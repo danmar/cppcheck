@@ -135,7 +135,16 @@ jobs:
         run: |
           python tools/test_matchcompiler.py
 
+      # we cannot specify -Werror since xml/etree/ElementTree.py in Python 3.9/3.10 contains an unclosed file
       - name: test addons
+        if: matrix.python-version == '3.9' || matrix.python-version == '3.10'
+        run: |
+          python -m pytest --strict-markers -vv addons/test/test-*.py
+        env:
+          PYTHONPATH: ./addons
+
+      - name: test addons
+        if: matrix.python-version != '3.9' && matrix.python-version != '3.10'
         run: |
           python -m pytest -Werror --strict-markers -vv addons/test/test-*.py
         env:
