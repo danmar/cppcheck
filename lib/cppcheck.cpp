@@ -787,27 +787,46 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             mPlistFile << ErrorLogger::plistHeader(version(), files);
         }
 
-        std::ostringstream dumpProlog;
+        std::string dumpProlog;
         if (mSettings.dump || !mSettings.addons.empty()) {
-            dumpProlog << "  <rawtokens>" << std::endl;
-            for (unsigned int i = 0; i < files.size(); ++i)
-                dumpProlog << "    <file index=\"" << i << "\" name=\"" << ErrorLogger::toxml(files[i]) << "\"/>" << std::endl;
-            for (const simplecpp::Token *tok = tokens1.cfront(); tok; tok = tok->next) {
-                dumpProlog
-                    << "    <tok "
-                    << "fileIndex=\"" << tok->location.fileIndex << "\" "
-                    << "linenr=\"" << tok->location.line << "\" "
-                    << "column=\"" << tok->location.col << "\" "
-                    << "str=\"" << ErrorLogger::toxml(tok->str()) << "\""
-                    << "/>" << std::endl;
+            dumpProlog += "  <rawtokens>\n";
+            for (unsigned int i = 0; i < files.size(); ++i) {
+                dumpProlog += "    <file index=\"";
+                dumpProlog += std::to_string(i);
+                dumpProlog += "\" name=\"";
+                dumpProlog += ErrorLogger::toxml(files[i]);
+                dumpProlog += "\"/>\n";
             }
-            dumpProlog << "  </rawtokens>" << std::endl;
+            for (const simplecpp::Token *tok = tokens1.cfront(); tok; tok = tok->next) {
+                dumpProlog += "    <tok ";
+
+                dumpProlog += "fileIndex=\"";
+                dumpProlog += std::to_string(tok->location.fileIndex);
+                dumpProlog += "\" ";
+
+                dumpProlog += "linenr=\"";
+                dumpProlog += std::to_string(tok->location.line);
+                dumpProlog += "\" ";
+
+                dumpProlog +="column=\"";
+                dumpProlog += std::to_string(tok->location.col);
+                dumpProlog += "\" ";
+
+                dumpProlog += "str=\"";
+                dumpProlog += ErrorLogger::toxml(tok->str());
+                dumpProlog += "\"";
+
+                dumpProlog += "/>\n";
+            }
+            dumpProlog += "  </rawtokens>\n";
         }
 
         // Parse comments and then remove them
         preprocessor.inlineSuppressions(tokens1, mSettings.nomsg);
         if (mSettings.dump || !mSettings.addons.empty()) {
-            mSettings.nomsg.dump(dumpProlog);
+            std::ostringstream oss;
+            mSettings.nomsg.dump(oss);
+            dumpProlog += oss.str();
         }
         tokens1.removeComments();
         preprocessor.removeComments();
@@ -841,8 +860,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         std::string dumpFile;
         createDumpFile(mSettings, filename, fdump, dumpFile);
         if (fdump.is_open()) {
-            fdump << dumpProlog.str();
-            dumpProlog.str("");
+            fdump << dumpProlog;
             if (!mSettings.dump)
                 filesDeleter.addFile(dumpFile);
         }
