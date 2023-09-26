@@ -1524,7 +1524,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             continue;
         if (mTokenizer.isCPP()) {
             const Token* parent = tok->astParent();
-            while (Token::simpleMatch(parent, "::"))
+            while (Token::Match(parent, "::|[|{"))
                 parent = parent->astParent();
             if (Token::simpleMatch(parent, "new"))
                 continue;
