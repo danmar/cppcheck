@@ -1522,6 +1522,13 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
         }
         if (mSettings.library.functions.find(fstr) != mSettings.library.functions.end())
             continue;
+        if (mTokenizer.isCPP()) {
+            const Token* parent = tok->astParent();
+            while (Token::Match(parent, "::|[|{"))
+                parent = parent->astParent();
+            if (Token::simpleMatch(parent, "new"))
+                continue;
+        }
         const_cast<Token *>(tok)->isIncompleteVar(true); // TODO: avoid const_cast
     }
 }
