@@ -248,6 +248,7 @@ private:
         TEST_CASE(doubleMoveMemberInitialization1);
         TEST_CASE(doubleMoveMemberInitialization2);
         TEST_CASE(doubleMoveMemberInitialization3); // #9974
+        TEST_CASE(doubleMoveMemberInitialization4);
         TEST_CASE(moveAndAssign1);
         TEST_CASE(moveAndAssign2);
         TEST_CASE(moveAssignMoveAssign);
@@ -10501,6 +10502,16 @@ private:
               "    return { .a1 = std::move(a1), .a2 = std::move(a2) };\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void doubleMoveMemberInitialization4() { // #11440
+        check("struct S { void f(int); };\n"
+              "struct T {\n"
+              "    T(int c, S&& d) : c{ c }, d{ std::move(d) } { d.f(c); }\n"
+              "    int c;\n"
+              "    S d;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Access of moved variable 'd'.\n", errout.str());
     }
 
     void moveAndAssign1() {
