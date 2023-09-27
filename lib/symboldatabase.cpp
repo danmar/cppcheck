@@ -1102,7 +1102,7 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
     }
 
     // Set function call pointers
-    for (const Token* tok = mTokenizer.list.front(); tok != mTokenizer.list.back(); tok = tok->next()) {
+    for (Token* tok = mTokenizer.list.front(); tok != mTokenizer.list.back(); tok = tok->next()) {
         if (tok->isName() && !tok->function() && tok->varId() == 0 && ((tok->astParent() && tok->astParent()->isComparisonOp()) || Token::Match(tok, "%name% [{(,)>;]")) && !isReservedName(tok->str())) {
             if (tok->next()->str() == ">" && !tok->next()->link())
                 continue;
@@ -1121,7 +1121,7 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
             if (!function || (isTemplateArg && function->isConstructor()))
                 continue;
 
-            const_cast<Token *>(tok)->function(function);
+            tok->function(function);
 
             if (tok->next()->str() != "(")
                 const_cast<Function *>(function)->functionPointerUsage = tok;
@@ -1170,7 +1170,7 @@ void SymbolDatabase::createSymbolDatabaseSetTypePointers()
     }
 
     // Set type pointers
-    for (const Token* tok = mTokenizer.list.front(); tok != mTokenizer.list.back(); tok = tok->next()) {
+    for (Token* tok = mTokenizer.list.front(); tok != mTokenizer.list.back(); tok = tok->next()) {
         if (!tok->isName() || tok->varId() || tok->function() || tok->type() || tok->enumerator())
             continue;
 
@@ -1179,7 +1179,7 @@ void SymbolDatabase::createSymbolDatabaseSetTypePointers()
 
         const Type *type = findVariableType(tok->scope(), tok);
         if (type)
-            const_cast<Token *>(tok)->type(type); // TODO: avoid const_cast
+            tok->type(type);
     }
 }
 
@@ -1241,7 +1241,7 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
         if (!tok->isName() || tok->isKeyword() || tok->isStandardType())
             continue;
         if (tok->varId())
-            const_cast<Token*>(tok)->variable(getVariableFromVarId(tok->varId()));
+            tok->variable(getVariableFromVarId(tok->varId()));
 
         // Set Token::variable pointer for array member variable
         // Since it doesn't point at a fixed location it doesn't have varid
@@ -1253,16 +1253,16 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
         if (isVar && (isArrayAccess || isDirectAccess || isDerefAccess)) {
             Token* membertok{};
             if (isArrayAccess) {
-                membertok = const_cast<Token*>(tok->astParent());
+                membertok = tok->astParent();
                 while (Token::simpleMatch(membertok, "["))
                     membertok = membertok->astParent();
                 if (membertok)
                     membertok = membertok->astOperand2();
             }
             else if (isDirectAccess) {
-                membertok = const_cast<Token*>(tok->astParent()->astOperand2());
+                membertok = tok->astParent()->astOperand2();
                 if (membertok == tok) {
-                    Token* gptok = const_cast<Token*>(tok->astParent()->astParent());
+                    Token* gptok = tok->astParent()->astParent();
                     if (Token::simpleMatch(gptok, ".")) // chained access
                         membertok = gptok->astOperand2();
                     else if (Token::simpleMatch(gptok, "[") && Token::simpleMatch(gptok->astParent(), "."))
@@ -1270,7 +1270,7 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                 }
             }
             else { // isDerefAccess
-                membertok = const_cast<Token*>(tok->astParent());
+                membertok = tok->astParent();
                 while (Token::simpleMatch(membertok, "*"))
                     membertok = membertok->astParent();
                 if (membertok)
@@ -1394,15 +1394,15 @@ void SymbolDatabase::createSymbolDatabaseEnums()
     }
 
     // find enumerators
-    for (const Token* tok = mTokenizer.list.front(); tok != mTokenizer.list.back(); tok = tok->next()) {
+    for (Token* tok = mTokenizer.list.front(); tok != mTokenizer.list.back(); tok = tok->next()) {
         const bool isVariable = (tok->tokType() == Token::eVariable && !tok->variable());
         if (tok->tokType() != Token::eName && !isVariable)
             continue;
         const Enumerator * enumerator = findEnumerator(tok, tokensThatAreNotEnumeratorValues);
         if (enumerator) {
             if (isVariable)
-                const_cast<Token*>(tok)->varId(0);
-            const_cast<Token*>(tok)->enumerator(enumerator);
+                tok->varId(0);
+            tok->enumerator(enumerator);
         }
     }
 }
@@ -1470,7 +1470,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
         "volatile",
         "NULL",
     };
-    for (const Token* tok = mTokenizer.list.front(); tok != mTokenizer.list.back(); tok = tok->next()) {
+    for (Token* tok = mTokenizer.list.front(); tok != mTokenizer.list.back(); tok = tok->next()) {
         const Scope * scope = tok->scope();
         if (!scope)
             continue;
@@ -1522,7 +1522,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
         }
         if (mSettings.library.functions.find(fstr) != mSettings.library.functions.end())
             continue;
-        const_cast<Token *>(tok)->isIncompleteVar(true); // TODO: avoid const_cast
+        tok->isIncompleteVar(true);
     }
 }
 
@@ -1799,13 +1799,13 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
 SymbolDatabase::~SymbolDatabase()
 {
     // Clear scope, type, function and variable pointers
-    for (const Token* tok = mTokenizer.list.front(); tok; tok = tok->next()) {
-        const_cast<Token *>(tok)->scope(nullptr);
-        const_cast<Token *>(tok)->type(nullptr);
-        const_cast<Token *>(tok)->function(nullptr);
-        const_cast<Token *>(tok)->variable(nullptr);
-        const_cast<Token *>(tok)->enumerator(nullptr);
-        const_cast<Token *>(tok)->setValueType(nullptr);
+    for (Token* tok = mTokenizer.list.front(); tok; tok = tok->next()) {
+        tok->scope(nullptr);
+        tok->type(nullptr);
+        tok->function(nullptr);
+        tok->variable(nullptr);
+        tok->enumerator(nullptr);
+        tok->setValueType(nullptr);
     }
 }
 
