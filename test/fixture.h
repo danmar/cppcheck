@@ -61,6 +61,7 @@ protected:
 
     bool prepareTest(const char testname[]);
     virtual void prepareTestInternal() {}
+    virtual void teardownTestInternal() {}
     std::string getLocationStr(const char * const filename, const unsigned int linenr) const;
 
     bool assert_(const char * const filename, const unsigned int linenr, const bool condition) const;
