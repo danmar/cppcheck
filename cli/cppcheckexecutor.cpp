@@ -419,7 +419,7 @@ static inline std::string ansiToOEM(const std::string &msg, bool doConvert)
         // ansi code page characters to wide characters
         MultiByteToWideChar(CP_ACP, 0, msg.data(), msglength, wcContainer.data(), msglength);
         // wide characters to oem codepage characters
-        WideCharToMultiByte(CP_OEMCP, 0, wcContainer.data(), msglength, const_cast<char *>(result.data()), msglength, nullptr, nullptr);
+        WideCharToMultiByte(CP_OEMCP, 0, wcContainer.data(), msglength, &result[0], msglength, nullptr, nullptr);
 
         return result; // hope for return value optimization
     }
