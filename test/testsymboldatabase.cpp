@@ -5494,6 +5494,20 @@ private:
             const Token* u = Token::findsimplematch(s, "uint64_t");
             ASSERT(u && !u->isIncompleteVar());
         }
+        {
+            GET_SYMBOL_DB("void f() {\n"
+                          "    T** p;\n"
+                          "    T*** q;\n"
+                          "    T** const * r;\n"
+                          "}\n");
+            ASSERT(db && errout.str().empty());
+            const Token* p = Token::findsimplematch(tokenizer.tokens(), "p");
+            ASSERT(p && !p->isIncompleteVar());
+            const Token* q = Token::findsimplematch(p, "q");
+            ASSERT(q && !q->isIncompleteVar());
+            const Token* r = Token::findsimplematch(q, "r");
+            ASSERT(r && !r->isIncompleteVar());
+        }
     }
 
     void enum1() {
