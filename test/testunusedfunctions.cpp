@@ -360,7 +360,7 @@ private:
     }
 
     void template10() {
-      check("template<typename T>\n" // #12013, don't crash
+        check("template<typename T>\n" // #12013, don't crash
               "struct S {\n"
               "    static const int digits = std::numeric_limits<T>::digits;\n"
               "    using type = std::conditional<digits < 32, std::int32_t, std::int64_t>::type;\n"
