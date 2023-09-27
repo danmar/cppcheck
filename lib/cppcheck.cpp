@@ -383,7 +383,8 @@ static std::vector<picojson::value> executeAddon(const AddonInfo &addonInfo,
     if (!premiumArgs.empty() && !addonInfo.executable.empty())
         args += " " + premiumArgs;
 
-    const std::string fileArg = (endsWith(file, FILELIST, sizeof(FILELIST)-1) ? " --file-list " : " ") + cmdFileName(file);
+    const bool is_file_list = (file.find(FILELIST) != std::string::npos);
+    const std::string fileArg = (is_file_list ? " --file-list " : " ") + cmdFileName(file);
     args += fileArg;
 
     std::string result;
@@ -1492,7 +1493,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
     std::string fileList;
 
     if (files.size() >= 2 || endsWith(files[0], ".ctu-info")) {
-        fileList = Path::getPathFromFilename(files[0]) + FILELIST;
+        fileList = Path::getPathFromFilename(files[0]) + FILELIST + std::to_string(getPid());
         filesDeleter.addFile(fileList);
         std::ofstream fout(fileList);
         for (const std::string& f: files)
