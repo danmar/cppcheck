@@ -132,6 +132,7 @@ void Timer::stop()
             std::cout << mStr << ": " << sec << "s" << std::endl;
         } else if (mShowTimeMode == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL) {
             const double sec = (double)diff / CLOCKS_PER_SEC;
+            std::lock_guard<std::mutex> l(stdCoutLock);
             std::cout << "Check time: " << mStr << ": " << sec << "s" << std::endl;
         } else {
             if (mTimerResults)
