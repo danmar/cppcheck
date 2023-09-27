@@ -155,6 +155,7 @@ private:
         TEST_CASE(showtime_top5_summary);
         TEST_CASE(showtime_file);
         TEST_CASE(showtime_summary);
+        TEST_CASE(showtime_file_total);
     }
 
     void many_files() {
@@ -344,6 +345,17 @@ private:
         // should only report the actual summary once
         ASSERT(output_s.find("1 result(s)") == std::string::npos);
         ASSERT(output_s.find("2 result(s)") != std::string::npos);
+    }
+
+    void showtime_file_total() {
+        REDIRECT;
+        check(2, 0,
+              "int main() {}",
+              dinit(CheckOptions,
+                    $.showtime = SHOWTIME_MODES::SHOWTIME_FILE_TOTAL));
+        const std::string output_s = GET_REDIRECT_OUTPUT;
+        ASSERT(output_s.find("Check time: " + fprefix() + "_" + zpad3(1) + ".cpp: ") != std::string::npos);
+        ASSERT(output_s.find("Check time: " + fprefix() + "_" + zpad3(2) + ".cpp: ") != std::string::npos);
     }
 
     // TODO: test whole program analysis

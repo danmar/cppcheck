@@ -235,6 +235,7 @@ private:
         TEST_CASE(xmlverinvalid);
         TEST_CASE(doc);
         TEST_CASE(showtimeFile);
+        TEST_CASE(showtimeFileTotal);
         TEST_CASE(showtimeTop5);
         TEST_CASE(showtimeTop5File);
         TEST_CASE(showtimeTop5Summary);
@@ -1590,6 +1591,15 @@ private:
         settings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_FILE);
+        ASSERT_EQUALS("", logger->str());
+    }
+
+    void showtimeFileTotal() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--showtime=file-total", "file.cpp"};
+        settings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
+        ASSERT(parser->parseFromArgs(3, argv));
+        ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL);
         ASSERT_EQUALS("", logger->str());
     }
 

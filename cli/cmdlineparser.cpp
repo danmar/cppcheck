@@ -1284,6 +1284,8 @@ void CmdLineParser::printHelp()
     "                                 Show nothing (default)\n"
     "                          * file\n"
     "                                 Show for each processed file\n"
+    "                          * file-total\n"
+    "                                 Show total time only for each processed file\n"
     "                          * summary\n"
     "                                 Show a summary at the end\n"
     "                          * top5_file\n"
