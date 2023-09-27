@@ -52,6 +52,7 @@ private:
         TEST_CASE(template7); // #9766 crash
         TEST_CASE(template8);
         TEST_CASE(template9);
+        TEST_CASE(template10);
         TEST_CASE(throwIsNotAFunction);
         TEST_CASE(unusedError);
         TEST_CASE(unusedMain);
@@ -355,6 +356,15 @@ private:
               "template <typename T> T f(T i) { return i; }\n"
               "template int f<int>(int);\n"
               "int main() { return f(int(2)); }\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void template10() {
+        check("template<typename T>\n"
+              "struct S {\n"
+              "    static const int digits = std::numeric_limits<T>::digits;\n"
+              "    using type = std::conditional<digits < 32, std::int32_t, std::int64_t>::type;\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -248,7 +248,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             continue;
 
         // funcname ( => Assert that the end parentheses isn't followed by {
-        if (Token::Match(funcname, "%name% (|<")) {
+        if (Token::Match(funcname, "%name% (|<") && funcname->linkAt(1)) {
             const Token *ftok = funcname->next();
             if (ftok->str() == "<")
                 ftok = ftok->link();
