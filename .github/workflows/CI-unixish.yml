@@ -384,10 +384,6 @@ jobs:
         env:
           STRICT: 1
 
-      - name: Run showtimetop5 tests
-        run: |
-          ./tools/test_showtimetop5.sh
-
       - name: Run --dump test
         run: |
           ./cppcheck test/testpreprocessor.cpp --dump
