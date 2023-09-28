@@ -2470,6 +2470,16 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
         if (!arg->isConst() && arg->isReference())
             return true;
     }
+    if (addressOf && tok1->astParent()->isUnaryOp("&")) {
+        const Token* castToken = tok1->astParent();
+        while (castToken->astParent()->isCast())
+            castToken = castToken->astParent();
+        if (Token::Match(castToken->astParent(), ",|(") &&
+            castToken->valueType() &&
+            castToken->valueType()->isIntegral() &&
+            castToken->valueType()->pointer == 0)
+            return true;
+    }
     if (!conclusive && inconclusive) {
         *inconclusive = true;
     }
