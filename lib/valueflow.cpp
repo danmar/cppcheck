@@ -1276,7 +1276,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
             if (sz > 0) {
                 ValueFlow::Value value(sz);
                 value.setKnown();
-                setTokenValue(const_cast<Token *>(tok->next()), std::move(value), settings);
+                setTokenValue(tok->next(), std::move(value), settings);
             }
         } else if (tok2->tokType() == Token::eChar) {
             nonneg int sz = 0;
@@ -3909,10 +3909,10 @@ static void valueFlowForwardLifetime(Token * tok, TokenList &tokenlist, ErrorLog
         });
 
         // Skip RHS
-        const Token *nextExpression = nextAfterAstRightmostLeaf(parent);
+        Token* nextExpression = nextAfterAstRightmostLeaf(parent);
 
         if (expr->exprId() > 0) {
-            valueFlowForward(const_cast<Token*>(nextExpression), endOfVarScope->next(), expr, values, tokenlist, settings);
+            valueFlowForward(nextExpression, endOfVarScope->next(), expr, values, tokenlist, settings);
 
             for (ValueFlow::Value& val : values) {
                 if (val.lifetimeKind == ValueFlow::Value::LifetimeKind::Address)
@@ -3923,7 +3923,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList &tokenlist, ErrorLog
                 const Token* parentLifetime =
                     getParentLifetime(tokenlist.isCPP(), parent->astOperand1()->astOperand2(), &settings->library);
                 if (parentLifetime && parentLifetime->exprId() > 0) {
-                    valueFlowForward(const_cast<Token*>(nextExpression), endOfVarScope, parentLifetime, values, tokenlist, settings);
+                    valueFlowForward(nextExpression, endOfVarScope, parentLifetime, values, tokenlist, settings);
                 }
             }
         }
@@ -3941,10 +3941,10 @@ static void valueFlowForwardLifetime(Token * tok, TokenList &tokenlist, ErrorLog
         const Token *endOfVarScope = var->scope()->bodyEnd;
 
         std::list<ValueFlow::Value> values = tok->values();
-        const Token *nextExpression = nextAfterAstRightmostLeaf(parent);
+        Token *nextExpression = nextAfterAstRightmostLeaf(parent);
         // Only forward lifetime values
         values.remove_if(&isNotLifetimeValue);
-        valueFlowForward(const_cast<Token*>(nextExpression), endOfVarScope, tok, values, tokenlist, settings);
+        valueFlowForward(nextExpression, endOfVarScope, tok, values, tokenlist, settings);
         // Cast
     } else if (parent->isCast()) {
         std::list<ValueFlow::Value> values = tok->values();
@@ -5072,19 +5072,19 @@ static bool isOpenParenthesisMemberFunctionCallOfVarId(const Token * openParenth
            varTok->next()->originalName().empty();
 }
 
-static const Token * findOpenParentesisOfMove(const Token * moveVarTok)
+static Token* findOpenParentesisOfMove(Token* moveVarTok)
 {
-    const Token * tok = moveVarTok;
+    Token* tok = moveVarTok;
     while (tok && tok->str() != "(")
         tok = tok->previous();
     return tok;
 }
 
-static const Token * findEndOfFunctionCallForParameter(const Token * parameterToken)
+static Token* findEndOfFunctionCallForParameter(Token* parameterToken)
 {
     if (!parameterToken)
         return nullptr;
-    const Token * parent = parameterToken->astParent();
+    Token* parent = parameterToken->astParent();
     while (parent && !parent->isOp() && !Token::Match(parent, "[({]"))
         parent = parent->astParent();
     if (!parent)
@@ -5145,8 +5145,8 @@ static void valueFlowAfterMove(TokenList& tokenlist, const SymbolDatabase& symbo
                 continue;
             const Token* const endOfVarScope = ValueFlow::getEndOfExprScope(varTok);
 
-            const Token * openParentesisOfMove = findOpenParentesisOfMove(varTok);
-            const Token * endOfFunctionCall = findEndOfFunctionCallForParameter(openParentesisOfMove);
+            Token* openParentesisOfMove = findOpenParentesisOfMove(varTok);
+            Token* endOfFunctionCall = findEndOfFunctionCallForParameter(openParentesisOfMove);
             if (endOfFunctionCall) {
                 ValueFlow::Value value;
                 value.valueType = ValueFlow::Value::ValueType::MOVED;
@@ -5157,7 +5157,7 @@ static void valueFlowAfterMove(TokenList& tokenlist, const SymbolDatabase& symbo
                     value.errorPath.emplace_back(tok, "Calling std::forward(" + varTok->str() + ")");
                 value.setKnown();
 
-                valueFlowForward(const_cast<Token*>(endOfFunctionCall), endOfVarScope, varTok, std::move(value), tokenlist, settings);
+                valueFlowForward(endOfFunctionCall, endOfVarScope, varTok, std::move(value), tokenlist, settings);
             }
         }
     }
@@ -5726,7 +5726,7 @@ static void valueFlowForwardAssign(Token* const tok,
         lowerToPossible(values);
 
     // Skip RHS
-    const Token * nextExpression = tok->astParent() ? nextAfterAstRightmostLeaf(tok->astParent()) : tok->next();
+    Token* nextExpression = tok->astParent() ? nextAfterAstRightmostLeaf(tok->astParent()) : tok->next();
     if (!nextExpression)
         return;
 
@@ -5754,9 +5754,9 @@ static void valueFlowForwardAssign(Token* const tok,
         });
         std::list<ValueFlow::Value> constValues;
         constValues.splice(constValues.end(), values, it, values.end());
-        valueFlowForwardConst(const_cast<Token*>(nextExpression), endOfVarScope, expr->variable(), constValues, settings);
+        valueFlowForwardConst(nextExpression, endOfVarScope, expr->variable(), constValues, settings);
     }
-    valueFlowForward(const_cast<Token*>(nextExpression), endOfVarScope, expr, values, tokenlist, settings);
+    valueFlowForward(nextExpression, endOfVarScope, expr, values, tokenlist, settings);
 }
 
 static void valueFlowForwardAssign(Token* const tok,
@@ -9133,7 +9133,7 @@ static void valueFlowUnknownFunctionReturn(TokenList &tokenlist, const Settings 
                 value = minvalue;
             else if (value > maxvalue)
                 value = maxvalue;
-            setTokenValue(const_cast<Token *>(tok), ValueFlow::Value(value), settings);
+            setTokenValue(tok, ValueFlow::Value(value), settings);
         }
     }
 }
