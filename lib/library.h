@@ -55,7 +55,7 @@ class CPPCHECKLIB Library {
     friend class TestSymbolDatabase; // For testing only
     friend class TestSingleExecutorBase; // For testing only
     friend class TestThreadExecutor; // For testing only
-    friend class TestProcessExecutor; // For testing only
+    friend class TestProcessExecutorBase; // For testing only
 
 public:
     Library() = default;
