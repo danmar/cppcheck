@@ -35,15 +35,18 @@
 #include <utility>
 #include <vector>
 
-class TestThreadExecutor : public TestFixture {
+class TestThreadExecutorBase : public TestFixture {
 public:
-    TestThreadExecutor() : TestFixture("TestThreadExecutor") {}
+    TestThreadExecutorBase(const char * const name, bool useFS) : TestFixture(name), useFS(useFS) {}
 
 private:
     Settings settings = settingsBuilder().library("std.cfg").build();
+    bool useFS;
 
-    static std::string fprefix()
+    std::string fprefix()
     {
+        if (useFS)
+            return "threadfs";
         return "thread";
     }
 
@@ -63,19 +66,29 @@ private:
     void check(unsigned int jobs, int files, int result, const std::string &data, const CheckOptions& opt = make_default_obj{}) {
         errout.str("");
         output.str("");
+        settings.project.fileSettings.clear();
 
         std::map<std::string, std::size_t> filemap;
         if (opt.filesList.empty()) {
             for (int i = 1; i <= files; ++i) {
-                std::ostringstream oss;
-                oss << fprefix() << "_" << i << ".cpp";
-                filemap[oss.str()] = data.size();
+                std::string s = fprefix() + "_" + std::to_string(i) + ".cpp";
+                filemap[s] = data.size();
+                if (useFS) {
+                    ImportProject::FileSettings fs;
+                    fs.filename = std::move(s);
+                    settings.project.fileSettings.emplace_back(std::move(fs));
+                }
             }
         }
         else {
             for (const auto& f : opt.filesList)
             {
                 filemap[f] = data.size();
+                if (useFS) {
+                    ImportProject::FileSettings fs;
+                    fs.filename = f;
+                    settings.project.fileSettings.emplace_back(std::move(fs));
+                }
             }
         }
 
@@ -85,13 +98,17 @@ private:
         settings1.quiet = opt.quiet;
         if (opt.plistOutput)
             settings1.plistOutput = opt.plistOutput;
-        // TODO: test with settings.project.fileSettings;
-        ThreadExecutor executor(filemap, settings1, settings1.nomsg, *this, CppCheckExecutor::executeCommand);
+
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filemap.size());
         for (std::map<std::string, std::size_t>::const_iterator i = filemap.cbegin(); i != filemap.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->first, data));
 
+        // clear files list so only fileSettings are used
+        if (useFS)
+            filemap.clear();
+
+        ThreadExecutor executor(filemap, settings1, settings1.nomsg, *this, CppCheckExecutor::executeCommand);
         ASSERT_EQUALS(result, executor.check());
     }
 
@@ -148,7 +165,7 @@ private:
     }
 
     void many_threads_plist() {
-        const char plistOutput[] = "plist_thread/";
+        const std::string plistOutput = "plist_" + fprefix() + "/";
         ScopedFile plistFile("dummy", "", plistOutput);
 
         check(16, 100, 100,
@@ -157,7 +174,7 @@ private:
               "  char *a = malloc(10);\n"
               "  return 0;\n"
               "}", dinit(CheckOptions,
-                         $.plistOutput = plistOutput));
+                         $.plistOutput = plistOutput.c_str()));
     }
 
     void no_errors_more_files() {
@@ -307,4 +324,15 @@ private:
     // TODO: test whole program analysis
 };
 
-REGISTER_TEST(TestThreadExecutor)
+class TestThreadExecutorFiles : public TestThreadExecutorBase {
+public:
+    TestThreadExecutorFiles() : TestThreadExecutorBase("TestThreadExecutorFiles", false) {}
+};
+
+class TestThreadExecutorFS : public TestThreadExecutorBase {
+public:
+    TestThreadExecutorFS() : TestThreadExecutorBase("TestThreadExecutorFS", true) {}
+};
+
+REGISTER_TEST(TestThreadExecutorFiles)
+REGISTER_TEST(TestThreadExecutorFS)
