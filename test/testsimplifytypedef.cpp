@@ -475,9 +475,9 @@ private:
 
     void carray4() {
         const char* code{};
-        code = "typedef int a[256];\n" // #12019
-               "a temp = {0};\n";
-        ASSERT_EQUALS("", simplifyTypedef(code));
+        code = "typedef int arr[12];\n" // #12019
+               "void foo() { arr temp = {0}; }\n";
+        ASSERT_EQUALS("", tok(code));
     }
 
     void cdonotreplace1() {
