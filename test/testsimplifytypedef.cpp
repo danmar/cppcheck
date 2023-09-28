@@ -477,7 +477,7 @@ private:
         const char* code{};
         code = "typedef int arr[12];\n" // #12019
                "void foo() { arr temp = {0}; }\n";
-        ASSERT_EQUALS("", tok(code));
+        ASSERT_EQUALS("void foo ( ) { int temp [ 12 ] = { 0 } ; }", tok(code));
     }
 
     void cdonotreplace1() {
@@ -1877,7 +1877,7 @@ private:
                              "}";
 
         // The expected tokens..
-        const char expected2[] = "void f ( ) { char a [ 256 ] ; a = { 0 } ; char b [ 256 ] ; b = { 0 } ; }";
+        const char expected2[] = "void f ( ) { char a [ 256 ] = { 0 } ; char b [ 256 ] = { 0 } ; }";
         ASSERT_EQUALS(expected2, tok(code2, false, cppcheck::Platform::Type::Native, false));
         ASSERT_EQUALS("", errout.str());
 

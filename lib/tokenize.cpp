@@ -888,9 +888,15 @@ namespace {
             if (!after)
                 throw InternalError(tok, "Failed to simplify typedef. Is the code valid?");
 
-            const Token* const tok4 = useAfterVarRange ? insertTokens(after->previous(), mRangeAfterVar)->next() : tok3->next();
+            Token* const tok4 = useAfterVarRange ? insertTokens(after->previous(), mRangeAfterVar)->next() : tok3->next();
 
             tok->deleteThis();
+
+            // Unsplit variable declarations
+            if (Token::Match(tok4->previous(), "] ; %name% = {") && tok4->isSplittedVarDeclEq()) {
+                tok4->deleteNext();
+                tok4->deleteThis();
+            }
 
             // Set links
             std::stack<Token*> brackets;
