@@ -92,12 +92,17 @@ public:
 
     void printMessage(const std::string &message) override
     {
-        std::cout << "cppcheck: " << message << std::endl;
+        printRaw("cppcheck: " + message);
     }
 
     void printError(const std::string &message) override
     {
         printMessage("error: " + message);
+    }
+
+    void printRaw(const std::string &message) override
+    {
+        std::cout << message << std::endl;
     }
 };
 

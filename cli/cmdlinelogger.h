@@ -28,6 +28,7 @@ public:
 
     virtual void printMessage(const std::string &message) = 0;
     virtual void printError(const std::string &message) = 0;
+    virtual void printRaw(const std::string &message) = 0;
 };
 
 #endif // CMD_LINE_LOGGER_H
