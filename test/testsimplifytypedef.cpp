@@ -67,6 +67,7 @@ private:
         TEST_CASE(carray1);
         TEST_CASE(carray2);
         TEST_CASE(carray3);
+        TEST_CASE(carray4);
         TEST_CASE(cdonotreplace1);
         TEST_CASE(cppfp1);
         TEST_CASE(Generic1);
@@ -470,6 +471,13 @@ private:
                "typedef b c[3];\n"
                "c* p;\n";
         ASSERT_EQUALS("int ( * p ) [ 3 ] [ 2 ] [ 1 ] ;", simplifyTypedef(code));
+    }
+
+    void carray4() {
+        const char* code{};
+        code = "typedef int a[256];\n" // #12019
+               "a temp = {0};\n";
+        ASSERT_EQUALS("", simplifyTypedef(code));
     }
 
     void cdonotreplace1() {
