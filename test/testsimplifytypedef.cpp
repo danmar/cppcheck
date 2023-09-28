@@ -211,6 +211,7 @@ private:
         TEST_CASE(simplifyTypedef144); // #9353
         TEST_CASE(simplifyTypedef145); // #9353
         TEST_CASE(simplifyTypedef146);
+        TEST_CASE(simplifyTypedef147);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -3387,6 +3388,25 @@ private:
                "void N::T::f(V*) {}\n"
                "namespace N {}\n";
         ASSERT_EQUALS("namespace N { struct S { } ; struct T { void f ( int * ) ; } ; } void N :: T :: f ( int * ) { }", tok(code));
+    }
+
+    void simplifyTypedef147() {
+        const char* code{};
+        code = "namespace N {\n" // #12014
+               "    template<typename T>\n"
+               "    struct S {};\n"
+               "}\n"
+               "typedef N::S<int> S;\n"
+               "namespace N {\n"
+               "    template<typename T>\n"
+               "    struct U {\n"
+               "        S<T> operator()() {\n"
+               "            return {};\n"
+               "        }\n"
+               "    };\n"
+               "}\n";
+        ASSERT_EQUALS("namespace N { template < typename T > struct S { } ; } namespace N { template < typename T > struct U { S < T > operator() ( ) { return { } ; } } ; }",
+                      tok(code));
     }
 
     void simplifyTypedefFunction1() {
