@@ -5590,6 +5590,16 @@ private:
         values = tokenValues(code, "& y :", ValueFlow::Value::ValueType::UNINIT);
         ASSERT_EQUALS(1, values.size());
         ASSERT_EQUALS(true, values.front().isUninitValue());
+
+        // #12012 - function init variable
+        code = "void init(uintptr_t p);\n"
+               "void fp() {\n"
+               "  int x;\n"
+               "  init((uintptr_t)&x);\n"
+               "  if (x > 0) {}\n"
+               "}\n";
+        values = tokenValues(code, "x >", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
     }
 
     void valueFlowConditionExpressions() {
