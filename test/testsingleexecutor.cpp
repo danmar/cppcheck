@@ -81,11 +81,11 @@ private:
         std::map<std::string, std::size_t> filemap;
         if (opt.filesList.empty()) {
             for (int i = 1; i <= files; ++i) {
-                const std::string s = fprefix() + "_" + zpad3(i) + ".cpp";
+                std::string s = fprefix() + "_" + zpad3(i) + ".cpp";
                 filemap[s] = data.size();
                 if (useFS) {
                     ImportProject::FileSettings fs;
-                    fs.filename = s;
+                    fs.filename = std::move(s);
                     settings.project.fileSettings.emplace_back(std::move(fs));
                 }
             }
@@ -128,7 +128,6 @@ private:
         if (useFS)
             filemap.clear();
 
-        // TODO: test with settings.project.fileSettings;
         SingleExecutor executor(cppcheck, filemap, settings, settings.nomsg, *this);
         ASSERT_EQUALS(result, executor.check());
         ASSERT_EQUALS(opt.executeCommandCalled, executeCommandCalled);
