@@ -876,7 +876,7 @@ Cppcheck is distributed with a few addons which are listed below.
 
 [misra.py](https://github.com/danmar/cppcheck/blob/main/addons/misra.py) is used to verify compliance with MISRA C 2012, a proprietary set of guidelines to avoid questionable code, developed for embedded systems.
 
-The full list of supported rules is available on [this](https://files.cppchecksolutions.com/misrac2012.html) web page.
+The full list of supported rules is available on: [https://files.cppchecksolutions.com/misrac2012.html](https://files.cppchecksolutions.com/misrac2012.html)
 
 ### y2038.py
 
