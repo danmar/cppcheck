@@ -41,8 +41,9 @@
 
 enum class Color;
 
-ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
+ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand)
     : Executor(files, settings, suppressions, errorLogger)
+    , mExecuteCommand(std::move(executeCommand))
 {
     assert(mSettings.jobs > 1);
 }
@@ -82,8 +83,8 @@ private:
 class ThreadData
 {
 public:
-    ThreadData(ThreadExecutor &threadExecutor, ErrorLogger &errorLogger, const Settings &settings, const std::map<std::string, std::size_t> &files, const std::list<ImportProject::FileSettings> &fileSettings)
-        : mFiles(files), mFileSettings(fileSettings), mSettings(settings), logForwarder(threadExecutor, errorLogger)
+    ThreadData(ThreadExecutor &threadExecutor, ErrorLogger &errorLogger, const Settings &settings, const std::map<std::string, std::size_t> &files, const std::list<ImportProject::FileSettings> &fileSettings, CppCheck::ExecuteCmdFn executeCommand)
+        : mFiles(files), mFileSettings(fileSettings), mSettings(settings), mExecuteCommand(std::move(executeCommand)), logForwarder(threadExecutor, errorLogger)
     {
         mItNextFile = mFiles.begin();
         mItNextFileSettings = mFileSettings.begin();
@@ -115,7 +116,7 @@ public:
     }
 
     unsigned int check(ErrorLogger &errorLogger, const std::string *file, const ImportProject::FileSettings *fs) const {
-        CppCheck fileChecker(errorLogger, false, CppCheckExecutor::executeCommand);
+        CppCheck fileChecker(errorLogger, false, mExecuteCommand);
         fileChecker.settings() = mSettings; // this is a copy
 
         unsigned int result;
@@ -153,6 +154,7 @@ private:
 
     std::mutex mFileSync;
     const Settings &mSettings;
+    CppCheck::ExecuteCmdFn mExecuteCommand;
 
 public:
     SyncLogForwarder logForwarder;
@@ -180,7 +182,7 @@ unsigned int ThreadExecutor::check()
     std::vector<std::future<unsigned int>> threadFutures;
     threadFutures.reserve(mSettings.jobs);
 
-    ThreadData data(*this, mErrorLogger, mSettings, mFiles, mSettings.project.fileSettings);
+    ThreadData data(*this, mErrorLogger, mSettings, mFiles, mSettings.project.fileSettings, mExecuteCommand);
 
     for (unsigned int i = 0; i < mSettings.jobs; ++i) {
         try {

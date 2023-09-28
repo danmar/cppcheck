@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "cppcheckexecutor.h"
 #include "redirect.h"
 #include "settings.h"
 #include "fixture.h"
@@ -85,7 +86,7 @@ private:
         if (opt.plistOutput)
             settings1.plistOutput = opt.plistOutput;
         // TODO: test with settings.project.fileSettings;
-        ThreadExecutor executor(filemap, settings1, settings1.nomsg, *this);
+        ThreadExecutor executor(filemap, settings1, settings1.nomsg, *this, CppCheckExecutor::executeCommand);
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filemap.size());
         for (std::map<std::string, std::size_t>::const_iterator i = filemap.cbegin(); i != filemap.cend(); ++i)
