@@ -327,7 +327,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
 #if defined(THREADING_MODEL_THREAD)
         ThreadExecutor executor(mFiles, settings, settings.nomsg, *this);
 #elif defined(THREADING_MODEL_FORK)
-        ProcessExecutor executor(mFiles, settings, settings.nomsg, *this);
+        ProcessExecutor executor(mFiles, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
 #endif
         returnValue = executor.check();
     }
