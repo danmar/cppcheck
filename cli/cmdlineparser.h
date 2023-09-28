@@ -20,6 +20,7 @@
 #define CMDLINE_PARSER_H
 
 #include <cstddef>
+#include <cstdint>
 #include <list>
 #include <string>
 #include <vector>
@@ -55,7 +56,7 @@ public:
      */
     CmdLineParser(CmdLineLogger &logger, Settings &settings, Suppressions &suppressions);
 
-    enum class Result { Success, Exit, Fail };
+    enum class Result : std::uint8_t { Success, Exit, Fail };
 
     /**
      * @brief Parse command line args and fill settings and file lists

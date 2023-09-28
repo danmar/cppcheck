@@ -21,10 +21,11 @@
 
 #include "config.h"
 
+#include <cstdint>
 #include <ostream>
 #include <string>
 
-enum class Color {
+enum class Color : std::uint8_t {
     Reset      = 0,
     Bold       = 1,
     Dim        = 2,

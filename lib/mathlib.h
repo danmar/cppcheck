@@ -23,6 +23,7 @@
 
 #include "config.h"
 
+#include <cstdint>
 #include <string>
 
 /// @addtogroup Core
@@ -39,7 +40,7 @@ public:
     private:
         long long mIntValue{};
         double mDoubleValue{};
-        enum class Type { INT, LONG, LONGLONG, FLOAT } mType;
+        enum class Type : std::uint8_t { INT, LONG, LONGLONG, FLOAT } mType;
         bool mIsUnsigned{};
 
         void promote(const value &v);

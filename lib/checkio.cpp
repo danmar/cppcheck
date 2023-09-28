@@ -96,7 +96,7 @@ void CheckIO::coutCerrMisusageError(const Token* tok, const std::string& streamN
 // fopen("","r"); fwrite(); <- write to read-only file (or vice versa)
 // fclose(); fread(); <- Use closed file
 //---------------------------------------------------------------------------
-enum class OpenMode { CLOSED, READ_MODE, WRITE_MODE, RW_MODE, UNKNOWN_OM };
+enum class OpenMode : std::uint8_t { CLOSED, READ_MODE, WRITE_MODE, RW_MODE, UNKNOWN_OM };
 static OpenMode getMode(const std::string& str)
 {
     if (str.find('+', 1) != std::string::npos)
@@ -112,9 +112,9 @@ namespace {
     struct Filepointer {
         OpenMode mode;
         nonneg int mode_indent{};
-        enum class Operation {NONE, UNIMPORTANT, READ, WRITE, POSITIONING, OPEN, CLOSE, UNKNOWN_OP} lastOperation = Operation::NONE;
+        enum class Operation : std::uint8_t {NONE, UNIMPORTANT, READ, WRITE, POSITIONING, OPEN, CLOSE, UNKNOWN_OP} lastOperation = Operation::NONE;
         nonneg int op_indent{};
-        enum class AppendMode { UNKNOWN_AM, APPEND, APPEND_EX };
+        enum class AppendMode : std::uint8_t { UNKNOWN_AM, APPEND, APPEND_EX };
         AppendMode append_mode = AppendMode::UNKNOWN_AM;
         std::string filename;
         explicit Filepointer(OpenMode mode_ = OpenMode::UNKNOWN_OM)

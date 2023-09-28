@@ -242,7 +242,7 @@ static int write_vcxproj(const std::string &proj_name, const std::function<void(
     return EXIT_SUCCESS;
 }
 
-enum ClType { Compile, Include, Precompile };
+enum ClType : std::uint8_t { Compile, Include, Precompile };
 
 static std::string make_vcxproj_cl_entry(const std::string& file, ClType type)
 {

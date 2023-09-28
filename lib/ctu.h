@@ -28,6 +28,7 @@
 #include "mathlib.h"
 #include "vfvalue.h"
 
+#include <cstdint>
 #include <list>
 #include <map>
 #include <string>
@@ -51,7 +52,7 @@ namespace tinyxml2 {
 namespace CTU {
     class CPPCHECKLIB FileInfo : public Check::FileInfo {
     public:
-        enum class InvalidValueType { null, uninit, bufferOverflow };
+        enum class InvalidValueType : std::uint8_t { null, uninit, bufferOverflow };
 
         std::string toString() const override;
 

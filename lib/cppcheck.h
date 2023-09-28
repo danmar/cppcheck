@@ -29,6 +29,7 @@
 #include "settings.h"
 
 #include <cstddef>
+#include <cstdint>
 #include <fstream>
 #include <functional>
 #include <list>
@@ -40,7 +41,7 @@
 #include <vector>
 
 class TokenList;
-enum class SHOWTIME_MODES;
+enum class SHOWTIME_MODES : std::uint8_t;
 struct FileSettings;
 class CheckUnusedFunctions;
 class Tokenizer;

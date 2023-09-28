@@ -25,6 +25,7 @@
 #include "config.h"
 #include "tokenize.h"
 
+#include <cstdint>
 #include <ostream>
 #include <string>
 
@@ -33,7 +34,7 @@ class Settings;
 class Token;
 class Variable;
 class ErrorLogger;
-enum class Severity;
+enum class Severity : std::uint8_t;
 
 /// @addtogroup Checks
 /// @{

@@ -19,6 +19,8 @@
 #ifndef REPORT_H
 #define REPORT_H
 
+#include <cstdint>
+
 #include <QFile>
 #include <QObject>
 #include <QString>
@@ -33,7 +35,7 @@ class ErrorItem;
  */
 class Report : public QObject {
 public:
-    enum Type {
+    enum Type : std::uint8_t {
         TXT,
         XMLV2,
         CSV,

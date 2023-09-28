@@ -500,7 +500,7 @@ namespace {
         }
         std::string name;
         std::string configuration;
-        enum { Win32, x64, Unknown } platform = Unknown;
+        enum : std::uint8_t { Win32, x64, Unknown } platform = Unknown;
         std::string platformStr;
     };
 

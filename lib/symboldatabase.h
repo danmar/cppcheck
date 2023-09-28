@@ -31,6 +31,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdint>
 #include <iosfwd>
 #include <list>
 #include <map>
@@ -51,7 +52,7 @@ class ValueType;
 /**
  * @brief Access control enumerations.
  */
-enum class AccessControl { Public, Protected, Private, Global, Namespace, Argument, Local, Throw };
+enum class AccessControl : std::uint8_t { Public, Protected, Private, Global, Namespace, Argument, Local, Throw };
 
 /**
  * @brief Array dimension information.
@@ -68,7 +69,7 @@ public:
     const Token* classDef;     ///< Points to "class" token
     const Scope* classScope;
     const Scope* enclosingScope;
-    enum class NeedInitialization {
+    enum class NeedInitialization : std::uint8_t {
         Unknown, True, False
     } needInitialization = NeedInitialization::Unknown;
 
@@ -747,7 +748,7 @@ class CPPCHECKLIB Function {
     }
 
 public:
-    enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction, eLambda };
+    enum Type : std::uint8_t { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction, eLambda };
 
     Function(const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef);
     Function(const Token *tokenDef, const std::string &clangType);
@@ -1021,7 +1022,7 @@ public:
         const Scope *scope;
     };
 
-    enum ScopeType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eFor, eWhile, eDo, eSwitch, eUnconditional, eTry, eCatch, eLambda, eEnum };
+    enum ScopeType : std::uint8_t { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eFor, eWhile, eDo, eSwitch, eUnconditional, eTry, eCatch, eLambda, eEnum };
 
     Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_);
     Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_);
@@ -1198,7 +1199,7 @@ private:
     void getVariableList(const Settings& settings, const Token *start, const Token *end);
 };
 
-enum class Reference {
+enum class Reference : std::uint8_t {
     None,
     LValue,
     RValue
@@ -1207,8 +1208,8 @@ enum class Reference {
 /** Value type */
 class CPPCHECKLIB ValueType {
 public:
-    enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign = UNKNOWN_SIGN;
-    enum Type {
+    enum Sign : std::uint8_t { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign = UNKNOWN_SIGN;
+    enum Type : std::uint8_t {
         UNKNOWN_TYPE,
         POD,
         NONSTD,
@@ -1278,7 +1279,7 @@ public:
 
     static Type typeFromString(const std::string &typestr, bool longType);
 
-    enum class MatchResult { UNKNOWN, SAME, FALLBACK1, FALLBACK2, NOMATCH };
+    enum class MatchResult : std::uint8_t { UNKNOWN, SAME, FALLBACK1, FALLBACK2, NOMATCH };
     static MatchResult matchParameter(const ValueType *call, const ValueType *func);
     static MatchResult matchParameter(const ValueType *call, const Variable *callVar, const Variable *funcVar);
 

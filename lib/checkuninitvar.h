@@ -29,6 +29,7 @@
 #include "tokenize.h"
 #include "vfvalue.h"
 
+#include <cstdint>
 #include <list>
 #include <map>
 #include <set>
@@ -69,7 +70,7 @@ public:
     /** @brief This constructor is used when registering the CheckUninitVar */
     CheckUninitVar() : Check(myName()) {}
 
-    enum Alloc { NO_ALLOC, NO_CTOR_CALL, CTOR_CALL, ARRAY };
+    enum Alloc : std::uint8_t { NO_ALLOC, NO_CTOR_CALL, CTOR_CALL, ARRAY };
 
     static const Token *isVariableUsage(const Token *vartok, const Library &library, bool pointer, Alloc alloc, int indirect = 0);
     const Token *isVariableUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect = 0) const;

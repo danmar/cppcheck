@@ -26,7 +26,7 @@
 #include <sstream>
 #endif
 
-enum class Color;
+enum class Color : std::uint8_t;
 
 class DummyErrorLogger : public ErrorLogger {
 public:

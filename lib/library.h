@@ -25,6 +25,7 @@
 #include "mathlib.h"
 #include "standards.h"
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <set>
@@ -36,7 +37,7 @@
 
 class Token;
 class Settings;
-enum class Severity;
+enum class Severity : std::uint8_t;
 
 namespace tinyxml2 {
     class XMLDocument;
@@ -55,7 +56,7 @@ class CPPCHECKLIB Library {
 public:
     Library() = default;
 
-    enum class ErrorCode {
+    enum class ErrorCode : std::uint8_t {
         OK,
         FILE_NOT_FOUND, BAD_XML, UNKNOWN_ELEMENT, MISSING_ATTRIBUTE, BAD_ATTRIBUTE_VALUE,
         UNSUPPORTED_FORMAT, DUPLICATE_PLATFORM_TYPE, PLATFORM_TYPE_REDEFINED, DUPLICATE_DEFINE
@@ -76,7 +77,7 @@ public:
     struct AllocFunc {
         int groupId;
         int arg;
-        enum class BufferSize {none,malloc,calloc,strdup};
+        enum class BufferSize : std::uint8_t {none,malloc,calloc,strdup};
         BufferSize bufferSize;
         int bufferSizeArg1;
         int bufferSizeArg2;
@@ -163,7 +164,7 @@ public:
     bool isNotLibraryFunction(const Token *ftok) const;
     bool matchArguments(const Token *ftok, const std::string &functionName) const;
 
-    enum class UseRetValType { NONE, DEFAULT, ERROR_CODE };
+    enum class UseRetValType : std::uint8_t { NONE, DEFAULT, ERROR_CODE };
     UseRetValType getUseRetValType(const Token* ftok) const;
 
     const std::string& returnValue(const Token *ftok) const;
@@ -180,7 +181,7 @@ public:
     public:
         Container() = default;
 
-        enum class Action {
+        enum class Action : std::uint8_t {
             RESIZE,
             CLEAR,
             PUSH,
@@ -194,7 +195,7 @@ public:
             CHANGE_INTERNAL,
             NO_ACTION
         };
-        enum class Yield {
+        enum class Yield : std::uint8_t {
             AT_INDEX,
             ITEM,
             BUFFER,
@@ -275,7 +276,7 @@ public:
         IteratorInfo iteratorInfo;
 
         struct MinSize {
-            enum class Type { NONE, STRLEN, ARGVALUE, SIZEOF, MUL, VALUE };
+            enum class Type : std::uint8_t { NONE, STRLEN, ARGVALUE, SIZEOF, MUL, VALUE };
             MinSize(Type t, int a) : type(t), arg(a) {}
             Type type;
             int arg;
@@ -285,7 +286,7 @@ public:
         };
         std::vector<MinSize> minsizes;
 
-        enum class Direction {
+        enum class Direction : std::uint8_t {
             DIR_IN,     ///< Input to called function. Data is treated as read-only.
             DIR_OUT,    ///< Output to caller. Data is passed by reference or address and is potentially written.
             DIR_INOUT,  ///< Input to called function, and output to caller. Data is passed by reference or address and is potentially modified.
@@ -411,7 +412,7 @@ public:
     struct PodType {
         unsigned int size;
         char sign;
-        enum class Type { NO, BOOL, CHAR, SHORT, INT, LONG, LONGLONG } stdtype;
+        enum class Type : std::uint8_t { NO, BOOL, CHAR, SHORT, INT, LONG, LONGLONG } stdtype;
     };
     const PodType *podtype(const std::string &name) const;
 
@@ -453,10 +454,11 @@ public:
     std::string getFunctionName(const Token *ftok) const;
 
     /** Suppress/check a type */
-    enum class TypeCheck { def,
-                           check,
-                           suppress,
-                           checkFiniteLifetime, // (unusedvar) object has side effects, but immediate destruction is wrong
+    enum class TypeCheck : std::uint8_t {
+        def,
+        check,
+        suppress,
+        checkFiniteLifetime, // (unusedvar) object has side effects, but immediate destruction is wrong
     };
     TypeCheck getTypeCheck(std::string check, std::string typeName) const;
     bool hasAnyTypeCheck(const std::string& typeName) const;
@@ -524,7 +526,7 @@ private:
     std::unordered_map<std::string, Container> mContainers;
     std::unordered_map<std::string, Function> mFunctions;
     std::unordered_map<std::string, SmartPointer> mSmartPointers;
-    enum class FalseTrueMaybe { False, True, Maybe };
+    enum class FalseTrueMaybe : std::uint8_t { False, True, Maybe };
     int mAllocId{};
     std::set<std::string> mFiles;
     std::map<std::string, AllocFunc> mAlloc; // allocation functions
@@ -559,7 +561,7 @@ private:
         return (it == data.end()) ? nullptr : &it->second;
     }
 
-    enum DetectContainer { ContainerOnly, IteratorOnly, Both };
+    enum DetectContainer : std::uint8_t { ContainerOnly, IteratorOnly, Both };
     const Library::Container* detectContainerInternal(const Token* typeStart, DetectContainer detect, bool* isIterator = nullptr, bool withoutStd = false) const;
 };
 

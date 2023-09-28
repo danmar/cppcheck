@@ -19,6 +19,8 @@
 #ifndef CPPCHECKLIBRARYDATA_H
 #define CPPCHECKLIBRARYDATA_H
 
+#include <cstdint>
+
 #include <QList>
 #include <QMap>
 #include <QPair>
@@ -72,7 +74,7 @@ public:
     struct Function {
         QString comments;
         QString name;
-        enum TrueFalseUnknown { False, True, Unknown } noreturn = Unknown;
+        enum TrueFalseUnknown : std::uint8_t { False, True, Unknown } noreturn = Unknown;
         bool gccPure{};
         bool gccConst{};
         bool leakignore{};

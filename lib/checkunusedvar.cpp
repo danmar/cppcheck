@@ -101,7 +101,7 @@ static bool isRaiiClass(const ValueType *valueType, bool cpp, bool defaultReturn
  */
 class Variables {
 public:
-    enum VariableType { standard, array, pointer, reference, pointerArray, referenceArray, pointerPointer, none };
+    enum VariableType : std::uint8_t { standard, array, pointer, reference, pointerArray, referenceArray, pointerPointer, none };
 
     /** Store information about variable usage */
     class VariableUsage {

@@ -1939,7 +1939,7 @@ void TokenList::simplifyPlatformTypes()
 
     const bool isCPP11 = isCPP() && (mSettings->standards.cpp >= Standards::CPP11);
 
-    enum { isLongLong, isLong, isInt } type;
+    enum : std::uint8_t { isLongLong, isLong, isInt } type;
 
     /** @todo This assumes a flat address space. Not true for segmented address space (FAR *). */
 

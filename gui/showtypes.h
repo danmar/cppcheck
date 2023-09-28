@@ -19,9 +19,11 @@
 #ifndef SHOWTYPES_H
 #define SHOWTYPES_H
 
+#include <cstdint>
+
 #include <QVariant>
 
-enum class Severity;
+enum class Severity : std::uint8_t;
 
 /// @addtogroup GUI
 /// @{
@@ -41,7 +43,7 @@ public:
     /**
      * @brief Show types we have (i.e. severities in the GUI).
      */
-    enum ShowType {
+    enum ShowType : std::uint8_t {
         ShowStyle = 0,
         ShowWarnings,
         ShowPerformance,

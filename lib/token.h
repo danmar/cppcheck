@@ -58,7 +58,7 @@ struct ScopeInfo2 {
     std::set<std::string> usingNamespaces;
 };
 
-enum class TokenDebug { None, ValueFlow, ValueType };
+enum class TokenDebug : std::uint8_t { None, ValueFlow, ValueType };
 
 struct TokenImpl {
     nonneg int mVarId{};
@@ -116,7 +116,7 @@ struct TokenImpl {
 
     // __cppcheck_in_range__
     struct CppcheckAttributes {
-        enum Type { LOW, HIGH } type = LOW;
+        enum Type : std::uint8_t { LOW, HIGH } type = LOW;
         MathLib::bigint value{};
         CppcheckAttributes* next{};
     };
@@ -132,7 +132,7 @@ struct TokenImpl {
     }
 
     // For memoization, to speed up parsing of huge arrays #8897
-    enum class Cpp11init { UNKNOWN, CPP11INIT, NOINIT } mCpp11init = Cpp11init::UNKNOWN;
+    enum class Cpp11init : std::uint8_t { UNKNOWN, CPP11INIT, NOINIT } mCpp11init = Cpp11init::UNKNOWN;
 
     TokenDebug mDebug{};
 
@@ -167,7 +167,7 @@ public:
     Token(const Token &) = delete;
     Token& operator=(const Token &) = delete;
 
-    enum Type {
+    enum Type : std::uint8_t {
         eVariable, eType, eFunction, eKeyword, eName, // Names: Variable (varId), Type (typeId, later), Function (FuncId, later), Language keyword, Name (unknown identifier)
         eNumber, eString, eChar, eBoolean, eLiteral, eEnumerator, // Literals: Number, String, Character, Boolean, User defined literal (C++11), Enumerator
         eArithmeticalOp, eComparisonOp, eAssignmentOp, eLogicalOp, eBitOp, eIncDecOp, eExtendedOp, // Operators: Arithmetical, Comparison, Assignment, Logical, Bitwise, ++/--, Extended
@@ -1382,7 +1382,7 @@ private:
         fIsInitComma            = (1ULL << 42), // Is this comma located inside some {..}. i.e: {1,2,3,4}
     };
 
-    enum : uint64_t {
+    enum : std::uint8_t  {
         efMaxSize = sizeof(nonneg int) * 8,
         efIsUnique = efMaxSize - 2,
     };

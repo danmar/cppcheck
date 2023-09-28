@@ -1995,7 +1995,7 @@ void CheckStl::string_c_str()
         if (scope.type != Scope::eFunction || !scope.function)
             continue;
 
-        enum {charPtr, stdString, stdStringConstRef, Other} returnType = Other;
+        enum : std::uint8_t {charPtr, stdString, stdStringConstRef, Other} returnType = Other;
         if (Token::Match(scope.function->tokenDef->tokAt(-2), "char|wchar_t *"))
             returnType = charPtr;
         else if (Token::Match(scope.function->tokenDef->tokAt(-5), "const std :: string|wstring &"))
