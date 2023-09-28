@@ -1849,6 +1849,7 @@ void Tokenizer::simplifyTypedefCpp()
                 }
 
                 simplifyType = simplifyType && (!inEnumClass || Token::simpleMatch(tok2->previous(), "="));
+                simplifyType = simplifyType && !(Token::simpleMatch(tok2->next(), "<") && Token::simpleMatch(typeEnd, ">"));
 
                 if (simplifyType) {
                     mTypedefInfo.back().used = true;
