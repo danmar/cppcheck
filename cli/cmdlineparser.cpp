@@ -654,6 +654,12 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // --project
             else if (std::strncmp(argv[i], "--project=", 10) == 0) {
+                if (mSettings.project.projectType != ImportProject::Type::NONE)
+                {
+                    mLogger.printError("multiple --project options are not supported.");
+                    return false;
+                }
+
                 mSettings.checkAllConfigurations = false; // Can be overridden with --max-configs or --force
                 std::string projectFile = argv[i]+10;
                 ImportProject::Type projType = mSettings.project.import(projectFile, &mSettings);

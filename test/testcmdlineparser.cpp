@@ -281,6 +281,10 @@ private:
         TEST_CASE(typedefMaxTimeInvalid2);
         TEST_CASE(templateMaxTime);
         TEST_CASE(templateMaxTime);
+        TEST_CASE(project);
+        TEST_CASE(projectMultiple);
+        TEST_CASE(projectEmpty);
+        TEST_CASE(projectMissing);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -1944,6 +1948,37 @@ private:
         const char * const argv[] = {"cppcheck", "--typedef-max-time=-1", "file.cpp"};
         ASSERT(!parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--typedef-max-time=' is not valid - needs to be positive.\n", logger->str());
+    }
+
+    void project() {
+        REDIRECT;
+        ScopedFile file("project.cppcheck", "<project></project>");
+        const char * const argv[] = {"cppcheck", "--project=project.cppcheck", "file.cpp"};
+        ASSERT(parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(static_cast<int>(ImportProject::Type::CPPCHECK_GUI), static_cast<int>(settings->project.projectType));
+        ASSERT_EQUALS("", logger->str());
+    }
+
+    void projectMultiple() {
+        REDIRECT;
+        ScopedFile file("project.cppcheck", "<project></project>");
+        const char * const argv[] = {"cppcheck", "--project=project.cppcheck", "--project=project.cppcheck", "file.cpp"};
+        ASSERT(!parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS("cppcheck: error: multiple --project options are not supported.\n", logger->str());
+    }
+
+    void projectEmpty() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--project=", "file.cpp"};
+        ASSERT(!parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: failed to open project ''. The file does not exist.\n", logger->str());
+    }
+
+    void projectMissing() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--project=project.cppcheck", "file.cpp"};
+        ASSERT(!parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: failed to open project 'project.cppcheck'. The file does not exist.\n", logger->str());
     }
 
     void ignorepaths1() {
