@@ -591,34 +591,24 @@ int main(int argc, char **argv)
     if (release) {
         makeConditionalVariable(fout, "CXXFLAGS", "-std=c++0x -O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-multichar");
     } else {
-        // TODO: add more compiler warnings.
-        // -Wlogical-op       : doesn't work on older GCC
-        // -Wsign-conversion  : too many warnings
-        // -Wunreachable-code : some GCC versions report lots of warnings
         makeConditionalVariable(fout, "CXXFLAGS",
                                 "-pedantic "
                                 "-Wall "
                                 "-Wextra "
                                 "-Wcast-qual "
-//                                "-Wconversion "  // danmar: gives fp. for instance: unsigned int sizeof_pointer = sizeof(void *);
-                                "-Wno-deprecated-declarations "
                                 "-Wfloat-equal "
-//                                "-Wlogical-op "
                                 "-Wmissing-declarations "
                                 "-Wmissing-format-attribute "
                                 "-Wno-long-long "
-//                                "-Woverloaded-virtual "  // danmar: we get fp when overloading analyseWholeProgram()
                                 "-Wpacked "
                                 "-Wredundant-decls "
                                 "-Wundef "
                                 "-Wno-shadow "
-//                                "-Wsign-conversion "
-//                                "-Wsign-promo "
                                 "-Wno-missing-field-initializers "
                                 "-Wno-missing-braces "
-//                                "-Wunreachable-code "
-                                "-Wno-sign-compare "  // danmar: I don't like this warning, it's very rarely a bug
+                                "-Wno-sign-compare "
                                 "-Wno-multichar "
+                                "-Woverloaded-virtual "
                                 "$(CPPCHK_GLIBCXX_DEBUG) "
                                 "-g");
     }
