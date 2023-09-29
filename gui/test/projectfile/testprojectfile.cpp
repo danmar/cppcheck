@@ -41,7 +41,6 @@ const char Settings::SafeChecks::XmlInternalFunctions[] = "internal-functions";
 const char Settings::SafeChecks::XmlExternalVariables[] = "external-variables";
 Settings::Settings() : maxCtuDepth(10) {}
 cppcheck::Platform::Platform() = default;
-ImportProject::ImportProject() = default;
 bool ImportProject::sourceFileExists(const std::string & /*file*/) {
     return true;
 }
