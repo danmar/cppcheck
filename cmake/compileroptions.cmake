@@ -47,8 +47,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"
     add_compile_options(-Wpacked)                   #
     add_compile_options(-Wredundant-decls)          # if anything is declared more than once in the same scope
     add_compile_options(-Wundef)
-    add_compile_options(-Wno-missing-field-initializers)
-    add_compile_options(-Wno-missing-braces)
     add_compile_options(-Wno-sign-compare)
     add_compile_options(-Wno-multichar)
     add_compile_options(-Woverloaded-virtual)       # when a function declaration hides virtual functions from a base class
@@ -65,9 +63,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # use pipes instead of temporary files - greatly reduces I/O usage
     add_compile_options(-pipe)
 
-    add_compile_options(-Wno-maybe-uninitialized)   # there are some false positives
     add_compile_options(-Wsuggest-attribute=noreturn)
-    add_compile_options(-Wno-shadow)                # whenever a local variable or type declaration shadows another one
     add_compile_options_safe(-Wuseless-cast)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 14 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 14)
