@@ -63,7 +63,7 @@ def lookup_cppcheck_exe():
 
 
 # Run Cppcheck with args
-def cppcheck(args, env=None):
+def cppcheck(args, env=None, status_report=False):
     exe = lookup_cppcheck_exe()
     assert exe is not None, 'no cppcheck binary found'
 
@@ -72,6 +72,6 @@ def cppcheck(args, env=None):
     comm = p.communicate()
     stdout = comm[0].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
     stderr = comm[1].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
-    if stdout.find('\nActive checkers:') > 0:
+    if (not status_report) and stdout.find('\nActive checkers:') > 0:
         stdout = stdout[:1 + stdout.find('\nActive checkers:')]
     return p.returncode, stdout, stderr

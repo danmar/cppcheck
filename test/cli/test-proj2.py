@@ -153,3 +153,13 @@ def test_gui_project_loads_absolute_vs_solution_2():
     ret, stdout, stderr = cppcheck(['--project=test.cppcheck'])
     assert ret == 0, stdout
     assert stderr == ERR_A + ERR_B
+
+def test_vs_project_missing_file():
+    with open('proj2/proj2.vcxproj', 'rt') as fin:
+        s = fin.read()
+        with open('proj2/test.vcxproj', 'wt') as fout:
+            fout.write(s.replace('a.c', 'a_missing.c'))
+    ret, stdout, stderr = cppcheck(['--project=proj2/test.vcxproj', '--file-filter=*/a*'], status_report=True)
+    assert 'proj2/a/a_missing.c:0:0: error: File not found [fileNotFound]' in stderr 
+    assert 'There was critical errors' in stdout
+    os.remove('proj2/test.vcxproj')
