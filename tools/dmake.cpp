@@ -589,7 +589,7 @@ int main(int argc, char **argv)
 
     // Makefile settings..
     if (release) {
-        makeConditionalVariable(fout, "CXXFLAGS", "-std=c++0x -O2 -DNDEBUG -Wall -Wno-sign-compare");
+        makeConditionalVariable(fout, "CXXFLAGS", "-std=c++0x -O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-multichar");
     } else {
         // TODO: add more compiler warnings.
         // -Wlogical-op       : doesn't work on older GCC
