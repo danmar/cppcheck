@@ -661,13 +661,13 @@ unsigned int CppCheck::check(const std::string &path, const std::string &content
 
 void CppCheck::fileNotFoundError(const std::string& filename)
 {
-        mErrorLogger.reportErr(ErrorMessage({ErrorMessage::FileLocation(filename, 0, 0)},
-                                             filename,
-                                             Severity::error,
-                                             "File not found",
-                                             "fileNotFound",
-                                             Certainty::normal));
-        mExitCode = 1;
+    mErrorLogger.reportErr(ErrorMessage({ErrorMessage::FileLocation(filename, 0, 0)},
+                                        filename,
+                                        Severity::error,
+                                        "File not found",
+                                        "fileNotFound",
+                                        Certainty::normal));
+    mExitCode = 1;
 }
 
 unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
