@@ -45,6 +45,7 @@ private:
 
     void run() override {
         TEST_CASE(getErrorMessages);
+        TEST_CASE(testMissingSourceFile);
     }
 
     void getErrorMessages() const {
@@ -75,6 +76,14 @@ private:
         }
         ASSERT(foundPurgedConfiguration);
         ASSERT(foundTooManyConfigs);
+    }
+
+    void testMissingSourceFile() {
+        CppCheck cppcheck(*this, false, nullptr);
+        ImportProject::FileSettings fileSettings;
+        fileSettings.filename = "missing.cpp";
+        cppcheck.check(fileSettings);
+        ASSERT_EQUALS("[missing.cpp:0]: (error) File not found\n", errout.str());
     }
 };
 

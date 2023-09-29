@@ -659,8 +659,23 @@ unsigned int CppCheck::check(const std::string &path, const std::string &content
     return checkFile(Path::simplifyPath(path), emptyString, &iss);
 }
 
+void CppCheck::fileNotFoundError(const std::string& filename)
+{
+        mErrorLogger.reportErr(ErrorMessage({ErrorMessage::FileLocation(filename, 0, 0)},
+                                             filename,
+                                             Severity::error,
+                                             "File not found",
+                                             "fileNotFound",
+                                             Certainty::normal));
+        mExitCode = 1;
+}
+
 unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
 {
+    if (!Path::isFile(fs.filename)) {
+        fileNotFoundError(fs.filename);
+        return mExitCode;
+    }
     CppCheck temp(mErrorLogger, mUseGlobalSuppressions, mExecuteCommand);
     temp.mSettings = mSettings;
     if (!temp.mSettings.userDefines.empty())
@@ -1715,6 +1730,7 @@ void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
     cppcheck.purgedConfigurationMessage(emptyString,emptyString);
     cppcheck.mTooManyConfigs = true;
     cppcheck.tooManyConfigsError(emptyString,0U);
+    cppcheck.fileNotFoundError("missing.c");
     // TODO: add functions to get remaining error messages
 
     // call all "getErrorMessages" in all registered Check classes

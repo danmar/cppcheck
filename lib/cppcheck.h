@@ -152,6 +152,9 @@ private:
     /** @brief There has been an internal error => Report information message */
     void internalError(const std::string &filename, const std::string &msg);
 
+    /** If check is called with a file that does not exist, this critical error message should be reported */
+    void fileNotFoundError(const std::string& filename);
+
     /**
      * @brief Check a file using stream
      * @param filename file name
