@@ -665,7 +665,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 ImportProject::Type projType = mSettings.project.import(projectFile, &mSettings);
                 mSettings.project.projectType = projType;
                 if (projType == ImportProject::Type::CPPCHECK_GUI) {
-                    mPathNames = mSettings.project.guiProject.pathNames;
                     for (const std::string &lib : mSettings.project.guiProject.libraries)
                         mSettings.libraries.emplace_back(lib);
 
@@ -1032,11 +1031,19 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         return true;
     }
 
+    if (!mPathNames.empty() && mSettings.project.projectType != ImportProject::Type::NONE) {
+        mLogger.printError("--project cannot be used in conjunction with source files.");
+        return false;
+    }
+
     // Print error only if we have "real" command and expect files
-    if (!mExitAfterPrint && mPathNames.empty() && mSettings.project.fileSettings.empty()) {
+    if (!mExitAfterPrint && mPathNames.empty() && mSettings.project.guiProject.pathNames.empty() && mSettings.project.fileSettings.empty()) {
         mLogger.printError("no C or C++ source files found.");
         return false;
     }
+
+    if (!mSettings.project.guiProject.pathNames.empty())
+        mPathNames = mSettings.project.guiProject.pathNames;
 
     // Use paths _pathnames if no base paths for relative path output are given
     if (mSettings.basePaths.empty() && mSettings.relativePaths)
