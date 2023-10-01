@@ -921,11 +921,7 @@ namespace {
             }
         }
 
-        bool canReplace(const Token* tok) {
-            if (mNameToken == tok)
-                return false;
-            if (!Token::Match(tok->previous(), "%name%|;|{|}|(|,|<") && !Token::Match(tok->previous(), "!!. %name% ("))
-                return false;
+        static int canReplaceStatic(const Token* tok) {
             if (!Token::Match(tok, "%name% %name%|*|&|&&|;|(|)|,|::")) {
                 if (Token::Match(tok->previous(), "( %name% =") && Token::Match(tok->linkAt(-1), ") %name%|{") && !tok->tokAt(-2)->isKeyword())
                     return true;
@@ -933,8 +929,19 @@ namespace {
                     return true;
                 if (Token::Match(tok->previous(), "new %name% ["))
                     return true;
-                if (Token::Match(tok->previous(), "< %name% >"))
+                if (Token::Match(tok->previous(), "< %name%") && tok->previous()->findClosingBracket())
                     return true;
+                if (Token::Match(tok->previous(), ", %name% >|>>")) {
+                    for (const Token* prev = tok->previous(); prev; prev = prev->previous()) {
+                        if (Token::Match(prev, "[;{}(]"))
+                            break;
+                        if (prev->str() == "<" && prev->findClosingBracket() == tok->next())
+                            return true;
+                        if (prev->str() == ")")
+                            prev = prev->link();
+                    }
+                    return true;
+                }
                 if (Token::Match(tok->previous(), "public|protected|private"))
                     return true;
                 if (Token::Match(tok->previous(), ", %name% :")) {
@@ -950,6 +957,19 @@ namespace {
                     return isGeneric;
                 }
                 return false;
+            }
+            return -1;
+        }
+
+        bool canReplace(const Token* tok) {
+            if (mNameToken == tok)
+                return false;
+            if (!Token::Match(tok->previous(), "%name%|;|{|}|(|,|<") && !Token::Match(tok->previous(), "!!. %name% ("))
+                return false;
+            {
+                const int res = canReplaceStatic(tok);
+                if (res == 0 || res == 1)
+                    return res != 0;
             }
             if (Token::Match(tok->previous(), "%name%") && !tok->previous()->isKeyword())
                 return false;
@@ -1843,7 +1863,7 @@ void Tokenizer::simplifyTypedefCpp()
                         } else if (Token::Match(tok2->tokAt(-2), "%type% *|&")) {
                             // Ticket #5868: Don't substitute variable names
                         } else if (tok2->previous()->str() != ".") {
-                            simplifyType = true;
+                            simplifyType = (TypedefSimplifier::canReplaceStatic(tok2) != 0);
                         }
                     }
                 }
