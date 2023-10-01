@@ -49,6 +49,7 @@ private:
         TEST_CASE(canreplace1);
         TEST_CASE(canreplace2);
         TEST_CASE(canreplace3);
+        TEST_CASE(canreplace4);
         TEST_CASE(cconst);
         TEST_CASE(cstruct1);
         TEST_CASE(cstruct2);
@@ -351,6 +352,14 @@ private:
                              "    std::string s;\n"
                              "};\n";
         ASSERT_EQUALS("struct S { const char * g ( ) const { return s . c_str ( ) ; } std :: string s ; } ;", simplifyTypedefC(code1));
+    }
+
+    void canreplace4() {
+        const char code1[] = "typedef std::vector<int> X;\n" // #11640
+                             "struct S {\n"
+                             "    enum E { X };\n"
+                             "};\n";
+        ASSERT_EQUALS("sdfd", simplifyTypedef(code1));
     }
 
     void cconst() {
