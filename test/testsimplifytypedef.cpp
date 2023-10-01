@@ -359,7 +359,7 @@ private:
                              "struct S {\n"
                              "    enum E { X };\n"
                              "};\n";
-        ASSERT_EQUALS("sdfd", simplifyTypedef(code1));
+        ASSERT_EQUALS("struct S { enum E { X } ; } ;", simplifyTypedef(code1));
     }
 
     void cconst() {
