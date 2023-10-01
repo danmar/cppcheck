@@ -355,7 +355,7 @@ private:
     }
 
     void canreplace4() {
-        const char code1[] = "typedef std::vector<int> X;\n" // #11640
+        const char code1[] = "typedef std::vector<int> X;\n" // #12026
                              "struct S {\n"
                              "    enum E { X };\n"
                              "};\n";
