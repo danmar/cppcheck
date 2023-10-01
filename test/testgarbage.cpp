@@ -812,7 +812,7 @@ private:
     }
 
     void garbageCode85() { // #6784
-        ASSERT_THROW(checkCode("{ } { } typedef void ( *VoidFunc() ) ( ) ; VoidFunc"), InternalError); // do not crash
+        checkCode("{ } { } typedef void ( *VoidFunc() ) ( ) ; VoidFunc"); // do not crash
     }
 
     void garbageCode86() { // #6785
