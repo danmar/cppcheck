@@ -70,9 +70,9 @@ public:
     static const int bigint_bits;
 
     /** @brief for conversion of numeric literals - for atoi-like conversions please use strToInt() */
-    static bigint toLongNumber(const std::string & str);
+    static bigint toBigNumber(const std::string & str);
     /** @brief for conversion of numeric literals - for atoi-like conversions please use strToInt() */
-    static biguint toULongNumber(const std::string & str);
+    static biguint toBigUNumber(const std::string & str);
 
     template<class T> static std::string toString(T value) = delete;
     /** @brief for conversion of numeric literals */

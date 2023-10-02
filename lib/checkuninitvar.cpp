@@ -315,9 +315,9 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<nonneg i
             return;
 
         if (tok->str() == "==")
-            *alwaysTrue  = (it->second == MathLib::toLongNumber(numtok->str()));
+            *alwaysTrue  = (it->second == MathLib::toBigNumber(numtok->str()));
         else if (tok->str() == "!=")
-            *alwaysTrue  = (it->second != MathLib::toLongNumber(numtok->str()));
+            *alwaysTrue  = (it->second != MathLib::toBigNumber(numtok->str()));
         else
             return;
         *alwaysFalse = !(*alwaysTrue);
@@ -517,7 +517,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                         if (Token::Match(tok2, "[;{}.] %name% = - %name% ;"))
                             varValueIf[tok2->next()->varId()] = !VariableValue(0);
                         else if (Token::Match(tok2, "[;{}.] %name% = %num% ;"))
-                            varValueIf[tok2->next()->varId()] = VariableValue(MathLib::toLongNumber(tok2->strAt(3)));
+                            varValueIf[tok2->next()->varId()] = VariableValue(MathLib::toBigNumber(tok2->strAt(3)));
                     }
                 }
 
@@ -547,7 +547,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                             if (Token::Match(tok2, "[;{}.] %var% = - %name% ;"))
                                 varValueElse[tok2->next()->varId()] = !VariableValue(0);
                             else if (Token::Match(tok2, "[;{}.] %var% = %num% ;"))
-                                varValueElse[tok2->next()->varId()] = VariableValue(MathLib::toLongNumber(tok2->strAt(3)));
+                                varValueElse[tok2->next()->varId()] = VariableValue(MathLib::toBigNumber(tok2->strAt(3)));
                         }
                     }
 
