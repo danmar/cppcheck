@@ -16,6 +16,7 @@ HEADERS += $${PWD}/analyzer.h \
            $${PWD}/checkbufferoverrun.h \
            $${PWD}/checkclass.h \
            $${PWD}/checkcondition.h \
+           $${PWD}/checkers.h \
            $${PWD}/checkersreport.h \
            $${PWD}/checkexceptionsafety.h \
            $${PWD}/checkfunctions.h \
@@ -90,6 +91,7 @@ SOURCES += $${PWD}/valueflow.cpp \
            $${PWD}/checkbufferoverrun.cpp \
            $${PWD}/checkclass.cpp \
            $${PWD}/checkcondition.cpp \
+           $${PWD}/checkers.cpp \
            $${PWD}/checkersreport.cpp \
            $${PWD}/checkexceptionsafety.cpp \
            $${PWD}/checkfunctions.cpp \
