@@ -1348,3 +1348,65 @@ bool ImportProject::sourceFileExists(const std::string &file)
 {
     return Path::isFile(file);
 }
+
+namespace CppcheckXml {
+    const char ProjectElementName[] = "project";
+    const char ProjectVersionAttrib[] = "version";
+    const char ProjectFileVersion[] = "1";
+    const char BuildDirElementName[] = "builddir";
+    const char ImportProjectElementName[] = "importproject";
+    const char AnalyzeAllVsConfigsElementName[] = "analyze-all-vs-configs";
+    const char Parser[] = "parser";
+    const char IncludeDirElementName[] = "includedir";
+    const char DirElementName[] = "dir";
+    const char DirNameAttrib[] = "name";
+    const char DefinesElementName[] = "defines";
+    const char DefineName[] = "define";
+    const char DefineNameAttrib[] = "name";
+    const char UndefinesElementName[] = "undefines";
+    const char UndefineName[] = "undefine";
+    const char PathsElementName[] = "paths";
+    const char PathName[] = "dir";
+    const char PathNameAttrib[] = "name";
+    const char RootPathName[] = "root";
+    const char RootPathNameAttrib[] = "name";
+    const char IgnoreElementName[] = "ignore";
+    const char IgnorePathName[] = "path";
+    const char IgnorePathNameAttrib[] = "name";
+    const char ExcludeElementName[] = "exclude";
+    const char ExcludePathName[] = "path";
+    const char ExcludePathNameAttrib[] = "name";
+    const char FunctionContracts[] = "function-contracts";
+    const char VariableContractsElementName[] = "variable-contracts";
+    const char LibrariesElementName[] = "libraries";
+    const char LibraryElementName[] = "library";
+    const char PlatformElementName[] = "platform";
+    const char SuppressionsElementName[] = "suppressions";
+    const char SuppressionElementName[] = "suppression";
+    const char AddonElementName[] = "addon";
+    const char AddonsElementName[] = "addons";
+    const char ToolElementName[] = "tool";
+    const char ToolsElementName[] = "tools";
+    const char TagsElementName[] = "tags";
+    const char TagElementName[] = "tag";
+    const char TagWarningsElementName[] = "tag-warnings";
+    const char TagAttributeName[] = "tag";
+    const char WarningElementName[] = "warning";
+    const char HashAttributeName[] = "hash";
+    const char CheckLevelExhaustiveElementName[] = "check-level-exhaustive";
+    const char CheckHeadersElementName[] = "check-headers";
+    const char CheckUnusedTemplatesElementName[] = "check-unused-templates";
+    const char MaxCtuDepthElementName[] = "max-ctu-depth";
+    const char MaxTemplateRecursionElementName[] = "max-template-recursion";
+    const char CheckUnknownFunctionReturn[] = "check-unknown-function-return-values";
+    const char ClangTidy[] = "clang-tidy";
+    const char Name[] = "name";
+    const char VSConfigurationElementName[] = "vs-configurations";
+    const char VSConfigurationName[] = "config";
+    // Cppcheck Premium
+    const char BughuntingElementName[] = "bug-hunting";
+    const char CodingStandardsElementName[] = "coding-standards";
+    const char CodingStandardElementName[] = "coding-standard";
+    const char CertIntPrecisionElementName[] = "cert-c-int-precision";
+    const char ProjectNameElementName[] = "project-name";
+}
