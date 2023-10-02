@@ -22,24 +22,26 @@
 #include <string>
 #include <vector>
 
-namespace checkers {
-    extern const std::map<std::string, std::string> allCheckers;
-    extern const std::map<std::string, std::string> premiumCheckers;
+#include "config.h"
 
-    struct MisraInfo {
+namespace checkers {
+    extern CPPCHECKLIB const std::map<std::string, std::string> allCheckers;
+    extern CPPCHECKLIB const std::map<std::string, std::string> premiumCheckers;
+
+    struct CPPCHECKLIB MisraInfo {
         int a;
         int b;
         const char* str;
         int amendment;
     };
 
-    extern const char Req[]; // = "Required";
-    extern const char Adv[]; // = "Advisory";
-    extern const char Man[]; // = "Mandatory";
+    extern CPPCHECKLIB const char Req[]; // = "Required";
+    extern CPPCHECKLIB const char Adv[]; // = "Advisory";
+    extern CPPCHECKLIB const char Man[]; // = "Mandatory";
 
-    extern const std::vector<MisraInfo> misraC2012Rules;
+    extern CPPCHECKLIB const std::vector<MisraInfo> misraC2012Rules;
 
-    extern const std::map<std::string, std::string> misraRuleSeverity;
+    extern CPPCHECKLIB const std::map<std::string, std::string> misraRuleSeverity;
 }
 
 
