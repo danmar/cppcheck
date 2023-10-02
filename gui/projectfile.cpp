@@ -820,74 +820,74 @@ bool ProjectFile::write(const QString &filename)
     QXmlStreamWriter xmlWriter(&file);
     xmlWriter.setAutoFormatting(true);
     xmlWriter.writeStartDocument("1.0");
-    xmlWriter.writeStartElement(CppcheckXml::ProjectElementName);
-    xmlWriter.writeAttribute(CppcheckXml::ProjectVersionAttrib, CppcheckXml::ProjectFileVersion);
+    xmlWriter.writeStartElement((const char*)CppcheckXml::ProjectElementName);
+    xmlWriter.writeAttribute((const char*)CppcheckXml::ProjectVersionAttrib, (const char*)CppcheckXml::ProjectFileVersion);
 
     if (!mRootPath.isEmpty()) {
-        xmlWriter.writeStartElement(CppcheckXml::RootPathName);
-        xmlWriter.writeAttribute(CppcheckXml::RootPathNameAttrib, mRootPath);
+        xmlWriter.writeStartElement((const char*)CppcheckXml::RootPathName);
+        xmlWriter.writeAttribute((const char*)CppcheckXml::RootPathNameAttrib, mRootPath);
         xmlWriter.writeEndElement();
     }
 
     if (!mBuildDir.isEmpty()) {
-        xmlWriter.writeStartElement(CppcheckXml::BuildDirElementName);
+        xmlWriter.writeStartElement((const char*)CppcheckXml::BuildDirElementName);
         xmlWriter.writeCharacters(mBuildDir);
         xmlWriter.writeEndElement();
     }
 
     if (!mPlatform.isEmpty()) {
-        xmlWriter.writeStartElement(CppcheckXml::PlatformElementName);
+        xmlWriter.writeStartElement((const char*)CppcheckXml::PlatformElementName);
         xmlWriter.writeCharacters(mPlatform);
         xmlWriter.writeEndElement();
     }
 
     if (!mImportProject.isEmpty()) {
-        xmlWriter.writeStartElement(CppcheckXml::ImportProjectElementName);
+        xmlWriter.writeStartElement((const char*)CppcheckXml::ImportProjectElementName);
         xmlWriter.writeCharacters(mImportProject);
         xmlWriter.writeEndElement();
     }
 
-    xmlWriter.writeStartElement(CppcheckXml::AnalyzeAllVsConfigsElementName);
+    xmlWriter.writeStartElement((const char*)CppcheckXml::AnalyzeAllVsConfigsElementName);
     xmlWriter.writeCharacters(bool_to_string(mAnalyzeAllVsConfigs));
     xmlWriter.writeEndElement();
 
     if (clangParser) {
-        xmlWriter.writeStartElement(CppcheckXml::Parser);
+        xmlWriter.writeStartElement((const char*)CppcheckXml::Parser);
         xmlWriter.writeCharacters("clang");
         xmlWriter.writeEndElement();
     }
 
-    xmlWriter.writeStartElement(CppcheckXml::CheckHeadersElementName);
+    xmlWriter.writeStartElement((const char*)CppcheckXml::CheckHeadersElementName);
     xmlWriter.writeCharacters(bool_to_string(mCheckHeaders));
     xmlWriter.writeEndElement();
 
-    xmlWriter.writeStartElement(CppcheckXml::CheckUnusedTemplatesElementName);
+    xmlWriter.writeStartElement((const char*)CppcheckXml::CheckUnusedTemplatesElementName);
     xmlWriter.writeCharacters(bool_to_string(mCheckUnusedTemplates));
     xmlWriter.writeEndElement();
 
-    xmlWriter.writeStartElement(CppcheckXml::MaxCtuDepthElementName);
+    xmlWriter.writeStartElement((const char*)CppcheckXml::MaxCtuDepthElementName);
     xmlWriter.writeCharacters(QString::number(mMaxCtuDepth));
     xmlWriter.writeEndElement();
 
-    xmlWriter.writeStartElement(CppcheckXml::MaxTemplateRecursionElementName);
+    xmlWriter.writeStartElement((const char*)CppcheckXml::MaxTemplateRecursionElementName);
     xmlWriter.writeCharacters(QString::number(mMaxTemplateRecursion));
     xmlWriter.writeEndElement();
 
     if (!mIncludeDirs.isEmpty()) {
-        xmlWriter.writeStartElement(CppcheckXml::IncludeDirElementName);
+        xmlWriter.writeStartElement((const char*)CppcheckXml::IncludeDirElementName);
         for (const QString& incdir : mIncludeDirs) {
-            xmlWriter.writeStartElement(CppcheckXml::DirElementName);
-            xmlWriter.writeAttribute(CppcheckXml::DirNameAttrib, incdir);
+            xmlWriter.writeStartElement((const char*)CppcheckXml::DirElementName);
+            xmlWriter.writeAttribute((const char*)CppcheckXml::DirNameAttrib, incdir);
             xmlWriter.writeEndElement();
         }
         xmlWriter.writeEndElement();
     }
 
     if (!mDefines.isEmpty()) {
-        xmlWriter.writeStartElement(CppcheckXml::DefinesElementName);
+        xmlWriter.writeStartElement((const char*)CppcheckXml::DefinesElementName);
         for (const QString& define : mDefines) {
-            xmlWriter.writeStartElement(CppcheckXml::DefineName);
-            xmlWriter.writeAttribute(CppcheckXml::DefineNameAttrib, define);
+            xmlWriter.writeStartElement((const char*)CppcheckXml::DefineName);
+            xmlWriter.writeAttribute((const char*)CppcheckXml::DefineNameAttrib, define);
             xmlWriter.writeEndElement();
         }
         xmlWriter.writeEndElement();
@@ -906,20 +906,20 @@ bool ProjectFile::write(const QString &filename)
                     CppcheckXml::UndefineName);
 
     if (!mPaths.isEmpty()) {
-        xmlWriter.writeStartElement(CppcheckXml::PathsElementName);
+        xmlWriter.writeStartElement((const char*)CppcheckXml::PathsElementName);
         for (const QString& path : mPaths) {
-            xmlWriter.writeStartElement(CppcheckXml::PathName);
-            xmlWriter.writeAttribute(CppcheckXml::PathNameAttrib, path);
+            xmlWriter.writeStartElement((const char*)CppcheckXml::PathName);
+            xmlWriter.writeAttribute((const char*)CppcheckXml::PathNameAttrib, path);
             xmlWriter.writeEndElement();
         }
         xmlWriter.writeEndElement();
     }
 
     if (!mExcludedPaths.isEmpty()) {
-        xmlWriter.writeStartElement(CppcheckXml::ExcludeElementName);
+        xmlWriter.writeStartElement((const char*)CppcheckXml::ExcludeElementName);
         for (const QString& path : mExcludedPaths) {
-            xmlWriter.writeStartElement(CppcheckXml::ExcludePathName);
-            xmlWriter.writeAttribute(CppcheckXml::ExcludePathNameAttrib, path);
+            xmlWriter.writeStartElement((const char*)CppcheckXml::ExcludePathName);
+            xmlWriter.writeAttribute((const char*)CppcheckXml::ExcludePathNameAttrib, path);
             xmlWriter.writeEndElement();
         }
         xmlWriter.writeEndElement();
@@ -931,9 +931,9 @@ bool ProjectFile::write(const QString &filename)
                     CppcheckXml::LibraryElementName);
 
     if (!mSuppressions.isEmpty()) {
-        xmlWriter.writeStartElement(CppcheckXml::SuppressionsElementName);
+        xmlWriter.writeStartElement((const char*)CppcheckXml::SuppressionsElementName);
         for (const Suppressions::Suppression &suppression : mSuppressions) {
-            xmlWriter.writeStartElement(CppcheckXml::SuppressionElementName);
+            xmlWriter.writeStartElement((const char*)CppcheckXml::SuppressionElementName);
             if (!suppression.fileName.empty())
                 xmlWriter.writeAttribute("fileName", QString::fromStdString(suppression.fileName));
             if (suppression.lineNumber > 0)
@@ -941,7 +941,7 @@ bool ProjectFile::write(const QString &filename)
             if (!suppression.symbolName.empty())
                 xmlWriter.writeAttribute("symbolName", QString::fromStdString(suppression.symbolName));
             if (suppression.hash > 0)
-                xmlWriter.writeAttribute(CppcheckXml::HashAttributeName, QString::number(suppression.hash));
+                xmlWriter.writeAttribute((const char*)CppcheckXml::HashAttributeName, QString::number(suppression.hash));
             if (!suppression.errorId.empty())
                 xmlWriter.writeCharacters(QString::fromStdString(suppression.errorId));
             xmlWriter.writeEndElement();
@@ -971,7 +971,7 @@ bool ProjectFile::write(const QString &filename)
                     CppcheckXml::ToolsElementName,
                     CppcheckXml::ToolElementName);
 
-    writeStringList(xmlWriter, mTags, CppcheckXml::TagsElementName, CppcheckXml::TagElementName);
+    writeStringList(xmlWriter, mTags, (const char*)CppcheckXml::TagsElementName, (const char*)CppcheckXml::TagElementName);
     if (!mWarningTags.empty()) {
         QStringList tags;
         for (const auto& wt: mWarningTags) {
@@ -979,12 +979,12 @@ bool ProjectFile::write(const QString &filename)
                 tags.append(wt.second);
         }
         for (const QString &tag: tags) {
-            xmlWriter.writeStartElement(CppcheckXml::TagWarningsElementName);
-            xmlWriter.writeAttribute(CppcheckXml::TagAttributeName, tag);
+            xmlWriter.writeStartElement((const char*)CppcheckXml::TagWarningsElementName);
+            xmlWriter.writeAttribute((const char*)CppcheckXml::TagAttributeName, tag);
             for (const auto& wt: mWarningTags) {
                 if (wt.second == tag) {
-                    xmlWriter.writeStartElement(CppcheckXml::WarningElementName);
-                    xmlWriter.writeAttribute(CppcheckXml::HashAttributeName, QString::number(wt.first));
+                    xmlWriter.writeStartElement((const char*)CppcheckXml::WarningElementName);
+                    xmlWriter.writeAttribute((const char*)CppcheckXml::HashAttributeName, QString::number(wt.first));
                     xmlWriter.writeEndElement();
                 }
             }
@@ -993,13 +993,13 @@ bool ProjectFile::write(const QString &filename)
     }
 
     if (mCheckLevel == CheckLevel::exhaustive) {
-        xmlWriter.writeStartElement(CppcheckXml::CheckLevelExhaustiveElementName);
+        xmlWriter.writeStartElement((const char*)CppcheckXml::CheckLevelExhaustiveElementName);
         xmlWriter.writeEndElement();
     }
 
     // Cppcheck Premium
     if (mBughunting) {
-        xmlWriter.writeStartElement(CppcheckXml::BughuntingElementName);
+        xmlWriter.writeStartElement((const char*)CppcheckXml::BughuntingElementName);
         xmlWriter.writeEndElement();
     }
 
@@ -1009,13 +1009,13 @@ bool ProjectFile::write(const QString &filename)
                     CppcheckXml::CodingStandardElementName);
 
     if (mCertIntPrecision > 0) {
-        xmlWriter.writeStartElement(CppcheckXml::CertIntPrecisionElementName);
+        xmlWriter.writeStartElement((const char*)CppcheckXml::CertIntPrecisionElementName);
         xmlWriter.writeCharacters(QString::number(mCertIntPrecision));
         xmlWriter.writeEndElement();
     }
 
     if (!mProjectName.isEmpty()) {
-        xmlWriter.writeStartElement(CppcheckXml::ProjectNameElementName);
+        xmlWriter.writeStartElement((const char*)CppcheckXml::ProjectNameElementName);
         xmlWriter.writeCharacters(mProjectName);
         xmlWriter.writeEndElement();
     }
