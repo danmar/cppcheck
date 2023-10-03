@@ -4542,7 +4542,7 @@ private:
                "void bar() {\n"
                "    foo(NULL, NULL);\n"
                "}\n";
-        ASSERT_EQUALS(false, testValueOfX(code, 5U, 1));
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
     }
 
     void valueFlowFunctionReturn() {
