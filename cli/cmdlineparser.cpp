@@ -1158,6 +1158,7 @@ void CmdLineParser::printHelp()
         "                         from the check. This applies only to source files so\n"
         "                         header files included by source files are not matched.\n"
         "                         Directory name is matched to all parts of the path.\n"
+        "                         This applies only to [files or paths], not to files included by --project."
         "    --inconclusive       Allow that Cppcheck reports even though the analysis is\n"
         "                         inconclusive.\n"
         "                         There are false positives with this option. Each result\n"
@@ -1247,6 +1248,11 @@ void CmdLineParser::printHelp()
         "                         or Borland C++ Builder 6 (*.bpr). The files to analyse,\n"
         "                         include paths, defines, platform and undefines in\n"
         "                         the specified file will be used.\n"
+        "                         <file> also defines the configuration(s) that are checked.\n"
+        "                         To increase the number of configurations checked,\n"
+        "                         --force can be used in combination with this option.\n"
+        // TODO: is the following line true for a target or globally, i.e. if a target has a -D, no configs are checked even for other targets?
+        "                         --max-configs does not have any effect if any preprocessor macro is found in <file>.\n"
         "    --project-configuration=<config>\n"
         "                         If used together with a Visual Studio Solution (*.sln)\n"
         "                         or Visual Studio Project (*.vcxproj) you can limit\n"
@@ -1356,6 +1362,10 @@ void CmdLineParser::printHelp()
     "  # Check f.cpp and search include files from inc1/ and inc2/:\n"
     "  cppcheck -I inc1/ -I inc2/ f.cpp\n"
     "\n"
+    "  # Note that no [files or paths], nor any -I <dir> are needed.\n"
+    "  # Check CMake project (CMake's CMAKE_EXPORT_COMPILE_COMMANDS has to be enabled):\n"
+    "  cppcheck --project=build/compile_command.json\n"
+    "\n"
     "For more information:\n"
     "    " << manualUrl << "\n"
         "\n"
@@ -1363,7 +1373,7 @@ void CmdLineParser::printHelp()
         " * tinyxml2 -- loading project/library/ctu files.\n"
         " * picojson -- loading compile database.\n"
         " * pcre -- rules.\n"
-        " * qt -- used in GUI\n";
+        " * qt -- used in GUI.\n";
 }
 
 bool CmdLineParser::isCppcheckPremium() const {
