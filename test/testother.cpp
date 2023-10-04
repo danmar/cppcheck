@@ -175,6 +175,7 @@ private:
         TEST_CASE(duplicateExpression14); // #9871
         TEST_CASE(duplicateExpression15); // #10650
         TEST_CASE(duplicateExpression16); // #10569
+        TEST_CASE(duplicateExpression17); // #12036
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
@@ -6291,7 +6292,8 @@ private:
               "    enum { Four = 4 };\n"
               "    if (Four == 4) {}"
               "}", nullptr, true, false);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) The comparison 'Four == 4' is always true.\n",
+                      errout.str());
 
         check("void f() {\n"
               "    enum { Four = 4 };\n"
@@ -6310,7 +6312,8 @@ private:
               "    enum { FourInEnumTwo = 4 };\n"
               "    if (FourInEnumOne == FourInEnumTwo) {}\n"
               "}", nullptr, true, false);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) The comparison 'FourInEnumOne == FourInEnumTwo' is always true because 'FourInEnumOne' and 'FourInEnumTwo' represent the same value.\n",
+                      errout.str());
 
         check("void f() {\n"
               "    enum { FourInEnumOne = 4 };\n"
@@ -6851,6 +6854,19 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Same expression '!s[1]' found multiple times in chain of '||' operators.\n", errout.str());
+    }
+
+    void duplicateExpression17() {
+        check("enum { E0 };\n" // #12036
+              "void f() {\n"
+              "    if (0 > E0) {}\n"
+              "    if (E0 > 0) {}\n"
+              "    if (E0 == 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) The comparison '0 > E0' is always false.\n"
+                      "[test.cpp:4]: (style) The comparison 'E0 > 0' is always false.\n"
+                      "[test.cpp:5]: (style) The comparison 'E0 == 0' is always true.\n",
+                      errout.str());
     }
 
     void duplicateExpressionLoop() {
