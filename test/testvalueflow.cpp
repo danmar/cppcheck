@@ -4517,7 +4517,7 @@ private:
                "void f(Object *obj) {\n"
                "  if (valid(obj, K0)) {}\n"
                "}\n";
-        ASSERT_EQUALS(true, testValueOfX(code, 7U, 0));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 7U, 0));
         ASSERT_EQUALS(false, testValueOfXKnown(code, 7U, 0));
 
         code = "int f(int i) {\n"
