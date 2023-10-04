@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "helpers.h"
 #include "library.h"
 #include "mathlib.h"
 #include "platform.h"
@@ -491,12 +492,7 @@ private:
         errout.str("");
 
         std::vector<std::string> files(1, "test.cpp");
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+        simplecpp::TokenList tokens2 = PreprocessorHelper::preprocess(code, files);
 
         // Tokenize..
         Tokenizer tokenizer(&s, this);

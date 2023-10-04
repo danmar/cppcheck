@@ -21,6 +21,7 @@
 #include "checkbufferoverrun.h"
 #include "ctu.h"
 #include "errortypes.h"
+#include "helpers.h"
 #include "standards.h"
 #include "platform.h"
 #include "settings.h"
@@ -79,15 +80,8 @@ private:
         const Settings settings = settingsBuilder(settings0).severity(Severity::performance)
                                   .c(Standards::CLatest).cpp(Standards::CPPLatest).certainty(Certainty::inconclusive).build();
 
-        // Raw tokens..
         std::vector<std::string> files(1, filename);
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        // Preprocess..
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+        simplecpp::TokenList tokens2 = PreprocessorHelper::preprocess(code, files);
 
         // Tokenizer..
         Tokenizer tokenizer(&settings, this);

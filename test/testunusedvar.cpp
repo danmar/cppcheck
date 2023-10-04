@@ -18,6 +18,7 @@
 
 #include "checkunusedvar.h"
 #include "errortypes.h"
+#include "helpers.h"
 #include "preprocessor.h"
 #include "settings.h"
 #include "fixture.h"
@@ -281,18 +282,9 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        // Preprocess..
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
-
         Preprocessor preprocessor(settings);
-        preprocessor.setDirectives(tokens1);
+        simplecpp::TokenList tokens2 = PreprocessorHelper::preprocess(preprocessor, code, files);
 
         // Tokenizer..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -309,18 +301,9 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        // Raw tokens..
-        std::vector<std::string> files(1, filename);
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        // Preprocess..
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
-
         Preprocessor preprocessor(settings);
-        preprocessor.setDirectives(tokens1);
+        std::vector<std::string> files(1, filename);
+        simplecpp::TokenList tokens2 = PreprocessorHelper::preprocess(preprocessor, code, files);
 
         // Tokenizer..
         Tokenizer tokenizer(&settings, this, &preprocessor);

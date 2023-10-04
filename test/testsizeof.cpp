@@ -18,6 +18,7 @@
 
 #include "checksizeof.h"
 #include "errortypes.h"
+#include "helpers.h"
 #include "settings.h"
 #include "fixture.h"
 #include "tokenize.h"
@@ -69,15 +70,8 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        // Preprocess..
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+        simplecpp::TokenList tokens2 = PreprocessorHelper::preprocess(code, files);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

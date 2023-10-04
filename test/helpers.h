@@ -90,6 +90,9 @@ public:
      * @param inlineSuppression the inline suppressions
      */
     static std::string getcode(Preprocessor &preprocessor, const std::string &filedata, const std::string &cfg, const std::string &filename, Suppressions *inlineSuppression = nullptr);
+
+    static simplecpp::TokenList preprocess(const char code[], std::vector<std::string> &files);
+    static simplecpp::TokenList preprocess(Preprocessor &preprocessor, const char code[], std::vector<std::string> &files);
 };
 
 namespace cppcheck {
