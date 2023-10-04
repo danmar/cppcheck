@@ -88,11 +88,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python 3.11
+      - name: Set up Python 3.12
         if: matrix.config == 'release'
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           check-latest: true
 
       - name: Set up Visual Studio environment
