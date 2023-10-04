@@ -248,6 +248,7 @@ private:
         TEST_CASE(functionArgs18); // #10376
         TEST_CASE(functionArgs19); // #10376
         TEST_CASE(functionArgs20);
+        TEST_CASE(functionArgs21);
 
         TEST_CASE(functionImplicitlyVirtual);
         TEST_CASE(functionGetOverridden);
@@ -2763,6 +2764,28 @@ private:
         ASSERT_EQUALS(1, func->argCount());
         const Variable* arg = func->getArgumentVar(0);
         TODO_ASSERT(arg->hasDefault());
+    }
+
+    void functionArgs21() {
+        const char code[] = "void f(std::vector<int>::size_type) {}\n" // #11408
+                            "template<typename T>\n"
+                            "struct S { using t = int; };\n"
+                            "template<typename T>\n"
+                            "S<T> operator+(const S<T>&lhs, typename S<T>::t) { return lhs; }";
+        GET_SYMBOL_DB(code);
+        ASSERT(db != nullptr);
+        auto it = db->functionScopes.begin();
+        const Function *func = (*it)->function;
+        ASSERT_EQUALS("f", func->name());
+        ASSERT_EQUALS(1, func->argCount());
+        const Variable* arg = func->getArgumentVar(0);
+        ASSERT_EQUALS("", arg->name());
+        ++it;
+        func = (*it)->function;
+        ASSERT_EQUALS("operator+", func->name());
+        ASSERT_EQUALS(2, func->argCount());
+        arg = func->getArgumentVar(1);
+        ASSERT_EQUALS("", arg->name());
     }
 
     void functionImplicitlyVirtual() {

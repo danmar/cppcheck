@@ -4365,9 +4365,14 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
         if (Token::Match(typeTok, ",|)")) { // #8333
             symbolDatabase->mTokenizer.syntaxError(typeTok);
         }
+        if (Token::Match(typeTok, "%type% <") && Token::Match(typeTok->linkAt(1), "> :: %type%"))
+            typeTok = typeTok->linkAt(1)->tokAt(2);
         // skip over qualification
-        while (Token::Match(typeTok, "%type% ::"))
+        while (Token::Match(typeTok, "%type% ::")) {
             typeTok = typeTok->tokAt(2);
+            if (Token::Match(typeTok, "%type% <") && Token::Match(typeTok->linkAt(1), "> :: %type%"))
+                typeTok = typeTok->linkAt(1)->tokAt(2);
+        }
 
         // check for argument with no name or missing varid
         if (!endTok) {
