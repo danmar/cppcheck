@@ -4613,6 +4613,10 @@ void Tokenizer::setVarIdPass1()
             } catch (const Token * errTok) {
                 syntaxError(errTok);
             }
+
+            if (tok->str() == "(" && isFunctionHead(tok, "{") && scopeStack.top().isExecutable)
+                inlineFunction = true;
+
             if (decl) {
                 if (isCPP()) {
                     if (Token *declTypeTok = Token::findsimplematch(tok, "decltype (", tok2)) {
@@ -4622,9 +4626,6 @@ void Tokenizer::setVarIdPass1()
                         }
                     }
                 }
-
-                if (tok->str() == "(" && isFunctionHead(tok,"{") && scopeStack.top().isExecutable)
-                    inlineFunction = true;
 
                 const Token* prev2 = tok2->previous();
                 if (Token::Match(prev2, "%type% [;[=,)]") && tok2->previous()->str() != "const")
