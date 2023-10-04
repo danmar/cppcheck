@@ -492,11 +492,10 @@ private:
         errout.str("");
 
         std::vector<std::string> files(1, "test.cpp");
-        simplecpp::TokenList tokens2 = PreprocessorHelper::preprocess(code, files);
+        Tokenizer tokenizer(&s, this);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenize..
-        Tokenizer tokenizer(&s, this);
-        tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
     }
 

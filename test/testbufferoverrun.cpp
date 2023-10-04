@@ -81,11 +81,10 @@ private:
                                   .c(Standards::CLatest).cpp(Standards::CPPLatest).certainty(Certainty::inconclusive).build();
 
         std::vector<std::string> files(1, filename);
-        simplecpp::TokenList tokens2 = PreprocessorHelper::preprocess(code, files);
+        Tokenizer tokenizer(&settings, this);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenizer..
-        Tokenizer tokenizer(&settings, this);
-        tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
         // Check for buffer overruns..

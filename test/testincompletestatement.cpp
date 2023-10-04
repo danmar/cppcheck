@@ -45,11 +45,10 @@ private:
         const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).build();
 
         std::vector<std::string> files(1, "test.cpp");
-        simplecpp::TokenList tokens2 = PreprocessorHelper::preprocess(code, files);
+        Tokenizer tokenizer(&settings1, this);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
-        tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
         // Check for incomplete statements..

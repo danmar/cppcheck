@@ -8417,13 +8417,10 @@ private:
 
         const Settings settings = settingsBuilder().severity(Severity::style).build();
 
-        // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
-        simplecpp::TokenList tokens2 = PreprocessorHelper::preprocess(code, files);
-
-        // Tokenize..
         Tokenizer tokenizer(&settings, this);
-        tokenizer.createTokens(std::move(tokens2));
+        PreprocessorHelper::preprocess(code, files, tokenizer);
+
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check..

@@ -134,11 +134,10 @@ private:
 
         Preprocessor preprocessor(settings);
         std::vector<std::string> files(1, filename);
-        simplecpp::TokenList tokens2 = PreprocessorHelper::preprocess(preprocessor, code, files);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
+        PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
 
         // Tokenizer..
-        Tokenizer tokenizer(&settings, this, &preprocessor);
-        tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
         // Run checks..

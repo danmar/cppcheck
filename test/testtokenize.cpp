@@ -7603,11 +7603,10 @@ private:
 
         Preprocessor preprocessor(settings0);
         std::vector<std::string> files(1, "test.cpp");
-        simplecpp::TokenList tokens2 = PreprocessorHelper::preprocess(preprocessor, code, files);
+        Tokenizer tokenizer(&settings, this);
+        PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
 
         // Tokenizer..
-        Tokenizer tokenizer(&settings, this);
-        tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
         return tokenizer.tokens()->stringifyList();

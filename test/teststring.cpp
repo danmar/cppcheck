@@ -68,11 +68,10 @@ private:
         errout.str("");
 
         std::vector<std::string> files(1, filename);
-        simplecpp::TokenList tokens2 = PreprocessorHelper::preprocess(code, files);
+        Tokenizer tokenizer(&settings, this);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
         // Check char variable usage..

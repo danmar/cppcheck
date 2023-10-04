@@ -138,8 +138,9 @@ std::string PreprocessorHelper::getcode(Preprocessor &preprocessor, const std::s
     return ret;
 }
 
-simplecpp::TokenList PreprocessorHelper::preprocess(const char code[], std::vector<std::string> &files)
+void PreprocessorHelper::preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer)
 {
+    // Raw Tokens..
     std::istringstream istr(code);
     const simplecpp::TokenList tokens1(istr, files, files[0]);
 
@@ -148,10 +149,11 @@ simplecpp::TokenList PreprocessorHelper::preprocess(const char code[], std::vect
     std::map<std::string, simplecpp::TokenList*> filedata;
     simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-    return tokens2;
+    // Tokenizer..
+    tokenizer.createTokens(std::move(tokens2));
 }
 
-simplecpp::TokenList PreprocessorHelper::preprocess(Preprocessor &preprocessor, const char code[], std::vector<std::string> &files)
+void PreprocessorHelper::preprocess(Preprocessor &preprocessor, const char code[], std::vector<std::string> &files, Tokenizer& tokenizer)
 {
     std::istringstream istr(code);
     const simplecpp::TokenList tokens1(istr, files, files[0]);
@@ -161,7 +163,8 @@ simplecpp::TokenList PreprocessorHelper::preprocess(Preprocessor &preprocessor, 
     std::map<std::string, simplecpp::TokenList*> filedata;
     simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-    preprocessor.setDirectives(tokens1);
+    // Tokenizer..
+    tokenizer.createTokens(std::move(tokens2));
 
-    return tokens2;
+    preprocessor.setDirectives(tokens1);
 }

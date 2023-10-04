@@ -107,10 +107,8 @@ private:
         Tokenizer tokenizer(&settings, this);
 
         if (preprocess) {
-            std::vector<std::string> files{ "test.cpp" };
-            simplecpp::TokenList tokens2 = PreprocessorHelper::preprocess(code, files);
-
-            tokenizer.createTokens(std::move(tokens2));
+            std::vector<std::string> files(1, "test.cpp");
+            PreprocessorHelper::preprocess(code, files, tokenizer);
         }
 
         std::istringstream istr(code);
