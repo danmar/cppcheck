@@ -180,7 +180,6 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
-        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), tokStr1, strlen(tokStr1));
         const Token * const tok2 = Token::findsimplematch(tok1->next(), tokStr2, strlen(tokStr2));
         return (isSameExpression)(false, false, tok1, tok2, library, false, true, nullptr);
