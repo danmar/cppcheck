@@ -278,7 +278,8 @@ private:
         (checkUnusedVar.checkStructMemberUsage)();
     }
 
-    void checkStructMemberUsageP(const char code[]) {
+#define checkStructMemberUsageP(...) checkStructMemberUsageP_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkStructMemberUsageP_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
@@ -288,15 +289,15 @@ private:
         PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
 
         // Tokenizer..
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check for unused variables..
         CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
         (checkUnusedVar.checkStructMemberUsage)();
     }
 
-
-    void checkFunctionVariableUsageP(const char code[], const char* filename = "test.cpp") {
+#define checkFunctionVariableUsageP(...) checkFunctionVariableUsageP_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkFunctionVariableUsageP_(const char* file, int line, const char code[], const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -306,7 +307,7 @@ private:
         PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
 
         // Tokenizer..
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check for unused variables..
         CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);

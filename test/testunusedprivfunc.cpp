@@ -90,8 +90,8 @@ private:
         TEST_CASE(maybeUnused);
     }
 
-
-    void check(const char code[], cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native) {
         // Clear the error buffer..
         errout.str("");
 
@@ -102,14 +102,12 @@ private:
         PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenize..
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check for unused private functions..
         CheckClass checkClass(&tokenizer, &settings1, this);
         checkClass.privateFunctions();
     }
-
-
 
     void test1() {
         check("class Fred\n"

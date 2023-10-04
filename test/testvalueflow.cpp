@@ -487,7 +487,8 @@ private:
         return false;
     }
 
-    void bailout(const char code[]) {
+#define bailout(...) bailout_(__FILE__, __LINE__, __VA_ARGS__)
+    void bailout_(const char* file, int line, const char code[]) {
         const Settings s = settingsBuilder().debugwarnings().build();
         errout.str("");
 
@@ -496,7 +497,7 @@ private:
         PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenize..
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
     }
 
 #define tokenValues(...) tokenValues_(__FILE__, __LINE__, __VA_ARGS__)

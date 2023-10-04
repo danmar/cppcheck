@@ -331,7 +331,8 @@ private:
         check_(file, line, code, "test.cpp", true, true, false, s);
     }
 
-    void checkP(const char code[], const char *filename = "test.cpp") {
+#define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkP_(const char* file, int line, const char code[], const char *filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -350,7 +351,7 @@ private:
         PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
 
         // Tokenizer..
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check..
         runChecks<CheckOther>(tokenizer, this);

@@ -128,7 +128,8 @@ private:
         TEST_CASE(knownConditionIncrementLoop); // #9808
     }
 
-    void check(const char code[], const Settings &settings, const char* filename = "test.cpp") {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], const Settings &settings, const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -138,15 +139,15 @@ private:
         PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
 
         // Tokenizer..
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Run checks..
         runChecks<CheckCondition>(tokenizer, this);
     }
 
-    void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
+    void check_(const char* file, int line, const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
         const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive, inconclusive).build();
-        check(code, settings, filename);
+        check_(file, line, code, settings, filename);
     }
 
     void assignAndCompare() {

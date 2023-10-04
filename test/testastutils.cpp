@@ -173,14 +173,14 @@ private:
         ASSERT_EQUALS(true, isReturnScope("void positiveTokenOffset() { return; }", 7));
     }
 
-#define isSameExpression(code, tokStr1, tokStr2) isSameExpression_(code, tokStr1, tokStr2, __FILE__, __LINE__)
-    bool isSameExpression_(const char code[], const char tokStr1[], const char tokStr2[], const char* file, int line) {
+#define isSameExpression(...) isSameExpression_(__FILE__, __LINE__, __VA_ARGS__)
+    bool isSameExpression_(const char* file, int line, const char code[], const char tokStr1[], const char tokStr2[]) {
         const Settings settings;
         Library library;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), tokStr1, strlen(tokStr1));
         const Token * const tok2 = Token::findsimplematch(tok1->next(), tokStr2, strlen(tokStr2));
         return (isSameExpression)(false, false, tok1, tok2, library, false, true, nullptr);

@@ -7595,7 +7595,8 @@ private:
         }
     }
 
-    std::string checkHeaders(const char code[], bool checkHeadersFlag) {
+#define checkHdrs(...) checkHdrs_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string checkHdrs_(const char* file, int line, const char code[], bool checkHeadersFlag) {
         // Clear the error buffer..
         errout.str("");
 
@@ -7607,7 +7608,7 @@ private:
         PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
 
         // Tokenizer..
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         return tokenizer.tokens()->stringifyList();
     }
@@ -7628,14 +7629,14 @@ private:
                       "4: void g<int> ( int x ) ;\n"
                       "5: } ;\n"
                       "4: void A :: g<int> ( int x ) { a = 2 ; }\n",
-                      checkHeaders(code, true));
+                      checkHdrs(code, true));
 
         ASSERT_EQUALS("\n\n##file 1\n\n"
                       "1:\n"
                       "|\n"
                       "4:\n"
                       "5: ;\n",
-                      checkHeaders(code, false));
+                      checkHdrs(code, false));
     }
 
     void removeExtraTemplateKeywords() {

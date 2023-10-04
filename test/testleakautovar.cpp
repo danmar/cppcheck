@@ -2838,7 +2838,8 @@ public:
 private:
     const Settings settings = settingsBuilder().library("std.cfg").checkLibrary().build();
 
-    void checkP(const char code[], bool cpp = false) {
+#define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkP_(const char* file, int line, const char code[], bool cpp = false) {
         // Clear the error buffer..
         errout.str("");
 
@@ -2847,7 +2848,7 @@ private:
         PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenizer..
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check for leaks..
         runChecks<CheckLeakAutoVar>(tokenizer, this);

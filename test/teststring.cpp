@@ -63,7 +63,8 @@ private:
         TEST_CASE(deadStrcmp);
     }
 
-    void check(const char code[], const char filename[] = "test.cpp") {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -72,7 +73,7 @@ private:
         PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenize..
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check char variable usage..
         runChecks<CheckString>(tokenizer, this);

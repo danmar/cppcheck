@@ -72,7 +72,8 @@ private:
         runChecks<CheckBufferOverrun>(tokenizer, this);
     }
 
-    void checkP(const char code[], const char* filename = "test.cpp")
+#define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkP_(const char* file, int line, const char code[], const char* filename = "test.cpp")
     {
         // Clear the error buffer..
         errout.str("");
@@ -85,7 +86,7 @@ private:
         PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenizer..
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check for buffer overruns..
         runChecks<CheckBufferOverrun>(tokenizer, this);

@@ -38,7 +38,8 @@ public:
 private:
     const Settings settings = settingsBuilder().severity(Severity::warning).build();
 
-    void check(const char code[], bool inconclusive = false) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], bool inconclusive = false) {
         // Clear the error buffer..
         errout.str("");
 
@@ -49,7 +50,7 @@ private:
         PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenize..
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check for incomplete statements..
         CheckOther checkOther(&tokenizer, &settings1, this);

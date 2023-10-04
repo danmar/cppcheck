@@ -8410,8 +8410,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    #define checkUselessOverride(code) checkUselessOverride_(code, __FILE__, __LINE__)
-    void checkUselessOverride_(const char code[], const char* file, int line) {
+    #define checkUselessOverride(...) checkUselessOverride_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkUselessOverride_(const char* file, int line, const char code[]) {
         // Clear the error log
         errout.str("");
 
