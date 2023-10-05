@@ -1403,10 +1403,10 @@ static inline bool isSameConstantValue(bool macro, const Token* tok1, const Toke
     };
 
     tok1 = adjustForCast(tok1);
-    if (!tok1->isNumber())
+    if (!tok1->isNumber() && !tok1->enumerator())
         return false;
     tok2 = adjustForCast(tok2);
-    if (!tok2->isNumber())
+    if (!tok2->isNumber() && !tok2->enumerator())
         return false;
 
     if (macro && (tok1->isExpandedMacro() || tok2->isExpandedMacro() || tok1->isTemplateArg() || tok2->isTemplateArg()))
@@ -1523,7 +1523,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         return true;
 
     // Follow variable
-    if (followVar && !tok_str_eq && (tok1->varId() || tok2->varId())) {
+    if (followVar && !tok_str_eq && (tok1->varId() || tok2->varId() || tok1->enumerator() || tok2->enumerator())) {
         const Token * varTok1 = followVariableExpression(tok1, cpp, tok2);
         if ((varTok1->str() == tok2->str()) || isSameConstantValue(macro, varTok1, tok2)) {
             followVariableExpressionError(tok1, varTok1, errors);

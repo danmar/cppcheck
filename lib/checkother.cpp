@@ -2595,10 +2595,11 @@ void CheckOther::checkDuplicateExpression()
                     if (isWithoutSideEffects(cpp, tok->astOperand1())) {
                         const Token* loopTok = isInLoopCondition(tok);
                         if (!loopTok || !isExpressionChanged(tok, tok, loopTok->link()->next()->link(), mSettings, cpp)) {
-                            const bool assignment = tok->str() == "=";
+                            const bool isEnum = tok->scope()->type == Scope::eEnum;
+                            const bool assignment = !isEnum && tok->str() == "=";
                             if (assignment && warningEnabled)
                                 selfAssignmentError(tok, tok->astOperand1()->expressionString());
-                            else if (styleEnabled) {
+                            else if (styleEnabled && !isEnum) {
                                 if (cpp && mSettings->standards.cpp >= Standards::CPP11 && tok->str() == "==") {
                                     const Token* parent = tok->astParent();
                                     while (parent && parent->astParent()) {
