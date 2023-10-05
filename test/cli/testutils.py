@@ -1,4 +1,5 @@
 
+import asyncio
 import logging
 import os
 import subprocess
@@ -75,3 +76,24 @@ def cppcheck(args, env=None):
     if stdout.find('\nActive checkers:') > 0:
         stdout = stdout[:1 + stdout.find('\nActive checkers:')]
     return p.returncode, stdout, stderr
+
+# Run multiple instances of cppcheck in parallel with the same args
+def cppcheck_parallel(args, n, env=None):
+    exe = lookup_cppcheck_exe()
+    assert exe is not None, 'no cppcheck binary found'
+    logging.info(exe + ' ' + ' '.join(args) + " x{} instances".format(n))
+
+    async def _async_cppcheck_runner(exe, args, n, env):
+        # Start all of the processes to run asynchronously
+        procs = [await asyncio.create_subprocess_exec(exe, *args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env) for _ in range(n)]
+        # Wait for all of the processes to finish.
+        await asyncio.gather(*[p.wait() for p in procs])
+
+        decode_output = lambda txt: txt.decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
+        stdouts = [decode_output(await p.stdout.read()) for p in procs]
+        stderrs = [decode_output(await p.stderr.read()) for p in procs]
+        returncodes = [p.returncode for p in procs]
+
+        return returncodes, stdouts, stderrs
+
+    return asyncio.run(_async_cppcheck_runner(exe, args, n, env))

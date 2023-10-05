@@ -134,6 +134,7 @@ jobs:
           python -m pip install pytest || exit /b !errorlevel!
           python -m pip install pytest-custom_exit_code || exit /b !errorlevel!
           python -m pip install pytest-timeout || exit /b !errorlevel!
+          python -m pip install asyncio || exit /b !errorlevel!
 
       - name: Run CMake
         if: false # TODO: enable

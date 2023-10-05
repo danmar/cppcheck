@@ -7,7 +7,7 @@ import tempfile
 import pytest
 import glob
 
-from testutils import create_gui_project_file, cppcheck
+from testutils import create_gui_project_file, cppcheck, cppcheck_parallel
 
 # Run Cppcheck from project path
 def cppcheck_local(args):
@@ -232,3 +232,30 @@ def test_missing_include_system():
 
 def test_missing_include_system_j(): #11283
     __test_missing_include_system(True)
+
+# #12015 Catch internalErrors when running addons in parallel
+@pytest.mark.timeout(30)
+def test_parallel_addon_internal_errors():
+    def err_msg(args, return_codes, stdouts, stderrs):
+        n_procs = len(return_codes)
+        intErr_idx = [id for id,e in enumerate(stderrs) if "internalError" in e]
+        first_fail = intErr_idx[0]
+        msg = "Inernal error during parallel run\n" + \
+            f"Of {n_procs} procs running `cppcheck {args}` " + \
+            f"{len(intErr_idx)} had internalErrors.\n" + \
+            f"Results for failing proc #{first_fail} \n" + \
+            f"Return code: {return_codes[first_fail]} \n\n" + \
+            f"stdout: {stdouts[first_fail]} \n\n" + \
+            f"stderr: {stderrs[first_fail]} \n\n"
+        return msg
+
+    iterations = 20
+    n_procs = 4
+    for _ in range(iterations):
+        with tempfile.TemporaryDirectory() as tempdir:
+            args = f'--cppcheck-build-dir={tempdir} --addon=misra helloworld'
+
+            returncodes, stdouts, stderrs = cppcheck_parallel(args.split(), n_procs)
+
+            ok = all(["internalError" not in e for e in stderrs])
+            assert ok, err_msg(args, returncodes, stdouts, stderrs)
