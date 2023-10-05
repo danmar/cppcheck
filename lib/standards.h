@@ -45,25 +45,11 @@ struct Standards {
     /** --std value given on command line */
     std::string stdValue;
 
-    bool setC(const std::string& str) {
+    bool setC(std::string str) {
         stdValue = str;
-        if (str == "c89" || str == "C89") {
-            c = C89;
-            return true;
-        }
-        if (str == "c99" || str == "C99") {
-            c = C99;
-            return true;
-        }
-        if (str == "c11" || str == "C11") {
-            c = C11;
-            return true;
-        }
-        if (str == "c23" || str == "C23") {
-            c = C23;
-            return true;
-        }
-        return false;
+        strTolower(str);
+        c = getC(str);
+        return !stdValue.empty() && str == getC();
     }
     std::string getC() const {
         switch (c) {
