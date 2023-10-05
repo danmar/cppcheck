@@ -231,9 +231,7 @@ void Variables::clearAliases(nonneg int varid)
 
     if (usage) {
         // remove usage from all aliases
-        std::set<nonneg int>::const_iterator i;
-
-        for (i = usage->_aliases.cbegin(); i != usage->_aliases.cend(); ++i) {
+        for (std::set<nonneg int>::const_iterator i = usage->_aliases.cbegin(); i != usage->_aliases.cend(); ++i) {
             VariableUsage *temp = find(*i);
 
             if (temp)

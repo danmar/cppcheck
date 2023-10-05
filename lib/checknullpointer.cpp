@@ -452,8 +452,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     } else if (value->defaultArg) {
         reportError(errorPath, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
     } else {
-        std::string errmsg;
-        errmsg = std::string(value->isKnown() ? "Null" : "Possible null") + " pointer dereference";
+        std::string errmsg = std::string(value->isKnown() ? "Null" : "Possible null") + " pointer dereference";
         if (!varname.empty())
             errmsg = "$symbol:" + varname + '\n' + errmsg + ": $symbol";
 
