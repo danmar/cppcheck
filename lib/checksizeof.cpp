@@ -40,7 +40,6 @@ namespace {
 }
 
 // CWE IDs used:
-static const CWE CWE398(398U);   // Indicator of Poor Code Quality
 static const CWE CWE467(467U);   // Use of sizeof() on a Pointer Type
 static const CWE CWE682(682U);   // Incorrect Calculation
 //---------------------------------------------------------------------------

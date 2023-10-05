@@ -1769,7 +1769,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
         } catch (InternalError &e) {
             QMessageBox msg(QMessageBox::Critical,
                             tr("Cppcheck"),
-                            tr("Failed to import '%1', analysis is stopped").arg(prjfile),
+                            tr("Failed to import '%1' (%2), analysis is stopped").arg(prjfile).arg(QString::fromStdString(e.errorMessage)),
                             QMessageBox::Ok,
                             this);
             msg.exec();
