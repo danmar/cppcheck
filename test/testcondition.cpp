@@ -4941,7 +4941,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f(int i) {\n"
+        check("void f(int i) {\n" // #12039
               "    if ((128 + i < 255 ? 128 + i : 255) > 0) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
