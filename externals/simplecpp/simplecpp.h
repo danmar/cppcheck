@@ -135,7 +135,7 @@ namespace simplecpp {
         bool isOneOf(const char ops[]) const;
         bool startsWithOneOf(const char c[]) const;
         bool endsWithOneOf(const char c[]) const;
-        static bool SIMPLECPP_LIB isNumberLike(const std::string& str) {
+        static bool isNumberLike(const std::string& str) {
             return std::isdigit(static_cast<unsigned char>(str[0])) ||
                    (str.size() > 1U && (str[0] == '-' || str[0] == '+') && std::isdigit(static_cast<unsigned char>(str[1])));
         }
