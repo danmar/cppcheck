@@ -52,18 +52,18 @@ namespace {
 }
 
 // CWE IDs used:
-static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
-static const struct CWE CWE597(597U);   // Use of Wrong Operator in String Comparison
-static const struct CWE CWE628(628U);   // Function Call with Incorrectly Specified Arguments
-static const struct CWE CWE664(664U);   // Improper Control of a Resource Through its Lifetime
-static const struct CWE CWE667(667U);   // Improper Locking
-static const struct CWE CWE704(704U);   // Incorrect Type Conversion or Cast
-static const struct CWE CWE762(762U);   // Mismatched Memory Management Routines
-static const struct CWE CWE786(786U);   // Access of Memory Location Before Start of Buffer
-static const struct CWE CWE788(788U);   // Access of Memory Location After End of Buffer
-static const struct CWE CWE825(825U);   // Expired Pointer Dereference
-static const struct CWE CWE833(833U);   // Deadlock
-static const struct CWE CWE834(834U);   // Excessive Iteration
+static const CWE CWE398(398U);   // Indicator of Poor Code Quality
+static const CWE CWE597(597U);   // Use of Wrong Operator in String Comparison
+static const CWE CWE628(628U);   // Function Call with Incorrectly Specified Arguments
+static const CWE CWE664(664U);   // Improper Control of a Resource Through its Lifetime
+static const CWE CWE667(667U);   // Improper Locking
+static const CWE CWE704(704U);   // Incorrect Type Conversion or Cast
+static const CWE CWE762(762U);   // Mismatched Memory Management Routines
+static const CWE CWE786(786U);   // Access of Memory Location Before Start of Buffer
+static const CWE CWE788(788U);   // Access of Memory Location After End of Buffer
+static const CWE CWE825(825U);   // Expired Pointer Dereference
+static const CWE CWE833(833U);   // Deadlock
+static const CWE CWE834(834U);   // Excessive Iteration
 
 static bool isElementAccessYield(Library::Container::Yield yield)
 {

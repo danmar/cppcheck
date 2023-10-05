@@ -511,7 +511,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     for (const tinyxml2::XMLElement* memberNode = node->FirstChildElement(); memberNode; memberNode = memberNode->NextSiblingElement()) {
                         const char *memberName = memberNode->Attribute("name");
                         const char *memberTemplateParameter = memberNode->Attribute("templateParameter");
-                        struct Container::RangeItemRecordTypeItem member;
+                        Container::RangeItemRecordTypeItem member;
                         member.name = memberName ? memberName : "";
                         member.templateParameter = memberTemplateParameter ? strToInt<int>(memberTemplateParameter) : -1;
                         container.rangeItemRecordType.emplace_back(std::move(member));

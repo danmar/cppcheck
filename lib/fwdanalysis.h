@@ -79,8 +79,8 @@ private:
         const Token* token{};
     };
 
-    struct Result check(const Token *expr, const Token *startToken, const Token *endToken);
-    struct Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<nonneg int> &exprVarIds, bool local, bool inInnerClass, int depth=0);
+    Result check(const Token *expr, const Token *startToken, const Token *endToken);
+    Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<nonneg int> &exprVarIds, bool local, bool inInnerClass, int depth=0);
 
     // Is expression a l-value global data?
     bool isGlobalData(const Token *expr) const;

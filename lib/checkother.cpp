@@ -50,24 +50,24 @@ namespace {
     CheckOther instance;
 }
 
-static const struct CWE CWE128(128U);   // Wrap-around Error
-static const struct CWE CWE131(131U);   // Incorrect Calculation of Buffer Size
-static const struct CWE CWE197(197U);   // Numeric Truncation Error
-static const struct CWE CWE362(362U);   // Concurrent Execution using Shared Resource with Improper Synchronization ('Race Condition')
-static const struct CWE CWE369(369U);   // Divide By Zero
-static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
-static const struct CWE CWE475(475U);   // Undefined Behavior for Input to API
-static const struct CWE CWE561(561U);   // Dead Code
-static const struct CWE CWE563(563U);   // Assignment to Variable without Use ('Unused Variable')
-static const struct CWE CWE570(570U);   // Expression is Always False
-static const struct CWE CWE571(571U);   // Expression is Always True
-static const struct CWE CWE672(672U);   // Operation on a Resource after Expiration or Release
-static const struct CWE CWE628(628U);   // Function Call with Incorrectly Specified Arguments
-static const struct CWE CWE683(683U);   // Function Call With Incorrect Order of Arguments
-static const struct CWE CWE704(704U);   // Incorrect Type Conversion or Cast
-static const struct CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
-static const struct CWE CWE768(768U);   // Incorrect Short Circuit Evaluation
-static const struct CWE CWE783(783U);   // Operator Precedence Logic Error
+static const CWE CWE128(128U);   // Wrap-around Error
+static const CWE CWE131(131U);   // Incorrect Calculation of Buffer Size
+static const CWE CWE197(197U);   // Numeric Truncation Error
+static const CWE CWE362(362U);   // Concurrent Execution using Shared Resource with Improper Synchronization ('Race Condition')
+static const CWE CWE369(369U);   // Divide By Zero
+static const CWE CWE398(398U);   // Indicator of Poor Code Quality
+static const CWE CWE475(475U);   // Undefined Behavior for Input to API
+static const CWE CWE561(561U);   // Dead Code
+static const CWE CWE563(563U);   // Assignment to Variable without Use ('Unused Variable')
+static const CWE CWE570(570U);   // Expression is Always False
+static const CWE CWE571(571U);   // Expression is Always True
+static const CWE CWE672(672U);   // Operation on a Resource after Expiration or Release
+static const CWE CWE628(628U);   // Function Call with Incorrectly Specified Arguments
+static const CWE CWE683(683U);   // Function Call With Incorrect Order of Arguments
+static const CWE CWE704(704U);   // Incorrect Type Conversion or Cast
+static const CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
+static const CWE CWE768(768U);   // Incorrect Short Circuit Evaluation
+static const CWE CWE783(783U);   // Operator Precedence Logic Error
 
 //----------------------------------------------------------------------------------
 // The return value of fgetc(), getc(), ungetc(), getchar() etc. is an integer value.
@@ -2793,7 +2793,7 @@ void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalse()
 void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, const bool result)
 {
     const std::string strResult = bool_to_string(result);
-    const struct CWE cweResult = result ? CWE571 : CWE570;
+    const CWE cweResult = result ? CWE571 : CWE570;
 
     reportError(tok, Severity::warning, "comparisonFunctionIsAlwaysTrueOrFalse",
                 "$symbol:" + functionName + "\n"

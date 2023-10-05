@@ -397,7 +397,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
         if (!Path::acceptFile(file))
             continue;
 
-        struct FileSettings fs;
+        FileSettings fs;
         if (Path::isAbsolute(file))
             fs.filename = Path::simplifyPath(file);
 #ifdef _WIN32

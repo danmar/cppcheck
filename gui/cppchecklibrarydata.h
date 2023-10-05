@@ -58,10 +58,10 @@ public:
             QString yields;
             QString action;
         };
-        QList<struct Function> accessFunctions;
-        QList<struct Function> otherFunctions;
-        QList<struct Function> sizeFunctions;
-        QList<struct RangeItemRecordType> rangeItemRecordTypeList;
+        QList<Function> accessFunctions;
+        QList<Function> otherFunctions;
+        QList<Function> sizeFunctions;
+        QList<RangeItemRecordType> rangeItemRecordTypeList;
     };
 
     struct Define {
@@ -106,13 +106,13 @@ public:
                 QString arg;
                 QString arg2;
             };
-            QList<struct MinSize> minsizes;
+            QList<MinSize> minsizes;
             struct Iterator {
                 int container = -1;
                 QString type;
             } iterator;
         };
-        QList<struct Arg> args;
+        QList<Arg> args;
 
         struct {
             QString severity;
@@ -149,8 +149,8 @@ public:
             QString name;
         };
 
-        QList<struct Alloc> alloc;
-        QList<struct Dealloc> dealloc;
+        QList<Alloc> alloc;
+        QList<Dealloc> dealloc;
         QStringList use;
     };
 
@@ -176,7 +176,7 @@ public:
             QString name;
         };
 
-        QList<struct Call> calls;
+        QList<Call> calls;
     };
 
     struct Markup {
@@ -244,18 +244,18 @@ public:
     QString open(QIODevice &file);
     QString toString() const;
 
-    QList<struct Container> containers;
-    QList<struct Define> defines;
-    QList<struct Function> functions;
-    QList<struct MemoryResource> memoryresource;
-    QList<struct PodType> podtypes;
+    QList<Container> containers;
+    QList<Define> defines;
+    QList<Function> functions;
+    QList<MemoryResource> memoryresource;
+    QList<PodType> podtypes;
     QList<TypeChecks> typeChecks;
-    QList<struct PlatformType> platformTypes;
+    QList<PlatformType> platformTypes;
     QStringList undefines;
-    QList<struct SmartPointer> smartPointers;
-    QList<struct Reflection> reflections;
-    QList<struct Markup> markups;
-    QList<struct Entrypoint> entrypoints;
+    QList<SmartPointer> smartPointers;
+    QList<Reflection> reflections;
+    QList<Markup> markups;
+    QList<Entrypoint> entrypoints;
 };
 
 #endif // CPPCHECKLIBRARYDATA_H

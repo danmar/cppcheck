@@ -2558,7 +2558,7 @@ TokenImpl::~TokenImpl()
     delete mTemplateSimplifierPointers;
 
     while (mCppcheckAttributes) {
-        struct CppcheckAttributes *c = mCppcheckAttributes;
+        CppcheckAttributes *c = mCppcheckAttributes;
         mCppcheckAttributes = mCppcheckAttributes->next;
         delete c;
     }
@@ -2566,7 +2566,7 @@ TokenImpl::~TokenImpl()
 
 void TokenImpl::setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value)
 {
-    struct CppcheckAttributes *attr = mCppcheckAttributes;
+    CppcheckAttributes *attr = mCppcheckAttributes;
     while (attr && attr->type != type)
         attr = attr->next;
     if (attr)
@@ -2582,7 +2582,7 @@ void TokenImpl::setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, M
 
 bool TokenImpl::getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint &value) const
 {
-    struct CppcheckAttributes *attr = mCppcheckAttributes;
+    CppcheckAttributes *attr = mCppcheckAttributes;
     while (attr && attr->type != type)
         attr = attr->next;
     if (attr)

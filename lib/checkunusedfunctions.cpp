@@ -54,7 +54,7 @@ namespace {
     CheckUnusedFunctions instance;
 }
 
-static const struct CWE CWE561(561U);   // Dead Code
+static const CWE CWE561(561U);   // Dead Code
 
 static std::string stripTemplateParameters(const std::string& funcName) {
     std::string name = funcName;
