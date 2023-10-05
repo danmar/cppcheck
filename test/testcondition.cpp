@@ -4940,6 +4940,11 @@ private:
               "    if (j >= 0) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i) {\n"
+              "    if ((128 + i < 255 ? 128 + i : 255) > 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueContainer() {
