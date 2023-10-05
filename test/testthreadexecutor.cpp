@@ -56,6 +56,7 @@ private:
         SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         const char* plistOutput = nullptr;
         std::vector<std::string> filesList;
+        bool clangTidy = false;
         bool executeCommandCalled = false;
         std::string exe;
         std::vector<std::string> args;
@@ -68,17 +69,18 @@ private:
     void check(unsigned int jobs, int files, int result, const std::string &data, const CheckOptions& opt = make_default_obj{}) {
         errout.str("");
         output.str("");
-        settings.project.fileSettings.clear();
+
+        Settings s = settings;
 
         std::map<std::string, std::size_t> filemap;
         if (opt.filesList.empty()) {
             for (int i = 1; i <= files; ++i) {
-                std::string s = fprefix() + "_" + std::to_string(i) + ".cpp";
-                filemap[s] = data.size();
+                std::string f_s = fprefix() + "_" + std::to_string(i) + ".cpp";
+                filemap[f_s] = data.size();
                 if (useFS) {
                     ImportProject::FileSettings fs;
-                    fs.filename = std::move(s);
-                    settings.project.fileSettings.emplace_back(std::move(fs));
+                    fs.filename = std::move(f_s);
+                    s.project.fileSettings.emplace_back(std::move(fs));
                 }
             }
         }
@@ -89,17 +91,17 @@ private:
                 if (useFS) {
                     ImportProject::FileSettings fs;
                     fs.filename = f;
-                    settings.project.fileSettings.emplace_back(std::move(fs));
+                    s.project.fileSettings.emplace_back(std::move(fs));
                 }
             }
         }
 
-        Settings s = settings;
         s.jobs = jobs;
         s.showtime = opt.showtime;
         s.quiet = opt.quiet;
         if (opt.plistOutput)
             s.plistOutput = opt.plistOutput;
+        s.clangTidy = opt.clangTidy;
 
         bool executeCommandCalled = false;
         std::string exe;
@@ -283,9 +285,6 @@ private:
         if (!useFS)
             return;
 
-        const Settings settingsOld = settings;
-        settings.clangTidy = true;
-
 #ifdef _WIN32
         const char exe[] = "clang-tidy.exe";
 #else
@@ -300,11 +299,11 @@ private:
               "}",
               dinit(CheckOptions,
                     $.quiet = false,
+                        $.clangTidy = true,
                         $.executeCommandCalled = true,
                         $.exe = exe,
                         $.args = {"-quiet", "-checks=*,-clang-analyzer-*,-llvm*", file, "--"}));
         ASSERT_EQUALS("Checking " + file + " ...\n", output.str());
-        settings = settingsOld;
     }
 
     // TODO: provide data which actually shows values above 0
