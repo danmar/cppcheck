@@ -468,7 +468,6 @@ CppCheck::~CppCheck()
         delete mFileInfo.back();
         mFileInfo.pop_back();
     }
-    s_timerResults.showResults(mSettings.showtime);
 
     if (mPlistFile.is_open()) {
         mPlistFile << ErrorLogger::plistFooter();
@@ -1100,6 +1099,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     }
 
     mErrorList.clear();
+
+    if (mSettings.showtime == SHOWTIME_MODES::SHOWTIME_FILE || mSettings.showtime == SHOWTIME_MODES::SHOWTIME_TOP5_FILE)
+        printTimerResults(mSettings.showtime);
 
     return mExitCode;
 }
@@ -1903,4 +1905,15 @@ void CppCheck::removeCtuInfoFiles(const std::map<std::string, std::size_t> &file
             std::remove(ctuInfoFileName.c_str());
         }
     }
+}
+
+// cppcheck-suppress unusedFunction - only used in tests
+void CppCheck::resetTimerResults()
+{
+    s_timerResults.reset();
+}
+
+void CppCheck::printTimerResults(SHOWTIME_MODES mode)
+{
+    s_timerResults.showResults(mode);
 }

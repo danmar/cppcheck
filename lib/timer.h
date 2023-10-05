@@ -32,7 +32,8 @@ enum class SHOWTIME_MODES {
     SHOWTIME_FILE,
     SHOWTIME_FILE_TOTAL,
     SHOWTIME_SUMMARY,
-    SHOWTIME_TOP5
+    SHOWTIME_TOP5_SUMMARY,
+    SHOWTIME_TOP5_FILE
 };
 
 class CPPCHECKLIB TimerResultsIntf {
@@ -58,6 +59,8 @@ public:
 
     void showResults(SHOWTIME_MODES mode) const;
     void addResults(const std::string& str, std::clock_t clocks) override;
+
+    void reset();
 
 private:
     std::map<std::string, struct TimerResultsData> mResults;

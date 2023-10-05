@@ -531,3 +531,26 @@ def test_unused_function_include(tmpdir):
 
     _, _, stderr = cppcheck(args)
     assert stderr == "{}:4:0: style: The function 'f' is never used. [unusedFunction]\n".format(test_h_file)
+
+
+# TODO: test with -j and all other types
+def test_showtime_top5_file(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        f.write("""
+                int main(int argc)
+                {
+                }
+                """)
+
+    args = ['--showtime=top5_file', '--quiet', test_file]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0  # TODO: needs to be 1
+    lines = stdout.splitlines()
+    assert len(lines) == 7
+    assert lines[0] == ''
+    for i in range(1, 5):
+        assert lines[i].endswith(' - 1 result(s))')
+    assert lines[6].startswith('Overall time:')
+    assert stderr == ''

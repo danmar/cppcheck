@@ -190,6 +190,9 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <option>--rule-file=&lt;file&gt;</option>
       </arg>
       <arg choice="opt">
+        <option>--showtime=&lt;mode&gt;</option>
+      </arg>
+      <arg choice="opt">
         <option>--std=&lt;id&gt;</option>
       </arg>
       <arg choice="opt">
@@ -541,6 +544,16 @@ There are false positives with this option. Each result must be carefully invest
         </term>
         <listitem>
           <para>Use given rule XML file. See https://sourceforge.net/projects/cppcheck/files/Articles/ for more info about the syntax. This command is only available if cppcheck was compiled with HAVE_RULES=yes.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>--showtime=&lt;mode&gt;</option>
+        </term>
+        <listitem>
+          <para>Show timing information. The available mode are:
+            <glosslist><glossentry><glossterm>none</glossterm><glossdef><para>Show nothing (default)</para></glossdef></glossentry><glossentry><glossterm>file</glossterm><glossdef><para>Show for each processed file</para></glossdef></glossentry><glossentry><glossterm>file-total</glossterm><glossdef><para>Show total time only for each processed file</para></glossdef></glossentry><glossentry><glossterm>summary</glossterm><glossdef><para>Show a summary at the end</para></glossdef></glossentry><glossentry><glossterm>top5_file</glossterm><glossdef><para>Show the top 5 for each processed file</para></glossdef></glossentry><glossentry><glossterm>top5_summary</glossterm><glossdef><para>Show the top 5 summary at the end</para></glossdef></glossentry><glossentry><glossterm>top5</glossterm><glossdef><para>Alias for top5_file (deprecated)</para></glossdef></glossentry></glosslist>
+          </para>
         </listitem>
       </varlistentry>
       <varlistentry>

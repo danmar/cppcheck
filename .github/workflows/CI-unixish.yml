@@ -384,10 +384,6 @@ jobs:
         env:
           STRICT: 1
 
-      - name: Run showtimetop5 tests
-        run: |
-          ./tools/test_showtimetop5.sh
-
       - name: Run --dump test
         run: |
           ./cppcheck test/testpreprocessor.cpp --dump
@@ -470,7 +466,7 @@ jobs:
 
       - name: Self check
         run: |
-          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5 -D__CPPCHECK__ -D__GNUC__ -DCHECK_INTERNAL -DHAVE_RULES --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=gnu --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings --check-level=exhaustive"
+          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5_summary -D__CPPCHECK__ -D__GNUC__ -DCHECK_INTERNAL -DHAVE_RULES --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=gnu --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings --check-level=exhaustive"
           ec=0
           
           # TODO: add --check-config          

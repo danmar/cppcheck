@@ -49,6 +49,7 @@ private:
     struct CheckOptions
     {
         CheckOptions() = default;
+        bool quiet = true;
         SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         const char* plistOutput = nullptr;
         std::vector<std::string> filesList;
@@ -80,6 +81,7 @@ private:
         Settings settings1 = settings;
         settings1.jobs = jobs;
         settings1.showtime = opt.showtime;
+        settings1.quiet = opt.quiet;
         if (opt.plistOutput)
             settings1.plistOutput = opt.plistOutput;
         // TODO: test with settings.project.fileSettings;
@@ -103,6 +105,11 @@ private:
         TEST_CASE(one_error_less_files);
         TEST_CASE(one_error_several_files);
         TEST_CASE(markup);
+        TEST_CASE(showtime_top5_file);
+        TEST_CASE(showtime_top5_summary);
+        TEST_CASE(showtime_file);
+        TEST_CASE(showtime_summary);
+        TEST_CASE(showtime_file_total);
     }
 
     void deadlock_with_many_errors() {
@@ -117,6 +124,7 @@ private:
         check(2, 3, 3, oss.str());
     }
 
+    // TODO: check the output
     void many_threads() {
         check(16, 100, 100,
               "int main()\n"
@@ -134,7 +142,8 @@ private:
               "{\n"
               "  char *a = malloc(10);\n"
               "  return 0;\n"
-              "}", dinit(CheckOptions, $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
+              "}", dinit(CheckOptions,
+                         $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
     }
 
     void many_threads_plist() {
@@ -146,7 +155,8 @@ private:
               "{\n"
               "  char *a = malloc(10);\n"
               "  return 0;\n"
-              "}", dinit(CheckOptions, $.plistOutput = plistOutput));
+              "}", dinit(CheckOptions,
+                         $.plistOutput = plistOutput));
     }
 
     void no_errors_more_files() {
@@ -227,6 +237,69 @@ private:
                            "4/4 files checked 100% done\n",
                            output.str());*/
         settings = settingsOld;
+    }
+
+
+    // TODO: provide data which actually shows values above 0
+
+    // TODO: should this be logged only once like summary?
+    void showtime_top5_file() {
+        REDIRECT; // should not cause TSAN failures as the showtime logging is synchronized
+        check(2, 2, 0,
+              "int main() {}",
+              dinit(CheckOptions,
+                    $.showtime = SHOWTIME_MODES::SHOWTIME_TOP5_FILE));
+        // for each file: top5 results + overall + empty line
+        const std::string output_s = GET_REDIRECT_OUTPUT;
+        // for each file: top5 results + overall + empty line
+        ASSERT_EQUALS((5 + 1 + 1) * 2, cppcheck::count_all_of(output_s, '\n'));
+    }
+
+    void showtime_top5_summary() {
+        REDIRECT;
+        check(2, 2, 0,
+              "int main() {}",
+              dinit(CheckOptions,
+                    $.showtime = SHOWTIME_MODES::SHOWTIME_TOP5_SUMMARY));
+        const std::string output_s = GET_REDIRECT_OUTPUT;
+        // once: top5 results + overall + empty line
+        ASSERT_EQUALS(5 + 1 + 1, cppcheck::count_all_of(output_s, '\n'));
+        // should only report the top5 once
+        ASSERT(output_s.find("1 result(s)") == std::string::npos);
+        ASSERT(output_s.find("2 result(s)") != std::string::npos);
+    }
+
+    void showtime_file() {
+        REDIRECT; // should not cause TSAN failures as the showtime logging is synchronized
+        check(2, 2, 0,
+              "int main() {}",
+              dinit(CheckOptions,
+                    $.showtime = SHOWTIME_MODES::SHOWTIME_FILE));
+        const std::string output_s = GET_REDIRECT_OUTPUT;
+        ASSERT_EQUALS(2, cppcheck::count_all_of(output_s, "Overall time:"));
+    }
+
+    void showtime_summary() {
+        REDIRECT; // should not cause TSAN failures as the showtime logging is synchronized
+        check(2, 2, 0,
+              "int main() {}",
+              dinit(CheckOptions,
+                    $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
+        const std::string output_s = GET_REDIRECT_OUTPUT;
+        // should only report the actual summary once
+        ASSERT(output_s.find("1 result(s)") == std::string::npos);
+        ASSERT(output_s.find("2 result(s)") != std::string::npos);
+    }
+
+    void showtime_file_total() {
+        REDIRECT; // should not cause TSAN failures as the showtime logging is synchronized
+        check(2, 2, 0,
+              "int main() {}",
+              dinit(CheckOptions,
+                    $.showtime = SHOWTIME_MODES::SHOWTIME_FILE_TOTAL));
+        const std::string output_s = GET_REDIRECT_OUTPUT;
+        ASSERT(output_s.find("Check time: " + fprefix() + "_1.cpp: ") != std::string::npos);
+        ASSERT(output_s.find("Check time: " + fprefix() + "_2.cpp: ") != std::string::npos);
     }
 
     // TODO: test clang-tidy

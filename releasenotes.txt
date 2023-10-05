@@ -12,6 +12,11 @@ GUI:
 Changed interface:
 -
 
+Deprecations:
+- "--showtime=top5" has been deprecated and will be removed in Cppcheck 2.14. Please use --showtime=top5_file or --showtime=top5_summary instead.
+
 Other:
 - Windows builds now default to the `native` platform instead of `win32A` or `win64`. Please specify it explicitly if you depedent on it.
 - The undocumented and deprecated command-line options `--template <template>` and `--template-format <template>` has been removed. Please use `--template=` and `--template-format=` instead.
+- "--showtime=summary" will now show a single summary at the end instead of showing it after each file when using the thread execution (default on Windows)
+- added "--showtime=none" to disable any previously specified showtime report. "--showtime=" without parameter is no longer valid.

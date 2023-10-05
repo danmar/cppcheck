@@ -143,6 +143,9 @@ public:
     /** Remove *.ctu-info files */
     void removeCtuInfoFiles(const std::map<std::string, std::size_t>& files); // cppcheck-suppress functionConst // has side effects
 
+    static void resetTimerResults();
+    static void printTimerResults(SHOWTIME_MODES mode);
+
 private:
 #ifdef HAVE_RULES
     /** Are there "simple" rules */
