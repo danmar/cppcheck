@@ -4517,7 +4517,7 @@ private:
                "void f(Object *obj) {\n"
                "  if (valid(obj, K0)) {}\n"
                "}\n";
-        ASSERT_EQUALS(true, testValueOfX(code, 7U, 0));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 7U, 0));
         ASSERT_EQUALS(false, testValueOfXKnown(code, 7U, 0));
 
         code = "int f(int i) {\n"
@@ -4530,7 +4530,21 @@ private:
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 1));
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+
+        code = "void foo(int* p, int* x) {\n"
+               "    bool b1 = (p != NULL);\n"
+               "    bool b2 = b1 && (x != NULL);\n"
+               "    if (b2) {\n"
+               "        *x = 3;\n"
+               "    }\n"
+               "}\n"
+               "\n"
+               "void bar() {\n"
+               "    foo(NULL, NULL);\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
     }
+
     void valueFlowFunctionReturn() {
         const char *code;
 

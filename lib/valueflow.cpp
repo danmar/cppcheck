@@ -7258,7 +7258,8 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
     }
 
     bool stopOnCondition(const Token* /*condTok*/) const override {
-        return isConditional();
+        // TODO fix false negatives
+        return true; // isConditional();
     }
 
     bool updateScope(const Token* endBlock, bool /*modified*/) const override {
