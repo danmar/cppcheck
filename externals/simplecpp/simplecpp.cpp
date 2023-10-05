@@ -114,6 +114,8 @@ static const simplecpp::TokenString ONCE("once");
 
 static const simplecpp::TokenString HAS_INCLUDE("__has_include");
 
+static const simplecpp::TokenString INNER_COMMA(",,");
+
 template<class T> static std::string toString(T t)
 {
     // NOLINTNEXTLINE(misc-const-correctness) - false positive
@@ -1559,6 +1561,10 @@ namespace simplecpp {
                 rawtok = rawtok2->next;
             }
             output->takeTokens(output2);
+            for (Token* tok = output->front(); tok; tok = tok->next) {
+                if (tok->str() == INNER_COMMA)
+                    tok->setstr(",");
+            }
             return rawtok;
         }
 
@@ -1733,7 +1739,12 @@ namespace simplecpp {
                         if (it != macros.end() && expandedmacros.find(tok->str()) == expandedmacros.end()) {
                             const Macro &m = it->second;
                             if (!m.functionLike()) {
+                                Token* mtok = tokens->back();
                                 m.expand(tokens, rawloc, tok, macros, expandedmacros);
+                                for (mtok = mtok->next; mtok; mtok = mtok->next) {
+                                    if (mtok->op == ',')
+                                        mtok->setstr(INNER_COMMA);
+                                }
                                 expanded = true;
                             }
                         }
