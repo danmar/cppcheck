@@ -734,7 +734,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == BreakStmt)
         return addtoken(tokenList, "break");
     if (nodeType == CharacterLiteral) {
-        const int c = MathLib::toLongNumber(mExtTokens.back());
+        const int c = MathLib::toBigNumber(mExtTokens.back());
         if (c == 0)
             return addtoken(tokenList, "\'\\0\'");
         if (c == '\r')

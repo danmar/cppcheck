@@ -2507,9 +2507,9 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, const Token *end, st
                        MathLib::isInt(tok->strAt(2))) {
                 if ((Token::Match(tok->previous(), "(|&&|%oror%|,") || tok == start) &&
                     (Token::Match(tok->tokAt(3), ")|&&|%oror%|?") || tok->tokAt(3) == end)) {
-                    const MathLib::bigint op1(MathLib::toLongNumber(tok->str()));
+                    const MathLib::bigint op1(MathLib::toBigNumber(tok->str()));
                     const std::string &cmp(tok->next()->str());
-                    const MathLib::bigint op2(MathLib::toLongNumber(tok->strAt(2)));
+                    const MathLib::bigint op2(MathLib::toBigNumber(tok->strAt(2)));
 
                     std::string result;
 
@@ -2680,7 +2680,7 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, const Token *ba
 
         if (validTokenEnd(bounded, tok, backToken, 3) &&
             Token::Match(tok->previous(), "(|&&|%oror% %char% %comp% %num% &&|%oror%|)")) {
-            tok->str(std::to_string(MathLib::toLongNumber(tok->str())));
+            tok->str(std::to_string(MathLib::toBigNumber(tok->str())));
         }
 
         if (validTokenEnd(bounded, tok, backToken, 5) &&
@@ -2876,9 +2876,9 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, const Token *ba
                 if (validTokenStart(bounded, tok, frontToken, -1) &&
                     Token::Match(tok->previous(), "(|&&|%oror%") &&
                     Token::Match(tok->tokAt(3), ")|&&|%oror%|?")) {
-                    const MathLib::bigint op1(MathLib::toLongNumber(tok->str()));
+                    const MathLib::bigint op1(MathLib::toBigNumber(tok->str()));
                     const std::string &cmp(tok->next()->str());
-                    const MathLib::bigint op2(MathLib::toLongNumber(tok->strAt(2)));
+                    const MathLib::bigint op2(MathLib::toBigNumber(tok->strAt(2)));
 
                     std::string result;
 

@@ -3785,7 +3785,7 @@ void Tokenizer::arraySize()
                 if (tok2->link() && Token::Match(tok2, "{|(|[|<")) {
                     if (tok2->str() == "[" && tok2->link()->strAt(1) == "=") { // designated initializer
                         if (Token::Match(tok2, "[ %num% ]"))
-                            sz = std::max(sz, MathLib::toULongNumber(tok2->strAt(1)) + 1U);
+                            sz = std::max(sz, MathLib::toBigUNumber(tok2->strAt(1)) + 1U);
                         else {
                             sz = 0;
                             break;
@@ -3926,8 +3926,8 @@ void Tokenizer::simplifyCaseRange()
 {
     for (Token* tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "case %num%|%char% ... %num%|%char% :")) {
-            const MathLib::bigint start = MathLib::toLongNumber(tok->strAt(1));
-            MathLib::bigint end = MathLib::toLongNumber(tok->strAt(3));
+            const MathLib::bigint start = MathLib::toBigNumber(tok->strAt(1));
+            MathLib::bigint end = MathLib::toBigNumber(tok->strAt(3));
             end = std::min(start + 50, end); // Simplify it 50 times at maximum
             if (start < end) {
                 tok = tok->tokAt(2);
@@ -8022,7 +8022,7 @@ void Tokenizer::unhandledCharLiteral(const Token *tok, const std::string& msg) c
 static bool isNumberOneOf(const std::string &s, MathLib::bigint intConstant, const char* floatConstant)
 {
     if (MathLib::isInt(s)) {
-        if (MathLib::toLongNumber(s) == intConstant)
+        if (MathLib::toBigNumber(s) == intConstant)
             return true;
     } else if (MathLib::isFloat(s)) {
         if (MathLib::toString(MathLib::toDoubleNumber(s)) == floatConstant)
@@ -9056,9 +9056,11 @@ void Tokenizer::simplifyCppcheckAttribute()
 
         if (vartok->isName()) {
             if (Token::Match(tok->previous(), "__cppcheck_low__ ( %num% )"))
-                vartok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, MathLib::toLongNumber(tok->next()->str()));
+                vartok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW,
+                                             MathLib::toBigNumber(tok->next()->str()));
             else if (Token::Match(tok->previous(), "__cppcheck_high__ ( %num% )"))
-                vartok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, MathLib::toLongNumber(tok->next()->str()));
+                vartok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH,
+                                             MathLib::toBigNumber(tok->next()->str()));
         }
 
         // Delete cppcheck attribute..
@@ -9121,13 +9123,17 @@ void Tokenizer::simplifyCPPAttribute()
                 }
                 if (argtok && argtok->str() == vartok->str()) {
                     if (vartok->next()->str() == ">=")
-                        argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, MathLib::toLongNumber(vartok->strAt(2)));
+                        argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW,
+                                                     MathLib::toBigNumber(vartok->strAt(2)));
                     else if (vartok->next()->str() == ">")
-                        argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, MathLib::toLongNumber(vartok->strAt(2))+1);
+                        argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW,
+                                                     MathLib::toBigNumber(vartok->strAt(2)) + 1);
                     else if (vartok->next()->str() == "<=")
-                        argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, MathLib::toLongNumber(vartok->strAt(2)));
+                        argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH,
+                                                     MathLib::toBigNumber(vartok->strAt(2)));
                     else if (vartok->next()->str() == "<")
-                        argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, MathLib::toLongNumber(vartok->strAt(2))-1);
+                        argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH,
+                                                     MathLib::toBigNumber(vartok->strAt(2)) - 1);
                 }
             }
         } else {
@@ -9563,7 +9569,7 @@ void Tokenizer::simplifyBitfields()
             !Token::simpleMatch(tok->tokAt(2), "default :")) {
             Token *tok1 = (tok->next()->str() == "const") ? tok->tokAt(3) : tok->tokAt(2);
             if (Token::Match(tok1, "%name% : %num% [;=]"))
-                tok1->setBits(MathLib::toLongNumber(tok1->strAt(2)));
+                tok1->setBits(MathLib::toBigNumber(tok1->strAt(2)));
             if (tok1 && tok1->tokAt(2) &&
                 (Token::Match(tok1->tokAt(2), "%bool%|%num%") ||
                  !Token::Match(tok1->tokAt(2), "public|protected|private| %type% ::|<|,|{|;"))) {
