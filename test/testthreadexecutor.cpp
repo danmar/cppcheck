@@ -94,12 +94,12 @@ private:
             }
         }
 
-        Settings settings1 = settings;
-        settings1.jobs = jobs;
-        settings1.showtime = opt.showtime;
-        settings1.quiet = opt.quiet;
+        Settings s = settings;
+        s.jobs = jobs;
+        s.showtime = opt.showtime;
+        s.quiet = opt.quiet;
         if (opt.plistOutput)
-            settings1.plistOutput = opt.plistOutput;
+            s.plistOutput = opt.plistOutput;
 
         bool executeCommandCalled = false;
         std::string exe;
@@ -121,7 +121,7 @@ private:
         if (useFS)
             filemap.clear();
 
-        ThreadExecutor executor(filemap, settings1, settings1.nomsg, *this, executeFn);
+        ThreadExecutor executor(filemap, s, s.nomsg, *this, executeFn);
         ASSERT_EQUALS(result, executor.check());
         ASSERT_EQUALS(opt.executeCommandCalled, executeCommandCalled);
         ASSERT_EQUALS(opt.exe, exe);
@@ -181,8 +181,7 @@ private:
               "{\n"
               "  char *a = malloc(10);\n"
               "  return 0;\n"
-              "}", dinit(CheckOptions,
-                         $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
+              "}", dinit(CheckOptions, $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
     }
 
     void many_threads_plist() {
@@ -194,8 +193,7 @@ private:
               "{\n"
               "  char *a = malloc(10);\n"
               "  return 0;\n"
-              "}", dinit(CheckOptions,
-                         $.plistOutput = plistOutput.c_str()));
+              "}", dinit(CheckOptions, $.plistOutput = plistOutput.c_str()));
     }
 
     void no_errors_more_files() {
@@ -256,7 +254,9 @@ private:
               "  char *a = malloc(10);\n"
               "  return 0;\n"
               "}",
-              dinit(CheckOptions, $.filesList = files));
+              dinit(CheckOptions,
+                    $.quiet = false,
+                        $.filesList = files));
         // TODO: order of "Checking" and "checked" is affected by thread
         /*TODO_ASSERT_EQUALS("Checking " + fprefix() + "_2.cpp ...\n"
                            "1/4 files checked 25% done\n"

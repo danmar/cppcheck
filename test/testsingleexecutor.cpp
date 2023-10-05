@@ -102,10 +102,11 @@ private:
             }
         }
 
-        settings.showtime = opt.showtime;
-        settings.quiet = opt.quiet;
+	Settings s = settings;
+        s.showtime = opt.showtime;
+        s.quiet = opt.quiet;
         if (opt.plistOutput)
-            settings.plistOutput = opt.plistOutput;
+            s.plistOutput = opt.plistOutput;
 
         bool executeCommandCalled = false;
         std::string exe;
@@ -117,7 +118,7 @@ private:
             args = std::move(a);
             return EXIT_SUCCESS;
         });
-        cppcheck.settings() = settings;
+        cppcheck.settings() = s;
 
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filemap.size());
@@ -128,7 +129,7 @@ private:
         if (useFS)
             filemap.clear();
 
-        SingleExecutor executor(cppcheck, filemap, settings, settings.nomsg, *this);
+        SingleExecutor executor(cppcheck, filemap, s, s.nomsg, *this);
         ASSERT_EQUALS(result, executor.check());
         ASSERT_EQUALS(opt.executeCommandCalled, executeCommandCalled);
         ASSERT_EQUALS(opt.exe, exe);
