@@ -196,7 +196,7 @@ QList<ErrorItem> XmlReportV2::read()
     return errors;
 }
 
-ErrorItem XmlReportV2::readError(QXmlStreamReader *reader)
+ErrorItem XmlReportV2::readError(const QXmlStreamReader *reader)
 {
     /*
        Error example from the core program in xml
