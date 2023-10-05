@@ -1858,6 +1858,7 @@ static void valueFlowImpossibleValues(TokenList& tokenList, const Settings* sett
             for (const Token* tok2 : tokens) {
                 if (tok2->hasKnownIntValue()) {
                     values.emplace_back();
+                    values.back().intvalue = tok2->getKnownIntValue();
                 } else {
                     ValueFlow::Value symValue{};
                     symValue.valueType = ValueFlow::Value::ValueType::SYMBOLIC;
