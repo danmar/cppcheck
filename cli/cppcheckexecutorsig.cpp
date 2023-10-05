@@ -320,7 +320,7 @@ int check_wrapper_sig(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(Cpp
     for (std::map<int, std::string>::const_iterator sig=listofsignals.cbegin(); sig!=listofsignals.cend(); ++sig) {
         sigaction(sig->first, &act, nullptr);
     }
-    return (&executor->*f)(cppcheck);
+    return (executor.*f)(cppcheck);
 }
 
 #endif
