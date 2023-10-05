@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "cppcheckexecutor.h"
 #include "redirect.h"
 #include "settings.h"
 #include "fixture.h"
@@ -57,6 +56,9 @@ private:
         SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         const char* plistOutput = nullptr;
         std::vector<std::string> filesList;
+        bool executeCommandCalled = false;
+        std::string exe;
+        std::vector<std::string> args;
     };
 
     /**
@@ -99,6 +101,17 @@ private:
         if (opt.plistOutput)
             settings1.plistOutput = opt.plistOutput;
 
+        bool executeCommandCalled = false;
+        std::string exe;
+        std::vector<std::string> args;
+        // NOLINTNEXTLINE(performance-unnecessary-value-param)
+        auto executeFn = [&executeCommandCalled, &exe, &args](std::string e,std::vector<std::string> a,std::string,std::string&){
+            executeCommandCalled = true;
+            exe = std::move(e);
+            args = std::move(a);
+            return EXIT_SUCCESS;
+        };
+
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filemap.size());
         for (std::map<std::string, std::size_t>::const_iterator i = filemap.cbegin(); i != filemap.cend(); ++i)
@@ -108,8 +121,15 @@ private:
         if (useFS)
             filemap.clear();
 
-        ThreadExecutor executor(filemap, settings1, settings1.nomsg, *this, CppCheckExecutor::executeCommand);
+        ThreadExecutor executor(filemap, settings1, settings1.nomsg, *this, executeFn);
         ASSERT_EQUALS(result, executor.check());
+        ASSERT_EQUALS(opt.executeCommandCalled, executeCommandCalled);
+        ASSERT_EQUALS(opt.exe, exe);
+        ASSERT_EQUALS(opt.args.size(), args.size());
+        for (int i = 0; i < args.size(); ++i)
+        {
+            ASSERT_EQUALS(opt.args[i], args[i]);
+        }
     }
 
     void run() override {
@@ -123,6 +143,7 @@ private:
         TEST_CASE(one_error_less_files);
         TEST_CASE(one_error_several_files);
         TEST_CASE(markup);
+        TEST_CASE(clangTidy);
         TEST_CASE(showtime_top5_file);
         TEST_CASE(showtime_top5_summary);
         TEST_CASE(showtime_file);
@@ -257,6 +278,34 @@ private:
         settings = settingsOld;
     }
 
+    void clangTidy() {
+        // TODO: we currently only invoke it with ImportProject::FileSettings
+        if (!useFS)
+            return;
+
+        const Settings settingsOld = settings;
+        settings.clangTidy = true;
+
+#ifdef _WIN32
+        const char exe[] = "clang-tidy.exe";
+#else
+        const char exe[] = "clang-tidy";
+#endif
+
+        const std::string file = fprefix() + "_1.cpp";
+        check(2, 1, 0,
+              "int main()\n"
+              "{\n"
+              "  return 0;\n"
+              "}",
+              dinit(CheckOptions,
+                    $.quiet = false,
+                        $.executeCommandCalled = true,
+                        $.exe = exe,
+                        $.args = {"-quiet", "-checks=*,-clang-analyzer-*,-llvm*", file, "--"}));
+        ASSERT_EQUALS("Checking " + file + " ...\n", output.str());
+        settings = settingsOld;
+    }
 
     // TODO: provide data which actually shows values above 0
 
@@ -320,7 +369,6 @@ private:
         ASSERT(output_s.find("Check time: " + fprefix() + "_2.cpp: ") != std::string::npos);
     }
 
-    // TODO: test clang-tidy
     // TODO: test whole program analysis
 };
 
