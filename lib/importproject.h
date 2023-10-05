@@ -51,6 +51,7 @@ class Settings;
 class CPPCHECKLIB ImportProject {
 public:
     enum class Type {
+        NONE,
         UNKNOWN,
         MISSING,
         FAILURE,
@@ -82,9 +83,9 @@ public:
         void setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
     };
     std::list<FileSettings> fileSettings;
-    Type projectType;
+    Type projectType{Type::NONE};
 
-    ImportProject();
+    ImportProject() = default;
     virtual ~ImportProject() = default;
     ImportProject(const ImportProject&) = default;
     ImportProject& operator=(const ImportProject&) = default;

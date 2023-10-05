@@ -1747,6 +1747,9 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
             case ImportProject::Type::FAILURE:
                 errorMessage = tr("Failed to import project file");
                 break;
+            case ImportProject::Type::NONE:
+                // can never happen
+                break;
             }
 
             if (!errorMessage.isEmpty()) {
