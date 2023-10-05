@@ -100,6 +100,7 @@ private:
         TEST_CASE(varid66);
         TEST_CASE(varid67); // #11711 - NOT function pointer
         TEST_CASE(varid68); // #11740 - switch (str_chars(&strOut)[0])
+        TEST_CASE(varid69);
         TEST_CASE(varid_for_1);
         TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
@@ -1238,6 +1239,16 @@ private:
                                  "4: switch ( str_chars ( & strOut@2 ) [ 0 ] ) { }\n"
                                  "5: }\n";
         ASSERT_EQUALS(expected1, tokenize(code1, "test.c"));
+        ASSERT_EQUALS(expected1, tokenize(code1, "test.cpp"));
+    }
+
+    void varid69() {
+        const char code1[] = "void f() {\n"
+                             "    auto g = [](int&, int& r, int i) {};\n"
+                             "}";
+        const char expected1[] = "1: void f ( ) {\n"
+                                 "2: auto g@1 ; g@1 = [ ] ( int & , int & r@2 , int i@3 ) { } ;\n"
+                                 "3: }\n";
         ASSERT_EQUALS(expected1, tokenize(code1, "test.cpp"));
     }
 
