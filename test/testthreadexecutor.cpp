@@ -42,7 +42,7 @@ private:
     Settings settings = settingsBuilder().library("std.cfg").build();
     bool useFS;
 
-    std::string fprefix()
+    std::string fprefix() const
     {
         if (useFS)
             return "threadfs";
