@@ -97,7 +97,7 @@ private:
         Settings s = settings;
         s.jobs = jobs;
         s.showtime = opt.showtime;
-        settings.quiet = opt.quiet;
+        s.quiet = opt.quiet;
         if (opt.plistOutput)
             s.plistOutput = opt.plistOutput;
 
