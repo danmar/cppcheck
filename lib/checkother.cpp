@@ -889,7 +889,7 @@ static bool isSimpleExpr(const Token* tok, const Variable* var, const Settings* 
             ((ftok->function() && ftok->function()->isConst()) || settings->library.isFunctionConst(ftok->str(), /*pure*/ true)))
             needsCheck = true;
     }
-    return (needsCheck && !isExpressionChanged(tok, tok->astParent(), var->scope()->bodyEnd, settings, true));
+    return (needsCheck && !findExpressionChanged(tok, tok->astParent(), var->scope()->bodyEnd, settings, true));
 }
 
 //---------------------------------------------------------------------------
@@ -2594,7 +2594,7 @@ void CheckOther::checkDuplicateExpression()
                                      &errorPath)) {
                     if (isWithoutSideEffects(cpp, tok->astOperand1())) {
                         const Token* loopTok = isInLoopCondition(tok);
-                        if (!loopTok || !isExpressionChanged(tok, tok, loopTok->link()->next()->link(), mSettings, cpp)) {
+                        if (!loopTok || !findExpressionChanged(tok, tok, loopTok->link()->next()->link(), mSettings, cpp)) {
                             const bool isEnum = tok->scope()->type == Scope::eEnum;
                             const bool assignment = !isEnum && tok->str() == "=";
                             if (assignment && warningEnabled)

@@ -160,6 +160,7 @@ private:
         TEST_CASE(valueFlowSymbolicStrlen);
         TEST_CASE(valueFlowSmartPointer);
         TEST_CASE(valueFlowImpossibleMinMax);
+        TEST_CASE(valueFlowImpossibleIncDec);
         TEST_CASE(valueFlowImpossibleUnknownConstant);
         TEST_CASE(valueFlowContainerEqual);
 
@@ -8130,6 +8131,19 @@ private:
                "}\n";
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "a", -1));
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, -1));
+    }
+
+    void valueFlowImpossibleIncDec()
+    {
+        const char* code;
+
+        code = "int f() {\n"
+                "    for(int i = 0; i < 5; i++) {\n"
+                "        int x = i;\n"
+                "        return x;\n"
+                "    }\n"
+                "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, -1));
     }
 
     void valueFlowImpossibleUnknownConstant()

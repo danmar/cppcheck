@@ -333,19 +333,19 @@ bool isVariablesChanged(const Token* start,
                         bool cpp);
 
 bool isThisChanged(const Token* tok, int indirect, const Settings* settings, bool cpp);
-bool isThisChanged(const Token* start, const Token* end, int indirect, const Settings* settings, bool cpp);
+const Token* findThisChanged(const Token* start, const Token* end, int indirect, const Settings* settings, bool cpp);
 
 const Token* findVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 Token* findVariableChanged(Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 
-CPPCHECKLIB bool isExpressionChanged(const Token* expr,
+CPPCHECKLIB const Token* findExpressionChanged(const Token* expr,
                                      const Token* start,
                                      const Token* end,
                                      const Settings* settings,
                                      bool cpp,
                                      int depth = 20);
 
-bool isExpressionChangedSkipDeadCode(const Token* expr,
+const Token* findExpressionChangedSkipDeadCode(const Token* expr,
                                      const Token* start,
                                      const Token* end,
                                      const Settings* settings,

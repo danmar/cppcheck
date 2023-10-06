@@ -398,7 +398,7 @@ private:
         const Token* const start = Token::findsimplematch(tokenizer.tokens(), startPattern, strlen(startPattern));
         const Token* const end = Token::findsimplematch(start, endPattern, strlen(endPattern));
         const Token* const expr = Token::findsimplematch(tokenizer.tokens(), var, strlen(var));
-        return (isExpressionChanged)(expr, start, end, &settings, true);
+        return (findExpressionChanged)(expr, start, end, &settings, true);
     }
 
     void isExpressionChangedTest()

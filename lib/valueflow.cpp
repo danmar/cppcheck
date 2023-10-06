@@ -5667,6 +5667,42 @@ static void valueFlowForwardConst(Token* start,
     valueFlowForwardConst(start, end, var, values, settings, 0);
 }
 
+static ValueFlow::Value::Bound findVarBound(const Variable* var, const Token* start, const Token* end, const Settings* settings)
+{
+    ValueFlow::Value::Bound result = ValueFlow::Value::Bound::Point;
+    const Token* next = start;
+    while((next = findExpressionChangedSkipDeadCode(var->nameToken(), next->next(), end, settings, true, &evaluateKnownValues))) {
+        ValueFlow::Value::Bound b = ValueFlow::Value::Bound::Point;
+        if (next->varId() != var->declarationId())
+            return ValueFlow::Value::Bound::Point;
+        if (Token::simpleMatch(next->astParent(), "++"))
+            b = ValueFlow::Value::Bound::Lower;
+        else if (Token::simpleMatch(next->astParent(), "--"))
+            b = ValueFlow::Value::Bound::Upper;
+        else
+            return ValueFlow::Value::Bound::Point;
+        if (result == ValueFlow::Value::Bound::Point)
+            result = b;
+        else if (result != b)
+            return ValueFlow::Value::Bound::Point;
+    }
+    return result;
+}
+
+static bool isInitialVarAssign(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (!tok->variable())
+        return false;
+    if (tok->variable()->nameToken() == tok)
+        return true;
+    const Token* prev = tok->tokAt(2);
+    if (!Token::Match(prev, "%var% ; %var%"))
+        return false;
+    return tok->varId() == prev->varId() && tok->variable()->nameToken() == prev;
+}
+
 static void valueFlowForwardAssign(Token* const tok,
                                    const Token* expr,
                                    std::vector<const Variable*> vars,
@@ -5755,6 +5791,24 @@ static void valueFlowForwardAssign(Token* const tok,
         std::list<ValueFlow::Value> constValues;
         constValues.splice(constValues.end(), values, it, values.end());
         valueFlowForwardConst(nextExpression, endOfVarScope, expr->variable(), constValues, settings);
+    }
+    if (isInitialVarAssign(expr)) {
+        // Check if variable is only incremented or decremented
+        ValueFlow::Value::Bound b = findVarBound(expr->variable(), nextExpression, endOfVarScope, settings);
+        if (b != ValueFlow::Value::Bound::Point) {
+            auto knownValueIt = std::find_if(values.begin(), values.end(), [](const ValueFlow::Value& value) {
+                if (!value.isKnown())
+                    return false;
+                return value.isIntValue();
+            });
+            if (knownValueIt != values.end()) {
+                ValueFlow::Value value = *knownValueIt;
+                value.bound = b;
+                value.invertRange();
+                value.setImpossible();
+                valueFlowForwardConst(nextExpression, endOfVarScope, expr->variable(), {value}, settings);
+            }
+        }
     }
     valueFlowForward(nextExpression, endOfVarScope, expr, values, tokenlist, settings);
 }
@@ -6254,7 +6308,7 @@ struct ConditionHandler {
                 // Variable changed in 3rd for-expression
                 if (Token::simpleMatch(top->previous(), "for (")) {
                     if (top->astOperand2() && top->astOperand2()->astOperand2() &&
-                        isExpressionChanged(
+                        findExpressionChanged(
                             cond.vartok, top->astOperand2()->astOperand2(), top->link(), settings, tokenlist.isCPP())) {
                         if (settings->debugwarnings)
                             bailout(tokenlist,
@@ -6270,7 +6324,7 @@ struct ConditionHandler {
                 const Token* const block = top->link()->next();
                 const Token* const end = block->link();
 
-                if (isExpressionChanged(cond.vartok, start, end, settings, tokenlist.isCPP())) {
+                if (findExpressionChanged(cond.vartok, start, end, settings, tokenlist.isCPP())) {
                     // If its reassigned in loop then analyze from the end
                     if (!Token::Match(tok, "%assign%|++|--") &&
                         findExpression(cond.vartok->exprId(), start, end, [&](const Token* tok2) {
