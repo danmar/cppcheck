@@ -3683,6 +3683,29 @@ private:
                         "}", "test.c");
         ASSERT_EQUALS("", errout.str());
 
+        // #12030
+        valueFlowUninit("int set(int *x);\n"
+                        "void foo(bool a) {\n"
+                        "    bool flag{0};\n"
+                        "    int x;\n"
+                        "    if (!a) {\n"
+                        "        flag = set(&x);\n"
+                        "    }\n"
+                        "    if (!flag || x==3) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("int set(int *x);\n"
+                        "void foo(bool a) {\n"
+                        "    bool flag{0};\n"
+                        "    int x;\n"
+                        "    if (!a) {\n"
+                        "        flag = set(&x);\n"
+                        "    }\n"
+                        "    if (!flag && x==3) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:8]: (warning) Uninitialized variable: x\n", errout.str());
+
         valueFlowUninit("int do_something();\n"
                         "int set_st(int *x);\n"
                         "int bar();\n"
