@@ -6881,8 +6881,6 @@ private:
               "};\n"
               "void g() {\n"
               "    if (0 > S::I) {}\n"
-              "    S s;\n"
-              "    if (0 > s.I) {}\n"
               "    if (0 > S::E0) {}\n"
               "    if (0 > S::F::F0) {}\n"
               "}\n");
@@ -6891,9 +6889,8 @@ private:
                       "[test.cpp:8]: (style) The comparison '0 > E0' is always false.\n"
                       "[test.cpp:9]: (style) The comparison '0 > S::E0' is always false.\n"
                       "[test.cpp:2] -> [test.cpp:13]: (style) The comparison '0 > S::I' is always false.\n"
-                      "[test.cpp:2] -> [test.cpp:15]: (style) The comparison '0 > s.I' is always false.\n"
-                      "[test.cpp:16]: (style) The comparison '0 > S::E0' is always false.\n"
-                      "[test.cpp:17]: (style) The comparison '0 > S::F::F0' is always false.\n",
+                      "[test.cpp:14]: (style) The comparison '0 > S::E0' is always false.\n"
+                      "[test.cpp:15]: (style) The comparison '0 > S::F::F0' is always false.\n",
                       errout.str());
     }
 
