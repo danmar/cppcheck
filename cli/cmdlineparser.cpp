@@ -1074,7 +1074,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     return true;
 }
 
-void CmdLineParser::printHelp()
+void CmdLineParser::printHelp() const
 {
     const std::string manualUrl(isCppcheckPremium() ?
                                 "https://cppcheck.sourceforge.io/manual.pdf" :
