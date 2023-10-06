@@ -155,6 +155,11 @@ To be evaluated (need to remove exclusion).
 
 To be evaluated (need to enable explicitly).
 
+`modernize-type-traits`</br>
+`modernize-use-nodiscard`</br>
+
+These apply to codebases which use later standards then C++11 (C++17 is used when building with Qt6) so we cannot simply apply them.
+
 `portability-std-allocator-const`<br/>
 
 Only necessary for code which is exclusively compiled with `libc++`. Also disabled for performance reasons - see https://github.com/llvm/llvm-project/issues/57527#issuecomment-1237935132.
