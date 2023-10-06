@@ -8138,11 +8138,11 @@ private:
         const char* code;
 
         code = "int f() {\n"
-                "    for(int i = 0; i < 5; i++) {\n"
-                "        int x = i;\n"
-                "        return x;\n"
-                "    }\n"
-                "}\n";
+               "    for(int i = 0; i < 5; i++) {\n"
+               "        int x = i;\n"
+               "        return x;\n"
+               "    }\n"
+               "}\n";
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, -1));
     }
 

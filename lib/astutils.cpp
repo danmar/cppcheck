@@ -2885,12 +2885,12 @@ const Token* findThisChanged(const Token* start, const Token* end, int indirect,
 
 template<class Find>
 const Token* findExpressionChangedImpl(const Token* expr,
-                             const Token* start,
-                             const Token* end,
-                             const Settings* settings,
-                             bool cpp,
-                             int depth,
-                             Find find)
+                                       const Token* start,
+                                       const Token* end,
+                                       const Settings* settings,
+                                       bool cpp,
+                                       int depth,
+                                       Find find)
 {
     if (depth < 0)
         return start;
@@ -2957,18 +2957,23 @@ struct ExpressionChangedSkipDeadCode {
     }
 };
 
-const Token* findExpressionChanged(const Token* expr, const Token* start, const Token* end, const Settings* settings, bool cpp, int depth)
+const Token* findExpressionChanged(const Token* expr,
+                                   const Token* start,
+                                   const Token* end,
+                                   const Settings* settings,
+                                   bool cpp,
+                                   int depth)
 {
     return findExpressionChangedImpl(expr, start, end, settings, cpp, depth, ExpressionChangedSimpleFind{});
 }
 
 const Token* findExpressionChangedSkipDeadCode(const Token* expr,
-                                     const Token* start,
-                                     const Token* end,
-                                     const Settings* settings,
-                                     bool cpp,
-                                     const std::function<std::vector<MathLib::bigint>(const Token* tok)>& evaluate,
-                                     int depth)
+                                               const Token* start,
+                                               const Token* end,
+                                               const Settings* settings,
+                                               bool cpp,
+                                               const std::function<std::vector<MathLib::bigint>(const Token* tok)>& evaluate,
+                                               int depth)
 {
     return findExpressionChangedImpl(
         expr, start, end, settings, cpp, depth, ExpressionChangedSkipDeadCode{&settings->library, evaluate});

@@ -5667,11 +5667,15 @@ static void valueFlowForwardConst(Token* start,
     valueFlowForwardConst(start, end, var, values, settings, 0);
 }
 
-static ValueFlow::Value::Bound findVarBound(const Variable* var, const Token* start, const Token* end, const Settings* settings)
+static ValueFlow::Value::Bound findVarBound(const Variable* var,
+                                            const Token* start,
+                                            const Token* end,
+                                            const Settings* settings)
 {
     ValueFlow::Value::Bound result = ValueFlow::Value::Bound::Point;
     const Token* next = start;
-    while((next = findExpressionChangedSkipDeadCode(var->nameToken(), next->next(), end, settings, true, &evaluateKnownValues))) {
+    while ((next = findExpressionChangedSkipDeadCode(
+                var->nameToken(), next->next(), end, settings, true, &evaluateKnownValues))) {
         ValueFlow::Value::Bound b = ValueFlow::Value::Bound::Point;
         if (next->varId() != var->declarationId())
             return ValueFlow::Value::Bound::Point;

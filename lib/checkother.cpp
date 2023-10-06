@@ -2594,7 +2594,8 @@ void CheckOther::checkDuplicateExpression()
                                      &errorPath)) {
                     if (isWithoutSideEffects(cpp, tok->astOperand1())) {
                         const Token* loopTok = isInLoopCondition(tok);
-                        if (!loopTok || !findExpressionChanged(tok, tok, loopTok->link()->next()->link(), mSettings, cpp)) {
+                        if (!loopTok ||
+                            !findExpressionChanged(tok, tok, loopTok->link()->next()->link(), mSettings, cpp)) {
                             const bool isEnum = tok->scope()->type == Scope::eEnum;
                             const bool assignment = !isEnum && tok->str() == "=";
                             if (assignment && warningEnabled)
