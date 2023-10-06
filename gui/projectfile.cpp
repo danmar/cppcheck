@@ -248,7 +248,7 @@ bool ProjectFile::read(const QString &filename)
     return projectTagFound;
 }
 
-void ProjectFile::readRootPath(QXmlStreamReader &reader)
+void ProjectFile::readRootPath(const QXmlStreamReader &reader)
 {
     QXmlStreamAttributes attribs = reader.attributes();
     QString name = attribs.value(QString(), CppcheckXml::RootPathNameAttrib).toString();

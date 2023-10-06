@@ -64,7 +64,7 @@ public:
      *
      * @param view View to show error results
      */
-    void initialize(ResultsView *view);
+    void initialize(const ResultsView *view);
 
     /**
      * @brief Load settings
