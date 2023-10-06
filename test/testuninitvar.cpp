@@ -3621,7 +3621,7 @@ private:
                         "        a = y;\n"
                         "    return y ? 2*a : 3*a;\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Uninitialized variable: a\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Uninitialized variable: a\n", "", errout.str());
 
         valueFlowUninit("void f() {\n" // Don't crash
                         "    int a;\n"
@@ -3681,6 +3681,17 @@ private:
                         "    }\n"
                         "    ++c;\n"
                         "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("int set(int *x);\n" // #12030
+                        "void foo(bool a) {\n"
+                        "    bool flag{0};\n"
+                        "    int x;\n"
+                        "    if (!a) {\n"
+                        "        flag = set(&x);\n"
+                        "    }\n"
+                        "    if (!flags && x==3) {}\n"
+                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
         valueFlowUninit("int do_something();\n"

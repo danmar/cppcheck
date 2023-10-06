@@ -3087,7 +3087,7 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
     bool stopOnCondition(const Token* condTok) const override
     {
         if (value.isNonValue())
-            return false;
+            return isConditional();
         if (value.isImpossible())
             return false;
         if (isConditional() && !value.isKnown() && !value.isImpossible())
