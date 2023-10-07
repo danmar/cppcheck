@@ -22,10 +22,10 @@
 /// https://learn.microsoft.com/en-us/windows/console/flushconsoleinputbuffer
 BOOL unreachableCode_FlushConsoleInputBuffer(int &val)
 {
-   const BOOL retVal = FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
-   // still reachable after call FlushConsoleInputBuffer()
-   val = 42;
-   return retVal;
+    const BOOL retVal = FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+    // still reachable after call FlushConsoleInputBuffer()
+    val = 42;
+    return retVal;
 }
 
 /// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew
