@@ -21,9 +21,9 @@
 /// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew
 std::string constVariable_GetModuleFileName(void) {
     char path[42];
-    if(GetModuleFileNameA(NULL, path, sizeof(path))==0)
-		return std::string();
-	return std::string{path};
+    if (GetModuleFileNameA(NULL, path, sizeof(path))==0)
+        return std::string();
+    return std::string{path};
 }
 
 int stringCompare_mbscmp(const unsigned char *string1, const unsigned char *string2)
