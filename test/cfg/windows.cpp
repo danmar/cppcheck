@@ -8,14 +8,23 @@
 //
 
 #include <windows.h>
-#include <stdio.h>
+#include <cstdio>
 #include <direct.h>
-#include <stdlib.h>
-#include <time.h>
+#include <cstdlib>
+#include <ctime>
 #include <memory.h>
 #include <mbstring.h>
 #include <wchar.h>
 #include <atlstr.h>
+#include <string>
+
+/// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew
+std::string constVariable_GetModuleFileName(void) {
+    char path[42];
+    if(GetModuleFileNameA(NULL, path, sizeof(path))==0)
+		return std::string();
+	return std::string{path};
+}
 
 int stringCompare_mbscmp(const unsigned char *string1, const unsigned char *string2)
 {
