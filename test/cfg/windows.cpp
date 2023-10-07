@@ -7,7 +7,8 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
-#include <windows.h>
+#include <Windows.h>
+#include <WinCon.h>
 #include <cstdio>
 #include <direct.h>
 #include <cstdlib>
@@ -17,6 +18,15 @@
 #include <wchar.h>
 #include <atlstr.h>
 #include <string>
+
+/// https://learn.microsoft.com/en-us/windows/console/flushconsoleinputbuffer
+BOOL unreachableCode_FlushConsoleInputBuffer(int &val)
+{
+    const BOOL retVal = FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+    // still reachable after call FlushConsoleInputBuffer()
+    val = 42;
+    return retVal;
+}
 
 /// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew
 std::string constVariable_GetModuleFileName(void) {
