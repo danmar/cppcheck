@@ -34,15 +34,18 @@
 #include <utility>
 #include <vector>
 
-class TestProcessExecutor : public TestFixture {
+class TestProcessExecutorBase : public TestFixture {
 public:
-    TestProcessExecutor() : TestFixture("TestProcessExecutor") {}
+    TestProcessExecutorBase(const char * const name, bool useFS) : TestFixture(name), useFS(useFS) {}
 
 private:
     Settings settings = settingsBuilder().library("std.cfg").build();
+    bool useFS;
 
-    static std::string fprefix()
+    std::string fprefix() const
     {
+        if (useFS)
+            return "processfs";
         return "process";
     }
 
@@ -53,6 +56,10 @@ private:
         SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         const char* plistOutput = nullptr;
         std::vector<std::string> filesList;
+        bool clangTidy = false;
+        bool executeCommandCalled = false;
+        std::string exe;
+        std::vector<std::string> args;
     };
 
     /**
@@ -63,35 +70,67 @@ private:
         errout.str("");
         output.str("");
 
+        Settings s = settings;
+
         std::map<std::string, std::size_t> filemap;
         if (opt.filesList.empty()) {
             for (int i = 1; i <= files; ++i) {
-                std::ostringstream oss;
-                oss << fprefix() << "_" << i << ".cpp";
-                filemap[oss.str()] = data.size();
+                std::string f_s = fprefix() + "_" + std::to_string(i) + ".cpp";
+                filemap[f_s] = data.size();
+                if (useFS) {
+                    ImportProject::FileSettings fs;
+                    fs.filename = std::move(f_s);
+                    s.project.fileSettings.emplace_back(std::move(fs));
+                }
             }
         }
         else {
             for (const auto& f : opt.filesList)
             {
                 filemap[f] = data.size();
+                if (useFS) {
+                    ImportProject::FileSettings fs;
+                    fs.filename = f;
+                    s.project.fileSettings.emplace_back(std::move(fs));
+                }
             }
         }
 
-        Settings s = settings;
         s.jobs = jobs;
         s.showtime = opt.showtime;
-        settings.quiet = opt.quiet;
+        s.quiet = opt.quiet;
         if (opt.plistOutput)
             s.plistOutput = opt.plistOutput;
-        // TODO: test with settings.project.fileSettings;
-        ProcessExecutor executor(filemap, s, s.nomsg, *this);
+
+        bool executeCommandCalled = false;
+        std::string exe;
+        std::vector<std::string> args;
+        // NOLINTNEXTLINE(performance-unnecessary-value-param)
+        auto executeFn = [&executeCommandCalled, &exe, &args](std::string e,std::vector<std::string> a,std::string,std::string&){
+            executeCommandCalled = true;
+            exe = std::move(e);
+            args = std::move(a);
+            return EXIT_SUCCESS;
+        };
+
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filemap.size());
         for (std::map<std::string, std::size_t>::const_iterator i = filemap.cbegin(); i != filemap.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->first, data));
 
+        // clear files list so only fileSettings are used
+        if (useFS)
+            filemap.clear();
+
+        ProcessExecutor executor(filemap, s, s.nomsg, *this, executeFn);
         ASSERT_EQUALS(result, executor.check());
+        ASSERT_EQUALS(opt.executeCommandCalled, executeCommandCalled);
+        ASSERT_EQUALS(opt.exe, exe);
+        ASSERT_EQUALS(opt.args.size(), args.size());
+        for (int i = 0; i < args.size(); ++i)
+        {
+            ASSERT_EQUALS(opt.args[i], args[i]);
+        }
     }
 
     void run() override {
@@ -106,6 +145,7 @@ private:
         TEST_CASE(one_error_less_files);
         TEST_CASE(one_error_several_files);
         TEST_CASE(markup);
+        TEST_CASE(clangTidy);
         TEST_CASE(showtime_top5_file);
         TEST_CASE(showtime_top5_summary);
         TEST_CASE(showtime_file);
@@ -148,7 +188,7 @@ private:
     }
 
     void many_threads_plist() {
-        const char plistOutput[] = "plist_process/";
+        const std::string plistOutput = "plist_" + fprefix() + "/";
         ScopedFile plistFile("dummy", "", plistOutput);
 
         check(16, 100, 100,
@@ -156,7 +196,7 @@ private:
               "{\n"
               "  char *a = malloc(10);\n"
               "  return 0;\n"
-              "}", dinit(CheckOptions, $.plistOutput = plistOutput));
+              "}", dinit(CheckOptions, $.plistOutput = plistOutput.c_str()));
     }
 
     void no_errors_more_files() {
@@ -241,6 +281,34 @@ private:
         settings = settingsOld;
     }
 
+    void clangTidy() {
+        // TODO: we currently only invoke it with ImportProject::FileSettings
+        if (!useFS)
+            return;
+
+#ifdef _WIN32
+        const char exe[] = "clang-tidy.exe";
+#else
+        const char exe[] = "clang-tidy";
+#endif
+        (void)exe;
+
+        const std::string file = fprefix() + "_1.cpp";
+        // TODO: the invocation cannot be checked as the code is called in the forked process
+        check(2, 1, 0,
+              "int main()\n"
+              "{\n"
+              "  return 0;\n"
+              "}",
+              dinit(CheckOptions,
+                    $.quiet = false,
+                        $.clangTidy = true /*,
+                                              $.executeCommandCalled = true,
+                                              $.exe = exe,
+                                              $.args = {"-quiet", "-checks=*,-clang-analyzer-*,-llvm*", file, "--"}*/));
+        ASSERT_EQUALS("Checking " + file + " ...\n", output.str());
+    }
+
     // TODO: provide data which actually shows values above 0
 
     // TODO: should this be logged only once like summary?
@@ -303,8 +371,18 @@ private:
         TODO_ASSERT(output_s.find("Check time: " + fprefix() + "_2.cpp: ") != std::string::npos);
     }
 
-    // TODO: test clang-tidy
     // TODO: test whole program analysis
 };
 
-REGISTER_TEST(TestProcessExecutor)
+class TestProcessExecutorFiles : public TestProcessExecutorBase {
+public:
+    TestProcessExecutorFiles() : TestProcessExecutorBase("TestProcessExecutorFiles", false) {}
+};
+
+class TestProcessExecutorFS : public TestProcessExecutorBase {
+public:
+    TestProcessExecutorFS() : TestProcessExecutorBase("TestProcessExecutorFS", true) {}
+};
+
+REGISTER_TEST(TestProcessExecutorFiles)
+REGISTER_TEST(TestProcessExecutorFS)
