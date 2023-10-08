@@ -1503,7 +1503,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
     }
 
     for (const std::string &addon : mSettings.addons) {
-        struct AddonInfo addonInfo;
+        AddonInfo addonInfo;
         const std::string &failedToGetAddonInfo = addonInfo.getAddonInfo(addon, mSettings.exename);
         if (!failedToGetAddonInfo.empty()) {
             reportOut(failedToGetAddonInfo, Color::FgRed);

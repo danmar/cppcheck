@@ -63,7 +63,7 @@ public:
     void reset();
 
 private:
-    std::map<std::string, struct TimerResultsData> mResults;
+    std::map<std::string, TimerResultsData> mResults;
     mutable std::mutex mResultsSync;
 };
 

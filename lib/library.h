@@ -54,8 +54,8 @@ class CPPCHECKLIB Library {
     // TODO: get rid of this
     friend class TestSymbolDatabase; // For testing only
     friend class TestSingleExecutorBase; // For testing only
-    friend class TestThreadExecutor; // For testing only
-    friend class TestProcessExecutor; // For testing only
+    friend class TestThreadExecutorBase; // For testing only
+    friend class TestProcessExecutorBase; // For testing only
 
 public:
     Library() = default;
@@ -439,8 +439,8 @@ public:
         char sign;
         enum class Type { NO, BOOL, CHAR, SHORT, INT, LONG, LONGLONG } stdtype;
     };
-    const struct PodType *podtype(const std::string &name) const {
-        const std::unordered_map<std::string, struct PodType>::const_iterator it = mPodTypes.find(name);
+    const PodType *podtype(const std::string &name) const {
+        const std::unordered_map<std::string, PodType>::const_iterator it = mPodTypes.find(name);
         return (it != mPodTypes.end()) ? &(it->second) : nullptr;
     }
 
@@ -468,7 +468,7 @@ public:
 
     struct Platform {
         const PlatformType *platform_type(const std::string &name) const {
-            const std::map<std::string, struct PlatformType>::const_iterator it = mPlatformTypes.find(name);
+            const std::map<std::string, PlatformType>::const_iterator it = mPlatformTypes.find(name);
             return (it != mPlatformTypes.end()) ? &(it->second) : nullptr;
         }
         std::map<std::string, PlatformType> mPlatformTypes;
@@ -579,7 +579,7 @@ private:
     std::map<std::string, ExportedFunctions> mExporters; // keywords that export variables/functions to libraries (meta-code/macros)
     std::map<std::string, std::set<std::string>> mImporters;  // keywords that import variables/functions
     std::map<std::string, int> mReflection; // invocation of reflection
-    std::unordered_map<std::string, struct PodType> mPodTypes; // pod types
+    std::unordered_map<std::string, PodType> mPodTypes; // pod types
     std::map<std::string, PlatformType> mPlatformTypes; // platform independent typedefs
     std::map<std::string, Platform> mPlatforms; // platform dependent typedefs
     std::map<std::pair<std::string,std::string>, TypeCheck> mTypeChecks;

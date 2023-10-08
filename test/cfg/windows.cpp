@@ -7,15 +7,34 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
-#include <windows.h>
-#include <stdio.h>
+#include <Windows.h>
+#include <WinCon.h>
+#include <cstdio>
 #include <direct.h>
-#include <stdlib.h>
-#include <time.h>
+#include <cstdlib>
+#include <ctime>
 #include <memory.h>
 #include <mbstring.h>
 #include <wchar.h>
 #include <atlstr.h>
+#include <string>
+
+/// https://learn.microsoft.com/en-us/windows/console/flushconsoleinputbuffer
+BOOL unreachableCode_FlushConsoleInputBuffer(int &val)
+{
+    const BOOL retVal = FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+    // still reachable after call FlushConsoleInputBuffer()
+    val = 42;
+    return retVal;
+}
+
+/// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew
+std::string constVariable_GetModuleFileName(void) {
+    char path[42];
+    if (GetModuleFileNameA(NULL, path, sizeof(path))==0)
+        return std::string();
+    return std::string{path};
+}
 
 int stringCompare_mbscmp(const unsigned char *string1, const unsigned char *string2)
 {

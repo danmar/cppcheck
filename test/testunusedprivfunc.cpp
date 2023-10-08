@@ -18,6 +18,7 @@
 
 #include "checkclass.h"
 #include "errortypes.h"
+#include "helpers.h"
 #include "platform.h"
 #include "settings.h"
 #include "fixture.h"
@@ -89,34 +90,24 @@ private:
         TEST_CASE(maybeUnused);
     }
 
-
-    void check(const char code[], cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native) {
         // Clear the error buffer..
         errout.str("");
 
         const Settings settings1 = settingsBuilder(settings).platform(platform).build();
 
-        // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        // Preprocess..
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+        Tokenizer tokenizer(&settings1, this);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
-        tokenizer.createTokens(std::move(tokens2));
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check for unused private functions..
         CheckClass checkClass(&tokenizer, &settings1, this);
         checkClass.privateFunctions();
     }
-
-
 
     void test1() {
         check("class Fred\n"

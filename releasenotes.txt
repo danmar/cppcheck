@@ -20,3 +20,5 @@ Other:
 - The undocumented and deprecated command-line options `--template <template>` and `--template-format <template>` has been removed. Please use `--template=` and `--template-format=` instead.
 - "--showtime=summary" will now show a single summary at the end instead of showing it after each file when using the thread execution (default on Windows)
 - added "--showtime=none" to disable any previously specified showtime report. "--showtime=" without parameter is no longer valid.
+- Multiple "--project" options are now prohibited. These would have overlapped each other and lead to unexpected behavior. Please use separate runs with a single "--project" option instead.
+- "--project" can also no longer be used in conjunction with additional source files.

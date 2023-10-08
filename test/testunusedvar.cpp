@@ -18,6 +18,7 @@
 
 #include "checkunusedvar.h"
 #include "errortypes.h"
+#include "helpers.h"
 #include "preprocessor.h"
 #include "settings.h"
 #include "fixture.h"
@@ -277,55 +278,36 @@ private:
         (checkUnusedVar.checkStructMemberUsage)();
     }
 
-    void checkStructMemberUsageP(const char code[]) {
+#define checkStructMemberUsageP(...) checkStructMemberUsageP_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkStructMemberUsageP_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
-        // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        // Preprocess..
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
-
         Preprocessor preprocessor(settings);
-        preprocessor.setDirectives(tokens1);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
+        PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
 
         // Tokenizer..
-        Tokenizer tokenizer(&settings, this, &preprocessor);
-        tokenizer.createTokens(std::move(tokens2));
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check for unused variables..
         CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
         (checkUnusedVar.checkStructMemberUsage)();
     }
 
-
-    void checkFunctionVariableUsageP(const char code[], const char* filename = "test.cpp") {
+#define checkFunctionVariableUsageP(...) checkFunctionVariableUsageP_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkFunctionVariableUsageP_(const char* file, int line, const char code[], const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
-        // Raw tokens..
-        std::vector<std::string> files(1, filename);
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        // Preprocess..
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
-
         Preprocessor preprocessor(settings);
-        preprocessor.setDirectives(tokens1);
+        std::vector<std::string> files(1, filename);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
+        PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
 
         // Tokenizer..
-        Tokenizer tokenizer(&settings, this, &preprocessor);
-        tokenizer.createTokens(std::move(tokens2));
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check for unused variables..
         CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
