@@ -20,8 +20,8 @@
 
 #include "color.h"
 #include "cppcheck.h"
-#include "mathlib.h"
 #include "path.h"
+#include "suppressions.h"
 #include "token.h"
 #include "tokenlist.h"
 #include "utils.h"

@@ -26,21 +26,21 @@
 #include "ctu.h"
 #include "errortypes.h"
 #include "library.h"
-#include "mathlib.h"
 #include "path.h"
 #include "platform.h"
-#include "preprocessor.h" // Preprocessor
+#include "preprocessor.h"
 #include "standards.h"
 #include "suppressions.h"
 #include "timer.h"
 #include "token.h"
-#include "tokenize.h" // Tokenizer
+#include "tokenize.h"
 #include "tokenlist.h"
 #include "utils.h"
 #include "valueflow.h"
 #include "version.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cstdio>
 #include <cstdint>
 #include <cstring>

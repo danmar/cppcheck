@@ -30,14 +30,10 @@
 
 #include <cstring>
 #include <list>
-#include <map>
 #include <set>
 #include <sstream>
 #include <string>
-#include <utility>
 #include <vector>
-
-#include <simplecpp.h>
 
 class TestTokenizer : public TestFixture {
 public:

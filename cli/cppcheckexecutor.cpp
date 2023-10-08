@@ -18,9 +18,10 @@
 
 #include "cppcheckexecutor.h"
 
+#include "addoninfo.h"
 #include "analyzerinfo.h"
-#include "checkers.h"
 #include "checkersreport.h"
+#include "cmdlinelogger.h"
 #include "cmdlineparser.h"
 #include "color.h"
 #include "config.h"
@@ -48,12 +49,11 @@
 #include <cassert>
 #include <cstdio>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
-#include <functional>
 #include <iostream>
 #include <iterator>
 #include <list>
-#include <memory>
 #include <sstream> // IWYU pragma: keep
+#include <unordered_set>
 #include <utility>
 #include <vector>
 

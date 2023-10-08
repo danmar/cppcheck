@@ -31,6 +31,7 @@
 #include "config.h"
 #include "errortypes.h"
 #include "library.h"
+#include "mathlib.h"
 #include "smallvector.h"
 #include "symboldatabase.h"
 #include "token.h"

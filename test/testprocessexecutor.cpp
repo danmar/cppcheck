@@ -21,11 +21,14 @@
 #include "settings.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "importproject.h"
 #include "timer.h"
 #include "library.h"
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdlib>
+#include <list>
 #include <map>
 #include <memory>
 #include <set>

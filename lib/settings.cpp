@@ -19,7 +19,6 @@
 #include "settings.h"
 #include "path.h"
 #include "summaries.h"
-#include "timer.h"
 #include "vfvalue.h"
 
 #include <fstream>

@@ -38,8 +38,6 @@
 
 #include <tinyxml2.h>
 
-#include <simplecpp.h>
-
 #include "json.h"
 
 void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)

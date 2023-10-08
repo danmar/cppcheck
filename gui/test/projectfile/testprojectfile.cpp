@@ -18,16 +18,13 @@
 
 #include "testprojectfile.h"
 
+#include "addoninfo.h"
 #include "importproject.h"
-#include "library.h"
 #include "platform.h"
 #include "projectfile.h"
 #include "settings.h"
 
-#include <set>
 #include <string>
-#include <utility>
-#include <vector>
 
 #include <QList>
 #include <QStringList>

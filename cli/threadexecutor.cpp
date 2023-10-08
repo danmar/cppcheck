@@ -20,7 +20,6 @@
 
 #include "config.h"
 #include "cppcheck.h"
-#include "cppcheckexecutor.h"
 #include "errorlogger.h"
 #include "importproject.h"
 #include "settings.h"
@@ -29,7 +28,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
-#include <functional>
 #include <future>
 #include <iostream>
 #include <list>

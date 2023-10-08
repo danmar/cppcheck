@@ -23,7 +23,6 @@
 #include "cppcheckexecutor.h"
 #include "errorlogger.h"
 #include "errortypes.h"
-#include "filelister.h"
 #include "importproject.h"
 #include "path.h"
 #include "platform.h"

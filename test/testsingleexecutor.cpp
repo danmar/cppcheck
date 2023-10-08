@@ -28,7 +28,7 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <functional>
+#include <cstdlib>
 #include <list>
 #include <map>
 #include <memory>

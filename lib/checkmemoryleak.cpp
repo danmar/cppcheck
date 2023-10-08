@@ -22,6 +22,8 @@
 #include "astutils.h"
 #include "errorlogger.h"
 #include "library.h"
+#include "mathlib.h"
+#include "platform.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"

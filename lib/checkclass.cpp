@@ -26,7 +26,6 @@
 #include "symboldatabase.h"
 #include "errorlogger.h"
 #include "errortypes.h"
-#include "mathlib.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"

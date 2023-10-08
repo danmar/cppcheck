@@ -17,7 +17,6 @@
  */
 
 #include "errortypes.h"
-#include "mathlib.h"
 #include "platform.h"
 #include "settings.h"
 #include "standards.h"
@@ -27,7 +26,6 @@
 
 #include <sstream> // IWYU pragma: keep
 #include <string>
-
 
 class TestVarID : public TestFixture {
 public:

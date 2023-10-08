@@ -26,14 +26,9 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
-#include <map>
 #include <sstream>
 #include <string>
-#include <utility>
 #include <vector>
-
-#include <simplecpp.h>
-
 
 class TestSimplifyTypedef : public TestFixture {
 public:

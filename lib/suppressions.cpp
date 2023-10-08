@@ -19,7 +19,7 @@
 #include "suppressions.h"
 
 #include "errorlogger.h"
-#include "mathlib.h"
+#include "errortypes.h"
 #include "path.h"
 #include "utils.h"
 #include "token.h"

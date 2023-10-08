@@ -23,8 +23,10 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
+#include <cstddef>
 #include <sstream> // IWYU pragma: keep
 #include <string>
+#include <vector>
 
 class Token;
 class Preprocessor;

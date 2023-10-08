@@ -31,6 +31,7 @@
 #include <algorithm>
 #include <cctype>
 #include <climits>
+#include <cstddef>
 #include <cstring>
 #include <list>
 #include <memory>
