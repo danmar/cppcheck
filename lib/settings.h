@@ -21,6 +21,7 @@
 #define settingsH
 //---------------------------------------------------------------------------
 
+#include "addoninfo.h"
 #include "config.h"
 #include "errortypes.h"
 #include "importproject.h"
@@ -103,6 +104,9 @@ public:
 
     /** @brief addons, either filename of python/json file or json data */
     std::unordered_set<std::string> addons;
+
+    /** @brief the loaded addons infos */
+    std::vector<AddonInfo> addonInfos;
 
     /** @brief Path to the python interpreter to be used to run addons. */
     std::string addonPython;

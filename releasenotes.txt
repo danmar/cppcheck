@@ -22,3 +22,4 @@ Other:
 - added "--showtime=none" to disable any previously specified showtime report. "--showtime=" without parameter is no longer valid.
 - Multiple "--project" options are now prohibited. These would have overlapped each other and lead to unexpected behavior. Please use separate runs with a single "--project" option instead.
 - "--project" can also no longer be used in conjunction with additional source files.
+- If a addon cannot be found it will bail out immediately instead of continously writing errors and failing the analysis at the end.

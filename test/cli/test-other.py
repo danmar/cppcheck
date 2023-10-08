@@ -403,11 +403,9 @@ typedef int MISRA_5_6_VIOLATION;
     args = ['--addon={}'.format(addon_file), '--enable=all', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0  # TODO: needs to be 1
+    assert exitcode == 1
     lines = stdout.splitlines()
     assert lines == [
-        'Checking {} ...'.format(test_file),
-        'Loading {} failed. syntax error at line 2 near: '.format(addon_file),
         'Loading {} failed. syntax error at line 2 near: '.format(addon_file)
     ]
     assert stderr == ''
@@ -554,3 +552,17 @@ def test_showtime_top5_file(tmpdir):
         assert lines[i].endswith(' - 1 result(s))')
     assert lines[6].startswith('Overall time:')
     assert stderr == ''
+
+
+def test_missing_addon(tmpdir):
+    args = ['--addon=misra3', '--addon=misra', '--addon=misra2', 'file.c']
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 1
+    lines = stdout.splitlines()
+    lines.sort()
+    assert lines == [
+        'Did not find addon misra2.py',
+        'Did not find addon misra3.py'
+    ]
+    assert stderr == ""

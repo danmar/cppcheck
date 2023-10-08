@@ -150,6 +150,9 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
     if (!loadLibraries(settings))
         return false;
 
+    if (!loadAddons(settings))
+        return false;
+
     // Check that all include paths exist
     {
         for (std::list<std::string>::iterator iter = settings.includePaths.begin();
@@ -402,6 +405,22 @@ bool CppCheckExecutor::loadLibraries(Settings& settings)
         if (!tryLoadLibrary(settings.library, settings.exename, lib.c_str())) {
             result = false;
         }
+    }
+    return result;
+}
+
+bool CppCheckExecutor::loadAddons(Settings& settings)
+{
+    bool result = true;
+    for (const std::string &addon: settings.addons) {
+        AddonInfo addonInfo;
+        const std::string failedToGetAddonInfo = addonInfo.getAddonInfo(addon, settings.exename);
+        if (!failedToGetAddonInfo.empty()) {
+            std::cout << failedToGetAddonInfo << std::endl;
+            result = false;
+            continue;
+        }
+        settings.addonInfos.emplace_back(std::move(addonInfo));
     }
     return result;
 }
