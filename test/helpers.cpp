@@ -137,3 +137,34 @@ std::string PreprocessorHelper::getcode(Preprocessor &preprocessor, const std::s
 
     return ret;
 }
+
+void PreprocessorHelper::preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer)
+{
+    // Raw Tokens..
+    std::istringstream istr(code);
+    const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+    // Preprocess..
+    simplecpp::TokenList tokens2(files);
+    std::map<std::string, simplecpp::TokenList*> filedata;
+    simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+
+    // Tokenizer..
+    tokenizer.createTokens(std::move(tokens2));
+}
+
+void PreprocessorHelper::preprocess(Preprocessor &preprocessor, const char code[], std::vector<std::string> &files, Tokenizer& tokenizer)
+{
+    std::istringstream istr(code);
+    const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+    // Preprocess..
+    simplecpp::TokenList tokens2(files);
+    std::map<std::string, simplecpp::TokenList*> filedata;
+    simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+
+    // Tokenizer..
+    tokenizer.createTokens(std::move(tokens2));
+
+    preprocessor.setDirectives(tokens1);
+}

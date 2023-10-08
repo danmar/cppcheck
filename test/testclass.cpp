@@ -19,6 +19,7 @@
 #include "check.h"
 #include "checkclass.h"
 #include "errortypes.h"
+#include "helpers.h"
 #include "preprocessor.h"
 #include "settings.h"
 #include "fixture.h"
@@ -8409,26 +8410,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    #define checkUselessOverride(code) checkUselessOverride_(code, __FILE__, __LINE__)
-    void checkUselessOverride_(const char code[], const char* file, int line) {
+    #define checkUselessOverride(...) checkUselessOverride_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkUselessOverride_(const char* file, int line, const char code[]) {
         // Clear the error log
         errout.str("");
 
         const Settings settings = settingsBuilder().severity(Severity::style).build();
 
-        // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        // Preprocess..
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
-
-        // Tokenize..
         Tokenizer tokenizer(&settings, this);
-        tokenizer.createTokens(std::move(tokens2));
+        PreprocessorHelper::preprocess(code, files, tokenizer);
+
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check..

@@ -18,6 +18,7 @@
 
 #include "checkcondition.h"
 #include "errortypes.h"
+#include "helpers.h"
 #include "library.h"
 #include "platform.h"
 #include "preprocessor.h"
@@ -127,35 +128,26 @@ private:
         TEST_CASE(knownConditionIncrementLoop); // #9808
     }
 
-    void check(const char code[], const Settings &settings, const char* filename = "test.cpp") {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], const Settings &settings, const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
-        // Raw tokens..
-        std::vector<std::string> files(1, filename);
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        // Preprocess..
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
-
         Preprocessor preprocessor(settings);
-        preprocessor.setDirectives(tokens1);
+        std::vector<std::string> files(1, filename);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
+        PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
 
         // Tokenizer..
-        Tokenizer tokenizer(&settings, this, &preprocessor);
-        tokenizer.createTokens(std::move(tokens2));
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Run checks..
         runChecks<CheckCondition>(tokenizer, this);
     }
 
-    void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
+    void check_(const char* file, int line, const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
         const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive, inconclusive).build();
-        check(code, settings, filename);
+        check_(file, line, code, settings, filename);
     }
 
     void assignAndCompare() {
