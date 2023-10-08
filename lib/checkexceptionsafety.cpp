@@ -37,9 +37,9 @@ namespace {
     CheckExceptionSafety instance;
 }
 
-static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
-static const struct CWE CWE703(703U);   // Improper Check or Handling of Exceptional Conditions
-static const struct CWE CWE480(480U);   // Use of Incorrect Operator
+static const CWE CWE398(398U);   // Indicator of Poor Code Quality
+static const CWE CWE703(703U);   // Improper Check or Handling of Exceptional Conditions
+static const CWE CWE480(480U);   // Use of Incorrect Operator
 
 //---------------------------------------------------------------------------
 

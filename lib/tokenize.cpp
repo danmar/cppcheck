@@ -10298,7 +10298,7 @@ void Tokenizer::setPodTypes()
             continue;
 
         // pod type
-        const struct Library::PodType *podType = mSettings->library.podtype(tok->str());
+        const Library::PodType *podType = mSettings->library.podtype(tok->str());
         if (podType) {
             const Token *prev = tok->previous();
             while (prev && prev->isName())

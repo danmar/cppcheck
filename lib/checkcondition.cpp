@@ -43,10 +43,10 @@
 #include <vector>
 
 // CWE ids used
-static const struct CWE uncheckedErrorConditionCWE(391U);
-static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
-static const struct CWE CWE570(570U);   // Expression is Always False
-static const struct CWE CWE571(571U);   // Expression is Always True
+static const CWE uncheckedErrorConditionCWE(391U);
+static const CWE CWE398(398U);   // Indicator of Poor Code Quality
+static const CWE CWE570(570U);   // Expression is Always False
+static const CWE CWE571(571U);   // Expression is Always True
 
 //---------------------------------------------------------------------------
 

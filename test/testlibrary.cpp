@@ -748,7 +748,7 @@ private:
             ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
             // s8
             {
-                const struct Library::PodType * const type = library.podtype("s8");
+                const Library::PodType * const type = library.podtype("s8");
                 ASSERT_EQUALS(true, type != nullptr);
                 if (type) {
                     ASSERT_EQUALS(1U, type->size);
@@ -757,7 +757,7 @@ private:
             }
             // u8
             {
-                const struct Library::PodType * const type = library.podtype("u8");
+                const Library::PodType * const type = library.podtype("u8");
                 ASSERT_EQUALS(true, type != nullptr);
                 if (type) {
                     ASSERT_EQUALS(1U, type->size);
@@ -766,7 +766,7 @@ private:
             }
             // u16
             {
-                const struct Library::PodType * const type = library.podtype("u16");
+                const Library::PodType * const type = library.podtype("u16");
                 ASSERT_EQUALS(true, type != nullptr);
                 if (type) {
                     ASSERT_EQUALS(2U, type->size);
@@ -775,7 +775,7 @@ private:
             }
             // s16
             {
-                const struct Library::PodType * const type = library.podtype("s16");
+                const Library::PodType * const type = library.podtype("s16");
                 ASSERT_EQUALS(true, type != nullptr);
                 if (type) {
                     ASSERT_EQUALS(2U, type->size);
@@ -784,7 +784,7 @@ private:
             }
             // robustness test: provide cfg without PodType
             {
-                const struct Library::PodType * const type = library.podtype("nonExistingPodType");
+                const Library::PodType * const type = library.podtype("nonExistingPodType");
                 ASSERT_EQUALS(true, type == nullptr);
             }
         }

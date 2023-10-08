@@ -307,7 +307,7 @@ unsigned int ProcessExecutor::check()
             FD_ZERO(&rfds);
             for (std::list<int>::const_iterator rp = rpipes.cbegin(); rp != rpipes.cend(); ++rp)
                 FD_SET(*rp, &rfds);
-            struct timeval tv; // for every second polling of load average condition
+            timeval tv; // for every second polling of load average condition
             tv.tv_sec = 1;
             tv.tv_usec = 0;
             const int r = select(*std::max_element(rpipes.cbegin(), rpipes.cend()) + 1, &rfds, nullptr, nullptr, &tv);

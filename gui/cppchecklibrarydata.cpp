@@ -82,7 +82,7 @@ static CppcheckLibraryData::Container loadContainer(QXmlStreamReader &xmlReader)
                     break;
                 if (type != QXmlStreamReader::StartElement)
                     continue;
-                struct CppcheckLibraryData::Container::Function function;
+                CppcheckLibraryData::Container::Function function;
                 function.name   = xmlReader.attributes().value("name").toString();
                 function.action = xmlReader.attributes().value("action").toString();
                 function.yields = xmlReader.attributes().value("yields").toString();
@@ -91,7 +91,7 @@ static CppcheckLibraryData::Container loadContainer(QXmlStreamReader &xmlReader)
                 else if (elementName == "access")
                     container.accessFunctions.append(function);
                 else if (elementName == "rangeItemRecordType") {
-                    struct CppcheckLibraryData::Container::RangeItemRecordType rangeItemRecordType;
+                    CppcheckLibraryData::Container::RangeItemRecordType rangeItemRecordType;
                     rangeItemRecordType.name = xmlReader.attributes().value("name").toString();
                     rangeItemRecordType.templateParameter = xmlReader.attributes().value("templateParameter").toString();
                     container.rangeItemRecordTypeList.append(rangeItemRecordType);
@@ -518,7 +518,7 @@ QString CppcheckLibraryData::open(QIODevice &file)
     return QString();
 }
 
-static void writeContainerFunctions(QXmlStreamWriter &xmlWriter, const QString &name, int extra, const QList<struct CppcheckLibraryData::Container::Function> &functions)
+static void writeContainerFunctions(QXmlStreamWriter &xmlWriter, const QString &name, int extra, const QList<CppcheckLibraryData::Container::Function> &functions)
 {
     if (functions.isEmpty() && extra < 0)
         return;
@@ -541,7 +541,7 @@ static void writeContainerFunctions(QXmlStreamWriter &xmlWriter, const QString &
     xmlWriter.writeEndElement();
 }
 
-static void writeContainerRangeItemRecords(QXmlStreamWriter &xmlWriter, const QList<struct CppcheckLibraryData::Container::RangeItemRecordType> &rangeItemRecords)
+static void writeContainerRangeItemRecords(QXmlStreamWriter &xmlWriter, const QList<CppcheckLibraryData::Container::RangeItemRecordType> &rangeItemRecords)
 {
     if (rangeItemRecords.isEmpty())
         return;
