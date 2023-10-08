@@ -2189,10 +2189,9 @@ Variable& Variable::operator=(const Variable &var)
     mScope = var.mScope;
     mDimensions = var.mDimensions;
     delete mValueType;
+    mValueType = nullptr;
     if (var.mValueType)
         mValueType = new ValueType(*var.mValueType);
-    else
-        mValueType = nullptr;
 
     return *this;
 }
@@ -2347,6 +2346,7 @@ void Variable::setValueType(const ValueType &valueType)
             return;
     }
     delete mValueType;
+    mValueType = nullptr;
     mValueType = new ValueType(valueType);
     if ((mValueType->pointer > 0) && (!isArray() || Token::Match(mNameToken->previous(), "( * %name% )")))
         setFlag(fIsPointer, true);
