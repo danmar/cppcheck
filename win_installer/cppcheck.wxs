@@ -46,8 +46,8 @@
               <File Id='Qt5Chartsdll' Name='Qt5Charts.dll' Source='$(var.QtDllDir)\Qt5Charts.dll' />
             <?endif?>
             <File Id='Qt5Network.dll' Name='Qt5Network.dll' DiskId='1' Source='$(var.QtDllDir)\Qt5Network.dll' />
-            <File Id='libcrypto.dll' Name='libcrypto-1_1-x64.dll' DiskId='1' Source='$(var.QtDllDir)\libcrypto-1_1-x64.dll' />
-            <File Id='libssl.dll' Name='libssl-1_1-x64.dll' DiskId='1' Source='$(var.QtDllDir)\libssl-1_1-x64.dll' />
+            <File Id='libcrypto.dll' Name='libcrypto-3-x64.dll' DiskId='1' Source='$(var.QtDllDir)\libcrypto-3-x64.dll' />
+            <File Id='libssl.dll' Name='libssl-3-x64.dll' DiskId='1' Source='$(var.QtDllDir)\libssl-3-x64.dll' />
           </Component>
           <Directory Id='QtPlatformsFolder' Name='platforms'>
             <Component Id='QtPlatforms' DiskId='1' Guid='$(var.qtplatformsGUID)'>

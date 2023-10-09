@@ -67,7 +67,7 @@ jobs:
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
-          tools: 'tools_openssl_x64,qt.tools.openssl.win_x64'
+          tools: 'tools_opensslv3_x64'
           cache: true
 
       - name: Create .qm
@@ -121,8 +121,8 @@ jobs:
           xcopy /s gui\help win_installer\files\help || exit /b !errorlevel!
           del win_installer\files\translations\*.qm || exit /b !errorlevel!
           move gui\*.qm win_installer\files\translations || exit /b !errorlevel!
-          :: copy libcrypto-1_1-x64.dll and libssl-1_1-x64.dll
-          copy %RUNNER_WORKSPACE%\Qt\Tools\OpenSSL\Win_x64\bin\lib*.dll win_installer\files || exit /b !errorlevel!
+          :: copy libcrypto-3-x64.dll and libssl-3-x64.dll
+          copy %RUNNER_WORKSPACE%\Qt\Tools\OpenSSLv3\Win_x64\bin\lib*.dll win_installer\files || exit /b !errorlevel!
 
       - name: Build Installer
         run: |
