@@ -26,6 +26,8 @@
 #include "tokenize.h"
 
 #include <cstddef>
+#include <iterator>
+#include <list>
 #include <vector>
 
 //---------------------------------------------------------------------------

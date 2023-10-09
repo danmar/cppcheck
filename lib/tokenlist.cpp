@@ -24,7 +24,6 @@
 #include "errortypes.h"
 #include "keywords.h"
 #include "library.h"
-#include "mathlib.h"
 #include "path.h"
 #include "platform.h"
 #include "settings.h"

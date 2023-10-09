@@ -17,7 +17,6 @@
  */
 
 #include "helpers.h"
-#include "library.h"
 #include "mathlib.h"
 #include "platform.h"
 #include "settings.h"
@@ -33,14 +32,10 @@
 #include <cstring>
 #include <functional>
 #include <list>
-#include <map>
 #include <set>
 #include <sstream>
 #include <string>
-#include <utility>
 #include <vector>
-
-#include <simplecpp.h>
 
 class TestValueFlow : public TestFixture {
 public:

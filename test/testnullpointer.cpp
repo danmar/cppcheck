@@ -32,10 +32,7 @@
 #include <sstream> // IWYU pragma: keep
 #include <string>
 #include <unordered_map>
-#include <utility>
 #include <vector>
-
-#include <simplecpp.h>
 
 class TestNullPointer : public TestFixture {
 public:

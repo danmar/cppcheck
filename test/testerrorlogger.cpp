@@ -20,7 +20,6 @@
 #include "cppcheck.h"
 #include "errorlogger.h"
 #include "errortypes.h"
-#include "suppressions.h"
 #include "fixture.h"
 
 #include <list>

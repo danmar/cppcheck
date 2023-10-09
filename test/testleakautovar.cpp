@@ -20,19 +20,13 @@
 #include "checkleakautovar.h"
 #include "errortypes.h"
 #include "helpers.h"
-#include "library.h"
 #include "settings.h"
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
-#include <unordered_map>
-#include <utility>
 #include <vector>
-
-#include <simplecpp.h>
 
 class TestLeakAutoVarStrcpy;
 class TestLeakAutoVarWindows;

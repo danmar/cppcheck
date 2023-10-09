@@ -43,6 +43,7 @@
 #include <QFileInfo>
 #include <QIODevice>
 #include <QLineEdit>
+#include <QList>
 #include <QMessageBox>
 #include <QProcess>
 #include <QRegularExpression>

@@ -24,10 +24,11 @@
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <simplecpp.h>
-
 #include <sstream> // IWYU pragma: keep
+#include <string>
+#include <vector>
 
+#include <simplecpp.h>
 
 class TestString : public TestFixture {
 public:

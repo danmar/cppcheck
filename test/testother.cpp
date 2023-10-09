@@ -19,7 +19,6 @@
 #include "checkother.h"
 #include "errortypes.h"
 #include "helpers.h"
-#include "library.h"
 #include "platform.h"
 #include "preprocessor.h"
 #include "settings.h"
@@ -27,15 +26,9 @@
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
-#include <unordered_map>
-#include <utility>
 #include <vector>
-
-#include <simplecpp.h>
-
 
 class TestOther : public TestFixture {
 public:

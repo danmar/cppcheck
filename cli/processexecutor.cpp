@@ -22,7 +22,6 @@
 
 #include "config.h"
 #include "cppcheck.h"
-#include "cppcheckexecutor.h"
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "importproject.h"
@@ -37,7 +36,6 @@
 #include <csignal>
 #include <cstdlib>
 #include <cstring>
-#include <functional>
 #include <iostream>
 #include <list>
 #include <sstream> // IWYU pragma: keep

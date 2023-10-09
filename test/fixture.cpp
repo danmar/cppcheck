@@ -23,6 +23,7 @@
 #include "options.h"
 #include "redirect.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <cctype>
 #include <exception>

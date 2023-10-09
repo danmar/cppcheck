@@ -19,20 +19,16 @@
 #include "checkcondition.h"
 #include "errortypes.h"
 #include "helpers.h"
-#include "library.h"
 #include "platform.h"
 #include "preprocessor.h"
 #include "settings.h"
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <map>
+#include <limits>
 #include <sstream> // IWYU pragma: keep
 #include <string>
-#include <utility>
 #include <vector>
-
-#include <simplecpp.h>
 
 class TestCondition : public TestFixture {
 public:

@@ -30,9 +30,13 @@
 #include "tokenize.h"
 #include "valueflow.h"
 
+#include <algorithm>
 #include <cmath>
+#include <cstddef>
+#include <iterator>
 #include <list>
 #include <sstream>
+#include <utility>
 #include <vector>
 
 //---------------------------------------------------------------------------

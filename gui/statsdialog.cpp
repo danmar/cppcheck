@@ -29,10 +29,12 @@
 #include <QDate>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QFont>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMimeData>
 #include <QPageSize>
+#include <QPlainTextEdit>
 #include <QPrinter>
 #include <QPushButton>
 #include <QStringList>

@@ -18,9 +18,12 @@
 
 #pragma once
 
-#include "settings.h"
+#include "config.h"
+
 #include <set>
 #include <string>
+
+class Settings;
 
 class CPPCHECKLIB CheckersReport {
 public:

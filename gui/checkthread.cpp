@@ -31,7 +31,6 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <functional>
 #include <iterator>
 #include <list>
 #include <map>

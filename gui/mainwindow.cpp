@@ -18,6 +18,7 @@
 
 #include "mainwindow.h"
 
+#include "addoninfo.h"
 #include "applicationlist.h"
 #include "aboutdialog.h"
 #include "analyzerinfo.h"
@@ -48,12 +49,12 @@
 #include "ui_mainwindow.h"
 
 #include <algorithm>
-#include <functional>
 #include <iterator>
 #include <list>
 #include <set>
 #include <string>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include <QApplication>

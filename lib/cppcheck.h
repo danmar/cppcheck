@@ -38,6 +38,7 @@
 #include <vector>
 
 class Tokenizer;
+enum class SHOWTIME_MODES;
 
 /// @addtogroup Core
 /// @{

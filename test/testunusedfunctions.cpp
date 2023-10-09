@@ -26,6 +26,7 @@
 #include "tokenize.h"
 
 #include <sstream>
+#include <string>
 
 class TestUnusedFunctions : public TestFixture {
 public:

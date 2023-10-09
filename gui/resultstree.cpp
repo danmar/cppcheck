@@ -49,7 +49,6 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QModelIndex>
-#include <QModelIndexList>
 #include <QProcess>
 #include <QSet>
 #include <QSettings>

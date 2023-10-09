@@ -20,12 +20,15 @@
 #include "settings.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "importproject.h"
 #include "library.h"
 #include "threadexecutor.h"
 #include "timer.h"
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdlib>
+#include <list>
 #include <map>
 #include <memory>
 #include <set>
