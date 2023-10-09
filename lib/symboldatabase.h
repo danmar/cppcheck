@@ -546,7 +546,7 @@ public:
      * @return length of dimension
      */
     MathLib::bigint dimension(nonneg int index_) const {
-        return mDimensions[index_].num;
+        return mDimensions.at(index_).num;
     }
 
     /**
@@ -554,7 +554,7 @@ public:
      * @return length of dimension known
      */
     bool dimensionKnown(nonneg int index_) const {
-        return mDimensions[index_].known;
+        return mDimensions.at(index_).known;
     }
 
     /**
