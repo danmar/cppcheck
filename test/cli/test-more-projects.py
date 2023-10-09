@@ -1,6 +1,7 @@
 # python -m pytest test-more-projects.py
 import json
 import os
+import pytest
 from testutils import cppcheck
 
 
@@ -252,3 +253,41 @@ def test_project_std(tmpdir):
     ret, stdout, stderr = cppcheck(['--project=' + compile_commands, '--enable=all', '-rp=' + str(tmpdir), '--template=cppcheck1'])
     assert ret == 0, stdout
     assert (stderr == '[bug1.cpp:3]: (error) Division by zero.\n')
+
+
+
+@pytest.mark.skip() # clang-tidy is not available in all cases
+def test_clang_tidy(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        f.write("""
+                int main(int argc)
+                {
+                  (void)argc;
+                }
+                """)
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project version="1">
+  <paths>
+   <dir name="{}"/>
+  </paths>>
+  <tools>
+    <tool>clang-tidy</tool>
+  </tools>
+</project>""".format(test_file))
+
+    args = ['--project={}'.format(project_file)]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    lines = stdout.splitlines()
+    # TODO: should detect clang-tidy issue
+    assert len(lines) == 1
+    assert lines == [
+        'Checking {} ...'.format(test_file)
+    ]
+    assert stderr == ''

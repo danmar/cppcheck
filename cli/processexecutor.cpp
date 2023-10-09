@@ -277,7 +277,8 @@ unsigned int ProcessExecutor::check()
 
                 if (iFileSettings != mSettings.project.fileSettings.end()) {
                     resultOfCheck = fileChecker.check(*iFileSettings);
-                    // TODO: call analyseClangTidy()
+                    if (fileChecker.settings().clangTidy)
+                        fileChecker.analyseClangTidy(*iFileSettings);
                 } else {
                     // Read file from a file
                     resultOfCheck = fileChecker.check(iFile->first);
