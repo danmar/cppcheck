@@ -313,7 +313,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                             << info << "\n";
                 }
 
-                std::cout << doc.str();
+                mLogger.printRaw(doc.str());
                 mExitAfterPrint = true;
                 return true;
             }
@@ -1057,7 +1057,8 @@ void CmdLineParser::printHelp()
                                 "https://cppcheck.sourceforge.io/manual.pdf" :
                                 "https://files.cppchecksolutions.com/manual.pdf");
 
-    std::cout << "Cppcheck - A tool for static C/C++ code analysis\n"
+    std::ostringstream oss;
+    oss << "Cppcheck - A tool for static C/C++ code analysis\n"
         "\n"
         "Syntax:\n"
         "    cppcheck [OPTIONS] [files or paths]\n"
@@ -1249,20 +1250,21 @@ void CmdLineParser::printHelp()
     "                         Generate Clang-plist output files in folder.\n";
 
     if (isCppcheckPremium()) {
-        std::cout << "    --premium=<option>\n"
-                  << "                         Coding standards:\n"
-                  << "                          * autosar           Autosar (partial)\n"
-                  << "                          * cert-c-2016       Cert C 2016 checking\n"
-                  << "                          * cert-c++-2016     Cert C++ 2016 checking\n"
-                  << "                          * misra-c-2012      Misra C 2012\n"
-                  << "                          * misra-c-2023      Misra C 2023\n"
-                  << "                          * misra-c++-2008    Misra C++ 2008 (partial)\n"
-                  << "                         Other:\n"
-                  << "                          * bughunting        Soundy analysis\n"
-                  << "                          * cert-c-int-precision=BITS  Integer precision to use in Cert C analysis.\n";
+        oss <<
+            "    --premium=<option>\n"
+            "                         Coding standards:\n"
+            "                          * autosar           Autosar (partial)\n"
+            "                          * cert-c-2016       Cert C 2016 checking\n"
+            "                          * cert-c++-2016     Cert C++ 2016 checking\n"
+            "                          * misra-c-2012      Misra C 2012\n"
+            "                          * misra-c-2023      Misra C 2023\n"
+            "                          * misra-c++-2008    Misra C++ 2008 (partial)\n"
+            "                         Other:\n"
+            "                          * bughunting        Soundy analysis\n"
+            "                          * cert-c-int-precision=BITS  Integer precision to use in Cert C analysis.\n";
     }
 
-    std::cout <<
+    oss <<
         "    --project=<file>     Run Cppcheck on project. The <file> can be a Visual\n"
         "                         Studio Solution (*.sln), Visual Studio Project\n"
         "                         (*.vcxproj), compile database (compile_commands.json),\n"
@@ -1402,6 +1404,8 @@ void CmdLineParser::printHelp()
         " * picojson -- loading compile database.\n"
         " * pcre -- rules.\n"
         " * qt -- used in GUI\n";
+
+    mLogger.printRaw(oss.str());
 }
 
 bool CmdLineParser::isCppcheckPremium() const {

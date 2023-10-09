@@ -58,6 +58,11 @@ private:
             printMessage("error: " + message);
         }
 
+        void printRaw(const std::string &message) override
+        {
+            printInternal(message + '\n');
+        }
+
         std::string str()
         {
             std::string s;
@@ -314,24 +319,24 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck"};
         ASSERT(parser->parseFromArgs(1, argv));
-        ASSERT(startsWith(GET_REDIRECT_OUTPUT, "Cppcheck - A tool for static C/C++ code analysis"));
-        ASSERT_EQUALS("", logger->str());
+        ASSERT(startsWith(logger->str(), "Cppcheck - A tool for static C/C++ code analysis"));
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void helpshort() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-h"};
         ASSERT(parser->parseFromArgs(2, argv));
-        ASSERT(startsWith(GET_REDIRECT_OUTPUT, "Cppcheck - A tool for static C/C++ code analysis"));
-        ASSERT_EQUALS("", logger->str());
+        ASSERT(startsWith(logger->str(), "Cppcheck - A tool for static C/C++ code analysis"));
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void helplong() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--help"};
         ASSERT(parser->parseFromArgs(2, argv));
-        ASSERT(startsWith(GET_REDIRECT_OUTPUT, "Cppcheck - A tool for static C/C++ code analysis"));
-        ASSERT_EQUALS("", logger->str());
+        ASSERT(startsWith(logger->str(), "Cppcheck - A tool for static C/C++ code analysis"));
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void showversion() {
@@ -1578,8 +1583,8 @@ private:
         const char * const argv[] = {"cppcheck", "--doc"};
         ASSERT(parser->parseFromArgs(2, argv));
         ASSERT(parser->exitAfterPrinting());
-        ASSERT(startsWith(GET_REDIRECT_OUTPUT, "## "));
-        ASSERT_EQUALS("", logger->str());
+        ASSERT(startsWith(logger->str(), "## "));
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void showtimeSummary() {

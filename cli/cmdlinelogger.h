@@ -26,8 +26,12 @@ class CmdLineLogger
 public:
     virtual ~CmdLineLogger() = default;
 
+    /** print a regular message */
     virtual void printMessage(const std::string &message) = 0;
+    /** print an error message */
     virtual void printError(const std::string &message) = 0;
+    /** print to the output */
+    virtual void printRaw(const std::string &message) = 0;
 };
 
 #endif // CMD_LINE_LOGGER_H
