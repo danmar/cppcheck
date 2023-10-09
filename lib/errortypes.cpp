@@ -18,6 +18,8 @@
 
 #include "errortypes.h"
 
+#include "utils.h"
+
 static std::string typeToString(InternalError::Type type)
 {
     switch (type) {
@@ -34,6 +36,7 @@ static std::string typeToString(InternalError::Type type)
     case InternalError::Type::INSTANTIATION:
         return "instantiationError";
     }
+    cppcheck::unreachable();
 }
 
 InternalError::InternalError(const Token *tok, std::string errorMsg, Type type) :

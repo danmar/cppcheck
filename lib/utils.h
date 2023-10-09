@@ -331,4 +331,18 @@ static inline const char* bool_to_string(bool b)
     return b ? "true" : "false";
 }
 
+namespace cppcheck
+{
+    NORETURN inline void unreachable()
+    {
+#if defined(__GNUC__)
+        __builtin_unreachable();
+#elif defined(_MSC_VER)
+        __assume(false);
+#else
+#error "no unreachable implementation"
+#endif
+    }
+}
+
 #endif

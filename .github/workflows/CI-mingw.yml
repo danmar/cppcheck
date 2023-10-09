@@ -47,6 +47,7 @@ jobs:
         with:
           key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
 
+      # TODO: bail out on warning
       - name: Build cppcheck
         run: |
           export PATH="/mingw64/lib/ccache/bin:$PATH"

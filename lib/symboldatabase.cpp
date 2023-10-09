@@ -3044,7 +3044,7 @@ bool Function::returnsConst(const Function* function, bool unknown)
 
 bool Function::returnsReference(const Function* function, bool unknown, bool includeRValueRef)
 {
-    return checkReturns(function, unknown, false, [includeRValueRef](UNUSED const Token* defStart, const Token* defEnd) {
+    return checkReturns(function, unknown, false, [includeRValueRef](const Token* /*defStart*/, const Token* defEnd) {
         return includeRValueRef ? Token::Match(defEnd->previous(), "&|&&") : Token::simpleMatch(defEnd->previous(), "&");
     });
 }
