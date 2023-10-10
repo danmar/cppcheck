@@ -332,6 +332,8 @@ void ImportProject::fsParseCommand(FileSettings& fs, const std::string& command)
                 defs += "__PIE__";
                 defs += ";";
             }
+            // TODO: support -fsigned-char and -funsigned-char?
+            // we can only set it globally but in this context it needs to be treated per file
         }
     }
     fsSetDefines(fs, defs);
@@ -733,6 +735,8 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             }
         }
     }
+    // # TODO: support signedness of char via /J (and potential XML option for it)?
+    // we can only set it globally but in this context it needs to be treated per file
 
     for (const std::string &c : compileList) {
         const std::string cfilename = Path::simplifyPath(Path::isAbsolute(c) ? c : Path::getPathFromFilename(filename) + c);

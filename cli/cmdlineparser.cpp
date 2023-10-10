@@ -418,6 +418,12 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "-f") == 0 || std::strcmp(argv[i], "--force") == 0)
                 mSettings.force = true;
 
+            else if (std::strcmp(argv[i], "--fsigned-char") == 0)
+                mSettings.platform.defaultSign = 's';
+
+            else if (std::strcmp(argv[i], "--funsigned-char") == 0)
+                mSettings.platform.defaultSign = 'u';
+
             // Print help
             else if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "--help") == 0) {
                 mPathNames.clear();
@@ -1191,6 +1197,8 @@ void CmdLineParser::printHelp() const
         "    -f, --force          Force checking of all configurations in files. If used\n"
         "                         together with '--max-configs=', the last option is the\n"
         "                         one that is effective.\n"
+        "    --fsigned-char       Treat char type as signed.\n"
+        "    --funsigned-char     Treat char type as unsigned.\n"
         "    -h, --help           Print this help.\n"
         "    -I <dir>             Give path to search for include files. Give several -I\n"
         "                         parameters to give several paths. First given path is\n"
