@@ -27,7 +27,6 @@
 #include "timer.h"
 
 #include <algorithm>
-#include <cstddef>
 #include <cstdlib>
 #include <list>
 #include <map>

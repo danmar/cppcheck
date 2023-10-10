@@ -23,7 +23,6 @@
 
 #include "config.h"
 #include "mathlib.h"
-#include "errortypes.h"
 #include "standards.h"
 
 #include <map>
@@ -37,6 +36,7 @@
 
 class Token;
 class Settings;
+enum class Severity;
 
 namespace tinyxml2 {
     class XMLDocument;

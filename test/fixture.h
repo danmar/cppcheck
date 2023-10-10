@@ -24,7 +24,6 @@
 #include "color.h"
 #include "config.h"
 #include "errorlogger.h"
-#include "errortypes.h"
 #include "library.h"
 #include "platform.h"
 #include "settings.h"
@@ -39,6 +38,8 @@
 
 class options;
 class Tokenizer;
+enum class Certainty;
+enum class Severity;
 
 class TestFixture : public ErrorLogger {
 private:

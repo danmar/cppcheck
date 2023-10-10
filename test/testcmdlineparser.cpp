@@ -16,11 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "cmdlinelogger.h"
 #include "cmdlineparser.h"
 #include "config.h"
 #include "cppcheckexecutor.h"
 #include "errortypes.h"
 #include "helpers.h"
+#include "importproject.h"
 #include "platform.h"
 #include "redirect.h"
 #include "settings.h"
@@ -33,8 +35,11 @@
 #include <cstdint>
 #include <cstdio>
 #include <list>
+#include <memory>
 #include <set>
+#include <stdexcept>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 class TestCmdlineParser : public TestFixture {

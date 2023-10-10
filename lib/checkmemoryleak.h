@@ -34,7 +34,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "errortypes.h"
 #include "tokenize.h"
 
 #include <list>
@@ -46,6 +45,8 @@ class Settings;
 class Token;
 class Variable;
 class ErrorLogger;
+struct CWE;
+enum class Severity;
 
 /// @addtogroup Core
 /// @{

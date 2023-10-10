@@ -30,6 +30,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <features.h> // __USE_DYNAMIC_STACK_SIZE
 #include <map>
 #include <string>
 #include <unistd.h>

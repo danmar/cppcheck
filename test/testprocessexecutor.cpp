@@ -26,7 +26,6 @@
 #include "library.h"
 
 #include <algorithm>
-#include <cstddef>
 #include <cstdlib>
 #include <list>
 #include <map>

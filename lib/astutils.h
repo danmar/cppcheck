@@ -23,6 +23,7 @@
 //---------------------------------------------------------------------------
 
 #include <functional>
+#include <list>
 #include <stack>
 #include <string>
 #include <type_traits>
