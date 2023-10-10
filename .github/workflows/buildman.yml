@@ -44,10 +44,9 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install missing software on ubuntu
-        if: contains(matrix.image, 'ubuntu')
         run: |
-          apt-get update
-          apt-get install -y xsltproc docbook-xsl
+          sudo apt-get update
+          sudo apt-get install -y xsltproc docbook-xsl
 
       - name: build manpage
         run: |
