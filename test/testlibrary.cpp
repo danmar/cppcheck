@@ -645,12 +645,12 @@ private:
         ASSERT(a && b);
         if (a && b) {
             ASSERT_EQUALS("Message", a->message);
-            ASSERT_EQUALS(Severity::style, a->severity);
+            ASSERT_EQUALS(static_cast<int>(Severity::style), static_cast<int>(a->severity));
             ASSERT_EQUALS(Standards::C99, a->standards.c);
             ASSERT_EQUALS(Standards::CPP03, a->standards.cpp);
 
             ASSERT_EQUALS("Obsolescent function 'b' called. It is recommended to use 'c', 'd' or 'e' instead.", b->message);
-            ASSERT_EQUALS(Severity::performance, b->severity);
+            ASSERT_EQUALS(static_cast<int>(Severity::performance), static_cast<int>(b->severity));
             ASSERT_EQUALS(Standards::C89, b->standards.c);
             ASSERT_EQUALS(Standards::CPP11, b->standards.cpp);
         }

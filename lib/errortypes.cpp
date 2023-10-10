@@ -47,47 +47,48 @@ InternalError::InternalError(const Token *tok, std::string errorMsg, std::string
     token(tok), errorMessage(std::move(errorMsg)), details(std::move(details)), type(type), id(typeToString(type))
 {}
 
-std::string Severity::toString(Severity::SeverityType severity)
+std::string severityToString(Severity severity)
 {
     switch (severity) {
-    case none:
+    case Severity::none:
         return "";
-    case error:
+    case Severity::error:
         return "error";
-    case warning:
+    case Severity::warning:
         return "warning";
-    case style:
+    case Severity::style:
         return "style";
-    case performance:
+    case Severity::performance:
         return "performance";
-    case portability:
+    case Severity::portability:
         return "portability";
-    case information:
+    case Severity::information:
         return "information";
-    case debug:
+    case Severity::debug:
         return "debug";
     }
     throw InternalError(nullptr, "Unknown severity");
 }
-Severity::SeverityType Severity::fromString(const std::string& severity)
+
+Severity severityFromString(const std::string& severity)
 {
     if (severity.empty())
-        return none;
+        return Severity::none;
     if (severity == "none")
-        return none;
+        return Severity::none;
     if (severity == "error")
-        return error;
+        return Severity::error;
     if (severity == "warning")
-        return warning;
+        return Severity::warning;
     if (severity == "style")
-        return style;
+        return Severity::style;
     if (severity == "performance")
-        return performance;
+        return Severity::performance;
     if (severity == "portability")
-        return portability;
+        return Severity::portability;
     if (severity == "information")
-        return information;
+        return Severity::information;
     if (severity == "debug")
-        return debug;
-    return none;
+        return Severity::debug;
+    return Severity::none;
 }

@@ -164,7 +164,7 @@ public:
     struct WarnInfo {
         std::string message;
         Standards standards;
-        Severity::SeverityType severity;
+        Severity severity;
     };
     std::map<std::string, WarnInfo> functionwarn;
 

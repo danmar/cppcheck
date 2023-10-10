@@ -138,7 +138,7 @@ protected:
         explicit SettingsBuilder(const TestFixture &fixture) : fixture(fixture) {}
         SettingsBuilder(const TestFixture &fixture, Settings settings) : fixture(fixture), settings(std::move(settings)) {}
 
-        SettingsBuilder& severity(Severity::SeverityType sev, bool b = true) {
+        SettingsBuilder& severity(Severity sev, bool b = true) {
             if (REDUNDANT_CHECK && settings.severity.isEnabled(sev) == b)
                 throw std::runtime_error("redundant setting: severity");
             settings.severity.setEnabled(sev, b);

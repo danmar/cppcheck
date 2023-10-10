@@ -37,12 +37,12 @@
  */
 class GuiSeverity {
 public:
-    static QString toString(Severity::SeverityType severity) {
-        return QString::fromStdString(Severity::toString(severity));
+    static QString toString(Severity severity) {
+        return QString::fromStdString(severityToString(severity));
     }
 
-    static Severity::SeverityType fromString(const QString &severity) {
-        return Severity::fromString(severity.toStdString());
+    static Severity fromString(const QString &severity) {
+        return severityFromString(severity.toStdString());
     }
 };
 
@@ -83,7 +83,7 @@ public:
 
     QString file0;
     QString errorId;
-    Severity::SeverityType severity;
+    Severity severity;
     bool inconclusive;
     QString summary;
     QString message;
@@ -117,7 +117,7 @@ public:
     int cwe;
     unsigned long long hash;
     bool inconclusive;
-    Severity::SeverityType severity;
+    Severity severity;
     QString summary;
     QString message;
     QString sinceDate;
