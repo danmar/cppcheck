@@ -162,6 +162,7 @@ const std::unordered_set<std::string>& Keywords::getAll(Standards::cstd_t cStd)
     case Standards::cstd_t::C99:
         return c99_keywords_all;
     case Standards::cstd_t::C11:
+    case Standards::cstd_t::CLatest:
         return c11_keywords_all;
         /*case Standards::cstd_t::C23:
             return c23_keywords_all;*/
@@ -184,6 +185,7 @@ const std::unordered_set<std::string>& Keywords::getAll(Standards::cppstd_t cppS
     case Standards::cppstd_t::CPP20:
         return cpp20_keywords_all;
     case Standards::cppstd_t::CPP23:
+    case Standards::cppstd_t::CPPLatest:
         return cpp23_keywords_all;
     }
     cppcheck::unreachable();
@@ -199,6 +201,7 @@ const std::unordered_set<std::string>& Keywords::getOnly(Standards::cstd_t cStd)
     case Standards::cstd_t::C99:
         return c99_keywords;
     case Standards::cstd_t::C11:
+    case Standards::cstd_t::CLatest:
         return c11_keywords;
         /*case Standards::cstd_t::C23:
             return c23_keywords_all;*/
@@ -222,6 +225,7 @@ const std::unordered_set<std::string>& Keywords::getOnly(Standards::cppstd_t cpp
     case Standards::cppstd_t::CPP20:
         return cpp20_keywords;
     case Standards::cppstd_t::CPP23:
+    case Standards::cppstd_t::CPPLatest:
         return cpp23_keywords;
     }
     cppcheck::unreachable();
