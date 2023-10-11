@@ -2878,6 +2878,8 @@ void CheckStl::useStlAlgorithm()
                 loopVar = splitTok->previous();
                 if (loopVar->varId() == 0)
                     continue;
+                if (Token::simpleMatch(splitTok->astOperand2(), "{"))
+                    continue;
             }
             else { // iterator-based loop?
                 const Token* initTok = getInitTok(tok);

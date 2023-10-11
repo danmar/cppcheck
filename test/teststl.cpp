@@ -5437,6 +5437,13 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Consider using std::any_of algorithm instead of a raw loop.\n",
                       errout.str());
+
+        check("void f() {\n" // #12064 
+              "    for (const auto& animal : { \"cat\", \"bat\", \"tiger\", \"rat\" })\n"
+              "        if (std::strlen(animal) > 4)\n"
+              "            throw 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void loopAlgoMinMax() {
