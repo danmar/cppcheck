@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ ! -z "$1" ]; then
+if [ -n "$1" ]; then
   compiler_cmd=$1
 else
   compiler_cmd="gcc"
@@ -11,7 +11,7 @@ compiler_defs=$($compiler_cmd -dM -E - < /dev/null)
 char_bit=$(echo "$compiler_defs" | grep __CHAR_BIT__ | cut -d' ' -f3)
 # only set by compiler if -funsigned-char is specified
 char_unsigned=$(echo "$compiler_defs" | grep __CHAR_UNSIGNED__ | cut -d' ' -f3)
-if [ ! -z "$char_unsigned" ] && [ "$char_unsigned" -eq 1 ]; then
+if [ -n "$char_unsigned" ] && [ "$char_unsigned" -eq 1 ]; then
   default_sign="unsigned"
 else
   default_sign="signed"
