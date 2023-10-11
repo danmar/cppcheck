@@ -119,8 +119,8 @@ class MacroUsage:
         self.name = element.get('name')
         _load_location(self, element)
         self.usefile = element.get('usefile')
-        self.useline = element.get('useline')
-        self.usecolumn = element.get('usecolumn')
+        self.useline = int(element.get('useline'))
+        self.usecolumn = int(element.get('usecolumn'))
         self.isKnownValue = element.get('is-known-value', 'false') == 'true'
 
     def __repr__(self):
@@ -1612,7 +1612,7 @@ def is_suppressed(location, message, errorId):
             return True
     return False
 
-def reportError(location, severity, message, addon, errorId, extra=''):
+def reportError(location, severity, message, addon, errorId, misra_severity='', extra=''):
     if '--cli' in sys.argv:
         msg = { 'file': location.file,
                 'linenr': location.linenr,
@@ -1621,12 +1621,14 @@ def reportError(location, severity, message, addon, errorId, extra=''):
                 'message': message,
                 'addon': addon,
                 'errorId': errorId,
-                'extra': extra}
+                'extra': misra_severity}
         sys.stdout.write(json.dumps(msg) + '\n')
     else:
         if is_suppressed(location, message, '%s-%s' % (addon, errorId)):
             return
         loc = '[%s:%i]' % (location.file, location.linenr)
+        if len(misra_severity) > 0:
+            message += ' (' + severity + ')'
         if len(extra) > 0:
             message += ' (' + extra + ')'
         sys.stderr.write('%s (%s) %s [%s-%s]\n' % (loc, severity, message, addon, errorId))
