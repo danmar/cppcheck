@@ -408,7 +408,7 @@ private:
         ASSERT_EQUALS(defs_c99, platform.getLimitsDefines(Standards::cppstd_t::CPPLatest));
     }
 
-    void charMinMax() {
+    void charMinMax() const {
         Platform platform;
         ASSERT_EQUALS(255, platform.unsignedCharMax());
         ASSERT_EQUALS(127, platform.signedCharMax());
