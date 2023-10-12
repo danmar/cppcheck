@@ -1,14 +1,25 @@
 missingIncludeSystem
-shadowFunction
-bitwiseOnBoolean
 
 # temporary suppressions - fix the warnings!
 simplifyUsing:lib/valueptr.h
 varid0:gui/projectfile.cpp
 naming-privateMemberVariable:gui/test/cppchecklibrarydata/testcppchecklibrarydata.h
-templateInstantiation
 symbolDatabaseWarning:*/moc_*.cpp
 simplifyUsing:*/moc_*.cpp
+bitwiseOnBoolean:lib/library.cpp
+templateInstantiation:lib/checkunusedfunctions.cpp
+templateInstantiation:lib/errorlogger.cpp
+templateInstantiation:lib/liobrary.cpp
+shadowFunction:lib/checkbufferoverrun.cpp
+shadowFunction:lib/checkclass.cpp
+shadowFunction:lib/checknullpointer.cpp
+shadowFunction:lib/cppcheck.cpp
+shadowFunction:lib/fwdanalysis.cpp
+shadowFunction:lib/library.cpp
+shadowFunction:lib/symboldatabase.cpp
+shadowFunction:lib/templatesimplifier.cpp
+shadowFunction:lib/token.cpp
+shadowFunction:tools/triage/mainwindow.cpp
 
 # warnings in Qt generated code we cannot fix
 funcArgNamesDifferent:*/moc_*.cpp
@@ -19,7 +30,6 @@ functionStatic:*/ui_fileview.h
 valueFlowBailout
 valueFlowBailoutIncompleteVar
 autoNoType
-bailoutUninitVar
 
 naming-varname:externals/simplecpp/simplecpp.h
 naming-privateMemberVariable:externals/simplecpp/simplecpp.h
