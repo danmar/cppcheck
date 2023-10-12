@@ -459,8 +459,10 @@ void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLo
                 }
                 if (std::strcmp(e2->Name(),"functiondecl") == 0) {
                     const char* lineNumber = e2->Attribute("lineNumber");
-                    if (lineNumber)
+                    if (lineNumber) {
+                        // cppcheck-suppress templateInstantiation - TODO: fix this - see #11631
                         decls[functionName] = Location(sourcefile, strToInt<int>(lineNumber));
+                    }
                 }
             }
         }

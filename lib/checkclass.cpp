@@ -2479,6 +2479,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                             return false;
                         const Token* assignTok = end->next()->astParent();
                         if (var && assignTok && assignTok->isAssignmentOp() && assignTok->astOperand1() && assignTok->astOperand1()->variable()) {
+                            // cppcheck-suppress shadowFunction - TODO: fix this
                             const Variable* assignVar = assignTok->astOperand1()->variable();
                             if (assignVar->isPointer() && !assignVar->isConst() && var->typeScope()) {
                                 const auto& funcMap = var->typeScope()->functionMap;

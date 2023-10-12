@@ -1062,6 +1062,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
     const std::time_t maxTime = mSettings.checksMaxTime > 0 ? std::time(nullptr) + mSettings.checksMaxTime : 0;
 
     // call all "runChecks" in all registered Check classes
+    // cppcheck-suppress shadowFunction - TODO: fix this
     for (Check *check : Check::instances()) {
         if (Settings::terminated())
             return;
@@ -1104,6 +1105,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
                 mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
         }
 
+        // cppcheck-suppress shadowFunction - TODO: fix this
         for (const Check *check : Check::instances()) {
             if (doUnusedFunctionOnly && dynamic_cast<const CheckUnusedFunctions*>(check) == nullptr)
                 continue;
@@ -1735,6 +1737,7 @@ bool CppCheck::analyseWholeProgram()
             ctu.nestedCalls.insert(ctu.nestedCalls.end(), fi2->nestedCalls.cbegin(), fi2->nestedCalls.cend());
         }
     }
+    // cppcheck-suppress shadowFunction - TODO: fix this
     for (Check *check : Check::instances())
         errors |= check->analyseWholeProgram(&ctu, mFileInfo, mSettings, *this);  // TODO: ctu
     return errors && (mExitCode > 0);
@@ -1785,6 +1788,7 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<
                 ctuFileInfo.loadFromXml(e);
                 continue;
             }
+            // cppcheck-suppress shadowFunction - TODO: fix this
             for (const Check *check : Check::instances()) {
                 if (checkClassAttr == check->name())
                     fileInfoList.push_back(check->loadFileInfoFromXml(e));
@@ -1796,6 +1800,7 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<
     CTU::maxCtuDepth = mSettings.maxCtuDepth;
 
     // Analyse the tokens
+    // cppcheck-suppress shadowFunction - TODO: fix this
     for (Check *check : Check::instances())
         check->analyseWholeProgram(&ctuFileInfo, fileInfoList, mSettings, *this);
 

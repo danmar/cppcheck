@@ -2946,6 +2946,7 @@ bool TemplateSimplifier::matchSpecialization(
             startToken = startToken->previous();
         if (!Token::simpleMatch(startToken, "template <"))
             continue;
+        // cppcheck-suppress shadowFunction - TODO: fix this
         std::vector<const Token *> templateParameters;
         getTemplateParametersInDeclaration(startToken->tokAt(2), templateParameters);
 
