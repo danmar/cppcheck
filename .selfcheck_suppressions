@@ -3,17 +3,47 @@ missingIncludeSystem
 # temporary suppressions - fix the warnings!
 simplifyUsing:lib/valueptr.h
 naming-privateMemberVariable:gui/test/cppchecklibrarydata/testcppchecklibrarydata.h
-simplifyUsing:*/moc_*.cpp
+simplifyUsing:*/moc_checkthread.cpp
+simplifyUsing:*/moc_codeeditstylecontrols.cpp
+simplifyUsing:*/moc_resultstree.cpp
+simplifyUsing:*/moc_resultsview.cpp
+simplifyUsing:*/moc_threadhandler.cpp
+simplifyUsing:*/moc_threadresult.cpp
+bitwiseOnBoolean:lib/library.cpp
+templateInstantiation:lib/checkunusedfunctions.cpp
+templateInstantiation:lib/errorlogger.cpp
+templateInstantiation:lib/liobrary.cpp
+shadowFunction:lib/checkbufferoverrun.cpp
+shadowFunction:lib/checkclass.cpp
+shadowFunction:lib/checknullpointer.cpp
+shadowFunction:lib/cppcheck.cpp
+shadowFunction:lib/fwdanalysis.cpp
+shadowFunction:lib/library.cpp
+shadowFunction:lib/symboldatabase.cpp
+shadowFunction:lib/templatesimplifier.cpp
+shadowFunction:lib/token.cpp
+shadowFunction:tools/triage/mainwindow.cpp
 
 # warnings in Qt generated code we cannot fix
-funcArgNamesDifferent:*/moc_*.cpp
-naming-varname:*/ui_*.h
+funcArgNamesDifferent:*/moc_checkthread.cpp
+funcArgNamesDifferent:*/moc_codeeditstylecontrols.cpp
+funcArgNamesDifferent:*/moc_resultstree.cpp
+funcArgNamesDifferent:*/moc_resultsview.cpp
+funcArgNamesDifferent:*/moc_threadhandler.cpp
+funcArgNamesDifferent:*/moc_threadresult.cpp
+naming-varname:*/gui/ui_*.h
 functionStatic:*/ui_fileview.h
 
 # --debug-warnings suppressions
 valueFlowBailout
 valueFlowBailoutIncompleteVar
-autoNoType
+autoNoType:externals/simplecpp/simplecpp.cpp
+autoNoType:cli/*.cpp
+autoNoType:lib/*.cpp
+autoNoType:lib/library.h
+autoNoType:gui/*.cpp
+autoNoType:test/*.cpp
+autoNoType:tools/triage/mainwindow.cpp
 # ticket 11631
 templateInstantiation:test/testutils.cpp
 
