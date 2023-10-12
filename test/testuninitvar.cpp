@@ -1239,6 +1239,18 @@ private:
                        "    return v2 + v4 + v6 + v7;\n"
                        "}\n");
         ASSERT_EQUALS("[test.cpp:12]: (error) Uninitialized variable: v5\n", errout.str());
+
+        checkUninitVar("bool set(int *p);\n"
+                       "\n"
+                       "void foo(bool a) {\n"
+                       "    bool flag{false};\n"
+                       "    int x;\n"
+                       "    if (!a) {\n"
+                       "        flag = set(&x);\n"
+                       "    }\n"
+                       "    if (!flag || x == 0) {}\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
