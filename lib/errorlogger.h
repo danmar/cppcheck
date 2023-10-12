@@ -110,32 +110,32 @@ public:
 
     ErrorMessage(std::list<FileLocation> callStack,
                  std::string file1,
-                 Severity::SeverityType severity,
+                 Severity severity,
                  const std::string &msg,
                  std::string id, Certainty certainty);
     ErrorMessage(std::list<FileLocation> callStack,
                  std::string file1,
-                 Severity::SeverityType severity,
+                 Severity severity,
                  const std::string &msg,
                  std::string id,
                  const CWE &cwe,
                  Certainty certainty);
     ErrorMessage(const std::list<const Token*>& callstack,
                  const TokenList* list,
-                 Severity::SeverityType severity,
+                 Severity severity,
                  std::string id,
                  const std::string& msg,
                  Certainty certainty);
     ErrorMessage(const std::list<const Token*>& callstack,
                  const TokenList* list,
-                 Severity::SeverityType severity,
+                 Severity severity,
                  std::string id,
                  const std::string& msg,
                  const CWE &cwe,
                  Certainty certainty);
     ErrorMessage(const ErrorPath &errorPath,
                  const TokenList *tokenList,
-                 Severity::SeverityType severity,
+                 Severity severity,
                  const char id[],
                  const std::string &msg,
                  const CWE &cwe,
@@ -173,7 +173,7 @@ public:
     /** For GUI rechecking; source file (not header) */
     std::string file0;
 
-    Severity::SeverityType severity;
+    Severity severity;
     CWE cwe;
     Certainty certainty;
 

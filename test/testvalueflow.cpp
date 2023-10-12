@@ -6670,6 +6670,27 @@ private:
                "}\n";
         ASSERT(!isKnownContainerSizeValue(tokenValues(code, "v ["), 0).empty());
         ASSERT(!isPossibleContainerSizeValue(tokenValues(code, "v ["), 0).empty());
+
+        code = "template<typename T>\n" // #12052
+               "std::vector<T> g(T);\n"
+               "int f() {\n"
+               "    const std::vector<int> v{ g(3) };\n"
+               "    auto x = v.size();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 1));
+
+        code = "template<typename T>\n"
+               "std::vector<T> g(const std::stack<T>& s);\n"
+               "int f() {\n"
+               "    std::stack<int> s{};\n"
+               "    s.push(42);\n"
+               "    s.push(43);\n"
+               "    const std::vector<int> r{ g(s) };\n"
+               "    auto x = r.size();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 9U, 1));
     }
 
     void valueFlowContainerElement()

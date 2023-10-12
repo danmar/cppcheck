@@ -791,7 +791,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         if (message) {
                             const tinyxml2::XMLElement *severity = message->FirstChildElement("severity");
                             if (severity)
-                                rule.severity = Severity::fromString(severity->GetText());
+                                rule.severity = severityFromString(severity->GetText());
 
                             const tinyxml2::XMLElement *id = message->FirstChildElement("id");
                             if (id)

@@ -144,7 +144,7 @@ void CheckType::tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, con
     }
 
 
-    Severity::SeverityType severity = rhsbits.errorSeverity() ? Severity::error : Severity::warning;
+    Severity severity = rhsbits.errorSeverity() ? Severity::error : Severity::warning;
     if (cpp14)
         severity = Severity::portability;
 

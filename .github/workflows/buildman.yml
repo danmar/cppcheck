@@ -39,21 +39,20 @@ jobs:
           path: output
 
   manpage:
-    - runs-on: ubuntu-22.04
-      steps:
-        - uses: actions/checkout@v3
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
 
-        - name: Install missing software on ubuntu
-          if: contains(matrix.image, 'ubuntu')
-          run: |
-            apt-get update
-            apt-get install -y xsltproc docbook-xsl
+      - name: Install missing software on ubuntu
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xsltproc docbook-xsl
 
-        - name: build manpage
-          run: |
-            make man
+      - name: build manpage
+        run: |
+          make man
 
-        - uses: actions/upload-artifact@v3
-          with:
-            name: cppcheck.1
-            path: cppcheck.1
+      - uses: actions/upload-artifact@v3
+        with:
+          name: cppcheck.1
+          path: cppcheck.1

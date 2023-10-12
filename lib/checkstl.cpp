@@ -1930,8 +1930,8 @@ void CheckStl::string_c_str()
 
     // Find all functions that take std::string as argument
     struct StrArg {
-        nonneg int n; // cppcheck-suppress unusedStructMember // FP used through iterator/pair
-        std::string argtype; // cppcheck-suppress unusedStructMember
+        nonneg int n;
+        std::string argtype;
     };
     std::multimap<const Function*, StrArg> c_strFuncParam;
     if (printPerformance) {
@@ -2877,6 +2877,8 @@ void CheckStl::useStlAlgorithm()
             if (Token::simpleMatch(splitTok, ":")) {
                 loopVar = splitTok->previous();
                 if (loopVar->varId() == 0)
+                    continue;
+                if (Token::simpleMatch(splitTok->astOperand2(), "{"))
                     continue;
             }
             else { // iterator-based loop?

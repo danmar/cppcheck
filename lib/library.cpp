@@ -837,7 +837,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             const char* const severity = functionnode->Attribute("severity");
             if (severity == nullptr)
                 return Error(ErrorCode::MISSING_ATTRIBUTE, "severity");
-            wi.severity = Severity::fromString(severity);
+            wi.severity = severityFromString(severity);
 
             const char* const cstd = functionnode->Attribute("cstd");
             if (cstd) {

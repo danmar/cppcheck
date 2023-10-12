@@ -8526,10 +8526,10 @@ static std::vector<ValueFlow::Value> getContainerSizeFromConstructorArgs(const s
 static bool valueFlowIsSameContainerType(const ValueType& contType, const Token* tok, const Settings* settings)
 {
     if (!tok || !tok->valueType() || !tok->valueType()->containerTypeToken)
-        return false;
+        return true;
 
     const ValueType tokType = ValueType::parseDecl(tok->valueType()->containerTypeToken, *settings);
-    return contType.isTypeEqual(&tokType);
+    return contType.isTypeEqual(&tokType) || tokType.type == ValueType::Type::UNKNOWN_TYPE;
 }
 
 static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
