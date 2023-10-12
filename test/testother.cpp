@@ -353,7 +353,7 @@ private:
 
     void checkInterlockedDecrement(const char code[]) {
         Settings settings;
-        settings.platform.type = cppcheck::Platform::Type::Win32A;
+        settings.platform.type = Platform::Type::Win32A;
 
         check(code, nullptr, false, true, false, &settings);
     }
@@ -2159,7 +2159,7 @@ private:
               "T::T(std::string s) noexcept(true) : m(std::move(s)) {}\n");
         ASSERT_EQUALS("", errout.str());
 
-        Settings settings1 = settingsBuilder().platform(cppcheck::Platform::Type::Win64).build();
+        Settings settings1 = settingsBuilder().platform(Platform::Type::Win64).build();
         check("using ui64 = unsigned __int64;\n"
               "ui64 Test(ui64 one, ui64 two) { return one + two; }\n",
               /*filename*/ nullptr, /*inconclusive*/ true, /*runSimpleChecks*/ true, /*verbose*/ false, &settings1);
@@ -2304,11 +2304,11 @@ private:
                                 "};\n"
                                 "void f(X x) {}";
 
-            Settings s32 = settingsBuilder(_settings).platform(cppcheck::Platform::Type::Unix32).build();
+            Settings s32 = settingsBuilder(_settings).platform(Platform::Type::Unix32).build();
             check(code, &s32);
             ASSERT_EQUALS("[test.cpp:5]: (performance) Function parameter 'x' should be passed by const reference.\n", errout.str());
 
-            Settings s64 = settingsBuilder(_settings).platform(cppcheck::Platform::Type::Unix64).build();
+            Settings s64 = settingsBuilder(_settings).platform(Platform::Type::Unix64).build();
             check(code, &s64);
             ASSERT_EQUALS("", errout.str());
         }
@@ -7926,7 +7926,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Checking if unsigned expression 'value' is less than zero.\n", errout.str());
 
         // #9040
-        Settings settings1 = settingsBuilder().platform(cppcheck::Platform::Type::Win64).build();
+        Settings settings1 = settingsBuilder().platform(Platform::Type::Win64).build();
         check("using BOOL = unsigned;\n"
               "int i;\n"
               "bool f() {\n"

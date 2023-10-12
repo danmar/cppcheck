@@ -756,9 +756,9 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             fs.useMfc = useOfMfc;
             fs.defines = "_WIN32=1";
             if (p.platform == ProjectConfiguration::Win32)
-                fs.platformType = cppcheck::Platform::Type::Win32W;
+                fs.platformType = Platform::Type::Win32W;
             else if (p.platform == ProjectConfiguration::x64) {
-                fs.platformType = cppcheck::Platform::Type::Win64;
+                fs.platformType = Platform::Type::Win64;
                 fs.defines += ";_WIN64=1";
             }
             std::string additionalIncludePaths;
@@ -1264,7 +1264,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     return true;
 }
 
-void ImportProject::selectOneVsConfig(cppcheck::Platform::Type platform)
+void ImportProject::selectOneVsConfig(Platform::Type platform)
 {
     std::set<std::string> filenames;
     for (std::list<ImportProject::FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
@@ -1276,9 +1276,9 @@ void ImportProject::selectOneVsConfig(cppcheck::Platform::Type platform)
         bool remove = false;
         if (!startsWith(fs.cfg,"Debug"))
             remove = true;
-        if (platform == cppcheck::Platform::Type::Win64 && fs.platformType != platform)
+        if (platform == Platform::Type::Win64 && fs.platformType != platform)
             remove = true;
-        else if ((platform == cppcheck::Platform::Type::Win32A || platform == cppcheck::Platform::Type::Win32W) && fs.platformType == cppcheck::Platform::Type::Win64)
+        else if ((platform == Platform::Type::Win32A || platform == Platform::Type::Win32W) && fs.platformType == Platform::Type::Win64)
             remove = true;
         else if (filenames.find(fs.filename) != filenames.end())
             remove = true;
@@ -1291,7 +1291,7 @@ void ImportProject::selectOneVsConfig(cppcheck::Platform::Type platform)
     }
 }
 
-void ImportProject::selectVsConfigurations(cppcheck::Platform::Type platform, const std::vector<std::string> &configurations)
+void ImportProject::selectVsConfigurations(Platform::Type platform, const std::vector<std::string> &configurations)
 {
     for (std::list<ImportProject::FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
         if (it->cfg.empty()) {
@@ -1303,9 +1303,9 @@ void ImportProject::selectVsConfigurations(cppcheck::Platform::Type platform, co
         bool remove = false;
         if (std::find(configurations.begin(), configurations.end(), config) == configurations.end())
             remove = true;
-        if (platform == cppcheck::Platform::Type::Win64 && fs.platformType != platform)
+        if (platform == Platform::Type::Win64 && fs.platformType != platform)
             remove = true;
-        else if ((platform == cppcheck::Platform::Type::Win32A || platform == cppcheck::Platform::Type::Win32W) && fs.platformType == cppcheck::Platform::Type::Win64)
+        else if ((platform == Platform::Type::Win32A || platform == Platform::Type::Win32W) && fs.platformType == Platform::Type::Win64)
             remove = true;
         if (remove) {
             it = fileSettings.erase(it);

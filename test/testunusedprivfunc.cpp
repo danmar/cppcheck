@@ -87,7 +87,7 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native) {
+    void check_(const char* file, int line, const char code[], Platform::Type platform = Platform::Type::Native) {
         // Clear the error buffer..
         errout.str("");
 
@@ -606,7 +606,7 @@ private:
               "public:\n"
               "    Foo() { }\n"
               "    __property int x = {read=getx}\n"
-              "};", cppcheck::Platform::Type::Win32A);
+              "};", Platform::Type::Win32A);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -619,7 +619,7 @@ private:
               "    }\n"
               "public:\n"
               "    Foo() { }\n"
-              "};", cppcheck::Platform::Type::Win32A);
+              "};", Platform::Type::Win32A);
         ASSERT_EQUALS("", errout.str());
     }
 

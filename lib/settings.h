@@ -245,7 +245,7 @@ public:
     /** @brief write results (--output-file=&lt;file&gt;) */
     std::string outputFile;
 
-    cppcheck::Platform platform;
+    Platform platform;
 
     /** @brief Experimental: --performance-valueflow-max-time=T */
     int performanceValueFlowMaxTime = -1;

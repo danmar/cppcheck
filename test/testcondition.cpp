@@ -5702,7 +5702,7 @@ private:
     }
 
     void compareOutOfTypeRange() {
-        const Settings settingsUnix64 = settingsBuilder().severity(Severity::style).platform(cppcheck::Platform::Type::Unix64).build();
+        const Settings settingsUnix64 = settingsBuilder().severity(Severity::style).platform(Platform::Type::Unix64).build();
 
         check("void f(unsigned char c) {\n"
               "  if (c == 256) {}\n"

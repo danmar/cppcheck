@@ -77,13 +77,13 @@ static QStringList getPaths(const QListWidget *list)
 }
 
 /** Platforms shown in the platform combobox */
-static const cppcheck::Platform::Type builtinPlatforms[] = {
-    cppcheck::Platform::Type::Native,
-    cppcheck::Platform::Type::Win32A,
-    cppcheck::Platform::Type::Win32W,
-    cppcheck::Platform::Type::Win64,
-    cppcheck::Platform::Type::Unix32,
-    cppcheck::Platform::Type::Unix64
+static const Platform::Type builtinPlatforms[] = {
+    Platform::Type::Native,
+    Platform::Type::Win32A,
+    Platform::Type::Win32W,
+    Platform::Type::Win64,
+    Platform::Type::Unix32,
+    Platform::Type::Unix64
 };
 
 static const int numberOfBuiltinPlatforms = sizeof(builtinPlatforms) / sizeof(builtinPlatforms[0]);
@@ -190,7 +190,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, bool premium, QWi
 
     // Platforms..
     Platforms platforms;
-    for (const cppcheck::Platform::Type builtinPlatform : builtinPlatforms)
+    for (const Platform::Type builtinPlatform : builtinPlatforms)
         mUI->mComboBoxPlatform->addItem(platforms.get(builtinPlatform).mTitle);
     QStringList platformFiles;
     for (QString sp : searchPaths) {
@@ -203,7 +203,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, bool premium, QWi
         for (const QFileInfo& item : dir.entryInfoList()) {
             const QString platformFile = item.fileName();
 
-            cppcheck::Platform plat2;
+            Platform plat2;
             if (!plat2.loadFromFile(applicationFilePath.toStdString().c_str(), platformFile.toStdString()))
                 continue;
 
@@ -336,8 +336,8 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     } else {
         int i;
         for (i = 0; i < numberOfBuiltinPlatforms; ++i) {
-            const cppcheck::Platform::Type p = builtinPlatforms[i];
-            if (platform == cppcheck::Platform::toString(p))
+            const Platform::Type p = builtinPlatforms[i];
+            if (platform == Platform::toString(p))
                 break;
         }
         if (i < numberOfBuiltinPlatforms)
@@ -445,7 +445,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     else {
         const int i = mUI->mComboBoxPlatform->currentIndex();
         if (i>=0 && i < numberOfBuiltinPlatforms)
-            projectFile->setPlatform(cppcheck::Platform::toString(builtinPlatforms[i]));
+            projectFile->setPlatform(Platform::toString(builtinPlatforms[i]));
         else
             projectFile->setPlatform(QString());
     }

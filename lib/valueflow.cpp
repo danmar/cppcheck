@@ -1128,7 +1128,7 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings *settings)
 }
 
 
-static bool getMinMaxValues(const ValueType* vt, const cppcheck::Platform& platform, MathLib::bigint& minValue, MathLib::bigint& maxValue);
+static bool getMinMaxValues(const ValueType* vt, const Platform& platform, MathLib::bigint& minValue, MathLib::bigint& maxValue);
 
 // Handle various constants..
 static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, bool cpp)
@@ -1193,7 +1193,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
             const size_t sz = vt ? ValueFlow::getSizeOf(*vt, settings) : 0;
             if (sz > 0) {
                 ValueFlow::Value value(sz);
-                if (!tok2->isTemplateArg() && settings->platform.type != cppcheck::Platform::Type::Unspecified)
+                if (!tok2->isTemplateArg() && settings->platform.type != Platform::Type::Unspecified)
                     value.setKnown();
                 setTokenValue(tok->next(), std::move(value), settings);
             }
@@ -1206,7 +1206,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
                     tok->linkAt(1);
             }
             ValueFlow::Value value(size);
-            if (!tok2->isTemplateArg() && settings->platform.type != cppcheck::Platform::Type::Unspecified)
+            if (!tok2->isTemplateArg() && settings->platform.type != Platform::Type::Unspecified)
                 value.setKnown();
             setTokenValue(tok, value, settings);
             setTokenValue(tok->next(), std::move(value), settings);
@@ -1219,7 +1219,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
                 }
             }
             ValueFlow::Value value(size);
-            if (!tok2->isTemplateArg() && settings->platform.type != cppcheck::Platform::Type::Unspecified)
+            if (!tok2->isTemplateArg() && settings->platform.type != Platform::Type::Unspecified)
                 value.setKnown();
             setTokenValue(tok, value, settings);
             setTokenValue(tok->next(), std::move(value), settings);
@@ -1236,7 +1236,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
                 sz1->variable()->dimensionKnown(0) &&
                 Token::Match(sz2->astOperand2(), "*|[") && Token::Match(sz2->astOperand2()->astOperand1(), "%varid%", varid1)) {
                 ValueFlow::Value value(sz1->variable()->dimension(0));
-                if (!tok2->isTemplateArg() && settings->platform.type != cppcheck::Platform::Type::Unspecified)
+                if (!tok2->isTemplateArg() && settings->platform.type != Platform::Type::Unspecified)
                     value.setKnown();
                 setTokenValue(tok->tokAt(4), std::move(value), settings);
             }
@@ -1265,7 +1265,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
                 }
                 if (size && count > 0) {
                     ValueFlow::Value value(count * size);
-                    if (settings->platform.type != cppcheck::Platform::Type::Unspecified)
+                    if (settings->platform.type != Platform::Type::Unspecified)
                         value.setKnown();
                     setTokenValue(tok, value, settings);
                     setTokenValue(tok->next(), std::move(value), settings);
@@ -1320,7 +1320,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
             }
             if (sz > 0) {
                 ValueFlow::Value value(sz);
-                if (!tok2->isTemplateArg() && settings->platform.type != cppcheck::Platform::Type::Unspecified)
+                if (!tok2->isTemplateArg() && settings->platform.type != Platform::Type::Unspecified)
                     value.setKnown();
                 setTokenValue(tok->next(), std::move(value), settings);
             }
@@ -8947,7 +8947,7 @@ static void valueFlowDynamicBufferSize(const TokenList& tokenlist, const SymbolD
     }
 }
 
-static bool getMinMaxValues(const ValueType *vt, const cppcheck::Platform &platform, MathLib::bigint &minValue, MathLib::bigint &maxValue)
+static bool getMinMaxValues(const ValueType *vt, const Platform &platform, MathLib::bigint &minValue, MathLib::bigint &maxValue)
 {
     if (!vt || !vt->isIntegral() || vt->pointer)
         return false;
@@ -9024,7 +9024,7 @@ static void valueFlowSafeFunctions(TokenList& tokenlist, const SymbolDatabase& s
             continue;
 
         const bool safe = function->isSafe(settings);
-        const bool all = safe && settings->platform.type != cppcheck::Platform::Type::Unspecified;
+        const bool all = safe && settings->platform.type != Platform::Type::Unspecified;
 
         for (const Variable &arg : function->argumentList) {
             if (!arg.nameToken() || !arg.valueType())

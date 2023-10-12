@@ -307,7 +307,7 @@ private:
     }
 
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tok_(const char* file, int line, const char code[], bool debugwarnings = false, cppcheck::Platform::Type type = cppcheck::Platform::Type::Native) {
+    std::string tok_(const char* file, int line, const char code[], bool debugwarnings = false, Platform::Type type = Platform::Type::Native) {
         errout.str("");
 
         const Settings settings1 = settingsBuilder(settings).library("std.cfg").debugwarnings(debugwarnings).platform(type).build();

@@ -421,9 +421,9 @@ TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::library(const char l
     return *this;
 }
 
-TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::platform(cppcheck::Platform::Type type)
+TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::platform(Platform::Type type)
 {
-    const std::string platformStr = cppcheck::Platform::toString(type);
+    const std::string platformStr = Platform::toString(type);
 
     if (REDUNDANT_CHECK && settings.platform.type == type)
         throw std::runtime_error("redundant setting: platform (" + platformStr + ")");
