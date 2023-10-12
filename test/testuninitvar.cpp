@@ -1251,6 +1251,23 @@ private:
                        "    if (!flag || x == 0) {}\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f(int n, int a) {\n" // #12011
+                       "    double x[10];\n"
+                       "    if (n == 1) {\n"
+                       "        if (a)\n"
+                       "            x[0] = 4;\n"
+                       "    }\n"
+                       "    else\n"
+                       "        for (int i = 0; i < n; i++) {\n"
+                       "            if (a)\n"
+                       "                x[i] = 8;\n"
+                       "        }\n"
+                       "    if (n == 1)\n"
+                       "        if (a)\n"
+                       "            (void)x[0];\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

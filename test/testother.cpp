@@ -61,6 +61,7 @@ private:
         TEST_CASE(zeroDiv16); // #11158
         TEST_CASE(zeroDiv17); // #9931
         TEST_CASE(zeroDiv18);
+        TEST_CASE(zeroDiv19);
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -653,6 +654,15 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'x==y' is redundant or there is division by zero at line 3.\n",
             errout.str());
+    }
+
+    void zeroDiv19()
+    {
+        check("void f() {\n" // #2456
+              "    for (int i = 0;;)\n"
+              "        int j = 10 / i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero.\n", errout.str());
     }
 
     void zeroDivCond() {
