@@ -70,7 +70,7 @@ private:
      * @param msg text
      * @param cwe cwe number
      */
-    void reportErr(const Token *tok, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe) const;
+    void reportErr(const Token *tok, Severity severity, const std::string &id, const std::string &msg, const CWE &cwe) const;
 
     /**
      * Report error. Similar with the function Check::reportError
@@ -80,7 +80,7 @@ private:
      * @param msg text
      * @param cwe cwe number
      */
-    void reportErr(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe) const;
+    void reportErr(const std::list<const Token *> &callstack, Severity severity, const std::string &id, const std::string &msg, const CWE &cwe) const;
 
 public:
     CheckMemoryLeak() = delete;

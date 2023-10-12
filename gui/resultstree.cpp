@@ -319,7 +319,7 @@ QStandardItem *ResultsTree::addBacktraceFiles(QStandardItem *parent,
     return list[0];
 }
 
-QString ResultsTree::severityToTranslatedString(Severity::SeverityType severity)
+QString ResultsTree::severityToTranslatedString(Severity severity)
 {
     switch (severity) {
     case Severity::style:
@@ -901,7 +901,7 @@ void ResultsTree::copy()
         QString inconclusive = data[INCONCLUSIVE].toBool() ? ",inconclusive" : "";
         text += '[' + data[FILENAME].toString() + ':' + QString::number(data[LINE].toInt())
                 + "] ("
-                + QString::fromStdString(Severity::toString(ShowTypes::ShowTypeToSeverity((ShowTypes::ShowType)data[SEVERITY].toInt()))) + inconclusive
+                + QString::fromStdString(severityToString(ShowTypes::ShowTypeToSeverity((ShowTypes::ShowType)data[SEVERITY].toInt()))) + inconclusive
                 + ") "
                 + data[MESSAGE].toString()
                 + " ["
@@ -1155,7 +1155,7 @@ QString ResultsTree::getFilePath(const QStandardItem *target, bool fullPath)
     return QString();
 }
 
-QString ResultsTree::severityToIcon(Severity::SeverityType severity)
+QString ResultsTree::severityToIcon(Severity severity)
 {
     switch (severity) {
     case Severity::error:

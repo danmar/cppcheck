@@ -1429,8 +1429,8 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             const std::string text = obj["message"].get<std::string>();
             errmsg.setmsg(text);
             const std::string severity = obj["severity"].get<std::string>();
-            errmsg.severity = Severity::fromString(severity);
-            if (errmsg.severity == Severity::SeverityType::none) {
+            errmsg.severity = severityFromString(severity);
+            if (errmsg.severity == Severity::none) {
                 if (!endsWith(errmsg.id, "-logChecker"))
                     continue;
             }
@@ -1672,13 +1672,13 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
 
         errmsg.id = "clang-tidy-" + errorString.substr(1, errorString.length() - 2);
         if (errmsg.id.find("performance") != std::string::npos)
-            errmsg.severity = Severity::SeverityType::performance;
+            errmsg.severity = Severity::performance;
         else if (errmsg.id.find("portability") != std::string::npos)
-            errmsg.severity = Severity::SeverityType::portability;
+            errmsg.severity = Severity::portability;
         else if (errmsg.id.find("cert") != std::string::npos || errmsg.id.find("misc") != std::string::npos || errmsg.id.find("unused") != std::string::npos)
-            errmsg.severity = Severity::SeverityType::warning;
+            errmsg.severity = Severity::warning;
         else
-            errmsg.severity = Severity::SeverityType::style;
+            errmsg.severity = Severity::style;
 
         errmsg.file0 = fixedpath;
         errmsg.setmsg(messageString);

@@ -32,7 +32,7 @@ ShowTypes::~ShowTypes()
     save();
 }
 
-ShowTypes::ShowType ShowTypes::SeverityToShowType(Severity::SeverityType severity)
+ShowTypes::ShowType ShowTypes::SeverityToShowType(Severity severity)
 {
     switch (severity) {
     case Severity::none:
@@ -54,7 +54,7 @@ ShowTypes::ShowType ShowTypes::SeverityToShowType(Severity::SeverityType severit
     }
 }
 
-Severity::SeverityType ShowTypes::ShowTypeToSeverity(ShowTypes::ShowType type)
+Severity ShowTypes::ShowTypeToSeverity(ShowTypes::ShowType type)
 {
     switch (type) {
     case ShowTypes::ShowStyle:
@@ -117,7 +117,7 @@ bool ShowTypes::isShown(ShowTypes::ShowType category) const
     return mVisible[category];
 }
 
-bool ShowTypes::isShown(Severity::SeverityType severity) const
+bool ShowTypes::isShown(Severity severity) const
 {
     return isShown(ShowTypes::SeverityToShowType(severity));
 }
