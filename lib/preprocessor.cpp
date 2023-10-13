@@ -275,6 +275,7 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
     }
 
     for (const Suppressions::Suppression & suppr: inlineSuppressionsBlockBegin)
+        // cppcheck-suppress useStlAlgorithm
         bad.emplace_back(suppr.fileName, suppr.lineNumber, "Suppress Begin: No matching end");
 }
 
