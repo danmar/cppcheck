@@ -66,8 +66,8 @@ static bool isAutoDeallocType(const Type* type) {
     if (type->classScope && type->classScope->numConstructors == 0 &&
         (type->classScope->varlist.empty() || type->needInitialization == Type::NeedInitialization::True) &&
         std::none_of(type->derivedFrom.begin(), type->derivedFrom.end(), [](const Type::BaseInfo& bi) {
-            return isAutoDeallocType(bi.type);
-        }))
+        return isAutoDeallocType(bi.type);
+    }))
         return false;
     return true;
 }
