@@ -713,6 +713,13 @@ private:
               "    auto g = [](decltype(a[0]) i) {};\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("enum E { E0 };\n"
+              "void f() {\n"
+              "    E0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant code: Found a statement that begins with enumerator constant.\n",
+                      errout.str());
     }
 
     void vardecl() {
