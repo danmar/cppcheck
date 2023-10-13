@@ -2707,7 +2707,7 @@ namespace {
         const Token* bodyTok = nullptr;
         const Token* loopVar = nullptr;
         const Settings* settings = nullptr;
-        std::set<nonneg int> varsChanged = {};
+        std::set<nonneg int> varsChanged;
 
         explicit LoopAnalyzer(const Token* tok, const Settings* psettings)
             : bodyTok(tok->next()->link()->next()), settings(psettings)

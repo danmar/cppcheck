@@ -1775,7 +1775,7 @@ static void valueFlowRightShift(TokenList &tokenList, const Settings* settings)
 
 static std::vector<MathLib::bigint> minUnsignedValue(const Token* tok, int depth = 8)
 {
-    std::vector<MathLib::bigint> result = {};
+    std::vector<MathLib::bigint> result;
     if (!tok)
         return result;
     if (depth < 0)
@@ -4942,7 +4942,7 @@ static void valueFlowLifetime(TokenList &tokenlist, ErrorLogger *errorLogger, co
                 continue;
             }
 
-            std::vector<const Token*> toks = {};
+            std::vector<const Token*> toks;
             if (tok->isUnaryOp("*") || parent->originalName() == "->") {
                 for (const ValueFlow::Value& v : tok->values()) {
                     if (!v.isLocalLifetimeValue())
@@ -9180,7 +9180,7 @@ struct ValueFlowState {
     SymbolDatabase& symboldatabase;
     ErrorLogger* errorLogger = nullptr;
     const Settings* settings = nullptr;
-    std::set<const Scope*> skippedFunctions = {};
+    std::set<const Scope*> skippedFunctions;
 };
 
 struct ValueFlowPass {

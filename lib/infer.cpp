@@ -49,10 +49,8 @@ static const ValueFlow::Value* getCompareValue(const std::list<ValueFlow::Value>
 }
 
 struct Interval {
-    std::vector<MathLib::bigint> minvalue = {};
-    std::vector<MathLib::bigint> maxvalue = {};
-    std::vector<const ValueFlow::Value*> minRef = {};
-    std::vector<const ValueFlow::Value*> maxRef = {};
+    std::vector<MathLib::bigint> minvalue, maxvalue;
+    std::vector<const ValueFlow::Value*> minRef, maxRef;
 
     std::string str() const
     {

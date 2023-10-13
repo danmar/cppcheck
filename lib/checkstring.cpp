@@ -73,8 +73,7 @@ void CheckString::stringLiteralWrite()
 
 void CheckString::stringLiteralWriteError(const Token *tok, const Token *strValue)
 {
-    std::list<const Token *> callstack;
-    callstack.push_back(tok);
+    std::list<const Token*> callstack{ tok };
     if (strValue)
         callstack.push_back(strValue);
 
