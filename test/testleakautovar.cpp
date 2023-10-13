@@ -601,6 +601,14 @@ private:
               "    b = Bar(*new Foo(data));\n"
               "}", /*cpp*/ true);
         ASSERT_EQUALS("[test.cpp:4]: (information) --check-library: Function Foo() should have <use>/<leak-ignore> configuration\n", errout.str());
+
+        check("class B {};\n"
+              "    class D : public B {};\n"
+              "    void g() {\n"
+              "        auto d = new D();\n"
+              "        if (d) {}\n"
+              "}", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: d\n", errout.str());
     }
 
     void realloc1() {
