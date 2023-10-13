@@ -83,7 +83,7 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native, const Settings *s = nullptr) {
+    void check_(const char* file, int line, const char code[], Platform::Type platform = Platform::Type::Native, const Settings *s = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
@@ -653,10 +653,10 @@ private:
 
         const Settings s = settingsBuilder(settings).library("windows.cfg").build();
 
-        check("int WinMain() { }", cppcheck::Platform::Type::Native, &s);
+        check("int WinMain() { }", Platform::Type::Native, &s);
         ASSERT_EQUALS("", errout.str());
 
-        check("int _tmain() { }", cppcheck::Platform::Type::Native, &s);
+        check("int _tmain() { }", Platform::Type::Native, &s);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -669,10 +669,10 @@ private:
 
         const Settings s = settingsBuilder(settings).library("windows.cfg").build();
 
-        check("int wWinMain() { }", cppcheck::Platform::Type::Native, &s);
+        check("int wWinMain() { }", Platform::Type::Native, &s);
         ASSERT_EQUALS("", errout.str());
 
-        check("int _tmain() { }", cppcheck::Platform::Type::Native, &s);
+        check("int _tmain() { }", Platform::Type::Native, &s);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -685,7 +685,7 @@ private:
         const Settings s = settingsBuilder(settings).library("gnu.cfg").build();
 
         check("int _init() { }\n"
-              "int _fini() { }\n", cppcheck::Platform::Type::Native, &s);
+              "int _fini() { }\n", Platform::Type::Native, &s);
         ASSERT_EQUALS("", errout.str());
     }
 

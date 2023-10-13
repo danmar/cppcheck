@@ -69,7 +69,7 @@ private:
     const Token* vartok{nullptr};
     const Token* typetok{nullptr};
     Settings settings1 = settingsBuilder().library("std.cfg").build();
-    const Settings settings2 = settingsBuilder().platform(cppcheck::Platform::Type::Unspecified).build();
+    const Settings settings2 = settingsBuilder().platform(Platform::Type::Unspecified).build();
 
     void reset() {
         vartok = nullptr;
@@ -8516,7 +8516,7 @@ private:
         }
         {
             // PodType
-            Settings settingsWin64 = settingsBuilder().platform(cppcheck::Platform::Type::Win64).build();
+            Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).build();
             const Library::PodType u32 = { 4, 'u' };
             const Library::PodType podtype2 = { 0, 'u', Library::PodType::Type::INT };
             settingsWin64.library.mPodTypes["u32"] = u32;
@@ -8537,7 +8537,7 @@ private:
         }
         {
             // PlatformType
-            Settings settingsUnix32 = settingsBuilder().platform(cppcheck::Platform::Type::Unix32).build();
+            Settings settingsUnix32 = settingsBuilder().platform(Platform::Type::Unix32).build();
             Library::PlatformType s32;
             s32.mType = "int";
             settingsUnix32.library.mPlatforms[settingsUnix32.platform.toString()].mPlatformTypes["s32"] = s32;
@@ -8547,7 +8547,7 @@ private:
         }
         {
             // PlatformType - wchar_t
-            Settings settingsWin64 = settingsBuilder().platform(cppcheck::Platform::Type::Win64).build();
+            Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).build();
             Library::PlatformType lpctstr;
             lpctstr.mType = "wchar_t";
             settingsWin64.library.mPlatforms[settingsWin64.platform.toString()].mPlatformTypes["LPCTSTR"] = lpctstr;

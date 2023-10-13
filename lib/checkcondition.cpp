@@ -1912,8 +1912,8 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
-    if (mSettings->platform.type == cppcheck::Platform::Type::Native ||
-        mSettings->platform.type == cppcheck::Platform::Type::Unspecified)
+    if (mSettings->platform.type == Platform::Type::Native ||
+        mSettings->platform.type == Platform::Type::Unspecified)
         return;
 
     logChecker("CheckCondition::checkCompareValueOutOfTypeRange"); // style,platform

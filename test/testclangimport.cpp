@@ -1050,7 +1050,7 @@ private:
 
 
 #define GET_SYMBOL_DB(AST) \
-    const Settings settings = settingsBuilder().clang().platform(cppcheck::Platform::Type::Unix64).build(); \
+    const Settings settings = settingsBuilder().clang().platform(Platform::Type::Unix64).build(); \
     Tokenizer tokenizer(&settings, this); \
     { \
         std::istringstream istr(AST); \

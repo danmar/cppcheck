@@ -74,7 +74,7 @@ public:
         std::list<std::string> includePaths;
         std::list<std::string> systemIncludePaths;
         std::string standard;
-        cppcheck::Platform::Type platformType = cppcheck::Platform::Type::Unspecified;
+        Platform::Type platformType = Platform::Type::Unspecified;
         bool msc{};
         bool useMfc{};
 
@@ -90,8 +90,8 @@ public:
     ImportProject(const ImportProject&) = default;
     ImportProject& operator=(const ImportProject&) = default;
 
-    void selectOneVsConfig(cppcheck::Platform::Type platform);
-    void selectVsConfigurations(cppcheck::Platform::Type platform, const std::vector<std::string> &configurations);
+    void selectOneVsConfig(Platform::Type platform);
+    void selectVsConfigurations(Platform::Type platform, const std::vector<std::string> &configurations);
 
     std::list<std::string> getVSConfigs();
 

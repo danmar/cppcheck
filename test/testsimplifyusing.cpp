@@ -94,7 +94,7 @@ private:
     }
 
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tok_(const char* file, int line, const char code[], cppcheck::Platform::Type type = cppcheck::Platform::Type::Native, bool debugwarnings = true, bool preprocess = false) {
+    std::string tok_(const char* file, int line, const char code[], Platform::Type type = Platform::Type::Native, bool debugwarnings = true, bool preprocess = false) {
         errout.str("");
 
         const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings(debugwarnings).platform(type).build();
@@ -406,7 +406,7 @@ private:
                             "    FP_M(val);"
                             "};";
 
-        TODO_ASSERT_THROW(tok(code, cppcheck::Platform::Type::Native, false), InternalError); // TODO: Do not throw AST validation exception
+        TODO_ASSERT_THROW(tok(code, Platform::Type::Native, false), InternalError); // TODO: Do not throw AST validation exception
         //ASSERT_EQUALS("", errout.str());
     }
 
@@ -670,7 +670,7 @@ private:
                             "    T* p{ new T };\n"
                             "}\n";
         const char expected[] = "void f ( ) { int * p { new int } ; }";
-        ASSERT_EQUALS(expected, tok(code, cppcheck::Platform::Type::Native, /*debugwarnings*/ true));
+        ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -678,7 +678,7 @@ private:
         const char code[] = "using T = int*;\n"
                             "void f(T = T()) {}\n";
         const char expected[] = "void f ( int * = ( int * ) 0 ) { }";
-        ASSERT_EQUALS(expected, tok(code, cppcheck::Platform::Type::Native, /*debugwarnings*/ true));
+        ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -732,11 +732,11 @@ private:
 
         const char exp[] = "int i ;";
 
-        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Unix32));
-        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Unix64));
-        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Win32A));
-        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Win32W));
-        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Win64));
+        ASSERT_EQUALS(exp, tok(code, Platform::Type::Unix32));
+        ASSERT_EQUALS(exp, tok(code, Platform::Type::Unix64));
+        ASSERT_EQUALS(exp, tok(code, Platform::Type::Win32A));
+        ASSERT_EQUALS(exp, tok(code, Platform::Type::Win32W));
+        ASSERT_EQUALS(exp, tok(code, Platform::Type::Win64));
     }
 
     void simplifyUsing9042() {
@@ -756,7 +756,7 @@ private:
                            "} ; "
                            "template < class T > class s { } ;";
 
-        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Win64));
+        ASSERT_EQUALS(exp, tok(code, Platform::Type::Win64));
     }
 
     void simplifyUsing9191() {
@@ -1389,7 +1389,7 @@ private:
                             "STAMP(A, int);\n"
                             "STAMP(B, A);\n"
                             "STAMP(C, B);\n";
-        tok(code, cppcheck::Platform::Type::Native, /*debugwarnings*/ true, /*preprocess*/ true);
+        tok(code, Platform::Type::Native, /*debugwarnings*/ true, /*preprocess*/ true);
         ASSERT(startsWith(errout.str(), "[test.cpp:6]: (debug) Failed to parse 'using C = S < S < S < int"));
     }
 

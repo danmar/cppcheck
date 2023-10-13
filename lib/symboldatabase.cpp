@@ -6313,7 +6313,7 @@ void SymbolDatabase::setValueType(Token* tok, const Variable& var, SourceLocatio
     }
 }
 
-static ValueType::Type getEnumType(const Scope* scope, const cppcheck::Platform& platform);
+static ValueType::Type getEnumType(const Scope* scope, const Platform& platform);
 
 void SymbolDatabase::setValueType(Token* tok, const Enumerator& enumerator, SourceLocation loc)
 {
@@ -6830,7 +6830,7 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
     }
 }
 
-static ValueType::Type getEnumType(const Scope* scope, const cppcheck::Platform& platform) // TODO: also determine sign?
+static ValueType::Type getEnumType(const Scope* scope, const Platform& platform) // TODO: also determine sign?
 {
     ValueType::Type type = ValueType::Type::INT;
     for (const Token* tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
@@ -7151,7 +7151,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                         pos -= 2;
                     } else break;
                 }
-                if (mSettings.platform.type != cppcheck::Platform::Type::Unspecified) {
+                if (mSettings.platform.type != Platform::Type::Unspecified) {
                     if (type <= ValueType::Type::INT && mSettings.platform.isIntValue(unsignedSuffix ? (value >> 1) : value))
                         type = ValueType::Type::INT;
                     else if (type <= ValueType::Type::INT && !MathLib::isDec(tokStr) && mSettings.platform.isIntValue(value >> 2)) {
@@ -7242,7 +7242,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
 
             else if (Token::simpleMatch(tok->previous(), "sizeof (")) {
                 ValueType valuetype(ValueType::Sign::UNSIGNED, ValueType::Type::LONG, 0U);
-                if (mSettings.platform.type == cppcheck::Platform::Type::Win64)
+                if (mSettings.platform.type == Platform::Type::Win64)
                     valuetype.type = ValueType::Type::LONGLONG;
 
                 valuetype.originalTypeName = "size_t";
@@ -7779,7 +7779,7 @@ bool ValueType::isConst(nonneg int indirect) const
     return constness & (1 << (pointer - indirect));
 }
 
-MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform, bool p) const
+MathLib::bigint ValueType::typeSize(const Platform &platform, bool p) const
 {
     if (p && pointer)
         return platform.sizeof_pointer;
