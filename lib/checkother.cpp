@@ -1892,7 +1892,7 @@ static bool isBracketAccess(const Token* tok)
 }
 
 static bool isConstant(const Token* tok) {
-    return Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL");
+    return tok && (tok->isEnumerator() || Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL"));
 }
 
 static bool isConstStatement(const Token *tok, bool cpp)
@@ -2072,6 +2072,8 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
             typeStr = "character";
         else if (isNullOperand(valueTok))
             typeStr = "NULL";
+        else if (valueTok->isEnumerator())
+            typeStr = "enumerator";
         msg = "Redundant code: Found a statement that begins with " + typeStr + " constant.";
     }
     else if (!tok)
