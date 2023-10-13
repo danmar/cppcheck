@@ -165,7 +165,7 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(c
             return suppressions;
         }
 
-        const std::string SymbolNameString = "symbolName=";
+        const std::string symbolNameString = "symbolName=";
 
         while (iss) {
             std::string word;
@@ -174,8 +174,8 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(c
                 break;
             if (word.find_first_not_of("+-*/%#;") == std::string::npos)
                 break;
-            if (startsWith(word, SymbolNameString)) {
-                s.symbolName = word.substr(SymbolNameString.size());
+            if (startsWith(word, symbolNameString)) {
+                s.symbolName = word.substr(symbolNameString.size());
             } else {
                 if (errorMessage && errorMessage->empty())
                     *errorMessage = "Bad multi suppression '" + comment + "'. legal format is cppcheck-suppress[errorId, errorId symbolName=arr, ...]";
@@ -304,19 +304,24 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::string *e
     if (comment.compare(comment.size() - 2, 2, "*/") == 0)
         comment.erase(comment.size() - 2, 2);
 
-    const std::string cppchecksuppress = "cppcheck-suppress";
+    const std::set<std::string> cppchecksuppress{
+        "cppcheck-suppress",
+        "cppcheck-suppress-begin",
+        "cppcheck-suppress-end",
+        "cppcheck-suppress-file"
+    };
 
     std::istringstream iss(comment.substr(2));
     std::string word;
     iss >> word;
-    if (word.substr(0, cppchecksuppress.size()) != cppchecksuppress)
+    if (!cppchecksuppress.count(word))
         return false;
 
     iss >> errorId;
     if (!iss)
         return false;
 
-    const std::string SymbolNameString = "symbolName=";
+    const std::string symbolNameString = "symbolName=";
 
     while (iss) {
         iss >> word;
@@ -324,8 +329,8 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::string *e
             break;
         if (word.find_first_not_of("+-*/%#;") == std::string::npos)
             break;
-        if (startsWith(word, SymbolNameString))
-            symbolName = word.substr(SymbolNameString.size());
+        if (startsWith(word, symbolNameString))
+            symbolName = word.substr(symbolNameString.size());
         else if (errorMessage && errorMessage->empty())
             *errorMessage = "Bad suppression attribute '" + word + "'. You can write comments in the comment after a ; or //. Valid suppression attributes; symbolName=sym";
     }
@@ -395,16 +400,16 @@ std::string Suppressions::Suppression::getText() const
 bool Suppressions::isSuppressed(const Suppressions::ErrorMessage &errmsg, bool global)
 {
     const bool unmatchedSuppression(errmsg.errorId == "unmatchedSuppression");
-    bool return_value = false;
+    bool returnValue = false;
     for (Suppression &s : mSuppressions) {
         if (!global && !s.isLocal())
             continue;
         if (unmatchedSuppression && s.errorId != errmsg.errorId)
             continue;
         if (s.isMatch(errmsg))
-            return_value = true;
+            returnValue = true;
     }
-    return return_value;
+    return returnValue;
 }
 
 bool Suppressions::isSuppressed(const ::ErrorMessage &errmsg)

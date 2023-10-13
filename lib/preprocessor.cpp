@@ -274,9 +274,9 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
         }
     }
 
-    std::for_each(inlineSuppressionsBlockBegin.begin(), inlineSuppressionsBlockBegin.end(), [&](const Suppressions::Suppression & suppr) {
+    for (const Suppressions::Suppression & suppr: inlineSuppressionsBlockBegin)
+        // cppcheck-suppress useStlAlgorithm
         bad.emplace_back(suppr.fileName, suppr.lineNumber, "Suppress Begin: No matching end");
-    });
 }
 
 void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens, Suppressions &suppressions)
