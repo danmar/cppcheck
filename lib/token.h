@@ -46,18 +46,9 @@ class Settings;
 class Type;
 class ValueType;
 class Variable;
-class TokenList;
 class ConstTokenRange;
 class Token;
-
-/**
- * @brief This struct stores pointers to the front and back tokens of the list this token is in.
- */
-struct TokensFrontBack {
-    Token *front{};
-    Token* back{};
-    const TokenList* list{};
-};
+struct TokensFrontBack;
 
 struct ScopeInfo2 {
     ScopeInfo2(std::string name_, const Token *bodyEnd_, std::set<std::string> usingNamespaces_ = std::set<std::string>()) : name(std::move(name_)), bodyEnd(bodyEnd_), usingNamespaces(std::move(usingNamespaces_)) {}

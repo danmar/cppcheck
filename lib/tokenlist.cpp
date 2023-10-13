@@ -30,7 +30,6 @@
 #include "standards.h"
 #include "token.h"
 
-#include <algorithm>
 #include <cctype>
 #include <exception>
 #include <functional>
