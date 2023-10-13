@@ -883,6 +883,9 @@ private:
         ASSERT_EQUALS(true, s.parseComment("/* cppcheck-suppress-end id */", &msg));
         ASSERT_EQUALS("", msg);
 
+        // Bad cppcheck-suppress comment
+        ASSERT_EQUALS(false, s.parseComment("/* cppcheck-suppress-beggin id */", &msg));
+
         // Bad attribute construction
         const std::string badSuppressionAttribute = "Bad suppression attribute 'some'. You can write comments in the comment after a ; or //. Valid suppression attributes; symbolName=sym";
 
