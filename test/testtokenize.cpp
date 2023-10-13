@@ -6073,7 +6073,7 @@ private:
         // C++17: if (expr1; expr2)
         ASSERT_EQUALS("ifx3=y;(", testAst("if (int x=3; y)"));
 
-
+        ASSERT_EQUALS("xstdstring::decltypea::{=", testAst("auto x = std::string{ decltype(s)::a };"));
     }
 
     void astexpr2() { // limit for large expressions
