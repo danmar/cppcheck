@@ -30,6 +30,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <time.h>
 #if !(defined(__APPLE__) && defined(__MACH__))
 #include <mqueue.h>
 #endif
@@ -167,6 +168,14 @@ void invalidFunctionArgStr_mbsnrtowcs(void)
     wcscpy (wenough, L"DEF");
     // No warning is expected for - #11119
     if (mbsnrtowcs (wenough, &cp, 1, 10, &s) != 1 || wcscmp (wenough, L"AEF") != 0) {}
+}
+
+struct tm * ignoredReturnValue_localtime(const time_t *tp)
+{
+    // cppcheck-suppress [ignoredReturnValue,localtimeCalled]
+    localtime(tp);
+    // cppcheck-suppress localtimeCalled
+    return localtime(tp);
 }
 
 int nullPointer_getpwuid_r(uid_t uid, struct passwd *pwd, char *buffer, size_t bufsize, struct passwd **result)
