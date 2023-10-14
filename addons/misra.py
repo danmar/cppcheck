@@ -495,6 +495,13 @@ def getEssentialTypeCategory(expr):
             return 'char'
         return expr.valueType.sign
 
+    if (expr.isCast and expr.str == "("):
+        castTok = expr.next
+        while castTok.isName or castTok.str == "*":
+            if castTok.str == 'char' and not castTok.isSigned and not castTok.isUnsigned:
+                return 'char'
+            castTok = castTok.next
+
     if expr.valueType:
         return expr.valueType.sign
     return None
