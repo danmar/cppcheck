@@ -1929,4 +1929,13 @@ static void misra_22_10(void)
   errno = 0;
   f = strtod ( "A.12", NULL );
   if ( 0 == errno ) {}
+
+  // #10855
+  f = strtol(numbuf, 0, (formatHex == 0U) ? 0 : 16);
+  if (errno != 0) {}
+
+  // #11752
+  #define NULL_PTR  ((void*)0)
+  f = strtod(inStr, NULL_PTR);
+  if(errno != 0) {}
 }
