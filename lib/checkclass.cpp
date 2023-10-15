@@ -2586,8 +2586,7 @@ void CheckClass::checkConstError(const Token *tok, const std::string &classname,
 
 void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname, bool suggestStatic)
 {
-    std::list<const Token *> toks;
-    toks.push_back(tok1);
+    std::list<const Token *> toks{ tok1 };
     if (tok2)
         toks.push_back(tok2);
     if (!suggestStatic)

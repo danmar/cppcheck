@@ -193,11 +193,12 @@ bool Platform::loadFromFile(const char exename[], const std::string &filename, b
 {
     // TODO: only append .xml if missing
     // TODO: use native separators
-    std::vector<std::string> filenames;
-    filenames.push_back(filename);
-    filenames.push_back(filename + ".xml");
-    filenames.push_back("platforms/" + filename);
-    filenames.push_back("platforms/" + filename + ".xml");
+    std::vector<std::string> filenames{
+        filename,
+        filename + ".xml",
+        "platforms/" + filename,
+        "platforms/" + filename + ".xml"
+    };
     if (exename && (std::string::npos != Path::fromNativeSeparators(exename).find('/'))) {
         filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + filename);
         filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename);
