@@ -858,6 +858,13 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 }
                 hasValidConfig = true;
 
+                // locations macros
+                mLocationMacros.clear();
+                for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
+                    if (!tok->getMacroName().empty())
+                        mLocationMacros[Location(files[tok->fileIndex()], tok->linenr())].emplace(tok->getMacroName());
+                }
+
                 // If only errors are printed, print filename after the check
                 if (!mSettings.quiet && (!mCurrentConfig.empty() || checkCount > 1)) {
                     std::string fixedpath = Path::simplifyPath(filename);
@@ -1556,8 +1563,17 @@ void CppCheck::reportErr(const ErrorMessage &msg)
     if (!mSettings.buildDir.empty())
         mAnalyzerInformation.reportErr(msg);
 
+    std::set<std::string> macroNames;
+    if (!msg.callStack.empty()) {
+        const std::string &file = msg.callStack.back().getfile(false);
+        int lineNumber = msg.callStack.back().line;
+        const auto it = mLocationMacros.find(Location(file, lineNumber));
+        if (it != mLocationMacros.cend())
+            macroNames = it->second;
+    }
+
     // TODO: only convert if necessary
-    const auto errorMessage = Suppressions::ErrorMessage::fromErrorMessage(msg);
+    const auto errorMessage = Suppressions::ErrorMessage::fromErrorMessage(msg, macroNames);
 
     if (mSettings.nomsg.isSuppressed(errorMessage, mUseGlobalSuppressions)) {
         return;

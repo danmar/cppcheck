@@ -25,6 +25,7 @@
 #include <cstddef>
 #include <istream>
 #include <list>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -42,7 +43,7 @@ class CPPCHECKLIB Suppressions {
 public:
 
     enum class Type {
-        unique, file, block, blockBegin, blockEnd
+        unique, file, block, blockBegin, blockEnd, macro
     };
 
     struct CPPCHECKLIB ErrorMessage {
@@ -55,8 +56,9 @@ public:
         int lineNumber;
         Certainty certainty;
         std::string symbolNames;
+        std::set<std::string> macroNames;
 
-        static Suppressions::ErrorMessage fromErrorMessage(const ::ErrorMessage &msg);
+        static Suppressions::ErrorMessage fromErrorMessage(const ::ErrorMessage &msg, const std::set<std::string> &macroNames);
     private:
         std::string mFileName;
     };
@@ -74,6 +76,8 @@ public:
                 return fileName < other.fileName;
             if (symbolName != other.symbolName)
                 return symbolName < other.symbolName;
+            if (macroName != other.macroName)
+                return symbolName < other.symbolName;
             if (hash != other.hash)
                 return hash < other.hash;
             if (thisAndNextLine != other.thisAndNextLine)
@@ -89,6 +93,8 @@ public:
             if (fileName != other.fileName)
                 return false;
             if (symbolName != other.symbolName)
+                return false;
+            if (macroName != other.macroName)
                 return false;
             if (hash != other.hash)
                 return false;
@@ -135,6 +141,7 @@ public:
         int lineEnd = NO_LINE;
         Type type = Type::unique;
         std::string symbolName;
+        std::string macroName;
         std::size_t hash{};
         bool thisAndNextLine{}; // Special case for backwards compatibility: { // cppcheck-suppress something
         bool matched{};
@@ -200,7 +207,7 @@ public:
      * @param errmsg error message
      * @return true if this error is suppressed.
      */
-    bool isSuppressed(const ::ErrorMessage &errmsg);
+    bool isSuppressed(const ::ErrorMessage &errmsg, const std::set<std::string>& macroNames);
 
     /**
      * @brief Create an xml dump of suppressions

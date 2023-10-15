@@ -777,6 +777,19 @@ private:
                                      "  int a; return a;\n"
                                      "}\n",
                                      "uninitvar"));
+
+        // cppcheck-suppress-macro
+        (this->*check)("// cppcheck-suppress-macro zerodiv\n"
+                       "#define DIV(A,B) A/B\n"
+                       "a = DIV(10,0);\n",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
+        (this->*check)("// cppcheck-suppress-macro abc\n"
+                       "#define DIV(A,B) A/B\n"
+                       "a = DIV(10,1);\n",
+                       "");
+        ASSERT_EQUALS("", errout.str()); // <- no unmatched suppression reported for macro suppression
     }
 
     void suppressionsSettings() {

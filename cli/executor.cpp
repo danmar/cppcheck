@@ -33,7 +33,7 @@ Executor::Executor(const std::map<std::string, std::size_t> &files, const Settin
 
 bool Executor::hasToLog(const ErrorMessage &msg)
 {
-    if (!mSuppressions.isSuppressed(msg))
+    if (!mSuppressions.isSuppressed(msg, {}))
     {
         std::string errmsg = msg.toString(mSettings.verbose);
 
