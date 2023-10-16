@@ -1324,7 +1324,7 @@ private:
         fIsAttributeUsed        = (1ULL << 14), // __attribute__((used))
         fIsAttributePacked      = (1ULL << 15), // __attribute__((packed))
         fIsAttributeExport      = (1ULL << 16), // __attribute__((__visibility__("default"))), __declspec(dllexport)
-        fIsAttributeMaybeUnused = (1ULL << 17), // [[maybe_unsed]]
+        fIsAttributeMaybeUnused = (1ULL << 17), // [[maybe_unused]]
         fIsAttributeNodiscard   = (1ULL << 18), // __attribute__ ((warn_unused_result)), [[nodiscard]]
         fIsControlFlowKeyword   = (1ULL << 19), // if/switch/while/...
         fIsOperatorKeyword      = (1ULL << 20), // operator=, etc

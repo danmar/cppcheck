@@ -1512,7 +1512,7 @@ void CheckStl::if_find()
                         for (int j = 0; j < container->type_templateArgNo; j++)
                             tok2 = tok2->nextTemplateArgument();
 
-                        container = mSettings->library.detectContainer(tok2); // innner container
+                        container = mSettings->library.detectContainer(tok2); // inner container
                     } else
                         container = nullptr;
                 }

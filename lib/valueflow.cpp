@@ -3299,7 +3299,7 @@ struct SubExpressionAnalyzer : ExpressionAnalyzer {
         partialReads->emplace_back(tok, v);
     }
 
-    // No reanalysis for subexression
+    // No reanalysis for subexpression
     ValuePtr<Analyzer> reanalyze(Token* /*tok*/, const std::string& /*msg*/) const override {
         return {};
     }

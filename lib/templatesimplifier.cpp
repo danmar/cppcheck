@@ -876,7 +876,7 @@ void TemplateSimplifier::getTemplateInstantiations()
                         size_t match = 0;
                         size_t argMatch = 0;
                         for (size_t i = 0; i < declarationParams.size(); ++i) {
-                            // fixme: only type deducton from literals is supported
+                            // fixme: only type deduction from literals is supported
                             const bool isArgLiteral = Token::Match(instantiationArgs[i], "%num%|%str%|%char%|%bool% ,|)");
                             if (isArgLiteral && Token::Match(declarationParams[i], "const| %type% &| %name%| ,|)")) {
                                 match++;
