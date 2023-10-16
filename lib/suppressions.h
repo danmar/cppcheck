@@ -77,7 +77,7 @@ public:
             if (symbolName != other.symbolName)
                 return symbolName < other.symbolName;
             if (macroName != other.macroName)
-                return symbolName < other.symbolName;
+                return macroName < other.macroName;
             if (hash != other.hash)
                 return hash < other.hash;
             if (thisAndNextLine != other.thisAndNextLine)
