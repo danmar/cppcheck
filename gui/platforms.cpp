@@ -52,7 +52,7 @@ PlatformData& Platforms::get(Platform::Type platform)
 {
     QList<PlatformData>::iterator iter = mPlatforms.begin();
     while (iter != mPlatforms.end()) {
-        if ((*iter).mType == platform) {
+        if (iter->mType == platform) {
             return *iter;
         }
         ++iter;

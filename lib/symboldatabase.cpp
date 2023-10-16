@@ -5949,7 +5949,7 @@ const Type* Scope::findType(const std::string & name) const
 
     // Type was found
     if (definedTypesMap.end() != it)
-        return (*it).second;
+        return it->second;
 
     // is type defined in anonymous namespace..
     it = definedTypesMap.find(emptyString);

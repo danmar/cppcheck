@@ -975,8 +975,8 @@ private:
         ASSERT_EQUALS(true, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(2, settings->nofail.getSuppressions().size());
         auto it = settings->nofail.getSuppressions().cbegin();
-        ASSERT_EQUALS("uninitvar", (*it++).errorId);
-        ASSERT_EQUALS("unusedFunction", (*it).errorId);
+        ASSERT_EQUALS("uninitvar", (it++)->errorId);
+        ASSERT_EQUALS("unusedFunction", it->errorId);
         ASSERT_EQUALS("", logger->str());
     }
 
@@ -1323,8 +1323,8 @@ private:
         ASSERT_EQUALS(true, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(2, settings->nomsg.getSuppressions().size());
         auto it = settings->nomsg.getSuppressions().cbegin();
-        ASSERT_EQUALS("uninitvar", (*it++).errorId);
-        ASSERT_EQUALS("unusedFunction", (*it).errorId);
+        ASSERT_EQUALS("uninitvar", (it++)->errorId);
+        ASSERT_EQUALS("unusedFunction", it->errorId);
         ASSERT_EQUALS("", logger->str());
     }
 
