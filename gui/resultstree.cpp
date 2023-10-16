@@ -23,6 +23,7 @@
 #include "common.h"
 #include "config.h"
 #include "erroritem.h"
+#include "errortypes.h"
 #include "path.h"
 #include "projectfile.h"
 #include "report.h"

@@ -19,6 +19,7 @@
 //---------------------------------------------------------------------------
 #include "checkio.h"
 
+#include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
 #include "platform.h"

@@ -22,7 +22,6 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "errortypes.h"
 #include "tokenlist.h"
 
 #include <cassert>
@@ -40,6 +39,7 @@ class TemplateSimplifier;
 class ErrorLogger;
 class Preprocessor;
 class VariableMap;
+enum class Severity;
 
 namespace simplecpp {
     class TokenList;

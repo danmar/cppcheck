@@ -28,8 +28,6 @@
 #include <string>
 #include <vector>
 
-#include <simplecpp.h>
-
 class TestString : public TestFixture {
 public:
     TestString() : TestFixture("TestString") {}

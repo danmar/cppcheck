@@ -19,6 +19,7 @@
 #include "showtypes.h"
 
 #include "common.h"
+#include "errortypes.h"
 
 #include <QSettings>
 

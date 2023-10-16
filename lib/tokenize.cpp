@@ -21,6 +21,7 @@
 
 #include "check.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
 #include "platform.h"
@@ -50,7 +51,6 @@
 #include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <stdexcept>
-#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>

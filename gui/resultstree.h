@@ -20,7 +20,6 @@
 #ifndef RESULTSTREE_H
 #define RESULTSTREE_H
 
-#include "errortypes.h"
 #include "showtypes.h"
 
 #include <QObject>
@@ -40,6 +39,7 @@ class ThreadHandler;
 class QContextMenuEvent;
 class QKeyEvent;
 class QSettings;
+enum class Severity;
 
 /// @addtogroup GUI
 /// @{

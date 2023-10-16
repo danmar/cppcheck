@@ -31,6 +31,7 @@
 #include <limits>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 struct SelectMapKeys {

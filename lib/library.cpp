@@ -19,6 +19,7 @@
 #include "library.h"
 
 #include "astutils.h"
+#include "errortypes.h"
 #include "mathlib.h"
 #include "path.h"
 #include "symboldatabase.h"
@@ -31,7 +32,6 @@
 #include <algorithm>
 #include <cctype>
 #include <climits>
-#include <cstddef>
 #include <cstring>
 #include <list>
 #include <memory>
