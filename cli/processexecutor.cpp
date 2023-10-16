@@ -394,7 +394,7 @@ void ProcessExecutor::reportInternalChildErr(const std::string &childname, const
                               "cppcheckError",
                               Certainty::normal);
 
-    if (!mSuppressions.isSuppressed(errmsg))
+    if (!mSuppressions.isSuppressed(errmsg, {}))
         mErrorLogger.reportErr(errmsg);
 }
 

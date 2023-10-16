@@ -35,7 +35,7 @@
 
 #include <tinyxml2.h>
 
-Suppressions::ErrorMessage Suppressions::ErrorMessage::fromErrorMessage(const ::ErrorMessage &msg)
+Suppressions::ErrorMessage Suppressions::ErrorMessage::fromErrorMessage(const ::ErrorMessage &msg, const std::set<std::string> &macroNames)
 {
     Suppressions::ErrorMessage ret;
     ret.hash = msg.hash;
@@ -48,6 +48,7 @@ Suppressions::ErrorMessage Suppressions::ErrorMessage::fromErrorMessage(const ::
     }
     ret.certainty = msg.certainty;
     ret.symbolNames = msg.symbolNames();
+    ret.macroNames = macroNames;
     return ret;
 }
 
@@ -308,7 +309,8 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::string *e
         "cppcheck-suppress",
         "cppcheck-suppress-begin",
         "cppcheck-suppress-end",
-        "cppcheck-suppress-file"
+        "cppcheck-suppress-file",
+        "cppcheck-suppress-macro"
     };
 
     std::istringstream iss(comment.substr(2));
@@ -343,14 +345,19 @@ bool Suppressions::Suppression::isSuppressed(const Suppressions::ErrorMessage &e
         return false;
     if (!errorId.empty() && !matchglob(errorId, errmsg.errorId))
         return false;
-    if (!fileName.empty() && !matchglob(fileName, errmsg.getFileName()))
-        return false;
-    if ((Suppressions::Type::unique == type) && (lineNumber != NO_LINE) && (lineNumber != errmsg.lineNumber)) {
-        if (!thisAndNextLine || lineNumber + 1 != errmsg.lineNumber)
+    if (type == Suppressions::Type::macro) {
+        if (errmsg.macroNames.count(macroName) == 0)
+            return false;
+    } else {
+        if (!fileName.empty() && !matchglob(fileName, errmsg.getFileName()))
+            return false;
+        if ((Suppressions::Type::unique == type) && (lineNumber != NO_LINE) && (lineNumber != errmsg.lineNumber)) {
+            if (!thisAndNextLine || lineNumber + 1 != errmsg.lineNumber)
+                return false;
+        }
+        if ((Suppressions::Type::block == type) && ((errmsg.lineNumber < lineBegin) || (errmsg.lineNumber > lineEnd)))
             return false;
     }
-    if ((Suppressions::Type::block == type) && ((errmsg.lineNumber < lineBegin) || (errmsg.lineNumber > lineEnd)))
-        return false;
     if (!symbolName.empty()) {
         for (std::string::size_type pos = 0; pos < errmsg.symbolNames.size();) {
             const std::string::size_type pos2 = errmsg.symbolNames.find('\n',pos);
@@ -412,11 +419,11 @@ bool Suppressions::isSuppressed(const Suppressions::ErrorMessage &errmsg, bool g
     return returnValue;
 }
 
-bool Suppressions::isSuppressed(const ::ErrorMessage &errmsg)
+bool Suppressions::isSuppressed(const ::ErrorMessage &errmsg, const std::set<std::string>& macroNames)
 {
     if (mSuppressions.empty())
         return false;
-    return isSuppressed(Suppressions::ErrorMessage::fromErrorMessage(errmsg));
+    return isSuppressed(Suppressions::ErrorMessage::fromErrorMessage(errmsg, macroNames));
 }
 
 void Suppressions::dump(std::ostream & out) const
@@ -444,6 +451,8 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions
     std::list<Suppression> result;
     for (const Suppression &s : mSuppressions) {
         if (s.matched || ((s.lineNumber != Suppression::NO_LINE) && !s.checked))
+            continue;
+        if (s.type == Suppressions::Type::macro)
             continue;
         if (s.hash > 0)
             continue;

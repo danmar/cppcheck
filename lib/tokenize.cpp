@@ -806,7 +806,7 @@ namespace {
                 if (pointerType) {
                     tok->insertToken("const");
                     tok->next()->column(tok->column());
-                    tok->next()->isExpandedMacro(tok->previous()->isExpandedMacro());
+                    tok->next()->setMacroName(tok->previous()->getMacroName());
                     tok->deletePrevious();
                 }
             }
@@ -7169,7 +7169,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                 endDecl = endDecl->next();
                 endDecl->next()->isSplittedVarDeclEq(true);
                 endDecl->insertToken(varName->str());
-                endDecl->next()->isExpandedMacro(varName->isExpandedMacro());
+                endDecl->next()->setMacroName(varName->getMacroName());
                 continue;
             }
             //non-VLA case
