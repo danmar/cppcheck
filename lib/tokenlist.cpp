@@ -306,6 +306,7 @@ void TokenList::insertTokens(Token *dest, const Token *src, nonneg int n)
         dest->varId(src->varId());
         dest->tokType(src->tokType());
         dest->flags(src->flags());
+        dest->setMacroName(src->getMacroName());
         src  = src->next();
         --n;
     }
