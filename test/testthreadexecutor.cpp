@@ -160,7 +160,7 @@ private:
         oss << "int main()\n"
             << "{\n";
         for (int i = 0; i < 500; i++)
-            oss << "  {char *a = malloc(10);}\n";
+            oss << "  {int i = *((int*)0);}\n";
 
         oss << "  return 0;\n"
             << "}\n";
@@ -172,7 +172,7 @@ private:
         check(16, 100, 100,
               "int main()\n"
               "{\n"
-              "  char *a = malloc(10);\n"
+              "  int i = *((int*)0);\n"
               "  return 0;\n"
               "}");
     }
@@ -183,7 +183,7 @@ private:
         check(16, 100, 100,
               "int main()\n"
               "{\n"
-              "  char *a = malloc(10);\n"
+              "  int i = *((int*)0);\n"
               "  return 0;\n"
               "}", dinit(CheckOptions, $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
     }
@@ -195,7 +195,7 @@ private:
         check(16, 100, 100,
               "int main()\n"
               "{\n"
-              "  char *a = malloc(10);\n"
+              "  int i = *((int*)0);\n"
               "  return 0;\n"
               "}", dinit(CheckOptions, $.plistOutput = plistOutput.c_str()));
     }
@@ -228,7 +228,7 @@ private:
         check(2, 1, 1,
               "int main()\n"
               "{\n"
-              "  {char *a = malloc(10);}\n"
+              "  {int i = *((int*)0);}\n"
               "  return 0;\n"
               "}");
     }
@@ -237,7 +237,7 @@ private:
         check(2, 20, 20,
               "int main()\n"
               "{\n"
-              "  {char *a = malloc(10);}\n"
+              "  {int i = *((int*)0);}\n"
               "  return 0;\n"
               "}");
     }
@@ -255,7 +255,7 @@ private:
         check(2, 4, 2,
               "int main()\n"
               "{\n"
-              "  char *a = malloc(10);\n"
+              "  int i = *((int*)0);\n"
               "  return 0;\n"
               "}",
               dinit(CheckOptions,
