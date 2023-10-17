@@ -999,6 +999,8 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                     compileUnaryOp(tok, state, nullptr);
             }
             tok = tok->link()->next();
+            if (Token::simpleMatch(tok, "::"))
+                compileBinOp(tok, state, compileTerm);
         } else if (iscast(tok, state.cpp) && Token::simpleMatch(tok->link(), ") {") && Token::simpleMatch(tok->link()->linkAt(1), "} [")) {
             Token *cast = tok;
             tok = tok->link()->next();
