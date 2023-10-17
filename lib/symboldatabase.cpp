@@ -2832,7 +2832,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
         else if (openParen == 1 && second->str() == ")" && first->str() != ")")
             break;
 
-        // ckeck for type * x == type x[]
+        // check for type * x == type x[]
         else if (Token::Match(first->next(), "* %name%| ,|)|=") &&
                  Token::Match(second->next(), "%name%| [ ] ,|)")) {
             do {

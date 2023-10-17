@@ -52,8 +52,8 @@ private:
         TEST_CASE(importCompileCommands2); // #8563, #9567
         TEST_CASE(importCompileCommands3); // check with existing trailing / in directory
         TEST_CASE(importCompileCommands4); // only accept certain file types
-        TEST_CASE(importCompileCommands5); // Windows/CMake/Ninja generated comile_commands.json
-        TEST_CASE(importCompileCommands6); // Windows/CMake/Ninja generated comile_commands.json with spaces
+        TEST_CASE(importCompileCommands5); // Windows/CMake/Ninja generated compile_commands.json
+        TEST_CASE(importCompileCommands6); // Windows/CMake/Ninja generated compile_commands.json with spaces
         TEST_CASE(importCompileCommands7); // linux: "/home/danielm/cppcheck 2"
         TEST_CASE(importCompileCommands8); // Windows: "C:\Users\danielm\cppcheck"
         TEST_CASE(importCompileCommands9);

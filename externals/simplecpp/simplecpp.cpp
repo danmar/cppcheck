@@ -79,13 +79,13 @@ static bool isOct(const std::string &s)
     return s.size()>1 && (s[0]=='0') && (s[1] >= '0') && (s[1] < '8');
 }
 
-// TODO: added an undercore since this conflicts with a function of the same name in utils.h from Cppcheck source when building Cppcheck with MSBuild
+// TODO: added an underscore since this conflicts with a function of the same name in utils.h from Cppcheck source when building Cppcheck with MSBuild
 static bool isStringLiteral_(const std::string &s)
 {
     return s.size() > 1 && (s[0]=='\"') && (*s.rbegin()=='\"');
 }
 
-// TODO: added an undercore since this conflicts with a function of the same name in utils.h from Cppcheck source when building Cppcheck with MSBuild
+// TODO: added an underscore since this conflicts with a function of the same name in utils.h from Cppcheck source when building Cppcheck with MSBuild
 static bool isCharLiteral_(const std::string &s)
 {
     // char literal patterns can include 'a', '\t', '\000', '\xff', 'abcd', and maybe ''

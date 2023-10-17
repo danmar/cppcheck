@@ -382,7 +382,7 @@ private:
 
     // Dereferencing a struct and then checking if it is null
     // This is checked by this function:
-    //        CheckOther::nullPointerStructByDeRefAndChec
+    //        CheckOther::nullPointerStructByDeRefAndCheck
     void structDerefAndCheck() {
         // extracttests.start: struct ABC { int a; int b; int x; };
 
