@@ -6899,6 +6899,11 @@ private:
                                              "void f(float a) {\n"
                                              "S s = (S){ .i = (int)a };\n"
                                              "}\n", /*expand*/ true, Platform::Type::Native, "test.c"));
+
+        ASSERT_THROW(tokenizeAndStringify("std::string g();\n"
+                                          "std::string f() {\n"
+                                          "    return std::string{ g() + \"abc\" MACRO \"def\" };\n"
+                                          "}\n", /*expand*/ true, Platform::Type::Native, "test.cpp"), InternalError);
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()

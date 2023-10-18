@@ -3530,10 +3530,10 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: a\n", errout.str());
 
-        checkUninitVar("void f() {\n" // Don't crash
-                       "    int a;\n"
-                       "    dostuff(\"ab\" cd \"ef\", x?a:z);\n" // <- No AST is created for ?:
-                       "}");
+        ASSERT_THROW(checkUninitVar("void f() {\n" // Don't crash
+                                    "    int a;\n"
+                                    "    dostuff(\"ab\" cd \"ef\", x?a:z);\n" // <- No AST is created for ?
+                                    "}"), InternalError);
 
         // Unknown => bail out..
         checkUninitVar("void f(int x) {\n"
@@ -3652,10 +3652,10 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Uninitialized variable: a\n", errout.str());
 
-        valueFlowUninit("void f() {\n" // Don't crash
-                        "    int a;\n"
-                        "    dostuff(\"ab\" cd \"ef\", x?a:z);\n" // <- No AST is created for ?:
-                        "}");
+        ASSERT_THROW(valueFlowUninit("void f() {\n" // Don't crash
+                                     "    int a;\n"
+                                     "    dostuff(\"ab\" cd \"ef\", x?a:z);\n" // <- No AST is created for ?
+                                     "}"), InternalError);
 
         // Unknown => bail out..
         valueFlowUninit("void f(int x) {\n"
