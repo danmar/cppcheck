@@ -910,7 +910,7 @@ const Token * Token::findClosingBracket() const
     if (!mPrevious)
         return nullptr;
 
-    if (!(mPrevious->isName() ||
+    if (!(mPrevious->isName() || Token::simpleMatch(mPrevious, "]") ||
           Token::Match(mPrevious->previous(), "operator %op% <") ||
           Token::Match(mPrevious->tokAt(-2), "operator [([] [)]] <")))
         return nullptr;
@@ -939,7 +939,7 @@ const Token * Token::findClosingBracket() const
             return nullptr;
         // we can make some guesses for template parameters
         else if (closing->str() == "<" && closing->previous() &&
-                 (closing->previous()->isName() || isOperator(closing->previous())) &&
+                 (closing->previous()->isName() || Token::simpleMatch(closing->previous(), "]") || isOperator(closing->previous())) &&
                  (templateParameter ? templateParameters.find(closing->strAt(-1)) == templateParameters.end() : true))
             ++depth;
         else if (closing->str() == ">") {
