@@ -6292,8 +6292,9 @@ private:
 
         valueFlowUninit("int g();\n" // #12082
                         "void f() {\n"
-                        "    int a[1];\n"
+                        "    int a[1], b[1];\n"
                         "    while (a[0] = g()) {}\n"
+                        "    if ((b[0] = g()) == 0) {}\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
     }
