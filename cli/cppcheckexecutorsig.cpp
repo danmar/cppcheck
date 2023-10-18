@@ -30,6 +30,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+//#include <features.h> // __USE_DYNAMIC_STACK_SIZE
 #include <map>
 #include <string>
 #include <unistd.h>
@@ -48,7 +49,7 @@
 #   include <ucontext.h>
 #endif
 
-
+// TODO: __USE_DYNAMIC_STACK_SIZE is dependent on the features.h include and not a built-in compiler define, so it might be problematic to depend on it
 #ifdef __USE_DYNAMIC_STACK_SIZE
 static const size_t MYSTACKSIZE = 16*1024+32768; // wild guess about a reasonable buffer
 #else
@@ -320,7 +321,7 @@ int check_wrapper_sig(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(Cpp
     for (std::map<int, std::string>::const_iterator sig=listofsignals.cbegin(); sig!=listofsignals.cend(); ++sig) {
         sigaction(sig->first, &act, nullptr);
     }
-    return (&executor->*f)(cppcheck);
+    return (executor.*f)(cppcheck);
 }
 
 #endif

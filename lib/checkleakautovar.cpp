@@ -60,6 +60,18 @@ static const int NEW = -1;
 static const std::array<std::pair<std::string, std::string>, 4> alloc_failed_conds {{{"==", "0"}, {"<", "0"}, {"==", "-1"}, {"<=", "-1"}}};
 static const std::array<std::pair<std::string, std::string>, 4> alloc_success_conds {{{"!=", "0"}, {">", "0"}, {"!=", "-1"}, {">=", "0"}}};
 
+static bool isAutoDeallocType(const Type* type) {
+    if (!type)
+        return true;
+    if (type->classScope && type->classScope->numConstructors == 0 &&
+        (type->classScope->varlist.empty() || type->needInitialization == Type::NeedInitialization::True) &&
+        std::none_of(type->derivedFrom.cbegin(), type->derivedFrom.cend(), [](const Type::BaseInfo& bi) {
+        return isAutoDeallocType(bi.type);
+    }))
+        return false;
+    return true;
+}
+
 /**
  * @brief Is variable type some class with automatic deallocation?
  * @param var variable token
@@ -72,14 +84,8 @@ static bool isAutoDealloc(const Variable *var)
 
     // return false if the type is a simple record type without side effects
     // a type that has no side effects (no constructors and no members with constructors)
-    /** @todo false negative: check base class for side effects */
     /** @todo false negative: check constructors for side effects */
-    if (var->typeScope() && var->typeScope()->numConstructors == 0 &&
-        (var->typeScope()->varlist.empty() || var->type()->needInitialization == Type::NeedInitialization::True) &&
-        var->type()->derivedFrom.empty())
-        return false;
-
-    return true;
+    return isAutoDeallocType(var->type());
 }
 
 template<std::size_t N>

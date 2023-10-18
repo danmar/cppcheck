@@ -40,7 +40,7 @@ namespace {
 
 
 // CWE ids used
-static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
+static const CWE CWE398(398U);   // Indicator of Poor Code Quality
 
 
 void CheckPostfixOperator::postfixOperator()

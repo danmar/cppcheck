@@ -3,7 +3,8 @@
 include($$PWD/pcrerules.pri)
 include($$PWD/../externals/externals.pri)
 INCLUDEPATH += $$PWD
-HEADERS += $${PWD}/analyzer.h \
+HEADERS += $${PWD}/addoninfo.h \
+           $${PWD}/analyzer.h \
            $${PWD}/analyzerinfo.h \
            $${PWD}/astutils.h \
            $${PWD}/calculate.h \
@@ -80,6 +81,7 @@ HEADERS += $${PWD}/analyzer.h \
 SOURCES += $${PWD}/valueflow.cpp \
            $${PWD}/tokenize.cpp \
            $${PWD}/symboldatabase.cpp \
+           $${PWD}/addoninfo.cpp \
            $${PWD}/analyzerinfo.cpp \
            $${PWD}/astutils.cpp \
            $${PWD}/check.cpp \

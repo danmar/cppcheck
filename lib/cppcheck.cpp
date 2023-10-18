@@ -15,8 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "cppcheck.h"
 
+#include "addoninfo.h"
 #include "check.h"
 #include "checkunusedfunctions.h"
 #include "clangimport.h"
@@ -24,21 +26,21 @@
 #include "ctu.h"
 #include "errortypes.h"
 #include "library.h"
-#include "mathlib.h"
 #include "path.h"
 #include "platform.h"
-#include "preprocessor.h" // Preprocessor
+#include "preprocessor.h"
 #include "standards.h"
 #include "suppressions.h"
 #include "timer.h"
 #include "token.h"
-#include "tokenize.h" // Tokenizer
+#include "tokenize.h"
 #include "tokenlist.h"
 #include "utils.h"
 #include "valueflow.h"
 #include "version.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cstdio>
 #include <cstdint>
 #include <cstring>
@@ -102,122 +104,6 @@ namespace {
         }
     private:
         std::vector<std::string> mFilenames;
-    };
-}
-
-namespace {
-    struct AddonInfo {
-        std::string name;
-        std::string scriptFile; // addon script
-        std::string executable; // addon executable
-        std::string args;       // special extra arguments
-        std::string python;     // script interpreter
-        bool ctu = false;
-        std::string runScript;
-
-        static std::string getFullPath(const std::string &fileName, const std::string &exename) {
-            if (Path::isFile(fileName))
-                return fileName;
-
-            const std::string exepath = Path::getPathFromFilename(exename);
-            if (Path::isFile(exepath + fileName))
-                return exepath + fileName;
-            if (Path::isFile(exepath + "addons/" + fileName))
-                return exepath + "addons/" + fileName;
-
-#ifdef FILESDIR
-            if (Path::isFile(FILESDIR + ("/" + fileName)))
-                return FILESDIR + ("/" + fileName);
-            if (Path::isFile(FILESDIR + ("/addons/" + fileName)))
-                return FILESDIR + ("/addons/" + fileName);
-#endif
-            return "";
-        }
-
-        std::string parseAddonInfo(const picojson::value &json, const std::string &fileName, const std::string &exename) {
-            const std::string& json_error = picojson::get_last_error();
-            if (!json_error.empty()) {
-                return "Loading " + fileName + " failed. " + json_error;
-            }
-            if (!json.is<picojson::object>())
-                return "Loading " + fileName + " failed. Bad json.";
-            picojson::object obj = json.get<picojson::object>();
-            if (obj.count("args")) {
-                if (!obj["args"].is<picojson::array>())
-                    return "Loading " + fileName + " failed. args must be array.";
-                for (const picojson::value &v : obj["args"].get<picojson::array>())
-                    args += " " + v.get<std::string>();
-            }
-
-            if (obj.count("ctu")) {
-                // ctu is specified in the config file
-                if (!obj["ctu"].is<bool>())
-                    return "Loading " + fileName + " failed. ctu must be boolean.";
-                ctu = obj["ctu"].get<bool>();
-            } else {
-                ctu = false;
-            }
-
-            if (obj.count("python")) {
-                // Python was defined in the config file
-                if (obj["python"].is<picojson::array>()) {
-                    return "Loading " + fileName +" failed. python must not be an array.";
-                }
-                python = obj["python"].get<std::string>();
-            } else {
-                python = "";
-            }
-
-            if (obj.count("executable")) {
-                if (!obj["executable"].is<std::string>())
-                    return "Loading " + fileName + " failed. executable must be a string.";
-                executable = getFullPath(obj["executable"].get<std::string>(), fileName);
-                return "";
-            }
-
-            return getAddonInfo(obj["script"].get<std::string>(), exename);
-        }
-
-        std::string getAddonInfo(const std::string &fileName, const std::string &exename) {
-            if (fileName[0] == '{') {
-                picojson::value json;
-                const std::string err = picojson::parse(json, fileName);
-                (void)err; // TODO: report
-                return parseAddonInfo(json, fileName, exename);
-            }
-            if (fileName.find('.') == std::string::npos)
-                return getAddonInfo(fileName + ".py", exename);
-
-            if (endsWith(fileName, ".py")) {
-                scriptFile = Path::fromNativeSeparators(getFullPath(fileName, exename));
-                if (scriptFile.empty())
-                    return "Did not find addon " + fileName;
-
-                std::string::size_type pos1 = scriptFile.rfind('/');
-                if (pos1 == std::string::npos)
-                    pos1 = 0;
-                else
-                    pos1++;
-                std::string::size_type pos2 = scriptFile.rfind('.');
-                if (pos2 < pos1)
-                    pos2 = std::string::npos;
-                name = scriptFile.substr(pos1, pos2 - pos1);
-
-                runScript = getFullPath("runaddon.py", exename);
-
-                return "";
-            }
-
-            if (!endsWith(fileName, ".json"))
-                return "Failed to open addon " + fileName;
-
-            std::ifstream fin(fileName);
-            if (!fin.is_open())
-                return "Failed to open " + fileName;
-            picojson::value json;
-            fin >> json;
-            return parseAddonInfo(json, fileName, exename);
-        }
     };
 }
 
@@ -675,7 +561,7 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
         temp.mSettings.standards.setCPP(fs.standard);
     else if (!fs.standard.empty())
         temp.mSettings.standards.setC(fs.standard);
-    if (fs.platformType != cppcheck::Platform::Type::Unspecified)
+    if (fs.platformType != Platform::Type::Unspecified)
         temp.mSettings.platform.set(fs.platformType);
     if (mSettings.clang) {
         temp.mSettings.includePaths.insert(temp.mSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
@@ -971,6 +857,13 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     tokenizer.createTokens(std::move(tokensP));
                 }
                 hasValidConfig = true;
+
+                // locations macros
+                mLocationMacros.clear();
+                for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
+                    if (!tok->getMacroName().empty())
+                        mLocationMacros[Location(files[tok->fileIndex()], tok->linenr())].emplace(tok->getMacroName());
+                }
 
                 // If only errors are printed, print filename after the check
                 if (!mSettings.quiet && (!mCurrentConfig.empty() || checkCount > 1)) {
@@ -1502,14 +1395,10 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             fout << f << std::endl;
     }
 
-    for (const std::string &addon : mSettings.addons) {
-        struct AddonInfo addonInfo;
-        const std::string &failedToGetAddonInfo = addonInfo.getAddonInfo(addon, mSettings.exename);
-        if (!failedToGetAddonInfo.empty()) {
-            reportOut(failedToGetAddonInfo, Color::FgRed);
-            mExitCode = 1;
-            continue;
-        }
+    // ensure all addons have already been resolved - TODO: remove when settings are const after creation
+    assert(mSettings.addonInfos.size() == mSettings.addons.size());
+
+    for (const AddonInfo &addonInfo : mSettings.addonInfos) {
         if (addonInfo.name != "misra" && !addonInfo.ctu && endsWith(files.back(), ".ctu-info"))
             continue;
 
@@ -1547,8 +1436,8 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             const std::string text = obj["message"].get<std::string>();
             errmsg.setmsg(text);
             const std::string severity = obj["severity"].get<std::string>();
-            errmsg.severity = Severity::fromString(severity);
-            if (errmsg.severity == Severity::SeverityType::none) {
+            errmsg.severity = severityFromString(severity);
+            if (errmsg.severity == Severity::none) {
                 if (!endsWith(errmsg.id, "-logChecker"))
                     continue;
             }
@@ -1674,8 +1563,17 @@ void CppCheck::reportErr(const ErrorMessage &msg)
     if (!mSettings.buildDir.empty())
         mAnalyzerInformation.reportErr(msg);
 
+    std::set<std::string> macroNames;
+    if (!msg.callStack.empty()) {
+        const std::string &file = msg.callStack.back().getfile(false);
+        int lineNumber = msg.callStack.back().line;
+        const auto it = mLocationMacros.find(Location(file, lineNumber));
+        if (it != mLocationMacros.cend())
+            macroNames = it->second;
+    }
+
     // TODO: only convert if necessary
-    const auto errorMessage = Suppressions::ErrorMessage::fromErrorMessage(msg);
+    const auto errorMessage = Suppressions::ErrorMessage::fromErrorMessage(msg, macroNames);
 
     if (mSettings.nomsg.isSuppressed(errorMessage, mUseGlobalSuppressions)) {
         return;
@@ -1790,13 +1688,13 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
 
         errmsg.id = "clang-tidy-" + errorString.substr(1, errorString.length() - 2);
         if (errmsg.id.find("performance") != std::string::npos)
-            errmsg.severity = Severity::SeverityType::performance;
+            errmsg.severity = Severity::performance;
         else if (errmsg.id.find("portability") != std::string::npos)
-            errmsg.severity = Severity::SeverityType::portability;
+            errmsg.severity = Severity::portability;
         else if (errmsg.id.find("cert") != std::string::npos || errmsg.id.find("misc") != std::string::npos || errmsg.id.find("unused") != std::string::npos)
-            errmsg.severity = Severity::SeverityType::warning;
+            errmsg.severity = Severity::warning;
         else
-            errmsg.severity = Severity::SeverityType::style;
+            errmsg.severity = Severity::style;
 
         errmsg.file0 = fixedpath;
         errmsg.setmsg(messageString);

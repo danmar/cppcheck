@@ -23,7 +23,6 @@
 #include "cppcheckexecutor.h"
 #include "errorlogger.h"
 #include "errortypes.h"
-#include "filelister.h"
 #include "importproject.h"
 #include "path.h"
 #include "platform.h"
@@ -314,7 +313,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                             << info << "\n";
                 }
 
-                std::cout << doc.str();
+                mLogger.printRaw(doc.str());
                 mExitAfterPrint = true;
                 return true;
             }
@@ -619,9 +618,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 // these are loaded via external files and thus have Settings::PlatformFile set instead.
                 // override the type so they behave like the regular platforms.
                 if (platform == "unix32-unsigned")
-                    mSettings.platform.type = cppcheck::Platform::Type::Unix32;
+                    mSettings.platform.type = Platform::Type::Unix32;
                 else if (platform == "unix64-unsigned")
-                    mSettings.platform.type = cppcheck::Platform::Type::Unix64;
+                    mSettings.platform.type = Platform::Type::Unix64;
             }
 
             // Write results in results.plist
@@ -665,7 +664,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 ImportProject::Type projType = mSettings.project.import(projectFile, &mSettings);
                 mSettings.project.projectType = projType;
                 if (projType == ImportProject::Type::CPPCHECK_GUI) {
-                    mPathNames = mSettings.project.guiProject.pathNames;
                     for (const std::string &lib : mSettings.project.guiProject.libraries)
                         mSettings.libraries.emplace_back(lib);
 
@@ -793,7 +791,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         if (message) {
                             const tinyxml2::XMLElement *severity = message->FirstChildElement("severity");
                             if (severity)
-                                rule.severity = Severity::fromString(severity->GetText());
+                                rule.severity = severityFromString(severity->GetText());
 
                             const tinyxml2::XMLElement *id = message->FirstChildElement("id");
                             if (id)
@@ -1032,11 +1030,19 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         return true;
     }
 
+    if (!mPathNames.empty() && mSettings.project.projectType != ImportProject::Type::NONE) {
+        mLogger.printError("--project cannot be used in conjunction with source files.");
+        return false;
+    }
+
     // Print error only if we have "real" command and expect files
-    if (!mExitAfterPrint && mPathNames.empty() && mSettings.project.fileSettings.empty()) {
+    if (!mExitAfterPrint && mPathNames.empty() && mSettings.project.guiProject.pathNames.empty() && mSettings.project.fileSettings.empty()) {
         mLogger.printError("no C or C++ source files found.");
         return false;
     }
+
+    if (!mSettings.project.guiProject.pathNames.empty())
+        mPathNames = mSettings.project.guiProject.pathNames;
 
     // Use paths _pathnames if no base paths for relative path output are given
     if (mSettings.basePaths.empty() && mSettings.relativePaths)
@@ -1051,7 +1057,8 @@ void CmdLineParser::printHelp()
                                 "https://cppcheck.sourceforge.io/manual.pdf" :
                                 "https://files.cppchecksolutions.com/manual.pdf");
 
-    std::cout << "Cppcheck - A tool for static C/C++ code analysis\n"
+    std::ostringstream oss;
+    oss << "Cppcheck - A tool for static C/C++ code analysis\n"
         "\n"
         "Syntax:\n"
         "    cppcheck [OPTIONS] [files or paths]\n"
@@ -1243,20 +1250,21 @@ void CmdLineParser::printHelp()
     "                         Generate Clang-plist output files in folder.\n";
 
     if (isCppcheckPremium()) {
-        std::cout << "    --premium=<option>\n"
-                  << "                         Coding standards:\n"
-                  << "                          * autosar           Autosar (partial)\n"
-                  << "                          * cert-c-2016       Cert C 2016 checking\n"
-                  << "                          * cert-c++-2016     Cert C++ 2016 checking\n"
-                  << "                          * misra-c-2012      Misra C 2012\n"
-                  << "                          * misra-c-2023      Misra C 2023\n"
-                  << "                          * misra-c++-2008    Misra C++ 2008 (partial)\n"
-                  << "                         Other:\n"
-                  << "                          * bughunting        Soundy analysis\n"
-                  << "                          * cert-c-int-precision=BITS  Integer precision to use in Cert C analysis.\n";
+        oss <<
+            "    --premium=<option>\n"
+            "                         Coding standards:\n"
+            "                          * autosar           Autosar (partial)\n"
+            "                          * cert-c-2016       Cert C 2016 checking\n"
+            "                          * cert-c++-2016     Cert C++ 2016 checking\n"
+            "                          * misra-c-2012      Misra C 2012\n"
+            "                          * misra-c-2023      Misra C 2023\n"
+            "                          * misra-c++-2008    Misra C++ 2008 (partial)\n"
+            "                         Other:\n"
+            "                          * bughunting        Soundy analysis\n"
+            "                          * cert-c-int-precision=BITS  Integer precision to use in Cert C analysis.\n";
     }
 
-    std::cout <<
+    oss <<
         "    --project=<file>     Run Cppcheck on project. The <file> can be a Visual\n"
         "                         Studio Solution (*.sln), Visual Studio Project\n"
         "                         (*.vcxproj), compile database (compile_commands.json),\n"
@@ -1396,6 +1404,8 @@ void CmdLineParser::printHelp()
         " * picojson -- loading compile database.\n"
         " * pcre -- rules.\n"
         " * qt -- used in GUI\n";
+
+    mLogger.printRaw(oss.str());
 }
 
 bool CmdLineParser::isCppcheckPremium() const {

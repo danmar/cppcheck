@@ -23,6 +23,7 @@
 #include "common.h"
 #include "config.h"
 #include "erroritem.h"
+#include "errortypes.h"
 #include "path.h"
 #include "projectfile.h"
 #include "report.h"
@@ -49,7 +50,6 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QModelIndex>
-#include <QModelIndexList>
 #include <QProcess>
 #include <QSet>
 #include <QSettings>
@@ -221,12 +221,11 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
             line.file = e.file;
             line.line = e.line;
             line.message = line.summary = e.info;
-            QStandardItem *child_item;
-            child_item = addBacktraceFiles(stditem,
-                                           line,
-                                           hide,
-                                           ":images/go-down.png",
-                                           true);
+            QStandardItem *child_item = addBacktraceFiles(stditem,
+                                                          line,
+                                                          hide,
+                                                          ":images/go-down.png",
+                                                          true);
             if (!child_item)
                 continue;
 
@@ -320,7 +319,7 @@ QStandardItem *ResultsTree::addBacktraceFiles(QStandardItem *parent,
     return list[0];
 }
 
-QString ResultsTree::severityToTranslatedString(Severity::SeverityType severity)
+QString ResultsTree::severityToTranslatedString(Severity severity)
 {
     switch (severity) {
     case Severity::style:
@@ -902,7 +901,7 @@ void ResultsTree::copy()
         QString inconclusive = data[INCONCLUSIVE].toBool() ? ",inconclusive" : "";
         text += '[' + data[FILENAME].toString() + ':' + QString::number(data[LINE].toInt())
                 + "] ("
-                + QString::fromStdString(Severity::toString(ShowTypes::ShowTypeToSeverity((ShowTypes::ShowType)data[SEVERITY].toInt()))) + inconclusive
+                + QString::fromStdString(severityToString(ShowTypes::ShowTypeToSeverity((ShowTypes::ShowType)data[SEVERITY].toInt()))) + inconclusive
                 + ") "
                 + data[MESSAGE].toString()
                 + " ["
@@ -1140,11 +1139,10 @@ QString ResultsTree::getFilePath(const QStandardItem *target, bool fullPath)
             target = target->parent()->child(target->row(), 0);
 
         QVariantMap data = target->data().toMap();
-        QString pathStr;
 
         //Replace (file) with filename
         QString file = data[FILENAME].toString();
-        pathStr = QDir::toNativeSeparators(file);
+        QString pathStr = QDir::toNativeSeparators(file);
         if (!fullPath) {
             QFileInfo fi(pathStr);
             pathStr = fi.fileName();
@@ -1156,7 +1154,7 @@ QString ResultsTree::getFilePath(const QStandardItem *target, bool fullPath)
     return QString();
 }
 
-QString ResultsTree::severityToIcon(Severity::SeverityType severity)
+QString ResultsTree::severityToIcon(Severity severity)
 {
     switch (severity) {
     case Severity::error:

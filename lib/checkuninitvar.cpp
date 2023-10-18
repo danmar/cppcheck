@@ -49,7 +49,7 @@ namespace tinyxml2 {
 //---------------------------------------------------------------------------
 
 // CWE ids used:
-static const struct CWE CWE_USE_OF_UNINITIALIZED_VARIABLE(457U);
+static const CWE CWE_USE_OF_UNINITIALIZED_VARIABLE(457U);
 
 // Register this check class (by creating a static instance of it)
 namespace {
@@ -80,6 +80,27 @@ static const Token *getAstParentSkipPossibleCastAndAddressOf(const Token *vartok
     while (parent && parent->isCast())
         parent = parent->astParent();
     return parent;
+}
+
+static std::map<nonneg int, VariableValue> getVariableValues(const Token* tok) {
+    std::map<nonneg int, VariableValue> ret;
+    if (!tok || !tok->scope()->isExecutable())
+        return ret;
+    while (tok && tok->str() != "{") {
+        if (tok->str() == "}") {
+            if (tok->link()->isBinaryOp())
+                tok = tok->link()->previous();
+            else
+                break;
+        }
+        if (Token::Match(tok, "%var% =|{") && tok->next()->isBinaryOp() && tok->varId() && ret.count(tok->varId()) == 0) {
+            const Token* rhs = tok->next()->astOperand2();
+            if (rhs && rhs->hasKnownIntValue())
+                ret[tok->varId()] = VariableValue(rhs->getKnownIntValue());
+        }
+        tok = tok->previous();
+    }
+    return ret;
 }
 
 bool CheckUninitVar::diag(const Token* tok)
@@ -175,14 +196,14 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
             }
             if (!init) {
                 Alloc alloc = ARRAY;
-                const std::map<nonneg int, VariableValue> variableValue;
+                std::map<nonneg int, VariableValue> variableValue = getVariableValues(var.typeStartToken());
                 checkScopeForVariable(tok, var, nullptr, nullptr, &alloc, emptyString, variableValue);
             }
             continue;
         }
         if (stdtype || var.isPointer()) {
             Alloc alloc = NO_ALLOC;
-            const std::map<nonneg int, VariableValue> variableValue;
+            std::map<nonneg int, VariableValue> variableValue = getVariableValues(var.typeStartToken());
             checkScopeForVariable(tok, var, nullptr, nullptr, &alloc, emptyString, variableValue);
         }
         if (var.type())
@@ -207,7 +228,7 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
                         checkStruct(tok, arg);
                     else if (arg.typeStartToken()->isStandardType() || arg.typeStartToken()->isEnumType()) {
                         Alloc alloc = NO_ALLOC;
-                        const std::map<nonneg int, VariableValue> variableValue;
+                        std::map<nonneg int, VariableValue> variableValue;
                         checkScopeForVariable(tok->next(), arg, nullptr, nullptr, &alloc, emptyString, variableValue);
                     }
                 }
@@ -246,7 +267,7 @@ void CheckUninitVar::checkStruct(const Token *tok, const Variable &structvar)
                     const Token *tok2 = tok;
                     if (tok->str() == "}")
                         tok2 = tok2->next();
-                    const std::map<nonneg int, VariableValue> variableValue;
+                    std::map<nonneg int, VariableValue> variableValue = getVariableValues(structvar.typeStartToken());
                     checkScopeForVariable(tok2, structvar, nullptr, nullptr, &alloc, var.name(), variableValue);
                 }
             }
@@ -377,7 +398,7 @@ static bool isVariableUsed(const Token *tok, const Variable& var)
     return !parent2 || parent2->isConstOp() || (parent2->str() == "=" && parent2->astOperand2() == parent);
 }
 
-bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, Alloc* const alloc, const std::string &membervar, std::map<nonneg int, VariableValue> variableValue)
+bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, Alloc* const alloc, const std::string &membervar, std::map<nonneg int, VariableValue>& variableValue)
 {
     const bool suppressErrors(possibleInit && *possibleInit);  // Assume that this is a variable declaration, rather than a fundef
     const bool printDebug = mSettings->debugwarnings;
@@ -421,7 +442,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
         }
 
         // track values of other variables..
-        if (Token::Match(tok->previous(), "[;{}] %var% =")) {
+        if (Token::Match(tok->previous(), "[;{}.] %var% =")) {
             if (tok->next()->astOperand2() && tok->next()->astOperand2()->hasKnownIntValue())
                 variableValue[tok->varId()] = VariableValue(tok->next()->astOperand2()->getKnownIntValue());
             else if (Token::Match(tok->previous(), "[;{}] %var% = - %name% ;"))
@@ -489,7 +510,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             if (tok->str() == "{") {
                 bool possibleInitIf((!alwaysTrue && number_of_if > 0) || suppressErrors);
                 bool noreturnIf = false;
-                const bool initif = !alwaysFalse && checkScopeForVariable(tok->next(), var, &possibleInitIf, &noreturnIf, alloc, membervar, variableValue);
+                std::map<nonneg int, VariableValue> varValueIf(variableValue);
+                const bool initif = !alwaysFalse && checkScopeForVariable(tok->next(), var, &possibleInitIf, &noreturnIf, alloc, membervar, varValueIf);
 
                 // bail out for such code:
                 //    if (a) x=0;    // conditional initialization
@@ -511,15 +533,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 if (alwaysTrue && (initif || noreturnIf))
                     return true;
 
-                std::map<nonneg int, VariableValue> varValueIf;
-                if (!alwaysFalse && !initif && !noreturnIf) {
-                    for (const Token *tok2 = tok; tok2 && tok2 != tok->link(); tok2 = tok2->next()) {
-                        if (Token::Match(tok2, "[;{}.] %name% = - %name% ;"))
-                            varValueIf[tok2->next()->varId()] = !VariableValue(0);
-                        else if (Token::Match(tok2, "[;{}.] %name% = %num% ;"))
-                            varValueIf[tok2->next()->varId()] = VariableValue(MathLib::toBigNumber(tok2->strAt(3)));
-                    }
-                }
+                if (!alwaysFalse && !initif && !noreturnIf)
+                    variableValue = varValueIf;
 
                 if (initif && condVarId > 0)
                     variableValue[condVarId] = !condVarValue;
@@ -539,17 +554,11 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
 
                     bool possibleInitElse((!alwaysFalse && number_of_if > 0) || suppressErrors);
                     bool noreturnElse = false;
-                    const bool initelse = !alwaysTrue && checkScopeForVariable(tok->next(), var, &possibleInitElse, &noreturnElse, alloc, membervar, variableValue);
+                    std::map<nonneg int, VariableValue> varValueElse(variableValue);
+                    const bool initelse = !alwaysTrue && checkScopeForVariable(tok->next(), var, &possibleInitElse, &noreturnElse, alloc, membervar, varValueElse);
 
-                    std::map<nonneg int, VariableValue> varValueElse;
-                    if (!alwaysTrue && !initelse && !noreturnElse) {
-                        for (const Token *tok2 = tok; tok2 && tok2 != tok->link(); tok2 = tok2->next()) {
-                            if (Token::Match(tok2, "[;{}.] %var% = - %name% ;"))
-                                varValueElse[tok2->next()->varId()] = !VariableValue(0);
-                            else if (Token::Match(tok2, "[;{}.] %var% = %num% ;"))
-                                varValueElse[tok2->next()->varId()] = VariableValue(MathLib::toBigNumber(tok2->strAt(3)));
-                        }
-                    }
+                    if (!alwaysTrue && !initelse && !noreturnElse)
+                        variableValue = varValueElse;
 
                     if (initelse && condVarId > 0 && !noreturnIf && !noreturnElse)
                         variableValue[condVarId] = condVarValue;

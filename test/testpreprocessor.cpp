@@ -480,7 +480,7 @@ private:
 
         // preprocess code with unix32 platform..
         {
-            const Settings settings = settingsBuilder().platform(cppcheck::Platform::Type::Unix32).build();
+            const Settings settings = settingsBuilder().platform(Platform::Type::Unix32).build();
             Preprocessor preprocessor(settings, this);
             preprocessor.setPlatformInfo(&tokens);
             ASSERT_EQUALS("\n1", preprocessor.getcode(tokens, "", files, false));
@@ -488,7 +488,7 @@ private:
 
         // preprocess code with unix64 platform..
         {
-            const Settings settings = settingsBuilder().platform(cppcheck::Platform::Type::Unix64).build();
+            const Settings settings = settingsBuilder().platform(Platform::Type::Unix64).build();
             Preprocessor preprocessor(settings, this);
             preprocessor.setPlatformInfo(&tokens);
             ASSERT_EQUALS("\n\n\n2", preprocessor.getcode(tokens, "", files, false));

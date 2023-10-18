@@ -21,20 +21,17 @@
 #include "checkbufferoverrun.h"
 #include "ctu.h"
 #include "errortypes.h"
+#include "helpers.h"
 #include "standards.h"
 #include "platform.h"
 #include "settings.h"
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <map>
 #include <list>
 #include <sstream> // IWYU pragma: keep
 #include <string>
-#include <utility>
 #include <vector>
-
-#include <simplecpp.h>
 
 class TestBufferOverrun : public TestFixture {
 public:
@@ -71,7 +68,8 @@ private:
         runChecks<CheckBufferOverrun>(tokenizer, this);
     }
 
-    void checkP(const char code[], const char* filename = "test.cpp")
+#define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkP_(const char* file, int line, const char code[], const char* filename = "test.cpp")
     {
         // Clear the error buffer..
         errout.str("");
@@ -79,20 +77,12 @@ private:
         const Settings settings = settingsBuilder(settings0).severity(Severity::performance)
                                   .c(Standards::CLatest).cpp(Standards::CPPLatest).certainty(Certainty::inconclusive).build();
 
-        // Raw tokens..
         std::vector<std::string> files(1, filename);
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        // Preprocess..
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+        Tokenizer tokenizer(&settings, this);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenizer..
-        Tokenizer tokenizer(&settings, this);
-        tokenizer.createTokens(std::move(tokens2));
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check for buffer overruns..
         runChecks<CheckBufferOverrun>(tokenizer, this);

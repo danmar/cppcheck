@@ -25,6 +25,7 @@
 #include <cstddef>
 #include <istream>
 #include <list>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -41,6 +42,10 @@ enum class Certainty;
 class CPPCHECKLIB Suppressions {
 public:
 
+    enum class Type {
+        unique, file, block, blockBegin, blockEnd, macro
+    };
+
     struct CPPCHECKLIB ErrorMessage {
         std::size_t hash;
         std::string errorId;
@@ -51,8 +56,9 @@ public:
         int lineNumber;
         Certainty certainty;
         std::string symbolNames;
+        std::set<std::string> macroNames;
 
-        static Suppressions::ErrorMessage fromErrorMessage(const ::ErrorMessage &msg);
+        static Suppressions::ErrorMessage fromErrorMessage(const ::ErrorMessage &msg, const std::set<std::string> &macroNames);
     private:
         std::string mFileName;
     };
@@ -70,11 +76,35 @@ public:
                 return fileName < other.fileName;
             if (symbolName != other.symbolName)
                 return symbolName < other.symbolName;
+            if (macroName != other.macroName)
+                return macroName < other.macroName;
             if (hash != other.hash)
                 return hash < other.hash;
             if (thisAndNextLine != other.thisAndNextLine)
                 return thisAndNextLine;
             return false;
+        }
+
+        bool operator==(const Suppression &other) const {
+            if (errorId != other.errorId)
+                return false;
+            if (lineNumber < other.lineNumber)
+                return false;
+            if (fileName != other.fileName)
+                return false;
+            if (symbolName != other.symbolName)
+                return false;
+            if (macroName != other.macroName)
+                return false;
+            if (hash != other.hash)
+                return false;
+            if (type != other.type)
+                return false;
+            if (lineBegin != other.lineBegin)
+                return false;
+            if (lineEnd != other.lineEnd)
+                return false;
+            return true;
         }
 
         /**
@@ -107,7 +137,11 @@ public:
         std::string errorId;
         std::string fileName;
         int lineNumber = NO_LINE;
+        int lineBegin = NO_LINE;
+        int lineEnd = NO_LINE;
+        Type type = Type::unique;
         std::string symbolName;
+        std::string macroName;
         std::size_t hash{};
         bool thisAndNextLine{}; // Special case for backwards compatibility: { // cppcheck-suppress something
         bool matched{};
@@ -173,7 +207,7 @@ public:
      * @param errmsg error message
      * @return true if this error is suppressed.
      */
-    bool isSuppressed(const ::ErrorMessage &errmsg);
+    bool isSuppressed(const ::ErrorMessage &errmsg, const std::set<std::string>& macroNames);
 
     /**
      * @brief Create an xml dump of suppressions

@@ -696,6 +696,7 @@ static void misra_10_3(uint32_t u32a, uint32_t u32b) {
     res = 2U + 3U; // no warning, utlr=unsigned char
     res = 0.1f; // 10.3
     const char c = '0'; // no-warning
+    uint32_t u = UINT32_C(10); // no-warning
 }
 
 static void misra_10_4(u32 x, s32 y) {
@@ -723,6 +724,12 @@ static void misra_10_4(u32 x, s32 y) {
   if ('\0' == cmd.buf[0]) //no-warning
   {
   }
+
+  // #10652
+  char c;
+  if ((char)'1' == c) {}            // no warning
+  if ((unsigned char)'1' == c) {}   //10.4
+  if ((signed char)'1' == c) {}     //10.4
 }
 
 static void misra_10_5(uint16_t x) {
@@ -1928,4 +1935,13 @@ static void misra_22_10(void)
   errno = 0;
   f = strtod ( "A.12", NULL );
   if ( 0 == errno ) {}
+
+  // #10855
+  f = strtol(numbuf, 0, (formatHex == 0U) ? 0 : 16);
+  if (errno != 0) {}
+
+  // #11752
+  #define NULL_PTR  ((void*)0)
+  f = strtod(inStr, NULL_PTR);
+  if(errno != 0) {}
 }

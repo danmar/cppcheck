@@ -19,9 +19,9 @@
 #ifndef SHOWTYPES_H
 #define SHOWTYPES_H
 
-#include "errortypes.h"
-
 #include <QVariant>
+
+enum class Severity;
 
 /// @addtogroup GUI
 /// @{
@@ -85,7 +85,7 @@ public:
      * @param severity severity to check.
      * @return true if the severity is visible.
      */
-    bool isShown(Severity::SeverityType severity) const;
+    bool isShown(Severity severity) const;
 
     /**
      * @brief Show/hide the showtype.
@@ -99,14 +99,14 @@ public:
      * @param severity Error severity
      * @return Severity converted to ShowTypes value
      */
-    static ShowTypes::ShowType SeverityToShowType(Severity::SeverityType severity);
+    static ShowTypes::ShowType SeverityToShowType(Severity severity);
 
     /**
      * @brief Convert ShowType to severity string
      * @param type ShowType to convert
      * @return ShowType converted to severity
      */
-    static Severity::SeverityType ShowTypeToSeverity(ShowTypes::ShowType type);
+    static Severity ShowTypeToSeverity(ShowTypes::ShowType type);
 
     /**
      * @brief Convert QVariant (that contains an int) to Showtypes value

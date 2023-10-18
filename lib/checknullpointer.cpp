@@ -40,8 +40,8 @@
 //---------------------------------------------------------------------------
 
 // CWE ids used:
-static const struct CWE CWE_NULL_POINTER_DEREFERENCE(476U);
-static const struct CWE CWE_INCORRECT_CALCULATION(682U);
+static const CWE CWE_NULL_POINTER_DEREFERENCE(476U);
+static const CWE CWE_INCORRECT_CALCULATION(682U);
 
 // Register this check class (by creating a static instance of it)
 namespace {
@@ -452,8 +452,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     } else if (value->defaultArg) {
         reportError(errorPath, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
     } else {
-        std::string errmsg;
-        errmsg = std::string(value->isKnown() ? "Null" : "Possible null") + " pointer dereference";
+        std::string errmsg = std::string(value->isKnown() ? "Null" : "Possible null") + " pointer dereference";
         if (!varname.empty())
             errmsg = "$symbol:" + varname + '\n' + errmsg + ": $symbol";
 
@@ -467,7 +466,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
 
 void CheckNullPointer::arithmetic()
 {
-    logChecker("CheckNullPointer::aithmetic");
+    logChecker("CheckNullPointer::arithmetic");
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {

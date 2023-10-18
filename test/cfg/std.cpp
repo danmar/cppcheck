@@ -880,6 +880,14 @@ void std_unordered_map_emplace_unnitvar(std::unordered_set<int>& u)
     u.emplace(i);
 }
 
+int std_map_find_constref(std::map<int, int>& m) // #11857
+{
+    std::map<int, int>& r = m;
+    std::map<int, int>::iterator it = r.find(42);
+    int* p = &it->second;
+    return ++*p;
+}
+
 void valid_code()
 {
     std::vector<int> vecInt{0, 1, 2};

@@ -27,8 +27,7 @@
 #include "timer.h"
 
 #include <algorithm>
-#include <cstddef>
-#include <functional>
+#include <cstdlib>
 #include <list>
 #include <map>
 #include <memory>
@@ -68,6 +67,7 @@ private:
         SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         const char* plistOutput = nullptr;
         std::vector<std::string> filesList;
+        bool clangTidy = false;
         bool executeCommandCalled = false;
         std::string exe;
         std::vector<std::string> args;
@@ -76,17 +76,18 @@ private:
     void check(int files, int result, const std::string &data, const CheckOptions& opt = make_default_obj{}) {
         errout.str("");
         output.str("");
-        settings.project.fileSettings.clear();
+
+        Settings s = settings;
 
         std::map<std::string, std::size_t> filemap;
         if (opt.filesList.empty()) {
             for (int i = 1; i <= files; ++i) {
-                const std::string s = fprefix() + "_" + zpad3(i) + ".cpp";
-                filemap[s] = data.size();
+                std::string f_s = fprefix() + "_" + zpad3(i) + ".cpp";
+                filemap[f_s] = data.size();
                 if (useFS) {
                     ImportProject::FileSettings fs;
-                    fs.filename = s;
-                    settings.project.fileSettings.emplace_back(std::move(fs));
+                    fs.filename = std::move(f_s);
+                    s.project.fileSettings.emplace_back(std::move(fs));
                 }
             }
         }
@@ -97,15 +98,16 @@ private:
                 if (useFS) {
                     ImportProject::FileSettings fs;
                     fs.filename = f;
-                    settings.project.fileSettings.emplace_back(std::move(fs));
+                    s.project.fileSettings.emplace_back(std::move(fs));
                 }
             }
         }
 
-        settings.showtime = opt.showtime;
-        settings.quiet = opt.quiet;
+        s.showtime = opt.showtime;
+        s.quiet = opt.quiet;
         if (opt.plistOutput)
-            settings.plistOutput = opt.plistOutput;
+            s.plistOutput = opt.plistOutput;
+        s.clangTidy = opt.clangTidy;
 
         bool executeCommandCalled = false;
         std::string exe;
@@ -117,7 +119,7 @@ private:
             args = std::move(a);
             return EXIT_SUCCESS;
         });
-        cppcheck.settings() = settings;
+        cppcheck.settings() = s;
 
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filemap.size());
@@ -128,8 +130,7 @@ private:
         if (useFS)
             filemap.clear();
 
-        // TODO: test with settings.project.fileSettings;
-        SingleExecutor executor(cppcheck, filemap, settings, settings.nomsg, *this);
+        SingleExecutor executor(cppcheck, filemap, s, s.nomsg, *this);
         ASSERT_EQUALS(result, executor.check());
         ASSERT_EQUALS(opt.executeCommandCalled, executeCommandCalled);
         ASSERT_EQUALS(opt.exe, exe);
@@ -162,7 +163,7 @@ private:
         check(100, 100,
               "int main()\n"
               "{\n"
-              "  char *a = malloc(10);\n"
+              "  int i = *((int*)0);\n"
               "  return 0;\n"
               "}", dinit(CheckOptions,
                          $.quiet = false));
@@ -179,7 +180,7 @@ private:
         check(100, 100,
               "int main()\n"
               "{\n"
-              "  char *a = malloc(10);\n"
+              "  int i = *((int*)0);\n"
               "  return 0;\n"
               "}", dinit(CheckOptions, $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
     }
@@ -191,7 +192,7 @@ private:
         check(100, 100,
               "int main()\n"
               "{\n"
-              "  char *a = malloc(10);\n"
+              "  int i = *((int*)0);\n"
               "  return 0;\n"
               "}", dinit(CheckOptions, $.plistOutput = plistOutput.c_str()));
     }
@@ -224,7 +225,7 @@ private:
         check(1, 1,
               "int main()\n"
               "{\n"
-              "  {char *a = malloc(10);}\n"
+              "  {int i = *((int*)0);}\n"
               "  return 0;\n"
               "}");
     }
@@ -233,7 +234,7 @@ private:
         check(20, 20,
               "int main()\n"
               "{\n"
-              "  {char *a = malloc(10);}\n"
+              "  {int i = *((int*)0);}\n"
               "  return 0;\n"
               "}");
     }
@@ -251,7 +252,7 @@ private:
         check(4, 2,
               "int main()\n"
               "{\n"
-              "  char *a = malloc(10);\n"
+              "  int i = *((int*)0);\n"
               "  return 0;\n"
               "}",
               dinit(CheckOptions,
@@ -274,9 +275,6 @@ private:
         if (!useFS)
             return;
 
-        const Settings settingsOld = settings;
-        settings.clangTidy = true;
-
 #ifdef _WIN32
         const char exe[] = "clang-tidy.exe";
 #else
@@ -291,11 +289,11 @@ private:
               "}",
               dinit(CheckOptions,
                     $.quiet = false,
+                        $.clangTidy = true,
                         $.executeCommandCalled = true,
                         $.exe = exe,
                         $.args = {"-quiet", "-checks=*,-clang-analyzer-*,-llvm*", file, "--"}));
         ASSERT_EQUALS("Checking " + file + " ...\n", output.str());
-        settings = settingsOld;
     }
 
 // TODO: provide data which actually shows values above 0

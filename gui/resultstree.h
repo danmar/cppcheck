@@ -20,7 +20,6 @@
 #ifndef RESULTSTREE_H
 #define RESULTSTREE_H
 
-#include "errortypes.h"
 #include "showtypes.h"
 
 #include <QObject>
@@ -40,6 +39,7 @@ class ThreadHandler;
 class QContextMenuEvent;
 class QKeyEvent;
 class QSettings;
+enum class Severity;
 
 /// @addtogroup GUI
 /// @{
@@ -335,7 +335,7 @@ protected:
      *
      * @param severity Severity
      */
-    static QString severityToIcon(Severity::SeverityType severity);
+    static QString severityToIcon(Severity severity);
 
     /**
      * @brief Helper function to open an error within target with application*
@@ -382,7 +382,7 @@ protected:
      * @param severity Severity to convert
      * @return Severity as translated string
      */
-    static QString severityToTranslatedString(Severity::SeverityType severity);
+    static QString severityToTranslatedString(Severity severity);
 
     /**
      * @brief Load all settings

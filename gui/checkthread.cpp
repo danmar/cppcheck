@@ -31,7 +31,6 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <functional>
 #include <iterator>
 #include <list>
 #include <map>
@@ -348,9 +347,9 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
         errorItem.errorPath.last().line = r1MatchRes.captured(2).toInt();
         errorItem.errorPath.last().column = r1MatchRes.captured(3).toInt();
         if (r1MatchRes.captured(4) == "warning")
-            errorItem.severity = Severity::SeverityType::warning;
+            errorItem.severity = Severity::warning;
         else if (r1MatchRes.captured(4) == "error" || r1MatchRes.captured(4) == "fatal error")
-            errorItem.severity = Severity::SeverityType::error;
+            errorItem.severity = Severity::error;
 
         QString message,id;
         const QRegularExpressionMatch r2MatchRes = r2.match(r1MatchRes.captured(5));
@@ -363,13 +362,13 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
                 id = tool + '-' + r2MatchRes.captured(2);
             if (tool == CLANG_TIDY) {
                 if (id1.startsWith("performance"))
-                    errorItem.severity = Severity::SeverityType::performance;
+                    errorItem.severity = Severity::performance;
                 else if (id1.startsWith("portability"))
-                    errorItem.severity = Severity::SeverityType::portability;
+                    errorItem.severity = Severity::portability;
                 else if (id1.startsWith("misc") && !id1.contains("unused"))
-                    errorItem.severity = Severity::SeverityType::warning;
+                    errorItem.severity = Severity::warning;
                 else
-                    errorItem.severity = Severity::SeverityType::style;
+                    errorItem.severity = Severity::style;
             }
         } else {
             message = r1MatchRes.captured(5);

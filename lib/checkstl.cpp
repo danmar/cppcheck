@@ -41,7 +41,6 @@
 #include <set>
 #include <sstream>
 #include <tuple>
-#include <type_traits>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -52,18 +51,18 @@ namespace {
 }
 
 // CWE IDs used:
-static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
-static const struct CWE CWE597(597U);   // Use of Wrong Operator in String Comparison
-static const struct CWE CWE628(628U);   // Function Call with Incorrectly Specified Arguments
-static const struct CWE CWE664(664U);   // Improper Control of a Resource Through its Lifetime
-static const struct CWE CWE667(667U);   // Improper Locking
-static const struct CWE CWE704(704U);   // Incorrect Type Conversion or Cast
-static const struct CWE CWE762(762U);   // Mismatched Memory Management Routines
-static const struct CWE CWE786(786U);   // Access of Memory Location Before Start of Buffer
-static const struct CWE CWE788(788U);   // Access of Memory Location After End of Buffer
-static const struct CWE CWE825(825U);   // Expired Pointer Dereference
-static const struct CWE CWE833(833U);   // Deadlock
-static const struct CWE CWE834(834U);   // Excessive Iteration
+static const CWE CWE398(398U);   // Indicator of Poor Code Quality
+static const CWE CWE597(597U);   // Use of Wrong Operator in String Comparison
+static const CWE CWE628(628U);   // Function Call with Incorrectly Specified Arguments
+static const CWE CWE664(664U);   // Improper Control of a Resource Through its Lifetime
+static const CWE CWE667(667U);   // Improper Locking
+static const CWE CWE704(704U);   // Incorrect Type Conversion or Cast
+static const CWE CWE762(762U);   // Mismatched Memory Management Routines
+static const CWE CWE786(786U);   // Access of Memory Location Before Start of Buffer
+static const CWE CWE788(788U);   // Access of Memory Location After End of Buffer
+static const CWE CWE825(825U);   // Expired Pointer Dereference
+static const CWE CWE833(833U);   // Deadlock
+static const CWE CWE834(834U);   // Excessive Iteration
 
 static bool isElementAccessYield(Library::Container::Yield yield)
 {
@@ -1513,7 +1512,7 @@ void CheckStl::if_find()
                         for (int j = 0; j < container->type_templateArgNo; j++)
                             tok2 = tok2->nextTemplateArgument();
 
-                        container = mSettings->library.detectContainer(tok2); // innner container
+                        container = mSettings->library.detectContainer(tok2); // inner container
                     } else
                         container = nullptr;
                 }
@@ -1930,8 +1929,8 @@ void CheckStl::string_c_str()
 
     // Find all functions that take std::string as argument
     struct StrArg {
-        nonneg int n; // cppcheck-suppress unusedStructMember // FP used through iterator/pair
-        std::string argtype; // cppcheck-suppress unusedStructMember
+        nonneg int n;
+        std::string argtype;
     };
     std::multimap<const Function*, StrArg> c_strFuncParam;
     if (printPerformance) {
@@ -2493,8 +2492,7 @@ void CheckStl::dereferenceInvalidIteratorError(const Token* tok, const ValueFlow
     if (value->condition) {
         reportError(errorPath, Severity::warning, "derefInvalidIteratorRedundantCheck", errmsgcond, CWE825, (inconclusive || value->isInconclusive()) ? Certainty::inconclusive : Certainty::normal);
     } else {
-        std::string errmsg;
-        errmsg = std::string(value->isKnown() ? "Dereference" : "Possible dereference") + " of an invalid iterator";
+        std::string errmsg = std::string(value->isKnown() ? "Dereference" : "Possible dereference") + " of an invalid iterator";
         if (!varname.empty())
             errmsg = "$symbol:" + varname + '\n' + errmsg + ": $symbol";
 
@@ -2707,7 +2705,7 @@ namespace {
         const Token* bodyTok = nullptr;
         const Token* loopVar = nullptr;
         const Settings* settings = nullptr;
-        std::set<nonneg int> varsChanged = {};
+        std::set<nonneg int> varsChanged;
 
         explicit LoopAnalyzer(const Token* tok, const Settings* psettings)
             : bodyTok(tok->next()->link()->next()), settings(psettings)
@@ -2877,6 +2875,8 @@ void CheckStl::useStlAlgorithm()
             if (Token::simpleMatch(splitTok, ":")) {
                 loopVar = splitTok->previous();
                 if (loopVar->varId() == 0)
+                    continue;
+                if (Token::simpleMatch(splitTok->astOperand2(), "{"))
                     continue;
             }
             else { // iterator-based loop?

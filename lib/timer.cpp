@@ -26,7 +26,7 @@
 #include <vector>
 
 namespace {
-    using dataElementType = std::pair<std::string, struct TimerResultsData>;
+    using dataElementType = std::pair<std::string, TimerResultsData>;
     bool more_second_sec(const dataElementType& lhs, const dataElementType& rhs)
     {
         return lhs.second.seconds() > rhs.second.seconds();

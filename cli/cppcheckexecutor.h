@@ -154,6 +154,13 @@ private:
     bool loadLibraries(Settings& settings);
 
     /**
+     * @brief Load addons
+     * @param settings Settings
+     * @return Returns true if successful
+     */
+    static bool loadAddons(Settings& settings);
+
+    /**
      * @brief Write the checkers report
      */
     void writeCheckersReport(const Settings& settings) const;

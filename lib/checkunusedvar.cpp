@@ -45,8 +45,8 @@ namespace {
     CheckUnusedVar instance;
 }
 
-static const struct CWE CWE563(563U);   // Assignment to Variable without Use ('Unused Variable')
-static const struct CWE CWE665(665U);   // Improper Initialization
+static const CWE CWE563(563U);   // Assignment to Variable without Use ('Unused Variable')
+static const CWE CWE665(665U);   // Improper Initialization
 
 /** Is scope a raii class scope */
 static bool isRaiiClassScope(const Scope *classScope)
@@ -231,9 +231,7 @@ void Variables::clearAliases(nonneg int varid)
 
     if (usage) {
         // remove usage from all aliases
-        std::set<nonneg int>::const_iterator i;
-
-        for (i = usage->_aliases.cbegin(); i != usage->_aliases.cend(); ++i) {
+        for (std::set<nonneg int>::const_iterator i = usage->_aliases.cbegin(); i != usage->_aliases.cend(); ++i) {
             VariableUsage *temp = find(*i);
 
             if (temp)

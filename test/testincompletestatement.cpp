@@ -18,17 +18,14 @@
 
 #include "checkother.h"
 #include "errortypes.h"
+#include "helpers.h"
 #include "settings.h"
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
-#include <utility>
 #include <vector>
-
-#include <simplecpp.h>
 
 class TestIncompleteStatement : public TestFixture {
 public:
@@ -37,26 +34,19 @@ public:
 private:
     const Settings settings = settingsBuilder().severity(Severity::warning).build();
 
-    void check(const char code[], bool inconclusive = false) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], bool inconclusive = false) {
         // Clear the error buffer..
         errout.str("");
 
         const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).build();
 
-        // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        // Preprocess..
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+        Tokenizer tokenizer(&settings1, this);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
-        tokenizer.createTokens(std::move(tokens2));
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check for incomplete statements..
         CheckOther checkOther(&tokenizer, &settings1, this);
@@ -713,6 +703,13 @@ private:
               "    auto g = [](decltype(a[0]) i) {};\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("enum E { E0 };\n"
+              "void f() {\n"
+              "    E0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant code: Found a statement that begins with enumerator constant.\n",
+                      errout.str());
     }
 
     void vardecl() {

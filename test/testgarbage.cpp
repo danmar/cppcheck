@@ -18,7 +18,6 @@
 
 #include "check.h"
 #include "errortypes.h"
-#include "mathlib.h"
 #include "preprocessor.h"
 #include "settings.h"
 #include "fixture.h"

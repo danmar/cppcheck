@@ -36,14 +36,10 @@
 #include <map>
 #include <set>
 #include <string>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
-namespace cppcheck {
-    class Platform;
-}
-
+class Platform;
 class ErrorLogger;
 class Function;
 class Scope;
@@ -546,7 +542,7 @@ public:
      * @return length of dimension
      */
     MathLib::bigint dimension(nonneg int index_) const {
-        return mDimensions[index_].num;
+        return mDimensions.at(index_).num;
     }
 
     /**
@@ -554,7 +550,7 @@ public:
      * @return length of dimension known
      */
     bool dimensionKnown(nonneg int index_) const {
-        return mDimensions[index_].known;
+        return mDimensions.at(index_).known;
     }
 
     /**
@@ -1251,18 +1247,18 @@ public:
     ErrorPath debugPath; ///< debug path to the type
 
     ValueType() = default;
-    ValueType(enum Sign s, enum Type t, nonneg int p)
+    ValueType(Sign s, Type t, nonneg int p)
         : sign(s),
         type(t),
         pointer(p)
     {}
-    ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c)
+    ValueType(Sign s, Type t, nonneg int p, nonneg int c)
         : sign(s),
         type(t),
         pointer(p),
         constness(c)
     {}
-    ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c, std::string otn)
+    ValueType(Sign s, Type t, nonneg int p, nonneg int c, std::string otn)
         : sign(s),
         type(t),
         pointer(p),
@@ -1298,7 +1294,7 @@ public:
 
     bool isConst(nonneg int indirect = 0) const;
 
-    MathLib::bigint typeSize(const cppcheck::Platform &platform, bool p=false) const;
+    MathLib::bigint typeSize(const Platform &platform, bool p=false) const;
 
     /// Check if type is the same ignoring const and references
     bool isTypeEqual(const ValueType* that) const;

@@ -26,7 +26,6 @@
 #include <algorithm>
 #include <string>
 #include <tuple>
-#include <type_traits>
 
 const Scope* PathAnalysis::findOuterScope(const Scope * scope)
 {

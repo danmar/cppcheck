@@ -18,7 +18,7 @@
 
 #include "checkother.h"
 #include "errortypes.h"
-#include "library.h"
+#include "helpers.h"
 #include "platform.h"
 #include "preprocessor.h"
 #include "settings.h"
@@ -26,15 +26,9 @@
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
-#include <unordered_map>
-#include <utility>
 #include <vector>
-
-#include <simplecpp.h>
-
 
 class TestOther : public TestFixture {
 public:
@@ -67,6 +61,7 @@ private:
         TEST_CASE(zeroDiv16); // #11158
         TEST_CASE(zeroDiv17); // #9931
         TEST_CASE(zeroDiv18);
+        TEST_CASE(zeroDiv19);
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -330,7 +325,8 @@ private:
         check_(file, line, code, "test.cpp", true, true, false, s);
     }
 
-    void checkP(const char code[], const char *filename = "test.cpp") {
+#define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkP_(const char* file, int line, const char code[], const char *filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -343,23 +339,13 @@ private:
         settings->standards.cpp = Standards::CPPLatest;
         settings->certainty.enable(Certainty::inconclusive);
 
-        // Raw tokens..
-        std::vector<std::string> files(1, filename);
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        // Preprocess..
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
-
         Preprocessor preprocessor(*settings);
-        preprocessor.setDirectives(tokens1);
+        std::vector<std::string> files(1, filename);
+        Tokenizer tokenizer(settings, this, &preprocessor);
+        PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
 
         // Tokenizer..
-        Tokenizer tokenizer(settings, this, &preprocessor);
-        tokenizer.createTokens(std::move(tokens2));
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check..
         runChecks<CheckOther>(tokenizer, this);
@@ -367,7 +353,7 @@ private:
 
     void checkInterlockedDecrement(const char code[]) {
         Settings settings;
-        settings.platform.type = cppcheck::Platform::Type::Win32A;
+        settings.platform.type = Platform::Type::Win32A;
 
         check(code, nullptr, false, true, false, &settings);
     }
@@ -668,6 +654,15 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'x==y' is redundant or there is division by zero at line 3.\n",
             errout.str());
+    }
+
+    void zeroDiv19()
+    {
+        check("void f() {\n" // #2456
+              "    for (int i = 0;;)\n"
+              "        int j = 10 / i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero.\n", errout.str());
     }
 
     void zeroDivCond() {
@@ -2164,7 +2159,7 @@ private:
               "T::T(std::string s) noexcept(true) : m(std::move(s)) {}\n");
         ASSERT_EQUALS("", errout.str());
 
-        Settings settings1 = settingsBuilder().platform(cppcheck::Platform::Type::Win64).build();
+        Settings settings1 = settingsBuilder().platform(Platform::Type::Win64).build();
         check("using ui64 = unsigned __int64;\n"
               "ui64 Test(ui64 one, ui64 two) { return one + two; }\n",
               /*filename*/ nullptr, /*inconclusive*/ true, /*runSimpleChecks*/ true, /*verbose*/ false, &settings1);
@@ -2309,11 +2304,11 @@ private:
                                 "};\n"
                                 "void f(X x) {}";
 
-            Settings s32 = settingsBuilder(_settings).platform(cppcheck::Platform::Type::Unix32).build();
+            Settings s32 = settingsBuilder(_settings).platform(Platform::Type::Unix32).build();
             check(code, &s32);
             ASSERT_EQUALS("[test.cpp:5]: (performance) Function parameter 'x' should be passed by const reference.\n", errout.str());
 
-            Settings s64 = settingsBuilder(_settings).platform(cppcheck::Platform::Type::Unix64).build();
+            Settings s64 = settingsBuilder(_settings).platform(Platform::Type::Unix64).build();
             check(code, &s64);
             ASSERT_EQUALS("", errout.str());
         }
@@ -7931,7 +7926,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Checking if unsigned expression 'value' is less than zero.\n", errout.str());
 
         // #9040
-        Settings settings1 = settingsBuilder().platform(cppcheck::Platform::Type::Win64).build();
+        Settings settings1 = settingsBuilder().platform(Platform::Type::Win64).build();
         check("using BOOL = unsigned;\n"
               "int i;\n"
               "bool f() {\n"

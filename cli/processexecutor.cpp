@@ -22,7 +22,6 @@
 
 #include "config.h"
 #include "cppcheck.h"
-#include "cppcheckexecutor.h"
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "importproject.h"
@@ -37,7 +36,6 @@
 #include <csignal>
 #include <cstdlib>
 #include <cstring>
-#include <functional>
 #include <iostream>
 #include <list>
 #include <sstream> // IWYU pragma: keep
@@ -62,8 +60,9 @@ enum class Color;
 using std::memset;
 
 
-ProcessExecutor::ProcessExecutor(const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
+ProcessExecutor::ProcessExecutor(const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand)
     : Executor(files, settings, suppressions, errorLogger)
+    , mExecuteCommand(std::move(executeCommand))
 {
     assert(mSettings.jobs > 1);
 }
@@ -272,13 +271,14 @@ unsigned int ProcessExecutor::check()
                 close(pipes[0]);
 
                 PipeWriter pipewriter(pipes[1]);
-                CppCheck fileChecker(pipewriter, false, CppCheckExecutor::executeCommand);
+                CppCheck fileChecker(pipewriter, false, mExecuteCommand);
                 fileChecker.settings() = mSettings;
                 unsigned int resultOfCheck = 0;
 
                 if (iFileSettings != mSettings.project.fileSettings.end()) {
                     resultOfCheck = fileChecker.check(*iFileSettings);
-                    // TODO: call analyseClangTidy()
+                    if (fileChecker.settings().clangTidy)
+                        fileChecker.analyseClangTidy(*iFileSettings);
                 } else {
                     // Read file from a file
                     resultOfCheck = fileChecker.check(iFile->first);
@@ -306,7 +306,7 @@ unsigned int ProcessExecutor::check()
             FD_ZERO(&rfds);
             for (std::list<int>::const_iterator rp = rpipes.cbegin(); rp != rpipes.cend(); ++rp)
                 FD_SET(*rp, &rfds);
-            struct timeval tv; // for every second polling of load average condition
+            timeval tv; // for every second polling of load average condition
             tv.tv_sec = 1;
             tv.tv_usec = 0;
             const int r = select(*std::max_element(rpipes.cbegin(), rpipes.cend()) + 1, &rfds, nullptr, nullptr, &tv);
@@ -394,7 +394,7 @@ void ProcessExecutor::reportInternalChildErr(const std::string &childname, const
                               "cppcheckError",
                               Certainty::normal);
 
-    if (!mSuppressions.isSuppressed(errmsg))
+    if (!mSuppressions.isSuppressed(errmsg, {}))
         mErrorLogger.reportErr(errmsg);
 }
 

@@ -23,12 +23,12 @@
 
 #include <QMap>
 #include <QObject>
-#include <QSet>
 #include <QString>
 #include <QStringList>
 
 #include <set>
 #include <string>
+#include <utility>
 
 /// @addtogroup GUI
 /// @{

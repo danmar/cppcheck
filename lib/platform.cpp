@@ -27,13 +27,13 @@
 
 #include <tinyxml2.h>
 
-cppcheck::Platform::Platform()
+Platform::Platform()
 {
     set(Type::Native);
 }
 
 
-bool cppcheck::Platform::set(Type t)
+bool Platform::set(Type t)
 {
     switch (t) {
     case Type::Unspecified: // unknown type sizes (sizes etc are set but are not known)
@@ -150,7 +150,7 @@ bool cppcheck::Platform::set(Type t)
     return false;
 }
 
-bool cppcheck::Platform::set(const std::string& platformstr, std::string& errstr, const std::vector<std::string>& paths, bool verbose)
+bool Platform::set(const std::string& platformstr, std::string& errstr, const std::vector<std::string>& paths, bool verbose)
 {
     if (platformstr == "win32A")
         set(Type::Win32A);
@@ -189,15 +189,16 @@ bool cppcheck::Platform::set(const std::string& platformstr, std::string& errstr
     return true;
 }
 
-bool cppcheck::Platform::loadFromFile(const char exename[], const std::string &filename, bool verbose)
+bool Platform::loadFromFile(const char exename[], const std::string &filename, bool verbose)
 {
     // TODO: only append .xml if missing
     // TODO: use native separators
-    std::vector<std::string> filenames;
-    filenames.push_back(filename);
-    filenames.push_back(filename + ".xml");
-    filenames.push_back("platforms/" + filename);
-    filenames.push_back("platforms/" + filename + ".xml");
+    std::vector<std::string> filenames{
+        filename,
+        filename + ".xml",
+        "platforms/" + filename,
+        "platforms/" + filename + ".xml"
+    };
     if (exename && (std::string::npos != Path::fromNativeSeparators(exename).find('/'))) {
         filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + filename);
         filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename);
@@ -240,7 +241,7 @@ static unsigned int xmlTextAsUInt(const tinyxml2::XMLElement* node, bool& error)
     return retval;
 }
 
-bool cppcheck::Platform::loadFromXmlDocument(const tinyxml2::XMLDocument *doc)
+bool Platform::loadFromXmlDocument(const tinyxml2::XMLDocument *doc)
 {
     const tinyxml2::XMLElement * const rootnode = doc->FirstChildElement();
 

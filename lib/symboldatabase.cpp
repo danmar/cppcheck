@@ -48,7 +48,6 @@
 #include <stack>
 #include <string>
 #include <tuple>
-#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 //---------------------------------------------------------------------------
@@ -2189,10 +2188,9 @@ Variable& Variable::operator=(const Variable &var)
     mScope = var.mScope;
     mDimensions = var.mDimensions;
     delete mValueType;
+    mValueType = nullptr;
     if (var.mValueType)
         mValueType = new ValueType(*var.mValueType);
-    else
-        mValueType = nullptr;
 
     return *this;
 }
@@ -2347,6 +2345,7 @@ void Variable::setValueType(const ValueType &valueType)
             return;
     }
     delete mValueType;
+    mValueType = nullptr;
     mValueType = new ValueType(valueType);
     if ((mValueType->pointer > 0) && (!isArray() || Token::Match(mNameToken->previous(), "( * %name% )")))
         setFlag(fIsPointer, true);
@@ -2833,7 +2832,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
         else if (openParen == 1 && second->str() == ")" && first->str() != ")")
             break;
 
-        // ckeck for type * x == type x[]
+        // check for type * x == type x[]
         else if (Token::Match(first->next(), "* %name%| ,|)|=") &&
                  Token::Match(second->next(), "%name%| [ ] ,|)")) {
             do {
@@ -3044,7 +3043,7 @@ bool Function::returnsConst(const Function* function, bool unknown)
 
 bool Function::returnsReference(const Function* function, bool unknown, bool includeRValueRef)
 {
-    return checkReturns(function, unknown, false, [includeRValueRef](UNUSED const Token* defStart, const Token* defEnd) {
+    return checkReturns(function, unknown, false, [includeRValueRef](const Token* /*defStart*/, const Token* defEnd) {
         return includeRValueRef ? Token::Match(defEnd->previous(), "&|&&") : Token::simpleMatch(defEnd->previous(), "&");
     });
 }
@@ -3215,10 +3214,8 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
         path.insert(0, ":: ");
     }
 
-    std::list<Scope>::iterator it1;
-
     // search for match
-    for (it1 = scopeList.begin(); it1 != scopeList.end(); ++it1) {
+    for (std::list<Scope>::iterator it1 = scopeList.begin(); it1 != scopeList.end(); ++it1) {
         Scope *scope1 = &(*it1);
 
         bool match = false;
@@ -5950,7 +5947,7 @@ const Type* Scope::findType(const std::string & name) const
 
     // Type was found
     if (definedTypesMap.end() != it)
-        return (*it).second;
+        return it->second;
 
     // is type defined in anonymous namespace..
     it = definedTypesMap.find(emptyString);
@@ -6313,7 +6310,7 @@ void SymbolDatabase::setValueType(Token* tok, const Variable& var, SourceLocatio
     }
 }
 
-static ValueType::Type getEnumType(const Scope* scope, const cppcheck::Platform& platform);
+static ValueType::Type getEnumType(const Scope* scope, const Platform& platform);
 
 void SymbolDatabase::setValueType(Token* tok, const Enumerator& enumerator, SourceLocation loc)
 {
@@ -6830,7 +6827,7 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
     }
 }
 
-static ValueType::Type getEnumType(const Scope* scope, const cppcheck::Platform& platform) // TODO: also determine sign?
+static ValueType::Type getEnumType(const Scope* scope, const Platform& platform) // TODO: also determine sign?
 {
     ValueType::Type type = ValueType::Type::INT;
     for (const Token* tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
@@ -7151,7 +7148,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                         pos -= 2;
                     } else break;
                 }
-                if (mSettings.platform.type != cppcheck::Platform::Type::Unspecified) {
+                if (mSettings.platform.type != Platform::Type::Unspecified) {
                     if (type <= ValueType::Type::INT && mSettings.platform.isIntValue(unsignedSuffix ? (value >> 1) : value))
                         type = ValueType::Type::INT;
                     else if (type <= ValueType::Type::INT && !MathLib::isDec(tokStr) && mSettings.platform.isIntValue(value >> 2)) {
@@ -7242,7 +7239,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
 
             else if (Token::simpleMatch(tok->previous(), "sizeof (")) {
                 ValueType valuetype(ValueType::Sign::UNSIGNED, ValueType::Type::LONG, 0U);
-                if (mSettings.platform.type == cppcheck::Platform::Type::Win64)
+                if (mSettings.platform.type == Platform::Type::Win64)
                     valuetype.type = ValueType::Type::LONGLONG;
 
                 valuetype.originalTypeName = "size_t";
@@ -7779,7 +7776,7 @@ bool ValueType::isConst(nonneg int indirect) const
     return constness & (1 << (pointer - indirect));
 }
 
-MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform, bool p) const
+MathLib::bigint ValueType::typeSize(const Platform &platform, bool p) const
 {
     if (p && pointer)
         return platform.sizeof_pointer;

@@ -23,6 +23,7 @@
     <ClCompile Include="valueflow.cpp" />
     <ClCompile Include="tokenize.cpp" />
     <ClCompile Include="symboldatabase.cpp" />
+    <ClCompile Include="addoninfo.cpp" />
     <ClCompile Include="analyzerinfo.cpp" />
     <ClCompile Include="astutils.cpp" />
     <ClCompile Include="check.cpp">
@@ -91,6 +92,7 @@
   <ItemGroup Label="HeaderFiles">
     <ClInclude Include="..\externals\simplecpp\simplecpp.h" />
     <ClInclude Include="..\externals\tinyxml2\tinyxml2.h" />
+    <ClInclude Include="addoninfo.h" />
     <ClInclude Include="analyzer.h" />
     <ClInclude Include="analyzerinfo.h" />
     <ClInclude Include="astutils.h" />

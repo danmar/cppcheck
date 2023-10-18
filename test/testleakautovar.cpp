@@ -19,19 +19,14 @@
 
 #include "checkleakautovar.h"
 #include "errortypes.h"
-#include "library.h"
+#include "helpers.h"
 #include "settings.h"
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
-#include <unordered_map>
-#include <utility>
 #include <vector>
-
-#include <simplecpp.h>
 
 class TestLeakAutoVarStrcpy;
 class TestLeakAutoVarWindows;
@@ -606,6 +601,14 @@ private:
               "    b = Bar(*new Foo(data));\n"
               "}", /*cpp*/ true);
         ASSERT_EQUALS("[test.cpp:4]: (information) --check-library: Function Foo() should have <use>/<leak-ignore> configuration\n", errout.str());
+
+        check("class B {};\n"
+              "    class D : public B {};\n"
+              "    void g() {\n"
+              "        auto d = new D();\n"
+              "        if (d) {}\n"
+              "}", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: d\n", errout.str());
     }
 
     void realloc1() {
@@ -2837,24 +2840,17 @@ public:
 private:
     const Settings settings = settingsBuilder().library("std.cfg").checkLibrary().build();
 
-    void checkP(const char code[], bool cpp = false) {
+#define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkP_(const char* file, int line, const char code[], bool cpp = false) {
         // Clear the error buffer..
         errout.str("");
 
-        // Raw tokens..
         std::vector<std::string> files(1, cpp?"test.cpp":"test.c");
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        // Preprocess..
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+        Tokenizer tokenizer(&settings, this);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenizer..
-        Tokenizer tokenizer(&settings, this);
-        tokenizer.createTokens(std::move(tokens2));
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check for leaks..
         runChecks<CheckLeakAutoVar>(tokenizer, this);

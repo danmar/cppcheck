@@ -29,10 +29,12 @@
 #include <QDate>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QFont>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMimeData>
 #include <QPageSize>
+#include <QPlainTextEdit>
 #include <QPrinter>
 #include <QPushButton>
 #include <QStringList>
@@ -111,8 +113,7 @@ void StatsDialog::setProject(const ProjectFile* projectFile)
         }
         mUI->mLblHistoryFile->setText(tr("File: ") + (statsFile.isEmpty() ? tr("No cppcheck build dir") : statsFile));
         if (!statsFile.isEmpty()) {
-            QChartView *chartView;
-            chartView = createChart(statsFile, "cppcheck");
+            QChartView *chartView = createChart(statsFile, "cppcheck");
             mUI->mTabHistory->layout()->addWidget(chartView);
             if (projectFile->getClangAnalyzer()) {
                 chartView = createChart(statsFile, CLANG_ANALYZER);

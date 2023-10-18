@@ -19,6 +19,7 @@
 #include "library.h"
 
 #include "astutils.h"
+#include "errortypes.h"
 #include "mathlib.h"
 #include "path.h"
 #include "symboldatabase.h"
@@ -511,7 +512,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     for (const tinyxml2::XMLElement* memberNode = node->FirstChildElement(); memberNode; memberNode = memberNode->NextSiblingElement()) {
                         const char *memberName = memberNode->Attribute("name");
                         const char *memberTemplateParameter = memberNode->Attribute("templateParameter");
-                        struct Container::RangeItemRecordTypeItem member;
+                        Container::RangeItemRecordTypeItem member;
                         member.name = memberName ? memberName : "";
                         member.templateParameter = memberTemplateParameter ? strToInt<int>(memberTemplateParameter) : -1;
                         container.rangeItemRecordType.emplace_back(std::move(member));
@@ -836,7 +837,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             const char* const severity = functionnode->Attribute("severity");
             if (severity == nullptr)
                 return Error(ErrorCode::MISSING_ATTRIBUTE, "severity");
-            wi.severity = Severity::fromString(severity);
+            wi.severity = severityFromString(severity);
 
             const char* const cstd = functionnode->Attribute("cstd");
             if (cstd) {

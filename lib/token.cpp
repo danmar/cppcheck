@@ -1889,8 +1889,7 @@ const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, nonneg int ar
     if (!mImpl->mValues || !settings)
         return nullptr;
     const ValueFlow::Value *ret = nullptr;
-    std::list<ValueFlow::Value>::const_iterator it;
-    for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
+    for (std::list<ValueFlow::Value>::const_iterator it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
         if (it->isImpossible())
             continue;
         if ((it->isIntValue() && !settings->library.isIntArgValid(ftok, argnr, it->intvalue)) ||
@@ -1916,8 +1915,7 @@ const Token *Token::getValueTokenMinStrSize(const Settings *settings, MathLib::b
         return nullptr;
     const Token *ret = nullptr;
     int minsize = INT_MAX;
-    std::list<ValueFlow::Value>::const_iterator it;
-    for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
+    for (std::list<ValueFlow::Value>::const_iterator it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
         if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
             const int size = getStrSize(it->tokvalue, settings);
             if (!ret || size < minsize) {
@@ -1937,8 +1935,7 @@ const Token *Token::getValueTokenMaxStrLength() const
         return nullptr;
     const Token *ret = nullptr;
     int maxlength = 0;
-    std::list<ValueFlow::Value>::const_iterator it;
-    for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
+    for (std::list<ValueFlow::Value>::const_iterator it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
         if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
             const int length = getStrLength(it->tokvalue);
             if (!ret || length > maxlength) {
@@ -2558,7 +2555,7 @@ TokenImpl::~TokenImpl()
     delete mTemplateSimplifierPointers;
 
     while (mCppcheckAttributes) {
-        struct CppcheckAttributes *c = mCppcheckAttributes;
+        CppcheckAttributes *c = mCppcheckAttributes;
         mCppcheckAttributes = mCppcheckAttributes->next;
         delete c;
     }
@@ -2566,7 +2563,7 @@ TokenImpl::~TokenImpl()
 
 void TokenImpl::setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value)
 {
-    struct CppcheckAttributes *attr = mCppcheckAttributes;
+    CppcheckAttributes *attr = mCppcheckAttributes;
     while (attr && attr->type != type)
         attr = attr->next;
     if (attr)
@@ -2582,7 +2579,7 @@ void TokenImpl::setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, M
 
 bool TokenImpl::getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint &value) const
 {
-    struct CppcheckAttributes *attr = mCppcheckAttributes;
+    CppcheckAttributes *attr = mCppcheckAttributes;
     while (attr && attr->type != type)
         attr = attr->next;
     if (attr)

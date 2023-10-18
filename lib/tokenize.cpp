@@ -21,6 +21,7 @@
 
 #include "check.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
 #include "platform.h"
@@ -50,7 +51,6 @@
 #include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <stdexcept>
-#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -806,7 +806,7 @@ namespace {
                 if (pointerType) {
                     tok->insertToken("const");
                     tok->next()->column(tok->column());
-                    tok->next()->isExpandedMacro(tok->previous()->isExpandedMacro());
+                    tok->next()->setMacroName(tok->previous()->getMacroName());
                     tok->deletePrevious();
                 }
             }
@@ -1131,15 +1131,13 @@ void Tokenizer::simplifyTypedef()
 
 void Tokenizer::simplifyTypedefCpp()
 {
-    std::vector<Space> spaceInfo;
     bool isNamespace = false;
-    std::string className;
-    std::string fullClassName;
+    std::string className, fullClassName;
     bool hasClass = false;
     bool goback = false;
 
     // add global namespace
-    spaceInfo.emplace_back(/*Space{}*/);
+    std::vector<Space> spaceInfo(1);
 
     // Convert "using a::b;" to corresponding typedef statements
     simplifyUsingToTypedef();
@@ -5013,8 +5011,7 @@ void Tokenizer::setVarIdPass2()
         const std::string &scopeName(getScopeName(scopeInfo));
         const std::string scopeName2(scopeName.empty() ? std::string() : (scopeName + " :: "));
 
-        std::list<const Token *> classnameTokens;
-        classnameTokens.push_back(tok->next());
+        std::list<const Token*> classnameTokens{ tok->next() };
         Token* tokStart = tok->tokAt(2);
         while (Token::Match(tokStart, ":: %name%") || tokStart->str() == "<") {
             if (tokStart->str() == "<") {
@@ -7172,7 +7169,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                 endDecl = endDecl->next();
                 endDecl->next()->isSplittedVarDeclEq(true);
                 endDecl->insertToken(varName->str());
-                endDecl->next()->isExpandedMacro(varName->isExpandedMacro());
+                endDecl->next()->setMacroName(varName->getMacroName());
                 continue;
             }
             //non-VLA case
@@ -8280,7 +8277,8 @@ void Tokenizer::reportUnknownMacros() const
 
     // String concatenation with unknown macros
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%str% %name% (") && Token::Match(tok->linkAt(2), ") %str%")) {
+        if ((Token::Match(tok, "%str% %name% (") && Token::Match(tok->linkAt(2), ") %str%")) ||
+            (Token::Match(tok, "%str% %name% %str%") && !(startsWith(tok->strAt(1), "PRI") || startsWith(tok->strAt(1), "SCN")))) { // TODO: implement macros in std.cfg
             if (tok->next()->isKeyword())
                 continue;
             unknownMacroError(tok->next());
@@ -9766,7 +9764,7 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
     if (!mSettings->platform.isWindows())
         return;
 
-    const bool ansi = mSettings->platform.type == cppcheck::Platform::Type::Win32A;
+    const bool ansi = mSettings->platform.type == Platform::Type::Win32A;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->strAt(1) != "(")
             continue;
@@ -10274,13 +10272,13 @@ void Tokenizer::prepareTernaryOpForAST()
     }
 }
 
-void Tokenizer::reportError(const Token* tok, const Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive) const
+void Tokenizer::reportError(const Token* tok, const Severity severity, const std::string& id, const std::string& msg, bool inconclusive) const
 {
     const std::list<const Token*> callstack(1, tok);
     reportError(callstack, severity, id, msg, inconclusive);
 }
 
-void Tokenizer::reportError(const std::list<const Token*>& callstack, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive) const
+void Tokenizer::reportError(const std::list<const Token*>& callstack, Severity severity, const std::string& id, const std::string& msg, bool inconclusive) const
 {
     const ErrorMessage errmsg(callstack, &list, severity, id, msg, inconclusive ? Certainty::inconclusive : Certainty::normal);
     if (mErrorLogger)
@@ -10298,7 +10296,7 @@ void Tokenizer::setPodTypes()
             continue;
 
         // pod type
-        const struct Library::PodType *podType = mSettings->library.podtype(tok->str());
+        const Library::PodType *podType = mSettings->library.podtype(tok->str());
         if (podType) {
             const Token *prev = tok->previous();
             while (prev && prev->isName())

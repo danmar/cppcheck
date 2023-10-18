@@ -17,8 +17,16 @@
  */
 
 #include "checkersreport.h"
+
 #include "checkers.h"
+#include "errortypes.h"
+#include "settings.h"
+
+#include <map>
 #include <sstream>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 
 static bool isCppcheckPremium(const Settings& settings) {
     return (settings.cppcheckCfgProductName.compare(0, 16, "Cppcheck Premium") == 0);

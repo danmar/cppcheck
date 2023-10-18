@@ -43,13 +43,20 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang
     add_compile_options(-Wno-missing-braces)
     add_compile_options(-Wno-sign-compare)
     add_compile_options(-Wno-multichar)
+    add_compile_options(-Woverloaded-virtual)       # when a function declaration hides virtual functions from a base class
+
+    # TODO: evaluate
+    #add_compile_options(-Wconversion)  # danmar: gives fp. for instance: unsigned int sizeof_pointer = sizeof(void *);
+    #add_compile_options(-Wlogical-op) # doesn't work on older GCC
+    #add_compile_options(-Wsign-conversion) # too many warnings
+    #add_compile_options(-Wunreachable-code) # some GCC versions report lots of warnings
+    #add_compile_options(-Wsign-promo)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # use pipes instead of temporary files - greatly reduces I/O usage
     add_compile_options(-pipe)
 
-    add_compile_options(-Woverloaded-virtual)       # when a function declaration hides virtual functions from a base class
     add_compile_options(-Wno-maybe-uninitialized)   # there are some false positives
     add_compile_options(-Wsuggest-attribute=noreturn)
     add_compile_options(-Wno-shadow)                # whenever a local variable or type declaration shadows another one
@@ -180,7 +187,7 @@ if (MSVC)
     # Linker - General
     add_link_options($<$<CONFIG:Debug>:/INCREMENTAL>) # Enable Incremental Linking - Yes
 
-    add_link_options(/NOLOGO) # SUppress Startup Banner - Yes
+    add_link_options(/NOLOGO) # Suppress Startup Banner - Yes
     # Ignore Import Library - Yes
 
     # Linker - Debugging

@@ -495,6 +495,13 @@ def getEssentialTypeCategory(expr):
             return 'char'
         return expr.valueType.sign
 
+    if (expr.isCast and expr.str == "("):
+        castTok = expr.next
+        while castTok.isName or castTok.str == "*":
+            if castTok.str == 'char' and not castTok.isSigned and not castTok.isUnsigned:
+                return 'char'
+            castTok = castTok.next
+
     if expr.valueType:
         return expr.valueType.sign
     return None
@@ -3849,8 +3856,8 @@ class MisraChecker:
     def misra_22_10(self, cfg):
         last_function_call = None
         for token in cfg.tokenlist:
-            if token.str == '(' and not simpleMatch(token.link, ') {'):
-                name, args = cppcheckdata.get_function_call_name_args(token.previous)
+            if token.isName and token.next.str == '(' and not simpleMatch(token.next.link, ') {'):
+                name, args = cppcheckdata.get_function_call_name_args(token)
                 last_function_call = name
             if token.str == '}':
                 last_function_call = None

@@ -20,6 +20,7 @@
 #include "checknullpointer.h"
 #include "ctu.h"
 #include "errortypes.h"
+#include "helpers.h"
 #include "library.h"
 #include "settings.h"
 #include "fixture.h"
@@ -31,10 +32,7 @@
 #include <sstream> // IWYU pragma: keep
 #include <string>
 #include <unordered_map>
-#include <utility>
 #include <vector>
-
-#include <simplecpp.h>
 
 class TestNullPointer : public TestFixture {
 public:
@@ -192,26 +190,19 @@ private:
         runChecks<CheckNullPointer>(tokenizer, this);
     }
 
-    void checkP(const char code[]) {
+#define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkP_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
         const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, false).build();
 
-        // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        // Preprocess..
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+        Tokenizer tokenizer(&settings1, this);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenizer..
-        Tokenizer tokenizer(&settings1, this);
-        tokenizer.createTokens(std::move(tokens2));
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check for null pointer dereferences..
         runChecks<CheckNullPointer>(tokenizer, this);
@@ -391,7 +382,7 @@ private:
 
     // Dereferencing a struct and then checking if it is null
     // This is checked by this function:
-    //        CheckOther::nullPointerStructByDeRefAndChec
+    //        CheckOther::nullPointerStructByDeRefAndCheck
     void structDerefAndCheck() {
         // extracttests.start: struct ABC { int a; int b; int x; };
 

@@ -18,6 +18,7 @@
 
 #include "mainwindow.h"
 
+#include "addoninfo.h"
 #include "applicationlist.h"
 #include "aboutdialog.h"
 #include "analyzerinfo.h"
@@ -48,12 +49,12 @@
 #include "ui_mainwindow.h"
 
 #include <algorithm>
-#include <functional>
 #include <iterator>
 #include <list>
 #include <set>
 #include <string>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include <QApplication>
@@ -242,7 +243,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI->mActionEditProjectFile->setEnabled(mProjectFile != nullptr);
 
     for (int i = 0; i < mPlatforms.getCount(); i++) {
-        Platform platform = mPlatforms.mPlatforms[i];
+        PlatformData platform = mPlatforms.mPlatforms[i];
         QAction *action = new QAction(this);
         platform.mActMainWindow = action;
         mPlatforms.mPlatforms[i] = platform;
@@ -273,11 +274,11 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     // For other platforms default to unspecified/default which means the
     // platform Cppcheck GUI was compiled on.
 #if defined(_WIN32)
-    const cppcheck::Platform::Type defaultPlatform = cppcheck::Platform::Type::Win32W;
+    const Platform::Type defaultPlatform = Platform::Type::Win32W;
 #else
-    const cppcheck::Platform::Type defaultPlatform = cppcheck::Platform::Type::Unspecified;
+    const Platform::Type defaultPlatform = Platform::Type::Unspecified;
 #endif
-    Platform &platform = mPlatforms.get((cppcheck::Platform::Type)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
+    PlatformData &platform = mPlatforms.get((Platform::Type)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
     platform.mActMainWindow->setChecked(true);
 
     mNetworkAccessManager = new QNetworkAccessManager(this);
@@ -493,7 +494,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         p.ignorePaths(v);
 
         if (!mProjectFile->getAnalyzeAllVsConfigs()) {
-            const cppcheck::Platform::Type platform = (cppcheck::Platform::Type) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
+            const Platform::Type platform = (Platform::Type) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
             std::vector<std::string> configurations;
             const QStringList configs = mProjectFile->getVsConfigurations();
             std::transform(configs.cbegin(), configs.cend(), std::back_inserter(configurations), [](const QString& e) {
@@ -966,9 +967,9 @@ Settings MainWindow::getCppcheckSettings()
             const QString applicationFilePath = QCoreApplication::applicationFilePath();
             result.platform.loadFromFile(applicationFilePath.toStdString().c_str(), platform.toStdString());
         } else {
-            for (int i = cppcheck::Platform::Type::Native; i <= cppcheck::Platform::Type::Unix64; i++) {
-                const cppcheck::Platform::Type p = (cppcheck::Platform::Type)i;
-                if (platform == cppcheck::Platform::toString(p)) {
+            for (int i = Platform::Type::Native; i <= Platform::Type::Unix64; i++) {
+                const Platform::Type p = (Platform::Type)i;
+                if (platform == Platform::toString(p)) {
                     result.platform.set(p);
                     break;
                 }
@@ -999,6 +1000,7 @@ Settings MainWindow::getCppcheckSettings()
 
             addonFilePath.replace(QChar('\\'), QChar('/'));
 
+            // TODO: use picojson to generate the JSON
             QString json;
             json += "{ \"script\":\"" + addonFilePath + "\"";
             if (!pythonCmd.isEmpty())
@@ -1014,6 +1016,9 @@ Settings MainWindow::getCppcheckSettings()
             }
             json += " }";
             result.addons.emplace(json.toStdString());
+            AddonInfo addonInfo;
+            addonInfo.getAddonInfo(json.toStdString(), result.exename);
+            result.addonInfos.emplace_back(std::move(addonInfo));
         }
 
         if (isCppcheckPremium()) {
@@ -1055,8 +1060,8 @@ Settings MainWindow::getCppcheckSettings()
     result.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
     result.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
     result.certainty.setEnabled(Certainty::inconclusive, mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool());
-    if (!mProjectFile || result.platform.type == cppcheck::Platform::Type::Unspecified)
-        result.platform.set((cppcheck::Platform::Type) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
+    if (!mProjectFile || result.platform.type == Platform::Type::Unspecified)
+        result.platform.set((Platform::Type) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
     result.standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
     result.standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
     result.enforcedLang = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
@@ -1764,7 +1769,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
         } catch (InternalError &e) {
             QMessageBox msg(QMessageBox::Critical,
                             tr("Cppcheck"),
-                            tr("Failed to import '%1', analysis is stopped").arg(prjfile),
+                            tr("Failed to import '%1' (%2), analysis is stopped").arg(prjfile).arg(QString::fromStdString(e.errorMessage)),
                             QMessageBox::Ok,
                             this);
             msg.exec();
@@ -1982,7 +1987,7 @@ void MainWindow::selectPlatform()
 {
     QAction *action = qobject_cast<QAction *>(sender());
     if (action) {
-        const cppcheck::Platform::Type platform = (cppcheck::Platform::Type) action->data().toInt();
+        const Platform::Type platform = (Platform::Type) action->data().toInt();
         mSettings->setValue(SETTINGS_CHECKED_PLATFORM, platform);
     }
 }

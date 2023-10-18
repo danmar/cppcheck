@@ -16,15 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "config.h"
 #include "errortypes.h"
 #include "mathlib.h"
 #include "fixture.h"
 
 #include <limits>
 #include <string>
-
-
 
 class TestMathLib : public TestFixture {
 public:

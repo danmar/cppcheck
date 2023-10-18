@@ -16,32 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef addonInfoH
+#define addonInfoH
 
 #include "config.h"
 
-#include <set>
 #include <string>
 
-class Settings;
+struct CPPCHECKLIB AddonInfo {
+    std::string name;
+    std::string scriptFile; // addon script
+    std::string executable; // addon executable
+    std::string args;       // special extra arguments
+    std::string python;     // script interpreter
+    bool ctu = false;
+    std::string runScript;
 
-class CPPCHECKLIB CheckersReport {
-public:
-    CheckersReport(const Settings& settings, const std::set<std::string>& activeCheckers);
-
-    int getActiveCheckersCount();
-    int getAllCheckersCount();
-
-    std::string getReport(const std::string& criticalErrors) const;
-
-private:
-    const Settings& mSettings;
-    const std::set<std::string>& mActiveCheckers;
-
-    void countCheckers();
-
-    int mActiveCheckersCount = 0;
-    int mAllCheckersCount = 0;
+    std::string getAddonInfo(const std::string &fileName, const std::string &exename);
 };
 
-
+#endif // addonInfoH

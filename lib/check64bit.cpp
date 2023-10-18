@@ -33,8 +33,7 @@
 //---------------------------------------------------------------------------
 
 // CWE ids used
-static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
-static const struct CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
+static const CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 
 // Register this check class (by creating a static instance of it)
 namespace {

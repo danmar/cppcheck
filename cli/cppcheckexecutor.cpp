@@ -18,9 +18,10 @@
 
 #include "cppcheckexecutor.h"
 
+#include "addoninfo.h"
 #include "analyzerinfo.h"
-#include "checkers.h"
 #include "checkersreport.h"
+#include "cmdlinelogger.h"
 #include "cmdlineparser.h"
 #include "color.h"
 #include "config.h"
@@ -48,12 +49,11 @@
 #include <cassert>
 #include <cstdio>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
-#include <functional>
 #include <iostream>
 #include <iterator>
 #include <list>
-#include <memory>
 #include <sstream> // IWYU pragma: keep
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -92,12 +92,17 @@ public:
 
     void printMessage(const std::string &message) override
     {
-        std::cout << "cppcheck: " << message << std::endl;
+        printRaw("cppcheck: " + message);
     }
 
     void printError(const std::string &message) override
     {
         printMessage("error: " + message);
+    }
+
+    void printRaw(const std::string &message) override
+    {
+        std::cout << message << std::endl;
     }
 };
 
@@ -119,14 +124,13 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
     if (success) {
         if (parser.getShowVersion() && !parser.getShowErrorMessages()) {
             if (!settings.cppcheckCfgProductName.empty()) {
-                std::cout << settings.cppcheckCfgProductName << std::endl;
+                logger.printRaw(settings.cppcheckCfgProductName);
             } else {
                 const char * const extraVersion = CppCheck::extraVersion();
                 if (*extraVersion != 0)
-                    std::cout << "Cppcheck " << CppCheck::version() << " ("
-                              << extraVersion << ')' << std::endl;
+                    logger.printRaw(std::string("Cppcheck ") + CppCheck::version() + " ("+ extraVersion + ')');
                 else
-                    std::cout << "Cppcheck " << CppCheck::version() << std::endl;
+                    logger.printRaw(std::string("Cppcheck ") + CppCheck::version());
             }
         }
 
@@ -148,6 +152,9 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
     // Libraries must be loaded before FileLister is executed to ensure markup files will be
     // listed properly.
     if (!loadLibraries(settings))
+        return false;
+
+    if (!loadAddons(settings))
         return false;
 
     // Check that all include paths exist
@@ -173,8 +180,8 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
         return Path::isHeader(i);
     });
     if (warn) {
-        std::cout << "cppcheck: filename exclusion does not apply to header (.h and .hpp) files." << std::endl;
-        std::cout << "cppcheck: Please use --suppress for ignoring results from the header files." << std::endl;
+        logger.printMessage("filename exclusion does not apply to header (.h and .hpp) files.");
+        logger.printMessage("Please use --suppress for ignoring results from the header files.");
     }
 
     const std::vector<std::string>& pathnames = parser.getPathNames();
@@ -196,7 +203,7 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
         if (!newList.empty())
             settings.project.fileSettings = newList;
         else {
-            std::cout << "cppcheck: error: could not find any files matching the filter." << std::endl;
+            logger.printError("could not find any files matching the filter.");
             return false;
         }
     } else if (!pathnames.empty()) {
@@ -205,15 +212,16 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
         for (const std::string &pathname : pathnames) {
             std::string err = FileLister::recursiveAddFiles(mFiles, Path::toNativeSeparators(pathname), settings.library.markupExtensions(), matcher);
             if (!err.empty()) {
-                std::cout << "cppcheck: " << err << std::endl;
+                // TODO: bail out?
+                logger.printMessage(err);
             }
         }
     }
 
     if (mFiles.empty() && settings.project.fileSettings.empty()) {
-        std::cout << "cppcheck: error: could not find or open any of the paths given." << std::endl;
+        logger.printError("could not find or open any of the paths given.");
         if (!ignored.empty())
-            std::cout << "cppcheck: Maybe all paths were ignored?" << std::endl;
+            logger.printMessage("Maybe all paths were ignored?");
         return false;
     }
     if (!settings.fileFilters.empty() && settings.project.fileSettings.empty()) {
@@ -224,7 +232,7 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
             }
         mFiles = newMap;
         if (mFiles.empty()) {
-            std::cout << "cppcheck: error: could not find any files matching the filter." << std::endl;
+            logger.printError("could not find any files matching the filter.");
             return false;
         }
 
@@ -325,9 +333,9 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         returnValue = executor.check();
     } else {
 #if defined(THREADING_MODEL_THREAD)
-        ThreadExecutor executor(mFiles, settings, settings.nomsg, *this);
+        ThreadExecutor executor(mFiles, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
 #elif defined(THREADING_MODEL_FORK)
-        ProcessExecutor executor(mFiles, settings, settings.nomsg, *this);
+        ProcessExecutor executor(mFiles, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
 #endif
         returnValue = executor.check();
     }
@@ -402,6 +410,22 @@ bool CppCheckExecutor::loadLibraries(Settings& settings)
         if (!tryLoadLibrary(settings.library, settings.exename, lib.c_str())) {
             result = false;
         }
+    }
+    return result;
+}
+
+bool CppCheckExecutor::loadAddons(Settings& settings)
+{
+    bool result = true;
+    for (const std::string &addon: settings.addons) {
+        AddonInfo addonInfo;
+        const std::string failedToGetAddonInfo = addonInfo.getAddonInfo(addon, settings.exename);
+        if (!failedToGetAddonInfo.empty()) {
+            std::cout << failedToGetAddonInfo << std::endl;
+            result = false;
+            continue;
+        }
+        settings.addonInfos.emplace_back(std::move(addonInfo));
     }
     return result;
 }
@@ -600,7 +624,7 @@ int CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> a
 #else
     const int res = pclose(p);
 #endif
-    if (res == -1) { // error occured
+    if (res == -1) { // error occurred
         // TODO: how to provide to caller?
         //const int err = errno;
         //std::cout << "pclose() errno " << std::to_string(err) << std::endl;

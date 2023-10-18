@@ -25,14 +25,20 @@
 #include "common.h"
 #include "csvreport.h"
 #include "erroritem.h"
+#include "errorlogger.h"
+#include "errortypes.h"
 #include "path.h"
 #include "printablereport.h"
 #include "resultstree.h"
+#include "settings.h"
 #include "txtreport.h"
 #include "xmlreport.h"
 #include "xmlreportv2.h"
 
 #include "ui_resultsview.h"
+
+#include <set>
+#include <string>
 
 #include <QAbstractItemModel>
 #include <QApplication>
@@ -45,6 +51,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QIODevice>
+#include <QLabel>
 #include <QList>
 #include <QListWidget>
 #include <QListWidgetItem>

@@ -43,7 +43,7 @@ private:
         TEST_CASE(default_platform);
     }
 
-    static bool readPlatform(cppcheck::Platform& platform, const char* xmldata) {
+    static bool readPlatform(Platform& platform, const char* xmldata) {
         tinyxml2::XMLDocument doc;
         return (doc.Parse(xmldata) == tinyxml2::XML_SUCCESS) && platform.loadFromXmlDocument(&doc);
     }
@@ -51,16 +51,16 @@ private:
     void empty() const {
         // An empty platform file does not change values, only the type.
         const char xmldata[] = "<?xml version=\"1.0\"?>\n<platform/>";
-        cppcheck::Platform platform;
+        Platform platform;
         // TODO: this should fail - platform files need to be complete
         TODO_ASSERT(!readPlatform(platform, xmldata));
     }
 
     void valid_config_win32a() const {
         // Verify if native Win32A platform is loaded correctly
-        cppcheck::Platform platform;
-        PLATFORM(platform, cppcheck::Platform::Type::Win32A);
-        ASSERT_EQUALS(cppcheck::Platform::Type::Win32A, platform.type);
+        Platform platform;
+        PLATFORM(platform, Platform::Type::Win32A);
+        ASSERT_EQUALS(Platform::Type::Win32A, platform.type);
         ASSERT(platform.isWindows());
         ASSERT_EQUALS(1, platform.sizeof_bool);
         ASSERT_EQUALS(2, platform.sizeof_short);
@@ -83,9 +83,9 @@ private:
 
     void valid_config_unix64() const {
         // Verify if native Unix64 platform is loaded correctly
-        cppcheck::Platform platform;
-        PLATFORM(platform, cppcheck::Platform::Type::Unix64);
-        ASSERT_EQUALS(cppcheck::Platform::Type::Unix64, platform.type);
+        Platform platform;
+        PLATFORM(platform, Platform::Type::Unix64);
+        ASSERT_EQUALS(Platform::Type::Unix64, platform.type);
         ASSERT(!platform.isWindows());
         ASSERT_EQUALS(1, platform.sizeof_bool);
         ASSERT_EQUALS(2, platform.sizeof_short);
@@ -108,9 +108,9 @@ private:
 
     void valid_config_win32w() const {
         // Verify if native Win32W platform is loaded correctly
-        cppcheck::Platform platform;
-        PLATFORM(platform, cppcheck::Platform::Type::Win32W);
-        ASSERT_EQUALS(cppcheck::Platform::Type::Win32W, platform.type);
+        Platform platform;
+        PLATFORM(platform, Platform::Type::Win32W);
+        ASSERT_EQUALS(Platform::Type::Win32W, platform.type);
         ASSERT(platform.isWindows());
         ASSERT_EQUALS(1, platform.sizeof_bool);
         ASSERT_EQUALS(2, platform.sizeof_short);
@@ -133,9 +133,9 @@ private:
 
     void valid_config_unix32() const {
         // Verify if native Unix32 platform is loaded correctly
-        cppcheck::Platform platform;
-        PLATFORM(platform, cppcheck::Platform::Type::Unix32);
-        ASSERT_EQUALS(cppcheck::Platform::Type::Unix32, platform.type);
+        Platform platform;
+        PLATFORM(platform, Platform::Type::Unix32);
+        ASSERT_EQUALS(Platform::Type::Unix32, platform.type);
         ASSERT(!platform.isWindows());
         ASSERT_EQUALS(1, platform.sizeof_bool);
         ASSERT_EQUALS(2, platform.sizeof_short);
@@ -158,9 +158,9 @@ private:
 
     void valid_config_win64() const {
         // Verify if native Win64 platform is loaded correctly
-        cppcheck::Platform platform;
-        PLATFORM(platform, cppcheck::Platform::Type::Win64);
-        ASSERT_EQUALS(cppcheck::Platform::Type::Win64, platform.type);
+        Platform platform;
+        PLATFORM(platform, Platform::Type::Win64);
+        ASSERT_EQUALS(Platform::Type::Win64, platform.type);
         ASSERT(platform.isWindows());
         ASSERT_EQUALS(1, platform.sizeof_bool);
         ASSERT_EQUALS(2, platform.sizeof_short);
@@ -202,9 +202,9 @@ private:
                                "    <wchar_t>2</wchar_t>\n"
                                "  </sizeof>\n"
                                " </platform>";
-        cppcheck::Platform platform;
+        Platform platform;
         ASSERT(readPlatform(platform, xmldata));
-        ASSERT_EQUALS(cppcheck::Platform::Type::File, platform.type);
+        ASSERT_EQUALS(Platform::Type::File, platform.type);
         ASSERT(!platform.isWindows());
         ASSERT_EQUALS(8, platform.char_bit);
         ASSERT_EQUALS('u', platform.defaultSign);
@@ -246,9 +246,9 @@ private:
                                "    <wchar_t>11</wchar_t>\n"
                                "  </sizeof>\n"
                                " </platform>";
-        cppcheck::Platform platform;
+        Platform platform;
         ASSERT(readPlatform(platform, xmldata));
-        ASSERT_EQUALS(cppcheck::Platform::Type::File, platform.type);
+        ASSERT_EQUALS(Platform::Type::File, platform.type);
         ASSERT(!platform.isWindows());
         ASSERT_EQUALS(20, platform.char_bit);
         ASSERT_EQUALS('s', platform.defaultSign);
@@ -290,7 +290,7 @@ private:
                                "    <wchar_t1>11</wchar_t1>\n"
                                "  </sizeof1>\n"
                                " </platform>";
-        cppcheck::Platform platform;
+        Platform platform;
         // TODO: needs to fail - files need to be complete
         TODO_ASSERT(!readPlatform(platform, xmldata));
     }
@@ -316,9 +316,9 @@ private:
                                "    <wchar_t>0</wchar_t>\n"
                                "  </sizeof>\n"
                                " </platform>";
-        cppcheck::Platform platform;
+        Platform platform;
         ASSERT(readPlatform(platform, xmldata));
-        ASSERT_EQUALS(cppcheck::Platform::Type::File, platform.type);
+        ASSERT_EQUALS(Platform::Type::File, platform.type);
         ASSERT(!platform.isWindows());
         ASSERT_EQUALS(0, platform.char_bit);
         ASSERT_EQUALS('z', platform.defaultSign);
@@ -359,7 +359,7 @@ private:
                                "    <wchar_t>2</wchar_t>\n"
                                "  </sizeof>\n"
                                " </platform>";
-        cppcheck::Platform platform;
+        Platform platform;
         ASSERT(!readPlatform(platform, xmldata));
     }
 
@@ -384,13 +384,13 @@ private:
                                "    <wchar_t></wchar_t>\n"
                                "  </sizeof>\n"
                                " </platform>";
-        cppcheck::Platform platform;
+        Platform platform;
         ASSERT(!readPlatform(platform, xmldata));
     }
 
     void default_platform() const {
-        cppcheck::Platform platform;
-        ASSERT_EQUALS(cppcheck::Platform::Type::Native, platform.type);
+        Platform platform;
+        ASSERT_EQUALS(Platform::Type::Native, platform.type);
     }
 };
 

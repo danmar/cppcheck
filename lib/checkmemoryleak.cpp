@@ -21,7 +21,10 @@
 
 #include "astutils.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "library.h"
+#include "mathlib.h"
+#include "platform.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
@@ -277,7 +280,7 @@ void CheckMemoryLeak::memoryLeak(const Token *tok, const std::string &varname, A
 }
 //---------------------------------------------------------------------------
 
-void CheckMemoryLeak::reportErr(const Token *tok, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe) const
+void CheckMemoryLeak::reportErr(const Token *tok, Severity severity, const std::string &id, const std::string &msg, const CWE &cwe) const
 {
     std::list<const Token *> callstack;
 
@@ -287,7 +290,7 @@ void CheckMemoryLeak::reportErr(const Token *tok, Severity::SeverityType severit
     reportErr(callstack, severity, id, msg, cwe);
 }
 
-void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe) const
+void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Severity severity, const std::string &id, const std::string &msg, const CWE &cwe) const
 {
     const ErrorMessage errmsg(callstack, mTokenizer_ ? &mTokenizer_->list : nullptr, severity, id, msg, cwe, Certainty::normal);
     if (mErrorLogger_)

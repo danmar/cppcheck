@@ -2582,6 +2582,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
                           Library::Container::Action::CHANGE_CONTENT,
                           Library::Container::Action::CHANGE_INTERNAL,
                           Library::Container::Action::CLEAR,
+                          Library::Container::Action::FIND,
                           Library::Container::Action::PUSH,
                           Library::Container::Action::POP,
                           Library::Container::Action::RESIZE},
@@ -3257,9 +3258,11 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
 
 ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings, bool cpp)
 {
-    const Token* const parent = tok->astParent();
+    const Token* parent = tok->astParent();
     if (indirect > 0 && parent) {
-        if (Token::Match(parent, "%assign%") && astIsRHS(tok))
+        while (Token::simpleMatch(parent, "[") && parent->astParent())
+            parent = parent->astParent();
+        if (Token::Match(parent, "%assign%") && (astIsRHS(tok) || astIsLHS(parent->astOperand1())))
             return ExprUsage::NotUsed;
         if (parent->isConstOp())
             return ExprUsage::NotUsed;

@@ -31,6 +31,7 @@
 #include <limits>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 struct SelectMapKeys {
@@ -89,6 +90,11 @@ template<std::size_t N>
 bool startsWith(const std::string& str, const char (&start)[N])
 {
     return startsWith(str, start, N - 1);
+}
+
+inline bool startsWith(const std::string& str, const std::string& start)
+{
+    return startsWith(str, start.c_str(), start.length());
 }
 
 inline bool endsWith(const std::string &str, char c)
@@ -329,6 +335,20 @@ static inline std::string id_string(const void* p)
 static inline const char* bool_to_string(bool b)
 {
     return b ? "true" : "false";
+}
+
+namespace cppcheck
+{
+    NORETURN inline void unreachable()
+    {
+#if defined(__GNUC__)
+        __builtin_unreachable();
+#elif defined(_MSC_VER)
+        __assume(false);
+#else
+#error "no unreachable implementation"
+#endif
+    }
 }
 
 #endif

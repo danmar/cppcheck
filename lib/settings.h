@@ -21,6 +21,7 @@
 #define settingsH
 //---------------------------------------------------------------------------
 
+#include "addoninfo.h"
 #include "config.h"
 #include "errortypes.h"
 #include "importproject.h"
@@ -103,6 +104,9 @@ public:
 
     /** @brief addons, either filename of python/json file or json data */
     std::unordered_set<std::string> addons;
+
+    /** @brief the loaded addons infos */
+    std::vector<AddonInfo> addonInfos;
 
     /** @brief Path to the python interpreter to be used to run addons. */
     std::string addonPython;
@@ -241,7 +245,7 @@ public:
     /** @brief write results (--output-file=&lt;file&gt;) */
     std::string outputFile;
 
-    cppcheck::Platform platform;
+    Platform platform;
 
     /** @brief Experimental: --performance-valueflow-max-time=T */
     int performanceValueFlowMaxTime = -1;
@@ -278,7 +282,7 @@ public:
         std::string pattern;
         std::string id = "rule"; // default id
         std::string summary;
-        Severity::SeverityType severity = Severity::style; // default severity
+        Severity severity = Severity::style; // default severity
     };
 
 #ifdef HAVE_RULES
@@ -331,7 +335,7 @@ public:
 
     SafeChecks safeChecks;
 
-    SimpleEnableGroup<Severity::SeverityType> severity;
+    SimpleEnableGroup<Severity> severity;
     SimpleEnableGroup<Certainty> certainty;
     SimpleEnableGroup<Checks> checks;
 
@@ -435,7 +439,7 @@ public:
     void setCheckLevelNormal();
 
 private:
-    static std::string parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity::SeverityType>, SimpleEnableGroup<Checks>> &groups);
+    static std::string parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity>, SimpleEnableGroup<Checks>> &groups);
     std::string applyEnabled(const std::string &str, bool enable);
 };
 

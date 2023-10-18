@@ -1239,6 +1239,35 @@ private:
                        "    return v2 + v4 + v6 + v7;\n"
                        "}\n");
         ASSERT_EQUALS("[test.cpp:12]: (error) Uninitialized variable: v5\n", errout.str());
+
+        checkUninitVar("bool set(int *p);\n"
+                       "\n"
+                       "void foo(bool a) {\n"
+                       "    bool flag{false};\n"
+                       "    int x;\n"
+                       "    if (!a) {\n"
+                       "        flag = set(&x);\n"
+                       "    }\n"
+                       "    if (!flag || x == 0) {}\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f(int n, int a) {\n" // #12011
+                       "    double x[10];\n"
+                       "    if (n == 1) {\n"
+                       "        if (a)\n"
+                       "            x[0] = 4;\n"
+                       "    }\n"
+                       "    else\n"
+                       "        for (int i = 0; i < n; i++) {\n"
+                       "            if (a)\n"
+                       "                x[i] = 8;\n"
+                       "        }\n"
+                       "    if (n == 1)\n"
+                       "        if (a)\n"
+                       "            (void)x[0];\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -3501,10 +3530,10 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: a\n", errout.str());
 
-        checkUninitVar("void f() {\n" // Don't crash
-                       "    int a;\n"
-                       "    dostuff(\"ab\" cd \"ef\", x?a:z);\n" // <- No AST is created for ?:
-                       "}");
+        ASSERT_THROW(checkUninitVar("void f() {\n" // Don't crash
+                                    "    int a;\n"
+                                    "    dostuff(\"ab\" cd \"ef\", x?a:z);\n" // <- No AST is created for ?
+                                    "}"), InternalError);
 
         // Unknown => bail out..
         checkUninitVar("void f(int x) {\n"
@@ -3623,10 +3652,10 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Uninitialized variable: a\n", errout.str());
 
-        valueFlowUninit("void f() {\n" // Don't crash
-                        "    int a;\n"
-                        "    dostuff(\"ab\" cd \"ef\", x?a:z);\n" // <- No AST is created for ?:
-                        "}");
+        ASSERT_THROW(valueFlowUninit("void f() {\n" // Don't crash
+                                     "    int a;\n"
+                                     "    dostuff(\"ab\" cd \"ef\", x?a:z);\n" // <- No AST is created for ?
+                                     "}"), InternalError);
 
         // Unknown => bail out..
         valueFlowUninit("void f(int x) {\n"
@@ -3682,6 +3711,29 @@ private:
                         "    ++c;\n"
                         "}", "test.c");
         ASSERT_EQUALS("", errout.str());
+
+        // #12030
+        valueFlowUninit("int set(int *x);\n"
+                        "void foo(bool a) {\n"
+                        "    bool flag{0};\n"
+                        "    int x;\n"
+                        "    if (!a) {\n"
+                        "        flag = set(&x);\n"
+                        "    }\n"
+                        "    if (!flag || x==3) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("int set(int *x);\n"
+                        "void foo(bool a) {\n"
+                        "    bool flag{0};\n"
+                        "    int x;\n"
+                        "    if (!a) {\n"
+                        "        flag = set(&x);\n"
+                        "    }\n"
+                        "    if (!flag && x==3) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:8]: (warning) Uninitialized variable: x\n", errout.str());
 
         valueFlowUninit("int do_something();\n"
                         "int set_st(int *x);\n"
@@ -6237,6 +6289,14 @@ private:
                         "    foo(q);\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:9]: (error) Uninitialized variable: q\n", errout.str());
+
+        valueFlowUninit("int g();\n" // #12082
+                        "void f() {\n"
+                        "    int a[1], b[1];\n"
+                        "    while (a[0] = g()) {}\n"
+                        "    if ((b[0] = g()) == 0) {}\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value

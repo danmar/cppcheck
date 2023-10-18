@@ -19,6 +19,7 @@
 #ifndef THREADEXECUTOR_H
 #define THREADEXECUTOR_H
 
+#include "cppcheck.h"
 #include "executor.h"
 
 #include <cstddef>
@@ -37,14 +38,16 @@ class Suppressions;
  * all files using threads.
  */
 class ThreadExecutor : public Executor {
+    friend class SyncLogForwarder;
+
 public:
-    ThreadExecutor(const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger);
+    ThreadExecutor(const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand);
     ThreadExecutor(const ThreadExecutor &) = delete;
     void operator=(const ThreadExecutor &) = delete;
 
     unsigned int check() override;
 
-    friend class SyncLogForwarder;
+    CppCheck::ExecuteCmdFn mExecuteCommand;
 };
 
 /// @}

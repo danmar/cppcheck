@@ -37,7 +37,7 @@ jobs:
       - name: build cppcheck
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) -s
+          make -j$(nproc) -s CXXFLAGS="-w"
           strip -s ./cppcheck
 
   scriptcheck:
@@ -183,5 +183,5 @@ jobs:
       - name: dmake
         if: matrix.python-latest
         run: |
-          make -j$(nproc) run-dmake
+          make -j$(nproc) CXXFLAGS="-w" run-dmake
           git diff --exit-code

@@ -386,7 +386,7 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
             if (Token::simpleMatch(tok2->previous(), "else {"))
                 tok2 = tok2->linkAt(-2)->previous();
         }
-        if (tok2->str() == "}") {
+        if (tok2->str() == "}" && !Token::Match(tok2->link()->previous(), "%var% {")) {
             const Token *cond = getCondTokFromEnd(tok2);
             const bool inElse = Token::simpleMatch(tok2->link()->previous(), "else {");
             if (cond) {

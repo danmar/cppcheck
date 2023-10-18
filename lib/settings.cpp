@@ -19,7 +19,6 @@
 #include "settings.h"
 #include "path.h"
 #include "summaries.h"
-#include "timer.h"
 #include "vfvalue.h"
 
 #include <fstream>
@@ -76,7 +75,7 @@ void Settings::loadCppcheckCfg()
     }
 }
 
-std::string Settings::parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity::SeverityType>, SimpleEnableGroup<Checks>> &groups)
+std::string Settings::parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity>, SimpleEnableGroup<Checks>> &groups)
 {
     // Enable parameters may be comma separated...
     if (str.find(',') != std::string::npos) {
@@ -101,9 +100,9 @@ std::string Settings::parseEnabled(const std::string &str, std::tuple<SimpleEnab
 
     if (str == "all") {
         // "error" is always enabled and cannot be controlled - so exclude it from "all"
-        SimpleEnableGroup<Severity::SeverityType> newSeverity;
+        SimpleEnableGroup<Severity> newSeverity;
         newSeverity.fill();
-        newSeverity.disable(Severity::SeverityType::error);
+        newSeverity.disable(Severity::error);
         severity.enable(newSeverity);
         checks.enable(Checks::missingInclude);
         checks.enable(Checks::unusedFunction);
@@ -149,7 +148,7 @@ std::string Settings::removeEnabled(const std::string &str)
 
 std::string Settings::applyEnabled(const std::string &str, bool enable)
 {
-    std::tuple<SimpleEnableGroup<Severity::SeverityType>, SimpleEnableGroup<Checks>> groups;
+    std::tuple<SimpleEnableGroup<Severity>, SimpleEnableGroup<Checks>> groups;
     std::string errmsg = parseEnabled(str, groups);
     if (!errmsg.empty())
         return (enable ? "--enable" : "--disable") + errmsg;
@@ -165,7 +164,7 @@ std::string Settings::applyEnabled(const std::string &str, bool enable)
         checks.disable(c);
     }
     // FIXME: hack to make sure "error" is always enabled
-    severity.enable(Severity::SeverityType::error);
+    severity.enable(Severity::error);
     return errmsg;
 }
 

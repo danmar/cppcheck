@@ -23,7 +23,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "errortypes.h"
 #include "tokenize.h"
 
 #include <ostream>
@@ -34,6 +33,7 @@ class Settings;
 class Token;
 class Variable;
 class ErrorLogger;
+enum class Severity;
 
 /// @addtogroup Checks
 /// @{
@@ -132,7 +132,7 @@ private:
     void invalidLengthModifierError(const Token* tok, nonneg int numFormat, const std::string& modifier);
     void invalidScanfFormatWidthError(const Token* tok, nonneg int numFormat, int width, const Variable *var, const std::string& specifier);
     static void argumentType(std::ostream & os, const ArgumentInfo * argInfo);
-    static Severity::SeverityType getSeverity(const ArgumentInfo *argInfo);
+    static Severity getSeverity(const ArgumentInfo *argInfo);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckIO c(nullptr, settings, errorLogger);
