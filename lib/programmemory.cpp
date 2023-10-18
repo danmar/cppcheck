@@ -204,8 +204,10 @@ static bool evaluateCondition(const std::string& op,
     if (!condition)
         return false;
     if (condition->str() == op) {
-        return evaluateCondition(op, r, condition->astOperand1(), pm, settings) ||
-               evaluateCondition(op, r, condition->astOperand2(), pm, settings);
+        if(evaluateCondition(op, r, condition->astOperand1(), pm, settings) ||
+            evaluateCondition(op, r, condition->astOperand2(), pm, settings)) {
+            return true;
+        }
     }
     MathLib::bigint result = 0;
     bool error = false;
@@ -309,8 +311,10 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
         if (lhs.empty() || rhs.empty()) {
             if (frontIs(lhs, !then))
                 programMemoryParseCondition(pm, tok->astOperand2(), endTok, settings, then);
-            if (frontIs(rhs, !then))
+            else if (frontIs(rhs, !then))
                 programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, then);
+            else
+                pm.setIntValue(tok, 0, then);
         }
     } else if (tok->exprId() > 0) {
         if (endTok && isExpressionChanged(tok, tok->next(), endTok, settings, true))

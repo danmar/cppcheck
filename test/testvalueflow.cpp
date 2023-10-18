@@ -5614,6 +5614,22 @@ private:
                "}\n";
         values = tokenValues(code, "x >", ValueFlow::Value::ValueType::UNINIT);
         ASSERT_EQUALS(0, values.size());
+
+        // #12031
+        code = "bool g(int *p);\n"
+                "bool h();\n"
+                "void f(bool b, int y) {\n"
+                "    int x;\n"
+                "    if (b && y > 0) {\n"
+                "        b = g(&x);\n"
+                "    }\n"
+                "    while (b && y > 0) {\n"
+                "        if (x < 0) {}\n"
+                "        break;\n"
+                "    }\n"
+                "}\n";
+        values = tokenValues(code, "x <", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
     }
 
     void valueFlowConditionExpressions() {
