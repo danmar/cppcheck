@@ -3249,9 +3249,11 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
 
 ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings, bool cpp)
 {
-    const Token* const parent = tok->astParent();
+    const Token* parent = tok->astParent();
     if (indirect > 0 && parent) {
-        if (Token::Match(parent, "%assign%") && astIsRHS(tok))
+        while (Token::simpleMatch(parent, "[") && parent->astParent())
+            parent = parent->astParent();
+        if (Token::Match(parent, "%assign%") && (astIsRHS(tok) || astIsLHS(parent->astOperand1())))
             return ExprUsage::NotUsed;
         if (parent->isConstOp())
             return ExprUsage::NotUsed;
