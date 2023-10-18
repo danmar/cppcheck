@@ -3232,6 +3232,8 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
         if (!args.empty() && indirect == 0 && !addressOf)
             return ExprUsage::Used;
     } else if (ftok->isControlFlowKeyword()) {
+        if (Token::simpleMatch(ftok->astParent(), "(") && Token::simpleMatch(ftok->astParent()->astOperand2(), "="))
+            return ExprUsage::Inconclusive;
         return ExprUsage::Used;
     } else if (ftok->str() == "{") {
         return indirect == 0 ? ExprUsage::Used : ExprUsage::Inconclusive;

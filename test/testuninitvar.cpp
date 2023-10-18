@@ -6288,7 +6288,14 @@ private:
                         "    int &q = s;\n"
                         "    foo(q);\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Uninitialized variable: q\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Uninitialized variable: q\n", errout.str());        
+
+        valueFlowUninit("int g();\n" // #12082
+                        "void f() {\n"
+                        "    int a[1];\n"
+                        "    while (a[0] = g()) {}\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
