@@ -3214,10 +3214,8 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
         path.insert(0, ":: ");
     }
 
-    std::list<Scope>::iterator it1;
-
     // search for match
-    for (it1 = scopeList.begin(); it1 != scopeList.end(); ++it1) {
+    for (std::list<Scope>::iterator it1 = scopeList.begin(); it1 != scopeList.end(); ++it1) {
         Scope *scope1 = &(*it1);
 
         bool match = false;

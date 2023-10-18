@@ -388,10 +388,9 @@ QString ProjectFile::readString(QXmlStreamReader &reader)
 
 void ProjectFile::readIncludeDirs(QXmlStreamReader &reader)
 {
-    QXmlStreamReader::TokenType type;
     bool allRead = false;
     do {
-        type = reader.readNext();
+        QXmlStreamReader::TokenType type = reader.readNext();
         switch (type) {
         case QXmlStreamReader::StartElement:
 
@@ -426,10 +425,9 @@ void ProjectFile::readIncludeDirs(QXmlStreamReader &reader)
 
 void ProjectFile::readDefines(QXmlStreamReader &reader)
 {
-    QXmlStreamReader::TokenType type;
     bool allRead = false;
     do {
-        type = reader.readNext();
+        QXmlStreamReader::TokenType type = reader.readNext();
         switch (type) {
         case QXmlStreamReader::StartElement:
             // Read define-elements
@@ -463,10 +461,9 @@ void ProjectFile::readDefines(QXmlStreamReader &reader)
 
 void ProjectFile::readCheckPaths(QXmlStreamReader &reader)
 {
-    QXmlStreamReader::TokenType type;
     bool allRead = false;
     do {
-        type = reader.readNext();
+        QXmlStreamReader::TokenType type = reader.readNext();
         switch (type) {
         case QXmlStreamReader::StartElement:
 
@@ -501,10 +498,9 @@ void ProjectFile::readCheckPaths(QXmlStreamReader &reader)
 
 void ProjectFile::readExcludes(QXmlStreamReader &reader)
 {
-    QXmlStreamReader::TokenType type;
     bool allRead = false;
     do {
-        type = reader.readNext();
+        QXmlStreamReader::TokenType type = reader.readNext();
         switch (type) {
         case QXmlStreamReader::StartElement:
             // Read exclude-elements
@@ -547,9 +543,8 @@ void ProjectFile::readExcludes(QXmlStreamReader &reader)
 
 void ProjectFile::readVsConfigurations(QXmlStreamReader &reader)
 {
-    QXmlStreamReader::TokenType type;
     do {
-        type = reader.readNext();
+        QXmlStreamReader::TokenType type = reader.readNext();
         switch (type) {
         case QXmlStreamReader::StartElement:
             // Read library-elements
@@ -611,9 +606,8 @@ void ProjectFile::readPlatform(QXmlStreamReader &reader)
 
 void ProjectFile::readSuppressions(QXmlStreamReader &reader)
 {
-    QXmlStreamReader::TokenType type;
     do {
-        type = reader.readNext();
+        QXmlStreamReader::TokenType type = reader.readNext();
         switch (type) {
         case QXmlStreamReader::StartElement:
             // Read library-elements
@@ -658,9 +652,8 @@ void ProjectFile::readSuppressions(QXmlStreamReader &reader)
 
 void ProjectFile::readTagWarnings(QXmlStreamReader &reader, const QString &tag)
 {
-    QXmlStreamReader::TokenType type;
     do {
-        type = reader.readNext();
+        QXmlStreamReader::TokenType type = reader.readNext();
         switch (type) {
         case QXmlStreamReader::StartElement:
             // Read library-elements
@@ -693,10 +686,9 @@ void ProjectFile::readTagWarnings(QXmlStreamReader &reader, const QString &tag)
 
 void ProjectFile::readStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[])
 {
-    QXmlStreamReader::TokenType type;
     bool allRead = false;
     do {
-        type = reader.readNext();
+        QXmlStreamReader::TokenType type = reader.readNext();
         switch (type) {
         case QXmlStreamReader::StartElement:
             // Read library-elements
