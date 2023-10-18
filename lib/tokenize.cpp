@@ -8931,8 +8931,8 @@ void Tokenizer::simplifyDeclspec()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         while (isAttribute(tok, false)) {
-            Token *functok = getAttributeFuncTok(tok, false);
             if (Token::Match(tok->tokAt(2), "noreturn|nothrow|dllexport")) {
+                Token *functok = getAttributeFuncTok(tok, false);
                 if (functok) {
                     if (tok->strAt(2) == "noreturn")
                         functok->isAttributeNoreturn(true);
