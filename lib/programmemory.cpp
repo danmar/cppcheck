@@ -204,7 +204,7 @@ static bool evaluateCondition(const std::string& op,
     if (!condition)
         return false;
     if (condition->str() == op) {
-        if(evaluateCondition(op, r, condition->astOperand1(), pm, settings) ||
+        if (evaluateCondition(op, r, condition->astOperand1(), pm, settings) ||
             evaluateCondition(op, r, condition->astOperand2(), pm, settings)) {
             return true;
         }
