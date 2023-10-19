@@ -23,7 +23,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "errortypes.h"
 #include "tokenize.h"
 
 #include <ostream>
@@ -34,6 +33,7 @@ class Settings;
 class Token;
 class Variable;
 class ErrorLogger;
+enum class Severity;
 
 /// @addtogroup Checks
 /// @{

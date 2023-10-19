@@ -48,7 +48,6 @@
 #include <stack>
 #include <string>
 #include <tuple>
-#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 //---------------------------------------------------------------------------
@@ -2833,7 +2832,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
         else if (openParen == 1 && second->str() == ")" && first->str() != ")")
             break;
 
-        // ckeck for type * x == type x[]
+        // check for type * x == type x[]
         else if (Token::Match(first->next(), "* %name%| ,|)|=") &&
                  Token::Match(second->next(), "%name%| [ ] ,|)")) {
             do {
@@ -3215,10 +3214,8 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
         path.insert(0, ":: ");
     }
 
-    std::list<Scope>::iterator it1;
-
     // search for match
-    for (it1 = scopeList.begin(); it1 != scopeList.end(); ++it1) {
+    for (std::list<Scope>::iterator it1 = scopeList.begin(); it1 != scopeList.end(); ++it1) {
         Scope *scope1 = &(*it1);
 
         bool match = false;
@@ -5950,7 +5947,7 @@ const Type* Scope::findType(const std::string & name) const
 
     // Type was found
     if (definedTypesMap.end() != it)
-        return (*it).second;
+        return it->second;
 
     // is type defined in anonymous namespace..
     it = definedTypesMap.find(emptyString);

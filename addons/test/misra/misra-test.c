@@ -724,6 +724,12 @@ static void misra_10_4(u32 x, s32 y) {
   if ('\0' == cmd.buf[0]) //no-warning
   {
   }
+
+  // #10652
+  char c;
+  if ((char)'1' == c) {}            // no warning
+  if ((unsigned char)'1' == c) {}   //10.4
+  if ((signed char)'1' == c) {}     //10.4
 }
 
 static void misra_10_5(uint16_t x) {

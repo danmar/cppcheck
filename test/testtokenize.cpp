@@ -6073,7 +6073,8 @@ private:
         // C++17: if (expr1; expr2)
         ASSERT_EQUALS("ifx3=y;(", testAst("if (int x=3; y)"));
 
-
+        ASSERT_EQUALS("xstdstring::decltypes(a::{=", testAst("auto x = std::string{ decltype(s)::a };"));
+        ASSERT_EQUALS("if0decltypest.(X::>(", testAst("if (0 > decltype(s.t)::X) {}"));
     }
 
     void astexpr2() { // limit for large expressions
@@ -6898,6 +6899,11 @@ private:
                                              "void f(float a) {\n"
                                              "S s = (S){ .i = (int)a };\n"
                                              "}\n", /*expand*/ true, Platform::Type::Native, "test.c"));
+
+        ASSERT_THROW(tokenizeAndStringify("std::string g();\n"
+                                          "std::string f() {\n"
+                                          "    return std::string{ g() + \"abc\" MACRO \"def\" };\n"
+                                          "}\n", /*expand*/ true, Platform::Type::Native, "test.cpp"), InternalError);
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()

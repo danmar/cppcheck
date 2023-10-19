@@ -23,6 +23,7 @@
 #include "common.h"
 #include "config.h"
 #include "erroritem.h"
+#include "errortypes.h"
 #include "path.h"
 #include "projectfile.h"
 #include "report.h"
@@ -220,12 +221,11 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
             line.file = e.file;
             line.line = e.line;
             line.message = line.summary = e.info;
-            QStandardItem *child_item;
-            child_item = addBacktraceFiles(stditem,
-                                           line,
-                                           hide,
-                                           ":images/go-down.png",
-                                           true);
+            QStandardItem *child_item = addBacktraceFiles(stditem,
+                                                          line,
+                                                          hide,
+                                                          ":images/go-down.png",
+                                                          true);
             if (!child_item)
                 continue;
 
@@ -1139,11 +1139,10 @@ QString ResultsTree::getFilePath(const QStandardItem *target, bool fullPath)
             target = target->parent()->child(target->row(), 0);
 
         QVariantMap data = target->data().toMap();
-        QString pathStr;
 
         //Replace (file) with filename
         QString file = data[FILENAME].toString();
-        pathStr = QDir::toNativeSeparators(file);
+        QString pathStr = QDir::toNativeSeparators(file);
         if (!fullPath) {
             QFileInfo fi(pathStr);
             pathStr = fi.fileName();

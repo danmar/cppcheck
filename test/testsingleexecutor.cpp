@@ -27,7 +27,6 @@
 #include "timer.h"
 
 #include <algorithm>
-#include <cstddef>
 #include <cstdlib>
 #include <list>
 #include <map>
@@ -164,7 +163,7 @@ private:
         check(100, 100,
               "int main()\n"
               "{\n"
-              "  char *a = malloc(10);\n"
+              "  int i = *((int*)0);\n"
               "  return 0;\n"
               "}", dinit(CheckOptions,
                          $.quiet = false));
@@ -181,7 +180,7 @@ private:
         check(100, 100,
               "int main()\n"
               "{\n"
-              "  char *a = malloc(10);\n"
+              "  int i = *((int*)0);\n"
               "  return 0;\n"
               "}", dinit(CheckOptions, $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
     }
@@ -193,7 +192,7 @@ private:
         check(100, 100,
               "int main()\n"
               "{\n"
-              "  char *a = malloc(10);\n"
+              "  int i = *((int*)0);\n"
               "  return 0;\n"
               "}", dinit(CheckOptions, $.plistOutput = plistOutput.c_str()));
     }
@@ -226,7 +225,7 @@ private:
         check(1, 1,
               "int main()\n"
               "{\n"
-              "  {char *a = malloc(10);}\n"
+              "  {int i = *((int*)0);}\n"
               "  return 0;\n"
               "}");
     }
@@ -235,7 +234,7 @@ private:
         check(20, 20,
               "int main()\n"
               "{\n"
-              "  {char *a = malloc(10);}\n"
+              "  {int i = *((int*)0);}\n"
               "  return 0;\n"
               "}");
     }
@@ -253,7 +252,7 @@ private:
         check(4, 2,
               "int main()\n"
               "{\n"
-              "  char *a = malloc(10);\n"
+              "  int i = *((int*)0);\n"
               "  return 0;\n"
               "}",
               dinit(CheckOptions,

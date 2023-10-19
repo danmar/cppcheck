@@ -551,6 +551,21 @@ Suppressing multiple ids for a whole file:
 
     // cppcheck-suppress-file [aaaa, bbbb]
 
+Suppressing warnings `aaaa` where macro is used:
+
+    // cppcheck-suppress-macro aaaa
+    #define MACRO ...
+    ...
+    x = MACRO; // <- aaaa warnings are suppressed here
+
+
+Suppressing multiple ids where macro is used:
+
+    // cppcheck-suppress-macro [aaaa, bbbb]
+    #define MACRO ...
+    ...
+    x = MACRO; // <- aaaa and bbbb warnings are suppressed here
+
 ### Comment before code or on same line
 
 The comment can be put before the code or at the same line as the code.

@@ -16,7 +16,7 @@ Deprecations:
 - "--showtime=top5" has been deprecated and will be removed in Cppcheck 2.14. Please use --showtime=top5_file or --showtime=top5_summary instead.
 
 Other:
-- Windows builds now default to the `native` platform instead of `win32A` or `win64`. Please specify it explicitly if you depedent on it.
+- Windows builds now default to the `native` platform instead of `win32A` or `win64`. Please specify it explicitly if you depend on it.
 - The undocumented and deprecated command-line options `--template <template>` and `--template-format <template>` has been removed. Please use `--template=` and `--template-format=` instead.
 - "--showtime=summary" will now show a single summary at the end instead of showing it after each file when using the thread execution (default on Windows)
 - added "--showtime=none" to disable any previously specified showtime report. "--showtime=" without parameter is no longer valid.
@@ -24,3 +24,7 @@ Other:
 - "--project" can also no longer be used in conjunction with additional source files.
 - If a addon cannot be found it will bail out immediately instead of continously writing errors and failing the analysis at the end.
 - Added CMake option "BUILD_MANPAGE" which adds the "man" target which will build the manpage. This requires xsltproc and the docbook XSLs to be installed.
+- Improved inline suppressions:
+  - You can suppress warnings in a block of code using "-begin" and "-end".
+  - You can suppress warnings in current file using "-file".
+  - You can suppress all warnings where macro is used using "-macro"

@@ -624,7 +624,7 @@ int CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> a
 #else
     const int res = pclose(p);
 #endif
-    if (res == -1) { // error occured
+    if (res == -1) { // error occurred
         // TODO: how to provide to caller?
         //const int err = errno;
         //std::cout << "pclose() errno " << std::to_string(err) << std::endl;

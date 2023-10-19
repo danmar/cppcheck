@@ -65,7 +65,7 @@ namespace checkers {
         {"CheckBoost::checkBoostForeachModification",""},
         {"CheckNullPointer::nullPointer",""},
         {"CheckNullPointer::nullConstantDereference",""},
-        {"CheckNullPointer::aithmetic",""},
+        {"CheckNullPointer::arithmetic",""},
         {"CheckNullPointer::analyseWholeProgram","unusedfunctions"},
         {"CheckBufferOverrun::arrayIndex",""},
         {"CheckBufferOverrun::pointerArithmetic","portability"},

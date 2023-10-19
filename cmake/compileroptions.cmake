@@ -187,7 +187,7 @@ if (MSVC)
     # Linker - General
     add_link_options($<$<CONFIG:Debug>:/INCREMENTAL>) # Enable Incremental Linking - Yes
 
-    add_link_options(/NOLOGO) # SUppress Startup Banner - Yes
+    add_link_options(/NOLOGO) # Suppress Startup Banner - Yes
     # Ignore Import Library - Yes
 
     # Linker - Debugging

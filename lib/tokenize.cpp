@@ -21,6 +21,7 @@
 
 #include "check.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
 #include "platform.h"
@@ -50,7 +51,6 @@
 #include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <stdexcept>
-#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -806,7 +806,7 @@ namespace {
                 if (pointerType) {
                     tok->insertToken("const");
                     tok->next()->column(tok->column());
-                    tok->next()->isExpandedMacro(tok->previous()->isExpandedMacro());
+                    tok->next()->setMacroName(tok->previous()->getMacroName());
                     tok->deletePrevious();
                 }
             }
@@ -7169,7 +7169,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                 endDecl = endDecl->next();
                 endDecl->next()->isSplittedVarDeclEq(true);
                 endDecl->insertToken(varName->str());
-                endDecl->next()->isExpandedMacro(varName->isExpandedMacro());
+                endDecl->next()->setMacroName(varName->getMacroName());
                 continue;
             }
             //non-VLA case
@@ -8277,7 +8277,8 @@ void Tokenizer::reportUnknownMacros() const
 
     // String concatenation with unknown macros
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%str% %name% (") && Token::Match(tok->linkAt(2), ") %str%")) {
+        if ((Token::Match(tok, "%str% %name% (") && Token::Match(tok->linkAt(2), ") %str%")) ||
+            (Token::Match(tok, "%str% %name% %str%") && !(startsWith(tok->strAt(1), "PRI") || startsWith(tok->strAt(1), "SCN")))) { // TODO: implement macros in std.cfg
             if (tok->next()->isKeyword())
                 continue;
             unknownMacroError(tok->next());

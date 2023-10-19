@@ -286,11 +286,11 @@ std::string ErrorMessage::serialize() const
 
     for (std::list<ErrorMessage::FileLocation>::const_iterator loc = callStack.cbegin(); loc != callStack.cend(); ++loc) {
         std::string frame;
-        frame += std::to_string((*loc).line);
+        frame += std::to_string(loc->line);
         frame += '\t';
-        frame += std::to_string((*loc).column);
+        frame += std::to_string(loc->column);
         frame += '\t';
-        frame += (*loc).getfile(false);
+        frame += loc->getfile(false);
         frame += '\t';
         frame += loc->getOrigFile(false);
         frame += '\t';
@@ -498,9 +498,9 @@ std::string ErrorMessage::toXML() const
 
     for (std::list<FileLocation>::const_reverse_iterator it = callStack.crbegin(); it != callStack.crend(); ++it) {
         printer.OpenElement("location", false);
-        printer.PushAttribute("file", (*it).getfile().c_str());
-        printer.PushAttribute("line", std::max((*it).line,0));
-        printer.PushAttribute("column", (*it).column);
+        printer.PushAttribute("file", it->getfile().c_str());
+        printer.PushAttribute("line", std::max(it->line,0));
+        printer.PushAttribute("column", it->column);
         if (!it->getinfo().empty())
             printer.PushAttribute("info", fixInvalidChars(it->getinfo()).c_str());
         printer.CloseElement(false);

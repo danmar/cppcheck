@@ -19,9 +19,9 @@
 #ifndef SHOWTYPES_H
 #define SHOWTYPES_H
 
-#include "errortypes.h"
-
 #include <QVariant>
+
+enum class Severity;
 
 /// @addtogroup GUI
 /// @{

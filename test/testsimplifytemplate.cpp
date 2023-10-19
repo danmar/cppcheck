@@ -216,6 +216,7 @@ private:
         TEST_CASE(template175); // #10908
         TEST_CASE(template176); // #11146
         TEST_CASE(template177);
+        TEST_CASE(template178);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -4518,6 +4519,34 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
+    void template178() {
+        const char code[] = "template<typename T>\n" // #11893
+                            "void g() {\n"
+                            "    for (T i = 0; i < T{ 3 }; ++i) {}\n"
+                            "}\n"
+                            "void f() {\n"
+                            "    g<int>();\n"
+                            "}";
+        const char exp[] = "void g<int> ( ) ; void f ( ) { g<int> ( ) ; } void g<int> ( ) { for ( int i = 0 ; i < int { 3 } ; ++ i ) { } }";
+        ASSERT_EQUALS(exp, tok(code));
+
+        const char code2[] = "template<typename T>\n"
+                             "struct S {\n"
+                             "    T c;\n"
+                             "    template<typename U>\n"
+                             "    void g() {\n"
+                             "        for (U i = 0; i < U{ 3 }; ++i) {}\n"
+                             "    }\n"
+                             "};\n"
+                             "void f() {\n"
+                             "    S<char> s{};\n"
+                             "    s.g<int>();\n"
+                             "}";
+        const char exp2[] = "struct S<char> ; void f ( ) { S<char> s { } ; s . g<int> ( ) ; } struct S<char> { char c ; void g<int> ( ) ; } ; "
+                            "void S<char> :: g<int> ( ) { for ( int i = 0 ; i < int { 3 } ; ++ i ) { } }";
+        ASSERT_EQUALS(exp2, tok(code2));
+    }
+
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         const char code[] = "template <typename T> struct C {};\n"
                             "template <typename T> struct S {a};\n"
@@ -5229,7 +5258,7 @@ private:
     void template_array_type() {
         ASSERT_EQUALS("void foo<int[]> ( int [ ] x ) ; "
                       "void bar ( ) { int [ 3 ] y ; foo<int[]> ( y ) ; } "
-                      "void foo<int[]> ( int [ ] x ) { } ;",
+                      "void foo<int[]> ( int [ ] x ) { }",
                       tok("template <class T> void foo(T x) {};\n"
                           "void bar() {\n"
                           "  int[3] y;\n"

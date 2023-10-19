@@ -876,7 +876,7 @@ void TemplateSimplifier::getTemplateInstantiations()
                         size_t match = 0;
                         size_t argMatch = 0;
                         for (size_t i = 0; i < declarationParams.size(); ++i) {
-                            // fixme: only type deducton from literals is supported
+                            // fixme: only type deduction from literals is supported
                             const bool isArgLiteral = Token::Match(instantiationArgs[i], "%num%|%str%|%char%|%bool% ,|)");
                             if (isArgLiteral && Token::Match(declarationParams[i], "const| %type% &| %name%| ,|)")) {
                                 match++;
@@ -2246,13 +2246,13 @@ void TemplateSimplifier::expandTemplate(
                     assert(brackets.empty() == false);
                     assert(brackets.top()->str() == "{");
                     Token::createMutualLinks(brackets.top(), mTokenList.back());
-                    if (tok3->strAt(1) == ";") {
-                        const Token * tokSemicolon = tok3->next();
-                        mTokenList.addtoken(tokSemicolon, tokSemicolon->linenr(), tokSemicolon->column(), tokSemicolon->fileIndex());
-                    }
                     brackets.pop();
                     if (brackets.empty() && !Token::Match(tok3, "} >|,|{")) {
                         inTemplateDefinition = false;
+                        if (isClass && tok3->strAt(1) == ";") {
+                            const Token* tokSemicolon = tok3->next();
+                            mTokenList.addtoken(tokSemicolon, tokSemicolon->linenr(), tokSemicolon->column(), tokSemicolon->fileIndex());
+                        }
                         break;
                     }
                 } else if (tok3->str() == ")") {

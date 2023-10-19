@@ -20,8 +20,6 @@
 
 #include "utils.h"
 
-#include <cassert>
-
 // see https://en.cppreference.com/w/c/keyword
 
 #define C90_KEYWORDS \

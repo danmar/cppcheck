@@ -119,15 +119,16 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         const std::string suppressTypeString =
             comment.substr(pos1 + cppchecksuppress.size() + 1, argumentLength);
 
-        if ("file" == suppressTypeString) {
+        if ("file" == suppressTypeString)
             errorType = Suppressions::Type::file;
-        } else if ("begin" == suppressTypeString) {
+        else if ("begin" == suppressTypeString)
             errorType = Suppressions::Type::blockBegin;
-        } else if ("end" == suppressTypeString) {
+        else if ("end" == suppressTypeString)
             errorType = Suppressions::Type::blockEnd;
-        } else {
+        else if ("macro" == suppressTypeString)
+            errorType = Suppressions::Type::macro;
+        else
             return false;
-        }
     }
 
     if (comment[pos2] == '[') {
@@ -217,6 +218,15 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
         }
         relativeFilename = Path::simplifyPath(relativeFilename);
 
+        // Macro name
+        std::string macroName;
+        if (tok->str() == "#" && tok->next && tok->next->str() == "define") {
+            const simplecpp::Token *macroNameTok = tok->next->next;
+            if (sameline(tok, macroNameTok) && macroNameTok->name) {
+                macroName = macroNameTok->str();
+            }
+        }
+
         // Add the suppressions.
         for (Suppressions::Suppression &suppr : inlineSuppressions) {
             suppr.fileName = relativeFilename;
@@ -252,7 +262,7 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
                     // NOLINTNEXTLINE(bugprone-use-after-move) - moved only when thrownError is false
                     bad.emplace_back(suppr.fileName, suppr.lineNumber, "Suppress End: No matching begin");
                 }
-            } else if (Suppressions::Type::unique == suppr.type) {
+            } else if (Suppressions::Type::unique == suppr.type || suppr.type == Suppressions::Type::macro) {
                 // special handling when suppressing { warnings for backwards compatibility
                 const bool thisAndNextLine = tok->previous &&
                                              tok->previous->previous &&
@@ -264,6 +274,7 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
 
                 suppr.thisAndNextLine = thisAndNextLine;
                 suppr.lineNumber = tok->location.line;
+                suppr.macroName = macroName;
                 suppressions.addSuppression(std::move(suppr));
             } else if (Suppressions::Type::file == suppr.type) {
                 if (onlyComments)

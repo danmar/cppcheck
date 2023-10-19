@@ -306,6 +306,7 @@ void TokenList::insertTokens(Token *dest, const Token *src, nonneg int n)
         dest->varId(src->varId());
         dest->tokType(src->tokType());
         dest->flags(src->flags());
+        dest->setMacroName(src->getMacroName());
         src  = src->next();
         --n;
     }
@@ -363,7 +364,7 @@ void TokenList::createTokens(simplecpp::TokenList&& tokenList)
         mTokensFrontBack.back->fileIndex(tok->location.fileIndex);
         mTokensFrontBack.back->linenr(tok->location.line);
         mTokensFrontBack.back->column(tok->location.col);
-        mTokensFrontBack.back->isExpandedMacro(!tok->macro.empty());
+        mTokensFrontBack.back->setMacroName(tok->macro);
 
         tok = tok->next;
         if (tok)
@@ -999,6 +1000,8 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                     compileUnaryOp(tok, state, nullptr);
             }
             tok = tok->link()->next();
+            if (Token::simpleMatch(tok, "::"))
+                compileBinOp(tok, state, compileTerm);
         } else if (iscast(tok, state.cpp) && Token::simpleMatch(tok->link(), ") {") && Token::simpleMatch(tok->link()->linkAt(1), "} [")) {
             Token *cast = tok;
             tok = tok->link()->next();
