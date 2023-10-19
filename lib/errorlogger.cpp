@@ -45,6 +45,7 @@ const std::set<std::string> ErrorLogger::mCriticalErrorIds{
     "internalAstError",
     "instantiationError",
     "internalError",
+    "misra-config",
     "premium-internalError",
     "premium-invalidArgument",
     "premium-invalidLicense",
