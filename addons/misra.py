@@ -4132,10 +4132,12 @@ class MisraChecker:
                 self.addSuppressedRule(ruleNum)
 
     def report_config_error(self, location, errmsg):
+        cppcheck_severity = 'error'
+        error_id = 'config'
         if self.settings.verify:
-            self.verify_actual.append('%s:%d %s' % (location.file, location.linenr, other_id))
+            self.verify_actual.append('%s:%d %s' % (location.file, location.linenr, error_id))
         else:
-            cppcheckdata.reportError(location, 'error', errmsg, 'misra', 'config')
+            cppcheckdata.reportError(location, cppcheck_severity, errmsg, 'misra', error_id)
 
     def reportError(self, location, num1, num2):
         ruleNum = num1 * 100 + num2
