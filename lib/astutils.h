@@ -393,7 +393,7 @@ const Token* getIteratorExpression(const Token* tok);
 /**
  * Are the arguments a pair of iterators/pointers?
  */
-bool isIteratorPair(std::vector<const Token*> args);
+bool isIteratorPair(const std::vector<const Token*>& args);
 
 CPPCHECKLIB const Token *findLambdaStartToken(const Token *last);
 

@@ -4280,7 +4280,7 @@ static bool hasBorrowingVariables(const std::list<Variable>& vars, const std::ve
 static void valueFlowLifetimeUserConstructor(Token* tok,
                                              const Function* constructor,
                                              const std::string& name,
-                                             std::vector<const Token*> args,
+                                             const std::vector<const Token*>& args,
                                              TokenList& tokenlist,
                                              ErrorLogger* errorLogger,
                                              const Settings* settings)
