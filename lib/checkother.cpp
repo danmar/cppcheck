@@ -2828,7 +2828,7 @@ void CheckOther::checkRedundantCopy()
     for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || var->isReference() || var->isPointer() ||
             (!var->type() && !var->isStlType()) || // bailout if var is of standard type, if it is a pointer or non-const
-            (!var->isConst() && isVariableChanged(var, mSettings, mTokenizer->isCPP())))            
+            (!var->isConst() && isVariableChanged(var, mSettings, mTokenizer->isCPP())))
             continue;
 
         const Token* startTok = var->nameToken();
