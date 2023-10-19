@@ -8242,6 +8242,7 @@ bool ValueFlow::isContainerSizeChanged(const Token* tok, int indirect, const Set
         }
         break;
     case Library::Container::Action::FIND:
+    case Library::Container::Action::FIND_CONST:
     case Library::Container::Action::CHANGE_CONTENT:
     case Library::Container::Action::CHANGE_INTERNAL:
         break;

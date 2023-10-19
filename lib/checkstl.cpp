@@ -1518,7 +1518,9 @@ void CheckStl::if_find()
                 }
             }
 
-            if (container && container->getAction(funcTok->str()) == Library::Container::Action::FIND) {
+            Library::Container::Action action{};
+            if (container &&
+                ((action = container->getAction(funcTok->str())) == Library::Container::Action::FIND || action == Library::Container::Action::FIND_CONST)) {
                 if (if_findCompare(funcTok->next(), container->stdStringLike))
                     continue;
 
