@@ -19,6 +19,7 @@
 #include "library.h"
 
 #include "astutils.h"
+#include "errortypes.h"
 #include "mathlib.h"
 #include "path.h"
 #include "symboldatabase.h"
@@ -31,7 +32,6 @@
 #include <algorithm>
 #include <cctype>
 #include <climits>
-#include <cstddef>
 #include <cstring>
 #include <list>
 #include <memory>
@@ -175,6 +175,8 @@ Library::Container::Action Library::Container::actionFrom(const std::string& act
         return Container::Action::POP;
     if (actionName == "find")
         return Container::Action::FIND;
+    if (actionName == "find-const")
+        return Container::Action::FIND_CONST;
     if (actionName == "insert")
         return Container::Action::INSERT;
     if (actionName == "erase")

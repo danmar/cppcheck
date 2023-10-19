@@ -811,6 +811,7 @@ private:
                                "      <function name=\"c_str\" yields=\"buffer-nt\"/>\n"
                                "      <function name=\"front\" yields=\"item\"/>\n"
                                "      <function name=\"find\" action=\"find\"/>\n"
+                               "      <function name=\"cfind\" action=\"find-const\"/>\n"
                                "    </access>\n"
                                "  </container>\n"
                                "  <container id=\"B\" startPattern=\"std :: B &lt;\" inherits=\"A\" opLessAllowed=\"false\">\n"
@@ -851,6 +852,7 @@ private:
         ASSERT_EQ(Library::Container::Action::PUSH, A.getAction("push_back"));
         ASSERT_EQ(Library::Container::Action::POP, A.getAction("pop_back"));
         ASSERT_EQ(Library::Container::Action::FIND, A.getAction("find"));
+        ASSERT_EQ(Library::Container::Action::FIND_CONST, A.getAction("cfind"));
         ASSERT_EQ(Library::Container::Action::NO_ACTION, A.getAction("foo"));
 
         ASSERT_EQUALS(B.type_templateArgNo, 1);

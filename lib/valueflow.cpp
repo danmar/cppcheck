@@ -3299,7 +3299,7 @@ struct SubExpressionAnalyzer : ExpressionAnalyzer {
         partialReads->emplace_back(tok, v);
     }
 
-    // No reanalysis for subexression
+    // No reanalysis for subexpression
     ValuePtr<Analyzer> reanalyze(Token* /*tok*/, const std::string& /*msg*/) const override {
         return {};
     }
@@ -8242,6 +8242,7 @@ bool ValueFlow::isContainerSizeChanged(const Token* tok, int indirect, const Set
         }
         break;
     case Library::Container::Action::FIND:
+    case Library::Container::Action::FIND_CONST:
     case Library::Container::Action::CHANGE_CONTENT:
     case Library::Container::Action::CHANGE_INTERNAL:
         break;

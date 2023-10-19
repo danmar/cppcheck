@@ -41,7 +41,6 @@
 #include <set>
 #include <sstream>
 #include <tuple>
-#include <type_traits>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -1513,13 +1512,15 @@ void CheckStl::if_find()
                         for (int j = 0; j < container->type_templateArgNo; j++)
                             tok2 = tok2->nextTemplateArgument();
 
-                        container = mSettings->library.detectContainer(tok2); // innner container
+                        container = mSettings->library.detectContainer(tok2); // inner container
                     } else
                         container = nullptr;
                 }
             }
 
-            if (container && container->getAction(funcTok->str()) == Library::Container::Action::FIND) {
+            Library::Container::Action action{};
+            if (container &&
+                (action = container->getAction(funcTok->str())) == Library::Container::Action::FIND || action == Library::Container::Action::FIND_CONST) {
                 if (if_findCompare(funcTok->next(), container->stdStringLike))
                     continue;
 
@@ -2493,8 +2494,7 @@ void CheckStl::dereferenceInvalidIteratorError(const Token* tok, const ValueFlow
     if (value->condition) {
         reportError(errorPath, Severity::warning, "derefInvalidIteratorRedundantCheck", errmsgcond, CWE825, (inconclusive || value->isInconclusive()) ? Certainty::inconclusive : Certainty::normal);
     } else {
-        std::string errmsg;
-        errmsg = std::string(value->isKnown() ? "Dereference" : "Possible dereference") + " of an invalid iterator";
+        std::string errmsg = std::string(value->isKnown() ? "Dereference" : "Possible dereference") + " of an invalid iterator";
         if (!varname.empty())
             errmsg = "$symbol:" + varname + '\n' + errmsg + ": $symbol";
 
