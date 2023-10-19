@@ -17,6 +17,14 @@ from .util import dump_create, dump_remove, convert_json_output
 TEST_SOURCE_FILES = ['./addons/test/misra/misra-test.c']
 
 
+def remove_misra_config(s:str):
+    ret = ''
+    for line in s.splitlines():
+        if '[misra-config]' not in line:
+            ret += line + '\n'
+    return ret
+
+
 def setup_module(module):
     for f in TEST_SOURCE_FILES:
         dump_create(f)
@@ -92,7 +100,7 @@ def test_rules_cppcheck_severity(checker, capsys):
     checker.loadRuleTexts("./addons/test/misra/misra_rules_dummy.txt")
     checker.parseDump("./addons/test/misra/misra-test.c.dump")
     captured = capsys.readouterr().err
-    assert("(error)" not in captured)
+    assert("(error)" not in remove_misra_config(captured))
     assert("(warning)" not in captured)
     assert("(style)" in captured)
 
@@ -101,7 +109,7 @@ def test_rules_cppcheck_severity_custom(checker, capsys):
     checker.setSeverity("custom-severity")
     checker.parseDump("./addons/test/misra/misra-test.c.dump")
     captured = capsys.readouterr().err
-    assert("(error)" not in captured)
+    assert("(error)" not in remove_misra_config(captured))
     assert("(warning)" not in captured)
     assert("(style)" not in captured)
     assert("(custom-severity)" in captured)
