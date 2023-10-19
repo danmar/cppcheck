@@ -4154,7 +4154,7 @@ void uninitvar_setbase(void)
     std::cout << std::setbase(p);
 }
 
-// cppcheck-suppress passedByValue
+// TODO cppcheck-suppress passedByValue
 void uninitvar_find(std::string s)
 {
     // testing of size_t find (const string& str, size_t pos = 0)
@@ -4497,7 +4497,7 @@ void getline()
     in.close();
 }
 
-// TODO cppcheck-suppress passedByValue
+// cppcheck-suppress passedByValue
 void stream_write(std::ofstream& s, std::vector<char> v) {
     if (v.empty()) {}
     s.write(v.data(), v.size());
