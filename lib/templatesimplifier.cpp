@@ -2246,13 +2246,13 @@ void TemplateSimplifier::expandTemplate(
                     assert(brackets.empty() == false);
                     assert(brackets.top()->str() == "{");
                     Token::createMutualLinks(brackets.top(), mTokenList.back());
-                    if (tok3->strAt(1) == ";") {
-                        const Token * tokSemicolon = tok3->next();
-                        mTokenList.addtoken(tokSemicolon, tokSemicolon->linenr(), tokSemicolon->column(), tokSemicolon->fileIndex());
-                    }
                     brackets.pop();
                     if (brackets.empty() && !Token::Match(tok3, "} >|,|{")) {
                         inTemplateDefinition = false;
+                        if (isClass && tok3->strAt(1) == ";") {
+                            const Token* tokSemicolon = tok3->next();
+                            mTokenList.addtoken(tokSemicolon, tokSemicolon->linenr(), tokSemicolon->column(), tokSemicolon->fileIndex());
+                        }
                         break;
                     }
                 } else if (tok3->str() == ")") {
