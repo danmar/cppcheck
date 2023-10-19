@@ -3043,7 +3043,7 @@ const Token* getIteratorExpression(const Token* tok)
     return nullptr;
 }
 
-bool isIteratorPair(std::vector<const Token*> args)
+bool isIteratorPair(const std::vector<const Token*>& args)
 {
     if (args.size() != 2)
         return false;
