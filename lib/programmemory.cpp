@@ -289,7 +289,7 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
             return;
         if (!truevalue.isIntValue())
             return;
-        if (endTok && isExpressionChanged(vartok, tok->next(), endTok, settings, true))
+        if (endTok && findExpressionChanged(vartok, tok->next(), endTok, settings, true))
             return;
         const bool impossible = (tok->str() == "==" && !then) || (tok->str() == "!=" && then);
         const ValueFlow::Value& v = then ? truevalue : falsevalue;
@@ -317,7 +317,7 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
                 pm.setIntValue(tok, 0, then);
         }
     } else if (tok->exprId() > 0) {
-        if (endTok && isExpressionChanged(tok, tok->next(), endTok, settings, true))
+        if (endTok && findExpressionChanged(tok, tok->next(), endTok, settings, true))
             return;
         pm.setIntValue(tok, 0, then);
         const Token* containerTok = settings->library.getContainerFromYield(tok, Library::Container::Yield::EMPTY);
@@ -501,7 +501,7 @@ void ProgramMemoryState::removeModifiedVars(const Token* tok)
     state.erase_if([&](const ExprIdToken& e) {
         const Token* start = origins[e.getExpressionId()];
         const Token* expr = e.tok;
-        if (!expr || isExpressionChangedSkipDeadCode(expr, start, tok, settings, true, eval)) {
+        if (!expr || findExpressionChangedSkipDeadCode(expr, start, tok, settings, true, eval)) {
             origins.erase(e.getExpressionId());
             return true;
         }

@@ -505,7 +505,7 @@ void CheckCondition::duplicateCondition()
             continue;
 
         ErrorPath errorPath;
-        if (!isExpressionChanged(cond1, scope.classDef->next(), cond2, mSettings, mTokenizer->isCPP()) &&
+        if (!findExpressionChanged(cond1, scope.classDef->next(), cond2, mSettings, mTokenizer->isCPP()) &&
             isSameExpression(mTokenizer->isCPP(), true, cond1, cond2, mSettings->library, true, true, &errorPath))
             duplicateConditionError(cond1, cond2, errorPath);
     }
@@ -554,10 +554,12 @@ void CheckCondition::multiCondition()
 
             if (tok2->astOperand2()) {
                 ErrorPath errorPath;
-                if (isOverlappingCond(cond1, tok2->astOperand2(), true) && !isExpressionChanged(cond1, cond1, tok2->astOperand2(), mSettings, mTokenizer->isCPP()))
+                if (isOverlappingCond(cond1, tok2->astOperand2(), true) &&
+                    !findExpressionChanged(cond1, cond1, tok2->astOperand2(), mSettings, mTokenizer->isCPP()))
                     overlappingElseIfConditionError(tok2->astOperand2(), cond1->linenr());
-                else if (isOppositeCond(true, mTokenizer->isCPP(), cond1, tok2->astOperand2(), mSettings->library, true, true, &errorPath) &&
-                         !isExpressionChanged(cond1, cond1, tok2->astOperand2(), mSettings, mTokenizer->isCPP()))
+                else if (isOppositeCond(
+                             true, mTokenizer->isCPP(), cond1, tok2->astOperand2(), mSettings->library, true, true, &errorPath) &&
+                         !findExpressionChanged(cond1, cond1, tok2->astOperand2(), mSettings, mTokenizer->isCPP()))
                     oppositeElseIfConditionError(cond1, tok2->astOperand2(), errorPath);
             }
         }
@@ -709,7 +711,7 @@ void CheckCondition::multiCondition2()
                     const Token * condStartToken = tok->str() == "if" ? tok->next() : tok;
                     const Token * condEndToken = tok->str() == "if" ? condStartToken->link() : Token::findsimplematch(condStartToken, ";");
                     // Does condition modify tracked variables?
-                    if (isExpressionChanged(cond1, condStartToken, condEndToken, mSettings, mTokenizer->isCPP()))
+                    if (findExpressionChanged(cond1, condStartToken, condEndToken, mSettings, mTokenizer->isCPP()))
                         break;
 
                     // Condition..
