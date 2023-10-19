@@ -2805,7 +2805,9 @@ class MisraChecker:
                 continue
             if not token.astOperand1 or not (token.astOperand1.str in ['if', 'while']):
                 continue
-            if not isBoolExpression(token.astOperand2):
+            if isBoolExpression(token.astOperand2):
+                continue
+            if token.astOperand2.valueType:
                 self.reportError(token, 14, 4)
 
     def misra_15_1(self, data):
@@ -3185,6 +3187,39 @@ class MisraChecker:
         for w in cfg.clang_warnings:
             if w['message'].endswith('[-Wimplicit-function-declaration]'):
                 self.reportError(cppcheckdata.Location(w), 17, 3)
+        for token in cfg.tokenlist:
+            if token.str not in ["while", "if"]:
+                continue
+            if token.next.str != "(":
+                continue
+            tok = token.next
+            end_token = token.next.link
+            while tok != end_token:
+                if tok.isName and tok.function is None and tok.valueType is None and tok.next.str == "(" and \
+                        tok.next.valueType is None and not isKeyword(tok.str) and not isStdLibId(tok.str):
+                    self.reportError(tok, 17, 3)
+                    break
+                tok = tok.next
+
+    def misra_config(self, data):
+        for token in data.tokenlist:
+            if token.str not in ["while", "if"]:
+                continue
+            if token.next.str != "(":
+                continue
+            tok = token.next
+            while tok != token.next.link:
+                if tok.str == "(" and tok.isCast:
+                    tok = tok.link
+                    continue
+                if not tok.isName or tok.function or tok.variable or tok.varId or tok.valueType \
+                        or tok.next.str == "(" or tok.str in ["EOF"] \
+                        or isKeyword(tok.str) or isStdLibId(tok.str):
+                    tok = tok.next
+                    continue
+                errmsg = tok.str + " Variable is unknown"
+                self.reportError(token, 0, 0, "config")
+                break
 
     def misra_17_6(self, rawTokens):
         for token in rawTokens:
@@ -4093,21 +4128,30 @@ class MisraChecker:
 
                 self.addSuppressedRule(ruleNum)
 
-    def reportError(self, location, num1, num2):
-        ruleNum = num1 * 100 + num2
+    def reportError(self, location, num1, num2, other_id = None):
+        if not other_id:
+            ruleNum = num1 * 100 + num2
+        else:
+            ruleNum = other_id
 
         if self.isRuleGloballySuppressed(ruleNum):
             return
 
         if self.settings.verify:
-            self.verify_actual.append('%s:%d %d.%d' % (location.file, location.linenr, num1, num2))
+            if not other_id:
+                self.verify_actual.append('%s:%d %d.%d' % (location.file, location.linenr, num1, num2))
+            else:
+                self.verify_actual.append('%s:%d %s' % (location.file, location.linenr, other_id))
         elif self.isRuleSuppressed(location.file, location.linenr, ruleNum):
             # Error is suppressed. Ignore
             self.suppressionStats.setdefault(ruleNum, 0)
             self.suppressionStats[ruleNum] += 1
             return
         else:
-            errorId = 'c2012-' + str(num1) + '.' + str(num2)
+            if not other_id:
+                errorId = 'c2012-' + str(num1) + '.' + str(num2)
+            else:
+                errorId = 'c2012-' + other_id
             misra_severity = 'Undefined'
             cppcheck_severity = 'style'
             if ruleNum in self.ruleTexts:
@@ -4293,7 +4337,7 @@ class MisraChecker:
             rule_re = re.compile(r'[0-9]+\.[0-9]+')
             if tok.str.startswith('//') and 'TODO' not in tok.str:
                 for word in tok.str[2:].split(' '):
-                    if rule_re.match(word):
+                    if rule_re.match(word) or word == "config":
                         verify_expected.append('%s:%d %s' % (tok.file, tok.linenr, word))
 
         data = cppcheckdata.parsedump(dumpfile)
@@ -4431,6 +4475,7 @@ class MisraChecker:
             self.executeCheck(1701, self.misra_17_1, cfg)
             self.executeCheck(1702, self.misra_17_2, cfg)
             self.executeCheck(1703, self.misra_17_3, cfg)
+            self.misra_config(cfg)
             if cfgNumber == 0:
                 self.executeCheck(1706, self.misra_17_6, data.rawTokens)
             self.executeCheck(1707, self.misra_17_7, cfg)
@@ -4751,7 +4796,7 @@ def main():
                 for misra_id in ids:
                     rules_violated[misra_id] = rules_violated.get(misra_id, 0) + 1
             print("MISRA rules violated:")
-            convert = lambda text: int(text) if text.isdigit() else text
+            convert = lambda text: int(text) if text.isdigit() else 0
             misra_sort = lambda key: [convert(c) for c in re.split(r'[\.-]([0-9]*)', key)]
             for misra_id in sorted(rules_violated.keys(), key=misra_sort):
                 res = re.match(r'misra-c2012-([0-9]+)\\.([0-9]+)', misra_id)
