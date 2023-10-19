@@ -1281,22 +1281,8 @@ static bool canBeConst(const Variable *var, const Settings* settings)
             if (parent->str() == ">>" && parent->astOperand2() == tok2)
                 return false;
         } else if (parent->str() == "," || parent->str() == "(") { // function argument
-            const Token* tok3 = tok2->previous();
-            int argNr = 0;
-            while (tok3 && tok3->str() != "(") {
-                if (tok3->link() && Token::Match(tok3, ")|]|}|>"))
-                    tok3 = tok3->link();
-                else if (tok3->link())
-                    break;
-                else if (tok3->str() == ";")
-                    break;
-                else if (tok3->str() == ",")
-                    argNr++;
-                tok3 = tok3->previous();
-            }
-            if (!tok3 || tok3->str() != "(")
-                return false;
-            const Token* functionTok = tok3->astOperand1();
+            int argNr = -1;
+            const Token* functionTok = getTokenArgumentFunction(tok2, argNr);
             if (!functionTok)
                 return false;
             const Function* tokFunction = functionTok->function();
