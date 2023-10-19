@@ -1227,14 +1227,6 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
     });
 }
 
-static bool isConstRangeBasedFor(const Token* tok) {
-    if (astIsRangeBasedForDecl(tok)) {
-        const Variable* loopVar = tok->astParent()->astOperand1()->variable();
-        return loopVar && (!loopVar->isReference() || loopVar->isConst());
-    }
-    return false;
-}
-
 void CheckOther::checkPassByReference()
 {
     if (!mSettings->severity.isEnabled(Severity::performance) || mTokenizer->isC())
