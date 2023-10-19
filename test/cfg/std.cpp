@@ -4154,7 +4154,7 @@ void uninitvar_setbase(void)
     std::cout << std::setbase(p);
 }
 
-// TODO cppcheck-suppress passedByValue
+// cppcheck-suppress passedByValue
 void uninitvar_find(std::string s)
 {
     // testing of size_t find (const string& str, size_t pos = 0)
