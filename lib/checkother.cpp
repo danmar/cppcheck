@@ -1235,112 +1235,6 @@ static bool isConstRangeBasedFor(const Token* tok) {
     return false;
 }
 
-static bool canBeConst(const Variable *var, const Settings* settings)
-{
-    if (!var->scope())
-        return false;
-    {
-        // check initializer list. If variable is moved from it can't be const.
-        const Function* func_scope = var->scope()->function;
-        if (func_scope && func_scope->type == Function::Type::eConstructor) {
-            //could be initialized in initializer list
-            const Token* init = func_scope->arg->link()->next();
-            if (init->str() == "noexcept") {
-                init = init->next();
-                if (init->link())
-                    init = init->link()->next();
-            }
-            if (init->str() == ":") {
-                for (const Token* tok2 = func_scope->arg->link()->next()->next(); tok2 != var->scope()->bodyStart; tok2 = tok2->next()) {
-                    if (tok2->varId() != var->declarationId())
-                        continue;
-                    const Token* parent = tok2->astParent();
-                    if (parent && Token::simpleMatch(parent->previous(), "move ("))
-                        return false;
-                }
-            }
-        }
-    }
-    for (const Token* tok2 = var->scope()->bodyStart; tok2 != var->scope()->bodyEnd; tok2 = tok2->next()) {
-        if (tok2->varId() != var->declarationId())
-            continue;
-
-        const Token* parent = tok2->astParent();
-        while (Token::simpleMatch(parent, "["))
-            parent = parent->astParent();
-        if (!parent)
-            continue;
-        if (Token::simpleMatch(tok2->next(), ";") && tok2->next()->isSplittedVarDeclEq()) {
-            tok2 = tok2->tokAt(2);
-            tok2 = Token::findsimplematch(tok2, ";");
-            continue;
-        }
-        if (parent->str() == "<<" || isLikelyStreamRead(true, parent)) {
-            if (parent->str() == "<<" && parent->astOperand1() == tok2)
-                return false;
-            if (parent->str() == ">>" && parent->astOperand2() == tok2)
-                return false;
-        } else if (parent->str() == "," || parent->str() == "(") { // function argument
-            const Token* tok3 = tok2->previous();
-            int argNr = 0;
-            while (tok3 && tok3->str() != "(") {
-                if (tok3->link() && Token::Match(tok3, ")|]|}|>"))
-                    tok3 = tok3->link();
-                else if (tok3->link())
-                    break;
-                else if (tok3->str() == ";")
-                    break;
-                else if (tok3->str() == ",")
-                    argNr++;
-                tok3 = tok3->previous();
-            }
-            if (!tok3 || tok3->str() != "(")
-                return false;
-            const Token* functionTok = tok3->astOperand1();
-            if (!functionTok)
-                return false;
-            const Function* tokFunction = functionTok->function();
-            if (!tokFunction && functionTok->str() == "." && (functionTok = functionTok->astOperand2()))
-                tokFunction = functionTok->function();
-            if (tokFunction) {
-                const Variable* argVar = tokFunction->getArgumentVar(argNr);
-                if (!argVar || (!argVar->isConst() && argVar->isReference()))
-                    return false;
-            }
-            else if (!settings->library.isFunctionConst(functionTok))
-                return false;
-        } else if (parent->isUnaryOp("&")) {
-            // TODO: check how pointer is used
-            return false;
-        } else if (parent->isConstOp() ||
-                   (parent->astOperand2() && settings->library.isFunctionConst(parent->astOperand2())))
-            continue;
-        else if (parent->isAssignmentOp()) {
-            const Token* assignee = parent->astOperand1();
-            while (Token::simpleMatch(assignee, "["))
-                assignee = assignee->astOperand1();
-            if (assignee == tok2)
-                return false;
-            const Variable* assignedVar = assignee ? assignee->variable() : nullptr;
-            if (assignedVar &&
-                !assignedVar->isConst() &&
-                assignedVar->isReference() &&
-                assignedVar->nameToken() == parent->astOperand1())
-                return false;
-        } else if (Token::Match(tok2, "%var% . %name% (")) {
-            const Function* func = tok2->tokAt(2)->function();
-            if (func && (func->isConst() || func->isStatic()))
-                continue;
-            return false;
-        } else if (isConstRangeBasedFor(tok2))
-            continue;
-        else
-            return false;
-    }
-
-    return true;
-}
-
 void CheckOther::checkPassByReference()
 {
     if (!mSettings->severity.isEnabled(Severity::performance) || mTokenizer->isC())
@@ -1390,7 +1284,7 @@ void CheckOther::checkPassByReference()
         if (!var->scope() || var->scope()->function->isImplicitlyVirtual())
             continue;
 
-        if (canBeConst(var, mSettings)) {
+        if (!isVariableChanged(var, mSettings, mTokenizer->isCPP())) {
             passedByValueError(var->nameToken(), var->name(), inconclusive);
         }
     }
@@ -2940,7 +2834,9 @@ void CheckOther::checkRedundantCopy()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Variable* var : symbolDatabase->variableList()) {
-        if (!var || var->isReference() || (!var->isConst() && !canBeConst(var, mSettings)) || var->isPointer() || (!var->type() && !var->isStlType())) // bailout if var is of standard type, if it is a pointer or non-const
+        if (!var || var->isReference() || var->isPointer() ||
+            (!var->type() && !var->isStlType()) || // bailout if var is of standard type, if it is a pointer or non-const
+            (!var->isConst() && isVariableChanged(var, mSettings, mTokenizer->isCPP())))            
             continue;
 
         const Token* startTok = var->nameToken();
