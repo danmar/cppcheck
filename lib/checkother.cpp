@@ -1286,8 +1286,6 @@ static bool canBeConst(const Variable *var, const Settings* settings)
             if (!functionTok)
                 return false;
             const Function* tokFunction = functionTok->function();
-            if (!tokFunction && functionTok->str() == "." && (functionTok = functionTok->astOperand2()))
-                tokFunction = functionTok->function();
             if (tokFunction) {
                 const Variable* argVar = tokFunction->getArgumentVar(argNr);
                 if (!argVar || (!argVar->isConst() && argVar->isReference()))
