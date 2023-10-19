@@ -222,6 +222,8 @@ private:
         TEST_CASE(simplifyTypedefFunction9);
         TEST_CASE(simplifyTypedefFunction10); // #5191
 
+        TEST_CASE(simplifyTypedefStruct); // #12081 - volatile struct
+
         TEST_CASE(simplifyTypedefShadow);  // #4445 - shadow variable
 
         TEST_CASE(simplifyTypedefMacro);
@@ -4000,6 +4002,20 @@ private:
                       "Format_E1 ( * * t1 ) ( ) ; "
                       "MySpace :: Format_E2 ( * * t2 ) ( ) ;",
                       tok(code,false));
+    }
+
+    void simplifyTypedefStruct() {
+        const char code1[] = "typedef struct S { int x; } xyz;\n"
+                             "xyz var;";
+        ASSERT_EQUALS("struct S { int x ; } ; struct S var ;", tok(code1,false));
+
+        const char code2[] = "typedef const struct S { int x; } xyz;\n"
+                             "xyz var;";
+        ASSERT_EQUALS("struct S { int x ; } ; const struct S var ;", tok(code2,false));
+
+        const char code3[] = "typedef volatile struct S { int x; } xyz;\n"
+                             "xyz var;";
+        ASSERT_EQUALS("struct S { int x ; } ; volatile struct S var ;", tok(code3,false));
     }
 
     void simplifyTypedefShadow() { // shadow variable (#4445)
