@@ -410,17 +410,15 @@ namespace {
 static Token *splitDefinitionFromTypedef(Token *tok, nonneg int *unnamedCount)
 {
     std::string name;
-    bool isConst = false;
-    Token *tok1 = tok->next();
+    std::set<std::string> qualifiers;
 
-    // skip const if present
-    if (tok1->str() == "const") {
-        tok1->deleteThis();
-        isConst = true;
+    while (Token::Match(tok->next(), "const|volatile")) {
+        qualifiers.insert(tok->next()->str());
+        tok->deleteNext();
     }
 
     // skip "class|struct|union|enum"
-    tok1 = tok1->next();
+    Token *tok1 = tok->tokAt(2);
 
     const bool hasName = Token::Match(tok1, "%name%");
 
@@ -465,8 +463,8 @@ static Token *splitDefinitionFromTypedef(Token *tok, nonneg int *unnamedCount)
     tok1->insertToken("typedef");
     tok1 = tok1->next();
     Token * tok3 = tok1;
-    if (isConst) {
-        tok1->insertToken("const");
+    for (const std::string &qualifier : qualifiers) {
+        tok1->insertToken(qualifier);
         tok1 = tok1->next();
     }
     tok1->insertToken(tok->next()->str()); // struct, union or enum
@@ -1209,7 +1207,10 @@ void Tokenizer::simplifyTypedefCpp()
 
         // pull struct, union, enum or class definition out of typedef
         // use typedef name for unnamed struct, union, enum or class
-        if (Token::Match(tok->next(), "const| struct|enum|union|class %type%| {|:")) {
+        const Token* tokClass = tok->next();
+        while (Token::Match(tokClass, "const|volatile"))
+            tokClass = tokClass->next();
+        if (Token::Match(tokClass, "struct|enum|union|class %type%| {|:")) {
             Token *tok1 = splitDefinitionFromTypedef(tok, &mUnnamedCount);
             if (!tok1)
                 continue;
@@ -8929,8 +8930,8 @@ void Tokenizer::simplifyDeclspec()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         while (isAttribute(tok, false)) {
-            Token *functok = getAttributeFuncTok(tok, false);
             if (Token::Match(tok->tokAt(2), "noreturn|nothrow|dllexport")) {
+                Token *functok = getAttributeFuncTok(tok, false);
                 if (functok) {
                     if (tok->strAt(2) == "noreturn")
                         functok->isAttributeNoreturn(true);

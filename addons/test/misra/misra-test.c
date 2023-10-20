@@ -58,7 +58,7 @@ typedef unsigned int       u32;
 typedef signed int         s32;
 typedef unsigned long long u64;
 
-static void misra_1_2(void)
+static void misra_1_2(bool expr)
 {
     (void)(condition ? : 0); // 1.2
     a = 1 + ({if (!expr) {code;} 1;}); // 1.2
@@ -67,7 +67,7 @@ static void misra_1_2(void)
 static _Atomic int misra_1_4_var; // 1.4
 static _Noreturn void misra_1_4_func(void) // 1.4
 {
-    if (0 != _Generic(misra_1_4_var)) {} // 1.4
+    if (0 != _Generic(misra_1_4_var)) {} // 1.4 17.3
     printf_s("hello"); // 1.4
 }
 
@@ -160,13 +160,13 @@ static void foo(void)
       {
         for(i = 0; i < 10; i++)
         {
-          if(misra_5_2_func3()) //14.4
+          if(misra_5_2_func3()) //17.3
           {
             int misra_5_2_var_hides_var_1____31x;
             int misra_5_2_var_hides_var_1____31y;//5.2
           }
         }
-      } while(misra_5_2_func2()); //14.4
+      } while(misra_5_2_func2()); //17.3
     }
     break;
   }
@@ -252,11 +252,11 @@ static void misra_5_5_func1(void)
     {
       do
       {
-        if(misra_5_5_func3()) //14.4
+        if(misra_5_5_func3()) //17.3
         {
           int misra_5_5_hides_macro________31y; //5.5
         }
-      } while(misra_5_5_func2()); //14.4
+      } while(misra_5_5_func2()); //17.3
     }
     break;
   }
@@ -1143,12 +1143,15 @@ static s13_4_t s13_4 =
     .string = STRING_DEF_13_4 // no-warning
 };
 
-static void misra_13_4(void) {
+static void misra_13_4(int x, int z) {
+  int y;
   if (x != (y = z)) {} // 13.4
   else {}
 }
 
 static void misra_13_5(void) {
+  int x = 0;
+  int y = 0;
   if (x && (y++ < 123)){} // 13.5
   if (x || ((y += 19) > 33)){} // 13.5
   if (x || ((y = 25) > 33)){} // 13.5 13.4
@@ -1297,13 +1300,16 @@ struct {
   unsigned int y:1;
 } r14_4_struct; // 8.4
 static void misra_14_4(bool b) {
-  if (x+4){} // 14.4
+  if (x+4){} //config
   else {}
 
   if (b) {}
   else {}
 
   if (r14_4_struct.x) {}
+
+  // #12079
+  if (z) {} //config
 }
 
 static void misra_15_1(void) {
@@ -1316,7 +1322,9 @@ label:
   goto label; // 15.2 15.1
 }
 
-static void misra_15_3(void) {
+static void misra_15_3(int a) {
+  int x = 0;
+  int y;
   if (x!=0) {
     goto L1; // 15.3 15.1
     if (y!=0) {
@@ -1431,14 +1439,14 @@ static void misra_15_4(void) {
   }
 }
 
-static int misra_15_5(void) {
+static int misra_15_5(int x) {
   if (x!=0) {
     return 1; // 15.5
   } else {}
   return 2;
 }
 
-static void misra_15_6(void) {
+static void misra_15_6(int x) {
   if (x!=0); // 15.6
   else{}
 
@@ -1470,7 +1478,7 @@ static void misra_15_6_fp(void)
 #if defined(M_20_9) && M_20_9 > 1 // no-warning (#10380)
 #endif
 
-static void misra_15_7(void) {
+static void misra_15_7(int x, int a, int b) {
   uint32_t var = 0;
   uint32_t var2 = 0;
 
@@ -1506,7 +1514,7 @@ static void misra_16_1(int32_t i) {
   }
 }
 
-static void misra_16_2(void) {
+static void misra_16_2(int y) {
   switch (x) {
     default:
       break;
@@ -1518,7 +1526,8 @@ static void misra_16_2(void) {
   }
 }
 
-static void misra_16_3(void) {
+static void misra_16_3(int b) {
+  int a;
   switch (x) {
     case 1:
     case 2:
@@ -1688,6 +1697,16 @@ static void misra_17_2_5(void) {
   misra_17_2_ok_1(); // no-warning
   misra_17_2_5(); // 17.2
   misra_17_2_1(); // no-warning
+}
+
+bool (*dostuff)(); //8.2 8.4
+static void misra_17_3(void) {
+  if (dostuff()) {}
+}
+
+static void misra_config(const char* str) {
+    if (strlen(str) > 3){} //10.4
+    if (sizeof(int) > 1){} //10.4
 }
 
 static void misra_17_6(int x[static 20]) {(void)x;} // 17.6

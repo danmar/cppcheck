@@ -21,13 +21,13 @@ static void foo(void)
       {
         for(i = 0; i < 10; i++)
         {
-          if(misra_5_2_func3()) //14.4
+          if(misra_5_2_func3()) //17.3
           {
             int misra_5_2_var_hides_var_1____31x;
             int misra_5_2_var_hides_var_1____31y;//5.2
           }
         }
-      } while(misra_5_2_func2()); //14.4
+      } while(misra_5_2_func2()); //17.3
     }
   }
 }
