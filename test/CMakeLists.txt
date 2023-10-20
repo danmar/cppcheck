@@ -1,4 +1,6 @@
 if (BUILD_TESTS)
+    add_subdirectory(signal)
+
     file(GLOB hdrs "*.h")
     file(GLOB srcs "*.cpp")
     list(APPEND testrunner_SOURCES ${hdrs} ${srcs} $<TARGET_OBJECTS:cli_objs>)

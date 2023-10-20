@@ -418,6 +418,13 @@ jobs:
         run: |
           make -j$(nproc) checkCWEEntries validateXML
 
+      - name: Test Signalhandler
+        run: |
+          cmake -S . -B cmake.output.signal -G "Unix Makefiles" -DBUILD_TESTS=On
+          cmake --build cmake.output.signal --target test-signalhandler -- -j$(nproc)
+          cp cmake.output.signal/bin/test-s* .
+          python3 -m pytest -Werror --strict-markers -vv test/signal/test-*.py
+
       # TODO: move to scriptcheck.yml so these are tested with all Python versions?
       - name: Test addons
         run: |
