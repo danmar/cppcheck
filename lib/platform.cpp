@@ -50,11 +50,7 @@ bool Platform::set(Type t)
         sizeof_wchar_t = sizeof(wchar_t);
         sizeof_size_t = sizeof(std::size_t);
         sizeof_pointer = sizeof(void *);
-        if (type == Type::Unspecified) {
-            defaultSign = '\0';
-        } else {
-            defaultSign = std::numeric_limits<char>::is_signed ? 's' : 'u';
-        }
+        defaultSign = std::numeric_limits<char>::is_signed ? 's' : 'u';
         char_bit = 8;
         short_bit = char_bit * sizeof_short;
         int_bit = char_bit * sizeof_int;
@@ -118,6 +114,7 @@ bool Platform::set(const std::string& platformstr, std::string& errstr, const st
         platformFile = platformstr;
     }
     else if (platformstr == "unix32-unsigned") {
+        std::cout << "Platform 'unix32-unsigned' is deprecated and will be removed in Cppcheck 2.18. Please use '--platform=unix32 --funsigned-char' instead." << std::endl;
         t = Type::Unix32;
         platformFile = platformstr;
     }
@@ -126,6 +123,7 @@ bool Platform::set(const std::string& platformstr, std::string& errstr, const st
         platformFile = platformstr;
     }
     else if (platformstr == "unix64-unsigned") {
+        std::cout << "Platform 'unix64-unsigned' is deprecated and will be removed in Cppcheck 2.18. Please use '--platform=unix64 --funsigned-char' instead." << std::endl;
         t = Type::Unix64;
         platformFile = platformstr;
     }
@@ -133,6 +131,7 @@ bool Platform::set(const std::string& platformstr, std::string& errstr, const st
         t = Type::Native;
     }
     else if (platformstr == "unspecified") {
+        std::cout << "Platform 'unspecified' is deprecated and will be removed in a future version. It is also now identical to 'native' (i.e. char type signedness based on compiler instead of unknown)." << std::endl;
         t = Type::Unspecified;
     }
     else if (paths.empty()) {
@@ -230,7 +229,7 @@ bool Platform::loadFromXmlDocument(const tinyxml2::XMLDocument *doc)
         if (std::strcmp(name, "default-sign") == 0) {
             const char* str = node->GetText();
             if (str)
-                defaultSign = *str;
+                defaultSign = *str; // TODO: warn if neither 'u' nor 's'
             else
                 error = true;
         } else if (std::strcmp(name, "char_bit") == 0)
