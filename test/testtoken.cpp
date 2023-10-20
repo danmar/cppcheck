@@ -106,6 +106,7 @@ private:
         TEST_CASE(canFindMatchingBracketsWithTooManyClosing);
         TEST_CASE(canFindMatchingBracketsWithTooManyOpening);
         TEST_CASE(findClosingBracket);
+        TEST_CASE(findClosingBracket2);
 
         TEST_CASE(expressionString);
 
@@ -1082,6 +1083,13 @@ private:
 
         const Token* const t = var.tokens()->next()->findClosingBracket();
         ASSERT(Token::simpleMatch(t, "> struct"));
+    }
+
+    void findClosingBracket2() const {
+        givenACodeSampleToTokenize var("const auto g = []<typename T>() {};\n"); // #11275
+
+        const Token* const t = Token::findsimplematch(var.tokens(), "<");
+        ASSERT(t && Token::simpleMatch(t->findClosingBracket(), ">"));
     }
 
     void expressionString() const {
