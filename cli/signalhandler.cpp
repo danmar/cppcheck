@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "cppcheckexecutorsig.h"
+#include "signalhandler.h"
 
 #if defined(USE_UNIX_SIGNAL_HANDLING)
 
@@ -298,7 +298,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
     }
 }
 
-int check_wrapper_sig(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(const Settings&) const, const Settings& settings)
+void register_signal_handler()
 {
     // determine stack vs. heap
     char stackVariable;
@@ -321,7 +321,6 @@ int check_wrapper_sig(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(con
     for (std::map<int, std::string>::const_iterator sig=listofsignals.cbegin(); sig!=listofsignals.cend(); ++sig) {
         sigaction(sig->first, &act, nullptr);
     }
-    return (executor.*f)(settings);
 }
 
 #endif

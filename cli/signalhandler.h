@@ -16,18 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CPPCHECKEXECUTORSIG_H
-#define CPPCHECKEXECUTORSIG_H
+#ifndef SIGNALHANDLER_H
+#define SIGNALHANDLER_H
 
 #include "config.h"
 
 #if defined(USE_UNIX_SIGNAL_HANDLING)
 
-class CppCheckExecutor;
-class Settings;
+void register_signal_handler();
 
-int check_wrapper_sig(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(const Settings&) const, const Settings& settings);
+#endif // USE_UNIX_SIGNAL_HANDLING
 
-#endif // CPPCHECKEXECUTORSIG_H
-
-#endif // CPPCHECKEXECUTORSIG_H
+#endif // SIGNALHANDLER_H

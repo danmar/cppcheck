@@ -53,7 +53,7 @@
 #include <vector>
 
 #ifdef USE_UNIX_SIGNAL_HANDLING
-#include "cppcheckexecutorsig.h"
+#include "signalhandler.h"
 #endif
 
 #ifdef USE_WINDOWS_SEH
@@ -207,7 +207,7 @@ int CppCheckExecutor::check_wrapper(const Settings& settings)
         return check_wrapper_seh(*this, &CppCheckExecutor::check_internal, settings);
 #elif defined(USE_UNIX_SIGNAL_HANDLING)
     if (settings.exceptionHandling)
-        return check_wrapper_sig(*this, &CppCheckExecutor::check_internal, settings);
+        register_signal_handler();
 #endif
     return check_internal(settings);
 }

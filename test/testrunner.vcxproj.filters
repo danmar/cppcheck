@@ -223,7 +223,7 @@
     <ClCompile Include="..\cli\cppcheckexecutorseh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\cli\cppcheckexecutorsig.cpp">
+    <ClCompile Include="..\cli\signalhandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\cli\executor.cpp">
@@ -285,7 +285,7 @@
     <ClInclude Include="..\cli\cppcheckexecutorseh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\cli\cppcheckexecutorsig.h">
+    <ClInclude Include="..\cli\signalhandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\cli\executor.h">
