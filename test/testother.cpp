@@ -5877,6 +5877,11 @@ private:
               "    std::array<std::array<double,3>,3> array;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(const std::vector<int*>& v) {\n" // #12088
+              "    for (auto it = v.begin(); it != v.end(); delete *it++);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateBranch() {

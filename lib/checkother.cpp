@@ -1910,8 +1910,12 @@ static bool isConstStatement(const Token *tok, bool cpp)
         return false;
     if (Token::Match(tok, "<<|>>") && !astIsIntegral(tok, false))
         return false;
-    if (tok->astTop() && Token::simpleMatch(tok->astTop()->astOperand1(), "delete"))
-        return false;
+    const Token* tok2 = tok;
+    while (tok2) {
+        if (Token::simpleMatch(tok2->astOperand1(), "delete"))
+            return false;
+        tok2 = tok2->astParent();
+    }
     if (Token::Match(tok, "&&|%oror%"))
         return isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2(), cpp);
     if (Token::Match(tok, "!|~|%cop%") && (tok->astOperand1() || tok->astOperand2()))
