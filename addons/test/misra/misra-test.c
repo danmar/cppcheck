@@ -1250,6 +1250,14 @@ static void misra_14_2_fn1(bool b) {
           }
       }
   }
+
+  static struct
+  {
+    uint16_t block;
+    bool readSuccessful;
+  }
+  opState;
+  for (opState.block = 0U; opState.block < 10U; opState.block++) {;} //no-warning
 }
 static void misra_14_2_fn2(void)
 {
