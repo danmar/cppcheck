@@ -175,6 +175,8 @@ Library::Container::Action Library::Container::actionFrom(const std::string& act
         return Container::Action::POP;
     if (actionName == "find")
         return Container::Action::FIND;
+    if (actionName == "find-const")
+        return Container::Action::FIND_CONST;
     if (actionName == "insert")
         return Container::Action::INSERT;
     if (actionName == "erase")

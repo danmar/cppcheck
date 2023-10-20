@@ -197,6 +197,7 @@ public:
             PUSH,
             POP,
             FIND,
+            FIND_CONST,
             INSERT,
             ERASE,
             CHANGE_CONTENT,

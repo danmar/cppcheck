@@ -1966,7 +1966,7 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
             return false;
         if (container->getYield(ftok->str()) != Library::Container::Yield::NO_YIELD)
             return true;
-        if (container->getAction(ftok->str()) == Library::Container::Action::FIND)
+        if (container->getAction(ftok->str()) == Library::Container::Action::FIND_CONST)
             return true;
         return false;
     } else if (const Library::Function* lf = library.getFunction(ftok)) {
@@ -1974,7 +1974,7 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
             return true;
         if (lf->containerYield != Library::Container::Yield::NO_YIELD)
             return true;
-        if (lf->containerAction == Library::Container::Action::FIND)
+        if (lf->containerAction == Library::Container::Action::FIND_CONST)
             return true;
         return false;
     } else {
