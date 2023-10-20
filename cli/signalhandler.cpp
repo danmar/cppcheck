@@ -20,8 +20,6 @@
 
 #if defined(USE_UNIX_SIGNAL_HANDLING)
 
-#include "cppcheckexecutor.h"
-
 #ifdef USE_UNIX_BACKTRACE_SUPPORT
 #include "stacktrace.h"
 #endif
@@ -57,6 +55,12 @@ static constexpr size_t MYSTACKSIZE = 16*1024+SIGSTKSZ; // wild guess about a re
 #endif
 static char mytstack[MYSTACKSIZE]= {0}; // alternative stack for signal handler
 static bool bStackBelowHeap=false; // lame attempt to locate heap vs. stack address space. See CppCheckExecutor::check_wrapper()
+static FILE* signalOutput = stdout;
+
+void set_signal_handler_output(FILE* f)
+{
+    signalOutput = f;
+}
 
 /**
  * \param[in] ptr address to be examined.
@@ -127,7 +131,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
     bool unexpectedSignal=true; // unexpected indicates program failure
     bool terminate=true; // exit process/thread
     const bool isAddressOnStack = IsAddressOnStack(info->si_addr);
-    FILE* output = CppCheckExecutor::getExceptionOutput();
+    FILE * const output = signalOutput;
     switch (signo) {
     case SIGABRT:
         fputs("Internal error: cppcheck received signal ", output);

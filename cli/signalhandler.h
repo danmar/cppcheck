@@ -23,6 +23,11 @@
 
 #if defined(USE_UNIX_SIGNAL_HANDLING)
 
+/**
+ * @param f Output file
+ */
+void set_signal_handler_output(FILE* f);
+
 void register_signal_handler();
 
 #endif // USE_UNIX_SIGNAL_HANDLING

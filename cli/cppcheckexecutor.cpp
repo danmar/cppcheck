@@ -443,6 +443,9 @@ void StdLogger::reportErr(const ErrorMessage &msg)
 void CppCheckExecutor::setExceptionOutput(FILE* exceptionOutput)
 {
     mExceptionOutput = exceptionOutput;
+#if defined(USE_UNIX_SIGNAL_HANDLING)
+    set_signal_handler_output(mExceptionOutput);
+#endif
 }
 
 FILE* CppCheckExecutor::getExceptionOutput()
