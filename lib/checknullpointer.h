@@ -24,7 +24,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "ctu.h"
 #include "tokenize.h"
 #include "vfvalue.h"
 
@@ -35,6 +34,10 @@ class ErrorLogger;
 class Library;
 class Settings;
 class Token;
+
+namespace CTU {
+    class FileInfo;
+}
 
 namespace tinyxml2 {
     class XMLElement;

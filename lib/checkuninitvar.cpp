@@ -21,6 +21,7 @@
 #include "checkuninitvar.h"
 
 #include "astutils.h"
+#include "ctu.h"
 #include "errorlogger.h"
 #include "library.h"
 #include "mathlib.h"

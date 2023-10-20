@@ -26,7 +26,6 @@
 #include "tokenize.h"
 #include "symboldatabase.h"
 
-#include <cstddef>
 #include <list>
 #include <map>
 #include <set>

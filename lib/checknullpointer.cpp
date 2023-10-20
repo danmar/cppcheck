@@ -21,6 +21,7 @@
 #include "checknullpointer.h"
 
 #include "astutils.h"
+#include "ctu.h"
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "library.h"
