@@ -4119,3 +4119,88 @@ def test_active_unusedfunction_only_misra_builddir(tmp_path):
         'CheckUnusedFunctions::check'
     ]
     __test_active_checkers(tmp_path, 1, 1175, use_unusedfunction_only=True, use_misra=True, checkers_exp=checkers_exp)
+
+
+def test_platform_custom(tmp_path):
+    test_cfg = tmp_path / 'test.cfg'
+    with open(test_cfg, 'wt') as f:
+        f.write("""
+<?xml version="1.0"?>
+<platform>
+    <char_bit>8</char_bit>
+    <default-sign>unsigned</default-sign>
+    <sizeof>
+        <bool>1</bool>
+        <short>2</short>
+        <int>2</int>
+        <long>4</long>
+        <long-long>8</long-long>
+        <float>4</float>
+        <double>4</double>
+        <long-double>4</long-double>
+        <pointer>2</pointer>
+        <size_t>2</size_t>
+        <wchar_t>2</wchar_t>
+    </sizeof>
+</platform>
+        """)
+
+    # TODO: use a sample to make sure the file is actually used
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""""")
+
+    args = [
+        '--platform={}'.format(test_cfg),
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file)
+    ]
+    assert stderr == ''
+
+
+def test_platform_invalid_defaultsign(tmp_path):
+    test_cfg = tmp_path / 'test.cfg'
+    with open(test_cfg, 'wt') as f:
+        f.write("""
+<?xml version="1.0"?>
+<platform>
+    <char_bit>8</char_bit>
+    <default-sign>notsigned</default-sign>
+    <sizeof>
+        <bool>1</bool>
+        <short>2</short>
+        <int>2</int>
+        <long>4</long>
+        <long-long>8</long-long>
+        <float>4</float>
+        <double>4</double>
+        <long-double>4</long-double>
+        <pointer>2</pointer>
+        <size_t>2</size_t>
+        <wchar_t>2</wchar_t>
+    </sizeof>
+</platform>
+        """)
+
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""""")
+
+    args = [
+        '--platform={}'.format(test_cfg),
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file)
+    ]
+    assert stderr == ''
