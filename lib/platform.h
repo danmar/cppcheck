@@ -81,7 +81,7 @@ private:
 
 protected:
     /** load platform from xml document, primarily for testing */
-    bool loadFromXmlDocument(const tinyxml2::XMLDocument *doc);
+    bool loadFromXmlDocument(const tinyxml2::XMLDocument *doc, std::string& errmsg);
 public:
     Platform();
 
@@ -130,7 +130,7 @@ public:
     std::size_t sizeof_size_t;
     std::size_t sizeof_pointer;
 
-    char defaultSign;  // unsigned:'u', signed:'s', unknown:'\0'
+    char defaultSign;  // unsigned:'u', signed:'s'
 
     bool windows{false}; // indicates if the platform is Windows
 

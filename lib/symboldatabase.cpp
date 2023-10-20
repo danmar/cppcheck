@@ -64,12 +64,10 @@ SymbolDatabase::SymbolDatabase(Tokenizer& tokenizer)
     if (!mTokenizer.tokens())
         return;
 
-    if (mSettings.platform.defaultSign == 's' || mSettings.platform.defaultSign == 'S')
-        mDefaultSignedness = ValueType::SIGNED;
-    else if (mSettings.platform.defaultSign == 'u' || mSettings.platform.defaultSign == 'U')
+    if (mSettings.platform.defaultSign == 'u')
         mDefaultSignedness = ValueType::UNSIGNED;
     else
-        mDefaultSignedness = ValueType::UNKNOWN_SIGN;
+        mDefaultSignedness = ValueType::SIGNED;
 
     createSymbolDatabaseFindAllScopes();
     createSymbolDatabaseClassInfo();

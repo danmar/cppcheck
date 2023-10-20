@@ -1800,7 +1800,6 @@ private:
     void platformWin64() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=win64", "file.cpp"};
-        ASSERT(settings->platform.set(Platform::Type::Unspecified));
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(Platform::Type::Win64, settings->platform.type);
     }
@@ -1808,7 +1807,6 @@ private:
     void platformWin32A() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=win32A", "file.cpp"};
-        ASSERT(settings->platform.set(Platform::Type::Unspecified));
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(Platform::Type::Win32A, settings->platform.type);
     }
@@ -1816,7 +1814,6 @@ private:
     void platformWin32W() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=win32W", "file.cpp"};
-        ASSERT(settings->platform.set(Platform::Type::Unspecified));
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(Platform::Type::Win32W, settings->platform.type);
     }
@@ -1824,7 +1821,6 @@ private:
     void platformUnix32() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=unix32", "file.cpp"};
-        ASSERT(settings->platform.set(Platform::Type::Unspecified));
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(Platform::Type::Unix32, settings->platform.type);
     }
@@ -1832,7 +1828,6 @@ private:
     void platformUnix32Unsigned() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=unix32-unsigned", "file.cpp"};
-        ASSERT(settings->platform.set(Platform::Type::Unspecified));
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized platform: 'unix32-unsigned'.\n", logger->str());
     }
@@ -1840,7 +1835,6 @@ private:
     void platformUnix64() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=unix64", "file.cpp"};
-        ASSERT(settings->platform.set(Platform::Type::Unspecified));
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(Platform::Type::Unix64, settings->platform.type);
     }
@@ -1848,7 +1842,6 @@ private:
     void platformUnix64Unsigned() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=unix64-unsigned", "file.cpp"};
-        ASSERT(settings->platform.set(Platform::Type::Unspecified));
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized platform: 'unix64-unsigned'.\n", logger->str());
     }
@@ -1856,7 +1849,6 @@ private:
     void platformNative() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=native", "file.cpp"};
-        ASSERT(settings->platform.set(Platform::Type::Unspecified));
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(Platform::Type::Native, settings->platform.type);
     }
@@ -1864,7 +1856,6 @@ private:
     void platformUnspecified() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=unspecified", "file.cpp"};
-        ASSERT(settings->platform.set(Platform::Type::Native));
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(Platform::Type::Unspecified, settings->platform.type);
     }
@@ -1872,7 +1863,6 @@ private:
     void platformPlatformFile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=avr8", "file.cpp"};
-        ASSERT(settings->platform.set(Platform::Type::Unspecified));
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(Platform::Type::File, settings->platform.type);
     }
