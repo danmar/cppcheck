@@ -145,6 +145,7 @@ private:
         TEST_CASE(varid_namespace_3);   // #8627
         TEST_CASE(varid_namespace_4);
         TEST_CASE(varid_namespace_5);
+        TEST_CASE(varid_namespace_6);
         TEST_CASE(varid_initList);
         TEST_CASE(varid_initListWithBaseTemplate);
         TEST_CASE(varid_initListWithScope);
@@ -2198,6 +2199,29 @@ private:
                       "7: void bar :: dostuff ( ) { int x2@2 ; x2@2 = x@1 * 2 ; }\n"
                       "8: }\n"
                       "9: }\n", tokenize(code, "test.cpp"));
+    }
+
+    void varid_namespace_6() {
+        const char code[] = "namespace N {\n" // #12077
+                            "    namespace O {\n"
+                            "        U::U(int* map) : id(0) {\n"
+                            "            this->p = map;\n"
+                            "        }\n"
+                            "        void U::f() {\n"
+                            "            std::map<Vec2i, int>::iterator iter;\n"
+                            "        }\n"
+                            "    }\n"
+                            "}";
+        ASSERT_EQUALS("1: namespace N {\n"
+                      "2: namespace O {\n"
+                      "3: U :: U ( int * map@1 ) : id ( 0 ) {\n"
+                      "4: this . p = map@1 ;\n"
+                      "5: }\n"
+                      "6: void U :: f ( ) {\n"
+                      "7: std :: map < Vec2i , int > :: iterator iter@2 ;\n"
+                      "8: }\n"
+                      "9: }\n"
+                      "10: }\n", tokenize(code, "test.cpp"));
     }
 
     void varid_initList() {

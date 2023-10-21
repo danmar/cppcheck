@@ -108,7 +108,9 @@ public:
 
 // TODO: do not directly write to stdout
 
+#if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
 /*static*/ FILE* CppCheckExecutor::mExceptionOutput = stdout;
+#endif
 
 CppCheckExecutor::~CppCheckExecutor()
 {
@@ -257,11 +259,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     cppCheck.settings() = settings;
     mSettings = &settings;
 
-    int ret;
-    if (settings.exceptionHandling)
-        ret = check_wrapper(cppCheck);
-    else
-        ret = check_internal(cppCheck);
+    const int ret = check_wrapper(cppCheck);
 
     mSettings = nullptr;
     return ret;
@@ -270,12 +268,13 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 int CppCheckExecutor::check_wrapper(CppCheck& cppcheck)
 {
 #ifdef USE_WINDOWS_SEH
-    return check_wrapper_seh(*this, &CppCheckExecutor::check_internal, cppcheck);
+    if (cppcheck.settings().exceptionHandling)
+        return check_wrapper_seh(*this, &CppCheckExecutor::check_internal, cppcheck);
 #elif defined(USE_UNIX_SIGNAL_HANDLING)
-    return check_wrapper_sig(*this, &CppCheckExecutor::check_internal, cppcheck);
-#else
-    return check_internal(cppcheck);
+    if (cppcheck.settings().exceptionHandling)
+        return check_wrapper_sig(*this, &CppCheckExecutor::check_internal, cppcheck);
 #endif
+    return check_internal(cppcheck);
 }
 
 bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::map<std::string, std::size_t> &files, ErrorLogger& errorLogger) {
@@ -522,6 +521,7 @@ void CppCheckExecutor::reportErr(const ErrorMessage &msg)
         reportErr(msg.toString(mSettings->verbose, mSettings->templateFormat, mSettings->templateLocation));
 }
 
+#if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
 void CppCheckExecutor::setExceptionOutput(FILE* exceptionOutput)
 {
     mExceptionOutput = exceptionOutput;
@@ -531,6 +531,7 @@ FILE* CppCheckExecutor::getExceptionOutput()
 {
     return mExceptionOutput;
 }
+#endif
 
 bool CppCheckExecutor::tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename)
 {

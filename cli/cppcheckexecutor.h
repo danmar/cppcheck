@@ -185,10 +185,12 @@ private:
      */
     std::time_t mLatestProgressOutputTime{};
 
+#if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
     /**
      * Output file name for exception handler
      */
     static FILE* mExceptionOutput;
+#endif
 
     /**
      * Error output
