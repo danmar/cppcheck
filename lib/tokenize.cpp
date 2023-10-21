@@ -4405,10 +4405,12 @@ void Tokenizer::setVarIdClassFunction(const std::string &classname,
                                       std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
                                       nonneg int &varId_)
 {
+    const auto pos = classname.rfind(' '); // TODO handle multiple scopes
+    const std::string lastScope = classname.substr(pos == std::string::npos ? 0 : pos + 1);
     for (Token *tok2 = startToken; tok2 && tok2 != endToken; tok2 = tok2->next()) {
         if (tok2->varId() != 0 || !tok2->isName())
             continue;
-        if (Token::Match(tok2->tokAt(-2), ("!!" + classname + " ::").c_str()))
+        if (Token::Match(tok2->tokAt(-2), ("!!" + lastScope + " ::").c_str()))
             continue;
         if (Token::Match(tok2->tokAt(-4), "%name% :: %name% ::")) // Currently unsupported
             continue;
