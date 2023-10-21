@@ -2159,6 +2159,14 @@ private:
               "T::T(std::string s) noexcept(true) : m(std::move(s)) {}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("namespace N {\n" // #12086
+              "    void g(int);\n"
+              "}\n"
+              "void f(std::vector<int> v) {\n"
+              "    N::g(v[0]);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Function parameter 'v' should be passed by const reference.\n", errout.str());
+
         Settings settings1 = settingsBuilder().platform(Platform::Type::Win64).build();
         check("using ui64 = unsigned __int64;\n"
               "ui64 Test(ui64 one, ui64 two) { return one + two; }\n",
