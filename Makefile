@@ -26,10 +26,13 @@ ifeq ($(MATCHCOMPILER),yes)
     ifeq ($(PYTHON_INTERPRETER),)
         $(error Did not find a Python interpreter)
     endif
+    ifeq ($(VERBOSE),1)
+        $(info PYTHON_INTERPRETER=$(PYTHON_INTERPRETER))
+    endif
     ifdef VERIFY
-        matchcompiler_S := $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py --verify)
+        $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py --quiet --verify)
     else
-        matchcompiler_S := $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py)
+        $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py --quiet)
     endif
     libcppdir:=build
 else
@@ -44,97 +47,55 @@ ifdef FILESDIR
     CPPFLAGS+=-DFILESDIR=\"$(FILESDIR)\"
 endif
 
-RDYNAMIC=-rdynamic
-# Set the CPPCHK_GLIBCXX_DEBUG flag. This flag is not used in release Makefiles.
-# The _GLIBCXX_DEBUG define doesn't work in Cygwin or other Win32 systems.
-ifndef COMSPEC
+# COMSPEC is defined when msys2 or cygwin shell is being used
+# ComSpec is defined when cmd or ps (PowerShell) shell is being used
+ifdef ComSpec
     ifeq ($(VERBOSE),1)
-        $(info COMSPEC not found)
+        $(info ComSpec found)
     endif
-    ifdef ComSpec
-        ifeq ($(VERBOSE),1)
-            $(info ComSpec found)
-        endif
-        #### ComSpec is defined on some WIN32's.
-        WINNT=1
-
-        ifeq ($(VERBOSE),1)
-            $(info PATH=$(PATH))
-        endif
-
-        ifneq (,$(findstring /cygdrive/,$(PATH)))
-            ifeq ($(VERBOSE),1)
-                $(info /cygdrive/ found in PATH)
-            endif
-            CYGWIN=1
-        endif # CYGWIN
-    endif # ComSpec
-endif # COMSPEC
-
-ifdef WINNT
-    ifeq ($(VERBOSE),1)
-        $(info WINNT found)
-    endif
-    #### Maybe Windows
-    ifndef CPPCHK_GLIBCXX_DEBUG
-        CPPCHK_GLIBCXX_DEBUG=
-    endif # !CPPCHK_GLIBCXX_DEBUG
-
-    ifeq ($(VERBOSE),1)
-        $(info MSYSTEM=$(MSYSTEM))
-    endif
-
-    ifneq ($(MSYSTEM),MINGW32 MINGW64)
-        RDYNAMIC=
-    endif
-
-    LDFLAGS+=-lshlwapi
-else # !WINNT
-    ifeq ($(VERBOSE),1)
-        $(info WINNT not found)
-    endif
-
-    uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
-
-    ifeq ($(VERBOSE),1)
-        $(info uname_S=$(uname_S))
-    endif
-
-    ifeq ($(uname_S),Linux)
-        ifndef CPPCHK_GLIBCXX_DEBUG
-            CPPCHK_GLIBCXX_DEBUG=-D_GLIBCXX_DEBUG
-        endif # !CPPCHK_GLIBCXX_DEBUG
-    endif # Linux
-
-    ifeq ($(uname_S),GNU/kFreeBSD)
-        ifndef CPPCHK_GLIBCXX_DEBUG
-            CPPCHK_GLIBCXX_DEBUG=-D_GLIBCXX_DEBUG
-        endif # !CPPCHK_GLIBCXX_DEBUG
-    endif # GNU/kFreeBSD
-
-    LDFLAGS+=-pthread
-
-endif # WINNT
-
-ifdef CYGWIN
-    ifeq ($(VERBOSE),1)
-        $(info CYGWIN found)
-    endif
-
-    # Set the flag to address compile time warnings
-    # with tinyxml2 and Cygwin.
-    CPPFLAGS+=-U__STRICT_ANSI__
     
-    # Increase stack size for Cygwin builds to avoid segmentation fault in limited recursive tests.
-    CXXFLAGS+=-Wl,--stack,8388608
-endif # CYGWIN
+    WINNT=1
+endif # ComSpec
 
+ifndef WINNT
+    LDFLAGS+=-pthread
+endif # !WINNT
+
+
+ifeq ($(VERBOSE),1)
+    $(info MSYSTEM=$(MSYSTEM))
+endif
+
+ifneq ($(MSYSTEM),)
+    # -rdynamic does not work with MinGW
+    RDYNAMIC=
+    LDFLAGS+=-lshlwapi
+else
+    # required for backtrace() to produce function names
+    RDYNAMIC=-rdynamic
+endif
+
+ifeq ($(VERBOSE),1)
+    $(info RDYNAMIC=$(RDYNAMIC))
+    $(info LDFLAGS=$(LDFLAGS))
+endif
 ifndef CXX
     CXX=g++
 endif
 
+# Set the CPPCHK_GLIBCXX_DEBUG flag. This flag is not used in release Makefiles.
+ifndef CPPCHK_GLIBCXX_DEBUG
+    CPPCHK_GLIBCXX_DEBUG=-D_GLIBCXX_DEBUG
+endif # !CPPCHK_GLIBCXX_DEBUG
+ifdef WINNT
+    # The _GLIBCXX_DEBUG define doesn't work in Cygwin or other Win32 systems.
+    CPPCHK_GLIBCXX_DEBUG=
+endif
 ifeq (clang++, $(findstring clang++,$(CXX)))
     CPPCHK_GLIBCXX_DEBUG=
+endif
+ifeq ($(VERBOSE),1)
+    $(info CPPCHK_GLIBCXX_DEBUG=$(CPPCHK_GLIBCXX_DEBUG))
 endif
 ifndef CXXFLAGS
     CXXFLAGS=-pedantic -Wall -Wextra -Wcast-qual -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wundef -Wno-shadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar -Woverloaded-virtual $(CPPCHK_GLIBCXX_DEBUG) -g
@@ -155,11 +116,20 @@ ifeq ($(HAVE_RULES),yes)
     ifeq ($(PCRE_CONFIG),)
         $(error Did not find pcre-config)
     endif
-    override CXXFLAGS += -DHAVE_RULES -DTIXML_USE_STL $(shell $(PCRE_CONFIG) --cflags)
+    PCRE_CFLAGS = $(shell $(PCRE_CONFIG) --cflags)
+    PCRE_LIBS = $(shell $(PCRE_CONFIG) --libs)
+
+    ifeq ($(VERBOSE),1)
+      $(info PCRE_CONFIG=$(PCRE_CONFIG))
+      $(info PCRE_CFLAGS=$(PCRE_CFLAGS))
+      $(info PCRE_LIBS=$(PCRE_LIBS))
+    endif
+
+    override CXXFLAGS += -DHAVE_RULES -DTIXML_USE_STL $(PCRE_CFLAGS)
     ifdef LIBS
-        LIBS += $(shell $(PCRE_CONFIG) --libs)
+        LIBS += $(PCRE_LIBS)
     else
-        LIBS=$(shell $(PCRE_CONFIG) --libs)
+        LIBS=$(PCRE_LIBS)
     endif
 endif
 
@@ -368,7 +338,7 @@ run-dmake: dmake
 	./dmake
 
 clean:
-	rm -f build/*.cpp build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1
+	$(RM) build/*.cpp build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1
 
 man:	man/cppcheck.1
 

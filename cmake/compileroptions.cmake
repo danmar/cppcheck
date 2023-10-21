@@ -51,6 +51,11 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang
     #add_compile_options(-Wsign-conversion) # too many warnings
     #add_compile_options(-Wunreachable-code) # some GCC versions report lots of warnings
     #add_compile_options(-Wsign-promo)
+
+    if (NOT MINGW)
+        # required for backtrace() to produce function names
+        add_link_options(-rdynamic)
+    endif()
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
