@@ -99,7 +99,7 @@ protected:
     /**
      * Print help text to the console.
      */
-    void printHelp();
+    void printHelp() const;
 
 private:
     bool isCppcheckPremium() const;
