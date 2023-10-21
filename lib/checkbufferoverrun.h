@@ -130,20 +130,6 @@ private:
     ValueFlow::Value getBufferSize(const Token *bufTok) const;
 
     // CTU
-
-    /** data for multifile checking */
-    class MyFileInfo : public Check::FileInfo {
-    public:
-        /** unsafe array index usage */
-        std::list<CTU::FileInfo::UnsafeUsage> unsafeArrayIndex;
-
-        /** unsafe pointer arithmetic */
-        std::list<CTU::FileInfo::UnsafeUsage> unsafePointerArith;
-
-        /** Convert MyFileInfo data into xml string */
-        std::string toString() const override;
-    };
-
     static bool isCtuUnsafeBufferUsage(const Check *check, const Token *argtok, MathLib::bigint *offset, int type);
     static bool isCtuUnsafeArrayIndex(const Check *check, const Token *argtok, MathLib::bigint *offset);
     static bool isCtuUnsafePointerArith(const Check *check, const Token *argtok, MathLib::bigint *offset);
