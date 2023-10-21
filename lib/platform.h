@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "standards.h"
 
 #include <climits>
 #include <stdexcept>
@@ -51,6 +52,9 @@ private:
             return (~0ULL) >> 1;
         return (1LL << (bit-1)) - 1LL;
     }
+
+    /** provides list of defines specified by the limit.h/climits includes */
+    std::string getLimitsDefines(bool c99) const;
 public:
     Platform();
 
@@ -178,6 +182,11 @@ public:
     long long signedCharMin() const {
         return min_value(char_bit);
     }
+
+    /** provides list of defines specified by the limit.h/climits includes */
+    std::string getLimitsDefines(Standards::cstd_t cstd) const;
+    /** provides list of defines specified by the limit.h/climits includes */
+    std::string getLimitsDefines(Standards::cppstd_t cppstd) const;
 };
 
 /// @}

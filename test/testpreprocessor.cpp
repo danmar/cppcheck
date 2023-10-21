@@ -262,6 +262,8 @@ private:
         TEST_CASE(testMissingSystemInclude5);
         TEST_CASE(testMissingIncludeMixed);
         TEST_CASE(testMissingIncludeCheckConfig);
+
+        TEST_CASE(limitsDefines);
     }
 
     // TODO: merge with `PreprocessorHelper::getcode()`
@@ -2679,6 +2681,17 @@ private:
                       "test.c:6:0: information: Include file: \"header4.h\" not found. [missingInclude]\n"
                       "test.c:9:0: information: Include file: \"" + missing3 + "\" not found. [missingInclude]\n"
                       "test.c:11:0: information: Include file: <" + missing4 + "> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout.str());
+    }
+
+    void limitsDefines() {
+        // #11928 / #10045
+        const char code[] = "void f(long l) {\n"
+                            "  if (l > INT_MAX) {}\n"
+                            "}";
+        const std::string actual = PreprocessorHelper::getcode(preprocessor0, code, "", "test.c");
+        ASSERT_EQUALS("void f ( long l ) {\n"
+                      "if ( l > $2147483647 ) { }\n"
+                      "}", actual);
     }
 };
 
