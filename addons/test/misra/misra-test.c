@@ -1183,6 +1183,8 @@ static void misra_14_1(void) {
 static void misra_14_2_init_value(int32_t *var) {
     *var = 0;
 }
+static void misra_14_2_init_value_1(int32_t *var);
+
 static void misra_14_2_fn1(bool b) {
   for (;i++<10;) {} // 14.2
   for (;i<10;dostuff()) {} // 14.2
@@ -1199,8 +1201,11 @@ static void misra_14_2_fn1(bool b) {
     }
     misra_14_2_init_value(&i2); // TODO: Fix false negative in function call
   }
-
-  for (misra_14_2_init_value(&i); i < 10; ++i) {} // no-warning FIXME: False positive for 14.2 Trac #9491
+  int i1;
+  int i2;
+  for (misra_14_2_init_value(&i1); i1 < 10; ++i1) {} // no-warning
+  for (misra_14_2_init_value_1(&i2); i2 < 10; ++i2) {} // no-warning
+  for (misra_14_2_init_value_2(&i2); i2 < 10; ++i2) {} // no-warning
 
   bool abort = false;
   for (i = 0; (i < 10) && !abort; ++i) { // 14.2 as 'i' is not a variable
@@ -1255,9 +1260,12 @@ static void misra_14_2_fn1(bool b) {
   {
     uint16_t block;
     bool readSuccessful;
+    int32_t i;
   }
   opState;
   for (opState.block = 0U; opState.block < 10U; opState.block++) {;} //no-warning
+
+  for (misra_14_2_init_value(&opState.i); opState.i < 10; ++opState.i) {} //no-warning
 }
 static void misra_14_2_fn2(void)
 {
