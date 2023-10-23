@@ -62,14 +62,14 @@ R calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
     case '*':
         return wrap(x * y);
     case '/':
-        if (isZero(y)) {
+        if (isZero(y) || (std::is_integral<T>::value && std::is_signed<T>::value && isEqual(y, T(-1)) && isEqual(x, std::numeric_limits<T>::min()))) {
             if (error)
                 *error = true;
             return R{};
         }
         return wrap(x / y);
     case '%':
-        if (isZero(MathLib::bigint(y))) {
+        if (isZero(MathLib::bigint(y)) || (std::is_integral<T>::value && std::is_signed<T>::value && isEqual(y, T(-1)) && isEqual(x, std::numeric_limits<T>::min()))) {
             if (error)
                 *error = true;
             return R{};
