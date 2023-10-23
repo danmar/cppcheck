@@ -182,14 +182,17 @@ while True:
         if ver == 'head':
             ver = 'main'
         current_cppcheck_dir = os.path.join(work_path, 'tree-'+ver)
-        print('Fetching Cppcheck-{}..'.format(ver))
+        if ver != 'main' and lib.has_binary(current_cppcheck_dir):
+            print('No need to check Cppcheck-{} for changes - binary already exists'.format(ver))
+            continue
+        print('Checking Cppcheck-{} for changes..'.format(ver))
         try:
             has_changes = lib.try_retry(lib.checkout_cppcheck_version, fargs=(repo_path, ver, current_cppcheck_dir), max_tries=3, sleep_duration=30.0, sleep_factor=1.0)
         except KeyboardInterrupt as e:
             # Passthrough for user abort
             raise e
         except Exception as e:
-            print('Failed to update Cppcheck ({}), retry later'.format(e))
+            print('Failed to update Cppcheck-{} ({}), retry later'.format(ver, e))
             sys.exit(1)
         if ver == 'main':
             if (has_changes or not lib.has_binary(current_cppcheck_dir)) and not lib.compile_cppcheck(current_cppcheck_dir):

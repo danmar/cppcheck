@@ -16,7 +16,7 @@ import copy
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.50"
+CLIENT_VERSION = "1.3.51"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -506,7 +506,7 @@ def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True):
                 sig_num = int(ie_line[sig_start_pos:ie_line.find(' ', sig_start_pos)])
             # break on the first signalled file for now
             break
-    print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')'))
+    print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')') + ' in {:.1f}s'.format(elapsed_time))
 
     options_j = options + ' ' + __jobs
 
