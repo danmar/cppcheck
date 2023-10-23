@@ -1506,7 +1506,11 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     if (cpp) {
         if (tok1->str() == "." && tok1->astOperand1() && tok1->astOperand1()->str() == "this")
             tok1 = tok1->astOperand2();
+        while (Token::simpleMatch(tok1, "::") && tok1->astOperand2())
+            tok1 = tok1->astOperand2();
         if (tok2->str() == "." && tok2->astOperand1() && tok2->astOperand1()->str() == "this")
+            tok2 = tok2->astOperand2();
+        while (Token::simpleMatch(tok2, "::") && tok2->astOperand2())
             tok2 = tok2->astOperand2();
     }
     // Skip double not

@@ -6875,6 +6875,31 @@ private:
                       "[test.cpp:4]: (style) The comparison 'E0 > 0' is always false.\n"
                       "[test.cpp:5]: (style) The comparison 'E0 == 0' is always true.\n",
                       errout.str());
+
+        check("struct S {\n" // #12040, #12044
+              "    static const int I = 0;\n"
+              "    enum { E0 };\n"
+              "    enum F { F0 };\n"
+              "    void f() {\n"
+              "        if (0 > I) {}\n"
+              "        if (0 > S::I) {}\n"
+              "        if (0 > E0) {}\n"
+              "        if (0 > S::E0) {}\n"
+              "    }\n"
+              "};\n"
+              "void g() {\n"
+              "    if (0 > S::I) {}\n"
+              "    if (0 > S::E0) {}\n"
+              "    if (0 > S::F::F0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:6]: (style) The comparison '0 > I' is always false.\n"
+                      "[test.cpp:2] -> [test.cpp:7]: (style) The comparison '0 > S::I' is always false.\n"
+                      "[test.cpp:8]: (style) The comparison '0 > E0' is always false.\n"
+                      "[test.cpp:9]: (style) The comparison '0 > S::E0' is always false.\n"
+                      "[test.cpp:2] -> [test.cpp:13]: (style) The comparison '0 > S::I' is always false.\n"
+                      "[test.cpp:14]: (style) The comparison '0 > S::E0' is always false.\n"
+                      "[test.cpp:15]: (style) The comparison '0 > S::F::F0' is always false.\n",
+                      errout.str());
     }
 
     void duplicateExpressionLoop() {
