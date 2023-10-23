@@ -9350,8 +9350,8 @@ struct ValueFlowPassRunner {
                         const ErrorMessage errmsg(callstack,
                                                   state.tokenlist.getSourceFilePath(),
                                                   Severity::information,
-                                                  "ValueFlow analysis is limited in " + functionName +
-                                                  ". Use --check-level=exhaustive if full analysis is wanted.",
+                                                  "Limiting ValueFlow analysis in function '" + functionName + "' since it is too complex. "
+                                                  "Please specify --check-level=exhaustive to perform full analysis.",
                                                   "checkLevelNormal",
                                                   Certainty::normal);
                         state.errorLogger->reportErr(errmsg);
