@@ -713,7 +713,28 @@ def getForLoopExpressions(forToken):
             lpar.astOperand2.astOperand2.astOperand2]
 
 
-def getForLoopCounterVariables(forToken):
+def get_function_scope(cfg, func):
+    if func:
+        for scope in cfg.scopes:
+            if scope.function == func:
+                return scope
+    return None
+
+
+def is_variable_changed(start_token, end_token, var):
+    """Check if variable is updated between body_start and body_end"""
+    tok = start_token
+    while tok != end_token:
+        if tok.isAssignmentOp:
+            vartok = tok.astOperand1
+            while vartok.astOperand1:
+                vartok = vartok.astOperand1
+            if vartok and vartok.variable == var:
+                return True
+        tok = tok.next
+    return False
+
+def getForLoopCounterVariables(forToken, cfg):
     """ Return a set of Variable objects defined in ``for`` statement and
     satisfy requirements to loop counter term from section 8.14 of MISRA
     document.
@@ -739,9 +760,43 @@ def getForLoopCounterVariables(forToken):
                 if tn.next and countSideEffectsRecursive(tn.next) > 0:
                     vars_modified.add(tn.variable)
                 elif tn.previous and tn.previous.str in ('++', '--'):
-                    vars_modified.add(tn.variable)
-        if cur_clause == 1 and tn.isAssignmentOp and tn.astOperand1.variable:
-            vars_initialized.add(tn.astOperand1.variable)
+                    tn_ast = tn.astParent
+                    if tn_ast and tn_ast == tn.previous:
+                        vars_modified.add(tn.variable)
+                    elif tn_ast and tn_ast.str == '.' and tn_ast.astOperand2 and tn_ast.astOperand2.variable:
+                        vars_modified.add(tn_ast.astOperand2.variable)
+        if cur_clause == 1 and tn.isAssignmentOp:
+            var_token = tn.astOperand1
+            while var_token and var_token.str == '.':
+                var_token = var_token.astOperand2
+            if var_token and var_token.variable:
+                vars_initialized.add(var_token.variable)
+        if cur_clause == 1 and tn.isName and tn.next.str == '(':
+            function_args_in_init = getArguments(tn.next)
+            function_scope = get_function_scope(cfg, tn.function)
+            for arg_nr in range(len(function_args_in_init)):
+                init_arg = function_args_in_init[arg_nr]
+                if init_arg is None or not init_arg.isUnaryOp('&'):
+                    continue
+                var_token = init_arg.astOperand1
+                while var_token and var_token.str == '.':
+                    var_token = var_token.astOperand2
+                if var_token is None or var_token.variable is None:
+                    continue
+                changed = False
+                if function_scope is None:
+                    changed = True
+                elif tn.function is None:
+                    changed = True
+                else:
+                    function_body_start = function_scope.bodyStart
+                    function_body_end = function_scope.bodyEnd
+                    args = tn.function.argument[arg_nr + 1]
+                    if function_scope is None or is_variable_changed(function_body_start, function_body_end, args):
+                        changed = True
+                if changed:
+                    vars_initialized.add(var_token.variable)
+
         if tn.str == ';':
             cur_clause += 1
         tn = tn.next
@@ -2764,13 +2819,14 @@ class MisraChecker:
                 if not expressions:
                     continue
                 if expressions[0] and not expressions[0].isAssignmentOp:
-                    self.reportError(token, 14, 2)
+                    if expressions[0].str != "(" or not expressions[0].previous.isName:
+                        self.reportError(token, 14, 2)
                 if countSideEffectsRecursive(expressions[1]) > 0:
                     self.reportError(token, 14, 2)
                 if countSideEffectsRecursive(expressions[2]) > 1:
                     self.reportError(token, 14, 2)
 
-                counter_vars_first_clause, counter_vars_exit_modified = getForLoopCounterVariables(token)
+                counter_vars_first_clause, counter_vars_exit_modified = getForLoopCounterVariables(token, data)
                 if len(counter_vars_exit_modified) == 0:
                     # if it's not possible to identify a loop counter, all 3 clauses must be empty
                     for idx in range(len(expressions)):
