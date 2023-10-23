@@ -459,13 +459,14 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, linenr);
 
+        // TODO: handle in a better way
         // filter out ValueFlow messages..
         const std::string debugwarnings = errout.str();
         errout.str("");
         std::istringstream istr2(debugwarnings);
         std::string line;
         while (std::getline(istr2,line)) {
-            if (line.find("valueflow.cpp") == std::string::npos)
+            if (line.find("bailout") == std::string::npos)
                 errout << line << "\n";
         }
 
