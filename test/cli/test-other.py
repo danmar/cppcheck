@@ -843,3 +843,19 @@ def test_file_ignore(tmpdir):
     ]
 
     assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
+
+
+def test_build_dir_j_memleak(tmpdir): #12111
+    build_dir = os.path.join(tmpdir, 'build-dir')
+    os.mkdir(build_dir)
+
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        f.write('int main() {}')
+
+    args = ['--cppcheck-build-dir={}'.format(build_dir), '-j2', test_file]
+    out_lines = [
+        'Checking {} ...'.format(test_file)
+    ]
+
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)

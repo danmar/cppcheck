@@ -1102,6 +1102,8 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
                 mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
             if (mSettings.useSingleJob())
                 mFileInfo.push_back(fi1);
+            else
+                delete fi1;
         }
 
         // cppcheck-suppress shadowFunction - TODO: fix this
@@ -1114,6 +1116,8 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
                     mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
                 if (mSettings.useSingleJob())
                     mFileInfo.push_back(fi);
+                else
+                    delete fi;
             }
         }
     }
