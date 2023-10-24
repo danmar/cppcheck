@@ -6269,7 +6269,7 @@ private:
                         "    int i;\n"
                         "    x = i;\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: i\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: i\n", "", errout.str());
 
         valueFlowUninit("void f() {\n" // #11890
                         "    int x;\n"

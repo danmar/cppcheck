@@ -8915,14 +8915,14 @@ private:
               "  state_t *x = NULL;\n"
               "  x = dostuff();\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("test.cpp:2:style:Variable 'x' can be declared as pointer to const\n", errout.str());
 
         check("void f() {\n"
               "  state_t *x;\n"
               "  x = NULL;\n"
               "  x = dostuff();\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("test.cpp:2:style:Variable 'x' can be declared as pointer to const\n", errout.str());
 
         check("int foo() {\n" // #4420
               "    int x;\n"
@@ -9055,7 +9055,8 @@ private:
               "        barney(x);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("test.cpp:2:style:The scope of the variable 'p' can be reduced.\n",
+        ASSERT_EQUALS("test.cpp:2:style:The scope of the variable 'p' can be reduced.\n"
+                      "test.cpp:2:style:Variable 'p' can be declared as pointer to const\n",
                       errout.str());
 
         check("void foo() {\n"
@@ -9147,14 +9148,14 @@ private:
               "   a = (void*)0;\n"
               "   a = p;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'a' can be declared as pointer to const\n", errout.str());
 
         check("void f() {\n"
               "   void* a;\n"
               "   a = (void*)0U;\n"
               "   a = p;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'a' can be declared as pointer to const\n", errout.str());
     }
 
     void redundantVarAssignment_struct() {
@@ -9411,7 +9412,7 @@ private:
               "    int *p = NULL;\n"
               "    p = dostuff();\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("test.cpp:2:style:Variable 'p' can be declared as pointer to const\n", errout.str());
 
         // "trivial" initialization => do not warn
         check("void f() {\n"
