@@ -1705,6 +1705,8 @@ void CheckOther::checkConstPointer()
                 continue;
             if (p->isArgument() && p->typeStartToken() && p->typeStartToken()->isSimplifiedTypedef() && !(Token::simpleMatch(p->typeEndToken(), "*") && !p->typeEndToken()->isSimplifiedTypedef()))
                 continue;
+            if (p->typeStartToken() && !p->typeStartToken()->originalName().empty())
+                continue;
             constVariableError(p, p->isArgument() ? p->scope()->function : nullptr);
         }
     }

@@ -1914,6 +1914,7 @@ void TokenList::simplifyPlatformTypes()
                 tok = tok->previous();
                 tok->deleteThis();
             }
+            tok->originalName(tok->str());
             Token *typeToken;
             if (platformtype->mConstPtr) {
                 tok->str("const");
@@ -1930,7 +1931,6 @@ void TokenList::simplifyPlatformTypes()
                 tok->insertToken("*");
                 tok->insertToken("*");
             } else {
-                tok->originalName(tok->str());
                 tok->str(platformtype->mType);
                 typeToken = tok;
             }
