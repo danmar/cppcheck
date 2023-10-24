@@ -6474,6 +6474,9 @@ private:
         ASSERT_EQUALS("tmpa*=a*b*=,b*tmp=,", testAst("{ ((tmp) = (*a)), ((*a) = (*b)), ((*b) = (tmp)); }"));
         ASSERT_EQUALS("a(*v=", testAst("(*(volatile unsigned int *)(a) = (v));"));
         ASSERT_EQUALS("i(j=", testAst("(int&)(i) = j;"));
+
+        ASSERT_EQUALS("", testAst("void f(enum E* var){}"));
+        ASSERT_EQUALS("", testAst("void f(enum E*& var){}"));
     }
 
     void astunaryop() const { // unary operators
