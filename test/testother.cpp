@@ -9884,6 +9884,16 @@ private:
         check("std::map<int, int> m;\n" // #10817
               "void f(const decltype(m)::const_iterator i) {}");
         ASSERT_EQUALS("", errout.str());
+
+        check("int (*pf) (std::vector<int>) = nullptr;\n" // #12118
+              "int f(std::vector<int> v) {\n"
+              "    return v.size();\n"
+              "}\n"
+              "void g() {\n"
+              "    pf = f;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (performance) Function parameter 'v' should be passed by const reference. However it seems that 'f' is a callback function.\n",
+                      errout.str());
     }
 
     void checkComparisonFunctionIsAlwaysTrueOrFalse() {
