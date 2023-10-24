@@ -2541,7 +2541,8 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
             return true;
         // Check if assigning to a non-const lvalue
         const Variable * var = getLHSVariable(tok2->astParent());
-        if (var && var->isReference() && !var->isConst()) {
+        if (var && var->isReference() && !var->isConst() &&
+            ((var->nameToken() && var->nameToken()->next() == tok2->astParent()) || var->isPointer())) {
             if (!var->isLocal() || isVariableChanged(var, settings, cpp, depth - 1))
                 return true;
         }
