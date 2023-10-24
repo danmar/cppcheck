@@ -28,3 +28,4 @@ Other:
   - You can suppress warnings in a block of code using "-begin" and "-end".
   - You can suppress warnings in current file using "-file".
   - You can suppress all warnings where macro is used using "-macro"
+- fixed CMake build with UBSAN and GCC
