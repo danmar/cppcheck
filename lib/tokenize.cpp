@@ -5616,13 +5616,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // If typedef handling is refactored and moved to symboldatabase someday we can remove this
     prepareTernaryOpForAST();
 
-    for (Token* tok = list.front(); tok;) {
-        if (Token::Match(tok, "union|struct|class union|struct|class"))
-            tok->deleteNext();
-        else
-            tok = tok->next();
-    }
-
     // class x y {
     if (isCPP() && mSettings->severity.isEnabled(Severity::information)) {
         for (const Token *tok = list.front(); tok; tok = tok->next()) {
