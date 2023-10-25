@@ -6900,6 +6900,12 @@ private:
                       "[test.cpp:14]: (style) The comparison '0 > S::E0' is always false.\n"
                       "[test.cpp:15]: (style) The comparison '0 > S::F::F0' is always false.\n",
                       errout.str());
+
+        check("template<typename T, typename U>\n" // #12122
+              "void f() {\n"
+              "    static_assert(std::is_same<T, U>::value || std::is_integral<T>::value);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpressionLoop() {

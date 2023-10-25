@@ -1506,8 +1506,6 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     if (cpp) {
         if (tok1->str() == "." && tok1->astOperand1() && tok1->astOperand1()->str() == "this")
             tok1 = tok1->astOperand2();
-        while (Token::simpleMatch(tok1, "::") && tok1->astOperand2())
-            tok1 = tok1->astOperand2();
         if (tok2->str() == "." && tok2->astOperand1() && tok2->astOperand1()->str() == "this")
             tok2 = tok2->astOperand2();
         while (Token::simpleMatch(tok2, "::") && tok2->astOperand2())
@@ -1523,8 +1521,16 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     const bool tok_str_eq = tok1->str() == tok2->str();
     if (!tok_str_eq && isDifferentKnownValues(tok1, tok2))
         return false;
-    if (isSameConstantValue(macro, tok1, tok2))
-        return true;
+
+    {
+        const Token *constTok1 = tok1, *constTok2 = tok2;
+        while (Token::simpleMatch(constTok1, "::") && constTok1->astOperand2())
+            constTok1 = constTok1->astOperand2();
+        while (Token::simpleMatch(constTok2, "::") && constTok2->astOperand2())
+            constTok2 = constTok2->astOperand2();
+        if (isSameConstantValue(macro, constTok1, constTok2))
+            return true;
+    }
 
     // Follow variable
     if (followVar && !tok_str_eq && (tok1->varId() || tok2->varId() || tok1->enumerator() || tok2->enumerator())) {
