@@ -33,7 +33,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <cstddef>
 #include <cstring>
 #include <iterator>
 #include <utility>

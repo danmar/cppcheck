@@ -19,9 +19,9 @@
 #include "processexecutor.h"
 #include "redirect.h"
 #include "settings.h"
+#include "filesettings.h"
 #include "fixture.h"
 #include "helpers.h"
-#include "importproject.h"
 #include "timer.h"
 #include "library.h"
 

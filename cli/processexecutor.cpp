@@ -24,7 +24,7 @@
 #include "cppcheck.h"
 #include "errorlogger.h"
 #include "errortypes.h"
-#include "importproject.h"
+#include "filesettings.h"
 #include "settings.h"
 #include "suppressions.h"
 #include "timer.h"

@@ -19,6 +19,7 @@
 #include "analyzerinfo.h"
 
 #include "errorlogger.h"
+#include "filesettings.h"
 #include "path.h"
 #include "utils.h"
 

@@ -18,9 +18,9 @@
 
 #include "redirect.h"
 #include "settings.h"
+#include "filesettings.h"
 #include "fixture.h"
 #include "helpers.h"
-#include "importproject.h"
 #include "library.h"
 #include "threadexecutor.h"
 #include "timer.h"

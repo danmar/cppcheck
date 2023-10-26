@@ -17,9 +17,9 @@
  */
 
 #include "cppcheck.h"
+#include "filesettings.h"
 #include "fixture.h"
 #include "helpers.h"
-#include "importproject.h"
 #include "redirect.h"
 #include "library.h"
 #include "settings.h"

@@ -26,7 +26,6 @@
 #include "color.h"
 #include "config.h"
 #include "errorlogger.h"
-#include "filesettings.h"
 #include "settings.h"
 
 #include <cstddef>
@@ -41,6 +40,7 @@
 
 class Tokenizer;
 enum class SHOWTIME_MODES;
+struct FileSettings;
 
 /// @addtogroup Core
 /// @{

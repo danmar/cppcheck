@@ -22,7 +22,6 @@
 #include "cppcheckexecutor.h"
 #include "errortypes.h"
 #include "helpers.h"
-#include "importproject.h"
 #include "platform.h"
 #include "redirect.h"
 #include "settings.h"

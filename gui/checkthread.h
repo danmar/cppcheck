@@ -21,7 +21,6 @@
 #define CHECKTHREAD_H
 
 #include "cppcheck.h"
-#include "filesettings.h"
 #include "suppressions.h"
 
 #include <atomic>
@@ -34,6 +33,7 @@
 
 class Settings;
 class ThreadResult;
+struct FileSettings;
 
 /// @addtogroup GUI
 /// @{

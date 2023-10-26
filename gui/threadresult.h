@@ -23,7 +23,6 @@
 #include "color.h"
 #include "errorlogger.h"
 #include "filesettings.h"
-#include "importproject.h"
 
 #include <list>
 #include <mutex>
@@ -35,6 +34,7 @@
 #include <QtGlobal>
 
 class ErrorItem;
+class ImportProject;
 
 /// @addtogroup GUI
 /// @{

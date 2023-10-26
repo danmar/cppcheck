@@ -28,7 +28,7 @@
 #include "cppcheck.h"
 #include "errortypes.h"
 #include "filelister.h"
-#include "importproject.h"
+#include "filesettings.h"
 #include "library.h"
 #include "path.h"
 #include "pathmatch.h"

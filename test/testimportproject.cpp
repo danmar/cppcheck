@@ -18,6 +18,7 @@
 
 #include "importproject.h"
 #include "settings.h"
+#include "filesettings.h"
 #include "fixture.h"
 
 #include <list>

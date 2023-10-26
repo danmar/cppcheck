@@ -19,7 +19,7 @@
 #include "singleexecutor.h"
 
 #include "cppcheck.h"
-#include "importproject.h"
+#include "filesettings.h"
 #include "library.h"
 #include "settings.h"
 #include "timer.h"

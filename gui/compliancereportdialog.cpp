@@ -22,6 +22,7 @@
 
 #include "errortypes.h"
 #include "filelist.h"
+#include "filesettings.h"
 #include "importproject.h"
 #include "projectfile.h"
 

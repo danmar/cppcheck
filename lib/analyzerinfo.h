@@ -22,7 +22,6 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "filesettings.h"
 
 #include <cstddef>
 #include <fstream>
@@ -30,6 +29,7 @@
 #include <string>
 
 class ErrorMessage;
+struct FileSettings;
 
 /// @addtogroup Core
 /// @{

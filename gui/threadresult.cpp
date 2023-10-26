@@ -22,6 +22,7 @@
 #include "erroritem.h"
 #include "errorlogger.h"
 #include "errortypes.h"
+#include "importproject.h"
 
 #include <numeric>
 

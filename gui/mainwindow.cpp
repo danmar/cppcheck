@@ -26,6 +26,7 @@
 #include "cppcheck.h"
 #include "errortypes.h"
 #include "filelist.h"
+#include "filesettings.h"
 #include "compliancereportdialog.h"
 #include "fileviewdialog.h"
 #include "helpdialog.h"

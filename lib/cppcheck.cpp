@@ -25,6 +25,7 @@
 #include "color.h"
 #include "ctu.h"
 #include "errortypes.h"
+#include "filesettings.h"
 #include "library.h"
 #include "path.h"
 #include "platform.h"

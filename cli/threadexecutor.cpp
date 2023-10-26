@@ -21,7 +21,7 @@
 #include "config.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
-#include "importproject.h"
+#include "filesettings.h"
 #include "settings.h"
 #include "timer.h"
 
