@@ -20,6 +20,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        include:
+          - use_qt6: On
+          - os: ubuntu-20.04
+            use_qt6: Off
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -37,28 +41,36 @@ jobs:
           key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
 
       - name: Install missing software on ubuntu
-        if: contains(matrix.os, 'ubuntu')
+        if: contains(matrix.os, 'ubuntu') && matrix.use_qt6 == 'Off'
         run: |
           sudo apt-get update
           sudo apt-get install libxml2-utils libtinyxml2-dev qtbase5-dev qttools5-dev libqt5charts5-dev qtchooser
+
+      - name: Install missing software on ubuntu
+        if: contains(matrix.os, 'ubuntu') && matrix.use_qt6 == 'On'
+        run: |
+          sudo apt-get update
+          # qt6-tools-dev-tools for lprodump
+          # qt6-l10n-tools for lupdate
+          sudo apt-get install libxml2-utils libtinyxml2-dev qt6-base-dev libqt6charts6-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools libglx-dev libgl1-mesa-dev
 
       # coreutils contains "nproc"
       - name: Install missing software on macos
         if: contains(matrix.os, 'macos')
         run: |
           # pcre was removed from runner images in November 2022
-          brew install coreutils qt@5 tinyxml2 pcre
+          brew install coreutils qt@6 tinyxml2 pcre
 
       - name: CMake build on ubuntu (with GUI / system tinyxml2)
         if: contains(matrix.os, 'ubuntu')
         run: |
-          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=${{ matrix.use_qt6 }} -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build cmake.output.tinyxml2 -- -j$(nproc)
 
       - name: CMake build on macos (with GUI / system tinyxml2)
         if: contains(matrix.os, 'macos')
         run: |
-          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5
+          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt6_DIR=$(brew --prefix qt@6)/lib/cmake/Qt6
           cmake --build cmake.output.tinyxml2 -- -j$(nproc)
 
       - name: Run CMake test (system tinyxml2)
@@ -70,6 +82,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        include:
+          - use_qt6: On
+          - os: ubuntu-20.04
+            use_qt6: Off
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -87,7 +103,7 @@ jobs:
           key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
 
       - name: Install missing software on ubuntu
-        if: contains(matrix.os, 'ubuntu')
+        if: contains(matrix.os, 'ubuntu') && matrix.use_qt6 == 'Off'
         run: |
           sudo apt-get update
           sudo apt-get install libxml2-utils qtbase5-dev qttools5-dev libqt5charts5-dev qtchooser
@@ -106,23 +122,31 @@ jobs:
         run: |
           echo "CXX=g++-13" >> $GITHUB_ENV
 
+      - name: Install missing software on ubuntu
+        if: contains(matrix.os, 'ubuntu') && matrix.use_qt6 == 'On'
+        run: |
+          sudo apt-get update
+          # qt6-tools-dev-tools for lprodump
+          # qt6-l10n-tools for lupdate
+          sudo apt-get install libxml2-utils qt6-base-dev libqt6charts6-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools libglx-dev libgl1-mesa-dev
+
       # coreutils contains "nproc"
       - name: Install missing software on macos
         if: contains(matrix.os, 'macos')
         run: |
           # pcre was removed from runner images in November 2022
-          brew install coreutils qt@5 pcre
+          brew install coreutils qt@6 pcre
 
       - name: CMake build on ubuntu (with GUI)
         if: contains(matrix.os, 'ubuntu')
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=${{ matrix.use_qt6 }} -DWITH_QCHART=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build cmake.output -- -j$(nproc)
 
       - name: CMake build on macos (with GUI)
         if: contains(matrix.os, 'macos')
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt6_DIR=$(brew --prefix qt@6)/lib/cmake/Qt6
           cmake --build cmake.output -- -j$(nproc)
 
       - name: Run CMake test
@@ -452,6 +476,7 @@ jobs:
           # compile with verification and ast matchers
           make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXFLAGS="-g -O2 -w -DHAVE_BOOST" MATCHCOMPILER=yes VERIFY=1
 
+      # TODO: update to Qt6
       - name: Generate UI files
         run: |
           pushd gui

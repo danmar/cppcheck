@@ -28,7 +28,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-2019, windows-2022]
-        qt_ver: [5.15.2, 6.2.4, 6.5.0]
+        qt_ver: [5.15.2, 6.2.4, 6.5.3]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -67,7 +67,7 @@ jobs:
       - name: Build GUI release (CMake)
         if: startsWith(matrix.qt_ver, '6')
         run: |
-          cmake -S . -B build -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_QT6=On || exit /b !errorlevel!
+          cmake -S . -B build -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On || exit /b !errorlevel!
           cmake --build build --target cppcheck-gui || exit /b !errorlevel!
 
       # TODO: deploy with CMake/Qt6
