@@ -1506,11 +1506,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     if (cpp) {
         if (tok1->str() == "." && tok1->astOperand1() && tok1->astOperand1()->str() == "this")
             tok1 = tok1->astOperand2();
-        while (Token::simpleMatch(tok1, "::") && tok1->astOperand2())
-            tok1 = tok1->astOperand2();
         if (tok2->str() == "." && tok2->astOperand1() && tok2->astOperand1()->str() == "this")
-            tok2 = tok2->astOperand2();
-        while (Token::simpleMatch(tok2, "::") && tok2->astOperand2())
             tok2 = tok2->astOperand2();
     }
     // Skip double not
@@ -1523,20 +1519,26 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     const bool tok_str_eq = tok1->str() == tok2->str();
     if (!tok_str_eq && isDifferentKnownValues(tok1, tok2))
         return false;
-    if (isSameConstantValue(macro, tok1, tok2))
+
+    const Token *followTok1 = tok1, *followTok2 = tok2;
+    while (Token::simpleMatch(followTok1, "::") && followTok1->astOperand2())
+        followTok1 = followTok1->astOperand2();
+    while (Token::simpleMatch(followTok2, "::") && followTok2->astOperand2())
+        followTok2 = followTok2->astOperand2();
+    if (isSameConstantValue(macro, followTok1, followTok2))
         return true;
 
     // Follow variable
-    if (followVar && !tok_str_eq && (tok1->varId() || tok2->varId() || tok1->enumerator() || tok2->enumerator())) {
-        const Token * varTok1 = followVariableExpression(tok1, cpp, tok2);
-        if ((varTok1->str() == tok2->str()) || isSameConstantValue(macro, varTok1, tok2)) {
-            followVariableExpressionError(tok1, varTok1, errors);
-            return isSameExpression(cpp, macro, varTok1, tok2, library, true, followVar, errors);
+    if (followVar && !tok_str_eq && (followTok1->varId() || followTok2->varId() || followTok1->enumerator() || followTok2->enumerator())) {
+        const Token * varTok1 = followVariableExpression(followTok1, cpp, followTok2);
+        if ((varTok1->str() == followTok2->str()) || isSameConstantValue(macro, varTok1, followTok2)) {
+            followVariableExpressionError(followTok1, varTok1, errors);
+            return isSameExpression(cpp, macro, varTok1, followTok2, library, true, followVar, errors);
         }
-        const Token * varTok2 = followVariableExpression(tok2, cpp, tok1);
-        if ((tok1->str() == varTok2->str()) || isSameConstantValue(macro, tok1, varTok2)) {
-            followVariableExpressionError(tok2, varTok2, errors);
-            return isSameExpression(cpp, macro, tok1, varTok2, library, true, followVar, errors);
+        const Token * varTok2 = followVariableExpression(followTok2, cpp, followTok1);
+        if ((followTok1->str() == varTok2->str()) || isSameConstantValue(macro, followTok1, varTok2)) {
+            followVariableExpressionError(followTok2, varTok2, errors);
+            return isSameExpression(cpp, macro, followTok1, varTok2, library, true, followVar, errors);
         }
         if ((varTok1->str() == varTok2->str()) || isSameConstantValue(macro, varTok1, varTok2)) {
             followVariableExpressionError(tok1, varTok1, errors);
