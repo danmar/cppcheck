@@ -578,13 +578,13 @@ static void misra_9_struct_initializers(void) {
     // Struct with fields of unknown type
     struct_with_unknown_fields ufa       = { 1, { 1, 2 }, { 1, 2 } };
     struct_with_unknown_fields ufb       = { 1, 1, 2 };                     // 9.2
-    struct_with_unknown_fields[2] ufc    = { {1, { 1, 2 }, { 1, 2 } },
+    struct_with_unknown_fields ufc[2]    = { {1, { 1, 2 }, { 1, 2 } },
                                              { 2, { 1, 2 }, { 1, 2 } } };
-    struct_with_unknown_fields[2][2] ufd = { {1, { 1, 2 }, { 1, 2 } },
+    struct_with_unknown_fields ufd[2][2] = { {1, { 1, 2 }, { 1, 2 } },      // 9.2 9.3
                                              { 2, { 1, 2 }, { 1, 2 } } };
-    struct_with_unknown_fields[2] ufe    = { 1, { 1, 2 }, { 1, 2 },         // TODO: 9.2
+    struct_with_unknown_fields ufe[2]    = { 1, { 1, 2 }, { 1, 2 },         // 9.2 9.3
                                              2, { 1, 2 }, { 1, 2 } };
-    struct_with_unknown_fields[3] uff    = { { 1, { 1, 2 }, { 1, 2 }},      // TODO: 9.3 9.4
+    struct_with_unknown_fields uff[3]    = { { 1, { 1, 2 }, { 1, 2 }},      // 9.3 9.4
                                              {2, { 1, 2 }, { 1, 2 }},
                                              [1] = { 2, { 1, 2 }, { 1, 2 }} };
 
