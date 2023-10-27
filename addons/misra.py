@@ -2379,6 +2379,9 @@ class MisraChecker:
                     e = getEssentialType(token.astOperand2)
                 if not e:
                     continue
+                if e == "char" and vt1.type == "int":
+                    # When arithmetic operations are performed on char values, they are usually promoted to int
+                    continue
                 lhsbits = vt1.bits if vt1.bits else bitsOfEssentialType(vt1.type)
                 if lhsbits > bitsOfEssentialType(e):
                     self.reportError(token, 10, 6)

@@ -749,7 +749,7 @@ static void misra_10_6(u8 x, char c1, char c2) {
   u16 y1 = x+x; // 10.6
   u16 y2 = (0x100u - 0x80u); // rhs is not a composite expression because it's a constant expression
   u16 z = ~u8 x ;//10.6
-  s32 i = c1 - c2; // 10.3 FIXME: False positive for 10.6 (this is compliant). Trac #9488
+  s32 i = c1 - c2; // 10.3
   struct misra_10_6_s s;
   s.a = x & 1U; // no-warning (#10487)
 }
