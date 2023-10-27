@@ -8,3 +8,13 @@ target_compile_options_safe(test-signalhandler -Wno-missing-declarations)
 target_compile_options_safe(test-signalhandler -Wno-missing-prototypes)
 # required for backtrace() to produce function names
 target_link_options(test-signalhandler PRIVATE -rdynamic)
+
+add_executable(test-stacktrace
+        test-stacktrace.cpp
+        ${PROJECT_SOURCE_DIR}/cli/stacktrace.cpp)
+target_include_directories(test-stacktrace PRIVATE ${PROJECT_SOURCE_DIR}/cli ${PROJECT_SOURCE_DIR}/lib)
+# names for static functions are omitted from trace
+target_compile_options_safe(test-stacktrace -Wno-missing-declarations)
+target_compile_options_safe(test-stacktrace -Wno-missing-prototypes)
+# required for backtrace() to produce function names
+target_link_options(test-stacktrace PRIVATE -rdynamic)

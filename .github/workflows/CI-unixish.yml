@@ -421,7 +421,7 @@ jobs:
       - name: Test Signalhandler
         run: |
           cmake -S . -B cmake.output.signal -G "Unix Makefiles" -DBUILD_TESTS=On
-          cmake --build cmake.output.signal --target test-signalhandler -- -j$(nproc)
+          cmake --build cmake.output.signal --target test-signalhandler test-stacktrace -- -j$(nproc)
           cp cmake.output.signal/bin/test-s* .
           python3 -m pytest -Werror --strict-markers -vv test/signal/test-*.py
 
