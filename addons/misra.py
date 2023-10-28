@@ -897,6 +897,14 @@ def isConstantExpression(expr):
         return False
     return True
 
+def isUnknownConstantExpression(expr):
+    if expr.isName and not isEnumConstant(expr) and expr.variable is None:
+        return True
+    if expr.astOperand1 and isUnknownConstantExpression(expr.astOperand1):
+        return True
+    if expr.astOperand2 and isUnknownConstantExpression(expr.astOperand2):
+        return True
+    return False
 
 def isUnsignedInt(expr):
     return expr and expr.valueType and expr.valueType.type in ('short', 'int') and expr.valueType.sign == 'unsigned'
@@ -3258,6 +3266,32 @@ class MisraChecker:
                 tok = tok.next
 
     def misra_config(self, data):
+        for var in data.variables:
+            if not var.isArray or var.nameToken is None or not cppcheckdata.simpleMatch(var.nameToken.next, '['):
+                continue
+            tok = var.nameToken.next
+            while tok.str == '[':
+                sz = tok.astOperand2
+                if sz and sz.getKnownIntValue() is None:
+                    has_var = False
+                    unknown_constant = False
+                    tokens = [sz]
+                    while len(tokens) > 0:
+                        t = tokens[-1]
+                        tokens = tokens[:-1]
+                        if t:
+                            if t.isName and t.getKnownIntValue() is None:
+                                if t.varId or t.variable:
+                                    has_var = True
+                                    continue
+                                unknown_constant = True
+                                self.report_config_error(tok, 'Unknown constant {}, please review configuration'.format(t.str))
+                            if t.isArithmeticalOp:
+                                tokens += [t.astOperand1, t.astOperand2]
+                    if not unknown_constant and not has_var:
+                        self.report_config_error(tok, 'Unknown array size, please review configuration')
+                tok = tok.link.next
+
         for token in data.tokenlist:
             if token.str not in ("while", "if"):
                 continue
@@ -3367,7 +3401,7 @@ class MisraChecker:
             # Unknown define or syntax error
             if not typetok.astOperand2:
                 continue
-            if not isConstantExpression(typetok.astOperand2):
+            if not isConstantExpression(typetok.astOperand2) and not isUnknownConstantExpression(typetok.astOperand2):
                 self.reportError(var.nameToken, 18, 8)
 
     def misra_19_2(self, data):
