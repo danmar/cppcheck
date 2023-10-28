@@ -4722,6 +4722,16 @@ private:
               "           (it != end) && *it;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #12116
+        check("void f(int n) {\n"
+              "    for (int i = 0; i < N; ++i) {\n"
+              "        if (i < n) {}\n"
+              "        else if (i > n) {}\n"
+              "        else {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {

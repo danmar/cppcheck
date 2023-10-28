@@ -5643,12 +5643,15 @@ static void valueFlowForwardConst(Token* start,
                     if (v.tokvalue->varId() != var->declarationId())
                         continue;
                     for (ValueFlow::Value value : values) {
+                        if (!v.isKnown() && value.isImpossible())
+                            continue;
                         if (v.intvalue != 0) {
                             if (!value.isIntValue())
                                 continue;
                             value.intvalue += v.intvalue;
                         }
-                        value.valueKind = v.valueKind;
+                        if (!value.isImpossible())
+                            value.valueKind = v.valueKind;
                         value.bound = v.bound;
                         value.errorPath.insert(value.errorPath.end(), v.errorPath.cbegin(), v.errorPath.cend());
                         setTokenValue(tok, std::move(value), settings);
