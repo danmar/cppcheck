@@ -3259,23 +3259,26 @@ class MisraChecker:
 
     def misra_config(self, data):
         for token in data.tokenlist:
-            if token.str not in ["while", "if"]:
-                continue
-            if token.next.str != "(":
+            if token.str not in ("while", "if"):
                 continue
             tok = token.next
-            while tok != token.next.link:
+            if token is None or tok.str != "(":
+                continue
+            end_token = tok.link
+            while tok != end_token:
+                tok = tok.next
                 if tok.str == "(" and tok.isCast:
                     tok = tok.link
                     continue
-                if not tok.isName or tok.function or tok.variable or tok.varId or tok.valueType \
-                        or tok.next.str == "(" or tok.str in ["EOF"] \
-                        or isKeyword(tok.str) or isStdLibId(tok.str):
-                    tok = tok.next
+                if not tok.isName:
                     continue
-                errmsg = tok.str + " Variable is unknown"
-                self.reportError(token, 0, 0, "config")
-                break
+                if tok.function or tok.variable or tok.varId or tok.valueType:
+                    continue
+                if tok.next.str == "(" or tok.str in ["EOF"]:
+                    continue
+                if isKeyword(tok.str) or isStdLibId(tok.str):
+                    continue
+                self.report_config_error(tok, "Variable '%s' is unknown" % tok.str)
 
     def misra_17_6(self, rawTokens):
         for token in rawTokens:
@@ -4184,30 +4187,29 @@ class MisraChecker:
 
                 self.addSuppressedRule(ruleNum)
 
-    def reportError(self, location, num1, num2, other_id = None):
-        if not other_id:
-            ruleNum = num1 * 100 + num2
+    def report_config_error(self, location, errmsg):
+        cppcheck_severity = 'error'
+        error_id = 'config'
+        if self.settings.verify:
+            self.verify_actual.append('%s:%d %s' % (location.file, location.linenr, error_id))
         else:
-            ruleNum = other_id
+            cppcheckdata.reportError(location, cppcheck_severity, errmsg, 'misra', error_id)
+
+    def reportError(self, location, num1, num2):
+        ruleNum = num1 * 100 + num2
 
         if self.isRuleGloballySuppressed(ruleNum):
             return
 
         if self.settings.verify:
-            if not other_id:
-                self.verify_actual.append('%s:%d %d.%d' % (location.file, location.linenr, num1, num2))
-            else:
-                self.verify_actual.append('%s:%d %s' % (location.file, location.linenr, other_id))
+            self.verify_actual.append('%s:%d %d.%d' % (location.file, location.linenr, num1, num2))
         elif self.isRuleSuppressed(location.file, location.linenr, ruleNum):
             # Error is suppressed. Ignore
             self.suppressionStats.setdefault(ruleNum, 0)
             self.suppressionStats[ruleNum] += 1
             return
         else:
-            if not other_id:
-                errorId = 'c2012-' + str(num1) + '.' + str(num2)
-            else:
-                errorId = 'c2012-' + other_id
+            errorId = 'c2012-' + str(num1) + '.' + str(num2)
             misra_severity = 'Undefined'
             cppcheck_severity = 'style'
             if ruleNum in self.ruleTexts:
