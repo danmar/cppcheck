@@ -55,10 +55,40 @@ struct ExprIdToken {
         return getExpressionId() == rhs.getExpressionId();
     }
 
+    bool operator<(const ExprIdToken& rhs) const {
+        return getExpressionId() < rhs.getExpressionId();
+    }
+
     template<class T, class U>
     friend bool operator!=(const T& lhs, const U& rhs)
     {
         return !(lhs == rhs);
+    }
+
+    template<class T, class U>
+    friend bool operator<=(const T& lhs, const U& rhs)
+    {
+        return !(lhs > rhs);
+    }
+
+    template<class T, class U>
+    friend bool operator>(const T& lhs, const U& rhs)
+    {
+        return rhs < lhs;
+    }
+
+    template<class T, class U>
+    friend bool operator>=(const T& lhs, const U& rhs)
+    {
+        return !(lhs < rhs);
+    }
+
+    const Token& operator*() const {
+        return *tok;
+    }
+
+    const Token* operator->() const NOEXCEPT {
+        return tok;
     }
 
     struct Hash {

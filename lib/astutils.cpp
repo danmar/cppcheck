@@ -124,14 +124,14 @@ static void astFlattenRecursive(T* tok, std::vector<T*>& result, const char* op,
 std::vector<const Token*> astFlatten(const Token* tok, const char* op)
 {
     std::vector<const Token*> result;
-    astFlattenRecursive(tok, result, op);
+    astFlattenCopy(tok, op, std::back_inserter(result));
     return result;
 }
 
 std::vector<Token*> astFlatten(Token* tok, const char* op)
 {
     std::vector<Token*> result;
-    astFlattenRecursive(tok, result, op);
+    astFlattenCopy(tok, op, std::back_inserter(result));
     return result;
 }
 

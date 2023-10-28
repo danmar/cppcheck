@@ -195,6 +195,8 @@ void ProgramMemory::insert(const ProgramMemory &pm)
 
 static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings* settings = nullptr);
 
+// static bool evaluateMultiCondition()
+
 static bool evaluateCondition(const std::string& op,
                               MathLib::bigint r,
                               const Token* condition,
@@ -246,6 +248,13 @@ static bool isFalse(const ValueFlow::Value& v)
     if (v.isImpossible())
         return false;
     return v.intvalue == 0;
+}
+
+static bool isTrueOrFalse(const ValueFlow::Value& v, bool b)
+{
+    if(b)
+        return isTrue(v);
+    return isFalse(v);
 }
 
 // If the scope is a non-range for loop
@@ -1196,17 +1205,45 @@ static BuiltinLibraryFunction getBuiltinLibraryFunction(const std::string& name)
         return nullptr;
     return it->second;
 }
-
+namespace {
 struct Executor {
     ProgramMemory* pm = nullptr;
     const Settings* settings = nullptr;
     int fdepth = 4;
+    ValueFlow::Value unknown = ValueFlow::Value::unknown();
 
     explicit Executor(ProgramMemory* pm = nullptr, const Settings* settings = nullptr) : pm(pm), settings(settings) {}
 
+    ValueFlow::Value executeMultiCondition(const std::string& op, bool b, const Token* expr)
+    {
+        if (pm->hasValue(expr->exprId())) {
+            const ValueFlow::Value& v = pm->at(expr->exprId());
+            if (v.isIntValue())
+                return v;
+        }
+        ValueFlow::Value lhs = execute(expr->astOperand1());
+        if (!lhs.isIntValue())
+            return unknown;
+        if (isTrueOrFalse(lhs, b))
+            return lhs;
+        if (isTrueOrFalse(lhs, !b)) {
+            ValueFlow::Value rhs = execute(expr->astOperand2());
+            if (!rhs.isUninitValue())
+                return rhs;
+        }
+        for(const auto& p:*pm) {
+            ExprIdToken tok = p.first;
+            const ValueFlow::Value& value = p.second;
+
+            if (tok->str() == op && isTrueOrFalse(value, true)) {
+                
+            }
+        }
+        return unknown;
+    }
+
     ValueFlow::Value executeImpl(const Token* expr)
     {
-        ValueFlow::Value unknown = ValueFlow::Value::unknown();
         const ValueFlow::Value* value = nullptr;
         if (!expr)
             return unknown;
@@ -1270,23 +1307,9 @@ struct Executor {
             pm->setValue(expr->astOperand1(), rhs);
             return rhs;
         } else if (expr->str() == "&&" && expr->astOperand1() && expr->astOperand2()) {
-            ValueFlow::Value lhs = execute(expr->astOperand1());
-            if (!lhs.isIntValue())
-                return unknown;
-            if (isFalse(lhs))
-                return lhs;
-            if (isTrue(lhs))
-                return execute(expr->astOperand2());
-            return unknown;
+            return executeMultiCondition("&&", false, expr);
         } else if (expr->str() == "||" && expr->astOperand1() && expr->astOperand2()) {
-            ValueFlow::Value lhs = execute(expr->astOperand1());
-            if (!lhs.isIntValue() || lhs.isImpossible())
-                return unknown;
-            if (isTrue(lhs))
-                return lhs;
-            if (isFalse(lhs))
-                return execute(expr->astOperand2());
-            return unknown;
+            return executeMultiCondition("||", true, expr);
         } else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
             execute(expr->astOperand1());
             return execute(expr->astOperand2());
@@ -1546,6 +1569,7 @@ struct Executor {
         return {};
     }
 };
+}
 
 static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings* settings)
 {

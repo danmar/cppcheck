@@ -116,6 +116,21 @@ const Token* findExpression(const nonneg int exprid,
                             const std::function<bool(const Token*)>& pred);
 const Token* findExpression(const Token* start, const nonneg int exprid);
 
+template<class T, class OuputIterator, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+void astFlattenCopy(T* tok, const char* op, OuputIterator out, nonneg int depth = 0)
+{
+    ++depth;
+    if (!tok || depth >= 100)
+        return;
+    if (tok->str() == op) {
+        astFlattenCopy(tok->astOperand1(), op, out, depth);
+        astFlattenCopy(tok->astOperand2(), op, out, depth);
+    } else {
+        *out = tok;
+        out++;
+    }
+}
+
 std::vector<const Token*> astFlatten(const Token* tok, const char* op);
 std::vector<Token*> astFlatten(Token* tok, const char* op);
 
