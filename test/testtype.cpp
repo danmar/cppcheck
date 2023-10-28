@@ -295,6 +295,11 @@ private:
               "   return 123456U * x;\n"
               "}",settings);
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(int i) {\n" // #12117
+              "    return (i == 31) ? 1 << i : 0;\n"
+              "}", settings);
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (warning) Shifting signed 32-bit value by 31 bits is undefined behaviour. See condition at line 2.\n", errout.str());
     }
 
     void signConversion() {
