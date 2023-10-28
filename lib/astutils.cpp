@@ -2543,11 +2543,12 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     tok2 = skipRedundantPtrOp(tok2, tok2->astParent());
 
     if (tok2->astParent() && tok2->astParent()->isAssignmentOp()) {
-        if (tok2 == tok2->astParent()->astOperand1())
+        if ((indirect == 0 || tok2 != tok) && tok2 == tok2->astParent()->astOperand1())
             return true;
         // Check if assigning to a non-const lvalue
         const Variable * var = getLHSVariable(tok2->astParent());
-        if (var && var->isReference() && !var->isConst() && var->nameToken() && var->nameToken()->next() == tok2->astParent()) {
+        if (var && var->isReference() && !var->isConst() &&
+            ((var->nameToken() && var->nameToken()->next() == tok2->astParent()) || var->isPointer())) {
             if (!var->isLocal() || isVariableChanged(var, settings, cpp, depth - 1))
                 return true;
         }
