@@ -1,5 +1,5 @@
 // Test with command:
-// ./cppcheck --enable=information --addon=misra --inline-suppr addons/test/misra/misra-ctu-*-test.c
+// ./cppcheck --enable=information --enable=style --addon=misra --inline-suppr addons/test/misra/misra-ctu-*-test.c
 
 #include "misra-ctu-test.h"
 

@@ -4594,6 +4594,9 @@ class MisraChecker:
         def is_different_location(loc1, loc2):
             return loc1['file'] != loc2['file'] or loc1['line'] != loc2['line']
 
+        def is_different_file(loc1, loc2):
+            return loc1['file'] != loc2['file']
+
         try:
             for filename in ctu_info_files:
                 for line in open(filename, 'rt'):
@@ -4640,7 +4643,7 @@ class MisraChecker:
                                 all_macro_info[key] = new_macro
 
                     if summary_type == 'MisraExternalIdentifiers':
-                        for s in summary_data:
+                        for s in sorted(summary_data, key=lambda d: "%s %s %s" %(d['file'],d['line'], d['column'] )):
                             is_declaration = s['decl']
                             if is_declaration:
                                 all_external_identifiers = all_external_identifiers_decl
@@ -4648,10 +4651,13 @@ class MisraChecker:
                                 all_external_identifiers = all_external_identifiers_def
 
                             name = s['name']
-                            if name in all_external_identifiers and is_different_location(s, all_external_identifiers[name]):
-                                num = 5 if is_declaration else 6
-                                self.reportError(Location(s), 8, num)
-                                self.reportError(Location(all_external_identifiers[name]), 8, num)
+                            if name in all_external_identifiers:
+                                if is_declaration and is_different_location(s, all_external_identifiers[name]):
+                                    self.reportError(Location(s), 8, 5)
+                                    self.reportError(Location(all_external_identifiers[name]), 8, 5)
+                                elif is_different_file(s, all_external_identifiers[name]):
+                                    self.reportError(Location(s), 8, 6)
+                                    self.reportError(Location(all_external_identifiers[name]), 8, 6)
                             all_external_identifiers[name] = s
 
                     if summary_type == 'MisraInternalIdentifiers':
