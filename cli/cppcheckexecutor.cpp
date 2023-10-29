@@ -194,16 +194,16 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
 #else
     const bool caseSensitive = true;
 #endif
-    if (!settings.project.fileSettings.empty() && !settings.fileFilters.empty()) {
+    if (!settings.fileSettings.empty() && !settings.fileFilters.empty()) {
         // filter only for the selected filenames from all project files
         std::list<ImportProject::FileSettings> newList;
 
-        const std::list<ImportProject::FileSettings>& fileSettings = settings.project.fileSettings;
+        const std::list<ImportProject::FileSettings>& fileSettings = settings.fileSettings;
         std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(newList), [&](const ImportProject::FileSettings& fs) {
             return matchglobs(settings.fileFilters, fs.filename);
         });
         if (!newList.empty())
-            settings.project.fileSettings = newList;
+            settings.fileSettings = newList;
         else {
             logger.printError("could not find any files matching the filter.");
             return false;
@@ -220,13 +220,13 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
         }
     }
 
-    if (mFiles.empty() && settings.project.fileSettings.empty()) {
+    if (mFiles.empty() && settings.fileSettings.empty()) {
         logger.printError("could not find or open any of the paths given.");
         if (!ignored.empty())
             logger.printMessage("Maybe all paths were ignored?");
         return false;
     }
-    if (!settings.fileFilters.empty() && settings.project.fileSettings.empty()) {
+    if (!settings.fileFilters.empty() && settings.fileSettings.empty()) {
         std::map<std::string, std::size_t> newMap;
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i)
             if (matchglobs(settings.fileFilters, i->first)) {
@@ -319,7 +319,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         std::list<std::string> fileNames;
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i)
             fileNames.emplace_back(i->first);
-        AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.userDefines, settings.project.fileSettings);
+        AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.userDefines, settings.fileSettings);
     }
 
     if (!settings.checkersReportFilename.empty())

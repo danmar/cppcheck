@@ -87,7 +87,7 @@ private:
                 if (useFS) {
                     ImportProject::FileSettings fs;
                     fs.filename = std::move(f_s);
-                    s.project.fileSettings.emplace_back(std::move(fs));
+                    s.fileSettings.emplace_back(std::move(fs));
                 }
             }
         }
@@ -98,7 +98,7 @@ private:
                 if (useFS) {
                     ImportProject::FileSettings fs;
                     fs.filename = f;
-                    s.project.fileSettings.emplace_back(std::move(fs));
+                    s.fileSettings.emplace_back(std::move(fs));
                 }
             }
         }
