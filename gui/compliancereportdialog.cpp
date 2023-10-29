@@ -167,7 +167,7 @@ void ComplianceReportDialog::save()
             p.ignorePaths(toStdStringList(mProjectFile->getExcludedPaths()));
 
             QDir dir(inf.absoluteDir());
-            for (const ImportProject::FileSettings& fs: p.fileSettings)
+            for (const FileSettings& fs: p.fileSettings)
                 fileList.addFile(dir.relativeFilePath(QString::fromStdString(fs.filename)));
         }
 

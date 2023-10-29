@@ -132,6 +132,7 @@
     <ClInclude Include="ctu.h" />
     <ClInclude Include="errorlogger.h" />
     <ClInclude Include="errortypes.h" />
+    <ClInclude Include="filesettings.h" />
     <ClInclude Include="findtoken.h" />
     <ClInclude Include="forwardanalyzer.h" />
     <ClInclude Include="fwdanalysis.h" />

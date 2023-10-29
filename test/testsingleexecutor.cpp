@@ -85,7 +85,7 @@ private:
                 std::string f_s = fprefix() + "_" + zpad3(i) + ".cpp";
                 filemap[f_s] = data.size();
                 if (useFS) {
-                    ImportProject::FileSettings fs;
+                    FileSettings fs;
                     fs.filename = std::move(f_s);
                     s.fileSettings.emplace_back(std::move(fs));
                 }
@@ -96,7 +96,7 @@ private:
             {
                 filemap[f] = data.size();
                 if (useFS) {
-                    ImportProject::FileSettings fs;
+                    FileSettings fs;
                     fs.filename = f;
                     s.fileSettings.emplace_back(std::move(fs));
                 }

@@ -26,7 +26,7 @@
 #include "color.h"
 #include "config.h"
 #include "errorlogger.h"
-#include "importproject.h"
+#include "filesettings.h"
 #include "settings.h"
 
 #include <cstddef>
@@ -82,7 +82,7 @@ public:
      *  settings()).
      */
     unsigned int check(const std::string &path);
-    unsigned int check(const ImportProject::FileSettings &fs);
+    unsigned int check(const FileSettings &fs);
 
     /**
      * @brief Check the file.
@@ -134,7 +134,7 @@ public:
     bool analyseWholeProgram();
 
     /** Analyze all files using clang-tidy */
-    void analyseClangTidy(const ImportProject::FileSettings &fileSettings);
+    void analyseClangTidy(const FileSettings &fileSettings);
 
     /** analyse whole program use .analyzeinfo files */
     void analyseWholeProgram(const std::string &buildDir, const std::map<std::string, std::size_t> &files);

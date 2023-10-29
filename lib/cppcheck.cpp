@@ -545,7 +545,7 @@ unsigned int CppCheck::check(const std::string &path, const std::string &content
     return checkFile(Path::simplifyPath(path), emptyString, &iss);
 }
 
-unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
+unsigned int CppCheck::check(const FileSettings &fs)
 {
     CppCheck temp(mErrorLogger, mUseGlobalSuppressions, mExecuteCommand);
     temp.mSettings = mSettings;
@@ -1625,7 +1625,7 @@ void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
     Preprocessor::getErrorMessages(&errorlogger, &s);
 }
 
-void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
+void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
 {
     std::string allIncludes;
     for (const std::string &inc : fileSettings.includePaths) {

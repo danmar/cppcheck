@@ -81,7 +81,7 @@ private:
 class ThreadData
 {
 public:
-    ThreadData(ThreadExecutor &threadExecutor, ErrorLogger &errorLogger, const Settings &settings, const std::map<std::string, std::size_t> &files, const std::list<ImportProject::FileSettings> &fileSettings, CppCheck::ExecuteCmdFn executeCommand)
+    ThreadData(ThreadExecutor &threadExecutor, ErrorLogger &errorLogger, const Settings &settings, const std::map<std::string, std::size_t> &files, const std::list<FileSettings> &fileSettings, CppCheck::ExecuteCmdFn executeCommand)
         : mFiles(files), mFileSettings(fileSettings), mSettings(settings), mExecuteCommand(std::move(executeCommand)), logForwarder(threadExecutor, errorLogger)
     {
         mItNextFile = mFiles.begin();
@@ -93,7 +93,7 @@ public:
         });
     }
 
-    bool next(const std::string *&file, const ImportProject::FileSettings *&fs, std::size_t &fileSize) {
+    bool next(const std::string *&file, const FileSettings *&fs, std::size_t &fileSize) {
         std::lock_guard<std::mutex> l(mFileSync);
         if (mItNextFile != mFiles.end()) {
             file = &mItNextFile->first;
@@ -113,7 +113,7 @@ public:
         return false;
     }
 
-    unsigned int check(ErrorLogger &errorLogger, const std::string *file, const ImportProject::FileSettings *fs) const {
+    unsigned int check(ErrorLogger &errorLogger, const std::string *file, const FileSettings *fs) const {
         CppCheck fileChecker(errorLogger, false, mExecuteCommand);
         fileChecker.settings() = mSettings; // this is a copy
 
@@ -142,8 +142,8 @@ public:
 private:
     const std::map<std::string, std::size_t> &mFiles;
     std::map<std::string, std::size_t>::const_iterator mItNextFile;
-    const std::list<ImportProject::FileSettings> &mFileSettings;
-    std::list<ImportProject::FileSettings>::const_iterator mItNextFileSettings;
+    const std::list<FileSettings> &mFileSettings;
+    std::list<FileSettings>::const_iterator mItNextFileSettings;
 
     std::size_t mProcessedFiles{};
     std::size_t mTotalFiles{};
@@ -163,7 +163,7 @@ static unsigned int STDCALL threadProc(ThreadData *data)
     unsigned int result = 0;
 
     const std::string *file;
-    const ImportProject::FileSettings *fs;
+    const FileSettings *fs;
     std::size_t fileSize;
 
     while (data->next(file, fs, fileSize)) {

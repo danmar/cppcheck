@@ -196,10 +196,10 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
 #endif
     if (!settings.fileSettings.empty() && !settings.fileFilters.empty()) {
         // filter only for the selected filenames from all project files
-        std::list<ImportProject::FileSettings> newList;
+        std::list<FileSettings> newList;
 
-        const std::list<ImportProject::FileSettings>& fileSettings = settings.fileSettings;
-        std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(newList), [&](const ImportProject::FileSettings& fs) {
+        const std::list<FileSettings>& fileSettings = settings.fileSettings;
+        std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(newList), [&](const FileSettings& fs) {
             return matchglobs(settings.fileFilters, fs.filename);
         });
         if (!newList.empty())

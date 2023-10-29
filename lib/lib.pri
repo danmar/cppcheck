@@ -43,6 +43,7 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/ctu.h \
            $${PWD}/errorlogger.h \
            $${PWD}/errortypes.h \
+           $${PWD}/filesettings.h \
            $${PWD}/findtoken.h \
            $${PWD}/forwardanalyzer.h \
            $${PWD}/fwdanalysis.h \

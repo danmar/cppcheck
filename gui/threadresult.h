@@ -22,6 +22,7 @@
 
 #include "color.h"
 #include "errorlogger.h"
+#include "filesettings.h"
 #include "importproject.h"
 
 #include <list>
@@ -53,7 +54,7 @@ public:
      */
     QString getNextFile();
 
-    ImportProject::FileSettings getNextFileSettings();
+    FileSettings getNextFileSettings();
 
     /**
      * @brief Set list of files to check
@@ -135,7 +136,7 @@ protected:
      */
     QStringList mFiles;
 
-    std::list<ImportProject::FileSettings> mFileSettings;
+    std::list<FileSettings> mFileSettings;
 
     /**
      * @brief Max progress

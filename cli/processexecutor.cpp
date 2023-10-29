@@ -237,7 +237,7 @@ unsigned int ProcessExecutor::check()
     std::map<int, std::string> pipeFile;
     std::size_t processedsize = 0;
     std::map<std::string, std::size_t>::const_iterator iFile = mFiles.cbegin();
-    std::list<ImportProject::FileSettings>::const_iterator iFileSettings = mSettings.fileSettings.cbegin();
+    std::list<FileSettings>::const_iterator iFileSettings = mSettings.fileSettings.cbegin();
     for (;;) {
         // Start a new child
         const size_t nchildren = childFile.size();

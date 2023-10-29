@@ -21,7 +21,7 @@
 #define CHECKTHREAD_H
 
 #include "cppcheck.h"
-#include "importproject.h"
+#include "filesettings.h"
 #include "suppressions.h"
 
 #include <atomic>
@@ -130,7 +130,7 @@ protected:
     CppCheck mCppcheck;
 
 private:
-    void runAddonsAndTools(const ImportProject::FileSettings *fileSettings, const QString &fileName);
+    void runAddonsAndTools(const FileSettings *fileSettings, const QString &fileName);
 
     void parseClangErrors(const QString &tool, const QString &file0, QString err);
 
