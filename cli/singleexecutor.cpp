@@ -31,8 +31,8 @@
 
 class ErrorLogger;
 
-SingleExecutor::SingleExecutor(CppCheck &cppcheck, const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
-    : Executor(files, settings, suppressions, errorLogger)
+SingleExecutor::SingleExecutor(CppCheck &cppcheck, const std::map<std::string, std::size_t> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
+    : Executor(files, fileSettings, settings, suppressions, errorLogger)
     , mCppcheck(cppcheck)
 {
     assert(mSettings.jobs == 1);
@@ -51,7 +51,7 @@ unsigned int SingleExecutor::check()
     unsigned int c = 0;
     // TODO: processes either mSettings.project.fileSettings or mFiles - process/thread implementations process both
     // TODO: thread/process implementations process fileSettings first
-    if (mSettings.fileSettings.empty()) {
+    if (mFileSettings.empty()) {
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
             if (!mSettings.library.markupFile(i->first)
                 || !mSettings.library.processMarkupAfterCode(i->first)) {
@@ -66,13 +66,13 @@ unsigned int SingleExecutor::check()
     } else {
         // filesettings
         // check all files of the project
-        for (const FileSettings &fs : mSettings.fileSettings) {
+        for (const FileSettings &fs : mFileSettings) {
             if (!mSettings.library.markupFile(fs.filename)
                 || !mSettings.library.processMarkupAfterCode(fs.filename)) {
                 result += mCppcheck.check(fs);
                 ++c;
                 if (!mSettings.quiet)
-                    reportStatus(c, mSettings.fileSettings.size(), c, mSettings.fileSettings.size());
+                    reportStatus(c, mFileSettings.size(), c, mFileSettings.size());
                 if (mSettings.clangTidy)
                     mCppcheck.analyseClangTidy(fs);
             }
@@ -82,7 +82,7 @@ unsigned int SingleExecutor::check()
     // second loop to parse all markup files which may not work until all
     // c/cpp files have been parsed and checked
     // TODO: get rid of duplicated code
-    if (mSettings.fileSettings.empty()) {
+    if (mFileSettings.empty()) {
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
             if (mSettings.library.markupFile(i->first)
                 && mSettings.library.processMarkupAfterCode(i->first)) {
@@ -96,13 +96,13 @@ unsigned int SingleExecutor::check()
         }
     }
     else {
-        for (const FileSettings &fs : mSettings.fileSettings) {
+        for (const FileSettings &fs : mFileSettings) {
             if (mSettings.library.markupFile(fs.filename)
                 && mSettings.library.processMarkupAfterCode(fs.filename)) {
                 result += mCppcheck.check(fs);
                 ++c;
                 if (!mSettings.quiet)
-                    reportStatus(c, mSettings.fileSettings.size(), c, mSettings.fileSettings.size());
+                    reportStatus(c, mFileSettings.size(), c, mFileSettings.size());
                 if (mSettings.clangTidy)
                     mCppcheck.analyseClangTidy(fs);
             }

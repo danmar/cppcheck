@@ -1073,7 +1073,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         mPathNames = project.guiProject.pathNames;
 
     if (!project.fileSettings.empty())
-        mSettings.fileSettings = project.fileSettings;
+        mFileSettings = project.fileSettings;
 
     // Use paths _pathnames if no base paths for relative path output are given
     if (mSettings.basePaths.empty() && mSettings.relativePaths)

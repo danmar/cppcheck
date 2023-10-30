@@ -187,6 +187,7 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
     }
 
     const std::vector<std::string>& pathnames = parser.getPathNames();
+    const std::list<FileSettings>& fileSettings = parser.getFileSettings();
 
 #if defined(_WIN32)
     // For Windows we want case-insensitive path matching
@@ -194,19 +195,19 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
 #else
     const bool caseSensitive = true;
 #endif
-    if (!settings.fileSettings.empty() && !settings.fileFilters.empty()) {
-        // filter only for the selected filenames from all project files
-        std::list<FileSettings> newList;
-
-        const std::list<FileSettings>& fileSettings = settings.fileSettings;
-        std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(newList), [&](const FileSettings& fs) {
-            return matchglobs(settings.fileFilters, fs.filename);
-        });
-        if (!newList.empty())
-            settings.fileSettings = newList;
+    if (!fileSettings.empty()) {
+        if (!settings.fileFilters.empty()) {
+            // filter only for the selected filenames from all project files
+            std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(mFileSettings), [&](const FileSettings &fs) {
+                return matchglobs(settings.fileFilters, fs.filename);
+            });
+            if (mFileSettings.empty()) {
+                logger.printError("could not find any files matching the filter.");
+                return false;
+            }
+        }
         else {
-            logger.printError("could not find any files matching the filter.");
-            return false;
+            mFileSettings = fileSettings;
         }
     } else if (!pathnames.empty()) {
         // Execute recursiveAddFiles() to each given file parameter
@@ -220,13 +221,13 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
         }
     }
 
-    if (mFiles.empty() && settings.fileSettings.empty()) {
+    if (mFiles.empty() && fileSettings.empty()) {
         logger.printError("could not find or open any of the paths given.");
         if (!ignored.empty())
             logger.printMessage("Maybe all paths were ignored?");
         return false;
     }
-    if (!settings.fileFilters.empty() && settings.fileSettings.empty()) {
+    if (!settings.fileFilters.empty() && fileSettings.empty()) {
         std::map<std::string, std::size_t> newMap;
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i)
             if (matchglobs(settings.fileFilters, i->first)) {
@@ -319,7 +320,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         std::list<std::string> fileNames;
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i)
             fileNames.emplace_back(i->first);
-        AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.userDefines, settings.fileSettings);
+        AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.userDefines, mFileSettings);
     }
 
     if (!settings.checkersReportFilename.empty())
@@ -328,18 +329,18 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     unsigned int returnValue = 0;
     if (settings.useSingleJob()) {
         // Single process
-        SingleExecutor executor(cppcheck, mFiles, settings, settings.nomsg, *this);
+        SingleExecutor executor(cppcheck, mFiles, mFileSettings, settings, settings.nomsg, *this);
         returnValue = executor.check();
     } else {
 #if defined(THREADING_MODEL_THREAD)
-        ThreadExecutor executor(mFiles, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
+        ThreadExecutor executor(mFiles, mFileSettings, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
 #elif defined(THREADING_MODEL_FORK)
-        ProcessExecutor executor(mFiles, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
+        ProcessExecutor executor(mFiles, mFileSettings, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
 #endif
         returnValue = executor.check();
     }
 
-    cppcheck.analyseWholeProgram(settings.buildDir, mFiles);
+    cppcheck.analyseWholeProgram(settings.buildDir, mFiles, mFileSettings);
 
     if (settings.severity.isEnabled(Severity::information) || settings.checkConfiguration) {
         const bool err = reportSuppressions(settings, cppcheck.isUnusedFunctionCheckEnabled(), mFiles, *this);

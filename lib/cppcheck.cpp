@@ -1722,11 +1722,11 @@ bool CppCheck::analyseWholeProgram()
     return errors && (mExitCode > 0);
 }
 
-void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<std::string, std::size_t> &files)
+void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<std::string, std::size_t> &files, const std::list<FileSettings>& fileSettings)
 {
-    executeAddonsWholeProgram(files);
+    executeAddonsWholeProgram(files); // TODO: pass FileSettings
     if (buildDir.empty()) {
-        removeCtuInfoFiles(files);
+        removeCtuInfoFiles(files, fileSettings);
         return;
     }
     if (mSettings.checks.isEnabled(Checks::unusedFunction))
@@ -1790,7 +1790,7 @@ bool CppCheck::isUnusedFunctionCheckEnabled() const
     return (mSettings.useSingleJob() && mSettings.checks.isEnabled(Checks::unusedFunction));
 }
 
-void CppCheck::removeCtuInfoFiles(const std::map<std::string, std::size_t> &files)
+void CppCheck::removeCtuInfoFiles(const std::map<std::string, std::size_t> &files, const std::list<FileSettings>& fileSettings)
 {
     if (mSettings.buildDir.empty()) {
         for (const auto& f: files) {
@@ -1798,7 +1798,7 @@ void CppCheck::removeCtuInfoFiles(const std::map<std::string, std::size_t> &file
             const std::string &ctuInfoFileName = getCtuInfoFileName(dumpFileName);
             std::remove(ctuInfoFileName.c_str());
         }
-        for (const auto& fs: mSettings.fileSettings) {
+        for (const auto& fs: fileSettings) {
             const std::string &dumpFileName = getDumpFileName(mSettings, fs.filename);
             const std::string &ctuInfoFileName = getCtuInfoFileName(dumpFileName);
             std::remove(ctuInfoFileName.c_str());

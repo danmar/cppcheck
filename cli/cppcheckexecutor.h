@@ -22,10 +22,12 @@
 #include "color.h"
 #include "config.h"
 #include "errorlogger.h"
+#include "filesettings.h"
 
 #include <cstdio>
 #include <ctime>
 #include <iosfwd>
+#include <list>
 #include <map>
 #include <set>
 #include <string>
@@ -180,6 +182,8 @@ private:
      * Filename associated with size of file
      */
     std::map<std::string, std::size_t> mFiles;
+
+    std::list<FileSettings> mFileSettings;
 
     /**
      * Report progress time

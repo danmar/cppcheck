@@ -77,7 +77,7 @@ private:
         errout.str("");
         output.str("");
 
-        Settings s = settings;
+        std::list<FileSettings> fileSettings;
 
         std::map<std::string, std::size_t> filemap;
         if (opt.filesList.empty()) {
@@ -87,7 +87,7 @@ private:
                 if (useFS) {
                     FileSettings fs;
                     fs.filename = std::move(f_s);
-                    s.fileSettings.emplace_back(std::move(fs));
+                    fileSettings.emplace_back(std::move(fs));
                 }
             }
         }
@@ -98,11 +98,12 @@ private:
                 if (useFS) {
                     FileSettings fs;
                     fs.filename = f;
-                    s.fileSettings.emplace_back(std::move(fs));
+                    fileSettings.emplace_back(std::move(fs));
                 }
             }
         }
 
+        Settings s = settings;
         s.showtime = opt.showtime;
         s.quiet = opt.quiet;
         if (opt.plistOutput)
@@ -130,7 +131,7 @@ private:
         if (useFS)
             filemap.clear();
 
-        SingleExecutor executor(cppcheck, filemap, s, s.nomsg, *this);
+        SingleExecutor executor(cppcheck, filemap, fileSettings, s, s.nomsg, *this);
         ASSERT_EQUALS(result, executor.check());
         ASSERT_EQUALS(opt.executeCommandCalled, executeCommandCalled);
         ASSERT_EQUALS(opt.exe, exe);
