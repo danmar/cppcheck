@@ -6884,6 +6884,37 @@ private:
                       "[test.cpp:4]: (style) The comparison 'E0 > 0' is always false.\n"
                       "[test.cpp:5]: (style) The comparison 'E0 == 0' is always true.\n",
                       errout.str());
+
+        check("struct S {\n" // #12040, #12044
+              "    static const int I = 0;\n"
+              "    enum { E0 };\n"
+              "    enum F { F0 };\n"
+              "    void f() {\n"
+              "        if (0 > I) {}\n"
+              "        if (0 > S::I) {}\n"
+              "        if (0 > E0) {}\n"
+              "        if (0 > S::E0) {}\n"
+              "    }\n"
+              "};\n"
+              "void g() {\n"
+              "    if (0 > S::I) {}\n"
+              "    if (0 > S::E0) {}\n"
+              "    if (0 > S::F::F0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:6]: (style) The comparison '0 > I' is always false.\n"
+                      "[test.cpp:2] -> [test.cpp:7]: (style) The comparison '0 > S::I' is always false.\n"
+                      "[test.cpp:8]: (style) The comparison '0 > E0' is always false.\n"
+                      "[test.cpp:9]: (style) The comparison '0 > S::E0' is always false.\n"
+                      "[test.cpp:2] -> [test.cpp:13]: (style) The comparison '0 > S::I' is always false.\n"
+                      "[test.cpp:14]: (style) The comparison '0 > S::E0' is always false.\n"
+                      "[test.cpp:15]: (style) The comparison '0 > S::F::F0' is always false.\n",
+                      errout.str());
+
+        check("template<typename T, typename U>\n" // #12122
+              "void f() {\n"
+              "    static_assert(std::is_same<T, U>::value || std::is_integral<T>::value);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpressionLoop() {
@@ -8924,14 +8955,14 @@ private:
               "  state_t *x = NULL;\n"
               "  x = dostuff();\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("test.cpp:2:style:Variable 'x' can be declared as pointer to const\n", errout.str());
 
         check("void f() {\n"
               "  state_t *x;\n"
               "  x = NULL;\n"
               "  x = dostuff();\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("test.cpp:2:style:Variable 'x' can be declared as pointer to const\n", errout.str());
 
         check("int foo() {\n" // #4420
               "    int x;\n"
@@ -9064,7 +9095,8 @@ private:
               "        barney(x);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("test.cpp:2:style:The scope of the variable 'p' can be reduced.\n",
+        ASSERT_EQUALS("test.cpp:2:style:The scope of the variable 'p' can be reduced.\n"
+                      "test.cpp:2:style:Variable 'p' can be declared as pointer to const\n",
                       errout.str());
 
         check("void foo() {\n"
@@ -9156,14 +9188,14 @@ private:
               "   a = (void*)0;\n"
               "   a = p;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'a' can be declared as pointer to const\n", errout.str());
 
         check("void f() {\n"
               "   void* a;\n"
               "   a = (void*)0U;\n"
               "   a = p;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'a' can be declared as pointer to const\n", errout.str());
     }
 
     void redundantVarAssignment_struct() {
@@ -9420,7 +9452,7 @@ private:
               "    int *p = NULL;\n"
               "    p = dostuff();\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("test.cpp:2:style:Variable 'p' can be declared as pointer to const\n", errout.str());
 
         // "trivial" initialization => do not warn
         check("void f() {\n"
@@ -9893,6 +9925,16 @@ private:
         check("std::map<int, int> m;\n" // #10817
               "void f(const decltype(m)::const_iterator i) {}");
         ASSERT_EQUALS("", errout.str());
+
+        check("int (*pf) (std::vector<int>) = nullptr;\n" // #12118
+              "int f(std::vector<int> v) {\n"
+              "    return v.size();\n"
+              "}\n"
+              "void g() {\n"
+              "    pf = f;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (performance) Function parameter 'v' should be passed by const reference. However it seems that 'f' is a callback function.\n",
+                      errout.str());
     }
 
     void checkComparisonFunctionIsAlwaysTrueOrFalse() {

@@ -992,7 +992,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
 
         mData->enumValue = 0;
         Token *enumtok = addtoken(tokenList, "enum");
-        Token *nametok = nullptr;
+        const Token *nametok = nullptr;
         {
             int nameIndex = mExtTokens.size() - 1;
             while (nameIndex > colIndex && mExtTokens[nameIndex][0] == '\'')

@@ -459,13 +459,14 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, linenr);
 
+        // TODO: handle in a better way
         // filter out ValueFlow messages..
         const std::string debugwarnings = errout.str();
         errout.str("");
         std::istringstream istr2(debugwarnings);
         std::string line;
         while (std::getline(istr2,line)) {
-            if (line.find("valueflow.cpp") == std::string::npos)
+            if (line.find("bailout") == std::string::npos)
                 errout << line << "\n";
         }
 
@@ -6473,6 +6474,9 @@ private:
         ASSERT_EQUALS("tmpa*=a*b*=,b*tmp=,", testAst("{ ((tmp) = (*a)), ((*a) = (*b)), ((*b) = (tmp)); }"));
         ASSERT_EQUALS("a(*v=", testAst("(*(volatile unsigned int *)(a) = (v));"));
         ASSERT_EQUALS("i(j=", testAst("(int&)(i) = j;"));
+
+        ASSERT_EQUALS("", testAst("void f(enum E* var){}"));
+        ASSERT_EQUALS("", testAst("void f(enum E*& var){}"));
     }
 
     void astunaryop() const { // unary operators

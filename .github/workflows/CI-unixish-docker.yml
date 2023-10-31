@@ -19,7 +19,11 @@ jobs:
 
     strategy:
       matrix:
-        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04", "ubuntu:18.04", "ubuntu:23.04"]
+        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04", "ubuntu:18.04", "ubuntu:23.10"]
+        include:
+          - build_gui: false
+          - image: "ubuntu:23.10"
+            build_gui: true
       fail-fast: false # Prefer quick result
 
     runs-on: ubuntu-22.04
@@ -48,11 +52,10 @@ jobs:
           apt-get update
           apt-get install -y cmake g++ make libxml2-utils libpcre3-dev
 
-      # required so a default Qt installation is configured
-      - name: Install missing software on ubuntu 18.04
-        if: false # matrix.os == 'ubuntu-18.04'
+      - name: Install missing software (gui) on latest ubuntu
+        if: matrix.build_gui
         run: |
-          sudo apt-get install qt5-default
+          apt-get install -y qt6-base-dev qt6-charts-dev qt6-tools-dev
 
       # needs to be called after the package installation since
       # - it doesn't call "apt-get update"
@@ -82,12 +85,18 @@ jobs:
           cmake --build . -- -j$(nproc)
 
       - name: CMake build
-        if: matrix.image != 'centos:7' && matrix.image != 'ubuntu:14.04' && matrix.image != 'ubuntu:16.04'
+        if: ${{ !matrix.build_gui && matrix.image != 'centos:7' && matrix.image != 'ubuntu:14.04' && matrix.image != 'ubuntu:16.04' }}
         run: |
           mkdir cmake.output
           cd cmake.output
           cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ..
           cmake --build . -- -j$(nproc)
+
+      - name: CMake build (with GUI)
+        if: matrix.build_gui
+        run: |
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --build cmake.output -- -j$(nproc)
 
       - name: Run CMake test
         if: matrix.image != 'centos:7' && matrix.image != 'ubuntu:14.04' && matrix.image != 'ubuntu:16.04'
@@ -98,7 +107,7 @@ jobs:
 
     strategy:
       matrix:
-        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04", "ubuntu:18.04", "ubuntu:23.04"]
+        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04", "ubuntu:18.04", "ubuntu:23.10"]
       fail-fast: false # Prefer quick result
 
     runs-on: ubuntu-22.04

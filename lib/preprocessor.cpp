@@ -700,6 +700,7 @@ static void splitcfg(const std::string &cfg, std::list<std::string> &defines, co
 
 static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cfg, const std::string &filename)
 {
+    // TODO: make it possible to specify platform-dependent sizes
     simplecpp::DUI dui;
 
     splitcfg(mSettings.userDefines, dui.defines, "1");
@@ -725,10 +726,14 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
     dui.includePaths = mSettings.includePaths; // -I
     dui.includes = mSettings.userIncludes;  // --include
     // TODO: use mSettings.standards.stdValue instead
-    if (Path::isCPP(filename))
+    if (Path::isCPP(filename)) {
         dui.std = mSettings.standards.getCPP();
-    else
+        splitcfg(mSettings.platform.getLimitsDefines(Standards::getCPP(dui.std)), dui.defines, "");
+    }
+    else {
         dui.std = mSettings.standards.getC();
+        splitcfg(mSettings.platform.getLimitsDefines(Standards::getC(dui.std)), dui.defines, "");
+    }
     dui.clearIncludeCache = mSettings.clearIncludeCache;
     return dui;
 }

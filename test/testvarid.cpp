@@ -103,6 +103,7 @@ private:
         TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
+        TEST_CASE(varid_cpp_keywords_in_c_code3);
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -1296,6 +1297,12 @@ private:
                             "                          EXTENT_DO_ACCOUNTING, 0, 0, NULL, mask);\n"
                             "}";
         tokenize(code, "test.c");
+    }
+
+    void varid_cpp_keywords_in_c_code3() { // #12120
+        const char code[] = "const struct class *p;";
+        const char expected[] = "1: const struct class * p@1 ;\n";
+        ASSERT_EQUALS(expected, tokenize(code, "test.c"));
     }
 
     void varidFunctionCall1() {

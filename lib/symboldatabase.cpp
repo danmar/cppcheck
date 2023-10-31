@@ -5106,6 +5106,15 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
             }
         }
     } else { // unqualified name
+
+        if (tok->scope()->type == Scope::eGlobal) {
+            const Token* astTop = tok->astTop();
+            if (Token::simpleMatch(astTop, ":") && Token::simpleMatch(astTop->astOperand1(), "(")) { // ctor init list
+                const Token* ctor = astTop->astOperand1()->previous();
+                if (ctor && ctor->function() && ctor->function()->nestedIn)
+                    scope = ctor->function()->nestedIn;
+            }
+        }
         const Enumerator * enumerator = scope->findEnumerator(tokStr);
 
         if (enumerator && !(enumerator->scope && enumerator->scope->enumClass))

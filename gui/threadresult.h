@@ -25,9 +25,9 @@
 #include "importproject.h"
 
 #include <list>
+#include <mutex>
 #include <string>
 
-#include <QMutex>
 #include <QObject>
 #include <QString>
 #include <QStringList>
@@ -127,7 +127,7 @@ protected:
      * @brief Mutex
      *
      */
-    mutable QMutex mutex;
+    mutable std::mutex mutex;
 
     /**
      * @brief List of files to check

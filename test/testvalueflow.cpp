@@ -911,6 +911,8 @@ private:
         ASSERT(tokenValues(";-1>>10;",">>").empty());
         ASSERT(tokenValues(";10>>-1;",">>").empty());
         ASSERT(tokenValues(";10>>64;",">>").empty());
+        ASSERT(tokenValues(";((-1) * 9223372036854775807LL - 1) / (-1);", "/").empty()); // #12109
+        ASSERT_EQUALS(tokenValues(";((-1) * 9223372036854775807LL - 1) % (-1);", "%").size(), 1);
 
         code = "float f(const uint16_t& value) {\n"
                "    const uint16_t uVal = value; \n"
@@ -1571,8 +1573,8 @@ private:
                 "    x = y;\n"
                 "    if (x == 123) {}\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:2]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y\n",
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y\n",
             errout.str());
     }
 
@@ -1695,8 +1697,8 @@ private:
         bailout("void f(int x) {\n"
                 "    y = ((x<0) ? x : ((x==2)?3:4));\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:2]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y\n",
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y\n",
             errout.str());
 
         bailout("int f(int x) {\n"
@@ -1760,8 +1762,8 @@ private:
                 "    if (x != 123) { b = x; }\n"
                 "    if (x == 123) {}\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:2]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable b\n",
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable b\n",
             errout.str());
 
         code = "void f(int x, bool abc) {\n"
@@ -1809,8 +1811,8 @@ private:
                 "    case 2: if (x==5) {} break;\n"
                 "    };\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n",
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n",
             errout.str());
 
         bailout("void f(int x, int y) {\n"
@@ -1819,8 +1821,8 @@ private:
                 "    case 2: if (x==5) {} break;\n"
                 "    };\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n",
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n",
             errout.str());
     }
 
@@ -1832,7 +1834,7 @@ private:
                 "    M;\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n"
+            "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n"
             "[test.cpp:4]: (debug) valueflow.cpp:1260:(valueFlow) bailout: variable 'x', condition is defined in macro\n",
             errout.str());
 
@@ -1842,7 +1844,7 @@ private:
                 "    FREE(x);\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n"
+            "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n"
             "[test.cpp:4]: (debug) valueflow.cpp:1260:(valueFlow) bailout: variable 'x', condition is defined in macro\n",
             errout.str());
     }
@@ -1856,7 +1858,7 @@ private:
                 "    if (x==123){}\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n"
+            "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n"
             "[test.cpp:2]: (debug) valueflow.cpp::(valueFlow) bailout: valueFlowAfterCondition: bailing in conditional block\n",
             errout.str());
 
@@ -8172,6 +8174,18 @@ private:
                "    }\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, -1));
+
+        code = "void f(int N, int z) {\n"
+               "  std::vector<int> a(N);\n"
+               "  int m = -1;\n"
+               "  m = 0;\n"
+               "  for (int k = 0; k < N; k++) {\n"
+               "    int x = m + k;\n"
+               "    if (z == a[x]) {}\n"
+               "  }\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 7U, -1));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 7U, -1));
     }
 
     void valueFlowImpossibleUnknownConstant()

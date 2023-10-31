@@ -132,8 +132,9 @@ static void bailoutInternal(const std::string& type, TokenList &tokenlist, Error
     if (function.find("operator") != std::string::npos)
         function = "(valueFlow)";
     std::list<ErrorMessage::FileLocation> callstack(1, ErrorMessage::FileLocation(tok, &tokenlist));
+    const std::string location = Path::stripDirectoryPart(file) + ":" + std::to_string(line) + ":";
     ErrorMessage errmsg(callstack, tokenlist.getSourceFilePath(), Severity::debug,
-                        Path::stripDirectoryPart(file) + ":" + std::to_string(line) + ":" + function + " bailout: " + what, type, Certainty::normal);
+                        (file.empty() ? "" : location) + function + " bailout: " + what, type, Certainty::normal);
     errorLogger->reportErr(errmsg);
 }
 
@@ -141,7 +142,7 @@ static void bailoutInternal(const std::string& type, TokenList &tokenlist, Error
 
 #define bailout(tokenlist, errorLogger, tok, what) bailout2("valueFlowBailout", tokenlist, errorLogger, tok, what)
 
-#define bailoutIncompleteVar(tokenlist, errorLogger, tok, what) bailout2("valueFlowBailoutIncompleteVar", tokenlist, errorLogger, tok, what)
+#define bailoutIncompleteVar(tokenlist, errorLogger, tok, what) bailoutInternal("valueFlowBailoutIncompleteVar", tokenlist, errorLogger, tok, what, "", 0, __func__)
 
 static std::string debugString(const ValueFlow::Value& v)
 {
@@ -5642,12 +5643,15 @@ static void valueFlowForwardConst(Token* start,
                     if (v.tokvalue->varId() != var->declarationId())
                         continue;
                     for (ValueFlow::Value value : values) {
+                        if (!v.isKnown() && value.isImpossible())
+                            continue;
                         if (v.intvalue != 0) {
                             if (!value.isIntValue())
                                 continue;
                             value.intvalue += v.intvalue;
                         }
-                        value.valueKind = v.valueKind;
+                        if (!value.isImpossible())
+                            value.valueKind = v.valueKind;
                         value.bound = v.bound;
                         value.errorPath.insert(value.errorPath.end(), v.errorPath.cbegin(), v.errorPath.cend());
                         setTokenValue(tok, std::move(value), settings);

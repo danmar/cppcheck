@@ -23,4 +23,8 @@ valueFlowBailoutIncompleteVar
 autoNoType
 bailoutUninitVar
 
-*:externals/*/*
+naming-varname:externals/simplecpp/simplecpp.h
+naming-privateMemberVariable:externals/simplecpp/simplecpp.h
+# TODO: use more granular suppressions - might expose false positives
+*:externals/picojson/*
+*:externals/tinyxml2/*

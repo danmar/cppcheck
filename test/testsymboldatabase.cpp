@@ -3129,8 +3129,8 @@ private:
         // ticket #2991 - segmentation fault
         check("::y(){x}");
 
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n"
-                                          "[test.cpp:1]: (debug) valueflow.cpp:1321:valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n"
+                      "[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n", errout.str());
     }
 
     void symboldatabase20() {
@@ -5943,8 +5943,30 @@ private:
             std::advance(it, 2);
             const Enumerator* E0 = it->findEnumerator("E0");
             ASSERT(E0 && E0->value_known && E0->value == 0);
-            std::advance(it, 1);
             const Token* const e = Token::findsimplematch(tokenizer.tokens(), "E0 ;");
+            ASSERT(e && e->enumerator());
+            ASSERT_EQUALS(E0, e->enumerator());
+        }
+        {
+            GET_SYMBOL_DB("struct S {\n"
+                          "    enum E { E0 };\n"
+                          "    void f(int i);\n"
+                          "    S();\n"
+                          "    int m;\n"
+                          "};\n"
+                          "S::S() : m(E0) {}\n"
+                          "void S::f(int i) {\n"
+                          "    if (i != E0) {}\n"
+                          "}\n");
+            ASSERT(db != nullptr);
+            auto it = db->scopeList.begin();
+            std::advance(it, 2);
+            const Enumerator* E0 = it->findEnumerator("E0");
+            ASSERT(E0 && E0->value_known && E0->value == 0);
+            const Token* e = Token::findsimplematch(tokenizer.tokens(), "E0 )");
+            ASSERT(e && e->enumerator());
+            ASSERT_EQUALS(E0, e->enumerator());
+            e = Token::findsimplematch(e->next(), "E0 )");
             ASSERT(e && e->enumerator());
             ASSERT_EQUALS(E0, e->enumerator());
         }

@@ -24,7 +24,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "ctu.h"
 #include "mathlib.h"
 #include "errortypes.h"
 #include "tokenize.h"
@@ -41,6 +40,10 @@ class Variable;
 class ErrorLogger;
 class Settings;
 class Library;
+
+namespace CTU {
+    class FileInfo;
+}
 
 namespace tinyxml2 {
     class XMLElement;
@@ -101,16 +104,6 @@ private:
 
     /** ValueFlow-based checking for uninitialized variables */
     void valueFlowUninit();
-
-    /* data for multifile checking */
-    class MyFileInfo : public Check::FileInfo {
-    public:
-        /** function arguments that data are unconditionally read */
-        std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
-
-        /** Convert MyFileInfo data into xml string */
-        std::string toString() const override;
-    };
 
     /** @brief Parse current TU and extract file info */
     Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const override;

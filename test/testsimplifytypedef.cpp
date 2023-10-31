@@ -1949,7 +1949,7 @@ private:
                                 "( ( int * * * ) global [ 6 ] ) ( \"assoc\" , \"eggdrop\" , 106 , 0 ) ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code));
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp:1319:valueFlowConditionExpressions bailout: Skipping function due to incomplete variable global\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable global\n", errout.str());
     }
 
     void simplifyTypedef68() { // ticket #2355
@@ -3395,6 +3395,18 @@ private:
                "void N::T::f(V*) {}\n"
                "namespace N {}\n";
         ASSERT_EQUALS("namespace N { struct S { } ; struct T { void f ( int * ) ; } ; } void N :: T :: f ( int * ) { }", tok(code));
+
+        code = "namespace N {\n" // #12008
+               "    typedef char U;\n"
+               "    typedef int V;\n"
+               "    struct S {\n"
+               "        S(V* v);\n"
+               "    };\n"
+               "}\n"
+               "void f() {}\n"
+               "N::S::S(V* v) {}\n"
+               "namespace N {}\n";
+        ASSERT_EQUALS("namespace N { struct S { S ( int * v ) ; } ; } void f ( ) { } N :: S :: S ( int * v ) { }", tok(code));
     }
 
     void simplifyTypedef147() {

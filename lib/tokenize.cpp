@@ -1693,7 +1693,7 @@ void Tokenizer::simplifyTypedefCpp()
                         } else {
                             if (scope == 0 && !(classLevel > 1 && tok2 == spaceInfo[classLevel - 1].bodyEnd))
                                 break;
-                            --scope;
+                            scope = std::max(scope - 1, 0);
                         }
                     }
 
@@ -5615,13 +5615,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // TODO: this is only necessary if one typedef simplification had a comma and was used within ?:
     // If typedef handling is refactored and moved to symboldatabase someday we can remove this
     prepareTernaryOpForAST();
-
-    for (Token* tok = list.front(); tok;) {
-        if (Token::Match(tok, "union|struct|class union|struct|class"))
-            tok->deleteNext();
-        else
-            tok = tok->next();
-    }
 
     // class x y {
     if (isCPP() && mSettings->severity.isEnabled(Severity::information)) {
