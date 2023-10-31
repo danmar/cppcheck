@@ -1468,7 +1468,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("template <class T>\n" // #12128
-              "    struct B {\n"
+              "struct B {\n"
               "    T x;\n"
               "};\n"
               "struct D : B<double> {\n"
