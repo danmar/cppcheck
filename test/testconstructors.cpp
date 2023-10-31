@@ -1472,7 +1472,15 @@ private:
               "    T x;\n"
               "};\n"
               "struct D : B<double> {\n"
-              "    D(double x) : B{ x } { }\n"
+              "    D(double x) : B{ x } {}\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct B {\n"
+              "    int x;\n"
+              "};\n"
+              "struct D : B {\n"
+              "    D(int i) : B{ i } {}\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
     }
