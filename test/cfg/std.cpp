@@ -4638,6 +4638,13 @@ void string_view_unused(std::string_view v)
     v.substr(1, 3);
 }
 
+// cppcheck-suppress passedByValue
+void string_substr(std::string s)
+{
+    // cppcheck-suppress ignoredReturnValue
+    s.substr(1, 3);
+}
+
 void stdspan()
 {
 #ifndef __cpp_lib_span
