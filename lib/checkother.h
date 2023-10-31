@@ -241,7 +241,7 @@ private:
     void clarifyStatementError(const Token* tok);
     void cstyleCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive, bool toIsInt);
-    void passedByValueError(const Token *tok, const std::string &parname, bool inconclusive);
+    void passedByValueError(const Variable* var, bool inconclusive);
     void constVariableError(const Variable *var, const Function *function);
     void constStatementError(const Token *tok, const std::string &type, bool inconclusive);
     void signedCharArrayIndexError(const Token *tok);
@@ -314,7 +314,7 @@ private:
         c.checkComparisonFunctionIsAlwaysTrueOrFalseError(nullptr, "isless","varName",false);
         c.checkCastIntToCharAndBackError(nullptr, "func_name");
         c.cstyleCastError(nullptr);
-        c.passedByValueError(nullptr, "parametername", false);
+        c.passedByValueError(nullptr, false);
         c.constVariableError(nullptr, nullptr);
         c.constStatementError(nullptr, "type", false);
         c.signedCharArrayIndexError(nullptr);

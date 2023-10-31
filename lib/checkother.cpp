@@ -1366,7 +1366,7 @@ void CheckOther::checkPassByReference()
 
         const bool isConst = var->isConst();
         if (isConst) {
-            passedByValueError(var->nameToken(), var->name(), inconclusive);
+            passedByValueError(var, inconclusive);
             continue;
         }
 
@@ -1375,18 +1375,26 @@ void CheckOther::checkPassByReference()
             continue;
 
         if (canBeConst(var, mSettings)) {
-            passedByValueError(var->nameToken(), var->name(), inconclusive);
+            passedByValueError(var, inconclusive);
         }
     }
 }
 
-void CheckOther::passedByValueError(const Token *tok, const std::string &parname, bool inconclusive)
+void CheckOther::passedByValueError(const Variable* var, bool inconclusive)
 {
-    reportError(tok, Severity::performance, "passedByValue",
-                "$symbol:" + parname + "\n"
-                "Function parameter '$symbol' should be passed by const reference.\n"
-                "Parameter '$symbol' is passed by value. It could be passed "
-                "as a const reference which is usually faster and recommended in C++.", CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
+    std::string id = "passedByValue";
+    std::string msg = "$symbol:" + (var ? var->name() : "") + "\n"
+                      "Function parameter '$symbol' should be passed by const reference.";
+    ErrorPath errorPath;
+    if (var && var->scope() && var->scope()->function && var->scope()->function->functionPointerUsage) {
+        id += "Callback";
+        errorPath.emplace_front(var->scope()->function->functionPointerUsage, "Function pointer used here.");
+        msg += " However it seems that '" + var->scope()->function->name() + "' is a callback function.";
+    }
+    if (var)
+        errorPath.emplace_back(var->nameToken(), msg);
+    msg += "\nParameter '$symbol' is passed by value. It could be passed as a const reference which is usually faster and recommended in C++.";
+    reportError(errorPath, Severity::performance, id.c_str(), msg, CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 static bool isUnusedVariable(const Variable *var)
