@@ -3833,7 +3833,7 @@ private:
               "    if (*r && *b >= 5) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'r' can be declared as pointer to const\n"
-                      "[test.cpp:1]: (style)Parameter 'b' can be declared as pointer to const\n",
+                      "[test.cpp:1]: (style) Parameter 'b' can be declared as pointer to const\n",
                       errout.str());
     }
 

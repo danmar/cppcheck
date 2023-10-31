@@ -1705,12 +1705,18 @@ void CheckOther::checkConstPointer()
                 continue;
             if (p->isArgument() && p->typeStartToken() && p->typeStartToken()->isSimplifiedTypedef() && !(Token::simpleMatch(p->typeEndToken(), "*") && !p->typeEndToken()->isSimplifiedTypedef()))
                 continue;
-            if (p->typeStartToken() && !p->typeStartToken()->originalName().empty() && p->typeStartToken()->originalName().back() == '*')
-                continue;
+            if (p->typeStartToken() && !p->typeStartToken()->originalName().empty()) {
+                const Token* typeTok = p->typeEndToken();
+                while (typeTok->originalName().empty() && typeTok != p->typeStartToken())
+                    typeTok = typeTok->previous();
+                if (!typeTok->originalName().empty() && typeTok->originalName().back() == '*')
+                    continue;
+            }
             constVariableError(p, p->isArgument() ? p->scope()->function : nullptr);
         }
     }
 }
+
 void CheckOther::constVariableError(const Variable *var, const Function *function)
 {
     if (!var) {
