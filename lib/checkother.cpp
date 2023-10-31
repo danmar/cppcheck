@@ -3692,7 +3692,7 @@ void CheckOther::checkShadowVariables()
     }
 }
 
-void CheckOther::shadowError(const Token *var, const Token *shadowed, std::string type)
+void CheckOther::shadowError(const Token *var, const Token *shadowed, const std::string& type)
 {
     ErrorPath errorPath;
     errorPath.emplace_back(shadowed, "Shadowed declaration");
