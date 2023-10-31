@@ -1703,15 +1703,8 @@ void CheckOther::checkConstPointer()
             const int indirect = p->isArray() ? p->dimensions().size() : 1;
             if (isVariableChanged(start, p->scope()->bodyEnd, indirect, p->declarationId(), false, mSettings, mTokenizer->isCPP()))
                 continue;
-            if (p->isArgument() && p->typeStartToken() && p->typeStartToken()->isSimplifiedTypedef() && !(Token::simpleMatch(p->typeEndToken(), "*") && !p->typeEndToken()->isSimplifiedTypedef()))
+            if (p->typeStartToken() && p->typeStartToken()->isSimplifiedTypedef() && !(Token::simpleMatch(p->typeEndToken(), "*") && !p->typeEndToken()->isSimplifiedTypedef()))
                 continue;
-            if (p->typeStartToken() && !p->typeStartToken()->originalName().empty()) {
-                const Token* typeTok = p->typeEndToken();
-                while (typeTok->originalName().empty() && typeTok != p->typeStartToken())
-                    typeTok = typeTok->previous();
-                if (!typeTok->originalName().empty() && typeTok->originalName().back() == '*')
-                    continue;
-            }
             constVariableError(p, p->isArgument() ? p->scope()->function : nullptr);
         }
     }

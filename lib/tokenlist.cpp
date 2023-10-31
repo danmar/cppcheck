@@ -1918,20 +1918,24 @@ void TokenList::simplifyPlatformTypes()
             Token *typeToken;
             if (platformtype->mConstPtr) {
                 tok->str("const");
-                tok->insertToken("*");
-                tok->insertToken(platformtype->mType);
+                tok->isSimplifiedTypedef(true);
+                tok->insertToken("*")->isSimplifiedTypedef(true);
+                tok->insertToken(platformtype->mType)->isSimplifiedTypedef(true);
                 typeToken = tok;
             } else if (platformtype->mPointer) {
                 tok->str(platformtype->mType);
+                tok->isSimplifiedTypedef(true);
                 typeToken = tok;
-                tok->insertToken("*");
+                tok->insertToken("*")->isSimplifiedTypedef(true);
             } else if (platformtype->mPtrPtr) {
                 tok->str(platformtype->mType);
+                tok->isSimplifiedTypedef(true);
                 typeToken = tok;
-                tok->insertToken("*");
-                tok->insertToken("*");
+                tok->insertToken("*")->isSimplifiedTypedef(true);
+                tok->insertToken("*")->isSimplifiedTypedef(true);
             } else {
                 tok->str(platformtype->mType);
+                tok->isSimplifiedTypedef(true);
                 typeToken = tok;
             }
             if (platformtype->mSigned)
