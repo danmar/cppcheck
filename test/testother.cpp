@@ -2167,6 +2167,11 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (performance) Function parameter 'v' should be passed by const reference.\n", errout.str());
 
+        check("void f(const std::string& s, std::string t) {\n" // #12083
+              "    const std::string& v = !s.empty() ? s : t;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 't' should be passed by const reference.\n", errout.str());
+
         Settings settings1 = settingsBuilder().platform(Platform::Type::Win64).build();
         check("using ui64 = unsigned __int64;\n"
               "ui64 Test(ui64 one, ui64 two) { return one + two; }\n",
@@ -2201,7 +2206,9 @@ private:
         check("void f(std::string str) {\n"
               "    std::string& s2 = str;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's2' can be declared as reference to const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' should be passed by const reference.\n"
+                      "[test.cpp:2]: (style) Variable 's2' can be declared as reference to const\n",
+                      errout.str());
 
         check("void f(std::string str) {\n"
               "    const std::string& s2 = str;\n"
@@ -2354,7 +2361,9 @@ private:
               "    int& i = x[0];\n"
               "    return i;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared as reference to const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'x' should be passed by const reference.\n"
+                      "[test.cpp:2]: (style) Variable 'i' can be declared as reference to const\n",
+                      errout.str());
 
         check("int f(std::vector<int>& x) {\n"
               "    return x[0];\n"
@@ -2371,7 +2380,7 @@ private:
               "    static int& i = x[0];\n"
               "    return i;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'x' should be passed by const reference.\n", errout.str());
 
         check("int f(std::vector<int> x) {\n"
               "    int& i = x[0];\n"

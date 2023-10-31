@@ -284,7 +284,7 @@ bool Path::isDirectory(const std::string &path)
     return file_type(path) == S_IFDIR;
 }
 
-std::string Path::join(std::string path1, std::string path2) {
+std::string Path::join(const std::string& path1, const std::string& path2) {
     if (path1.empty() || path2.empty())
         return path1 + path2;
     if (path2.front() == '/')

@@ -4497,7 +4497,7 @@ void getline()
     in.close();
 }
 
-// TODO cppcheck-suppress passedByValue
+// cppcheck-suppress passedByValue
 void stream_write(std::ofstream& s, std::vector<char> v) {
     if (v.empty()) {}
     s.write(v.data(), v.size());
