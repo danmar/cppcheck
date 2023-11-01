@@ -33,7 +33,7 @@ void print_stacktrace(FILE* output, int start_idx, bool demangling, int maxdepth
     // 32 vs. 64bit
 #define ADDRESSDISPLAYLENGTH ((sizeof(long)==8)?12:8)
     void *callstackArray[32]= {nullptr}; // the less resources the better...
-    const int currentdepth = backtrace(callstackArray, (int)getArrayLength(callstackArray));
+    const int currentdepth = backtrace(callstackArray, static_cast<int>(getArrayLength(callstackArray)));
     // set offset to 1 to omit the printing function itself
     int offset=start_idx+1; // some entries on top are within our own exception handling code or libc
     if (maxdepth<0)
@@ -86,12 +86,12 @@ void print_stacktrace(FILE* output, int start_idx, bool demangling, int maxdepth
                     padLen, 0);
         if (realnameString) {
             fprintf(output, "%.*s in %s\n",
-                    (int)(secondBracketAddress-firstBracketAddress-3), firstBracketAddress+3,
+                    static_cast<int>(secondBracketAddress - firstBracketAddress - 3), firstBracketAddress+3,
                     realnameString);
         } else {
             fprintf(output, "%.*s in %.*s\n",
-                    (int)(secondBracketAddress-firstBracketAddress-3), firstBracketAddress+3,
-                    (int)(firstBracketAddress-symbolString), symbolString);
+                    static_cast<int>(secondBracketAddress - firstBracketAddress - 3), firstBracketAddress+3,
+                    static_cast<int>(firstBracketAddress - symbolString), symbolString);
         }
     }
     // NOLINTNEXTLINE(bugprone-multi-level-implicit-pointer-conversion) - code matches the documented usage

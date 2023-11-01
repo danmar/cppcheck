@@ -89,7 +89,7 @@ ShowTypes::ShowType ShowTypes::VariantToShowType(const QVariant &data)
     if (value < ShowTypes::ShowStyle || value > ShowTypes::ShowErrors) {
         return ShowTypes::ShowNone;
     }
-    return (ShowTypes::ShowType)value;
+    return static_cast<ShowTypes::ShowType>(value);
 }
 
 void ShowTypes::load()

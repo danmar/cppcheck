@@ -69,16 +69,16 @@ public:
         mFlags = 0xFFFFFFFF;
     }
     bool isEnabled(T flag) const {
-        return (mFlags & (1U << (uint32_t)flag)) != 0;
+        return (mFlags & (1U << static_cast<uint32_t>(flag))) != 0;
     }
     void enable(T flag) {
-        mFlags |= (1U << (uint32_t)flag);
+        mFlags |= (1U << static_cast<uint32_t>(flag));
     }
     void enable(SimpleEnableGroup<T> group) {
         mFlags |= group.intValue();
     }
     void disable(T flag) {
-        mFlags &= ~(1U << (uint32_t)flag);
+        mFlags &= ~(1U << static_cast<uint32_t>(flag));
     }
     void disable(SimpleEnableGroup<T> group) {
         mFlags &= ~(group.intValue());

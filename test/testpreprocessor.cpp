@@ -1694,7 +1694,7 @@ private:
             const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(settings0, *this, filedata);
 
             // Compare results..
-            ASSERT_EQUALS(1, (int)actual.size());
+            ASSERT_EQUALS(1, actual.size());
             ASSERT_EQUALS("\n\n\n\nB", actual.at(""));
         }
 
@@ -1708,7 +1708,7 @@ private:
             const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(settings0, *this, filedata);
 
             // Compare results..
-            ASSERT_EQUALS(1, (int)actual.size());
+            ASSERT_EQUALS(1, actual.size());
             ASSERT_EQUALS("\n\n$1", actual.at(""));
         }
 
@@ -1722,7 +1722,7 @@ private:
             const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(settings0, *this, filedata);
 
             // Compare results..
-            ASSERT_EQUALS(1, (int)actual.size());
+            ASSERT_EQUALS(1, actual.size());
             ASSERT_EQUALS("\n\n$1", actual.at(""));
         }
 
@@ -1736,7 +1736,7 @@ private:
             const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(settings0, *this, filedata);
 
             // Compare results..
-            ASSERT_EQUALS(1, (int)actual.size());
+            ASSERT_EQUALS(1, actual.size());
             ASSERT_EQUALS("\n\n$1", actual.at(""));
         }
 
@@ -1751,7 +1751,7 @@ private:
             const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(settings0, *this, filedata);
 
             // Compare results..
-            ASSERT_EQUALS(1, (int)actual.size());
+            ASSERT_EQUALS(1, actual.size());
             ASSERT_EQUALS("\n\n\n\n$1", actual.at(""));
         }
     }
@@ -1828,7 +1828,7 @@ private:
         const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(settings0, *this, filedata);
 
         // Compare results..
-        ASSERT_EQUALS(4, (int)actual.size());
+        ASSERT_EQUALS(4, actual.size());
         ASSERT(actual.find("") != actual.end());
         ASSERT(actual.find("BAR") != actual.end());
         ASSERT(actual.find("FOO") != actual.end());
@@ -1845,7 +1845,7 @@ private:
         const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(settings0, *this, filedata);
 
         // Compare results..
-        ASSERT_EQUALS(1, (int)actual.size());
+        ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("char a [ ] = \"#endfile\" ;\nchar b [ ] = \"#endfile\" ;", actual.at(""));
     }
 
