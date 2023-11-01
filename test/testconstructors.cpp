@@ -1467,6 +1467,22 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("template <class T>\n" // #12128
+              "struct B {\n"
+              "    T x;\n"
+              "};\n"
+              "struct D : B<double> {\n"
+              "    D(double x) : B{ x } {}\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct B {\n"
+              "    int x;\n"
+              "};\n"
+              "struct D : B {\n"
+              "    D(int i) : B{ i } {}\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void initvar_derived_pod_struct_with_union() {

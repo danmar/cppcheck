@@ -764,7 +764,14 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         if (initList) {
             if (level == 0 && Token::Match(ftok, "%name% {|(") && Token::Match(ftok->linkAt(1), "}|) ,|{")) {
                 if (ftok->str() != func.name()) {
-                    initVar(usage, ftok->varId());
+                    if (ftok->varId())
+                        initVar(usage, ftok->varId());
+                    else { // base class constructor
+                        for (Usage& u : usage) {
+                            if (u.var->scope() != scope) // assume that all variables are initialized in base class
+                                u.init = true;
+                        }
+                    }
                 } else { // c++11 delegate constructor
                     const Function *member = ftok->function();
                     // member function not found => assume it initializes all members
