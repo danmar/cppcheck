@@ -16,7 +16,7 @@ import copy
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.51"
+CLIENT_VERSION = "1.3.52"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -607,25 +607,6 @@ def diff_results(ver1, results1, ver2, results2):
     while i2 < len(r2):
         ret += ver2 + ' ' + r2[i2] + '\n'
         i2 += 1
-
-    # if there are syntaxError/unknownMacro/etc then analysis stops.
-    # diffing normal checker warnings will not make much sense
-    bailout_ids = ('[syntaxError]', '[unknownMacro]')
-    has_bailout_id = False
-    for id in bailout_ids:
-        if (id in results1) or (id in results1):
-            has_bailout_id = True
-    if has_bailout_id:
-        def check_bailout(line):
-            for id in bailout_ids:
-                if line.endswith(id):
-                    return True
-            return False
-        out = ''
-        for line in ret.split('\n'):
-            if check_bailout(line):
-                out += line + '\n'
-        ret = out
 
     return ret
 
