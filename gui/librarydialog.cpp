@@ -313,7 +313,7 @@ void LibraryDialog::changeFunction()
         return;
 
     function->comments   = mUi->comments->toPlainText();
-    function->noreturn   = (CppcheckLibraryData::Function::TrueFalseUnknown)mUi->noreturn->currentIndex();
+    function->noreturn   = static_cast<CppcheckLibraryData::Function::TrueFalseUnknown>(mUi->noreturn->currentIndex());
     function->useretval  = mUi->useretval->isChecked();
     function->leakignore = mUi->leakignore->isChecked();
 

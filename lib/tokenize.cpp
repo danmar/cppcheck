@@ -8147,7 +8147,7 @@ void Tokenizer::unhandledCharLiteral(const Token *tok, const std::string& msg) c
 {
     std::string s = tok ? (" " + tok->str()) : "";
     for (std::size_t i = 0; i < s.size(); ++i) {
-        if ((unsigned char)s[i] >= 0x80)
+        if (static_cast<unsigned char>(s[i]) >= 0x80)
             s.clear();
     }
 
@@ -8949,7 +8949,7 @@ std::string Tokenizer::simplifyString(const std::string &source)
         int sz = 0;    // size of stringdata
         if (str[i+1] == 'x') {
             sz = 2;
-            while (sz < 4 && std::isxdigit((unsigned char)str[i+sz]))
+            while (sz < 4 && std::isxdigit(static_cast<unsigned char>(str[i+sz])))
                 sz++;
             if (sz > 2) {
                 std::istringstream istr(str.substr(i+2, sz-2));
@@ -8961,14 +8961,14 @@ std::string Tokenizer::simplifyString(const std::string &source)
                 sz++;
             std::istringstream istr(str.substr(i+1, sz-1));
             istr >> std::oct >> c;
-            str = str.replace(i, sz, std::string(1U, (char)c));
+            str = str.replace(i, sz, std::string(1U, static_cast<char>(c)));
             continue;
         }
 
         if (sz <= 2)
             i++;
         else if (i+sz < str.size())
-            str.replace(i, sz, std::string(1U, (char)c));
+            str.replace(i, sz, std::string(1U, static_cast<char>(c)));
         else
             str.replace(i, str.size() - i - 1U, "a");
     }

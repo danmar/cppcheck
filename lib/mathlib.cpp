@@ -152,34 +152,34 @@ MathLib::value MathLib::value::calc(char op, const MathLib::value &v1, const Mat
     } else if (temp.mIsUnsigned) {
         switch (op) {
         case '+':
-            temp.mIntValue += (unsigned long long)v2.mIntValue;
+            temp.mIntValue += static_cast<unsigned long long>(v2.mIntValue);
             break;
         case '-':
-            temp.mIntValue -= (unsigned long long)v2.mIntValue;
+            temp.mIntValue -= static_cast<unsigned long long>(v2.mIntValue);
             break;
         case '*':
-            temp.mIntValue *= (unsigned long long)v2.mIntValue;
+            temp.mIntValue *= static_cast<unsigned long long>(v2.mIntValue);
             break;
         case '/':
             if (v2.mIntValue == 0)
                 throw InternalError(nullptr, "Internal Error: Division by zero");
             if (v1.mIntValue == std::numeric_limits<bigint>::min() && std::abs(v2.mIntValue)<=1)
                 throw InternalError(nullptr, "Internal Error: Division overflow");
-            temp.mIntValue /= (unsigned long long)v2.mIntValue;
+            temp.mIntValue /= static_cast<unsigned long long>(v2.mIntValue);
             break;
         case '%':
             if (v2.mIntValue == 0)
                 throw InternalError(nullptr, "Internal Error: Division by zero");
-            temp.mIntValue %= (unsigned long long)v2.mIntValue;
+            temp.mIntValue %= static_cast<unsigned long long>(v2.mIntValue);
             break;
         case '&':
-            temp.mIntValue &= (unsigned long long)v2.mIntValue;
+            temp.mIntValue &= static_cast<unsigned long long>(v2.mIntValue);
             break;
         case '|':
-            temp.mIntValue |= (unsigned long long)v2.mIntValue;
+            temp.mIntValue |= static_cast<unsigned long long>(v2.mIntValue);
             break;
         case '^':
-            temp.mIntValue ^= (unsigned long long)v2.mIntValue;
+            temp.mIntValue ^= static_cast<unsigned long long>(v2.mIntValue);
             break;
         default:
             throw InternalError(nullptr, "Unhandled calculation");
@@ -238,9 +238,9 @@ int MathLib::value::compare(const MathLib::value &v) const
     }
 
     if (temp.mIsUnsigned) {
-        if ((unsigned long long)mIntValue < (unsigned long long)v.mIntValue)
+        if (static_cast<unsigned long long>(mIntValue) < static_cast<unsigned long long>(v.mIntValue))
             return -1;
-        if ((unsigned long long)mIntValue > (unsigned long long)v.mIntValue)
+        if (static_cast<unsigned long long>(mIntValue) > static_cast<unsigned long long>(v.mIntValue))
             return 1;
         return 0;
     }
@@ -338,7 +338,7 @@ MathLib::biguint MathLib::toBigUNumber(const std::string & str, const Token * co
         // Use min/max values as an approximation. See #5843
         // TODO: bail out when we are out of range?
         const double doubleval = toDoubleNumber(str, tok);
-        if (doubleval > (double)std::numeric_limits<biguint>::max())
+        if (doubleval > static_cast<double>(std::numeric_limits<biguint>::max()))
             return std::numeric_limits<biguint>::max();
         // cast to bigint to avoid UBSAN warning about negative double being out-of-range
         return static_cast<biguint>(static_cast<bigint>(doubleval));
@@ -382,7 +382,7 @@ MathLib::bigint MathLib::toBigNumber(const std::string & str, const Token * cons
     if (isIntHex(str)) {
         try {
             const biguint ret = std::stoull(str, nullptr, 16);
-            return (bigint)ret;
+            return static_cast<bigint>(ret);
         } catch (const std::out_of_range& /*e*/) {
             throw InternalError(tok, "Internal Error. MathLib::toBigNumber: out_of_range: " + str);
         } catch (const std::invalid_argument& /*e*/) {
@@ -422,9 +422,9 @@ MathLib::bigint MathLib::toBigNumber(const std::string & str, const Token * cons
         // Use min/max values as an approximation. See #5843
         // TODO: bail out when we are out of range?
         const double doubleval = toDoubleNumber(str, tok);
-        if (doubleval > (double)std::numeric_limits<bigint>::max())
+        if (doubleval > static_cast<double>(std::numeric_limits<bigint>::max()))
             return std::numeric_limits<bigint>::max();
-        if (doubleval < (double)std::numeric_limits<bigint>::min())
+        if (doubleval < static_cast<double>(std::numeric_limits<bigint>::min()))
             return std::numeric_limits<bigint>::min();
         return static_cast<bigint>(doubleval);
     }

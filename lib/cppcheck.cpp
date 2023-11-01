@@ -1264,7 +1264,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
         // collected after all files are processed
         if (!mSettings.useSingleJob()) {
             // TODO: check result?
-            SuppressionList::reportUnmatchedSuppressions(mSuppressions.nomsg.getUnmatchedLocalSuppressions(file, (bool)mUnusedFunctionsCheck), mErrorLogger);
+            SuppressionList::reportUnmatchedSuppressions(mSuppressions.nomsg.getUnmatchedLocalSuppressions(file, static_cast<bool>(mUnusedFunctionsCheck)), mErrorLogger);
         }
     }
 
@@ -1594,8 +1594,8 @@ void CppCheck::executeRules(const std::string &tokenlist, const TokenList &list)
 
         int pos = 0;
         int ovector[30]= {0};
-        while (pos < (int)str.size()) {
-            const int pcreExecRet = pcre_exec(re, pcreExtra, str.c_str(), (int)str.size(), pos, 0, ovector, 30);
+        while (pos < static_cast<int>(str.size())) {
+            const int pcreExecRet = pcre_exec(re, pcreExtra, str.c_str(), static_cast<int>(str.size()), pos, 0, ovector, 30);
             if (pcreExecRet < 0) {
                 const std::string errorMessage = pcreErrorCodeToString(pcreExecRet);
                 if (!errorMessage.empty()) {
@@ -1610,11 +1610,11 @@ void CppCheck::executeRules(const std::string &tokenlist, const TokenList &list)
                 }
                 break;
             }
-            const auto pos1 = (unsigned int)ovector[0];
-            const auto pos2 = (unsigned int)ovector[1];
+            const auto pos1 = static_cast<unsigned int>(ovector[0]);
+            const auto pos2 = static_cast<unsigned int>(ovector[1]);
 
             // jump to the end of the match for the next pcre_exec
-            pos = (int)pos2;
+            pos = static_cast<int>(pos2);
 
             // determine location..
             int fileIndex = 0;

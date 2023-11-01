@@ -1008,10 +1008,10 @@ static void valueFlowBitAnd(TokenList& tokenlist, const Settings& settings)
             continue;
 
         int bit = 0;
-        while (bit <= (MathLib::bigint_bits - 2) && ((((MathLib::bigint)1) << bit) < number))
+        while (bit <= (MathLib::bigint_bits - 2) && ((static_cast<MathLib::bigint>(1) << bit) < number))
             ++bit;
 
-        if ((((MathLib::bigint)1) << bit) == number) {
+        if ((static_cast<MathLib::bigint>(1) << bit) == number) {
             setTokenValue(tok, ValueFlow::Value(0), settings);
             setTokenValue(tok, ValueFlow::Value(number), settings);
         }

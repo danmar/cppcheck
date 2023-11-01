@@ -116,9 +116,9 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
     // TODO: separate these two defines
 #if defined(__linux__) && defined(REG_ERR)
     const auto* const uc = reinterpret_cast<const ucontext_t*>(context);
-    killid = (pid_t) syscall(SYS_gettid);
+    killid = static_cast<pid_t>(syscall(SYS_gettid));
     if (uc) {
-        type = (int)uc->uc_mcontext.gregs[REG_ERR] & 2;
+        type = static_cast<int>(uc->uc_mcontext.gregs[REG_ERR]) & 2;
     }
 #else
     (void)context;
@@ -170,7 +170,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
             break;
         }
         fprintf(output, " (at 0x%lx).\n",
-                (unsigned long)info->si_addr);
+                reinterpret_cast<unsigned long>(info->si_addr));
         break;
     case SIGFPE:
         fputs("Internal error: cppcheck received signal ", output);
@@ -204,7 +204,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
             break;
         }
         fprintf(output, " (at 0x%lx).\n",
-                (unsigned long)info->si_addr);
+                reinterpret_cast<unsigned long>(info->si_addr));
         break;
     case SIGILL:
         fputs("Internal error: cppcheck received signal ", output);
@@ -238,7 +238,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
             break;
         }
         fprintf(output, " (at 0x%lx).%s\n",
-                (unsigned long)info->si_addr,
+                reinterpret_cast<unsigned long>(info->si_addr),
                 (isAddressOnStack)?" Stackoverflow?":"");
         break;
     case SIGINT:
@@ -264,7 +264,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
                 // cppcheck-suppress knownConditionTrueFalse ; FP
                 (type==-1)? "" :
                 (type==0) ? "reading " : "writing ",
-                (unsigned long)info->si_addr,
+                reinterpret_cast<unsigned long>(info->si_addr),
                 (isAddressOnStack)?" Stackoverflow?":""
                 );
         break;
