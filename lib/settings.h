@@ -205,6 +205,8 @@ public:
     /** @brief List of --file-filter for analyzing special files */
     std::vector<std::string> fileFilters;
 
+    std::list<ImportProject::FileSettings> fileSettings;
+
     /** @brief Force checking the files with "too many" configurations (--force). */
     bool force{};
 
@@ -266,8 +268,6 @@ public:
 
     /** @brief Using -E for debugging purposes */
     bool preprocessOnly{};
-
-    ImportProject project;
 
     /** @brief Is --quiet given? */
     bool quiet{};

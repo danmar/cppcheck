@@ -122,6 +122,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     bool def = false;
     bool maxconfigs = false;
 
+    ImportProject project;
+
     mSettings.exename = Path::getCurrentExecutablePath(argv[0]);
 
     for (int i = 1; i < argc; i++) {
@@ -666,7 +668,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // --project
             else if (std::strncmp(argv[i], "--project=", 10) == 0) {
-                if (mSettings.project.projectType != ImportProject::Type::NONE)
+                if (project.projectType != ImportProject::Type::NONE)
                 {
                     mLogger.printError("multiple --project options are not supported.");
                     return false;
@@ -674,16 +676,16 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
                 mSettings.checkAllConfigurations = false; // Can be overridden with --max-configs or --force
                 std::string projectFile = argv[i]+10;
-                ImportProject::Type projType = mSettings.project.import(projectFile, &mSettings);
-                mSettings.project.projectType = projType;
+                ImportProject::Type projType = project.import(projectFile, &mSettings);
+                project.projectType = projType;
                 if (projType == ImportProject::Type::CPPCHECK_GUI) {
-                    for (const std::string &lib : mSettings.project.guiProject.libraries)
+                    for (const std::string &lib : project.guiProject.libraries)
                         mSettings.libraries.emplace_back(lib);
 
-                    const auto& excludedPaths = mSettings.project.guiProject.excludedPaths;
+                    const auto& excludedPaths = project.guiProject.excludedPaths;
                     std::copy(excludedPaths.cbegin(), excludedPaths.cend(), std::back_inserter(mIgnoredPaths));
 
-                    std::string platform(mSettings.project.guiProject.platform);
+                    std::string platform(project.guiProject.platform);
 
                     // keep existing platform from command-line intact
                     if (!platform.empty()) {
@@ -700,14 +702,16 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         }
                     }
 
-                    if (!mSettings.project.guiProject.projectFile.empty()) {
-                        projectFile = mSettings.project.guiProject.projectFile;
-                        projType = mSettings.project.import(mSettings.project.guiProject.projectFile, &mSettings);
+                    const auto& projectFileGui = project.guiProject.projectFile;
+                    if (!projectFileGui.empty()) {
+                        // read underlying project
+                        projectFile = projectFileGui;
+                        projType = project.import(projectFileGui, &mSettings);
                     }
                 }
                 if (projType == ImportProject::Type::VS_SLN || projType == ImportProject::Type::VS_VCXPROJ) {
-                    if (mSettings.project.guiProject.analyzeAllVsConfigs == "false")
-                        mSettings.project.selectOneVsConfig(mSettings.platform.type);
+                    if (project.guiProject.analyzeAllVsConfigs == "false")
+                        project.selectOneVsConfig(mSettings.platform.type);
                     if (!CppCheckExecutor::tryLoadLibrary(mSettings.library, argv[0], "windows.cfg")) {
                         // This shouldn't happen normally.
                         mLogger.printError("failed to load 'windows.cfg'. Your Cppcheck installation is broken. Please re-install.");
@@ -731,8 +735,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // --project-configuration
             else if (std::strncmp(argv[i], "--project-configuration=", 24) == 0) {
                 mVSConfig = argv[i] + 24;
-                if (!mVSConfig.empty() && (mSettings.project.projectType == ImportProject::Type::VS_SLN || mSettings.project.projectType == ImportProject::Type::VS_VCXPROJ))
-                    mSettings.project.ignoreOtherConfigs(mVSConfig);
+                if (!mVSConfig.empty() && (project.projectType == ImportProject::Type::VS_SLN || project.projectType == ImportProject::Type::VS_VCXPROJ))
+                    project.ignoreOtherConfigs(mVSConfig);
             }
 
             // Only print something when there are errors
@@ -1028,7 +1032,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     substituteTemplateFormatStatic(mSettings.templateFormat);
     substituteTemplateLocationStatic(mSettings.templateLocation);
 
-    mSettings.project.ignorePaths(mIgnoredPaths);
+    project.ignorePaths(mIgnoredPaths);
 
     if (mSettings.force || maxconfigs)
         mSettings.checkAllConfigurations = true;
@@ -1053,19 +1057,22 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         return true;
     }
 
-    if (!mPathNames.empty() && mSettings.project.projectType != ImportProject::Type::NONE) {
+    if (!mPathNames.empty() && project.projectType != ImportProject::Type::NONE) {
         mLogger.printError("--project cannot be used in conjunction with source files.");
         return false;
     }
 
     // Print error only if we have "real" command and expect files
-    if (!mExitAfterPrint && mPathNames.empty() && mSettings.project.guiProject.pathNames.empty() && mSettings.project.fileSettings.empty()) {
+    if (!mExitAfterPrint && mPathNames.empty() && project.guiProject.pathNames.empty() && project.fileSettings.empty()) {
         mLogger.printError("no C or C++ source files found.");
         return false;
     }
 
-    if (!mSettings.project.guiProject.pathNames.empty())
-        mPathNames = mSettings.project.guiProject.pathNames;
+    if (!project.guiProject.pathNames.empty())
+        mPathNames = project.guiProject.pathNames;
+
+    if (!project.fileSettings.empty())
+        mSettings.fileSettings = project.fileSettings;
 
     // Use paths _pathnames if no base paths for relative path output are given
     if (mSettings.basePaths.empty() && mSettings.relativePaths)

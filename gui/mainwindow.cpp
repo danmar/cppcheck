@@ -600,7 +600,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
         std::transform(fileNames.cbegin(), fileNames.cend(), std::back_inserter(sourcefiles), [](const QString& s) {
             return s.toStdString();
         });
-        AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.userDefines, checkSettings.project.fileSettings);
+        AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.userDefines, checkSettings.fileSettings);
     }
 
     mThread->setCheckFiles(true);

@@ -180,7 +180,7 @@ unsigned int ThreadExecutor::check()
     std::vector<std::future<unsigned int>> threadFutures;
     threadFutures.reserve(mSettings.jobs);
 
-    ThreadData data(*this, mErrorLogger, mSettings, mFiles, mSettings.project.fileSettings, mExecuteCommand);
+    ThreadData data(*this, mErrorLogger, mSettings, mFiles, mSettings.fileSettings, mExecuteCommand);
 
     for (unsigned int i = 0; i < mSettings.jobs; ++i) {
         try {
