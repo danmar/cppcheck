@@ -3837,6 +3837,13 @@ private:
               "    qsort(p, nmemb, size, cmp);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void g(bool *r, std::size_t *b) {\n" // #12129
+              "    if (*r && *b >= 5) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'r' can be declared as pointer to const\n"
+                      "[test.cpp:1]: (style) Parameter 'b' can be declared as pointer to const\n",
+                      errout.str());
     }
 
     void switchRedundantAssignmentTest() {
