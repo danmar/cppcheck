@@ -129,7 +129,6 @@ private:
     void uninitStructMemberError(const Token *tok, const std::string &membername);
 
     std::set<const Token*> mUninitDiags;
-    Check::FileInfo* getFileInfo() const;
 
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override
     {

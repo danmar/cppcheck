@@ -1681,12 +1681,6 @@ void CheckUninitVar::valueFlowUninit()
     }
 }
 
-Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
-{
-    const CheckUninitVar checker(tokenizer, settings, nullptr);
-    return checker.getFileInfo();
-}
-
 // NOLINTNEXTLINE(readability-non-const-parameter) - used as callback so we need to preserve the signature
 static bool isVariableUsage(const Settings *settings, const Token *vartok, MathLib::bigint *value)
 {
@@ -1709,9 +1703,9 @@ namespace {
     };
 }
 
-Check::FileInfo *CheckUninitVar::getFileInfo() const
+Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
-    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(mTokenizer, mSettings, ::isVariableUsage);
+    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, ::isVariableUsage);
     if (unsafeUsage.empty())
         return nullptr;
 
