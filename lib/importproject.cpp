@@ -78,7 +78,7 @@ void ImportProject::ignoreOtherConfigs(const std::string &cfg)
     }
 }
 
-void ImportProject::FileSettings::setDefines(std::string defs)
+void ImportProject::fsSetDefines(FileSettings& fs, std::string defs)
 {
     while (defs.find(";%(") != std::string::npos) {
         const std::string::size_type pos1 = defs.find(";%(");
@@ -106,7 +106,7 @@ void ImportProject::FileSettings::setDefines(std::string defs)
     }
     if (!eq && !defs.empty())
         defs += "=1";
-    defines.swap(defs);
+    fs.defines.swap(defs);
 }
 
 static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std::string, cppcheck::stricmp> &variables)
@@ -140,12 +140,12 @@ static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std:
     return true;
 }
 
-void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables)
+void ImportProject::fsSetIncludePaths(FileSettings& fs, const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables)
 {
     std::set<std::string> found;
     // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
     const std::list<std::string> copyIn(in);
-    includePaths.clear();
+    fs.includePaths.clear();
     for (const std::string &ipath : copyIn) {
         if (ipath.empty())
             continue;
@@ -157,7 +157,7 @@ void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, c
         if (s[0] == '/' || (s.size() > 1U && s.compare(1,2,":/") == 0)) {
             if (!endsWith(s,'/'))
                 s += '/';
-            includePaths.push_back(std::move(s));
+            fs.includePaths.push_back(std::move(s));
             continue;
         }
 
@@ -172,7 +172,7 @@ void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, c
         }
         if (s.empty())
             continue;
-        includePaths.push_back(s + '/');
+        fs.includePaths.push_back(s + '/');
     }
 }
 
@@ -266,7 +266,7 @@ static std::string unescape(const std::string &in)
     return out;
 }
 
-void ImportProject::FileSettings::parseCommand(const std::string& command)
+void ImportProject::fsParseCommand(FileSettings& fs, const std::string& command)
 {
     std::string defs;
 
@@ -299,20 +299,20 @@ void ImportProject::FileSettings::parseCommand(const std::string& command)
                 defs += defval;
             defs += ';';
         } else if (F=='U')
-            undefs.insert(fval);
+            fs.undefs.insert(fval);
         else if (F=='I') {
             std::string i = fval;
             if (i.size() > 1 && i[0] == '\"' && i.back() == '\"')
                 i = unescape(i.substr(1, i.size() - 2));
-            if (std::find(includePaths.cbegin(), includePaths.cend(), i) == includePaths.cend())
-                includePaths.push_back(std::move(i));
+            if (std::find(fs.includePaths.cbegin(), fs.includePaths.cend(), i) == fs.includePaths.cend())
+                fs.includePaths.push_back(std::move(i));
         } else if (F=='s' && startsWith(fval,"td")) {
             ++pos;
-            standard = readUntil(command, &pos, " ");
+            fs.standard = readUntil(command, &pos, " ");
         } else if (F == 'i' && fval == "system") {
             ++pos;
             std::string isystem = readUntil(command, &pos, " ");
-            systemIncludePaths.push_back(std::move(isystem));
+            fs.systemIncludePaths.push_back(std::move(isystem));
         } else if (F=='m') {
             if (fval == "unicode") {
                 defs += "UNICODE";
@@ -334,7 +334,7 @@ void ImportProject::FileSettings::parseCommand(const std::string& command)
             }
         }
     }
-    setDefines(defs);
+    fsSetDefines(fs, defs);
 }
 
 bool ImportProject::importCompileCommands(std::istream &istr)
@@ -411,9 +411,9 @@ bool ImportProject::importCompileCommands(std::istream &istr)
             printError("'" + fs.filename + "' from compilation database does not exist");
             return false;
         }
-        fs.parseCommand(command); // read settings; -D, -I, -U, -std, -m*, -f*
+        fsParseCommand(fs, command); // read settings; -D, -I, -U, -std, -m*, -f*
         std::map<std::string, std::string, cppcheck::stricmp> variables;
-        fs.setIncludePaths(directory, fs.includePaths, variables);
+        fsSetIncludePaths(fs, directory, fs.includePaths, variables);
         fileSettings.push_back(std::move(fs));
     }
 
@@ -779,8 +779,8 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                     fs.defines += ";__AVX512__";
                 additionalIncludePaths += ';' + i.additionalIncludePaths;
             }
-            fs.setDefines(fs.defines);
-            fs.setIncludePaths(Path::getPathFromFilename(filename), toStringList(includePath + ';' + additionalIncludePaths), variables);
+            fsSetDefines(fs, fs.defines);
+            fsSetIncludePaths(fs, Path::getPathFromFilename(filename), toStringList(includePath + ';' + additionalIncludePaths), variables);
             fileSettings.push_back(std::move(fs));
         }
     }
@@ -1045,8 +1045,8 @@ bool ImportProject::importBcb6Prj(const std::string &projectFilename)
         // We can also force C++ compilation for all files using the -P command line switch.
         const bool cppMode = forceCppMode || Path::getFilenameExtensionInLowerCase(c) == ".cpp";
         FileSettings fs;
-        fs.setIncludePaths(projectDir, toStringList(includePath), variables);
-        fs.setDefines(cppMode ? cppDefines : defines);
+        fsSetIncludePaths(fs, projectDir, toStringList(includePath), variables);
+        fsSetDefines(fs, cppMode ? cppDefines : defines);
         fs.filename = Path::simplifyPath(Path::isAbsolute(c) ? c : projectDir + c);
         fileSettings.push_back(std::move(fs));
     }
@@ -1267,12 +1267,12 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
 void ImportProject::selectOneVsConfig(Platform::Type platform)
 {
     std::set<std::string> filenames;
-    for (std::list<ImportProject::FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
+    for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
         if (it->cfg.empty()) {
             ++it;
             continue;
         }
-        const ImportProject::FileSettings &fs = *it;
+        const FileSettings &fs = *it;
         bool remove = false;
         if (!startsWith(fs.cfg,"Debug"))
             remove = true;
@@ -1293,12 +1293,12 @@ void ImportProject::selectOneVsConfig(Platform::Type platform)
 
 void ImportProject::selectVsConfigurations(Platform::Type platform, const std::vector<std::string> &configurations)
 {
-    for (std::list<ImportProject::FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
+    for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
         if (it->cfg.empty()) {
             ++it;
             continue;
         }
-        const ImportProject::FileSettings &fs = *it;
+        const FileSettings &fs = *it;
         const auto config = fs.cfg.substr(0, fs.cfg.find('|'));
         bool remove = false;
         if (std::find(configurations.begin(), configurations.end(), config) == configurations.end())

@@ -18,6 +18,9 @@
 
 #include "platform.h"
 #include "fixture.h"
+#include "standards.h"
+
+#include <string>
 
 #include <tinyxml2.h>
 

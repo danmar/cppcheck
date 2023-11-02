@@ -19,7 +19,7 @@
 #include "singleexecutor.h"
 
 #include "cppcheck.h"
-#include "importproject.h"
+#include "filesettings.h"
 #include "library.h"
 #include "settings.h"
 #include "timer.h"
@@ -66,7 +66,7 @@ unsigned int SingleExecutor::check()
     } else {
         // filesettings
         // check all files of the project
-        for (const ImportProject::FileSettings &fs : mSettings.fileSettings) {
+        for (const FileSettings &fs : mSettings.fileSettings) {
             if (!mSettings.library.markupFile(fs.filename)
                 || !mSettings.library.processMarkupAfterCode(fs.filename)) {
                 result += mCppcheck.check(fs);
@@ -96,7 +96,7 @@ unsigned int SingleExecutor::check()
         }
     }
     else {
-        for (const ImportProject::FileSettings &fs : mSettings.fileSettings) {
+        for (const FileSettings &fs : mSettings.fileSettings) {
             if (mSettings.library.markupFile(fs.filename)
                 && mSettings.library.processMarkupAfterCode(fs.filename)) {
                 result += mCppcheck.check(fs);

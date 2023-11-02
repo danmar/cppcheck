@@ -26,6 +26,7 @@
 #include "cppcheck.h"
 #include "errortypes.h"
 #include "filelist.h"
+#include "filesettings.h"
 #include "compliancereportdialog.h"
 #include "fileviewdialog.h"
 #include "helpdialog.h"
@@ -710,7 +711,7 @@ void MainWindow::analyzeFiles()
 
         if (file0.endsWith(".sln")) {
             QStringList configs;
-            for (std::list<ImportProject::FileSettings>::const_iterator it = p.fileSettings.cbegin(); it != p.fileSettings.cend(); ++it) {
+            for (std::list<FileSettings>::const_iterator it = p.fileSettings.cbegin(); it != p.fileSettings.cend(); ++it) {
                 const QString cfg(QString::fromStdString(it->cfg));
                 if (!configs.contains(cfg))
                     configs.push_back(cfg);

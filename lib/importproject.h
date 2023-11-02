@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "filesettings.h"
 #include "platform.h"
 #include "utils.h"
 
@@ -48,7 +49,7 @@ class Settings;
 /**
  * @brief Importing project settings.
  */
-class CPPCHECKLIB ImportProject {
+class CPPCHECKLIB WARN_UNUSED ImportProject {
 public:
     enum class Type {
         NONE,
@@ -62,26 +63,10 @@ public:
         CPPCHECK_GUI
     };
 
-    /** File settings. Multiple configurations for a file is allowed. */
-    struct CPPCHECKLIB FileSettings {
-        std::string cfg;
-        std::string filename;
-        std::string defines;
-        std::string cppcheckDefines() const {
-            return defines + (msc ? ";_MSC_VER=1900" : "") + (useMfc ? ";__AFXWIN_H__=1" : "");
-        }
-        std::set<std::string> undefs;
-        std::list<std::string> includePaths;
-        std::list<std::string> systemIncludePaths;
-        std::string standard;
-        Platform::Type platformType = Platform::Type::Unspecified;
-        bool msc{};
-        bool useMfc{};
+    static void fsParseCommand(FileSettings& fs, const std::string& command);
+    static void fsSetDefines(FileSettings& fs, std::string defs);
+    static void fsSetIncludePaths(FileSettings& fs, const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
 
-        void parseCommand(const std::string& command);
-        void setDefines(std::string defs);
-        void setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
-    };
     std::list<FileSettings> fileSettings;
     Type projectType{Type::NONE};
 

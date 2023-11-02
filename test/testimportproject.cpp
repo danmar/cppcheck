@@ -18,6 +18,7 @@
 
 #include "importproject.h"
 #include "settings.h"
+#include "filesettings.h"
 #include "fixture.h"
 
 #include <list>
@@ -66,46 +67,46 @@ private:
     }
 
     void setDefines() const {
-        ImportProject::FileSettings fs;
+        FileSettings fs;
 
-        fs.setDefines("A");
+        ImportProject::fsSetDefines(fs, "A");
         ASSERT_EQUALS("A=1", fs.defines);
 
-        fs.setDefines("A;B;");
+        ImportProject::fsSetDefines(fs, "A;B;");
         ASSERT_EQUALS("A=1;B=1", fs.defines);
 
-        fs.setDefines("A;;B;");
+        ImportProject::fsSetDefines(fs, "A;;B;");
         ASSERT_EQUALS("A=1;B=1", fs.defines);
 
-        fs.setDefines("A;;B");
+        ImportProject::fsSetDefines(fs, "A;;B");
         ASSERT_EQUALS("A=1;B=1", fs.defines);
     }
 
     void setIncludePaths1() const {
-        ImportProject::FileSettings fs;
+        FileSettings fs;
         std::list<std::string> in(1, "../include");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
-        fs.setIncludePaths("abc/def/", in, variables);
+        ImportProject::fsSetIncludePaths(fs, "abc/def/", in, variables);
         ASSERT_EQUALS(1U, fs.includePaths.size());
         ASSERT_EQUALS("abc/include/", fs.includePaths.front());
     }
 
     void setIncludePaths2() const {
-        ImportProject::FileSettings fs;
+        FileSettings fs;
         std::list<std::string> in(1, "$(SolutionDir)other");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         variables["SolutionDir"] = "c:/abc/";
-        fs.setIncludePaths("/home/fred", in, variables);
+        ImportProject::fsSetIncludePaths(fs, "/home/fred", in, variables);
         ASSERT_EQUALS(1U, fs.includePaths.size());
         ASSERT_EQUALS("c:/abc/other/", fs.includePaths.front());
     }
 
     void setIncludePaths3() const { // macro names are case insensitive
-        ImportProject::FileSettings fs;
+        FileSettings fs;
         std::list<std::string> in(1, "$(SOLUTIONDIR)other");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         variables["SolutionDir"] = "c:/abc/";
-        fs.setIncludePaths("/home/fred", in, variables);
+        ImportProject::fsSetIncludePaths(fs, "/home/fred", in, variables);
         ASSERT_EQUALS(1U, fs.includePaths.size());
         ASSERT_EQUALS("c:/abc/other/", fs.includePaths.front());
     }
@@ -279,7 +280,7 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(1, importer.fileSettings.size());
-        const ImportProject::FileSettings &fs = importer.fileSettings.front();
+        const FileSettings &fs = importer.fileSettings.front();
         ASSERT_EQUALS("/home/danielm/cppcheck/test folder/", fs.includePaths.front());
     }
 
@@ -300,7 +301,7 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(1, importer.fileSettings.size());
-        const ImportProject::FileSettings &fs = importer.fileSettings.front();
+        const FileSettings &fs = importer.fileSettings.front();
         ASSERT_EQUALS("/x/def/", fs.includePaths.front());
         ASSERT_EQUALS("/x/abc/", fs.includePaths.back());
     }
@@ -353,7 +354,7 @@ private:
     }
 
     void ignorePaths() const {
-        ImportProject::FileSettings fs1, fs2;
+        FileSettings fs1, fs2;
         fs1.filename = "foo/bar";
         fs2.filename = "qwe/rty";
         TestImporter project;
@@ -369,6 +370,8 @@ private:
         project.ignorePaths({ "*e/r*" });
         ASSERT_EQUALS(0, project.fileSettings.size());
     }
+
+    // TODO: test fsParseCommand()
 };
 
 REGISTER_TEST(TestImportProject)

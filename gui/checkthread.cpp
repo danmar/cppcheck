@@ -24,6 +24,7 @@
 #include "erroritem.h"
 #include "errorlogger.h"
 #include "errortypes.h"
+#include "filesettings.h"
 #include "settings.h"
 #include "standards.h"
 #include "threadresult.h"
@@ -130,7 +131,7 @@ void CheckThread::run()
             file = mResult.getNextFile();
     }
 
-    ImportProject::FileSettings fileSettings = mResult.getNextFileSettings();
+    FileSettings fileSettings = mResult.getNextFileSettings();
     while (!fileSettings.filename.empty() && mState == Running) {
         file = QString::fromStdString(fileSettings.filename);
         qDebug() << "Checking file" << file;
@@ -150,7 +151,7 @@ void CheckThread::run()
     emit done();
 }
 
-void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSettings, const QString &fileName)
+void CheckThread::runAddonsAndTools(const FileSettings *fileSettings, const QString &fileName)
 {
     for (const QString& addon : mAddonsAndTools) {
         if (addon == CLANG_ANALYZER || addon == CLANG_TIDY) {
