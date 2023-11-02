@@ -549,12 +549,11 @@ void CheckNullPointer::redundantConditionWarning(const Token* tok, const ValueFl
 }
 
 // NOLINTNEXTLINE(readability-non-const-parameter) - used as callback so we need to preserve the signature
-static bool isUnsafeUsage(const Check *check, const Token *vartok, MathLib::bigint *value)
+static bool isUnsafeUsage(const Settings *settings, const Token *vartok, MathLib::bigint *value)
 {
     (void)value;
-    const CheckNullPointer *checkNullPointer = dynamic_cast<const CheckNullPointer *>(check);
     bool unknown = false;
-    return checkNullPointer && checkNullPointer->isPointerDeRef(vartok, unknown);
+    return CheckNullPointer::isPointerDeRef(vartok, unknown, settings);
 }
 
 namespace {
@@ -575,8 +574,7 @@ namespace {
 
 Check::FileInfo *CheckNullPointer::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
-    CheckNullPointer check(tokenizer, settings, nullptr);
-    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, &check, ::isUnsafeUsage);
+    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, isUnsafeUsage);
     if (unsafeUsage.empty())
         return nullptr;
 

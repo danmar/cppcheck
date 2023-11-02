@@ -146,7 +146,7 @@ namespace CTU {
     /** @brief Parse current TU and extract file info */
     CPPCHECKLIB FileInfo *getFileInfo(const Tokenizer *tokenizer);
 
-    CPPCHECKLIB std::list<FileInfo::UnsafeUsage> getUnsafeUsage(const Tokenizer *tokenizer, const Settings *settings, const Check *check, bool (*isUnsafeUsage)(const Check *check, const Token *argtok, MathLib::bigint *value));
+    CPPCHECKLIB std::list<FileInfo::UnsafeUsage> getUnsafeUsage(const Tokenizer *tokenizer, const Settings *settings, bool (*isUnsafeUsage)(const Settings *settings, const Token *argtok, MathLib::bigint *value));
 
     CPPCHECKLIB std::list<FileInfo::UnsafeUsage> loadUnsafeUsageListFromXml(const tinyxml2::XMLElement *xmlElement);
 }

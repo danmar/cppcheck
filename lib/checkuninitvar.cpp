@@ -1334,7 +1334,7 @@ const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, cons
 
 const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect) const
 {
-    return CheckUninitVar::isVariableUsage(mTokenizer->isCPP(), vartok, mSettings->library, pointer, alloc, indirect);
+    return isVariableUsage(mTokenizer->isCPP(), vartok, mSettings->library, pointer, alloc, indirect);
 }
 
 /***
@@ -1688,11 +1688,10 @@ Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const S
 }
 
 // NOLINTNEXTLINE(readability-non-const-parameter) - used as callback so we need to preserve the signature
-static bool isVariableUsage(const Check *check, const Token *vartok, MathLib::bigint *value)
+static bool isVariableUsage(const Settings *settings, const Token *vartok, MathLib::bigint *value)
 {
     (void)value;
-    const CheckUninitVar *c = dynamic_cast<const CheckUninitVar *>(check);
-    return c && c->isVariableUsage(vartok, true, CheckUninitVar::Alloc::ARRAY);
+    return CheckUninitVar::isVariableUsage(vartok->isCpp(), vartok, settings->library, true, CheckUninitVar::Alloc::ARRAY);
 }
 
 namespace {
@@ -1712,7 +1711,7 @@ namespace {
 
 Check::FileInfo *CheckUninitVar::getFileInfo() const
 {
-    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(mTokenizer, mSettings, this, ::isVariableUsage);
+    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(mTokenizer, mSettings, ::isVariableUsage);
     if (unsafeUsage.empty())
         return nullptr;
 
