@@ -1317,6 +1317,7 @@ private:
         ASSERT_EQUALS("blah :: blah f ( ) ;", tok("__attribute__ ((visibility(\"default\"))) blah::blah f();"));
         ASSERT_EQUALS("template < T > Result < T > f ( ) ;", tok("template<T> __attribute__ ((warn_unused_result)) Result<T> f();"));
         ASSERT_EQUALS("template < T , U > Result < T , U > f ( ) ;", tok("template<T, U> __attribute__ ((warn_unused_result)) Result<T, U> f();"));
+        ASSERT_EQUALS("void ( * fp ) ( ) ; fp = nullptr ;", tok("typedef void (*fp_t)() __attribute__((noreturn)); fp_t fp = nullptr;")); // #12137
     }
 
     void simplifyFunctorCall() {
