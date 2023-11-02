@@ -2172,7 +2172,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 't' should be passed by const reference.\n", errout.str());
 
-        check("struct S {\n"
+        check("struct S {\n" // #12138
               "    union {\n"
               "        int a = 0;\n"
               "        int x;\n"
