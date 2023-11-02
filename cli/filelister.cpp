@@ -24,8 +24,6 @@
 
 #include <cstddef>
 #include <cstring>
-// fix NAME_MAX not found on macOS GCC8.1
-#include <climits>
 #include <memory>
 
 #ifdef _WIN32
@@ -156,13 +154,6 @@ std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, cons
 #include <dirent.h>
 #include <sys/stat.h>
 #include <cerrno>
-
-#ifndef NAME_MAX
-#ifdef MAXNAMLEN
-#define NAME_MAX MAXNAMLEN
-#endif
-#endif
-
 
 static std::string addFiles2(std::map<std::string, std::size_t> &files,
                              const std::string &path,
