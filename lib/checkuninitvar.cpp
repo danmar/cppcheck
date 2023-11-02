@@ -1129,8 +1129,9 @@ static bool isVoidCast(const Token *tok)
     return Token::simpleMatch(tok, "(") && tok->isCast() && tok->valueType() && tok->valueType()->type == ValueType::Type::VOID && tok->valueType()->pointer == 0;
 }
 
-const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, const Library& library, bool pointer, Alloc alloc, int indirect)
+const Token* CheckUninitVar::isVariableUsage(const Token *vartok, const Library& library, bool pointer, Alloc alloc, int indirect)
 {
+    const bool cpp = vartok->isCpp();
     const Token *valueExpr = vartok;   // non-dereferenced , no address of value as variable
     while (Token::Match(valueExpr->astParent(), ".|::") && astIsRhs(valueExpr))
         valueExpr = valueExpr->astParent();
@@ -1334,7 +1335,7 @@ const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, cons
 
 const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect) const
 {
-    return isVariableUsage(mTokenizer->isCPP(), vartok, mSettings->library, pointer, alloc, indirect);
+    return isVariableUsage(vartok, mSettings->library, pointer, alloc, indirect);
 }
 
 /***
@@ -1685,7 +1686,7 @@ void CheckUninitVar::valueFlowUninit()
 static bool isVariableUsage(const Settings *settings, const Token *vartok, MathLib::bigint *value)
 {
     (void)value;
-    return CheckUninitVar::isVariableUsage(vartok->isCpp(), vartok, settings->library, true, CheckUninitVar::Alloc::ARRAY);
+    return CheckUninitVar::isVariableUsage(vartok, settings->library, true, CheckUninitVar::Alloc::ARRAY);
 }
 
 namespace {
