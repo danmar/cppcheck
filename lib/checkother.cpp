@@ -1200,16 +1200,22 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
         else
             cumulatedSize += size;
     };
-    for (const Variable&var : type->classScope->varlist) {
+    std::set<const Scope*> anonScopes;
+    for (const Variable& var : type->classScope->varlist) {
         int size = 0;
         if (var.isStatic())
             continue;
         if (var.isPointer() || var.isReference())
             size = settings->platform.sizeof_pointer;
         else if (var.type() && var.type()->classScope)
-            size = estimateSize(var.type(), settings, symbolDatabase, recursionDepth+1);
+            size = estimateSize(var.type(), settings, symbolDatabase, recursionDepth + 1);
         else if (var.valueType() && var.valueType()->type == ValueType::Type::CONTAINER)
             size = 3 * settings->platform.sizeof_pointer; // Just guess
+        else if (var.nameToken()->scope() != type->classScope && var.nameToken()->scope()->definedType) { // anonymous union
+             const auto ret = anonScopes.insert(var.nameToken()->scope());
+             if (ret.second)
+                 size = estimateSize(var.nameToken()->scope()->definedType, settings, symbolDatabase, recursionDepth + 1);
+        }
         else
             size = symbolDatabase->sizeOfType(var.typeStartToken());
 
