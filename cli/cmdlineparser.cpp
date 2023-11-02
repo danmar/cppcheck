@@ -713,11 +713,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 if (projType == ImportProject::Type::VS_SLN || projType == ImportProject::Type::VS_VCXPROJ) {
                     if (project.guiProject.analyzeAllVsConfigs == "false")
                         project.selectOneVsConfig(mSettings.platform.type);
-                    if (!CppCheckExecutor::tryLoadLibrary(mSettings.library, argv[0], "windows.cfg")) {
-                        // This shouldn't happen normally.
-                        mLogger.printError("failed to load 'windows.cfg'. Your Cppcheck installation is broken. Please re-install.");
-                        return false;
-                    }
+                    mSettings.libraries.emplace_back("windows");
                 }
                 if (projType == ImportProject::Type::MISSING) {
                     mLogger.printError("failed to open project '" + projectFile + "'. The file does not exist.");
