@@ -114,7 +114,7 @@ void CheckThread::run()
         std::map<std::string,std::size_t> files2;
         for (const QString& file : mFiles)
             files2[file.toStdString()] = 0;
-        mCppcheck.analyseWholeProgram(mCppcheck.settings().buildDir, files2);
+        mCppcheck.analyseWholeProgram(mCppcheck.settings().buildDir, files2, {});
         mFiles.clear();
         emit done();
         return;

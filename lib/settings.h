@@ -24,7 +24,6 @@
 #include "addoninfo.h"
 #include "config.h"
 #include "errortypes.h"
-#include "filesettings.h"
 #include "library.h"
 #include "platform.h"
 #include "standards.h"
@@ -204,8 +203,6 @@ public:
 
     /** @brief List of --file-filter for analyzing special files */
     std::vector<std::string> fileFilters;
-
-    std::list<FileSettings> fileSettings;
 
     /** @brief Force checking the files with "too many" configurations (--force). */
     bool force{};
