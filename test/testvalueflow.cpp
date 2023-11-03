@@ -46,11 +46,11 @@ private:
 
     void run() override {
         // strcpy, abort cfg
-        const char cfg[] = "<?xml version=\"1.0\"?>\n"
-                           "<def>\n"
-                           "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> </function>\n"
-                           "  <function name=\"abort\"> <noreturn>true</noreturn> </function>\n" // abort is a noreturn function
-                           "</def>";
+        constexpr char cfg[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> </function>\n"
+                               "  <function name=\"abort\"> <noreturn>true</noreturn> </function>\n" // abort is a noreturn function
+                               "</def>";
         settings = settingsBuilder(settings).libraryxml(cfg, sizeof(cfg)).build();
 
         TEST_CASE(valueFlowNumber);

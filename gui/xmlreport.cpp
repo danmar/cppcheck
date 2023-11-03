@@ -29,8 +29,8 @@
 #include <QStringRef>
 #endif
 
-static const char ResultElementName[] = "results";
-static const char VersionAttribute[] = "version";
+static constexpr char ResultElementName[] = "results";
+static constexpr char VersionAttribute[] = "version";
 
 XmlReport::XmlReport(const QString &filename) :
     Report(filename)

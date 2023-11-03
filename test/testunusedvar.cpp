@@ -5354,7 +5354,7 @@ private:
     }
 
     void localvarOp() {
-        const char op[] = "+-*/%&|^";
+        constexpr char op[] = "+-*/%&|^";
         for (const char *p = op; *p; ++p) {
             std::string code("int main()\n"
                              "{\n"

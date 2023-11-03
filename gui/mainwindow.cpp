@@ -271,13 +271,14 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI->mActionEnforceCpp->setActionGroup(mSelectLanguageActions);
     mUI->mActionAutoDetectLanguage->setActionGroup(mSelectLanguageActions);
 
+    // TODO: we no longer default to a Windows platform in CLI - so we should probably also get rid of this in the GUI
     // For Windows platforms default to Win32 checked platform.
     // For other platforms default to unspecified/default which means the
     // platform Cppcheck GUI was compiled on.
 #if defined(_WIN32)
-    const Platform::Type defaultPlatform = Platform::Type::Win32W;
+    constexpr Platform::Type defaultPlatform = Platform::Type::Win32W;
 #else
-    const Platform::Type defaultPlatform = Platform::Type::Unspecified;
+    constexpr Platform::Type defaultPlatform = Platform::Type::Unspecified;
 #endif
     PlatformData &platform = mPlatforms.get((Platform::Type)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
     platform.mActMainWindow->setChecked(true);

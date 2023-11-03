@@ -112,11 +112,11 @@ private:
     }
 
     void importCompileCommands1() const {
-        const char json[] = R"([{
+        constexpr char json[] = R"([{
                                    "directory": "/tmp",
                                    "command": "gcc -DTEST1 -DTEST2=2 -o /tmp/src.o -c /tmp/src.c",
                                    "file": "/tmp/src.c"
-                               }])";
+                                   }])";
         std::istringstream istr(json);
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
@@ -138,11 +138,11 @@ private:
         ASSERT_EQUALS(1, importer.fileSettings.size());
         ASSERT_EQUALS("C:/bar.c", importer.fileSettings.cbegin()->filename);
 #else
-        const char json[] = R"([{
+        constexpr char json[] = R"([{
                                    "directory": "/foo",
                                    "command": "gcc -c bar.c",
                                    "file": "/bar.c"
-                               }])";
+                                   }])";
         std::istringstream istr(json);
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
@@ -165,11 +165,11 @@ private:
     }
 
     void importCompileCommands4() const {
-        const char json[] = R"([{
+        constexpr char json[] = R"([{
                                     "directory": "/tmp/",
                                     "command": "gcc -c src.mm",
                                     "file": "src.mm"
-                               }])";
+                                   }])";
         std::istringstream istr(json);
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
@@ -177,7 +177,7 @@ private:
     }
 
     void importCompileCommands5() const {
-        const char json[] =
+        constexpr char json[] =
             R"([{
                 "directory": "C:/Users/dan/git/build-test-cppcheck-Desktop_Qt_5_15_0_MSVC2019_64bit-Debug",
                 "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1427~1.291\\bin\\HostX64\\x64\\cl.exe /nologo /TP -IC:\\Users\\dan\\git\\test-cppcheck\\mylib\\src /DWIN32 /D_WINDOWS /GR /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++17 /Fomylib\\CMakeFiles\\mylib.dir\\src\\foobar\\mylib.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\dan\\git\\test-cppcheck\\mylib\\src\\foobar\\mylib.cpp",
@@ -196,7 +196,7 @@ private:
     }
 
     void importCompileCommands6() const {
-        const char json[] =
+        constexpr char json[] =
             R"([{
                 "directory": "C:/Users/dan/git/build-test-cppcheck-Desktop_Qt_5_15_0_MSVC2019_64bit-Debug",
                 "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1427~1.291\\bin\\HostX64\\x64\\cl.exe /nologo /TP -IC:\\Users\\dan\\git\\test-cppcheck\\mylib\\src -I\"C:\\Users\\dan\\git\\test-cppcheck\\mylib\\second src\" /DWIN32 /D_WINDOWS /GR /EHsc /Zi /Ob0 /Od /RTC1 -MDd -std:c++17 /Fomylib\\CMakeFiles\\mylib.dir\\src\\foobar\\mylib.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\dan\\git\\test-cppcheck\\mylib\\src\\foobar\\mylib.cpp",
@@ -218,7 +218,7 @@ private:
 
     void importCompileCommands7() const {
         // cmake -DFILESDIR="/some/path" ..
-        const char json[] =
+        constexpr char json[] =
             R"([{
                 "directory": "/home/danielm/cppcheck 2/b/lib",
                 "command": "/usr/bin/c++  -DFILESDIR=\\\"/some/path\\\" -I\"/home/danielm/cppcheck 2/b/lib\" -isystem \"/home/danielm/cppcheck 2/externals\" \"/home/danielm/cppcheck 2/lib/astutils.cpp\"",
@@ -238,7 +238,7 @@ private:
 
     void importCompileCommands8() const {
         // cmake -DFILESDIR="C:\Program Files\Cppcheck" -G"NMake Makefiles" ..
-        const char json[] =
+        constexpr char json[] =
             R"([{
               "directory": "C:/Users/danielm/cppcheck/build/lib",
               "command": "C:\\PROGRA~2\\MICROS~2\\2017\\COMMUN~1\\VC\\Tools\\MSVC\\1412~1.258\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DFILESDIR=\"\\\"C:\\Program Files\\Cppcheck\\\"\" -IC:\\Users\\danielm\\cppcheck\\build\\lib -IC:\\Users\\danielm\\cppcheck\\lib -c C:\\Users\\danielm\\cppcheck\\lib\\astutils.cpp",
@@ -251,7 +251,7 @@ private:
 
     void importCompileCommands9() const {
         // IAR output (https://sourceforge.net/p/cppcheck/discussion/general/thread/608af51e0a/)
-        const char json[] =
+        constexpr char json[] =
             R"([{
               "arguments" : [
                  "powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File d:\\Projekte\\xyz\\firmware\\app\\xyz-lib\\build.ps1 -IAR -COMPILER_PATH \"c:\\Program Files (x86)\\IAR Systems\\Embedded Workbench 9.0\" -CONTROLLER CC1310F128 -LIB LIB_PERMANENT -COMPILER_DEFINES \"CC1310_HFXO_FREQ=24000000 DEBUG\""
@@ -266,7 +266,7 @@ private:
     }
 
     void importCompileCommands10() const { // #10887
-        const char json[] =
+        constexpr char json[] =
             R"([{
                "file": "/home/danielm/cppcheck/1/test folder/1.c" ,
                "directory": "",
@@ -285,7 +285,7 @@ private:
     }
 
     void importCompileCommands11() const { // include path order
-        const char json[] =
+        constexpr char json[] =
             R"([{
                "file": "1.c" ,
                "directory": "/x",
@@ -307,9 +307,9 @@ private:
     }
 
     void importCompileCommandsArgumentsSection() const {
-        const char json[] = "[ { \"directory\": \"/tmp/\","
-                            "\"arguments\": [\"gcc\", \"-c\", \"src.c\"],"
-                            "\"file\": \"src.c\" } ]";
+        constexpr char json[] = "[ { \"directory\": \"/tmp/\","
+                                "\"arguments\": [\"gcc\", \"-c\", \"src.c\"],"
+                                "\"file\": \"src.c\" } ]";
         std::istringstream istr(json);
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
@@ -318,8 +318,8 @@ private:
     }
 
     void importCompileCommandsNoCommandSection() const {
-        const char json[] = "[ { \"directory\": \"/tmp/\","
-                            "\"file\": \"src.mm\" } ]";
+        constexpr char json[] = "[ { \"directory\": \"/tmp/\","
+                                "\"file\": \"src.mm\" } ]";
         std::istringstream istr(json);
         TestImporter importer;
         ASSERT_EQUALS(false, importer.importCompileCommands(istr));
@@ -327,22 +327,22 @@ private:
     }
 
     void importCppcheckGuiProject() const {
-        const char xml[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                           "<project version=\"1\">\n"
-                           "    <root name=\".\"/>\n"
-                           "    <builddir>out1</builddir>\n"
-                           "    <analyze-all-vs-configs>true</analyze-all-vs-configs>\n"
-                           "    <includedir>\n"
-                           "        <dir name=\"lib/\"/>\n"
-                           "    </includedir>\n"
-                           "    <paths>\n"
-                           "        <dir name=\"cli/\"/>\n"
-                           "    </paths>\n"
-                           "    <exclude>\n"
-                           "        <path name=\"gui/temp/\"/>\n"
-                           "    </exclude>\n"
-                           "    <project-name>test test</project-name>\n"
-                           "</project>\n";
+        constexpr char xml[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                               "<project version=\"1\">\n"
+                               "    <root name=\".\"/>\n"
+                               "    <builddir>out1</builddir>\n"
+                               "    <analyze-all-vs-configs>true</analyze-all-vs-configs>\n"
+                               "    <includedir>\n"
+                               "        <dir name=\"lib/\"/>\n"
+                               "    </includedir>\n"
+                               "    <paths>\n"
+                               "        <dir name=\"cli/\"/>\n"
+                               "    </paths>\n"
+                               "    <exclude>\n"
+                               "        <path name=\"gui/temp/\"/>\n"
+                               "    </exclude>\n"
+                               "    <project-name>test test</project-name>\n"
+                               "</project>\n";
         std::istringstream istr(xml);
         Settings s;
         TestImporter project;

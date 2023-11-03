@@ -431,7 +431,7 @@ int main(int argc, char **argv)
         }
     }
 
-    static const char makefile[] = "Makefile";
+    static constexpr char makefile[] = "Makefile";
     std::ofstream fout(makefile, std::ios_base::trunc);
     if (!fout.is_open()) {
         std::cerr << "An error occurred while trying to open "

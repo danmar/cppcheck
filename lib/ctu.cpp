@@ -39,21 +39,21 @@
 #include <tinyxml2.h>
 //---------------------------------------------------------------------------
 
-static const char ATTR_CALL_ID[] = "call-id";
-static const char ATTR_CALL_FUNCNAME[] = "call-funcname";
-static const char ATTR_CALL_ARGNR[] = "call-argnr";
-static const char ATTR_CALL_ARGEXPR[] = "call-argexpr";
-static const char ATTR_CALL_ARGVALUETYPE[] = "call-argvaluetype";
-static const char ATTR_CALL_ARGVALUE[] = "call-argvalue";
-static const char ATTR_WARNING[] = "warning";
-static const char ATTR_LOC_FILENAME[] = "file";
-static const char ATTR_LOC_LINENR[] = "line";
-static const char ATTR_LOC_COLUMN[] = "col";
-static const char ATTR_INFO[] = "info";
-static const char ATTR_MY_ID[] = "my-id";
-static const char ATTR_MY_ARGNR[] = "my-argnr";
-static const char ATTR_MY_ARGNAME[] = "my-argname";
-static const char ATTR_VALUE[] = "value";
+static constexpr char ATTR_CALL_ID[] = "call-id";
+static constexpr char ATTR_CALL_FUNCNAME[] = "call-funcname";
+static constexpr char ATTR_CALL_ARGNR[] = "call-argnr";
+static constexpr char ATTR_CALL_ARGEXPR[] = "call-argexpr";
+static constexpr char ATTR_CALL_ARGVALUETYPE[] = "call-argvaluetype";
+static constexpr char ATTR_CALL_ARGVALUE[] = "call-argvalue";
+static constexpr char ATTR_WARNING[] = "warning";
+static constexpr char ATTR_LOC_FILENAME[] = "file";
+static constexpr char ATTR_LOC_LINENR[] = "line";
+static constexpr char ATTR_LOC_COLUMN[] = "col";
+static constexpr char ATTR_INFO[] = "info";
+static constexpr char ATTR_MY_ID[] = "my-id";
+static constexpr char ATTR_MY_ARGNR[] = "my-argnr";
+static constexpr char ATTR_MY_ARGNAME[] = "my-argname";
+static constexpr char ATTR_VALUE[] = "value";
 
 int CTU::maxCtuDepth = 2;
 
