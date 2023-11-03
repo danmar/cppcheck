@@ -664,3 +664,63 @@ def test_file_order(tmpdir):
         '4/4 files checked 0% done'
     ]
     assert stderr == ''
+
+
+def test_markup(tmpdir):
+    test_file_1 = os.path.join(tmpdir, 'test_1.qml')
+    with open(test_file_1, 'wt') as f:
+        pass
+    test_file_2 = os.path.join(tmpdir, 'test_2.cpp')
+    with open(test_file_2, 'wt') as f:
+        pass
+    test_file_3 = os.path.join(tmpdir, 'test_3.qml')
+    with open(test_file_3, 'wt') as f:
+        pass
+    test_file_4 = os.path.join(tmpdir, 'test_4.cpp')
+    with open(test_file_4, 'wt') as f:
+        pass
+
+    args = ['--library=qt', test_file_1, test_file_2, test_file_3, test_file_4]
+    out_lines = [
+        'Checking {} ...'.format(test_file_2),
+        '1/4 files checked 0% done',
+        'Checking {} ...'.format(test_file_4),
+        '2/4 files checked 0% done',
+        'Checking {} ...'.format(test_file_1),
+        '3/4 files checked 0% done',
+        'Checking {} ...'.format(test_file_3),
+        '4/4 files checked 0% done'
+    ]
+
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
+
+
+def test_markup_j(tmpdir):
+    test_file_1 = os.path.join(tmpdir, 'test_1.qml')
+    with open(test_file_1, 'wt') as f:
+        pass
+    test_file_2 = os.path.join(tmpdir, 'test_2.cpp')
+    with open(test_file_2, 'wt') as f:
+        pass
+    test_file_3 = os.path.join(tmpdir, 'test_3.qml')
+    with open(test_file_3, 'wt') as f:
+        pass
+    test_file_4 = os.path.join(tmpdir, 'test_4.cpp')
+    with open(test_file_4, 'wt') as f:
+        pass
+
+    args = ['--library=qt', test_file_1, test_file_2, test_file_3, test_file_4]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    for i in range(1, 5):
+        lines.remove('{}/4 files checked 0% done'.format(i))
+
+    assert lines == [
+        'Checking {} ...'.format(test_file_2),
+        'Checking {} ...'.format(test_file_4),
+        'Checking {} ...'.format(test_file_1),
+        'Checking {} ...'.format(test_file_3)
+    ]
+    assert stderr == ''

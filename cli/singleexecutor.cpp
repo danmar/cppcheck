@@ -51,52 +51,23 @@ unsigned int SingleExecutor::check()
     unsigned int c = 0;
 
     for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
-        if (!mSettings.library.markupFile(i->first) || !mSettings.library.processMarkupAfterCode(i->first)) {
-            result += mCppcheck.check(i->first);
-            processedsize += i->second;
-            ++c;
-            if (!mSettings.quiet)
-                reportStatus(c, mFiles.size(), processedsize, totalfilesize);
-            // TODO: call analyseClangTidy()?
-        }
+        result += mCppcheck.check(i->first);
+        processedsize += i->second;
+        ++c;
+        if (!mSettings.quiet)
+            reportStatus(c, mFiles.size(), processedsize, totalfilesize);
+        // TODO: call analyseClangTidy()?
     }
 
     // filesettings
     // check all files of the project
     for (const FileSettings &fs : mFileSettings) {
-        if (!mSettings.library.markupFile(fs.filename) || !mSettings.library.processMarkupAfterCode(fs.filename)) {
-            result += mCppcheck.check(fs);
-            ++c;
-            if (!mSettings.quiet)
-                reportStatus(c, mFileSettings.size(), c, mFileSettings.size());
-            if (mSettings.clangTidy)
-                mCppcheck.analyseClangTidy(fs);
-        }
-    }
-
-    // second loop to parse all markup files which may not work until all
-    // c/cpp files have been parsed and checked
-    // TODO: get rid of duplicated code
-    for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
-        if (mSettings.library.markupFile(i->first) && mSettings.library.processMarkupAfterCode(i->first)) {
-            result += mCppcheck.check(i->first);
-            processedsize += i->second;
-            ++c;
-            if (!mSettings.quiet)
-                reportStatus(c, mFiles.size(), processedsize, totalfilesize);
-            // TODO: call analyseClangTidy()?
-        }
-    }
-
-    for (const FileSettings &fs : mFileSettings) {
-        if (mSettings.library.markupFile(fs.filename) && mSettings.library.processMarkupAfterCode(fs.filename)) {
-            result += mCppcheck.check(fs);
-            ++c;
-            if (!mSettings.quiet)
-                reportStatus(c, mFileSettings.size(), c, mFileSettings.size());
-            if (mSettings.clangTidy)
-                mCppcheck.analyseClangTidy(fs);
-        }
+        result += mCppcheck.check(fs);
+        ++c;
+        if (!mSettings.quiet)
+            reportStatus(c, mFileSettings.size(), c, mFileSettings.size());
+        if (mSettings.clangTidy)
+            mCppcheck.analyseClangTidy(fs);
     }
 
     if (mCppcheck.analyseWholeProgram())

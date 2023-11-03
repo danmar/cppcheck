@@ -1,4 +1,3 @@
-
 import logging
 import os
 import subprocess
@@ -83,7 +82,7 @@ def assert_cppcheck(args, ec_exp=None, out_exp=None, err_exp=None, env=None):
         assert exitcode == ec_exp, stdout
     if out_exp is not None:
         out_lines = stdout.splitlines()
-        assert out_lines == out_exp
+        assert out_lines == out_exp, stdout
     if err_exp is not None:
         err_lines = stderr.splitlines()
-        assert err_lines == err_exp
+        assert err_lines == err_exp, stderr
