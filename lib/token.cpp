@@ -182,7 +182,7 @@ void Token::update_property_isStandardType()
 {
     isStandardType(false);
 
-    if (mStr.size() < 3)
+    if (mStr.size() < 3 || mStr.size() > 7)
         return;
 
     if (stdTypes.find(mStr)!=stdTypes.end()) {
