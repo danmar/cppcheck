@@ -697,6 +697,11 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             return true;
         }
 
+        // bailout if there is a pointer to member
+        if (Token::Match(tok, "%varid% . *", var.declarationId())) {
+            return true;
+        }
+
         if (tok->str() == "?") {
             if (!tok->astOperand2())
                 return true;

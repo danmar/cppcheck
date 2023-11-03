@@ -4875,6 +4875,15 @@ private:
                        "    return s;\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("struct S { int i; };\n" // #12142
+                       "int f() {\n"
+                       "    S s;\n"
+                       "    int S::* p = &S::i;\n"
+                       "    s.*p = 123;\n"
+                       "    return s.i;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar2_while() {
