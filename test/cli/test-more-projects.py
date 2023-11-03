@@ -2,7 +2,7 @@
 import json
 import os
 import pytest
-from testutils import cppcheck
+from testutils import cppcheck, assert_cppcheck
 
 
 def test_project_force_U(tmpdir):
@@ -291,3 +291,100 @@ def test_clang_tidy(tmpdir):
         'Checking {} ...'.format(test_file)
     ]
     assert stderr == ''
+
+
+def test_project_file_filter(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        pass
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="{}"/>
+    </paths>
+</project>""".format(test_file))
+
+    args = ['--file-filter=*.cpp', '--project={}'.format(project_file)]
+    out_lines = [
+        'Checking {} ...'.format(test_file)
+    ]
+
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
+
+
+def test_project_file_filter_2(tmpdir):
+    test_file_1 = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file_1, 'wt') as f:
+        pass
+    test_file_2 = os.path.join(tmpdir, 'test.c')
+    with open(test_file_2, 'wt') as f:
+        pass
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="{}"/>
+        <dir name="{}"/>
+    </paths>
+</project>""".format(test_file_1, test_file_2))
+
+    args = ['--file-filter=*.cpp', '--project={}'.format(project_file)]
+    out_lines = [
+        'Checking {} ...'.format(test_file_1)
+    ]
+
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
+
+
+def test_project_file_filter_3(tmpdir):
+    test_file_1 = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file_1, 'wt') as f:
+        pass
+    test_file_2 = os.path.join(tmpdir, 'test.c')
+    with open(test_file_2, 'wt') as f:
+        pass
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="{}"/>
+        <dir name="{}"/>
+    </paths>
+</project>""".format(test_file_1, test_file_2))
+
+    args = ['--file-filter=*.c', '--project={}'.format(project_file)]
+    out_lines = [
+        'Checking {} ...'.format(test_file_2)
+    ]
+
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
+
+
+@pytest.mark.xfail
+def test_project_file_filter_no_match(tmpdir):
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="test.cpp"/>
+    </paths>
+</project>""")
+
+    args = ['--file-filter=*.c', '--project={}'.format(project_file)]
+    out_lines = [
+        'cppcheck: error: could not find any files matching the filter.'
+    ]
+
+    assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)

@@ -4,7 +4,7 @@
 import os
 import pytest
 
-from testutils import cppcheck
+from testutils import cppcheck, assert_cppcheck
 
 
 def __test_missing_include(tmpdir, use_j):
@@ -578,3 +578,58 @@ def test_missing_addon(tmpdir):
         'Did not find addon misra3.py'
     ]
     assert stderr == ""
+
+
+def test_file_filter(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        pass
+
+    args = ['--file-filter=*.cpp', test_file]
+    out_lines = [
+        'Checking {} ...'.format(test_file)
+    ]
+
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
+
+
+def test_file_filter_2(tmpdir):
+    test_file_1 = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file_1, 'wt') as f:
+        pass
+    test_file_2 = os.path.join(tmpdir, 'test.c')
+    with open(test_file_2, 'wt') as f:
+        pass
+
+    args = ['--file-filter=*.cpp', test_file_1, test_file_2]
+    out_lines = [
+        'Checking {} ...'.format(test_file_1)
+    ]
+
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
+
+
+def test_file_filter_3(tmpdir):
+    test_file_1 = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file_1, 'wt') as f:
+        pass
+    test_file_2 = os.path.join(tmpdir, 'test.c')
+    with open(test_file_2, 'wt') as f:
+        pass
+
+    args = ['--file-filter=*.c', test_file_1, test_file_2]
+    out_lines = [
+        'Checking {} ...'.format(test_file_2)
+    ]
+
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
+
+
+@pytest.mark.xfail
+def test_file_filter_no_match(tmpdir):
+    args = ['--file-filter=*.c', 'test.cpp']
+    out_lines = [
+        'cppcheck: error: could not find any files matching the filter.'
+    ]
+
+    assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
