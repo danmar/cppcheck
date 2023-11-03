@@ -2880,7 +2880,8 @@ void CheckOther::checkRedundantCopy()
             const Scope* fScope = func->functionScope;
             if (fScope && fScope->bodyEnd && Token::Match(fScope->bodyEnd->tokAt(-3), "return %var% ;")) {
                 const Token* varTok = fScope->bodyEnd->tokAt(-2);
-                if (varTok->variable() && !varTok->variable()->isGlobal())
+                if (varTok->variable() && !varTok->variable()->isGlobal() &&
+                    (!varTok->variable()->type() || estimateSize(varTok->variable()->type(), mSettings, symbolDatabase) > 2 * mSettings->platform.sizeof_pointer))
                     redundantCopyError(startTok, startTok->str());
             }
         }

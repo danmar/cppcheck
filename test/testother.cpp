@@ -8408,7 +8408,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Use const reference for 'a' to avoid unnecessary data copying.\n", errout.str());
 
-        check("class A{public:A(){}};\n"
+        check("class A { public: A() {} char x[100]; };\n"
               "const A& getA(){static A a;return a;}\n"
               "int main()\n"
               "{\n"
@@ -8434,7 +8434,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:4]: (style) Local variable \'getA\' shadows outer function\n", errout.str());
 
-        check("class A{public:A(){}};\n"
+        check("class A { public: A() {} char x[100]; };\n"
               "const A& getA(){static A a;return a;}\n"
               "int main()\n"
               "{\n"
@@ -8583,6 +8583,19 @@ private:
               "}\n"
               "void g() {\n"
               "    std::string s = getC().get();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n" // #12139
+              "    int x, y;\n"
+              "};\n"
+              "struct T {\n"
+              "    S s;\n"
+              "    const S& get() const { return s; }\n"
+              "};\n"
+              "void f(const T& t) {\n"
+              "    const S a = t.get();\n"
+              "    if (a.x > a.y) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
