@@ -289,9 +289,9 @@ private:
             return;
 
 #ifdef _WIN32
-        const char exe[] = "clang-tidy.exe";
+        constexpr char exe[] = "clang-tidy.exe";
 #else
-        const char exe[] = "clang-tidy";
+        constexpr char exe[] = "clang-tidy";
 #endif
         (void)exe;
 

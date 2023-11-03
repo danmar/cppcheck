@@ -407,7 +407,7 @@ static ValueFlow::Value castValue(ValueFlow::Value value, const ValueType::Sign 
         }
     }
     if (bit < MathLib::bigint_bits) {
-        const MathLib::biguint one = 1;
+        constexpr MathLib::biguint one = 1;
         value.intvalue &= (one << bit) - 1;
         if (sign == ValueType::Sign::SIGNED && value.intvalue & (one << (bit - 1))) {
             value.intvalue |= ~((one << bit) - 1ULL);
@@ -3158,7 +3158,7 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     }
 
     void setupExprVarIds(const Token* start, int depth = 0) {
-        const int maxDepth = 4;
+        constexpr int maxDepth = 4;
         if (depth > maxDepth)
             return;
         visitAstNodes(start, [&](const Token* tok) {
@@ -8459,7 +8459,7 @@ struct IteratorConditionHandler : SimpleConditionHandler {
             if (!tok->astOperand1() || !tok->astOperand2())
                 return {};
 
-            const ValueFlow::Value::ValueKind kind = ValueFlow::Value::ValueKind::Known;
+            constexpr ValueFlow::Value::ValueKind kind = ValueFlow::Value::ValueKind::Known;
             std::list<ValueFlow::Value> values = getIteratorValues(tok->astOperand1()->values(), &kind);
             if (!values.empty()) {
                 cond.vartok = tok->astOperand2();

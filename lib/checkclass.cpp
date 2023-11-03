@@ -1117,8 +1117,7 @@ void CheckClass::missingMemberCopyError(const Token *tok, Function::Type functio
     const std::string message =
         "$symbol:" + classname + "::" + varname + "\n" +
         "Member variable '$symbol' is not assigned in the " + ctor + " constructor. Should it be " + action;
-    const char id[] = "missingMemberCopy";
-    reportError(tok, Severity::warning, id, message, CWE398, Certainty::inconclusive);
+    reportError(tok, Severity::warning, "missingMemberCopy", message, CWE398, Certainty::inconclusive);
 }
 
 void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive)

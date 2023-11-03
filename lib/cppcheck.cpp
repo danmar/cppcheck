@@ -81,10 +81,10 @@
 
 class SymbolDatabase;
 
-static const char Version[] = CPPCHECK_VERSION_STRING;
-static const char ExtraVersion[] = "";
+static constexpr char Version[] = CPPCHECK_VERSION_STRING;
+static constexpr char ExtraVersion[] = "";
 
-static const char FILELIST[] = "cppcheck-addon-ctu-file-list";
+static constexpr char FILELIST[] = "cppcheck-addon-ctu-file-list";
 
 static TimerResults s_timerResults;
 
@@ -1636,9 +1636,9 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
     const std::string allDefines = getDefinesFlags(fileSettings.defines);
 
 #ifdef _WIN32
-    const char exe[] = "clang-tidy.exe";
+    constexpr char exe[] = "clang-tidy.exe";
 #else
-    const char exe[] = "clang-tidy";
+    constexpr char exe[] = "clang-tidy";
 #endif
 
     const std::string args = "-quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename + "\" -- " + allIncludes + allDefines;

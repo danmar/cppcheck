@@ -3960,9 +3960,9 @@ void CheckOther::checkOverlappingWrite()
                 if (nonOverlappingData->sizeArg <= 0 || nonOverlappingData->sizeArg > args.size()) {
                     if (nonOverlappingData->sizeArg == -1) {
                         ErrorPath errorPath;
-                        const bool macro = true;
-                        const bool pure = true;
-                        const bool follow = true;
+                        constexpr bool macro = true;
+                        constexpr bool pure = true;
+                        constexpr bool follow = true;
                         if (!isSameExpression(mTokenizer->isCPP(), macro, ptr1, ptr2, mSettings->library, pure, follow, &errorPath))
                             continue;
                         overlappingWriteFunction(tok);
@@ -3985,9 +3985,9 @@ void CheckOther::checkOverlappingWrite()
                     continue;
 
                 ErrorPath errorPath;
-                const bool macro = true;
-                const bool pure = true;
-                const bool follow = true;
+                constexpr bool macro = true;
+                constexpr bool pure = true;
+                constexpr bool follow = true;
                 if (!isSameExpression(mTokenizer->isCPP(), macro, buf1, buf2, mSettings->library, pure, follow, &errorPath))
                     continue;
                 overlappingWriteFunction(tok);

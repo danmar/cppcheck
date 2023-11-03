@@ -3444,11 +3444,11 @@ private:
     }
 
     void memsetOnStdPodType() { // Ticket #5901
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def>\n"
-                               "  <podtype name=\"std::uint8_t\" sign=\"u\" size=\"1\"/>\n"
-                               "  <podtype name=\"std::atomic_bool\"/>\n"
-                               "</def>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "  <podtype name=\"std::uint8_t\" sign=\"u\" size=\"1\"/>\n"
+                                   "  <podtype name=\"std::atomic_bool\"/>\n"
+                                   "</def>";
         const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         checkNoMemset("class A {\n"

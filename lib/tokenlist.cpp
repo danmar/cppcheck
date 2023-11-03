@@ -43,7 +43,7 @@
 // How many compileExpression recursions are allowed?
 // For practical code this could be endless. But in some special torture test
 // there needs to be a limit.
-static const int AST_MAX_DEPTH = 150;
+static constexpr int AST_MAX_DEPTH = 150;
 
 
 TokenList::TokenList(const Settings* settings) :

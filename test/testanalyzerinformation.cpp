@@ -33,7 +33,7 @@ private:
     }
 
     void getAnalyzerInfoFile() const {
-        const char filesTxt[] = "file1.a4::file1.c\n";
+        constexpr char filesTxt[] = "file1.a4::file1.c\n";
         std::istringstream f1(filesTxt);
         ASSERT_EQUALS("file1.a4", getAnalyzerInfoFileFromFilesTxt(f1, "file1.c", ""));
         std::istringstream f2(filesTxt);
