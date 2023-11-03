@@ -79,13 +79,13 @@ static bool isOct(const std::string &s)
     return s.size()>1 && (s[0]=='0') && (s[1] >= '0') && (s[1] < '8');
 }
 
-// TODO: added an underscore since this conflicts with a function of the same name in utils.h from Cppcheck source when building Cppcheck with MSBuild
+// TODO: added an undercore since this conflicts with a function of the same name in utils.h from Cppcheck source when building Cppcheck with MSBuild
 static bool isStringLiteral_(const std::string &s)
 {
     return s.size() > 1 && (s[0]=='\"') && (*s.rbegin()=='\"');
 }
 
-// TODO: added an underscore since this conflicts with a function of the same name in utils.h from Cppcheck source when building Cppcheck with MSBuild
+// TODO: added an undercore since this conflicts with a function of the same name in utils.h from Cppcheck source when building Cppcheck with MSBuild
 static bool isCharLiteral_(const std::string &s)
 {
     // char literal patterns can include 'a', '\t', '\000', '\xff', 'abcd', and maybe ''
@@ -627,8 +627,6 @@ void simplecpp::TokenList::readfile(Stream &stream, const std::string &filename,
         unsigned char ch = stream.readChar();
         if (!stream.good())
             break;
-        if (ch < ' ' && ch != '\t' && ch != '\n' && ch != '\r')
-            ch = ' ';
 
         if (ch >= 0x80) {
             if (outputList) {
@@ -694,7 +692,7 @@ void simplecpp::TokenList::readfile(Stream &stream, const std::string &filename,
             continue;
         }
 
-        if (std::isspace(ch)) {
+        if (ch <= ' ') {
             location.col++;
             continue;
         }
