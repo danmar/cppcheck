@@ -123,7 +123,7 @@ private:
             TokenList tokenlist(nullptr); // no settings use latest standard
             std::istringstream istr(code2);
             tokenlist.createTokens(istr, "a.c");
-            TODO_ASSERT_EQUALS(true, false, tokenlist.front()->isKeyword());
+            ASSERT_EQUALS(true, tokenlist.front()->isKeyword());
         }
 
         {
@@ -157,7 +157,7 @@ private:
             TokenList tokenlist(&s);
             std::istringstream istr(code2);
             tokenlist.createTokens(istr, "a.cpp");
-            TODO_ASSERT_EQUALS(false, true, tokenlist.front()->isKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
         }
     }
 };
