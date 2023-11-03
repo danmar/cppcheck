@@ -625,7 +625,6 @@ def test_file_filter_3(tmpdir):
     assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
 
 
-@pytest.mark.xfail
 def test_file_filter_no_match(tmpdir):
     args = ['--file-filter=*.c', 'test.cpp']
     out_lines = [

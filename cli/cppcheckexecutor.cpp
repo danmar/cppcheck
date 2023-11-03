@@ -189,12 +189,9 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
     const std::vector<std::string>& pathnames = parser.getPathNames();
     const std::list<FileSettings>& fileSettings = parser.getFileSettings();
 
-#if defined(_WIN32)
-    // For Windows we want case-insensitive path matching
-    const bool caseSensitive = false;
-#else
-    const bool caseSensitive = true;
-#endif
+    // the inputs can only be used exclusively - CmdLineParser should already handle this
+    assert(!(!pathnames.empty() && !fileSettings.empty()));
+
     if (!fileSettings.empty()) {
         if (!settings.fileFilters.empty()) {
             // filter only for the selected filenames from all project files
@@ -209,36 +206,47 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
         else {
             mFileSettings = fileSettings;
         }
-    } else if (!pathnames.empty()) {
+    }
+
+    if (!pathnames.empty()) {
+        // TODO: this should be a vector or list so the order is kept
+        std::map<std::string, std::size_t> files;
+        // TODO: this needs to be inlined into PathMatch as it depends on the underlying filesystem
+#if defined(_WIN32)
+        // For Windows we want case-insensitive path matching
+        const bool caseSensitive = false;
+#else
+        const bool caseSensitive = true;
+#endif
         // Execute recursiveAddFiles() to each given file parameter
         const PathMatch matcher(ignored, caseSensitive);
         for (const std::string &pathname : pathnames) {
-            std::string err = FileLister::recursiveAddFiles(mFiles, Path::toNativeSeparators(pathname), settings.library.markupExtensions(), matcher);
+            const std::string err = FileLister::recursiveAddFiles(files, Path::toNativeSeparators(pathname), settings.library.markupExtensions(), matcher);
             if (!err.empty()) {
                 // TODO: bail out?
                 logger.printMessage(err);
             }
         }
+
+        if (!settings.fileFilters.empty()) {
+            std::copy_if(files.cbegin(), files.cend(), std::inserter(mFiles, mFiles.end()), [&](const decltype(files)::value_type& entry) {
+                return matchglobs(settings.fileFilters, entry.first);
+            });
+            if (mFiles.empty()) {
+                logger.printError("could not find any files matching the filter.");
+                return false;
+            }
+        }
+        else {
+            mFiles = files;
+        }
     }
 
-    if (mFiles.empty() && fileSettings.empty()) {
+    if (mFiles.empty() && mFileSettings.empty()) {
         logger.printError("could not find or open any of the paths given.");
         if (!ignored.empty())
             logger.printMessage("Maybe all paths were ignored?");
         return false;
-    }
-    if (!settings.fileFilters.empty() && fileSettings.empty()) {
-        std::map<std::string, std::size_t> newMap;
-        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i)
-            if (matchglobs(settings.fileFilters, i->first)) {
-                newMap[i->first] = i->second;
-            }
-        mFiles = newMap;
-        if (mFiles.empty()) {
-            logger.printError("could not find any files matching the filter.");
-            return false;
-        }
-
     }
 
     return true;

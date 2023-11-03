@@ -370,7 +370,6 @@ def test_project_file_filter_3(tmpdir):
     assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
 
 
-@pytest.mark.xfail
 def test_project_file_filter_no_match(tmpdir):
     project_file = os.path.join(tmpdir, 'test.cppcheck')
     with open(project_file, 'wt') as f:
