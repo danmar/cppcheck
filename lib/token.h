@@ -1418,9 +1418,6 @@ private:
     /** Update internal property cache about isStandardType() */
     void update_property_isStandardType();
 
-    /** Update internal property cache about string and char literals */
-    void update_property_char_string_literal();
-
     /** Internal helper function to avoid excessive string allocations */
     void astStringVerboseRecursive(std::string& ret, const nonneg int indent1 = 0, const nonneg int indent2 = 0) const;
 

@@ -108,10 +108,14 @@ void Token::update_property_info()
     if (!mStr.empty()) {
         if (mStr == "true" || mStr == "false")
             tokType(eBoolean);
-        else if (isStringLiteral(mStr))
+        else if (isStringLiteral(mStr)) {
             tokType(eString);
-        else if (isCharLiteral(mStr))
+            isLong(isPrefixStringCharLiteral(mStr, '"', "L"));
+        }
+        else if (isCharLiteral(mStr)) {
             tokType(eChar);
+            isLong(isPrefixStringCharLiteral(mStr, '\'', "L"));
+        }
         else if (std::isalpha((unsigned char)mStr[0]) || mStr[0] == '_' || mStr[0] == '$') { // Name
             if (mImpl->mVarId)
                 tokType(eVariable);
@@ -159,7 +163,6 @@ void Token::update_property_info()
         else
             tokType(eOther);
 
-        update_property_char_string_literal();
         update_property_isStandardType();
     } else {
         tokType(eNone);
@@ -188,15 +191,6 @@ void Token::update_property_isStandardType()
         isStandardType(true);
         tokType(eType);
     }
-}
-
-void Token::update_property_char_string_literal()
-{
-    if (mTokType != Token::eString && mTokType != Token::eChar)
-        return;
-
-    isLong(((mTokType == Token::eString) && isPrefixStringCharLiteral(mStr, '"', "L")) ||
-           ((mTokType == Token::eChar) && isPrefixStringCharLiteral(mStr, '\'', "L")));
 }
 
 bool Token::isUpperCaseName() const
