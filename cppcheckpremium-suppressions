@@ -1,27 +1,11 @@
 
-#FIXME False positives
-premium-misra-cpp-2008-4-5-1
+# False positives
 premium-misra-cpp-2008-5-17-1
-premium-misra-cpp-2008-12-1-2
-premium-misra-cpp-2008-3-3-1
-premium-misra-cpp-2008-12-8-2
-premium-cert-exp55-cpp
 premium-misra-cpp-2008-5-0-6
-
-# TODO
-premium-misra-cpp-2008-8-4-4
-premium-misra-cpp-2008-18-0-2
-premium-misra-cpp-2008-9-3-1
-premium-cert-err60-cpp
-premium-misra-cpp-2008-2-10-4
-premium-misra-cpp-2008-4-5-2
 premium-misra-cpp-2008-7-2-1
+premium-misra-cpp-2008-2-10-4
 premium-misra-cpp-2008-3-3-2
-premium-misra-cpp-2008-16-2-3
-premium-cert-err56-cpp
-premium-misra-cpp-2008-14-5-2
-premium-misra-cpp-2008-5-0-12
-premium-cert-err61-cpp
+premium-misra-cpp-2008-8-4-4
 
 # open source warnings are handled by the selfcheck.yml
 noExplicitConstructor
@@ -32,11 +16,23 @@ useStlAlgorithm
 # we need to declare reserved identifier _CRTDBG_MAP_ALLOC
 premium-cert-dcl51-cpp
 
+# TODO: Is there unsafe allocations, in case of exceptions) in cppcheck
+premium-cert-err58-cpp
+
 # we have global objects
 premium-cert-err58-cpp
 
+# TODO: Exception objects must be nothrow copy constructible.
+premium-cert-err60-cpp
+
+# TODO should we throw Token?
+premium-cert-err61-cpp
+
 # TODO: Detect errors when converting a string to a number. The library function 'atoi()' shall not be used.
 premium-cert-err62-cpp
+
+# TODO: Can we reduce some const_cast?
+premium-cert-exp55-cpp
 
 # sometimes a void function does not have side effects
 premium-misra-cpp-2008-0-1-8
@@ -58,6 +54,9 @@ premium-misra-cpp-2008-2-10-1
 # flag |= ..
 premium-misra-cpp-2008-4-5-1
 
+# Token/Variable flags are enum constants and we use those in bitwise operations by intention.
+premium-misra-cpp-2008-4-5-2
+
 # intentional addition of char to string: const std::string end(':' + cfg + ':' + Path::simplifyPath(sourcefile));
 premium-misra-cpp-2008-4-5-3
 
@@ -72,6 +71,9 @@ premium-misra-cpp-2008-5-0-5
 
 # intentional addition of char literal: c = 'a' + (temp - 10);
 premium-misra-cpp-2008-5-0-11
+
+# conversion of char-to-int is intentional sometimes
+premium-misra-cpp-2008-5-0-12
 
 # pointer-to-bool conversion is common
 premium-misra-cpp-2008-5-0-14
@@ -134,6 +136,9 @@ premium-misra-cpp-2008-8-0-1
 # cppcheck does not care about this enumerator rule
 premium-misra-cpp-2008-8-5-3
 
+# TODO Fix these
+premium-misra-cpp-2008-9-3-1
+
 # we use unions by intention sometimes
 premium-misra-cpp-2008-9-5-1
 
@@ -142,6 +147,9 @@ premium-misra-cpp-2008-10-3-1
 
 # some classes have public members by intention
 premium-misra-cpp-2008-11-0-1
+
+# rule should not apply to deleted copy assignment operator
+premium-misra-cpp-2008-12-8-2
 
 # TODO: this can be fixed by refactoring the code.
 premium-misra-cpp-2008-14-6-2
@@ -154,6 +162,9 @@ premium-misra-cpp-2008-16-0-1
 premium-misra-cpp-2008-16-2-1
 premium-misra-cpp-2008-16-2-2
 premium-misra-cpp-2008-16-3-2
+
+# TODO do we need to catch string conversion errors (using atoi)?
+premium-misra-cpp-2008-18-0-2
 
 # what standard alternative is there for std::getenv
 premium-misra-cpp-2008-18-0-3

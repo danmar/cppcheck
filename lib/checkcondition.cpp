@@ -995,7 +995,7 @@ static bool checkFloatRelation(const std::string &op, const double value1, const
 }
 
 template<class T>
-T getvalue3(const T value1, const T value2)
+static T getvalue3(const T value1, const T value2)
 {
     const T min = std::min(value1, value2);
     if (min== std::numeric_limits<T>::max())

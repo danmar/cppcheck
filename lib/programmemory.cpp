@@ -548,8 +548,8 @@ static double asFloat(const ValueFlow::Value& value)
     return value.isFloatValue() ? value.floatValue : value.intvalue;
 }
 
-static std::string removeAssign(const std::string& assign) {
-    return std::string{assign.cbegin(), assign.cend() - 1};
+static std::string removeAssign(const std::string& compoundAssignment) {
+    return std::string{compoundAssignment.cbegin(), compoundAssignment.cend() - 1};
 }
 
 struct assign {
