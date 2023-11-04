@@ -522,7 +522,7 @@ unsigned int CppCheck::check(const std::string &path)
             }
 
             // run addons
-            executeAddons(dumpFile);
+            executeAddons(dumpFile, path);
 
         } catch (const InternalError &e) {
             const ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, path, "Bailing out from analysis: Processing Clang AST dump failed");
@@ -967,7 +967,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             fdump.close();
         }
 
-        executeAddons(dumpFile);
+        executeAddons(dumpFile, Path::simplifyPath(filename));
 
     } catch (const TerminateException &) {
         // Analysis is terminated
@@ -1371,15 +1371,15 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
 }
 #endif
 
-void CppCheck::executeAddons(const std::string& dumpFile)
+void CppCheck::executeAddons(const std::string& dumpFile, const std::string& file0)
 {
     if (!dumpFile.empty()) {
         std::vector<std::string> f{dumpFile};
-        executeAddons(f);
+        executeAddons(f, file0);
     }
 }
 
-void CppCheck::executeAddons(const std::vector<std::string>& files)
+void CppCheck::executeAddons(const std::vector<std::string>& files, const std::string& file0)
 {
     if (mSettings.addons.empty() || files.empty())
         return;
@@ -1444,7 +1444,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             }
             else if (!mSettings.severity.isEnabled(errmsg.severity))
                 continue;
-            errmsg.file0 = ((files.size() == 1) ? files[0] : "");
+            errmsg.file0 = file0;
 
             reportErr(errmsg);
         }
@@ -1463,7 +1463,7 @@ void CppCheck::executeAddonsWholeProgram(const std::map<std::string, std::size_t
     }
 
     try {
-        executeAddons(ctuInfoFiles);
+        executeAddons(ctuInfoFiles, "");
     } catch (const InternalError& e) {
         const ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, "", "Bailing out from analysis: Whole program analysis failed");
         reportErr(errmsg);

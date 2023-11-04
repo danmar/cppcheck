@@ -182,8 +182,8 @@ private:
     /**
      * Execute addons
      */
-    void executeAddons(const std::vector<std::string>& files);
-    void executeAddons(const std::string &dumpFile);
+    void executeAddons(const std::vector<std::string>& files, const std::string& file0);
+    void executeAddons(const std::string &dumpFile, const std::string& file0);
 
     /**
      * Execute addons

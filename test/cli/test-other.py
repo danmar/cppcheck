@@ -211,6 +211,18 @@ def test_execute_addon_failure_2(tmpdir):
     assert stderr == "{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'naming' - exitcode is {} [internalError]\n\n^\n".format(test_file, ec)
 
 
+def test_execute_addon_file0(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write('void foo() {}\n')
+
+    args = ['--xml', '--addon=misra', '--enable=style', test_file]
+
+    _, _, stderr = cppcheck(args)
+    assert 'misra-c2012-8.2' in stderr
+    assert '.dump' not in stderr
+
+
 # TODO: find a test case which always fails
 @pytest.mark.skip
 def test_internal_error(tmpdir):
