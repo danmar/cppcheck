@@ -1451,7 +1451,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
     }
 }
 
-void CppCheck::executeAddonsWholeProgram(const std::map<std::string, std::size_t> &files)
+void CppCheck::executeAddonsWholeProgram(const std::list<std::pair<std::string, std::size_t>> &files)
 {
     if (mSettings.addons.empty())
         return;
@@ -1722,7 +1722,7 @@ bool CppCheck::analyseWholeProgram()
     return errors && (mExitCode > 0);
 }
 
-void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<std::string, std::size_t> &files, const std::list<FileSettings>& fileSettings)
+void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings)
 {
     executeAddonsWholeProgram(files); // TODO: pass FileSettings
     if (buildDir.empty()) {
@@ -1790,7 +1790,7 @@ bool CppCheck::isUnusedFunctionCheckEnabled() const
     return (mSettings.useSingleJob() && mSettings.checks.isEnabled(Checks::unusedFunction));
 }
 
-void CppCheck::removeCtuInfoFiles(const std::map<std::string, std::size_t> &files, const std::list<FileSettings>& fileSettings)
+void CppCheck::removeCtuInfoFiles(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings)
 {
     if (mSettings.buildDir.empty()) {
         for (const auto& f: files) {

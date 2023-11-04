@@ -24,6 +24,7 @@
 #include <fstream> // IWYU pragma: keep
 #include <functional>
 #include <iostream>
+#include <list>
 #include <map>
 #include <set>
 #include <string>
@@ -139,16 +140,16 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
 
 static std::string getCppFiles(std::vector<std::string> &files, const std::string &path, bool recursive)
 {
-    std::map<std::string,size_t> filemap;
+    std::list<std::pair<std::string, std::size_t>> filelist;
     const std::set<std::string> extra;
     const std::vector<std::string> masks;
     const PathMatch matcher(masks);
-    std::string err = FileLister::addFiles(filemap, path, extra, recursive, matcher);
+    std::string err = FileLister::addFiles(filelist, path, extra, recursive, matcher);
     if (!err.empty())
         return err;
 
     // add *.cpp files to the "files" vector..
-    for (const std::pair<const std::string&, size_t> file : filemap) {
+    for (const std::pair<const std::string&, size_t> file : filelist) {
         if (endsWith(file.first, ".cpp"))
             files.push_back(file.first);
     }

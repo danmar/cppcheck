@@ -38,6 +38,7 @@
 #include <cstring>
 #include <iostream>
 #include <list>
+#include <map>
 #include <sstream> // IWYU pragma: keep
 #include <sys/select.h>
 #include <sys/wait.h>
@@ -60,7 +61,7 @@ enum class Color;
 using std::memset;
 
 
-ProcessExecutor::ProcessExecutor(const std::map<std::string, std::size_t> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand)
+ProcessExecutor::ProcessExecutor(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand)
     : Executor(files, fileSettings, settings, suppressions, errorLogger)
     , mExecuteCommand(std::move(executeCommand))
 {
@@ -236,7 +237,7 @@ unsigned int ProcessExecutor::check()
     std::map<pid_t, std::string> childFile;
     std::map<int, std::string> pipeFile;
     std::size_t processedsize = 0;
-    std::map<std::string, std::size_t>::const_iterator iFile = mFiles.cbegin();
+    std::list<std::pair<std::string, std::size_t>>::const_iterator iFile = mFiles.cbegin();
     std::list<FileSettings>::const_iterator iFileSettings = mFileSettings.cbegin();
     for (;;) {
         // Start a new child
@@ -325,7 +326,9 @@ unsigned int ProcessExecutor::check()
                             std::size_t size = 0;
                             if (p != pipeFile.end()) {
                                 pipeFile.erase(p);
-                                const std::map<std::string, std::size_t>::const_iterator fs = mFiles.find(name);
+                                const auto fs = std::find_if(mFiles.cbegin(), mFiles.cend(), [&name](const std::pair<std::string, std::size_t>& entry) {
+                                    return entry.first == name;
+                                });
                                 if (fs != mFiles.end()) {
                                     size = fs->second;
                                 }

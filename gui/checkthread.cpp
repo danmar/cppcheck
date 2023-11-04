@@ -34,10 +34,10 @@
 #include <cstddef>
 #include <iterator>
 #include <list>
-#include <map>
 #include <ostream>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <QByteArray>
@@ -111,9 +111,9 @@ void CheckThread::run()
     if (!mFiles.isEmpty() || mAnalyseWholeProgram) {
         mAnalyseWholeProgram = false;
         qDebug() << "Whole program analysis";
-        std::map<std::string,std::size_t> files2;
+        std::list<std::pair<std::string, std::size_t>> files2;
         for (const QString& file : mFiles)
-            files2[file.toStdString()] = 0;
+            files2.emplace_back(file.toStdString(), 0);
         mCppcheck.analyseWholeProgram(mCppcheck.settings().buildDir, files2, {});
         mFiles.clear();
         emit done();
