@@ -827,6 +827,10 @@ namespace {
                 }
             }
 
+            // don't add class|struct|union in inheritance list
+            if (Token::Match(tok->previous(), "public|private|protected") && Token::Match(mRangeType.first, "class|struct|union"))
+                mRangeType.first = mRangeType.first->next();
+
             Token* const tok2 = insertTokens(tok, mRangeType);
             Token* const tok3 = insertTokens(tok2, mRangeTypeQualifiers);
 
