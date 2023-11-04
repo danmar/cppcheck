@@ -73,6 +73,8 @@ public:
      */
     int check(int argc, const char* const argv[]);
 
+private:
+
     /**
      * Information about progress is directed here. This should be
      * called by the CppCheck class only.
@@ -86,6 +88,8 @@ public:
 
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
 
+public:
+
     /**
      * @param exceptionOutput Output file
      */
@@ -94,6 +98,8 @@ public:
      * @return file name to be used for output from exception handler. Has to be either "stdout" or "stderr".
      */
     static FILE* getExceptionOutput();
+
+private:
 
     /**
      * Tries to load a library and prints warning/error messages
@@ -105,8 +111,6 @@ public:
      * Execute a shell command and read the output from it. Returns exitcode of the executed command,.
      */
     static int executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output_);
-
-protected:
 
     /**
      * Helper function to print out errors. Appends a line change.
@@ -124,8 +128,6 @@ protected:
      * @return false when errors are found in the input
      */
     bool parseFromArgs(Settings &settings, int argc, const char* const argv[]);
-
-private:
 
     static bool reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::map<std::string, std::size_t> &files, ErrorLogger& errorLogger);
 
