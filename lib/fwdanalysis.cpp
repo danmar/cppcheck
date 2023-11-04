@@ -500,6 +500,8 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
 {
     if (expr->isUnaryOp("*") && !expr->astOperand1()->isUnaryOp("&"))
         return true;
+    if (Token::simpleMatch(expr, ". *"))
+        return true;
 
     const bool macro = false;
     const bool pure = false;
