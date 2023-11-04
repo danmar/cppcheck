@@ -618,7 +618,6 @@ namespace {
         std::pair<Token*, Token*> mRangeType;
         std::pair<Token*, Token*> mRangeTypeQualifiers;
         std::pair<Token*, Token*> mRangeAfterVar;
-        std::string mTypedefName;  // Name of typedef type
         Token* mNameToken{nullptr};
         bool mFail = false;
         bool mReplaceFailed = false;
@@ -643,7 +642,6 @@ namespace {
                 if (Token::Match(nameToken, "%name% ;")) {
                     mRangeType = rangeBefore;
                     mRangeTypeQualifiers = rangeQualifiers;
-                    mTypedefName = nameToken->str();
                     Token* typeName = rangeBefore.second->previous();
                     if (typeName->isKeyword()) {
                         (void)num;
