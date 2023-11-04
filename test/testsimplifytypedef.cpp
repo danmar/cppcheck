@@ -1601,7 +1601,7 @@ private:
         }
 
         {
-            const char code[] = "struct B {};\n"
+            const char code[] = "struct B {};\n" // #12141
                                 "typedef struct B B;\n"
                                 "namespace N {\n"
                                 "    struct D : public B {};\n"
