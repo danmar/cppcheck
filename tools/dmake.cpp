@@ -630,7 +630,7 @@ int main(int argc, char **argv)
          << "    ifeq ($(PCRE_CONFIG),)\n"
          << "        $(error Did not find pcre-config)\n"
          << "    endif\n"
-         << "    override CXXFLAGS += -DHAVE_RULES -DTIXML_USE_STL $(shell $(PCRE_CONFIG) --cflags)\n"
+         << "    override CXXFLAGS += -DHAVE_RULES $(shell $(PCRE_CONFIG) --cflags)\n"
          << "    ifdef LIBS\n"
          << "        LIBS += $(shell $(PCRE_CONFIG) --libs)\n"
          << "    else\n"
