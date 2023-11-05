@@ -2579,8 +2579,8 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
         if (indirect == 0 && astIsPointer(tok))
             return false;
 
-        const Token *ftok = tok->tokAt(2);
-        if (astIsContainer(tok) && vt && vt->container) {
+        const Token *ftok = tok2->astParent()->next();
+        if (astIsContainer(tok2->astParent()->previous()) && vt && vt->container) {
             const Library::Container* c = vt->container;
             const Library::Container::Action action = c->getAction(ftok->str());
             if (contains({Library::Container::Action::INSERT,
