@@ -3763,7 +3763,7 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
     mTokenizer.calculateScopes();
 
     unsigned int passCount = 0;
-    const unsigned int passCountMax = 10;
+    constexpr unsigned int passCountMax = 10;
     for (; passCount < passCountMax; ++passCount) {
         if (passCount) {
             // it may take more than one pass to simplify type aliases

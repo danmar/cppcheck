@@ -2172,6 +2172,25 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 't' should be passed by const reference.\n", errout.str());
 
+        check("struct S {\n" // #12138
+              "    union {\n"
+              "        int a = 0;\n"
+              "        int x;\n"
+              "    };\n"
+              "    union {\n"
+              "        int b = 0;\n"
+              "        int y;\n"
+              "    };\n"
+              "    union {\n"
+              "        int c = 0;\n"
+              "        int z;\n"
+              "    };\n"
+              "};\n"
+              "void f(S s) {\n"
+              "    if (s.x > s.y) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("struct S { std::list<int> l; };\n" // #12147
               "class C { public: std::list<int> l; };\n"
               "bool f(S s) {\n"
@@ -4714,13 +4733,13 @@ private:
               "}", nullptr, false, false);
         ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
 
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def>\n"
-                               "  <function name=\"exit\">\n"
-                               "    <noreturn>true</noreturn>\n"
-                               "    <arg nr=\"1\"/>\n"
-                               "  </function>\n"
-                               "</def>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "  <function name=\"exit\">\n"
+                                   "    <noreturn>true</noreturn>\n"
+                                   "    <arg nr=\"1\"/>\n"
+                                   "  </function>\n"
+                                   "</def>";
         Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         check("void foo() {\n"
@@ -6403,14 +6422,14 @@ private:
     }
 
     void duplicateExpression3() {
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def>\n"
-                               "  <function name=\"mystrcmp\">\n"
-                               "    <pure/>\n"
-                               "    <arg nr=\"1\"/>\n"
-                               "    <arg nr=\"2\"/>\n"
-                               "  </function>\n"
-                               "</def>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "  <function name=\"mystrcmp\">\n"
+                                   "    <pure/>\n"
+                                   "    <arg nr=\"1\"/>\n"
+                                   "    <arg nr=\"2\"/>\n"
+                                   "  </function>\n"
+                                   "</def>";
         Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         check("void foo() {\n"
@@ -8420,7 +8439,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Use const reference for 'a' to avoid unnecessary data copying.\n", errout.str());
 
-        check("class A{public:A(){}};\n"
+        check("class A { public: A() {} char x[100]; };\n"
               "const A& getA(){static A a;return a;}\n"
               "int main()\n"
               "{\n"
@@ -8446,7 +8465,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:4]: (style) Local variable \'getA\' shadows outer function\n", errout.str());
 
-        check("class A{public:A(){}};\n"
+        check("class A { public: A() {} char x[100]; };\n"
               "const A& getA(){static A a;return a;}\n"
               "int main()\n"
               "{\n"
@@ -8595,6 +8614,19 @@ private:
               "}\n"
               "void g() {\n"
               "    std::string s = getC().get();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n" // #12139
+              "    int x, y;\n"
+              "};\n"
+              "struct T {\n"
+              "    S s;\n"
+              "    const S& get() const { return s; }\n"
+              "};\n"
+              "void f(const T& t) {\n"
+              "    const S a = t.get();\n"
+              "    if (a.x > a.y) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

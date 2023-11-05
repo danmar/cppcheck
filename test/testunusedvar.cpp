@@ -201,6 +201,7 @@ private:
         TEST_CASE(localvarStruct11); // 10095
         TEST_CASE(localvarStruct12); // #10495
         TEST_CASE(localvarStruct13); // #10398
+        TEST_CASE(localvarStruct14);
         TEST_CASE(localvarStructArray);
         TEST_CASE(localvarUnion1);
 
@@ -5330,6 +5331,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void localvarStruct14() { // #12142
+        functionVariableUsage("struct S { int i; };\n"
+                              "int f() {\n"
+                              "    S s;\n"
+                              "    int S::* p = &S::i;\n"
+                              "    s.*p = 123;\n"
+                              "    return s.i;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void localvarStructArray() {
         // extracttests.start: struct X {int a;};
 
@@ -5354,7 +5366,7 @@ private:
     }
 
     void localvarOp() {
-        const char op[] = "+-*/%&|^";
+        constexpr char op[] = "+-*/%&|^";
         for (const char *p = op; *p; ++p) {
             std::string code("int main()\n"
                              "{\n"

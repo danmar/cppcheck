@@ -25,6 +25,7 @@
 #include "color.h"
 #include "ctu.h"
 #include "errortypes.h"
+#include "filesettings.h"
 #include "library.h"
 #include "path.h"
 #include "platform.h"
@@ -80,10 +81,10 @@
 
 class SymbolDatabase;
 
-static const char Version[] = CPPCHECK_VERSION_STRING;
-static const char ExtraVersion[] = "";
+static constexpr char Version[] = CPPCHECK_VERSION_STRING;
+static constexpr char ExtraVersion[] = "";
 
-static const char FILELIST[] = "cppcheck-addon-ctu-file-list";
+static constexpr char FILELIST[] = "cppcheck-addon-ctu-file-list";
 
 static TimerResults s_timerResults;
 
@@ -521,7 +522,7 @@ unsigned int CppCheck::check(const std::string &path)
             }
 
             // run addons
-            executeAddons(dumpFile);
+            executeAddons(dumpFile, path);
 
         } catch (const InternalError &e) {
             const ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, path, "Bailing out from analysis: Processing Clang AST dump failed");
@@ -545,7 +546,7 @@ unsigned int CppCheck::check(const std::string &path, const std::string &content
     return checkFile(Path::simplifyPath(path), emptyString, &iss);
 }
 
-unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
+unsigned int CppCheck::check(const FileSettings &fs)
 {
     CppCheck temp(mErrorLogger, mUseGlobalSuppressions, mExecuteCommand);
     temp.mSettings = mSettings;
@@ -966,7 +967,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             fdump.close();
         }
 
-        executeAddons(dumpFile);
+        executeAddons(dumpFile, Path::simplifyPath(filename));
 
     } catch (const TerminateException &) {
         // Analysis is terminated
@@ -1370,15 +1371,15 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
 }
 #endif
 
-void CppCheck::executeAddons(const std::string& dumpFile)
+void CppCheck::executeAddons(const std::string& dumpFile, const std::string& file0)
 {
     if (!dumpFile.empty()) {
         std::vector<std::string> f{dumpFile};
-        executeAddons(f);
+        executeAddons(f, file0);
     }
 }
 
-void CppCheck::executeAddons(const std::vector<std::string>& files)
+void CppCheck::executeAddons(const std::vector<std::string>& files, const std::string& file0)
 {
     if (mSettings.addons.empty() || files.empty())
         return;
@@ -1443,7 +1444,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             }
             else if (!mSettings.severity.isEnabled(errmsg.severity))
                 continue;
-            errmsg.file0 = ((files.size() == 1) ? files[0] : "");
+            errmsg.file0 = file0;
 
             reportErr(errmsg);
         }
@@ -1462,7 +1463,7 @@ void CppCheck::executeAddonsWholeProgram(const std::map<std::string, std::size_t
     }
 
     try {
-        executeAddons(ctuInfoFiles);
+        executeAddons(ctuInfoFiles, "");
     } catch (const InternalError& e) {
         const ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, "", "Bailing out from analysis: Whole program analysis failed");
         reportErr(errmsg);
@@ -1625,7 +1626,7 @@ void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
     Preprocessor::getErrorMessages(&errorlogger, &s);
 }
 
-void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
+void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
 {
     std::string allIncludes;
     for (const std::string &inc : fileSettings.includePaths) {
@@ -1635,9 +1636,9 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
     const std::string allDefines = getDefinesFlags(fileSettings.defines);
 
 #ifdef _WIN32
-    const char exe[] = "clang-tidy.exe";
+    constexpr char exe[] = "clang-tidy.exe";
 #else
-    const char exe[] = "clang-tidy";
+    constexpr char exe[] = "clang-tidy";
 #endif
 
     const std::string args = "-quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename + "\" -- " + allIncludes + allDefines;
@@ -1721,11 +1722,11 @@ bool CppCheck::analyseWholeProgram()
     return errors && (mExitCode > 0);
 }
 
-void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<std::string, std::size_t> &files)
+void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<std::string, std::size_t> &files, const std::list<FileSettings>& fileSettings)
 {
-    executeAddonsWholeProgram(files);
+    executeAddonsWholeProgram(files); // TODO: pass FileSettings
     if (buildDir.empty()) {
-        removeCtuInfoFiles(files);
+        removeCtuInfoFiles(files, fileSettings);
         return;
     }
     if (mSettings.checks.isEnabled(Checks::unusedFunction))
@@ -1789,7 +1790,7 @@ bool CppCheck::isUnusedFunctionCheckEnabled() const
     return (mSettings.useSingleJob() && mSettings.checks.isEnabled(Checks::unusedFunction));
 }
 
-void CppCheck::removeCtuInfoFiles(const std::map<std::string, std::size_t> &files)
+void CppCheck::removeCtuInfoFiles(const std::map<std::string, std::size_t> &files, const std::list<FileSettings>& fileSettings)
 {
     if (mSettings.buildDir.empty()) {
         for (const auto& f: files) {
@@ -1797,7 +1798,7 @@ void CppCheck::removeCtuInfoFiles(const std::map<std::string, std::size_t> &file
             const std::string &ctuInfoFileName = getCtuInfoFileName(dumpFileName);
             std::remove(ctuInfoFileName.c_str());
         }
-        for (const auto& fs: mSettings.project.fileSettings) {
+        for (const auto& fs: fileSettings) {
             const std::string &dumpFileName = getDumpFileName(mSettings, fs.filename);
             const std::string &ctuInfoFileName = getCtuInfoFileName(dumpFileName);
             std::remove(ctuInfoFileName.c_str());

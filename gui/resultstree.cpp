@@ -60,25 +60,25 @@
 #include <QVariantMap>
 #include <Qt>
 
-static const char COLUMN[] = "column";
-static const char CWE[] = "cwe";
-static const char ERRORID[] = "id";
-static const char FILENAME[] = "file";
-static const char FILE0[] = "file0";
-static const char HASH[] = "hash";
-static const char HIDE[] = "hide";
-static const char INCONCLUSIVE[] = "inconclusive";
-static const char LINE[] = "line";
-static const char MESSAGE[] = "message";
-static const char SEVERITY[] = "severity";
-static const char SINCEDATE[] = "sinceDate";
-static const char SYMBOLNAMES[] = "symbolNames";
-static const char SUMMARY[] = "summary";
-static const char TAGS[] = "tags";
+static constexpr char COLUMN[] = "column";
+static constexpr char CWE[] = "cwe";
+static constexpr char ERRORID[] = "id";
+static constexpr char FILENAME[] = "file";
+static constexpr char FILE0[] = "file0";
+static constexpr char HASH[] = "hash";
+static constexpr char HIDE[] = "hide";
+static constexpr char INCONCLUSIVE[] = "inconclusive";
+static constexpr char LINE[] = "line";
+static constexpr char MESSAGE[] = "message";
+static constexpr char SEVERITY[] = "severity";
+static constexpr char SINCEDATE[] = "sinceDate";
+static constexpr char SYMBOLNAMES[] = "symbolNames";
+static constexpr char SUMMARY[] = "summary";
+static constexpr char TAGS[] = "tags";
 
 // These must match column headers given in ResultsTree::translate()
-static const int COLUMN_SINCE_DATE = 6;
-static const int COLUMN_TAGS       = 7;
+static constexpr int COLUMN_SINCE_DATE = 6;
+static constexpr int COLUMN_TAGS       = 7;
 
 ResultsTree::ResultsTree(QWidget * parent) :
     QTreeView(parent)

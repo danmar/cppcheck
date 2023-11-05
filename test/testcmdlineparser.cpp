@@ -22,7 +22,6 @@
 #include "cppcheckexecutor.h"
 #include "errortypes.h"
 #include "helpers.h"
-#include "importproject.h"
 #include "platform.h"
 #include "redirect.h"
 #include "settings.h"
@@ -2015,7 +2014,6 @@ private:
                         "</project>");
         const char * const argv[] = {"cppcheck", "--project=project.cppcheck"};
         ASSERT(parser->parseFromArgs(2, argv));
-        ASSERT_EQUALS(static_cast<int>(ImportProject::Type::CPPCHECK_GUI), static_cast<int>(settings->project.projectType));
         ASSERT_EQUALS(1, parser->getPathNames().size());
         auto it = parser->getPathNames().cbegin();
         ASSERT_EQUALS("dir", *it);

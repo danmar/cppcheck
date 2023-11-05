@@ -240,7 +240,7 @@ protected:
 private:
     void manageStyleControls();
 
-    static const int mLangCodeRole = Qt::UserRole;
+    static constexpr int mLangCodeRole = Qt::UserRole;
 
     bool mPremium;
 };

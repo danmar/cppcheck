@@ -20,6 +20,7 @@
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
 #include "errortypes.h"
+#include "filesettings.h"
 #include "processexecutor.h"
 #include "settings.h"
 #include "suppressions.h"
@@ -207,7 +208,9 @@ private:
         if (!suppression.empty()) {
             EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));
         }
-        SingleExecutor executor(cppCheck, files, settings, settings.nomsg, *this);
+        // TODO: test with FS
+        std::list<FileSettings> fileSettings;
+        SingleExecutor executor(cppCheck, files, fileSettings, settings, settings.nomsg, *this);
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(files.size());
         for (std::map<std::string, std::string>::const_iterator i = f.cbegin(); i != f.cend(); ++i)
@@ -234,7 +237,9 @@ private:
         if (!suppression.empty()) {
             EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));
         }
-        ThreadExecutor executor(files, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
+        // TODO: test with FS
+        std::list<FileSettings> fileSettings;
+        ThreadExecutor executor(files, fileSettings, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(files.size());
         for (std::map<std::string, std::size_t>::const_iterator i = files.cbegin(); i != files.cend(); ++i)
@@ -262,7 +267,9 @@ private:
         if (!suppression.empty()) {
             EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));
         }
-        ProcessExecutor executor(files, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
+        // TODO: test with FS
+        std::list<FileSettings> fileSettings;
+        ProcessExecutor executor(files, fileSettings, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(files.size());
         for (std::map<std::string, std::size_t>::const_iterator i = files.cbegin(); i != files.cend(); ++i)

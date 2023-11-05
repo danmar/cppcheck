@@ -57,12 +57,12 @@
 #include <QVariant>
 #include <QtCore>
 
-static const char ADDON_MISRA[]   = "misra";
-static const char CODING_STANDARD_MISRA_C_2023[] = "misra-c-2023";
-static const char CODING_STANDARD_MISRA_CPP_2008[] = "misra-cpp-2008";
-static const char CODING_STANDARD_CERT_C[] = "cert-c-2016";
-static const char CODING_STANDARD_CERT_CPP[] = "cert-cpp-2016";
-static const char CODING_STANDARD_AUTOSAR[] = "autosar";
+static constexpr char ADDON_MISRA[]   = "misra";
+static constexpr char CODING_STANDARD_MISRA_C_2023[] = "misra-c-2023";
+static constexpr char CODING_STANDARD_MISRA_CPP_2008[] = "misra-cpp-2008";
+static constexpr char CODING_STANDARD_CERT_C[] = "cert-c-2016";
+static constexpr char CODING_STANDARD_CERT_CPP[] = "cert-cpp-2016";
+static constexpr char CODING_STANDARD_AUTOSAR[] = "autosar";
 
 /** Return paths from QListWidget */
 static QStringList getPaths(const QListWidget *list)
@@ -77,7 +77,7 @@ static QStringList getPaths(const QListWidget *list)
 }
 
 /** Platforms shown in the platform combobox */
-static const Platform::Type builtinPlatforms[] = {
+static constexpr Platform::Type builtinPlatforms[] = {
     Platform::Type::Native,
     Platform::Type::Win32A,
     Platform::Type::Win32W,
@@ -86,7 +86,7 @@ static const Platform::Type builtinPlatforms[] = {
     Platform::Type::Unix64
 };
 
-static const int numberOfBuiltinPlatforms = sizeof(builtinPlatforms) / sizeof(builtinPlatforms[0]);
+static constexpr int numberOfBuiltinPlatforms = sizeof(builtinPlatforms) / sizeof(builtinPlatforms[0]);
 
 QStringList ProjectFileDialog::getProjectConfigs(const QString &fileName)
 {

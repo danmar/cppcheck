@@ -19,6 +19,7 @@
 #include "analyzerinfo.h"
 
 #include "errorlogger.h"
+#include "filesettings.h"
 #include "path.h"
 #include "utils.h"
 
@@ -44,7 +45,7 @@ static std::string getFilename(const std::string &fullpath)
     return fullpath.substr(pos1,pos2);
 }
 
-void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::list<std::string> &sourcefiles, const std::string &userDefines, const std::list<ImportProject::FileSettings> &fileSettings)
+void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::list<std::string> &sourcefiles, const std::string &userDefines, const std::list<FileSettings> &fileSettings)
 {
     std::map<std::string, unsigned int> fileCount;
 
@@ -57,7 +58,7 @@ void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::
             fout << afile << ".a" << (++fileCount[afile]) << ":" << userDefines << ":" << Path::simplifyPath(Path::fromNativeSeparators(f)) << '\n';
     }
 
-    for (const ImportProject::FileSettings &fs : fileSettings) {
+    for (const FileSettings &fs : fileSettings) {
         const std::string afile = getFilename(fs.filename);
         fout << afile << ".a" << (++fileCount[afile]) << ":" << fs.cfg << ":" << Path::simplifyPath(Path::fromNativeSeparators(fs.filename)) << std::endl;
     }

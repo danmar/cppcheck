@@ -112,7 +112,7 @@ void CheckType::checkTooBigBitwiseShift()
 
 void CheckType::tooBigBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits)
 {
-    const char id[] = "shiftTooManyBits";
+    constexpr char id[] = "shiftTooManyBits";
 
     if (!tok) {
         reportError(tok, Severity::error, id, "Shifting 32-bit value by 40 bits is undefined behaviour", CWE758, Certainty::normal);
@@ -131,7 +131,7 @@ void CheckType::tooBigBitwiseShiftError(const Token *tok, int lhsbits, const Val
 
 void CheckType::tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits)
 {
-    const char id[] = "shiftTooManyBitsSigned";
+    constexpr char id[] = "shiftTooManyBitsSigned";
 
     const bool cpp14 = mSettings->standards.cpp >= Standards::CPP14;
 

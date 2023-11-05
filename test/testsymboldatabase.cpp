@@ -6167,7 +6167,7 @@ private:
         ASSERT(db);
         const Scope * bar = db->findScopeByName("bar");
         ASSERT(bar != nullptr);
-        const unsigned int linenrs[2] = { 2, 1 };
+        constexpr unsigned int linenrs[2] = { 2, 1 };
         unsigned int index = 0;
         for (const Token * tok = bar->bodyStart->next(); tok != bar->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "%name% (") && !tok->varId() && Token::simpleMatch(tok->linkAt(1), ") ;")) {
@@ -8520,9 +8520,9 @@ private:
         {
             // Char types
             Settings settings;
-            const Library::PodType char8 = { 1, 'u' };
-            const Library::PodType char16 = { 2, 'u' };
-            const Library::PodType char32 = { 4, 'u' };
+            constexpr Library::PodType char8 = { 1, 'u' };
+            constexpr Library::PodType char16 = { 2, 'u' };
+            constexpr Library::PodType char32 = { 4, 'u' };
             settings.library.mPodTypes["char8_t"] = char8;
             settings.library.mPodTypes["char16_t"] = char16;
             settings.library.mPodTypes["char32_t"] = char32;
@@ -8539,8 +8539,8 @@ private:
         {
             // PodType
             Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).build();
-            const Library::PodType u32 = { 4, 'u' };
-            const Library::PodType podtype2 = { 0, 'u', Library::PodType::Type::INT };
+            constexpr Library::PodType u32 = { 4, 'u' };
+            constexpr Library::PodType podtype2 = { 0, 'u', Library::PodType::Type::INT };
             settingsWin64.library.mPodTypes["u32"] = u32;
             settingsWin64.library.mPodTypes["xyz::x"] = u32;
             settingsWin64.library.mPodTypes["podtype2"] = podtype2;

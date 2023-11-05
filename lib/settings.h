@@ -24,7 +24,6 @@
 #include "addoninfo.h"
 #include "config.h"
 #include "errortypes.h"
-#include "importproject.h"
 #include "library.h"
 #include "platform.h"
 #include "standards.h"
@@ -266,8 +265,6 @@ public:
 
     /** @brief Using -E for debugging purposes */
     bool preprocessOnly{};
-
-    ImportProject project;
 
     /** @brief Is --quiet given? */
     bool quiet{};

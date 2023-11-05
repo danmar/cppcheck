@@ -326,6 +326,7 @@ int main(int argc, char **argv)
     libfiles_h.emplace_back("analyzer.h");
     libfiles_h.emplace_back("calculate.h");
     libfiles_h.emplace_back("config.h");
+    libfiles_h.emplace_back("filesettings.h");
     libfiles_h.emplace_back("findtoken.h");
     libfiles_h.emplace_back("json.h");
     libfiles_h.emplace_back("precompiled.h");
@@ -430,7 +431,7 @@ int main(int argc, char **argv)
         }
     }
 
-    static const char makefile[] = "Makefile";
+    static constexpr char makefile[] = "Makefile";
     std::ofstream fout(makefile, std::ios_base::trunc);
     if (!fout.is_open()) {
         std::cerr << "An error occurred while trying to open "
@@ -629,7 +630,7 @@ int main(int argc, char **argv)
          << "    ifeq ($(PCRE_CONFIG),)\n"
          << "        $(error Did not find pcre-config)\n"
          << "    endif\n"
-         << "    override CXXFLAGS += -DHAVE_RULES -DTIXML_USE_STL $(shell $(PCRE_CONFIG) --cflags)\n"
+         << "    override CXXFLAGS += -DHAVE_RULES $(shell $(PCRE_CONFIG) --cflags)\n"
          << "    ifdef LIBS\n"
          << "        LIBS += $(shell $(PCRE_CONFIG) --libs)\n"
          << "    else\n"

@@ -17,9 +17,9 @@
  */
 
 #include "cppcheck.h"
+#include "filesettings.h"
 #include "fixture.h"
 #include "helpers.h"
-#include "importproject.h"
 #include "redirect.h"
 #include "library.h"
 #include "settings.h"
@@ -77,7 +77,7 @@ private:
         errout.str("");
         output.str("");
 
-        Settings s = settings;
+        std::list<FileSettings> fileSettings;
 
         std::map<std::string, std::size_t> filemap;
         if (opt.filesList.empty()) {
@@ -85,9 +85,9 @@ private:
                 std::string f_s = fprefix() + "_" + zpad3(i) + ".cpp";
                 filemap[f_s] = data.size();
                 if (useFS) {
-                    ImportProject::FileSettings fs;
+                    FileSettings fs;
                     fs.filename = std::move(f_s);
-                    s.project.fileSettings.emplace_back(std::move(fs));
+                    fileSettings.emplace_back(std::move(fs));
                 }
             }
         }
@@ -96,13 +96,14 @@ private:
             {
                 filemap[f] = data.size();
                 if (useFS) {
-                    ImportProject::FileSettings fs;
+                    FileSettings fs;
                     fs.filename = f;
-                    s.project.fileSettings.emplace_back(std::move(fs));
+                    fileSettings.emplace_back(std::move(fs));
                 }
             }
         }
 
+        Settings s = settings;
         s.showtime = opt.showtime;
         s.quiet = opt.quiet;
         if (opt.plistOutput)
@@ -130,7 +131,7 @@ private:
         if (useFS)
             filemap.clear();
 
-        SingleExecutor executor(cppcheck, filemap, s, s.nomsg, *this);
+        SingleExecutor executor(cppcheck, filemap, fileSettings, s, s.nomsg, *this);
         ASSERT_EQUALS(result, executor.check());
         ASSERT_EQUALS(opt.executeCommandCalled, executeCommandCalled);
         ASSERT_EQUALS(opt.exe, exe);
@@ -276,9 +277,9 @@ private:
             return;
 
 #ifdef _WIN32
-        const char exe[] = "clang-tidy.exe";
+        constexpr char exe[] = "clang-tidy.exe";
 #else
-        const char exe[] = "clang-tidy";
+        constexpr char exe[] = "clang-tidy";
 #endif
 
         const std::string file = fprefix() + "_001.cpp";

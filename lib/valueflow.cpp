@@ -407,7 +407,7 @@ static ValueFlow::Value castValue(ValueFlow::Value value, const ValueType::Sign 
         }
     }
     if (bit < MathLib::bigint_bits) {
-        const MathLib::biguint one = 1;
+        constexpr MathLib::biguint one = 1;
         value.intvalue &= (one << bit) - 1;
         if (sign == ValueType::Sign::SIGNED && value.intvalue & (one << (bit - 1))) {
             value.intvalue |= ~((one << bit) - 1ULL);
@@ -3158,7 +3158,7 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     }
 
     void setupExprVarIds(const Token* start, int depth = 0) {
-        const int maxDepth = 4;
+        constexpr int maxDepth = 4;
         if (depth > maxDepth)
             return;
         visitAstNodes(start, [&](const Token* tok) {
@@ -7658,7 +7658,7 @@ static void valueFlowSubFunction(TokenList& tokenlist, SymbolDatabase& symboldat
                 });
                 // Remove uninit values if argument is passed by value
                 if (argtok->variable() && !argtok->variable()->isPointer() && argvalues.size() == 1 && argvalues.front().isUninitValue()) {
-                    if (CheckUninitVar::isVariableUsage(tokenlist.isCPP(), argtok, settings.library, false, CheckUninitVar::Alloc::NO_ALLOC, 0))
+                    if (CheckUninitVar::isVariableUsage(argtok, settings.library, false, CheckUninitVar::Alloc::NO_ALLOC, 0))
                         continue;
                 }
 
@@ -8459,7 +8459,7 @@ struct IteratorConditionHandler : SimpleConditionHandler {
             if (!tok->astOperand1() || !tok->astOperand2())
                 return {};
 
-            const ValueFlow::Value::ValueKind kind = ValueFlow::Value::ValueKind::Known;
+            constexpr ValueFlow::Value::ValueKind kind = ValueFlow::Value::ValueKind::Known;
             std::list<ValueFlow::Value> values = getIteratorValues(tok->astOperand1()->values(), &kind);
             if (!values.empty()) {
                 cond.vartok = tok->astOperand2();
@@ -9353,8 +9353,8 @@ struct ValueFlowPassRunner {
                         const ErrorMessage errmsg(callstack,
                                                   state.tokenlist.getSourceFilePath(),
                                                   Severity::information,
-                                                  "ValueFlow analysis is limited in " + functionName +
-                                                  ". Use --check-level=exhaustive if full analysis is wanted.",
+                                                  "Limiting ValueFlow analysis in function '" + functionName + "' since it is too complex. "
+                                                  "Please specify --check-level=exhaustive to perform full analysis.",
                                                   "checkLevelNormal",
                                                   Certainty::normal);
                         state.errorLogger->reportErr(errmsg);

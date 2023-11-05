@@ -19,7 +19,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-12]
         include:
           - use_qt6: On
           - os: ubuntu-20.04
@@ -81,7 +81,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-12]
         include:
           - use_qt6: On
           - os: ubuntu-20.04
@@ -162,7 +162,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-12]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -194,7 +194,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-12]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -226,7 +226,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-12]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -248,7 +248,8 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        # no longer build with qmake on MacOS as brew might lack pre-built Qt5 packages causing the step to run for hours
+        os: [ubuntu-20.04, ubuntu-22.04]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -329,7 +330,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-12]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}

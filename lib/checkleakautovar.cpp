@@ -54,8 +54,8 @@ static const CWE CWE672(672U);
 static const CWE CWE415(415U);
 
 // Hardcoded allocation types (not from library)
-static const int NEW_ARRAY = -2;
-static const int NEW = -1;
+static constexpr int NEW_ARRAY = -2;
+static constexpr int NEW = -1;
 
 static const std::array<std::pair<std::string, std::string>, 4> alloc_failed_conds {{{"==", "0"}, {"<", "0"}, {"==", "-1"}, {"<=", "-1"}}};
 static const std::array<std::pair<std::string, std::string>, 4> alloc_success_conds {{{"!=", "0"}, {">", "0"}, {"!=", "-1"}, {">=", "0"}}};
@@ -304,9 +304,9 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
     static const nonneg int recursiveLimit = 300;
 #elif defined(__MINGW32__)
     // testrunner crashes with stack overflow in CI
-    static const nonneg int recursiveLimit = 600;
+    static constexpr nonneg int recursiveLimit = 600;
 #else
-    static const nonneg int recursiveLimit = 1000;
+    static constexpr nonneg int recursiveLimit = 1000;
 #endif
     if (++recursiveCount > recursiveLimit)    // maximum number of "else if ()"
         throw InternalError(startToken, "Internal limit: CheckLeakAutoVar::checkScope() Maximum recursive count of 1000 reached.", InternalError::LIMIT);

@@ -906,14 +906,11 @@ namespace {
     };
 }
 
-bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Check *check, const Token *argtok, MathLib::bigint *offset, int type)
+bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Settings *settings, const Token *argtok, MathLib::bigint *offset, int type)
 {
     if (!offset)
         return false;
-    const CheckBufferOverrun *c = dynamic_cast<const CheckBufferOverrun *>(check);
-    if (!c)
-        return false;
-    if (!argtok->valueType() || argtok->valueType()->typeSize(c->mSettings->platform) == 0)
+    if (!argtok->valueType() || argtok->valueType()->typeSize(settings->platform) == 0)
         return false;
     const Token *indexTok = nullptr;
     if (type == 1 && Token::Match(argtok, "%name% [") && argtok->astParent() == argtok->next() && !Token::simpleMatch(argtok->linkAt(1), "] ["))
@@ -926,27 +923,26 @@ bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Check *check, const Token 
         return false;
     if (!indexTok->hasKnownIntValue())
         return false;
-    *offset = indexTok->getKnownIntValue() * argtok->valueType()->typeSize(c->mSettings->platform);
+    *offset = indexTok->getKnownIntValue() * argtok->valueType()->typeSize(settings->platform);
     return true;
 }
 
-bool CheckBufferOverrun::isCtuUnsafeArrayIndex(const Check *check, const Token *argtok, MathLib::bigint *offset)
+bool CheckBufferOverrun::isCtuUnsafeArrayIndex(const Settings *settings, const Token *argtok, MathLib::bigint *offset)
 {
-    return CheckBufferOverrun::isCtuUnsafeBufferUsage(check, argtok, offset, 1);
+    return isCtuUnsafeBufferUsage(settings, argtok, offset, 1);
 }
 
-bool CheckBufferOverrun::isCtuUnsafePointerArith(const Check *check, const Token *argtok, MathLib::bigint *offset)
+bool CheckBufferOverrun::isCtuUnsafePointerArith(const Settings *settings, const Token *argtok, MathLib::bigint *offset)
 {
-    return CheckBufferOverrun::isCtuUnsafeBufferUsage(check, argtok, offset, 2);
+    return isCtuUnsafeBufferUsage(settings, argtok, offset, 2);
 }
 
 /** @brief Parse current TU and extract file info */
 Check::FileInfo *CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
-    CheckBufferOverrun checkBufferOverrun(tokenizer, settings, nullptr);
     MyFileInfo *fileInfo = new MyFileInfo;
-    fileInfo->unsafeArrayIndex = CTU::getUnsafeUsage(tokenizer, settings, &checkBufferOverrun, isCtuUnsafeArrayIndex);
-    fileInfo->unsafePointerArith = CTU::getUnsafeUsage(tokenizer, settings, &checkBufferOverrun, isCtuUnsafePointerArith);
+    fileInfo->unsafeArrayIndex = CTU::getUnsafeUsage(tokenizer, settings, isCtuUnsafeArrayIndex);
+    fileInfo->unsafePointerArith = CTU::getUnsafeUsage(tokenizer, settings, isCtuUnsafePointerArith);
     if (fileInfo->unsafeArrayIndex.empty() && fileInfo->unsafePointerArith.empty()) {
         delete fileInfo;
         return nullptr;

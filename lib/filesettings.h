@@ -16,33 +16,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SINGLEEXECUTOR_H
-#define SINGLEEXECUTOR_H
+#ifndef fileSettingsH
+#define fileSettingsH
 
-#include "executor.h"
+#include "config.h"
+#include "platform.h"
 
-#include <cstddef>
 #include <list>
-#include <map>
+#include <set>
 #include <string>
 
-class ErrorLogger;
-class Settings;
-class CppCheck;
-class Suppressions;
-struct FileSettings;
-
-class SingleExecutor : public Executor
-{
-public:
-    SingleExecutor(CppCheck &cppcheck, const std::map<std::string, std::size_t> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger);
-    SingleExecutor(const SingleExecutor &) = delete;
-    void operator=(const SingleExecutor &) = delete;
-
-    unsigned int check() override;
-
-private:
-    CppCheck &mCppcheck;
+/** File settings. Multiple configurations for a file is allowed. */
+struct CPPCHECKLIB FileSettings {
+    std::string cfg;
+    std::string filename;
+    std::string defines;
+    std::string cppcheckDefines() const {
+        return defines + (msc ? ";_MSC_VER=1900" : "") + (useMfc ? ";__AFXWIN_H__=1" : "");
+    }
+    std::set<std::string> undefs;
+    std::list<std::string> includePaths;
+    std::list<std::string> systemIncludePaths;
+    std::string standard;
+    Platform::Type platformType = Platform::Type::Unspecified;
+    bool msc{};
+    bool useMfc{};
 };
 
-#endif // SINGLEEXECUTOR_H
+#endif // fileSettingsH

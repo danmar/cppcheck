@@ -8911,8 +8911,12 @@ Token* Tokenizer::getAttributeFuncTok(Token* tok, bool gccattr) const {
         Token *prev = tok->previous();
         while (Token::Match(prev, "%name%"))
             prev = prev->previous();
-        if (Token::simpleMatch(prev, ")") && Token::Match(prev->link()->previous(), "%name% ("))
-            return prev->link()->previous();
+        if (Token::simpleMatch(prev, ")")) {
+            if (Token::Match(prev->link()->previous(), "%name% ("))
+                return prev->link()->previous();
+            if (Token::Match(prev->link()->tokAt(-2), "%name% ) ("))
+                return prev->link()->tokAt(-2);
+        }
         if (Token::simpleMatch(prev, ")") && Token::Match(prev->link()->tokAt(-2), "operator %op% (") && isCPP())
             return prev->link()->tokAt(-2);
         if ((!prev || Token::Match(prev, "[;{}*]")) && Token::Match(tok->previous(), "%name%"))
