@@ -155,7 +155,7 @@ ifeq ($(HAVE_RULES),yes)
     ifeq ($(PCRE_CONFIG),)
         $(error Did not find pcre-config)
     endif
-    override CXXFLAGS += -DHAVE_RULES -DTIXML_USE_STL $(shell $(PCRE_CONFIG) --cflags)
+    override CXXFLAGS += -DHAVE_RULES $(shell $(PCRE_CONFIG) --cflags)
     ifdef LIBS
         LIBS += $(shell $(PCRE_CONFIG) --libs)
     else
