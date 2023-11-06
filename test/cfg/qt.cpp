@@ -589,6 +589,7 @@ struct SEstimateSize {
 class QString;
 
 void dontCrashEstimateSize(const SEstimateSize& s) {
+    // cppcheck-suppress redundantCopyLocalConst
     QString q = s.get();
     if (!q.isNull()) {}
 }
