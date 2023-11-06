@@ -580,3 +580,15 @@ namespace {
         Q_PROPERTY(QHash<QString, int> hash READ hash WRITE setHash)
     };
 }
+
+struct SEstimateSize {
+    inline const QString& get() const { return m; }
+    QString m;
+};
+
+class QString;
+
+void dontCrashEstimateSize(const SEstimateSize& s) {
+    QString q = s.get();
+    if (!q.isNull()) {}
+}
