@@ -1457,7 +1457,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         bool isStandardTypeOrQualifier = false;
         Token* type = tok;
         while (Token::Match(type, "%type%|*|&|<")) {
-            if (type->isName() && (type->isStandardType() || Token::Match(type, "const|static")))
+            if (type->isName() && (type->isStandardType() || Token::Match(type, "const|mutable|static|volatile")))
                 isStandardTypeOrQualifier = true;
             if (type->str() == "<") {
                 if (type->link())
