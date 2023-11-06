@@ -1066,7 +1066,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         } else if (astIsRangeBasedForDecl(ftok)) {
             if (const Variable* rangeVar = ftok->astParent()->astOperand1()->variable()) {
                 if (rangeVar->isReference() && !rangeVar->isConst())
-                assignVar(usage, ftok->varId());
+                    assignVar(usage, ftok->varId());
             }
         }
 
