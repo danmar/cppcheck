@@ -1371,6 +1371,8 @@ public:
      */
     void debugMessage(const Token *tok, const std::string &type, const std::string &msg) const;
 
+    void returnImplicitIntError(const Token *tok) const;
+
     void printOut(const char * title = nullptr) const;
     void printVariable(const Variable *var, const char *indent) const;
     void printXml(std::ostream &out) const;
