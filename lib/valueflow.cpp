@@ -3470,7 +3470,7 @@ static std::vector<ValueFlow::LifetimeToken> getLifetimeTokens(const Token* tok,
                 errorPath.emplace_back(varDeclEndToken, "Passed to reference.");
                 return {{tok, true, std::move(errorPath)}};
             }
-            if (Token::simpleMatch(varDeclEndToken, "=")) {
+            if (Token::Match(varDeclEndToken, "=|{")) {
                 errorPath.emplace_back(varDeclEndToken, "Assigned to reference.");
                 const Token *vartok = varDeclEndToken->astOperand2();
                 const bool temporary = isTemporary(true, vartok, nullptr, true);
