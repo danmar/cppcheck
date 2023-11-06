@@ -1997,7 +1997,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
              Token::simpleMatch(tok->linkAt(1), ") {") &&
              (!tok->previous() || Token::Match(tok->previous(), ";|}"))) {
         if (mTokenizer.isC()) {
-            debugMessage(tok, "debug", "SymbolDatabase::isFunction found C function '" + tok->str() + "' without a return type.");
+            returnImplicitIntError(tok);
             *funcStart = tok;
             *argStart = tok->next();
             *declEnd = tok->linkAt(1)->next();
@@ -3517,6 +3517,19 @@ void SymbolDatabase::debugMessage(const Token *tok, const std::string &type, con
                                   Severity::debug,
                                   type,
                                   msg,
+                                  Certainty::normal);
+        mErrorLogger->reportErr(errmsg);
+    }
+}
+
+void SymbolDatabase::returnImplicitIntError(const Token *tok) const
+{
+    if (tok && mSettings.severity.isEnabled(Severity::portability) && mSettings.standards.c != Standards::C89 && mErrorLogger) {
+        const std::list<const Token*> locationList(1, tok);
+        const ErrorMessage errmsg(locationList, &mTokenizer.list,
+                                  Severity::portability,
+                                  "returnImplicitInt",
+                                  "Omitted return type of function '" + tok->str() + "' defaults to int, this is not supported by ISO C99 and later standards.",
                                   Certainty::normal);
         mErrorLogger->reportErr(errmsg);
     }

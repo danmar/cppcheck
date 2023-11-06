@@ -2380,12 +2380,12 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool debug = true, const char filename[] = "test.cpp") {
+    void check_(const char* file, int line, const char code[], bool debug = true, const char filename[] = "test.cpp", const Settings* pSettings = nullptr) {
         // Clear the error log
         errout.str("");
 
         // Check..
-        const Settings settings = settingsBuilder(settings1).debugwarnings(debug).build();
+        const Settings settings = settingsBuilder(pSettings ? *pSettings : settings1).debugwarnings(debug).build();
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -2986,7 +2986,12 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("main(int argc, char *argv[]) { }", true, "test.c");
-        ASSERT_EQUALS("[test.c:1]: (debug) SymbolDatabase::isFunction found C function 'main' without a return type.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        const Settings s = settingsBuilder(settings1).severity(Severity::portability).build();
+        check("main(int argc, char *argv[]) { }", false, "test.c", &s);
+        ASSERT_EQUALS("[test.c:1]: (portability) Omitted return type of function 'main' defaults to int, this is not supported by ISO C99 and later standards.\n",
+                      errout.str());
 
         check("namespace boost {\n"
               "    std::locale generate_locale()\n"
