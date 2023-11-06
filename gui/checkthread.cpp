@@ -112,8 +112,9 @@ void CheckThread::run()
         mAnalyseWholeProgram = false;
         qDebug() << "Whole program analysis";
         std::list<std::pair<std::string, std::size_t>> files2;
-        for (const QString& file : mFiles)
-            files2.emplace_back(file.toStdString(), 0);
+        std::transform(mFiles.cbegin(), mFiles.cend(), std::back_inserter(files2), [&](const QString& file) {
+            return std::pair<std::string, std::size_t>{file.toStdString(), 0};
+        });
         mCppcheck.analyseWholeProgram(mCppcheck.settings().buildDir, files2, {});
         mFiles.clear();
         emit done();
