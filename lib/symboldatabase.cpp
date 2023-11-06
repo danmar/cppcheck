@@ -3526,7 +3526,7 @@ void SymbolDatabase::returnImplicitIntError(const Token *tok) const
         const std::list<const Token*> locationList(1, tok);
         const ErrorMessage errmsg(locationList, &mTokenizer.list,
                                   Severity::portability,
-                                  "warning",
+                                  "returnImplicitInt",
                                   "Omitted return type of function '" + tok->str() + "' defaults to int, this is not supported by ISO C99 and later standards.",
                                   Certainty::normal);
         mErrorLogger->reportErr(errmsg);
