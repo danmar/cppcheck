@@ -3,9 +3,7 @@
 premium-misra-cpp-2008-5-17-1
 premium-misra-cpp-2008-5-0-6
 premium-misra-cpp-2008-7-2-1
-premium-misra-cpp-2008-2-10-4
 premium-misra-cpp-2008-3-3-2
-premium-misra-cpp-2008-8-4-4
 
 # open source warnings are handled by the selfcheck.yml
 noExplicitConstructor
@@ -50,6 +48,9 @@ premium-misra-cpp-2008-2-7-3
 
 # NA
 premium-misra-cpp-2008-2-10-1
+
+# objects of a class often has the lowercase name of the class.
+premium-misra-cpp-2008-2-10-4
 
 # flag |= ..
 premium-misra-cpp-2008-4-5-1
@@ -132,6 +133,9 @@ premium-misra-cpp-2008-7-5-3
 
 # intentional declaration of multiple variables
 premium-misra-cpp-2008-8-0-1
+
+# we intentionally don't use & before function names
+premium-misra-cpp-2008-8-4-4
 
 # cppcheck does not care about this enumerator rule
 premium-misra-cpp-2008-8-5-3

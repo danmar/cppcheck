@@ -2384,7 +2384,7 @@ namespace {
                 functionsByName[func.tokenDef->str()].push_back(&func);
             }
             for (std::pair<const std::string, std::list<const Function*>>& it : functionsByName) {
-                const std::list<const Function*>::const_iterator nc = std::find_if(it.second.cbegin(), it.second.cend(), &notconst);
+                const std::list<const Function*>::const_iterator nc = std::find_if(it.second.cbegin(), it.second.cend(), notconst);
                 if (nc == it.second.cend()) {
                     // ok to add all of them
                     constFunctions.splice(constFunctions.end(), it.second);
