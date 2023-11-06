@@ -1454,8 +1454,11 @@ static Token * createAstAtToken(Token *tok, bool cpp)
             return tok2;
     }
     if (Token::Match(tok, "%type%") && !Token::Match(tok, "return|throw|if|while|new|delete")) {
+        bool isStandardTypeOrQualifier = false;
         Token* type = tok;
         while (Token::Match(type, "%type%|*|&|<")) {
+            if (type->isName() && (type->isStandardType() || Token::Match(type, "const|static")))
+                isStandardTypeOrQualifier = true;
             if (type->str() == "<") {
                 if (type->link())
                     type = type->link();
@@ -1464,6 +1467,8 @@ static Token * createAstAtToken(Token *tok, bool cpp)
             }
             type = type->next();
         }
+        if (isStandardTypeOrQualifier && Token::Match(type, "%var% [;,)]"))
+            return type;
         if (Token::Match(type, "( * *| %var%") &&
             Token::Match(type->link()->previous(), "%var%|] ) (") &&
             Token::Match(type->link()->linkAt(1), ") [;,)]"))
