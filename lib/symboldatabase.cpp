@@ -2178,6 +2178,10 @@ Variable& Variable::operator=(const Variable &var)
     if (this == &var)
         return *this;
 
+    ValueType* vt = nullptr;
+    if (var.mValueType)
+        vt = new ValueType(*var.mValueType);
+
     mNameToken = var.mNameToken;
     mTypeStartToken = var.mTypeStartToken;
     mTypeEndToken = var.mTypeEndToken;
@@ -2188,9 +2192,7 @@ Variable& Variable::operator=(const Variable &var)
     mScope = var.mScope;
     mDimensions = var.mDimensions;
     delete mValueType;
-    mValueType = nullptr;
-    if (var.mValueType)
-        mValueType = new ValueType(*var.mValueType);
+    mValueType = vt;
 
     return *this;
 }
@@ -2344,9 +2346,9 @@ void Variable::setValueType(const ValueType &valueType)
         if (declType && !declType->next()->valueType())
             return;
     }
+    ValueType* vt = new ValueType(valueType);
     delete mValueType;
-    mValueType = nullptr;
-    mValueType = new ValueType(valueType);
+    mValueType = vt;
     if ((mValueType->pointer > 0) && (!isArray() || Token::Match(mNameToken->previous(), "( * %name% )")))
         setFlag(fIsPointer, true);
     setFlag(fIsConst, mValueType->constness & (1U << mValueType->pointer));
@@ -6359,7 +6361,7 @@ static void setAutoTokenProperties(Token * const autoTok)
         autoTok->isStandardType(true);
 }
 
-bool isContainerYieldElement(Library::Container::Yield yield)
+static bool isContainerYieldElement(Library::Container::Yield yield)
 {
     return yield == Library::Container::Yield::ITEM || yield == Library::Container::Yield::AT_INDEX ||
            yield == Library::Container::Yield::BUFFER || yield == Library::Container::Yield::BUFFER_NT;

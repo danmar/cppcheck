@@ -1,6 +1,9 @@
 // For a release version x.y.z the MAJOR should be x and both MINOR and DEVMINOR should be y.
 // After a release the DEVMINOR is incremented. MAJOR=x MINOR=y, DEVMINOR=y+1
 
+#ifndef versionH
+#define versionH
+
 #define CPPCHECK_MAJOR_VERSION 2
 #define CPPCHECK_MINOR_VERSION 12
 #define CPPCHECK_DEVMINOR_VERSION 13
@@ -16,3 +19,5 @@
 #define CPPCHECK_VERSION CPPCHECK_MAJOR_VERSION,CPPCHECK_MINOR_VERSION,99,0
 #endif
 #define LEGALCOPYRIGHT L"Copyright (C) 2007-2023 Cppcheck team."
+
+#endif

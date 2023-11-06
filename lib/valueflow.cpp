@@ -2237,7 +2237,7 @@ struct SingleRange {
 };
 
 template<class T>
-SingleRange<T> MakeSingleRange(T& x)
+static SingleRange<T> MakeSingleRange(T& x)
 {
     return {&x};
 }
@@ -6804,7 +6804,7 @@ ValuePtr<InferModel> ValueFlow::makeIntegralInferModel() {
     return IntegralInferModel{};
 }
 
-ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val)
+static ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val)
 {
     if (!varTok)
         return ValueFlow::Value{};
@@ -7374,7 +7374,7 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
 };
 
 template<class Key, class F>
-bool productParams(const Settings* settings, const std::unordered_map<Key, std::list<ValueFlow::Value>>& vars, F f)
+static bool productParams(const Settings* settings, const std::unordered_map<Key, std::list<ValueFlow::Value>>& vars, F f)
 {
     using Args = std::vector<std::unordered_map<Key, ValueFlow::Value>>;
     Args args(1);
@@ -7607,7 +7607,7 @@ struct IteratorRange
 };
 
 template<class Iterator>
-IteratorRange<Iterator> MakeIteratorRange(Iterator start, Iterator last)
+static IteratorRange<Iterator> MakeIteratorRange(Iterator start, Iterator last)
 {
     return {start, last};
 }
@@ -8260,7 +8260,7 @@ static const Token* solveExprValue(const Token* expr, ValueFlow::Value& value)
         value);
 }
 
-ValuePtr<Analyzer> makeAnalyzer(const Token* exprTok, ValueFlow::Value value, const TokenList& tokenlist, const Settings* settings)
+static ValuePtr<Analyzer> makeAnalyzer(const Token* exprTok, ValueFlow::Value value, const TokenList& tokenlist, const Settings* settings)
 {
     if (value.isContainerSizeValue())
         return ContainerExpressionAnalyzer(exprTok, std::move(value), tokenlist, settings);
@@ -8268,7 +8268,7 @@ ValuePtr<Analyzer> makeAnalyzer(const Token* exprTok, ValueFlow::Value value, co
     return ExpressionAnalyzer(expr, std::move(value), tokenlist, settings);
 }
 
-ValuePtr<Analyzer> makeReverseAnalyzer(const Token* exprTok, ValueFlow::Value value, const TokenList& tokenlist, const Settings* settings)
+static ValuePtr<Analyzer> makeReverseAnalyzer(const Token* exprTok, ValueFlow::Value value, const TokenList& tokenlist, const Settings* settings)
 {
     if (value.isContainerSizeValue())
         return ContainerExpressionAnalyzer(exprTok, std::move(value), tokenlist, settings);
@@ -9380,7 +9380,7 @@ struct ValueFlowPassAdaptor : ValueFlowPass {
     const char* mName = nullptr;
     bool mCPP = false;
     F mRun;
-    ValueFlowPassAdaptor(const char* pname, bool pcpp, F prun) : mName(pname), mCPP(pcpp), mRun(prun) {}
+    ValueFlowPassAdaptor(const char* pname, bool pcpp, F prun) : ValueFlowPass(), mName(pname), mCPP(pcpp), mRun(prun) {}
     const char* name() const override {
         return mName;
     }
@@ -9394,7 +9394,7 @@ struct ValueFlowPassAdaptor : ValueFlowPass {
 };
 
 template<class F>
-ValueFlowPassAdaptor<F> makeValueFlowPassAdaptor(const char* name, bool cpp, F run)
+static ValueFlowPassAdaptor<F> makeValueFlowPassAdaptor(const char* name, bool cpp, F run)
 {
     return {name, cpp, run};
 }
