@@ -109,6 +109,56 @@ private:
             ASSERT_EQUALS(true, tokenlist.front()->tokAt(4)->isLiteral());
             ASSERT_EQUALS(false, tokenlist.front()->tokAt(4)->isControlFlowKeyword());
         }
+
+        {
+            const char code2[] = "_Generic"; // C11 keyword
+            TokenList tokenlist(nullptr); // no settings use latest standard
+            std::istringstream istr(code2);
+            tokenlist.createTokens(istr, "a.cpp");
+            ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
+        }
+
+        {
+            const char code2[] = "_Generic"; // C11 keyword
+            TokenList tokenlist(nullptr); // no settings use latest standard
+            std::istringstream istr(code2);
+            tokenlist.createTokens(istr, "a.c");
+            ASSERT_EQUALS(true, tokenlist.front()->isKeyword());
+        }
+
+        {
+            const char code2[] = "_Generic"; // C11 keyword
+            const Settings s = settingsBuilder().c(Standards::C89).build();
+            TokenList tokenlist(&s);
+            std::istringstream istr(code2);
+            tokenlist.createTokens(istr, "a.c");
+            ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
+        }
+
+        {
+            const char code2[] = "co_return"; // C++20 keyword
+            TokenList tokenlist(nullptr); // no settings use latest standard
+            std::istringstream istr(code2);
+            tokenlist.createTokens(istr, "a.cpp");
+            ASSERT_EQUALS(true, tokenlist.front()->isKeyword());
+        }
+
+        {
+            const char code2[] = "co_return"; // C++20 keyword
+            TokenList tokenlist(nullptr); // no settings use latest standard
+            std::istringstream istr(code2);
+            tokenlist.createTokens(istr, "a.c");
+            ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
+        }
+
+        {
+            const char code2[] = "noexcept"; // C++11 keyword
+            const Settings s = settingsBuilder().cpp(Standards::CPP03).build();
+            TokenList tokenlist(&s);
+            std::istringstream istr(code2);
+            tokenlist.createTokens(istr, "a.cpp");
+            ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
+        }
     }
 };
 
