@@ -24,8 +24,8 @@
 
 #include <cstddef>
 #include <list>
-#include <map>
 #include <string>
+#include <utility>
 
 class Settings;
 class ErrorLogger;
@@ -41,7 +41,7 @@ struct FileSettings;
  */
 class ProcessExecutor : public Executor {
 public:
-    ProcessExecutor(const std::map<std::string, std::size_t> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand);
+    ProcessExecutor(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand);
     ProcessExecutor(const ProcessExecutor &) = delete;
     void operator=(const ProcessExecutor &) = delete;
 

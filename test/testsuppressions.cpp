@@ -193,9 +193,9 @@ private:
         errout.str("");
         output.str("");
 
-        std::map<std::string, std::size_t> files;
+        std::list<std::pair<std::string, std::size_t>> files;
         for (std::map<std::string, std::string>::const_iterator i = f.cbegin(); i != f.cend(); ++i) {
-            files[i->first] = i->second.size();
+            files.emplace_back(i->first, i->second.size());
         }
 
         CppCheck cppCheck(*this, true, nullptr);
@@ -227,8 +227,8 @@ private:
         errout.str("");
         output.str("");
 
-        std::map<std::string, std::size_t> files;
-        files["test.cpp"] = strlen(code);
+        std::list<std::pair<std::string, std::size_t>> files;
+        files.emplace_back("test.cpp", strlen(code));
 
         Settings settings;
         settings.jobs = 2;
@@ -242,7 +242,7 @@ private:
         ThreadExecutor executor(files, fileSettings, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(files.size());
-        for (std::map<std::string, std::size_t>::const_iterator i = files.cbegin(); i != files.cend(); ++i)
+        for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = files.cbegin(); i != files.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->first, code));
 
         const unsigned int exitCode = executor.check();
@@ -257,8 +257,8 @@ private:
         errout.str("");
         output.str("");
 
-        std::map<std::string, std::size_t> files;
-        files["test.cpp"] = strlen(code);
+        std::list<std::pair<std::string, std::size_t>> files;
+        files.emplace_back("test.cpp", strlen(code));
 
         Settings settings;
         settings.jobs = 2;
@@ -272,7 +272,7 @@ private:
         ProcessExecutor executor(files, fileSettings, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(files.size());
-        for (std::map<std::string, std::size_t>::const_iterator i = files.cbegin(); i != files.cend(); ++i)
+        for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = files.cbegin(); i != files.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->first, code));
 
         const unsigned int exitCode = executor.check();

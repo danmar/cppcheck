@@ -387,3 +387,48 @@ def test_project_file_filter_no_match(tmpdir):
     ]
 
     assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
+
+
+def test_project_file_order(tmpdir):
+    test_file_a = os.path.join(tmpdir, 'a.c')
+    with open(test_file_a, 'wt'):
+        pass
+    test_file_b = os.path.join(tmpdir, 'b.c')
+    with open(test_file_b, 'wt'):
+        pass
+    test_file_c = os.path.join(tmpdir, 'c.c')
+    with open(test_file_c, 'wt'):
+        pass
+    test_file_d = os.path.join(tmpdir, 'd.c')
+    with open(test_file_d, 'wt'):
+        pass
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+    </paths>
+</project>""".format(test_file_c, test_file_d, test_file_b, test_file_a))
+
+    args = ['--project={}'.format(project_file)]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file_c),
+        '1/4 files checked 0% done',
+        'Checking {} ...'.format(test_file_d),
+        '2/4 files checked 0% done',
+        'Checking {} ...'.format(test_file_b),
+        '3/4 files checked 0% done',
+        'Checking {} ...'.format(test_file_a),
+        '4/4 files checked 0% done'
+    ]
+    assert stderr == ''

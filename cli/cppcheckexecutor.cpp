@@ -209,8 +209,7 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
     }
 
     if (!pathnames.empty()) {
-        // TODO: this should be a vector or list so the order is kept
-        std::map<std::string, std::size_t> files;
+        std::list<std::pair<std::string, std::size_t>> files;
         // TODO: this needs to be inlined into PathMatch as it depends on the underlying filesystem
 #if defined(_WIN32)
         // For Windows we want case-insensitive path matching
@@ -286,7 +285,7 @@ int CppCheckExecutor::check_wrapper(CppCheck& cppcheck)
     return check_internal(cppcheck);
 }
 
-bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::map<std::string, std::size_t> &files, ErrorLogger& errorLogger) {
+bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::list<std::pair<std::string, std::size_t>> &files, ErrorLogger& errorLogger) {
     const auto& suppressions = settings.nomsg.getSuppressions();
     if (std::any_of(suppressions.begin(), suppressions.end(), [](const Suppressions::Suppression& s) {
         return s.errorId == "unmatchedSuppression" && s.fileName.empty() && s.lineNumber == Suppressions::Suppression::NO_LINE;
@@ -295,7 +294,7 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedF
 
     bool err = false;
     if (settings.useSingleJob()) {
-        for (std::map<std::string, std::size_t>::const_iterator i = files.cbegin(); i != files.cend(); ++i) {
+        for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = files.cbegin(); i != files.cend(); ++i) {
             err |= Suppressions::reportUnmatchedSuppressions(
                 settings.nomsg.getUnmatchedLocalSuppressions(i->first, unusedFunctionCheckEnabled), errorLogger);
         }
@@ -326,7 +325,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         settings.loadSummaries();
 
         std::list<std::string> fileNames;
-        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i)
+        for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i)
             fileNames.emplace_back(i->first);
         AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.userDefines, mFileSettings);
     }

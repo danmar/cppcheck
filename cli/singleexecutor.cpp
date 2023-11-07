@@ -31,7 +31,7 @@
 
 class ErrorLogger;
 
-SingleExecutor::SingleExecutor(CppCheck &cppcheck, const std::map<std::string, std::size_t> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
+SingleExecutor::SingleExecutor(CppCheck &cppcheck, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
     : Executor(files, fileSettings, settings, suppressions, errorLogger)
     , mCppcheck(cppcheck)
 {
@@ -50,7 +50,7 @@ unsigned int SingleExecutor::check()
     std::size_t processedsize = 0;
     unsigned int c = 0;
 
-    for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
+    for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
         if (!mSettings.library.markupFile(i->first) || !mSettings.library.processMarkupAfterCode(i->first)) {
             result += mCppcheck.check(i->first);
             processedsize += i->second;
@@ -77,7 +77,7 @@ unsigned int SingleExecutor::check()
     // second loop to parse all markup files which may not work until all
     // c/cpp files have been parsed and checked
     // TODO: get rid of duplicated code
-    for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
+    for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
         if (mSettings.library.markupFile(i->first) && mSettings.library.processMarkupAfterCode(i->first)) {
             result += mCppcheck.check(i->first);
             processedsize += i->second;
