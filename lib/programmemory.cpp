@@ -1591,31 +1591,30 @@ namespace {
 
         std::vector<ValueFlow::Value> execute(const Scope* scope)
         {
-            static const std::vector<ValueFlow::Value> unknown = {ValueFlow::Value::unknown()};
             if (!scope)
-                return unknown;
+                return {unknown};
             if (!scope->bodyStart)
-                return unknown;
+                return {unknown};
             for (const Token* tok = scope->bodyStart->next(); precedes(tok, scope->bodyEnd); tok = tok->next()) {
                 const Token* top = tok->astTop();
                 if (!top)
-                    return unknown;
+                    return {unknown};
 
                 if (Token::simpleMatch(top, "return") && top->astOperand1())
                     return {execute(top->astOperand1())};
 
                 if (Token::Match(top, "%op%")) {
                     if (execute(top).isUninitValue())
-                        return unknown;
+                        return {unknown};
                     const Token* next = nextAfterAstRightmostLeaf(top);
                     if (!next)
-                        return unknown;
+                        return {unknown};
                     tok = next;
                 } else if (Token::simpleMatch(top->previous(), "if (")) {
                     const Token* condTok = top->astOperand2();
                     ValueFlow::Value v = execute(condTok);
                     if (!v.isIntValue())
-                        return unknown;
+                        return {unknown};
                     const Token* thenStart = top->link()->next();
                     const Token* next = thenStart->link();
                     const Token* elseStart = nullptr;
@@ -1630,13 +1629,13 @@ namespace {
                         if (elseStart)
                             result = execute(elseStart->scope());
                     } else {
-                        return unknown;
+                        return {unknown};
                     }
                     if (!result.empty())
                         return result;
                     tok = next;
                 } else {
-                    return unknown;
+                    return {unknown};
                 }
             }
             return {};
