@@ -5624,22 +5624,22 @@ private:
         ASSERT_EQUALS(0, values.size());
 
         code = "bool do_something(int *p);\n"
-                "int getY();\n"
-                "bool bar();\n"
-                "void foo() {\n"
-                "    bool flag{true};\n"
-                "    int x;\n"
-                "    int y = getY();\n"
-                "    if (flag == true) {\n"
-                "        flag = bar();\n"
-                "    }\n"
-                "    if ((flag == true) && y > 0) {\n"
-                "        flag = do_something(&x);\n"
-                "    }\n"
-                "    for (int i = 0; (flag == true) && i < y; i++) {\n"
-                "        if (x < 0) {}\n"
-                "    }\n"
-                "}\n";
+               "int getY();\n"
+               "bool bar();\n"
+               "void foo() {\n"
+               "    bool flag{true};\n"
+               "    int x;\n"
+               "    int y = getY();\n"
+               "    if (flag == true) {\n"
+               "        flag = bar();\n"
+               "    }\n"
+               "    if ((flag == true) && y > 0) {\n"
+               "        flag = do_something(&x);\n"
+               "    }\n"
+               "    for (int i = 0; (flag == true) && i < y; i++) {\n"
+               "        if (x < 0) {}\n"
+               "    }\n"
+               "}\n";
         values = tokenValues(code, "x <", ValueFlow::Value::ValueType::UNINIT);
         ASSERT_EQUALS(0, values.size());
     }
