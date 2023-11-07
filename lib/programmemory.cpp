@@ -195,8 +195,6 @@ void ProgramMemory::insert(const ProgramMemory &pm)
 
 static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings* settings = nullptr);
 
-// static bool evaluateMultiCondition()
-
 static bool evaluateCondition(const std::string& op,
                               MathLib::bigint r,
                               const Token* condition,
