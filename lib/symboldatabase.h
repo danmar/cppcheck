@@ -553,6 +553,10 @@ public:
         return mDimensions.at(index_).known;
     }
 
+    void setDimensions(const std::vector<Dimension> &dimensions_) {
+        mDimensions = dimensions_;
+    }
+
     /**
      * Checks if the variable is an STL type ('std::')
      * E.g.:

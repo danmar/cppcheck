@@ -164,6 +164,7 @@ public:
 
     /** Insert array size where it isn't given */
     void arraySize();
+    void arraySizeAfterValueFlow(); // cppcheck-suppress functionConst
 
     /** Simplify labels and 'case|default' syntaxes.
      */
