@@ -1497,7 +1497,8 @@ namespace {
                 if (settings && expr->str() == "(") {
                     std::vector<const Token*> tokArgs = getArguments(expr);
                     std::vector<ValueFlow::Value> args(tokArgs.size());
-                    std::transform(tokArgs.cbegin(), tokArgs.cend(), args.begin(), [&](const Token* tok) {
+                    std::transform(
+                        tokArgs.cbegin(), tokArgs.cend(), args.begin(), [&](const Token* tok) {
                         return execute(tok);
                     });
                     if (f) {

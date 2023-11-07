@@ -7081,7 +7081,6 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
                         tok2 = tok2->linkAt(1);
                 }
             }
-
         }
         const Token* vartok = expr;
         const Token* rml = nextAfterAstRightmostLeaf(vartok);
@@ -7092,10 +7091,12 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
 
         if ((tok2->str() == "&&" &&
              conditionIsFalse(tok2->astOperand1(),
-                              getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings), settings)) ||
+                              getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings),
+                              settings)) ||
             (tok2->str() == "||" &&
              conditionIsTrue(tok2->astOperand1(),
-                             getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings), settings)))
+                             getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings),
+                             settings)))
             break;
 
         if (Token::simpleMatch(tok2, ") {")) {
