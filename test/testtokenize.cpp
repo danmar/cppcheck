@@ -6483,6 +6483,7 @@ private:
 
         ASSERT_EQUALS("", testAst("void f(enum E* var){}"));
         ASSERT_EQUALS("", testAst("void f(enum E*& var){}"));
+        ASSERT_EQUALS("", testAst("void f(bool& var){}"));
     }
 
     void astunaryop() const { // unary operators
