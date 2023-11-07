@@ -3842,7 +3842,7 @@ void Tokenizer::arraySizeAfterValueFlow()
             // Set array dimensions
             Dimension d;
             d.num = maxIndex + 1;
-            std::vector<Dimension> dimensions;
+            std::vector<Dimension> dimensions{d};
             const_cast<Variable*>(var)->setDimensions(dimensions);
         }
     }
