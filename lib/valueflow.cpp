@@ -7067,8 +7067,8 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
 
         if (Token::Match(tok2, "%oror%|&&")) {
             const ProgramMemory programMemory(getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings));
-            if ((tok2->str() == "&&" && !conditionIsTrue(tok2->astOperand1(), programMemory)) ||
-                (tok2->str() == "||" && !conditionIsFalse(tok2->astOperand1(), programMemory))) {
+            if ((tok2->str() == "&&" && !conditionIsTrue(tok2->astOperand1(), programMemory, settings)) ||
+                (tok2->str() == "||" && !conditionIsFalse(tok2->astOperand1(), programMemory, settings))) {
                 // Skip second expression..
                 Token *parent = tok2;
                 while (parent && parent->str() == tok2->str())
@@ -7092,10 +7092,10 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
 
         if ((tok2->str() == "&&" &&
              conditionIsFalse(tok2->astOperand1(),
-                              getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings))) ||
+                              getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings), settings)) ||
             (tok2->str() == "||" &&
              conditionIsTrue(tok2->astOperand1(),
-                             getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings))))
+                             getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings), settings)))
             break;
 
         if (Token::simpleMatch(tok2, ") {")) {

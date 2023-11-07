@@ -193,7 +193,7 @@ void ProgramMemory::insert(const ProgramMemory &pm)
         mValues.insert(p);
 }
 
-static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings* settings = nullptr);
+static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings* settings);
 
 static bool evaluateCondition(const std::string& op,
                               MathLib::bigint r,
@@ -351,7 +351,7 @@ static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Scope* scop
             return;
         MathLib::bigint result = 0;
         bool error = false;
-        execute(condTok, pm, &result, &error);
+        execute(condTok, pm, &result, &error, settings);
         if (error)
             programMemoryParseCondition(pm, condTok, endTok, settings, scope->type != Scope::eElse);
     }
@@ -381,7 +381,7 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
             if (!setvar) {
                 if (!pm.hasValue(vartok->exprId())) {
                     const Token* valuetok = tok2->astOperand2();
-                    pm.setValue(vartok, execute(valuetok, pm));
+                    pm.setValue(vartok, execute(valuetok, pm, settings));
                 }
             }
         } else if (tok2->exprId() > 0 && Token::Match(tok2, ".|(|[|*|%var%") && !pm.hasValue(tok2->exprId()) &&
@@ -393,7 +393,7 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
             if (indentlevel <= 0) {
                 const Token* cond = getCondTokFromEnd(tok2->link());
                 // Keep progressing with anonymous/do scopes and always true branches
-                if (!Token::Match(tok2->previous(), "do|; {") && !conditionIsTrue(cond, state) &&
+                if (!Token::Match(tok2->previous(), "do|; {") && !conditionIsTrue(cond, state, settings) &&
                     (cond || !isBasicForLoop(tok2)))
                     break;
             } else
@@ -405,12 +405,12 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
             const Token *cond = getCondTokFromEnd(tok2);
             const bool inElse = Token::simpleMatch(tok2->link()->previous(), "else {");
             if (cond) {
-                if (conditionIsFalse(cond, state)) {
+                if (conditionIsFalse(cond, state, settings)) {
                     if (inElse) {
                         ++indentlevel;
                         continue;
                     }
-                } else if (conditionIsTrue(cond, state)) {
+                } else if (conditionIsTrue(cond, state, settings)) {
                     if (inElse)
                         tok2 = tok2->link()->tokAt(-2);
                     ++indentlevel;
@@ -503,9 +503,9 @@ void ProgramMemoryState::removeModifiedVars(const Token* tok)
 {
     ProgramMemory pm = state;
     auto eval = [&](const Token* cond) -> std::vector<MathLib::bigint> {
-        if (conditionIsTrue(cond, pm))
+        if (conditionIsTrue(cond, pm, settings))
             return {1};
-        if (conditionIsFalse(cond, pm))
+        if (conditionIsFalse(cond, pm, settings))
             return {0};
         return {};
     };

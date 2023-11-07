@@ -195,14 +195,14 @@ void execute(const Token* expr,
  * \param condition   top ast token in condition
  * \param pm   program memory
  */
-bool conditionIsFalse(const Token* condition, ProgramMemory pm, const Settings* settings = nullptr);
+bool conditionIsFalse(const Token* condition, ProgramMemory pm, const Settings* settings);
 
 /**
  * Is condition always true when variable has given value?
  * \param condition   top ast token in condition
  * \param pm   program memory
  */
-bool conditionIsTrue(const Token* condition, ProgramMemory pm, const Settings* settings = nullptr);
+bool conditionIsTrue(const Token* condition, ProgramMemory pm, const Settings* settings);
 
 /**
  * Get program memory by looking backwards from given token.
