@@ -83,7 +83,7 @@ struct ExprIdToken {
         return !(lhs < rhs);
     }
 
-    const Token& operator*() const {
+    const Token& operator*() const NOEXCEPT {
         return *tok;
     }
 
@@ -147,6 +147,14 @@ struct ProgramMemory {
 
     Map::const_iterator end() const {
         return mValues.end();
+    }
+
+    friend bool operator==(const ProgramMemory& x, const ProgramMemory& y) {
+        return x.mValues == y.mValues;
+    }
+
+    friend bool operator!=(const ProgramMemory& x, const ProgramMemory& y) {
+        return x.mValues != y.mValues;
     }
 
 private:

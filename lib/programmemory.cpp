@@ -238,6 +238,8 @@ static bool frontIs(const std::vector<MathLib::bigint>& v, bool i)
 
 static bool isTrue(const ValueFlow::Value& v)
 {
+    if (v.isUninitValue())
+        return false;
     if (v.isImpossible())
         return v.intvalue == 0;
     return v.intvalue != 0;
@@ -245,6 +247,8 @@ static bool isTrue(const ValueFlow::Value& v)
 
 static bool isFalse(const ValueFlow::Value& v)
 {
+    if (v.isUninitValue())
+        return false;
     if (v.isImpossible())
         return false;
     return v.intvalue == 0;
@@ -1205,6 +1209,33 @@ static BuiltinLibraryFunction getBuiltinLibraryFunction(const std::string& name)
         return nullptr;
     return it->second;
 }
+static bool TokenExprIdCompare(const Token* tok1, const Token* tok2)
+{
+    return tok1->exprId() < tok2->exprId();
+}
+
+static std::vector<const Token*> setDifference(const std::vector<const Token*>& v1, const std::vector<const Token*>& v2)
+{
+    std::vector<const Token*> result;
+    std::set_difference(v1.begin(), v1.end(), v2.begin(), v2.end(), std::back_inserter(result), &TokenExprIdCompare);
+    return result;
+}
+
+static bool evalSameCondition(const ProgramMemory& state, const Token* tok1, const Token* tok2, const Settings* settings)
+{
+    assert(!conditionIsTrue(tok2, state, settings));
+    ProgramMemory pm = state;
+    programMemoryParseCondition(pm, tok1, nullptr, settings, true);
+    if (pm == state)
+        return false;
+    return conditionIsTrue(tok2, pm, settings);
+}
+
+static bool isSameCondition(const ProgramMemory& state, const Token* tok1, const Token* tok2, const Settings* settings)
+{
+    return evalSameCondition(state, tok1, tok2, settings) || evalSameCondition(state, tok2, tok1, settings);
+}
+
 namespace {
 struct Executor {
     ProgramMemory* pm = nullptr;
@@ -1214,7 +1245,22 @@ struct Executor {
 
     explicit Executor(ProgramMemory* pm = nullptr, const Settings* settings = nullptr) : pm(pm), settings(settings) {}
 
-    ValueFlow::Value executeMultiCondition(const std::string& op, bool b, const Token* expr)
+    std::vector<const Token*> flattenConditionsSorted(const Token* tok, bool b) const
+    {
+        std::vector<const Token*> result = astFlatten(tok, tok->str().c_str());
+        std::sort(result.begin(), result.end(), &TokenExprIdCompare);
+        if (!result.empty() && result.front()->exprId() == 0)
+            return {};
+        auto state = *this;
+        result.erase(std::remove_if(result.begin(), result.end(), [&](const Token* cond) {
+            ValueFlow::Value r = state.execute(cond);
+            // assert(!isTrueOrFalse(r, b));
+            return isTrueOrFalse(r, !b);
+        }), result.end());
+        return result;
+    }
+
+    ValueFlow::Value executeMultiCondition(bool b, const Token* expr)
     {
         if (pm->hasValue(expr->exprId())) {
             const ValueFlow::Value& v = pm->at(expr->exprId());
@@ -1222,21 +1268,47 @@ struct Executor {
                 return v;
         }
         ValueFlow::Value lhs = execute(expr->astOperand1());
-        if (!lhs.isIntValue())
-            return unknown;
         if (isTrueOrFalse(lhs, b))
             return lhs;
-        if (isTrueOrFalse(lhs, !b)) {
-            ValueFlow::Value rhs = execute(expr->astOperand2());
-            if (!rhs.isUninitValue())
-                return rhs;
-        }
+        ValueFlow::Value rhs = execute(expr->astOperand2());
+        if (isTrueOrFalse(rhs, b))
+            return rhs;
+        if (isTrueOrFalse(lhs, !b) && isTrueOrFalse(rhs, !b))
+            return lhs;
+        nonneg int n = astCount(expr, expr->str().c_str());
+        if (n > 5)
+            return unknown;
+        std::vector<const Token*> conditions1 = flattenConditionsSorted(expr, b);
+        if (conditions1.empty())
+            return unknown;
         for(const auto& p:*pm) {
-            ExprIdToken tok = p.first;
+            const Token* tok = p.first.tok;
             const ValueFlow::Value& value = p.second;
 
-            if (tok->str() == op && isTrueOrFalse(value, true)) {
-                
+            if (tok->str() == expr->str()) {
+                // TODO: Handle when it is greater
+                if (n != astCount(tok, expr->str().c_str()))
+                    continue;
+                std::vector<const Token*> conditions2 = flattenConditionsSorted(tok, b);
+                if(conditions2.empty())
+                    continue;
+                if(conditions1 == conditions2)
+                    return value;
+                std::vector<const Token*> diffConditions1 = setDifference(conditions1, conditions2);
+                std::vector<const Token*> diffConditions2 = setDifference(conditions2, conditions1);
+                // TODO: Handle when diffConditions2 is larger
+                if(diffConditions1.size() != diffConditions2.size())
+                    continue;
+                for(const Token* cond1:diffConditions1) {
+                    auto it = std::find_if(diffConditions2.begin(), diffConditions2.end(), [&](const Token* cond2) {
+                        return isSameCondition(*pm, cond1, cond2, settings);
+                    });
+                    if (it == diffConditions2.end())
+                        break;
+                    diffConditions2.erase(it);
+                }
+                if(diffConditions2.empty())
+                    return value;
             }
         }
         return unknown;
@@ -1307,9 +1379,9 @@ struct Executor {
             pm->setValue(expr->astOperand1(), rhs);
             return rhs;
         } else if (expr->str() == "&&" && expr->astOperand1() && expr->astOperand2()) {
-            return executeMultiCondition("&&", false, expr);
+            return executeMultiCondition(false, expr);
         } else if (expr->str() == "||" && expr->astOperand1() && expr->astOperand2()) {
-            return executeMultiCondition("||", true, expr);
+            return executeMultiCondition(true, expr);
         } else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
             execute(expr->astOperand1());
             return execute(expr->astOperand2());

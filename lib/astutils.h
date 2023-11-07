@@ -117,17 +117,17 @@ const Token* findExpression(const nonneg int exprid,
 const Token* findExpression(const Token* start, const nonneg int exprid);
 
 template<class T, class OuputIterator, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-void astFlattenCopy(T* tok, const char* op, OuputIterator out, nonneg int depth = 0)
+void astFlattenCopy(T* tok, const char* op, OuputIterator out, nonneg int depth = 100)
 {
-    ++depth;
-    if (!tok || depth >= 100)
+    --depth;
+    if (!tok || depth < 0)
         return;
     if (tok->str() == op) {
         astFlattenCopy(tok->astOperand1(), op, out, depth);
         astFlattenCopy(tok->astOperand2(), op, out, depth);
     } else {
         *out = tok;
-        out++;
+        ++out;
     }
 }
 
