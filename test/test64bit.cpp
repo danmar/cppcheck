@@ -292,6 +292,18 @@ private:
               "  return nullptr;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n" // #12159
+              "    std::future<int> f() const {\n"
+              "        return {};\n"
+              "    }\n"
+              "};\n"
+              "int g() {\n"
+              "    std::shared_ptr<S> s = std::make_shared<S>();\n"
+              "    auto x = s->f();\n"
+              "    return x.get();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
