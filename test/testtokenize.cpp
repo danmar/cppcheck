@@ -272,6 +272,7 @@ private:
         TEST_CASE(cpp14template); // Ticket #6708
 
         TEST_CASE(arraySize);
+        TEST_CASE(arraySizeAfterValueFlow);
 
         TEST_CASE(labels);
         TEST_CASE(simplifyInitVar);
@@ -4154,6 +4155,11 @@ private:
         ASSERT_EQUALS("; int a [ 5 ] = { 1 , 2 , [ 2 ] = 5 , 3 , 4 } ;", tokenizeAndStringify(";int a[]={ 1, 2, [2] = 5, 3, 4 };"));
         ASSERT_EQUALS("; int a [ ] = { 1 , 2 , [ x ] = 5 , 3 , 4 } ;", tokenizeAndStringify(";int a[]={ 1, 2, [x] = 5, 3, 4 };"));
         ASSERT_EQUALS("; const char c [ 4 ] = \"abc\" ;", tokenizeAndStringify(";const char c[] = { \"abc\" };"));
+    }
+
+    void arraySizeAfterValueFlow() {
+        const char code[] = "enum {X=10}; int a[] = {[X]=1};";
+        ASSERT_EQUALS("enum Anonymous0 { X = 10 } ; int a [ 11 ] = { [ X ] = 1 } ;", tokenizeAndStringify(code));
     }
 
     void labels() {

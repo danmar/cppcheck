@@ -3393,6 +3393,8 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
         } else {
             ValueFlow::setValues(list, *mSymbolDatabase, mErrorLogger, mSettings, mTimerResults);
         }
+
+        arraySizeAfterValueFlow();
     }
 
     // Warn about unhandled character literals
@@ -3803,6 +3805,45 @@ void Tokenizer::arraySize()
                 tok->insertToken(std::to_string(sz));
 
             tok = end->next() ? end->next() : end;
+        }
+    }
+}
+
+void Tokenizer::arraySizeAfterValueFlow()
+{
+    // After ValueFlow, adjust array sizes.
+    for (const Variable* var: mSymbolDatabase->variableList()) {
+        if (!var || !var->isArray())
+            continue;
+        if (!Token::Match(var->nameToken(), "%name% [ ] = { ["))
+            continue;
+        MathLib::bigint maxIndex = -1;
+        const Token* const startToken = var->nameToken()->tokAt(4);
+        const Token* const endToken = startToken->link();
+        for (const Token* tok = startToken; tok != endToken; tok = tok->next()) {
+            if (!Token::Match(tok, "[{,] [") || !Token::simpleMatch(tok->linkAt(1), "] ="))
+                continue;
+            const Token* expr = tok->next()->astOperand1();
+            if (expr && expr->hasKnownIntValue())
+                maxIndex = std::max(maxIndex, expr->getKnownIntValue());
+        }
+        if (maxIndex >= 0) {
+            // insert array size
+            Token* tok = const_cast<Token*>(var->nameToken()->next());
+            tok->insertToken(std::to_string(maxIndex + 1));
+            // ast
+            tok->astOperand2(tok->next());
+            // Token::scope
+            tok->next()->scope(tok->scope());
+            // Value flow
+            ValueFlow::Value value(maxIndex + 1);
+            value.setKnown();
+            tok->next()->addValue(value);
+            // Set array dimensions
+            Dimension d;
+            d.num = maxIndex + 1;
+            std::vector<Dimension> dimensions;
+            const_cast<Variable*>(var)->setDimensions(dimensions);
         }
     }
 }

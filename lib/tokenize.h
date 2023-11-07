@@ -164,6 +164,7 @@ public:
 
     /** Insert array size where it isn't given */
     void arraySize();
+    void arraySizeAfterValueFlow();
 
     /** Simplify labels and 'case|default' syntaxes.
      */
