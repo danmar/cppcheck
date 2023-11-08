@@ -4652,7 +4652,7 @@ class MisraChecker:
         try:
             for filename in ctu_info_files:
                 for line in open(filename, 'rt'):
-                    s = read_ctu_info_line(line)
+                    s = self.read_ctu_info_line(line)
                     if s is None:
                         continue
                     summary_type = s.get('summary', '')
