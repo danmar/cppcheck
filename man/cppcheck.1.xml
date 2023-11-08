@@ -127,6 +127,12 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <option>--force</option>
       </arg>
       <arg choice="opt">
+        <option>--fsigned-char</option>
+      </arg>
+      <arg choice="opt">
+        <option>--funsigned-char</option>
+      </arg>
+      <arg choice="opt">
         <option>--help</option>
       </arg>
       <arg choice="opt">
@@ -348,6 +354,22 @@ Example: '-UDEBUG'</para>
         <listitem>
           <para>Force checking of files that have a lot of configurations. Error is printed if such a file is found so there is no reason to use this by
 default. If used together with --max-configs=, the last option is the one that is effective.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+            <option>--fsigned-char</option>
+        </term>
+        <listitem>
+            <para>Treat char type as signed. This overrides previous --platform options and is overridden by following ones.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>--funsigned-char</option>
+        </term>
+        <listitem>
+          <para>Treat char type as unsigned. This overrides previous --platform options and is overridden by following ones.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
