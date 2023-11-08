@@ -4618,6 +4618,19 @@ class MisraChecker:
             self.executeCheck(2209, self.misra_22_9, cfg)
             self.executeCheck(2210, self.misra_22_10, cfg)
 
+    def read_ctu_info_line(self, line):
+        if not line.startswith('{'):
+            return None
+        try:
+            ctu_info = json.loads(line)
+        except json.decoder.JSONDecodeError:
+            return None
+        if 'summary' not in ctu_info:
+            return None
+        if 'data' not in ctu_info:
+            return None
+        return ctu_info
+
     def analyse_ctu_info(self, ctu_info_files):
         all_typedef_info = {}
         all_tagname_info = {}
@@ -4639,10 +4652,9 @@ class MisraChecker:
         try:
             for filename in ctu_info_files:
                 for line in open(filename, 'rt'):
-                    if not line.startswith('{'):
+                    s = read_ctu_info_line(line)
+                    if s is None:
                         continue
-
-                    s = json.loads(line)
                     summary_type = s.get('summary', '')
                     summary_data = s.get('data', None)
 

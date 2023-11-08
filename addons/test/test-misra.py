@@ -170,9 +170,8 @@ def test_arguments_regression():
         sys.argv = sys_argv_old
 
 
-def test_ctu_info_1(checker):
-    with tempfile.TemporaryDirectory() as tempdir:
-        f = os.path.join(tempdir, 'crash.ctu-info')
-        with open(f, 'w') as fout:
-            fout.write('{"ctu-info": {"version": 1}}')
-        checker.analyse_ctu_info((f,))
+def test_read_ctu_info_line(checker):
+    assert checker.read_ctu_info_line('{') is None
+    assert checker.read_ctu_info_line('{"summary":"123"}') is None
+    assert checker.read_ctu_info_line('{"data":123}') is None
+    assert checker.read_ctu_info_line('{"summary":"123","data":123}') is not None
