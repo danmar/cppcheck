@@ -2531,8 +2531,10 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                     ;
                 } else if (hasOverloadedMemberAccess(end, var->typeScope())) {
                     ;
-                } else if (!var->typeScope() || (end->function() != func && !isConstMemberFunc(var->typeScope(), end)))
-                    return false;
+                } else if (!var->typeScope() || (end->function() != func && !isConstMemberFunc(var->typeScope(), end))) {
+                    if (!mSettings->library.isFunctionConst(end))
+                        return false;
+                }
             }
 
             // Assignment
