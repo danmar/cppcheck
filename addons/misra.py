@@ -4643,8 +4643,8 @@ class MisraChecker:
                         continue
 
                     s = json.loads(line)
-                    summary_type = s['summary']
-                    summary_data = s['data']
+                    summary_type = s.get('summary', '')
+                    summary_data = s.get('data', None)
 
                     if summary_type == 'MisraTypedefInfo':
                         for new_typedef_info in summary_data:

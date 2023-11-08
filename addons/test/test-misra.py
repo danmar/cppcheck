@@ -7,9 +7,11 @@
 # Command in cppcheck directory:
 # PYTHONPATH=./addons python3 -m pytest addons/test/test-misra.py
 
+import os
 import pytest
 import re
 import sys
+import tempfile
 
 from .util import dump_create, dump_remove, convert_json_output
 
@@ -25,16 +27,6 @@ def remove_misra_config(s:str):
     return ret
 
 
-def setup_module(module):
-    for f in TEST_SOURCE_FILES:
-        dump_create(f)
-
-
-def teardown_module(module):
-    for f in TEST_SOURCE_FILES:
-        dump_remove(f)
-
-
 @pytest.fixture(scope="function")
 def checker():
     from addons.misra import MisraChecker, MisraSettings, get_args_parser
@@ -42,6 +34,15 @@ def checker():
     args = parser.parse_args([])
     settings = MisraSettings(args)
     return MisraChecker(settings)
+
+
+@pytest.fixture
+def test_files():
+    for f in TEST_SOURCE_FILES:
+        dump_create(f)
+    yield
+    for f in TEST_SOURCE_FILES:
+        dump_remove(f)
 
 
 def test_loadRuleTexts_structure(checker):
@@ -83,7 +84,7 @@ def test_rules_misra_severity(checker):
     assert(checker.ruleTexts[2104].misra_severity == '')
 
 
-def test_json_out(checker, capsys):
+def test_json_out(checker, capsys, test_files):
     sys.argv.append("--cli")
     checker.loadRuleTexts("./addons/test/misra/misra_rules_dummy.txt")
     checker.parseDump("./addons/test/misra/misra-test.c.dump")
@@ -96,7 +97,7 @@ def test_json_out(checker, capsys):
     assert("Advisory" in json_output['c2012-20.1'][0]['extra'])
 
 
-def test_rules_cppcheck_severity(checker, capsys):
+def test_rules_cppcheck_severity(checker, capsys, test_files):
     checker.loadRuleTexts("./addons/test/misra/misra_rules_dummy.txt")
     checker.parseDump("./addons/test/misra/misra-test.c.dump")
     captured = capsys.readouterr().err
@@ -104,7 +105,7 @@ def test_rules_cppcheck_severity(checker, capsys):
     assert("(warning)" not in captured)
     assert("(style)" in captured)
 
-def test_rules_cppcheck_severity_custom(checker, capsys):
+def test_rules_cppcheck_severity_custom(checker, capsys, test_files):
     checker.loadRuleTexts("./addons/test/misra/misra_rules_dummy.txt")
     checker.setSeverity("custom-severity")
     checker.parseDump("./addons/test/misra/misra-test.c.dump")
@@ -167,3 +168,11 @@ def test_arguments_regression():
             sys.argv.remove(arg)
     finally:
         sys.argv = sys_argv_old
+
+
+def test_ctu_info_1(checker):
+    with tempfile.TemporaryDirectory() as tempdir:
+        f = os.path.join(tempdir, 'crash.ctu-info')
+        with open(f, 'w') as fout:
+            fout.write('{"ctu-info": {"version": 1}}')
+        checker.analyse_ctu_info((f,))
