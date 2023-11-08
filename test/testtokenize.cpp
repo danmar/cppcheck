@@ -171,6 +171,7 @@ private:
         TEST_CASE(removeParentheses25);      // daca@home - a=(b,c)
         TEST_CASE(removeParentheses26);      // Ticket #8875 a[0](0)
         TEST_CASE(removeParentheses27);
+        TEST_CASE(removeParentheses28);      // #12164 - don't remove parentheses in '(expr1) ? (expr2) : (expr3);'
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -1809,7 +1810,7 @@ private:
     void removeParentheses15() {
         ASSERT_EQUALS("a = b ? c : 123 ;", tokenizeAndStringify("a = b ? c : (123);"));
         ASSERT_EQUALS("a = b ? c : ( 123 + 456 ) ;", tokenizeAndStringify("a = b ? c : ((123)+(456));"));
-        ASSERT_EQUALS("a = b ? 123 : c ;", tokenizeAndStringify("a = b ? (123) : c;"));
+        ASSERT_EQUALS("a = b ? ( 123 ) : c ;", tokenizeAndStringify("a = b ? (123) : c;"));
 
         // #4316
         ASSERT_EQUALS("a = b ? c : ( d = 1 , 0 ) ;", tokenizeAndStringify("a = b ? c : (d=1,0);"));
@@ -1915,6 +1916,12 @@ private:
                                   "void f ( S s , int j ) {\n"
                                   "g ( j , ( decltype ( s . i ) ) j * s . i ) ;\n"
                                   "}";
+        ASSERT_EQUALS(exp, tokenizeAndStringify(code));
+    }
+
+    void removeParentheses28() { // Ticket #12164
+        static char code[] = "temp1 = (value > 100U) ? (value+100U) : (value-50U);";
+        static const char exp[] = "temp1 = ( value > 100U ) ? ( value + 100U ) : ( value - 50U ) ;";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code));
     }
 
