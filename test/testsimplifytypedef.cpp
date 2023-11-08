@@ -52,6 +52,7 @@ private:
         TEST_CASE(cstruct3);
         TEST_CASE(cstruct3);
         TEST_CASE(cstruct4);
+        TEST_CASE(cenum1);
         TEST_CASE(cfunction1);
         TEST_CASE(cfunction2);
         TEST_CASE(cfunction3);
@@ -386,6 +387,12 @@ private:
         const char code[] = "typedef struct s { int a; int b; } t;\n"
                             "struct t x{};";
         ASSERT_EQUALS("struct s { int a ; int b ; } ; struct s x { } ;", simplifyTypedefC(code));
+    }
+
+    void cenum1() {
+        const char code[] = "typedef enum { a, b } E;\n"
+                            "E e;";
+        ASSERT_EQUALS("123", simplifyTypedefC(code));
     }
 
     void cfunction1() {
