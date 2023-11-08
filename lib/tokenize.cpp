@@ -630,7 +630,7 @@ namespace {
                 start = start->next();
 
             // TODO handle unnamed structs etc
-            if (Token::Match(start, "const| enum|struct|union|class %name% {")) {
+            if (Token::Match(start, "const| enum|struct|union|class %name%| {")) {
                 const std::pair<Token*, Token*> rangeBefore(start, Token::findsimplematch(start, "{"));
 
                 // find typedef name token
@@ -640,6 +640,8 @@ namespace {
                 const std::pair<Token*, Token*> rangeQualifiers(rangeBefore.second->link()->next(), nameToken);
 
                 if (Token::Match(nameToken, "%name% ;")) {
+                    if (Token::Match(rangeBefore.second->previous(), "enum|struct|union|class {"))
+                        rangeBefore.second->previous()->insertToken(nameToken->str());
                     mRangeType = rangeBefore;
                     mRangeTypeQualifiers = rangeQualifiers;
                     Token* typeName = rangeBefore.second->previous();
