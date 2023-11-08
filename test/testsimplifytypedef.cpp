@@ -3335,7 +3335,7 @@ private:
     void simplifyTypedef144() { // #9353
         const char code[] = "typedef struct {} X;\n"
                             "std::vector<X> v;\n";
-        ASSERT_EQUALS("struct X { } ; std :: vector < struct X > v ;", tok(code));
+        ASSERT_EQUALS("struct X { } ; std :: vector < X > v ;", tok(code));
     }
 
     void simplifyTypedef145() {

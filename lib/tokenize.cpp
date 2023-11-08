@@ -776,7 +776,7 @@ namespace {
             }
 
             // Inherited type => skip "struct" / "class"
-            if (Token::Match(mRangeType.first, "const| struct|class %name% {") && Token::Match(tok->previous(), "public|protected|private")) {
+            if (Token::Match(mRangeType.first, "const| struct|class %name% {") && Token::Match(tok->previous(), "public|protected|private|<")) {
                 tok->originalName(tok->str());
                 tok->str(mRangeType.second->previous()->str());
                 return;
