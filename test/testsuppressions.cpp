@@ -53,18 +53,23 @@ private:
         TEST_CASE(suppressionsGlob);
         TEST_CASE(suppressionsGlobId);
         TEST_CASE(suppressionsFileNameWithExtraPath);
-        TEST_CASE(suppressionsSettings);
-        TEST_CASE(suppressionsSettingsThreads);
+        TEST_CASE(suppressionsSettingsFiles);
+        TEST_CASE(suppressionsSettingsFS);
+        TEST_CASE(suppressionsSettingsThreadsFiles);
+        TEST_CASE(suppressionsSettingsThreadsFS);
 #if !defined(WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
-        TEST_CASE(suppressionsSettingsProcesses);
+        TEST_CASE(suppressionsSettingsProcessesFiles);
+        TEST_CASE(suppressionsSettingsProcessesFS);
 #endif
-        TEST_CASE(suppressionsMultiFile);
+        TEST_CASE(suppressionsMultiFileFiles);
+        TEST_CASE(suppressionsMultiFileFS);
         TEST_CASE(suppressionsPathSeparator);
         TEST_CASE(suppressionsLine0);
         TEST_CASE(suppressionsFileComment);
 
         TEST_CASE(inlinesuppress);
-        TEST_CASE(inlinesuppress_symbolname);
+        TEST_CASE(inlinesuppress_symbolname_Files);
+        TEST_CASE(inlinesuppress_symbolname_FS);
         TEST_CASE(inlinesuppress_comment);
 
         TEST_CASE(multi_inlinesuppress);
@@ -75,14 +80,21 @@ private:
         TEST_CASE(inlinesuppress_unusedFunction); // #4210 - unusedFunction
         TEST_CASE(globalsuppress_unusedFunction); // #4946
         TEST_CASE(suppressionWithRelativePaths); // #4733
-        TEST_CASE(suppressingSyntaxErrors); // #7076
-        TEST_CASE(suppressingSyntaxErrorsInline); // #5917
-        TEST_CASE(suppressingSyntaxErrorsWhileFileRead); // PR #1333
+        TEST_CASE(suppressingSyntaxErrorsFiles); // #7076
+        TEST_CASE(suppressingSyntaxErrorsFS); // #7076
+        TEST_CASE(suppressingSyntaxErrorsInlineFiles); // #5917
+        TEST_CASE(suppressingSyntaxErrorsInlineFS); // #5917
+        TEST_CASE(suppressingSyntaxErrorsWhileFileReadFiles); // PR #1333
+        TEST_CASE(suppressingSyntaxErrorsWhileFileReadFS); // PR #1333
         TEST_CASE(symbol);
 
-        TEST_CASE(unusedFunction);
+        TEST_CASE(unusedFunctionFiles);
+        TEST_CASE(unusedFunctionFS);
 
-        TEST_CASE(suppressingSyntaxErrorAndExitCode);
+        TEST_CASE(suppressingSyntaxErrorAndExitCodeFiles);
+        TEST_CASE(suppressingSyntaxErrorAndExitCodeFS);
+        TEST_CASE(suppressingSyntaxErrorAndExitCodeMultiFileFiles);
+        TEST_CASE(suppressingSyntaxErrorAndExitCodeMultiFileFS);
         TEST_CASE(suppressLocal);
 
         TEST_CASE(suppressUnmatchedSuppressions);
@@ -188,22 +200,45 @@ private:
         ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "x/../a.c", 123)));
     }
 
+    unsigned int checkSuppressionFiles(const char code[], const std::string &suppression = emptyString) {
+        return _checkSuppression(code, false, suppression);
+    }
+
+    unsigned int checkSuppressionFS(const char code[], const std::string &suppression = emptyString) {
+        return _checkSuppression(code, true, suppression);
+    }
+
     // Check the suppression
-    unsigned int checkSuppression(const char code[], const std::string &suppression = emptyString) {
+    unsigned int _checkSuppression(const char code[], bool useFS, const std::string &suppression = emptyString) {
         std::map<std::string, std::string> files;
         files["test.cpp"] = code;
 
-        return checkSuppression(files, suppression);
+        return _checkSuppression(files, useFS, suppression);
+    }
+
+    unsigned int checkSuppressionFiles(std::map<std::string, std::string> &f, const std::string &suppression = emptyString) {
+        return _checkSuppression(f, false, suppression);
+    }
+
+    unsigned int checkSuppressionFS(std::map<std::string, std::string> &f, const std::string &suppression = emptyString) {
+        return _checkSuppression(f, true, suppression);
     }
 
     // Check the suppression for multiple files
-    unsigned int checkSuppression(std::map<std::string, std::string> &f, const std::string &suppression = emptyString) {
+    unsigned int _checkSuppression(std::map<std::string, std::string> &f, bool useFS, const std::string &suppression = emptyString) {
         // Clear the error log
         errout.str("");
+
+        std::list<FileSettings> fileSettings;
 
         std::list<std::pair<std::string, std::size_t>> filelist;
         for (std::map<std::string, std::string>::const_iterator i = f.cbegin(); i != f.cend(); ++i) {
             filelist.emplace_back(i->first, i->second.size());
+            if (useFS) {
+                FileSettings fs;
+                fs.filename = i->first;
+                fileSettings.emplace_back(std::move(fs));
+            }
         }
 
         CppCheck cppCheck(*this, true, nullptr);
@@ -223,8 +258,10 @@ private:
         for (std::map<std::string, std::string>::const_iterator i = f.cbegin(); i != f.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->first, i->second));
 
-        // TODO: test with FS
-        std::list<FileSettings> fileSettings;
+        // clear files list so only fileSettings are used
+        if (useFS)
+            filelist.clear();
+
         SingleExecutor executor(cppCheck, filelist, fileSettings, settings, settings.nomsg, *this);
         const unsigned int exitCode = executor.check();
 
@@ -233,11 +270,26 @@ private:
         return exitCode;
     }
 
-    unsigned int checkSuppressionThreads(const char code[], const std::string &suppression = emptyString) {
+    unsigned int checkSuppressionThreadsFiles(const char code[], const std::string &suppression = emptyString) {
+        return _checkSuppressionThreads(code, false, suppression);
+    }
+
+    unsigned int checkSuppressionThreadsFS(const char code[], const std::string &suppression = emptyString) {
+        return _checkSuppressionThreads(code, true, suppression);
+    }
+
+    unsigned int _checkSuppressionThreads(const char code[], bool useFS, const std::string &suppression = emptyString) {
         errout.str("");
+
+        std::list<FileSettings> fileSettings;
 
         std::list<std::pair<std::string, std::size_t>> filelist;
         filelist.emplace_back("test.cpp", strlen(code));
+        if (useFS) {
+            FileSettings fs;
+            fs.filename = "test.cpp";
+            fileSettings.emplace_back(std::move(fs));
+        }
 
         Settings settings;
         settings.jobs = 2;
@@ -253,8 +305,10 @@ private:
         for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = filelist.cbegin(); i != filelist.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->first, code));
 
-        // TODO: test with FS
-        std::list<FileSettings> fileSettings;
+        // clear files list so only fileSettings are used
+        if (useFS)
+            filelist.clear();
+
         ThreadExecutor executor(filelist, fileSettings, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
         const unsigned int exitCode = executor.check();
 
@@ -264,11 +318,26 @@ private:
     }
 
 #if !defined(WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
-    unsigned int checkSuppressionProcesses(const char code[], const std::string &suppression = emptyString) {
+    unsigned int checkSuppressionProcessesFiles(const char code[], const std::string &suppression = emptyString) {
+        return _checkSuppressionProcesses(code, false, suppression);
+    }
+
+    unsigned int checkSuppressionProcessesFS(const char code[], const std::string &suppression = emptyString) {
+        return _checkSuppressionProcesses(code, true, suppression);
+    }
+
+    unsigned int _checkSuppressionProcesses(const char code[], bool useFS, const std::string &suppression = emptyString) {
         errout.str("");
+
+        std::list<FileSettings> fileSettings;
 
         std::list<std::pair<std::string, std::size_t>> filelist;
         filelist.emplace_back("test.cpp", strlen(code));
+        if (useFS) {
+            FileSettings fs;
+            fs.filename = "test.cpp";
+            fileSettings.emplace_back(std::move(fs));
+        }
 
         Settings settings;
         settings.jobs = 2;
@@ -284,8 +353,10 @@ private:
         for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = filelist.cbegin(); i != filelist.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->first, code));
 
-        // TODO: test with FS
-        std::list<FileSettings> fileSettings;
+        // clear files list so only fileSettings are used
+        if (useFS)
+            filelist.clear();
+
         ProcessExecutor executor(filelist, fileSettings, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
         const unsigned int exitCode = executor.check();
 
@@ -811,21 +882,33 @@ private:
         ASSERT_EQUALS("", errout.str()); // <- no unmatched suppression reported for macro suppression
     }
 
-    void suppressionsSettings() {
-        runChecks(&TestSuppressions::checkSuppression);
+    void suppressionsSettingsFiles() {
+        runChecks(&TestSuppressions::checkSuppressionFiles);
     }
 
-    void suppressionsSettingsThreads() {
-        runChecks(&TestSuppressions::checkSuppressionThreads);
+    void suppressionsSettingsFS() {
+        runChecks(&TestSuppressions::checkSuppressionFS);
+    }
+
+    void suppressionsSettingsThreadsFiles() {
+        runChecks(&TestSuppressions::checkSuppressionThreadsFiles);
+    }
+
+    void suppressionsSettingsThreadsFS() {
+        runChecks(&TestSuppressions::checkSuppressionThreadsFS);
     }
 
 #if !defined(WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
-    void suppressionsSettingsProcesses() {
-        runChecks(&TestSuppressions::checkSuppressionProcesses);
+    void suppressionsSettingsProcessesFiles() {
+        runChecks(&TestSuppressions::checkSuppressionProcessesFiles);
+    }
+
+    void suppressionsSettingsProcessesFS() {
+        runChecks(&TestSuppressions::checkSuppressionProcessesFS);
     }
 #endif
 
-    void suppressionsMultiFile() {
+    void suppressionsMultiFileInternal(unsigned int (TestSuppressions::*check)(std::map<std::string, std::string> &f, const std::string &)) {
         std::map<std::string, std::string> files;
         files["abc.cpp"] = "void f() {\n"
                            "}\n";
@@ -835,8 +918,16 @@ private:
                            "}\n";
 
         // suppress uninitvar for this file and line
-        ASSERT_EQUALS(0, checkSuppression(files, "uninitvar:xyz.cpp:3"));
+        ASSERT_EQUALS(0, (this->*check)(files, "uninitvar:xyz.cpp:3"));
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void suppressionsMultiFileFiles() {
+        suppressionsMultiFileInternal(&TestSuppressions::checkSuppressionFiles);
+    }
+
+    void suppressionsMultiFileFS() {
+        suppressionsMultiFileInternal(&TestSuppressions::checkSuppressionFS);
     }
 
     void suppressionsPathSeparator() const {
@@ -931,22 +1022,30 @@ private:
         ASSERT_EQUALS(badSuppressionAttribute, msg);
     }
 
-    void inlinesuppress_symbolname() {
-        ASSERT_EQUALS(0, checkSuppression("void f() {\n"
-                                          "    int a;\n"
-                                          "    /* cppcheck-suppress uninitvar symbolName=a */\n"
-                                          "    a++;\n"
-                                          "}\n",
-                                          ""));
+    void inlinesuppress_symbolname_Internal(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) {
+        ASSERT_EQUALS(0, (this->*check)("void f() {\n"
+                                        "    int a;\n"
+                                        "    /* cppcheck-suppress uninitvar symbolName=a */\n"
+                                        "    a++;\n"
+                                        "}\n",
+                                        ""));
         ASSERT_EQUALS("", errout.str());
 
-        ASSERT_EQUALS(1, checkSuppression("void f() {\n"
-                                          "    int a,b;\n"
-                                          "    /* cppcheck-suppress uninitvar symbolName=b */\n"
-                                          "    a++; b++;\n"
-                                          "}\n",
-                                          ""));
+        ASSERT_EQUALS(1, (this->*check)("void f() {\n"
+                                        "    int a,b;\n"
+                                        "    /* cppcheck-suppress uninitvar symbolName=b */\n"
+                                        "    a++; b++;\n"
+                                        "}\n",
+                                        ""));
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str());
+    }
+
+    void inlinesuppress_symbolname_Files() {
+        inlinesuppress_symbolname_Internal(&TestSuppressions::checkSuppressionFiles);
+    }
+
+    void inlinesuppress_symbolname_FS() {
+        inlinesuppress_symbolname_Internal(&TestSuppressions::checkSuppressionFS);
     }
 
     void inlinesuppress_comment() const {
@@ -1144,14 +1243,22 @@ private:
         ASSERT_EQUALS("",errout.str());
     }
 
-    void suppressingSyntaxErrors() { // syntaxErrors should be suppressible (#7076)
+    void suppressingSyntaxErrorsInternal(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) { // syntaxErrors should be suppressible (#7076)
         const char code[] = "if if\n";
 
-        ASSERT_EQUALS(0, checkSuppression(code, "syntaxError:test.cpp:1"));
+        ASSERT_EQUALS(0, (this->*check)(code, "syntaxError:test.cpp:1"));
         ASSERT_EQUALS("", errout.str());
     }
 
-    void suppressingSyntaxErrorsInline() { // syntaxErrors should be suppressible (#5917)
+    void suppressingSyntaxErrorsFiles() {
+        suppressingSyntaxErrorsInternal(&TestSuppressions::checkSuppressionFiles);
+    }
+
+    void suppressingSyntaxErrorsFS() {
+        suppressingSyntaxErrorsInternal(&TestSuppressions::checkSuppressionFiles);
+    }
+
+    void suppressingSyntaxErrorsInlineInternal(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) { // syntaxErrors should be suppressible (#5917)
         const char code[] = "double result(0.0);\n"
                             "_asm\n"
                             "{\n"
@@ -1162,11 +1269,19 @@ private:
                             "   fstp  QWORD PTR result  ; store a double (8 bytes)\n"
                             "   pop   EAX               ; restore EAX\n"
                             "}";
-        ASSERT_EQUALS(0, checkSuppression(code, ""));
+        ASSERT_EQUALS(0, (this->*check)(code, ""));
         ASSERT_EQUALS("", errout.str());
     }
 
-    void suppressingSyntaxErrorsWhileFileRead() { // syntaxError while file read should be suppressible (PR #1333)
+    void suppressingSyntaxErrorsInlineFiles() {
+        suppressingSyntaxErrorsInlineInternal(&TestSuppressions::checkSuppressionFiles);
+    }
+
+    void suppressingSyntaxErrorsInlineFS() {
+        suppressingSyntaxErrorsInlineInternal(&TestSuppressions::checkSuppressionFS);
+    }
+
+    void suppressingSyntaxErrorsWhileFileReadInternal(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) { // syntaxError while file read should be suppressible (PR #1333)
         const char code[] = "CONST (genType, KS_CONST) genService[KS_CFG_NR_OF_NVM_BLOCKS] =\n"
                             "{\n"
                             "[!VAR \"BC\" = \"$BC + 1\"!][!//\n"
@@ -1180,8 +1295,16 @@ private:
                             "[!VAR \"BC\" = \"$BC + 1\"!][!//\n"
                             "[!ENDIF!][!//\n"
                             "};";
-        ASSERT_EQUALS(0, checkSuppression(code, "syntaxError:test.cpp:4"));
+        ASSERT_EQUALS(0, (this->*check)(code, "syntaxError:test.cpp:4"));
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void suppressingSyntaxErrorsWhileFileReadFiles() {
+        suppressingSyntaxErrorsWhileFileReadInternal(&TestSuppressions::checkSuppressionFiles);
+    }
+
+    void suppressingSyntaxErrorsWhileFileReadFS() {
+        suppressingSyntaxErrorsWhileFileReadInternal(&TestSuppressions::checkSuppressionFiles);
     }
 
     void symbol() const {
@@ -1207,27 +1330,28 @@ private:
         ASSERT_EQUALS(true, s.isSuppressed(errorMsg));
     }
 
-    void unusedFunction() {
-        ASSERT_EQUALS(0, checkSuppression("void f() {}", "unusedFunction"));
+    void unusedFunctionInternal(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) {
+        ASSERT_EQUALS(0, (this->*check)("void f() {}", "unusedFunction"));
     }
 
-    void suppressingSyntaxErrorAndExitCode() {
+    void unusedFunctionFiles() {
+        unusedFunctionInternal(&TestSuppressions::checkSuppressionFiles);
+    }
+
+    void unusedFunctionFS() {
+        unusedFunctionInternal(&TestSuppressions::checkSuppressionFS);
+    }
+
+    void suppressingSyntaxErrorAndExitCodeInternal(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) {
         const char code[] = "fi if;";
 
-        ASSERT_EQUALS(0, checkSuppression(code, "*:test.cpp"));
+        ASSERT_EQUALS(0, (this->*check)(code, "*:test.cpp"));
         ASSERT_EQUALS("", errout.str());
-
-        // multi files, but only suppression one
-        std::map<std::string, std::string> mfiles;
-        mfiles["test.cpp"] = "fi if;";
-        mfiles["test2.cpp"] = "fi if";
-        ASSERT_EQUALS(2, checkSuppression(mfiles, "*:test.cpp"));
-        ASSERT_EQUALS("[test2.cpp:1]: (error) syntax error\n", errout.str());
 
         // multi error in file, but only suppression one error
         const char code2[] = "fi fi\n"
                              "if if;";
-        ASSERT_EQUALS(2, checkSuppression(code2, "*:test.cpp:1"));  // suppress all error at line 1 of test.cpp
+        ASSERT_EQUALS(2, (this->*check)(code2, "*:test.cpp:1"));  // suppress all error at line 1 of test.cpp
         ASSERT_EQUALS("[test.cpp:2]: (error) syntax error\n", errout.str());
 
         // multi error in file, but only suppression one error (2)
@@ -1236,7 +1360,32 @@ private:
                              "    int b = y/0;\n"
                              "}\n"
                              "f(0, 1);\n";
-        ASSERT_EQUALS(2, checkSuppression(code3, "zerodiv:test.cpp:3"));  // suppress 'errordiv' at line 3 of test.cpp
+        ASSERT_EQUALS(2, (this->*check)(code3, "zerodiv:test.cpp:3"));  // suppress 'errordiv' at line 3 of test.cpp
+    }
+
+    void suppressingSyntaxErrorAndExitCodeFiles() {
+        suppressingSyntaxErrorAndExitCodeInternal(&TestSuppressions::checkSuppressionFiles);
+    }
+
+    void suppressingSyntaxErrorAndExitCodeFS() {
+        suppressingSyntaxErrorAndExitCodeInternal(&TestSuppressions::checkSuppressionFS);
+    }
+
+    void suppressingSyntaxErrorAndExitCodeMultiFileInternal(unsigned int (TestSuppressions::*check)(std::map<std::string, std::string> &f, const std::string &)) {
+        // multi files, but only suppression one
+        std::map<std::string, std::string> mfiles;
+        mfiles["test.cpp"] = "fi if;";
+        mfiles["test2.cpp"] = "fi if";
+        ASSERT_EQUALS(2, (this->*check)(mfiles, "*:test.cpp"));
+        ASSERT_EQUALS("[test2.cpp:1]: (error) syntax error\n", errout.str());
+    }
+
+    void suppressingSyntaxErrorAndExitCodeMultiFileFiles() {
+        suppressingSyntaxErrorAndExitCodeMultiFileInternal(&TestSuppressions::checkSuppressionFiles);
+    }
+
+    void suppressingSyntaxErrorAndExitCodeMultiFileFS() {
+        suppressingSyntaxErrorAndExitCodeMultiFileInternal(&TestSuppressions::checkSuppressionFS);
     }
 
     void suppressLocal() const {
