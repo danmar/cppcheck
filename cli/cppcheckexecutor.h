@@ -81,7 +81,7 @@ private:
 
 protected:
 
-    static bool reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::list<std::pair<std::string, std::size_t>> &files, ErrorLogger& errorLogger);
+    static bool reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, ErrorLogger& errorLogger);
 
     /**
      * Wrapper around check_internal

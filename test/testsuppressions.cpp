@@ -265,7 +265,7 @@ private:
         SingleExecutor executor(cppCheck, filelist, fileSettings, settings, settings.nomsg, *this);
         const unsigned int exitCode = executor.check();
 
-        CppCheckExecutor::reportSuppressions(settings, false, filelist, *this);
+        CppCheckExecutor::reportSuppressions(settings, false, filelist, fileSettings, *this);
 
         return exitCode;
     }
@@ -312,7 +312,7 @@ private:
         ThreadExecutor executor(filelist, fileSettings, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
         const unsigned int exitCode = executor.check();
 
-        CppCheckExecutor::reportSuppressions(settings, false, filelist, *this);
+        CppCheckExecutor::reportSuppressions(settings, false, filelist, fileSettings, *this);
 
         return exitCode;
     }
@@ -360,7 +360,7 @@ private:
         ProcessExecutor executor(filelist, fileSettings, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
         const unsigned int exitCode = executor.check();
 
-        CppCheckExecutor::reportSuppressions(settings, false, filelist, *this);
+        CppCheckExecutor::reportSuppressions(settings, false, filelist, fileSettings, *this);
 
         return exitCode;
     }
