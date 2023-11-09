@@ -186,30 +186,40 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
         logger.printMessage("Please use --suppress for ignoring results from the header files.");
     }
 
-    const std::vector<std::string>& pathnames = parser.getPathNames();
-    const std::list<FileSettings>& fileSettings = parser.getFileSettings();
+    const std::vector<std::string>& pathnamesRef = parser.getPathNames();
+    const std::list<FileSettings>& fileSettingsRef = parser.getFileSettings();
 
     // the inputs can only be used exclusively - CmdLineParser should already handle this
-    assert(!(!pathnames.empty() && !fileSettings.empty()));
+    assert(!(!pathnamesRef.empty() && !fileSettingsRef.empty()));
 
-    if (!fileSettings.empty()) {
+    if (!fileSettingsRef.empty()) {
+        std::list<FileSettings> fileSettings;
         if (!settings.fileFilters.empty()) {
             // filter only for the selected filenames from all project files
-            std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(mFileSettings), [&](const FileSettings &fs) {
+            std::copy_if(fileSettingsRef.cbegin(), fileSettingsRef.cend(), std::back_inserter(fileSettings), [&](const FileSettings &fs) {
                 return matchglobs(settings.fileFilters, fs.filename);
             });
-            if (mFileSettings.empty()) {
+            if (fileSettings.empty()) {
                 logger.printError("could not find any files matching the filter.");
                 return false;
             }
         }
         else {
-            mFileSettings = fileSettings;
+            fileSettings = fileSettingsRef;
         }
+
+        // sort the markup last
+        std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(mFileSettings), [&](const FileSettings &fs) {
+            return !settings.library.markupFile(fs.filename) || !settings.library.processMarkupAfterCode(fs.filename);
+        });
+
+        std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(mFileSettings), [&](const FileSettings &fs) {
+            return settings.library.markupFile(fs.filename) && settings.library.processMarkupAfterCode(fs.filename);
+        });
     }
 
-    if (!pathnames.empty()) {
-        std::list<std::pair<std::string, std::size_t>> files;
+    if (!pathnamesRef.empty()) {
+        std::list<std::pair<std::string, std::size_t>> filesResolved;
         // TODO: this needs to be inlined into PathMatch as it depends on the underlying filesystem
 #if defined(_WIN32)
         // For Windows we want case-insensitive path matching
@@ -219,26 +229,36 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
 #endif
         // Execute recursiveAddFiles() to each given file parameter
         const PathMatch matcher(ignored, caseSensitive);
-        for (const std::string &pathname : pathnames) {
-            const std::string err = FileLister::recursiveAddFiles(files, Path::toNativeSeparators(pathname), settings.library.markupExtensions(), matcher);
+        for (const std::string &pathname : pathnamesRef) {
+            const std::string err = FileLister::recursiveAddFiles(filesResolved, Path::toNativeSeparators(pathname), settings.library.markupExtensions(), matcher);
             if (!err.empty()) {
                 // TODO: bail out?
                 logger.printMessage(err);
             }
         }
 
+        std::list<std::pair<std::string, std::size_t>> files;
         if (!settings.fileFilters.empty()) {
-            std::copy_if(files.cbegin(), files.cend(), std::inserter(mFiles, mFiles.end()), [&](const decltype(files)::value_type& entry) {
+            std::copy_if(filesResolved.cbegin(), filesResolved.cend(), std::inserter(files, files.end()), [&](const decltype(filesResolved)::value_type& entry) {
                 return matchglobs(settings.fileFilters, entry.first);
             });
-            if (mFiles.empty()) {
+            if (files.empty()) {
                 logger.printError("could not find any files matching the filter.");
                 return false;
             }
         }
         else {
-            mFiles = files;
+            files = std::move(filesResolved);
         }
+
+        // sort the markup last
+        std::copy_if(files.cbegin(), files.cend(), std::inserter(mFiles, mFiles.end()), [&](const decltype(files)::value_type& entry) {
+            return !settings.library.markupFile(entry.first) || !settings.library.processMarkupAfterCode(entry.first);
+        });
+
+        std::copy_if(files.cbegin(), files.cend(), std::inserter(mFiles, mFiles.end()), [&](const decltype(files)::value_type& entry) {
+            return settings.library.markupFile(entry.first) && settings.library.processMarkupAfterCode(entry.first);
+        });
     }
 
     if (mFiles.empty() && mFileSettings.empty()) {

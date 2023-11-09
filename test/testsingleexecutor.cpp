@@ -151,7 +151,6 @@ private:
         TEST_CASE(no_errors_equal_amount_files);
         TEST_CASE(one_error_less_files);
         TEST_CASE(one_error_several_files);
-        TEST_CASE(markup);
         TEST_CASE(clangTidy);
         TEST_CASE(showtime_top5_file);
         TEST_CASE(showtime_top5_summary);
@@ -238,37 +237,6 @@ private:
               "  {int i = *((int*)0);}\n"
               "  return 0;\n"
               "}");
-    }
-
-    void markup() {
-        const Settings settingsOld = settings;
-        settings.library.mMarkupExtensions.emplace(".cp1");
-        settings.library.mProcessAfterCode.emplace(".cp1", true);
-
-        const std::vector<std::string> files = {
-            fprefix() + "_1.cp1", fprefix() + "_2.cpp", fprefix() + "_3.cp1", fprefix() + "_4.cpp"
-        };
-
-        // checks are not executed on markup files => expected result is 2
-        check(4, 2,
-              "int main()\n"
-              "{\n"
-              "  int i = *((int*)0);\n"
-              "  return 0;\n"
-              "}",
-              dinit(CheckOptions,
-                    $.quiet = false,
-                        $.filesList = files));
-        // TODO: filter out the "files checked" messages
-        ASSERT_EQUALS("Checking " + fprefix() + "_2.cpp ...\n"
-                      "1/4 files checked 25% done\n"
-                      "Checking " + fprefix() + "_4.cpp ...\n"
-                      "2/4 files checked 50% done\n"
-                      "Checking " + fprefix() + "_1.cp1 ...\n"
-                      "3/4 files checked 75% done\n"
-                      "Checking " + fprefix() + "_3.cp1 ...\n"
-                      "4/4 files checked 100% done\n", output.str());
-        settings = settingsOld;
     }
 
     void clangTidy() {
