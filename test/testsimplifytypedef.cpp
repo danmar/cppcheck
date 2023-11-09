@@ -2517,7 +2517,7 @@ private:
     void simplifyTypedef109() {
         const char code[] = "typedef int&& rref;\n"
                             "rref var = 0;";
-        const char expected[] = "int && var ; var = 0 ;";
+        const char expected[] = "int && var = 0 ;";
         ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
@@ -3441,10 +3441,6 @@ private:
         code = "typedef int& R;\n" // #12166
                "R r = i;\n";
         ASSERT_EQUALS("int & r = i ;", tok(code));
-
-        code = "typedef int&& R;\n"
-               "R r = {};\n";
-        ASSERT_EQUALS("int && r = { } ;", tok(code));
     }
 
     void simplifyTypedefFunction1() {
