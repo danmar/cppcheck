@@ -2114,7 +2114,7 @@ private:
                "};\n"
                "void S::f() {\n"
                "    u8[0] = 0;\n"
-              "}\n";
+               "}\n";
         expected = "1: struct S {\n"
                    "2: union {\n"
                    "3: uint8_t u8@1 [ 4 ] ;\n"
