@@ -211,6 +211,7 @@ private:
         TEST_CASE(simplifyTypedef145); // #9353
         TEST_CASE(simplifyTypedef146);
         TEST_CASE(simplifyTypedef147);
+        TEST_CASE(simplifyTypedef148);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -3433,6 +3434,13 @@ private:
                "}\n";
         ASSERT_EQUALS("namespace N { template < typename T > struct S { } ; } namespace N { template < typename T > struct U { S < T > operator() ( ) { return { } ; } } ; }",
                       tok(code));
+    }
+
+    void simplifyTypedef148() {
+        const char* code{};
+        code = "typedef int& R;\n" // #12166
+               "R r = i;\n";
+        ASSERT_EQUALS("int & r = i ;", tok(code));
     }
 
     void simplifyTypedefFunction1() {

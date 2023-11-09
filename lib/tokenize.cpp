@@ -891,7 +891,8 @@ namespace {
             tok->deleteThis();
 
             // Unsplit variable declarations
-            if (Token::Match(tok4->previous(), "] ; %name% = {") && tok4->isSplittedVarDeclEq()) {
+            if (tok4 && tok4->isSplittedVarDeclEq() &&
+                ((tok4->isCpp() && Token::Match(tok4->tokAt(-2), "& %name% ;")) || Token::Match(tok4->previous(), "] ; %name% = {"))) {
                 tok4->deleteNext();
                 tok4->deleteThis();
             }
