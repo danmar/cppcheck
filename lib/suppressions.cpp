@@ -250,8 +250,9 @@ std::string SuppressionList::addSuppression(SuppressionList::Suppression suppres
     auto foundSuppression = std::find_if(mSuppressions.begin(), mSuppressions.end(),
                                          std::bind(&Suppression::isSameParameters, &suppression, std::placeholders::_1));
     if (foundSuppression != mSuppressions.end()) {
-        // Update matched state of existing global suppression
-        if (!suppression.isLocal() && suppression.matched)
+        if (suppression.checked)
+            foundSuppression->checked = suppression.checked;
+        if (suppression.matched)
             foundSuppression->matched = suppression.matched;
         return "";
     }
