@@ -28,9 +28,9 @@
 #include <ctime>
 #include <iosfwd>
 #include <list>
-#include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 class CppCheck;
@@ -129,7 +129,7 @@ private:
      */
     bool parseFromArgs(Settings &settings, int argc, const char* const argv[]);
 
-    static bool reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::map<std::string, std::size_t> &files, ErrorLogger& errorLogger);
+    static bool reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::list<std::pair<std::string, std::size_t>> &files, ErrorLogger& errorLogger);
 
     /**
      * Wrapper around check_internal
@@ -183,7 +183,7 @@ private:
     /**
      * Filename associated with size of file
      */
-    std::map<std::string, std::size_t> mFiles;
+    std::list<std::pair<std::string, std::size_t>> mFiles;
 
     std::list<FileSettings> mFileSettings;
 

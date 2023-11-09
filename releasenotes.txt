@@ -1,7 +1,8 @@
 Release Notes for Cppcheck 2.13
 
 New checks:
--
+- passedByValueCallback for functions which take a parameter by value but are used as callbacks (subset of passedByValue)
+- returnImplicitInt for C functions without return type (previously reported as a debug message)
 
 Improved checking:
 -
@@ -30,3 +31,4 @@ Other:
   - You can suppress warnings in current file using "-file".
   - You can suppress all warnings where macro is used using "-macro"
 - fixed CMake build with UBSAN and GCC
+- Added command-line options "--fsigned-char" and "--funsigned-char" to control the signess of the "char" type. This overrides previously specified "--platform" options and is overrides by following ones.

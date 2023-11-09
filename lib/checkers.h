@@ -16,7 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef checkersH
+#define checkersH
 
 #include <map>
 #include <string>
@@ -44,4 +45,4 @@ namespace checkers {
     extern CPPCHECKLIB const std::map<std::string, std::string> misraRuleSeverity;
 }
 
-
+#endif

@@ -21,9 +21,9 @@
 
 #include <cstddef>
 #include <list>
-#include <map>
 #include <mutex>
 #include <string>
+#include <utility>
 
 class Settings;
 class ErrorLogger;
@@ -40,7 +40,7 @@ struct FileSettings;
  */
 class Executor {
 public:
-    Executor(const std::map<std::string, std::size_t> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger);
+    Executor(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger);
     virtual ~Executor() = default;
 
     Executor(const Executor &) = delete;
@@ -66,7 +66,7 @@ protected:
      */
     bool hasToLog(const ErrorMessage &msg);
 
-    const std::map<std::string, std::size_t> &mFiles;
+    const std::list<std::pair<std::string, std::size_t>> &mFiles;
     const std::list<FileSettings>& mFileSettings;
     const Settings &mSettings;
     Suppressions &mSuppressions;

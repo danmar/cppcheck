@@ -553,6 +553,10 @@ public:
         return mDimensions.at(index_).known;
     }
 
+    void setDimensions(const std::vector<Dimension> &dimensions_) {
+        mDimensions = dimensions_;
+    }
+
     /**
      * Checks if the variable is an STL type ('std::')
      * E.g.:
@@ -1370,6 +1374,8 @@ public:
      * @brief output a debug message
      */
     void debugMessage(const Token *tok, const std::string &type, const std::string &msg) const;
+
+    void returnImplicitIntError(const Token *tok) const;
 
     void printOut(const char * title = nullptr) const;
     void printVariable(const Variable *var, const char *indent) const;

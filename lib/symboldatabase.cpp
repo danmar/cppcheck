@@ -1997,7 +1997,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
              Token::simpleMatch(tok->linkAt(1), ") {") &&
              (!tok->previous() || Token::Match(tok->previous(), ";|}"))) {
         if (mTokenizer.isC()) {
-            debugMessage(tok, "debug", "SymbolDatabase::isFunction found C function '" + tok->str() + "' without a return type.");
+            returnImplicitIntError(tok);
             *funcStart = tok;
             *argStart = tok->next();
             *declEnd = tok->linkAt(1)->next();
@@ -2178,6 +2178,10 @@ Variable& Variable::operator=(const Variable &var)
     if (this == &var)
         return *this;
 
+    ValueType* vt = nullptr;
+    if (var.mValueType)
+        vt = new ValueType(*var.mValueType);
+
     mNameToken = var.mNameToken;
     mTypeStartToken = var.mTypeStartToken;
     mTypeEndToken = var.mTypeEndToken;
@@ -2188,9 +2192,7 @@ Variable& Variable::operator=(const Variable &var)
     mScope = var.mScope;
     mDimensions = var.mDimensions;
     delete mValueType;
-    mValueType = nullptr;
-    if (var.mValueType)
-        mValueType = new ValueType(*var.mValueType);
+    mValueType = vt;
 
     return *this;
 }
@@ -2344,9 +2346,9 @@ void Variable::setValueType(const ValueType &valueType)
         if (declType && !declType->next()->valueType())
             return;
     }
+    ValueType* vt = new ValueType(valueType);
     delete mValueType;
-    mValueType = nullptr;
-    mValueType = new ValueType(valueType);
+    mValueType = vt;
     if ((mValueType->pointer > 0) && (!isArray() || Token::Match(mNameToken->previous(), "( * %name% )")))
         setFlag(fIsPointer, true);
     setFlag(fIsConst, mValueType->constness & (1U << mValueType->pointer));
@@ -3515,6 +3517,19 @@ void SymbolDatabase::debugMessage(const Token *tok, const std::string &type, con
                                   Severity::debug,
                                   type,
                                   msg,
+                                  Certainty::normal);
+        mErrorLogger->reportErr(errmsg);
+    }
+}
+
+void SymbolDatabase::returnImplicitIntError(const Token *tok) const
+{
+    if (tok && mSettings.severity.isEnabled(Severity::portability) && mSettings.standards.c != Standards::C89 && mErrorLogger) {
+        const std::list<const Token*> locationList(1, tok);
+        const ErrorMessage errmsg(locationList, &mTokenizer.list,
+                                  Severity::portability,
+                                  "returnImplicitInt",
+                                  "Omitted return type of function '" + tok->str() + "' defaults to int, this is not supported by ISO C99 and later standards.",
                                   Certainty::normal);
         mErrorLogger->reportErr(errmsg);
     }
@@ -5071,9 +5086,13 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
         else {
             // FIXME search base class here
 
+            const Scope* temp = nullptr;
+            if (scope)
+                temp = scope->findRecordInNestedList(tok1->str());
             // find first scope
             while (scope && scope->nestedIn) {
-                const Scope* temp = scope->nestedIn->findRecordInNestedList(tok1->str());
+                if (!temp)
+                    temp = scope->nestedIn->findRecordInNestedList(tok1->str());
                 if (!temp && scope->functionOf)
                     temp = scope->functionOf->findRecordInNestedList(tok1->str());
                 if (temp) {
@@ -6359,7 +6378,7 @@ static void setAutoTokenProperties(Token * const autoTok)
         autoTok->isStandardType(true);
 }
 
-bool isContainerYieldElement(Library::Container::Yield yield)
+static bool isContainerYieldElement(Library::Container::Yield yield)
 {
     return yield == Library::Container::Yield::ITEM || yield == Library::Container::Yield::AT_INDEX ||
            yield == Library::Container::Yield::BUFFER || yield == Library::Container::Yield::BUFFER_NT;

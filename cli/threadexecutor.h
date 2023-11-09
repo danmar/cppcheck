@@ -24,8 +24,8 @@
 
 #include <cstddef>
 #include <list>
-#include <map>
 #include <string>
+#include <utility>
 
 class Settings;
 class ErrorLogger;
@@ -43,7 +43,7 @@ class ThreadExecutor : public Executor {
     friend class SyncLogForwarder;
 
 public:
-    ThreadExecutor(const std::map<std::string, std::size_t> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand);
+    ThreadExecutor(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand);
     ThreadExecutor(const ThreadExecutor &) = delete;
     void operator=(const ThreadExecutor &) = delete;
 

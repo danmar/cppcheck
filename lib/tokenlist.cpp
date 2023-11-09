@@ -1454,8 +1454,11 @@ static Token * createAstAtToken(Token *tok, bool cpp)
             return tok2;
     }
     if (Token::Match(tok, "%type%") && !Token::Match(tok, "return|throw|if|while|new|delete")) {
+        bool isStandardTypeOrQualifier = false;
         Token* type = tok;
         while (Token::Match(type, "%type%|*|&|<")) {
+            if (type->isName() && (type->isStandardType() || Token::Match(type, "const|mutable|static|volatile")))
+                isStandardTypeOrQualifier = true;
             if (type->str() == "<") {
                 if (type->link())
                     type = type->link();
@@ -1464,6 +1467,8 @@ static Token * createAstAtToken(Token *tok, bool cpp)
             }
             type = type->next();
         }
+        if (isStandardTypeOrQualifier && Token::Match(type, "%var% [;,)]"))
+            return type;
         if (Token::Match(type, "( * *| %var%") &&
             Token::Match(type->link()->previous(), "%var%|] ) (") &&
             Token::Match(type->link()->linkAt(1), ") [;,)]"))
@@ -2051,14 +2056,13 @@ bool TokenList::isKeyword(const std::string &str) const
         if (cpp_types.find(str) != cpp_types.end())
             return false;
 
-        // TODO: properly apply configured standard
-        if (!mSettings || mSettings->standards.cpp >= Standards::CPP20) {
-            static const auto& cpp20_keywords = Keywords::getAll(Standards::cppstd_t::CPP20);
-            return cpp20_keywords.find(str) != cpp20_keywords.end();
+        if (mSettings) {
+            const auto &cpp_keywords = Keywords::getAll(mSettings->standards.cpp);
+            return cpp_keywords.find(str) != cpp_keywords.end();
         }
 
-        static const auto& cpp_keywords = Keywords::getAll(Standards::cppstd_t::CPP11);
-        return cpp_keywords.find(str) != cpp_keywords.end();
+        static const auto& latest_cpp_keywords = Keywords::getAll(Standards::cppstd_t::CPPLatest);
+        return latest_cpp_keywords.find(str) != latest_cpp_keywords.end();
     }
 
     // TODO: integrate into Keywords?
@@ -2067,7 +2071,11 @@ bool TokenList::isKeyword(const std::string &str) const
     if (c_types.find(str) != c_types.end())
         return false;
 
-    // TODO: use configured standard
-    static const auto& c_keywords = Keywords::getAll(Standards::cstd_t::C99);
-    return c_keywords.find(str) != c_keywords.end();
+    if (mSettings) {
+        const auto &c_keywords = Keywords::getAll(mSettings->standards.c);
+        return c_keywords.find(str) != c_keywords.end();
+    }
+
+    static const auto& latest_c_keywords = Keywords::getAll(Standards::cstd_t::CLatest);
+    return latest_c_keywords.find(str) != latest_c_keywords.end();
 }

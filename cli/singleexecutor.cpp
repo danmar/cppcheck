@@ -31,7 +31,7 @@
 
 class ErrorLogger;
 
-SingleExecutor::SingleExecutor(CppCheck &cppcheck, const std::map<std::string, std::size_t> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
+SingleExecutor::SingleExecutor(CppCheck &cppcheck, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
     : Executor(files, fileSettings, settings, suppressions, errorLogger)
     , mCppcheck(cppcheck)
 {
@@ -49,65 +49,27 @@ unsigned int SingleExecutor::check()
 
     std::size_t processedsize = 0;
     unsigned int c = 0;
-    // TODO: processes either mSettings.project.fileSettings or mFiles - process/thread implementations process both
-    // TODO: thread/process implementations process fileSettings first
-    if (mFileSettings.empty()) {
-        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
-            if (!mSettings.library.markupFile(i->first)
-                || !mSettings.library.processMarkupAfterCode(i->first)) {
-                result += mCppcheck.check(i->first);
-                processedsize += i->second;
-                if (!mSettings.quiet)
-                    reportStatus(c + 1, mFiles.size(), processedsize, totalfilesize);
-                // TODO: call analyseClangTidy()?
-                c++;
-            }
-        }
-    } else {
-        // filesettings
-        // check all files of the project
-        for (const FileSettings &fs : mFileSettings) {
-            if (!mSettings.library.markupFile(fs.filename)
-                || !mSettings.library.processMarkupAfterCode(fs.filename)) {
-                result += mCppcheck.check(fs);
-                ++c;
-                if (!mSettings.quiet)
-                    reportStatus(c, mFileSettings.size(), c, mFileSettings.size());
-                if (mSettings.clangTidy)
-                    mCppcheck.analyseClangTidy(fs);
-            }
-        }
+
+    for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
+        result += mCppcheck.check(i->first);
+        processedsize += i->second;
+        ++c;
+        if (!mSettings.quiet)
+            reportStatus(c, mFiles.size(), processedsize, totalfilesize);
+        // TODO: call analyseClangTidy()?
     }
 
-    // second loop to parse all markup files which may not work until all
-    // c/cpp files have been parsed and checked
-    // TODO: get rid of duplicated code
-    if (mFileSettings.empty()) {
-        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
-            if (mSettings.library.markupFile(i->first)
-                && mSettings.library.processMarkupAfterCode(i->first)) {
-                result += mCppcheck.check(i->first);
-                processedsize += i->second;
-                if (!mSettings.quiet)
-                    reportStatus(c + 1, mFiles.size(), processedsize, totalfilesize);
-                // TODO: call analyseClangTidy()?
-                c++;
-            }
-        }
+    // filesettings
+    // check all files of the project
+    for (const FileSettings &fs : mFileSettings) {
+        result += mCppcheck.check(fs);
+        ++c;
+        if (!mSettings.quiet)
+            reportStatus(c, mFileSettings.size(), c, mFileSettings.size());
+        if (mSettings.clangTidy)
+            mCppcheck.analyseClangTidy(fs);
     }
-    else {
-        for (const FileSettings &fs : mFileSettings) {
-            if (mSettings.library.markupFile(fs.filename)
-                && mSettings.library.processMarkupAfterCode(fs.filename)) {
-                result += mCppcheck.check(fs);
-                ++c;
-                if (!mSettings.quiet)
-                    reportStatus(c, mFileSettings.size(), c, mFileSettings.size());
-                if (mSettings.clangTidy)
-                    mCppcheck.analyseClangTidy(fs);
-            }
-        }
-    }
+
     if (mCppcheck.analyseWholeProgram())
         result++;
 

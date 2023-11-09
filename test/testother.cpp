@@ -2191,6 +2191,25 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct S { std::list<int> l; };\n" // #12147
+              "class C { public: std::list<int> l; };\n"
+              "bool f(S s) {\n"
+              "    return s.l.empty();\n"
+              "}\n"
+              "bool f(C c) {\n"
+              "    return c.l.empty();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Function parameter 's' should be passed by const reference.\n"
+                      "[test.cpp:6]: (performance) Function parameter 'c' should be passed by const reference.\n",
+                      errout.str());
+
+        check("struct S { std::list<int> a[1][1]; };\n"
+              "bool f(S s) {\n"
+              "    return s.a[0][0].empty();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 's' should be passed by const reference.\n",
+                      errout.str());
+
         Settings settings1 = settingsBuilder().platform(Platform::Type::Win64).build();
         check("using ui64 = unsigned __int64;\n"
               "ui64 Test(ui64 one, ui64 two) { return one + two; }\n",

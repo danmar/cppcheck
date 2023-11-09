@@ -1,0 +1,186 @@
+
+# False positives
+premium-misra-cpp-2008-5-17-1
+premium-misra-cpp-2008-5-0-6
+premium-misra-cpp-2008-7-2-1
+premium-misra-cpp-2008-3-3-2
+
+# open source warnings are handled by the selfcheck.yml
+noExplicitConstructor
+postfixOperator
+shadowFunction
+useStlAlgorithm
+
+# we need to declare reserved identifier _CRTDBG_MAP_ALLOC
+premium-cert-dcl51-cpp
+
+# TODO: Is there unsafe allocations, in case of exceptions) in cppcheck
+premium-cert-err58-cpp
+
+# we have global objects
+premium-cert-err58-cpp
+
+# TODO: Exception objects must be nothrow copy constructible.
+premium-cert-err60-cpp
+
+# TODO should we throw Token?
+premium-cert-err61-cpp
+
+# TODO: Detect errors when converting a string to a number. The library function 'atoi()' shall not be used.
+premium-cert-err62-cpp
+
+# TODO: Can we reduce some const_cast?
+premium-cert-exp55-cpp
+
+# sometimes a void function does not have side effects
+premium-misra-cpp-2008-0-1-8
+
+# unused arguments, misra rules are too strict
+premium-misra-cpp-2008-0-1-11
+premium-misra-cpp-2008-0-1-12
+
+# we sometimes don't care about return value from functions
+premium-misra-cpp-2008-0-1-7
+
+# TODO: can we prevent commented out code?
+premium-misra-cpp-2008-2-7-2
+premium-misra-cpp-2008-2-7-3
+
+# NA
+premium-misra-cpp-2008-2-10-1
+
+# objects of a class often has the lowercase name of the class.
+premium-misra-cpp-2008-2-10-4
+
+# flag |= ..
+premium-misra-cpp-2008-4-5-1
+
+# Token/Variable flags are enum constants and we use those in bitwise operations by intention.
+premium-misra-cpp-2008-4-5-2
+
+# intentional addition of char to string: const std::string end(':' + cfg + ':' + Path::simplifyPath(sourcefile));
+premium-misra-cpp-2008-4-5-3
+
+# too strict operator precedence warnings
+premium-misra-cpp-2008-5-0-2
+
+# we are less strict about signedness. what bug is there here: unsigned int col = 0
+premium-misra-cpp-2008-5-0-4
+
+# intentional integral-to-float conversion
+premium-misra-cpp-2008-5-0-5
+
+# intentional addition of char literal: c = 'a' + (temp - 10);
+premium-misra-cpp-2008-5-0-11
+
+# conversion of char-to-int is intentional sometimes
+premium-misra-cpp-2008-5-0-12
+
+# pointer-to-bool conversion is common
+premium-misra-cpp-2008-5-0-14
+
+# pointer arithmetic is not uncommon in cppcheck code
+premium-misra-cpp-2008-5-0-15
+
+# it's only a problem if signed expression is negative
+premium-misra-cpp-2008-5-0-21
+
+# Intentional safe operands of &&: return !stdValue.empty() && str == getCPP();
+premium-misra-cpp-2008-5-2-1
+
+# const_cast performs intentional const casting
+premium-misra-cpp-2008-5-2-5
+
+# safe code: const char *next = static_cast<const char*>(std::memchr(pattern, ' ', pattern_len));
+premium-misra-cpp-2008-5-2-8
+
+# we intentionally cast pointer to integer when creating id for dumpfile
+premium-misra-cpp-2008-5-2-9
+
+# we intentionally mix increment with other operators in expressions
+premium-misra-cpp-2008-5-2-10
+
+# intentional array-to-pointer decay
+premium-misra-cpp-2008-5-2-12
+
+# we write !pointer by intention
+premium-misra-cpp-2008-5-3-1
+
+# for (;;)
+premium-misra-cpp-2008-6-2-3
+
+# it's not a bug to not put default at the end of a switch body
+premium-misra-cpp-2008-6-4-6
+
+# looping linked list => not well formed for loop
+premium-misra-cpp-2008-6-5-1
+premium-misra-cpp-2008-6-5-2
+premium-misra-cpp-2008-6-5-3
+premium-misra-cpp-2008-6-5-4
+premium-misra-cpp-2008-6-5-5
+premium-misra-cpp-2008-6-5-6
+
+# we like early returns
+premium-misra-cpp-2008-6-6-3
+premium-misra-cpp-2008-6-6-4
+premium-misra-cpp-2008-6-6-5
+
+# we have local functions by intention
+premium-misra-cpp-2008-7-3-1
+
+# intentional: return reference from method to non-const reference parameter
+premium-misra-cpp-2008-7-5-3
+
+# intentional declaration of multiple variables
+premium-misra-cpp-2008-8-0-1
+
+# we intentionally don't use & before function names
+premium-misra-cpp-2008-8-4-4
+
+# cppcheck does not care about this enumerator rule
+premium-misra-cpp-2008-8-5-3
+
+# TODO Fix these
+premium-misra-cpp-2008-9-3-1
+
+# we use unions by intention sometimes
+premium-misra-cpp-2008-9-5-1
+
+# overridden methods is safe
+premium-misra-cpp-2008-10-3-1
+
+# some classes have public members by intention
+premium-misra-cpp-2008-11-0-1
+
+# rule should not apply to deleted copy assignment operator
+premium-misra-cpp-2008-12-8-2
+
+# TODO: this can be fixed by refactoring the code.
+premium-misra-cpp-2008-14-6-2
+
+# function specializations: TODO check if we should refactor
+premium-misra-cpp-2008-14-8-2
+
+# we use preprocessor when it makes sense
+premium-misra-cpp-2008-16-0-1
+premium-misra-cpp-2008-16-2-1
+premium-misra-cpp-2008-16-2-2
+premium-misra-cpp-2008-16-3-2
+
+# TODO do we need to catch string conversion errors (using atoi)?
+premium-misra-cpp-2008-18-0-2
+
+# what standard alternative is there for std::getenv
+premium-misra-cpp-2008-18-0-3
+
+# <ctime> is used by intention
+premium-misra-cpp-2008-18-0-4
+
+# code is safe. we use std::strcmp by intention
+premium-misra-cpp-2008-18-0-5
+
+# we do avoid using new/delete
+premium-misra-cpp-2008-18-4-1
+
+# <cstdio> is used by intention
+premium-misra-cpp-2008-27-0-1

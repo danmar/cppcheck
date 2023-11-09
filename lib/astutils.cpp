@@ -2241,7 +2241,7 @@ bool isScopeBracket(const Token* tok)
 }
 
 template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-T* getTokenArgumentFunctionImpl(T* tok, int& argn)
+static T* getTokenArgumentFunctionImpl(T* tok, int& argn)
 {
     argn = -1;
     {
@@ -2579,8 +2579,8 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
         if (indirect == 0 && astIsPointer(tok))
             return false;
 
-        const Token *ftok = tok->tokAt(2);
-        if (astIsContainer(tok) && vt && vt->container) {
+        const Token *ftok = tok2->astParent()->astOperand2();
+        if (astIsContainer(tok2->astParent()->astOperand1()) && vt && vt->container) {
             const Library::Container* c = vt->container;
             const Library::Container::Action action = c->getAction(ftok->str());
             if (contains({Library::Container::Action::INSERT,
@@ -2892,13 +2892,13 @@ const Token* findThisChanged(const Token* start, const Token* end, int indirect,
 }
 
 template<class Find>
-const Token* findExpressionChangedImpl(const Token* expr,
-                                       const Token* start,
-                                       const Token* end,
-                                       const Settings* settings,
-                                       bool cpp,
-                                       int depth,
-                                       Find find)
+static const Token* findExpressionChangedImpl(const Token* expr,
+                                              const Token* start,
+                                              const Token* end,
+                                              const Settings* settings,
+                                              bool cpp,
+                                              int depth,
+                                              Find find)
 {
     if (depth < 0)
         return start;
@@ -3095,7 +3095,7 @@ const Token *findLambdaStartToken(const Token *last)
 }
 
 template<class T>
-T* findLambdaEndTokenGeneric(T* first)
+static T* findLambdaEndTokenGeneric(T* first)
 {
     auto maybeLambda = [](T* tok) -> bool {
         while (Token::Match(tok, "*|%name%|::|>")) {

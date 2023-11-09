@@ -659,12 +659,11 @@ std::vector<CheckClass::Usage> CheckClass::createUsageList(const Scope *scope)
 
 void CheckClass::assignVar(std::vector<Usage> &usageList, nonneg int varid)
 {
-    for (Usage& usage: usageList) {
-        if (usage.var->declarationId() == varid) {
-            usage.assign = true;
-            return;
-        }
-    }
+    auto it = std::find_if(usageList.begin(), usageList.end(), [varid](const Usage& usage) {
+        return usage.var->declarationId() == varid;
+    });
+    if (it != usageList.end())
+        it->assign = true;
 }
 
 void CheckClass::assignVar(std::vector<Usage> &usageList, const Token* vartok)
@@ -673,23 +672,21 @@ void CheckClass::assignVar(std::vector<Usage> &usageList, const Token* vartok)
         assignVar(usageList, vartok->varId());
         return;
     }
-    for (Usage& usage: usageList) {
+    auto it = std::find_if(usageList.begin(), usageList.end(), [vartok](const Usage& usage) {
         // FIXME: This is a workaround when varid is not set for a derived member
-        if (usage.var->name() == vartok->str()) {
-            usage.assign = true;
-            return;
-        }
-    }
+        return usage.var->name() == vartok->str();
+    });
+    if (it != usageList.end())
+        it->assign = true;
 }
 
 void CheckClass::initVar(std::vector<Usage> &usageList, nonneg int varid)
 {
-    for (Usage& usage: usageList) {
-        if (usage.var->declarationId() == varid) {
-            usage.init = true;
-            return;
-        }
-    }
+    auto it = std::find_if(usageList.begin(), usageList.end(), [varid](const Usage& usage) {
+        return usage.var->declarationId() == varid;
+    });
+    if (it != usageList.end())
+        it->init = true;
 }
 
 void CheckClass::assignAllVar(std::vector<Usage> &usageList)
@@ -1063,6 +1060,11 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             assignVar(usage, ftok->next()->varId());
         } else if (Token::Match(ftok, "* this . %name% =")) {
             assignVar(usage, ftok->tokAt(3)->varId());
+        } else if (astIsRangeBasedForDecl(ftok)) {
+            if (const Variable* rangeVar = ftok->astParent()->astOperand1()->variable()) {
+                if (rangeVar->isReference() && !rangeVar->isConst())
+                    assignVar(usage, ftok->varId());
+            }
         }
 
         // The functions 'clear' and 'Clear' are supposed to initialize variable.
@@ -2529,8 +2531,10 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                     ;
                 } else if (hasOverloadedMemberAccess(end, var->typeScope())) {
                     ;
-                } else if (!var->typeScope() || (end->function() != func && !isConstMemberFunc(var->typeScope(), end)))
-                    return false;
+                } else if (!var->typeScope() || (end->function() != func && !isConstMemberFunc(var->typeScope(), end))) {
+                    if (!mSettings->library.isFunctionConst(end))
+                        return false;
+                }
             }
 
             // Assignment

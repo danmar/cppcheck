@@ -24,14 +24,18 @@
 #include "suppressions.h"
 
 #include <algorithm>
+#include <cassert>
 #include <sstream> // IWYU pragma: keep
 #include <utility>
 
 struct FileSettings;
 
-Executor::Executor(const std::map<std::string, std::size_t> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
+Executor::Executor(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
     : mFiles(files), mFileSettings(fileSettings), mSettings(settings), mSuppressions(suppressions), mErrorLogger(errorLogger)
-{}
+{
+    // the two inputs may only be used exclusively
+    assert(!(!files.empty() && !fileSettings.empty()));
+}
 
 bool Executor::hasToLog(const ErrorMessage &msg)
 {
