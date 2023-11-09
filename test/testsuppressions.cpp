@@ -201,9 +201,9 @@ private:
         // Clear the error log
         errout.str("");
 
-        std::list<std::pair<std::string, std::size_t>> files;
+        std::list<std::pair<std::string, std::size_t>> filelist;
         for (std::map<std::string, std::string>::const_iterator i = f.cbegin(); i != f.cend(); ++i) {
-            files.emplace_back(i->first, i->second.size());
+            filelist.emplace_back(i->first, i->second.size());
         }
 
         CppCheck cppCheck(*this, true, nullptr);
@@ -217,17 +217,18 @@ private:
         if (!suppression.empty()) {
             EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));
         }
-        // TODO: test with FS
-        std::list<FileSettings> fileSettings;
-        SingleExecutor executor(cppCheck, files, fileSettings, settings, settings.nomsg, *this);
+
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
-        scopedfiles.reserve(files.size());
+        scopedfiles.reserve(filelist.size());
         for (std::map<std::string, std::string>::const_iterator i = f.cbegin(); i != f.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->first, i->second));
 
+        // TODO: test with FS
+        std::list<FileSettings> fileSettings;
+        SingleExecutor executor(cppCheck, filelist, fileSettings, settings, settings.nomsg, *this);
         const unsigned int exitCode = executor.check();
 
-        CppCheckExecutor::reportSuppressions(settings, false, files, *this);
+        CppCheckExecutor::reportSuppressions(settings, false, filelist, *this);
 
         return exitCode;
     }
@@ -235,8 +236,8 @@ private:
     unsigned int checkSuppressionThreads(const char code[], const std::string &suppression = emptyString) {
         errout.str("");
 
-        std::list<std::pair<std::string, std::size_t>> files;
-        files.emplace_back("test.cpp", strlen(code));
+        std::list<std::pair<std::string, std::size_t>> filelist;
+        filelist.emplace_back("test.cpp", strlen(code));
 
         Settings settings;
         settings.jobs = 2;
@@ -246,17 +247,18 @@ private:
         if (!suppression.empty()) {
             EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));
         }
-        // TODO: test with FS
-        std::list<FileSettings> fileSettings;
-        ThreadExecutor executor(files, fileSettings, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
+
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
-        scopedfiles.reserve(files.size());
-        for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = files.cbegin(); i != files.cend(); ++i)
+        scopedfiles.reserve(filelist.size());
+        for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = filelist.cbegin(); i != filelist.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->first, code));
 
+        // TODO: test with FS
+        std::list<FileSettings> fileSettings;
+        ThreadExecutor executor(filelist, fileSettings, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
         const unsigned int exitCode = executor.check();
 
-        CppCheckExecutor::reportSuppressions(settings, false, files, *this);
+        CppCheckExecutor::reportSuppressions(settings, false, filelist, *this);
 
         return exitCode;
     }
@@ -265,8 +267,8 @@ private:
     unsigned int checkSuppressionProcesses(const char code[], const std::string &suppression = emptyString) {
         errout.str("");
 
-        std::list<std::pair<std::string, std::size_t>> files;
-        files.emplace_back("test.cpp", strlen(code));
+        std::list<std::pair<std::string, std::size_t>> filelist;
+        filelist.emplace_back("test.cpp", strlen(code));
 
         Settings settings;
         settings.jobs = 2;
@@ -276,17 +278,18 @@ private:
         if (!suppression.empty()) {
             EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));
         }
-        // TODO: test with FS
-        std::list<FileSettings> fileSettings;
-        ProcessExecutor executor(files, fileSettings, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
+
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
-        scopedfiles.reserve(files.size());
-        for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = files.cbegin(); i != files.cend(); ++i)
+        scopedfiles.reserve(filelist.size());
+        for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = filelist.cbegin(); i != filelist.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->first, code));
 
+        // TODO: test with FS
+        std::list<FileSettings> fileSettings;
+        ProcessExecutor executor(filelist, fileSettings, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
         const unsigned int exitCode = executor.check();
 
-        CppCheckExecutor::reportSuppressions(settings, false, files, *this);
+        CppCheckExecutor::reportSuppressions(settings, false, filelist, *this);
 
         return exitCode;
     }
