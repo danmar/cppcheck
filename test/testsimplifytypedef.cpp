@@ -52,6 +52,7 @@ private:
         TEST_CASE(cstruct3);
         TEST_CASE(cstruct3);
         TEST_CASE(cstruct4);
+        TEST_CASE(cenum1);
         TEST_CASE(cfunction1);
         TEST_CASE(cfunction2);
         TEST_CASE(cfunction3);
@@ -372,8 +373,8 @@ private:
     void cstruct2() {
         const char code[] = "typedef enum { A, B } t;\n"
                             "t x;";
-        ASSERT_EQUALS("enum t { A , B } ; t x ;", simplifyTypedef(code));
-        ASSERT_EQUALS("enum t { A , B } ; t x ;", simplifyTypedefC(code));
+        ASSERT_EQUALS("enum t { A , B } ; enum t x ;", simplifyTypedef(code));
+        ASSERT_EQUALS("enum t { A , B } ; enum t x ;", simplifyTypedefC(code));
     }
 
     void cstruct3() {
@@ -386,6 +387,12 @@ private:
         const char code[] = "typedef struct s { int a; int b; } t;\n"
                             "struct t x{};";
         ASSERT_EQUALS("struct s { int a ; int b ; } ; struct s x { } ;", simplifyTypedefC(code));
+    }
+
+    void cenum1() {
+        const char code[] = "typedef enum { a, b } E;\n"
+                            "E e;";
+        ASSERT_EQUALS("enum E { a , b } ; enum E e ;", simplifyTypedefC(code));
     }
 
     void cfunction1() {
@@ -694,13 +701,13 @@ private:
         const char expected[] =
             "struct t { int a ; } ; "
             "struct U { int a ; } ; "
-            "struct Unnamed0 { int a ; } ; "
+            "struct V { int a ; } ; "
             "struct s s ; "
             "struct s * ps ; "
             "struct t t ; "
             "struct t * tp ; "
             "struct U u ; "
-            "struct Unnamed0 * v ;";
+            "struct V * v ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
@@ -720,13 +727,13 @@ private:
         const char expected[] =
             "union t { int a ; float b ; } ; "
             "union U { int a ; float b ; } ; "
-            "union Unnamed0 { int a ; float b ; } ; "
+            "union V { int a ; float b ; } ; "
             "union s s ; "
             "union s * ps ; "
             "union t t ; "
             "union t * tp ; "
             "union U u ; "
-            "union Unnamed0 * v ;";
+            "union V * v ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
@@ -739,7 +746,7 @@ private:
 
         const char expected[] = "enum abc { a = 0 , b = 1 , c = 2 } ; "
                                 "enum xyz { x = 0 , y = 1 , z = 2 } ; "
-                                "abc e1 ; "
+                                "enum abc e1 ; "
                                 "enum xyz e2 ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
@@ -1837,7 +1844,7 @@ private:
                             "    localEntitiyAddFunc_t f;\n"
                             "}";
         // The expected result..
-        const char expected[] = "enum qboolean { qfalse , qtrue } ; void f ( ) { qboolean b ; qboolean ( * f ) ( struct le_s * , entity_t * ) ; }";
+        const char expected[] = "enum qboolean { qfalse , qtrue } ; void f ( ) { enum qboolean b ; enum qboolean ( * f ) ( struct le_s * , entity_t * ) ; }";
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }
