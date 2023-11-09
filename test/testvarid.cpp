@@ -141,6 +141,7 @@ private:
         TEST_CASE(varid_in_class23);    // #11293
         TEST_CASE(varid_in_class24);
         TEST_CASE(varid_in_class25);
+        TEST_CASE(varid_in_class26);
         TEST_CASE(varid_namespace_1);   // #7272
         TEST_CASE(varid_namespace_2);   // #7000
         TEST_CASE(varid_namespace_3);   // #8627
@@ -2100,6 +2101,31 @@ private:
                    "6: auto t@3 ; t@3 = p@2 . front ( ) . t@4 ;\n"
                    "7: }\n";
         ASSERT_EQUALS(expected, tokenize(code, "test.cpp", &s));
+    }
+
+    void varid_in_class26() {
+        const char *code{}, *expected{}; // #11334
+        code = "struct S {\n"
+               "    union {\n"
+               "        uint8_t u8[4];\n"
+               "        uint32_t u32;\n"
+               "    };\n"
+               "    void f();\n"
+               "};\n"
+               "void S::f() {\n"
+               "    u8[0] = 0;\n"
+              "}\n";
+        expected = "1: struct S {\n"
+                   "2: union {\n"
+                   "3: uint8_t u8@1 [ 4 ] ;\n"
+                   "4: uint32_t u32@2 ;\n"
+                   "5: } ;\n"
+                   "6: void f ( ) ;\n"
+                   "7: } ;\n"
+                   "8: void S :: f ( ) {\n"
+                   "9: u8@1 [ 0 ] = 0 ;\n"
+                   "10: }\n";
+        ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
     }
 
     void varid_namespace_1() { // #7272
