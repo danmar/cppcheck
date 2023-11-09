@@ -3315,6 +3315,10 @@ class MisraChecker:
                     continue
                 if isKeyword(tok.str) or isStdLibId(tok.str):
                     continue
+                if tok.astParent is None:
+                    continue
+                if tok.astParent.str == "." and tok.astParent.valueType:
+                    continue
                 self.report_config_error(tok, "Variable '%s' is unknown" % tok.str)
 
     def misra_17_6(self, rawTokens):
