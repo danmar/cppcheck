@@ -3434,6 +3434,10 @@ private:
         code = "typedef int& R;\n" // #12166
                "R r = i;\n";
         ASSERT_EQUALS("int & r = i ;", tok(code));
+
+        code = "typedef int&& R;\n"
+               "R r = {};\n";
+        ASSERT_EQUALS("int && r = { } ;", tok(code));
     }
 
     void simplifyTypedefFunction1() {
