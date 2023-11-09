@@ -11621,6 +11621,12 @@ private:
               "    if (dynamic_cast<D*>(b)) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("bool (*ptr)();\n" // #12170
+              "void f() {\n"
+              "    if (!ptr || !ptr()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
