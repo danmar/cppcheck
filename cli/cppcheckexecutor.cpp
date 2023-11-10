@@ -218,9 +218,9 @@ int CppCheckExecutor::check_wrapper(CppCheck& cppcheck)
     return check_internal(cppcheck);
 }
 
-bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, ErrorLogger& errorLogger) {
-    const auto& suppressions = settings.nomsg.getSuppressions();
-    if (std::any_of(suppressions.begin(), suppressions.end(), [](const Suppressions::Suppression& s) {
+bool CppCheckExecutor::reportSuppressions(const Settings &settings, const Suppressions& suppressions, bool unusedFunctionCheckEnabled, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, ErrorLogger& errorLogger) {
+    const auto& suppr = suppressions.getSuppressions();
+    if (std::any_of(suppr.begin(), suppr.end(), [](const Suppressions::Suppression& s) {
         return s.errorId == "unmatchedSuppression" && s.fileName.empty() && s.lineNumber == Suppressions::Suppression::NO_LINE;
     }))
         return false;
@@ -232,15 +232,15 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedF
 
         for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = files.cbegin(); i != files.cend(); ++i) {
             err |= Suppressions::reportUnmatchedSuppressions(
-                settings.nomsg.getUnmatchedLocalSuppressions(i->first, unusedFunctionCheckEnabled), errorLogger);
+                suppressions.getUnmatchedLocalSuppressions(i->first, unusedFunctionCheckEnabled), errorLogger);
         }
 
         for (std::list<FileSettings>::const_iterator i = fileSettings.cbegin(); i != fileSettings.cend(); ++i) {
             err |= Suppressions::reportUnmatchedSuppressions(
-                    settings.nomsg.getUnmatchedLocalSuppressions(i->filename, unusedFunctionCheckEnabled), errorLogger);
+                suppressions.getUnmatchedLocalSuppressions(i->filename, unusedFunctionCheckEnabled), errorLogger);
         }
     }
-    err |= Suppressions::reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions(unusedFunctionCheckEnabled), errorLogger);
+    err |= Suppressions::reportUnmatchedSuppressions(suppressions.getUnmatchedGlobalSuppressions(unusedFunctionCheckEnabled), errorLogger);
     return err;
 }
 
@@ -286,7 +286,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck) const
     cppcheck.analyseWholeProgram(settings.buildDir, mFiles, mFileSettings);
 
     if (settings.severity.isEnabled(Severity::information) || settings.checkConfiguration) {
-        const bool err = reportSuppressions(settings, cppcheck.isUnusedFunctionCheckEnabled(), mFiles, mFileSettings, *mStdLogger);
+        const bool err = reportSuppressions(settings, settings.nomsg, cppcheck.isUnusedFunctionCheckEnabled(), mFiles, mFileSettings, *mStdLogger);
         if (err && returnValue == 0)
             returnValue = settings.exitCode;
     }
