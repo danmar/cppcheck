@@ -57,7 +57,12 @@
 #  define NORETURN [[noreturn]]
 #elif defined(__GNUC__)
 #  define NORETURN __attribute__((noreturn))
-#else
+#elif defined __has_cpp_attribute
+#  if __has_cpp_attribute (noreturn)
+#    define NORETURN [[noreturn]]
+#  endif
+#endif
+#if !defined(NORETURN)
 #  define NORETURN
 #endif
 
