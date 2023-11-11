@@ -656,7 +656,7 @@ namespace {
                 }
             }
 
-            for (Token* type = start; Token::Match(type, "%name%|*|&"); type = type->next()) {
+            for (Token* type = start; Token::Match(type, "%name%|*|&|&&"); type = type->next()) {
                 if (type != start && Token::Match(type, "%name% ;") && !type->isStandardType()) {
                     mRangeType.first = start;
                     mRangeType.second = type;
@@ -892,7 +892,7 @@ namespace {
 
             // Unsplit variable declarations
             if (tok4 && tok4->isSplittedVarDeclEq() &&
-                ((tok4->isCpp() && Token::Match(tok4->tokAt(-2), "& %name% ;")) || Token::Match(tok4->previous(), "] ; %name% = {"))) {
+                ((tok4->isCpp() && Token::Match(tok4->tokAt(-2), "&|&& %name% ;")) || Token::Match(tok4->previous(), "] ; %name% = {"))) {
                 tok4->deleteNext();
                 tok4->deleteThis();
             }
