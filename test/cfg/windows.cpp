@@ -19,6 +19,13 @@
 #include <atlstr.h>
 #include <string>
 
+void resourceLeak_OpenProcess(const DWORD dwDesiredAccess, const BOOL bInheritHandle, const DWORD dwProcessId)
+{
+    HANDLE proc = OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId);
+    if (proc != INVALID_HANDLE_VALUE) {}
+    // cppcheck-suppress resourceLeak
+}
+
 /// https://learn.microsoft.com/en-us/windows/console/flushconsoleinputbuffer
 BOOL unreachableCode_FlushConsoleInputBuffer(int &val)
 {
