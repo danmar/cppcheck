@@ -58,8 +58,8 @@
 #endif
 #if !defined(NORETURN)
 #  if (defined(__GNUC__) && (__GNUC__ >= 5)) \
-      || defined(__clang__) \
-      || defined(__CPPCHECK__)
+    || defined(__clang__) \
+    || defined(__CPPCHECK__)
 #    define NORETURN [[noreturn]]
 #  elif defined(__GNUC__)
 #    define NORETURN __attribute__((noreturn))
