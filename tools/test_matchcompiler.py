@@ -177,19 +177,24 @@ class MatchCompilerTest(unittest.TestCase):
         # str() ==
         input = 'if (tok2->str() == "abc") {'
         output = self.mc._replaceCStrings(input)
-        self.assertEqual('if (tok2->str() == MatchCompiler::makeConstString("abc")) {', output)
+        self.assertEqual('if (tok2->str() == constString0) {', output)
 
         # str() !=
         input = 'if (tok2->str() != "xyz") {'
         output = self.mc._replaceCStrings(input)
-        self.assertEqual('if (tok2->str() != MatchCompiler::makeConstString("xyz")) {', output)
+        self.assertEqual('if (tok2->str() != constString1) {', output)
 
         # strAt()
         input = 'if (match16(parent->tokAt(-3)) && tok->strAt(1) == ")")'
         output = self.mc._replaceCStrings(input)
         self.assertEqual(
-            'if (match16(parent->tokAt(-3)) && tok->strAt(1) == MatchCompiler::makeConstString(")"))',
+            'if (match16(parent->tokAt(-3)) && tok->strAt(1) == constString2)',
             output)
+
+        # Multiple str() ==
+        input = 'if (tok2->str() == "abc" && tok3->str() == "def") {'
+        output = self.mc._replaceCStrings(input)
+        self.assertEqual('if (tok2->str() == constString0 && tok3->str() == constString3) {', output)
 
     def test_parseMatchSkipComments(self):
         input = '// TODO: suggest Token::exactMatch() for Token::simpleMatch() when pattern contains no whitespaces'

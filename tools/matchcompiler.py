@@ -106,6 +106,7 @@ class MatchCompiler:
     def _reset(self):
         self._rawMatchFunctions = []
         self._matchFunctionCache = {}
+        self._constStringCache = {}
 
     @staticmethod
     def _generateCacheSignature(
@@ -128,6 +129,13 @@ class MatchCompiler:
             sig += '|NORMALMATCH'
 
         return sig
+
+    def _getConstStringId(self, tok):
+        if tok in self._constStringCache:
+            return self._constStringCache[tok]
+        newId = "constString" + str(len(self._constStringCache))
+        self._constStringCache[tok] = newId
+        return newId
 
     def _lookupMatchFunctionId(
             self, pattern, endToken=None, varId=None, isFindMatch=False):
@@ -154,8 +162,7 @@ class MatchCompiler:
 
         self._matchFunctionCache[signature] = id
 
-    @staticmethod
-    def _compileCmd(tok):
+    def _compileCmd(self, tok):
         if tok == '%any%':
             return 'true'
         elif tok == '%assign%':
@@ -173,13 +180,13 @@ class MatchCompiler:
         elif tok == '%op%':
             return 'tok->isOp()'
         elif tok == '%or%':
-            return '(tok->tokType() == Token::eBitOp && tok->str() == MatchCompiler::makeConstString("|") )'
+            return '(tok->tokType() == Token::eBitOp && tok->str() == ' + self._getConstStringId('|') + ')'
         elif tok == '%oror%':
-            return '(tok->tokType() == Token::eLogicalOp && tok->str() == MatchCompiler::makeConstString("||"))'
+            return '(tok->tokType() == Token::eLogicalOp && tok->str() == ' + self._getConstStringId('||') + ')'
         elif tok == '%str%':
             return '(tok->tokType() == Token::eString)'
         elif tok == '%type%':
-            return '(tok->isName() && tok->varId() == 0U && (tok->str() != MatchCompiler::makeConstString("delete") || !tok->isKeyword()))'
+            return '(tok->isName() && tok->varId() == 0U && (tok->str() != ' + self._getConstStringId("delete") + ' || !tok->isKeyword()))'
         elif tok == '%name%':
             return 'tok->isName()'
         elif tok == '%var%':
@@ -192,7 +199,7 @@ class MatchCompiler:
             cond = ' || '.join(['tok->tokType() == Token::{}'.format(tokType) for tokType in tokTypes[tok]])
             return '(({cond}) && tok->str() == MatchCompiler::makeConstString("{tok}"))'.format(cond=cond, tok=tok)
         return (
-            '(tok->str() == MatchCompiler::makeConstString("' + tok + '"))'
+            '(tok->str() == ' + self._getConstStringId(tok) + ')'
         )
 
     def _compilePattern(self, pattern, nr, varid,
@@ -257,7 +264,7 @@ class MatchCompiler:
 
             # !!a
             elif tok[0:2] == "!!":
-                ret += '    if (tok && tok->str() == MatchCompiler::makeConstString("' + tok[2:] + '"))\n'
+                ret += '    if (tok && tok->str() == ' + self._getConstStringId(tok[2:]) + ')\n'
                 ret += '        ' + returnStatement
                 gotoNextToken = '    tok = tok ? tok->next() : nullptr;\n'
 
@@ -654,26 +661,26 @@ class MatchCompiler:
 
         return line
 
+    @staticmethod
+    def _findCStringStartEnd(line):
+        match = re.search('(==|!=) *"', line)
+        if not match:
+            return None, None
+        if MatchCompiler._isInString(line, match.start()):
+            return None, None
+        res = MatchCompiler._parseStringComparison(line, match.start())
+        if res is None:
+            return None, None
+        startPos = res[0]
+        endPos = res[1]
+        return startPos, endPos
+
     def _replaceCStrings(self, line):
-        while True:
-            match = re.search('(==|!=) *"', line)
-            if not match:
-                break
-
-            if self._isInString(line, match.start()):
-                break
-
-            res = self._parseStringComparison(line, match.start())
-            if res is None:
-                break
-
-            startPos = res[0]
-            endPos = res[1]
-            text = line[startPos + 1:endPos - 1]
-            line = line[:startPos] + 'MatchCompiler::makeConstStringBegin' +\
-                text + 'MatchCompiler::makeConstStringEnd' + line[endPos:]
-        line = line.replace('MatchCompiler::makeConstStringBegin', 'MatchCompiler::makeConstString("')
-        line = line.replace('MatchCompiler::makeConstStringEnd', '")')
+        startPos, endPos = self._findCStringStartEnd(line)
+        if startPos is None:
+            return line
+        text = line[startPos + 1:endPos - 1]
+        line = line[:startPos] + self._getConstStringId(text) + self._replaceCStrings(line[endPos:])
         return line
 
     def convertFile(self, srcname, destname, line_directive):
@@ -712,6 +719,10 @@ class MatchCompiler:
         for function in self._rawMatchFunctions:
             strFunctions += function
 
+        constants = u''
+        for constString, constStringId in self._constStringCache.items():
+            constants += 'static const auto '  + constStringId + ' = MatchCompiler::makeConstString("' + constString + '");\n'
+
         lineno = u''
         if line_directive:
             lineno = u'#line 1 "' + srcname + '"\n'
@@ -726,6 +737,7 @@ class MatchCompiler:
         fout = io.open(destname, 'wt', encoding="utf-8")
         if modified or len(self._rawMatchFunctions):
             fout.write(header)
+            fout.write(constants)
             fout.write(strFunctions)
         fout.write(lineno)
         fout.write(code)
