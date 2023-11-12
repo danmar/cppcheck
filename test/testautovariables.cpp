@@ -2144,6 +2144,15 @@ private:
               "    (void)s.i;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:9]: (error) Using reference to dangling temporary.\n", errout.str());
+
+        check("std::string f() {\n" // #12173
+              "    std::string s;\n"
+              "    for (auto& c : { \"a\", \"b\", \"c\" }) {\n"
+              "        s += c;\n"
+              "    }\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testglobalnamespace() {
