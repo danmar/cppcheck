@@ -51,19 +51,21 @@
 #endif
 
 // C++11 noreturn
-#if (defined(__GNUC__) && (__GNUC__ >= 5)) \
-    || defined(__clang__) \
-    || defined(__CPPCHECK__)
-#  define NORETURN [[noreturn]]
-#elif defined(__GNUC__)
-#  define NORETURN __attribute__((noreturn))
-#elif defined __has_cpp_attribute
+#if defined __has_cpp_attribute
 #  if __has_cpp_attribute (noreturn)
 #    define NORETURN [[noreturn]]
 #  endif
 #endif
 #if !defined(NORETURN)
-#  define NORETURN
+#  if (defined(__GNUC__) && (__GNUC__ >= 5)) \
+      || defined(__clang__) \
+      || defined(__CPPCHECK__)
+#    define NORETURN [[noreturn]]
+#  elif defined(__GNUC__)
+#    define NORETURN __attribute__((noreturn))
+#  else
+#    define NORETURN
+#  endif
 #endif
 
 // fallthrough
