@@ -19,6 +19,13 @@
 #include <atlstr.h>
 #include <string>
 
+void resourceLeak_OpenThread(const DWORD dwDesiredAccess, const BOOL bInheritHandle, const DWORD dwThreadId)
+{
+    HANDLE proc = OpenThread(dwDesiredAccess, bInheritHandle, dwThreadId);
+    if (proc != INVALID_HANDLE_VALUE) {}
+    // cppcheck-suppress resourceLeak
+}
+
 void resourceLeak_OpenProcess(const DWORD dwDesiredAccess, const BOOL bInheritHandle, const DWORD dwProcessId)
 {
     HANDLE proc = OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId);
