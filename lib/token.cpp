@@ -1701,6 +1701,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
 {
     std::string outs;
 
+    int fileIndex = -1;
     int line = 0;
     if (xml)
         outs += "  <valueflow>\n";
@@ -1718,11 +1719,20 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
             outs +=  "\">";
             outs += '\n';
         }
-        else if (line != tok->linenr()) {
-            outs += "Line ";
-            outs += std::to_string(tok->linenr());
-            outs += '\n';
+        else {
+            if (fileIndex != tok->fileIndex()) {
+                outs += "File ";
+                outs += tok->mTokensFrontBack->list->getFiles()[tok->fileIndex()];
+                outs += '\n';
+                line = 0;
+            }
+            if (line != tok->linenr()) {
+                outs += "Line ";
+                outs += std::to_string(tok->linenr());
+                outs += '\n';
+            }
         }
+        fileIndex = tok->fileIndex();
         line = tok->linenr();
         if (!xml) {
             ValueFlow::Value::ValueKind valueKind = values->front().valueKind;
