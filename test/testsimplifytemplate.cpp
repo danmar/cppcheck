@@ -4162,8 +4162,9 @@ private:
     }
 
     void template163() { // #9685 syntax error
-        const char code[] = "template < typename T > T * test ( ) { return nullptr ; }";
-        ASSERT_EQUALS(code, tok(code));
+        const char code[] = "extern \"C++\" template < typename T > T * test ( ) { return nullptr ; }";
+        const char expected[] = "template < typename T > T * test ( ) { return nullptr ; }";
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template164() {  // #9394
