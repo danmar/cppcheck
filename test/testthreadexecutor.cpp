@@ -21,16 +21,13 @@
 #include "filesettings.h"
 #include "fixture.h"
 #include "helpers.h"
-#include "library.h"
 #include "threadexecutor.h"
 #include "timer.h"
 
 #include <algorithm>
 #include <cstdlib>
 #include <list>
-#include <map>
 #include <memory>
-#include <set>
 #include <sstream>
 #include <string>
 #include <utility>

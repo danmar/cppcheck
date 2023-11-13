@@ -19,6 +19,7 @@
 #include "settings.h"
 #include "fixture.h"
 #include "platform.h"
+#include "standards.h"
 #include "token.h"
 #include "tokenlist.h"
 

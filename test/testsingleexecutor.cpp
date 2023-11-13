@@ -21,7 +21,6 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "redirect.h"
-#include "library.h"
 #include "settings.h"
 #include "singleexecutor.h"
 #include "timer.h"
@@ -29,9 +28,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <list>
-#include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
