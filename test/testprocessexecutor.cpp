@@ -23,14 +23,11 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "timer.h"
-#include "library.h"
 
 #include <algorithm>
 #include <cstdlib>
 #include <list>
-#include <map>
 #include <memory>
-#include <set>
 #include <sstream>
 #include <string>
 #include <utility>

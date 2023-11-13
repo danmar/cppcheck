@@ -20,7 +20,6 @@
 
 #include "cppcheck.h"
 #include "filesettings.h"
-#include "library.h"
 #include "settings.h"
 #include "timer.h"
 
