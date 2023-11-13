@@ -1578,7 +1578,7 @@ private:
             // Expected result..
             ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
             ASSERT(!tokenizer.tokens()->next()->isExternC());
-        }        
+        }
         {
             const char code[] = "extern \"C++\" { int foo(); }";
             // tokenize..
