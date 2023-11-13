@@ -3830,7 +3830,7 @@ private:
 
     void localvar70() {
         functionVariableUsage("struct S { int i = 0; };\n" // #12176
-                              "void f(S s, int j) {\n"
+                              "void f(S s) {\n"
                               "    S s1;\n"
                               "    if (s == s1) {}\n"
                               "}\n");
