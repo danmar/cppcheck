@@ -3592,17 +3592,18 @@ void Tokenizer::simplifyExternC()
 
     // Add attributes to all tokens within `extern "C"` inlines and blocks, and remove the `extern "C"` tokens.
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "extern \"C\"")) {
+        if (Token::Match(tok, "extern \"C\"|\"C++\"")) {
             Token *tok2 = tok->next();
+            const bool isExtC = tok->next()->str().size() == 3;
             if (tok->strAt(2) == "{") {
                 tok2 = tok2->next(); // skip {
                 while ((tok2 = tok2->next()) && tok2 != tok->linkAt(2))
-                    tok2->isExternC(true);
+                    tok2->isExternC(isExtC);
                 tok->linkAt(2)->deleteThis(); // }
                 tok->deleteNext(2); // "C" {
             } else {
                 while ((tok2 = tok2->next()) && !Token::Match(tok2, "[;{]"))
-                    tok2->isExternC(true);
+                    tok2->isExternC(isExtC);
                 tok->deleteNext(); // "C"
             }
             tok->deleteThis(); // extern
