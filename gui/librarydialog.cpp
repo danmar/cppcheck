@@ -47,18 +47,20 @@ class QWidget;
 
 // TODO: get/compare functions from header
 
-class FunctionListItem : public QListWidgetItem {
-public:
-    FunctionListItem(QListWidget *view,
-                     CppcheckLibraryData::Function *function,
-                     bool selected)
-        : QListWidgetItem(view), function(function) {
-        setText(function->name);
-        setFlags(flags() | Qt::ItemIsEditable);
-        setSelected(selected);
-    }
-    CppcheckLibraryData::Function *function;
-};
+namespace {
+    class FunctionListItem : public QListWidgetItem {
+    public:
+        FunctionListItem(QListWidget *view,
+                         CppcheckLibraryData::Function *function,
+                         bool selected)
+            : QListWidgetItem(view), function(function) {
+            setText(function->name);
+            setFlags(flags() | Qt::ItemIsEditable);
+            setSelected(selected);
+        }
+        CppcheckLibraryData::Function *function;
+    };
+}
 
 LibraryDialog::LibraryDialog(QWidget *parent) :
     QDialog(parent),

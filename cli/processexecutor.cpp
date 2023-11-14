@@ -68,59 +68,61 @@ ProcessExecutor::ProcessExecutor(const std::list<std::pair<std::string, std::siz
     assert(mSettings.jobs > 1);
 }
 
-class PipeWriter : public ErrorLogger {
-public:
-    enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', CHILD_END='5'};
+namespace {
+    class PipeWriter : public ErrorLogger {
+    public:
+        enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', CHILD_END='5'};
 
-    explicit PipeWriter(int pipe) : mWpipe(pipe) {}
+        explicit PipeWriter(int pipe) : mWpipe(pipe) {}
 
-    void reportOut(const std::string &outmsg, Color c) override {
-        writeToPipe(REPORT_OUT, static_cast<char>(c) + outmsg);
-    }
-
-    void reportErr(const ErrorMessage &msg) override {
-        writeToPipe(REPORT_ERROR, msg.serialize());
-    }
-
-    void writeEnd(const std::string& str) const {
-        writeToPipe(CHILD_END, str);
-    }
-
-private:
-    // TODO: how to log file name in error?
-    void writeToPipeInternal(PipeSignal type, const void* data, std::size_t to_write) const
-    {
-        const ssize_t bytes_written = write(mWpipe, data, to_write);
-        if (bytes_written <= 0) {
-            const int err = errno;
-            std::cerr << "#### ThreadExecutor::writeToPipeInternal() error for type " << type << ": " << std::strerror(err) << std::endl;
-            std::exit(EXIT_FAILURE);
+        void reportOut(const std::string &outmsg, Color c) override {
+            writeToPipe(REPORT_OUT, static_cast<char>(c) + outmsg);
         }
-        // TODO: write until everything is written
-        if (bytes_written != to_write) {
-            std::cerr << "#### ThreadExecutor::writeToPipeInternal() error for type " << type << ": insufficient data written (expected: " << to_write << " / got: " << bytes_written << ")" << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
-    }
 
-    void writeToPipe(PipeSignal type, const std::string &data) const
-    {
+        void reportErr(const ErrorMessage &msg) override {
+            writeToPipe(REPORT_ERROR, msg.serialize());
+        }
+
+        void writeEnd(const std::string& str) const {
+            writeToPipe(CHILD_END, str);
+        }
+
+    private:
+        // TODO: how to log file name in error?
+        void writeToPipeInternal(PipeSignal type, const void* data, std::size_t to_write) const
         {
-            const char t = static_cast<char>(type);
-            writeToPipeInternal(type, &t, 1);
+            const ssize_t bytes_written = write(mWpipe, data, to_write);
+            if (bytes_written <= 0) {
+                const int err = errno;
+                std::cerr << "#### ThreadExecutor::writeToPipeInternal() error for type " << type << ": " << std::strerror(err) << std::endl;
+                std::exit(EXIT_FAILURE);
+            }
+            // TODO: write until everything is written
+            if (bytes_written != to_write) {
+                std::cerr << "#### ThreadExecutor::writeToPipeInternal() error for type " << type << ": insufficient data written (expected: " << to_write << " / got: " << bytes_written << ")" << std::endl;
+                std::exit(EXIT_FAILURE);
+            }
         }
 
-        const unsigned int len = static_cast<unsigned int>(data.length());
+        void writeToPipe(PipeSignal type, const std::string &data) const
         {
-            static constexpr std::size_t l_size = sizeof(unsigned int);
-            writeToPipeInternal(type, &len, l_size);
+            {
+                const char t = static_cast<char>(type);
+                writeToPipeInternal(type, &t, 1);
+            }
+
+            const unsigned int len = static_cast<unsigned int>(data.length());
+            {
+                static constexpr std::size_t l_size = sizeof(unsigned int);
+                writeToPipeInternal(type, &len, l_size);
+            }
+
+            writeToPipeInternal(type, data.c_str(), len);
         }
 
-        writeToPipeInternal(type, data.c_str(), len);
-    }
-
-    const int mWpipe;
-};
+        const int mWpipe;
+    };
+}
 
 bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::string& filename)
 {

@@ -2943,27 +2943,29 @@ static const Token* findExpressionChangedImpl(const Token* expr,
     return result;
 }
 
-struct ExpressionChangedSimpleFind {
-    template<class F>
-    const Token* operator()(const Token* start, const Token* end, F f) const
-    {
-        return findToken(start, end, f);
-    }
-};
+namespace {
+    struct ExpressionChangedSimpleFind {
+        template<class F>
+        const Token* operator()(const Token* start, const Token* end, F f) const
+        {
+            return findToken(start, end, f);
+        }
+    };
 
-struct ExpressionChangedSkipDeadCode {
-    const Library* library;
-    const std::function<std::vector<MathLib::bigint>(const Token* tok)>* evaluate;
-    ExpressionChangedSkipDeadCode(const Library* library,
-                                  const std::function<std::vector<MathLib::bigint>(const Token* tok)>& evaluate)
-        : library(library), evaluate(&evaluate)
-    {}
-    template<class F>
-    const Token* operator()(const Token* start, const Token* end, F f) const
-    {
-        return findTokenSkipDeadCode(library, start, end, f, *evaluate);
-    }
-};
+    struct ExpressionChangedSkipDeadCode {
+        const Library* library;
+        const std::function<std::vector<MathLib::bigint>(const Token* tok)>* evaluate;
+        ExpressionChangedSkipDeadCode(const Library* library,
+                                      const std::function<std::vector<MathLib::bigint>(const Token* tok)>& evaluate)
+            : library(library), evaluate(&evaluate)
+        {}
+        template<class F>
+        const Token* operator()(const Token* start, const Token* end, F f) const
+        {
+            return findTokenSkipDeadCode(library, start, end, f, *evaluate);
+        }
+    };
+}
 
 const Token* findExpressionChanged(const Token* expr,
                                    const Token* start,

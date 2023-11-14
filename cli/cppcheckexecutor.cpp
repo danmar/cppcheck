@@ -72,42 +72,44 @@
 #include <windows.h>
 #endif
 
-class XMLErrorMessagesLogger : public ErrorLogger
-{
-    void reportOut(const std::string & outmsg, Color /*c*/ = Color::Reset) override
+namespace {
+    class XMLErrorMessagesLogger : public ErrorLogger
     {
-        std::cout << outmsg << std::endl;
-    }
+        void reportOut(const std::string & outmsg, Color /*c*/ = Color::Reset) override
+        {
+            std::cout << outmsg << std::endl;
+        }
 
-    void reportErr(const ErrorMessage &msg) override
+        void reportErr(const ErrorMessage &msg) override
+        {
+            reportOut(msg.toXML());
+        }
+
+        void reportProgress(const std::string & /*filename*/, const char /*stage*/[], const std::size_t /*value*/) override
+        {}
+    };
+
+    class CmdLineLoggerStd : public CmdLineLogger
     {
-        reportOut(msg.toXML());
-    }
+    public:
+        CmdLineLoggerStd() = default;
 
-    void reportProgress(const std::string & /*filename*/, const char /*stage*/[], const std::size_t /*value*/) override
-    {}
-};
+        void printMessage(const std::string &message) override
+        {
+            printRaw("cppcheck: " + message);
+        }
 
-class CmdLineLoggerStd : public CmdLineLogger
-{
-public:
-    CmdLineLoggerStd() = default;
+        void printError(const std::string &message) override
+        {
+            printMessage("error: " + message);
+        }
 
-    void printMessage(const std::string &message) override
-    {
-        printRaw("cppcheck: " + message);
-    }
-
-    void printError(const std::string &message) override
-    {
-        printMessage("error: " + message);
-    }
-
-    void printRaw(const std::string &message) override
-    {
-        std::cout << message << std::endl;
-    }
-};
+        void printRaw(const std::string &message) override
+        {
+            std::cout << message << std::endl;
+        }
+    };
+}
 
 class CppCheckExecutor::StdLogger : public ErrorLogger
 {
