@@ -1580,7 +1580,7 @@ void CheckOther::checkConstPointer()
             }
         } else {
             int argn = -1;
-            if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-"))
+            if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-|<<"))
                 continue;
             if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
                 continue;

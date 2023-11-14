@@ -3882,6 +3882,13 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'r' can be declared as pointer to const\n"
                       "[test.cpp:1]: (style) Parameter 'b' can be declared as pointer to const\n",
                       errout.str());
+
+        check("void f(int i) {\n" // #12185
+              "    void* p = &i;\n"
+              "    std::cout << p << '\\n';\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n",
+                      errout.str());
     }
 
     void switchRedundantAssignmentTest() {
@@ -8436,7 +8443,7 @@ private:
               "  ptr = otherPtr;\n"
               "  free(otherPtr - xx - 1);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'ptr' can be declared as pointer to const\n", errout.str());
     }
 
     void checkRedundantCopy() {
