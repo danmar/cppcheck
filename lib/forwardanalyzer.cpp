@@ -116,11 +116,6 @@ namespace {
             return evalCond(tok, ctx).first;
         }
 
-        // cppcheck-suppress unusedFunction
-        bool isConditionFalse(const Token* tok, const Token* ctx = nullptr) const {
-            return evalCond(tok, ctx).second;
-        }
-
         template<class T, class F, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
         Progress traverseTok(T* tok, F f, bool traverseUnknown, T** out = nullptr) {
             if (Token::Match(tok, "asm|goto"))
@@ -872,15 +867,6 @@ namespace {
             if (i > 0)
                 return tok->tokAt(dest->index() - tok->index());
             return nullptr;
-        }
-
-        static bool isConditional(const Token* tok) {
-            const Token* parent = tok->astParent();
-            while (parent && !Token::Match(parent, "%oror%|&&|:")) {
-                tok = parent;
-                parent = parent->astParent();
-            }
-            return parent && (parent->str() == ":" || parent->astOperand2() == tok);
         }
 
         static Token* getStepTokFromEnd(Token* tok) {

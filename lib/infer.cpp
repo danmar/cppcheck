@@ -53,22 +53,6 @@ namespace {
         std::vector<MathLib::bigint> minvalue, maxvalue;
         std::vector<const ValueFlow::Value*> minRef, maxRef;
 
-        std::string str() const
-        {
-            std::string result = "[";
-            if (minvalue.size() == 1)
-                result += std::to_string(minvalue.front());
-            else
-                result += "*";
-            result += ",";
-            if (maxvalue.size() == 1)
-                result += std::to_string(maxvalue.front());
-            else
-                result += "*";
-            result += "]";
-            return result;
-        }
-
         void setMinValue(MathLib::bigint x, const ValueFlow::Value* ref = nullptr)
         {
             minvalue = {x};
