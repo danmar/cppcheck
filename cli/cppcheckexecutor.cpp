@@ -129,19 +129,16 @@ public:
         mLatestProgressOutputTime = std::time(nullptr);
     }
 
-    const std::set<std::string>& activeCheckers() const {
-        return mActiveCheckers;
-    }
-
-    const std::string& criticalErrors() const {
-        return mCriticalErrors;
-    }
-
     /**
      * Helper function to print out errors. Appends a line change.
      * @param errmsg String printed to error stream
      */
     void reportErr(const std::string &errmsg);
+
+    /**
+     * @brief Write the checkers report
+     */
+    void writeCheckersReport() const;
 
 private:
     /**
@@ -458,34 +455,34 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         mStdLogger->reportErr(ErrorMessage::getXMLFooter());
     }
 
-    writeCheckersReport(settings);
+    mStdLogger->writeCheckersReport();
 
     if (returnValue)
         return settings.exitCode;
     return 0;
 }
 
-void CppCheckExecutor::writeCheckersReport(const Settings& settings) const
+void CppCheckExecutor::StdLogger::writeCheckersReport() const
 {
-    CheckersReport checkersReport(settings, mStdLogger->activeCheckers());
+    CheckersReport checkersReport(*mSettings, mActiveCheckers);
 
-    if (!settings.quiet) {
+    if (!mSettings->quiet) {
         const int activeCheckers = checkersReport.getActiveCheckersCount();
         const int totalCheckers = checkersReport.getAllCheckersCount();
 
-        const std::string extra = settings.verbose ? " (use --checkers-report=<filename> to see details)" : "";
-        if (mStdLogger->criticalErrors().empty())
+        const std::string extra = mSettings->verbose ? " (use --checkers-report=<filename> to see details)" : "";
+        if (mCriticalErrors.empty())
             std::cout << "Active checkers: " << activeCheckers << "/" << totalCheckers << extra << std::endl;
         else
             std::cout << "Active checkers: There was critical errors" << extra << std::endl;
     }
 
-    if (settings.checkersReportFilename.empty())
+    if (mSettings->checkersReportFilename.empty())
         return;
 
-    std::ofstream fout(settings.checkersReportFilename);
+    std::ofstream fout(mSettings->checkersReportFilename);
     if (fout.is_open())
-        fout << checkersReport.getReport(mStdLogger->criticalErrors());
+        fout << checkersReport.getReport(mCriticalErrors);
 
 }
 

@@ -136,11 +136,6 @@ protected:
     static bool loadAddons(Settings& settings);
 
     /**
-     * @brief Write the checkers report
-     */
-    void writeCheckersReport(const Settings& settings) const;
-
-    /**
      * Filename associated with size of file
      */
     std::list<std::pair<std::string, std::size_t>> mFiles;
