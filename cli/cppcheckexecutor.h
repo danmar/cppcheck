@@ -49,7 +49,7 @@ public:
      */
     CppCheckExecutor() = default;
     CppCheckExecutor(const CppCheckExecutor &) = delete;
-    void operator=(const CppCheckExecutor&) = delete;
+    CppCheckExecutor& operator=(const CppCheckExecutor&) = delete;
 
     /**
      * Starts the checking.

@@ -86,7 +86,7 @@ private:
 public:
     CheckMemoryLeak() = delete;
     CheckMemoryLeak(const CheckMemoryLeak &) = delete;
-    void operator=(const CheckMemoryLeak &) = delete;
+    CheckMemoryLeak& operator=(const CheckMemoryLeak &) = delete;
 
     CheckMemoryLeak(const Tokenizer *t, ErrorLogger *e, const Settings *s)
         : mTokenizer_(t), mErrorLogger_(e), mSettings_(s) {}

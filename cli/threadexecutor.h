@@ -45,7 +45,7 @@ class ThreadExecutor : public Executor {
 public:
     ThreadExecutor(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand);
     ThreadExecutor(const ThreadExecutor &) = delete;
-    void operator=(const ThreadExecutor &) = delete;
+    ThreadExecutor& operator=(const ThreadExecutor &) = delete;
 
     unsigned int check() override;
 
