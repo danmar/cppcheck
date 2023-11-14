@@ -126,7 +126,7 @@ protected:
      * @param settings Settings
      * @return Returns true if successful
      */
-    bool loadLibraries(Settings& settings);
+    static bool loadLibraries(Settings& settings);
 
     /**
      * @brief Load addons
