@@ -253,7 +253,7 @@ namespace {
     };
 }
 
-std::string toString(const Interval& i) {
+static std::string toString(const Interval& i) {
     return i.str();
 }
 
