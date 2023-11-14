@@ -253,10 +253,6 @@ namespace {
     };
 }
 
-static std::string toString(const Interval& i) {
-    return i.str();
-}
-
 static void addToErrorPath(ValueFlow::Value& value, const std::vector<const ValueFlow::Value*>& refs)
 {
     std::unordered_set<const Token*> locations;
