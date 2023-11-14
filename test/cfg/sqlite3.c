@@ -43,7 +43,7 @@ void resourceLeak_sqlite3_open()
     sqlite3 * db;
 
     sqlite3_open("/db", &db);
-    // TODO: cppcheck-suppress resourceLeak
+    // cppcheck-suppress resourceLeak
 }
 
 void ignoredReturnValue(const char * buf)
