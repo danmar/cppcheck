@@ -50,7 +50,8 @@
 #endif
 
 // C++11 noexcept
-#if (defined(__GNUC__) && (__GNUC__ >= 5)) \
+#if defined(__cpp_noexcept_function_type) || \
+    (defined(__GNUC__) && (__GNUC__ >= 5)) \
     || defined(__clang__) \
     || defined(__CPPCHECK__)
 #  define NOEXCEPT noexcept
@@ -77,28 +78,49 @@
 #endif
 
 // fallthrough
-#if defined(__clang__)
-#  define FALLTHROUGH [[clang::fallthrough]]
-#elif (defined(__GNUC__) && (__GNUC__ >= 7))
-#  define FALLTHROUGH __attribute__((fallthrough))
-#else
-#  define FALLTHROUGH
+#if defined __has_cpp_attribute
+#  if __cplusplus >= 201703L && __has_cpp_attribute (fallthrough)
+#    define FALLTHROUGH [[fallthrough]]
+#  endif
+#endif
+#if !defined(FALLTHROUGH)
+#  if defined(__clang__)
+#    define FALLTHROUGH [[clang::fallthrough]]
+#  elif (defined(__GNUC__) && (__GNUC__ >= 7))
+#    define FALLTHROUGH __attribute__((fallthrough))
+#  else
+#    define FALLTHROUGH
+#  endif
 #endif
 
 // unused
-#if defined(__GNUC__) \
+#if defined __has_cpp_attribute
+#  if __has_cpp_attribute (maybe_unused)
+#    define UNUSED [[maybe_unused]]
+#  endif
+#endif
+#if !defined(UNUSED)
+#  if defined(__GNUC__) \
     || defined(__clang__) \
     || defined(__CPPCHECK__)
-#  define UNUSED __attribute__((unused))
-#else
-#  define UNUSED
+#    define UNUSED __attribute__((unused))
+#  else
+#    define UNUSED
+#  endif
 #endif
 
 // warn_unused
-#if (defined(__clang__) && (__clang_major__ >= 15))
-#  define WARN_UNUSED [[gnu::warn_unused]]
-#else
-#  define WARN_UNUSED
+#if defined __has_cpp_attribute
+#  if __has_cpp_attribute (gnu::warn_unused)
+#    define WARN_UNUSED [[gnu::warn_unused]]
+#  endif
+#endif
+#if !defined(WARN_UNUSED)
+#  if (defined(__clang__) && (__clang_major__ >= 15))
+#    define WARN_UNUSED [[gnu::warn_unused]]
+#  else
+#    define WARN_UNUSED
+#  endif
 #endif
 
 #define REQUIRES(msg, ...) class=typename std::enable_if<__VA_ARGS__::value>::type
