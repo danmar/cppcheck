@@ -112,18 +112,20 @@ public:
 class CppCheckExecutor::StdLogger : public ErrorLogger
 {
 public:
-    explicit StdLogger(const Settings* settings) {
-        // cppcheck-suppress-begin danglingLifetime - this is intentional. the lifetime of the object exceeds its usage
-        mSettings = settings;
-        if (!mSettings->outputFile.empty()) {
-            mErrorOutput = new std::ofstream(settings->outputFile);
+    explicit StdLogger(const Settings& settings)
+        : mSettings(settings)
+    {
+        if (!mSettings.outputFile.empty()) {
+            mErrorOutput = new std::ofstream(settings.outputFile);
         }
-        // cppcheck-suppress-end danglingLifetime
     }
 
     ~StdLogger() override {
         delete mErrorOutput;
     }
+
+    StdLogger(const StdLogger&) = delete;
+    StdLogger& operator=(const SingleExecutor &) = delete;
 
     void resetLatestProgressOutputTime() {
         mLatestProgressOutputTime = std::time(nullptr);
@@ -157,7 +159,7 @@ private:
     /**
      * Pointer to current settings; set while check() is running for reportError().
      */
-    const Settings* mSettings{};
+    const Settings& mSettings;
 
     /**
      * Used to filter out duplicate error messages.
@@ -358,7 +360,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         return EXIT_SUCCESS;
     }
 
-    mStdLogger = new StdLogger(&settings);
+    mStdLogger = new StdLogger(settings);
     CppCheck cppCheck(*mStdLogger, true, executeCommand);
     cppCheck.settings() = settings;
 
@@ -464,23 +466,23 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
 
 void CppCheckExecutor::StdLogger::writeCheckersReport() const
 {
-    CheckersReport checkersReport(*mSettings, mActiveCheckers);
+    CheckersReport checkersReport(mSettings, mActiveCheckers);
 
-    if (!mSettings->quiet) {
+    if (!mSettings.quiet) {
         const int activeCheckers = checkersReport.getActiveCheckersCount();
         const int totalCheckers = checkersReport.getAllCheckersCount();
 
-        const std::string extra = mSettings->verbose ? " (use --checkers-report=<filename> to see details)" : "";
+        const std::string extra = mSettings.verbose ? " (use --checkers-report=<filename> to see details)" : "";
         if (mCriticalErrors.empty())
             std::cout << "Active checkers: " << activeCheckers << "/" << totalCheckers << extra << std::endl;
         else
             std::cout << "Active checkers: There was critical errors" << extra << std::endl;
     }
 
-    if (mSettings->checkersReportFilename.empty())
+    if (mSettings.checkersReportFilename.empty())
         return;
 
-    std::ofstream fout(mSettings->checkersReportFilename);
+    std::ofstream fout(mSettings.checkersReportFilename);
     if (fout.is_open())
         fout << checkersReport.getReport(mCriticalErrors);
 
@@ -558,7 +560,7 @@ void CppCheckExecutor::StdLogger::reportErr(const std::string &errmsg)
     if (mErrorOutput)
         *mErrorOutput << errmsg << std::endl;
     else {
-        std::cerr << ansiToOEM(errmsg, (mSettings == nullptr) ? true : !mSettings->xml) << std::endl;
+        std::cerr << ansiToOEM(errmsg, !mSettings.xml) << std::endl;
     }
 }
 
@@ -580,7 +582,7 @@ void CppCheckExecutor::StdLogger::reportProgress(const std::string &filename, co
 
     // Report progress messages every x seconds
     const std::time_t currentTime = std::time(nullptr);
-    if (currentTime >= (mLatestProgressOutputTime + mSettings->reportProgress))
+    if (currentTime >= (mLatestProgressOutputTime + mSettings.reportProgress))
     {
         mLatestProgressOutputTime = currentTime;
 
@@ -597,8 +599,6 @@ void CppCheckExecutor::StdLogger::reportProgress(const std::string &filename, co
 
 void CppCheckExecutor::StdLogger::reportErr(const ErrorMessage &msg)
 {
-    assert(mSettings != nullptr);
-
     if (msg.severity == Severity::none && (msg.id == "logChecker" || endsWith(msg.id, "-logChecker"))) {
         const std::string& checker = msg.shortMessage();
         mActiveCheckers.emplace(checker);
@@ -606,7 +606,7 @@ void CppCheckExecutor::StdLogger::reportErr(const ErrorMessage &msg)
     }
 
     // Alert only about unique errors
-    if (!mShownErrors.insert(msg.toString(mSettings->verbose)).second)
+    if (!mShownErrors.insert(msg.toString(mSettings.verbose)).second)
         return;
 
     if (ErrorLogger::isCriticalErrorId(msg.id) && mCriticalErrors.find(msg.id) == std::string::npos) {
@@ -615,10 +615,10 @@ void CppCheckExecutor::StdLogger::reportErr(const ErrorMessage &msg)
         mCriticalErrors += msg.id;
     }
 
-    if (mSettings->xml)
+    if (mSettings.xml)
         reportErr(msg.toXML());
     else
-        reportErr(msg.toString(mSettings->verbose, mSettings->templateFormat, mSettings->templateLocation));
+        reportErr(msg.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation));
 }
 
 #if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
