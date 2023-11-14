@@ -359,6 +359,12 @@ void memleak_asprintf(char **ptr, const char *fmt, const int arg)
     }
 }
 
+void memleak_asprintf2() { // #12186
+    char* p = malloc(5);
+    // cppcheck-suppress memleak
+    (void)asprintf(&p, "%s", "test");
+}
+
 void memleak_xmalloc()
 {
     char *p = (char*)xmalloc(10);
