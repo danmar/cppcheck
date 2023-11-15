@@ -364,6 +364,13 @@ void memleak_asprintf2() { // #12186
     // cppcheck-suppress memleak
 }
 
+void memleak_asprintf3() {
+    char* p = malloc(5);
+    // cppcheck-suppress memleak
+    asprintf(&p, "%s", "test");
+    free(p);
+}
+
 void memleak_xmalloc()
 {
     char *p = (char*)xmalloc(10);
