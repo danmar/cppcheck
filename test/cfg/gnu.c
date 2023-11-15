@@ -360,6 +360,7 @@ void memleak_asprintf(char **ptr, const char *fmt, const int arg)
 
 void memleak_asprintf2() { // #12186
     char* p = malloc(5);
+    // cppcheck-suppress memleak
     (void)asprintf(&p, "%s", "test");
     // cppcheck-suppress memleak
 }

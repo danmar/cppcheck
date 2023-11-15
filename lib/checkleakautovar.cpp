@@ -969,8 +969,8 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
                 const Library::AllocFunc* deallocFunc = mSettings->library.getDeallocFuncInfo(tokName);
                 VarInfo::AllocInfo dealloc(deallocFunc ? deallocFunc->groupId : 0, VarInfo::DEALLOC, tokName);
                 if (const Library::AllocFunc* allocFunc = mSettings->library.getAllocFuncInfo(tokName)) {
-                    leakIfAllocated(arg, varInfo);
                     if (allocFunc->arg == argNr) {
+                        leakIfAllocated(arg, varInfo);
                         VarInfo::AllocInfo& varAlloc = varInfo.alloctype[arg->varId()];
                         varAlloc.type = allocFunc->groupId;
                         varAlloc.status = VarInfo::ALLOC;
