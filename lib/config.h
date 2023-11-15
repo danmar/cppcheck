@@ -92,7 +92,7 @@
 #endif
 
 // unused
-#if __has_cpp_attribute (maybe_unused)
+#if __cplusplus >= 201703L && __has_cpp_attribute (maybe_unused)
 #  define UNUSED [[maybe_unused]]
 #elif defined(__GNUC__) \
     || defined(__clang__) \
