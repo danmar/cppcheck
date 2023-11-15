@@ -2828,6 +2828,16 @@ private:
               "    SomeClass::someMethod(a);\n"
               "}\n", settingsLeakIgnore);
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: a\n", errout.str());
+
+        check("void bar(int* p) {\n"
+              "    if (p)\n"
+              "        free(p);\n"
+              "}\n"
+              "void f() {\n"
+              "    int* p = malloc(4);\n"
+              "    bar(p);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
