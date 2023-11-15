@@ -35,6 +35,7 @@ CheckOptions:
 
     add_executable(cppcheck-gui ${cppcheck-gui-deps} ${cppcheck-gui_SOURCES})
     set_target_properties(cppcheck-gui PROPERTIES AUTOMOC ON)
+    set_target_properties(cppcheck-gui PROPERTIES WIN32_EXECUTABLE ON)
     target_include_directories(cppcheck-gui PRIVATE ${PROJECT_SOURCE_DIR}/lib/)
     if(USE_BUNDLED_TINYXML2)
         target_include_directories(cppcheck-gui PRIVATE ${PROJECT_SOURCE_DIR}/externals/tinyxml2/)
