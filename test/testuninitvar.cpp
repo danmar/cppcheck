@@ -7225,10 +7225,15 @@ private:
                         "}\n"
                         "void g() {\n"
                         "    S s;\n"
+                        "    s.i--;\n"
+                        "}\n"
+                        "void h() {\n"
+                        "    S s;\n"
                         "    s.i &= 3;\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: s.i\n"
-                      "[test.cpp:10]: (error) Uninitialized variable: s.i\n",
+                      "[test.cpp:10]: (error) Uninitialized variable: s.i\n"
+                      "[test.cpp:14]: (error) Uninitialized variable: s.i\n",
                       errout.str());
     }
 
