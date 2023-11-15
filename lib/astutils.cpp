@@ -3263,6 +3263,18 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
     return ExprUsage::Inconclusive;
 }
 
+bool isLeafDot(const Token* tok)
+{
+    if (!tok)
+        return false;
+    const Token * parent = tok->astParent();
+    if (!Token::simpleMatch(parent, "."))
+        return false;
+    if (parent->astOperand2() == tok && !Token::simpleMatch(parent->astParent(), "."))
+        return true;
+    return isLeafDot(parent);
+}
+
 ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings, bool cpp)
 {
     const Token* parent = tok->astParent();
@@ -3283,6 +3295,11 @@ ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings,
             !parent->isUnaryOp("&") &&
             !(astIsRHS(tok) && isLikelyStreamRead(cpp, parent)))
             return ExprUsage::Used;
+        if (isLeafDot(tok)) {
+            const Token* top = parent->astTop();
+            if (Token::Match(top, "%assign%|++|--") && top->str() != "=")
+                return ExprUsage::Used;
+        }
         if (Token::simpleMatch(parent, "=") && astIsRHS(tok)) {
             const Token* const lhs  = parent->astOperand1();
             if (lhs && lhs->variable() && lhs->variable()->isReference() && lhs == lhs->variable()->nameToken())
