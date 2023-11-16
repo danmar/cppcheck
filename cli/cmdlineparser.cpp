@@ -146,18 +146,6 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
     const bool success = parseFromArgs(argc, argv);
 
     if (success) {
-        if (getShowVersion() && !getShowErrorMessages()) {
-            if (!mSettings.cppcheckCfgProductName.empty()) {
-                mLogger.printRaw(mSettings.cppcheckCfgProductName);
-            } else {
-                const char * const extraVersion = CppCheck::extraVersion();
-                if (*extraVersion != 0)
-                    mLogger.printRaw(std::string("Cppcheck ") + CppCheck::version() + " ("+ extraVersion + ')');
-                else
-                    mLogger.printRaw(std::string("Cppcheck ") + CppCheck::version());
-            }
-        }
-
         if (getShowErrorMessages()) {
             XMLErrorMessagesLogger xmlLogger;
             std::cout << ErrorMessage::getXMLHeader(mSettings.cppcheckCfgProductName);
@@ -1163,9 +1151,18 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings.verbose = true;
 
             else if (std::strcmp(argv[i], "--version") == 0) {
-                mShowVersion = true;
+                // TODO: make this an exclusive parameter
                 mExitAfterPrint = true;
                 mSettings.loadCppcheckCfg();
+                if (!mSettings.cppcheckCfgProductName.empty()) {
+                    mLogger.printRaw(mSettings.cppcheckCfgProductName);
+                } else {
+                    const char * const extraVersion = CppCheck::extraVersion();
+                    if (*extraVersion != '\0')
+                        mLogger.printRaw(std::string("Cppcheck ") + CppCheck::version() + " ("+ extraVersion + ')');
+                    else
+                        mLogger.printRaw(std::string("Cppcheck ") + CppCheck::version());
+                }
                 return true;
             }
 

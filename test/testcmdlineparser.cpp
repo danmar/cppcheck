@@ -108,7 +108,8 @@ private:
         TEST_CASE(nooptions);
         TEST_CASE(helpshort);
         TEST_CASE(helplong);
-        TEST_CASE(showversion);
+        TEST_CASE(version);
+        TEST_CASE(versionWithCfg);
         TEST_CASE(onefile);
         TEST_CASE(onepath);
         TEST_CASE(optionwithoutfile);
@@ -368,13 +369,25 @@ private:
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
-    void showversion() {
+    void version() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--version"};
         ASSERT(parser->parseFromArgs(2, argv));
-        ASSERT_EQUALS(true, parser->getShowVersion());
-        ASSERT_EQUALS("", logger->str()); // version is not actually shown
+        ASSERT_EQUALS("Cppcheck 2.13 dev\n", logger->str());
     }
+
+    void versionWithCfg() {
+        REDIRECT;
+        ScopedFile file("cppcheck.cfg",
+                "{\n"
+                "\"productName\": \"The Product\""
+                "}\n");
+        const char * const argv[] = {"cppcheck", "--version"};
+        ASSERT(parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS("The Product\n", logger->str()); // TODO: include version?
+    }
+
+    // TODO: test extraVersion
 
     void onefile() {
         REDIRECT;

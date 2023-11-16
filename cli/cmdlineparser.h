@@ -74,13 +74,6 @@ public:
     bool parseFromArgs(int argc, const char* const argv[]);
 
     /**
-     * Return if user wanted to see program version.
-     */
-    bool getShowVersion() const {
-        return mShowVersion;
-    }
-
-    /**
      * Return if user wanted to see list of error messages.
      */
     bool getShowErrorMessages() const {
@@ -179,7 +172,6 @@ private:
     Suppressions &mSuppressions;
     Suppressions &mSuppressionsNoFail;
     bool mShowHelp{};
-    bool mShowVersion{};
     bool mShowErrorMessages{};
     bool mExitAfterPrint{};
     std::string mVSConfig;
