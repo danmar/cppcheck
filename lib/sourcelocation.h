@@ -19,13 +19,7 @@
 #ifndef sourcelocationH
 #define sourcelocationH
 
-#ifndef __has_builtin
-#define __has_builtin(x) 0 // Compatibility with non-clang compilers.
-#endif
-
-#ifndef __has_include
-#define __has_include(x) 0 // Compatibility with non-clang compilers.
-#endif
+#include "config.h"
 
 #ifdef __CPPCHECK__
 #define CPPCHECK_HAS_SOURCE_LOCATION 0

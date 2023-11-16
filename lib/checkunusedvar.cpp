@@ -1356,7 +1356,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 unassignedVariableError(usage._var->nameToken(), varname);
             }
             // variable has been read but not written
-            else if (!usage._write && !usage._allocateMemory && var && !var->isStlType() && !isEmptyType(var->type()))
+            else if (!usage._write && !usage._allocateMemory && var && !var->isStlType() && !isEmptyType(var->type()) &&
+                     !(var->type() && var->type()->needInitialization == Type::NeedInitialization::False))
                 unassignedVariableError(usage._var->nameToken(), varname);
             else if (!usage._var->isMaybeUnused() && !usage._modified && !usage._read && var) {
                 const Token* vnt = var->nameToken();

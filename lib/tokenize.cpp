@@ -656,7 +656,7 @@ namespace {
                 }
             }
 
-            for (Token* type = start; Token::Match(type, "%name%|*|&"); type = type->next()) {
+            for (Token* type = start; Token::Match(type, "%name%|*|&|&&"); type = type->next()) {
                 if (type != start && Token::Match(type, "%name% ;") && !type->isStandardType()) {
                     mRangeType.first = start;
                     mRangeType.second = type;
@@ -892,7 +892,7 @@ namespace {
 
             // Unsplit variable declarations
             if (tok4 && tok4->isSplittedVarDeclEq() &&
-                ((tok4->isCpp() && Token::Match(tok4->tokAt(-2), "& %name% ;")) || Token::Match(tok4->previous(), "] ; %name% = {"))) {
+                ((tok4->isCpp() && Token::Match(tok4->tokAt(-2), "&|&& %name% ;")) || Token::Match(tok4->previous(), "] ; %name% = {"))) {
                 tok4->deleteNext();
                 tok4->deleteThis();
             }
@@ -3592,17 +3592,18 @@ void Tokenizer::simplifyExternC()
 
     // Add attributes to all tokens within `extern "C"` inlines and blocks, and remove the `extern "C"` tokens.
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "extern \"C\"")) {
+        if (Token::Match(tok, "extern \"C\"|\"C++\"")) {
             Token *tok2 = tok->next();
+            const bool isExtC = tok->next()->str().size() == 3;
             if (tok->strAt(2) == "{") {
                 tok2 = tok2->next(); // skip {
                 while ((tok2 = tok2->next()) && tok2 != tok->linkAt(2))
-                    tok2->isExternC(true);
+                    tok2->isExternC(isExtC);
                 tok->linkAt(2)->deleteThis(); // }
                 tok->deleteNext(2); // "C" {
             } else {
                 while ((tok2 = tok2->next()) && !Token::Match(tok2, "[;{]"))
-                    tok2->isExternC(true);
+                    tok2->isExternC(isExtC);
                 tok->deleteNext(); // "C"
             }
             tok->deleteThis(); // extern
@@ -5130,7 +5131,7 @@ void Tokenizer::setVarIdPass2()
                         continue;
                     }
                 }
-                if (tok2->str() == "{") {
+                if (tok2->str() == "{" && !Token::simpleMatch(tok2->previous(), "union")) {
                     if (tok2->strAt(-1) == ")")
                         setVarIdClassFunction(scopeName2 + classname, tok2, tok2->link(), thisClassVars, structMembers, mVarId);
                     tok2 = tok2->link();

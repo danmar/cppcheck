@@ -2562,7 +2562,7 @@ class MisraChecker:
             vt2 = token.astOperand1.valueType
             if not vt1 or not vt2:
                 continue
-            if vt1.pointer == 1 and vt1.type == 'void' and vt2.pointer == 0 and token.astOperand1.str != "0":
+            if vt1.pointer == 1 and vt1.type == 'void' and vt2.pointer == 0 and token.astOperand1.getKnownIntValue() != 0:
                 self.reportError(token, 11, 6)
             elif vt1.pointer == 0 and vt1.type != 'void' and vt2.pointer == 1 and vt2.type == 'void':
                 self.reportError(token, 11, 6)

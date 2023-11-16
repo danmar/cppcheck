@@ -653,10 +653,10 @@ cli/cmdlineparser.o: cli/cmdlineparser.cpp cli/cmdlinelogger.h cli/cmdlineparser
 cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cmdlinelogger.h cli/cmdlineparser.h cli/cppcheckexecutor.h cli/cppcheckexecutorseh.h cli/cppcheckexecutorsig.h cli/executor.h cli/filelister.h cli/processexecutor.h cli/singleexecutor.h cli/threadexecutor.h lib/addoninfo.h lib/analyzerinfo.h lib/check.h lib/checkersreport.h lib/checkunusedfunctions.h lib/color.h lib/config.h lib/cppcheck.h lib/errorlogger.h lib/errortypes.h lib/filesettings.h lib/library.h lib/mathlib.h lib/path.h lib/pathmatch.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/cppcheckexecutor.cpp
 
-cli/cppcheckexecutorseh.o: cli/cppcheckexecutorseh.cpp cli/cppcheckexecutor.h cli/cppcheckexecutorseh.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/filesettings.h lib/platform.h lib/standards.h lib/utils.h
+cli/cppcheckexecutorseh.o: cli/cppcheckexecutorseh.cpp cli/cppcheckexecutor.h cli/cppcheckexecutorseh.h lib/config.h lib/filesettings.h lib/platform.h lib/standards.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/cppcheckexecutorseh.cpp
 
-cli/cppcheckexecutorsig.o: cli/cppcheckexecutorsig.cpp cli/cppcheckexecutor.h cli/cppcheckexecutorsig.h cli/stacktrace.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/filesettings.h lib/platform.h lib/standards.h lib/utils.h
+cli/cppcheckexecutorsig.o: cli/cppcheckexecutorsig.cpp cli/cppcheckexecutor.h cli/cppcheckexecutorsig.h cli/stacktrace.h lib/config.h lib/filesettings.h lib/platform.h lib/standards.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/cppcheckexecutorsig.cpp
 
 cli/executor.o: cli/executor.cpp cli/executor.h lib/addoninfo.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/utils.h
@@ -665,7 +665,7 @@ cli/executor.o: cli/executor.cpp cli/executor.h lib/addoninfo.h lib/color.h lib/
 cli/filelister.o: cli/filelister.cpp cli/filelister.h lib/config.h lib/path.h lib/pathmatch.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/filelister.cpp
 
-cli/main.o: cli/main.cpp cli/cppcheckexecutor.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/filesettings.h lib/platform.h lib/standards.h lib/utils.h
+cli/main.o: cli/main.cpp cli/cppcheckexecutor.h lib/config.h lib/errortypes.h lib/filesettings.h lib/platform.h lib/standards.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/main.cpp
 
 cli/processexecutor.o: cli/processexecutor.cpp cli/executor.h cli/processexecutor.h lib/addoninfo.h lib/analyzerinfo.h lib/check.h lib/color.h lib/config.h lib/cppcheck.h lib/errorlogger.h lib/errortypes.h lib/filesettings.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/timer.h lib/utils.h

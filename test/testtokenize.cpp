@@ -1548,8 +1548,47 @@ private:
 
 
     void simplifyExternC() {
-        ASSERT_EQUALS("int foo ( ) ;", tokenizeAndStringify("extern \"C\" int foo();"));
-        ASSERT_EQUALS("int foo ( ) ;", tokenizeAndStringify("extern \"C\" { int foo(); }"));
+        const char expected[] = "int foo ( ) ;";
+        {
+            const char code[] = "extern \"C\" int foo();";
+            // tokenize..
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            // Expected result..
+            ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+            ASSERT(tokenizer.tokens()->next()->isExternC());
+        }
+        {
+            const char code[] = "extern \"C\" { int foo(); }";
+            // tokenize..
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            // Expected result..
+            ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+            ASSERT(tokenizer.tokens()->next()->isExternC());
+        }
+        {
+            const char code[] = "extern \"C++\" int foo();";
+            // tokenize..
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            // Expected result..
+            ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+            ASSERT(!tokenizer.tokens()->next()->isExternC());
+        }
+        {
+            const char code[] = "extern \"C++\" { int foo(); }";
+            // tokenize..
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            // Expected result..
+            ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+            ASSERT(!tokenizer.tokens()->next()->isExternC());
+        }
     }
 
     void simplifyFunctionParameters() {
