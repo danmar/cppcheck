@@ -811,6 +811,8 @@ static void misra_11_6(void) {
   x = (u64)p;      // 11.6
   p = ( void * )0; // no-warning
   (void)p;         // no-warning
+  // # 12184
+  p = (void*)0U;   // no-warning
 }
 
 
