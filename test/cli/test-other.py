@@ -2,6 +2,7 @@
 # python -m pytest test-other.py
 
 import os
+import sys
 import pytest
 
 from testutils import cppcheck, assert_cppcheck
@@ -723,4 +724,90 @@ def test_markup_j(tmpdir):
         'Checking {} ...'.format(test_file_1),
         'Checking {} ...'.format(test_file_3)
     ]
+    assert stderr == ''
+
+
+def test_valueflow_debug(tmpdir):
+    test_file_cpp = os.path.join(tmpdir, 'test_1.cpp')
+    with open(test_file_cpp, 'wt') as f:
+        f.write("""
+#include "test.h"
+
+void f()
+{
+    int i = 0;
+}
+"""
+                )
+    test_file_h = os.path.join(tmpdir, 'test.h')
+    with open(test_file_h, 'wt') as f:
+        f.write("""
+#include "test2.h"
+inline void f1()
+{
+    int i = 0;
+}
+"""
+                )
+        pass
+    test_file_h_2 = os.path.join(tmpdir, 'test2.h')
+    with open(test_file_h_2, 'wt') as f:
+        f.write("""
+inline void f2()
+{
+    int i = 0;
+}
+"""
+                )
+
+    args = ['--debug', test_file_cpp]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    if sys.platform == "win32":
+        stdout = stdout.replace('/', '\\')
+    assert stdout == '''Checking {} ...
+
+
+##file {}
+2: void f2 ( )
+3: {{
+4: int i@var1 ; i@var1 =@expr1073741828 0 ;
+5: }}
+
+##file {}
+
+1:
+2:
+3: void f1 ( )
+4: {{
+5: int i@var2 ; i@var2 =@expr1073741829 0 ;
+6: }}
+
+##file {}
+
+1:
+2:
+3:
+4: void f ( )
+5: {{
+6: int i@var3 ; i@var3 =@expr1073741830 0 ;
+7: }}
+
+
+
+##Value flow
+File {}
+Line 4
+  = always 0
+  0 always 0
+File {}
+Line 5
+  = always 0
+  0 always 0
+File {}
+Line 6
+  = always 0
+  0 always 0
+'''.format(test_file_cpp, test_file_h_2, test_file_h, test_file_cpp, test_file_h_2, test_file_h, test_file_cpp)
     assert stderr == ''

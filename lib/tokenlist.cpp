@@ -396,17 +396,19 @@ std::size_t TokenList::calculateHash() const
 
 //---------------------------------------------------------------------------
 
-struct AST_state {
-    std::stack<Token*> op;
-    int depth{};
-    int inArrayAssignment{};
-    bool cpp;
-    int assign{};
-    bool inCase{}; // true from case to :
-    bool stopAtColon{}; // help to properly parse ternary operators
-    const Token* functionCallEndPar{};
-    explicit AST_state(bool cpp) : cpp(cpp) {}
-};
+namespace {
+    struct AST_state {
+        std::stack<Token*> op;
+        int depth{};
+        int inArrayAssignment{};
+        bool cpp;
+        int assign{};
+        bool inCase{}; // true from case to :
+        bool stopAtColon{}; // help to properly parse ternary operators
+        const Token* functionCallEndPar{};
+        explicit AST_state(bool cpp) : cpp(cpp) {}
+    };
+}
 
 static Token* skipDecl(Token* tok, std::vector<Token*>* inner = nullptr)
 {
@@ -1703,16 +1705,18 @@ void TokenList::createAst() const
     }
 }
 
-struct OnException {
-    std::function<void()> f;
+namespace {
+    struct OnException {
+        std::function<void()> f;
 
-    ~OnException() {
+        ~OnException() {
 #ifndef _MSC_VER
-        if (std::uncaught_exception())
-            f();
+            if (std::uncaught_exception())
+                f();
 #endif
-    }
-};
+        }
+    };
+}
 
 void TokenList::validateAst() const
 {

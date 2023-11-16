@@ -190,10 +190,4 @@ namespace ValueFlow {
         }
         return "";
     }
-
-    Value Value::unknown() {
-        Value v;
-        v.valueType = ValueType::UNINIT;
-        return v;
-    }
 }
