@@ -779,6 +779,13 @@ static void misra_10_8(u8 x, s32 a, s32 b) {
 int (*misra_11_1_p)(void); // 8.4
 void *misra_11_1_bad1 = (void*)misra_11_1_p; // 11.1 8.4
 
+// #12172
+typedef void (*pfFunc_11_1)(uint32_t some);
+extern pfFunc_11_1 data_11_1[10];
+void func_11_1(pfFunc_11_1 ptr){ //8.4
+    data_11_1[index] = ptr; // no-warning
+}
+
 struct misra_11_2_s;
 struct misra_11_2_t;
 

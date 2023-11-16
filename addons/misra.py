@@ -647,7 +647,8 @@ def get_function_pointer_type(tok):
     ret += '('
     tok = tok.next.next
     while tok and (tok.str not in '()'):
-        ret += ' ' + tok.str
+        if tok.varId is None:
+            ret += ' ' + tok.str
         tok = tok.next
     if (tok is None) or tok.str != ')':
         return None
