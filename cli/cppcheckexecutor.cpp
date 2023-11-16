@@ -26,6 +26,7 @@
 #include "color.h"
 #include "config.h"
 #include "cppcheck.h"
+#include "errorlogger.h"
 #include "errortypes.h"
 #include "filelister.h"
 #include "filesettings.h"
@@ -49,9 +50,11 @@
 #include <cassert>
 #include <cstdio>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
+#include <ctime>
 #include <iostream>
 #include <iterator>
 #include <list>
+#include <set>
 #include <sstream> // IWYU pragma: keep
 #include <unordered_set>
 #include <utility>
@@ -106,16 +109,89 @@ public:
     }
 };
 
+class CppCheckExecutor::StdLogger : public ErrorLogger
+{
+public:
+    explicit StdLogger(const Settings& settings)
+        : mSettings(settings)
+    {
+        if (!mSettings.outputFile.empty()) {
+            mErrorOutput = new std::ofstream(settings.outputFile);
+        }
+    }
+
+    ~StdLogger() override {
+        delete mErrorOutput;
+    }
+
+    StdLogger(const StdLogger&) = delete;
+    StdLogger& operator=(const SingleExecutor &) = delete;
+
+    void resetLatestProgressOutputTime() {
+        mLatestProgressOutputTime = std::time(nullptr);
+    }
+
+    /**
+     * Helper function to print out errors. Appends a line change.
+     * @param errmsg String printed to error stream
+     */
+    void reportErr(const std::string &errmsg);
+
+    /**
+     * @brief Write the checkers report
+     */
+    void writeCheckersReport() const;
+
+private:
+    /**
+     * Information about progress is directed here. This should be
+     * called by the CppCheck class only.
+     *
+     * @param outmsg Progress message e.g. "Checking main.cpp..."
+     */
+    void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
+
+    /** xml output of errors */
+    void reportErr(const ErrorMessage &msg) override;
+
+    void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
+
+    /**
+     * Pointer to current settings; set while check() is running for reportError().
+     */
+    const Settings& mSettings;
+
+    /**
+     * Used to filter out duplicate error messages.
+     */
+    std::set<std::string> mShownErrors;
+
+    /**
+     * Report progress time
+     */
+    std::time_t mLatestProgressOutputTime{};
+
+    /**
+     * Error output
+     */
+    std::ofstream* mErrorOutput{};
+
+    /**
+     * Checkers that has been executed
+     */
+    std::set<std::string> mActiveCheckers;
+
+    /**
+     * True if there are critical errors
+     */
+    std::string mCriticalErrors;
+};
+
 // TODO: do not directly write to stdout
 
 #if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
 /*static*/ FILE* CppCheckExecutor::mExceptionOutput = stdout;
 #endif
-
-CppCheckExecutor::~CppCheckExecutor()
-{
-    delete mErrorOutput;
-}
 
 bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* const argv[])
 {
@@ -168,6 +244,7 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
             if (Path::isDirectory(path))
                 ++iter;
             else {
+                // TODO: this bypasses the template format and other settings
                 // If the include path is not found, warn user and remove the non-existing path from the list.
                 if (settings.severity.isEnabled(Severity::information))
                     std::cout << "(information) Couldn't find path given by -I '" << path << '\'' << std::endl;
@@ -283,13 +360,14 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         return EXIT_SUCCESS;
     }
 
-    CppCheck cppCheck(*this, true, executeCommand);
+    mStdLogger = new StdLogger(settings);
+    CppCheck cppCheck(*mStdLogger, true, executeCommand);
     cppCheck.settings() = settings;
-    mSettings = &settings;
 
     const int ret = check_wrapper(cppCheck);
 
-    mSettings = nullptr;
+    delete mStdLogger;
+    mStdLogger = nullptr;
     return ret;
 }
 
@@ -331,14 +409,10 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     Settings& settings = cppcheck.settings();
 
     if (settings.reportProgress >= 0)
-        mLatestProgressOutputTime = std::time(nullptr);
-
-    if (!settings.outputFile.empty()) {
-        mErrorOutput = new std::ofstream(settings.outputFile);
-    }
+        mStdLogger->resetLatestProgressOutputTime();
 
     if (settings.xml) {
-        reportErr(ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName));
+        mStdLogger->reportErr(ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName));
     }
 
     if (!settings.buildDir.empty()) {
@@ -353,16 +427,16 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     if (!settings.checkersReportFilename.empty())
         std::remove(settings.checkersReportFilename.c_str());
 
-    unsigned int returnValue = 0;
+    unsigned int returnValue;
     if (settings.useSingleJob()) {
         // Single process
-        SingleExecutor executor(cppcheck, mFiles, mFileSettings, settings, settings.nomsg, *this);
+        SingleExecutor executor(cppcheck, mFiles, mFileSettings, settings, settings.nomsg, *mStdLogger);
         returnValue = executor.check();
     } else {
 #if defined(THREADING_MODEL_THREAD)
-        ThreadExecutor executor(mFiles, mFileSettings, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
+        ThreadExecutor executor(mFiles, mFileSettings, settings, settings.nomsg, *mStdLogger, CppCheckExecutor::executeCommand);
 #elif defined(THREADING_MODEL_FORK)
-        ProcessExecutor executor(mFiles, mFileSettings, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
+        ProcessExecutor executor(mFiles, mFileSettings, settings, settings.nomsg, *mStdLogger, CppCheckExecutor::executeCommand);
 #endif
         returnValue = executor.check();
     }
@@ -370,7 +444,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     cppcheck.analyseWholeProgram(settings.buildDir, mFiles, mFileSettings);
 
     if (settings.severity.isEnabled(Severity::information) || settings.checkConfiguration) {
-        const bool err = reportSuppressions(settings, cppcheck.isUnusedFunctionCheckEnabled(), mFiles, *this);
+        const bool err = reportSuppressions(settings, cppcheck.isUnusedFunctionCheckEnabled(), mFiles, *mStdLogger);
         if (err && returnValue == 0)
             returnValue = settings.exitCode;
     }
@@ -380,35 +454,35 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     }
 
     if (settings.xml) {
-        reportErr(ErrorMessage::getXMLFooter());
+        mStdLogger->reportErr(ErrorMessage::getXMLFooter());
     }
 
-    writeCheckersReport(settings);
+    mStdLogger->writeCheckersReport();
 
     if (returnValue)
         return settings.exitCode;
     return 0;
 }
 
-void CppCheckExecutor::writeCheckersReport(const Settings& settings) const
+void CppCheckExecutor::StdLogger::writeCheckersReport() const
 {
-    CheckersReport checkersReport(settings, mActiveCheckers);
+    CheckersReport checkersReport(mSettings, mActiveCheckers);
 
-    if (!settings.quiet) {
+    if (!mSettings.quiet) {
         const int activeCheckers = checkersReport.getActiveCheckersCount();
         const int totalCheckers = checkersReport.getAllCheckersCount();
 
-        const std::string extra = settings.verbose ? " (use --checkers-report=<filename> to see details)" : "";
+        const std::string extra = mSettings.verbose ? " (use --checkers-report=<filename> to see details)" : "";
         if (mCriticalErrors.empty())
             std::cout << "Active checkers: " << activeCheckers << "/" << totalCheckers << extra << std::endl;
         else
             std::cout << "Active checkers: There was critical errors" << extra << std::endl;
     }
 
-    if (settings.checkersReportFilename.empty())
+    if (mSettings.checkersReportFilename.empty())
         return;
 
-    std::ofstream fout(settings.checkersReportFilename);
+    std::ofstream fout(mSettings.checkersReportFilename);
     if (fout.is_open())
         fout << checkersReport.getReport(mCriticalErrors);
 
@@ -481,16 +555,16 @@ static inline std::string ansiToOEM(const std::string &msg, bool doConvert)
 #define ansiToOEM(msg, doConvert) (msg)
 #endif
 
-void CppCheckExecutor::reportErr(const std::string &errmsg)
+void CppCheckExecutor::StdLogger::reportErr(const std::string &errmsg)
 {
     if (mErrorOutput)
         *mErrorOutput << errmsg << std::endl;
     else {
-        std::cerr << ansiToOEM(errmsg, (mSettings == nullptr) ? true : !mSettings->xml) << std::endl;
+        std::cerr << ansiToOEM(errmsg, !mSettings.xml) << std::endl;
     }
 }
 
-void CppCheckExecutor::reportOut(const std::string &outmsg, Color c)
+void CppCheckExecutor::StdLogger::reportOut(const std::string &outmsg, Color c)
 {
     if (c == Color::Reset)
         std::cout << ansiToOEM(outmsg, true) << std::endl;
@@ -499,7 +573,7 @@ void CppCheckExecutor::reportOut(const std::string &outmsg, Color c)
 }
 
 // TODO: remove filename parameter?
-void CppCheckExecutor::reportProgress(const std::string &filename, const char stage[], const std::size_t value)
+void CppCheckExecutor::StdLogger::reportProgress(const std::string &filename, const char stage[], const std::size_t value)
 {
     (void)filename;
 
@@ -508,7 +582,7 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
 
     // Report progress messages every x seconds
     const std::time_t currentTime = std::time(nullptr);
-    if (currentTime >= (mLatestProgressOutputTime + mSettings->reportProgress))
+    if (currentTime >= (mLatestProgressOutputTime + mSettings.reportProgress))
     {
         mLatestProgressOutputTime = currentTime;
 
@@ -523,10 +597,8 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
     }
 }
 
-void CppCheckExecutor::reportErr(const ErrorMessage &msg)
+void CppCheckExecutor::StdLogger::reportErr(const ErrorMessage &msg)
 {
-    assert(mSettings != nullptr);
-
     if (msg.severity == Severity::none && (msg.id == "logChecker" || endsWith(msg.id, "-logChecker"))) {
         const std::string& checker = msg.shortMessage();
         mActiveCheckers.emplace(checker);
@@ -534,7 +606,7 @@ void CppCheckExecutor::reportErr(const ErrorMessage &msg)
     }
 
     // Alert only about unique errors
-    if (!mShownErrors.insert(msg.toString(mSettings->verbose)).second)
+    if (!mShownErrors.insert(msg.toString(mSettings.verbose)).second)
         return;
 
     if (ErrorLogger::isCriticalErrorId(msg.id) && mCriticalErrors.find(msg.id) == std::string::npos) {
@@ -543,10 +615,10 @@ void CppCheckExecutor::reportErr(const ErrorMessage &msg)
         mCriticalErrors += msg.id;
     }
 
-    if (mSettings->xml)
+    if (mSettings.xml)
         reportErr(msg.toXML());
     else
-        reportErr(msg.toString(mSettings->verbose, mSettings->templateFormat, mSettings->templateLocation));
+        reportErr(msg.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation));
 }
 
 #if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
