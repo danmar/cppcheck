@@ -375,7 +375,7 @@ void memleak_asprintf4(char** p) {
     asprintf(p, "%s", "test");
 }
 
-void memleak_asprintf4(char* p) {
+void memleak_asprintf5(char* p) {
     asprintf(&p, "%s", "test");
     // cppcheck-suppress memleak
 }
