@@ -933,8 +933,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
                 if (!hasValidConfig && currCfg == *configurations.rbegin()) {
                     // If there is no valid configuration then report error..
-                    mExitCode = 1;
-
                     std::string file = Path::fromNativeSeparators(o.location.file());
                     if (mSettings.relativePaths)
                         file = Path::getRelativePath(file, mSettings.basePaths);

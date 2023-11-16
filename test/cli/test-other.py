@@ -75,8 +75,9 @@ def test_preprocessor_error(tmpdir):
     test_file = os.path.join(tmpdir, '10866.c')
     with open(test_file, 'wt') as f:
         f.write('#error test\nx=1;\n')
-    _, _, stderr = cppcheck([test_file])
+    exitcode, _, stderr = cppcheck(['--error-exitcode=1', test_file])
     assert 'preprocessorErrorDirective' in stderr
+    assert exitcode != 0
 
 
 def test_invalid_library(tmpdir):
