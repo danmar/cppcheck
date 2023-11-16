@@ -1206,10 +1206,9 @@ struct Executor {
 
     ValueFlow::Value executeImpl(const Token* expr)
     {
-        ValueFlow::Value unknown = ValueFlow::Value::unknown();
         const ValueFlow::Value* value = nullptr;
         if (!expr)
-            return unknown;
+            return ValueFlow::Value::unknown();
         if (expr->hasKnownIntValue() && !expr->isAssignmentOp() && expr->str() != ",")
             return expr->values().front();
         if ((value = expr->getKnownValue(ValueFlow::Value::ValueType::FLOAT)) ||
@@ -1221,10 +1220,10 @@ struct Executor {
         }
         if (expr->isNumber()) {
             if (MathLib::isFloat(expr->str()))
-                return unknown;
+                return ValueFlow::Value::unknown();
             MathLib::bigint i = MathLib::toBigNumber(expr->str());
             if (i < 0 && astIsUnsigned(expr))
-                return unknown;
+                return ValueFlow::Value::unknown();
             return ValueFlow::Value{i};
         }
         if (expr->isBoolean())
@@ -1235,14 +1234,14 @@ struct Executor {
             if (yield == Library::Container::Yield::SIZE) {
                 ValueFlow::Value v = execute(containerTok);
                 if (!v.isContainerSizeValue())
-                    return unknown;
+                    return ValueFlow::Value::unknown();
                 v.valueType = ValueFlow::Value::ValueType::INT;
                 return v;
             }
             if (yield == Library::Container::Yield::EMPTY) {
                 ValueFlow::Value v = execute(containerTok);
                 if (!v.isContainerSizeValue())
-                    return unknown;
+                    return ValueFlow::Value::unknown();
                 if (v.isImpossible() && v.intvalue == 0)
                     return ValueFlow::Value{0};
                 if (!v.isImpossible())
@@ -1252,10 +1251,10 @@ struct Executor {
                    expr->astOperand1()->exprId() > 0) {
             ValueFlow::Value rhs = execute(expr->astOperand2());
             if (rhs.isUninitValue())
-                return unknown;
+                return ValueFlow::Value::unknown();
             if (expr->str() != "=") {
                 if (!pm->hasValue(expr->astOperand1()->exprId()))
-                    return unknown;
+                    return ValueFlow::Value::unknown();
                 ValueFlow::Value& lhs = pm->at(expr->astOperand1()->exprId());
                 rhs = evaluate(removeAssign(expr->str()), lhs, rhs);
                 if (lhs.isIntValue())
@@ -1264,7 +1263,7 @@ struct Executor {
                     ValueFlow::Value::visitValue(rhs,
                                                  std::bind(assign{}, std::ref(lhs.floatValue), std::placeholders::_1));
                 else
-                    return unknown;
+                    return ValueFlow::Value::unknown();
                 return lhs;
             }
             pm->setValue(expr->astOperand1(), rhs);
@@ -1272,33 +1271,33 @@ struct Executor {
         } else if (expr->str() == "&&" && expr->astOperand1() && expr->astOperand2()) {
             ValueFlow::Value lhs = execute(expr->astOperand1());
             if (!lhs.isIntValue())
-                return unknown;
+                return ValueFlow::Value::unknown();
             if (isFalse(lhs))
                 return lhs;
             if (isTrue(lhs))
                 return execute(expr->astOperand2());
-            return unknown;
+            return ValueFlow::Value::unknown();
         } else if (expr->str() == "||" && expr->astOperand1() && expr->astOperand2()) {
             ValueFlow::Value lhs = execute(expr->astOperand1());
             if (!lhs.isIntValue() || lhs.isImpossible())
-                return unknown;
+                return ValueFlow::Value::unknown();
             if (isTrue(lhs))
                 return lhs;
             if (isFalse(lhs))
                 return execute(expr->astOperand2());
-            return unknown;
+            return ValueFlow::Value::unknown();
         } else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
             execute(expr->astOperand1());
             return execute(expr->astOperand2());
         } else if (expr->tokType() == Token::eIncDecOp && expr->astOperand1() && expr->astOperand1()->exprId() != 0) {
             if (!pm->hasValue(expr->astOperand1()->exprId()))
-                return unknown;
+                return ValueFlow::Value::unknown();
             ValueFlow::Value& lhs = pm->at(expr->astOperand1()->exprId());
             if (!lhs.isIntValue())
-                return unknown;
+                return ValueFlow::Value::unknown();
             // overflow
             if (!lhs.isImpossible() && lhs.intvalue == 0 && expr->str() == "--" && astIsUnsigned(expr->astOperand1()))
-                return unknown;
+                return ValueFlow::Value::unknown();
 
             if (expr->str() == "++")
                 lhs.intvalue++;
@@ -1312,17 +1311,17 @@ struct Executor {
                                                 expr->astOperand1()->values().cend(),
                                                 std::mem_fn(&ValueFlow::Value::isTokValue));
                 if (tokvalue_it == expr->astOperand1()->values().cend() || !tokvalue_it->isKnown()) {
-                    return unknown;
+                    return ValueFlow::Value::unknown();
                 }
                 tokvalue = tokvalue_it->tokvalue;
             }
             if (!tokvalue || !tokvalue->isLiteral()) {
-                return unknown;
+                return ValueFlow::Value::unknown();
             }
             const std::string strValue = tokvalue->strValue();
             ValueFlow::Value rhs = execute(expr->astOperand2());
             if (!rhs.isIntValue())
-                return unknown;
+                return ValueFlow::Value::unknown();
             const MathLib::bigint index = rhs.intvalue;
             if (index >= 0 && index < strValue.size())
                 return ValueFlow::Value{strValue[index]};
@@ -1331,23 +1330,23 @@ struct Executor {
         } else if (Token::Match(expr, "%cop%") && expr->astOperand1() && expr->astOperand2()) {
             ValueFlow::Value lhs = execute(expr->astOperand1());
             ValueFlow::Value rhs = execute(expr->astOperand2());
-            ValueFlow::Value r = unknown;
+            ValueFlow::Value r = ValueFlow::Value::unknown();
             if (!lhs.isUninitValue() && !rhs.isUninitValue())
                 r = evaluate(expr->str(), lhs, rhs);
             if (expr->isComparisonOp() && (r.isUninitValue() || r.isImpossible())) {
                 if (rhs.isIntValue()) {
                     std::vector<ValueFlow::Value> result =
-                        infer(ValueFlow::makeIntegralInferModel(), expr->str(), expr->astOperand1()->values(), {rhs});
+                        infer(ValueFlow::makeIntegralInferModel(), expr->str(), expr->astOperand1()->values(), {std::move(rhs)});
                     if (!result.empty() && result.front().isKnown())
                         return result.front();
                 }
                 if (lhs.isIntValue()) {
                     std::vector<ValueFlow::Value> result =
-                        infer(ValueFlow::makeIntegralInferModel(), expr->str(), {lhs}, expr->astOperand2()->values());
+                        infer(ValueFlow::makeIntegralInferModel(), expr->str(), {std::move(lhs)}, expr->astOperand2()->values());
                     if (!result.empty() && result.front().isKnown())
                         return result.front();
                 }
-                return unknown;
+                return ValueFlow::Value::unknown();
             }
             return r;
         }
@@ -1355,14 +1354,14 @@ struct Executor {
         else if (Token::Match(expr, "!|+|-") && expr->astOperand1() && !expr->astOperand2()) {
             ValueFlow::Value lhs = execute(expr->astOperand1());
             if (!lhs.isIntValue())
-                return unknown;
+                return ValueFlow::Value::unknown();
             if (expr->str() == "!") {
                 if (isTrue(lhs)) {
                     lhs.intvalue = 0;
                 } else if (isFalse(lhs)) {
                     lhs.intvalue = 1;
                 } else {
-                    return unknown;
+                    return ValueFlow::Value::unknown();
                 }
                 lhs.setPossible();
                 lhs.bound = ValueFlow::Value::Bound::Point;
@@ -1373,14 +1372,14 @@ struct Executor {
         } else if (expr->str() == "?" && expr->astOperand1() && expr->astOperand2()) {
             ValueFlow::Value cond = execute(expr->astOperand1());
             if (!cond.isIntValue())
-                return unknown;
+                return ValueFlow::Value::unknown();
             const Token* child = expr->astOperand2();
             if (isFalse(cond))
                 return execute(child->astOperand2());
             if (isTrue(cond))
                 return execute(child->astOperand1());
 
-            return unknown;
+            return ValueFlow::Value::unknown();
         } else if (expr->str() == "(" && expr->isCast()) {
             if (Token::simpleMatch(expr->previous(), ">") && expr->previous()->link())
                 return execute(expr->astOperand2());
@@ -1398,7 +1397,7 @@ struct Executor {
         if (Token::Match(expr->previous(), ">|%name% {|(")) {
             const Token* ftok = expr->previous();
             const Function* f = ftok->function();
-            ValueFlow::Value result = unknown;
+            ValueFlow::Value result = ValueFlow::Value::unknown();
             if (settings && expr->str() == "(") {
                 std::vector<const Token*> tokArgs = getArguments(expr);
                 std::vector<ValueFlow::Value> args(tokArgs.size());
@@ -1411,7 +1410,7 @@ struct Executor {
                         for (std::size_t i = 0; i < args.size(); ++i) {
                             const Variable* const arg = f->getArgumentVar(i);
                             if (!arg)
-                                return unknown;
+                                return ValueFlow::Value::unknown();
                             functionState.setValue(arg->nameToken(), args[i]);
                         }
                         Executor ex = *this;
@@ -1419,7 +1418,7 @@ struct Executor {
                         ex.fdepth--;
                         auto r = ex.execute(f->functionScope);
                         if (!r.empty())
-                            result = r.front();
+                            result = std::move(r.front());
                         // TODO: Track values changed by reference
                     }
                 } else {
@@ -1445,10 +1444,10 @@ struct Executor {
                     ValueFlow::Value& v = pm->at(child->exprId());
                     if (v.valueType == ValueFlow::Value::ValueType::CONTAINER_SIZE) {
                         if (ValueFlow::isContainerSizeChanged(child, v.indirect, settings))
-                            v = unknown;
+                            v = ValueFlow::Value::unknown();
                     } else if (v.valueType != ValueFlow::Value::ValueType::UNINIT) {
                         if (isVariableChanged(child, v.indirect, settings, true))
-                            v = unknown;
+                            v = ValueFlow::Value::unknown();
                     }
                 }
                 return ChildrenToVisit::op1_and_op2;
@@ -1456,7 +1455,7 @@ struct Executor {
             return result;
         }
 
-        return unknown;
+        return ValueFlow::Value::unknown();
     }
     static const ValueFlow::Value* getImpossibleValue(const Token* tok)
     {
