@@ -3014,8 +3014,7 @@ private:
               "  HeapFree(MyHeap, 0, a);"
               "  HeapFree(MyHeap, 0, b);"
               "}");
-        TODO_ASSERT_EQUALS("[test.c:1] (error) Resource leak: MyHeap",
-                           "", errout.str());
+        ASSERT_EQUALS("[test.c:1]: (error) Resource leak: MyHeap\n", errout.str());
 
         check("void f() {"
               "  HANDLE MyHeap = HeapCreate(0, 0, 0);"
@@ -3023,9 +3022,9 @@ private:
               "  int *b = HeapAlloc(MyHeap, 0, sizeof(int));"
               "  HeapFree(MyHeap, 0, a);"
               "}");
-        TODO_ASSERT_EQUALS("[test.c:1] (error) Memory leak: MyHeap\n"
-                           "[test.c:1] (error) Memory leak: b",
-                           "[test.c:1]: (error) Memory leak: b\n", errout.str());
+        ASSERT_EQUALS("[test.c:1]: (error) Resource leak: MyHeap\n"
+                      "[test.c:1]: (error) Memory leak: b\n",
+                      errout.str());
     }
 };
 

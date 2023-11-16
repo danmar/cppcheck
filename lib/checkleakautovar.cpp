@@ -970,10 +970,17 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
             if (!isnull && (!af || af->arg == argNr)) {
                 const Library::AllocFunc* deallocFunc = mSettings->library.getDeallocFuncInfo(tokName);
                 VarInfo::AllocInfo dealloc(deallocFunc ? deallocFunc->groupId : 0, VarInfo::DEALLOC, tokName);
-                if (dealloc.type == 0)
-                    changeAllocStatus(varInfo, allocation, tokName, arg);
+                if (const Library::AllocFunc* allocFunc = mSettings->library.getAllocFuncInfo(tokName)) {
+                    if (allocFunc->arg == argNr) {
+                        leakIfAllocated(arg, varInfo);
+                        VarInfo::AllocInfo& varAlloc = varInfo.alloctype[arg->varId()];
+                        varAlloc.type = allocFunc->groupId;
+                        varAlloc.status = VarInfo::ALLOC;
+                        varAlloc.allocTok = arg;
+                    }
+                }
                 else
-                    changeAllocStatus(varInfo, dealloc, tokName, arg);
+                    changeAllocStatus(varInfo, dealloc.type == 0 ? allocation : dealloc, tokName, arg);
             }
         }
         // Check smart pointer
