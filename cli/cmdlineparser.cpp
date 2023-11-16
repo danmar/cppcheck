@@ -18,14 +18,20 @@
 
 #include "cmdlineparser.h"
 
+#include "addoninfo.h"
 #include "check.h"
+#include "color.h"
 #include "config.h"
+#include "cppcheck.h"
 #include "cppcheckexecutor.h"
 #include "errorlogger.h"
 #include "errortypes.h"
+#include "filelister.h"
 #include "filesettings.h"
 #include "importproject.h"
+#include "library.h"
 #include "path.h"
+#include "pathmatch.h"
 #include "platform.h"
 #include "settings.h"
 #include "standards.h"
@@ -34,6 +40,7 @@
 #include "utils.h"
 
 #include <algorithm>
+#include <cassert>
 #include <climits>
 #include <cstdio>
 #include <cstdlib> // EXIT_FAILURE
@@ -109,12 +116,185 @@ static bool addPathsToSet(const std::string& fileName, std::set<std::string>& se
     return true;
 }
 
+namespace {
+    class XMLErrorMessagesLogger : public ErrorLogger
+    {
+        void reportOut(const std::string & outmsg, Color /*c*/ = Color::Reset) override
+        {
+            std::cout << outmsg << std::endl;
+        }
+
+        void reportErr(const ErrorMessage &msg) override
+        {
+            reportOut(msg.toXML());
+        }
+
+        void reportProgress(const std::string & /*filename*/, const char /*stage*/[], const std::size_t /*value*/) override
+        {}
+    };
+}
+
 CmdLineParser::CmdLineParser(CmdLineLogger &logger, Settings &settings, Suppressions &suppressions, Suppressions &suppressionsNoFail)
     : mLogger(logger)
     , mSettings(settings)
     , mSuppressions(suppressions)
     , mSuppressionsNoFail(suppressionsNoFail)
 {}
+
+bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
+{
+    const bool success = parseFromArgs(argc, argv);
+
+    if (success) {
+        if (getShowVersion() && !getShowErrorMessages()) {
+            if (!mSettings.cppcheckCfgProductName.empty()) {
+                mLogger.printRaw(mSettings.cppcheckCfgProductName);
+            } else {
+                const char * const extraVersion = CppCheck::extraVersion();
+                if (*extraVersion != 0)
+                    mLogger.printRaw(std::string("Cppcheck ") + CppCheck::version() + " ("+ extraVersion + ')');
+                else
+                    mLogger.printRaw(std::string("Cppcheck ") + CppCheck::version());
+            }
+        }
+
+        if (getShowErrorMessages()) {
+            XMLErrorMessagesLogger xmlLogger;
+            std::cout << ErrorMessage::getXMLHeader(mSettings.cppcheckCfgProductName);
+            CppCheck::getErrorMessages(xmlLogger);
+            std::cout << ErrorMessage::getXMLFooter() << std::endl;
+        }
+
+        if (exitAfterPrinting()) {
+            Settings::terminate();
+            return true;
+        }
+    } else {
+        return false;
+    }
+
+    // Libraries must be loaded before FileLister is executed to ensure markup files will be
+    // listed properly.
+    if (!loadLibraries(mSettings))
+        return false;
+
+    if (!loadAddons(mSettings))
+        return false;
+
+    // Check that all include paths exist
+    {
+        for (std::list<std::string>::iterator iter = mSettings.includePaths.begin();
+             iter != mSettings.includePaths.end();
+             ) {
+            const std::string path(Path::toNativeSeparators(*iter));
+            if (Path::isDirectory(path))
+                ++iter;
+            else {
+                // TODO: this bypasses the template format and other settings
+                // If the include path is not found, warn user and remove the non-existing path from the list.
+                if (mSettings.severity.isEnabled(Severity::information))
+                    std::cout << "(information) Couldn't find path given by -I '" << path << '\'' << std::endl;
+                iter = mSettings.includePaths.erase(iter);
+            }
+        }
+    }
+
+    // Output a warning for the user if he tries to exclude headers
+    const std::vector<std::string>& ignored = getIgnoredPaths();
+    const bool warn = std::any_of(ignored.cbegin(), ignored.cend(), [](const std::string& i) {
+        return Path::isHeader(i);
+    });
+    if (warn) {
+        mLogger.printMessage("filename exclusion does not apply to header (.h and .hpp) files.");
+        mLogger.printMessage("Please use --suppress for ignoring results from the header files.");
+    }
+
+    const std::vector<std::string>& pathnamesRef = getPathNames();
+    const std::list<FileSettings>& fileSettingsRef = getFileSettings();
+
+    // the inputs can only be used exclusively - CmdLineParser should already handle this
+    assert(!(!pathnamesRef.empty() && !fileSettingsRef.empty()));
+
+    if (!fileSettingsRef.empty()) {
+        std::list<FileSettings> fileSettings;
+        if (!mSettings.fileFilters.empty()) {
+            // filter only for the selected filenames from all project files
+            std::copy_if(fileSettingsRef.cbegin(), fileSettingsRef.cend(), std::back_inserter(fileSettings), [&](const FileSettings &fs) {
+                return matchglobs(mSettings.fileFilters, fs.filename);
+            });
+            if (fileSettings.empty()) {
+                mLogger.printError("could not find any files matching the filter.");
+                return false;
+            }
+        }
+        else {
+            fileSettings = fileSettingsRef;
+        }
+
+        mFileSettings.clear();
+
+        // sort the markup last
+        std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(mFileSettings), [&](const FileSettings &fs) {
+            return !mSettings.library.markupFile(fs.filename) || !mSettings.library.processMarkupAfterCode(fs.filename);
+        });
+
+        std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(mFileSettings), [&](const FileSettings &fs) {
+            return mSettings.library.markupFile(fs.filename) && mSettings.library.processMarkupAfterCode(fs.filename);
+        });
+    }
+
+    if (!pathnamesRef.empty()) {
+        std::list<std::pair<std::string, std::size_t>> filesResolved;
+        // TODO: this needs to be inlined into PathMatch as it depends on the underlying filesystem
+#if defined(_WIN32)
+        // For Windows we want case-insensitive path matching
+        const bool caseSensitive = false;
+#else
+        const bool caseSensitive = true;
+#endif
+        // Execute recursiveAddFiles() to each given file parameter
+        const PathMatch matcher(ignored, caseSensitive);
+        for (const std::string &pathname : pathnamesRef) {
+            const std::string err = FileLister::recursiveAddFiles(filesResolved, Path::toNativeSeparators(pathname), mSettings.library.markupExtensions(), matcher);
+            if (!err.empty()) {
+                // TODO: bail out?
+                mLogger.printMessage(err);
+            }
+        }
+
+        std::list<std::pair<std::string, std::size_t>> files;
+        if (!mSettings.fileFilters.empty()) {
+            std::copy_if(filesResolved.cbegin(), filesResolved.cend(), std::inserter(files, files.end()), [&](const decltype(filesResolved)::value_type& entry) {
+                return matchglobs(mSettings.fileFilters, entry.first);
+            });
+            if (files.empty()) {
+                mLogger.printError("could not find any files matching the filter.");
+                return false;
+            }
+        }
+        else {
+            files = std::move(filesResolved);
+        }
+
+        // sort the markup last
+        std::copy_if(files.cbegin(), files.cend(), std::inserter(mFiles, mFiles.end()), [&](const decltype(files)::value_type& entry) {
+            return !mSettings.library.markupFile(entry.first) || !mSettings.library.processMarkupAfterCode(entry.first);
+        });
+
+        std::copy_if(files.cbegin(), files.cend(), std::inserter(mFiles, mFiles.end()), [&](const decltype(files)::value_type& entry) {
+            return mSettings.library.markupFile(entry.first) && mSettings.library.processMarkupAfterCode(entry.first);
+        });
+    }
+
+    if (mFiles.empty() && mFileSettings.empty()) {
+        mLogger.printError("could not find or open any of the paths given.");
+        if (!ignored.empty())
+            mLogger.printMessage("Maybe all paths were ignored?");
+        return false;
+    }
+
+    return true;
+}
 
 // TODO: normalize/simplify/native all path parameters
 // TODO: error out on all missing given files/paths
@@ -1443,4 +1623,91 @@ bool CmdLineParser::isCppcheckPremium() const {
     if (mSettings.cppcheckCfgProductName.empty())
         mSettings.loadCppcheckCfg();
     return startsWith(mSettings.cppcheckCfgProductName, "Cppcheck Premium");
+}
+
+bool CmdLineParser::tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename)
+{
+    const Library::Error err = destination.load(basepath.c_str(), filename);
+
+    if (err.errorcode == Library::ErrorCode::UNKNOWN_ELEMENT)
+        std::cout << "cppcheck: Found unknown elements in configuration file '" << filename << "': " << err.reason << std::endl;
+    else if (err.errorcode != Library::ErrorCode::OK) {
+        std::cout << "cppcheck: Failed to load library configuration file '" << filename << "'. ";
+        switch (err.errorcode) {
+        case Library::ErrorCode::OK:
+            break;
+        case Library::ErrorCode::FILE_NOT_FOUND:
+            std::cout << "File not found";
+            break;
+        case Library::ErrorCode::BAD_XML:
+            std::cout << "Bad XML";
+            break;
+        case Library::ErrorCode::UNKNOWN_ELEMENT:
+            std::cout << "Unexpected element";
+            break;
+        case Library::ErrorCode::MISSING_ATTRIBUTE:
+            std::cout << "Missing attribute";
+            break;
+        case Library::ErrorCode::BAD_ATTRIBUTE_VALUE:
+            std::cout << "Bad attribute value";
+            break;
+        case Library::ErrorCode::UNSUPPORTED_FORMAT:
+            std::cout << "File is of unsupported format version";
+            break;
+        case Library::ErrorCode::DUPLICATE_PLATFORM_TYPE:
+            std::cout << "Duplicate platform type";
+            break;
+        case Library::ErrorCode::PLATFORM_TYPE_REDEFINED:
+            std::cout << "Platform type redefined";
+            break;
+        }
+        if (!err.reason.empty())
+            std::cout << " '" + err.reason + "'";
+        std::cout << std::endl;
+        return false;
+    }
+    return true;
+}
+
+bool CmdLineParser::loadLibraries(Settings& settings)
+{
+    if (!tryLoadLibrary(settings.library, settings.exename, "std.cfg")) {
+        const std::string msg("Failed to load std.cfg. Your Cppcheck installation is broken, please re-install.");
+#ifdef FILESDIR
+        const std::string details("The Cppcheck binary was compiled with FILESDIR set to \""
+                                  FILESDIR "\" and will therefore search for "
+                                  "std.cfg in " FILESDIR "/cfg.");
+#else
+        const std::string cfgfolder(Path::fromNativeSeparators(Path::getPathFromFilename(settings.exename)) + "cfg");
+        const std::string details("The Cppcheck binary was compiled without FILESDIR set. Either the "
+                                  "std.cfg should be available in " + cfgfolder + " or the FILESDIR "
+                                  "should be configured.");
+#endif
+        std::cout << msg << " " << details << std::endl;
+        return false;
+    }
+
+    bool result = true;
+    for (const auto& lib : settings.libraries) {
+        if (!tryLoadLibrary(settings.library, settings.exename, lib.c_str())) {
+            result = false;
+        }
+    }
+    return result;
+}
+
+bool CmdLineParser::loadAddons(Settings& settings)
+{
+    bool result = true;
+    for (const std::string &addon: settings.addons) {
+        AddonInfo addonInfo;
+        const std::string failedToGetAddonInfo = addonInfo.getAddonInfo(addon, settings.exename);
+        if (!failedToGetAddonInfo.empty()) {
+            std::cout << failedToGetAddonInfo << std::endl;
+            result = false;
+            continue;
+        }
+        settings.addonInfos.emplace_back(std::move(addonInfo));
+    }
+    return result;
 }
