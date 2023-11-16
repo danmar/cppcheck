@@ -71,6 +71,15 @@ def test_missing_include_inline_suppr(tmpdir):
     assert stderr == ''
 
 
+def test_preprocessor_error(tmpdir):
+    test_file = os.path.join(tmpdir, '10866.c')
+    with open(test_file, 'wt') as f:
+        f.write('#error test\nx=1;\n')
+    exitcode, _, stderr = cppcheck(['--error-exitcode=1', test_file])
+    assert 'preprocessorErrorDirective' in stderr
+    assert exitcode != 0
+
+
 def test_invalid_library(tmpdir):
     args = ['--library=none', '--library=posix', '--library=none2', 'file.c']
 
