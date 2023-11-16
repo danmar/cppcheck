@@ -3296,8 +3296,10 @@ ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings,
             !(astIsRHS(tok) && isLikelyStreamRead(cpp, parent)))
             return ExprUsage::Used;
         if (isLeafDot(tok)) {
-            const Token* top = parent->astTop();
-            if (Token::Match(top, "%assign%|++|--") && top->str() != "=")
+            const Token* op = parent->astParent();
+            while (Token::simpleMatch(op, "."))
+                op = op->astParent();
+            if (Token::Match(op, "%assign%|++|--") && op->str() != "=")
                 return ExprUsage::Used;
         }
         if (Token::simpleMatch(parent, "=") && astIsRHS(tok)) {
