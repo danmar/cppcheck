@@ -7215,6 +7215,42 @@ private:
                         "  foo(&my_st);\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct S {\n" // #12188
+                        "    int i;\n"
+                        "    struct T { int j; } t;\n"
+                        "};\n"
+                        "void f() {\n"
+                        "    S s;\n"
+                        "    ++s.i;\n"
+                        "}\n"
+                        "void g() {\n"
+                        "    S s;\n"
+                        "    s.i--;\n"
+                        "}\n"
+                        "void h() {\n"
+                        "    S s;\n"
+                        "    s.i &= 3;\n"
+                        "}\n"
+                        "void k() {\n"
+                        "    S s;\n"
+                        "    if (++s.i < 3) {}\n"
+                        "}\n"
+                        "void m() {\n"
+                        "    S s;\n"
+                        "    ++s.t.j;\n"
+                        "}\n"
+                        "void n() {\n"
+                        "    S s;\n"
+                        "    if (s.t.j-- < 3) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: s.i\n"
+                      "[test.cpp:11]: (error) Uninitialized variable: s.i\n"
+                      "[test.cpp:15]: (error) Uninitialized variable: s.i\n"
+                      "[test.cpp:19]: (error) Uninitialized variable: s.i\n"
+                      "[test.cpp:23]: (error) Uninitialized variable: s.t.j\n"
+                      "[test.cpp:27]: (error) Uninitialized variable: s.t.j\n",
+                      errout.str());
     }
 
     void uninitvar_memberfunction() {
