@@ -48,211 +48,193 @@ static const ValueFlow::Value* getCompareValue(const std::list<ValueFlow::Value>
     return result;
 }
 
-struct Interval {
-    std::vector<MathLib::bigint> minvalue, maxvalue;
-    std::vector<const ValueFlow::Value*> minRef, maxRef;
+namespace {
+    struct Interval {
+        std::vector<MathLib::bigint> minvalue, maxvalue;
+        std::vector<const ValueFlow::Value*> minRef, maxRef;
 
-    std::string str() const
-    {
-        std::string result = "[";
-        if (minvalue.size() == 1)
-            result += std::to_string(minvalue.front());
-        else
-            result += "*";
-        result += ",";
-        if (maxvalue.size() == 1)
-            result += std::to_string(maxvalue.front());
-        else
-            result += "*";
-        result += "]";
-        return result;
-    }
-
-    void setMinValue(MathLib::bigint x, const ValueFlow::Value* ref = nullptr)
-    {
-        minvalue = {x};
-        if (ref)
-            minRef = {ref};
-    }
-
-    void setMaxValue(MathLib::bigint x, const ValueFlow::Value* ref = nullptr)
-    {
-        maxvalue = {x};
-        if (ref)
-            maxRef = {ref};
-    }
-
-    bool isLessThan(MathLib::bigint x, std::vector<const ValueFlow::Value*>* ref = nullptr) const
-    {
-        if (!this->maxvalue.empty() && this->maxvalue.front() < x) {
+        void setMinValue(MathLib::bigint x, const ValueFlow::Value* ref = nullptr)
+        {
+            minvalue = {x};
             if (ref)
-                *ref = maxRef;
-            return true;
+                minRef = {ref};
         }
-        return false;
-    }
 
-    bool isGreaterThan(MathLib::bigint x, std::vector<const ValueFlow::Value*>* ref = nullptr) const
-    {
-        if (!this->minvalue.empty() && this->minvalue.front() > x) {
+        void setMaxValue(MathLib::bigint x, const ValueFlow::Value* ref = nullptr)
+        {
+            maxvalue = {x};
             if (ref)
-                *ref = minRef;
-            return true;
+                maxRef = {ref};
         }
-        return false;
-    }
 
-    bool isScalar() const {
-        return minvalue.size() == 1 && minvalue == maxvalue;
-    }
-
-    bool empty() const {
-        return minvalue.empty() && maxvalue.empty();
-    }
-
-    bool isScalarOrEmpty() const {
-        return empty() || isScalar();
-    }
-
-    MathLib::bigint getScalar() const
-    {
-        assert(isScalar());
-        return minvalue.front();
-    }
-
-    std::vector<const ValueFlow::Value*> getScalarRef() const
-    {
-        assert(isScalar());
-        if (minRef != maxRef)
-            return merge(minRef, maxRef);
-        return minRef;
-    }
-
-    static Interval fromInt(MathLib::bigint x, const ValueFlow::Value* ref = nullptr)
-    {
-        Interval result;
-        result.setMinValue(x, ref);
-        result.setMaxValue(x, ref);
-        return result;
-    }
-
-    template<class Predicate>
-    static Interval fromValues(const std::list<ValueFlow::Value>& values, Predicate predicate)
-    {
-        Interval result;
-        const ValueFlow::Value* minValue = getCompareValue(values, predicate, std::less<MathLib::bigint>{});
-        if (minValue) {
-            if (minValue->isImpossible() && minValue->bound == ValueFlow::Value::Bound::Upper)
-                result.setMinValue(minValue->intvalue + 1, minValue);
-            if (minValue->isPossible() && minValue->bound == ValueFlow::Value::Bound::Lower)
-                result.setMinValue(minValue->intvalue, minValue);
-            if (!minValue->isImpossible() && (minValue->bound == ValueFlow::Value::Bound::Point || minValue->isKnown()) &&
-                std::count_if(values.begin(), values.end(), predicate) == 1)
-                return Interval::fromInt(minValue->intvalue, minValue);
+        bool isLessThan(MathLib::bigint x, std::vector<const ValueFlow::Value*>* ref = nullptr) const
+        {
+            if (!this->maxvalue.empty() && this->maxvalue.front() < x) {
+                if (ref)
+                    *ref = maxRef;
+                return true;
+            }
+            return false;
         }
-        const ValueFlow::Value* maxValue = getCompareValue(values, predicate, std::greater<MathLib::bigint>{});
-        if (maxValue) {
-            if (maxValue->isImpossible() && maxValue->bound == ValueFlow::Value::Bound::Lower)
-                result.setMaxValue(maxValue->intvalue - 1, maxValue);
-            if (maxValue->isPossible() && maxValue->bound == ValueFlow::Value::Bound::Upper)
-                result.setMaxValue(maxValue->intvalue, maxValue);
-            assert(!maxValue->isKnown());
+
+        bool isGreaterThan(MathLib::bigint x, std::vector<const ValueFlow::Value*>* ref = nullptr) const
+        {
+            if (!this->minvalue.empty() && this->minvalue.front() > x) {
+                if (ref)
+                    *ref = minRef;
+                return true;
+            }
+            return false;
         }
-        return result;
-    }
 
-    static Interval fromValues(const std::list<ValueFlow::Value>& values)
-    {
-        return Interval::fromValues(values, [](const ValueFlow::Value&) {
-            return true;
-        });
-    }
-
-    template<class F>
-    static std::vector<MathLib::bigint> apply(const std::vector<MathLib::bigint>& x,
-                                              const std::vector<MathLib::bigint>& y,
-                                              F f)
-    {
-        if (x.empty())
-            return {};
-        if (y.empty())
-            return {};
-        return {f(x.front(), y.front())};
-    }
-
-    static std::vector<const ValueFlow::Value*> merge(std::vector<const ValueFlow::Value*> x,
-                                                      const std::vector<const ValueFlow::Value*>& y)
-    {
-        x.insert(x.end(), y.cbegin(), y.cend());
-        return x;
-    }
-
-    friend Interval operator-(const Interval& lhs, const Interval& rhs)
-    {
-        Interval result;
-        result.minvalue = Interval::apply(lhs.minvalue, rhs.maxvalue, std::minus<MathLib::bigint>{});
-        result.maxvalue = Interval::apply(lhs.maxvalue, rhs.minvalue, std::minus<MathLib::bigint>{});
-        if (!result.minvalue.empty())
-            result.minRef = merge(lhs.minRef, rhs.maxRef);
-        if (!result.maxvalue.empty())
-            result.maxRef = merge(lhs.maxRef, rhs.minRef);
-        return result;
-    }
-
-    static std::vector<int> equal(const Interval& lhs,
-                                  const Interval& rhs,
-                                  std::vector<const ValueFlow::Value*>* ref = nullptr)
-    {
-        if (!lhs.isScalar())
-            return {};
-        if (!rhs.isScalar())
-            return {};
-        if (ref)
-            *ref = merge(lhs.getScalarRef(), rhs.getScalarRef());
-        return {lhs.minvalue == rhs.minvalue};
-    }
-
-    static std::vector<int> compare(const Interval& lhs,
-                                    const Interval& rhs,
-                                    std::vector<const ValueFlow::Value*>* ref = nullptr)
-    {
-        Interval diff = lhs - rhs;
-        if (diff.isGreaterThan(0, ref))
-            return {1};
-        if (diff.isLessThan(0, ref))
-            return {-1};
-        std::vector<int> eq = Interval::equal(lhs, rhs, ref);
-        if (!eq.empty()) {
-            if (eq.front() == 0)
-                return {1, -1};
-            return {0};
+        bool isScalar() const {
+            return minvalue.size() == 1 && minvalue == maxvalue;
         }
-        if (diff.isGreaterThan(-1, ref))
-            return {0, 1};
-        if (diff.isLessThan(1, ref))
-            return {0, -1};
-        return {};
-    }
 
-    static std::vector<bool> compare(const std::string& op,
-                                     const Interval& lhs,
-                                     const Interval& rhs,
-                                     std::vector<const ValueFlow::Value*>* ref = nullptr)
-    {
-        std::vector<int> r = compare(lhs, rhs, ref);
-        if (r.empty())
+        bool empty() const {
+            return minvalue.empty() && maxvalue.empty();
+        }
+
+        bool isScalarOrEmpty() const {
+            return empty() || isScalar();
+        }
+
+        MathLib::bigint getScalar() const
+        {
+            assert(isScalar());
+            return minvalue.front();
+        }
+
+        std::vector<const ValueFlow::Value*> getScalarRef() const
+        {
+            assert(isScalar());
+            if (minRef != maxRef)
+                return merge(minRef, maxRef);
+            return minRef;
+        }
+
+        static Interval fromInt(MathLib::bigint x, const ValueFlow::Value* ref = nullptr)
+        {
+            Interval result;
+            result.setMinValue(x, ref);
+            result.setMaxValue(x, ref);
+            return result;
+        }
+
+        template<class Predicate>
+        static Interval fromValues(const std::list<ValueFlow::Value>& values, Predicate predicate)
+        {
+            Interval result;
+            const ValueFlow::Value* minValue = getCompareValue(values, predicate, std::less<MathLib::bigint>{});
+            if (minValue) {
+                if (minValue->isImpossible() && minValue->bound == ValueFlow::Value::Bound::Upper)
+                    result.setMinValue(minValue->intvalue + 1, minValue);
+                if (minValue->isPossible() && minValue->bound == ValueFlow::Value::Bound::Lower)
+                    result.setMinValue(minValue->intvalue, minValue);
+                if (!minValue->isImpossible() && (minValue->bound == ValueFlow::Value::Bound::Point || minValue->isKnown()) &&
+                    std::count_if(values.begin(), values.end(), predicate) == 1)
+                    return Interval::fromInt(minValue->intvalue, minValue);
+            }
+            const ValueFlow::Value* maxValue = getCompareValue(values, predicate, std::greater<MathLib::bigint>{});
+            if (maxValue) {
+                if (maxValue->isImpossible() && maxValue->bound == ValueFlow::Value::Bound::Lower)
+                    result.setMaxValue(maxValue->intvalue - 1, maxValue);
+                if (maxValue->isPossible() && maxValue->bound == ValueFlow::Value::Bound::Upper)
+                    result.setMaxValue(maxValue->intvalue, maxValue);
+                assert(!maxValue->isKnown());
+            }
+            return result;
+        }
+
+        static Interval fromValues(const std::list<ValueFlow::Value>& values)
+        {
+            return Interval::fromValues(values, [](const ValueFlow::Value&) {
+                return true;
+            });
+        }
+
+        template<class F>
+        static std::vector<MathLib::bigint> apply(const std::vector<MathLib::bigint>& x,
+                                                  const std::vector<MathLib::bigint>& y,
+                                                  F f)
+        {
+            if (x.empty())
+                return {};
+            if (y.empty())
+                return {};
+            return {f(x.front(), y.front())};
+        }
+
+        static std::vector<const ValueFlow::Value*> merge(std::vector<const ValueFlow::Value*> x,
+                                                          const std::vector<const ValueFlow::Value*>& y)
+        {
+            x.insert(x.end(), y.cbegin(), y.cend());
+            return x;
+        }
+
+        friend Interval operator-(const Interval& lhs, const Interval& rhs)
+        {
+            Interval result;
+            result.minvalue = Interval::apply(lhs.minvalue, rhs.maxvalue, std::minus<MathLib::bigint>{});
+            result.maxvalue = Interval::apply(lhs.maxvalue, rhs.minvalue, std::minus<MathLib::bigint>{});
+            if (!result.minvalue.empty())
+                result.minRef = merge(lhs.minRef, rhs.maxRef);
+            if (!result.maxvalue.empty())
+                result.maxRef = merge(lhs.maxRef, rhs.minRef);
+            return result;
+        }
+
+        static std::vector<int> equal(const Interval& lhs,
+                                      const Interval& rhs,
+                                      std::vector<const ValueFlow::Value*>* ref = nullptr)
+        {
+            if (!lhs.isScalar())
+                return {};
+            if (!rhs.isScalar())
+                return {};
+            if (ref)
+                *ref = merge(lhs.getScalarRef(), rhs.getScalarRef());
+            return {lhs.minvalue == rhs.minvalue};
+        }
+
+        static std::vector<int> compare(const Interval& lhs,
+                                        const Interval& rhs,
+                                        std::vector<const ValueFlow::Value*>* ref = nullptr)
+        {
+            Interval diff = lhs - rhs;
+            if (diff.isGreaterThan(0, ref))
+                return {1};
+            if (diff.isLessThan(0, ref))
+                return {-1};
+            std::vector<int> eq = Interval::equal(lhs, rhs, ref);
+            if (!eq.empty()) {
+                if (eq.front() == 0)
+                    return {1, -1};
+                return {0};
+            }
+            if (diff.isGreaterThan(-1, ref))
+                return {0, 1};
+            if (diff.isLessThan(1, ref))
+                return {0, -1};
             return {};
-        bool b = calculate(op, r.front(), 0);
-        if (std::all_of(r.cbegin() + 1, r.cend(), [&](int i) {
-            return b == calculate(op, i, 0);
-        }))
-            return {b};
-        return {};
-    }
-};
+        }
 
-std::string toString(const Interval& i) {
-    return i.str();
+        static std::vector<bool> compare(const std::string& op,
+                                         const Interval& lhs,
+                                         const Interval& rhs,
+                                         std::vector<const ValueFlow::Value*>* ref = nullptr)
+        {
+            std::vector<int> r = compare(lhs, rhs, ref);
+            if (r.empty())
+                return {};
+            bool b = calculate(op, r.front(), 0);
+            if (std::all_of(r.cbegin() + 1, r.cend(), [&](int i) {
+                return b == calculate(op, i, 0);
+            }))
+                return {b};
+            return {};
+        }
+    };
 }
 
 static void addToErrorPath(ValueFlow::Value& value, const std::vector<const ValueFlow::Value*>& refs)

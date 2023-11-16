@@ -107,19 +107,19 @@ static OpenMode getMode(const std::string& str)
     return OpenMode::UNKNOWN_OM;
 }
 
-struct Filepointer {
-    OpenMode mode;
-    nonneg int mode_indent{};
-    enum class Operation {NONE, UNIMPORTANT, READ, WRITE, POSITIONING, OPEN, CLOSE, UNKNOWN_OP} lastOperation = Operation::NONE;
-    nonneg int op_indent{};
-    enum class AppendMode { UNKNOWN_AM, APPEND, APPEND_EX };
-    AppendMode append_mode = AppendMode::UNKNOWN_AM;
-    std::string filename;
-    explicit Filepointer(OpenMode mode_ = OpenMode::UNKNOWN_OM)
-        : mode(mode_) {}
-};
-
 namespace {
+    struct Filepointer {
+        OpenMode mode;
+        nonneg int mode_indent{};
+        enum class Operation {NONE, UNIMPORTANT, READ, WRITE, POSITIONING, OPEN, CLOSE, UNKNOWN_OP} lastOperation = Operation::NONE;
+        nonneg int op_indent{};
+        enum class AppendMode { UNKNOWN_AM, APPEND, APPEND_EX };
+        AppendMode append_mode = AppendMode::UNKNOWN_AM;
+        std::string filename;
+        explicit Filepointer(OpenMode mode_ = OpenMode::UNKNOWN_OM)
+            : mode(mode_) {}
+    };
+
     const std::unordered_set<std::string> whitelist = { "clearerr", "feof", "ferror", "fgetpos", "ftell", "setbuf", "setvbuf", "ungetc", "ungetwc" };
 }
 

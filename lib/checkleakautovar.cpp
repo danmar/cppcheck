@@ -106,7 +106,7 @@ void VarInfo::print()
         std::string strusage;
         const auto use = possibleUsage.find(it->first);
         if (use != possibleUsage.end())
-            strusage = use->second.first;
+            strusage = use->second.first->str();
 
         std::string status;
         switch (it->second.status) {
@@ -140,7 +140,7 @@ void VarInfo::print()
     }
 }
 
-void VarInfo::possibleUsageAll(const std::pair<std::string, Usage>& functionUsage)
+void VarInfo::possibleUsageAll(const std::pair<const Token*, Usage>& functionUsage)
 {
     possibleUsage.clear();
     for (std::map<int, AllocInfo>::const_iterator it = alloctype.cbegin(); it != alloctype.cend(); ++it)
@@ -176,13 +176,15 @@ void CheckLeakAutoVar::deallocReturnError(const Token *tok, const Token *dealloc
     reportError(locations, Severity::error, "deallocret", "$symbol:" + varname + "\nReturning/dereferencing '$symbol' after it is deallocated / released", CWE672, Certainty::normal);
 }
 
-void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::pair<std::string, VarInfo::Usage>& functionUsage)
+void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::pair<const Token*, VarInfo::Usage>& functionUsage)
 {
-    if (mSettings->checkLibrary && functionUsage.second == VarInfo::USED) {
+    if (mSettings->checkLibrary && functionUsage.second == VarInfo::USED &&
+        (!functionUsage.first || !functionUsage.first->function() || !functionUsage.first->function()->hasBody())) {
+        const std::string funcStr = functionUsage.first ? mSettings->library.getFunctionName(functionUsage.first) : "f";
         reportError(tok,
                     Severity::information,
                     "checkLibraryUseIgnore",
-                    "--check-library: Function " + functionUsage.first + "() should have <use>/<leak-ignore> configuration");
+                    "--check-library: Function " + funcStr + "() should have <use>/<leak-ignore> configuration");
     }
 }
 
@@ -684,7 +686,6 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
             if (allocation.status == VarInfo::NOALLOC && Token::simpleMatch(tok, ") ; }")) {
                 if (ftok->isKeyword())
                     continue;
-                const std::string functionName(mSettings->library.getFunctionName(ftok));
                 bool unknown = false;
                 if (mTokenizer->isScopeNoReturn(tok->tokAt(2), &unknown)) {
                     if (!unknown)
@@ -693,9 +694,10 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                         if (ftok->function() && !ftok->function()->isAttributeNoreturn() &&
                             !(ftok->function()->functionScope && mTokenizer->isScopeNoReturn(ftok->function()->functionScope->bodyEnd))) // check function scope
                             continue;
+                        const std::string functionName(mSettings->library.getFunctionName(ftok));
                         if (!mSettings->library.isLeakIgnore(functionName) && !mSettings->library.isUse(functionName)) {
                             const VarInfo::Usage usage = Token::simpleMatch(openingPar, "( )") ? VarInfo::NORET : VarInfo::USED; // TODO: check parameters passed to function
-                            varInfo.possibleUsageAll({ functionName, usage });
+                            varInfo.possibleUsageAll({ ftok, usage });
                         }
                     }
                 }
@@ -895,7 +897,7 @@ void CheckLeakAutoVar::changeAllocStatus(VarInfo &varInfo, const VarInfo::AllocI
     if (var != alloctype.end()) {
         if (allocation.status == VarInfo::NOALLOC) {
             // possible usage
-            varInfo.possibleUsage[arg->varId()] = { tok->str(), VarInfo::USED };
+            varInfo.possibleUsage[arg->varId()] = { tok, VarInfo::USED };
             if (var->second.status == VarInfo::DEALLOC && arg->previous()->str() == "&")
                 varInfo.erase(arg->varId());
         } else if (var->second.managed()) {

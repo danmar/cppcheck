@@ -760,10 +760,12 @@ bool CheckStl::checkIteratorPair(const Token* tok1, const Token* tok2)
     return false;
 }
 
-struct ArgIteratorInfo {
-    const Token* tok;
-    const Library::ArgumentChecks::IteratorInfo* info;
-};
+namespace {
+    struct ArgIteratorInfo {
+        const Token* tok;
+        const Library::ArgumentChecks::IteratorInfo* info;
+    };
+}
 
 void CheckStl::mismatchingContainers()
 {
@@ -913,102 +915,104 @@ static const Token* getInvalidMethod(const Token* tok)
     return nullptr;
 }
 
-struct InvalidContainerAnalyzer {
-    struct Info {
-        struct Reference {
-            const Token* tok;
-            ErrorPath errorPath;
-            const Token* ftok;
-        };
-        std::unordered_map<int, Reference> expressions;
+namespace {
+    struct InvalidContainerAnalyzer {
+        struct Info {
+            struct Reference {
+                const Token* tok;
+                ErrorPath errorPath;
+                const Token* ftok;
+            };
+            std::unordered_map<int, Reference> expressions;
 
-        void add(const std::vector<Reference>& refs) {
-            for (const Reference& r : refs) {
-                add(r);
-            }
-        }
-        void add(const Reference& r) {
-            if (!r.tok)
-                return;
-            expressions.insert(std::make_pair(r.tok->exprId(), r));
-        }
-
-        std::vector<Reference> invalidTokens() const {
-            std::vector<Reference> result;
-            std::transform(expressions.cbegin(), expressions.cend(), std::back_inserter(result), SelectMapValues{});
-            return result;
-        }
-    };
-    std::unordered_map<const Function*, Info> invalidMethods;
-
-    std::vector<Info::Reference> invalidatesContainer(const Token* tok) const {
-        std::vector<Info::Reference> result;
-        if (Token::Match(tok, "%name% (")) {
-            const Function* f = tok->function();
-            if (!f)
-                return result;
-            ErrorPathItem epi = std::make_pair(tok, "Calling function " + tok->str());
-            const bool dependsOnThis = exprDependsOnThis(tok->next());
-            auto it = invalidMethods.find(f);
-            if (it != invalidMethods.end()) {
-                std::vector<Info::Reference> refs = it->second.invalidTokens();
-                std::copy_if(refs.cbegin(), refs.cend(), std::back_inserter(result), [&](const Info::Reference& r) {
-                    const Variable* var = r.tok->variable();
-                    if (!var)
-                        return false;
-                    if (dependsOnThis && !var->isLocal() && !var->isGlobal() && !var->isStatic())
-                        return true;
-                    if (!var->isArgument())
-                        return false;
-                    if (!var->isReference())
-                        return false;
-                    return true;
-                });
-                std::vector<const Token*> args = getArguments(tok);
-                for (Info::Reference& r : result) {
-                    r.errorPath.push_front(epi);
-                    r.ftok = tok;
-                    const Variable* var = r.tok->variable();
-                    if (!var)
-                        continue;
-                    if (var->isArgument()) {
-                        const int n = getArgumentPos(var, f);
-                        const Token* tok2 = nullptr;
-                        if (n >= 0 && n < args.size())
-                            tok2 = args[n];
-                        r.tok = tok2;
-                    }
+            void add(const std::vector<Reference>& refs) {
+                for (const Reference& r : refs) {
+                    add(r);
                 }
             }
-        } else if (astIsContainer(tok)) {
-            const Token* ftok = getInvalidMethod(tok);
-            if (ftok) {
-                ErrorPath ep;
-                ep.emplace_front(ftok,
-                                 "After calling '" + ftok->expressionString() +
-                                 "', iterators or references to the container's data may be invalid .");
-                result.emplace_back(Info::Reference{tok, ep, ftok});
+            void add(const Reference& r) {
+                if (!r.tok)
+                    return;
+                expressions.insert(std::make_pair(r.tok->exprId(), r));
             }
-        }
-        return result;
-    }
 
-    void analyze(const SymbolDatabase* symboldatabase) {
-        for (const Scope* scope : symboldatabase->functionScopes) {
-            const Function* f = scope->function;
-            if (!f)
-                continue;
-            for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-                if (Token::Match(tok, "if|while|for|goto|return"))
-                    break;
-                std::vector<Info::Reference> c = invalidatesContainer(tok);
-                if (c.empty())
+            std::vector<Reference> invalidTokens() const {
+                std::vector<Reference> result;
+                std::transform(expressions.cbegin(), expressions.cend(), std::back_inserter(result), SelectMapValues{});
+                return result;
+            }
+        };
+        std::unordered_map<const Function*, Info> invalidMethods;
+
+        std::vector<Info::Reference> invalidatesContainer(const Token* tok) const {
+            std::vector<Info::Reference> result;
+            if (Token::Match(tok, "%name% (")) {
+                const Function* f = tok->function();
+                if (!f)
+                    return result;
+                ErrorPathItem epi = std::make_pair(tok, "Calling function " + tok->str());
+                const bool dependsOnThis = exprDependsOnThis(tok->next());
+                auto it = invalidMethods.find(f);
+                if (it != invalidMethods.end()) {
+                    std::vector<Info::Reference> refs = it->second.invalidTokens();
+                    std::copy_if(refs.cbegin(), refs.cend(), std::back_inserter(result), [&](const Info::Reference& r) {
+                        const Variable* var = r.tok->variable();
+                        if (!var)
+                            return false;
+                        if (dependsOnThis && !var->isLocal() && !var->isGlobal() && !var->isStatic())
+                            return true;
+                        if (!var->isArgument())
+                            return false;
+                        if (!var->isReference())
+                            return false;
+                        return true;
+                    });
+                    std::vector<const Token*> args = getArguments(tok);
+                    for (Info::Reference& r : result) {
+                        r.errorPath.push_front(epi);
+                        r.ftok = tok;
+                        const Variable* var = r.tok->variable();
+                        if (!var)
+                            continue;
+                        if (var->isArgument()) {
+                            const int n = getArgumentPos(var, f);
+                            const Token* tok2 = nullptr;
+                            if (n >= 0 && n < args.size())
+                                tok2 = args[n];
+                            r.tok = tok2;
+                        }
+                    }
+                }
+            } else if (astIsContainer(tok)) {
+                const Token* ftok = getInvalidMethod(tok);
+                if (ftok) {
+                    ErrorPath ep;
+                    ep.emplace_front(ftok,
+                                     "After calling '" + ftok->expressionString() +
+                                     "', iterators or references to the container's data may be invalid .");
+                    result.emplace_back(Info::Reference{tok, ep, ftok});
+                }
+            }
+            return result;
+        }
+
+        void analyze(const SymbolDatabase* symboldatabase) {
+            for (const Scope* scope : symboldatabase->functionScopes) {
+                const Function* f = scope->function;
+                if (!f)
                     continue;
-                invalidMethods[f].add(c);
+                for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+                    if (Token::Match(tok, "if|while|for|goto|return"))
+                        break;
+                    std::vector<Info::Reference> c = invalidatesContainer(tok);
+                    if (c.empty())
+                        continue;
+                    invalidMethods[f].add(c);
+                }
             }
         }
-    }
-};
+    };
+}
 
 static const Token* getLoopContainer(const Token* tok)
 {
