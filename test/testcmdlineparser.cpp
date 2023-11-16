@@ -252,11 +252,6 @@ private:
         TEST_CASE(showtimeEmpty);
         TEST_CASE(showtimeInvalid);
         TEST_CASE(errorlist);
-        TEST_CASE(errorlist2);
-        TEST_CASE(errorlistverbose1);
-        TEST_CASE(errorlistverbose2);
-        TEST_CASE(errorlistverbose3);
-        TEST_CASE(errorlistverbose4);
         TEST_CASE(ignorepathsnopath);
 #if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
         TEST_CASE(exceptionhandling);
@@ -1716,64 +1711,12 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--errorlist"};
         ASSERT(parser->parseFromArgs(2, argv));
-        ASSERT(parser->getShowErrorMessages());
-        ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT); // empty since the logging happens later on
-    }
-
-    void errorlist2() {
-        REDIRECT;
-        const char * const argv[] = {"cppcheck", "--errorlist"};
-        ASSERT(parser->fillSettingsFromArgs(2, argv));
-        ASSERT(parser->getShowErrorMessages());
         ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
         ASSERT(startsWith(GET_REDIRECT_OUTPUT, "<?xml"));
         ASSERT(endsWith(GET_REDIRECT_OUTPUT, "</results>\n"));
     }
 
     // TODO: test --errorlist with product name
-
-    void errorlistverbose1() {
-        REDIRECT;
-        const char * const argv[] = {"cppcheck", "--verbose", "--errorlist"};
-        settings->verbose = false;
-        ASSERT(parser->parseFromArgs(3, argv));
-        ASSERT(settings->verbose);
-        ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT); // empty since the logging happens later on
-    }
-
-    void errorlistverbose2() {
-        REDIRECT;
-        const char * const argv[] = {"cppcheck", "--errorlist", "--verbose"};
-        settings->verbose = false;
-        ASSERT(parser->parseFromArgs(3, argv));
-        ASSERT(settings->verbose);
-        ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT); // empty since the logging happens later on
-    }
-
-    void errorlistverbose3() {
-        REDIRECT;
-        const char * const argv[] = {"cppcheck", "--verbose", "--errorlist"};
-        settings->verbose = false;
-        ASSERT(parser->fillSettingsFromArgs(3, argv));
-        ASSERT(settings->verbose);
-        ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
-        ASSERT(startsWith(GET_REDIRECT_OUTPUT, "<?xml"));
-        ASSERT(endsWith(GET_REDIRECT_OUTPUT, "</results>\n"));
-    }
-
-    void errorlistverbose4() {
-        REDIRECT;
-        const char * const argv[] = {"cppcheck", "--errorlist", "--verbose"};
-        settings->verbose = false;
-        ASSERT(parser->fillSettingsFromArgs(3, argv));
-        ASSERT(settings->verbose);
-        ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
-        ASSERT(startsWith(GET_REDIRECT_OUTPUT, "<?xml"));
-        ASSERT(endsWith(GET_REDIRECT_OUTPUT, "</results>\n"));
-    }
 
     void ignorepathsnopath() {
         REDIRECT;

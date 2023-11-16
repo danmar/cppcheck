@@ -146,14 +146,6 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
     const bool success = parseFromArgs(argc, argv);
 
     if (success) {
-        if (getShowErrorMessages()) {
-            XMLErrorMessagesLogger xmlLogger;
-            ErrorLogger& log = xmlLogger;
-            log.reportOut(ErrorMessage::getXMLHeader(mSettings.cppcheckCfgProductName));
-            CppCheck::getErrorMessages(xmlLogger);
-            log.reportOut(ErrorMessage::getXMLFooter());
-        }
-
         if (exitAfterPrinting()) {
             Settings::terminate();
             return true;
@@ -515,9 +507,16 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // print all possible error messages..
             else if (std::strcmp(argv[i], "--errorlist") == 0) {
-                mShowErrorMessages = true;
-                mSettings.xml = true;
+                // TODO: make this an exclusive option
                 mExitAfterPrint = true;
+                mSettings.loadCppcheckCfg();
+                {
+                    XMLErrorMessagesLogger xmlLogger;
+                    std::cout << ErrorMessage::getXMLHeader(mSettings.cppcheckCfgProductName);
+                    CppCheck::getErrorMessages(xmlLogger);
+                    std::cout << ErrorMessage::getXMLFooter() << std::endl;
+                }
+                return true;
             }
 
             // --error-exitcode=1

@@ -74,13 +74,6 @@ public:
     bool parseFromArgs(int argc, const char* const argv[]);
 
     /**
-     * Return if user wanted to see list of error messages.
-     */
-    bool getShowErrorMessages() const {
-        return mShowErrorMessages;
-    }
-
-    /**
      * Return the path names user gave to command line.
      */
     const std::vector<std::string>& getPathNames() const {
@@ -171,7 +164,6 @@ private:
     Settings &mSettings;
     Suppressions &mSuppressions;
     Suppressions &mSuppressionsNoFail;
-    bool mShowErrorMessages{};
     bool mExitAfterPrint{};
     std::string mVSConfig;
 };
