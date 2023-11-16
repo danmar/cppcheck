@@ -594,10 +594,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // Print help
             else if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "--help") == 0) {
-                mPathNames.clear();
-                mShowHelp = true;
+                // TODO: make this an exclusive option
                 mExitAfterPrint = true;
-                break;
+                printHelp();
+                return true;
             }
 
             // Ignored paths
@@ -1228,11 +1228,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     }
 
     if (argc <= 1) {
-        mShowHelp = true;
         mExitAfterPrint = true;
-    }
-
-    if (mShowHelp) {
         printHelp();
         return true;
     }

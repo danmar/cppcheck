@@ -171,7 +171,6 @@ private:
     Settings &mSettings;
     Suppressions &mSuppressions;
     Suppressions &mSuppressionsNoFail;
-    bool mShowHelp{};
     bool mShowErrorMessages{};
     bool mExitAfterPrint{};
     std::string mVSConfig;
