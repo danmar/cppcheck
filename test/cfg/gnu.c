@@ -372,6 +372,10 @@ void memleak_asprintf3() {
     free(p);
 }
 
+void memleak_asprintf4(char** p) {
+    asprintf(p, "%s", "test");
+}
+
 void memleak_xmalloc()
 {
     char *p = (char*)xmalloc(10);
