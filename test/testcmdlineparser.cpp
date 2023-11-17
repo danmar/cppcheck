@@ -251,9 +251,12 @@ private:
         TEST_CASE(showtimeNone);
         TEST_CASE(showtimeEmpty);
         TEST_CASE(showtimeInvalid);
-        TEST_CASE(errorlist1);
+        TEST_CASE(errorlist);
+        TEST_CASE(errorlist2);
         TEST_CASE(errorlistverbose1);
         TEST_CASE(errorlistverbose2);
+        TEST_CASE(errorlistverbose3);
+        TEST_CASE(errorlistverbose4);
         TEST_CASE(ignorepathsnopath);
 #if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
         TEST_CASE(exceptionhandling);
@@ -304,6 +307,7 @@ private:
         TEST_CASE(projectMissing);
         TEST_CASE(projectNoPaths);
         TEST_CASE(addon);
+        TEST_CASE(addonMissing);
 #ifdef HAVE_RULES
         TEST_CASE(rule);
 #else
@@ -322,6 +326,8 @@ private:
         TEST_CASE(unsignedChar);
         TEST_CASE(unsignedChar2);
         TEST_CASE(signedCharUnsignedChar);
+        TEST_CASE(library);
+        TEST_CASE(libraryMissing);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -1706,13 +1712,26 @@ private:
         ASSERT_EQUALS("cppcheck: error: unrecognized --showtime mode: 'top10'. Supported modes: file, file-total, summary, top5, top5_file, top5_summary.\n", logger->str());
     }
 
-    void errorlist1() {
+    void errorlist() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--errorlist"};
         ASSERT(parser->parseFromArgs(2, argv));
         ASSERT(parser->getShowErrorMessages());
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT); // empty since the logging happens later on
     }
+
+    void errorlist2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--errorlist"};
+        ASSERT(parser->fillSettingsFromArgs(2, argv));
+        ASSERT(parser->getShowErrorMessages());
+        ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
+        ASSERT(startsWith(GET_REDIRECT_OUTPUT, "<?xml"));
+        ASSERT(endsWith(GET_REDIRECT_OUTPUT, "</results>\n"));
+    }
+
+    // TODO: test --errorlist with product name
 
     void errorlistverbose1() {
         REDIRECT;
@@ -1720,7 +1739,8 @@ private:
         settings->verbose = false;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->verbose);
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT); // empty since the logging happens later on
     }
 
     void errorlistverbose2() {
@@ -1729,7 +1749,30 @@ private:
         settings->verbose = false;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->verbose);
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT); // empty since the logging happens later on
+    }
+
+    void errorlistverbose3() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--verbose", "--errorlist"};
+        settings->verbose = false;
+        ASSERT(parser->fillSettingsFromArgs(3, argv));
+        ASSERT(settings->verbose);
+        ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
+        ASSERT(startsWith(GET_REDIRECT_OUTPUT, "<?xml"));
+        ASSERT(endsWith(GET_REDIRECT_OUTPUT, "</results>\n"));
+    }
+
+    void errorlistverbose4() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--errorlist", "--verbose"};
+        settings->verbose = false;
+        ASSERT(parser->fillSettingsFromArgs(3, argv));
+        ASSERT(settings->verbose);
+        ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
+        ASSERT(startsWith(GET_REDIRECT_OUTPUT, "<?xml"));
+        ASSERT(endsWith(GET_REDIRECT_OUTPUT, "</results>\n"));
     }
 
     void ignorepathsnopath() {
@@ -2085,6 +2128,17 @@ private:
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
+    void addonMissing() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--addon=misra2", "file.cpp"};
+        settings->addons.clear();
+        ASSERT(!parser->fillSettingsFromArgs(3, argv));
+        ASSERT_EQUALS(1, settings->addons.size());
+        ASSERT_EQUALS("misra2", *settings->addons.cbegin());
+        ASSERT_EQUALS("Did not find addon misra2.py\n", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
     void signedChar() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--fsigned-char", "file.cpp"};
@@ -2195,6 +2249,27 @@ private:
         ASSERT_EQUALS("cppcheck: error: Option --rule-file cannot be used as Cppcheck has not been built with rules support.\n", logger->str());
     }
 #endif
+
+    void library() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--library=posix", "file.cpp"};
+        settings->libraries.clear();
+        ASSERT(parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(1, settings->libraries.size());
+        ASSERT_EQUALS("posix", *settings->libraries.cbegin());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void libraryMissing() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--library=posix2", "file.cpp"};
+        settings->libraries.clear();
+        ASSERT(!parser->fillSettingsFromArgs(3, argv));
+        ASSERT_EQUALS(1, settings->libraries.size());
+        ASSERT_EQUALS("posix2", *settings->libraries.cbegin());
+        ASSERT_EQUALS("cppcheck: Failed to load library configuration file 'posix2'. File not found\n", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
 
     void ignorepaths1() {
         REDIRECT;

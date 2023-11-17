@@ -148,9 +148,10 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
     if (success) {
         if (getShowErrorMessages()) {
             XMLErrorMessagesLogger xmlLogger;
-            std::cout << ErrorMessage::getXMLHeader(mSettings.cppcheckCfgProductName);
+            ErrorLogger& log = xmlLogger;
+            log.reportOut(ErrorMessage::getXMLHeader(mSettings.cppcheckCfgProductName));
             CppCheck::getErrorMessages(xmlLogger);
-            std::cout << ErrorMessage::getXMLFooter() << std::endl;
+            log.reportOut(ErrorMessage::getXMLFooter());
         }
 
         if (exitAfterPrinting()) {
@@ -1623,40 +1624,40 @@ bool CmdLineParser::tryLoadLibrary(Library& destination, const std::string& base
     const Library::Error err = destination.load(basepath.c_str(), filename);
 
     if (err.errorcode == Library::ErrorCode::UNKNOWN_ELEMENT)
-        std::cout << "cppcheck: Found unknown elements in configuration file '" << filename << "': " << err.reason << std::endl;
+        mLogger.printMessage("Found unknown elements in configuration file '" + std::string(filename) + "': " + err.reason); // TODO: print as errors
     else if (err.errorcode != Library::ErrorCode::OK) {
-        std::cout << "cppcheck: Failed to load library configuration file '" << filename << "'. ";
+        std::string msg = "Failed to load library configuration file '" + std::string(filename) + "'. ";
         switch (err.errorcode) {
         case Library::ErrorCode::OK:
             break;
         case Library::ErrorCode::FILE_NOT_FOUND:
-            std::cout << "File not found";
+            msg += "File not found";
             break;
         case Library::ErrorCode::BAD_XML:
-            std::cout << "Bad XML";
+            msg += "Bad XML";
             break;
         case Library::ErrorCode::UNKNOWN_ELEMENT:
-            std::cout << "Unexpected element";
+            msg += "Unexpected element";
             break;
         case Library::ErrorCode::MISSING_ATTRIBUTE:
-            std::cout << "Missing attribute";
+            msg +="Missing attribute";
             break;
         case Library::ErrorCode::BAD_ATTRIBUTE_VALUE:
-            std::cout << "Bad attribute value";
+            msg += "Bad attribute value";
             break;
         case Library::ErrorCode::UNSUPPORTED_FORMAT:
-            std::cout << "File is of unsupported format version";
+            msg += "File is of unsupported format version";
             break;
         case Library::ErrorCode::DUPLICATE_PLATFORM_TYPE:
-            std::cout << "Duplicate platform type";
+            msg += "Duplicate platform type";
             break;
         case Library::ErrorCode::PLATFORM_TYPE_REDEFINED:
-            std::cout << "Platform type redefined";
+            msg += "Platform type redefined";
             break;
         }
         if (!err.reason.empty())
-            std::cout << " '" + err.reason + "'";
-        std::cout << std::endl;
+            msg += " '" + err.reason + "'";
+        mLogger.printMessage(msg); // TODO: print as errors
         return false;
     }
     return true;
@@ -1676,7 +1677,7 @@ bool CmdLineParser::loadLibraries(Settings& settings)
                                   "std.cfg should be available in " + cfgfolder + " or the FILESDIR "
                                   "should be configured.");
 #endif
-        std::cout << msg << " " << details << std::endl;
+        mLogger.printRaw(msg + " " + details); // TODO: do not print as raw?
         return false;
     }
 
@@ -1696,7 +1697,7 @@ bool CmdLineParser::loadAddons(Settings& settings)
         AddonInfo addonInfo;
         const std::string failedToGetAddonInfo = addonInfo.getAddonInfo(addon, settings.exename);
         if (!failedToGetAddonInfo.empty()) {
-            std::cout << failedToGetAddonInfo << std::endl;
+            mLogger.printRaw(failedToGetAddonInfo); // TODO: do not print as raw
             result = false;
             continue;
         }

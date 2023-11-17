@@ -146,21 +146,21 @@ private:
      * Tries to load a library and prints warning/error messages
      * @return false, if an error occurred (except unknown XML elements)
      */
-    static bool tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename);
+    bool tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename);
 
     /**
      * @brief Load libraries
      * @param settings Settings
      * @return Returns true if successful
      */
-    static bool loadLibraries(Settings& settings);
+    bool loadLibraries(Settings& settings);
 
     /**
      * @brief Load addons
      * @param settings Settings
      * @return Returns true if successful
      */
-    static bool loadAddons(Settings& settings);
+    bool loadAddons(Settings& settings);
 
     CmdLineLogger &mLogger;
 
