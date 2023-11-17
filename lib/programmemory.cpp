@@ -285,7 +285,7 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
             return {t->values().front().intvalue};
         MathLib::bigint result = 0;
         bool error = false;
-        execute(t, pm, &result, &error);
+        execute(t, pm, &result, &error, settings);
         if (!error)
             return {result};
         return std::vector<MathLib::bigint>{};
