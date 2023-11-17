@@ -33,7 +33,7 @@
 #include <array>
 #include <cstddef>
 #include <iterator> // back_inserter
-#include <sstream> // IWYU pragma: keep
+#include <sstream>
 #include <utility>
 
 #include <simplecpp.h>

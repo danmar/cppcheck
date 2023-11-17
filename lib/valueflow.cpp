@@ -121,7 +121,7 @@
 #include <memory>
 #include <numeric>
 #include <set>
-#include <sstream> // IWYU pragma: keep
+#include <sstream>
 #include <string>
 #include <type_traits>
 #include <unordered_map>

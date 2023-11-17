@@ -21,7 +21,7 @@
 #ifndef _WIN32
 #include <unistd.h>
 #include <cstddef>
-#include <sstream> // IWYU pragma: keep
+#include <sstream>
 #include <iostream>
 #endif
 

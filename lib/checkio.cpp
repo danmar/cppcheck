@@ -38,7 +38,7 @@
 #include <list>
 #include <map>
 #include <set>
-#include <sstream> // IWYU pragma: keep
+#include <sstream>
 #include <unordered_set>
 #include <utility>
 #include <vector>

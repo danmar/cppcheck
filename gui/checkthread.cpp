@@ -32,9 +32,9 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <fstream>
 #include <iterator>
 #include <list>
-#include <ostream>
 #include <set>
 #include <string>
 #include <utility>

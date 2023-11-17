@@ -25,7 +25,6 @@
 
 #include <cstring>
 #include <map>
-#include <sstream> // IWYU pragma: keep
 
 #include "xml.h"
 

@@ -25,7 +25,7 @@
 #include "tokenize.h"
 
 #include <list>
-#include <sstream> // IWYU pragma: keep
+#include <sstream>
 
 class TestMemleakInClass;
 class TestMemleakNoVar;

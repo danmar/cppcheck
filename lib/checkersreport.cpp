@@ -25,7 +25,6 @@
 #include <map>
 #include <sstream>
 #include <unordered_set>
-#include <utility>
 #include <vector>
 
 static bool isCppcheckPremium(const Settings& settings) {

@@ -30,7 +30,7 @@
 #include <cctype>   // std::isdigit, std::isalnum, etc
 #include <cstring>
 #include <functional> // std::bind, std::placeholders
-#include <sstream> // IWYU pragma: keep
+#include <sstream>
 #include <utility>
 
 #include "xml.h"

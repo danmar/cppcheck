@@ -35,7 +35,7 @@
 #include <cstring>
 #include <list>
 #include <memory>
-#include <sstream> // IWYU pragma: keep
+#include <sstream>
 #include <stack>
 #include <stdexcept>
 #include <string>

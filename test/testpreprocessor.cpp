@@ -33,7 +33,7 @@
 #include <list>
 #include <map>
 #include <set>
-#include <sstream> // IWYU pragma: keep
+#include <sstream>
 #include <string>
 #include <vector>
 

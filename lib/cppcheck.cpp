@@ -48,12 +48,12 @@
 #include <cctype>
 #include <cstdlib>
 #include <ctime>
-#include <exception>
+#include <exception> // IWYU pragma: keep
 #include <fstream>
 #include <iostream> // <- TEMPORARY
 #include <new>
 #include <set>
-#include <sstream> // IWYU pragma: keep
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
