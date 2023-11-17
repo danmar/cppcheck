@@ -2004,7 +2004,7 @@ private:
               "}\n");
         TODO_ASSERT_EQUALS("",
                            "[test.cpp:6]: (warning) Iterators to containers from different expressions 'a.vec()' and 'a.vec()' are used together.\n"
-                           "[test.cpp:6]: (warning)Iterators to containers from different expressions 'b.vec()' and 'b.vec()' are used together.\n",
+                           "[test.cpp:6]: (warning) Iterators to containers from different expressions 'b.vec()' and 'b.vec()' are used together.\n",
                            errout.str());
     }
 
