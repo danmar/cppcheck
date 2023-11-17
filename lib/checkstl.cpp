@@ -747,8 +747,8 @@ bool CheckStl::checkIteratorPair(const Token* tok1, const Token* tok2)
     }
 
     if (Token::Match(tok1->astParent(), "%comp%|-")) {
-        if (astIsIntegral(tok1, false) || astIsIntegral(tok2, false) || astIsFloat(tok1, false) ||
-            astIsFloat(tok2, false))
+        if (astIsIntegral(tok1, true) || astIsIntegral(tok2, true) ||
+            astIsFloat(tok1, true) || astIsFloat(tok2, true))
             return false;
     }
     const Token* iter1 = getIteratorExpression(tok1);
