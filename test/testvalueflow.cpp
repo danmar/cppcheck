@@ -7244,6 +7244,18 @@ private:
                "    int& q = (&r)[0];\n"
                "}\n";
         valueOfTok(code, "&");
+
+        code = "bool a(int *);\n"
+                "void fn2(int b) {\n"
+                "  if (b) {\n"
+                "    bool c, d, e;\n"
+                "    if (c && d)\n"
+                "      return;\n"
+                "    if (e && a(&b)) {\n"
+                "    }\n"
+                "  }\n"
+                "}\n";
+        valueOfTok(code, "e");
     }
 
     void valueFlowHang() {

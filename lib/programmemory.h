@@ -43,7 +43,7 @@ struct ExprIdToken {
     ExprIdToken() = default;
     // cppcheck-suppress noExplicitConstructor
     // NOLINTNEXTLINE(google-explicit-constructor)
-    ExprIdToken(const Token* tok) : tok(tok) {}
+    ExprIdToken(const Token* tok) : tok(tok), exprid(tok ? tok->exprId() : 0) {}
     // TODO: Make this constructor only available from ProgramMemory
     // cppcheck-suppress noExplicitConstructor
     // NOLINTNEXTLINE(google-explicit-constructor)

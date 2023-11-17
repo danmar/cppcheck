@@ -331,6 +331,7 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
         if (endTok && findExpressionChanged(tok, tok->next(), endTok, settings, true))
             return;
         pm.setIntValue(tok, 0, then);
+        assert(settings);
         const Token* containerTok = settings->library.getContainerFromYield(tok, Library::Container::Yield::EMPTY);
         if (containerTok)
             pm.setContainerSizeValue(containerTok, 0, then);
@@ -1218,19 +1219,27 @@ static std::vector<const Token*> setDifference(const std::vector<const Token*>& 
     return result;
 }
 
-static bool evalSameCondition(const ProgramMemory& state, const Token* tok1, const Token* tok2, const Settings* settings)
+static bool evalSameCondition(const ProgramMemory& state, const Token* storedValue, const Token* cond, const Settings* settings)
 {
-    assert(!conditionIsTrue(tok2, state, settings));
+    assert(!conditionIsTrue(cond, state, settings));
     ProgramMemory pm = state;
-    programMemoryParseCondition(pm, tok1, nullptr, settings, true);
+    programMemoryParseCondition(pm, storedValue, nullptr, settings, true);
     if (pm == state)
         return false;
-    return conditionIsTrue(tok2, pm, settings);
+    return conditionIsTrue(cond, pm, settings);
 }
 
-static bool isSameCondition(const ProgramMemory& state, const Token* tok1, const Token* tok2, const Settings* settings)
+static void pruneConditions(std::vector<const Token*>& conds, bool b, const std::unordered_map<nonneg int, ValueFlow::Value>& state)
 {
-    return evalSameCondition(state, tok1, tok2, settings) || evalSameCondition(state, tok2, tok1, settings);
+    conds.erase(std::remove_if(conds.begin(), conds.end(), [&](const Token* cond) {
+        if (cond->exprId() == 0)
+            return false;
+        auto it = state.find(cond->exprId());
+        if (it == state.end())
+            return false;
+        const ValueFlow::Value& v = it->second;
+        return isTrueOrFalse(v, !b);
+    }), conds.end());
 }
 
 namespace {
@@ -1239,24 +1248,29 @@ namespace {
         const Settings* settings = nullptr;
         int fdepth = 4;
         ValueFlow::Value unknown = ValueFlow::Value::unknown();
+        int depth = 100;
 
         explicit Executor(ProgramMemory* pm = nullptr, const Settings* settings = nullptr) : pm(pm), settings(settings) {}
 
-        std::vector<const Token*> flattenConditionsSorted(const Token* tok, bool b) const
+        std::unordered_map<nonneg int, ValueFlow::Value> executeAll(const std::vector<const Token*>& toks) const
+        {
+            std::unordered_map<nonneg int, ValueFlow::Value> result;
+            auto state = *this;
+            for(const Token* tok:toks) {
+                ValueFlow::Value r = state.execute(tok);
+                if(r.isUninitValue())
+                    continue;
+                result.insert(std::make_pair(tok->exprId(), r));
+            }
+            return result;
+        }
+
+        std::vector<const Token*> flattenConditionsSorted(const Token* tok) const
         {
             std::vector<const Token*> result = astFlatten(tok, tok->str().c_str());
             std::sort(result.begin(), result.end(), &TokenExprIdCompare);
             if (!result.empty() && result.front()->exprId() == 0)
                 return {};
-            auto state = *this;
-            result.erase(std::remove_if(result.begin(),
-                                        result.end(),
-                                        [&](const Token* cond) {
-                ValueFlow::Value r = state.execute(cond);
-                // assert(!isTrueOrFalse(r, b));
-                return isTrueOrFalse(r, !b);
-            }),
-                         result.end());
             return result;
         }
 
@@ -1278,7 +1292,13 @@ namespace {
             nonneg int n = astCount(expr, expr->str().c_str());
             if (n > 5)
                 return unknown;
-            std::vector<const Token*> conditions1 = flattenConditionsSorted(expr, b);
+            std::vector<const Token*> conditions1 = flattenConditionsSorted(expr);
+            std::unordered_map<nonneg int, ValueFlow::Value> condValues = executeAll(conditions1);
+            for(const auto& p:condValues) {
+                const ValueFlow::Value& v = p.second;
+                if (isTrueOrFalse(v, b))
+                    return v;
+            }
             if (conditions1.empty())
                 return unknown;
             for (const auto& p : *pm) {
@@ -1289,19 +1309,20 @@ namespace {
                     // TODO: Handle when it is greater
                     if (n != astCount(tok, expr->str().c_str()))
                         continue;
-                    std::vector<const Token*> conditions2 = flattenConditionsSorted(tok, b);
+                    std::vector<const Token*> conditions2 = flattenConditionsSorted(tok);
                     if (conditions2.empty())
                         continue;
                     if (conditions1 == conditions2)
                         return value;
                     std::vector<const Token*> diffConditions1 = setDifference(conditions1, conditions2);
                     std::vector<const Token*> diffConditions2 = setDifference(conditions2, conditions1);
-                    // TODO: Handle when diffConditions2 is larger
+                    pruneConditions(diffConditions1, b, condValues);
+                    pruneConditions(diffConditions2, b, executeAll(diffConditions2));
                     if (diffConditions1.size() != diffConditions2.size())
                         continue;
                     for (const Token* cond1 : diffConditions1) {
                         auto it = std::find_if(diffConditions2.begin(), diffConditions2.end(), [&](const Token* cond2) {
-                            return isSameCondition(*pm, cond1, cond2, settings);
+                            return evalSameCondition(*pm, cond2, cond1, settings);
                         });
                         if (it == diffConditions2.end())
                             break;
@@ -1577,6 +1598,9 @@ namespace {
 
         ValueFlow::Value execute(const Token* expr)
         {
+            depth--;
+            if(depth < 0)
+                return unknown;
             ValueFlow::Value v = executeImpl(expr);
             if (!v.isUninitValue())
                 return v;
