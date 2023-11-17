@@ -15,12 +15,12 @@ jobs:
 
     strategy:
       matrix:
-        image: ["fedora:latest"] # "debian:unstable" / "archlinux:latest"
+        image: ["opensuse/tumbleweed:latest"] # "fedora:latest" / "debian:unstable" / "archlinux:latest"
 
     runs-on: ubuntu-22.04
 
     container:
-      image: "fedora:latest"
+      image: ${{ matrix.image }}
 
     steps:
       - uses: actions/checkout@v3
@@ -60,6 +60,14 @@ jobs:
           ln -s iwyu_tool.py /usr/bin/iwyu_tool
           ln -s qt5 /usr/include/qt
 
+      - name: Install missing software on OpenSUSE
+        if: contains(matrix.image, 'opensuse')
+        run: |
+          zypper install -y cmake gcc-c++ pcre-devel libQt5Core-devel libQt5Gui-devel libQt5Widgets-devel libQt5PrintSupport-devel libqt5-linguist-devel libqt5-qttools-devel libQt5Network-devel libQt5Charts5-devel libQt5Test-devel
+          zypper install -y wget include-what-you-use-tools
+          ln -s iwyu_tool.py /usr/bin/iwyu_tool
+          ln -s qt5 /usr/include/qt          
+
       # TODO: switch to Qt 6 after we enabled the Qt mappings again
       - name: Prepare CMake
         run: |
@@ -86,7 +94,8 @@ jobs:
       - name: iwyu_tool
         run: |
           PWD=$(pwd)
-          iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --max_line_length=1024 -Xiwyu --comment_style=long -Xiwyu --quoted_includes_first -Xiwyu --update_comments -Xiwyu --mapping_file=$PWD/qt5.imp -isystem/usr/lib/clang/17/include > iwyu.log
+          # -isystem/usr/lib/clang/17/include
+          iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --max_line_length=1024 -Xiwyu --comment_style=long -Xiwyu --quoted_includes_first -Xiwyu --update_comments -Xiwyu --mapping_file=$PWD/qt5.imp > iwyu.log
 
       - uses: actions/upload-artifact@v3
         if: success() || failure()
