@@ -3333,7 +3333,9 @@ class MisraChecker:
                 continue
             if token.str != '(' or token.astParent:
                 continue
-            if not token.previous.isName or token.previous.varId:
+            if not token.astOperand1 or not token.astOperand1.isName:
+                continue
+            if token.astOperand1.varId and get_function_pointer_type(token.astOperand1.variable.typeStartToken) is None:
                 continue
             if token.valueType is None:
                 continue

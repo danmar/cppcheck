@@ -1739,6 +1739,9 @@ static void misra_17_6(int x[static 20]) {(void)x;} // 17.6
 static int calculation(int x) { return x + 1; }
 static void misra_17_7(void) {
   calculation(123); // 17.7
+  int (*calc_ptr)(int) = &calculation;
+  calc_ptr(123); // 17.7
+  int y = calc_ptr(123);
 }
 
 static void misra_17_8(int x) {
