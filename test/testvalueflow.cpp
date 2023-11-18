@@ -7256,6 +7256,12 @@ private:
                 "  }\n"
                 "}\n";
         valueOfTok(code, "e");
+
+        code = "void f(int a, int b, int c) {\n"
+                "  if (c && (a || a && b))\n"
+                "    if (a && b) {}\n"
+                "}\n";
+        valueOfTok(code, "a");
     }
 
     void valueFlowHang() {
