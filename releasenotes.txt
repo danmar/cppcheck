@@ -1,7 +1,8 @@
 Release Notes for Cppcheck 2.13
 
 New checks:
--
+- passedByValueCallback for functions which take a parameter by value but are used as callbacks (subset of passedByValue)
+- returnImplicitInt for C functions without return type (previously reported as a debug message)
 
 Improved checking:
 -
@@ -14,6 +15,7 @@ Changed interface:
 
 Deprecations:
 - "--showtime=top5" has been deprecated and will be removed in Cppcheck 2.14. Please use --showtime=top5_file or --showtime=top5_summary instead.
+- Building with Qt5 has been deprecated (it went EOL in May 2023) and will be removed in a future version - please use Qt6 instead.
 
 Other:
 - Windows builds now default to the `native` platform instead of `win32A` or `win64`. Please specify it explicitly if you depend on it.
@@ -28,3 +30,5 @@ Other:
   - You can suppress warnings in a block of code using "-begin" and "-end".
   - You can suppress warnings in current file using "-file".
   - You can suppress all warnings where macro is used using "-macro"
+- fixed CMake build with UBSAN and GCC
+- Added command-line options "--fsigned-char" and "--funsigned-char" to control the signess of the "char" type. This overrides previously specified "--platform" options and is overrides by following ones.

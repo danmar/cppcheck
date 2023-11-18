@@ -48,23 +48,25 @@ namespace {
     };
 }
 using TestSet = std::set<TestFixture*, CompareFixtures>;
-class TestRegistry {
-    TestSet _tests;
-public:
+namespace {
+    class TestRegistry {
+        TestSet _tests;
+    public:
 
-    static TestRegistry &theInstance() {
-        static TestRegistry testreg;
-        return testreg;
-    }
+        static TestRegistry &theInstance() {
+            static TestRegistry testreg;
+            return testreg;
+        }
 
-    void addTest(TestFixture *t) {
-        _tests.insert(t);
-    }
+        void addTest(TestFixture *t) {
+            _tests.insert(t);
+        }
 
-    const TestSet &tests() const {
-        return _tests;
-    }
-};
+        const TestSet &tests() const {
+            return _tests;
+        }
+    };
+}
 
 
 

@@ -409,7 +409,7 @@ const Token* getIteratorExpression(const Token* tok);
 /**
  * Are the arguments a pair of iterators/pointers?
  */
-bool isIteratorPair(std::vector<const Token*> args);
+bool isIteratorPair(const std::vector<const Token*>& args);
 
 CPPCHECKLIB const Token *findLambdaStartToken(const Token *last);
 
@@ -433,6 +433,8 @@ bool isLikelyStreamRead(bool cpp, const Token *op);
 bool isCPPCast(const Token* tok);
 
 bool isConstVarExpression(const Token* tok, std::function<bool(const Token*)> skipPredicate = nullptr);
+
+bool isLeafDot(const Token* tok);
 
 enum class ExprUsage { None, NotUsed, PassedByReference, Used, Inconclusive };
 

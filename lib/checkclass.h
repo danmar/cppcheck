@@ -26,7 +26,6 @@
 #include "tokenize.h"
 #include "symboldatabase.h"
 
-#include <cstddef>
 #include <list>
 #include <map>
 #include <set>
@@ -163,33 +162,6 @@ private:
 
     /** @brief Unsafe class check - const reference member */
     void checkUnsafeClassRefMember();
-
-
-    /* multifile checking; one definition rule violations */
-    class MyFileInfo : public Check::FileInfo {
-    public:
-        struct NameLoc {
-            std::string className;
-            std::string fileName;
-            int lineNumber;
-            int column;
-            std::size_t hash;
-
-            bool operator==(const NameLoc& other) const {
-                return isSameLocation(other) && hash == other.hash;
-            }
-
-            bool isSameLocation(const NameLoc& other) const {
-                return fileName == other.fileName &&
-                       lineNumber == other.lineNumber &&
-                       column == other.column;
-            }
-        };
-        std::vector<NameLoc> classDefinitions;
-
-        /** Convert MyFileInfo data into xml string */
-        std::string toString() const override;
-    };
 
     /** @brief Parse current TU and extract file info */
     Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const override;

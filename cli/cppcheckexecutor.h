@@ -19,20 +19,19 @@
 #ifndef CPPCHECKEXECUTOR_H
 #define CPPCHECKEXECUTOR_H
 
-#include "color.h"
-#include "errorlogger.h"
+#include "config.h"
+#include "filesettings.h"
 
 #include <cstdio>
-#include <ctime>
-#include <iosfwd>
-#include <map>
-#include <set>
+#include <list>
 #include <string>
+#include <utility>
 #include <vector>
 
 class CppCheck;
 class Library;
 class Settings;
+class ErrorLogger;
 
 /**
  * This class works as an example of how CppCheck can be used in external
@@ -41,7 +40,7 @@ class Settings;
  * just rewrite this class for your needs and possibly use other methods
  * from CppCheck class instead the ones used here.
  */
-class CppCheckExecutor : public ErrorLogger {
+class CppCheckExecutor {
 public:
     friend class TestSuppressions;
 
@@ -51,11 +50,6 @@ public:
     CppCheckExecutor() = default;
     CppCheckExecutor(const CppCheckExecutor &) = delete;
     void operator=(const CppCheckExecutor&) = delete;
-
-    /**
-     * Destructor
-     */
-    ~CppCheckExecutor() override;
 
     /**
      * Starts the checking.
@@ -71,19 +65,6 @@ public:
     int check(int argc, const char* const argv[]);
 
     /**
-     * Information about progress is directed here. This should be
-     * called by the CppCheck class only.
-     *
-     * @param outmsg Progress message e.g. "Checking main.cpp..."
-     */
-    void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
-
-    /** xml output of errors */
-    void reportErr(const ErrorMessage &msg) override;
-
-    void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
-
-    /**
      * @param exceptionOutput Output file
      */
     static void setExceptionOutput(FILE* exceptionOutput);
@@ -91,6 +72,8 @@ public:
      * @return file name to be used for output from exception handler. Has to be either "stdout" or "stderr".
      */
     static FILE* getExceptionOutput();
+
+private:
 
     /**
      * Tries to load a library and prints warning/error messages
@@ -106,12 +89,6 @@ public:
 protected:
 
     /**
-     * Helper function to print out errors. Appends a line change.
-     * @param errmsg String printed to error stream
-     */
-    void reportErr(const std::string &errmsg);
-
-    /**
      * @brief Parse command line args and get settings and file lists
      * from there.
      *
@@ -122,9 +99,7 @@ protected:
      */
     bool parseFromArgs(Settings &settings, int argc, const char* const argv[]);
 
-private:
-
-    static bool reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::map<std::string, std::size_t> &files, ErrorLogger& errorLogger);
+    static bool reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::list<std::pair<std::string, std::size_t>> &files, ErrorLogger& errorLogger);
 
     /**
      * Wrapper around check_internal
@@ -151,7 +126,7 @@ private:
      * @param settings Settings
      * @return Returns true if successful
      */
-    bool loadLibraries(Settings& settings);
+    static bool loadLibraries(Settings& settings);
 
     /**
      * @brief Load addons
@@ -161,49 +136,21 @@ private:
     static bool loadAddons(Settings& settings);
 
     /**
-     * @brief Write the checkers report
-     */
-    void writeCheckersReport(const Settings& settings) const;
-
-    /**
-     * Pointer to current settings; set while check() is running for reportError().
-     */
-    const Settings* mSettings{};
-
-    /**
-     * Used to filter out duplicate error messages.
-     */
-    std::set<std::string> mShownErrors;
-
-    /**
      * Filename associated with size of file
      */
-    std::map<std::string, std::size_t> mFiles;
+    std::list<std::pair<std::string, std::size_t>> mFiles;
 
-    /**
-     * Report progress time
-     */
-    std::time_t mLatestProgressOutputTime{};
+    std::list<FileSettings> mFileSettings;
 
+#if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
     /**
      * Output file name for exception handler
      */
     static FILE* mExceptionOutput;
+#endif
 
-    /**
-     * Error output
-     */
-    std::ofstream* mErrorOutput{};
-
-    /**
-     * Checkers that has been executed
-     */
-    std::set<std::string> mActiveCheckers;
-
-    /**
-     * True if there are critical errors
-     */
-    std::string mCriticalErrors;
+    class StdLogger;
+    StdLogger* mStdLogger{};
 };
 
 #endif // CPPCHECKEXECUTOR_H

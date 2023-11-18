@@ -4722,6 +4722,16 @@ private:
               "           (it != end) && *it;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #12116
+        check("void f(int n) {\n"
+              "    for (int i = 0; i < N; ++i) {\n"
+              "        if (i < n) {}\n"
+              "        else if (i > n) {}\n"
+              "        else {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {
@@ -5015,7 +5025,7 @@ private:
         }
 
         // #9353
-        check("typedef struct { std::string s; } X;\n"
+        check("struct X { std::string s; };\n"
               "void f(const std::vector<X>&v) {\n"
               "    for (std::vector<X>::const_iterator it = v.begin(); it != v.end(); ++it)\n"
               "        if (!it->s.empty()) {\n"
@@ -5023,6 +5033,15 @@ private:
               "        }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (style) Condition '!it->s.empty()' is always true\n", errout.str());
+
+        check("struct X { std::string s; };\n"
+              "void f(const std::vector<struct X>&v) {\n"
+              "    for (std::vector<struct X>::const_iterator it = v.begin(); it != v.end(); ++it)\n"
+              "        if (!it->s.empty()) {\n"
+              "            if (!it->s.empty()) {}\n"
+              "        }\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (style) Condition '!it->s.empty()' is always true\n", "", errout.str());
 
         // #10508
         check("bool f(const std::string& a, const std::string& b) {\n"

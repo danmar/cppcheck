@@ -17,11 +17,10 @@
  */
 
 #include "cppcheck.h"
+#include "filesettings.h"
 #include "fixture.h"
 #include "helpers.h"
-#include "importproject.h"
 #include "redirect.h"
-#include "library.h"
 #include "settings.h"
 #include "singleexecutor.h"
 #include "timer.h"
@@ -29,9 +28,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <list>
-#include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -77,32 +74,33 @@ private:
         errout.str("");
         output.str("");
 
-        Settings s = settings;
+        std::list<FileSettings> fileSettings;
 
-        std::map<std::string, std::size_t> filemap;
+        std::list<std::pair<std::string, std::size_t>> filelist;
         if (opt.filesList.empty()) {
             for (int i = 1; i <= files; ++i) {
                 std::string f_s = fprefix() + "_" + zpad3(i) + ".cpp";
-                filemap[f_s] = data.size();
+                filelist.emplace_back(f_s, data.size());
                 if (useFS) {
-                    ImportProject::FileSettings fs;
+                    FileSettings fs;
                     fs.filename = std::move(f_s);
-                    s.project.fileSettings.emplace_back(std::move(fs));
+                    fileSettings.emplace_back(std::move(fs));
                 }
             }
         }
         else {
             for (const auto& f : opt.filesList)
             {
-                filemap[f] = data.size();
+                filelist.emplace_back(f, data.size());
                 if (useFS) {
-                    ImportProject::FileSettings fs;
+                    FileSettings fs;
                     fs.filename = f;
-                    s.project.fileSettings.emplace_back(std::move(fs));
+                    fileSettings.emplace_back(std::move(fs));
                 }
             }
         }
 
+        Settings s = settings;
         s.showtime = opt.showtime;
         s.quiet = opt.quiet;
         if (opt.plistOutput)
@@ -122,15 +120,15 @@ private:
         cppcheck.settings() = s;
 
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
-        scopedfiles.reserve(filemap.size());
-        for (std::map<std::string, std::size_t>::const_iterator i = filemap.cbegin(); i != filemap.cend(); ++i)
+        scopedfiles.reserve(filelist.size());
+        for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = filelist.cbegin(); i != filelist.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->first, data));
 
         // clear files list so only fileSettings are used
         if (useFS)
-            filemap.clear();
+            filelist.clear();
 
-        SingleExecutor executor(cppcheck, filemap, s, s.nomsg, *this);
+        SingleExecutor executor(cppcheck, filelist, fileSettings, s, s.nomsg, *this);
         ASSERT_EQUALS(result, executor.check());
         ASSERT_EQUALS(opt.executeCommandCalled, executeCommandCalled);
         ASSERT_EQUALS(opt.exe, exe);
@@ -150,7 +148,6 @@ private:
         TEST_CASE(no_errors_equal_amount_files);
         TEST_CASE(one_error_less_files);
         TEST_CASE(one_error_several_files);
-        TEST_CASE(markup);
         TEST_CASE(clangTidy);
         TEST_CASE(showtime_top5_file);
         TEST_CASE(showtime_top5_summary);
@@ -239,46 +236,15 @@ private:
               "}");
     }
 
-    void markup() {
-        const Settings settingsOld = settings;
-        settings.library.mMarkupExtensions.emplace(".cp1");
-        settings.library.mProcessAfterCode.emplace(".cp1", true);
-
-        const std::vector<std::string> files = {
-            fprefix() + "_1.cp1", fprefix() + "_2.cpp", fprefix() + "_3.cp1", fprefix() + "_4.cpp"
-        };
-
-        // checks are not executed on markup files => expected result is 2
-        check(4, 2,
-              "int main()\n"
-              "{\n"
-              "  int i = *((int*)0);\n"
-              "  return 0;\n"
-              "}",
-              dinit(CheckOptions,
-                    $.quiet = false,
-                        $.filesList = files));
-        // TODO: filter out the "files checked" messages
-        ASSERT_EQUALS("Checking " + fprefix() + "_2.cpp ...\n"
-                      "1/4 files checked 25% done\n"
-                      "Checking " + fprefix() + "_4.cpp ...\n"
-                      "2/4 files checked 50% done\n"
-                      "Checking " + fprefix() + "_1.cp1 ...\n"
-                      "3/4 files checked 75% done\n"
-                      "Checking " + fprefix() + "_3.cp1 ...\n"
-                      "4/4 files checked 100% done\n", output.str());
-        settings = settingsOld;
-    }
-
     void clangTidy() {
         // TODO: we currently only invoke it with ImportProject::FileSettings
         if (!useFS)
             return;
 
 #ifdef _WIN32
-        const char exe[] = "clang-tidy.exe";
+        constexpr char exe[] = "clang-tidy.exe";
 #else
-        const char exe[] = "clang-tidy";
+        constexpr char exe[] = "clang-tidy";
 #endif
 
         const std::string file = fprefix() + "_001.cpp";

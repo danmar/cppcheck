@@ -833,10 +833,10 @@ private:
 
         {
             // Ticket #6701 - Variable name is a POD type according to cfg
-            const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                                   "<def format=\"1\">"
-                                   "  <podtype name=\"_tm\"/>"
-                                   "</def>";
+            constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                       "<def format=\"1\">"
+                                       "  <podtype name=\"_tm\"/>"
+                                       "</def>";
             const Settings s = settingsBuilder(settings).libraryxml(xmldata, sizeof(xmldata)).build();
             checkUninitVar("void f() {\n"
                            "  Fred _tm;\n"
@@ -4470,15 +4470,15 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         {
-            const char argDirectionsTestXmlData[] = "<?xml version=\"1.0\"?>\n"
-                                                    "<def>\n"
-                                                    "  <function name=\"uninitvar_funcArgInTest\">\n"
-                                                    "    <arg nr=\"1\" direction=\"in\"/>\n"
-                                                    "  </function>\n"
-                                                    "  <function name=\"uninitvar_funcArgOutTest\">\n"
-                                                    "    <arg nr=\"1\" direction=\"out\"/>\n"
-                                                    "  </function>\n"
-                                                    "</def>";
+            constexpr char argDirectionsTestXmlData[] = "<?xml version=\"1.0\"?>\n"
+                                                        "<def>\n"
+                                                        "  <function name=\"uninitvar_funcArgInTest\">\n"
+                                                        "    <arg nr=\"1\" direction=\"in\"/>\n"
+                                                        "  </function>\n"
+                                                        "  <function name=\"uninitvar_funcArgOutTest\">\n"
+                                                        "    <arg nr=\"1\" direction=\"out\"/>\n"
+                                                        "  </function>\n"
+                                                        "</def>";
             const Settings s = settingsBuilder(settings).libraryxml(argDirectionsTestXmlData, sizeof(argDirectionsTestXmlData)).build();
 
             checkUninitVar("struct AB { int a; };\n"
@@ -4874,6 +4874,15 @@ private:
                        "    r.x = 0;\n"
                        "    return s;\n"
                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("struct S { int i; };\n" // #12142
+                       "int f() {\n"
+                       "    S s;\n"
+                       "    int S::* p = &S::i;\n"
+                       "    s.*p = 123;\n"
+                       "    return s.i;\n"
+                       "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -7206,6 +7215,42 @@ private:
                         "  foo(&my_st);\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct S {\n" // #12188
+                        "    int i;\n"
+                        "    struct T { int j; } t;\n"
+                        "};\n"
+                        "void f() {\n"
+                        "    S s;\n"
+                        "    ++s.i;\n"
+                        "}\n"
+                        "void g() {\n"
+                        "    S s;\n"
+                        "    s.i--;\n"
+                        "}\n"
+                        "void h() {\n"
+                        "    S s;\n"
+                        "    s.i &= 3;\n"
+                        "}\n"
+                        "void k() {\n"
+                        "    S s;\n"
+                        "    if (++s.i < 3) {}\n"
+                        "}\n"
+                        "void m() {\n"
+                        "    S s;\n"
+                        "    ++s.t.j;\n"
+                        "}\n"
+                        "void n() {\n"
+                        "    S s;\n"
+                        "    if (s.t.j-- < 3) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: s.i\n"
+                      "[test.cpp:11]: (error) Uninitialized variable: s.i\n"
+                      "[test.cpp:15]: (error) Uninitialized variable: s.i\n"
+                      "[test.cpp:19]: (error) Uninitialized variable: s.i\n"
+                      "[test.cpp:23]: (error) Uninitialized variable: s.t.j\n"
+                      "[test.cpp:27]: (error) Uninitialized variable: s.t.j\n",
+                      errout.str());
     }
 
     void uninitvar_memberfunction() {

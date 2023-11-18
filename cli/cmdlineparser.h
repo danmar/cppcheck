@@ -20,10 +20,12 @@
 #define CMDLINE_PARSER_H
 
 #include <cstddef>
+#include <list>
 #include <string>
 #include <vector>
 
 #include "cmdlinelogger.h"
+#include "filesettings.h"
 #include "utils.h"
 
 class Settings;
@@ -81,6 +83,13 @@ public:
     }
 
     /**
+     * Return the file settings read from command line.
+     */
+    const std::list<FileSettings>& getFileSettings() const {
+        return mFileSettings;
+    }
+
+    /**
      * Return if we should exit after printing version, help etc.
      */
     bool exitAfterPrinting() const {
@@ -99,7 +108,7 @@ protected:
     /**
      * Print help text to the console.
      */
-    void printHelp();
+    void printHelp() const;
 
 private:
     bool isCppcheckPremium() const;
@@ -124,6 +133,7 @@ private:
     CmdLineLogger &mLogger;
 
     std::vector<std::string> mPathNames;
+    std::list<FileSettings> mFileSettings;
     std::vector<std::string> mIgnoredPaths;
     Settings &mSettings;
     Suppressions &mSuppressions;

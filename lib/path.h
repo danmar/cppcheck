@@ -197,7 +197,7 @@ public:
     /**
      * join 2 paths with '/' separators
      */
-    static std::string join(std::string path1, std::string path2);
+    static std::string join(const std::string& path1, const std::string& path2);
 };
 
 /// @}

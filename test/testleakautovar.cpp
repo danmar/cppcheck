@@ -39,28 +39,28 @@ private:
     Settings settings;
 
     void run() override {
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def>\n"
-                               "  <podtype name=\"uint8_t\" sign=\"u\" size=\"1\"/>\n"
-                               "  <memory>\n"
-                               "    <alloc>malloc</alloc>\n"
-                               "    <realloc>realloc</realloc>\n"
-                               "    <dealloc>free</dealloc>\n"
-                               "  </memory>\n"
-                               "  <resource>\n"
-                               "    <alloc>socket</alloc>\n"
-                               "    <dealloc>close</dealloc>\n"
-                               "  </resource>\n"
-                               "  <resource>\n"
-                               "    <alloc>fopen</alloc>\n"
-                               "    <realloc realloc-arg=\"3\">freopen</realloc>\n"
-                               "    <dealloc>fclose</dealloc>\n"
-                               "  </resource>\n"
-                               "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
-                               "  <smart-pointer class-name=\"std::unique_ptr\">\n"
-                               "    <unique/>\n"
-                               "  </smart-pointer>\n"
-                               "</def>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "  <podtype name=\"uint8_t\" sign=\"u\" size=\"1\"/>\n"
+                                   "  <memory>\n"
+                                   "    <alloc>malloc</alloc>\n"
+                                   "    <realloc>realloc</realloc>\n"
+                                   "    <dealloc>free</dealloc>\n"
+                                   "  </memory>\n"
+                                   "  <resource>\n"
+                                   "    <alloc>socket</alloc>\n"
+                                   "    <dealloc>close</dealloc>\n"
+                                   "  </resource>\n"
+                                   "  <resource>\n"
+                                   "    <alloc>fopen</alloc>\n"
+                                   "    <realloc realloc-arg=\"3\">freopen</realloc>\n"
+                                   "    <dealloc>fclose</dealloc>\n"
+                                   "  </resource>\n"
+                                   "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
+                                   "  <smart-pointer class-name=\"std::unique_ptr\">\n"
+                                   "    <unique/>\n"
+                                   "  </smart-pointer>\n"
+                                   "</def>";
         settings = settingsBuilder(settings).libraryxml(xmldata, sizeof(xmldata)).build();
 
         // Assign
@@ -2777,18 +2777,18 @@ private:
     }
 
     void functionCallCastConfig() { // #9652
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def format=\"2\">\n"
-                               "  <function name=\"free_func\">\n"
-                               "    <noreturn>false</noreturn>\n"
-                               "    <arg nr=\"1\">\n"
-                               "      <not-uninit/>\n"
-                               "    </arg>\n"
-                               "    <arg nr=\"2\">\n"
-                               "      <not-uninit/>\n"
-                               "    </arg>\n"
-                               "  </function>\n"
-                               "</def>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def format=\"2\">\n"
+                                   "  <function name=\"free_func\">\n"
+                                   "    <noreturn>false</noreturn>\n"
+                                   "    <arg nr=\"1\">\n"
+                                   "      <not-uninit/>\n"
+                                   "    </arg>\n"
+                                   "    <arg nr=\"2\">\n"
+                                   "      <not-uninit/>\n"
+                                   "    </arg>\n"
+                                   "  </function>\n"
+                                   "</def>";
         const Settings settingsFunctionCall = settingsBuilder(settings).libraryxml(xmldata, sizeof(xmldata)).build();
 
         check("void test_func()\n"
@@ -2814,20 +2814,30 @@ private:
     }
 
     void functionCallLeakIgnoreConfig() { // #7923
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def format=\"2\">\n"
-                               "  <function name=\"SomeClass::someMethod\">\n"
-                               "    <leak-ignore/>\n"
-                               "    <noreturn>false</noreturn>\n"
-                               "    <arg nr=\"1\" direction=\"in\"/>\n"
-                               "  </function>\n"
-                               "</def>\n";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def format=\"2\">\n"
+                                   "  <function name=\"SomeClass::someMethod\">\n"
+                                   "    <leak-ignore/>\n"
+                                   "    <noreturn>false</noreturn>\n"
+                                   "    <arg nr=\"1\" direction=\"in\"/>\n"
+                                   "  </function>\n"
+                                   "</def>\n";
         const Settings settingsLeakIgnore = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
         check("void f() {\n"
               "    double* a = new double[1024];\n"
               "    SomeClass::someMethod(a);\n"
               "}\n", settingsLeakIgnore);
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: a\n", errout.str());
+
+        check("void bar(int* p) {\n"
+              "    if (p)\n"
+              "        free(p);\n"
+              "}\n"
+              "void f() {\n"
+              "    int* p = malloc(4);\n"
+              "    bar(p);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
@@ -3004,8 +3014,7 @@ private:
               "  HeapFree(MyHeap, 0, a);"
               "  HeapFree(MyHeap, 0, b);"
               "}");
-        TODO_ASSERT_EQUALS("[test.c:1] (error) Resource leak: MyHeap",
-                           "", errout.str());
+        ASSERT_EQUALS("[test.c:1]: (error) Resource leak: MyHeap\n", errout.str());
 
         check("void f() {"
               "  HANDLE MyHeap = HeapCreate(0, 0, 0);"
@@ -3013,9 +3022,9 @@ private:
               "  int *b = HeapAlloc(MyHeap, 0, sizeof(int));"
               "  HeapFree(MyHeap, 0, a);"
               "}");
-        TODO_ASSERT_EQUALS("[test.c:1] (error) Memory leak: MyHeap\n"
-                           "[test.c:1] (error) Memory leak: b",
-                           "[test.c:1]: (error) Memory leak: b\n", errout.str());
+        ASSERT_EQUALS("[test.c:1]: (error) Resource leak: MyHeap\n"
+                      "[test.c:1]: (error) Memory leak: b\n",
+                      errout.str());
     }
 };
 

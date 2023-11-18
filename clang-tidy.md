@@ -155,6 +155,13 @@ To be evaluated (need to remove exclusion).
 
 To be evaluated (need to enable explicitly).
 
+`modernize-type-traits`</br>
+`modernize-use-nodiscard`</br>
+
+These apply to codebases which use later standards then C++11 (C++17 is used when building with Qt6) so we cannot simply apply them.
+
+### Disabled for performance reasons
+
 `portability-std-allocator-const`<br/>
 
 Only necessary for code which is exclusively compiled with `libc++`. Also disabled for performance reasons - see https://github.com/llvm/llvm-project/issues/57527#issuecomment-1237935132.
@@ -178,3 +185,15 @@ We are currently using our own `naming.json` to enforce naming schemes. Also dis
 `portability-simd-intrinsics`<br/>
 
 We are not using SIMD instructions and it suggests to use `std::experiemental::` features which might not be commonly available. Also disabled for performance reasons - see https://github.com/llvm/llvm-project/issues/57527#issuecomment-1237935132.
+
+`modernize-macro-to-enum`<br/>
+
+It does not seem to produce any warnings for us (needs to be investigated) and it is one of the more expensive checks.
+
+`misc-unused-using-decls`
+
+This is the most expensive check for several files and it is providing much in terms of code quality. Reported upstream as https://github.com/llvm/llvm-project/issues/72300.
+
+`modernize-use-nullptr`
+
+This is already covered by the `-Wzero-as-null-pointer-constant` compiler warning so there is no need for an additional check.

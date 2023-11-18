@@ -578,13 +578,13 @@ static void misra_9_struct_initializers(void) {
     // Struct with fields of unknown type
     struct_with_unknown_fields ufa       = { 1, { 1, 2 }, { 1, 2 } };
     struct_with_unknown_fields ufb       = { 1, 1, 2 };                     // 9.2
-    struct_with_unknown_fields[2] ufc    = { {1, { 1, 2 }, { 1, 2 } },
+    struct_with_unknown_fields ufc[2]    = { {1, { 1, 2 }, { 1, 2 } },
                                              { 2, { 1, 2 }, { 1, 2 } } };
-    struct_with_unknown_fields[2][2] ufd = { {1, { 1, 2 }, { 1, 2 } },
+    struct_with_unknown_fields ufd[2][2] = { {1, { 1, 2 }, { 1, 2 } },      // 9.2 9.3
                                              { 2, { 1, 2 }, { 1, 2 } } };
-    struct_with_unknown_fields[2] ufe    = { 1, { 1, 2 }, { 1, 2 },         // TODO: 9.2
+    struct_with_unknown_fields ufe[2]    = { 1, { 1, 2 }, { 1, 2 },         // 9.2 9.3
                                              2, { 1, 2 }, { 1, 2 } };
-    struct_with_unknown_fields[3] uff    = { { 1, { 1, 2 }, { 1, 2 }},      // TODO: 9.3 9.4
+    struct_with_unknown_fields uff[3]    = { { 1, { 1, 2 }, { 1, 2 }},      // 9.3 9.4
                                              {2, { 1, 2 }, { 1, 2 }},
                                              [1] = { 2, { 1, 2 }, { 1, 2 }} };
 
@@ -749,7 +749,7 @@ static void misra_10_6(u8 x, char c1, char c2) {
   u16 y1 = x+x; // 10.6
   u16 y2 = (0x100u - 0x80u); // rhs is not a composite expression because it's a constant expression
   u16 z = ~u8 x ;//10.6
-  s32 i = c1 - c2; // 10.3 FIXME: False positive for 10.6 (this is compliant). Trac #9488
+  s32 i = c1 - c2; // 10.3
   struct misra_10_6_s s;
   s.a = x & 1U; // no-warning (#10487)
 }
@@ -778,6 +778,13 @@ static void misra_10_8(u8 x, s32 a, s32 b) {
 
 int (*misra_11_1_p)(void); // 8.4
 void *misra_11_1_bad1 = (void*)misra_11_1_p; // 11.1 8.4
+
+// #12172
+typedef void (*pfFunc_11_1)(uint32_t some);
+extern pfFunc_11_1 data_11_1[10];
+void func_11_1(pfFunc_11_1 ptr){ //8.4
+    data_11_1[index] = ptr; // no-warning
+}
 
 struct misra_11_2_s;
 struct misra_11_2_t;
@@ -811,6 +818,8 @@ static void misra_11_6(void) {
   x = (u64)p;      // 11.6
   p = ( void * )0; // no-warning
   (void)p;         // no-warning
+  // # 12184
+  p = (void*)0U;   // no-warning
 }
 
 
@@ -1183,6 +1192,8 @@ static void misra_14_1(void) {
 static void misra_14_2_init_value(int32_t *var) {
     *var = 0;
 }
+static void misra_14_2_init_value_1(int32_t *var);
+
 static void misra_14_2_fn1(bool b) {
   for (;i++<10;) {} // 14.2
   for (;i<10;dostuff()) {} // 14.2
@@ -1199,8 +1210,11 @@ static void misra_14_2_fn1(bool b) {
     }
     misra_14_2_init_value(&i2); // TODO: Fix false negative in function call
   }
-
-  for (misra_14_2_init_value(&i); i < 10; ++i) {} // no-warning FIXME: False positive for 14.2 Trac #9491
+  int i1;
+  int i2;
+  for (misra_14_2_init_value(&i1); i1 < 10; ++i1) {} // no-warning
+  for (misra_14_2_init_value_1(&i2); i2 < 10; ++i2) {} // no-warning
+  for (misra_14_2_init_value_2(&i2); i2 < 10; ++i2) {} // no-warning
 
   bool abort = false;
   for (i = 0; (i < 10) && !abort; ++i) { // 14.2 as 'i' is not a variable
@@ -1250,6 +1264,17 @@ static void misra_14_2_fn1(bool b) {
           }
       }
   }
+
+  static struct
+  {
+    uint16_t block;
+    bool readSuccessful;
+    int32_t i;
+  }
+  opState;
+  for (opState.block = 0U; opState.block < 10U; opState.block++) {;} //no-warning
+
+  for (misra_14_2_init_value(&opState.i); opState.i < 10; ++opState.i) {} //no-warning
 }
 static void misra_14_2_fn2(void)
 {
@@ -1767,6 +1792,8 @@ static void misra_18_8(int x) {
   int buf1[10];
   int buf2[sizeof(int)];
   int vla[x]; // 18.8
+  // #9498
+  int vlb[y]; // config
   static const unsigned char arr18_8_1[] = UNDEFINED_ID;
   static uint32_t enum_test_0[R18_8_ENUM_CONSTANT_0] = {0};
 }

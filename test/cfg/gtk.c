@@ -269,7 +269,7 @@ void g_new_if_test()
         int b;
     };
 
-    struct a * pNew3;
+    const struct a * pNew3;
     if (pNew3 = g_new(struct a, 6)) {
         printf("%p", pNew3);
     }

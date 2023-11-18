@@ -21,6 +21,7 @@
 #include "checkuninitvar.h"
 
 #include "astutils.h"
+#include "ctu.h"
 #include "errorlogger.h"
 #include "library.h"
 #include "mathlib.h"
@@ -696,6 +697,11 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             return true;
         }
 
+        // bailout if there is a pointer to member
+        if (Token::Match(tok, "%varid% . *", var.declarationId())) {
+            return true;
+        }
+
         if (tok->str() == "?") {
             if (!tok->astOperand2())
                 return true;
@@ -1128,8 +1134,9 @@ static bool isVoidCast(const Token *tok)
     return Token::simpleMatch(tok, "(") && tok->isCast() && tok->valueType() && tok->valueType()->type == ValueType::Type::VOID && tok->valueType()->pointer == 0;
 }
 
-const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, const Library& library, bool pointer, Alloc alloc, int indirect)
+const Token* CheckUninitVar::isVariableUsage(const Token *vartok, const Library& library, bool pointer, Alloc alloc, int indirect)
 {
+    const bool cpp = vartok->isCpp();
     const Token *valueExpr = vartok;   // non-dereferenced , no address of value as variable
     while (Token::Match(valueExpr->astParent(), ".|::") && astIsRhs(valueExpr))
         valueExpr = valueExpr->astParent();
@@ -1333,7 +1340,7 @@ const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, cons
 
 const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect) const
 {
-    return CheckUninitVar::isVariableUsage(mTokenizer->isCPP(), vartok, mSettings->library, pointer, alloc, indirect);
+    return isVariableUsage(vartok, mSettings->library, pointer, alloc, indirect);
 }
 
 /***
@@ -1589,18 +1596,6 @@ void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string
                 "$symbol:" + membername + "\nUninitialized struct member: $symbol", CWE_USE_OF_UNINITIALIZED_VARIABLE, Certainty::normal);
 }
 
-static bool isLeafDot(const Token* tok)
-{
-    if (!tok)
-        return false;
-    const Token * parent = tok->astParent();
-    if (!Token::simpleMatch(parent, "."))
-        return false;
-    if (parent->astOperand2() == tok && !Token::simpleMatch(parent->astParent(), "."))
-        return true;
-    return isLeafDot(parent);
-}
-
 void CheckUninitVar::valueFlowUninit()
 {
     logChecker("CheckUninitVar::valueFlowUninit");
@@ -1680,28 +1675,31 @@ void CheckUninitVar::valueFlowUninit()
     }
 }
 
-std::string CheckUninitVar::MyFileInfo::toString() const
+// NOLINTNEXTLINE(readability-non-const-parameter) - used as callback so we need to preserve the signature
+static bool isVariableUsage(const Settings *settings, const Token *vartok, MathLib::bigint *value)
 {
-    return CTU::toString(unsafeUsage);
+    (void)value;
+    return CheckUninitVar::isVariableUsage(vartok, settings->library, true, CheckUninitVar::Alloc::ARRAY);
+}
+
+namespace {
+    /* data for multifile checking */
+    class MyFileInfo : public Check::FileInfo {
+    public:
+        /** function arguments that data are unconditionally read */
+        std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
+
+        /** Convert data into xml string */
+        std::string toString() const override
+        {
+            return CTU::toString(unsafeUsage);
+        }
+    };
 }
 
 Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
-    const CheckUninitVar checker(tokenizer, settings, nullptr);
-    return checker.getFileInfo();
-}
-
-// NOLINTNEXTLINE(readability-non-const-parameter) - used as callback so we need to preserve the signature
-static bool isVariableUsage(const Check *check, const Token *vartok, MathLib::bigint *value)
-{
-    (void)value;
-    const CheckUninitVar *c = dynamic_cast<const CheckUninitVar *>(check);
-    return c && c->isVariableUsage(vartok, true, CheckUninitVar::Alloc::ARRAY);
-}
-
-Check::FileInfo *CheckUninitVar::getFileInfo() const
-{
-    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(mTokenizer, mSettings, this, ::isVariableUsage);
+    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, ::isVariableUsage);
     if (unsafeUsage.empty())
         return nullptr;
 

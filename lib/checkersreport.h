@@ -16,7 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef checkersReportH
+#define checkersReportH
 
 #include "config.h"
 
@@ -44,4 +45,4 @@ private:
     int mAllCheckersCount = 0;
 };
 
-
+#endif

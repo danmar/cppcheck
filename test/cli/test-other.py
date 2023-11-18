@@ -2,9 +2,10 @@
 # python -m pytest test-other.py
 
 import os
+import sys
 import pytest
 
-from testutils import cppcheck
+from testutils import cppcheck, assert_cppcheck
 
 
 def __test_missing_include(tmpdir, use_j):
@@ -68,6 +69,15 @@ def test_missing_include_inline_suppr(tmpdir):
 
     _, _, stderr = cppcheck(args)
     assert stderr == ''
+
+
+def test_preprocessor_error(tmpdir):
+    test_file = os.path.join(tmpdir, '10866.c')
+    with open(test_file, 'wt') as f:
+        f.write('#error test\nx=1;\n')
+    exitcode, _, stderr = cppcheck(['--error-exitcode=1', test_file])
+    assert 'preprocessorErrorDirective' in stderr
+    assert exitcode != 0
 
 
 def test_invalid_library(tmpdir):
@@ -209,6 +219,18 @@ def test_execute_addon_failure_2(tmpdir):
     _, _, stderr = cppcheck(args)
     ec = 1 if os.name == 'nt' else 127
     assert stderr == "{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'naming' - exitcode is {} [internalError]\n\n^\n".format(test_file, ec)
+
+
+def test_execute_addon_file0(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write('void foo() {}\n')
+
+    args = ['--xml', '--addon=misra', '--enable=style', test_file]
+
+    _, _, stderr = cppcheck(args)
+    assert 'misra-c2012-8.2' in stderr
+    assert '.dump' not in stderr
 
 
 # TODO: find a test case which always fails
@@ -566,3 +588,235 @@ def test_missing_addon(tmpdir):
         'Did not find addon misra3.py'
     ]
     assert stderr == ""
+
+
+def test_file_filter(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        pass
+
+    args = ['--file-filter=*.cpp', test_file]
+    out_lines = [
+        'Checking {} ...'.format(test_file)
+    ]
+
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
+
+
+def test_file_filter_2(tmpdir):
+    test_file_1 = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file_1, 'wt') as f:
+        pass
+    test_file_2 = os.path.join(tmpdir, 'test.c')
+    with open(test_file_2, 'wt') as f:
+        pass
+
+    args = ['--file-filter=*.cpp', test_file_1, test_file_2]
+    out_lines = [
+        'Checking {} ...'.format(test_file_1)
+    ]
+
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
+
+
+def test_file_filter_3(tmpdir):
+    test_file_1 = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file_1, 'wt') as f:
+        pass
+    test_file_2 = os.path.join(tmpdir, 'test.c')
+    with open(test_file_2, 'wt') as f:
+        pass
+
+    args = ['--file-filter=*.c', test_file_1, test_file_2]
+    out_lines = [
+        'Checking {} ...'.format(test_file_2)
+    ]
+
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
+
+
+def test_file_filter_no_match(tmpdir):
+    args = ['--file-filter=*.c', 'test.cpp']
+    out_lines = [
+        'cppcheck: error: could not find any files matching the filter.'
+    ]
+
+    assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
+
+
+def test_file_order(tmpdir):
+    test_file_a = os.path.join(tmpdir, 'a.c')
+    with open(test_file_a, 'wt'):
+        pass
+    test_file_b = os.path.join(tmpdir, 'b.c')
+    with open(test_file_b, 'wt'):
+        pass
+    test_file_c = os.path.join(tmpdir, 'c.c')
+    with open(test_file_c, 'wt'):
+        pass
+    test_file_d = os.path.join(tmpdir, 'd.c')
+    with open(test_file_d, 'wt'):
+        pass
+
+    args = [test_file_c, test_file_d, test_file_b, test_file_a]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file_c),
+        '1/4 files checked 0% done',
+        'Checking {} ...'.format(test_file_d),
+        '2/4 files checked 0% done',
+        'Checking {} ...'.format(test_file_b),
+        '3/4 files checked 0% done',
+        'Checking {} ...'.format(test_file_a),
+        '4/4 files checked 0% done'
+    ]
+    assert stderr == ''
+
+
+def test_markup(tmpdir):
+    test_file_1 = os.path.join(tmpdir, 'test_1.qml')
+    with open(test_file_1, 'wt') as f:
+        pass
+    test_file_2 = os.path.join(tmpdir, 'test_2.cpp')
+    with open(test_file_2, 'wt') as f:
+        pass
+    test_file_3 = os.path.join(tmpdir, 'test_3.qml')
+    with open(test_file_3, 'wt') as f:
+        pass
+    test_file_4 = os.path.join(tmpdir, 'test_4.cpp')
+    with open(test_file_4, 'wt') as f:
+        pass
+
+    args = ['--library=qt', test_file_1, test_file_2, test_file_3, test_file_4]
+    out_lines = [
+        'Checking {} ...'.format(test_file_2),
+        '1/4 files checked 0% done',
+        'Checking {} ...'.format(test_file_4),
+        '2/4 files checked 0% done',
+        'Checking {} ...'.format(test_file_1),
+        '3/4 files checked 0% done',
+        'Checking {} ...'.format(test_file_3),
+        '4/4 files checked 0% done'
+    ]
+
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
+
+
+def test_markup_j(tmpdir):
+    test_file_1 = os.path.join(tmpdir, 'test_1.qml')
+    with open(test_file_1, 'wt') as f:
+        pass
+    test_file_2 = os.path.join(tmpdir, 'test_2.cpp')
+    with open(test_file_2, 'wt') as f:
+        pass
+    test_file_3 = os.path.join(tmpdir, 'test_3.qml')
+    with open(test_file_3, 'wt') as f:
+        pass
+    test_file_4 = os.path.join(tmpdir, 'test_4.cpp')
+    with open(test_file_4, 'wt') as f:
+        pass
+
+    args = ['--library=qt', test_file_1, test_file_2, test_file_3, test_file_4]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    for i in range(1, 5):
+        lines.remove('{}/4 files checked 0% done'.format(i))
+
+    assert lines == [
+        'Checking {} ...'.format(test_file_2),
+        'Checking {} ...'.format(test_file_4),
+        'Checking {} ...'.format(test_file_1),
+        'Checking {} ...'.format(test_file_3)
+    ]
+    assert stderr == ''
+
+
+def test_valueflow_debug(tmpdir):
+    test_file_cpp = os.path.join(tmpdir, 'test_1.cpp')
+    with open(test_file_cpp, 'wt') as f:
+        f.write("""
+#include "test.h"
+
+void f()
+{
+    int i = 0;
+}
+"""
+                )
+    test_file_h = os.path.join(tmpdir, 'test.h')
+    with open(test_file_h, 'wt') as f:
+        f.write("""
+#include "test2.h"
+inline void f1()
+{
+    int i = 0;
+}
+"""
+                )
+        pass
+    test_file_h_2 = os.path.join(tmpdir, 'test2.h')
+    with open(test_file_h_2, 'wt') as f:
+        f.write("""
+inline void f2()
+{
+    int i = 0;
+}
+"""
+                )
+
+    args = ['--debug', test_file_cpp]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    if sys.platform == "win32":
+        stdout = stdout.replace('/', '\\')
+    assert stdout == '''Checking {} ...
+
+
+##file {}
+2: void f2 ( )
+3: {{
+4: int i@var1 ; i@var1 =@expr1073741828 0 ;
+5: }}
+
+##file {}
+
+1:
+2:
+3: void f1 ( )
+4: {{
+5: int i@var2 ; i@var2 =@expr1073741829 0 ;
+6: }}
+
+##file {}
+
+1:
+2:
+3:
+4: void f ( )
+5: {{
+6: int i@var3 ; i@var3 =@expr1073741830 0 ;
+7: }}
+
+
+
+##Value flow
+File {}
+Line 4
+  = always 0
+  0 always 0
+File {}
+Line 5
+  = always 0
+  0 always 0
+File {}
+Line 6
+  = always 0
+  0 always 0
+'''.format(test_file_cpp, test_file_h_2, test_file_h, test_file_cpp, test_file_h_2, test_file_h, test_file_cpp)
+    assert stderr == ''

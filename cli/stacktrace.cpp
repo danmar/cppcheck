@@ -35,7 +35,7 @@ void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool lowMem)
     const int fd = fileno(output);
     void *callstackArray[32]= {nullptr}; // the less resources the better...
     const int currentdepth = backtrace(callstackArray, (int)getArrayLength(callstackArray));
-    const int offset=2; // some entries on top are within our own exception handling code or libc
+    constexpr int offset=2; // some entries on top are within our own exception handling code or libc
     if (maxdepth<0)
         maxdepth=currentdepth-offset;
     else

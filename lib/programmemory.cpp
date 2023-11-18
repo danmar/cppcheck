@@ -564,13 +564,15 @@ static std::string removeAssign(const std::string& assign) {
     return std::string{assign.cbegin(), assign.cend() - 1};
 }
 
-struct assign {
-    template<class T, class U>
-    void operator()(T& x, const U& y) const
-    {
-        x = y;
-    }
-};
+namespace {
+    struct assign {
+        template<class T, class U>
+        void operator()(T& x, const U& y) const
+        {
+            x = y;
+        }
+    };
+}
 
 static bool isIntegralValue(const ValueFlow::Value& value)
 {
@@ -1416,7 +1418,7 @@ namespace {
                 return execute(expr->astOperand2());
             } else if (expr->tokType() == Token::eIncDecOp && expr->astOperand1() && expr->astOperand1()->exprId() != 0) {
                 if (!pm->hasValue(expr->astOperand1()->exprId()))
-                    return unknown;
+                    return ValueFlow::Value::unknown();
                 ValueFlow::Value& lhs = pm->at(expr->astOperand1()->exprId());
                 if (!lhs.isIntValue())
                     return unknown;

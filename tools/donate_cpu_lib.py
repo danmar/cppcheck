@@ -16,7 +16,7 @@ import copy
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.50"
+CLIENT_VERSION = "1.3.52"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -506,7 +506,7 @@ def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True):
                 sig_num = int(ie_line[sig_start_pos:ie_line.find(' ', sig_start_pos)])
             # break on the first signalled file for now
             break
-    print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')'))
+    print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')') + ' in {:.1f}s'.format(elapsed_time))
 
     options_j = options + ' ' + __jobs
 
@@ -607,25 +607,6 @@ def diff_results(ver1, results1, ver2, results2):
     while i2 < len(r2):
         ret += ver2 + ' ' + r2[i2] + '\n'
         i2 += 1
-
-    # if there are syntaxError/unknownMacro/etc then analysis stops.
-    # diffing normal checker warnings will not make much sense
-    bailout_ids = ('[syntaxError]', '[unknownMacro]')
-    has_bailout_id = False
-    for id in bailout_ids:
-        if (id in results1) or (id in results1):
-            has_bailout_id = True
-    if has_bailout_id:
-        def check_bailout(line):
-            for id in bailout_ids:
-                if line.endswith(id):
-                    return True
-            return False
-        out = ''
-        for line in ret.split('\n'):
-            if check_bailout(line):
-                out += line + '\n'
-        ret = out
 
     return ret
 

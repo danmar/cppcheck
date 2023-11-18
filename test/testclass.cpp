@@ -181,6 +181,7 @@ private:
         TEST_CASE(const90);
         TEST_CASE(const91);
         TEST_CASE(const92);
+        TEST_CASE(const93);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -3444,11 +3445,11 @@ private:
     }
 
     void memsetOnStdPodType() { // Ticket #5901
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def>\n"
-                               "  <podtype name=\"std::uint8_t\" sign=\"u\" size=\"1\"/>\n"
-                               "  <podtype name=\"std::atomic_bool\"/>\n"
-                               "</def>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "  <podtype name=\"std::uint8_t\" sign=\"u\" size=\"1\"/>\n"
+                                   "  <podtype name=\"std::atomic_bool\"/>\n"
+                                   "</def>";
         const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         checkNoMemset("class A {\n"
@@ -6664,6 +6665,21 @@ private:
                    "struct S<0> {};\n"
                    "struct D : S<150> {};\n");
         // don't hang
+    }
+
+    void const93() { // #12162
+        checkConst("struct S {\n"
+                   "    bool f() {\n"
+                   "        return m.cbegin()->first == 0;\n"
+                   "    }\n"
+                   "    bool g() {\n"
+                   "        return m.count(0);\n"
+                   "    }\n"
+                   "    std::map<int, int> m;\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Technically the member function 'S::f' can be const.\n"
+                      "[test.cpp:5]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
+                      errout.str());
     }
 
     void const_handleDefaultParameters() {

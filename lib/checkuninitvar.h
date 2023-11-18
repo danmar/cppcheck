@@ -24,7 +24,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "ctu.h"
 #include "mathlib.h"
 #include "errortypes.h"
 #include "tokenize.h"
@@ -41,6 +40,10 @@ class Variable;
 class ErrorLogger;
 class Settings;
 class Library;
+
+namespace CTU {
+    class FileInfo;
+}
 
 namespace tinyxml2 {
     class XMLElement;
@@ -68,7 +71,7 @@ public:
 
     enum Alloc { NO_ALLOC, NO_CTOR_CALL, CTOR_CALL, ARRAY };
 
-    static const Token *isVariableUsage(bool cpp, const Token *vartok, const Library &library, bool pointer, Alloc alloc, int indirect = 0);
+    static const Token *isVariableUsage(const Token *vartok, const Library &library, bool pointer, Alloc alloc, int indirect = 0);
     const Token *isVariableUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect = 0) const;
 
 private:
@@ -102,16 +105,6 @@ private:
     /** ValueFlow-based checking for uninitialized variables */
     void valueFlowUninit();
 
-    /* data for multifile checking */
-    class MyFileInfo : public Check::FileInfo {
-    public:
-        /** function arguments that data are unconditionally read */
-        std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
-
-        /** Convert MyFileInfo data into xml string */
-        std::string toString() const override;
-    };
-
     /** @brief Parse current TU and extract file info */
     Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const override;
 
@@ -136,7 +129,6 @@ private:
     void uninitStructMemberError(const Token *tok, const std::string &membername);
 
     std::set<const Token*> mUninitDiags;
-    Check::FileInfo* getFileInfo() const;
 
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override
     {

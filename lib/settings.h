@@ -24,7 +24,6 @@
 #include "addoninfo.h"
 #include "config.h"
 #include "errortypes.h"
-#include "importproject.h"
 #include "library.h"
 #include "platform.h"
 #include "standards.h"
@@ -190,8 +189,10 @@ public:
     /** @brief Name of the language that is enforced. Empty per default. */
     Language enforcedLang{};
 
+#if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
     /** @brief Is --exception-handling given */
     bool exceptionHandling{};
+#endif
 
     // argv[0]
     std::string exename;
@@ -265,8 +266,6 @@ public:
     /** @brief Using -E for debugging purposes */
     bool preprocessOnly{};
 
-    ImportProject project;
-
     /** @brief Is --quiet given? */
     bool quiet{};
 
@@ -276,6 +275,7 @@ public:
     /** @brief --report-progress */
     int reportProgress{-1};
 
+#ifdef HAVE_RULES
     /** Rule */
     struct CPPCHECKLIB Rule {
         std::string tokenlist = "normal"; // use normal tokenlist
@@ -285,7 +285,6 @@ public:
         Severity severity = Severity::style; // default severity
     };
 
-#ifdef HAVE_RULES
     /**
      * @brief Extra rules
      */

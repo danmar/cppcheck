@@ -39,6 +39,7 @@
 #include <cctype>
 #include <list>
 #include <map>
+#include <set>
 #include <sstream>
 #include <utility>
 #include <numeric>
@@ -1200,16 +1201,22 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
         else
             cumulatedSize += size;
     };
-    for (const Variable&var : type->classScope->varlist) {
+    std::set<const Scope*> anonScopes;
+    for (const Variable& var : type->classScope->varlist) {
         int size = 0;
         if (var.isStatic())
             continue;
         if (var.isPointer() || var.isReference())
             size = settings->platform.sizeof_pointer;
         else if (var.type() && var.type()->classScope)
-            size = estimateSize(var.type(), settings, symbolDatabase, recursionDepth+1);
+            size = estimateSize(var.type(), settings, symbolDatabase, recursionDepth + 1);
         else if (var.valueType() && var.valueType()->type == ValueType::Type::CONTAINER)
             size = 3 * settings->platform.sizeof_pointer; // Just guess
+        else if (var.nameToken()->scope() != type->classScope && var.nameToken()->scope()->definedType) { // anonymous union
+            const auto ret = anonScopes.insert(var.nameToken()->scope());
+            if (ret.second)
+                size = estimateSize(var.nameToken()->scope()->definedType, settings, symbolDatabase, recursionDepth + 1);
+        }
         else
             size = symbolDatabase->sizeOfType(var.typeStartToken());
 
@@ -1225,120 +1232,6 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
             v += estimateSize(baseInfo.type, settings, symbolDatabase, recursionDepth + 1);
         return v;
     });
-}
-
-static bool isConstRangeBasedFor(const Token* tok) {
-    if (astIsRangeBasedForDecl(tok)) {
-        const Variable* loopVar = tok->astParent()->astOperand1()->variable();
-        return loopVar && (!loopVar->isReference() || loopVar->isConst());
-    }
-    return false;
-}
-
-static bool canBeConst(const Variable *var, const Settings* settings)
-{
-    if (!var->scope())
-        return false;
-    {
-        // check initializer list. If variable is moved from it can't be const.
-        const Function* func_scope = var->scope()->function;
-        if (func_scope && func_scope->type == Function::Type::eConstructor) {
-            //could be initialized in initializer list
-            const Token* init = func_scope->arg->link()->next();
-            if (init->str() == "noexcept") {
-                init = init->next();
-                if (init->link())
-                    init = init->link()->next();
-            }
-            if (init->str() == ":") {
-                for (const Token* tok2 = func_scope->arg->link()->next()->next(); tok2 != var->scope()->bodyStart; tok2 = tok2->next()) {
-                    if (tok2->varId() != var->declarationId())
-                        continue;
-                    const Token* parent = tok2->astParent();
-                    if (parent && Token::simpleMatch(parent->previous(), "move ("))
-                        return false;
-                }
-            }
-        }
-    }
-    for (const Token* tok2 = var->scope()->bodyStart; tok2 != var->scope()->bodyEnd; tok2 = tok2->next()) {
-        if (tok2->varId() != var->declarationId())
-            continue;
-
-        const Token* parent = tok2->astParent();
-        while (Token::simpleMatch(parent, "["))
-            parent = parent->astParent();
-        if (!parent)
-            continue;
-        if (Token::simpleMatch(tok2->next(), ";") && tok2->next()->isSplittedVarDeclEq()) {
-            tok2 = tok2->tokAt(2);
-            tok2 = Token::findsimplematch(tok2, ";");
-            continue;
-        }
-        if (parent->str() == "<<" || isLikelyStreamRead(true, parent)) {
-            if (parent->str() == "<<" && parent->astOperand1() == tok2)
-                return false;
-            if (parent->str() == ">>" && parent->astOperand2() == tok2)
-                return false;
-        } else if (parent->str() == "," || parent->str() == "(") { // function argument
-            const Token* tok3 = tok2->previous();
-            int argNr = 0;
-            while (tok3 && tok3->str() != "(") {
-                if (tok3->link() && Token::Match(tok3, ")|]|}|>"))
-                    tok3 = tok3->link();
-                else if (tok3->link())
-                    break;
-                else if (tok3->str() == ";")
-                    break;
-                else if (tok3->str() == ",")
-                    argNr++;
-                tok3 = tok3->previous();
-            }
-            if (!tok3 || tok3->str() != "(")
-                return false;
-            const Token* functionTok = tok3->astOperand1();
-            if (!functionTok)
-                return false;
-            const Function* tokFunction = functionTok->function();
-            if (!tokFunction && functionTok->str() == "." && (functionTok = functionTok->astOperand2()))
-                tokFunction = functionTok->function();
-            if (tokFunction) {
-                const Variable* argVar = tokFunction->getArgumentVar(argNr);
-                if (!argVar || (!argVar->isConst() && argVar->isReference()))
-                    return false;
-            }
-            else if (!settings->library.isFunctionConst(functionTok))
-                return false;
-        } else if (parent->isUnaryOp("&")) {
-            // TODO: check how pointer is used
-            return false;
-        } else if (parent->isConstOp() ||
-                   (parent->astOperand2() && settings->library.isFunctionConst(parent->astOperand2())))
-            continue;
-        else if (parent->isAssignmentOp()) {
-            const Token* assignee = parent->astOperand1();
-            while (Token::simpleMatch(assignee, "["))
-                assignee = assignee->astOperand1();
-            if (assignee == tok2)
-                return false;
-            const Variable* assignedVar = assignee ? assignee->variable() : nullptr;
-            if (assignedVar &&
-                !assignedVar->isConst() &&
-                assignedVar->isReference() &&
-                assignedVar->nameToken() == parent->astOperand1())
-                return false;
-        } else if (Token::Match(tok2, "%var% . %name% (")) {
-            const Function* func = tok2->tokAt(2)->function();
-            if (func && (func->isConst() || func->isStatic()))
-                continue;
-            return false;
-        } else if (isConstRangeBasedFor(tok2))
-            continue;
-        else
-            return false;
-    }
-
-    return true;
 }
 
 void CheckOther::checkPassByReference()
@@ -1382,7 +1275,7 @@ void CheckOther::checkPassByReference()
 
         const bool isConst = var->isConst();
         if (isConst) {
-            passedByValueError(var->nameToken(), var->name(), inconclusive);
+            passedByValueError(var, inconclusive);
             continue;
         }
 
@@ -1390,19 +1283,27 @@ void CheckOther::checkPassByReference()
         if (!var->scope() || var->scope()->function->isImplicitlyVirtual())
             continue;
 
-        if (canBeConst(var, mSettings)) {
-            passedByValueError(var->nameToken(), var->name(), inconclusive);
+        if (!isVariableChanged(var, mSettings, mTokenizer->isCPP())) {
+            passedByValueError(var, inconclusive);
         }
     }
 }
 
-void CheckOther::passedByValueError(const Token *tok, const std::string &parname, bool inconclusive)
+void CheckOther::passedByValueError(const Variable* var, bool inconclusive)
 {
-    reportError(tok, Severity::performance, "passedByValue",
-                "$symbol:" + parname + "\n"
-                "Function parameter '$symbol' should be passed by const reference.\n"
-                "Parameter '$symbol' is passed by value. It could be passed "
-                "as a const reference which is usually faster and recommended in C++.", CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
+    std::string id = "passedByValue";
+    std::string msg = "$symbol:" + (var ? var->name() : "") + "\n"
+                      "Function parameter '$symbol' should be passed by const reference.";
+    ErrorPath errorPath;
+    if (var && var->scope() && var->scope()->function && var->scope()->function->functionPointerUsage) {
+        id += "Callback";
+        errorPath.emplace_front(var->scope()->function->functionPointerUsage, "Function pointer used here.");
+        msg += " However it seems that '" + var->scope()->function->name() + "' is a callback function.";
+    }
+    if (var)
+        errorPath.emplace_back(var->nameToken(), msg);
+    msg += "\nParameter '$symbol' is passed by value. It could be passed as a const reference which is usually faster and recommended in C++.";
+    reportError(errorPath, Severity::performance, id.c_str(), msg, CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 static bool isUnusedVariable(const Variable *var)
@@ -1679,7 +1580,7 @@ void CheckOther::checkConstPointer()
             }
         } else {
             int argn = -1;
-            if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-"))
+            if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-|<<"))
                 continue;
             if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
                 continue;
@@ -1719,12 +1620,13 @@ void CheckOther::checkConstPointer()
             const int indirect = p->isArray() ? p->dimensions().size() : 1;
             if (isVariableChanged(start, p->scope()->bodyEnd, indirect, p->declarationId(), false, mSettings, mTokenizer->isCPP()))
                 continue;
-            if (p->isArgument() && p->typeStartToken() && p->typeStartToken()->isSimplifiedTypedef() && !(Token::simpleMatch(p->typeEndToken(), "*") && !p->typeEndToken()->isSimplifiedTypedef()))
+            if (p->typeStartToken() && p->typeStartToken()->isSimplifiedTypedef() && !(Token::simpleMatch(p->typeEndToken(), "*") && !p->typeEndToken()->isSimplifiedTypedef()))
                 continue;
             constVariableError(p, p->isArgument() ? p->scope()->function : nullptr);
         }
     }
 }
+
 void CheckOther::constVariableError(const Variable *var, const Function *function)
 {
     if (!var) {
@@ -2945,7 +2847,9 @@ void CheckOther::checkRedundantCopy()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Variable* var : symbolDatabase->variableList()) {
-        if (!var || var->isReference() || (!var->isConst() && !canBeConst(var, mSettings)) || var->isPointer() || (!var->type() && !var->isStlType())) // bailout if var is of standard type, if it is a pointer or non-const
+        if (!var || var->isReference() || var->isPointer() ||
+            (!var->type() && !var->isStlType()) || // bailout if var is of standard type, if it is a pointer or non-const
+            (!var->isConst() && isVariableChanged(var, mSettings, mTokenizer->isCPP())))
             continue;
 
         const Token* startTok = var->nameToken();
@@ -2983,7 +2887,9 @@ void CheckOther::checkRedundantCopy()
             const Scope* fScope = func->functionScope;
             if (fScope && fScope->bodyEnd && Token::Match(fScope->bodyEnd->tokAt(-3), "return %var% ;")) {
                 const Token* varTok = fScope->bodyEnd->tokAt(-2);
-                if (varTok->variable() && !varTok->variable()->isGlobal())
+                if (varTok->variable() && !varTok->variable()->isGlobal() &&
+                    (!varTok->variable()->type() || !varTok->variable()->type()->classScope ||
+                     estimateSize(varTok->variable()->type(), mSettings, symbolDatabase) > 2 * mSettings->platform.sizeof_pointer))
                     redundantCopyError(startTok, startTok->str());
             }
         }
@@ -3698,7 +3604,7 @@ void CheckOther::checkShadowVariables()
     }
 }
 
-void CheckOther::shadowError(const Token *var, const Token *shadowed, std::string type)
+void CheckOther::shadowError(const Token *var, const Token *shadowed, const std::string& type)
 {
     ErrorPath errorPath;
     errorPath.emplace_back(shadowed, "Shadowed declaration");
@@ -4063,9 +3969,9 @@ void CheckOther::checkOverlappingWrite()
                 if (nonOverlappingData->sizeArg <= 0 || nonOverlappingData->sizeArg > args.size()) {
                     if (nonOverlappingData->sizeArg == -1) {
                         ErrorPath errorPath;
-                        const bool macro = true;
-                        const bool pure = true;
-                        const bool follow = true;
+                        constexpr bool macro = true;
+                        constexpr bool pure = true;
+                        constexpr bool follow = true;
                         if (!isSameExpression(mTokenizer->isCPP(), macro, ptr1, ptr2, mSettings->library, pure, follow, &errorPath))
                             continue;
                         overlappingWriteFunction(tok);
@@ -4088,9 +3994,9 @@ void CheckOther::checkOverlappingWrite()
                     continue;
 
                 ErrorPath errorPath;
-                const bool macro = true;
-                const bool pure = true;
-                const bool follow = true;
+                constexpr bool macro = true;
+                constexpr bool pure = true;
+                constexpr bool follow = true;
                 if (!isSameExpression(mTokenizer->isCPP(), macro, buf1, buf2, mSettings->library, pure, follow, &errorPath))
                     continue;
                 overlappingWriteFunction(tok);

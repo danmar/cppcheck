@@ -241,7 +241,7 @@ private:
     void clarifyStatementError(const Token* tok);
     void cstyleCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive, bool toIsInt);
-    void passedByValueError(const Token *tok, const std::string &parname, bool inconclusive);
+    void passedByValueError(const Variable* var, bool inconclusive);
     void constVariableError(const Variable *var, const Function *function);
     void constStatementError(const Token *tok, const std::string &type, bool inconclusive);
     void signedCharArrayIndexError(const Token *tok);
@@ -284,7 +284,7 @@ private:
     void accessMovedError(const Token *tok, const std::string &varname, const ValueFlow::Value *value, bool inconclusive);
     void funcArgNamesDifferent(const std::string & functionName, nonneg int index, const Token* declaration, const Token* definition);
     void funcArgOrderDifferent(const std::string & functionName, const Token * declaration, const Token * definition, const std::vector<const Token*> & declarations, const std::vector<const Token*> & definitions);
-    void shadowError(const Token *var, const Token *shadowed, std::string type);
+    void shadowError(const Token *var, const Token *shadowed, const std::string& type);
     void knownArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value, const std::string &varexpr, bool isVariableExpressionHidden);
     void knownPointerToBoolError(const Token* tok, const ValueFlow::Value* value);
     void comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2);
@@ -314,7 +314,7 @@ private:
         c.checkComparisonFunctionIsAlwaysTrueOrFalseError(nullptr, "isless","varName",false);
         c.checkCastIntToCharAndBackError(nullptr, "func_name");
         c.cstyleCastError(nullptr);
-        c.passedByValueError(nullptr, "parametername", false);
+        c.passedByValueError(nullptr, false);
         c.constVariableError(nullptr, nullptr);
         c.constStatementError(nullptr, "type", false);
         c.signedCharArrayIndexError(nullptr);

@@ -659,12 +659,11 @@ std::vector<CheckClass::Usage> CheckClass::createUsageList(const Scope *scope)
 
 void CheckClass::assignVar(std::vector<Usage> &usageList, nonneg int varid)
 {
-    for (Usage& usage: usageList) {
-        if (usage.var->declarationId() == varid) {
-            usage.assign = true;
-            return;
-        }
-    }
+    auto it = std::find_if(usageList.begin(), usageList.end(), [varid](const Usage& usage) {
+        return usage.var->declarationId() == varid;
+    });
+    if (it != usageList.end())
+        it->assign = true;
 }
 
 void CheckClass::assignVar(std::vector<Usage> &usageList, const Token* vartok)
@@ -673,23 +672,21 @@ void CheckClass::assignVar(std::vector<Usage> &usageList, const Token* vartok)
         assignVar(usageList, vartok->varId());
         return;
     }
-    for (Usage& usage: usageList) {
+    auto it = std::find_if(usageList.begin(), usageList.end(), [vartok](const Usage& usage) {
         // FIXME: This is a workaround when varid is not set for a derived member
-        if (usage.var->name() == vartok->str()) {
-            usage.assign = true;
-            return;
-        }
-    }
+        return usage.var->name() == vartok->str();
+    });
+    if (it != usageList.end())
+        it->assign = true;
 }
 
 void CheckClass::initVar(std::vector<Usage> &usageList, nonneg int varid)
 {
-    for (Usage& usage: usageList) {
-        if (usage.var->declarationId() == varid) {
-            usage.init = true;
-            return;
-        }
-    }
+    auto it = std::find_if(usageList.begin(), usageList.end(), [varid](const Usage& usage) {
+        return usage.var->declarationId() == varid;
+    });
+    if (it != usageList.end())
+        it->init = true;
 }
 
 void CheckClass::assignAllVar(std::vector<Usage> &usageList)
@@ -763,7 +760,14 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         if (initList) {
             if (level == 0 && Token::Match(ftok, "%name% {|(") && Token::Match(ftok->linkAt(1), "}|) ,|{")) {
                 if (ftok->str() != func.name()) {
-                    initVar(usage, ftok->varId());
+                    if (ftok->varId())
+                        initVar(usage, ftok->varId());
+                    else { // base class constructor
+                        for (Usage& u : usage) {
+                            if (u.var->scope() != scope) // assume that all variables are initialized in base class
+                                u.init = true;
+                        }
+                    }
                 } else { // c++11 delegate constructor
                     const Function *member = ftok->function();
                     // member function not found => assume it initializes all members
@@ -1056,6 +1060,11 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             assignVar(usage, ftok->next()->varId());
         } else if (Token::Match(ftok, "* this . %name% =")) {
             assignVar(usage, ftok->tokAt(3)->varId());
+        } else if (astIsRangeBasedForDecl(ftok)) {
+            if (const Variable* rangeVar = ftok->astParent()->astOperand1()->variable()) {
+                if (rangeVar->isReference() && !rangeVar->isConst())
+                    assignVar(usage, ftok->varId());
+            }
         }
 
         // The functions 'clear' and 'Clear' are supposed to initialize variable.
@@ -1110,8 +1119,7 @@ void CheckClass::missingMemberCopyError(const Token *tok, Function::Type functio
     const std::string message =
         "$symbol:" + classname + "::" + varname + "\n" +
         "Member variable '$symbol' is not assigned in the " + ctor + " constructor. Should it be " + action;
-    const char id[] = "missingMemberCopy";
-    reportError(tok, Severity::warning, id, message, CWE398, Certainty::inconclusive);
+    reportError(tok, Severity::warning, "missingMemberCopy", message, CWE398, Certainty::inconclusive);
 }
 
 void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive)
@@ -2523,8 +2531,10 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                     ;
                 } else if (hasOverloadedMemberAccess(end, var->typeScope())) {
                     ;
-                } else if (!var->typeScope() || (end->function() != func && !isConstMemberFunc(var->typeScope(), end)))
-                    return false;
+                } else if (!var->typeScope() || (end->function() != func && !isConstMemberFunc(var->typeScope(), end))) {
+                    if (!mSettings->library.isFunctionConst(end))
+                        return false;
+                }
             }
 
             // Assignment
@@ -3390,6 +3400,42 @@ void CheckClass::unsafeClassRefMemberError(const Token *tok, const std::string &
                 CWE(0), Certainty::normal);
 }
 
+namespace {
+    /* multifile checking; one definition rule violations */
+    class MyFileInfo : public Check::FileInfo {
+    public:
+        struct NameLoc {
+            std::string className;
+            std::string fileName;
+            int lineNumber;
+            int column;
+            std::size_t hash;
+
+            bool isSameLocation(const NameLoc& other) const {
+                return fileName == other.fileName &&
+                       lineNumber == other.lineNumber &&
+                       column == other.column;
+            }
+        };
+        std::vector<NameLoc> classDefinitions;
+
+        /** Convert data into xml string */
+        std::string toString() const override
+        {
+            std::string ret;
+            for (const NameLoc &nameLoc: classDefinitions) {
+                ret += "<class name=\"" + ErrorLogger::toxml(nameLoc.className) +
+                       "\" file=\"" + ErrorLogger::toxml(nameLoc.fileName) +
+                       "\" line=\"" + std::to_string(nameLoc.lineNumber) +
+                       "\" col=\"" + std::to_string(nameLoc.column) +
+                       "\" hash=\"" + std::to_string(nameLoc.hash) +
+                       "\"/>\n";
+            }
+            return ret;
+        }
+    };
+}
+
 Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
     if (!tokenizer->isCPP())
@@ -3457,20 +3503,6 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
     MyFileInfo *fileInfo = new MyFileInfo;
     fileInfo->classDefinitions.swap(classDefinitions);
     return fileInfo;
-}
-
-std::string CheckClass::MyFileInfo::toString() const
-{
-    std::string ret;
-    for (const MyFileInfo::NameLoc &nameLoc: classDefinitions) {
-        ret += "<class name=\"" + ErrorLogger::toxml(nameLoc.className) +
-               "\" file=\"" + ErrorLogger::toxml(nameLoc.fileName) +
-               "\" line=\"" + std::to_string(nameLoc.lineNumber) +
-               "\" col=\"" + std::to_string(nameLoc.column) +
-               "\" hash=\"" + std::to_string(nameLoc.hash) +
-               "\"/>\n";
-    }
-    return ret;
 }
 
 Check::FileInfo * CheckClass::loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const

@@ -24,6 +24,7 @@
 #include "erroritem.h"
 #include "errorlogger.h"
 #include "errortypes.h"
+#include "filesettings.h"
 #include "settings.h"
 #include "standards.h"
 #include "threadresult.h"
@@ -33,10 +34,10 @@
 #include <cstddef>
 #include <iterator>
 #include <list>
-#include <map>
 #include <ostream>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <QByteArray>
@@ -56,7 +57,7 @@
 #endif
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param) - used as callback so we need to preserve the signature
-static int executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output) // cppcheck-suppress passedByValue
+static int executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output) // cppcheck-suppress passedByValueCallback
 {
     output.clear();
 
@@ -110,10 +111,11 @@ void CheckThread::run()
     if (!mFiles.isEmpty() || mAnalyseWholeProgram) {
         mAnalyseWholeProgram = false;
         qDebug() << "Whole program analysis";
-        std::map<std::string,std::size_t> files2;
-        for (const QString& file : mFiles)
-            files2[file.toStdString()] = 0;
-        mCppcheck.analyseWholeProgram(mCppcheck.settings().buildDir, files2);
+        std::list<std::pair<std::string, std::size_t>> files2;
+        std::transform(mFiles.cbegin(), mFiles.cend(), std::back_inserter(files2), [&](const QString& file) {
+            return std::pair<std::string, std::size_t>{file.toStdString(), 0};
+        });
+        mCppcheck.analyseWholeProgram(mCppcheck.settings().buildDir, files2, {});
         mFiles.clear();
         emit done();
         return;
@@ -130,7 +132,7 @@ void CheckThread::run()
             file = mResult.getNextFile();
     }
 
-    ImportProject::FileSettings fileSettings = mResult.getNextFileSettings();
+    FileSettings fileSettings = mResult.getNextFileSettings();
     while (!fileSettings.filename.empty() && mState == Running) {
         file = QString::fromStdString(fileSettings.filename);
         qDebug() << "Checking file" << file;
@@ -150,7 +152,7 @@ void CheckThread::run()
     emit done();
 }
 
-void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSettings, const QString &fileName)
+void CheckThread::runAddonsAndTools(const FileSettings *fileSettings, const QString &fileName)
 {
     for (const QString& addon : mAddonsAndTools) {
         if (addon == CLANG_ANALYZER || addon == CLANG_TIDY) {

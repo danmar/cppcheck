@@ -21,6 +21,7 @@
 #include "checknullpointer.h"
 
 #include "astutils.h"
+#include "ctu.h"
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "library.h"
@@ -547,24 +548,33 @@ void CheckNullPointer::redundantConditionWarning(const Token* tok, const ValueFl
                 inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
-std::string CheckNullPointer::MyFileInfo::toString() const
-{
-    return CTU::toString(unsafeUsage);
-}
-
 // NOLINTNEXTLINE(readability-non-const-parameter) - used as callback so we need to preserve the signature
-static bool isUnsafeUsage(const Check *check, const Token *vartok, MathLib::bigint *value)
+static bool isUnsafeUsage(const Settings *settings, const Token *vartok, MathLib::bigint *value)
 {
     (void)value;
-    const CheckNullPointer *checkNullPointer = dynamic_cast<const CheckNullPointer *>(check);
     bool unknown = false;
-    return checkNullPointer && checkNullPointer->isPointerDeRef(vartok, unknown);
+    return CheckNullPointer::isPointerDeRef(vartok, unknown, settings);
 }
+
+namespace {
+    /* data for multifile checking */
+    class MyFileInfo : public Check::FileInfo {
+    public:
+        /** function arguments that are dereferenced without checking if they are null */
+        std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
+
+        /** Convert data into xml string */
+        std::string toString() const override
+        {
+            return CTU::toString(unsafeUsage);
+        }
+    };
+}
+
 
 Check::FileInfo *CheckNullPointer::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
-    CheckNullPointer check(tokenizer, settings, nullptr);
-    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, &check, ::isUnsafeUsage);
+    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, isUnsafeUsage);
     if (unsafeUsage.empty())
         return nullptr;
 

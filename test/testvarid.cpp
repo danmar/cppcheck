@@ -103,6 +103,7 @@ private:
         TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
+        TEST_CASE(varid_cpp_keywords_in_c_code3);
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -140,11 +141,13 @@ private:
         TEST_CASE(varid_in_class23);    // #11293
         TEST_CASE(varid_in_class24);
         TEST_CASE(varid_in_class25);
+        TEST_CASE(varid_in_class26);
         TEST_CASE(varid_namespace_1);   // #7272
         TEST_CASE(varid_namespace_2);   // #7000
         TEST_CASE(varid_namespace_3);   // #8627
         TEST_CASE(varid_namespace_4);
         TEST_CASE(varid_namespace_5);
+        TEST_CASE(varid_namespace_6);
         TEST_CASE(varid_initList);
         TEST_CASE(varid_initListWithBaseTemplate);
         TEST_CASE(varid_initListWithScope);
@@ -1297,6 +1300,12 @@ private:
         tokenize(code, "test.c");
     }
 
+    void varid_cpp_keywords_in_c_code3() { // #12120
+        const char code[] = "const struct class *p;";
+        const char expected[] = "1: const struct class * p@1 ;\n";
+        ASSERT_EQUALS(expected, tokenize(code, "test.c"));
+    }
+
     void varidFunctionCall1() {
         const char code[] ="void f() {\n"
                             "    int x;\n"
@@ -2094,6 +2103,31 @@ private:
         ASSERT_EQUALS(expected, tokenize(code, "test.cpp", &s));
     }
 
+    void varid_in_class26() {
+        const char *code{}, *expected{}; // #11334
+        code = "struct S {\n"
+               "    union {\n"
+               "        uint8_t u8[4];\n"
+               "        uint32_t u32;\n"
+               "    };\n"
+               "    void f();\n"
+               "};\n"
+               "void S::f() {\n"
+               "    u8[0] = 0;\n"
+               "}\n";
+        expected = "1: struct S {\n"
+                   "2: union {\n"
+                   "3: uint8_t u8@1 [ 4 ] ;\n"
+                   "4: uint32_t u32@2 ;\n"
+                   "5: } ;\n"
+                   "6: void f ( ) ;\n"
+                   "7: } ;\n"
+                   "8: void S :: f ( ) {\n"
+                   "9: u8@1 [ 0 ] = 0 ;\n"
+                   "10: }\n";
+        ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
+    }
+
     void varid_namespace_1() { // #7272
         const char code[] = "namespace Blah {\n"
                             "  struct foo { int x;};\n"
@@ -2198,6 +2232,29 @@ private:
                       "7: void bar :: dostuff ( ) { int x2@2 ; x2@2 = x@1 * 2 ; }\n"
                       "8: }\n"
                       "9: }\n", tokenize(code, "test.cpp"));
+    }
+
+    void varid_namespace_6() {
+        const char code[] = "namespace N {\n" // #12077
+                            "    namespace O {\n"
+                            "        U::U(int* map) : id(0) {\n"
+                            "            this->p = map;\n"
+                            "        }\n"
+                            "        void U::f() {\n"
+                            "            std::map<Vec2i, int>::iterator iter;\n"
+                            "        }\n"
+                            "    }\n"
+                            "}";
+        ASSERT_EQUALS("1: namespace N {\n"
+                      "2: namespace O {\n"
+                      "3: U :: U ( int * map@1 ) : id ( 0 ) {\n"
+                      "4: this . p = map@1 ;\n"
+                      "5: }\n"
+                      "6: void U :: f ( ) {\n"
+                      "7: std :: map < Vec2i , int > :: iterator iter@2 ;\n"
+                      "8: }\n"
+                      "9: }\n"
+                      "10: }\n", tokenize(code, "test.cpp"));
     }
 
     void varid_initList() {

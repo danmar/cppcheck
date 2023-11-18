@@ -52,6 +52,7 @@ private:
         TEST_CASE(cstruct3);
         TEST_CASE(cstruct3);
         TEST_CASE(cstruct4);
+        TEST_CASE(cenum1);
         TEST_CASE(cfunction1);
         TEST_CASE(cfunction2);
         TEST_CASE(cfunction3);
@@ -210,6 +211,7 @@ private:
         TEST_CASE(simplifyTypedef145); // #9353
         TEST_CASE(simplifyTypedef146);
         TEST_CASE(simplifyTypedef147);
+        TEST_CASE(simplifyTypedef148);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -372,8 +374,8 @@ private:
     void cstruct2() {
         const char code[] = "typedef enum { A, B } t;\n"
                             "t x;";
-        ASSERT_EQUALS("enum t { A , B } ; t x ;", simplifyTypedef(code));
-        ASSERT_EQUALS("enum t { A , B } ; t x ;", simplifyTypedefC(code));
+        ASSERT_EQUALS("enum t { A , B } ; enum t x ;", simplifyTypedef(code));
+        ASSERT_EQUALS("enum t { A , B } ; enum t x ;", simplifyTypedefC(code));
     }
 
     void cstruct3() {
@@ -386,6 +388,12 @@ private:
         const char code[] = "typedef struct s { int a; int b; } t;\n"
                             "struct t x{};";
         ASSERT_EQUALS("struct s { int a ; int b ; } ; struct s x { } ;", simplifyTypedefC(code));
+    }
+
+    void cenum1() {
+        const char code[] = "typedef enum { a, b } E;\n"
+                            "E e;";
+        ASSERT_EQUALS("enum E { a , b } ; enum E e ;", simplifyTypedefC(code));
     }
 
     void cfunction1() {
@@ -694,13 +702,13 @@ private:
         const char expected[] =
             "struct t { int a ; } ; "
             "struct U { int a ; } ; "
-            "struct Unnamed0 { int a ; } ; "
+            "struct V { int a ; } ; "
             "struct s s ; "
             "struct s * ps ; "
             "struct t t ; "
             "struct t * tp ; "
             "struct U u ; "
-            "struct Unnamed0 * v ;";
+            "struct V * v ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
@@ -720,13 +728,13 @@ private:
         const char expected[] =
             "union t { int a ; float b ; } ; "
             "union U { int a ; float b ; } ; "
-            "union Unnamed0 { int a ; float b ; } ; "
+            "union V { int a ; float b ; } ; "
             "union s s ; "
             "union s * ps ; "
             "union t t ; "
             "union t * tp ; "
             "union U u ; "
-            "union Unnamed0 * v ;";
+            "union V * v ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
@@ -739,7 +747,7 @@ private:
 
         const char expected[] = "enum abc { a = 0 , b = 1 , c = 2 } ; "
                                 "enum xyz { x = 0 , y = 1 , z = 2 } ; "
-                                "abc e1 ; "
+                                "enum abc e1 ; "
                                 "enum xyz e2 ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
@@ -1837,7 +1845,7 @@ private:
                             "    localEntitiyAddFunc_t f;\n"
                             "}";
         // The expected result..
-        const char expected[] = "enum qboolean { qfalse , qtrue } ; void f ( ) { qboolean b ; qboolean ( * f ) ( struct le_s * , entity_t * ) ; }";
+        const char expected[] = "enum qboolean { qfalse , qtrue } ; void f ( ) { enum qboolean b ; enum qboolean ( * f ) ( struct le_s * , entity_t * ) ; }";
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }
@@ -1949,7 +1957,7 @@ private:
                                 "( ( int * * * ) global [ 6 ] ) ( \"assoc\" , \"eggdrop\" , 106 , 0 ) ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code));
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp:1319:valueFlowConditionExpressions bailout: Skipping function due to incomplete variable global\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable global\n", errout.str());
     }
 
     void simplifyTypedef68() { // ticket #2355
@@ -2509,7 +2517,7 @@ private:
     void simplifyTypedef109() {
         const char code[] = "typedef int&& rref;\n"
                             "rref var = 0;";
-        const char expected[] = "int && var ; var = 0 ;";
+        const char expected[] = "int && var = 0 ;";
         ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
@@ -3395,6 +3403,18 @@ private:
                "void N::T::f(V*) {}\n"
                "namespace N {}\n";
         ASSERT_EQUALS("namespace N { struct S { } ; struct T { void f ( int * ) ; } ; } void N :: T :: f ( int * ) { }", tok(code));
+
+        code = "namespace N {\n" // #12008
+               "    typedef char U;\n"
+               "    typedef int V;\n"
+               "    struct S {\n"
+               "        S(V* v);\n"
+               "    };\n"
+               "}\n"
+               "void f() {}\n"
+               "N::S::S(V* v) {}\n"
+               "namespace N {}\n";
+        ASSERT_EQUALS("namespace N { struct S { S ( int * v ) ; } ; } void f ( ) { } N :: S :: S ( int * v ) { }", tok(code));
     }
 
     void simplifyTypedef147() {
@@ -3414,6 +3434,13 @@ private:
                "}\n";
         ASSERT_EQUALS("namespace N { template < typename T > struct S { } ; } namespace N { template < typename T > struct U { S < T > operator() ( ) { return { } ; } } ; }",
                       tok(code));
+    }
+
+    void simplifyTypedef148() {
+        const char* code{};
+        code = "typedef int& R;\n" // #12166
+               "R r = i;\n";
+        ASSERT_EQUALS("int & r = i ;", tok(code));
     }
 
     void simplifyTypedefFunction1() {

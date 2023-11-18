@@ -1701,6 +1701,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
 {
     std::string outs;
 
+    int fileIndex = -1;
     int line = 0;
     if (xml)
         outs += "  <valueflow>\n";
@@ -1718,11 +1719,20 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
             outs +=  "\">";
             outs += '\n';
         }
-        else if (line != tok->linenr()) {
-            outs += "Line ";
-            outs += std::to_string(tok->linenr());
-            outs += '\n';
+        else {
+            if (fileIndex != tok->fileIndex()) {
+                outs += "File ";
+                outs += tok->mTokensFrontBack->list->getFiles()[tok->fileIndex()];
+                outs += '\n';
+                line = 0;
+            }
+            if (line != tok->linenr()) {
+                outs += "Line ";
+                outs += std::to_string(tok->linenr());
+                outs += '\n';
+            }
         }
+        fileIndex = tok->fileIndex();
         line = tok->linenr();
         if (!xml) {
             ValueFlow::Value::ValueKind valueKind = values->front().valueKind;
@@ -2350,8 +2360,6 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
                     varTok = varTok->next();
                 while (Token::Match(varTok, "%name% ::"))
                     varTok = varTok->tokAt(2);
-                if (Token::simpleMatch(varTok, "(") && Token::simpleMatch(varTok->astOperand1(), "."))
-                    varTok = varTok->astOperand1()->astOperand1();
                 std::pair<const Token*, const Token*> r = typeDecl(varTok);
                 if (r.first)
                     return r;

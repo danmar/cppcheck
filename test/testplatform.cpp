@@ -18,6 +18,9 @@
 
 #include "platform.h"
 #include "fixture.h"
+#include "standards.h"
+
+#include <string>
 
 #include <tinyxml2.h>
 
@@ -41,6 +44,8 @@ private:
         TEST_CASE(invalid_config_file_1);
         TEST_CASE(empty_elements);
         TEST_CASE(default_platform);
+        TEST_CASE(limitsDefines);
+        TEST_CASE(charMinMax);
     }
 
     static bool readPlatform(Platform& platform, const char* xmldata) {
@@ -50,7 +55,7 @@ private:
 
     void empty() const {
         // An empty platform file does not change values, only the type.
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n<platform/>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n<platform/>";
         Platform platform;
         // TODO: this should fail - platform files need to be complete
         TODO_ASSERT(!readPlatform(platform, xmldata));
@@ -184,24 +189,24 @@ private:
     void valid_config_file_1() const {
         // Valid platform configuration with all possible values specified.
         // Similar to the avr8 platform file.
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<platform>\n"
-                               "  <char_bit>8</char_bit>\n"
-                               "  <default-sign>unsigned</default-sign>\n"
-                               "  <sizeof>\n"
-                               "    <bool>1</bool>\n"
-                               "    <short>2</short>\n"
-                               "    <int>2</int>\n"
-                               "    <long>4</long>\n"
-                               "    <long-long>8</long-long>\n"
-                               "    <float>4</float>\n"
-                               "    <double>4</double>\n"
-                               "    <long-double>4</long-double>\n"
-                               "    <pointer>2</pointer>\n"
-                               "    <size_t>2</size_t>\n"
-                               "    <wchar_t>2</wchar_t>\n"
-                               "  </sizeof>\n"
-                               " </platform>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<platform>\n"
+                                   "  <char_bit>8</char_bit>\n"
+                                   "  <default-sign>unsigned</default-sign>\n"
+                                   "  <sizeof>\n"
+                                   "    <bool>1</bool>\n"
+                                   "    <short>2</short>\n"
+                                   "    <int>2</int>\n"
+                                   "    <long>4</long>\n"
+                                   "    <long-long>8</long-long>\n"
+                                   "    <float>4</float>\n"
+                                   "    <double>4</double>\n"
+                                   "    <long-double>4</long-double>\n"
+                                   "    <pointer>2</pointer>\n"
+                                   "    <size_t>2</size_t>\n"
+                                   "    <wchar_t>2</wchar_t>\n"
+                                   "  </sizeof>\n"
+                                   " </platform>";
         Platform platform;
         ASSERT(readPlatform(platform, xmldata));
         ASSERT_EQUALS(Platform::Type::File, platform.type);
@@ -228,24 +233,24 @@ private:
     void valid_config_file_2() const {
         // Valid platform configuration with all possible values specified and
         // char_bit > 8.
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<platform>\n"
-                               "  <char_bit>20</char_bit>\n"
-                               "  <default-sign>signed</default-sign>\n"
-                               "  <sizeof>\n"
-                               "    <bool>1</bool>\n"
-                               "    <short>2</short>\n"
-                               "    <int>3</int>\n"
-                               "    <long>4</long>\n"
-                               "    <long-long>5</long-long>\n"
-                               "    <float>6</float>\n"
-                               "    <double>7</double>\n"
-                               "    <long-double>8</long-double>\n"
-                               "    <pointer>9</pointer>\n"
-                               "    <size_t>10</size_t>\n"
-                               "    <wchar_t>11</wchar_t>\n"
-                               "  </sizeof>\n"
-                               " </platform>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<platform>\n"
+                                   "  <char_bit>20</char_bit>\n"
+                                   "  <default-sign>signed</default-sign>\n"
+                                   "  <sizeof>\n"
+                                   "    <bool>1</bool>\n"
+                                   "    <short>2</short>\n"
+                                   "    <int>3</int>\n"
+                                   "    <long>4</long>\n"
+                                   "    <long-long>5</long-long>\n"
+                                   "    <float>6</float>\n"
+                                   "    <double>7</double>\n"
+                                   "    <long-double>8</long-double>\n"
+                                   "    <pointer>9</pointer>\n"
+                                   "    <size_t>10</size_t>\n"
+                                   "    <wchar_t>11</wchar_t>\n"
+                                   "  </sizeof>\n"
+                                   " </platform>";
         Platform platform;
         ASSERT(readPlatform(platform, xmldata));
         ASSERT_EQUALS(Platform::Type::File, platform.type);
@@ -272,24 +277,24 @@ private:
     void valid_config_file_3() const {
         // Valid platform configuration without any usable information.
         // Similar like an empty file.
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<platform>\n"
-                               "  <char_bit1>8</char_bit1>\n"
-                               "  <default-sign1>unsigned</default-sign1>\n"
-                               "  <sizeof1>\n"
-                               "    <bool1>1</bool1>\n"
-                               "    <short1>2</short1>\n"
-                               "    <int1>3</int1>\n"
-                               "    <long1>4</long1>\n"
-                               "    <long-long1>5</long-long1>\n"
-                               "    <float1>6</float1>\n"
-                               "    <double1>7</double1>\n"
-                               "    <long-double1>8</long-double1>\n"
-                               "    <pointer1>9</pointer1>\n"
-                               "    <size_t1>10</size_t1>\n"
-                               "    <wchar_t1>11</wchar_t1>\n"
-                               "  </sizeof1>\n"
-                               " </platform>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<platform>\n"
+                                   "  <char_bit1>8</char_bit1>\n"
+                                   "  <default-sign1>unsigned</default-sign1>\n"
+                                   "  <sizeof1>\n"
+                                   "    <bool1>1</bool1>\n"
+                                   "    <short1>2</short1>\n"
+                                   "    <int1>3</int1>\n"
+                                   "    <long1>4</long1>\n"
+                                   "    <long-long1>5</long-long1>\n"
+                                   "    <float1>6</float1>\n"
+                                   "    <double1>7</double1>\n"
+                                   "    <long-double1>8</long-double1>\n"
+                                   "    <pointer1>9</pointer1>\n"
+                                   "    <size_t1>10</size_t1>\n"
+                                   "    <wchar_t1>11</wchar_t1>\n"
+                                   "  </sizeof1>\n"
+                                   " </platform>";
         Platform platform;
         // TODO: needs to fail - files need to be complete
         TODO_ASSERT(!readPlatform(platform, xmldata));
@@ -298,24 +303,24 @@ private:
     void valid_config_file_4() const {
         // Valid platform configuration with all possible values specified and
         // set to 0.
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<platform>\n"
-                               "  <char_bit>0</char_bit>\n"
-                               "  <default-sign>z</default-sign>\n"
-                               "  <sizeof>\n"
-                               "    <bool>0</bool>\n"
-                               "    <short>0</short>\n"
-                               "    <int>0</int>\n"
-                               "    <long>0</long>\n"
-                               "    <long-long>0</long-long>\n"
-                               "    <float>0</float>\n"
-                               "    <double>0</double>\n"
-                               "    <long-double>0</long-double>\n"
-                               "    <pointer>0</pointer>\n"
-                               "    <size_t>0</size_t>\n"
-                               "    <wchar_t>0</wchar_t>\n"
-                               "  </sizeof>\n"
-                               " </platform>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<platform>\n"
+                                   "  <char_bit>0</char_bit>\n"
+                                   "  <default-sign>z</default-sign>\n"
+                                   "  <sizeof>\n"
+                                   "    <bool>0</bool>\n"
+                                   "    <short>0</short>\n"
+                                   "    <int>0</int>\n"
+                                   "    <long>0</long>\n"
+                                   "    <long-long>0</long-long>\n"
+                                   "    <float>0</float>\n"
+                                   "    <double>0</double>\n"
+                                   "    <long-double>0</long-double>\n"
+                                   "    <pointer>0</pointer>\n"
+                                   "    <size_t>0</size_t>\n"
+                                   "    <wchar_t>0</wchar_t>\n"
+                                   "  </sizeof>\n"
+                                   " </platform>";
         Platform platform;
         ASSERT(readPlatform(platform, xmldata));
         ASSERT_EQUALS(Platform::Type::File, platform.type);
@@ -341,24 +346,24 @@ private:
 
     void invalid_config_file_1() const {
         // Invalid XML file: mismatching elements "boolt" vs "bool".
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<platform>\n"
-                               "  <char_bit>8</char_bit>\n"
-                               "  <default-sign>unsigned</default-sign>\n"
-                               "  <sizeof>\n"
-                               "    <boolt>1</bool>\n"
-                               "    <short>2</short>\n"
-                               "    <int>2</int>\n"
-                               "    <long>4</long>\n"
-                               "    <long-long>8</long-long>\n"
-                               "    <float>4</float>\n"
-                               "    <double>4</double>\n"
-                               "    <long-double>4</long-double>\n"
-                               "    <pointer>2</pointer>\n"
-                               "    <size_t>2</size_t>\n"
-                               "    <wchar_t>2</wchar_t>\n"
-                               "  </sizeof>\n"
-                               " </platform>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<platform>\n"
+                                   "  <char_bit>8</char_bit>\n"
+                                   "  <default-sign>unsigned</default-sign>\n"
+                                   "  <sizeof>\n"
+                                   "    <boolt>1</bool>\n"
+                                   "    <short>2</short>\n"
+                                   "    <int>2</int>\n"
+                                   "    <long>4</long>\n"
+                                   "    <long-long>8</long-long>\n"
+                                   "    <float>4</float>\n"
+                                   "    <double>4</double>\n"
+                                   "    <long-double>4</long-double>\n"
+                                   "    <pointer>2</pointer>\n"
+                                   "    <size_t>2</size_t>\n"
+                                   "    <wchar_t>2</wchar_t>\n"
+                                   "  </sizeof>\n"
+                                   " </platform>";
         Platform platform;
         ASSERT(!readPlatform(platform, xmldata));
     }
@@ -366,24 +371,24 @@ private:
     void empty_elements() const {
         // Valid platform configuration without any usable information.
         // Similar like an empty file.
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<platform>\n"
-                               "  <char_bit></char_bit>\n"
-                               "  <default-sign></default-sign>\n"
-                               "  <sizeof>\n"
-                               "    <bool></bool>\n"
-                               "    <short></short>\n"
-                               "    <int></int>\n"
-                               "    <long></long>\n"
-                               "    <long-long></long-long>\n"
-                               "    <float></float>\n"
-                               "    <double></double>\n"
-                               "    <long-double></long-double>\n"
-                               "    <pointer></pointer>\n"
-                               "    <size_t></size_t>\n"
-                               "    <wchar_t></wchar_t>\n"
-                               "  </sizeof>\n"
-                               " </platform>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<platform>\n"
+                                   "  <char_bit></char_bit>\n"
+                                   "  <default-sign></default-sign>\n"
+                                   "  <sizeof>\n"
+                                   "    <bool></bool>\n"
+                                   "    <short></short>\n"
+                                   "    <int></int>\n"
+                                   "    <long></long>\n"
+                                   "    <long-long></long-long>\n"
+                                   "    <float></float>\n"
+                                   "    <double></double>\n"
+                                   "    <long-double></long-double>\n"
+                                   "    <pointer></pointer>\n"
+                                   "    <size_t></size_t>\n"
+                                   "    <wchar_t></wchar_t>\n"
+                                   "  </sizeof>\n"
+                                   " </platform>";
         Platform platform;
         ASSERT(!readPlatform(platform, xmldata));
     }
@@ -391,6 +396,26 @@ private:
     void default_platform() const {
         Platform platform;
         ASSERT_EQUALS(Platform::Type::Native, platform.type);
+    }
+
+    void limitsDefines() const {
+        Platform platform;
+        platform.set(Platform::Unix64);
+        const std::string defs = "CHAR_BIT=8;SCHAR_MIN=-128;SCHAR_MAX=127;UCHAR_MAX=255;CHAR_MIN=0;CHAR_MAX=127;SHRT_MIN=-32768;SHRT_MAX=32767;USHRT_MAX=65535;INT_MIN=-2147483648;INT_MAX=2147483647;UINT_MAX=4294967295;LONG_MIN=-9223372036854775808;LONG_MAX=9223372036854775807;ULONG_MAX=9223372036854775807";
+        const std::string defs_c99 = "CHAR_BIT=8;SCHAR_MIN=-128;SCHAR_MAX=127;UCHAR_MAX=255;CHAR_MIN=0;CHAR_MAX=127;SHRT_MIN=-32768;SHRT_MAX=32767;USHRT_MAX=65535;INT_MIN=-2147483648;INT_MAX=2147483647;UINT_MAX=4294967295;LONG_MIN=-9223372036854775808;LONG_MAX=9223372036854775807;ULONG_MAX=9223372036854775807;LLONG_MIN=-9223372036854775808;LLONG_MAX=9223372036854775807;ULLONG_MAX=9223372036854775807";
+        ASSERT_EQUALS(defs, platform.getLimitsDefines(Standards::cstd_t::C89));
+        ASSERT_EQUALS(defs_c99, platform.getLimitsDefines(Standards::cstd_t::C99));
+        ASSERT_EQUALS(defs_c99, platform.getLimitsDefines(Standards::cstd_t::CLatest));
+        ASSERT_EQUALS(defs, platform.getLimitsDefines(Standards::cppstd_t::CPP03));
+        ASSERT_EQUALS(defs_c99, platform.getLimitsDefines(Standards::cppstd_t::CPP11));
+        ASSERT_EQUALS(defs_c99, platform.getLimitsDefines(Standards::cppstd_t::CPPLatest));
+    }
+
+    void charMinMax() const {
+        Platform platform;
+        ASSERT_EQUALS(255, platform.unsignedCharMax());
+        ASSERT_EQUALS(127, platform.signedCharMax());
+        ASSERT_EQUALS(-128, platform.signedCharMin());
     }
 };
 

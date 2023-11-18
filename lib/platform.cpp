@@ -294,3 +294,153 @@ bool Platform::loadFromXmlDocument(const tinyxml2::XMLDocument *doc)
     type = Type::File;
     return !error;
 }
+
+std::string Platform::getLimitsDefines(bool c99) const
+{
+    std::string s;
+
+    // climits / limits.h
+    s += "CHAR_BIT=";
+    s += std::to_string(char_bit);
+    s += ";SCHAR_MIN=";
+    s += std::to_string(min_value(char_bit));
+    s += ";SCHAR_MAX=";
+    s += std::to_string(max_value(char_bit));
+    s += ";UCHAR_MAX=";
+    s += std::to_string(max_value(char_bit+1));
+    s += ";CHAR_MIN=";
+    if (defaultSign == 'u')
+        s += std::to_string(min_value(char_bit));
+    else
+        s += std::to_string(0);
+    s += ";CHAR_MAX=";
+    if (defaultSign == 'u')
+        s += std::to_string(max_value(char_bit+1));
+    else
+        s += std::to_string(max_value(char_bit));
+    // TODO
+    //s += ";MB_LEN_MAX=";
+    s += ";SHRT_MIN=";
+    s += std::to_string(min_value(short_bit));
+    s += ";SHRT_MAX=";
+    s += std::to_string(max_value(short_bit));
+    s += ";USHRT_MAX=";
+    s += std::to_string(max_value(short_bit+1));
+    s += ";INT_MIN=";
+    s += std::to_string(min_value(int_bit));
+    s += ";INT_MAX=";
+    s += std::to_string(max_value(int_bit));
+    s += ";UINT_MAX=";
+    s += std::to_string(max_value(int_bit+1));
+    s += ";LONG_MIN=";
+    s += std::to_string(min_value(long_bit));
+    s += ";LONG_MAX=";
+    s += std::to_string(max_value(long_bit));
+    s += ";ULONG_MAX=";
+    s += std::to_string(max_value(long_bit+1));
+    if (c99) {
+        s += ";LLONG_MIN=";
+        s += std::to_string(min_value(long_long_bit));
+        s += ";LLONG_MAX=";
+        s += std::to_string(max_value(long_long_bit));
+        s += ";ULLONG_MAX=";
+        s += std::to_string(max_value(long_long_bit + 1));
+    }
+
+    // cstdint / stdint.h
+    // FIXME: these are currently hard-coded in std.cfg
+    /*
+        INTMAX_MIN
+        INTMAX_MAX
+        UINTMAX_MAX
+        INTN_MIN
+        INTN_MAX
+        UINTN_MAX
+        INT_LEASTN_MIN
+        INT_LEASTN_MAX
+        UINT_LEASTN_MAX
+        INT_FASTN_MIN
+        INT_FASTN_MAX
+        UINT_FASTN_MAX
+        INTPTR_MIN
+        INTPTR_MAX
+        UINTPTR_MAX
+        SIZE_MAX
+        PTRDIFF_MIN
+        PTRDIFF_MAX
+        SIG_ATOMIC_MIN
+        SIG_ATOMIC_MAX
+        WCHAR_MIN
+        WCHAR_MAX
+        WINT_MIN
+        WINT_MAX
+
+        // function-like macros
+        // implemented in std.cfg
+        INTMAX_C
+        UINTMAX_C
+        INTN_C
+        UINTN_C
+     */
+
+    // cfloat / float.h
+    /*
+        // TODO: implement
+        FLT_RADIX
+
+        FLT_MANT_DIG
+        DBL_MANT_DIG
+        LDBL_MANT_DIG
+
+        FLT_DIG
+        DBL_DIG
+        LDBL_DIG
+
+        FLT_MIN_EXP
+        DBL_MIN_EXP
+        LDBL_MIN_EXP
+
+        FLT_MIN_10_EXP
+        DBL_MIN_10_EXP
+        LDBL_MIN_10_EXP
+
+        FLT_MAX_EXP
+        DBL_MAX_EXP
+        LDBL_MAX_EXP
+
+        FLT_MAX_10_EXP
+        DBL_MAX_10_EXP
+        LDBL_MAX_10_EXP
+
+        FLT_MAX
+        DBL_MAX
+        LDBL_MAX
+
+        FLT_EPSILON
+        DBL_EPSILON
+        LDBL_EPSILON
+
+        FLT_MIN
+        DBL_MIN
+        LDBL_MIN
+
+        FLT_ROUNDS
+
+        // C99 / C++11 only
+        FLT_EVAL_METHOD
+
+        DECIMAL_DIG
+     */
+
+    return s;
+}
+
+std::string Platform::getLimitsDefines(Standards::cstd_t cstd) const
+{
+    return getLimitsDefines(cstd >= Standards::cstd_t::C99);
+}
+
+std::string Platform::getLimitsDefines(Standards::cppstd_t cppstd) const
+{
+    return getLimitsDefines(cppstd >= Standards::cppstd_t::CPP11);
+}

@@ -19,7 +19,11 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-12]
+        include:
+          - use_qt6: On
+          - os: ubuntu-20.04
+            use_qt6: Off
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -37,28 +41,36 @@ jobs:
           key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
 
       - name: Install missing software on ubuntu
-        if: contains(matrix.os, 'ubuntu')
+        if: contains(matrix.os, 'ubuntu') && matrix.use_qt6 == 'Off'
         run: |
           sudo apt-get update
           sudo apt-get install libxml2-utils libtinyxml2-dev qtbase5-dev qttools5-dev libqt5charts5-dev qtchooser
+
+      - name: Install missing software on ubuntu
+        if: contains(matrix.os, 'ubuntu') && matrix.use_qt6 == 'On'
+        run: |
+          sudo apt-get update
+          # qt6-tools-dev-tools for lprodump
+          # qt6-l10n-tools for lupdate
+          sudo apt-get install libxml2-utils libtinyxml2-dev qt6-base-dev libqt6charts6-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools libglx-dev libgl1-mesa-dev
 
       # coreutils contains "nproc"
       - name: Install missing software on macos
         if: contains(matrix.os, 'macos')
         run: |
           # pcre was removed from runner images in November 2022
-          brew install coreutils qt@5 tinyxml2 pcre
+          brew install coreutils qt@6 tinyxml2 pcre
 
       - name: CMake build on ubuntu (with GUI / system tinyxml2)
         if: contains(matrix.os, 'ubuntu')
         run: |
-          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=${{ matrix.use_qt6 }} -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build cmake.output.tinyxml2 -- -j$(nproc)
 
       - name: CMake build on macos (with GUI / system tinyxml2)
         if: contains(matrix.os, 'macos')
         run: |
-          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5
+          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt6_DIR=$(brew --prefix qt@6)/lib/cmake/Qt6
           cmake --build cmake.output.tinyxml2 -- -j$(nproc)
 
       - name: Run CMake test (system tinyxml2)
@@ -69,7 +81,11 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-12]
+        include:
+          - use_qt6: On
+          - os: ubuntu-20.04
+            use_qt6: Off
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -87,7 +103,7 @@ jobs:
           key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
 
       - name: Install missing software on ubuntu
-        if: contains(matrix.os, 'ubuntu')
+        if: contains(matrix.os, 'ubuntu') && matrix.use_qt6 == 'Off'
         run: |
           sudo apt-get update
           sudo apt-get install libxml2-utils qtbase5-dev qttools5-dev libqt5charts5-dev qtchooser
@@ -106,23 +122,31 @@ jobs:
         run: |
           echo "CXX=g++-13" >> $GITHUB_ENV
 
+      - name: Install missing software on ubuntu
+        if: contains(matrix.os, 'ubuntu') && matrix.use_qt6 == 'On'
+        run: |
+          sudo apt-get update
+          # qt6-tools-dev-tools for lprodump
+          # qt6-l10n-tools for lupdate
+          sudo apt-get install libxml2-utils qt6-base-dev libqt6charts6-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools libglx-dev libgl1-mesa-dev
+
       # coreutils contains "nproc"
       - name: Install missing software on macos
         if: contains(matrix.os, 'macos')
         run: |
           # pcre was removed from runner images in November 2022
-          brew install coreutils qt@5 pcre
+          brew install coreutils qt@6 pcre
 
       - name: CMake build on ubuntu (with GUI)
         if: contains(matrix.os, 'ubuntu')
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=${{ matrix.use_qt6 }} -DWITH_QCHART=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build cmake.output -- -j$(nproc)
 
       - name: CMake build on macos (with GUI)
         if: contains(matrix.os, 'macos')
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt6_DIR=$(brew --prefix qt@6)/lib/cmake/Qt6
           cmake --build cmake.output -- -j$(nproc)
 
       - name: Run CMake test
@@ -138,7 +162,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-12]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -170,7 +194,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-12]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -202,7 +226,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-12]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -224,7 +248,8 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        # no longer build with qmake on MacOS as brew might lack pre-built Qt5 packages causing the step to run for hours
+        os: [ubuntu-20.04, ubuntu-22.04]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -305,7 +330,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-12]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -399,6 +424,8 @@ jobs:
           ./cppcheck --error-exitcode=1 --inline-suppr --addon=threadsafety addons/test/threadsafety
           ./cppcheck --error-exitcode=1 --inline-suppr --addon=threadsafety --std=c++03 addons/test/threadsafety
           ./cppcheck --error-exitcode=1 --inline-suppr --addon=misra addons/test/misra/crash*.c
+          ./cppcheck --error-exitcode=1 --inline-suppr --addon=misra --enable=information addons/test/misra/config*.c
+
           ./cppcheck --addon=misra --enable=style --inline-suppr --enable=information --error-exitcode=1 addons/test/misra/misra-ctu-*-test.c
           pushd addons/test
           # We'll force C89 standard to enable an additional verification for
@@ -452,6 +479,7 @@ jobs:
           # compile with verification and ast matchers
           make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXFLAGS="-g -O2 -w -DHAVE_BOOST" MATCHCOMPILER=yes VERIFY=1
 
+      # TODO: update to Qt6
       - name: Generate UI files
         run: |
           pushd gui
@@ -466,7 +494,8 @@ jobs:
 
       - name: Self check
         run: |
-          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5_summary -D__CPPCHECK__ -D__GNUC__ -DCHECK_INTERNAL -DHAVE_RULES --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=gnu --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings --check-level=exhaustive"
+          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5_summary -D__GNUC__ --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=gnu --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings --check-level=exhaustive"
+          cppcheck_options="-D__CPPCHECK__ -DCHECK_INTERNAL -DHAVE_RULES --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2"
           ec=0
           
           # TODO: add --check-config          
@@ -476,14 +505,16 @@ jobs:
             exit $ec
           fi
           
+          # self check simplecpp
+          ./cppcheck $selfcheck_options externals/simplecpp || ec=1
           # self check lib/cli
           mkdir b1
-          ./cppcheck $selfcheck_options --cppcheck-build-dir=b1 --addon=naming.json -DCHECK_INTERNAL cli lib || ec=1
+          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b1 --addon=naming.json cli lib || ec=1
           # check gui with qt settings
           mkdir b2
-          ./cppcheck $selfcheck_options --cppcheck-build-dir=b2 -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 -DQT_CHARTS_LIB --library=qt --addon=naming.json -Igui/temp -Igui gui/*.cpp gui/temp/*.cpp || ec=1
+          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b2 -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 -DQT_CHARTS_LIB --library=qt --addon=naming.json -Igui/temp -Igui gui/*.cpp gui/temp/*.cpp || ec=1
           # self check test and tools
-          ./cppcheck $selfcheck_options -Icli test/*.cpp tools/*.cpp || ec=1
+          ./cppcheck $selfcheck_options $cppcheck_options -Icli test/*.cpp tools/*.cpp || ec=1
           # triage
-          ./cppcheck $selfcheck_options -DQ_MOC_OUTPUT_REVISION=67 -DQT_CHARTS_LIB --library=qt -Itools/triage/temp -Igui tools/triage/*.cpp tools/triage/temp/*.cpp || ec=1
+          ./cppcheck $selfcheck_options $cppcheck_options -DQ_MOC_OUTPUT_REVISION=67 -DQT_CHARTS_LIB --library=qt -Itools/triage/temp -Igui tools/triage/*.cpp tools/triage/temp/*.cpp || ec=1
           exit $ec

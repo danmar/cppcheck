@@ -18,8 +18,6 @@
 
 #include "codeeditorstyle.h"
 
-#include <utility>
-
 #include <QSettings>
 #include <QStringList>
 #include <QVariant>
@@ -43,21 +41,21 @@ CodeEditorStyle::CodeEditorStyle(
     QColor SymbFGColor, QColor SymbBGColor,
     // cppcheck-suppress naming-varname - TODO: fix this
     QFont::Weight SymbWeight) :
-    widgetFGColor(std::move(CtrlFGColor)),
-    widgetBGColor(std::move(CtrlBGColor)),
-    highlightBGColor(std::move(HiLiBGColor)),
-    lineNumFGColor(std::move(LnNumFGColor)),
-    lineNumBGColor(std::move(LnNumBGColor)),
-    keywordColor(std::move(KeyWdFGColor)),
+    widgetFGColor(CtrlFGColor),
+    widgetBGColor(CtrlBGColor),
+    highlightBGColor(HiLiBGColor),
+    lineNumFGColor(LnNumFGColor),
+    lineNumBGColor(LnNumBGColor),
+    keywordColor(KeyWdFGColor),
     keywordWeight(KeyWdWeight),
-    classColor(std::move(ClsFGColor)),
+    classColor(ClsFGColor),
     classWeight(ClsWeight),
-    quoteColor(std::move(QteFGColor)),
+    quoteColor(QteFGColor),
     quoteWeight(QteWeight),
-    commentColor(std::move(CmtFGColor)),
+    commentColor(CmtFGColor),
     commentWeight(CmtWeight),
-    symbolFGColor(std::move(SymbFGColor)),
-    symbolBGColor(std::move(SymbBGColor)),
+    symbolFGColor(SymbFGColor),
+    symbolBGColor(SymbBGColor),
     symbolWeight(SymbWeight)
 {}
 

@@ -31,6 +31,9 @@
 class Token;
 class Preprocessor;
 class Suppressions;
+namespace simplecpp {
+    struct DUI;
+}
 
 class givenACodeSampleToTokenize {
 private:
@@ -95,6 +98,7 @@ public:
 
     static void preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer);
     static void preprocess(Preprocessor &preprocessor, const char code[], std::vector<std::string> &files, Tokenizer& tokenizer);
+    static void preprocess(Preprocessor &preprocessor, const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, const simplecpp::DUI& dui);
 };
 
 namespace cppcheck {

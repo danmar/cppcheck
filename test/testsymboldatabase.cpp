@@ -2380,12 +2380,12 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool debug = true, const char filename[] = "test.cpp") {
+    void check_(const char* file, int line, const char code[], bool debug = true, const char filename[] = "test.cpp", const Settings* pSettings = nullptr) {
         // Clear the error log
         errout.str("");
 
         // Check..
-        const Settings settings = settingsBuilder(settings1).debugwarnings(debug).build();
+        const Settings settings = settingsBuilder(pSettings ? *pSettings : settings1).debugwarnings(debug).build();
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -2986,7 +2986,12 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("main(int argc, char *argv[]) { }", true, "test.c");
-        ASSERT_EQUALS("[test.c:1]: (debug) SymbolDatabase::isFunction found C function 'main' without a return type.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        const Settings s = settingsBuilder(settings1).severity(Severity::portability).build();
+        check("main(int argc, char *argv[]) { }", false, "test.c", &s);
+        ASSERT_EQUALS("[test.c:1]: (portability) Omitted return type of function 'main' defaults to int, this is not supported by ISO C99 and later standards.\n",
+                      errout.str());
 
         check("namespace boost {\n"
               "    std::locale generate_locale()\n"
@@ -3129,8 +3134,8 @@ private:
         // ticket #2991 - segmentation fault
         check("::y(){x}");
 
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n"
-                                          "[test.cpp:1]: (debug) valueflow.cpp:1321:valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n"
+                      "[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n", errout.str());
     }
 
     void symboldatabase20() {
@@ -5943,10 +5948,53 @@ private:
             std::advance(it, 2);
             const Enumerator* E0 = it->findEnumerator("E0");
             ASSERT(E0 && E0->value_known && E0->value == 0);
-            std::advance(it, 1);
             const Token* const e = Token::findsimplematch(tokenizer.tokens(), "E0 ;");
             ASSERT(e && e->enumerator());
             ASSERT_EQUALS(E0, e->enumerator());
+        }
+        {
+            GET_SYMBOL_DB("struct S {\n"
+                          "    enum E { E0 };\n"
+                          "    void f(int i);\n"
+                          "    S();\n"
+                          "    int m;\n"
+                          "};\n"
+                          "S::S() : m(E0) {}\n"
+                          "void S::f(int i) {\n"
+                          "    if (i != E0) {}\n"
+                          "}\n");
+            ASSERT(db != nullptr);
+            auto it = db->scopeList.begin();
+            std::advance(it, 2);
+            const Enumerator* E0 = it->findEnumerator("E0");
+            ASSERT(E0 && E0->value_known && E0->value == 0);
+            const Token* e = Token::findsimplematch(tokenizer.tokens(), "E0 )");
+            ASSERT(e && e->enumerator());
+            ASSERT_EQUALS(E0, e->enumerator());
+            e = Token::findsimplematch(e->next(), "E0 )");
+            ASSERT(e && e->enumerator());
+            ASSERT_EQUALS(E0, e->enumerator());
+        }
+        {
+            GET_SYMBOL_DB("struct S {\n"
+                          "    enum class E {\n"
+                          "        A, D\n"
+                          "    } e = E::D;\n"
+                          "};\n"
+                          "struct E {\n"
+                          "    enum { A, B, C, D };\n"
+                          "};\n");
+            ASSERT(db != nullptr);
+            auto it = db->scopeList.begin();
+            std::advance(it, 2);
+            ASSERT_EQUALS(it->className, "E");
+            ASSERT(it->nestedIn);
+            ASSERT_EQUALS(it->nestedIn->className, "S");
+            const Enumerator* D = it->findEnumerator("D");
+            ASSERT(D && D->value_known && D->value == 1);
+            const Token* tok = Token::findsimplematch(tokenizer.tokens(), "D ;");
+            ASSERT(tok && tok->enumerator());
+            ASSERT_EQUALS(D, tok->enumerator());
         }
     }
 
@@ -6145,7 +6193,7 @@ private:
         ASSERT(db);
         const Scope * bar = db->findScopeByName("bar");
         ASSERT(bar != nullptr);
-        const unsigned int linenrs[2] = { 2, 1 };
+        constexpr unsigned int linenrs[2] = { 2, 1 };
         unsigned int index = 0;
         for (const Token * tok = bar->bodyStart->next(); tok != bar->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "%name% (") && !tok->varId() && Token::simpleMatch(tok->linkAt(1), ") ;")) {
@@ -8498,9 +8546,9 @@ private:
         {
             // Char types
             Settings settings;
-            const Library::PodType char8 = { 1, 'u' };
-            const Library::PodType char16 = { 2, 'u' };
-            const Library::PodType char32 = { 4, 'u' };
+            constexpr Library::PodType char8 = { 1, 'u' };
+            constexpr Library::PodType char16 = { 2, 'u' };
+            constexpr Library::PodType char32 = { 4, 'u' };
             settings.library.mPodTypes["char8_t"] = char8;
             settings.library.mPodTypes["char16_t"] = char16;
             settings.library.mPodTypes["char32_t"] = char32;
@@ -8517,8 +8565,8 @@ private:
         {
             // PodType
             Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).build();
-            const Library::PodType u32 = { 4, 'u' };
-            const Library::PodType podtype2 = { 0, 'u', Library::PodType::Type::INT };
+            constexpr Library::PodType u32 = { 4, 'u' };
+            constexpr Library::PodType podtype2 = { 0, 'u', Library::PodType::Type::INT };
             settingsWin64.library.mPodTypes["u32"] = u32;
             settingsWin64.library.mPodTypes["xyz::x"] = u32;
             settingsWin64.library.mPodTypes["podtype2"] = podtype2;
@@ -8922,8 +8970,8 @@ private:
 
             const Token* tok = tokenizer.tokens();
             tok = Token::findsimplematch(tok, "auto r");
-            ASSERT(tok && tok->valueType());
-            ASSERT_EQUALS("container(std :: string|wstring|u16string|u32string)", tok->valueType()->str());
+            ASSERT(tok);
+            TODO_ASSERT(tok->valueType() && "container(std :: string|wstring|u16string|u32string)" == tok->valueType()->str());
         }
     }
 

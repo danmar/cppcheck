@@ -26,6 +26,7 @@
 #include "cppcheck.h"
 #include "errortypes.h"
 #include "filelist.h"
+#include "filesettings.h"
 #include "compliancereportdialog.h"
 #include "fileviewdialog.h"
 #include "helpdialog.h"
@@ -270,13 +271,14 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI->mActionEnforceCpp->setActionGroup(mSelectLanguageActions);
     mUI->mActionAutoDetectLanguage->setActionGroup(mSelectLanguageActions);
 
+    // TODO: we no longer default to a Windows platform in CLI - so we should probably also get rid of this in the GUI
     // For Windows platforms default to Win32 checked platform.
     // For other platforms default to unspecified/default which means the
     // platform Cppcheck GUI was compiled on.
 #if defined(_WIN32)
-    const Platform::Type defaultPlatform = Platform::Type::Win32W;
+    constexpr Platform::Type defaultPlatform = Platform::Type::Win32W;
 #else
-    const Platform::Type defaultPlatform = Platform::Type::Unspecified;
+    constexpr Platform::Type defaultPlatform = Platform::Type::Unspecified;
 #endif
     PlatformData &platform = mPlatforms.get((Platform::Type)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
     platform.mActMainWindow->setChecked(true);
@@ -600,7 +602,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
         std::transform(fileNames.cbegin(), fileNames.cend(), std::back_inserter(sourcefiles), [](const QString& s) {
             return s.toStdString();
         });
-        AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.userDefines, checkSettings.project.fileSettings);
+        AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.userDefines, {});
     }
 
     mThread->setCheckFiles(true);
@@ -710,7 +712,7 @@ void MainWindow::analyzeFiles()
 
         if (file0.endsWith(".sln")) {
             QStringList configs;
-            for (std::list<ImportProject::FileSettings>::const_iterator it = p.fileSettings.cbegin(); it != p.fileSettings.cend(); ++it) {
+            for (std::list<FileSettings>::const_iterator it = p.fileSettings.cbegin(); it != p.fileSettings.cend(); ++it) {
                 const QString cfg(QString::fromStdString(it->cfg));
                 if (!configs.contains(cfg))
                     configs.push_back(cfg);
