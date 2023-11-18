@@ -138,6 +138,7 @@ nonneg int astCount(const Token* tok, const char* op, int depth = 100);
 
 bool astHasToken(const Token* root, const Token * tok);
 
+bool astHasExpr(const Token * tok, nonneg int exprid);
 bool astHasVar(const Token * tok, nonneg int varid);
 
 bool astIsPrimitive(const Token* tok);

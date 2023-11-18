@@ -149,6 +149,15 @@ bool astHasVar(const Token * tok, nonneg int varid)
     return astHasVar(tok->astOperand1(), varid) || astHasVar(tok->astOperand2(), varid);
 }
 
+bool astHasExpr(const Token * tok, nonneg int exprid)
+{
+    if (!tok)
+        return false;
+    if (tok->exprId() == exprid)
+        return true;
+    return astHasExpr(tok->astOperand1(), exprid) || astHasExpr(tok->astOperand2(), exprid);
+}
+
 static bool astIsCharWithSign(const Token *tok, ValueType::Sign sign)
 {
     if (!tok)

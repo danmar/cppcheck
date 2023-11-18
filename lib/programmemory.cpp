@@ -1313,7 +1313,7 @@ namespace {
                 const Token* tok = p.first.tok;
                 const ValueFlow::Value& value = p.second;
 
-                if (tok->str() == expr->str()) {
+                if (tok->str() == expr->str() && !astHasExpr(tok, expr->exprId())) {
                     // TODO: Handle when it is greater
                     if (n != astCount(tok, expr->str().c_str()))
                         continue;
