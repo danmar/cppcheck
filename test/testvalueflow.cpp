@@ -7246,21 +7246,21 @@ private:
         valueOfTok(code, "&");
 
         code = "bool a(int *);\n"
-                "void fn2(int b) {\n"
-                "  if (b) {\n"
-                "    bool c, d, e;\n"
-                "    if (c && d)\n"
-                "      return;\n"
-                "    if (e && a(&b)) {\n"
-                "    }\n"
-                "  }\n"
-                "}\n";
+               "void fn2(int b) {\n"
+               "  if (b) {\n"
+               "    bool c, d, e;\n"
+               "    if (c && d)\n"
+               "      return;\n"
+               "    if (e && a(&b)) {\n"
+               "    }\n"
+               "  }\n"
+               "}\n";
         valueOfTok(code, "e");
 
         code = "void f(int a, int b, int c) {\n"
-                "  if (c && (a || a && b))\n"
-                "    if (a && b) {}\n"
-                "}\n";
+               "  if (c && (a || a && b))\n"
+               "    if (a && b) {}\n"
+               "}\n";
         valueOfTok(code, "a");
     }
 

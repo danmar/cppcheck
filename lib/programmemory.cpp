@@ -1219,7 +1219,10 @@ static std::vector<const Token*> setDifference(const std::vector<const Token*>& 
     return result;
 }
 
-static bool evalSameCondition(const ProgramMemory& state, const Token* storedValue, const Token* cond, const Settings* settings)
+static bool evalSameCondition(const ProgramMemory& state,
+                              const Token* storedValue,
+                              const Token* cond,
+                              const Settings* settings)
 {
     assert(!conditionIsTrue(cond, state, settings));
     ProgramMemory pm = state;
@@ -1229,9 +1232,13 @@ static bool evalSameCondition(const ProgramMemory& state, const Token* storedVal
     return conditionIsTrue(cond, pm, settings);
 }
 
-static void pruneConditions(std::vector<const Token*>& conds, bool b, const std::unordered_map<nonneg int, ValueFlow::Value>& state)
+static void pruneConditions(std::vector<const Token*>& conds,
+                            bool b,
+                            const std::unordered_map<nonneg int, ValueFlow::Value>& state)
 {
-    conds.erase(std::remove_if(conds.begin(), conds.end(), [&](const Token* cond) {
+    conds.erase(std::remove_if(conds.begin(),
+                               conds.end(),
+                               [&](const Token* cond) {
         if (cond->exprId() == 0)
             return false;
         auto it = state.find(cond->exprId());
@@ -1239,7 +1246,8 @@ static void pruneConditions(std::vector<const Token*>& conds, bool b, const std:
             return false;
         const ValueFlow::Value& v = it->second;
         return isTrueOrFalse(v, !b);
-    }), conds.end());
+    }),
+                conds.end());
 }
 
 namespace {
@@ -1256,9 +1264,9 @@ namespace {
         {
             std::unordered_map<nonneg int, ValueFlow::Value> result;
             auto state = *this;
-            for(const Token* tok:toks) {
+            for (const Token* tok : toks) {
                 ValueFlow::Value r = state.execute(tok);
-                if(r.isUninitValue())
+                if (r.isUninitValue())
                     continue;
                 result.insert(std::make_pair(tok->exprId(), r));
             }
@@ -1294,7 +1302,7 @@ namespace {
                 return unknown;
             std::vector<const Token*> conditions1 = flattenConditionsSorted(expr);
             std::unordered_map<nonneg int, ValueFlow::Value> condValues = executeAll(conditions1);
-            for(const auto& p:condValues) {
+            for (const auto& p : condValues) {
                 const ValueFlow::Value& v = p.second;
                 if (isTrueOrFalse(v, b))
                     return v;
@@ -1599,7 +1607,7 @@ namespace {
         ValueFlow::Value execute(const Token* expr)
         {
             depth--;
-            if(depth < 0)
+            if (depth < 0)
                 return unknown;
             ValueFlow::Value v = executeImpl(expr);
             if (!v.isUninitValue())
