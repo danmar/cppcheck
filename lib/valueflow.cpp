@@ -1042,6 +1042,16 @@ static void setTokenValue(Token* tok,
         }
     }
 
+    // C++ init
+    else if (parent->str() == "{" && Token::simpleMatch(parent->previous(), "= {") && Token::simpleMatch(parent->link(), "} ;")) {
+        const Token* lhs = parent->previous()->astOperand1();
+        if (lhs && lhs->valueType()) {
+            if (lhs->valueType()->isIntegral() || lhs->valueType()->isFloat() || (lhs->valueType()->pointer > 0 && value.isIntValue())) {
+                setTokenValue(parent, value, settings);
+            }
+        }
+    }
+
     else if (Token::Match(parent, ":: %name%") && parent->astOperand2() == tok) {
         setTokenValue(parent, value, settings);
     }
@@ -1335,16 +1345,12 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
         if (!tok->isTemplateArg())
             value.setKnown();
         setTokenValue(tok->next(), std::move(value), settings);
-    } else if (Token::Match(tok, "%name% = {") && tok->variable() &&
-               (tok->variable()->isPointer() || (tok->variable()->valueType() && tok->variable()->valueType()->isIntegral()))) {
-        if (Token::simpleMatch(tok->tokAt(3), "}")) {
+    } else if (Token::simpleMatch(tok, "= { } ;")) {
+        const Token* lhs = tok->astOperand1();
+        if (lhs && lhs->valueType() && (lhs->valueType()->isIntegral() || lhs->valueType()->pointer > 0)) {
             ValueFlow::Value value(0);
             value.setKnown();
-            setTokenValue(tok->tokAt(2), std::move(value), settings);
-        } else if (tok->tokAt(2)->astOperand1() && tok->tokAt(2)->astOperand1()->hasKnownIntValue()) {
-            ValueFlow::Value value(tok->tokAt(2)->astOperand1()->getKnownIntValue());
-            value.setKnown();
-            setTokenValue(tok->tokAt(2), std::move(value), settings);
+            setTokenValue(tok->next(), std::move(value), settings);
         }
     }
     return tok->next();
@@ -9448,7 +9454,6 @@ void ValueFlow::setValues(TokenList& tokenlist,
         VFA(valueFlowUnknownFunctionReturn(tokenlist, settings)),
         VFA(valueFlowGlobalConstVar(tokenlist, settings)),
         VFA(valueFlowEnumValue(symboldatabase, settings)),
-        VFA(valueFlowNumber(tokenlist, settings)),
         VFA(valueFlowGlobalStaticVar(tokenlist, settings)),
         VFA(valueFlowPointerAlias(tokenlist, settings)),
         VFA(valueFlowLifetime(tokenlist, errorLogger, settings)),
