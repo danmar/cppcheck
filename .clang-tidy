@@ -61,7 +61,6 @@ Checks: >
         -readability-braces-around-statements,
         -readability-const-return-type,
         -readability-container-data-pointer,
-        -readability-convert-member-functions-to-static,
         -readability-function-cognitive-complexity,
         -readability-function-size,
         -readability-identifier-length,

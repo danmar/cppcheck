@@ -71,10 +71,6 @@ These might change the behavior of code which might not be intended (need to fil
 
 This leads to a mismatch of raw string literals and regular ones and does reduce the readability.
 
-`readability-convert-member-functions-to-static`<br/>
-
-Disabled because of false positives with Qt `slot` methods (see https://github.com/llvm/llvm-project/issues/57520).
-
 `-clang-analyzer-*`<br/>
 
 Disabled because of false positives (needs to file an upstream bug report).
@@ -197,3 +193,9 @@ This is the most expensive check for several files and it is providing much in t
 `modernize-use-nullptr`
 
 This is already covered by the `-Wzero-as-null-pointer-constant` compiler warning so there is no need for an additional check.
+
+### Disabled for GUI only
+
+`readability-convert-member-functions-to-static`<br/>
+
+Disabled because of false positives with Qt `slot` methods (see https://github.com/llvm/llvm-project/issues/57520).
