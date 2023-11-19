@@ -22,6 +22,7 @@
 #include <cstddef>
 #include <list>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "cmdlinelogger.h"
@@ -30,6 +31,7 @@
 
 class Settings;
 class Suppressions;
+class Library;
 
 /// @addtogroup CLI
 /// @{
@@ -56,6 +58,16 @@ public:
     CmdLineParser(CmdLineLogger &logger, Settings &settings, Suppressions &suppressions, Suppressions &suppressionsNoFail);
 
     /**
+     * @brief Parse command line args and fill settings and file lists
+     * from there.
+     *
+     * @param argc argc from main()
+     * @param argv argv from main()
+     * @return false when errors are found in the input
+     */
+    bool fillSettingsFromArgs(int argc, const char* const argv[]);
+
+    /**
      * Parse given command line.
      * @return true if command line was ok, false if there was an error.
      */
@@ -80,6 +92,13 @@ public:
      */
     const std::vector<std::string>& getPathNames() const {
         return mPathNames;
+    }
+
+    /**
+     * Return the files user gave to command line.
+     */
+    const std::list<std::pair<std::string, std::size_t>>& getFiles() const {
+        return mFiles;
     }
 
     /**
@@ -130,9 +149,30 @@ private:
         return true;
     }
 
+    /**
+     * Tries to load a library and prints warning/error messages
+     * @return false, if an error occurred (except unknown XML elements)
+     */
+    static bool tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename);
+
+    /**
+     * @brief Load libraries
+     * @param settings Settings
+     * @return Returns true if successful
+     */
+    static bool loadLibraries(Settings& settings);
+
+    /**
+     * @brief Load addons
+     * @param settings Settings
+     * @return Returns true if successful
+     */
+    static bool loadAddons(Settings& settings);
+
     CmdLineLogger &mLogger;
 
     std::vector<std::string> mPathNames;
+    std::list<std::pair<std::string, std::size_t>> mFiles;
     std::list<FileSettings> mFileSettings;
     std::vector<std::string> mIgnoredPaths;
     Settings &mSettings;
