@@ -4,6 +4,7 @@
 import os
 import sys
 import pytest
+import time
 
 from testutils import cppcheck, assert_cppcheck
 
@@ -189,6 +190,79 @@ def test_slow_long_line(tmpdir):
             f.write(" -123, 456, -789,\\\n")
         f.write("};\n")
     cppcheck([filename]) # should not take more than ~1 second
+
+
+@pytest.mark.timeout(60)
+def test_slow_large_constant_expression(tmpdir):
+    # 12182
+    filename = os.path.join(tmpdir, 'hang.c')
+    with open(filename, 'wt') as f:
+        f.write("""
+#define FLAG1 0
+#define FLAG2 0
+#define FLAG3 0
+#define FLAG4 0
+#define FLAG5 0
+#define FLAG6 0
+#define FLAG7 0
+#define FLAG8 0
+#define FLAG9 0
+#define FLAG10 0
+#define FLAG11 0
+#define FLAG12 0
+#define FLAG13 0
+#define FLAG14 0
+#define FLAG15 0
+#define FLAG16 0
+#define FLAG17 0
+#define FLAG18 0
+#define FLAG19 0
+#define FLAG20 0
+#define FLAG21 0
+#define FLAG22 0
+#define FLAG23 0
+#define FLAG24 0
+
+#define maxval(x, y) ((x) > (y) ? (x) : (y))
+
+#define E_SAMPLE_SIZE   maxval( FLAG1,                \
+                                  maxval( FLAG2,      \
+                                  maxval( FLAG3,      \
+                                  maxval( FLAG4,      \
+                                  maxval( FLAG5,      \
+                                  maxval( FLAG6,      \
+                                  maxval( FLAG7,      \
+                                  maxval( FLAG8,      \
+                                  maxval( FLAG9,      \
+                                  maxval( FLAG10,     \
+                                  maxval( FLAG11,     \
+                                  maxval( FLAG12,     \
+                                  maxval( FLAG13,     \
+                                  maxval( FLAG14,     \
+                                  FLAG15 ))))))))))))))
+
+#define SAMPLE_SIZE       maxval( E_SAMPLE_SIZE,      \
+                                  maxval( sizeof(st), \
+                                  maxval( FLAG16,     \
+                                  maxval( FLAG17,     \
+                                  maxval( FLAG18,     \
+                                  maxval( FLAG19,     \
+                                  maxval( FLAG20,     \
+                                  maxval( FLAG21,     \
+                                  maxval( FLAG22,     \
+                                  maxval( FLAG23,     \
+                                          FLAG24 ))))))))))
+
+typedef struct {
+    int n;
+} st;
+
+x = SAMPLE_SIZE;
+        """)
+    t1 = time.time()
+    cppcheck([filename])
+    t2 = time.time()
+    print(t2-t1)
 
 
 def test_execute_addon_failure(tmpdir):
