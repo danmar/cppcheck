@@ -380,6 +380,24 @@ void memleak_asprintf5(char* p) {
     // cppcheck-suppress memleak
 }
 
+void memleak_asprintf6(const char* fmt, const int arg) {
+    char* ptr;
+    if (-1 == asprintf(&ptr, fmt, arg))
+        return;
+    printf("%s", ptr);
+    free(ptr);
+}
+
+void memleak_asprintf7(const char* fmt, const int arg) {
+    char* ptr;
+    if (asprintf(&ptr, fmt, arg) != -1) {
+        printf("%s", ptr);
+        free(ptr);
+    }
+    else
+        return;
+}
+
 void memleak_xmalloc()
 {
     char *p = (char*)xmalloc(10);

@@ -1108,6 +1108,23 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
                 }
             }
 
+            // don't warn when returning after checking return value of outparam allocation
+            const Scope* scope = tok->scope();
+            if (scope->type == Scope::ScopeType::eIf || scope->type== Scope::ScopeType::eElse) {
+                if (scope->type == Scope::ScopeType::eElse) {
+                    scope = scope->bodyStart->tokAt(-2)->scope();
+                }
+                const Token* const ifEnd = scope->bodyStart->previous();
+                const Token* const ifStart = ifEnd->link();
+                const Token* const alloc = it->second.allocTok;
+                if (precedes(ifStart, alloc) && succeeds(ifEnd, alloc)) {
+                    int argn{};
+                    if (const Token* ftok = getTokenArgumentFunction(alloc, argn))
+                        if (Token::Match(ftok->next()->astParent(), "%comp%"))
+                            continue;
+                }
+            }
+
             // return deallocated pointer
             if (used != PtrUsage::NONE && it->second.status == VarInfo::DEALLOC)
                 deallocReturnError(tok, it->second.allocTok, var->name());
