@@ -4,7 +4,6 @@
 import os
 import sys
 import pytest
-import time
 
 from testutils import cppcheck, assert_cppcheck
 
@@ -259,10 +258,8 @@ typedef struct {
 
 x = SAMPLE_SIZE;
         """)
-    t1 = time.time()
+
     cppcheck([filename])
-    t2 = time.time()
-    print(t2-t1)
 
 
 def test_execute_addon_failure(tmpdir):
