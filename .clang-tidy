@@ -68,7 +68,6 @@ Checks: >
         -readability-implicit-bool-conversion,
         -readability-isolate-declaration,
         -readability-magic-numbers,
-        -readability-redundant-access-specifiers,
         -readability-suspicious-call-argument,
         -readability-uppercase-literal-suffix
 WarningsAsErrors: '*'

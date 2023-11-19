@@ -108,10 +108,6 @@ Produces a lot of false positives since it is too vague in its analysis.
 
 Produces warnings which might be considered false positives starting with C++11 - see https://github.com/llvm/llvm-project/issues/54526.
 
-`readability-redundant-access-specifiers`<br/>
-
-Reports warning with the Qt `<access-specifier> slots:` syntax in class declarations - see https://github.com/llvm/llvm-project/issues/60055.
-
 `modernize-avoid-c-arrays`<br/>
 
 Produces warnings when `const char[]` is being used which is quite common in our code. Does not make sense to enable before C++17 when `std::string_view` becomes available.
@@ -199,3 +195,7 @@ This is already covered by the `-Wzero-as-null-pointer-constant` compiler warnin
 `readability-convert-member-functions-to-static`<br/>
 
 Disabled because of false positives with Qt `slot` methods (see https://github.com/llvm/llvm-project/issues/57520).
+
+`readability-redundant-access-specifiers`<br/>
+
+Reports warning with the Qt `<access-specifier> slots:` syntax in class declarations - see https://github.com/llvm/llvm-project/issues/60055.
