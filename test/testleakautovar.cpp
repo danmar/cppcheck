@@ -1594,6 +1594,16 @@ private:
               "    s->p = NULL;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        const Settings s = settingsBuilder().library("std.cfg").build();
+        check("struct S {};\n"
+              "void f(int i, std::vector<std::unique_ptr<S>> &v) {\n"
+              "    if (i < 1) {\n"
+              "        auto s = new S;\n"
+              "        v.push_back(std::unique_ptr<S>(s));\n"
+              "    }\n"
+              "}\n", &s);
+        ASSERT_EQUALS("", errout.str()); // don't crash
     }
 
     void goto1() {
