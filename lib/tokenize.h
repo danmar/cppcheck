@@ -268,7 +268,7 @@ public:
 
     /**
      */
-    bool isMemberFunction(const Token *openParen) const;
+    static bool isMemberFunction(const Token *openParen);
 
     /**
      */
@@ -570,12 +570,12 @@ private:
 
     void unsupportedTypedef(const Token *tok) const;
 
-    void setVarIdClassFunction(const std::string &classname, // cppcheck-suppress functionConst // has side effects
-                               Token * const startToken,
-                               const Token * const endToken,
-                               const std::map<std::string, nonneg int> &varlist,
-                               std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
-                               nonneg int &varId_);
+    static void setVarIdClassFunction(const std::string &classname,
+                                      Token * const startToken,
+                                      const Token * const endToken,
+                                      const std::map<std::string, nonneg int> &varlist,
+                                      std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
+                                      nonneg int &varId_);
 
     /**
      * Output list of unknown types.
@@ -585,7 +585,7 @@ private:
     /** Find end of SQL (or PL/SQL) block */
     static const Token *findSQLBlockEnd(const Token *tokSQLStart);
 
-    bool operatorEnd(const Token * tok) const;
+    static bool operatorEnd(const Token * tok);
 
 public:
     const SymbolDatabase *getSymbolDatabase() const {

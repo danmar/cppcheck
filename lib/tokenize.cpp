@@ -2786,7 +2786,7 @@ namespace {
     }
 } // namespace
 
-bool Tokenizer::isMemberFunction(const Token *openParen) const
+bool Tokenizer::isMemberFunction(const Token *openParen)
 {
     return (Token::Match(openParen->tokAt(-2), ":: %name% (") ||
             Token::Match(openParen->tokAt(-3), ":: ~ %name% (")) &&
@@ -9880,7 +9880,7 @@ void Tokenizer::createSymbolDatabase()
     mSymbolDatabase->validate();
 }
 
-bool Tokenizer::operatorEnd(const Token * tok) const
+bool Tokenizer::operatorEnd(const Token * tok)
 {
     if (tok && tok->str() == ")") {
         if (isFunctionHead(tok, "{|;|?|:|["))
