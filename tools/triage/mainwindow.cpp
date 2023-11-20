@@ -285,7 +285,7 @@ bool MainWindow::unpackArchive(const QString &archiveName)
     return runProcess("tar", args);
 }
 
-void MainWindow::showResult(QListWidgetItem *item)
+void MainWindow::showResult(const QListWidgetItem *item)
 {
     ui->statusBar->clearMessage();
     const bool local = item->text().startsWith(DACA2_PACKAGES);

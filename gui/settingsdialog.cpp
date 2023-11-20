@@ -214,7 +214,7 @@ void SettingsDialog::saveSettingValues() const
     CodeEditorStyle::saveSettings(&settings, *mCurrentStyle);
 }
 
-void SettingsDialog::saveCheckboxValue(QSettings *settings, QCheckBox *box,
+void SettingsDialog::saveCheckboxValue(QSettings *settings, const QCheckBox *box,
                                        const QString &name)
 {
     settings->setValue(name, checkStateToBool(box->checkState()));
