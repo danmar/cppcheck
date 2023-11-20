@@ -3254,7 +3254,8 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
             }
         }
 
-        if (scope1->className == tok1->str() && (scope1->type != Scope::eFunction)) {
+        const bool isAnonymousNamespace = (scope1->type == Scope::eNamespace && scope1->className.empty());
+        if ((scope1->className == tok1->str() && (scope1->type != Scope::eFunction)) || isAnonymousNamespace) {
             // do the scopes match (same scope) or do their names match (multiple namespaces)
             if ((*scope == scope1->nestedIn) || (*scope &&
                                                  (*scope)->className == scope1->nestedIn->className &&
@@ -3286,6 +3287,8 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                         tok1 = tok1->tokAt(2);
                     scope2 = scope2->findRecordInNestedList(tok1->str());
                 }
+                if (isAnonymousNamespace)
+                    scope2 = scope2->findRecordInNestedList(tok1->str());
 
                 if (count == 1 && scope2) {
                     match = true;
