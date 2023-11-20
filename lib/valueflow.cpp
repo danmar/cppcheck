@@ -4011,7 +4011,7 @@ struct LifetimeStore {
         }
     }
 
-    static LifetimeStore fromFunctionArg(const Function * f, const Token *tok, const Variable *var, TokenList &tokenlist, const Settings* settings, ErrorLogger *errorLogger) {
+    static LifetimeStore fromFunctionArg(const Function * f, const Token *tok, const Variable *var, const TokenList &tokenlist, const Settings* settings, ErrorLogger *errorLogger) {
         if (!var)
             return LifetimeStore{};
         if (!var->isArgument())
@@ -7038,7 +7038,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
                                      const Token* expr,
                                      bool globalvar,
                                      const MathLib::bigint value,
-                                     TokenList& tokenlist,
+                                     const TokenList& tokenlist,
                                      ErrorLogger* errorLogger,
                                      const Settings* settings)
 {
