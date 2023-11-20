@@ -38,7 +38,6 @@ class Token;
 class TemplateSimplifier;
 class ErrorLogger;
 class Preprocessor;
-class VariableMap;
 enum class Severity;
 
 namespace simplecpp {
@@ -366,16 +365,7 @@ public:
      * @param endsWith    string after function head
      * @return token matching with endsWith if syntax seems to be a function head else nullptr
      */
-    const Token * isFunctionHead(const Token *tok, const std::string &endsWith) const;
-
-    /**
-     * is token pointing at function head?
-     * @param tok         A '(' or ')' token in a possible function head
-     * @param endsWith    string after function head
-     * @param cpp         c++ code
-     * @return token matching with endsWith if syntax seems to be a function head else nullptr
-     */
-    static const Token * isFunctionHead(const Token *tok, const std::string &endsWith, bool cpp);
+    static const Token * isFunctionHead(const Token *tok, const std::string &endsWith);
 
     const Preprocessor *getPreprocessor() const {
         assert(mPreprocessor);
@@ -579,15 +569,6 @@ private:
     bool duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef) const;
 
     void unsupportedTypedef(const Token *tok) const;
-
-    void setVarIdClassDeclaration(Token* const startToken, // cppcheck-suppress functionConst // has side effects
-                                  VariableMap& variableMap,
-                                  const nonneg int scopeStartVarId,
-                                  std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers);
-
-    void setVarIdStructMembers(Token **tok1,
-                               std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
-                               nonneg int &varId) const;
 
     void setVarIdClassFunction(const std::string &classname, // cppcheck-suppress functionConst // has side effects
                                Token * const startToken,
