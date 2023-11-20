@@ -531,7 +531,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             // class function?
             else if (isFunction(tok, scope, &funcStart, &argStart, &declEnd)) {
                 if (tok->previous()->str() != "::" || tok->strAt(-2) == scope->className) {
-                    Function function(&mTokenizer, tok, scope, funcStart, argStart);
+                    Function function(tok, scope, funcStart, argStart);
 
                     // save the access type
                     function.access = access[scope];
@@ -2418,8 +2418,7 @@ static bool isOperator(const Token *tokenDef)
     return name.size() > 8 && startsWith(name,"operator") && std::strchr("+-*/%&|~^<>!=[(", name[8]);
 }
 
-Function::Function(const Tokenizer *mTokenizer,
-                   const Token *tok,
+Function::Function(const Token *tok,
                    const Scope *scope,
                    const Token *tokDef,
                    const Token *tokArgDef)
@@ -3168,7 +3167,7 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
 
 Function* SymbolDatabase::addGlobalFunctionDecl(Scope*& scope, const Token *tok, const Token *argStart, const Token* funcStart)
 {
-    Function function(&mTokenizer, tok, scope, funcStart, argStart);
+    Function function(tok, scope, funcStart, argStart);
     scope->addFunction(std::move(function));
     return &scope->functionList.back();
 }
