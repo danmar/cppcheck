@@ -5460,7 +5460,7 @@ private:
         ASSERT_EQUALS(classNC.derivedFrom[0].type, &classNA);
         ASSERT_EQUALS(classNC.derivedFrom[1].type, &classNB);
     }
-    
+
     void createSymbolDatabaseFindAllScopes7()
     {
         GET_SYMBOL_DB("namespace {\n"
