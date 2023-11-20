@@ -817,18 +817,19 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--plist-output=", 15) == 0) {
                 mSettings.plistOutput = Path::simplifyPath(Path::fromNativeSeparators(argv[i] + 15));
                 if (mSettings.plistOutput.empty())
-                    mSettings.plistOutput = "./";
-                else if (!endsWith(mSettings.plistOutput,'/'))
-                    mSettings.plistOutput += '/';
+                    mSettings.plistOutput = ".";
 
                 const std::string plistOutput = Path::toNativeSeparators(mSettings.plistOutput);
                 if (!Path::isDirectory(plistOutput)) {
-                    std::string message("plist folder does not exist: \"");
+                    std::string message("plist folder does not exist: '");
                     message += plistOutput;
-                    message += "\".";
+                    message += "'.";
                     mLogger.printError(message);
                     return false;
                 }
+
+                if (!endsWith(mSettings.plistOutput,'/'))
+                    mSettings.plistOutput += '/';
             }
 
             // Special Cppcheck Premium options
