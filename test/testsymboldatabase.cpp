@@ -373,6 +373,7 @@ private:
         TEST_CASE(createSymbolDatabaseFindAllScopes4);
         TEST_CASE(createSymbolDatabaseFindAllScopes5);
         TEST_CASE(createSymbolDatabaseFindAllScopes6);
+        TEST_CASE(createSymbolDatabaseFindAllScopes7);
 
         TEST_CASE(createSymbolDatabaseIncompleteVars);
 
@@ -5459,6 +5460,31 @@ private:
         ASSERT_EQUALS(classNC.derivedFrom.size(), 2U);
         ASSERT_EQUALS(classNC.derivedFrom[0].type, &classNA);
         ASSERT_EQUALS(classNC.derivedFrom[1].type, &classNB);
+    }
+
+    void createSymbolDatabaseFindAllScopes7()
+    {
+        GET_SYMBOL_DB("namespace {\n"
+                      "    struct S {\n"
+                      "        void f();\n"
+                      "    };\n"
+                      "}\n"
+                      "void S::f() {}\n");
+        ASSERT(db);
+        ASSERT_EQUALS(4, db->scopeList.size());
+        auto anon = db->scopeList.begin();
+        ++anon;
+        ASSERT(anon->className.empty());
+        ASSERT_EQUALS(anon->type, Scope::eNamespace);
+        auto S = anon;
+        ++S;
+        ASSERT_EQUALS(S->type, Scope::eStruct);
+        ASSERT_EQUALS(S->className, "S");
+        ASSERT_EQUALS(S->nestedIn, &*anon);
+        const Token* f = Token::findsimplematch(tokenizer.tokens(), "f ( ) {");
+        ASSERT(f && f->function() && f->function()->functionScope && f->function()->functionScope->bodyStart);
+        ASSERT_EQUALS(f->function()->functionScope->functionOf, &*S);
+        ASSERT_EQUALS(f->function()->functionScope->bodyStart->linenr(), 6);
     }
 
     void createSymbolDatabaseIncompleteVars()
