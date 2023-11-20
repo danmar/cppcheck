@@ -71,10 +71,6 @@ These might change the behavior of code which might not be intended (need to fil
 
 This leads to a mismatch of raw string literals and regular ones and does reduce the readability.
 
-`readability-convert-member-functions-to-static`<br/>
-
-Disabled because of false positives with Qt `slot` methods (see https://github.com/llvm/llvm-project/issues/57520).
-
 `-clang-analyzer-*`<br/>
 
 Disabled because of false positives (needs to file an upstream bug report).
@@ -111,10 +107,6 @@ Produces a lot of false positives since it is too vague in its analysis.
 `performance-inefficient-string-concatenation`<br/>
 
 Produces warnings which might be considered false positives starting with C++11 - see https://github.com/llvm/llvm-project/issues/54526.
-
-`readability-redundant-access-specifiers`<br/>
-
-Reports warning with the Qt `<access-specifier> slots:` syntax in class declarations - see https://github.com/llvm/llvm-project/issues/60055.
 
 `modernize-avoid-c-arrays`<br/>
 
@@ -197,3 +189,13 @@ This is the most expensive check for several files and it is providing much in t
 `modernize-use-nullptr`
 
 This is already covered by the `-Wzero-as-null-pointer-constant` compiler warning so there is no need for an additional check.
+
+### Disabled for GUI only
+
+`readability-convert-member-functions-to-static`<br/>
+
+Disabled because of false positives with Qt `slot` methods (see https://github.com/llvm/llvm-project/issues/57520).
+
+`readability-redundant-access-specifiers`<br/>
+
+Reports warning with the Qt `<access-specifier> slots:` syntax in class declarations - see https://github.com/llvm/llvm-project/issues/60055.
