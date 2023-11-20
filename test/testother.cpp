@@ -3374,6 +3374,13 @@ private:
               "    return is >> s.x;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("bool f(std::string& s1, std::string& s2) {\n" // #12203
+              "    return &s1 == &s2;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 's1' can be declared as reference to const\n"
+                      "[test.cpp:1]: (style) Parameter 's2' can be declared as reference to const\n",
+                      errout.str());
     }
 
     void constParameterCallback() {
