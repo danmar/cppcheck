@@ -53,12 +53,10 @@
 //---------------------------------------------------------------------------
 
 SymbolDatabase::SymbolDatabase(Tokenizer& tokenizer, const Settings& settings, ErrorLogger* errorLogger)
-    : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger)
+    : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger), mIsCpp(mTokenizer.isCPP())
 {
     if (!mTokenizer.tokens())
         return;
-
-    mIsCpp = isCPP();
 
     if (mSettings.platform.defaultSign == 's' || mSettings.platform.defaultSign == 'S')
         mDefaultSignedness = ValueType::SIGNED;
@@ -162,7 +160,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                                          "SymbolDatabase",
                                          tok->progressValue());
         // Locate next class
-        if ((mTokenizer.isCPP() && tok->isKeyword() &&
+        if ((mIsCpp && tok->isKeyword() &&
              ((Token::Match(tok, "class|struct|union|namespace ::| %name% final| {|:|::|<") &&
                !Token::Match(tok->previous(), "new|friend|const|enum|typedef|mutable|volatile|using|)|(|<")) ||
               (Token::Match(tok, "enum class| %name% {") ||
@@ -172,7 +170,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
             if (tok->strAt(1) == "::")
                 tok2 = tok2->next();
-            else if (mTokenizer.isCPP() && tok->strAt(1) == "class")
+            else if (mIsCpp && tok->strAt(1) == "class")
                 tok2 = tok2->next();
 
             while (Token::Match(tok2, ":: %name%"))
@@ -188,7 +186,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             }
 
             // skip over final
-            if (mTokenizer.isCPP() && Token::simpleMatch(tok2, "final"))
+            if (mIsCpp && Token::simpleMatch(tok2, "final"))
                 tok2 = tok2->next();
 
             // make sure we have valid code
@@ -256,7 +254,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 }
 
                 // definition may be different than declaration
-                if (mTokenizer.isCPP() && tok->str() == "class") {
+                if (mIsCpp && tok->str() == "class") {
                     access[new_scope] = AccessControl::Private;
                     new_scope->type = Scope::eClass;
                 } else if (tok->str() == "struct") {
@@ -315,7 +313,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 }
 
                 if (new_scope->type == Scope::eEnum) {
-                    tok2 = new_scope->addEnum(tok, mTokenizer.isCPP());
+                    tok2 = new_scope->addEnum(tok, mIsCpp);
                     scope->nestedList.push_back(new_scope);
 
                     if (!tok2)
@@ -331,7 +329,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         }
 
         // Namespace and unknown macro (#3854)
-        else if (mTokenizer.isCPP() && tok->isKeyword() &&
+        else if (mIsCpp && tok->isKeyword() &&
                  Token::Match(tok, "namespace %name% %type% (") &&
                  tok->tokAt(2)->isUpperCaseName() &&
                  Token::simpleMatch(tok->linkAt(3), ") {")) {
@@ -370,7 +368,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         }
 
         // using namespace
-        else if (mTokenizer.isCPP() && tok->isKeyword() && Token::Match(tok, "using namespace ::| %type% ;|::")) {
+        else if (mIsCpp && tok->isKeyword() && Token::Match(tok, "using namespace ::| %type% ;|::")) {
             Scope::UsingInfo using_info;
 
             using_info.start = tok; // save location
@@ -390,7 +388,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         }
 
         // using type alias
-        else if (mTokenizer.isCPP() && tok->isKeyword() && Token::Match(tok, "using %name% =") && !tok->tokAt(2)->isSimplifiedTypedef()) {
+        else if (mIsCpp && tok->isKeyword() && Token::Match(tok, "using %name% =") && !tok->tokAt(2)->isSimplifiedTypedef()) {
             if (tok->strAt(-1) != ">" && !findType(tok->next(), scope)) {
                 // fill typeList..
                 typeList.emplace_back(tok, nullptr, scope);
@@ -603,7 +601,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             }
 
             // friend class declaration?
-            else if (mTokenizer.isCPP() && tok->isKeyword() && Token::Match(tok, "friend class|struct| ::| %any% ;|::")) {
+            else if (mIsCpp && tok->isKeyword() && Token::Match(tok, "friend class|struct| ::| %any% ;|::")) {
                 Type::FriendInfo friendInfo;
 
                 // save the name start
@@ -1550,7 +1548,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
         }
         if (mSettings.library.functions.find(fstr) != mSettings.library.functions.end())
             continue;
-        if (mTokenizer.isCPP()) {
+        if (mIsCpp) {
             const Token* parent = tok->astParent();
             while (Token::Match(parent, "::|[|{"))
                 parent = parent->astParent();
@@ -1615,7 +1613,7 @@ namespace {
         }
     };
     using ExprIdMap = std::map<ExprIdKey, nonneg int>;
-    void setParentExprId(Token* tok, bool cpp, ExprIdMap& exprIdMap, nonneg int &id) {
+    void setParentExprId(Token* tok, ExprIdMap& exprIdMap, nonneg int &id) {
         if (!tok->astParent() || tok->astParent()->isControlFlowKeyword())
             return;
         const Token* op1 = tok->astParent()->astOperand1();
@@ -1632,7 +1630,7 @@ namespace {
         if (tok->astParent()->isExpandedMacro() || Token::Match(tok->astParent(), "++|--")) {
             tok->astParent()->exprId(id);
             ++id;
-            setParentExprId(tok->astParent(), cpp, exprIdMap, id);
+            setParentExprId(tok->astParent(), exprIdMap, id);
             return;
         }
 
@@ -1674,7 +1672,7 @@ namespace {
         if (key.operand1 > key.operand2 && key.operand2 &&
             Token::Match(tok->astParent(), "%or%|%oror%|+|*|&|&&|^|==|!=")) {
             // In C++ the order of operands of + might matter
-            if (!cpp ||
+            if (!tok->isCpp() ||
                 key.parentOp != "+" ||
                 !tok->astParent()->valueType() ||
                 tok->astParent()->valueType()->isIntegral() ||
@@ -1691,7 +1689,7 @@ namespace {
         } else {
             tok->astParent()->exprId(it->second);
         }
-        setParentExprId(tok->astParent(), cpp, exprIdMap, id);
+        setParentExprId(tok->astParent(), exprIdMap, id);
     }
 }
 
@@ -1766,7 +1764,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
             if (tok->varId() > 0) {
                 tok->exprId(tok->varId());
                 if (tok->astParent() && tok->astParent()->exprId() == 0)
-                    setParentExprId(tok, mTokenizer.isCPP(), exprIdMap, id);
+                    setParentExprId(tok, exprIdMap, id);
             } else if (tok->astParent() && !tok->astOperand1() && !tok->astOperand2()) {
                 if (tok->tokType() == Token::Type::eBracket)
                     continue;
@@ -1789,7 +1787,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
                     }
                 }
 
-                setParentExprId(tok, mTokenizer.isCPP(), exprIdMap, id);
+                setParentExprId(tok, exprIdMap, id);
             }
         }
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
@@ -2063,7 +2061,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
             // skip over modifiers and other stuff
             while (Token::Match(tok1, "const|static|extern|template|virtual|struct|class|enum|%name%")) {
                 // friend type func(); is not a function
-                if (isCPP() && tok1->str() == "friend" && tok2->str() == ";")
+                if (mIsCpp && tok1->str() == "friend" && tok2->str() == ";")
                     return false;
                 tok1 = tok1->previous();
             }
@@ -5070,7 +5068,7 @@ bool Scope::isVariableDeclaration(const Token* const tok, const Token*& vartok, 
     if (!tok)
         return false;
 
-    const bool isCPP = check && check->mTokenizer.isCPP();
+    const bool isCPP = tok->isCpp();
 
     if (isCPP && Token::Match(tok, "throw|new"))
         return false;
@@ -6208,7 +6206,7 @@ const Function *Scope::getDestructor() const
 
 bool SymbolDatabase::isCPP() const
 {
-    return mTokenizer.isCPP();
+    return mIsCpp;
 }
 
 //---------------------------------------------------------------------------
@@ -6463,7 +6461,7 @@ Function * SymbolDatabase::findFunctionInScope(const Token *func, const Scope *n
 
 bool SymbolDatabase::isReservedName(const std::string& iName) const
 {
-    if (isCPP()) {
+    if (mIsCpp) {
         static const auto& cpp_keywords = Keywords::getAll(Standards::cppstd_t::CPPLatest);
         return cpp_keywords.find(iName) != cpp_keywords.cend();
     }

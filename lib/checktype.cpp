@@ -68,7 +68,7 @@ void CheckType::checkTooBigBitwiseShift()
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         // C++ and macro: OUT(x<<y)
-        if (mTokenizer->isCPP() && Token::Match(tok, "[;{}] %name% (") && Token::simpleMatch(tok->linkAt(2), ") ;") && tok->next()->isUpperCaseName() && !tok->next()->function())
+        if (tok->isCpp() && Token::Match(tok, "[;{}] %name% (") && Token::simpleMatch(tok->linkAt(2), ") ;") && tok->next()->isUpperCaseName() && !tok->next()->function())
             tok = tok->linkAt(2);
 
         if (!tok->astOperand1() || !tok->astOperand2())

@@ -296,7 +296,7 @@ void CheckAutoVariables::autoVariables()
             }
             // Invalid pointer deallocation
             else if ((Token::Match(tok, "%name% ( %var%|%str% ) ;") && mSettings->library.getDeallocFuncInfo(tok)) ||
-                     (mTokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| %var%|%str% !!["))) {
+                     (tok->isCpp() && Token::Match(tok, "delete [| ]| (| %var%|%str% !!["))) {
                 tok = Token::findmatch(tok->next(), "%var%|%str%");
                 if (Token::simpleMatch(tok->astParent(), "."))
                     continue;
@@ -314,7 +314,7 @@ void CheckAutoVariables::autoVariables()
                     }
                 }
             } else if ((Token::Match(tok, "%name% ( & %var% ) ;") && mSettings->library.getDeallocFuncInfo(tok)) ||
-                       (mTokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| & %var% !!["))) {
+                       (tok->isCpp() && Token::Match(tok, "delete [| ]| (| & %var% !!["))) {
                 tok = Token::findmatch(tok->next(), "%var%");
                 if (isAutoVar(tok))
                     errorInvalidDeallocation(tok, nullptr);
@@ -463,9 +463,9 @@ static int getPointerDepth(const Token *tok)
     return n;
 }
 
-static bool isDeadTemporary(bool cpp, const Token* tok, const Token* expr, const Library* library)
+static bool isDeadTemporary(const Token* tok, const Token* expr, const Library* library)
 {
-    if (!isTemporary(cpp, tok, library))
+    if (!isTemporary(tok, library))
         return false;
     if (expr) {
         if (!precedes(nextAfterAstRightmostLeaf(tok->astTop()), nextAfterAstRightmostLeaf(expr->astTop())))
@@ -495,7 +495,7 @@ static bool isEscapedReference(const Variable* var)
     if (!Token::simpleMatch(varDeclEndToken, "="))
         return false;
     const Token* vartok = varDeclEndToken->astOperand2();
-    return !isTemporary(true, vartok, nullptr, false);
+    return !isTemporary(vartok, nullptr, false);
 }
 
 static bool isDanglingSubFunction(const Token* tokvalue, const Token* tok)
@@ -562,7 +562,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     errorReturnReference(tok, lt.errorPath, lt.inconclusive);
                     break;
                 }
-                if (isDeadTemporary(mTokenizer->isCPP(), lt.token, nullptr, &mSettings->library)) {
+                if (isDeadTemporary(lt.token, nullptr, &mSettings->library)) {
                     errorReturnTempReference(tok, lt.errorPath, lt.inconclusive);
                     break;
                 }
@@ -584,7 +584,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                 if (!printInconclusive && lt.inconclusive)
                     continue;
                 const Token * tokvalue = lt.token;
-                if (isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
+                if (isDeadTemporary(tokvalue, tok, &mSettings->library)) {
                     errorDanglingTempReference(tok, lt.errorPath, lt.inconclusive);
                     break;
                 }
@@ -598,7 +598,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                 continue;
             if (!printInconclusive && val.isInconclusive())
                 continue;
-            const Token* parent = getParentLifetime(mTokenizer->isCPP(), val.tokvalue, &mSettings->library);
+            const Token* parent = getParentLifetime(val.tokvalue, &mSettings->library);
             if (!exprs.insert(parent).second)
                 continue;
             for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(parent, escape || isAssignedToNonLocal(tok))) {
@@ -614,7 +614,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                             continue;
                         if ((tokvalue->variable() && !isEscapedReference(tokvalue->variable()) &&
                              isInScope(tokvalue->variable()->nameToken(), scope)) ||
-                            isDeadTemporary(mTokenizer->isCPP(), tokvalue, nullptr, &mSettings->library)) {
+                            isDeadTemporary(tokvalue, nullptr, &mSettings->library)) {
                             errorReturnDanglingLifetime(tok, &val);
                             break;
                         }
@@ -622,7 +622,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                         errorInvalidLifetime(tok, &val);
                         break;
                     } else if (!tokvalue->variable() &&
-                               isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
+                               isDeadTemporary(tokvalue, tok, &mSettings->library)) {
                         if (!diag(tokvalue))
                             errorDanglingTemporaryLifetime(tok, &val, tokvalue);
                         break;
@@ -650,8 +650,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                                            tok->scope()->bodyEnd,
                                            var->declarationId(),
                                            var->isGlobal(),
-                                           mSettings,
-                                           mTokenizer->isCPP())) {
+                                           mSettings)) {
                         errorDanglngLifetime(tok2, &val);
                         break;
                     }

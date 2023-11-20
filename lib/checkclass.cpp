@@ -503,7 +503,7 @@ void CheckClass::copyconstructors()
                 }
             }
             for (tok = func.functionScope->bodyStart; tok != func.functionScope->bodyEnd; tok = tok->next()) {
-                if ((mTokenizer->isCPP() && Token::Match(tok, "%var% = new")) ||
+                if ((tok->isCpp() && Token::Match(tok, "%var% = new")) ||
                     (Token::Match(tok, "%var% = %name% (") && (mSettings->library.getAllocFuncInfo(tok->tokAt(2)) || mSettings->library.getReallocFuncInfo(tok->tokAt(2))))) {
                     allocatedVars.erase(tok->varId());
                 } else if (Token::Match(tok, "%var% = %name% . %name% ;") && allocatedVars.find(tok->varId()) != allocatedVars.end()) {
@@ -817,7 +817,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             continue;
 
         // Variable getting value from stream?
-        if (Token::Match(ftok, ">>|& %name%") && isLikelyStreamRead(true, ftok)) {
+        if (Token::Match(ftok, ">>|& %name%") && isLikelyStreamRead(ftok)) {
             assignVar(usage, ftok->next()->varId());
         }
 
@@ -1771,7 +1771,7 @@ bool CheckClass::hasAllocation(const Function *func, const Scope* scope, const T
     if (!end)
         end = func->functionScope->bodyEnd;
     for (const Token *tok = start; tok && (tok != end); tok = tok->next()) {
-        if (((mTokenizer->isCPP() && Token::Match(tok, "%var% = new")) ||
+        if (((tok->isCpp() && Token::Match(tok, "%var% = new")) ||
              (Token::Match(tok, "%var% = %name% (") && mSettings->library.getAllocFuncInfo(tok->tokAt(2)))) &&
             isMemberVar(scope, tok))
             return true;
@@ -1780,9 +1780,9 @@ bool CheckClass::hasAllocation(const Function *func, const Scope* scope, const T
         const Token *var;
         if (Token::Match(tok, "%name% ( %var%") && mSettings->library.getDeallocFuncInfo(tok))
             var = tok->tokAt(2);
-        else if (mTokenizer->isCPP() && Token::Match(tok, "delete [ ] %var%"))
+        else if (tok->isCpp() && Token::Match(tok, "delete [ ] %var%"))
             var = tok->tokAt(3);
-        else if (mTokenizer->isCPP() && Token::Match(tok, "delete %var%"))
+        else if (tok->isCpp() && Token::Match(tok, "delete %var%"))
             var = tok->next();
         else
             continue;
@@ -2552,7 +2552,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
             // Streaming
             else if (end->strAt(1) == "<<" && tok1->strAt(-1) != "<<")
                 return false;
-            else if (isLikelyStreamRead(true, tok1->previous()))
+            else if (isLikelyStreamRead(tok1->previous()))
                 return false;
 
             // ++/--
@@ -2581,7 +2581,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
         }
 
         // streaming: >> *this
-        else if (Token::simpleMatch(tok1, ">> * this") && isLikelyStreamRead(true, tok1)) {
+        else if (Token::simpleMatch(tok1, ">> * this") && isLikelyStreamRead(tok1)) {
             return false;
         }
 
