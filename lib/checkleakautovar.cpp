@@ -1109,7 +1109,7 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
             }
 
             // don't warn when returning after checking return value of outparam allocation
-            if (it->second.allocTok && tok->scope()->type == Scope::ScopeType::eIf || tok->scope()->type== Scope::ScopeType::eElse) {
+            if (it->second.allocTok && (tok->scope()->type == Scope::ScopeType::eIf || tok->scope()->type== Scope::ScopeType::eElse)) {
                 const Scope* scope = tok->scope();
                 if (scope->type == Scope::ScopeType::eElse) {
                     scope = scope->bodyStart->tokAt(-2)->scope();
