@@ -5867,8 +5867,11 @@ const Function* SymbolDatabase::findFunction(const Token* const tok) const
             if (tok1)
                 tok1 = tok1->tokAt(2);
 
-            if (currScope && tok1)
-                return currScope->findFunction(tok1);
+            if (currScope && tok1) {
+                const Function* func = currScope->findFunction(tok1);
+                if (func)
+                    return func;
+            }
         }
     }
 
