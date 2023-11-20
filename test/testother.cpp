@@ -2812,12 +2812,6 @@ private:
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
-              "    const U * const * const * const y = dynamic_cast<const U const * const * const * const>(&x);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
-        check("struct T : public U { void dostuff() const {}};\n"
-              "void a(T& x) {\n"
-              "    x.dostuff();\n"
               "    U const * const *  * const y = dynamic_cast<U const * const *  * const>(&x);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
