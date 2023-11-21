@@ -3286,7 +3286,7 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                         tok1 = tok1->tokAt(2);
                     scope2 = scope2->findRecordInNestedList(tok1->str());
                 }
-                if (isAnonymousNamespace)
+                if (scope2 && isAnonymousNamespace)
                     scope2 = scope2->findRecordInNestedList(tok1->str());
 
                 if (count == 1 && scope2) {

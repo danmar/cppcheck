@@ -5464,27 +5464,47 @@ private:
 
     void createSymbolDatabaseFindAllScopes7()
     {
-        GET_SYMBOL_DB("namespace {\n"
-                      "    struct S {\n"
-                      "        void f();\n"
-                      "    };\n"
-                      "}\n"
-                      "void S::f() {}\n");
-        ASSERT(db);
-        ASSERT_EQUALS(4, db->scopeList.size());
-        auto anon = db->scopeList.begin();
-        ++anon;
-        ASSERT(anon->className.empty());
-        ASSERT_EQUALS(anon->type, Scope::eNamespace);
-        auto S = anon;
-        ++S;
-        ASSERT_EQUALS(S->type, Scope::eStruct);
-        ASSERT_EQUALS(S->className, "S");
-        ASSERT_EQUALS(S->nestedIn, &*anon);
-        const Token* f = Token::findsimplematch(tokenizer.tokens(), "f ( ) {");
-        ASSERT(f && f->function() && f->function()->functionScope && f->function()->functionScope->bodyStart);
-        ASSERT_EQUALS(f->function()->functionScope->functionOf, &*S);
-        ASSERT_EQUALS(f->function()->functionScope->bodyStart->linenr(), 6);
+        {
+            GET_SYMBOL_DB("namespace {\n"
+                          "    struct S {\n"
+                          "        void f();\n"
+                          "    };\n"
+                          "}\n"
+                          "void S::f() {}\n");
+            ASSERT(db);
+            ASSERT_EQUALS(4, db->scopeList.size());
+            auto anon = db->scopeList.begin();
+            ++anon;
+            ASSERT(anon->className.empty());
+            ASSERT_EQUALS(anon->type, Scope::eNamespace);
+            auto S = anon;
+            ++S;
+            ASSERT_EQUALS(S->type, Scope::eStruct);
+            ASSERT_EQUALS(S->className, "S");
+            ASSERT_EQUALS(S->nestedIn, &*anon);
+            const Token* f = Token::findsimplematch(tokenizer.tokens(), "f ( ) {");
+            ASSERT(f && f->function() && f->function()->functionScope && f->function()->functionScope->bodyStart);
+            ASSERT_EQUALS(f->function()->functionScope->functionOf, &*S);
+            ASSERT_EQUALS(f->function()->functionScope->bodyStart->linenr(), 6);
+        }
+        {
+            GET_SYMBOL_DB("namespace {\n"
+                          "    int i = 0;\n"
+                          "}\n"
+                          "namespace N {\n"
+                          "    namespace {\n"
+                          "        template<typename T>\n"
+                          "        struct S {\n"
+                          "            void f();\n"
+                          "        };\n"
+                          "        template<typename T>\n"
+                          "        void S<T>::f() {}\n"
+                          "    }\n"
+                          "    S<int> g() { return {}; }\n"
+                          "}\n");
+            ASSERT(db); // don't crash
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void createSymbolDatabaseIncompleteVars()
