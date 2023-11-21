@@ -2880,7 +2880,7 @@ private:
               "   x.f();\n"
               "   foo( static_cast<U2>(0) );\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
 
         check("class a {\n"
               "    void foo(const int& i) const;\n"
@@ -3374,6 +3374,12 @@ private:
               "    return is >> s.x;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int& r) {\n"
+              "    (void)(true);\n"
+              "    if (r) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'r' can be declared as reference to const\n", errout.str());
     }
 
     void constParameterCallback() {
@@ -10852,7 +10858,9 @@ private:
               "        for (auto &j : g(std::move(l))) { (void)j; }\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable 'l'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'j' can be declared as reference to const\n"
+                      "[test.cpp:4]: (warning) Access of moved variable 'l'.\n",
+                      errout.str());
     }
 
     void moveCallback()
