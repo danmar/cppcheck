@@ -9408,7 +9408,7 @@ static ValueFlowPassAdaptor<F> makeValueFlowPassAdaptor(const char* name, bool c
 #define VALUEFLOW_ADAPTOR(cpp, ...)                                                                                    \
     makeValueFlowPassAdaptor(#__VA_ARGS__,                                                                             \
                              cpp,                                                                                      \
-                             [](TokenList& tokenlist, /* cppcheck-suppress constVariable*/                             \
+                             [](TokenList& tokenlist,                                                                  \
                                 SymbolDatabase& symboldatabase,                                                        \
                                 ErrorLogger* errorLogger,                                                              \
                                 const Settings* settings,                                                              \
