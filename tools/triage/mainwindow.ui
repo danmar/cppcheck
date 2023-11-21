@@ -450,7 +450,7 @@
    <sender>results</sender>
    <signal>itemDoubleClicked(QListWidgetItem*)</signal>
    <receiver>MainWindow</receiver>
-   <slot>showResult(QListWidgetItem*)</slot>
+   <slot>showResult(const QListWidgetItem*)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>28</x>
@@ -481,7 +481,7 @@
  </connections>
  <slots>
   <slot>loadFile()</slot>
-  <slot>showResult(QListWidgetItem*)</slot>
+  <slot>showResult(const QListWidgetItem*)</slot>
   <slot>loadFromClipboard()</slot>
   <slot>filter(QString)</slot>
   <slot>refreshResults()</slot>

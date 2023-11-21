@@ -453,7 +453,7 @@ static CppcheckLibraryData::Markup loadMarkup(QXmlStreamReader &xmlReader)
     return markup;
 }
 
-static CppcheckLibraryData::Entrypoint loadEntrypoint(QXmlStreamReader &xmlReader)
+static CppcheckLibraryData::Entrypoint loadEntrypoint(const QXmlStreamReader &xmlReader)
 {
     CppcheckLibraryData::Entrypoint entrypoint;
     entrypoint.name = xmlReader.attributes().value("name").toString();
