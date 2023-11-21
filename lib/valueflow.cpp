@@ -5238,7 +5238,7 @@ static const Scope* getLoopScope(const Token* tok)
 }
 
 //
-static void valueFlowConditionExpressions(TokenList &tokenlist, const SymbolDatabase& symboldatabase, ErrorLogger *errorLogger, const Settings &settings)
+static void valueFlowConditionExpressions(const TokenList &tokenlist, const SymbolDatabase& symboldatabase, ErrorLogger *errorLogger, const Settings &settings)
 {
     for (const Scope * scope : symboldatabase.functionScopes) {
         if (const Token* incompleteTok = findIncompleteVar(scope->bodyStart, scope->bodyEnd)) {
@@ -7482,7 +7482,7 @@ static void valueFlowInjectParameter(const TokenList& tokenlist,
                      settings);
 }
 
-static void valueFlowSwitchVariable(TokenList &tokenlist, const SymbolDatabase& symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
+static void valueFlowSwitchVariable(const TokenList &tokenlist, const SymbolDatabase& symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (const Scope &scope : symboldatabase.scopeList) {
         if (scope.type != Scope::ScopeType::eSwitch)
@@ -9408,7 +9408,7 @@ static ValueFlowPassAdaptor<F> makeValueFlowPassAdaptor(const char* name, bool c
 #define VALUEFLOW_ADAPTOR(cpp, ...)                                                                                    \
     makeValueFlowPassAdaptor(#__VA_ARGS__,                                                                             \
                              cpp,                                                                                      \
-                             [](TokenList& tokenlist,                                                                  \
+                             [](TokenList& tokenlist, /* cppcheck-suppress constVariable*/                             \
                                 SymbolDatabase& symboldatabase,                                                        \
                                 ErrorLogger* errorLogger,                                                              \
                                 const Settings* settings,                                                              \

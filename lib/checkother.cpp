@@ -1390,6 +1390,8 @@ void CheckOther::checkConstVariable()
             continue;
         if (var->isVolatile())
             continue;
+        if (var->nameToken()->isExpandedMacro())
+            continue;
         if (isStructuredBindingVariable(var)) // TODO: check all bound variables
             continue;
         if (isVariableChanged(var, mSettings, mTokenizer->isCPP()))

@@ -298,7 +298,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
     }
 }
 
-int check_wrapper_sig(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(CppCheck&), CppCheck& cppcheck)
+int check_wrapper_sig(const CppCheckExecutor& executor, int (CppCheckExecutor::*f)(CppCheck&), const CppCheck& cppcheck)
 {
     // determine stack vs. heap
     char stackVariable;
