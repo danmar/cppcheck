@@ -21,10 +21,6 @@
 #include <sstream>
 #include <string>
 
-// NOLINTNEXTLINE(readability-redundant-declaration) - TODO: fix this
-extern std::ostringstream errout;
-// NOLINTNEXTLINE(readability-redundant-declaration) - TODO: fix this
-extern std::ostringstream output;
 /**
  * @brief Utility class for capturing cout and cerr to ostringstream buffers
  * for later use. Uses RAII to stop redirection when the object goes out of
@@ -50,9 +46,6 @@ public:
     ~RedirectOutputError() {
         std::cout.rdbuf(_oldCout); // restore cout's original streambuf
         std::cerr.rdbuf(_oldCerr); // restore cerrs's original streambuf
-
-        errout << _err.str();
-        output << _out.str();
     }
 
     /** Return what would be printed to cout. See also clearOutput() */

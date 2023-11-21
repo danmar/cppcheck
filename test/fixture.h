@@ -248,10 +248,7 @@ public:
     static std::size_t runTests(const options& args);
 };
 
-// TODO: fix these
-// NOLINTNEXTLINE(readability-redundant-declaration)
 extern std::ostringstream errout;
-// NOLINTNEXTLINE(readability-redundant-declaration)
 extern std::ostringstream output;
 
 // TODO: most asserts do not actually assert i.e. do not return
