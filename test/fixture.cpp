@@ -34,6 +34,7 @@
 
 #include "xml.h"
 
+// TODO: make sure the output has been consumed in the test
 std::ostringstream errout;
 std::ostringstream output;
 
