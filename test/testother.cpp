@@ -3374,7 +3374,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 's1' can be declared as reference to const\n"
                       "[test.cpp:1]: (style) Parameter 's2' can be declared as reference to const\n",
                       errout.str());
-        
+
         check("struct S {\n"
               "    void f(int& r) { p = &r; }\n"
               "    int* p;\n"
