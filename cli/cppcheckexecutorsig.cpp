@@ -298,7 +298,6 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
     }
 }
 
-// cppcheck-suppress constParameterReference
 int check_wrapper_sig(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(CppCheck&), CppCheck& cppcheck)
 {
     // determine stack vs. heap

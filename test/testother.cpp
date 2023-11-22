@@ -3380,6 +3380,12 @@ private:
               "    if (r) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'r' can be declared as reference to const\n", errout.str());
+
+        check("struct S { void f(int&); };\n"
+              "void g(S& s, int& r, void (S::* p2m)(int&)) {\n"
+              "    (s.*p2m)(r);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constParameterCallback() {
