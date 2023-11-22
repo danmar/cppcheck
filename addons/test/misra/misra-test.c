@@ -418,6 +418,21 @@ static void misra_8_14(char * restrict str) {(void)str;} // 8.14
 struct S_9_3 { struct S_9_3* p; int x; };
 struct S_9_3* s_9_3_array[] = { x, NULL }; // 8.4
 
+// #10854
+struct Entry_9_2{
+    union{ // 19.2
+        const int *p;
+        int x;
+    };
+    int y;
+};
+
+static void misra_9_2_10854(void){
+    struct Entry_9_2 e1[] =
+    {
+        {{ .x = 1 }, .y = 2 }
+    };
+}
 static void misra_9_empty_or_zero_initializers(void) {
     int a[2]    = {};                          // 9.2
     int b[2][2] = {};                          // 9.2

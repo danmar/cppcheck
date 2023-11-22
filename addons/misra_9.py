@@ -500,11 +500,29 @@ def createRecordChildrenDefs(ed, var):
         child = ElementDef("pointer", var.nameToken, var.nameToken.valueType)
         ed.addChild(child)
         return
+    child_dict = {}
     for variable in valueType.typeScope.varlist:
         if variable is var:
             continue
         child = getElementDef(variable.nameToken)
-        ed.addChild(child)
+        child_dict[variable.nameToken] = child
+    for scopes in valueType.typeScope.nestedList:
+        varscope = False
+        if scopes.nestedIn == valueType.typeScope:
+            for variable in valueType.typeScope.varlist:
+                if variable.nameToken and variable.nameToken.valueType and variable.nameToken.valueType.typeScope == scopes:
+                    varscope = True
+                    break
+            if not varscope:
+                ed1 = ElementDef("record", scopes.Id, valueType)
+                for variable in scopes.varlist:
+                    child = getElementDef(variable.nameToken)
+                    ed1.addChild(child)
+                child_dict[scopes.bodyStart] = ed1
+    sorted_keys = sorted(list(child_dict.keys()), key=lambda k: "%s %s %s" % (k.file, k.linenr, k.column))
+    for _key in sorted_keys:
+        ed.addChild(child_dict[_key])
+
 
 def getElementByDesignator(ed, token):
     if not token.str in [ '.', '[' ]:

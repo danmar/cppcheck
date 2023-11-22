@@ -566,6 +566,7 @@ class Scope:
     function = None
     nestedInId = None
     nestedIn = None
+    nestedList = None
     type = None
     isExecutable = None
     varlistId = None
@@ -583,6 +584,7 @@ class Scope:
         self.bodyEnd = None
         self.nestedInId = element.get('nestedIn')
         self.nestedIn = None
+        self.nestedList = list()
         self.type = element.get('type')
         self.definedType = element.get('definedType')
         self.isExecutable = (self.type in ('Function', 'If', 'Else', 'For', 'While', 'Do',
@@ -603,6 +605,8 @@ class Scope:
         self.bodyStart = IdMap[self.bodyStartId]
         self.bodyEnd = IdMap[self.bodyEndId]
         self.nestedIn = IdMap[self.nestedInId]
+        if self.nestedIn:
+            self.nestedIn.nestedList.append(self)
         self.function = IdMap[self.functionId]
         for v in self.varlistId:
             value = IdMap.get(v)
