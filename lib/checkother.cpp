@@ -1431,25 +1431,7 @@ void CheckOther::checkConstVariable()
                     }
                 }
                 if (tok->isUnaryOp("&") && Token::Match(tok, "& %varid%", var->declarationId())) {
-                    const Token* opTok = tok->astParent();
-                    int argn = -1;
-                    if (opTok && opTok->isUnaryOp("!"))
-                        continue;
-                    if (opTok && (opTok->isComparisonOp() || opTok->isAssignmentOp() || opTok->isCalculation())) {
-                        if (opTok->isComparisonOp() || opTok->isCalculation()) {
-                            if (opTok->astOperand1() != tok)
-                                opTok = opTok->astOperand1();
-                            else
-                                opTok = opTok->astOperand2();
-                        }
-                        if (opTok && opTok->valueType() && var->valueType() && opTok->valueType()->isConst(var->valueType()->pointer))
-                            continue;
-                    } else if (const Token* ftok = getTokenArgumentFunction(tok, argn)) {
-                        bool inconclusive{};
-                        if (var->valueType() && !isVariableChangedByFunctionCall(ftok, var->valueType()->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
-                            continue;
-                    }
-                    usedInAssignment = true;
+                    usedInAssignment = isExpressionChangedAt(tok->next(), tok, 0, false, mSettings, true);
                     break;
                 }
                 if (astIsRangeBasedForDecl(tok) && Token::Match(tok->astParent()->astOperand2(), "%varid%", var->declarationId())) {

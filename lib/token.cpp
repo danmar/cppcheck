@@ -2109,10 +2109,10 @@ static void mergeAdjacent(std::list<ValueFlow::Value>& values)
 
 static void removeOverlaps(std::list<ValueFlow::Value>& values)
 {
-    for (ValueFlow::Value& x : values) {
+    for (const ValueFlow::Value& x : values) {
         if (x.isNonValue())
             continue;
-        values.remove_if([&](ValueFlow::Value& y) {
+        values.remove_if([&](const ValueFlow::Value& y) {
             if (y.isNonValue())
                 return false;
             if (&x == &y)

@@ -5943,7 +5943,7 @@ void Tokenizer::dump(std::ostream &out) const
         if (tok->isExternC())
             outs += " externLang=\"C\"";
         if (tok->isExpandedMacro())
-            outs += " isExpandedMacro=\"true\"";
+            outs += " macroName=\"" + tok->getMacroName() + "\"";
         if (tok->isTemplateArg())
             outs += " isTemplateArg=\"true\"";
         if (tok->isRemovedVoidParameter())

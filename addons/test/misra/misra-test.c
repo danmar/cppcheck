@@ -798,12 +798,15 @@ static void misra_11_3(u8* p, struct Fred *fred) {
   struct Wilma *wilma = (struct Wilma *)fred; // 11.3
 }
 
+typedef struct { uint32_t something; } struct_11_4;
+#define A_11_4 ((struct_11_4 *)0x40000U)  // 11.4
+
 static void misra_11_4(u8*p) {
   u64 y = (u64)p; // 11.4
   u8 *misra_11_4_A = ( u8 * ) 0x0005;// 11.4
   s32 misra_11_4_B;
   u8 *q = ( u8 * ) misra_11_4_B; // 11.4
-
+  dummy = A_11_4->something; // no-warning
 }
 
 static void misra_11_5(void *p) {
