@@ -93,12 +93,7 @@ static void skipEnumBody(T **tok)
         *tok = defStart->link()->next();
 }
 
-const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &endsWith) const
-{
-    return Tokenizer::isFunctionHead(tok, endsWith, isCPP());
-}
-
-const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &endsWith, bool cpp)
+const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &endsWith)
 {
     if (!tok)
         return nullptr;
@@ -113,7 +108,7 @@ const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &end
         }
         return (tok && endsWith.find(tok->str()) != std::string::npos) ? tok : nullptr;
     }
-    if (cpp && tok->str() == ")") {
+    if (tok->isCpp() && tok->str() == ")") {
         tok = tok->next();
         while (Token::Match(tok, "const|noexcept|override|final|volatile|mutable|&|&& !!(") ||
                (Token::Match(tok, "%name% !!(") && tok->isUpperCaseName()))
@@ -2791,7 +2786,7 @@ namespace {
     }
 } // namespace
 
-bool Tokenizer::isMemberFunction(const Token *openParen) const
+bool Tokenizer::isMemberFunction(const Token *openParen)
 {
     return (Token::Match(openParen->tokAt(-2), ":: %name% (") ||
             Token::Match(openParen->tokAt(-3), ":: ~ %name% (")) &&
@@ -3901,7 +3896,7 @@ const Token * Tokenizer::startOfExecutableScope(const Token * tok)
     if (tok->str() != ")")
         return nullptr;
 
-    tok = isFunctionHead(tok, ":{", true);
+    tok = Tokenizer::isFunctionHead(tok, ":{");
 
     if (Token::Match(tok, ": %name% [({]")) {
         while (Token::Match(tok, "[:,] %name% [({]"))
@@ -4088,32 +4083,31 @@ void Tokenizer::simplifyTemplates()
 //---------------------------------------------------------------------------
 
 
-/** Class used in Tokenizer::setVarIdPass1 */
-class VariableMap {
-private:
-    std::unordered_map<std::string, nonneg int> mVariableId;
-    std::unordered_map<std::string, nonneg int> mVariableId_global;
-    std::stack<std::vector<std::pair<std::string, nonneg int>>> mScopeInfo;
-    mutable nonneg int mVarId{};
-public:
-    VariableMap() = default;
-    void enterScope();
-    bool leaveScope();
-    void addVariable(const std::string& varname, bool globalNamespace);
-    bool hasVariable(const std::string& varname) const {
-        return mVariableId.find(varname) != mVariableId.end();
-    }
+namespace {
+    /** Class used in Tokenizer::setVarIdPass1 */
+    class VariableMap {
+    private:
+        std::unordered_map<std::string, nonneg int> mVariableId;
+        std::unordered_map<std::string, nonneg int> mVariableId_global;
+        std::stack<std::vector<std::pair<std::string, nonneg int>>> mScopeInfo;
+        mutable nonneg int mVarId{};
+    public:
+        VariableMap() = default;
+        void enterScope();
+        bool leaveScope();
+        void addVariable(const std::string& varname, bool globalNamespace);
+        bool hasVariable(const std::string& varname) const {
+            return mVariableId.find(varname) != mVariableId.end();
+        }
 
-    const std::unordered_map<std::string, nonneg int>& map(bool global) const {
-        return global ? mVariableId_global : mVariableId;
-    }
-    nonneg int getVarId() const {
-        return mVarId;
-    }
-    nonneg int& getVarId() {
-        return mVarId;
-    }
-};
+        const std::unordered_map<std::string, nonneg int>& map(bool global) const {
+            return global ? mVariableId_global : mVariableId;
+        }
+        nonneg int& getVarId() {
+            return mVarId;
+        }
+    };
+}
 
 
 void VariableMap::enterScope()
@@ -4298,9 +4292,9 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
 }
 
 
-void Tokenizer::setVarIdStructMembers(Token **tok1,
-                                      std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
-                                      nonneg int &varId) const
+static void setVarIdStructMembers(Token **tok1,
+                                  std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
+                                  nonneg int &varId)
 {
     Token *tok = *tok1;
 
@@ -4334,7 +4328,7 @@ void Tokenizer::setVarIdStructMembers(Token **tok1,
     while (Token::Match(tok->next(), ")| . %name% !!(")) {
         // Don't set varid for trailing return type
         if (tok->strAt(1) == ")" && (tok->linkAt(1)->previous()->isName() || tok->linkAt(1)->strAt(-1) == "]") &&
-            isFunctionHead(tok->linkAt(1), "{|;")) {
+            Tokenizer::isFunctionHead(tok->linkAt(1), "{|;")) {
             tok = tok->tokAt(3);
             continue;
         }
@@ -4363,10 +4357,10 @@ void Tokenizer::setVarIdStructMembers(Token **tok1,
     *tok1 = tok;
 }
 
-void Tokenizer::setVarIdClassDeclaration(Token* const startToken,
-                                         VariableMap& variableMap,
-                                         const nonneg int scopeStartVarId,
-                                         std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers)
+static bool setVarIdClassDeclaration(Token* const startToken,
+                                     VariableMap& variableMap,
+                                     const nonneg int scopeStartVarId,
+                                     std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers)
 {
     // end of scope
     const Token* const endToken = startToken->link();
@@ -4389,7 +4383,7 @@ void Tokenizer::setVarIdClassDeclaration(Token* const startToken,
     const Token *initListArgLastToken = nullptr;
     for (Token *tok = startToken->next(); tok != endToken; tok = tok->next()) {
         if (!tok)
-            syntaxError(nullptr);
+            return false;
         if (initList) {
             if (tok == initListArgLastToken)
                 initListArgLastToken = nullptr;
@@ -4416,7 +4410,7 @@ void Tokenizer::setVarIdClassDeclaration(Token* const startToken,
                 if (Token::Match(tok->previous(), "::|.") && tok->strAt(-2) != "this" && !Token::simpleMatch(tok->tokAt(-5), "( * this ) ."))
                     continue;
                 if (!tok->next())
-                    syntaxError(nullptr);
+                    return false;
                 if (tok->next()->str() == "::") {
                     if (tok->str() == className)
                         tok = tok->tokAt(2);
@@ -4435,6 +4429,7 @@ void Tokenizer::setVarIdClassDeclaration(Token* const startToken,
         } else if (indentlevel == 0 && tok->str() == ":" && !initListArgLastToken)
             initList = true;
     }
+    return true;
 }
 
 
@@ -4602,10 +4597,12 @@ void Tokenizer::setVarIdPass1()
                     }
                     // Set variable ids in class declaration..
                     if (!initlist && !isC() && !scopeStack.top().isExecutable && tok->link() && !isNamespace) {
-                        setVarIdClassDeclaration(tok->link(),
-                                                 variableMap,
-                                                 scopeStack.top().startVarid,
-                                                 structMembers);
+                        if (!setVarIdClassDeclaration(tok->link(),
+                                                      variableMap,
+                                                      scopeStack.top().startVarid,
+                                                      structMembers)) {
+                            syntaxError(nullptr);
+                        }
                     }
 
                     if (!scopeStack.top().isStructInit) {
@@ -5949,7 +5946,7 @@ void Tokenizer::dump(std::ostream &out) const
         if (tok->isExternC())
             outs += " externLang=\"C\"";
         if (tok->isExpandedMacro())
-            outs += " isExpandedMacro=\"true\"";
+            outs += " macroName=\"" + tok->getMacroName() + "\"";
         if (tok->isTemplateArg())
             outs += " isTemplateArg=\"true\"";
         if (tok->isRemovedVoidParameter())
@@ -9883,7 +9880,7 @@ void Tokenizer::createSymbolDatabase()
     mSymbolDatabase->validate();
 }
 
-bool Tokenizer::operatorEnd(const Token * tok) const
+bool Tokenizer::operatorEnd(const Token * tok)
 {
     if (tok && tok->str() == ")") {
         if (isFunctionHead(tok, "{|;|?|:|["))

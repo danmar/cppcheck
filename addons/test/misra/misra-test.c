@@ -779,6 +779,13 @@ static void misra_10_8(u8 x, s32 a, s32 b) {
 int (*misra_11_1_p)(void); // 8.4
 void *misra_11_1_bad1 = (void*)misra_11_1_p; // 11.1 8.4
 
+// #12172
+typedef void (*pfFunc_11_1)(uint32_t some);
+extern pfFunc_11_1 data_11_1[10];
+void func_11_1(pfFunc_11_1 ptr){ //8.4
+    data_11_1[index] = ptr; // no-warning
+}
+
 struct misra_11_2_s;
 struct misra_11_2_t;
 
@@ -791,12 +798,15 @@ static void misra_11_3(u8* p, struct Fred *fred) {
   struct Wilma *wilma = (struct Wilma *)fred; // 11.3
 }
 
+typedef struct { uint32_t something; } struct_11_4;
+#define A_11_4 ((struct_11_4 *)0x40000U)  // 11.4
+
 static void misra_11_4(u8*p) {
   u64 y = (u64)p; // 11.4
   u8 *misra_11_4_A = ( u8 * ) 0x0005;// 11.4
   s32 misra_11_4_B;
   u8 *q = ( u8 * ) misra_11_4_B; // 11.4
-
+  dummy = A_11_4->something; // no-warning
 }
 
 static void misra_11_5(void *p) {
@@ -1732,6 +1742,9 @@ static void misra_17_6(int x[static 20]) {(void)x;} // 17.6
 static int calculation(int x) { return x + 1; }
 static void misra_17_7(void) {
   calculation(123); // 17.7
+  int (*calc_ptr)(int) = &calculation;
+  calc_ptr(123); // 17.7
+  int y = calc_ptr(123);
 }
 
 static void misra_17_8(int x) {

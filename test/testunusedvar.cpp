@@ -176,6 +176,7 @@ private:
         TEST_CASE(localvararray3);  // ticket #3980
         TEST_CASE(localvararray4);  // ticket #4839
         TEST_CASE(localvararray5);  // ticket #7092
+        TEST_CASE(localvararray6);
         TEST_CASE(localvarstring1);
         TEST_CASE(localvarstring2); // ticket #2929
         TEST_CASE(localvarconst1);
@@ -6057,6 +6058,17 @@ private:
                               "    char v[1][2];\n"
                               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: v\n", errout.str());
+    }
+
+    void localvararray6() {
+        functionVariableUsage("struct S { int* p; };\n" // #11012
+                              "void g(struct S* ps);\n"
+                              "void f() {\n"
+                              "    int i[2];\n"
+                              "    struct S s = { i };\n"
+                              "    g(&s);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarstring1() { // ticket #1597

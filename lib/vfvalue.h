@@ -51,7 +51,11 @@ namespace ValueFlow
         {}
         Value(const Token* c, long long val, Bound b = Bound::Point);
 
-        static Value unknown();
+        static Value unknown() {
+            Value v;
+            v.valueType = ValueType::UNINIT;
+            return v;
+        }
 
         bool equalValue(const ValueFlow::Value& rhs) const {
             if (valueType != rhs.valueType)

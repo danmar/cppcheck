@@ -1594,6 +1594,16 @@ private:
               "    s->p = NULL;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        const Settings s = settingsBuilder().library("std.cfg").build();
+        check("struct S {};\n"
+              "void f(int i, std::vector<std::unique_ptr<S>> &v) {\n"
+              "    if (i < 1) {\n"
+              "        auto s = new S;\n"
+              "        v.push_back(std::unique_ptr<S>(s));\n"
+              "    }\n"
+              "}\n", &s);
+        ASSERT_EQUALS("", errout.str()); // don't crash
     }
 
     void goto1() {
@@ -2828,6 +2838,16 @@ private:
               "    SomeClass::someMethod(a);\n"
               "}\n", settingsLeakIgnore);
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: a\n", errout.str());
+
+        check("void bar(int* p) {\n"
+              "    if (p)\n"
+              "        free(p);\n"
+              "}\n"
+              "void f() {\n"
+              "    int* p = malloc(4);\n"
+              "    bar(p);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
@@ -3004,8 +3024,7 @@ private:
               "  HeapFree(MyHeap, 0, a);"
               "  HeapFree(MyHeap, 0, b);"
               "}");
-        TODO_ASSERT_EQUALS("[test.c:1] (error) Resource leak: MyHeap",
-                           "", errout.str());
+        ASSERT_EQUALS("[test.c:1]: (error) Resource leak: MyHeap\n", errout.str());
 
         check("void f() {"
               "  HANDLE MyHeap = HeapCreate(0, 0, 0);"
@@ -3013,9 +3032,9 @@ private:
               "  int *b = HeapAlloc(MyHeap, 0, sizeof(int));"
               "  HeapFree(MyHeap, 0, a);"
               "}");
-        TODO_ASSERT_EQUALS("[test.c:1] (error) Memory leak: MyHeap\n"
-                           "[test.c:1] (error) Memory leak: b",
-                           "[test.c:1]: (error) Memory leak: b\n", errout.str());
+        ASSERT_EQUALS("[test.c:1]: (error) Resource leak: MyHeap\n"
+                      "[test.c:1]: (error) Memory leak: b\n",
+                      errout.str());
     }
 };
 

@@ -647,7 +647,8 @@ def get_function_pointer_type(tok):
     ret += '('
     tok = tok.next.next
     while tok and (tok.str not in '()'):
-        ret += ' ' + tok.str
+        if tok.varId is None:
+            ret += ' ' + tok.str
         tok = tok.next
     if (tok is None) or tok.str != ')':
         return None
@@ -2519,6 +2520,20 @@ class MisraChecker:
                 self.reportError(token, 11, 3)
 
     def misra_11_4(self, data):
+        # Get list of macro definitions
+        macros = {}
+        for directive in data.directives:
+            #define X ((peripheral_t *)0x40000U)
+            res = re.match(r'#define ([A-Za-z0-9_]+).*', directive.str)
+            if res:
+                if res.group(1) in macros:
+                    macros[res.group(1)].append(directive)
+                else:
+                    macros[res.group(1)] = [directive]
+
+        # If macro definition is non-compliant then warn about the macro definition instead of
+        # the macro usages. To reduce diagnostics for a non-compliant macro.
+        bad_macros = []
         for token in data.tokenlist:
             if not isCast(token):
                 continue
@@ -2529,6 +2544,17 @@ class MisraChecker:
             if vt2.pointer > 0 and vt1.pointer == 0 and (vt1.isIntegral() or vt1.isEnum()) and vt2.type != 'void':
                 self.reportError(token, 11, 4)
             elif vt1.pointer > 0 and vt2.pointer == 0 and (vt2.isIntegral() or vt2.isEnum()) and vt1.type != 'void':
+                if token.macroName is not None and \
+                   token.macroName == token.astOperand1.macroName and \
+                   token.astOperand1.isInt and \
+                   token.link.previous.str == '*' and \
+                   token.macroName == token.link.previous.macroName and \
+                   token.macroName in macros and \
+                   len(macros[token.macroName]) == 1:
+                    if token.macroName not in bad_macros:
+                        bad_macros.append(token.macroName)
+                        self.reportError(macros[token.macroName][0], 11, 4)
+                    continue
                 self.reportError(token, 11, 4)
 
     def misra_11_5(self, data):
@@ -3332,7 +3358,9 @@ class MisraChecker:
                 continue
             if token.str != '(' or token.astParent:
                 continue
-            if not token.previous.isName or token.previous.varId:
+            if not token.astOperand1 or not token.astOperand1.isName:
+                continue
+            if token.astOperand1.varId and get_function_pointer_type(token.astOperand1.variable.typeStartToken) is None:
                 continue
             if token.valueType is None:
                 continue

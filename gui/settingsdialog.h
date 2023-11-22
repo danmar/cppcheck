@@ -185,7 +185,7 @@ protected:
      * @param box checkbox to save
      * @param name name for QSettings to store the value
      */
-    static void saveCheckboxValue(QSettings *settings, QCheckBox *box, const QString &name);
+    static void saveCheckboxValue(QSettings *settings, const QCheckBox *box, const QString &name);
 
     /**
      * @brief Convert bool to Qt::CheckState

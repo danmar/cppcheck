@@ -2943,27 +2943,29 @@ static const Token* findExpressionChangedImpl(const Token* expr,
     return result;
 }
 
-struct ExpressionChangedSimpleFind {
-    template<class F>
-    const Token* operator()(const Token* start, const Token* end, F f) const
-    {
-        return findToken(start, end, f);
-    }
-};
+namespace {
+    struct ExpressionChangedSimpleFind {
+        template<class F>
+        const Token* operator()(const Token* start, const Token* end, F f) const
+        {
+            return findToken(start, end, f);
+        }
+    };
 
-struct ExpressionChangedSkipDeadCode {
-    const Library* library;
-    const std::function<std::vector<MathLib::bigint>(const Token* tok)>* evaluate;
-    ExpressionChangedSkipDeadCode(const Library* library,
-                                  const std::function<std::vector<MathLib::bigint>(const Token* tok)>& evaluate)
-        : library(library), evaluate(&evaluate)
-    {}
-    template<class F>
-    const Token* operator()(const Token* start, const Token* end, F f) const
-    {
-        return findTokenSkipDeadCode(library, start, end, f, *evaluate);
-    }
-};
+    struct ExpressionChangedSkipDeadCode {
+        const Library* library;
+        const std::function<std::vector<MathLib::bigint>(const Token* tok)>* evaluate;
+        ExpressionChangedSkipDeadCode(const Library* library,
+                                      const std::function<std::vector<MathLib::bigint>(const Token* tok)>& evaluate)
+            : library(library), evaluate(&evaluate)
+        {}
+        template<class F>
+        const Token* operator()(const Token* start, const Token* end, F f) const
+        {
+            return findTokenSkipDeadCode(library, start, end, f, *evaluate);
+        }
+    };
+}
 
 const Token* findExpressionChanged(const Token* expr,
                                    const Token* start,
@@ -3263,6 +3265,18 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
     return ExprUsage::Inconclusive;
 }
 
+bool isLeafDot(const Token* tok)
+{
+    if (!tok)
+        return false;
+    const Token * parent = tok->astParent();
+    if (!Token::simpleMatch(parent, "."))
+        return false;
+    if (parent->astOperand2() == tok && !Token::simpleMatch(parent->astParent(), "."))
+        return true;
+    return isLeafDot(parent);
+}
+
 ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings, bool cpp)
 {
     const Token* parent = tok->astParent();
@@ -3283,6 +3297,13 @@ ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings,
             !parent->isUnaryOp("&") &&
             !(astIsRHS(tok) && isLikelyStreamRead(cpp, parent)))
             return ExprUsage::Used;
+        if (isLeafDot(tok)) {
+            const Token* op = parent->astParent();
+            while (Token::simpleMatch(op, "."))
+                op = op->astParent();
+            if (Token::Match(op, "%assign%|++|--") && op->str() != "=")
+                return ExprUsage::Used;
+        }
         if (Token::simpleMatch(parent, "=") && astIsRHS(tok)) {
             const Token* const lhs  = parent->astOperand1();
             if (lhs && lhs->variable() && lhs->variable()->isReference() && lhs == lhs->variable()->nameToken())

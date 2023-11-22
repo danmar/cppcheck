@@ -420,7 +420,7 @@ void CodeEditor::highlightErrorLine()
     setExtraSelections(extraSelections);
 }
 
-void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
+void CodeEditor::lineNumberAreaPaintEvent(const QPaintEvent *event)
 {
     QPainter painter(mLineNumberArea);
     painter.fillRect(event->rect(), mWidgetStyle->lineNumBGColor);

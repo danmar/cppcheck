@@ -930,6 +930,24 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 // #error etc during preprocessing
                 configurationError.push_back((mCurrentConfig.empty() ? "\'\'" : mCurrentConfig) + " : [" + o.location.file() + ':' + std::to_string(o.location.line) + "] " + o.msg);
                 --checkCount; // don't count invalid configurations
+
+                if (!hasValidConfig && currCfg == *configurations.rbegin()) {
+                    // If there is no valid configuration then report error..
+                    std::string file = Path::fromNativeSeparators(o.location.file());
+                    if (mSettings.relativePaths)
+                        file = Path::getRelativePath(file, mSettings.basePaths);
+
+                    const ErrorMessage::FileLocation loc1(file, o.location.line, o.location.col);
+                    std::list<ErrorMessage::FileLocation> callstack(1, loc1);
+
+                    ErrorMessage errmsg(callstack,
+                                        filename,
+                                        Severity::error,
+                                        o.msg,
+                                        "preprocessorErrorDirective",
+                                        Certainty::normal);
+                    reportErr(errmsg);
+                }
                 continue;
 
             } catch (const TerminateException &) {

@@ -354,9 +354,48 @@ void memleak_asprintf(char **ptr, const char *fmt, const int arg)
     if (-1 != asprintf(ptr,fmt,arg)) {
         free(ptr);
     }
-    if (-1 != asprintf(ptr,fmt,arg)) {
-        // TODO: Related to #8980 cppcheck-suppress memleak
+    if (-1 != asprintf(ptr,fmt,arg)) {}
+}
+
+void memleak_asprintf2() { // #12186
+    char* p = malloc(5);
+    // cppcheck-suppress memleak
+    (void)asprintf(&p, "%s", "test");
+    // cppcheck-suppress memleak
+}
+
+void memleak_asprintf3() {
+    char* p = malloc(5);
+    // cppcheck-suppress memleak
+    asprintf(&p, "%s", "test");
+    free(p);
+}
+
+void memleak_asprintf4(char** p) {
+    asprintf(p, "%s", "test");
+}
+
+void memleak_asprintf5(char* p) {
+    asprintf(&p, "%s", "test");
+    // cppcheck-suppress memleak
+}
+
+void memleak_asprintf6(const char* fmt, const int arg) {
+    char* ptr;
+    if (-1 == asprintf(&ptr, fmt, arg))
+        return;
+    printf("%s", ptr);
+    free(ptr);
+}
+
+void memleak_asprintf7(const char* fmt, const int arg) {
+    char* ptr;
+    if (asprintf(&ptr, fmt, arg) != -1) {
+        printf("%s", ptr);
+        free(ptr);
     }
+    else
+        return;
 }
 
 void memleak_xmalloc()

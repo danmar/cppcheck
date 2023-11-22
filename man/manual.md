@@ -451,10 +451,10 @@ The format for an error suppression is one of:
     [error id]:[filename2]
     [error id]
 
-The `error id` is the id that you want to suppress. The easiest way to get it is to use the --template=gcc command line flag. The id is shown in brackets.
+The `error id` is the id that you want to suppress. The id of a warning is shown in brackets in the normal cppcheck text output. The suppression `error id` may contain \* to match any sequence of tokens.
 
-The filename may include the wildcard characters \* or ?, which matches any sequence of characters or any single character respectively. 
-It is recommended to use "/" as path separator on all operating systems. The filename must match the filename in the reported warning exactly. 
+The filename may include the wildcard characters \* or ?, which matches any sequence of characters or any single character respectively.
+It is recommended to use forward-slash `/` as path separator on all operating systems. The filename must match the filename in the reported warning exactly.
 For instance, if the warning contains a relative path, then the suppression must match that relative path.
 
 ## Command line suppression

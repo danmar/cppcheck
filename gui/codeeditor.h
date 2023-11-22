@@ -91,7 +91,7 @@ public:
     CodeEditor &operator=(const CodeEditor &) = delete;
     ~CodeEditor() override;
 
-    void lineNumberAreaPaintEvent(QPaintEvent *event);
+    void lineNumberAreaPaintEvent(const QPaintEvent *event);
     int lineNumberAreaWidth();
     void setStyle(const CodeEditorStyle& newStyle);
 

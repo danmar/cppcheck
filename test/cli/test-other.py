@@ -2,6 +2,7 @@
 # python -m pytest test-other.py
 
 import os
+import sys
 import pytest
 
 from testutils import cppcheck, assert_cppcheck
@@ -68,6 +69,15 @@ def test_missing_include_inline_suppr(tmpdir):
 
     _, _, stderr = cppcheck(args)
     assert stderr == ''
+
+
+def test_preprocessor_error(tmpdir):
+    test_file = os.path.join(tmpdir, '10866.c')
+    with open(test_file, 'wt') as f:
+        f.write('#error test\nx=1;\n')
+    exitcode, _, stderr = cppcheck(['--error-exitcode=1', test_file])
+    assert 'preprocessorErrorDirective' in stderr
+    assert exitcode != 0
 
 
 def test_invalid_library(tmpdir):
@@ -179,6 +189,77 @@ def test_slow_long_line(tmpdir):
             f.write(" -123, 456, -789,\\\n")
         f.write("};\n")
     cppcheck([filename]) # should not take more than ~1 second
+
+
+@pytest.mark.timeout(60)
+def test_slow_large_constant_expression(tmpdir):
+    # 12182
+    filename = os.path.join(tmpdir, 'hang.c')
+    with open(filename, 'wt') as f:
+        f.write("""
+#define FLAG1 0
+#define FLAG2 0
+#define FLAG3 0
+#define FLAG4 0
+#define FLAG5 0
+#define FLAG6 0
+#define FLAG7 0
+#define FLAG8 0
+#define FLAG9 0
+#define FLAG10 0
+#define FLAG11 0
+#define FLAG12 0
+#define FLAG13 0
+#define FLAG14 0
+#define FLAG15 0
+#define FLAG16 0
+#define FLAG17 0
+#define FLAG18 0
+#define FLAG19 0
+#define FLAG20 0
+#define FLAG21 0
+#define FLAG22 0
+#define FLAG23 0
+#define FLAG24 0
+
+#define maxval(x, y) ((x) > (y) ? (x) : (y))
+
+#define E_SAMPLE_SIZE   maxval( FLAG1,                \
+                                  maxval( FLAG2,      \
+                                  maxval( FLAG3,      \
+                                  maxval( FLAG4,      \
+                                  maxval( FLAG5,      \
+                                  maxval( FLAG6,      \
+                                  maxval( FLAG7,      \
+                                  maxval( FLAG8,      \
+                                  maxval( FLAG9,      \
+                                  maxval( FLAG10,     \
+                                  maxval( FLAG11,     \
+                                  maxval( FLAG12,     \
+                                  maxval( FLAG13,     \
+                                  maxval( FLAG14,     \
+                                  FLAG15 ))))))))))))))
+
+#define SAMPLE_SIZE       maxval( E_SAMPLE_SIZE,      \
+                                  maxval( sizeof(st), \
+                                  maxval( FLAG16,     \
+                                  maxval( FLAG17,     \
+                                  maxval( FLAG18,     \
+                                  maxval( FLAG19,     \
+                                  maxval( FLAG20,     \
+                                  maxval( FLAG21,     \
+                                  maxval( FLAG22,     \
+                                  maxval( FLAG23,     \
+                                          FLAG24 ))))))))))
+
+typedef struct {
+    int n;
+} st;
+
+x = SAMPLE_SIZE;
+        """)
+
+    cppcheck([filename])
 
 
 def test_execute_addon_failure(tmpdir):
@@ -723,4 +804,90 @@ def test_markup_j(tmpdir):
         'Checking {} ...'.format(test_file_1),
         'Checking {} ...'.format(test_file_3)
     ]
+    assert stderr == ''
+
+
+def test_valueflow_debug(tmpdir):
+    test_file_cpp = os.path.join(tmpdir, 'test_1.cpp')
+    with open(test_file_cpp, 'wt') as f:
+        f.write("""
+#include "test.h"
+
+void f()
+{
+    int i = 0;
+}
+"""
+                )
+    test_file_h = os.path.join(tmpdir, 'test.h')
+    with open(test_file_h, 'wt') as f:
+        f.write("""
+#include "test2.h"
+inline void f1()
+{
+    int i = 0;
+}
+"""
+                )
+        pass
+    test_file_h_2 = os.path.join(tmpdir, 'test2.h')
+    with open(test_file_h_2, 'wt') as f:
+        f.write("""
+inline void f2()
+{
+    int i = 0;
+}
+"""
+                )
+
+    args = ['--debug', test_file_cpp]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    if sys.platform == "win32":
+        stdout = stdout.replace('/', '\\')
+    assert stdout == '''Checking {} ...
+
+
+##file {}
+2: void f2 ( )
+3: {{
+4: int i@var1 ; i@var1 =@expr1073741828 0 ;
+5: }}
+
+##file {}
+
+1:
+2:
+3: void f1 ( )
+4: {{
+5: int i@var2 ; i@var2 =@expr1073741829 0 ;
+6: }}
+
+##file {}
+
+1:
+2:
+3:
+4: void f ( )
+5: {{
+6: int i@var3 ; i@var3 =@expr1073741830 0 ;
+7: }}
+
+
+
+##Value flow
+File {}
+Line 4
+  = always 0
+  0 always 0
+File {}
+Line 5
+  = always 0
+  0 always 0
+File {}
+Line 6
+  = always 0
+  0 always 0
+'''.format(test_file_cpp, test_file_h_2, test_file_h, test_file_cpp, test_file_h_2, test_file_h, test_file_cpp)
     assert stderr == ''

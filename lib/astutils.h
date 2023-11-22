@@ -418,6 +418,8 @@ bool isCPPCast(const Token* tok);
 
 bool isConstVarExpression(const Token* tok, std::function<bool(const Token*)> skipPredicate = nullptr);
 
+bool isLeafDot(const Token* tok);
+
 enum class ExprUsage { None, NotUsed, PassedByReference, Used, Inconclusive };
 
 ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings, bool cpp);
