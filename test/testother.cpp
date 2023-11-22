@@ -3381,6 +3381,15 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 's1' can be declared as reference to const\n"
                       "[test.cpp:1]: (style) Parameter 's2' can be declared as reference to const\n",
                       errout.str());
+        
+        check("struct S {\n"
+              "    void f(int& r) { p = &r; }\n"
+              "    int* p;\n"
+              "};\n"
+              "void g(std::vector<int>& v1, std::vector<int*>& v2) {\n"
+              "    std::transform(v1.begin(), v1.end(), v2.begin(), [](auto& x) { return &x; });\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constParameterCallback() {
