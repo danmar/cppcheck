@@ -454,6 +454,7 @@ private:
         TEST_CASE(findFunction51); // #11975 - method with same name in derived class
         TEST_CASE(findFunction52);
         TEST_CASE(findFunction53);
+        TEST_CASE(findFunction54);
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -7731,6 +7732,20 @@ private:
         ASSERT(S->function() && S->function()->tokenDef);
         ASSERT(S->function()->tokenDef->linenr() == 3);
         ASSERT(S->function()->isConstructor());
+    }
+
+    void findFunction54() {
+        GET_SYMBOL_DB("struct S {\n"
+                      "    explicit S(int& r) { if (r) {} }\n"
+                      "    bool f(const std::map<int, S>&m) const;\n"
+                      "};\n");
+        const Token* S = Token::findsimplematch(tokenizer.tokens(), "S (");
+        ASSERT(S && S->function());
+        ASSERT(S->function()->isConstructor());
+        ASSERT(!S->function()->functionPointerUsage);
+        S = Token::findsimplematch(S->next(), "S >");
+        ASSERT(S && S->type());
+        ASSERT_EQUALS(S->type()->name(), "S");
     }
 
     void findFunctionContainer() {
