@@ -1101,28 +1101,18 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
     }
 
     // Set function call pointers
-    const Token* templateEnd = nullptr;
+    const Token* inTemplateArg = nullptr;
     for (Token* tok = mTokenizer.list.front(); tok != mTokenizer.list.back(); tok = tok->next()) {
-        if (tok->link() && tok->str() == "<")
-            templateEnd = tok->link();
-        if (templateEnd == tok)
-            templateEnd = nullptr;
+        if (inTemplateArg == nullptr && tok->link() && tok->str() == "<")
+            inTemplateArg = tok->link();
+        if (inTemplateArg == tok)
+            inTemplateArg = nullptr;
         if (tok->isName() && !tok->function() && tok->varId() == 0 && ((tok->astParent() && tok->astParent()->isComparisonOp()) || Token::Match(tok, "%name% [{(,)>;]")) && !isReservedName(tok->str())) {
             if (tok->next()->str() == ">" && !tok->next()->link())
                 continue;
 
-            bool isTemplateArg = false;
-            if (!Token::Match(tok->next(), "(|{")) {
-                const Token *start = tok;
-                while (Token::Match(start->tokAt(-2), "%name% ::"))
-                    start = start->tokAt(-2);
-                if (!Token::Match(start->previous(), "[(,<=]") && !Token::simpleMatch(start->previous(), "::") && !Token::Match(start->tokAt(-2), "[(,<=] &") && !Token::Match(start, "%name% ;"))
-                    continue;
-                isTemplateArg = Token::simpleMatch(start->previous(), "<") || Token::simpleMatch(start->tokAt(-2), "<");
-            }
-
             const Function *function = findFunction(tok);
-            if (!function || ((isTemplateArg || templateEnd) && function->isConstructor()))
+            if (!function || (inTemplateArg && function->isConstructor()))
                 continue;
 
             tok->function(function);
