@@ -7735,17 +7735,35 @@ private:
     }
 
     void findFunction54() {
-        GET_SYMBOL_DB("struct S {\n"
-                      "    explicit S(int& r) { if (r) {} }\n"
-                      "    bool f(const std::map<int, S>&m) const;\n"
-                      "};\n");
-        const Token* S = Token::findsimplematch(tokenizer.tokens(), "S (");
-        ASSERT(S && S->function());
-        ASSERT(S->function()->isConstructor());
-        ASSERT(!S->function()->functionPointerUsage);
-        S = Token::findsimplematch(S->next(), "S >");
-        ASSERT(S && S->type());
-        ASSERT_EQUALS(S->type()->name(), "S");
+        {
+            GET_SYMBOL_DB("struct S {\n"
+                          "    explicit S(int& r) { if (r) {} }\n"
+                          "    bool f(const std::map<int, S>& m);\n"
+                          "};\n");
+            const Token* S = Token::findsimplematch(tokenizer.tokens(), "S (");
+            ASSERT(S && S->function());
+            ASSERT(S->function()->isConstructor());
+            ASSERT(!S->function()->functionPointerUsage);
+            S = Token::findsimplematch(S->next(), "S >");
+            ASSERT(S && S->type());
+            ASSERT_EQUALS(S->type()->name(), "S");
+        }
+        {
+            GET_SYMBOL_DB("struct S {\n"
+                          "    explicit S(int& r) { if (r) {} }\n"
+                          "    bool f(const std::map<int, S, std::allocator<S>>& m);\n"
+                          "};\n");
+            const Token* S = Token::findsimplematch(tokenizer.tokens(), "S (");
+            ASSERT(S && S->function());
+            ASSERT(S->function()->isConstructor());
+            ASSERT(!S->function()->functionPointerUsage);
+            S = Token::findsimplematch(S->next(), "S ,");
+            ASSERT(S && S->type());
+            ASSERT_EQUALS(S->type()->name(), "S");
+            S = Token::findsimplematch(S->next(), "S >");
+            ASSERT(S && S->type());
+            ASSERT_EQUALS(S->type()->name(), "S");
+        }
     }
 
     void findFunctionContainer() {

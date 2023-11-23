@@ -1101,7 +1101,12 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
     }
 
     // Set function call pointers
+    const Token* templateEnd = nullptr;
     for (Token* tok = mTokenizer.list.front(); tok != mTokenizer.list.back(); tok = tok->next()) {
+        if (tok->link() && tok->str() == "<")
+            templateEnd = tok->link();
+        if (templateEnd == tok)
+            templateEnd = nullptr;
         if (tok->isName() && !tok->function() && tok->varId() == 0 && ((tok->astParent() && tok->astParent()->isComparisonOp()) || Token::Match(tok, "%name% [{(,)>;]")) && !isReservedName(tok->str())) {
             if (tok->next()->str() == ">" && !tok->next()->link())
                 continue;
@@ -1113,11 +1118,11 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
                     start = start->tokAt(-2);
                 if (!Token::Match(start->previous(), "[(,<=]") && !Token::simpleMatch(start->previous(), "::") && !Token::Match(start->tokAt(-2), "[(,<=] &") && !Token::Match(start, "%name% ;"))
                     continue;
-                isTemplateArg = Token::simpleMatch(start->previous(), "<") || Token::simpleMatch(start->tokAt(-2), "<") || (tok->linkAt(1) && tok->strAt(1) == ">");
+                isTemplateArg = Token::simpleMatch(start->previous(), "<") || Token::simpleMatch(start->tokAt(-2), "<");
             }
 
             const Function *function = findFunction(tok);
-            if (!function || (isTemplateArg && function->isConstructor()))
+            if (!function || ((isTemplateArg || templateEnd) && function->isConstructor()))
                 continue;
 
             tok->function(function);
