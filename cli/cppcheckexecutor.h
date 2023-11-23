@@ -101,7 +101,7 @@ protected:
      *         given value is returned instead of default 0.
      *         If no errors are found, 0 is returned.
      */
-    int check_internal(CppCheck& cppcheck);
+    int check_internal(CppCheck& cppcheck) const;
 
     /**
      * Filename associated with size of file
