@@ -118,7 +118,6 @@ Also reports a false positive about templates which deduce the array length: htt
 We run this separately via `clang-include-cleaner` in the `iwyu.yml` workflow as the findings of the include checkers still need to be reviewed manually before applying them. 
 
 `bugprone-branch-clone`<br/>
-`readability-const-return-type`<br/>
 `modernize-return-braced-init-list`<br/>
 `misc-throw-by-value-catch-by-reference`<br/>
 `readability-avoid-const-params-in-decls`<br/>
