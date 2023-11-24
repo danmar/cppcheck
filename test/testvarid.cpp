@@ -17,6 +17,7 @@
  */
 
 #include "errortypes.h"
+#include "helpers.h"
 #include "platform.h"
 #include "settings.h"
 #include "standards.h"
@@ -236,6 +237,9 @@ private:
 
         TEST_CASE(exprid1);
         TEST_CASE(exprid2);
+        TEST_CASE(exprid3);
+        TEST_CASE(exprid4);
+        TEST_CASE(exprid5);
 
         TEST_CASE(structuredBindings);
     }
@@ -260,9 +264,11 @@ private:
     std::string tokenizeExpr_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         errout.str("");
 
+        std::vector<std::string> files(1, filename);
         Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC((tokenizer.tokenize)(istr, filename), file, line);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
+
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // result..
         Token::stringifyOptions options = Token::stringifyOptions::forDebugExprId();
@@ -3859,9 +3865,9 @@ private:
             "2: int x ; int y ;\n"
             "3: } ;\n"
             "4: int f ( A a , A b ) {\n"
-            "5: int x@5 ; x@5 =@9 a@3 .@10 x@6 +@11 b@4 .@12 x@7 ;\n"
-            "6: int y@8 ; y@8 =@1073741837 b@4 .@12 x@7 +@11 a@3 .@10 x@6 ;\n"
-            "7: return x@5 +@1073741841 y@8 +@1073741842 a@3 .@1073741843 y@9 +@1073741844 b@4 .@1073741845 y@10 ;\n"
+            "5: int x@5 ; x@5 =@UNIQUE a@3 .@11 x@6 +@13 b@4 .@12 x@7 ;\n"
+            "6: int y@8 ; y@8 =@UNIQUE b@4 .@12 x@7 +@13 a@3 .@11 x@6 ;\n"
+            "7: return x@5 +@UNIQUE y@8 +@UNIQUE a@3 .@UNIQUE y@9 +@UNIQUE b@4 .@UNIQUE y@10 ;\n"
             "8: }\n";
 
         ASSERT_EQUALS(expected, actual);
@@ -3878,12 +3884,49 @@ private:
 
         const char expected[] = "1: struct S { std :: unique_ptr < int > u ; } ;\n"
                                 "2: auto f ; f = [ ] ( const S & s ) . std :: unique_ptr < int > {\n"
-                                "3: if (@5 auto p@4 =@1073741830 s@3 .@1073741831 u@5 .@1073741832 get (@1073741833 ) ) {\n"
-                                "4: return std ::@1073741834 make_unique < int > (@1073741835 *@1073741836 p@4 ) ; }\n"
+                                "3: if ( auto p@4 =@UNIQUE s@3 .@UNIQUE u@5 .@UNIQUE get (@UNIQUE ) ) {\n"
+                                "4: return std ::@UNIQUE make_unique < int > (@UNIQUE *@UNIQUE p@4 ) ; }\n"
                                 "5: return nullptr ;\n"
                                 "6: } ;\n";
 
         ASSERT_EQUALS(expected, actual);
+    }
+
+    void exprid3() {
+        const char code[] = "void f(bool b, int y) {\n"
+                            "    if (b && y > 0) {}\n"
+                            "    while (b && y > 0) {}\n"
+                            "}\n";
+        const char expected[] = "1: void f ( bool b , int y ) {\n"
+                                "2: if ( b@1 &&@5 y@2 >@4 0 ) { }\n"
+                                "3: while ( b@1 &&@5 y@2 >@4 0 ) { }\n"
+                                "4: }\n";
+        ASSERT_EQUALS(expected, tokenizeExpr(code));
+    }
+
+    void exprid4() {
+        // expanded macro..
+        const char code[] = "#define ADD(x,y)  x+y\n"
+                            "int f(int a, int b) {\n"
+                            "    return ADD(a,b) + ADD(a,b);\n"
+                            "}\n";
+        const char expected[] = "2: int f ( int a , int b ) {\n"
+                                "3: return a@1 $+@UNIQUE b@2 +@UNIQUE a@1 $+@UNIQUE b@2 ;\n"
+                                "4: }\n";
+        ASSERT_EQUALS(expected, tokenizeExpr(code));
+    }
+
+    void exprid5() {
+        // references..
+        const char code[] = "int foo(int a) {\n"
+                            "    int& r = a;\n"
+                            "    return (a+a)*(r+r);\n"
+                            "}\n";
+        const char expected[] = "1: int foo ( int a ) {\n"
+                                "2: int & r@2 =@UNIQUE a@1 ;\n"
+                                "3: return ( a@1 +@4 a@1 ) *@UNIQUE ( r@2 +@4 r@2 ) ;\n"
+                                "4: }\n";
+        ASSERT_EQUALS(expected, tokenizeExpr(code));
     }
 
     void structuredBindings() {
