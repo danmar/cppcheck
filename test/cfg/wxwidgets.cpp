@@ -29,7 +29,7 @@
 #include <wx/textctrl.h>
 #include <wx/propgrid/property.h>
 
-void uninitvar_wxRegEx_GetMatch(wxRegEx &obj, size_t *start, size_t *len, size_t index)
+void uninitvar_wxRegEx_GetMatch(const wxRegEx &obj, size_t *start, size_t *len, size_t index)
 {
     size_t s,l;
     size_t *sPtr,*lPtr;

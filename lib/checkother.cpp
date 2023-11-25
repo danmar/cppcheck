@@ -1390,6 +1390,8 @@ void CheckOther::checkConstVariable()
             continue;
         if (var->isVolatile())
             continue;
+        if (var->nameToken()->isExpandedMacro())
+            continue;
         if (isStructuredBindingVariable(var)) // TODO: check all bound variables
             continue;
         if (isVariableChanged(var, mSettings, mTokenizer->isCPP()))
@@ -1459,25 +1461,6 @@ void CheckOther::checkConstVariable()
                 }
             }
             if (usedInAssignment)
-                continue;
-        }
-        // Skip if we ever cast this variable to a pointer/reference to a non-const type
-        {
-            bool castToNonConst = false;
-            for (const Token* tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next()) {
-                if (tok->isCast()) {
-                    if (!tok->valueType()) {
-                        castToNonConst = true; // safe guess
-                        break;
-                    }
-                    const bool isConst = tok->valueType()->isConst(tok->valueType()->pointer);
-                    if (!isConst) {
-                        castToNonConst = true;
-                        break;
-                    }
-                }
-            }
-            if (castToNonConst)
                 continue;
         }
 
