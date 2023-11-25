@@ -1331,7 +1331,7 @@ namespace {
                     std::vector<const Token*> conditions2 = flattenConditionsSorted(tok);
                     if (conditions2.empty())
                         continue;
-                    if (conditions1 == conditions2)
+                    if (std::equal(conditions1.begin(), conditions1.end(), conditions2.begin(), conditions2.end(), &TokenExprIdCompare))
                         return value;
                     std::vector<const Token*> diffConditions1 = setDifference(conditions1, conditions2);
                     std::vector<const Token*> diffConditions2 = setDifference(conditions2, conditions1);
