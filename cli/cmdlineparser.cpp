@@ -282,6 +282,11 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
 // TODO: error out on all missing given files/paths
 CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 {
+    if (argc <= 1) {
+        printHelp();
+        return Result::Exit;
+    }
+
     // check for exclusive options
     for (int i = 1; i < argc; i++) {
         // documentation..
@@ -1223,11 +1228,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && mSettings.jobs > 1 && mSettings.buildDir.empty()) {
         mLogger.printMessage("unusedFunction check can't be used with '-j' option. Disabling unusedFunction check.");
-    }
-
-    if (argc <= 1) {
-        printHelp();
-        return Result::Exit;
     }
 
     if (!mPathNames.empty() && project.projectType != ImportProject::Type::NONE) {
