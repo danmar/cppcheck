@@ -21,6 +21,10 @@
 
 #include "config.h"
 
+SUPPRESS_WARNING_CLANG_PUSH("-Wzero-as-null-pointer-constant")
+
 #include <tinyxml2.h>
+
+SUPPRESS_WARNING_CLANG_POP
 
 #endif // xmlH
