@@ -74,20 +74,6 @@ public:
     bool parseFromArgs(int argc, const char* const argv[]);
 
     /**
-     * Return if user wanted to see program version.
-     */
-    bool getShowVersion() const {
-        return mShowVersion;
-    }
-
-    /**
-     * Return if user wanted to see list of error messages.
-     */
-    bool getShowErrorMessages() const {
-        return mShowErrorMessages;
-    }
-
-    /**
      * Return the path names user gave to command line.
      */
     const std::vector<std::string>& getPathNames() const {
@@ -153,21 +139,21 @@ private:
      * Tries to load a library and prints warning/error messages
      * @return false, if an error occurred (except unknown XML elements)
      */
-    static bool tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename);
+    bool tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename);
 
     /**
      * @brief Load libraries
      * @param settings Settings
      * @return Returns true if successful
      */
-    static bool loadLibraries(Settings& settings);
+    bool loadLibraries(Settings& settings);
 
     /**
      * @brief Load addons
      * @param settings Settings
      * @return Returns true if successful
      */
-    static bool loadAddons(Settings& settings);
+    bool loadAddons(Settings& settings);
 
     CmdLineLogger &mLogger;
 
@@ -178,9 +164,6 @@ private:
     Settings &mSettings;
     Suppressions &mSuppressions;
     Suppressions &mSuppressionsNoFail;
-    bool mShowHelp{};
-    bool mShowVersion{};
-    bool mShowErrorMessages{};
     bool mExitAfterPrint{};
     std::string mVSConfig;
 };

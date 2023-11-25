@@ -77,7 +77,7 @@ private:
         void destroy()
         {
             if (!buf.empty())
-                throw std::runtime_error("unconsumed messages");
+                throw std::runtime_error("unconsumed messages: " + buf);
         }
 
     private:
@@ -108,7 +108,8 @@ private:
         TEST_CASE(nooptions);
         TEST_CASE(helpshort);
         TEST_CASE(helplong);
-        TEST_CASE(showversion);
+        TEST_CASE(version);
+        TEST_CASE(versionWithCfg);
         TEST_CASE(onefile);
         TEST_CASE(onepath);
         TEST_CASE(optionwithoutfile);
@@ -250,9 +251,7 @@ private:
         TEST_CASE(showtimeNone);
         TEST_CASE(showtimeEmpty);
         TEST_CASE(showtimeInvalid);
-        TEST_CASE(errorlist1);
-        TEST_CASE(errorlistverbose1);
-        TEST_CASE(errorlistverbose2);
+        TEST_CASE(errorlist);
         TEST_CASE(ignorepathsnopath);
 #if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
         TEST_CASE(exceptionhandling);
@@ -303,6 +302,7 @@ private:
         TEST_CASE(projectMissing);
         TEST_CASE(projectNoPaths);
         TEST_CASE(addon);
+        TEST_CASE(addonMissing);
 #ifdef HAVE_RULES
         TEST_CASE(rule);
 #else
@@ -321,6 +321,8 @@ private:
         TEST_CASE(unsignedChar);
         TEST_CASE(unsignedChar2);
         TEST_CASE(signedCharUnsignedChar);
+        TEST_CASE(library);
+        TEST_CASE(libraryMissing);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -368,13 +370,28 @@ private:
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
-    void showversion() {
+    void version() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--version"};
         ASSERT(parser->parseFromArgs(2, argv));
-        ASSERT_EQUALS(true, parser->getShowVersion());
-        ASSERT_EQUALS("", logger->str()); // version is not actually shown
+        ASSERT_EQUALS("Cppcheck 2.13 dev\n", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
+
+    void versionWithCfg() {
+        REDIRECT;
+        ScopedFile file("cppcheck.cfg",
+                        "{\n"
+                        "\"productName\": \"The Product\""
+                        "}\n");
+        const char * const argv[] = {"cppcheck", "--version"};
+        ASSERT(parser->parseFromArgs(2, argv));
+        // TODO: somehow the config is not loaded on some systems
+        (void)logger->str(); //ASSERT_EQUALS("The Product\n", logger->str()); // TODO: include version?
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    // TODO: test extraVersion
 
     void onefile() {
         REDIRECT;
@@ -382,7 +399,7 @@ private:
         ASSERT(parser->parseFromArgs(2, argv));
         ASSERT_EQUALS(1, (int)parser->getPathNames().size());
         ASSERT_EQUALS("file.cpp", parser->getPathNames().at(0));
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void onepath() {
@@ -391,7 +408,7 @@ private:
         ASSERT(parser->parseFromArgs(2, argv));
         ASSERT_EQUALS(1, (int)parser->getPathNames().size());
         ASSERT_EQUALS("src", parser->getPathNames().at(0));
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void optionwithoutfile() {
@@ -400,6 +417,7 @@ private:
         ASSERT_EQUALS(false, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS(0, (int)parser->getPathNames().size());
         ASSERT_EQUALS("cppcheck: error: no C or C++ source files found.\n", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void verboseshort() {
@@ -408,7 +426,7 @@ private:
         settings->verbose = false;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->verbose);
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void verboselong() {
@@ -417,7 +435,7 @@ private:
         settings->verbose = false;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->verbose);
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void debugSimplified() {
@@ -426,7 +444,7 @@ private:
         settings->debugSimplified = false;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->debugSimplified);
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void debugwarnings() {
@@ -435,7 +453,7 @@ private:
         settings->debugwarnings = false;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->debugwarnings);
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void forceshort() {
@@ -444,7 +462,7 @@ private:
         settings->force = false;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->force);
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void forcelong() {
@@ -453,7 +471,7 @@ private:
         settings->force = false;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->force);
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void relativePaths1() {
@@ -462,7 +480,7 @@ private:
         const char * const argv[] = {"cppcheck", "-rp", "file.cpp"};
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->relativePaths);
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void relativePaths2() {
@@ -471,7 +489,7 @@ private:
         const char * const argv[] = {"cppcheck", "--relative-paths", "file.cpp"};
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->relativePaths);
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void relativePaths3() {
@@ -484,7 +502,7 @@ private:
         ASSERT_EQUALS(2, settings->basePaths.size());
         ASSERT_EQUALS("C:/foo", settings->basePaths[0]);
         ASSERT_EQUALS("C:/bar", settings->basePaths[1]);
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void relativePaths4() {
@@ -498,7 +516,7 @@ private:
         ASSERT_EQUALS(2, settings->basePaths.size());
         ASSERT_EQUALS("C:/foo", settings->basePaths[0]);
         ASSERT_EQUALS("C:/bar", settings->basePaths[1]);
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void quietshort() {
@@ -507,7 +525,7 @@ private:
         settings->quiet = false;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->quiet);
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void quietlong() {
@@ -516,7 +534,7 @@ private:
         settings->quiet = false;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->quiet);
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void defines_noarg() {
@@ -549,7 +567,7 @@ private:
         settings->userDefines.clear();
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("_WIN32=1", settings->userDefines);
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void defines2() {
@@ -558,7 +576,7 @@ private:
         settings->userDefines.clear();
         ASSERT(parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("_WIN32=1;NODEBUG=1", settings->userDefines);
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void defines3() {
@@ -567,7 +585,7 @@ private:
         settings->userDefines.clear();
         ASSERT(parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("DEBUG=1", settings->userDefines);
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void defines4() {
@@ -576,7 +594,7 @@ private:
         settings->userDefines.clear();
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("DEBUG=", settings->userDefines);
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void enforceLanguage1() {
@@ -585,7 +603,6 @@ private:
         settings->enforcedLang = Settings::Language::None;
         ASSERT(parser->parseFromArgs(2, argv));
         ASSERT_EQUALS(Settings::Language::None, settings->enforcedLang);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void enforceLanguage2() {
@@ -594,7 +611,6 @@ private:
         settings->enforcedLang = Settings::Language::None;
         ASSERT(parser->parseFromArgs(4, argv));
         ASSERT_EQUALS(Settings::Language::CPP, settings->enforcedLang);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void enforceLanguage3() {
@@ -617,7 +633,6 @@ private:
         settings->enforcedLang = Settings::Language::None;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Settings::Language::CPP, settings->enforcedLang);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void enforceLanguage6() {
@@ -626,7 +641,6 @@ private:
         settings->enforcedLang = Settings::Language::None;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Settings::Language::C, settings->enforcedLang);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void enforceLanguage7() {
@@ -650,7 +664,6 @@ private:
         settings->includePaths.clear();
         ASSERT(parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("include/", settings->includePaths.front());
-        ASSERT_EQUALS("", logger->str());
     }
 
     void includesslash() {
@@ -659,7 +672,6 @@ private:
         settings->includePaths.clear();
         ASSERT(parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("include/", settings->includePaths.front());
-        ASSERT_EQUALS("", logger->str());
     }
 
     void includesbackslash() {
@@ -668,7 +680,6 @@ private:
         settings->includePaths.clear();
         ASSERT(parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("include/", settings->includePaths.front());
-        ASSERT_EQUALS("", logger->str());
     }
 
     void includesnospace() {
@@ -677,7 +688,6 @@ private:
         settings->includePaths.clear();
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("include/", settings->includePaths.front());
-        ASSERT_EQUALS("", logger->str());
     }
 
     void includes2() {
@@ -688,7 +698,6 @@ private:
         ASSERT_EQUALS("include/", settings->includePaths.front());
         settings->includePaths.pop_front();
         ASSERT_EQUALS("framework/", settings->includePaths.front());
-        ASSERT_EQUALS("", logger->str());
     }
 
     void includesFile() {
@@ -702,7 +711,6 @@ private:
         auto it = settings->includePaths.cbegin();
         ASSERT_EQUALS("path/sub/", *it++);
         ASSERT_EQUALS("path2/sub1/", *it);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void includesFileNoFile() {
@@ -724,7 +732,6 @@ private:
         auto it = settings->configExcludePaths.cbegin();
         ASSERT_EQUALS("path/sub/", *it++);
         ASSERT_EQUALS("path2/sub1/", *it);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void configExcludesFileNoFile() {
@@ -743,7 +750,6 @@ private:
         ASSERT(settings->checks.isEnabled(Checks::unusedFunction));
         ASSERT(settings->checks.isEnabled(Checks::missingInclude));
         ASSERT(!settings->checks.isEnabled(Checks::internalCheck));
-        ASSERT_EQUALS("", logger->str());
     }
 
     void enabledStyle() {
@@ -756,7 +762,6 @@ private:
         ASSERT(settings->severity.isEnabled(Severity::portability));
         ASSERT(!settings->checks.isEnabled(Checks::unusedFunction));
         ASSERT(!settings->checks.isEnabled(Checks::internalCheck));
-        ASSERT_EQUALS("", logger->str());
     }
 
     void enabledPerformance() {
@@ -769,7 +774,6 @@ private:
         ASSERT(!settings->severity.isEnabled(Severity::portability));
         ASSERT(!settings->checks.isEnabled(Checks::unusedFunction));
         ASSERT(!settings->checks.isEnabled(Checks::missingInclude));
-        ASSERT_EQUALS("", logger->str());
     }
 
     void enabledPortability() {
@@ -782,7 +786,6 @@ private:
         ASSERT(settings->severity.isEnabled(Severity::portability));
         ASSERT(!settings->checks.isEnabled(Checks::unusedFunction));
         ASSERT(!settings->checks.isEnabled(Checks::missingInclude));
-        ASSERT_EQUALS("", logger->str());
     }
 
     void enabledInformation() {
@@ -799,7 +802,6 @@ private:
         const char * const argv[] = {"cppcheck", "--enable=unusedFunction", "file.cpp"};
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->checks.isEnabled(Checks::unusedFunction));
-        ASSERT_EQUALS("", logger->str());
     }
 
     void enabledMissingInclude() {
@@ -807,7 +809,6 @@ private:
         const char * const argv[] = {"cppcheck", "--enable=missingInclude", "file.cpp"};
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->checks.isEnabled(Checks::missingInclude));
-        ASSERT_EQUALS("", logger->str());
     }
 
 #ifdef CHECK_INTERNAL
@@ -816,7 +817,6 @@ private:
         const char * const argv[] = {"cppcheck", "--enable=internal", "file.cpp"};
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->checks.isEnabled(Checks::internalCheck));
-        ASSERT_EQUALS("", logger->str());
     }
 #endif
 
@@ -830,7 +830,6 @@ private:
         ASSERT(settings->severity.isEnabled(Severity::portability));
         ASSERT(!settings->checks.isEnabled(Checks::unusedFunction));
         ASSERT(settings->checks.isEnabled(Checks::missingInclude));
-        ASSERT_EQUALS("", logger->str());
     }
 
     void enabledInvalid() {
@@ -870,7 +869,6 @@ private:
         ASSERT_EQUALS(false, settings->checks.isEnabled(Checks::unusedFunction));
         ASSERT_EQUALS(false, settings->checks.isEnabled(Checks::missingInclude));
         ASSERT_EQUALS(false, settings->checks.isEnabled(Checks::internalCheck));
-        ASSERT_EQUALS("", logger->str());
     }
 
     void disableMultiple() {
@@ -888,7 +886,6 @@ private:
         ASSERT_EQUALS(false, settings->checks.isEnabled(Checks::unusedFunction));
         ASSERT_EQUALS(true, settings->checks.isEnabled(Checks::missingInclude));
         ASSERT_EQUALS(false, settings->checks.isEnabled(Checks::internalCheck));
-        ASSERT_EQUALS("", logger->str());
     }
 
     // make sure the implied "style" checks are not added when "--enable=style" is specified
@@ -907,7 +904,6 @@ private:
         ASSERT_EQUALS(true, settings->checks.isEnabled(Checks::unusedFunction));
         ASSERT_EQUALS(false, settings->checks.isEnabled(Checks::missingInclude));
         ASSERT_EQUALS(false, settings->checks.isEnabled(Checks::internalCheck));
-        ASSERT_EQUALS("", logger->str());
     }
 
     void disableInformationPartial() {
@@ -925,7 +921,6 @@ private:
         ASSERT(parser->parseFromArgs(4, argv));
         ASSERT(!settings->severity.isEnabled(Severity::information));
         ASSERT(settings->checks.isEnabled(Checks::missingInclude));
-        ASSERT_EQUALS("", logger->str());
     }
 
     void disableInvalid() {
@@ -955,7 +950,6 @@ private:
         settings->certainty.clear();
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->certainty.isEnabled(Certainty::inconclusive));
-        ASSERT_EQUALS("", logger->str());
     }
 
     void errorExitcode() {
@@ -964,7 +958,6 @@ private:
         settings->exitCode = 0;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(5, settings->exitCode);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void errorExitcodeMissing() {
@@ -1001,7 +994,6 @@ private:
         auto it = settings->nofail.getSuppressions().cbegin();
         ASSERT_EQUALS("uninitvar", (it++)->errorId);
         ASSERT_EQUALS("unusedFunction", it->errorId);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void exitcodeSuppressionsNoFile() {
@@ -1023,7 +1015,6 @@ private:
         ASSERT_EQUALS("file1.c", *it++);
         ASSERT_EQUALS("file2.cpp", *it++);
         ASSERT_EQUALS("file.cpp", *it);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void fileListNoFile() {
@@ -1039,7 +1030,6 @@ private:
             REDIRECT;
             const char * const argv[] = {"cppcheck", "--file-list=-", "file.cpp"};
             TODO_ASSERT_EQUALS(true, false, parser->parseFromArgs(3, argv));
-            TODO_ASSERT_EQUALS("", "", logger->str());
         } */
 
     void fileListInvalid() {
@@ -1055,7 +1045,6 @@ private:
         settings->inlineSuppressions = false;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->inlineSuppressions);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void jobs() {
@@ -1064,7 +1053,6 @@ private:
         settings->jobs = 0;
         ASSERT(parser->parseFromArgs(4, argv));
         ASSERT_EQUALS(3, settings->jobs);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void jobs2() {
@@ -1073,7 +1061,6 @@ private:
         settings->jobs = 0;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(3, settings->jobs);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void jobsMissingCount() {
@@ -1114,7 +1101,6 @@ private:
         ASSERT(parser->parseFromArgs(4, argv));
         ASSERT_EQUALS(12, settings->maxConfigs);
         ASSERT_EQUALS(false, settings->force);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void maxConfigsMissingCount() {
@@ -1147,7 +1133,6 @@ private:
         settings->reportProgress = -1;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(10, settings->reportProgress);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void reportProgress2() {
@@ -1172,7 +1157,6 @@ private:
         settings->reportProgress = -1;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(0, settings->reportProgress);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void reportProgress5() {
@@ -1181,7 +1165,6 @@ private:
         settings->reportProgress = -1;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, settings->reportProgress);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void stdc99() {
@@ -1190,7 +1173,6 @@ private:
         settings->standards.c = Standards::C89;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->standards.c == Standards::C99);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void stdcpp11() {
@@ -1199,7 +1181,6 @@ private:
         settings->standards.cpp = Standards::CPP03;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->standards.cpp == Standards::CPP11);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void stdunknown1() {
@@ -1222,7 +1203,6 @@ private:
         ASSERT(settings->platform.set(Platform::Type::Unspecified));
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Platform::Type::Win64, settings->platform.type);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void platformWin32A() {
@@ -1231,7 +1211,6 @@ private:
         ASSERT(settings->platform.set(Platform::Type::Unspecified));
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Platform::Type::Win32A, settings->platform.type);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void platformWin32W() {
@@ -1240,7 +1219,6 @@ private:
         ASSERT(settings->platform.set(Platform::Type::Unspecified));
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Platform::Type::Win32W, settings->platform.type);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void platformUnix32() {
@@ -1249,7 +1227,6 @@ private:
         ASSERT(settings->platform.set(Platform::Type::Unspecified));
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Platform::Type::Unix32, settings->platform.type);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void platformUnix32Unsigned() {
@@ -1258,7 +1235,6 @@ private:
         ASSERT(settings->platform.set(Platform::Type::Unspecified));
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Platform::Type::Unix32, settings->platform.type);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void platformUnix64() {
@@ -1267,7 +1243,6 @@ private:
         ASSERT(settings->platform.set(Platform::Type::Unspecified));
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Platform::Type::Unix64, settings->platform.type);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void platformUnix64Unsigned() {
@@ -1276,7 +1251,6 @@ private:
         ASSERT(settings->platform.set(Platform::Type::Unspecified));
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Platform::Type::Unix64, settings->platform.type);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void platformNative() {
@@ -1285,7 +1259,6 @@ private:
         ASSERT(settings->platform.set(Platform::Type::Unspecified));
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Platform::Type::Native, settings->platform.type);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void platformUnspecified() {
@@ -1294,7 +1267,6 @@ private:
         ASSERT(settings->platform.set(Platform::Type::Native));
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Platform::Type::Unspecified, settings->platform.type);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void platformPlatformFile() {
@@ -1303,7 +1275,6 @@ private:
         ASSERT(settings->platform.set(Platform::Type::Unspecified));
         ASSERT_EQUALS(true, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Platform::Type::File, settings->platform.type);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void platformUnknown() {
@@ -1319,7 +1290,6 @@ private:
         settings->plistOutput = "";
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->plistOutput == "./");
-        ASSERT_EQUALS("", logger->str());
     }
 
     void plistDoesNotExist() {
@@ -1327,8 +1297,7 @@ private:
         const char * const argv[] = {"cppcheck", "--plist-output=./cppcheck_reports", "file.cpp"};
         // Fails since folder pointed by --plist-output= does not exist
         ASSERT_EQUALS(false, parser->parseFromArgs(3, argv));
-        // TODO: output contains non-native separator
-        //ASSERT_EQUALS("cppcheck: error: plist folder does not exist: \"cppcheck_reports/\".\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: plist folder does not exist: 'cppcheck_reports'.\n", logger->str());
     }
 
     void suppressionsOld() {
@@ -1349,7 +1318,6 @@ private:
         auto it = settings->nomsg.getSuppressions().cbegin();
         ASSERT_EQUALS("uninitvar", (it++)->errorId);
         ASSERT_EQUALS("unusedFunction", it->errorId);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void suppressionsNoFile1() {
@@ -1386,7 +1354,6 @@ private:
         const char * const argv[] = {"cppcheck", "--suppress=uninitvar", "file.cpp"};
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->nomsg.isSuppressed(errorMessage("uninitvar", "file.cpp", 1)));
-        ASSERT_EQUALS("", logger->str());
     }
 
     void suppressionSingleFile() {
@@ -1394,7 +1361,6 @@ private:
         const char * const argv[] = {"cppcheck", "--suppress=uninitvar:file.cpp", "file.cpp"};
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->nomsg.isSuppressed(errorMessage("uninitvar", "file.cpp", 1U)));
-        ASSERT_EQUALS("", logger->str());
     }
 
     void suppressionTwo() {
@@ -1412,7 +1378,6 @@ private:
         ASSERT(parser->parseFromArgs(4, argv));
         ASSERT_EQUALS(true, settings->nomsg.isSuppressed(errorMessage("uninitvar", "file.cpp", 1U)));
         ASSERT_EQUALS(true, settings->nomsg.isSuppressed(errorMessage("noConstructor", "file.cpp", 1U)));
-        ASSERT_EQUALS("", logger->str());
     }
 
     void templates() {
@@ -1423,7 +1388,6 @@ private:
         ASSERT(parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("{file}:{line},{severity},{id},{message}", settings->templateFormat);
         ASSERT_EQUALS("{file}:{line}:{column} {info}", settings->templateLocation);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void templatesGcc() {
@@ -1434,7 +1398,6 @@ private:
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("{file}:{line}:{column}: warning: {message} [{id}]\n{code}", settings->templateFormat);
         ASSERT_EQUALS("{file}:{line}:{column}: note: {info}\n{code}", settings->templateLocation);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void templatesVs() {
@@ -1445,7 +1408,6 @@ private:
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("{file}({line}): {severity}: {message}", settings->templateFormat);
         ASSERT_EQUALS("", settings->templateLocation);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void templatesEdit() {
@@ -1456,7 +1418,6 @@ private:
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("{file} +{line}: {severity}: {message}", settings->templateFormat);
         ASSERT_EQUALS("", settings->templateLocation);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void templatesCppcheck1() {
@@ -1467,7 +1428,6 @@ private:
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("{callstack}: ({severity}{inconclusive:, inconclusive}) {message}", settings->templateFormat);
         ASSERT_EQUALS("", settings->templateLocation);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void templatesDaca2() {
@@ -1479,7 +1439,6 @@ private:
         ASSERT_EQUALS("{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]", settings->templateFormat);
         ASSERT_EQUALS("{file}:{line}:{column}: note: {info}", settings->templateLocation);
         ASSERT_EQUALS(true, settings->daca);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void templatesSelfcheck() {
@@ -1490,7 +1449,6 @@ private:
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]\n{code}", settings->templateFormat);
         ASSERT_EQUALS("{file}:{line}:{column}: note: {info}\n{code}", settings->templateLocation);
-        ASSERT_EQUALS("", logger->str());
     }
 
     // TODO: we should bail out on this
@@ -1502,7 +1460,6 @@ private:
         TODO_ASSERT(!parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("selfchek", settings->templateFormat);
         ASSERT_EQUALS("", settings->templateLocation);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void templateFormatInvalid() {
@@ -1524,7 +1481,6 @@ private:
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("{file}:{line}:{column}: {inconclusive:}{severity}:{inconclusive: inconclusive:} {message} [{id}]\n{code}", settings->templateFormat);
         ASSERT_EQUALS("{file}:{line}:{column}: note: {info}\n{code}", settings->templateLocation);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void templateLocationInvalid() {
@@ -1544,7 +1500,6 @@ private:
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("{file}:{line}:{column}: {inconclusive:}{severity}:{inconclusive: inconclusive:} {message} [{id}]\n{code}", settings->templateFormat);
         ASSERT_EQUALS("{file}:{line}:{column}: note: {info}\n{code}", settings->templateLocation);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void xml() {
@@ -1555,7 +1510,6 @@ private:
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->xml);
         ASSERT_EQUALS(1, settings->xml_version);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void xmlver2() {
@@ -1566,7 +1520,6 @@ private:
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->xml);
         ASSERT_EQUALS(2, settings->xml_version);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void xmlver2both() {
@@ -1577,7 +1530,6 @@ private:
         ASSERT(parser->parseFromArgs(4, argv));
         ASSERT(settings->xml);
         ASSERT_EQUALS(2, settings->xml_version);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void xmlver2both2() {
@@ -1588,7 +1540,6 @@ private:
         ASSERT(parser->parseFromArgs(4, argv));
         ASSERT(settings->xml);
         ASSERT_EQUALS(2, settings->xml_version);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void xmlverunknown() {
@@ -1622,7 +1573,6 @@ private:
         settings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_SUMMARY);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void showtimeFile() {
@@ -1631,7 +1581,6 @@ private:
         settings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_FILE);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void showtimeFileTotal() {
@@ -1640,7 +1589,6 @@ private:
         settings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void showtimeTop5() {
@@ -1658,7 +1606,6 @@ private:
         settings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_TOP5_FILE);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void showtimeTop5Summary() {
@@ -1667,7 +1614,6 @@ private:
         settings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_TOP5_SUMMARY);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void showtimeNone() {
@@ -1676,7 +1622,6 @@ private:
         settings->showtime = SHOWTIME_MODES::SHOWTIME_FILE;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_NONE);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void showtimeEmpty() {
@@ -1693,31 +1638,16 @@ private:
         ASSERT_EQUALS("cppcheck: error: unrecognized --showtime mode: 'top10'. Supported modes: file, file-total, summary, top5, top5_file, top5_summary.\n", logger->str());
     }
 
-    void errorlist1() {
+    void errorlist() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--errorlist"};
         ASSERT(parser->parseFromArgs(2, argv));
-        ASSERT(parser->getShowErrorMessages());
-        ASSERT_EQUALS("", logger->str());
+        ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
+        ASSERT(startsWith(GET_REDIRECT_OUTPUT, "<?xml"));
+        ASSERT(endsWith(GET_REDIRECT_OUTPUT, "</results>\n"));
     }
 
-    void errorlistverbose1() {
-        REDIRECT;
-        const char * const argv[] = {"cppcheck", "--verbose", "--errorlist"};
-        settings->verbose = false;
-        ASSERT(parser->parseFromArgs(3, argv));
-        ASSERT(settings->verbose);
-        ASSERT_EQUALS("", logger->str());
-    }
-
-    void errorlistverbose2() {
-        REDIRECT;
-        const char * const argv[] = {"cppcheck", "--errorlist", "--verbose"};
-        settings->verbose = false;
-        ASSERT(parser->parseFromArgs(3, argv));
-        ASSERT(settings->verbose);
-        ASSERT_EQUALS("", logger->str());
-    }
+    // TODO: test --errorlist with product name
 
     void ignorepathsnopath() {
         REDIRECT;
@@ -1736,7 +1666,6 @@ private:
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->exceptionHandling);
         ASSERT_EQUALS(stderr, CppCheckExecutor::getExceptionOutput());
-        ASSERT_EQUALS("", logger->str());
     }
 
     void exceptionhandling2() {
@@ -1747,7 +1676,6 @@ private:
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->exceptionHandling);
         ASSERT_EQUALS(stderr, CppCheckExecutor::getExceptionOutput());
-        ASSERT_EQUALS("", logger->str());
     }
 
     void exceptionhandling3() {
@@ -1758,7 +1686,6 @@ private:
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->exceptionHandling);
         ASSERT_EQUALS(stdout, CppCheckExecutor::getExceptionOutput());
-        ASSERT_EQUALS("", logger->str());
     }
 
     void exceptionhandlingInvalid() {
@@ -1798,7 +1725,6 @@ private:
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->clang);
         ASSERT_EQUALS("exe", settings->clangExecutable);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void clang2() {
@@ -1809,7 +1735,6 @@ private:
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->clang);
         ASSERT_EQUALS("clang-14", settings->clangExecutable);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void clangInvalid() {
@@ -1825,7 +1750,6 @@ private:
         settings->valueFlowMaxIterations = SIZE_MAX;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(0, settings->valueFlowMaxIterations);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void valueFlowMaxIterations2() {
@@ -1834,7 +1758,6 @@ private:
         settings->valueFlowMaxIterations = SIZE_MAX;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(11, settings->valueFlowMaxIterations);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void valueFlowMaxIterationsInvalid() {
@@ -1864,7 +1787,6 @@ private:
         settings->checksMaxTime = 0;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(12, settings->checksMaxTime);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void checksMaxTime2() {
@@ -1888,7 +1810,6 @@ private:
         settings->loadAverage = 0;
         ASSERT(parser->parseFromArgs(4, argv));
         ASSERT_EQUALS(12, settings->loadAverage);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void loadAverage2() {
@@ -1897,7 +1818,6 @@ private:
         settings->loadAverage = 0;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(12, settings->loadAverage);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void loadAverageInvalid() {
@@ -1921,7 +1841,6 @@ private:
         settings->maxCtuDepth = 0;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(12, settings->maxCtuDepth);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void maxCtuDepthInvalid() {
@@ -1937,7 +1856,6 @@ private:
         settings->performanceValueFlowMaxTime = 0;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(12, settings->performanceValueFlowMaxTime);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void performanceValueflowMaxTimeInvalid() {
@@ -1953,7 +1871,6 @@ private:
         settings->performanceValueFlowMaxIfCount = 0;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(12, settings->performanceValueFlowMaxIfCount);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void performanceValueFlowMaxIfCountInvalid() {
@@ -1969,7 +1886,6 @@ private:
         settings->templateMaxTime = 0;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(12, settings->templateMaxTime);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void templateMaxTimeInvalid() {
@@ -2022,7 +1938,6 @@ private:
         ASSERT_EQUALS(1, parser->getPathNames().size());
         auto it = parser->getPathNames().cbegin();
         ASSERT_EQUALS("dir", *it);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void projectMultiple() {
@@ -2069,6 +1984,17 @@ private:
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, settings->addons.size());
         ASSERT_EQUALS("misra", *settings->addons.cbegin());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void addonMissing() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--addon=misra2", "file.cpp"};
+        settings->addons.clear();
+        ASSERT(!parser->fillSettingsFromArgs(3, argv));
+        ASSERT_EQUALS(1, settings->addons.size());
+        ASSERT_EQUALS("misra2", *settings->addons.cbegin());
+        ASSERT_EQUALS("Did not find addon misra2.py\n", logger->str());
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
@@ -2125,7 +2051,6 @@ private:
         ASSERT_EQUALS(1, settings->rules.size());
         auto it = settings->rules.cbegin();
         ASSERT_EQUALS(".+", it->pattern);
-        ASSERT_EQUALS("", logger->str());
     }
 #else
     void ruleNotSupported() {
@@ -2150,7 +2075,6 @@ private:
         ASSERT_EQUALS(1, settings->rules.size());
         auto it = settings->rules.cbegin();
         ASSERT_EQUALS(".+", it->pattern);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void ruleFileEmpty() {
@@ -2183,13 +2107,33 @@ private:
     }
 #endif
 
+    void library() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--library=posix", "file.cpp"};
+        settings->libraries.clear();
+        ASSERT(parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(1, settings->libraries.size());
+        ASSERT_EQUALS("posix", *settings->libraries.cbegin());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void libraryMissing() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--library=posix2", "file.cpp"};
+        settings->libraries.clear();
+        ASSERT(!parser->fillSettingsFromArgs(3, argv));
+        ASSERT_EQUALS(1, settings->libraries.size());
+        ASSERT_EQUALS("posix2", *settings->libraries.cbegin());
+        ASSERT_EQUALS("cppcheck: Failed to load library configuration file 'posix2'. File not found\n", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
     void ignorepaths1() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-isrc", "file.cpp"};
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
         ASSERT_EQUALS("src", parser->getIgnoredPaths()[0]);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void ignorepaths2() {
@@ -2198,7 +2142,6 @@ private:
         ASSERT(parser->parseFromArgs(4, argv));
         ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
         ASSERT_EQUALS("src", parser->getIgnoredPaths()[0]);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void ignorepaths3() {
@@ -2208,7 +2151,6 @@ private:
         ASSERT_EQUALS(2, parser->getIgnoredPaths().size());
         ASSERT_EQUALS("src", parser->getIgnoredPaths()[0]);
         ASSERT_EQUALS("module", parser->getIgnoredPaths()[1]);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void ignorepaths4() {
@@ -2218,7 +2160,6 @@ private:
         ASSERT_EQUALS(2, parser->getIgnoredPaths().size());
         ASSERT_EQUALS("src", parser->getIgnoredPaths()[0]);
         ASSERT_EQUALS("module", parser->getIgnoredPaths()[1]);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void ignorefilepaths1() {
@@ -2227,7 +2168,6 @@ private:
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
         ASSERT_EQUALS("foo.cpp", parser->getIgnoredPaths()[0]);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void ignorefilepaths2() {
@@ -2236,7 +2176,6 @@ private:
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
         ASSERT_EQUALS("src/foo.cpp", parser->getIgnoredPaths()[0]);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void checkconfig() {
@@ -2245,7 +2184,6 @@ private:
         settings->checkConfiguration = false;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->checkConfiguration);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void unknownParam() {
@@ -2261,7 +2199,6 @@ private:
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, settings->userUndefs.size());
         ASSERT(settings->userUndefs.find("_WIN32") != settings->userUndefs.end());
-        ASSERT_EQUALS("", logger->str());
     }
 
     void undefs2() {
@@ -2271,7 +2208,6 @@ private:
         ASSERT_EQUALS(2, settings->userUndefs.size());
         ASSERT(settings->userUndefs.find("_WIN32") != settings->userUndefs.end());
         ASSERT(settings->userUndefs.find("NODEBUG") != settings->userUndefs.end());
-        ASSERT_EQUALS("", logger->str());
     }
 
     void undefs_noarg() {
@@ -2302,7 +2238,6 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--cppcheck-build-dir=.", "file.cpp"};
         ASSERT_EQUALS(true, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS("", logger->str());
     }
 
     void cppcheckBuildDirNonExistent() {

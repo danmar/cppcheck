@@ -146,25 +146,6 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
     const bool success = parseFromArgs(argc, argv);
 
     if (success) {
-        if (getShowVersion() && !getShowErrorMessages()) {
-            if (!mSettings.cppcheckCfgProductName.empty()) {
-                mLogger.printRaw(mSettings.cppcheckCfgProductName);
-            } else {
-                const char * const extraVersion = CppCheck::extraVersion();
-                if (*extraVersion != 0)
-                    mLogger.printRaw(std::string("Cppcheck ") + CppCheck::version() + " ("+ extraVersion + ')');
-                else
-                    mLogger.printRaw(std::string("Cppcheck ") + CppCheck::version());
-            }
-        }
-
-        if (getShowErrorMessages()) {
-            XMLErrorMessagesLogger xmlLogger;
-            std::cout << ErrorMessage::getXMLHeader(mSettings.cppcheckCfgProductName);
-            CppCheck::getErrorMessages(xmlLogger);
-            std::cout << ErrorMessage::getXMLFooter() << std::endl;
-        }
-
         if (exitAfterPrinting()) {
             Settings::terminate();
             return true;
@@ -526,9 +507,16 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // print all possible error messages..
             else if (std::strcmp(argv[i], "--errorlist") == 0) {
-                mShowErrorMessages = true;
-                mSettings.xml = true;
+                // TODO: make this an exclusive option
                 mExitAfterPrint = true;
+                mSettings.loadCppcheckCfg();
+                {
+                    XMLErrorMessagesLogger xmlLogger;
+                    std::cout << ErrorMessage::getXMLHeader(mSettings.cppcheckCfgProductName);
+                    CppCheck::getErrorMessages(xmlLogger);
+                    std::cout << ErrorMessage::getXMLFooter() << std::endl;
+                }
+                return true;
             }
 
             // --error-exitcode=1
@@ -606,10 +594,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // Print help
             else if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "--help") == 0) {
-                mPathNames.clear();
-                mShowHelp = true;
+                // TODO: make this an exclusive option
                 mExitAfterPrint = true;
-                break;
+                printHelp();
+                return true;
             }
 
             // Ignored paths
@@ -829,18 +817,19 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--plist-output=", 15) == 0) {
                 mSettings.plistOutput = Path::simplifyPath(Path::fromNativeSeparators(argv[i] + 15));
                 if (mSettings.plistOutput.empty())
-                    mSettings.plistOutput = "./";
-                else if (!endsWith(mSettings.plistOutput,'/'))
-                    mSettings.plistOutput += '/';
+                    mSettings.plistOutput = ".";
 
                 const std::string plistOutput = Path::toNativeSeparators(mSettings.plistOutput);
                 if (!Path::isDirectory(plistOutput)) {
-                    std::string message("plist folder does not exist: \"");
+                    std::string message("plist folder does not exist: '");
                     message += plistOutput;
-                    message += "\".";
+                    message += "'.";
                     mLogger.printError(message);
                     return false;
                 }
+
+                if (!endsWith(mSettings.plistOutput,'/'))
+                    mSettings.plistOutput += '/';
             }
 
             // Special Cppcheck Premium options
@@ -1163,9 +1152,18 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings.verbose = true;
 
             else if (std::strcmp(argv[i], "--version") == 0) {
-                mShowVersion = true;
+                // TODO: make this an exclusive parameter
                 mExitAfterPrint = true;
                 mSettings.loadCppcheckCfg();
+                if (!mSettings.cppcheckCfgProductName.empty()) {
+                    mLogger.printRaw(mSettings.cppcheckCfgProductName);
+                } else {
+                    const char * const extraVersion = CppCheck::extraVersion();
+                    if (*extraVersion != '\0')
+                        mLogger.printRaw(std::string("Cppcheck ") + CppCheck::version() + " ("+ extraVersion + ')');
+                    else
+                        mLogger.printRaw(std::string("Cppcheck ") + CppCheck::version());
+                }
                 return true;
             }
 
@@ -1231,11 +1229,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     }
 
     if (argc <= 1) {
-        mShowHelp = true;
         mExitAfterPrint = true;
-    }
-
-    if (mShowHelp) {
         printHelp();
         return true;
     }
@@ -1630,40 +1624,40 @@ bool CmdLineParser::tryLoadLibrary(Library& destination, const std::string& base
     const Library::Error err = destination.load(basepath.c_str(), filename);
 
     if (err.errorcode == Library::ErrorCode::UNKNOWN_ELEMENT)
-        std::cout << "cppcheck: Found unknown elements in configuration file '" << filename << "': " << err.reason << std::endl;
+        mLogger.printMessage("Found unknown elements in configuration file '" + std::string(filename) + "': " + err.reason); // TODO: print as errors
     else if (err.errorcode != Library::ErrorCode::OK) {
-        std::cout << "cppcheck: Failed to load library configuration file '" << filename << "'. ";
+        std::string msg = "Failed to load library configuration file '" + std::string(filename) + "'. ";
         switch (err.errorcode) {
         case Library::ErrorCode::OK:
             break;
         case Library::ErrorCode::FILE_NOT_FOUND:
-            std::cout << "File not found";
+            msg += "File not found";
             break;
         case Library::ErrorCode::BAD_XML:
-            std::cout << "Bad XML";
+            msg += "Bad XML";
             break;
         case Library::ErrorCode::UNKNOWN_ELEMENT:
-            std::cout << "Unexpected element";
+            msg += "Unexpected element";
             break;
         case Library::ErrorCode::MISSING_ATTRIBUTE:
-            std::cout << "Missing attribute";
+            msg +="Missing attribute";
             break;
         case Library::ErrorCode::BAD_ATTRIBUTE_VALUE:
-            std::cout << "Bad attribute value";
+            msg += "Bad attribute value";
             break;
         case Library::ErrorCode::UNSUPPORTED_FORMAT:
-            std::cout << "File is of unsupported format version";
+            msg += "File is of unsupported format version";
             break;
         case Library::ErrorCode::DUPLICATE_PLATFORM_TYPE:
-            std::cout << "Duplicate platform type";
+            msg += "Duplicate platform type";
             break;
         case Library::ErrorCode::PLATFORM_TYPE_REDEFINED:
-            std::cout << "Platform type redefined";
+            msg += "Platform type redefined";
             break;
         }
         if (!err.reason.empty())
-            std::cout << " '" + err.reason + "'";
-        std::cout << std::endl;
+            msg += " '" + err.reason + "'";
+        mLogger.printMessage(msg); // TODO: print as errors
         return false;
     }
     return true;
@@ -1683,7 +1677,7 @@ bool CmdLineParser::loadLibraries(Settings& settings)
                                   "std.cfg should be available in " + cfgfolder + " or the FILESDIR "
                                   "should be configured.");
 #endif
-        std::cout << msg << " " << details << std::endl;
+        mLogger.printRaw(msg + " " + details); // TODO: do not print as raw?
         return false;
     }
 
@@ -1703,7 +1697,7 @@ bool CmdLineParser::loadAddons(Settings& settings)
         AddonInfo addonInfo;
         const std::string failedToGetAddonInfo = addonInfo.getAddonInfo(addon, settings.exename);
         if (!failedToGetAddonInfo.empty()) {
-            std::cout << failedToGetAddonInfo << std::endl;
+            mLogger.printRaw(failedToGetAddonInfo); // TODO: do not print as raw
             result = false;
             continue;
         }
