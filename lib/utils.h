@@ -48,6 +48,14 @@ struct SelectMapValues {
     }
 };
 
+struct OnExit {
+    std::function<void()> f;
+
+    ~OnExit() {
+        f();
+    }
+};
+
 template<class Range, class T>
 bool contains(const Range& r, const T& x)
 {

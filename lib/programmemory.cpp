@@ -1263,7 +1263,7 @@ namespace {
         const Settings* settings = nullptr;
         int fdepth = 4;
         ValueFlow::Value unknown = ValueFlow::Value::unknown();
-        int depth = 100;
+        int depth = 10;
 
         explicit Executor(ProgramMemory* pm = nullptr, const Settings* settings = nullptr) : pm(pm), settings(settings) {}
 
@@ -1614,6 +1614,7 @@ namespace {
         ValueFlow::Value execute(const Token* expr)
         {
             depth--;
+            OnExit onExit{[&] { depth++; }};
             if (depth < 0)
                 return unknown;
             ValueFlow::Value v = executeImpl(expr);
