@@ -33,7 +33,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include <tinyxml2.h>
+#include "xml.h"
 
 #define ASSERT_EQ(expected, actual)   ASSERT(expected == actual)
 

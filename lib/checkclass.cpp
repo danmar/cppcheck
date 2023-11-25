@@ -38,7 +38,7 @@
 #include <utility>
 #include <unordered_map>
 
-#include <tinyxml2.h>
+#include "xml.h"
 
 namespace CTU {
     class FileInfo;

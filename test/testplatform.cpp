@@ -22,7 +22,7 @@
 
 #include <string>
 
-#include <tinyxml2.h>
+#include "xml.h"
 
 
 class TestPlatform : public TestFixture {

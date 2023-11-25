@@ -36,7 +36,7 @@
 #include <sstream>
 #include <utility>
 
-#include <tinyxml2.h>
+#include "xml.h"
 //---------------------------------------------------------------------------
 
 static constexpr char ATTR_CALL_ID[] = "call-id";

@@ -70,7 +70,7 @@
 
 #include <simplecpp.h>
 
-#include <tinyxml2.h>
+#include "xml.h"
 
 #ifdef HAVE_RULES
 #ifdef _WIN32
