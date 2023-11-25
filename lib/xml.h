@@ -22,9 +22,11 @@
 #include "config.h"
 
 SUPPRESS_WARNING_CLANG_PUSH("-Wzero-as-null-pointer-constant")
+SUPPRESS_WARNING_CLANG_PUSH("-Wextra-semi-stmt")
 
 #include <tinyxml2.h>
 
+SUPPRESS_WARNING_CLANG_POP
 SUPPRESS_WARNING_CLANG_POP
 
 #endif // xmlH
