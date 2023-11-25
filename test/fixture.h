@@ -236,6 +236,10 @@ protected:
         return SettingsBuilder(*this, std::move(settings));
     }
 
+    // TODO: make sure the output has been consumed in the test
+    std::ostringstream errout;
+    std::ostringstream output;
+
 public:
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
     void reportErr(const ErrorMessage &msg) override;
@@ -247,9 +251,6 @@ public:
 
     static std::size_t runTests(const options& args);
 };
-
-extern std::ostringstream errout;
-extern std::ostringstream output;
 
 // TODO: most asserts do not actually assert i.e. do not return
 #define TEST_CASE( NAME )  do { if (prepareTest(#NAME)) { setVerbose(false); NAME(); teardownTest(); } } while (false)
