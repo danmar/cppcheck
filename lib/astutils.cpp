@@ -149,7 +149,7 @@ bool astHasVar(const Token * tok, nonneg int varid)
     return astHasVar(tok->astOperand1(), varid) || astHasVar(tok->astOperand2(), varid);
 }
 
-bool astHasExpr(const Token * tok, nonneg int exprid)
+bool astHasExpr(const Token* tok, nonneg int exprid)
 {
     if (!tok)
         return false;

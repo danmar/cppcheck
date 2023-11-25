@@ -40,10 +40,7 @@
 #include <utility>
 #include <vector>
 
-
-
-ExprIdToken::ExprIdToken(const Token* tok) 
-: tok(tok), exprid(tok ? tok->exprId() : 0) {}
+ExprIdToken::ExprIdToken(const Token* tok) : tok(tok), exprid(tok ? tok->exprId() : 0) {}
 
 nonneg int ExprIdToken::getExpressionId() const {
     return tok ? tok->exprId() : exprid;
@@ -1331,7 +1328,8 @@ namespace {
                     std::vector<const Token*> conditions2 = flattenConditionsSorted(tok);
                     if (conditions2.empty())
                         continue;
-                    if (std::equal(conditions1.begin(), conditions1.end(), conditions2.begin(), conditions2.end(), &TokenExprIdCompare))
+                    if (std::equal(
+                            conditions1.begin(), conditions1.end(), conditions2.begin(), conditions2.end(), &TokenExprIdCompare))
                         return value;
                     std::vector<const Token*> diffConditions1 = setDifference(conditions1, conditions2);
                     std::vector<const Token*> diffConditions2 = setDifference(conditions2, conditions1);
@@ -1618,7 +1616,9 @@ namespace {
         ValueFlow::Value execute(const Token* expr)
         {
             depth--;
-            OnExit onExit{[&] { depth++; }};
+            OnExit onExit{[&] {
+                    depth++;
+                }};
             if (depth < 0)
                 return unknown;
             ValueFlow::Value v = executeImpl(expr);
@@ -1685,7 +1685,7 @@ namespace {
             return {};
         }
     };
-} // namespace
+}     // namespace
 
 static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings* settings)
 {
