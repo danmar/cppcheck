@@ -1942,6 +1942,8 @@ void Tokenizer::simplifyTypedefCpp()
                         tok2 = tok2->next();
                         tok2->next()->insertToken("0");
                     }
+                    if (Token::Match(tok2->tokAt(-1), "class|struct|union") && tok2->strAt(-1) == typeStart->str())
+                        tok2->deletePrevious();
                     tok2->str(typeStart->str());
 
                     // restore qualification if it was removed

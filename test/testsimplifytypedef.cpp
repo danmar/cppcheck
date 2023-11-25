@@ -212,6 +212,7 @@ private:
         TEST_CASE(simplifyTypedef146);
         TEST_CASE(simplifyTypedef147);
         TEST_CASE(simplifyTypedef148);
+        TEST_CASE(simplifyTypedef149);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -3441,6 +3442,18 @@ private:
         code = "typedef int& R;\n" // #12166
                "R r = i;\n";
         ASSERT_EQUALS("int & r = i ;", tok(code));
+    }
+
+    void simplifyTypedef149() { // #12218
+        const char* code{};
+        code = "namespace N {\n"
+               "    typedef struct S {} S;\n"
+               "}\n"
+               "void g(int);\n"
+               "void f() {\n"
+               "    g(sizeof(struct N::S));\n"
+               "}\n";
+        ASSERT_EQUALS("namespace N { struct S { } ; } void g ( int ) ; void f ( ) { g ( sizeof ( struct N :: S ) ) ; }", tok(code));
     }
 
     void simplifyTypedefFunction1() {
