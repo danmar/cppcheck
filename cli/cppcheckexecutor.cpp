@@ -183,10 +183,13 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         return EXIT_SUCCESS;
     }
 
+    settings.loadSummaries();
+
     mFiles = parser.getFiles();
     mFileSettings = parser.getFileSettings();
 
     mStdLogger = new StdLogger(settings);
+
     CppCheck cppCheck(*mStdLogger, true, executeCommand);
     cppCheck.settings() = settings;
 
@@ -230,9 +233,10 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedF
 /*
  * That is a method which gets called from check_wrapper
  * */
-int CppCheckExecutor::check_internal(CppCheck& cppcheck)
+int CppCheckExecutor::check_internal(CppCheck& cppcheck) const
 {
-    Settings& settings = cppcheck.settings();
+    const auto& settings = cppcheck.settings();
+    auto& suppressions = cppcheck.settings().nomsg;
 
     if (settings.reportProgress >= 0)
         mStdLogger->resetLatestProgressOutputTime();
@@ -242,8 +246,6 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     }
 
     if (!settings.buildDir.empty()) {
-        settings.loadSummaries();
-
         std::list<std::string> fileNames;
         for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i)
             fileNames.emplace_back(i->first);
@@ -256,13 +258,13 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     unsigned int returnValue;
     if (settings.useSingleJob()) {
         // Single process
-        SingleExecutor executor(cppcheck, mFiles, mFileSettings, settings, settings.nomsg, *mStdLogger);
+        SingleExecutor executor(cppcheck, mFiles, mFileSettings, settings, suppressions, *mStdLogger);
         returnValue = executor.check();
     } else {
 #if defined(THREADING_MODEL_THREAD)
-        ThreadExecutor executor(mFiles, mFileSettings, settings, settings.nomsg, *mStdLogger, CppCheckExecutor::executeCommand);
+        ThreadExecutor executor(mFiles, mFileSettings, settings, suppressions, *mStdLogger, CppCheckExecutor::executeCommand);
 #elif defined(THREADING_MODEL_FORK)
-        ProcessExecutor executor(mFiles, mFileSettings, settings, settings.nomsg, *mStdLogger, CppCheckExecutor::executeCommand);
+        ProcessExecutor executor(mFiles, mFileSettings, settings, suppressions, *mStdLogger, CppCheckExecutor::executeCommand);
 #endif
         returnValue = executor.check();
     }
