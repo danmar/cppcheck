@@ -1305,7 +1305,7 @@ namespace {
             if (isTrueOrFalse(lhs, !b) && isTrueOrFalse(rhs, !b))
                 return lhs;
             nonneg int n = astCount(expr, expr->str().c_str());
-            if (n > 5)
+            if (n > 4)
                 return unknown;
             std::vector<const Token*> conditions1 = flattenConditionsSorted(expr);
             std::unordered_map<nonneg int, ValueFlow::Value> condValues = executeAll(conditions1);
