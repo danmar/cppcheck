@@ -240,10 +240,12 @@ protected:
     std::ostringstream errout;
     std::ostringstream output;
 
-public:
+private:
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
     void reportErr(const ErrorMessage &msg) override;
     void run(const std::string &str);
+
+public:
     static void printHelp();
     const std::string classname;
 
