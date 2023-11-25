@@ -1283,6 +1283,10 @@ namespace {
         std::vector<const Token*> flattenConditionsSorted(const Token* tok) const
         {
             std::vector<const Token*> result = astFlatten(tok, tok->str().c_str());
+            if (std::any_of(result.begin(), result.end(), [](const Token* child) {
+                return Token::Match(child, "&&|%oror%");
+            }))
+                return {};
             std::sort(result.begin(), result.end(), &TokenExprIdCompare);
             if (!result.empty() && result.front()->exprId() == 0)
                 return {};
@@ -1308,14 +1312,14 @@ namespace {
             if (n > 4)
                 return unknown;
             std::vector<const Token*> conditions1 = flattenConditionsSorted(expr);
+            if (conditions1.empty())
+                return unknown;
             std::unordered_map<nonneg int, ValueFlow::Value> condValues = executeAll(conditions1);
             for (const auto& p : condValues) {
                 const ValueFlow::Value& v = p.second;
                 if (isTrueOrFalse(v, b))
                     return v;
             }
-            if (conditions1.empty())
-                return unknown;
             for (const auto& p : *pm) {
                 const Token* tok = p.first.tok;
                 const ValueFlow::Value& value = p.second;
