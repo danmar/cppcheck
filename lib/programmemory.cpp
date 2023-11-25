@@ -40,6 +40,11 @@
 #include <utility>
 #include <vector>
 
+
+
+ExprIdToken::ExprIdToken(const Token* tok) 
+: tok(tok), exprid(tok ? tok->exprId() : 0) {}
+
 nonneg int ExprIdToken::getExpressionId() const {
     return tok ? tok->exprId() : exprid;
 }
