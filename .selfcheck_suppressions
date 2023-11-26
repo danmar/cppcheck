@@ -19,6 +19,10 @@ autoNoType
 
 naming-varname:externals/simplecpp/simplecpp.h
 naming-privateMemberVariable:externals/simplecpp/simplecpp.h
-# TODO: use more granular suppressions - might expose false positives
-*:externals/picojson/*
-*:externals/tinyxml2/*
+
+# these warnings need to be addressed upstream
+uninitMemberVar:externals/tinyxml2/tinyxml2.h
+noExplicitConstructor:externals/tinyxml2/tinyxml2.h
+missingOverride:externals/tinyxml2/tinyxml2.h
+invalidPrintfArgType_sint:externals/tinyxml2/tinyxml2.h
+naming-privateMemberVariable:externals/tinyxml2/tinyxml2.h
