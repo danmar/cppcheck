@@ -21,6 +21,7 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/checkersreport.h \
            $${PWD}/checkexceptionsafety.h \
            $${PWD}/checkfunctions.h \
+           $${PWD}/checkimpl.h \
            $${PWD}/checkinternal.h \
            $${PWD}/checkio.h \
            $${PWD}/checkleakautovar.h \
@@ -99,6 +100,7 @@ SOURCES += $${PWD}/valueflow.cpp \
            $${PWD}/checkersreport.cpp \
            $${PWD}/checkexceptionsafety.cpp \
            $${PWD}/checkfunctions.cpp \
+           $${PWD}/checkimpl.cpp \
            $${PWD}/checkinternal.cpp \
            $${PWD}/checkio.cpp \
            $${PWD}/checkleakautovar.cpp \

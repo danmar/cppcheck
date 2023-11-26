@@ -23,6 +23,7 @@
 #include "checkcondition.h"
 
 #include "astutils.h"
+#include "checkimpl.h"
 #include "library.h"
 #include "platform.h"
 #include "settings.h"
@@ -53,9 +54,113 @@ static const CWE CWE571(571U);   // Expression is Always True
 // Register this check class (by creating a static instance of it)
 namespace {
     CheckCondition instance;
+
+
+    class CheckConditionImpl : public CheckImpl {
+    public:
+        /** This constructor is used when running checks. */
+        CheckConditionImpl(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+            : CheckImpl(tokenizer, settings, errorLogger) {}
+
+        /** mismatching assignment / comparison */
+        void assignIf();
+
+        /** parse scopes recursively */
+        bool assignIfParseScope(const Token * const assignTok,
+                                const Token * const startTok,
+                                const nonneg int varid,
+                                const bool islocal,
+                                const char bitop,
+                                const MathLib::bigint num);
+
+        /** check bitmask using | instead of & */
+        void checkBadBitmaskCheck();
+
+        /** mismatching lhs and rhs in comparison */
+        void comparison();
+
+        void duplicateCondition();
+
+        /** match 'if' and 'else if' conditions */
+        void multiCondition();
+
+        /**
+         * multiconditions #2
+         * - Opposite inner conditions => always false
+         * - (TODO) Same/Overlapping inner condition => always true
+         * - same condition after early exit => always false
+         **/
+        void multiCondition2();
+
+        /** @brief %Check for testing for mutual exclusion over ||*/
+        void checkIncorrectLogicOperator();
+
+        /** @brief %Check for suspicious usage of modulo (e.g. "if(var % 4 == 4)") */
+        void checkModuloAlwaysTrueFalse();
+
+        /** @brief Suspicious condition (assignment+comparison) */
+        void clarifyCondition();
+
+        /** @brief Condition is always true/false */
+        void alwaysTrueFalse();
+
+        /** @brief %Check for invalid test for overflow 'x+100 < x' */
+        void checkInvalidTestForOverflow();
+
+        /** @brief Check if pointer addition result is NULL '(ptr + 1) == NULL' */
+        void checkPointerAdditionResultNotNull();
+
+        void checkDuplicateConditionalAssign();
+
+        /** @brief Assignment in condition */
+        void checkAssignmentInCondition();
+
+        // The conditions that have been diagnosed
+        std::set<const Token*> mCondDiags;
+        bool diag(const Token* tok, bool insert=true);
+        bool isAliased(const std::set<int> &vars) const;
+        bool isOverlappingCond(const Token * const cond1, const Token * const cond2, bool pure) const;
+        void assignIfError(const Token *tok1, const Token *tok2, const std::string &condition, bool result);
+        void mismatchingBitAndError(const Token *tok1, const MathLib::bigint num1, const Token *tok2, const MathLib::bigint num2);
+        void badBitmaskCheckError(const Token *tok, bool isNoOp = false);
+        void comparisonError(const Token *tok,
+                             const std::string &bitop,
+                             MathLib::bigint value1,
+                             const std::string &op,
+                             MathLib::bigint value2,
+                             bool result);
+        void duplicateConditionError(const Token *tok1, const Token *tok2, ErrorPath errorPath);
+        void overlappingElseIfConditionError(const Token *tok, nonneg int line1);
+        void oppositeElseIfConditionError(const Token *ifCond, const Token *elseIfCond, ErrorPath errorPath);
+
+        void oppositeInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath);
+
+        void identicalInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath);
+
+        void identicalConditionAfterEarlyExitError(const Token *cond1, const Token *cond2, ErrorPath errorPath);
+
+        void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always, bool inconclusive, ErrorPath errors);
+        void redundantConditionError(const Token *tok, const std::string &text, bool inconclusive);
+
+        void moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal);
+
+        void clarifyConditionError(const Token *tok, bool assign, bool boolop);
+
+        void alwaysTrueFalseError(const Token* tok, const Token* condition, const ValueFlow::Value* value);
+
+        void invalidTestForOverflow(const Token* tok, const ValueType *valueType, const std::string &replace);
+        void pointerAdditionResultNotNullError(const Token *tok, const Token *calc);
+
+        void duplicateConditionalAssignError(const Token *condTok, const Token* assignTok, bool isRedundant = false);
+
+        void assignmentInCondition(const Token *eq);
+
+        void checkCompareValueOutOfTypeRange();
+        void compareValueOutOfTypeRangeError(const Token *comparison, const std::string &type, long long value, bool result);
+    };
 }
 
-bool CheckCondition::diag(const Token* tok, bool insert)
+bool CheckConditionImpl::diag(const Token* tok, bool insert)
 {
     if (!tok)
         return false;
@@ -76,7 +181,7 @@ bool CheckCondition::diag(const Token* tok, bool insert)
     return true;
 }
 
-bool CheckCondition::isAliased(const std::set<int> &vars) const
+bool CheckConditionImpl::isAliased(const std::set<int> &vars) const
 {
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "= & %var% ;") && vars.find(tok->tokAt(2)->varId()) != vars.end())
@@ -85,7 +190,7 @@ bool CheckCondition::isAliased(const std::set<int> &vars) const
     return false;
 }
 
-void CheckCondition::assignIf()
+void CheckConditionImpl::assignIf()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
@@ -158,7 +263,7 @@ static bool isParameterChanged(const Token *partok)
 }
 
 /** parse scopes recursively */
-bool CheckCondition::assignIfParseScope(const Token * const assignTok,
+bool CheckConditionImpl::assignIfParseScope(const Token * const assignTok,
                                         const Token * const startTok,
                                         const nonneg int varid,
                                         const bool islocal,
@@ -236,7 +341,7 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
     return false;
 }
 
-void CheckCondition::assignIfError(const Token *tok1, const Token *tok2, const std::string &condition, bool result)
+void CheckConditionImpl::assignIfError(const Token *tok1, const Token *tok2, const std::string &condition, bool result)
 {
     if (tok2 && diag(tok2->tokAt(2)))
         return;
@@ -248,7 +353,7 @@ void CheckCondition::assignIfError(const Token *tok1, const Token *tok2, const s
 }
 
 
-void CheckCondition::mismatchingBitAndError(const Token *tok1, const MathLib::bigint num1, const Token *tok2, const MathLib::bigint num2)
+void CheckConditionImpl::mismatchingBitAndError(const Token *tok1, const MathLib::bigint num1, const Token *tok2, const MathLib::bigint num2)
 {
     std::list<const Token *> locations = { tok1, tok2 };
 
@@ -304,7 +409,7 @@ static bool isOperandExpanded(const Token *tok)
     return false;
 }
 
-void CheckCondition::checkBadBitmaskCheck()
+void CheckConditionImpl::checkBadBitmaskCheck()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
@@ -344,7 +449,7 @@ void CheckCondition::checkBadBitmaskCheck()
     }
 }
 
-void CheckCondition::badBitmaskCheckError(const Token *tok, bool isNoOp)
+void CheckConditionImpl::badBitmaskCheckError(const Token *tok, bool isNoOp)
 {
     if (isNoOp)
         reportError(tok, Severity::style, "badBitmaskCheck", "Operator '|' with one operand equal to zero is redundant.", CWE571, Certainty::normal);
@@ -352,7 +457,7 @@ void CheckCondition::badBitmaskCheckError(const Token *tok, bool isNoOp)
         reportError(tok, Severity::warning, "badBitmaskCheck", "Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?", CWE571, Certainty::normal);
 }
 
-void CheckCondition::comparison()
+void CheckConditionImpl::comparison()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
@@ -415,7 +520,7 @@ void CheckCondition::comparison()
     }
 }
 
-void CheckCondition::comparisonError(const Token *tok, const std::string &bitop, MathLib::bigint value1, const std::string &op, MathLib::bigint value2, bool result)
+void CheckConditionImpl::comparisonError(const Token *tok, const std::string &bitop, MathLib::bigint value1, const std::string &op, MathLib::bigint value2, bool result)
 {
     if (tok && (diag(tok) | diag(tok->astParent())))
         return;
@@ -431,7 +536,7 @@ void CheckCondition::comparisonError(const Token *tok, const std::string &bitop,
     reportError(tok, Severity::style, "comparisonError", errmsg, CWE398, Certainty::normal);
 }
 
-bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * const cond2, bool pure) const
+bool CheckConditionImpl::isOverlappingCond(const Token * const cond1, const Token * const cond2, bool pure) const
 {
     if (!cond1 || !cond2)
         return false;
@@ -472,7 +577,7 @@ bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * 
     return false;
 }
 
-void CheckCondition::duplicateCondition()
+void CheckConditionImpl::duplicateCondition()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
@@ -511,7 +616,7 @@ void CheckCondition::duplicateCondition()
     }
 }
 
-void CheckCondition::duplicateConditionError(const Token *tok1, const Token *tok2, ErrorPath errorPath)
+void CheckConditionImpl::duplicateConditionError(const Token *tok1, const Token *tok2, ErrorPath errorPath)
 {
     if (diag(tok1) & diag(tok2))
         return;
@@ -523,7 +628,7 @@ void CheckCondition::duplicateConditionError(const Token *tok1, const Token *tok
     reportError(errorPath, Severity::style, "duplicateCondition", msg, CWE398, Certainty::normal);
 }
 
-void CheckCondition::multiCondition()
+void CheckConditionImpl::multiCondition()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
@@ -566,7 +671,7 @@ void CheckCondition::multiCondition()
     }
 }
 
-void CheckCondition::overlappingElseIfConditionError(const Token *tok, nonneg int line1)
+void CheckConditionImpl::overlappingElseIfConditionError(const Token *tok, nonneg int line1)
 {
     if (diag(tok))
         return;
@@ -577,7 +682,7 @@ void CheckCondition::overlappingElseIfConditionError(const Token *tok, nonneg in
     reportError(tok, Severity::style, "multiCondition", errmsg.str(), CWE398, Certainty::normal);
 }
 
-void CheckCondition::oppositeElseIfConditionError(const Token *ifCond, const Token *elseIfCond, ErrorPath errorPath)
+void CheckConditionImpl::oppositeElseIfConditionError(const Token *ifCond, const Token *elseIfCond, ErrorPath errorPath)
 {
     if (diag(ifCond) & diag(elseIfCond))
         return;
@@ -613,7 +718,7 @@ static bool isNonConstFunctionCall(const Token *ftok, const Library &library)
     return true;
 }
 
-void CheckCondition::multiCondition2()
+void CheckConditionImpl::multiCondition2()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
@@ -841,7 +946,7 @@ static std::string innerSmtString(const Token * tok)
     return top->str();
 }
 
-void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath)
+void CheckConditionImpl::oppositeInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath)
 {
     if (diag(tok1) & diag(tok2))
         return;
@@ -856,7 +961,7 @@ void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token*
     reportError(errorPath, Severity::warning, "oppositeInnerCondition", msg, CWE398, Certainty::normal);
 }
 
-void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath)
+void CheckConditionImpl::identicalInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath)
 {
     if (diag(tok1) & diag(tok2))
         return;
@@ -871,7 +976,7 @@ void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token
     reportError(errorPath, Severity::warning, "identicalInnerCondition", msg, CWE398, Certainty::normal);
 }
 
-void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, const Token* cond2, ErrorPath errorPath)
+void CheckConditionImpl::identicalConditionAfterEarlyExitError(const Token *cond1, const Token* cond2, ErrorPath errorPath)
 {
     if (diag(cond1) & diag(cond2))
         return;
@@ -1121,7 +1226,7 @@ static bool isIfConstexpr(const Token* tok) {
     return top && Token::simpleMatch(top->astOperand1(), "if") && top->astOperand1()->isConstexpr();
 }
 
-void CheckCondition::checkIncorrectLogicOperator()
+void CheckConditionImpl::checkIncorrectLogicOperator()
 {
     const bool printStyle = mSettings->severity.isEnabled(Severity::style);
     const bool printWarning = mSettings->severity.isEnabled(Severity::warning);
@@ -1332,7 +1437,7 @@ void CheckCondition::checkIncorrectLogicOperator()
     }
 }
 
-void CheckCondition::incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always, bool inconclusive, ErrorPath errors)
+void CheckConditionImpl::incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always, bool inconclusive, ErrorPath errors)
 {
     if (diag(tok))
         return;
@@ -1349,7 +1454,7 @@ void CheckCondition::incorrectLogicOperatorError(const Token *tok, const std::st
                     "Are these conditions necessary? Did you intend to use || instead? Are the numbers correct? Are you comparing the correct variables?", CWE570, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
-void CheckCondition::redundantConditionError(const Token *tok, const std::string &text, bool inconclusive)
+void CheckConditionImpl::redundantConditionError(const Token *tok, const std::string &text, bool inconclusive)
 {
     if (diag(tok))
         return;
@@ -1359,7 +1464,7 @@ void CheckCondition::redundantConditionError(const Token *tok, const std::string
 //-----------------------------------------------------------------------------
 // Detect "(var % val1) > val2" where val2 is >= val1.
 //-----------------------------------------------------------------------------
-void CheckCondition::checkModuloAlwaysTrueFalse()
+void CheckConditionImpl::checkModuloAlwaysTrueFalse()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
@@ -1389,7 +1494,7 @@ void CheckCondition::checkModuloAlwaysTrueFalse()
     }
 }
 
-void CheckCondition::moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal)
+void CheckConditionImpl::moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal)
 {
     if (diag(tok))
         return;
@@ -1415,7 +1520,7 @@ static int countPar(const Token *tok1, const Token *tok2)
 // Clarify condition '(x = a < 0)' into '((x = a) < 0)' or '(x = (a < 0))'
 // Clarify condition '(a & b == c)' into '((a & b) == c)' or '(a & (b == c))'
 //---------------------------------------------------------------------------
-void CheckCondition::clarifyCondition()
+void CheckConditionImpl::clarifyCondition()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
@@ -1458,7 +1563,7 @@ void CheckCondition::clarifyCondition()
     }
 }
 
-void CheckCondition::clarifyConditionError(const Token *tok, bool assign, bool boolop)
+void CheckConditionImpl::clarifyConditionError(const Token *tok, bool assign, bool boolop)
 {
     std::string errmsg;
 
@@ -1481,7 +1586,7 @@ void CheckCondition::clarifyConditionError(const Token *tok, bool assign, bool b
                 errmsg, CWE398, Certainty::normal);
 }
 
-void CheckCondition::alwaysTrueFalse()
+void CheckConditionImpl::alwaysTrueFalse()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
@@ -1618,7 +1723,7 @@ void CheckCondition::alwaysTrueFalse()
     }
 }
 
-void CheckCondition::alwaysTrueFalseError(const Token* tok, const Token* condition, const ValueFlow::Value* value)
+void CheckConditionImpl::alwaysTrueFalseError(const Token* tok, const Token* condition, const ValueFlow::Value* value)
 {
     const bool alwaysTrue = value && (value->intvalue != 0 || value->isImpossible());
     const std::string expr = tok ? tok->expressionString() : std::string("x");
@@ -1632,7 +1737,7 @@ void CheckCondition::alwaysTrueFalseError(const Token* tok, const Token* conditi
                 (alwaysTrue ? CWE571 : CWE570), Certainty::normal);
 }
 
-void CheckCondition::checkInvalidTestForOverflow()
+void CheckConditionImpl::checkInvalidTestForOverflow()
 {
     // Interesting blogs:
     // https://www.airs.com/blog/archives/120
@@ -1721,7 +1826,7 @@ void CheckCondition::checkInvalidTestForOverflow()
     }
 }
 
-void CheckCondition::invalidTestForOverflow(const Token* tok, const ValueType *valueType, const std::string &replace)
+void CheckConditionImpl::invalidTestForOverflow(const Token* tok, const ValueType *valueType, const std::string &replace)
 {
     const std::string expr = (tok ? tok->expressionString() : std::string("x + c < x"));
     const std::string overflow = (valueType && valueType->pointer) ? "pointer overflow" : "signed integer overflow";
@@ -1736,7 +1841,7 @@ void CheckCondition::invalidTestForOverflow(const Token* tok, const ValueType *v
 }
 
 
-void CheckCondition::checkPointerAdditionResultNotNull()
+void CheckConditionImpl::checkPointerAdditionResultNotNull()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
@@ -1777,13 +1882,13 @@ void CheckCondition::checkPointerAdditionResultNotNull()
     }
 }
 
-void CheckCondition::pointerAdditionResultNotNullError(const Token *tok, const Token *calc)
+void CheckConditionImpl::pointerAdditionResultNotNullError(const Token *tok, const Token *calc)
 {
     const std::string s = calc ? calc->expressionString() : "ptr+1";
     reportError(tok, Severity::warning, "pointerAdditionResultNotNull", "Comparison is wrong. Result of '" + s + "' can't be 0 unless there is pointer overflow, and pointer overflow is undefined behaviour.");
 }
 
-void CheckCondition::checkDuplicateConditionalAssign()
+void CheckConditionImpl::checkDuplicateConditionalAssign()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
@@ -1840,7 +1945,7 @@ void CheckCondition::checkDuplicateConditionalAssign()
     }
 }
 
-void CheckCondition::duplicateConditionalAssignError(const Token *condTok, const Token* assignTok, bool isRedundant)
+void CheckConditionImpl::duplicateConditionalAssignError(const Token *condTok, const Token* assignTok, bool isRedundant)
 {
     ErrorPath errors;
     std::string msg = "Duplicate expression for the condition and assignment.";
@@ -1862,7 +1967,7 @@ void CheckCondition::duplicateConditionalAssignError(const Token *condTok, const
 }
 
 
-void CheckCondition::checkAssignmentInCondition()
+void CheckConditionImpl::checkAssignmentInCondition()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
@@ -1896,7 +2001,7 @@ void CheckCondition::checkAssignmentInCondition()
     }
 }
 
-void CheckCondition::assignmentInCondition(const Token *eq)
+void CheckConditionImpl::assignmentInCondition(const Token *eq)
 {
     std::string expr = eq ? eq->expressionString() : "x=y";
 
@@ -1909,7 +2014,7 @@ void CheckCondition::assignmentInCondition(const Token *eq)
         Certainty::normal);
 }
 
-void CheckCondition::checkCompareValueOutOfTypeRange()
+void CheckConditionImpl::checkCompareValueOutOfTypeRange()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
@@ -2028,7 +2133,7 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
     }
 }
 
-void CheckCondition::compareValueOutOfTypeRangeError(const Token *comparison, const std::string &type, long long value, bool result)
+void CheckConditionImpl::compareValueOutOfTypeRangeError(const Token *comparison, const std::string &type, long long value, bool result)
 {
     reportError(
         comparison,
@@ -2037,4 +2142,49 @@ void CheckCondition::compareValueOutOfTypeRangeError(const Token *comparison, co
         "Comparing expression of type '" + type + "' against value " + std::to_string(value) + ". Condition is always " + bool_to_string(result) + ".",
         CWE398,
         Certainty::normal);
+}
+
+void CheckCondition::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) {
+    CheckConditionImpl checkCondition(&tokenizer, tokenizer.getSettings(), errorLogger);
+    checkCondition.multiCondition();
+    checkCondition.clarifyCondition();   // not simplified because ifAssign
+    checkCondition.multiCondition2();
+    checkCondition.checkIncorrectLogicOperator();
+    checkCondition.checkInvalidTestForOverflow();
+    checkCondition.duplicateCondition();
+    checkCondition.checkPointerAdditionResultNotNull();
+    checkCondition.checkDuplicateConditionalAssign();
+    checkCondition.assignIf();
+    checkCondition.checkBadBitmaskCheck();
+    checkCondition.comparison();
+    checkCondition.checkModuloAlwaysTrueFalse();
+    checkCondition.checkAssignmentInCondition();
+    checkCondition.checkCompareValueOutOfTypeRange();
+    checkCondition.alwaysTrueFalse();
+}
+
+void CheckCondition::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    CheckConditionImpl c(nullptr, settings, errorLogger);
+
+    ErrorPath errorPath;
+
+    c.assignIfError(nullptr, nullptr, emptyString, false);
+    c.badBitmaskCheckError(nullptr);
+    c.comparisonError(nullptr, "&", 6, "==", 1, false);
+    c.duplicateConditionError(nullptr, nullptr, errorPath);
+    c.overlappingElseIfConditionError(nullptr, 1);
+    c.mismatchingBitAndError(nullptr, 0xf0, nullptr, 1);
+    c.oppositeInnerConditionError(nullptr, nullptr, errorPath);
+    c.identicalInnerConditionError(nullptr, nullptr, errorPath);
+    c.identicalConditionAfterEarlyExitError(nullptr, nullptr, errorPath);
+    c.incorrectLogicOperatorError(nullptr, "foo > 3 && foo < 4", true, false, errorPath);
+    c.redundantConditionError(nullptr, "If x > 11 the condition x > 10 is always true.", false);
+    c.moduloAlwaysTrueFalseError(nullptr, "1");
+    c.clarifyConditionError(nullptr, true, false);
+    c.alwaysTrueFalseError(nullptr, nullptr, nullptr);
+    c.invalidTestForOverflow(nullptr, nullptr, "false");
+    c.pointerAdditionResultNotNullError(nullptr, nullptr);
+    c.duplicateConditionalAssignError(nullptr, nullptr);
+    c.assignmentInCondition(nullptr);
+    c.compareValueOutOfTypeRangeError(nullptr, "unsigned char", 256, true);
 }

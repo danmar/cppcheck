@@ -60,32 +60,6 @@ void Check::writeToErrorList(const ErrorMessage &errmsg)
     std::cout << errmsg.toXML() << std::endl;
 }
 
-
-void Check::reportError(const std::list<const Token *> &callstack, Severity severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty certainty)
-{
-    const ErrorMessage errmsg(callstack, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, certainty);
-    if (mErrorLogger)
-        mErrorLogger->reportErr(errmsg);
-    else
-        writeToErrorList(errmsg);
-}
-
-void Check::reportError(const ErrorPath &errorPath, Severity severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty)
-{
-    const ErrorMessage errmsg(errorPath, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, certainty);
-    if (mErrorLogger)
-        mErrorLogger->reportErr(errmsg);
-    else
-        writeToErrorList(errmsg);
-}
-
-bool Check::wrongData(const Token *tok, const char *str)
-{
-    if (mSettings->daca)
-        reportError(tok, Severity::debug, "DacaWrongData", "Wrong data detected by condition " + std::string(str));
-    return true;
-}
-
 std::list<Check *> &Check::instances()
 {
 #ifdef __SVR4
@@ -98,36 +72,3 @@ std::list<Check *> &Check::instances()
     return _instances;
 #endif
 }
-
-std::string Check::getMessageId(const ValueFlow::Value &value, const char id[])
-{
-    if (value.condition != nullptr)
-        return id + std::string("Cond");
-    if (value.safe)
-        return std::string("safe") + (char)std::toupper(id[0]) + (id + 1);
-    return id;
-}
-
-ErrorPath Check::getErrorPath(const Token* errtok, const ValueFlow::Value* value, std::string bug) const
-{
-    ErrorPath errorPath;
-    if (!value) {
-        errorPath.emplace_back(errtok, std::move(bug));
-    } else if (mSettings->verbose || mSettings->xml || !mSettings->templateLocation.empty()) {
-        errorPath = value->errorPath;
-        errorPath.emplace_back(errtok, std::move(bug));
-    } else {
-        if (value->condition)
-            errorPath.emplace_back(value->condition, "condition '" + value->condition->expressionString() + "'");
-        //else if (!value->isKnown() || value->defaultArg)
-        //    errorPath = value->callstack;
-        errorPath.emplace_back(errtok, std::move(bug));
-    }
-    return errorPath;
-}
-
-void Check::logChecker(const char id[])
-{
-    reportError(nullptr, Severity::none, "logChecker", id);
-}
-

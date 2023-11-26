@@ -28,7 +28,6 @@
 #include "errortypes.h"
 #include "mathlib.h"
 #include "symboldatabase.h"
-#include "tokenize.h"
 #include "vfvalue.h"
 
 #include <list>
@@ -43,6 +42,7 @@ namespace tinyxml2 {
 class ErrorLogger;
 class Settings;
 class Token;
+class Tokenizer;
 
 /// @addtogroup Checks
 /// @{
@@ -59,37 +59,10 @@ class Token;
 class CPPCHECKLIB CheckBufferOverrun : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
-    CheckBufferOverrun() : Check(myName()) {}
+    CheckBufferOverrun() : Check("Bounds checking") {}
 
 private:
-    /** This constructor is used when running checks. */
-    CheckBufferOverrun(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {}
-
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckBufferOverrun checkBufferOverrun(&tokenizer, tokenizer.getSettings(), errorLogger);
-        checkBufferOverrun.arrayIndex();
-        checkBufferOverrun.pointerArithmetic();
-        checkBufferOverrun.bufferOverflow();
-        checkBufferOverrun.arrayIndexThenCheck();
-        checkBufferOverrun.stringNotZeroTerminated();
-        checkBufferOverrun.objectIndex();
-        checkBufferOverrun.argumentSize();
-        checkBufferOverrun.negativeArraySize();
-    }
-
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckBufferOverrun c(nullptr, settings, errorLogger);
-        c.arrayIndexError(nullptr, std::vector<Dimension>(), std::vector<ValueFlow::Value>());
-        c.pointerArithmeticError(nullptr, nullptr, nullptr);
-        c.negativeIndexError(nullptr, std::vector<Dimension>(), std::vector<ValueFlow::Value>());
-        c.arrayIndexThenCheckError(nullptr, "i");
-        c.bufferOverflowError(nullptr, nullptr, Certainty::normal);
-        c.objectIndexError(nullptr, nullptr, true);
-        c.argumentSizeError(nullptr, "function", 1, "buffer", nullptr, nullptr);
-        c.negativeMemoryAllocationSizeError(nullptr, nullptr);
-        c.negativeArraySizeError(nullptr);
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /** @brief Parse current TU and extract file info */
     Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const override;
@@ -97,50 +70,14 @@ private:
     /** @brief Analyse all file infos for all TU */
     bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
 
-    void arrayIndex();
-    void arrayIndexError(const Token* tok,
-                         const std::vector<Dimension>& dimensions,
-                         const std::vector<ValueFlow::Value>& indexes);
-    void negativeIndexError(const Token* tok,
-                            const std::vector<Dimension>& dimensions,
-                            const std::vector<ValueFlow::Value>& indexes);
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
-    void pointerArithmetic();
-    void pointerArithmeticError(const Token *tok, const Token *indexToken, const ValueFlow::Value *indexValue);
-
-    void bufferOverflow();
-    void bufferOverflowError(const Token *tok, const ValueFlow::Value *value, Certainty certainty);
-
-    void arrayIndexThenCheck();
-    void arrayIndexThenCheckError(const Token *tok, const std::string &indexName);
-
-    void stringNotZeroTerminated();
-    void terminateStrncpyError(const Token *tok, const std::string &varname);
-
-    void argumentSize();
-    void argumentSizeError(const Token *tok, const std::string &functionName, nonneg int paramIndex, const std::string &paramExpression, const Variable *paramVar, const Variable *functionArg);
-
-    void negativeArraySize();
-    void negativeArraySizeError(const Token* tok);
-    void negativeMemoryAllocationSizeError(const Token* tok, const ValueFlow::Value* value); // provide a negative value to memory allocation function
-
-    void objectIndex();
-    void objectIndexError(const Token *tok, const ValueFlow::Value *v, bool known);
-
-    ValueFlow::Value getBufferSize(const Token *bufTok) const;
-
-    // CTU
     static bool isCtuUnsafeBufferUsage(const Settings *settings, const Token *argtok, MathLib::bigint *offset, int type);
     static bool isCtuUnsafeArrayIndex(const Settings *settings, const Token *argtok, MathLib::bigint *offset);
     static bool isCtuUnsafePointerArith(const Settings *settings, const Token *argtok, MathLib::bigint *offset);
 
     Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const override;
     static bool analyseWholeProgram1(const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap, const CTU::FileInfo::UnsafeUsage &unsafeUsage, int type, ErrorLogger &errorLogger);
-
-
-    static std::string myName() {
-        return "Bounds checking";
-    }
 
     std::string classInfo() const override {
         return "Out of bounds checking:\n"

@@ -61,15 +61,8 @@ public:
     /** This constructor is used when registering the CheckClass */
     explicit Check(const std::string &aname);
 
-protected:
-    /** This constructor is used when running checks. */
-    Check(std::string aname, const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger), mName(std::move(aname)) {}
-
-public:
     virtual ~Check() {
-        if (!mTokenizer)
-            instances().remove(this);
+        instances().remove(this);
     }
 
     Check(const Check &) = delete;
@@ -128,45 +121,6 @@ public:
         //(void)errorLogger;
         return false;
     }
-
-protected:
-    static std::string getMessageId(const ValueFlow::Value &value, const char id[]);
-
-    const Tokenizer* const mTokenizer{};
-    const Settings* const mSettings{};
-    ErrorLogger* const mErrorLogger{};
-
-    /** report an error */
-    void reportError(const Token *tok, const Severity severity, const std::string &id, const std::string &msg) {
-        reportError(tok, severity, id, msg, CWE(0U), Certainty::normal);
-    }
-
-    /** report an error */
-    void reportError(const Token *tok, const Severity severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty certainty) {
-        const std::list<const Token *> callstack(1, tok);
-        reportError(callstack, severity, id, msg, cwe, certainty);
-    }
-
-    /** report an error */
-    void reportError(const std::list<const Token *> &callstack, Severity severity, const std::string &id, const std::string &msg) {
-        reportError(callstack, severity, id, msg, CWE(0U), Certainty::normal);
-    }
-
-    /** report an error */
-    void reportError(const std::list<const Token *> &callstack, Severity severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty certainty);
-
-    void reportError(const ErrorPath &errorPath, Severity severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty);
-
-    /** log checker */
-    void logChecker(const char id[]);
-
-    ErrorPath getErrorPath(const Token* errtok, const ValueFlow::Value* value, std::string bug) const;
-
-    /**
-     * Use WRONG_DATA in checkers when you check for wrong data. That
-     * will call this method
-     */
-    bool wrongData(const Token *tok, const char *str);
 
 private:
     const std::string mName;

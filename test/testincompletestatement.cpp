@@ -49,8 +49,7 @@ private:
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check for incomplete statements..
-        CheckOther checkOther(&tokenizer, &settings1, this);
-        checkOther.checkIncompleteStatement();
+        CheckOther::checkIncompleteStatement(&tokenizer, &settings1, this);
     }
 
     void run() override {

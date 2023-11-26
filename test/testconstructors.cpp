@@ -47,8 +47,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check class constructors..
-        CheckClass checkClass(&tokenizer, &settings1, this);
-        checkClass.constructors();
+        CheckClass::constructors(&tokenizer, &settings1, this);
     }
 
     void check_(const char* file, int line, const char code[], const Settings &s) {
@@ -61,8 +60,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check class constructors..
-        CheckClass checkClass(&tokenizer, &s, this);
-        checkClass.constructors();
+        CheckClass::constructors(&tokenizer, &s, this);
     }
 
     void run() override {

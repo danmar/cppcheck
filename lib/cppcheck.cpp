@@ -619,7 +619,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         mPlistFile.close();
     }
 
-    CheckUnusedFunctions checkUnusedFunctions(nullptr, nullptr, nullptr);
+    // TODO
+    //CheckUnusedFunctions checkUnusedFunctions(nullptr, nullptr, nullptr);
 
     try {
         Preprocessor preprocessor(mSettings, this);
@@ -655,7 +656,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         if (mSettings.library.markupFile(filename)) {
             Tokenizer tokenizer(&mSettings, this, &preprocessor);
             tokenizer.createTokens(std::move(tokens1));
-            checkUnusedFunctions.getFileInfo(&tokenizer, &mSettings);
+            // TODO
+            //checkUnusedFunctions.getFileInfo(&tokenizer, &mSettings);
             return EXIT_SUCCESS;
         }
 
@@ -916,9 +918,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 // Check normal tokens
                 checkNormalTokens(tokenizer);
 
+                // TODO
                 // Analyze info..
-                if (!mSettings.buildDir.empty())
-                    checkUnusedFunctions.parseTokens(tokenizer, filename.c_str(), &mSettings);
+                //if (!mSettings.buildDir.empty())
+                //    checkUnusedFunctions.parseTokens(tokenizer, filename.c_str(), &mSettings);
 
 #ifdef HAVE_RULES
                 // handling of "simple" rules has been removed.
@@ -1000,7 +1003,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     }
 
     if (!mSettings.buildDir.empty()) {
-        mAnalyzerInformation.setFileInfo("CheckUnusedFunctions", checkUnusedFunctions.analyzerInfo());
+        // TODO
+        //mAnalyzerInformation.setFileInfo("CheckUnusedFunctions", checkUnusedFunctions.analyzerInfo());
         mAnalyzerInformation.close();
     }
 

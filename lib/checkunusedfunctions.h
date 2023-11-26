@@ -46,11 +46,7 @@ namespace CTU {
 class CPPCHECKLIB CheckUnusedFunctions : public Check {
 public:
     /** @brief This constructor is used when registering the CheckUnusedFunctions */
-    CheckUnusedFunctions() : Check(myName()) {}
-
-    /** @brief This constructor is used when running checks. */
-    CheckUnusedFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {}
+    CheckUnusedFunctions() : Check("Unused functions") {}
 
     static void clear();
 
@@ -74,9 +70,7 @@ public:
     static void analyseWholeProgram(const Settings &settings, ErrorLogger * const errorLogger, const std::string &buildDir);
 
 private:
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings * /*settings*/) const override {
-        CheckUnusedFunctions::unusedFunctionError(errorLogger, emptyString, 0, 0, "funcName");
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings * /*settings*/) const override;
 
     void runChecks(const Tokenizer & /*tokenizer*/, ErrorLogger * /*errorLogger*/) override {}
 
@@ -86,10 +80,6 @@ private:
     static void unusedFunctionError(ErrorLogger * const errorLogger,
                                     const std::string &filename, unsigned int fileIndex, unsigned int lineNumber,
                                     const std::string &funcname);
-
-    static std::string myName() {
-        return "Unused functions";
-    }
 
     std::string classInfo() const override {
         return "Check for functions that are never called\n";
