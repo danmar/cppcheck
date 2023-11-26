@@ -1216,7 +1216,7 @@ SmallVector<ReferenceToken> followAllReferences(const Token* tok,
         return {};
     if (depth < 0) {
         SmallVector<ReferenceToken> refs_result;
-        refs_result.emplace_back(ReferenceToken{tok, std::move(errors)});
+        refs_result.push_back({tok, std::move(errors)});
         return refs_result;
     }
     const Variable *var = tok->variable();
