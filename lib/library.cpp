@@ -40,7 +40,7 @@
 #include <stdexcept>
 #include <string>
 
-#include <tinyxml2.h>
+#include "xml.h"
 
 static std::vector<std::string> getnames(const char *names)
 {
