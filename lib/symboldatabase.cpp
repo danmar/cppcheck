@@ -1609,8 +1609,15 @@ namespace {
                 key.operand1 = op1 ? (i1 >= refs1.size() ? op1->exprId() : refs1[i1].token->exprId()) : 0;
                 key.operand2 = op2 ? (i2 >= refs2.size() ? op2->exprId() : refs2[i2].token->exprId()) : 0;
 
-                if (key.operand1 > key.operand2 && key.operand2 && key.parentOp == "+")
-                    std::swap(key.operand1, key.operand2);
+                if (key.operand1 > key.operand2 && key.operand2 &&
+                    Token::Match(tok->astParent(), "%or%|%oror%|+|*|&|&&|^|==|!=")) {
+                    // In C++ the order of operands of + might matter
+                     if (key.parentOp != "+" ||
+                        !tok->astParent()->valueType() ||
+                        tok->astParent()->valueType()->isIntegral() ||
+                        tok->astParent()->valueType()->isFloat())
+                        std::swap(key.operand1, key.operand2);
+                }
 
                 const auto it = exprIdMap.find(key);
                 if (it == exprIdMap.end()) {
