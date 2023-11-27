@@ -1966,64 +1966,68 @@ static bool isAdjacent(const ValueFlow::Value& x, const ValueFlow::Value& y)
     return std::abs(x.intvalue - y.intvalue) == 1;
 }
 
-static bool removePointValue(std::list<ValueFlow::Value>& values, ValueFlow::Value& x)
+static bool removePointValue(std::list<ValueFlow::Value>& values, std::list<ValueFlow::Value>::iterator& x)
 {
-    const bool isPoint = x.bound == ValueFlow::Value::Bound::Point;
+    const bool isPoint = x->bound == ValueFlow::Value::Bound::Point;
     if (!isPoint)
-        x.decreaseRange();
+        x->decreaseRange();
     else
-        values.remove(x);
+        x = values.erase(x);
     return isPoint;
 }
 
 static bool removeContradiction(std::list<ValueFlow::Value>& values)
 {
     bool result = false;
-    for (ValueFlow::Value& x : values) {
-        if (x.isNonValue())
+    for (auto itx = values.begin(); itx != values.end(); ++itx) {
+        if (itx->isNonValue())
             continue;
-        for (ValueFlow::Value& y : values) {
-            if (y.isNonValue())
+
+        auto ity = itx;
+        ++ity;
+        for (; ity != values.end(); ++ity) {
+            if (ity->isNonValue())
                 continue;
-            if (x == y)
+            if (*itx == *ity)
                 continue;
-            if (x.valueType != y.valueType)
+            if (itx->valueType != ity->valueType)
                 continue;
-            if (x.isImpossible() == y.isImpossible())
+            if (itx->isImpossible() == ity->isImpossible())
                 continue;
-            if (x.isSymbolicValue() && !ValueFlow::Value::sameToken(x.tokvalue, y.tokvalue))
+            if (itx->isSymbolicValue() && !ValueFlow::Value::sameToken(itx->tokvalue, ity->tokvalue))
                 continue;
-            if (!x.equalValue(y)) {
-                auto compare = [](const ValueFlow::Value& x, const ValueFlow::Value& y) {
-                    return x.compareValue(y, less{});
+            if (!itx->equalValue(*ity)) {
+                auto compare = [](const std::list<ValueFlow::Value>::const_iterator& x, const std::list<ValueFlow::Value>::const_iterator& y) {
+                    return x->compareValue(*y, less{});
                 };
-                const ValueFlow::Value& maxValue = std::max(x, y, compare);
-                const ValueFlow::Value& minValue = std::min(x, y, compare);
+                auto itMax = std::max(itx, ity, compare);
+                auto itMin = std::min(itx, ity, compare);
                 // TODO: Adjust non-points instead of removing them
-                if (maxValue.isImpossible() && maxValue.bound == ValueFlow::Value::Bound::Upper) {
-                    values.remove(minValue);
+                if (itMax->isImpossible() && itMax->bound == ValueFlow::Value::Bound::Upper) {
+                    values.erase(itMin);
                     return true;
                 }
-                if (minValue.isImpossible() && minValue.bound == ValueFlow::Value::Bound::Lower) {
-                    values.remove(maxValue);
+                if (itMin->isImpossible() && itMin->bound == ValueFlow::Value::Bound::Lower) {
+                    values.erase(itMax);
                     return true;
                 }
                 continue;
             }
-            const bool removex = !x.isImpossible() || y.isKnown();
-            const bool removey = !y.isImpossible() || x.isKnown();
-            if (x.bound == y.bound) {
+            const bool removex = !itx->isImpossible() || ity->isKnown();
+            const bool removey = !ity->isImpossible() || itx->isKnown();
+            if (itx->bound == ity->bound) {
                 if (removex)
-                    values.remove(x);
+                    values.erase(itx);
                 if (removey)
-                    values.remove(y);
+                    values.erase(ity);
+                // itx and ity are invalidated
                 return true;
             }
             result = removex || removey;
             bool bail = false;
-            if (removex && removePointValue(values, x))
+            if (removex && removePointValue(values, itx))
                 bail = true;
-            if (removey && removePointValue(values, y))
+            if (removey && removePointValue(values, ity))
                 bail = true;
             if (bail)
                 return true;
