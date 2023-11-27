@@ -967,9 +967,9 @@ To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The
 | bento4.cfg | [Bento4](http://www.bento4.com/) |
 | boost.cfg | [Boost](http://www.boost.org/)|
 | bsd.cfg | |
-| cairo.cfg | |
+| cairo.cfg | [cairo](https://www.cairographics.org/) |
 | cppcheck-lib.cfg | |
-| cppunit.cfg | |
+| cppunit.cfg | [CppUnit](https://sourceforge.net/projects/cppunit/) |
 | dpdk.cfg | |
 | embedded_sql.cfg | |
 | emscripten.cfg | |
@@ -978,15 +978,15 @@ To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The
 | googletest.cfg | [GoogleTest](https://github.com/google/googletest) |
 | gtk.cfg | [GTK](https://www.gtk.org/) |
 | icu.cfg | |
-| kde.cfg | |
-| libcerror.cfg | |
+| kde.cfg | [KDE](https://kde.org/) |
+| libcerror.cfg | [libcerror](https://github.com/libyal/libcerror) |
 | libcurl.cfg | [libcurl](https://curl.se/libcurl/) |
-| libsigc++.cfg | |
+| libsigc++.cfg | [libsigc++](https://github.com/libsigcplusplus/libsigcplusplus) |
 | lua.cfg | |
-| mfc.cfg | |
-| microsoft_atl.cfg | |
-| microsoft_sal.cfg | |
-| microsoft_unittest.cfg | |
+| mfc.cfg | [MFC](https://learn.microsoft.com/en-us/cpp/mfc/mfc-desktop-applications) |
+| microsoft_atl.cfg | [ATL](https://learn.microsoft.com/en-us/cpp/atl/active-template-library-atl-concepts) |
+| microsoft_sal.cfg | [SAL annotations](https://learn.microsoft.com/en-us/cpp/c-runtime-library/sal-annotations) |
+| microsoft_unittest.cfg | [CppUnitTest](https://learn.microsoft.com/en-us/visualstudio/test/microsoft-visualstudio-testtools-cppunittestframework-api-reference) |
 | motif.cfg | |
 | nspr.cfg | |
 | ntl.cfg | |
@@ -1001,11 +1001,11 @@ To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The
 | ruby.cfg | |
 | sdl.cfg | |
 | sfml.cfg | |
-| sqlite3.cfg | |
+| sqlite3.cfg | [SQLite](https://www.sqlite.org/) |
 | std.cfg | C/C++ standard library | Loaded by default
 | tinyxml2.cfg | [TinyXML-2](https://github.com/leethomason/tinyxml2) |
 | vcl.cfg | |
-| windows.cfg | |
+| windows.cfg | [Win32 API](https://learn.microsoft.com/en-us/windows/win32/) |
 | wxsqlite3.cfg | |
 | wxsvg.cfg | |
 | wxwidgets.cfg | [wxWidgets](https://www.wxwidgets.org/) |
