@@ -241,6 +241,7 @@ private:
         TEST_CASE(exprid4);
         TEST_CASE(exprid5);
         TEST_CASE(exprid6);
+        TEST_CASE(exprid7);
 
         TEST_CASE(structuredBindings);
     }
@@ -3939,6 +3940,19 @@ private:
         const char expected[] = "1: void foo ( int * a ) {\n"
                                 "2: *@UNIQUE a@1 ++@UNIQUE = 0 ;\n"
                                 "3: if ( *@UNIQUE a@1 ++@UNIQUE ==@UNIQUE 32 ) { }\n"
+                                "4: }\n";
+        ASSERT_EQUALS(expected, tokenizeExpr(code));
+    }
+
+    void exprid7() {
+        // different casts
+        const char code[] = "void foo(int a) {\n"
+                            "    if ((char)a == (short)a) {}\n"
+                            "    if ((char)a == (short)a) {}\n"
+                            "}\n";
+        const char expected[] = "1: void foo ( int a ) {\n"
+                                "2: if ( (@2 char ) a@1 ==@4 (@3 short ) a@1 ) { }\n"
+                                "3: if ( (@2 char ) a@1 ==@4 (@3 short ) a@1 ) { }\n"
                                 "4: }\n";
         ASSERT_EQUALS(expected, tokenizeExpr(code));
     }

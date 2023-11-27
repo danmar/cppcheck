@@ -1601,6 +1601,23 @@ namespace {
         ExprIdKey key;
         key.parentOp = tok->astParent()->str();
 
+        if (tok->astParent()->isCast() && tok->astParent()->str() == "(") {
+            const Token* typeStartToken;
+            const Token* typeEndToken;
+            if (tok->astParent()->astOperand2()) {
+                typeStartToken = tok->astParent()->astOperand1();
+                typeEndToken = tok;
+            } else {
+                typeStartToken = tok->astParent()->next();
+                typeEndToken = tok->astParent()->link();
+            }
+            std::string type;
+            for (const Token* t = typeStartToken; t != typeEndToken; t = t->next()) {
+                type += " " + t->str();
+            }
+            key.parentOp += type;
+        }
+
         const auto& refs1 = followAllReferences(op1);
         const auto& refs2 = followAllReferences(op2);
 
