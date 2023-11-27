@@ -960,12 +960,12 @@ Cppcheck already contains configurations for several libraries. They can be load
 
 ## Using a .cfg file
 
-To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The table below shows the existing libraries:
+To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The table below shows the currently existing libraries:
 | .cfg file  | Library | Comment |
 | ------------- | ------------- | ------------- |
-| avr.cfg | | |
-| bento4.cfg | |
-| boost.cfg | |
+| avr.cfg | |
+| bento4.cfg | [Bento4](http://www.bento4.com/) |
+| boost.cfg | [Boost](http://www.boost.org/)|
 | bsd.cfg | |
 | cairo.cfg | |
 | cppcheck-lib.cfg | |
@@ -975,12 +975,12 @@ To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The
 | emscripten.cfg | |
 | ginac.cfg | |
 | gnu.cfg | |
-| googletest.cfg | |
-| gtk.cfg | |
+| googletest.cfg | [GoogleTest](https://github.com/google/googletest) |
+| gtk.cfg | [GTK](https://www.gtk.org/) |
 | icu.cfg | |
 | kde.cfg | |
 | libcerror.cfg | |
-| libcurl.cfg | |
+| libcurl.cfg | [libcurl](https://curl.se/libcurl/) |
 | libsigc++.cfg | |
 | lua.cfg | |
 | mfc.cfg | |
@@ -990,27 +990,27 @@ To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The
 | motif.cfg | |
 | nspr.cfg | |
 | ntl.cfg | |
-| opencv2.cfg | |
-| opengl.cfg | |
-| openmp.cfg | |
-| openssl.cfg | |
+| opencv2.cfg | [OpenCV](https://opencv.org/) |
+| opengl.cfg | [OpenGL](https://opengl.org/) |
+| openmp.cfg | [OpenMP](https://www.openmp.org/) |
+| openssl.cfg | [OpenSSL](https://www.openssl.org/) |
 | pcre.cfg | |
 | posix.cfg | |
 | python.cfg | |
-| qt.cfg | |
+| qt.cfg | [Qt](https://www.qt.io/) |
 | ruby.cfg | |
 | sdl.cfg | |
 | sfml.cfg | |
 | sqlite3.cfg | |
-| std.cfg | |
-| tinyxml2.cfg | |
+| std.cfg | C/C++ standard library | Loaded by default
+| tinyxml2.cfg | [TinyXML-2](https://github.com/leethomason/tinyxml2) |
 | vcl.cfg | |
 | windows.cfg | |
 | wxsqlite3.cfg | |
 | wxsvg.cfg | |
-| wxwidgets.cfg | |
+| wxwidgets.cfg | [wxWidgets](https://www.wxwidgets.org/) |
 | zephyr.cfg | |
-| zlib.cfg | |
+| zlib.cfg | [zlib](https://www.zlib.net) |
 
 ## Using your own custom .cfg file
 
