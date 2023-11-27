@@ -1629,12 +1629,12 @@ namespace {
                 if (key.operand1 > key.operand2 && key.operand2 &&
                     Token::Match(tok->astParent(), "%or%|%oror%|+|*|&|&&|^|==|!=")) {
                     // In C++ the order of operands of + might matter
-                     if (!cpp ||
-                         key.parentOp != "+" ||
-                         !tok->astParent()->valueType() ||
-                         tok->astParent()->valueType()->isIntegral() ||
-                         tok->astParent()->valueType()->isFloat() ||
-                         tok->astParent()->valueType()->pointer > 0)
+                    if (!cpp ||
+                        key.parentOp != "+" ||
+                        !tok->astParent()->valueType() ||
+                        tok->astParent()->valueType()->isIntegral() ||
+                        tok->astParent()->valueType()->isFloat() ||
+                        tok->astParent()->valueType()->pointer > 0)
                         std::swap(key.operand1, key.operand2);
                 }
 
