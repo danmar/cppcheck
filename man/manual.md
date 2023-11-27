@@ -954,9 +954,63 @@ This allows you to create and manage multiple configuration files for different 
 
 # Library configuration
 
-When external libraries are used, such as WinAPI, POSIX, gtk, Qt, etc, Cppcheck doesn't know how the external functions behave. Cppcheck then fails to detect various problems such as memory leaks, buffer overflows, possible null pointer dereferences, etc. But this can be fixed with configuration files.
+When external libraries are used, such as WinAPI, POSIX, gtk, Qt, etc, Cppcheck has no information about functions, types, or macros contained in those libraries. Cppcheck then fails to detect various problems in the code, or might even abort the analysis. But this can be fixed by using the appropriate configuration files.
 
-Cppcheck already contains configurations for several libraries. They can be loaded as described below. Note that the configuration for the standard libraries of C and C++, std.cfg, is always loaded by cppcheck. If you create or update a configuration file for a popular library, we would appreciate if you upload it to us.
+Cppcheck already contains configurations for several libraries. They can be loaded as described below. Note that the configuration for the standard libraries of C and C++, std.cfg, is always loaded by cppcheck. If you create or update a configuration file for a popular library, we would appreciate if you supply it to the cppcheck project.
+
+## Using a .cfg file
+
+To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The table below shows the existing libraries:
+| .cfg file  | Library | Comment |
+| ------------- | ------------- | ------------- |
+| avr.cfg | | |
+| bento4.cfg | |
+| boost.cfg | |
+| bsd.cfg | |
+| cairo.cfg | |
+| cppcheck-lib.cfg | |
+| cppunit.cfg | |
+| dpdk.cfg | |
+| embedded_sql.cfg | |
+| emscripten.cfg | |
+| ginac.cfg | |
+| gnu.cfg | |
+| googletest.cfg | |
+| gtk.cfg | |
+| icu.cfg | |
+| kde.cfg | |
+| libcerror.cfg | |
+| libcurl.cfg | |
+| libsigc++.cfg | |
+| lua.cfg | |
+| mfc.cfg | |
+| microsoft_atl.cfg | |
+| microsoft_sal.cfg | |
+| microsoft_unittest.cfg | |
+| motif.cfg | |
+| nspr.cfg | |
+| ntl.cfg | |
+| opencv2.cfg | |
+| opengl.cfg | |
+| openmp.cfg | |
+| openssl.cfg | |
+| pcre.cfg | |
+| posix.cfg | |
+| python.cfg | |
+| qt.cfg | |
+| ruby.cfg | |
+| sdl.cfg | |
+| sfml.cfg | |
+| sqlite3.cfg | |
+| std.cfg | |
+| tinyxml2.cfg | |
+| vcl.cfg | |
+| windows.cfg | |
+| wxsqlite3.cfg | |
+| wxsvg.cfg | |
+| wxwidgets.cfg | |
+| zephyr.cfg | |
+| zlib.cfg | |
 
 ## Using your own custom .cfg file
 
