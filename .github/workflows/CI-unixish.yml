@@ -480,17 +480,15 @@ jobs:
           make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXFLAGS="-g -O2 -w -DHAVE_BOOST" MATCHCOMPILER=yes VERIFY=1
 
       # TODO: update to Qt6
-      - name: Generate UI files
+      - name: CMake
         run: |
-          pushd gui
-          qmake CONFIG+=debug HAVE_QCHART=yes
-          make -j$(nproc) compiler_uic_make_all mocables
+          cmake -S . -B cmake.output -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_MATCHCOMPILER=Verify -DENABLE_CHECK_INTERNAL=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DDISABLE_DMAKE=On
 
-      - name: Generate triage UI files
+      - name: Generate dependencies
         run: |
-          pushd tools/triage
-          qmake CONFIG+=debug
-          make -j$(nproc) compiler_uic_make_all mocables
+          # make sure auto-generated GUI files exist
+          make -C cmake.output autogen
+          make -C cmake.output gui-build-deps triage-build-ui-deps
 
       - name: Self check
         run: |
@@ -512,9 +510,9 @@ jobs:
           ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b1 --addon=naming.json cli lib || ec=1
           # check gui with qt settings
           mkdir b2
-          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b2 -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 -DQT_CHARTS_LIB --library=qt --addon=naming.json -Igui/temp -Igui gui/*.cpp gui/temp/*.cpp || ec=1
+          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b2 -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 -DQT_CHARTS_LIB --library=qt --addon=naming.json -Icmake.output/gui -Igui gui/*.cpp cmake.output/gui || ec=1
           # self check test and tools
           ./cppcheck $selfcheck_options $cppcheck_options -Icli test/*.cpp tools/*.cpp || ec=1
           # triage
-          ./cppcheck $selfcheck_options $cppcheck_options -DQ_MOC_OUTPUT_REVISION=67 -DQT_CHARTS_LIB --library=qt -Itools/triage/temp -Igui tools/triage/*.cpp tools/triage/temp/*.cpp || ec=1
+          ./cppcheck $selfcheck_options $cppcheck_options -DQ_MOC_OUTPUT_REVISION=67 -DQT_CHARTS_LIB --library=qt -Icmake.output/tools/triage -Igui tools/triage/*.cpp cmake.output/tools/triage || ec=1
           exit $ec

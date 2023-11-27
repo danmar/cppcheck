@@ -4,16 +4,16 @@ bitwiseOnBoolean
 
 # temporary suppressions - fix the warnings!
 simplifyUsing:lib/valueptr.h
-simplifyUsing:gui/temp/moc_*.cpp
 varid0:gui/projectfile.cpp
+naming-privateMemberVariable:gui/test/cppchecklibrarydata/testcppchecklibrarydata.h
 templateInstantiation
+symbolDatabaseWarning:*/moc_*.cpp
+simplifyUsing:*/moc_*.cpp
 
 # warnings in Qt generated code we cannot fix
-funcArgNamesDifferent:gui/temp/moc_*.cpp
-naming-varname:gui/temp/ui_*.h
-naming-varname:cmake.output/gui/ui_*.h
-functionStatic:gui/temp/ui_fileview.h
-functionStatic:cmake.output/gui/ui_fileview.h
+funcArgNamesDifferent:*/moc_*.cpp
+naming-varname:*/ui_*.h
+functionStatic:*/ui_fileview.h
 
 # --debug-warnings suppressions
 valueFlowBailout
