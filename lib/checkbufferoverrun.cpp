@@ -40,7 +40,8 @@
 #include <iterator>
 #include <numeric> // std::accumulate
 #include <sstream>
-#include <tinyxml2.h>
+
+#include "xml.h"
 
 //---------------------------------------------------------------------------
 

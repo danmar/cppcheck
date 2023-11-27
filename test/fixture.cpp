@@ -32,7 +32,7 @@
 #include <sstream>
 #include <string>
 
-#include <tinyxml2.h>
+#include "xml.h"
 
 std::ostringstream errout;
 std::ostringstream output;
@@ -109,10 +109,14 @@ bool TestFixture::prepareTest(const char testname[])
         } else {
             std::cout << classname << "::" << mTestname << std::endl;
         }
-        teardownTestInternal();
         return true;
     }
     return false;
+}
+
+void TestFixture::teardownTest()
+{
+    teardownTestInternal();
 }
 
 std::string TestFixture::getLocationStr(const char * const filename, const unsigned int linenr) const

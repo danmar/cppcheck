@@ -24,7 +24,7 @@
 #include <QStringList>
 #include <QtTest>
 
-static const QStringList getTranslationNames(const TranslationHandler& handler)
+static QStringList getTranslationNames(const TranslationHandler& handler)
 {
     QStringList names;
     for (const TranslationInfo& translation : handler.getTranslations()) {

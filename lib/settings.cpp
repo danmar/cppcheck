@@ -40,6 +40,7 @@ Settings::Settings()
     setCheckLevelNormal();
 }
 
+// TODO: report error when the config is invalid
 void Settings::loadCppcheckCfg()
 {
     std::string fileName = Path::getPathFromFilename(exename) + "cppcheck.cfg";

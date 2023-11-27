@@ -36,7 +36,7 @@
 #include <unordered_set>
 #include <utility>
 
-#include <tinyxml2.h>
+#include "xml.h"
 
 #include "json.h"
 

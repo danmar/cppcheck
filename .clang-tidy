@@ -59,7 +59,6 @@ Checks: >
         -portability-std-allocator-const,
         -readability-avoid-const-params-in-decls,
         -readability-braces-around-statements,
-        -readability-const-return-type,
         -readability-container-data-pointer,
         -readability-function-cognitive-complexity,
         -readability-function-size,

@@ -1390,6 +1390,8 @@ void CheckOther::checkConstVariable()
             continue;
         if (var->isVolatile())
             continue;
+        if (var->nameToken()->isExpandedMacro())
+            continue;
         if (isStructuredBindingVariable(var)) // TODO: check all bound variables
             continue;
         if (isVariableChanged(var, mSettings, mTokenizer->isCPP()))
@@ -1429,7 +1431,25 @@ void CheckOther::checkConstVariable()
                     }
                 }
                 if (tok->isUnaryOp("&") && Token::Match(tok, "& %varid%", var->declarationId())) {
-                    usedInAssignment = isExpressionChangedAt(tok->next(), tok, 0, false, mSettings, true);
+                    const Token* opTok = tok->astParent();
+                    int argn = -1;
+                    if (opTok && (opTok->isUnaryOp("!") || opTok->isComparisonOp()))
+                        continue;
+                    if (opTok && (opTok->isAssignmentOp() || opTok->isCalculation())) {
+                        if (opTok->isCalculation()) {
+                            if (opTok->astOperand1() != tok)
+                                opTok = opTok->astOperand1();
+                            else
+                                opTok = opTok->astOperand2();
+                        }
+                        if (opTok && opTok->valueType() && var->valueType() && opTok->valueType()->isConst(var->valueType()->pointer))
+                            continue;
+                    } else if (const Token* ftok = getTokenArgumentFunction(tok, argn)) {
+                        bool inconclusive{};
+                        if (var->valueType() && !isVariableChangedByFunctionCall(ftok, var->valueType()->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
+                            continue;
+                    }
+                    usedInAssignment = true;
                     break;
                 }
                 if (astIsRangeBasedForDecl(tok) && Token::Match(tok->astParent()->astOperand2(), "%varid%", var->declarationId())) {
@@ -1441,25 +1461,6 @@ void CheckOther::checkConstVariable()
                 }
             }
             if (usedInAssignment)
-                continue;
-        }
-        // Skip if we ever cast this variable to a pointer/reference to a non-const type
-        {
-            bool castToNonConst = false;
-            for (const Token* tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next()) {
-                if (tok->isCast()) {
-                    if (!tok->valueType()) {
-                        castToNonConst = true; // safe guess
-                        break;
-                    }
-                    const bool isConst = tok->valueType()->isConst(tok->valueType()->pointer);
-                    if (!isConst) {
-                        castToNonConst = true;
-                        break;
-                    }
-                }
-            }
-            if (castToNonConst)
                 continue;
         }
 

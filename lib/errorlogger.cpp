@@ -37,7 +37,7 @@
 #include <unordered_map>
 #include <utility>
 
-#include <tinyxml2.h>
+#include "xml.h"
 
 const std::set<std::string> ErrorLogger::mCriticalErrorIds{
     "cppcheckError",

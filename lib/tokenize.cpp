@@ -619,7 +619,7 @@ namespace {
         bool mUsed = false;
 
     public:
-        TypedefSimplifier(Token* typedefToken, int &num) : mTypedefToken(typedefToken) {
+        explicit TypedefSimplifier(Token* typedefToken) : mTypedefToken(typedefToken) {
             Token* start = typedefToken->next();
             if (Token::simpleMatch(start, "typename"))
                 start = start->next();
@@ -641,7 +641,6 @@ namespace {
                     mRangeTypeQualifiers = rangeQualifiers;
                     Token* typeName = rangeBefore.second->previous();
                     if (typeName->isKeyword()) {
-                        (void)num;
                         // TODO typeName->insertToken("T:" + std::to_string(num++));
                         typeName->insertToken(nameToken->str());
                     }
@@ -1048,8 +1047,7 @@ void Tokenizer::simplifyTypedef()
     std::map<std::string, int> numberOfTypedefs;
     for (Token* tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() == "typedef") {
-            int dummy = 0;
-            TypedefSimplifier ts(tok, dummy);
+            TypedefSimplifier ts(tok);
             if (!ts.fail())
                 numberOfTypedefs[ts.name()]++;
             continue;
@@ -1057,7 +1055,6 @@ void Tokenizer::simplifyTypedef()
     }
 
     int indentlevel = 0;
-    int typeNum = 1;
     std::map<std::string, TypedefSimplifier> typedefs;
     for (Token* tok = list.front(); tok; tok = tok->next()) {
         if (!tok->isName()) {
@@ -1069,7 +1066,7 @@ void Tokenizer::simplifyTypedef()
         }
 
         if (indentlevel == 0 && tok->str() == "typedef") {
-            TypedefSimplifier ts(tok, typeNum);
+            TypedefSimplifier ts(tok);
             if (!ts.fail() && numberOfTypedefs[ts.name()] == 1) {
                 if (mSettings->severity.isEnabled(Severity::portability) && ts.isInvalidConstFunctionType(typedefs))
                     reportError(tok->next(), Severity::portability, "invalidConstFunctionType",

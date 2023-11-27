@@ -36,6 +36,7 @@
 
 struct SelectMapKeys {
     template<class Pair>
+    // NOLINTNEXTLINE(readability-const-return-type) - false positive
     typename Pair::first_type operator()(const Pair& p) const {
         return p.first;
     }

@@ -16,24 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef jsonH
-#define jsonH
+#ifndef xmlH
+#define xmlH
 
 #include "config.h"
 
-SUPPRESS_WARNING_PUSH("-Wfloat-equal")
-SUPPRESS_WARNING_CLANG_PUSH("-Wtautological-type-limit-compare")
-SUPPRESS_WARNING_GCC_PUSH("-Wparentheses")
-SUPPRESS_WARNING_CLANG_PUSH("-Wextra-semi-stmt")
 SUPPRESS_WARNING_CLANG_PUSH("-Wzero-as-null-pointer-constant")
+SUPPRESS_WARNING_CLANG_PUSH("-Wextra-semi-stmt")
+SUPPRESS_WARNING_CLANG_PUSH("-Wsuggest-override")
+SUPPRESS_WARNING_CLANG_PUSH("-Wsuggest-destructor-override")
 
-#define PICOJSON_USE_INT64
-#include <picojson.h>
+#include <tinyxml2.h>
 
 SUPPRESS_WARNING_CLANG_POP
 SUPPRESS_WARNING_CLANG_POP
-SUPPRESS_WARNING_GCC_POP
 SUPPRESS_WARNING_CLANG_POP
-SUPPRESS_WARNING_POP
+SUPPRESS_WARNING_CLANG_POP
 
-#endif // jsonH
+#endif // xmlH

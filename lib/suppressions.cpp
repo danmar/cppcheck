@@ -33,7 +33,7 @@
 #include <sstream> // IWYU pragma: keep
 #include <utility>
 
-#include <tinyxml2.h>
+#include "xml.h"
 
 Suppressions::ErrorMessage Suppressions::ErrorMessage::fromErrorMessage(const ::ErrorMessage &msg, const std::set<std::string> &macroNames)
 {

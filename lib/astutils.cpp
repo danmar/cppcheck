@@ -2290,6 +2290,8 @@ static T* getTokenArgumentFunctionImpl(T* tok, int& argn)
         tok = tok->astOperand1();
     while (tok && (tok->isUnaryOp("*") || tok->str() == "["))
         tok = tok->astOperand1();
+    if (Token::Match(tok, ". * %name%")) // bailout for pointer to member
+        return tok->tokAt(2);
     while (Token::simpleMatch(tok, "."))
         tok = tok->astOperand2();
     while (Token::simpleMatch(tok, "::")) {
@@ -2630,6 +2632,8 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
         if (!ftok->function() || !ftok->function()->isConst())
             return true;
     }
+    if (Token::Match(tok2->astParent(), ". * %name%")) // bailout
+        return true;
 
     if (Token::simpleMatch(tok2, "[") && astIsContainer(tok) && vt && vt->container && vt->container->stdAssociativeLike)
         return true;
