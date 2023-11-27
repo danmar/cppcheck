@@ -1581,7 +1581,7 @@ namespace {
         }
     };
     using ExprIdMap = std::map<ExprIdKey, nonneg int>;
-    void setParentExprId(Token* tok, ExprIdMap& exprIdMap, nonneg int &id) {
+    void setParentExprId(Token* tok, bool cpp, ExprIdMap& exprIdMap, nonneg int &id) {
         if (!tok->astParent() || tok->astParent()->isControlFlowKeyword())
             return;
         const Token* op1 = tok->astParent()->astOperand1();
@@ -1591,10 +1591,10 @@ namespace {
         if (op2 && op2->exprId() == 0)
             return;
 
-        if (tok->astParent()->isExpandedMacro()) {
+        if (tok->astParent()->isExpandedMacro() || Token::Match(tok->astParent(), "++|--")) {
             tok->astParent()->exprId(id);
             ++id;
-            setParentExprId(tok->astParent(), exprIdMap, id);
+            setParentExprId(tok->astParent(), cpp, exprIdMap, id);
             return;
         }
 
@@ -1612,10 +1612,12 @@ namespace {
                 if (key.operand1 > key.operand2 && key.operand2 &&
                     Token::Match(tok->astParent(), "%or%|%oror%|+|*|&|&&|^|==|!=")) {
                     // In C++ the order of operands of + might matter
-                     if (key.parentOp != "+" ||
-                        !tok->astParent()->valueType() ||
-                        tok->astParent()->valueType()->isIntegral() ||
-                        tok->astParent()->valueType()->isFloat())
+                     if (!cpp ||
+                         key.parentOp != "+" ||
+                         !tok->astParent()->valueType() ||
+                         tok->astParent()->valueType()->isIntegral() ||
+                         tok->astParent()->valueType()->isFloat() ||
+                         tok->astParent()->valueType()->pointer > 0)
                         std::swap(key.operand1, key.operand2);
                 }
 
@@ -1630,7 +1632,7 @@ namespace {
                 } else {
                     tok->astParent()->exprId(it->second);
                 }
-                setParentExprId(tok->astParent(), exprIdMap, id);
+                setParentExprId(tok->astParent(), cpp, exprIdMap, id);
                 i1 = 1 + refs1.size();
                 break;
             }
@@ -1709,7 +1711,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
             if (tok->varId() > 0) {
                 tok->exprId(tok->varId());
                 if (tok->astParent() && tok->astParent()->exprId() == 0)
-                    setParentExprId(tok, exprIdMap, id);
+                    setParentExprId(tok, mTokenizer.isCPP(), exprIdMap, id);
             } else if (tok->astParent() && !tok->astOperand1() && !tok->astOperand2()) {
                 if (tok->tokType() == Token::Type::eBracket)
                     continue;
@@ -1732,7 +1734,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
                     }
                 }
 
-                setParentExprId(tok, exprIdMap, id);
+                setParentExprId(tok, mTokenizer.isCPP(), exprIdMap, id);
             }
         }
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {

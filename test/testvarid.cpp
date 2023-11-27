@@ -240,6 +240,7 @@ private:
         TEST_CASE(exprid3);
         TEST_CASE(exprid4);
         TEST_CASE(exprid5);
+        TEST_CASE(exprid6);
 
         TEST_CASE(structuredBindings);
     }
@@ -3925,6 +3926,19 @@ private:
         const char expected[] = "1: int foo ( int a ) {\n"
                                 "2: int & r@2 =@UNIQUE a@1 ;\n"
                                 "3: return ( a@1 +@4 a@1 ) *@UNIQUE ( r@2 +@4 r@2 ) ;\n"
+                                "4: }\n";
+        ASSERT_EQUALS(expected, tokenizeExpr(code));
+    }
+
+    void exprid6() {
+        // ++ and -- should have UNIQUE exprid
+        const char code[] = "void foo(int *a) {\n"
+                            "    *a++ = 0;\n"
+                            "    if (*a++ == 32) {}\n"
+                            "}\n";
+        const char expected[] = "1: void foo ( int * a ) {\n"
+                                "2: *@UNIQUE a@1 ++@UNIQUE = 0 ;\n"
+                                "3: if ( *@UNIQUE a@1 ++@UNIQUE ==@UNIQUE 32 ) { }\n"
                                 "4: }\n";
         ASSERT_EQUALS(expected, tokenizeExpr(code));
     }
