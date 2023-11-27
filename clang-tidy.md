@@ -186,10 +186,6 @@ It does not seem to produce any warnings for us (needs to be investigated) and i
 
 This is the most expensive check for several files and it is providing much in terms of code quality. Reported upstream as https://github.com/llvm/llvm-project/issues/72300.
 
-`modernize-use-nullptr`
-
-This is already covered by the `-Wzero-as-null-pointer-constant` compiler warning so there is no need for an additional check.
-
 ### Disabled for GUI only
 
 `readability-convert-member-functions-to-static`<br/>
