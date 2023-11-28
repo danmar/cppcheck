@@ -51,14 +51,23 @@ def __lookup_cppcheck_exe():
     if sys.platform == "win32":
         exe_name += ".exe"
 
-    for base in (script_path + '/../../', './'):
-        for path in ('', 'bin/', 'bin/debug/'):
-            exe_path = base + path + exe_name
-            if os.path.isfile(exe_path):
-                print("using '{}'".format(exe_path))
-                return exe_path
+    exe_path = None
 
-    return None
+    if 'TEST_CPPCHECK_EXE_LOOKUP_PATH' in os.environ:
+        lookup_paths = [os.environ['TEST_CPPCHECK_EXE_LOOKUP_PATH']]
+    else:
+        lookup_paths = [os.path.join(script_path, '..', '..'), '.']
+
+    for base in lookup_paths:
+        for path in ('', 'bin', os.path.join('bin', 'debug')):
+            tmp_exe_path = os.path.join(base, path, exe_name)
+            if os.path.isfile(tmp_exe_path):
+                exe_path = tmp_exe_path
+                break
+
+    if exe_path:
+        print("using '{}'".format(exe_path))
+    return exe_path
 
 
 # Run Cppcheck with args
