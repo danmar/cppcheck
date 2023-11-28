@@ -59,6 +59,12 @@ jobs:
           modules: 'qtcharts'
           cache: true
 
+      - name: Install missing Python packages
+        run: |
+          python3 -m pip install pip --upgrade
+          python3 -m pip install pytest
+          python3 -m pip install pytest-timeout
+
       - name: CMake
         run: |
           cmake -S . -B cmake.output -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=Off -DWITH_QCHART=Off -DUSE_MATCHCOMPILER=Verify -DANALYZE_THREAD=On -DUSE_THREADS=On -DENABLE_CHECK_INTERNAL=On -DUSE_BOOST=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=Off -DDISABLE_DMAKE=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
@@ -76,6 +82,12 @@ jobs:
 
       - name: Run tests
         run: ./cmake.output/bin/testrunner
+
+      - name: Run test/cli
+        run: |
+          pwd=$(pwd)
+          cd test/cli
+          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv test-*.py
 
       - name: Generate dependencies
         if: false
