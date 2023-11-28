@@ -956,7 +956,7 @@ This allows you to create and manage multiple configuration files for different 
 
 When external libraries are used, such as WinAPI, POSIX, gtk, Qt, etc, Cppcheck has no information about functions, types, or macros contained in those libraries. Cppcheck then fails to detect various problems in the code, or might even abort the analysis. But this can be fixed by using the appropriate configuration files.
 
-Cppcheck already contains configurations for several libraries. They can be loaded as described below. Note that the configuration for the standard libraries of C and C++, std.cfg, is always loaded by cppcheck. If you create or update a configuration file for a popular library, we would appreciate if you supply it to the cppcheck project.
+Cppcheck already contains configurations for several libraries. They can be loaded as described below. Note that the configuration for the standard libraries of C and C++, std.cfg, is always loaded by cppcheck. If you create or update a configuration file for a popular library, we would appreciate if you supplied it to the cppcheck project.
 
 ## Using a .cfg file
 
@@ -966,15 +966,15 @@ To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The
 | avr.cfg | |
 | bento4.cfg | [Bento4](http://www.bento4.com/) |
 | boost.cfg | [Boost](http://www.boost.org/)|
-| bsd.cfg | |
+| bsd.cfg | [*BSD](https://www.freebsd.org/) |
 | cairo.cfg | [cairo](https://www.cairographics.org/) |
-| cppcheck-lib.cfg | |
+| cppcheck-lib.cfg | [Cppcheck](http://cppcheck.net/) | Used in selfcheck of the Cppcheck code base
 | cppunit.cfg | [CppUnit](https://sourceforge.net/projects/cppunit/) |
 | dpdk.cfg | |
 | embedded_sql.cfg | |
 | emscripten.cfg | |
 | ginac.cfg | |
-| gnu.cfg | |
+| gnu.cfg | [*nix](https://www.gnu.org/) |
 | googletest.cfg | [GoogleTest](https://github.com/google/googletest) |
 | gtk.cfg | [GTK](https://www.gtk.org/) |
 | icu.cfg | |
@@ -994,8 +994,8 @@ To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The
 | opengl.cfg | [OpenGL](https://opengl.org/) |
 | openmp.cfg | [OpenMP](https://www.openmp.org/) |
 | openssl.cfg | [OpenSSL](https://www.openssl.org/) |
-| pcre.cfg | |
-| posix.cfg | |
+| pcre.cfg | [PCRE](https://pcre.org/) |
+| posix.cfg | [POSIX](https://pubs.opengroup.org/onlinepubs/9699919799/) |
 | python.cfg | |
 | qt.cfg | [Qt](https://www.qt.io/) |
 | ruby.cfg | |
@@ -1012,7 +1012,7 @@ To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The
 | zephyr.cfg | |
 | zlib.cfg | [zlib](https://www.zlib.net) |
 
-## Using your own custom .cfg file
+## Creating a custom .cfg file
 
 You can create and use your own .cfg files for your projects. Use `--check-library` to get hints about what you should configure.
 
