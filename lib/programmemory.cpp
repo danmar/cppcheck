@@ -197,20 +197,13 @@ void ProgramMemory::insert(const ProgramMemory &pm)
 
 static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings* settings);
 
-static bool evaluateCondition(const std::string& op,
-                              MathLib::bigint r,
+static bool evaluateCondition(MathLib::bigint r,
                               const Token* condition,
                               ProgramMemory& pm,
                               const Settings* settings)
 {
     if (!condition)
         return false;
-    if (condition->str() == op) {
-        if (evaluateCondition(op, r, condition->astOperand1(), pm, settings) ||
-            evaluateCondition(op, r, condition->astOperand2(), pm, settings)) {
-            return true;
-        }
-    }
     MathLib::bigint result = 0;
     bool error = false;
     execute(condition, pm, &result, &error, settings);
@@ -219,12 +212,12 @@ static bool evaluateCondition(const std::string& op,
 
 bool conditionIsFalse(const Token* condition, ProgramMemory pm, const Settings* settings)
 {
-    return evaluateCondition("&&", 0, condition, pm, settings);
+    return evaluateCondition(0, condition, pm, settings);
 }
 
 bool conditionIsTrue(const Token* condition, ProgramMemory pm, const Settings* settings)
 {
-    return evaluateCondition("||", 1, condition, pm, settings);
+    return evaluateCondition(1, condition, pm, settings);
 }
 
 static bool frontIs(const std::vector<MathLib::bigint>& v, bool i)
