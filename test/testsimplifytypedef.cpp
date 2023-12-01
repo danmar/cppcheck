@@ -3454,6 +3454,33 @@ private:
                "    g(sizeof(struct N::S));\n"
                "}\n";
         ASSERT_EQUALS("namespace N { struct S { } ; } void g ( int ) ; void f ( ) { g ( sizeof ( struct N :: S ) ) ; }", tok(code));
+
+        code = "namespace N {\n"
+               "    typedef class C {} C;\n"
+               "}\n"
+               "void g(int);\n"
+               "void f() {\n"
+               "    g(sizeof(class N::C));\n"
+               "}\n";
+        ASSERT_EQUALS("namespace N { class C { } ; } void g ( int ) ; void f ( ) { g ( sizeof ( class N :: C ) ) ; }", tok(code));
+
+        code = "namespace N {\n"
+               "    typedef union U {} U;\n"
+               "}\n"
+               "void g(int);\n"
+               "void f() {\n"
+               "    g(sizeof(union N::U));\n"
+               "}\n";
+        ASSERT_EQUALS("namespace N { union U { } ; } void g ( int ) ; void f ( ) { g ( sizeof ( union N :: U ) ) ; }", tok(code));
+
+        code = "namespace N {\n"
+               "    typedef enum E {} E;\n"
+               "}\n"
+               "void g(int);\n"
+               "void f() {\n"
+               "    g(sizeof(enum N::E));\n"
+               "}\n";
+        ASSERT_EQUALS("namespace N { enum E { } ; } void g ( int ) ; void f ( ) { g ( sizeof ( enum N :: E ) ) ; }", tok(code));
     }
 
     void simplifyTypedefFunction1() {
