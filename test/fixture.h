@@ -236,10 +236,16 @@ protected:
         return SettingsBuilder(*this, std::move(settings));
     }
 
-public:
+    // TODO: make sure the output has been consumed in the test
+    std::ostringstream errout;
+    std::ostringstream output;
+
+private:
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
     void reportErr(const ErrorMessage &msg) override;
     void run(const std::string &str);
+
+public:
     static void printHelp();
     const std::string classname;
 
@@ -247,12 +253,6 @@ public:
 
     static std::size_t runTests(const options& args);
 };
-
-// TODO: fix these
-// NOLINTNEXTLINE(readability-redundant-declaration)
-extern std::ostringstream errout;
-// NOLINTNEXTLINE(readability-redundant-declaration)
-extern std::ostringstream output;
 
 // TODO: most asserts do not actually assert i.e. do not return
 #define TEST_CASE( NAME )  do { if (prepareTest(#NAME)) { setVerbose(false); NAME(); teardownTest(); } } while (false)

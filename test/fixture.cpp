@@ -34,9 +34,6 @@
 
 #include "xml.h"
 
-std::ostringstream errout;
-std::ostringstream output;
-
 /**
  * TestRegistry
  **/
