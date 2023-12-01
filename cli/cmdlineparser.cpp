@@ -282,6 +282,62 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
 // TODO: error out on all missing given files/paths
 CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 {
+    if (argc <= 1) {
+        printHelp();
+        return Result::Exit;
+    }
+
+    // check for exclusive options
+    for (int i = 1; i < argc; i++) {
+        // documentation..
+        if (std::strcmp(argv[i], "--doc") == 0) {
+            std::ostringstream doc;
+            // Get documentation..
+            for (const Check * it : Check::instances()) {
+                const std::string& name(it->name());
+                const std::string info(it->classInfo());
+                if (!name.empty() && !info.empty())
+                    doc << "## " << name << " ##\n"
+                        << info << "\n";
+            }
+
+            mLogger.printRaw(doc.str());
+            return Result::Exit;
+        }
+
+        // print all possible error messages..
+        if (std::strcmp(argv[i], "--errorlist") == 0) {
+            mSettings.loadCppcheckCfg();
+            {
+                XMLErrorMessagesLogger xmlLogger;
+                std::cout << ErrorMessage::getXMLHeader(mSettings.cppcheckCfgProductName);
+                CppCheck::getErrorMessages(xmlLogger);
+                std::cout << ErrorMessage::getXMLFooter() << std::endl;
+            }
+            return Result::Exit;
+        }
+
+        // Print help
+        if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "--help") == 0) {
+            printHelp();
+            return Result::Exit;
+        }
+
+        if (std::strcmp(argv[i], "--version") == 0) {
+            mSettings.loadCppcheckCfg();
+            if (!mSettings.cppcheckCfgProductName.empty()) {
+                mLogger.printRaw(mSettings.cppcheckCfgProductName);
+            } else {
+                const char * const extraVersion = CppCheck::extraVersion();
+                if (*extraVersion != '\0')
+                    mLogger.printRaw(std::string("Cppcheck ") + CppCheck::version() + " ("+ extraVersion + ')');
+                else
+                    mLogger.printRaw(std::string("Cppcheck ") + CppCheck::version());
+            }
+            return Result::Exit;
+        }
+    }
+
     bool def = false;
     bool maxconfigs = false;
 
@@ -466,23 +522,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 }
             }
 
-            // documentation..
-            else if (std::strcmp(argv[i], "--doc") == 0) {
-                // TODO: make an exclusive option
-                std::ostringstream doc;
-                // Get documentation..
-                for (const Check * it : Check::instances()) {
-                    const std::string& name(it->name());
-                    const std::string info(it->classInfo());
-                    if (!name.empty() && !info.empty())
-                        doc << "## " << name << " ##\n"
-                            << info << "\n";
-                }
-
-                mLogger.printRaw(doc.str());
-                return Result::Exit;
-            }
-
             // dump cppcheck data
             else if (std::strcmp(argv[i], "--dump") == 0)
                 mSettings.dump = true;
@@ -504,19 +543,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     mSettings.addEnabled("missingInclude");
                     mLogger.printMessage("'--enable=information' will no longer implicitly enable 'missingInclude' starting with 2.16. Please enable it explicitly if you require it.");
                 }
-            }
-
-            // print all possible error messages..
-            else if (std::strcmp(argv[i], "--errorlist") == 0) {
-                // TODO: make this an exclusive option
-                mSettings.loadCppcheckCfg();
-                {
-                    XMLErrorMessagesLogger xmlLogger;
-                    std::cout << ErrorMessage::getXMLHeader(mSettings.cppcheckCfgProductName);
-                    CppCheck::getErrorMessages(xmlLogger);
-                    std::cout << ErrorMessage::getXMLFooter() << std::endl;
-                }
-                return Result::Exit;
             }
 
             // --error-exitcode=1
@@ -591,13 +617,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             else if (std::strcmp(argv[i], "--funsigned-char") == 0)
                 mSettings.platform.defaultSign = 'u';
-
-            // Print help
-            else if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "--help") == 0) {
-                // TODO: make this an exclusive option
-                printHelp();
-                return Result::Exit;
-            }
 
             // Ignored paths
             else if (std::strncmp(argv[i], "-i", 2) == 0) {
@@ -1150,21 +1169,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             else if (std::strcmp(argv[i], "-v") == 0 || std::strcmp(argv[i], "--verbose") == 0)
                 mSettings.verbose = true;
 
-            else if (std::strcmp(argv[i], "--version") == 0) {
-                // TODO: make this an exclusive parameter
-                mSettings.loadCppcheckCfg();
-                if (!mSettings.cppcheckCfgProductName.empty()) {
-                    mLogger.printRaw(mSettings.cppcheckCfgProductName);
-                } else {
-                    const char * const extraVersion = CppCheck::extraVersion();
-                    if (*extraVersion != '\0')
-                        mLogger.printRaw(std::string("Cppcheck ") + CppCheck::version() + " ("+ extraVersion + ')');
-                    else
-                        mLogger.printRaw(std::string("Cppcheck ") + CppCheck::version());
-                }
-                return Result::Exit;
-            }
-
             // Write results in results.xml
             else if (std::strcmp(argv[i], "--xml") == 0)
                 mSettings.xml = true;
@@ -1224,11 +1228,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && mSettings.jobs > 1 && mSettings.buildDir.empty()) {
         mLogger.printMessage("unusedFunction check can't be used with '-j' option. Disabling unusedFunction check.");
-    }
-
-    if (argc <= 1) {
-        printHelp();
-        return Result::Exit;
     }
 
     if (!mPathNames.empty() && project.projectType != ImportProject::Type::NONE) {

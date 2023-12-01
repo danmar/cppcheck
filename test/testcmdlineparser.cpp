@@ -119,9 +119,12 @@ private:
     void run() override {
         TEST_CASE(nooptions);
         TEST_CASE(helpshort);
+        TEST_CASE(helpshortExclusive);
         TEST_CASE(helplong);
+        TEST_CASE(helplongExclusive);
         TEST_CASE(version);
         TEST_CASE(versionWithCfg);
+        TEST_CASE(versionExclusive);
         TEST_CASE(onefile);
         TEST_CASE(onepath);
         TEST_CASE(optionwithoutfile);
@@ -255,6 +258,7 @@ private:
         TEST_CASE(xmlverunknown);
         TEST_CASE(xmlverinvalid);
         TEST_CASE(doc);
+        TEST_CASE(docExclusive);
         TEST_CASE(showtimeFile);
         TEST_CASE(showtimeFileTotal);
         TEST_CASE(showtimeTop5);
@@ -264,6 +268,7 @@ private:
         TEST_CASE(showtimeEmpty);
         TEST_CASE(showtimeInvalid);
         TEST_CASE(errorlist);
+        TEST_CASE(errorlistExclusive);
         TEST_CASE(ignorepathsnopath);
 #if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
         TEST_CASE(exceptionhandling);
@@ -373,10 +378,26 @@ private:
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
+    void helpshortExclusive() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--library=missing", "-h"};
+        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
+        ASSERT(startsWith(logger->str(), "Cppcheck - A tool for static C/C++ code analysis"));
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
     void helplong() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--help"};
         ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
+        ASSERT(startsWith(logger->str(), "Cppcheck - A tool for static C/C++ code analysis"));
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void helplongExclusive() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--library=missing", "--help"};
+        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
         ASSERT(startsWith(logger->str(), "Cppcheck - A tool for static C/C++ code analysis"));
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
@@ -402,7 +423,15 @@ private:
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
-    // TODO: test extraVersion
+    // TODO: test --version with extraVersion
+
+    void versionExclusive() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--library=missing", "--version"};
+        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("Cppcheck 2.13 dev\n", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
 
     void onefile() {
         REDIRECT;
@@ -1577,6 +1606,14 @@ private:
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
+    void docExclusive() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--library=missing", "--doc"};
+        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
+        ASSERT(startsWith(logger->str(), "## "));
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
     void showtimeSummary() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=summary", "file.cpp"};
@@ -1658,6 +1695,15 @@ private:
     }
 
     // TODO: test --errorlist with product name
+
+    void errorlistExclusive() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--library=missing", "--errorlist"};
+        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
+        ASSERT(startsWith(GET_REDIRECT_OUTPUT, "<?xml"));
+        ASSERT(endsWith(GET_REDIRECT_OUTPUT, "</results>\n"));
+    }
 
     void ignorepathsnopath() {
         REDIRECT;
