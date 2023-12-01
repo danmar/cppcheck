@@ -125,6 +125,7 @@ private:
         TEST_CASE(version);
         TEST_CASE(versionWithCfg);
         TEST_CASE(versionExclusive);
+        TEST_CASE(versionWithInvalidCfg);
         TEST_CASE(onefile);
         TEST_CASE(onepath);
         TEST_CASE(optionwithoutfile);
@@ -268,7 +269,9 @@ private:
         TEST_CASE(showtimeEmpty);
         TEST_CASE(showtimeInvalid);
         TEST_CASE(errorlist);
+        TEST_CASE(errorlistWithCfg);
         TEST_CASE(errorlistExclusive);
+        TEST_CASE(errorlistWithInvalidCfg);
         TEST_CASE(ignorepathsnopath);
 #if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
         TEST_CASE(exceptionhandling);
@@ -360,6 +363,8 @@ private:
         TEST_CASE(cppcheckBuildDirExistent);
         TEST_CASE(cppcheckBuildDirNonExistent);
         TEST_CASE(cppcheckBuildDirEmpty);
+
+        TEST_CASE(invalidCppcheckCfg);
     }
 
     void nooptions() {
@@ -430,6 +435,16 @@ private:
         const char * const argv[] = {"cppcheck", "--library=missing", "--version"};
         ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("Cppcheck 2.13 dev\n", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void versionWithInvalidCfg() {
+        REDIRECT;
+        ScopedFile file("cppcheck.cfg",
+                        "{\n");
+        const char * const argv[] = {"cppcheck", "--version"};
+        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS("cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 1 near: \n", logger->str());
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
@@ -1690,11 +1705,19 @@ private:
         const char * const argv[] = {"cppcheck", "--errorlist"};
         ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
-        ASSERT(startsWith(GET_REDIRECT_OUTPUT, "<?xml"));
+        ASSERT(startsWith(GET_REDIRECT_OUTPUT, ErrorMessage::getXMLHeader("")));
         ASSERT(endsWith(GET_REDIRECT_OUTPUT, "</results>\n"));
     }
 
-    // TODO: test --errorlist with product name
+    void errorlistWithCfg() {
+        REDIRECT;
+        ScopedFile file("cppcheck.cfg",
+                        R"({"productName": "The Product"}\n)");
+        const char * const argv[] = {"cppcheck", "--errorlist"};
+        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
+        ASSERT(startsWith(GET_REDIRECT_OUTPUT, ErrorMessage::getXMLHeader("The Product")));
+    }
 
     void errorlistExclusive() {
         REDIRECT;
@@ -1703,6 +1726,16 @@ private:
         ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
         ASSERT(startsWith(GET_REDIRECT_OUTPUT, "<?xml"));
         ASSERT(endsWith(GET_REDIRECT_OUTPUT, "</results>\n"));
+    }
+
+    void errorlistWithInvalidCfg() {
+        REDIRECT;
+        ScopedFile file("cppcheck.cfg",
+                        "{\n");
+        const char * const argv[] = {"cppcheck", "--errorlist"};
+        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS("cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 1 near: \n", logger->str());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void ignorepathsnopath() {
@@ -2308,6 +2341,15 @@ private:
         const char * const argv[] = {"cppcheck", "--cppcheck-build-dir="};
         ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: Directory '' specified by --cppcheck-build-dir argument has to be existent.\n", logger->str());
+    }
+
+    void invalidCppcheckCfg() {
+        REDIRECT;
+        ScopedFile file("cppcheck.cfg",
+                        "{\n");
+        const char * const argv[] = {"cppcheck", "test.cpp"};
+        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS("cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 1 near: \n", logger->str());
     }
 };
 

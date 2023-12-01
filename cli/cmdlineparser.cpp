@@ -307,7 +307,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
         // print all possible error messages..
         if (std::strcmp(argv[i], "--errorlist") == 0) {
-            mSettings.loadCppcheckCfg();
+            if (!loadCppcheckCfg())
+                return Result::Fail;
             {
                 XMLErrorMessagesLogger xmlLogger;
                 std::cout << ErrorMessage::getXMLHeader(mSettings.cppcheckCfgProductName);
@@ -324,7 +325,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         }
 
         if (std::strcmp(argv[i], "--version") == 0) {
-            mSettings.loadCppcheckCfg();
+            if (!loadCppcheckCfg())
+                return Result::Fail;
             if (!mSettings.cppcheckCfgProductName.empty()) {
                 mLogger.printRaw(mSettings.cppcheckCfgProductName);
             } else {
@@ -1203,7 +1205,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         }
     }
 
-    mSettings.loadCppcheckCfg();
+    if (!loadCppcheckCfg())
+        return Result::Fail;
 
     // Default template format..
     if (mSettings.templateFormat.empty()) {
@@ -1609,10 +1612,10 @@ void CmdLineParser::printHelp() const
     mLogger.printRaw(oss.str());
 }
 
-bool CmdLineParser::isCppcheckPremium() const {
-    if (mSettings.cppcheckCfgProductName.empty())
-        mSettings.loadCppcheckCfg();
-    return startsWith(mSettings.cppcheckCfgProductName, "Cppcheck Premium");
+bool CmdLineParser::isCppcheckPremium() {
+    Settings settings;
+    settings.loadCppcheckCfg(); // TODO: how to handle errors?
+    return startsWith(settings.cppcheckCfgProductName, "Cppcheck Premium");
 }
 
 bool CmdLineParser::tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename)
@@ -1701,3 +1704,14 @@ bool CmdLineParser::loadAddons(Settings& settings)
     }
     return result;
 }
+
+bool CmdLineParser::loadCppcheckCfg()
+{
+    const std::string cfgErr = mSettings.loadCppcheckCfg();
+    if (!cfgErr.empty()) {
+        mLogger.printError("could not load cppcheck.cfg - " + cfgErr);
+        return false;
+    }
+    return true;
+}
+
