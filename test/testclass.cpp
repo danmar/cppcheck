@@ -6621,6 +6621,17 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'S::f' can be const.\n"
                       "[test.cpp:8]: (performance, inconclusive) Technically the member function 'S::g' can be static (but you may consider moving to unnamed namespace).\n",
                       errout.str());
+
+        checkConst("class C {\n" // #11653
+                   "public:\n"
+                   "    void f(bool b) const;\n"
+                   "};\n"
+                   "void C::f(bool b) const {\n"
+                   "    if (b)\n"
+                   "        f(false);\n"
+                   "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (performance, inconclusive) Technically the member function 'C::f' can be static (but you may consider moving to unnamed namespace).\n",
+                      errout.str());
     }
 
     void const90() { // #11637

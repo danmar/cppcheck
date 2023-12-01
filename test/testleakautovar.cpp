@@ -88,6 +88,7 @@ private:
         TEST_CASE(assign22); // #9139
         TEST_CASE(assign23);
         TEST_CASE(assign24); // #7440
+        TEST_CASE(assign25);
 
         TEST_CASE(isAutoDealloc);
 
@@ -569,6 +570,16 @@ private:
               "    g();\n"
               "}\n");
         ASSERT_EQUALS("[test.c:5]: (error) Memory leak: p\n", errout.str());
+    }
+
+    void assign25() {
+        check("void f() {\n" // #11796
+              "    int* p{ new int };\n"
+              "    int* q(new int);\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: p\n"
+                      "[test.cpp:4]: (error) Memory leak: q\n",
+                      errout.str());
     }
 
     void isAutoDealloc() {
