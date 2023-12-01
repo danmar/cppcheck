@@ -208,6 +208,8 @@ static bool evaluateCondition(const std::string& op,
             evaluateCondition(op, r, condition->astOperand2(), pm, settings)) {
             return true;
         }
+        if (!pm.hasValue(condition->exprId()))
+            return false;
     }
     MathLib::bigint result = 0;
     bool error = false;
