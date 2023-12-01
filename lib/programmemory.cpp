@@ -1330,7 +1330,7 @@ namespace {
                     pruneConditions(diffConditions2, b, executeAll(diffConditions2));
                     if (diffConditions1.size() != diffConditions2.size())
                         continue;
-                    if(diffConditions1.size() == conditions1.size())
+                    if (diffConditions1.size() == conditions1.size())
                         continue;
                     for (const Token* cond1 : diffConditions1) {
                         auto it = std::find_if(diffConditions2.begin(), diffConditions2.end(), [&](const Token* cond2) {
@@ -1342,7 +1342,6 @@ namespace {
                     }
                     if (diffConditions2.empty())
                         return value;
-
                 }
             }
             return unknown;
