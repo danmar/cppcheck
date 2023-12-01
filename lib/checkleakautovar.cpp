@@ -350,6 +350,11 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
         if (!tok || tok == endToken)
             break;
 
+        if (Token::Match(tok, "%name% (") && isUnevaluated(tok)) {
+            tok = tok->linkAt(1);
+            continue;
+        }
+
         if (Token::Match(tok, "const %type%"))
             tok = tok->tokAt(2);
 

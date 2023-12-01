@@ -127,6 +127,7 @@ private:
         TEST_CASE(doublefree13); // #11008
         TEST_CASE(doublefree14); // #9708
         TEST_CASE(doublefree15);
+        TEST_CASE(doublefree16);
 
         // exit
         TEST_CASE(exit1);
@@ -1549,6 +1550,15 @@ private:
         check("void f(FILE* fp) {\n"
               "    static_cast<void>(fclose(fp));\n"
               "}", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void doublefree16() { // #12236
+        check("void f() {\n"
+              "    FILE* f = fopen(\"abc\", \"r\");\n"
+              "    decltype(fclose(f)) y;\n"
+              "    y = fclose(f);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
