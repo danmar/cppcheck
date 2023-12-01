@@ -2639,11 +2639,8 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
         return true;
 
     const Token *ftok = tok2;
-    while (ftok && (!Token::Match(ftok, "[({]") || ftok->isCast())) {
-        if (ftok->isInitComma())
-            return false;
+    while (ftok && (!Token::Match(ftok, "[({]") || ftok->isCast()))
         ftok = ftok->astParent();
-    }
 
     if (ftok && Token::Match(ftok->link(), ")|} !!{")) {
         const Token * ptok = tok2;
