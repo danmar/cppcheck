@@ -952,10 +952,20 @@ Settings MainWindow::getCppcheckSettings()
     if (!std)
         QMessageBox::critical(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=<directory> at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.").arg("std.cfg"));
 
+    const QString filesDir(getDataDir());
+    const QString pythonCmd = fromNativePath(mSettings->value(SETTINGS_PYTHON_PATH).toString());
+
     {
         const QString cfgErr = QString::fromStdString(result.loadCppcheckCfg());
         if (!cfgErr.isEmpty())
             QMessageBox::critical(this, tr("Error"), tr("Failed to load %1 - %2").arg("cppcheck.cfg").arg(cfgErr));
+
+        const auto cfgAddons = result.addons;
+        result.addons.clear();
+        for (const std::string& addon : cfgAddons) {
+            // TODO: support addons which are a script and not a file
+            loadAddon(result, filesDir, pythonCmd, QString::fromStdString(addon));
+        }
     }
 
     // If project file loaded, read settings from it
@@ -1034,8 +1044,6 @@ Settings MainWindow::getCppcheckSettings()
         for (const QString& s : mProjectFile->getCheckUnknownFunctionReturn())
             result.checkUnknownFunctionReturn.insert(s.toStdString());
 
-        QString filesDir(getDataDir());
-        const QString pythonCmd = fromNativePath(mSettings->value(SETTINGS_PYTHON_PATH).toString());
         for (const QString& addon : mProjectFile->getAddons()) {
             loadAddon(result, filesDir, pythonCmd, addon);
         }
