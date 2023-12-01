@@ -40,6 +40,8 @@
 #include <utility>
 #include <vector>
 
+#include <iostream>
+
 ExprIdToken::ExprIdToken(const Token* tok) : tok(tok), exprid(tok ? tok->exprId() : 0) {}
 
 nonneg int ExprIdToken::getExpressionId() const {
@@ -1267,7 +1269,7 @@ namespace {
             return result;
         }
 
-        std::vector<const Token*> flattenConditionsSorted(const Token* tok) const
+        static std::vector<const Token*> flattenConditionsSorted(const Token* tok)
         {
             std::vector<const Token*> result = astFlatten(tok, tok->str().c_str());
             if (std::any_of(result.begin(), result.end(), [](const Token* child) {
@@ -1307,6 +1309,7 @@ namespace {
                 if (isTrueOrFalse(v, b))
                     return v;
             }
+
             for (const auto& p : *pm) {
                 const Token* tok = p.first.tok;
                 const ValueFlow::Value& value = p.second;
@@ -1327,6 +1330,8 @@ namespace {
                     pruneConditions(diffConditions2, b, executeAll(diffConditions2));
                     if (diffConditions1.size() != diffConditions2.size())
                         continue;
+                    if(diffConditions1.size() == conditions1.size())
+                        continue;
                     for (const Token* cond1 : diffConditions1) {
                         auto it = std::find_if(diffConditions2.begin(), diffConditions2.end(), [&](const Token* cond2) {
                             return evalSameCondition(*pm, cond2, cond1, settings);
@@ -1337,6 +1342,7 @@ namespace {
                     }
                     if (diffConditions2.empty())
                         return value;
+
                 }
             }
             return unknown;
