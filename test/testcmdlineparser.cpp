@@ -22,6 +22,7 @@
 #include "cppcheckexecutor.h"
 #include "errortypes.h"
 #include "helpers.h"
+#include "path.h"
 #include "platform.h"
 #include "redirect.h"
 #include "settings.h"
@@ -417,7 +418,7 @@ private:
 
     void versionWithCfg() {
         REDIRECT;
-        ScopedFile file("cppcheck.cfg",
+        ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
                         "{\n"
                         "\"productName\": \"The Product\""
                         "}\n");
@@ -440,7 +441,7 @@ private:
 
     void versionWithInvalidCfg() {
         REDIRECT;
-        ScopedFile file("cppcheck.cfg",
+        ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
                         "{\n");
         const char * const argv[] = {"cppcheck", "--version"};
         ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
@@ -1711,7 +1712,7 @@ private:
 
     void errorlistWithCfg() {
         REDIRECT;
-        ScopedFile file("cppcheck.cfg",
+        ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
                         R"({"productName": "The Product"}\n)");
         const char * const argv[] = {"cppcheck", "--errorlist"};
         ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
@@ -1730,7 +1731,7 @@ private:
 
     void errorlistWithInvalidCfg() {
         REDIRECT;
-        ScopedFile file("cppcheck.cfg",
+        ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
                         "{\n");
         const char * const argv[] = {"cppcheck", "--errorlist"};
         ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
@@ -2345,7 +2346,7 @@ private:
 
     void invalidCppcheckCfg() {
         REDIRECT;
-        ScopedFile file("cppcheck.cfg",
+        ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
                         "{\n");
         const char * const argv[] = {"cppcheck", "test.cpp"};
         ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
