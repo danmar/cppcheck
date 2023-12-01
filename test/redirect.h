@@ -51,7 +51,7 @@ public:
         {
             const std::string s = _out.str();
             if (!s.empty())
-                throw std::runtime_error("unconsumed stdout: " + s);
+                throw std::runtime_error("unconsumed stdout: " + s); // cppcheck-suppress exceptThrowInDestructor - FP #11031
         }
 
         {
