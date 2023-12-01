@@ -1043,8 +1043,8 @@ void uninitvar_isxdigit(void)
 void uninitvar_proj(void)
 {
     double d;
+    // cppcheck-suppress uninitvar
     const std::complex<double> dc(d,d);
-    // TODO cppcheck-suppress uninitvar
     (void)std::proj(dc);
 }
 
