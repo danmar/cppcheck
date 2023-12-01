@@ -3257,6 +3257,9 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
         return ExprUsage::Used;
     } else if (ftok->str() == "{") {
         return indirect == 0 ? ExprUsage::Used : ExprUsage::Inconclusive;
+    } else if (ftok->variable() && ftok == ftok->variable()->nameToken()) {
+        if (ftok->variable()->type() && ftok->variable()->type()->needInitialization == Type::NeedInitialization::True)
+            return ExprUsage::Used;
     } else {
         const bool isnullbad = settings->library.isnullargbad(ftok, argnr + 1);
         if (indirect == 0 && astIsPointer(tok) && !addressOf && isnullbad)
