@@ -2364,6 +2364,7 @@ const Type* Variable::smartPointerType() const
     while (Token::Match(typeTok, "%name%|::"))
         typeTok = typeTok->next();
     if (Token::Match(typeTok, "< %name% >")) {
+        // cppcheck-suppress shadowFunction - TODO: fix this
         const Scope* scope = typeTok->scope();
         const Type* ptrType{};
         while (scope && !ptrType) {

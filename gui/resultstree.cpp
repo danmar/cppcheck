@@ -643,8 +643,8 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             }
 
             //Create an action for the application
-            QAction *recheckSelectedFiles   = new QAction(tr("Recheck"), &menu);
-            QAction *copy                   = new QAction(tr("Copy"), &menu);
+            QAction *recheckAction          = new QAction(tr("Recheck"), &menu);
+            QAction *copyAction             = new QAction(tr("Copy"), &menu);
             QAction *hide                   = new QAction(tr("Hide"), &menu);
             QAction *hideallid              = new QAction(tr("Hide all with id"), &menu);
             QAction *opencontainingfolder   = new QAction(tr("Open containing folder"), &menu);
@@ -654,13 +654,13 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 opencontainingfolder->setDisabled(true);
             }
             if (mThread->isChecking())
-                recheckSelectedFiles->setDisabled(true);
+                recheckAction->setDisabled(true);
             else
-                recheckSelectedFiles->setDisabled(false);
+                recheckAction->setDisabled(false);
 
-            menu.addAction(recheckSelectedFiles);
+            menu.addAction(recheckAction);
             menu.addSeparator();
-            menu.addAction(copy);
+            menu.addAction(copyAction);
             menu.addSeparator();
             menu.addAction(hide);
             menu.addAction(hideallid);
@@ -672,8 +672,8 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addSeparator();
             menu.addAction(opencontainingfolder);
 
-            connect(recheckSelectedFiles, SIGNAL(triggered()), this, SLOT(recheckSelectedFiles()));
-            connect(copy, SIGNAL(triggered()), this, SLOT(copy()));
+            connect(recheckAction, SIGNAL(triggered()), this, SLOT(recheckAction()));
+            connect(copyAction, SIGNAL(triggered()), this, SLOT(copyAction()));
             connect(hide, SIGNAL(triggered()), this, SLOT(hideResult()));
             connect(hideallid, SIGNAL(triggered()), this, SLOT(hideAllIdResult()));
             connect(opencontainingfolder, SIGNAL(triggered()), this, SLOT(openContainingFolder()));

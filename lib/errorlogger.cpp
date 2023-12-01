@@ -169,6 +169,7 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
     severity = attr ? severityFromString(attr) : Severity::none;
 
     attr = errmsg->Attribute("cwe");
+    // cppcheck-suppress templateInstantiation - TODO: fix this - see #11631
     cwe.id = attr ? strToInt<unsigned short>(attr) : 0;
 
     attr = errmsg->Attribute("inconclusive");
