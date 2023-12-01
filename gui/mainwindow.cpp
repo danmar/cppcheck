@@ -909,7 +909,7 @@ void MainWindow::loadAddon(Settings &settings, const QString &filesDir, const QS
 {
     QString addonFilePath = ProjectFile::getAddonFilePath(filesDir, addon);
     if (addonFilePath.isEmpty())
-        return;
+        return; // TODO: report an error
 
     addonFilePath.replace(QChar('\\'), QChar('/'));
 
@@ -934,7 +934,7 @@ void MainWindow::loadAddon(Settings &settings, const QString &filesDir, const QS
     std::string json_str = json.serialize();
 
     AddonInfo addonInfo;
-    addonInfo.getAddonInfo(json_str, settings.exename);
+    addonInfo.getAddonInfo(json_str, settings.exename); // TODO: handle error
     settings.addonInfos.emplace_back(std::move(addonInfo));
 
     settings.addons.emplace(std::move(json_str));
