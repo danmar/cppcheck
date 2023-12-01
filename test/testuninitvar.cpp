@@ -7260,9 +7260,19 @@ private:
                         "void g() {\n"
                         "    int i;\n"
                         "    S t{ i };\n"
+                        "}\n"
+                        "void h() {\n"
+                        "    int i;\n"
+                        "    std::vector<int> v(i);\n"
+                        "}\n"
+                        "void k() {\n"
+                        "    double d;\n"
+                        "    std::complex<double> c(d, d);\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: i\n"
-                      "[test.cpp:8]: (error) Uninitialized variable: i\n",
+                      "[test.cpp:8]: (error) Uninitialized variable: i\n"
+                      "[test.cpp:12]: (error) Uninitialized variable: i\n"
+                      "[test.cpp:16]: (error) Uninitialized variable: d\n",
                       errout.str());
     }
 

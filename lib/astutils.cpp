@@ -3257,8 +3257,10 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
         return ExprUsage::Used;
     } else if (ftok->str() == "{") {
         return indirect == 0 ? ExprUsage::Used : ExprUsage::Inconclusive;
-    } else if (ftok->variable() && ftok == ftok->variable()->nameToken()) {
+    } else if (ftok->variable() && ftok == ftok->variable()->nameToken()) { // variable init/constructor call
         if (ftok->variable()->type() && ftok->variable()->type()->needInitialization == Type::NeedInitialization::True)
+            return ExprUsage::Used;
+        if (ftok->variable()->isStlType()) // STL types don't initialize external variables
             return ExprUsage::Used;
     } else {
         const bool isnullbad = settings->library.isnullargbad(ftok, argnr + 1);
