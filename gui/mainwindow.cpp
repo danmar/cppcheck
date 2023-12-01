@@ -905,7 +905,43 @@ bool MainWindow::tryLoadLibrary(Library *library, const QString& filename)
     return true;
 }
 
-Settings MainWindow::getCppcheckSettings() {
+void MainWindow::loadAddon(Settings &settings, const QString &filesDir, const QString &pythonCmd, const QString& addon)
+{
+    QString addonFilePath = ProjectFile::getAddonFilePath(filesDir, addon);
+    if (addonFilePath.isEmpty())
+        return;
+
+    addonFilePath.replace(QChar('\\'), QChar('/'));
+
+    picojson::object obj;
+    obj["script"] = picojson::value(addonFilePath.toStdString());
+    if (!pythonCmd.isEmpty())
+        obj["python"] = picojson::value(pythonCmd.toStdString());
+
+    if (!isCppcheckPremium() && addon == "misra") {
+        const QString misraFile = fromNativePath(mSettings->value(SETTINGS_MISRA_FILE).toString());
+        if (!misraFile.isEmpty()) {
+            QString arg;
+            if (misraFile.endsWith(".pdf", Qt::CaseInsensitive))
+                arg = "--misra-pdf=" + misraFile;
+            else
+                arg = "--rule-texts=" + misraFile;
+            obj["args"] = picojson::value(arg.toStdString());
+        }
+    }
+    picojson::value json;
+    json.set(std::move(obj));
+    std::string json_str = json.serialize();
+
+    AddonInfo addonInfo;
+    addonInfo.getAddonInfo(json_str, settings.exename);
+    settings.addonInfos.emplace_back(std::move(addonInfo));
+
+    settings.addons.emplace(std::move(json_str));
+}
+
+Settings MainWindow::getCppcheckSettings()
+{
     saveSettings(); // Save settings
 
     Settings result;
@@ -1001,37 +1037,7 @@ Settings MainWindow::getCppcheckSettings() {
         QString filesDir(getDataDir());
         const QString pythonCmd = fromNativePath(mSettings->value(SETTINGS_PYTHON_PATH).toString());
         for (const QString& addon : mProjectFile->getAddons()) {
-            QString addonFilePath = ProjectFile::getAddonFilePath(filesDir, addon);
-            if (addonFilePath.isEmpty())
-                continue;
-
-            addonFilePath.replace(QChar('\\'), QChar('/'));
-
-            picojson::object obj;
-            obj["script"] = picojson::value(addonFilePath.toStdString());
-            if (!pythonCmd.isEmpty())
-                obj["python"] = picojson::value(pythonCmd.toStdString());
-
-            if (!isCppcheckPremium() && addon == "misra") {
-                const QString misraFile = fromNativePath(mSettings->value(SETTINGS_MISRA_FILE).toString());
-                if (!misraFile.isEmpty()) {
-                    QString arg;
-                    if (misraFile.endsWith(".pdf", Qt::CaseInsensitive))
-                        arg = "--misra-pdf=" + misraFile;
-                    else
-                        arg = "--rule-texts=" + misraFile;
-                    obj["args"] = picojson::value(arg.toStdString());
-                }
-            }
-            picojson::value json;
-            json.set(std::move(obj));
-            std::string json_str = json.serialize();
-
-            AddonInfo addonInfo;
-            addonInfo.getAddonInfo(json_str, result.exename);
-            result.addonInfos.emplace_back(std::move(addonInfo));
-
-            result.addons.emplace(std::move(json_str));
+            loadAddon(result, filesDir, pythonCmd, addon);
         }
 
         if (isCppcheckPremium()) {

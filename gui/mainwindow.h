@@ -401,6 +401,8 @@ private:
      */
     bool tryLoadLibrary(Library *library, const QString& filename);
 
+    void loadAddon(Settings &settings, const QString &filesDir, const QString &pythonCmd, const QString& addon);
+
     /**
      * @brief Update project MRU items in File-menu.
      */
