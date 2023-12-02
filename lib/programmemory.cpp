@@ -1259,7 +1259,7 @@ namespace {
 
         explicit Executor(ProgramMemory* pm = nullptr, const Settings* settings = nullptr) : pm(pm), settings(settings) {}
 
-        std::unordered_map<nonneg int, ValueFlow::Value> executeAll(const std::vector<const Token*>& toks) const
+        std::unordered_map<nonneg int, ValueFlow::Value> executeAll(const std::vector<const Token*>& toks, bool* b = nullptr) const
         {
             std::unordered_map<nonneg int, ValueFlow::Value> result;
             auto state = *this;
@@ -1268,21 +1268,25 @@ namespace {
                 if (r.isUninitValue())
                     continue;
                 result.insert(std::make_pair(tok->exprId(), r));
+                // Short-circuit evaluation
+                if(b && isTrueOrFalse(r, *b))
+                    break;
             }
             return result;
         }
 
-        static std::vector<const Token*> flattenConditionsSorted(const Token* tok)
+        static std::vector<const Token*> flattenConditions(const Token* tok)
         {
-            std::vector<const Token*> result = astFlatten(tok, tok->str().c_str());
-            if (std::any_of(result.begin(), result.end(), [](const Token* child) {
+            return astFlatten(tok, tok->str().c_str());
+        }
+        static bool sortConditions(std::vector<const Token*>& conditions)
+        {
+            if (std::any_of(conditions.begin(), conditions.end(), [](const Token* child) {
                 return Token::Match(child, "&&|%oror%");
             }))
-                return {};
-            std::sort(result.begin(), result.end(), &TokenExprIdCompare);
-            if (!result.empty() && result.front()->exprId() == 0)
-                return {};
-            return result;
+                return false;
+            std::sort(conditions.begin(), conditions.end(), &TokenExprIdCompare);
+            return !conditions.empty() && conditions.front()->exprId() != 0;
         }
 
         ValueFlow::Value executeMultiCondition(bool b, const Token* expr)
@@ -1292,26 +1296,43 @@ namespace {
                 if (v.isIntValue())
                     return v;
             }
-            ValueFlow::Value lhs = execute(expr->astOperand1());
-            if (isTrueOrFalse(lhs, b))
-                return lhs;
-            ValueFlow::Value rhs = execute(expr->astOperand2());
-            if (isTrueOrFalse(rhs, b))
-                return rhs;
-            if (isTrueOrFalse(lhs, !b) && isTrueOrFalse(rhs, !b))
-                return lhs;
+
+            // Evaluate recursively if there are no exprids
+            if((expr->astOperand1() && expr->astOperand1()->exprId() == 0) || (expr->astOperand2() && expr->astOperand2()->exprId() == 0)) {
+                ValueFlow::Value lhs = execute(expr->astOperand1());
+                if (isTrueOrFalse(lhs, b))
+                    return lhs;
+                ValueFlow::Value rhs = execute(expr->astOperand2());
+                if (isTrueOrFalse(rhs, b))
+                    return rhs;
+                if (isTrueOrFalse(lhs, !b) && isTrueOrFalse(rhs, !b))
+                    return lhs;
+                return unknown;
+            }
+
             nonneg int n = astCount(expr, expr->str().c_str());
-            if (n > 4)
+            if (n > 50)
                 return unknown;
-            std::vector<const Token*> conditions1 = flattenConditionsSorted(expr);
-            if (conditions1.empty())
+            std::vector<const Token*> conditions1 = flattenConditions(expr);
+            if(conditions1.empty())
                 return unknown;
-            std::unordered_map<nonneg int, ValueFlow::Value> condValues = executeAll(conditions1);
+            std::unordered_map<nonneg int, ValueFlow::Value> condValues = executeAll(conditions1, &b);
+            bool allNegated = true;
+            ValueFlow::Value negatedValue = unknown;
             for (const auto& p : condValues) {
                 const ValueFlow::Value& v = p.second;
                 if (isTrueOrFalse(v, b))
                     return v;
+                allNegated &= isTrueOrFalse(v, !b);;
+                if(allNegated && negatedValue.isUninitValue())
+                    negatedValue = v;
             }
+            if (condValues.size() == conditions1.size() && allNegated)
+                return negatedValue;
+            if (n > 4)
+                return unknown;
+            if(!sortConditions(conditions1))
+                return unknown;
 
             for (const auto& p : *pm) {
                 const Token* tok = p.first.tok;
@@ -1321,9 +1342,9 @@ namespace {
                     // TODO: Handle when it is greater
                     if (n != astCount(tok, expr->str().c_str()))
                         continue;
-                    std::vector<const Token*> conditions2 = flattenConditionsSorted(tok);
-                    if (conditions2.empty())
-                        continue;
+                    std::vector<const Token*> conditions2 = flattenConditions(tok);
+                    if(!sortConditions(conditions2))
+                        return unknown;
                     if (conditions1.size() == conditions2.size() &&
                         std::equal(conditions1.begin(), conditions1.end(), conditions2.begin(), &TokenExprIdEqual))
                         return value;
