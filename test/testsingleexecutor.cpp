@@ -153,6 +153,7 @@ private:
         TEST_CASE(showtime_file);
         TEST_CASE(showtime_summary);
         TEST_CASE(showtime_file_total);
+        TEST_CASE(suppress_error_library);
     }
 
     void many_files() {
@@ -319,6 +320,21 @@ private:
         const std::string output_s = GET_REDIRECT_OUTPUT;
         ASSERT(output_s.find("Check time: " + fprefix() + "_" + zpad3(1) + ".cpp: ") != std::string::npos);
         ASSERT(output_s.find("Check time: " + fprefix() + "_" + zpad3(2) + ".cpp: ") != std::string::npos);
+    }
+
+    void suppress_error_library() {
+        SUPPRESS;
+        const Settings settingsOld = settings;
+        const char xmldata[] = R"(<def format="2"><markup ext=".cpp" reporterrors="false"/></def>)";
+        settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+        check(1, 0,
+              "int main()\n"
+              "{\n"
+              "  int i = *((int*)0);\n"
+              "  return 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        settings = settingsOld;
     }
 
     // TODO: test whole program analysis
