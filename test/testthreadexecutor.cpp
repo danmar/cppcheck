@@ -343,6 +343,7 @@ private:
     }
 
     // TODO: test whole program analysis
+    // TODO: test unique errors
 };
 
 class TestThreadExecutorFiles : public TestThreadExecutorBase {

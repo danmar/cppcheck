@@ -346,6 +346,7 @@ private:
     }
 
     // TODO: test whole program analysis
+    // TODO: test unique errors
 };
 
 class TestProcessExecutorFiles : public TestProcessExecutorBase {

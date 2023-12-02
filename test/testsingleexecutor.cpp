@@ -338,6 +338,7 @@ private:
     }
 
     // TODO: test whole program analysis
+    // TODO: test unique errors
 };
 
 class TestSingleExecutorFiles : public TestSingleExecutorBase {
