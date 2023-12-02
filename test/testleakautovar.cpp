@@ -111,6 +111,7 @@ private:
         TEST_CASE(deallocuse10);
         TEST_CASE(deallocuse11); // #8302
         TEST_CASE(deallocuse12);
+        TEST_CASE(deallocuse13);
 
         TEST_CASE(doublefree1);
         TEST_CASE(doublefree2);
@@ -893,6 +894,20 @@ private:
               "  *out = f->x;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void deallocuse13() {
+        check("void f() {\n" // #9695
+              "    auto* a = new int[2];\n"
+              "    delete[] a;\n"
+              "    a[1] = 0;\n"
+              "    auto* b = static_cast<int*>(malloc(8));\n"
+              "    free(b);\n"
+              "    b[1] = 0;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Dereferencing 'a' after it is deallocated / released\n"
+                      "[test.cpp:7]: (error) Dereferencing 'b' after it is deallocated / released\n",
+                      errout.str());
     }
 
     void doublefree1() {  // #3895
