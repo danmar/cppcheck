@@ -514,6 +514,7 @@ static std::string arithmeticTypeString(const Token *tok)
 
 void CheckNullPointer::pointerArithmeticError(const Token* tok, const ValueFlow::Value *value, bool inconclusive)
 {
+    // cppcheck-suppress shadowFunction - TODO: fix this
     std::string arithmetic = arithmeticTypeString(tok);
     std::string errmsg;
     if (tok && tok->str()[0] == '-') {
@@ -532,6 +533,7 @@ void CheckNullPointer::pointerArithmeticError(const Token* tok, const ValueFlow:
 
 void CheckNullPointer::redundantConditionWarning(const Token* tok, const ValueFlow::Value *value, const Token *condition, bool inconclusive)
 {
+    // cppcheck-suppress shadowFunction - TODO: fix this
     std::string arithmetic = arithmeticTypeString(tok);
     std::string errmsg;
     if (tok && tok->str()[0] == '-') {

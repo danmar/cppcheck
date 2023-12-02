@@ -321,6 +321,13 @@ void duplicateExpression_QString_Compare(QString style) //#8723
     {}
 }
 
+void QVector_uninit()
+{
+    int i;
+    // cppcheck-suppress [uninitvar, unreadVariable]
+    QVector<int> v(i);
+}
+
 void QStack1(QStack<int> intStackArg)
 {
     for (int i = 0; i <= intStackArg.size(); ++i) {

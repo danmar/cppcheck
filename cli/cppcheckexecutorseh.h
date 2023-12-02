@@ -26,7 +26,7 @@
 class CppCheckExecutor;
 class CppCheck;
 
-int check_wrapper_seh(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(CppCheck&), CppCheck& cppcheck);
+int check_wrapper_seh(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(CppCheck&) const, CppCheck& cppcheck);
 
 #endif
 

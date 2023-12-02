@@ -418,6 +418,21 @@ static void misra_8_14(char * restrict str) {(void)str;} // 8.14
 struct S_9_3 { struct S_9_3* p; int x; };
 struct S_9_3* s_9_3_array[] = { x, NULL }; // 8.4
 
+// #10854
+struct Entry_9_2{
+    union{ // 19.2
+        const int *p;
+        int x;
+    };
+    int y;
+};
+
+static void misra_9_2_10854(void){
+    struct Entry_9_2 e1[] =
+    {
+        {{ .x = 1 }, .y = 2 }
+    };
+}
 static void misra_9_empty_or_zero_initializers(void) {
     int a[2]    = {};                          // 9.2
     int b[2][2] = {};                          // 9.2
@@ -798,12 +813,15 @@ static void misra_11_3(u8* p, struct Fred *fred) {
   struct Wilma *wilma = (struct Wilma *)fred; // 11.3
 }
 
+typedef struct { uint32_t something; } struct_11_4;
+#define A_11_4 ((struct_11_4 *)0x40000U)  // 11.4
+
 static void misra_11_4(u8*p) {
   u64 y = (u64)p; // 11.4
   u8 *misra_11_4_A = ( u8 * ) 0x0005;// 11.4
   s32 misra_11_4_B;
   u8 *q = ( u8 * ) misra_11_4_B; // 11.4
-
+  dummy = A_11_4->something; // no-warning
 }
 
 static void misra_11_5(void *p) {
@@ -1739,6 +1757,9 @@ static void misra_17_6(int x[static 20]) {(void)x;} // 17.6
 static int calculation(int x) { return x + 1; }
 static void misra_17_7(void) {
   calculation(123); // 17.7
+  int (*calc_ptr)(int) = &calculation;
+  calc_ptr(123); // 17.7
+  int y = calc_ptr(123);
 }
 
 static void misra_17_8(int x) {

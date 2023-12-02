@@ -253,7 +253,7 @@ namespace {
  * TODO Check for multi-threading issues!
  *
  */
-int check_wrapper_seh(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(CppCheck&), CppCheck& cppcheck)
+int check_wrapper_seh(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(CppCheck&) const, CppCheck& cppcheck)
 {
     FILE *outputFile = CppCheckExecutor::getExceptionOutput();
     __try {

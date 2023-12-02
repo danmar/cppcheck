@@ -212,6 +212,7 @@ private:
         TEST_CASE(simplifyTypedef146);
         TEST_CASE(simplifyTypedef147);
         TEST_CASE(simplifyTypedef148);
+        TEST_CASE(simplifyTypedef149);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -3441,6 +3442,45 @@ private:
         code = "typedef int& R;\n" // #12166
                "R r = i;\n";
         ASSERT_EQUALS("int & r = i ;", tok(code));
+    }
+
+    void simplifyTypedef149() { // #12218
+        const char* code{};
+        code = "namespace N {\n"
+               "    typedef struct S {} S;\n"
+               "}\n"
+               "void g(int);\n"
+               "void f() {\n"
+               "    g(sizeof(struct N::S));\n"
+               "}\n";
+        ASSERT_EQUALS("namespace N { struct S { } ; } void g ( int ) ; void f ( ) { g ( sizeof ( struct N :: S ) ) ; }", tok(code));
+
+        code = "namespace N {\n"
+               "    typedef class C {} C;\n"
+               "}\n"
+               "void g(int);\n"
+               "void f() {\n"
+               "    g(sizeof(class N::C));\n"
+               "}\n";
+        ASSERT_EQUALS("namespace N { class C { } ; } void g ( int ) ; void f ( ) { g ( sizeof ( class N :: C ) ) ; }", tok(code));
+
+        code = "namespace N {\n"
+               "    typedef union U {} U;\n"
+               "}\n"
+               "void g(int);\n"
+               "void f() {\n"
+               "    g(sizeof(union N::U));\n"
+               "}\n";
+        ASSERT_EQUALS("namespace N { union U { } ; } void g ( int ) ; void f ( ) { g ( sizeof ( union N :: U ) ) ; }", tok(code));
+
+        code = "namespace N {\n"
+               "    typedef enum E {} E;\n"
+               "}\n"
+               "void g(int);\n"
+               "void f() {\n"
+               "    g(sizeof(enum N::E));\n"
+               "}\n";
+        ASSERT_EQUALS("namespace N { enum E { } ; } void g ( int ) ; void f ( ) { g ( sizeof ( enum N :: E ) ) ; }", tok(code));
     }
 
     void simplifyTypedefFunction1() {

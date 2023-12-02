@@ -38,7 +38,7 @@
 #include <utility>
 #include <unordered_map>
 
-#include <tinyxml2.h>
+#include "xml.h"
 
 namespace CTU {
     class FileInfo;
@@ -2479,6 +2479,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                             return false;
                         const Token* assignTok = end->next()->astParent();
                         if (var && assignTok && assignTok->isAssignmentOp() && assignTok->astOperand1() && assignTok->astOperand1()->variable()) {
+                            // cppcheck-suppress shadowFunction - TODO: fix this
                             const Variable* assignVar = assignTok->astOperand1()->variable();
                             if (assignVar->isPointer() && !assignVar->isConst() && var->typeScope()) {
                                 const auto& funcMap = var->typeScope()->functionMap;
@@ -2523,14 +2524,15 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                      ((lastVarTok->valueType()->container->getYield(end->str()) == Library::Container::Yield::START_ITERATOR) ||
                       (lastVarTok->valueType()->container->getYield(end->str()) == Library::Container::Yield::END_ITERATOR))
                      && (tok1->previous()->isComparisonOp() ||
-                         (tok1->previous()->isAssignmentOp() && tok1->tokAt(-2)->variable() && Token::Match(tok1->tokAt(-2)->variable()->typeEndToken(), "const_iterator|const_reverse_iterator")))))
-                    ;
+                         (tok1->previous()->isAssignmentOp() && tok1->tokAt(-2)->variable() && Token::Match(tok1->tokAt(-2)->variable()->typeEndToken(), "const_iterator|const_reverse_iterator"))))) {
+                    // empty body
+                }
                 else if (var->smartPointerType() && var->smartPointerType()->classScope && isConstMemberFunc(var->smartPointerType()->classScope, end)) {
-                    ;
+                    // empty body
                 } else if (var->isSmartPointer() && Token::simpleMatch(tok1->next(), ".") && tok1->next()->originalName().empty() && mSettings->library.isFunctionConst(end)) {
-                    ;
+                    // empty body
                 } else if (hasOverloadedMemberAccess(end, var->typeScope())) {
-                    ;
+                    // empty body
                 } else if (!var->typeScope() || (end->function() != func && !isConstMemberFunc(var->typeScope(), end))) {
                     if (!mSettings->library.isFunctionConst(end))
                         return false;

@@ -23,10 +23,11 @@
 #include "path.h"
 #include "utils.h"
 
-#include <tinyxml2.h>
 #include <cstring>
 #include <map>
 #include <sstream> // IWYU pragma: keep
+
+#include "xml.h"
 
 AnalyzerInformation::~AnalyzerInformation()
 {

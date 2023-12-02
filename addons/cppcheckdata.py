@@ -254,6 +254,7 @@ class Token:
         isCast
         externLang
         isExpandedMacro    Is this token a expanded macro token
+        macroName          Macro name that this token is expanded from
         isRemovedVoidParameter  Has void parameter been removed?
         isSplittedVarDeclComma  Is this a comma changed to semicolon in a split variable declaration ('int a,b;' => 'int a; int b;')
         isSplittedVarDeclEq     Is this a '=' changed to semicolon in a split variable declaration ('int a=5;' => 'int a; a=5;')
@@ -313,6 +314,7 @@ class Token:
     isCast = False
     isUnsigned = False
     isSigned = False
+    macroName = None
     isExpandedMacro = False
     isRemovedVoidParameter = False
     isSplittedVarDeclComma = False
@@ -386,7 +388,8 @@ class Token:
         if element.get('isCast'):
             self.isCast = True
         self.externLang = element.get('externLang')
-        if element.get('isExpandedMacro'):
+        self.macroName = element.get('macroName')
+        if self.macroName or element.get('isExpandedMacro'):
             self.isExpandedMacro = True
         if element.get('isRemovedVoidParameter'):
             self.isRemovedVoidParameter = True
@@ -566,6 +569,7 @@ class Scope:
     function = None
     nestedInId = None
     nestedIn = None
+    nestedList = None
     type = None
     isExecutable = None
     varlistId = None
@@ -583,6 +587,7 @@ class Scope:
         self.bodyEnd = None
         self.nestedInId = element.get('nestedIn')
         self.nestedIn = None
+        self.nestedList = list()
         self.type = element.get('type')
         self.definedType = element.get('definedType')
         self.isExecutable = (self.type in ('Function', 'If', 'Else', 'For', 'While', 'Do',
@@ -603,6 +608,8 @@ class Scope:
         self.bodyStart = IdMap[self.bodyStartId]
         self.bodyEnd = IdMap[self.bodyEndId]
         self.nestedIn = IdMap[self.nestedInId]
+        if self.nestedIn:
+            self.nestedIn.nestedList.append(self)
         self.function = IdMap[self.functionId]
         for v in self.varlistId:
             value = IdMap.get(v)

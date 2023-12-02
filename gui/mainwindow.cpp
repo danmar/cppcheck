@@ -119,7 +119,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     {
         Settings tempSettings;
         tempSettings.exename = QCoreApplication::applicationFilePath().toStdString();
-        tempSettings.loadCppcheckCfg();
+        tempSettings.loadCppcheckCfg(); // TODO: how to handle error?
         mCppcheckCfgProductName = QString::fromStdString(tempSettings.cppcheckCfgProductName);
         mCppcheckCfgAbout = QString::fromStdString(tempSettings.cppcheckCfgAbout);
     }
@@ -903,8 +903,7 @@ bool MainWindow::tryLoadLibrary(Library *library, const QString& filename)
     return true;
 }
 
-Settings MainWindow::getCppcheckSettings()
-{
+Settings MainWindow::getCppcheckSettings() {
     saveSettings(); // Save settings
 
     Settings result;
@@ -915,7 +914,11 @@ Settings MainWindow::getCppcheckSettings()
     if (!std)
         QMessageBox::critical(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=<directory> at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.").arg("std.cfg"));
 
-    result.loadCppcheckCfg();
+    {
+        const QString cfgErr = QString::fromStdString(result.loadCppcheckCfg());
+        if (!cfgErr.isEmpty())
+            QMessageBox::critical(this, tr("Error"), tr("Failed to load %1 - %2").arg("cppcheck.cfg").arg(cfgErr));
+    }
 
     // If project file loaded, read settings from it
     if (mProjectFile) {

@@ -37,7 +37,7 @@
 #include <unordered_map>
 #include <utility>
 
-#include <tinyxml2.h>
+#include "xml.h"
 
 const std::set<std::string> ErrorLogger::mCriticalErrorIds{
     "cppcheckError",
@@ -169,6 +169,7 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
     severity = attr ? severityFromString(attr) : Severity::none;
 
     attr = errmsg->Attribute("cwe");
+    // cppcheck-suppress templateInstantiation - TODO: fix this - see #11631
     cwe.id = attr ? strToInt<unsigned short>(attr) : 0;
 
     attr = errmsg->Attribute("inconclusive");

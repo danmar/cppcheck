@@ -1043,8 +1043,8 @@ void uninitvar_isxdigit(void)
 void uninitvar_proj(void)
 {
     double d;
+    // cppcheck-suppress uninitvar
     const std::complex<double> dc(d,d);
-    // TODO cppcheck-suppress uninitvar
     (void)std::proj(dc);
 }
 
@@ -4206,7 +4206,7 @@ void uninivar_istream_read(std::istream &f)
     f.read(buffer, size);
 }
 
-void uninitvar_string_compare(std::string &teststr, std::wstring &testwstr)
+void uninitvar_string_compare(const std::string &teststr, const std::wstring &testwstr)
 {
     const char *pStrUninit;
     // cppcheck-suppress uninitvar

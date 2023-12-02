@@ -285,7 +285,7 @@ bool MainWindow::unpackArchive(const QString &archiveName)
     return runProcess("tar", args);
 }
 
-void MainWindow::showResult(QListWidgetItem *item)
+void MainWindow::showResult(const QListWidgetItem *item)
 {
     ui->statusBar->clearMessage();
     const bool local = item->text().startsWith(DACA2_PACKAGES);
@@ -359,6 +359,7 @@ void MainWindow::findInFilesClicked()
     ui->inFilesResult->clear();
     const QString text = ui->filterEdit->text();
 
+    // cppcheck-suppress shadowFunction - TODO: fix this
     QStringList filter;
     if (ui->hFilesFilter->isChecked())
         filter.append(hFiles);

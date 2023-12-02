@@ -29,7 +29,6 @@
 #include <vector>
 
 class CppCheck;
-class Library;
 class Settings;
 class ErrorLogger;
 
@@ -76,28 +75,11 @@ public:
 private:
 
     /**
-     * Tries to load a library and prints warning/error messages
-     * @return false, if an error occurred (except unknown XML elements)
-     */
-    static bool tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename);
-
-    /**
      * Execute a shell command and read the output from it. Returns exitcode of the executed command,.
      */
     static int executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output_);
 
 protected:
-
-    /**
-     * @brief Parse command line args and get settings and file lists
-     * from there.
-     *
-     * @param settings the settings to store into
-     * @param argc argc from main()
-     * @param argv argv from main()
-     * @return false when errors are found in the input
-     */
-    bool parseFromArgs(Settings &settings, int argc, const char* const argv[]);
 
     static bool reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::list<std::pair<std::string, std::size_t>> &files, ErrorLogger& errorLogger);
 
@@ -119,21 +101,7 @@ protected:
      *         given value is returned instead of default 0.
      *         If no errors are found, 0 is returned.
      */
-    int check_internal(CppCheck& cppcheck);
-
-    /**
-     * @brief Load libraries
-     * @param settings Settings
-     * @return Returns true if successful
-     */
-    static bool loadLibraries(Settings& settings);
-
-    /**
-     * @brief Load addons
-     * @param settings Settings
-     * @return Returns true if successful
-     */
-    static bool loadAddons(Settings& settings);
+    int check_internal(CppCheck& cppcheck) const;
 
     /**
      * Filename associated with size of file

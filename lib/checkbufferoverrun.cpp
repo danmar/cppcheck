@@ -40,7 +40,8 @@
 #include <iterator>
 #include <numeric> // std::accumulate
 #include <sstream>
-#include <tinyxml2.h>
+
+#include "xml.h"
 
 //---------------------------------------------------------------------------
 
@@ -952,6 +953,7 @@ Check::FileInfo *CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, con
 
 Check::FileInfo * CheckBufferOverrun::loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const
 {
+    // cppcheck-suppress shadowFunction - TODO: fix this
     const std::string arrayIndex("array-index");
     const std::string pointerArith("pointer-arith");
 

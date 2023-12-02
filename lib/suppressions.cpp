@@ -33,7 +33,7 @@
 #include <sstream> // IWYU pragma: keep
 #include <utility>
 
-#include <tinyxml2.h>
+#include "xml.h"
 
 Suppressions::ErrorMessage Suppressions::ErrorMessage::fromErrorMessage(const ::ErrorMessage &msg, const std::set<std::string> &macroNames)
 {
@@ -58,9 +58,10 @@ static bool isAcceptedErrorIdChar(char c)
     case '_':
     case '-':
     case '.':
+    case '*':
         return true;
     default:
-        return std::isalnum(c);
+        return c > 0 && std::isalnum(c);
     }
 }
 
@@ -255,14 +256,12 @@ std::string Suppressions::addSuppression(Suppressions::Suppression suppression)
     if (suppression.errorId.empty() && suppression.hash == 0)
         return "Failed to add suppression. No id.";
 
-    if (suppression.errorId != "*") {
-        for (std::string::size_type pos = 0; pos < suppression.errorId.length(); ++pos) {
-            if (suppression.errorId[pos] < 0 || !isAcceptedErrorIdChar(suppression.errorId[pos])) {
-                return "Failed to add suppression. Invalid id \"" + suppression.errorId + "\"";
-            }
-            if (pos == 0 && std::isdigit(suppression.errorId[pos])) {
-                return "Failed to add suppression. Invalid id \"" + suppression.errorId + "\"";
-            }
+    for (std::string::size_type pos = 0; pos < suppression.errorId.length(); ++pos) {
+        if (!isAcceptedErrorIdChar(suppression.errorId[pos])) {
+            return "Failed to add suppression. Invalid id \"" + suppression.errorId + "\"";
+        }
+        if (pos == 0 && std::isdigit(suppression.errorId[pos])) {
+            return "Failed to add suppression. Invalid id \"" + suppression.errorId + "\"";
         }
     }
 
