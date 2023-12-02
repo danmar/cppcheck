@@ -580,6 +580,20 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: p\n"
                       "[test.cpp:4]: (error) Memory leak: q\n",
                       errout.str());
+
+        check("struct S : B {\n" // #12239
+              "    void f();\n"
+              "    void g();\n"
+              "};\n"
+              "void S::f() {\n"
+              "    FD* fd(new FD(this));\n"
+              "    fd->exec();\n"
+              "}\n"
+              "void S::g() {\n"
+              "    FD* fd{ new FD(this) };\n"
+              "    fd->exec();\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void isAutoDealloc() {

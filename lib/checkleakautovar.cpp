@@ -263,7 +263,7 @@ static bool isLocalVarNoAutoDealloc(const Token *varTok, const bool isCpp)
     // non-pod variable
     if (isCpp) {
         // Possibly automatically deallocated memory
-        if (isAutoDealloc(var) && Token::Match(varTok, "%var% = new"))
+        if (isAutoDealloc(var) && Token::Match(varTok, "%var% [=({] new"))
             return false;
         if (!var->isPointer() && !var->typeStartToken()->isStandardType())
             return false;
