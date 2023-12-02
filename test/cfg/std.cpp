@@ -606,7 +606,7 @@ void nullPointer_localtime_s(const std::time_t *restrict time, struct tm *restri
 void memleak_localtime_s(const std::time_t *restrict time, struct tm *restrict result)
 {
     const time_t t = time(0);
-    struct tm* const now = new tm();
+    const struct tm* const now = new tm();
     if (localtime_s(now, &t) == 0)
         std::cout << now->tm_mday << std::endl;
     // cppcheck-suppress memleak
