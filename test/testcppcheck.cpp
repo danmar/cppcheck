@@ -19,7 +19,9 @@
 #include "color.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
+#include "filesettings.h"
 #include "fixture.h"
+#include "helpers.h"
 
 #include <algorithm>
 #include <list>
@@ -34,30 +36,34 @@ private:
 
     class ErrorLogger2 : public ErrorLogger {
     public:
-        std::list<std::string> id;
+        std::list<std::string> ids;
 
+    private:
         void reportOut(const std::string & /*outmsg*/, Color /*c*/ = Color::Reset) override {}
 
         void reportErr(const ErrorMessage &msg) override {
-            id.push_back(msg.id);
+            ids.push_back(msg.id);
         }
     };
 
     void run() override {
         TEST_CASE(getErrorMessages);
+        TEST_CASE(checkWithFile);
+        TEST_CASE(checkWithFS);
+        TEST_CASE(suppress_error_library);
     }
 
     void getErrorMessages() const {
         ErrorLogger2 errorLogger;
         CppCheck::getErrorMessages(errorLogger);
-        ASSERT(!errorLogger.id.empty());
+        ASSERT(!errorLogger.ids.empty());
 
         // Check if there are duplicate error ids in errorLogger.id
         std::string duplicate;
-        for (std::list<std::string>::const_iterator it = errorLogger.id.cbegin();
-             it != errorLogger.id.cend();
+        for (std::list<std::string>::const_iterator it = errorLogger.ids.cbegin();
+             it != errorLogger.ids.cend();
              ++it) {
-            if (std::find(errorLogger.id.cbegin(), it, *it) != it) {
+            if (std::find(errorLogger.ids.cbegin(), it, *it) != it) {
                 duplicate = "Duplicate ID: " + *it;
                 break;
             }
@@ -67,7 +73,7 @@ private:
         // Check for error ids from this class.
         bool foundPurgedConfiguration = false;
         bool foundTooManyConfigs = false;
-        for (const std::string & it : errorLogger.id) {
+        for (const std::string & it : errorLogger.ids) {
             if (it == "purgedConfiguration")
                 foundPurgedConfiguration = true;
             else if (it == "toomanyconfigs")
@@ -76,6 +82,74 @@ private:
         ASSERT(foundPurgedConfiguration);
         ASSERT(foundTooManyConfigs);
     }
+
+    void checkWithFile()
+    {
+        ScopedFile file("test.cpp",
+                        "int main()\n"
+                        "{\n"
+                        "  int i = *((int*)0);\n"
+                        "  return 0;\n"
+                        "}");
+
+        ErrorLogger2 errorLogger;
+        CppCheck cppcheck(errorLogger, false, {});
+        ASSERT_EQUALS(1, cppcheck.check(file.path()));
+        // TODO: how to properly disable these warnings?
+        errorLogger.ids.erase(std::remove_if(errorLogger.ids.begin(), errorLogger.ids.end(), [](const std::string& id) {
+            return id == "logChecker";
+        }), errorLogger.ids.end());
+        ASSERT_EQUALS(1, errorLogger.ids.size());
+        ASSERT_EQUALS("nullPointer", *errorLogger.ids.cbegin());
+    }
+
+    void checkWithFS()
+    {
+        ScopedFile file("test.cpp",
+                        "int main()\n"
+                        "{\n"
+                        "  int i = *((int*)0);\n"
+                        "  return 0;\n"
+                        "}");
+
+        ErrorLogger2 errorLogger;
+        CppCheck cppcheck(errorLogger, false, {});
+        FileSettings fs;
+        fs.filename = file.path();
+        ASSERT_EQUALS(1, cppcheck.check(fs));
+        // TODO: how to properly disable these warnings?
+        errorLogger.ids.erase(std::remove_if(errorLogger.ids.begin(), errorLogger.ids.end(), [](const std::string& id) {
+            return id == "logChecker";
+        }), errorLogger.ids.end());
+        ASSERT_EQUALS(1, errorLogger.ids.size());
+        ASSERT_EQUALS("nullPointer", *errorLogger.ids.cbegin());
+    }
+
+    void suppress_error_library()
+    {
+        ScopedFile file("test.cpp",
+                        "int main()\n"
+                        "{\n"
+                        "  int i = *((int*)0);\n"
+                        "  return 0;\n"
+                        "}");
+
+        ErrorLogger2 errorLogger;
+        CppCheck cppcheck(errorLogger, false, {});
+        const char xmldata[] = R"(<def format="2"><markup ext=".cpp" reporterrors="false"/></def>)";
+        const Settings s = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+        cppcheck.settings() = s;
+        ASSERT_EQUALS(0, cppcheck.check(file.path()));
+        // TODO: how to properly disable these warnings?
+        errorLogger.ids.erase(std::remove_if(errorLogger.ids.begin(), errorLogger.ids.end(), [](const std::string& id) {
+            return id == "logChecker";
+        }), errorLogger.ids.end());
+        ASSERT_EQUALS(0, errorLogger.ids.size());
+    }
+
+    // TODO: test suppressions
+    // TODO: test unique errors
+    // TODO: test all with FS
 };
 
 REGISTER_TEST(TestCppcheck)
