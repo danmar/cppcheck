@@ -1207,6 +1207,9 @@ static BuiltinLibraryFunction getBuiltinLibraryFunction(const std::string& name)
 static bool TokenExprIdCompare(const Token* tok1, const Token* tok2) {
     return tok1->exprId() < tok2->exprId();
 }
+static bool TokenExprIdEqual(const Token* tok1, const Token* tok2) {
+    return tok1->exprId() == tok2->exprId();
+}
 
 static std::vector<const Token*> setDifference(const std::vector<const Token*>& v1, const std::vector<const Token*>& v2)
 {
@@ -1322,7 +1325,7 @@ namespace {
                     if (conditions2.empty())
                         continue;
                     if (conditions1.size() == conditions2.size() &&
-                        std::equal(conditions1.begin(), conditions1.end(), conditions2.begin(), &TokenExprIdCompare))
+                        std::equal(conditions1.begin(), conditions1.end(), conditions2.begin(), &TokenExprIdEqual))
                         return value;
                     std::vector<const Token*> diffConditions1 = setDifference(conditions1, conditions2);
                     std::vector<const Token*> diffConditions2 = setDifference(conditions2, conditions1);
