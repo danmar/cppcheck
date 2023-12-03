@@ -252,8 +252,6 @@ private:
 
 #define tokenize(...) tokenize_(__FILE__, __LINE__, __VA_ARGS__)
     std::string tokenize_(const char* file, int line, const char code[], const char filename[] = "test.cpp", const Settings *s = nullptr) {
-        errout.str("");
-
         const Settings *settings1 = s ? s : &settings;
 
         Tokenizer tokenizer(*settings1, this);
@@ -268,8 +266,6 @@ private:
 
 #define tokenizeExpr(...) tokenizeExpr_(__FILE__, __LINE__, __VA_ARGS__)
     std::string tokenizeExpr_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
-        errout.str("");
-
         std::vector<std::string> files(1, filename);
         Tokenizer tokenizer(settings, this);
         PreprocessorHelper::preprocess(code, files, tokenizer);
@@ -284,8 +280,6 @@ private:
 
 #define compareVaridsForVariable(...) compareVaridsForVariable_(__FILE__, __LINE__, __VA_ARGS__)
     std::string compareVaridsForVariable_(const char* file, int line, const char code[], const char varname[], const char filename[] = "test.cpp") {
-        errout.str("");
-
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC((tokenizer.tokenize)(istr, filename), file, line);
@@ -824,7 +818,7 @@ private:
                                 "6: int a@1 ;\n"
                                 "7: } ;\n";
         ASSERT_EQUALS(expected, tokenize(code));
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void varid35() { // function declaration inside function body
@@ -864,7 +858,7 @@ private:
         const char code[] ="#elif A\n"
                             "A,a<b<x0\n";
         tokenize(code);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void varid37() {

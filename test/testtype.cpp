@@ -52,9 +52,6 @@ private:
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     void check_(const char* file, int line, const char code[], const Settings& settings, const char filename[] = "test.cpp", Standards::cppstd_t standard = Standards::cppstd_t::CPP11) {
-        // Clear the error buffer..
-        errout.str("");
-
         const Settings settings1 = settingsBuilder(settings).severity(Severity::warning).severity(Severity::portability).cpp(standard).build();
 
         // Tokenize..
@@ -68,9 +65,6 @@ private:
 
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
     void checkP_(const char* file, int line, const char code[], const Settings& settings, const char filename[] = "test.cpp", const simplecpp::DUI& dui = simplecpp::DUI()) {
-        // Clear the error buffer..
-        errout.str("");
-
         const Settings settings1 = settingsBuilder(settings).severity(Severity::warning).severity(Severity::portability).build();
 
         Preprocessor preprocessor(settings1);
@@ -94,13 +88,13 @@ private:
             const std::string types[] = {"unsigned char", /*[unsigned]*/ "char", "bool", "unsigned short", "unsigned int", "unsigned long"};
             for (const std::string& type : types) {
                 check((type + " f(" + type +" x) { return x << 31; }").c_str(), settings);
-                ASSERT_EQUALS("", errout.str());
+                ASSERT_EQUALS("", errout_str());
                 check((type + " f(" + type +" x) { return x << 33; }").c_str(), settings);
-                ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 33 bits is undefined behaviour\n", errout.str());
+                ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 33 bits is undefined behaviour\n", errout_str());
                 check((type + " f(int x) { return (x = (" + type + ")x << 32); }").c_str(), settings);
-                ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout.str());
+                ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout_str());
                 check((type + " foo(" + type + " x) { return x << 31; }").c_str(), settings);
-                ASSERT_EQUALS("", errout.str());
+                ASSERT_EQUALS("", errout_str());
             }
         }
         // signed types getting promoted to int sizeof(int) = 4 bytes
@@ -110,68 +104,68 @@ private:
             for (const std::string& type : types) {
                 // c++11
                 check((type + " f(" + type +" x) { return x << 33; }").c_str(), settings);
-                ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 33 bits is undefined behaviour\n", errout.str());
+                ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 33 bits is undefined behaviour\n", errout_str());
                 check((type + " f(int x) { return (x = (" + type + ")x << 32); }").c_str(), settings);
-                ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout.str());
+                ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout_str());
                 check((type + " foo(" + type + " x) { return x << 31; }").c_str(), settings);
-                ASSERT_EQUALS("[test.cpp:1]: (error) Shifting signed 32-bit value by 31 bits is undefined behaviour\n", errout.str());
+                ASSERT_EQUALS("[test.cpp:1]: (error) Shifting signed 32-bit value by 31 bits is undefined behaviour\n", errout_str());
                 check((type + " foo(" + type + " x) { return x << 30; }").c_str(), settings);
-                ASSERT_EQUALS("", errout.str());
+                ASSERT_EQUALS("", errout_str());
 
                 // c++14
                 check((type + " foo(" + type + " x) { return x << 31; }").c_str(), settings, "test.cpp", Standards::cppstd_t::CPP14);
-                ASSERT_EQUALS("[test.cpp:1]: (portability) Shifting signed 32-bit value by 31 bits is implementation-defined behaviour\n", errout.str());
+                ASSERT_EQUALS("[test.cpp:1]: (portability) Shifting signed 32-bit value by 31 bits is implementation-defined behaviour\n", errout_str());
                 check((type + " f(int x) { return (x = (" + type + ")x << 32); }").c_str(), settings, "test.cpp", Standards::cppstd_t::CPP14);
-                ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout.str());
+                ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout_str());
             }
         }
         // 64 bit width types
         {
             // unsigned long long
             check("unsigned long long foo(unsigned long long x) { return x << 64; }",settings);
-            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout_str());
             check("unsigned long long f(int x) { return (x = (unsigned long long)x << 64); }",settings);
-            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout_str());
             check("unsigned long long f(unsigned long long x) { return x << 63; }",settings);
-            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("", errout_str());
             // [signed] long long
             check("long long foo(long long x) { return x << 64; }",settings);
-            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout_str());
             check("long long f(int x) { return (x = (long long)x << 64); }",settings);
-            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout_str());
             check("long long f(long long x) { return x << 63; }",settings);
-            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting signed 64-bit value by 63 bits is undefined behaviour\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting signed 64-bit value by 63 bits is undefined behaviour\n", errout_str());
             check("long long f(long long x) { return x << 62; }",settings);
-            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("", errout_str());
             // signed long long
             check("signed long long foo(signed long long x) { return x << 64; }",settings);
-            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout_str());
             check("signed long long f(long long x) { return (x = (signed long long)x << 64); }",settings);
-            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout_str());
             check("signed long long f(signed long long x) { return x << 63; }",settings);
-            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting signed 64-bit value by 63 bits is undefined behaviour\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting signed 64-bit value by 63 bits is undefined behaviour\n", errout_str());
             check("signed long long f(signed long long x) { return x << 62; }",settings);
-            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("", errout_str());
 
             // c++14
             check("signed long long foo(signed long long x) { return x << 64; }",settings, "test.cpp", Standards::cppstd_t::CPP14);
-            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout_str());
             check("signed long long f(long long x) { return (x = (signed long long)x << 64); }",settings, "test.cpp", Standards::cppstd_t::CPP14);
-            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout_str());
             check("signed long long f(signed long long x) { return x << 63; }",settings, "test.cpp", Standards::cppstd_t::CPP14);
-            ASSERT_EQUALS("[test.cpp:1]: (portability) Shifting signed 64-bit value by 63 bits is implementation-defined behaviour\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:1]: (portability) Shifting signed 64-bit value by 63 bits is implementation-defined behaviour\n", errout_str());
             check("signed long long f(signed long long x) { return x << 62; }",settings);
-            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("", errout_str());
         }
 
         check("void f() { int x; x = 1 >> 64; }", settings);
-        ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 64 bits is undefined behaviour\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 64 bits is undefined behaviour\n", errout_str());
 
         check("void foo() {\n"
               "  QList<int> someList;\n"
               "  someList << 300;\n"
               "}", settings);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // Ticket #6793
         check("template<unsigned int I> int foo(unsigned int x) { return x << I; }\n"
@@ -180,13 +174,13 @@ private:
               "template<unsigned int I> int hoo(unsigned int x) { return x << 32; }\n"
               "const unsigned int h = hoo<100>(0);", settings);
         ASSERT_EQUALS("[test.cpp:4]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n"
-                      "[test.cpp:1]: (error) Shifting 32-bit value by 100 bits is undefined behaviour\n", errout.str());
+                      "[test.cpp:1]: (error) Shifting 32-bit value by 100 bits is undefined behaviour\n", errout_str());
 
         // #7266: C++, shift in macro
         check("void f(unsigned int x) {\n"
               "    UINFO(x << 1234);\n"
               "}", settingsDefault);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // #8640
         check("int f (void)\n"
@@ -197,7 +191,7 @@ private:
               "    return ret;\n"
               "}", settingsDefault);
         ASSERT_EQUALS("[test.cpp:5]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n"
-                      "[test.cpp:5]: (error) Signed integer overflow for expression 'a<<shift[0]'.\n", errout.str());
+                      "[test.cpp:5]: (error) Signed integer overflow for expression 'a<<shift[0]'.\n", errout_str());
 
         // #8885
         check("int f(int k, int rm) {\n"
@@ -209,7 +203,7 @@ private:
               "}", settingsDefault);
         ASSERT_EQUALS(
             "[test.cpp:4] -> [test.cpp:6]: (warning) Shifting signed 32-bit value by 31 bits is undefined behaviour. See condition at line 4.\n",
-            errout.str());
+            errout_str());
 
         check("int f(int k, int rm) {\n"
               "  if (k == 0 || k == 32)\n"
@@ -221,7 +215,7 @@ private:
               "}", settingsDefault);
         ASSERT_EQUALS(
             "[test.cpp:4] -> [test.cpp:7]: (warning) Shifting signed 32-bit value by 31 bits is undefined behaviour. See condition at line 4.\n",
-            errout.str());
+            errout_str());
 
         check("int f(int k, int rm) {\n"
               "  if (k == 0 || k == 32 || k == 31)\n"
@@ -231,20 +225,20 @@ private:
               "  else\n"
               "    return rm>> k;\n"
               "}", settingsDefault);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("static long long f(int x, long long y) {\n"
               "    if (x >= 64)\n"
               "        return 0;\n"
               "    return -(y << (x-1));\n"
               "}", settingsDefault);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("bool f() {\n"
               "    std::ofstream outfile;\n"
               "    outfile << vec_points[0](0) << static_cast<int>(d) << ' ';\n"
               "}", settingsDefault);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f(unsigned b, int len, unsigned char rem) {\n" // #10773
               "    int bits = 0;\n"
@@ -255,67 +249,67 @@ private:
               "            len -= 8;\n"
               "    }\n"
               "}\n", settingsDefault);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void checkIntegerOverflow() {
         const Settings settings = settingsBuilder().severity(Severity::warning).platform(Platform::Type::Unix32).build();
 
         check("x = (int)0x10000 * (int)0x10000;", settings);
-        ASSERT_EQUALS("[test.cpp:1]: (error) Signed integer overflow for expression '(int)0x10000*(int)0x10000'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Signed integer overflow for expression '(int)0x10000*(int)0x10000'.\n", errout_str());
 
         check("x = (long)0x10000 * (long)0x10000;", settings);
-        ASSERT_EQUALS("[test.cpp:1]: (error) Signed integer overflow for expression '(long)0x10000*(long)0x10000'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Signed integer overflow for expression '(long)0x10000*(long)0x10000'.\n", errout_str());
 
         check("void foo() {\n"
               "    int intmax = 0x7fffffff;\n"
               "    return intmax + 1;\n"
               "}",settings);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Signed integer overflow for expression 'intmax+1'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Signed integer overflow for expression 'intmax+1'.\n", errout_str());
 
         check("void foo() {\n"
               "    int intmax = 0x7fffffff;\n"
               "    return intmax - 1;\n"
               "}",settings);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("int foo(signed int x) {\n"
               "   if (x==123456) {}\n"
               "   return x * x;\n"
               "}",settings);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'x==123456' is redundant or there is signed integer overflow for expression 'x*x'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'x==123456' is redundant or there is signed integer overflow for expression 'x*x'.\n", errout_str());
 
         check("int foo(signed int x) {\n"
               "   if (x==123456) {}\n"
               "   return -123456 * x;\n"
               "}",settings);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'x==123456' is redundant or there is signed integer overflow for expression '-123456*x'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'x==123456' is redundant or there is signed integer overflow for expression '-123456*x'.\n", errout_str());
 
         check("int foo(signed int x) {\n"
               "   if (x==123456) {}\n"
               "   return 123456U * x;\n"
               "}",settings);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("int f(int i) {\n" // #12117
               "    return (i == 31) ? 1 << i : 0;\n"
               "}", settings);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (warning) Shifting signed 32-bit value by 31 bits is undefined behaviour. See condition at line 2.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (warning) Shifting signed 32-bit value by 31 bits is undefined behaviour. See condition at line 2.\n", errout_str());
     }
 
     void signConversion() {
         const Settings settings = settingsBuilder().platform(Platform::Type::Unix64).build();
         check("x = -4 * (unsigned)y;", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Expression '-4' has a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Expression '-4' has a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout_str());
 
         check("x = (unsigned)y * -4;", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Expression '-4' has a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Expression '-4' has a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout_str());
 
         check("unsigned int dostuff(int x) {\n" // x is signed
               "  if (x==0) {}\n"
               "  return (x-1)*sizeof(int);\n"
               "}", settings);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Expression 'x-1' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Expression 'x-1' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout_str());
 
         check("unsigned int f1(signed int x, unsigned int y) {" // x is signed
               "  return x * y;\n"
@@ -323,7 +317,7 @@ private:
               "void f2() { f1(-4,4); }", settingsDefault);
         ASSERT_EQUALS(
             "[test.cpp:1]: (warning) Expression 'x' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n",
-            errout.str());
+            errout_str());
 
         check("unsigned int f1(int x) {"
               "  return x * 5U;\n"
@@ -331,25 +325,25 @@ private:
               "void f2() { f1(-4); }", settingsDefault);
         ASSERT_EQUALS(
             "[test.cpp:1]: (warning) Expression 'x' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n",
-            errout.str());
+            errout_str());
 
         check("unsigned int f1(int x) {" // #6168: FP for inner calculation
               "  return 5U * (1234 - x);\n" // <- signed subtraction, x is not sign converted
               "}\n"
               "void f2() { f1(-4); }", settingsDefault);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // Don't warn for + and -
         check("void f1(int x) {"
               "  a = x + 5U;\n"
               "}\n"
               "void f2() { f1(-4); }", settingsDefault);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("size_t foo(size_t x) {\n"
               " return -2 * x;\n"
               "}", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression '-2' has a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression '-2' has a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout_str());
     }
 
     void longCastAssign() {
@@ -361,46 +355,46 @@ private:
                             "  return ret;\n"
                             "}\n";
         check(code, settings);
-        ASSERT_EQUALS("[test.cpp:2]: (style) int result is assigned to long variable. If the variable is long to avoid loss of information, then you have loss of information.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) int result is assigned to long variable. If the variable is long to avoid loss of information, then you have loss of information.\n", errout_str());
         check(code, settingsWin);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("long f(int x, int y) {\n"
               "  long ret = x * y;\n"
               "  return ret;\n"
               "}\n", settings);
-        ASSERT_EQUALS("[test.cpp:2]: (style) int result is assigned to long variable. If the variable is long to avoid loss of information, then you have loss of information.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) int result is assigned to long variable. If the variable is long to avoid loss of information, then you have loss of information.\n", errout_str());
 
         check("long f() {\n"
               "  const long long ret = 256 * (1 << 10);\n"
               "  return ret;\n"
               "}\n", settings);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // typedef
         check("long f(int x, int y) {\n"
               "  const size_t ret = x * y;\n"
               "  return ret;\n"
               "}\n", settings);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // astIsIntResult
         check("long f(int x, int y) {\n"
               "  const long ret = (long)x * y;\n"
               "  return ret;\n"
               "}\n", settings);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("double g(float f) {\n"
               "    return f * f;\n"
               "}\n", settings);
         ASSERT_EQUALS("[test.cpp:2]: (style) float result is returned as double value. If the return value is double to avoid loss of information, then you have loss of information.\n",
-                      errout.str());
+                      errout_str());
 
         check("void f(int* p) {\n" // #11862
               "    long long j = *(p++);\n"
               "}\n", settings);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("template <class T>\n" // #12393
               "struct S {\n"
@@ -410,7 +404,7 @@ private:
               "    };\n"
               "    U u;\n"
               "};\n", settings);
-        ASSERT_EQUALS("", errout.str()); // don't crash
+        ASSERT_EQUALS("", errout_str()); // don't crash
     }
 
     void longCastReturn() {
@@ -421,23 +415,23 @@ private:
                             "  return x * y;\n"
                             "}\n";
         check(code, settings);
-        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information.\n", errout_str());
         check(code, settingsWin);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         const char code2[] = "long long f(int x, int y) {\n"
                              "  return x * y;\n"
                              "}\n";
         check(code2, settings);
-        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long long value. If the return value is long long to avoid loss of information, then you have loss of information.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long long value. If the return value is long long to avoid loss of information, then you have loss of information.\n", errout_str());
         check(code2, settingsWin);
-        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long long value. If the return value is long long to avoid loss of information, then you have loss of information.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long long value. If the return value is long long to avoid loss of information, then you have loss of information.\n", errout_str());
 
         // typedef
         check("size_t f(int x, int y) {\n"
               "  return x * y;\n"
               "}\n", settings);
-        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information.\n", errout_str());
     }
 
     // This function ensure that test works with different compilers. Floats can
@@ -452,42 +446,42 @@ private:
 
     void checkFloatToIntegerOverflow() {
         check("x = (int)1E100;", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:1]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
+        ASSERT_EQUALS("[test.cpp:1]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
 
         check("void f(void) {\n"
               "  return (int)1E100;\n"
               "}", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
+        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
 
         check("void f(void) {\n"
               "  return (int)-1E100;\n"
               "}", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
+        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
 
         check("void f(void) {\n"
               "  return (short)1E6;\n"
               "}", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
+        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
 
         check("void f(void) {\n"
               "  return (unsigned char)256.0;\n"
               "}", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
+        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
 
         check("void f(void) {\n"
               "  return (unsigned char)255.5;\n"
               "}", settingsDefault);
-        ASSERT_EQUALS("", removeFloat(errout.str()));
+        ASSERT_EQUALS("", removeFloat(errout_str()));
 
         check("void f(void) {\n"
               "  char c = 1234.5;\n"
               "}", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
+        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
 
         check("char f(void) {\n"
               "  return 1234.5;\n"
               "}", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
+        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
     }
 
     void integerOverflow() { // #11794
@@ -508,14 +502,14 @@ private:
                "{\n"
                "    fun(INT_MIN);\n"
                "}", settingsDefault, "test.cpp", dui);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Signed integer overflow for expression '-x'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Signed integer overflow for expression '-x'.\n", errout_str());
 
         checkP("void f() {\n" // #8399
                "    int32_t i = INT32_MAX;\n"
                "    i << 1;\n"
                "    i << 2;\n"
                "}", settingsDefault, "test.cpp", dui);
-        ASSERT_EQUALS("[test.cpp:4]: (error) Signed integer overflow for expression 'i<<2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Signed integer overflow for expression 'i<<2'.\n", errout_str());
     }
 };
 

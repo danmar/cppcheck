@@ -61,8 +61,6 @@ private:
     void inc() {
         const char code[] = "a++1;1++b;";
 
-        errout.str("");
-
         const SimpleTokenList tokenlist(code);
         ASSERT(Token::simpleMatch(tokenlist.front(), "a + + 1 ; 1 + + b ;"));
     }

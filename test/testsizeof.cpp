@@ -50,9 +50,6 @@ private:
 
 #define check(code) check_(code, __FILE__, __LINE__)
     void check_(const char code[], const char* file, int line) {
-        // Clear the error buffer..
-        errout.str("");
-
         // Tokenize..
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
@@ -64,9 +61,6 @@ private:
 
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
     void checkP_(const char* file, int line, const char code[]) {
-        // Clear the error buffer..
-        errout.str("");
-
         std::vector<std::string> files(1, "test.cpp");
         Tokenizer tokenizer(settings, this);
         PreprocessorHelper::preprocess(code, files, tokenizer);
@@ -83,48 +77,48 @@ private:
               "{\n"
               "    int i = sizeof sizeof char;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Calling 'sizeof' on 'sizeof'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Calling 'sizeof' on 'sizeof'.\n", errout_str());
 
         check("void foo()\n"
               "{\n"
               "    int i = sizeof (sizeof long);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Calling 'sizeof' on 'sizeof'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Calling 'sizeof' on 'sizeof'.\n", errout_str());
 
         check("void foo(long *p)\n"
               "{\n"
               "    int i = sizeof (sizeof (p));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Calling 'sizeof' on 'sizeof'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Calling 'sizeof' on 'sizeof'.\n", errout_str());
     }
 
     void sizeofCalculation() {
         check("int a, b; int a,sizeof(a+b)");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout_str());
 
         check("int a, b; sizeof(a*b)");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout_str());
 
         check("int a, b; sizeof(-a)");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout_str());
 
         check("int a, b; sizeof(*a)");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("sizeof(void * const)");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("sizeof(int*[2])");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("sizeof(Fred**)");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("sizeof(foo++)");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout_str());
 
         check("sizeof(--foo)");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout_str());
 
         // #6888
         checkP("#define SIZEOF1   sizeof(i != 2)\n"
@@ -138,7 +132,7 @@ private:
                "  VOIDCAST2(SIZEOF2);\n"
                "  return i + foo(1);\n"
                "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         checkP("#define SIZEOF1   sizeof(i != 2)\n"
                "#define SIZEOF2   ((sizeof(i != 2)))\n"
@@ -148,11 +142,11 @@ private:
                "  return i + foo(1);\n"
                "}");
         ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Found calculation inside sizeof().\n"
-                      "[test.cpp:5]: (warning, inconclusive) Found calculation inside sizeof().\n", errout.str());
+                      "[test.cpp:5]: (warning, inconclusive) Found calculation inside sizeof().\n", errout_str());
 
         checkP("#define MACRO(data)  f(data, sizeof(data))\n"
                "x = MACRO((unsigned int *)data + 4);");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found calculation inside sizeof().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found calculation inside sizeof().\n", errout_str());
     }
 
     void sizeofFunction() {
@@ -161,7 +155,7 @@ private:
               "    int bar() { return 1; };\n"
               "}\n"
               "Foo f;int a=sizeof(f.bar());");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Found function call inside sizeof().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Found function call inside sizeof().\n", errout_str());
 
         check("class Foo\n"
               "{\n"
@@ -169,35 +163,35 @@ private:
               "    int bar() const { return 1; };\n"
               "}\n"
               "Foo f;int a=sizeof(f.bar());");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("class Foo\n"
               "{\n"
               "    int bar() { return 1; };\n"
               "}\n"
               "Foo * fp;int a=sizeof(fp->bar());");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Found function call inside sizeof().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Found function call inside sizeof().\n", errout_str());
 
         check("int a=sizeof(foo());");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("int foo() { return 1; }; int a=sizeof(foo());");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Found function call inside sizeof().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Found function call inside sizeof().\n", errout_str());
 
         check("int foo() { return 1; }; sizeof(decltype(foo()));");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("int foo(int) { return 1; }; int a=sizeof(foo(0))");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Found function call inside sizeof().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Found function call inside sizeof().\n", errout_str());
 
         check("char * buf; int a=sizeof(*buf);");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("int a=sizeof(foo())");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("int foo(int) { return 1; }; char buf[1024]; int a=sizeof(buf), foo(0)");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("template<class T>\n"
               "struct A\n"
@@ -213,7 +207,7 @@ private:
               "        Z = X & Y\n"
               "    };\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void sizeofForArrayParameter() {
@@ -221,7 +215,7 @@ private:
               "    int a[10];\n"
               "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    unsigned int a = 2;\n"
@@ -229,7 +223,7 @@ private:
               "    int c[(a+b)];\n"
               "    std::cout << sizeof(c) / sizeof(int) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    unsigned int a = { 2 };\n"
@@ -237,7 +231,7 @@ private:
               "    int c[a[b[0]]];\n"
               "    std::cout << sizeof(c) / sizeof(int) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
 
         check("void f() {\n"
@@ -246,56 +240,56 @@ private:
               "    int c[(a[0]+b)];\n"
               "    std::cout << sizeof(c) / sizeof(int) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    int a[] = { 1, 2, 3 };\n"
               "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    int a[3] = { 1, 2, 3 };\n"
               "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f( int a[]) {\n"
               "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Using 'sizeof' on array given as "
-                      "function argument returns size of a pointer.\n", errout.str());
+                      "function argument returns size of a pointer.\n", errout_str());
 
         check("void f( int a[]) {\n"
               "    std::cout << sizeof a / sizeof(int) << std::endl;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Using 'sizeof' on array given as "
-                      "function argument returns size of a pointer.\n", errout.str());
+                      "function argument returns size of a pointer.\n", errout_str());
 
         check("void f( int a[3] ) {\n"
               "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Using 'sizeof' on array given as "
-                      "function argument returns size of a pointer.\n", errout.str());
+                      "function argument returns size of a pointer.\n", errout_str());
 
         check("typedef char Fixname[1000];\n"
               "int f2(Fixname& f2v) {\n"
               "  int i = sizeof(f2v);\n"
               "  printf(\"sizeof f2v %d\", i);\n"
               "   }");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f(int *p) {\n"
               "    p[0] = 0;\n"
               "    int unused = sizeof(p);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    char p[] = \"test\";\n"
               "    int unused = sizeof(p);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // ticket #2495
         check("void f() {\n"
@@ -309,33 +303,33 @@ private:
               "    };\n"
               "    const int COL_MAX=sizeof(col)/sizeof(col[0]);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // ticket #155
         check("void f() {\n"
               "    char buff1[1024*64],buff2[sizeof(buff1)*2];\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // ticket #2510
         check("void f( int a[], int b) {\n"
               "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Using 'sizeof' on array given as "
-                      "function argument returns size of a pointer.\n", errout.str());
+                      "function argument returns size of a pointer.\n", errout_str());
 
         // ticket #2510
         check("void f( int a[3] , int b[2] ) {\n"
               "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Using 'sizeof' on array given as "
-                      "function argument returns size of a pointer.\n", errout.str());
+                      "function argument returns size of a pointer.\n", errout_str());
 
         // ticket #2510
         check("void f() {\n"
               "    char buff1[1024*64],buff2[sizeof(buff1)*(2+1)];\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
     }
 
@@ -343,22 +337,22 @@ private:
         check("void f() {\n"
               "    std::cout << sizeof(10) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious usage of 'sizeof' with a numeric constant as parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious usage of 'sizeof' with a numeric constant as parameter.\n", errout_str());
 
         check("void f() {\n"
               "    std::cout << sizeof(-10) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious usage of 'sizeof' with a numeric constant as parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious usage of 'sizeof' with a numeric constant as parameter.\n", errout_str());
 
         check("void f() {\n"
               "    std::cout << sizeof 10  << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious usage of 'sizeof' with a numeric constant as parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious usage of 'sizeof' with a numeric constant as parameter.\n", errout_str());
 
         check("void f() {\n"
               "    std::cout << sizeof -10  << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious usage of 'sizeof' with a numeric constant as parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious usage of 'sizeof' with a numeric constant as parameter.\n", errout_str());
     }
 
     void suspiciousSizeofCalculation() {
@@ -366,68 +360,68 @@ private:
               "  int* p;\n"
               "  return sizeof(p)/5;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Division of result of sizeof() on pointer type.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Division of result of sizeof() on pointer type.\n", errout_str());
 
         check("void f() {\n"
               "  unknown p;\n"
               "  return sizeof(p)/5;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "  return sizeof(unknown)/5;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "  int p;\n"
               "  return sizeof(p)/5;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "  int* p[5];\n"
               "  return sizeof(p)/5;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
 
         check("void f() {\n"
               "  return sizeof(foo)*sizeof(bar);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Multiplying sizeof() with sizeof() indicates a logic error.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Multiplying sizeof() with sizeof() indicates a logic error.\n", errout_str());
 
         check("void f() {\n"
               "  return (foo)*sizeof(bar);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "  return sizeof(foo)*bar;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "  return (end - source) / sizeof(encode_block_type) * sizeof(encode_block_type);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("struct S { T* t; };\n" // #10179
               "int f(S* s) {\n"
               "    return g(sizeof(*s->t) / 4);\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    const char* a[N];\n"
               "    for (int i = 0; i < (int)(sizeof(a) / sizeof(char*)); i++) {}\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("int f(int** p) {\n"
               "    return sizeof(p[0]) / 4;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Division of result of sizeof() on pointer type.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Division of result of sizeof() on pointer type.\n", errout_str());
 
         check("struct S {\n"
               "    unsigned char* s;\n"
@@ -438,7 +432,7 @@ private:
               "void f(T* t) {\n"
               "    for (size_t i = 0; i < sizeof(t->s) / sizeof(t->s[0]); i++) {}\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("struct S {\n"
               "    struct T {\n"
@@ -448,18 +442,18 @@ private:
               "void f(S* s) {\n"
               "    for (int i = 0; i != sizeof(s->t[0].c) / sizeof(char*); i++) {}\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f(int32_t* buf, size_t len) {\n"
               "    for (int i = 0; i < len / sizeof(buf[0]); i++) {}\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f(int32_t*** buf, size_t len) {\n"
               "    for (int i = 0; i < len / sizeof(**buf[0]); i++) {}\n"
               "    for (int i = 0; i < len / sizeof(*buf[0][0]); i++) {}\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void checkPointerSizeof() {
@@ -467,49 +461,49 @@ private:
               "    char *x = malloc(10);\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    int *x = malloc(sizeof(*x));\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    int *x = malloc(sizeof(int));\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    int *x = malloc(sizeof(x));\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout_str());
 
         check("void f() {\n"
               "    int *x = (int*)malloc(sizeof(x));\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout_str());
 
         check("void f() {\n"
               "    int *x = static_cast<int*>(malloc(sizeof(x)));\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout_str());
 
         check("void f() {\n"
               "    int *x = malloc(sizeof(&x));\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout_str());
 
         check("void f() {\n"
               "    int *x = malloc(sizeof(int*));\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout_str());
 
         check("void f() {\n"
               "    int *x = malloc(sizeof(int));\n"
@@ -517,155 +511,155 @@ private:
               "    int **y = malloc(sizeof(int*));\n"
               "    free(y);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    int *x = malloc(100 * sizeof(x));\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout_str());
 
         check("void f() {\n"
               "    int *x = malloc(sizeof(x) * 100);\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout_str());
 
         check("void f() {\n"
               "    int *x = malloc(sizeof *x);\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    int *x = malloc(sizeof x);\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout_str());
 
         check("void f() {\n"
               "    int *x = malloc(100 * sizeof x);\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout_str());
 
         check("void f() {\n"
               "    int *x = calloc(1, sizeof(*x));\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    int *x = calloc(1, sizeof *x);\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    int *x = calloc(1, sizeof(x));\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout_str());
 
         check("void f() {\n"
               "    int *x = calloc(1, sizeof x);\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout_str());
 
         check("void f() {\n"
               "    int *x = calloc(1, sizeof(int));\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    char x[10];\n"
               "    memset(x, 0, sizeof(x));\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    char* x[10];\n"
               "    memset(x, 0, sizeof(x));\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    char x[10];\n"
               "    memset(x, 0, sizeof x);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    int *x = malloc(sizeof(int));\n"
               "    memset(x, 0, sizeof(int));\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    int *x = malloc(sizeof(int));\n"
               "    memset(x, 0, sizeof(*x));\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    int *x = malloc(sizeof(int));\n"
               "    memset(x, 0, sizeof *x);\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    int *x = malloc(sizeof(int));\n"
               "    memset(x, 0, sizeof x);\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout_str());
 
         check("void f() {\n"
               "    int *x = malloc(sizeof(int));\n"
               "    memset(x, 0, sizeof(x));\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout_str());
 
         check("void f() {\n"
               "    int *x = malloc(sizeof(int) * 10);\n"
               "    memset(x, 0, sizeof(x) * 10);\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout_str());
 
         check("void f() {\n"
               "    int *x = malloc(sizeof(int) * 10);\n"
               "    memset(x, 0, sizeof x * 10);\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Size of pointer 'x' used instead of size of its data.\n", errout_str());
 
         check("void f() {\n"
               "    int *x = malloc(sizeof(int) * 10);\n"
               "    memset(x, 0, sizeof(*x) * 10);\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    int *x = malloc(sizeof(int) * 10);\n"
               "    memset(x, 0, sizeof *x * 10);\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    int *x = malloc(sizeof(int) * 10);\n"
               "    memset(x, 0, sizeof(int) * 10);\n"
               "    free(x);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check(
             "int fun(const char *buf1)\n"
@@ -673,18 +667,18 @@ private:
             "  const char *buf1_ex = \"foobarbaz\";\n"
             "  return strncmp(buf1, buf1_ex, sizeof(buf1_ex)) == 0;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Size of pointer 'buf1_ex' used instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Size of pointer 'buf1_ex' used instead of size of its data.\n", errout_str());
 
         check(
             "int fun(const char *buf1) {\n"
             "  return strncmp(buf1, foo(buf2), sizeof(buf1)) == 0;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'buf1' used instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'buf1' used instead of size of its data.\n", errout_str());
 
         check("int fun(const char *buf2) {\n"
               "  return strncmp(buf1, buf2, sizeof(char*)) == 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'buf2' used instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Size of pointer 'buf2' used instead of size of its data.\n", errout_str());
 
         // #ticket 3874
         check("void f()\n"
@@ -692,25 +686,25 @@ private:
               " int * pIntArray[10];\n"
               " memset(pIntArray, 0, sizeof(pIntArray));\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void FreeFileName(const char *s) {\n"
               "  CxString tbuf;\n"
               "  const char *p;\n"
               "  memcpy(s, siezof(s));\n" // non-standard memcpy
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("int f() {\n"
               "  module_config_t *tab = module;\n"
               "  memset(tab + confsize, 0, sizeof(tab[confsize]));\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("int f(char* aug) {\n"
               "  memmove(aug + extra_string, aug, buf - (bfd_byte *)aug);\n" // #7100
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // #7518
         check("bool create_iso_definition(cpp_reader *pfile, cpp_macro *macro) {\n"
@@ -718,13 +712,13 @@ private:
               "  cpp_hashnode **params = malloc(sizeof(cpp_hashnode *) * macro->paramc);\n"
               "  memcpy(params, macro->params, sizeof(cpp_hashnode *) * macro->paramc);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void* foo() {\n"
               "  void* AtomName = malloc(sizeof(char *) * 34);\n"
               "  return AtomName;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void checkPointerSizeofStruct() {
@@ -732,7 +726,7 @@ private:
               "    struct foo *ptr;\n"
               "    memset( ptr->bar, 0, sizeof ptr->bar );\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    struct foo {\n"
@@ -740,7 +734,7 @@ private:
               "    }* ptr;\n"
               "    memset( ptr->bar, 0, sizeof ptr->bar );\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    struct foo {\n"
@@ -748,7 +742,7 @@ private:
               "    }* ptr;\n"
               "    memset( ptr->bar, 0, sizeof ptr->bar );\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Size of pointer 'bar' used instead of size of its data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Size of pointer 'bar' used instead of size of its data.\n", errout_str());
     }
 
     void sizeofDivisionMemset() {
@@ -757,18 +751,18 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Division of result of sizeof() on pointer type.\n"
                       "[test.cpp:2]: (warning) Division by result of sizeof(). memmove() expects a size in bytes, did you intend to multiply instead?\n",
-                      errout.str());
+                      errout_str());
 
         check("Foo* allocFoo(int num) {\n"
               "    return malloc(num / sizeof(Foo));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Division by result of sizeof(). malloc() expects a size in bytes, did you intend to multiply instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Division by result of sizeof(). malloc() expects a size in bytes, did you intend to multiply instead?\n", errout_str());
 
         check("void f() {\n"
               "  char str[100];\n"
               "  strncpy(str, xyz, sizeof(str)/sizeof(str[0]));\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n" // #9648
               "    int a[5] = { 0 };\n"
@@ -776,20 +770,20 @@ private:
               "    memcpy(b, a, ((sizeof(a) / sizeof(a[0])) - 1) * sizeof(a[0]));\n"
               "    memcpy(b, a, sizeof(a[0]) * ((sizeof(a) / sizeof(a[0])) - 1));\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void sizeofVoid() {
         check("void f() {\n"
               "  int size = sizeof(void);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (portability) Behaviour of 'sizeof(void)' is not covered by the ISO C standard.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Behaviour of 'sizeof(void)' is not covered by the ISO C standard.\n", errout_str());
 
         check("void f() {\n"
               "  void* p;\n"
               "  int size = sizeof(*p);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (portability) '*p' is of type 'void', the behaviour of 'sizeof(void)' is not covered by the ISO C standard.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) '*p' is of type 'void', the behaviour of 'sizeof(void)' is not covered by the ISO C standard.\n", errout_str());
 
         check("void f() {\n"
               "  void* p = malloc(10);\n"
@@ -799,7 +793,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) 'p' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n"
                       "[test.cpp:4]: (portability) 'p' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n"
-                      "[test.cpp:5]: (portability) 'p' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
+                      "[test.cpp:5]: (portability) 'p' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout_str());
 
         check("void f() {\n"
               "  void* p1 = malloc(10);\n"
@@ -808,7 +802,7 @@ private:
               "  p2++;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (portability) 'p1' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n"
-                      "[test.cpp:5]: (portability) 'p2' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
+                      "[test.cpp:5]: (portability) 'p2' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout_str());
 
         check("void f() {\n"
               "  void* p1 = malloc(10);\n"
@@ -817,61 +811,61 @@ private:
               "  p2+=4;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (portability) 'p1' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n"
-                      "[test.cpp:5]: (portability) 'p2' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
+                      "[test.cpp:5]: (portability) 'p2' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout_str());
 
         check("void f() {\n"
               "  void* p = malloc(10);\n"
               "  int* p2 = &p + 4;\n"
               "  int* p3 = &p - 1;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "  void** p1 = malloc(10);\n"
               "  p1--;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "  void** p1;\n"
               "  int j = sizeof(*p1);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "  void* p1[5];\n"
               "  int j = sizeof(*p1);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // Calculations on void* with casts
 
         check("void f(void *data) {\n"
               "  *((unsigned char *)data + 1) = 0;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f(void *data) {\n"
               "  *((unsigned char *)(data) + 1) = 0;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f(void *data) {\n"
               "  unsigned char* c = (unsigned char *)(data + 1);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (portability) 'data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (portability) 'data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout_str());
 
         check("void f(void *data) {\n"
               "  unsigned char* c = (unsigned char *)data++;\n"
               "  unsigned char* c2 = (unsigned char *)++data;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (portability) 'data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n"
-                      "[test.cpp:3]: (portability) 'data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
+                      "[test.cpp:3]: (portability) 'data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout_str());
 
         check("void f(void *data) {\n"
               "  void* data2 = data + 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (portability) 'data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (portability) 'data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout_str());
 
         // #4908 (void pointer as a member of a struct/class)
         check("struct FOO {\n"
@@ -883,7 +877,7 @@ private:
               "  return x;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (portability) 'foo.data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n"
-                      "[test.cpp:6]: (portability) 'foo.data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
+                      "[test.cpp:6]: (portability) 'foo.data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout_str());
 
         check("struct FOO {\n"
               "  void *data;\n"
@@ -906,7 +900,7 @@ private:
               "void f4(struct BOO* boo) {\n"
               "  char c = *((char*)boo->data.data + 1);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("struct FOO {\n"
               "  void *data;\n"
@@ -914,7 +908,7 @@ private:
               "char f(struct FOO* foo) {\n"
               "  *(foo[1].data + 1) = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (portability) 'foo[1].data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (portability) 'foo[1].data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout_str());
 
         check("struct FOO {\n"
               "  void *data;\n"
@@ -922,12 +916,12 @@ private:
               "void f2(struct FOO* foo) {\n"
               "  (foo[0]).data++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (portability) '(foo[0]).data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (portability) '(foo[0]).data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout_str());
 
         // #6050 arithmetic on void**
         check("void* array[10];\n"
               "void** b = array + 3;");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void customStrncat() {
