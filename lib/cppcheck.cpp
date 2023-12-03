@@ -428,6 +428,7 @@ unsigned int CppCheck::checkClang(const std::string &path)
     if (!mSettings.quiet)
         mErrorLogger.reportOut(std::string("Checking ") + path + " ...", Color::FgGreen);
 
+    // TODO: this ignores the configured language
     const std::string lang = Path::isCPP(path) ? "-x c++" : "-x c";
     const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, emptyString);
     const std::string clangcmd = analyzerInfo + ".clang-cmd";
@@ -442,6 +443,7 @@ unsigned int CppCheck::checkClang(const std::string &path)
 #endif
 
     std::string flags(lang + " ");
+    // TODO: does not apply C standard
     if (Path::isCPP(path) && !mSettings.standards.stdValue.empty())
         flags += "-std=" + mSettings.standards.stdValue + " ";
 
@@ -507,6 +509,7 @@ unsigned int CppCheck::checkClang(const std::string &path)
         std::string dumpFile;
         createDumpFile(mSettings, path, fdump, dumpFile);
         if (fdump.is_open()) {
+            // TODO: use tinyxml2 to create XML
             fdump << "<dump cfg=\"\">\n";
             for (const ErrorMessage& errmsg: compilerWarnings)
                 fdump << "  <clang-warning file=\"" << toxml(errmsg.callStack.front().getfile()) << "\" line=\"" << errmsg.callStack.front().line << "\" column=\"" << errmsg.callStack.front().column << "\" message=\"" << toxml(errmsg.shortMessage()) << "\"/>\n";
