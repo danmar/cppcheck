@@ -236,11 +236,17 @@ protected:
         return SettingsBuilder(*this, std::move(settings));
     }
 
-    // TODO: make sure the output has been consumed in the test
+    std::string output_str() {
+        std::string s = mOutput.str();
+        mOutput.str("");
+        return s;
+    }
+
     std::ostringstream errout;
-    std::ostringstream output;
 
 private:
+    std::ostringstream mOutput;
+
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
     void reportErr(const ErrorMessage &msg) override;
     void run(const std::string &str);

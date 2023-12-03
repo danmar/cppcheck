@@ -114,6 +114,20 @@ bool TestFixture::prepareTest(const char testname[])
 void TestFixture::teardownTest()
 {
     teardownTestInternal();
+
+    // TODO: enable
+    /*
+        {
+        const std::string s = errout.str();
+        if (!s.empty())
+            throw std::runtime_error("unconsumed ErrorLogger err: " + s);
+        }
+     */
+    {
+        const std::string s = output_str();
+        if (!s.empty())
+            throw std::runtime_error("unconsumed ErrorLogger out: " + s);
+    }
 }
 
 std::string TestFixture::getLocationStr(const char * const filename, const unsigned int linenr) const
@@ -381,7 +395,7 @@ std::size_t TestFixture::runTests(const options& args)
 
 void TestFixture::reportOut(const std::string & outmsg, Color /*c*/)
 {
-    output << outmsg << std::endl;
+    mOutput << outmsg << std::endl;
 }
 
 void TestFixture::reportErr(const ErrorMessage &msg)
@@ -389,6 +403,7 @@ void TestFixture::reportErr(const ErrorMessage &msg)
     if (msg.severity == Severity::none && msg.id == "logChecker")
         return;
     const std::string errormessage(msg.toString(mVerbose, mTemplateFormat, mTemplateLocation));
+    // TODO: remove the unique error handling?
     if (errout.str().find(errormessage) == std::string::npos)
         errout << errormessage << std::endl;
 }

@@ -20,6 +20,7 @@
 #include "settings.h"
 #include "filesettings.h"
 #include "fixture.h"
+#include "redirect.h"
 
 #include <list>
 #include <map>
@@ -112,6 +113,7 @@ private:
     }
 
     void importCompileCommands1() const {
+        REDIRECT;
         constexpr char json[] = R"([{
                                    "directory": "/tmp",
                                    "command": "gcc -DTEST1 -DTEST2=2 -o /tmp/src.o -c /tmp/src.c",
@@ -125,6 +127,7 @@ private:
     }
 
     void importCompileCommands2() const {
+        REDIRECT;
         // Absolute file path
 #ifdef _WIN32
         const char json[] = R"([{
@@ -152,6 +155,7 @@ private:
     }
 
     void importCompileCommands3() const {
+        REDIRECT;
         const char json[] = R"([{
                                     "directory": "/tmp/",
                                     "command": "gcc -c src.c",
@@ -165,6 +169,7 @@ private:
     }
 
     void importCompileCommands4() const {
+        REDIRECT;
         constexpr char json[] = R"([{
                                     "directory": "/tmp/",
                                     "command": "gcc -c src.mm",
@@ -177,6 +182,7 @@ private:
     }
 
     void importCompileCommands5() const {
+        REDIRECT;
         constexpr char json[] =
             R"([{
                 "directory": "C:/Users/dan/git/build-test-cppcheck-Desktop_Qt_5_15_0_MSVC2019_64bit-Debug",
@@ -196,6 +202,7 @@ private:
     }
 
     void importCompileCommands6() const {
+        REDIRECT;
         constexpr char json[] =
             R"([{
                 "directory": "C:/Users/dan/git/build-test-cppcheck-Desktop_Qt_5_15_0_MSVC2019_64bit-Debug",
@@ -217,6 +224,7 @@ private:
 
 
     void importCompileCommands7() const {
+        REDIRECT;
         // cmake -DFILESDIR="/some/path" ..
         constexpr char json[] =
             R"([{
@@ -237,6 +245,7 @@ private:
     }
 
     void importCompileCommands8() const {
+        REDIRECT;
         // cmake -DFILESDIR="C:\Program Files\Cppcheck" -G"NMake Makefiles" ..
         constexpr char json[] =
             R"([{
@@ -250,6 +259,7 @@ private:
     }
 
     void importCompileCommands9() const {
+        REDIRECT;
         // IAR output (https://sourceforge.net/p/cppcheck/discussion/general/thread/608af51e0a/)
         constexpr char json[] =
             R"([{
@@ -266,6 +276,7 @@ private:
     }
 
     void importCompileCommands10() const { // #10887
+        REDIRECT;
         constexpr char json[] =
             R"([{
                "file": "/home/danielm/cppcheck/1/test folder/1.c" ,
@@ -285,6 +296,7 @@ private:
     }
 
     void importCompileCommands11() const { // include path order
+        REDIRECT;
         constexpr char json[] =
             R"([{
                "file": "1.c" ,
@@ -307,6 +319,7 @@ private:
     }
 
     void importCompileCommandsArgumentsSection() const {
+        REDIRECT;
         constexpr char json[] = "[ { \"directory\": \"/tmp/\","
                                 "\"arguments\": [\"gcc\", \"-c\", \"src.c\"],"
                                 "\"file\": \"src.c\" } ]";
@@ -318,15 +331,18 @@ private:
     }
 
     void importCompileCommandsNoCommandSection() const {
+        REDIRECT;
         constexpr char json[] = "[ { \"directory\": \"/tmp/\","
                                 "\"file\": \"src.mm\" } ]";
         std::istringstream istr(json);
         TestImporter importer;
         ASSERT_EQUALS(false, importer.importCompileCommands(istr));
         ASSERT_EQUALS(0, importer.fileSettings.size());
+        ASSERT_EQUALS("cppcheck: error: no 'arguments' or 'command' field found in compilation database entry\n", GET_REDIRECT_OUTPUT);
     }
 
     void importCppcheckGuiProject() const {
+        REDIRECT;
         constexpr char xml[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                                "<project version=\"1\">\n"
                                "    <root name=\".\"/>\n"
