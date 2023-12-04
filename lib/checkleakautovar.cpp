@@ -1061,6 +1061,21 @@ void CheckLeakAutoVar::leakIfAllocated(const Token *vartok,
     }
 }
 
+static const Token* getOutparamAllocation(const Token* tok, const Settings* settings)
+{
+    if (!tok)
+        return nullptr;
+    int argn{};
+    const Token* ftok = getTokenArgumentFunction(tok, argn);
+    if (!ftok)
+        return nullptr;
+    if (const Library::AllocFunc* allocFunc = settings->library.getAllocFuncInfo(ftok)) {
+        if (allocFunc->arg == argn)
+            return ftok;
+    }
+    return nullptr;
+}
+
 void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndOfScope)
 {
     const std::map<int, VarInfo::AllocInfo> &alloctype = varInfo.alloctype;
@@ -1115,7 +1130,9 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
             }
 
             // don't warn when returning after checking return value of outparam allocation
-            if (it->second.allocTok && (tok->scope()->type == Scope::ScopeType::eIf || tok->scope()->type== Scope::ScopeType::eElse)) {
+            const Token* outparamFunc{};
+            if ((tok->scope()->type == Scope::ScopeType::eIf || tok->scope()->type== Scope::ScopeType::eElse) &&
+                (outparamFunc = getOutparamAllocation(it->second.allocTok, mSettings))) {
                 const Scope* scope = tok->scope();
                 if (scope->type == Scope::ScopeType::eElse) {
                     scope = scope->bodyStart->tokAt(-2)->scope();
@@ -1124,12 +1141,10 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
                 const Token* const ifStart = ifEnd->link();
                 const Token* const alloc = it->second.allocTok;
                 if (precedes(ifStart, alloc) && succeeds(ifEnd, alloc)) { // allocation and check in if
-                    int argn{};
-                    if (const Token* ftok = getTokenArgumentFunction(alloc, argn))
-                        if (Token::Match(ftok->next()->astParent(), "%comp%"))
-                            continue;
+                    if (Token::Match(outparamFunc->next()->astParent(), "%comp%"))
+                        continue;
                 } else { // allocation result assigned to variable
-                    const Token* retAssign = it->second.allocTok->astParent();
+                    const Token* retAssign = alloc->astParent();
                     while (Token::Match(retAssign, "[&,(]"))
                         retAssign = retAssign->astParent();
                     if (Token::simpleMatch(retAssign, "=") && retAssign->astOperand1()->varId()) {
