@@ -1070,7 +1070,7 @@ static const Token* getOutparamAllocation(const Token* tok, const Settings* sett
     if (!ftok)
         return nullptr;
     if (const Library::AllocFunc* allocFunc = settings->library.getAllocFuncInfo(ftok)) {
-        if (allocFunc->arg == argn)
+        if (allocFunc->arg == argn + 1)
             return ftok;
     }
     return nullptr;
