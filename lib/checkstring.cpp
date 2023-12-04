@@ -193,7 +193,7 @@ void CheckString::checkSuspiciousStringCompare()
                 continue;
 
             if (litTok->tokType() == Token::eString) {
-                if (mTokenizer->isC() || (varType && varType->pointer))
+                if (varTok->isC() || (varType && varType->pointer))
                     suspiciousStringCompareError(tok, varTok->expressionString(), litTok->isLong());
             } else if (litTok->tokType() == Token::eChar && varType && varType->pointer) {
                 suspiciousStringCompareError_char(tok, varTok->expressionString());

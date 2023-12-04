@@ -166,7 +166,7 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
                 continue;
         }
 
-        bool stdtype = mTokenizer->isC() && arrayTypeDefs.find(var.typeStartToken()->str()) == arrayTypeDefs.end();
+        bool stdtype = var.typeStartToken()->isC() && arrayTypeDefs.find(var.typeStartToken()->str()) == arrayTypeDefs.end();
         const Token* tok = var.typeStartToken();
         for (; tok != var.nameToken() && tok->str() != "<"; tok = tok->next()) {
             if (tok->isStandardType() || tok->isEnumType())

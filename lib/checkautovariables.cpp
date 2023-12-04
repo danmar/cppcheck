@@ -241,10 +241,10 @@ static bool isAutoVariableRHS(const Token* tok) {
     return isAddressOfLocalVariable(tok) || isAutoVarArray(tok) || isLocalContainerBuffer(tok);
 }
 
-static bool hasOverloadedAssignment(const Token* tok, bool c, bool& inconclusive)
+static bool hasOverloadedAssignment(const Token* tok, bool& inconclusive)
 {
     inconclusive = false;
-    if (c)
+    if (tok->isC())
         return false;
     if (const ValueType* vt = tok->valueType()) {
         if (vt->pointer && !Token::simpleMatch(tok->astParent(), "*"))
@@ -280,13 +280,13 @@ void CheckAutoVariables::autoVariables()
             } else if (Token::Match(tok, "[;{}] * %var% =") && isPtrArg(tok->tokAt(2)) && isAutoVariableRHS(tok->tokAt(3)->astOperand2())) {
                 const Token* lhs = tok->tokAt(2);
                 bool inconclusive = false;
-                if (!hasOverloadedAssignment(lhs, mTokenizer->isC(), inconclusive) || (printInconclusive && inconclusive))
+                if (!hasOverloadedAssignment(lhs, inconclusive) || (printInconclusive && inconclusive))
                     checkAutoVariableAssignment(tok->next(), inconclusive);
                 tok = tok->tokAt(4);
             } else if (Token::Match(tok, "[;{}] %var% . %var% =") && isPtrArg(tok->next()) && isAutoVariableRHS(tok->tokAt(4)->astOperand2())) {
                 const Token* lhs = tok->tokAt(3);
                 bool inconclusive = false;
-                if (!hasOverloadedAssignment(lhs, mTokenizer->isC(), inconclusive) || (printInconclusive && inconclusive))
+                if (!hasOverloadedAssignment(lhs, inconclusive) || (printInconclusive && inconclusive))
                     checkAutoVariableAssignment(tok->next(), inconclusive);
                 tok = tok->tokAt(5);
             } else if (Token::Match(tok, "[;{}] %var% [") && Token::simpleMatch(tok->linkAt(2), "] =") &&
