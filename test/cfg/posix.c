@@ -1113,6 +1113,13 @@ void resourceLeak_open2(void)
     // cppcheck-suppress resourceLeak
 }
 
+void resourceLeak_fdopen(const char* fn) // #2767
+{
+  int fi = open(fn, O_RDONLY);
+  FILE* fd = fdopen(fi, "r");
+  fclose(fd);
+}
+
 void noleak(int x, int y, int z)
 {
     DIR *p1 = fdopendir(x);
