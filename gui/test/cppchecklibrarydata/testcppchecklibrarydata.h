@@ -46,7 +46,7 @@ private slots:
 
 private:
     static void loadCfgFile(const QString &filename, CppcheckLibraryData &data, QString &res, bool removeFile = false);
-    static void saveCfgFile(const QString &filename, CppcheckLibraryData &data);
+    static void saveCfgFile(const QString &filename, const CppcheckLibraryData &data);
 
     // cppcheck-suppress-begin naming-privateMemberVariable
     CppcheckLibraryData libraryData;
