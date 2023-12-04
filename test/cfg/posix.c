@@ -1060,6 +1060,13 @@ void resourceLeak_fdopen(int fd)
     // cppcheck-suppress resourceLeak
 }
 
+void resourceLeak_fdopen2(const char* fn) // #2767
+{
+    int fi = open(fn, O_RDONLY);
+    FILE* fd = fdopen(fi, "r");
+    fclose(fd);
+}
+
 void resourceLeak_mkstemp(char *template)
 {
     // cppcheck-suppress unreadVariable
@@ -1113,13 +1120,6 @@ void resourceLeak_open2(void)
     // cppcheck-suppress resourceLeak
 }
 
-void resourceLeak_fdopen(const char* fn) // #2767
-{
-  int fi = open(fn, O_RDONLY);
-  FILE* fd = fdopen(fi, "r");
-  fclose(fd);
-}
-
 void noleak(int x, int y, int z)
 {
     DIR *p1 = fdopendir(x);
@@ -1132,12 +1132,6 @@ void noleak(int x, int y, int z)
     close(fd1);
     int fd2 = open("a", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
     close(fd2);
-    /* TODO: add configuration for open/fdopen
-        // #2830
-        int fd = open("path", O_RDONLY);
-        FILE *f = fdopen(fd, "rt");
-        fclose(f);
-     */
 }
 
 
