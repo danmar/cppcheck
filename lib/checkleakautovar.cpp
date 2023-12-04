@@ -962,7 +962,7 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
         while (Token::Match(arg, "%name% .|:: %name%"))
             arg = arg->tokAt(2);
 
-        if (Token::Match(arg, "%var% [-,)] !!.") || Token::Match(arg, "& %var%")) {
+        if (Token::Match(arg, "%var% [-,)] !!.") || Token::Match(arg, "& %var% !!.")) {
             // goto variable
             if (arg->str() == "&")
                 arg = arg->next();
