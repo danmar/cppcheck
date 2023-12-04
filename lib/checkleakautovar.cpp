@@ -1144,9 +1144,7 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
                     if (Token::Match(outparamFunc->next()->astParent(), "%comp%"))
                         continue;
                 } else { // allocation result assigned to variable
-                    const Token* retAssign = alloc->astParent();
-                    while (Token::Match(retAssign, "[&,(]"))
-                        retAssign = retAssign->astParent();
+                    const Token* const retAssign = outparamFunc->next()->astParent();
                     if (Token::simpleMatch(retAssign, "=") && retAssign->astOperand1()->varId()) {
                         bool isRetComp = false;
                         for (const Token* tok2 = ifStart; tok2 != ifEnd; tok2 = tok2->next()) {
