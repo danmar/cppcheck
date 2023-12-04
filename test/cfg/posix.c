@@ -896,7 +896,7 @@ typedef struct {
     int* data;
 } S_memalign;
 
-S* posix_memalign_memleak(size_t n) {
+S_memalign* posix_memalign_memleak(size_t n) {
    S_memalign* s = malloc(sizeof(*s));   
    s->N = n;   
    if (0 != posix_memalign((void**)&s->data, 16, n * sizeof(int))) {
