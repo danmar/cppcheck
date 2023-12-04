@@ -35,6 +35,8 @@ public:
 
 private:
 
+    // TODO: test with C code
+
     void run() override {
         TEST_CASE(findLambdaEndTokenTest);
         TEST_CASE(findLambdaStartTokenTest);
@@ -182,7 +184,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), tokStr1, strlen(tokStr1));
         const Token * const tok2 = Token::findsimplematch(tok1->next(), tokStr2, strlen(tokStr2));
-        return (isSameExpression)(false, false, tok1, tok2, library, false, true, nullptr);
+        return (isSameExpression)(/*cpp*/ true, false, tok1, tok2, library, false, true, nullptr);
     }
 
     void isSameExpressionTest() {
@@ -196,11 +198,11 @@ private:
         ASSERT_EQUALS(false, isSameExpression("x < y;", "x", "y"));
         ASSERT_EQUALS(true,  isSameExpression("(x + 1) < (x + 1);", "+", "+"));
         ASSERT_EQUALS(false, isSameExpression("(x + 1) < (x + 1L);", "+", "+"));
-        ASSERT_EQUALS(true,  isSameExpression("(1 + x) < (x + 1);", "+", "+"));
+        ASSERT_EQUALS(false, isSameExpression("(1 + x) < (x + 1);", "+", "+"));
         ASSERT_EQUALS(false, isSameExpression("(1.0l + x) < (1.0 + x);", "+", "+"));
-        ASSERT_EQUALS(true,  isSameExpression("(0.0 + x) < (x + 0x0p+0);", "+", "+"));
+        ASSERT_EQUALS(false, isSameExpression("(0.0 + x) < (x + 0x0p+0);", "+", "+"));
         ASSERT_EQUALS(true,  isSameExpression("void f() {double y = 1e1; (x + y) < (x + 10.0); } ", "+", "+"));
-        ASSERT_EQUALS(true,  isSameExpression("void f() {double y = 1e1; (x + 10.0) < (y + x); } ", "+", "+"));
+        ASSERT_EQUALS(false, isSameExpression("void f() {double y = 1e1; (x + 10.0) < (y + x); } ", "+", "+"));
         ASSERT_EQUALS(true,  isSameExpression("void f() {double y = 1e1; double z = 10.0; (x + y) < (x + z); } ", "+", "+"));
         ASSERT_EQUALS(true,  isSameExpression("A + A", "A", "A"));
 
@@ -220,7 +222,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), startPattern, strlen(startPattern));
         const Token * const tok2 = Token::findsimplematch(tokenizer.tokens(), endPattern, strlen(endPattern));
-        return (isVariableChanged)(tok1, tok2, 1, false, &settings, true);
+        return (isVariableChanged)(tok1, tok2, 1, false, &settings, /*cpp*/ true);
     }
 
     void isVariableChangedTest() {
@@ -399,7 +401,7 @@ private:
         const Token* const start = Token::findsimplematch(tokenizer.tokens(), startPattern, strlen(startPattern));
         const Token* const end = Token::findsimplematch(start, endPattern, strlen(endPattern));
         const Token* const expr = Token::findsimplematch(tokenizer.tokens(), var, strlen(var));
-        return (findExpressionChanged)(expr, start, end, &settings, true);
+        return (findExpressionChanged)(expr, start, end, &settings, /*cpp*/ true);
     }
 
     void isExpressionChangedTest()
