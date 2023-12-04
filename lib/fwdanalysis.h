@@ -37,7 +37,7 @@ class Library;
  */
 class FwdAnalysis {
 public:
-    FwdAnalysis(const Library &library) : mLibrary(library) {}
+    explicit FwdAnalysis(const Library &library) : mLibrary(library) {}
 
     bool hasOperand(const Token *tok, const Token *lhs) const;
 
