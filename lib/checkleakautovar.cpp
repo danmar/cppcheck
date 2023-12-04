@@ -1123,11 +1123,26 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
                 const Token* const ifEnd = scope->bodyStart->previous();
                 const Token* const ifStart = ifEnd->link();
                 const Token* const alloc = it->second.allocTok;
-                if (precedes(ifStart, alloc) && succeeds(ifEnd, alloc)) {
+                if (precedes(ifStart, alloc) && succeeds(ifEnd, alloc)) { // allocation and check in if
                     int argn{};
                     if (const Token* ftok = getTokenArgumentFunction(alloc, argn))
                         if (Token::Match(ftok->next()->astParent(), "%comp%"))
                             continue;
+                } else { // allocation result assigned to variable
+                    const Token* retAssign = it->second.allocTok->astParent();
+                    while (Token::Match(retAssign, "[&,(]"))
+                        retAssign = retAssign->astParent();
+                    if (Token::simpleMatch(retAssign, "=") && retAssign->astOperand1()->varId()) {
+                        bool isRetComp = false;
+                        for (const Token* tok2 = ifStart; tok2 != ifEnd; tok2 = tok2->next()) {
+                            if (tok2->varId() == retAssign->astOperand1()->varId()) {
+                                isRetComp = true;
+                                break;
+                            }
+                        }
+                        if (isRetComp)
+                            continue;
+                    }
                 }
             }
 
