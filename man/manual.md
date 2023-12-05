@@ -321,7 +321,7 @@ If you can generate a compile database, then it is possible to import that in Cp
 
 In Linux you can use for instance the `bear` (build ear) utility to generate a compile database from arbitrary build tools:
 
-    bear make
+    bear -- make
 
 # Preprocessor Settings
 
