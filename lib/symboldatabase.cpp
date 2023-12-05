@@ -1600,6 +1600,8 @@ namespace {
 
         ExprIdKey key;
         key.parentOp = tok->astParent()->str();
+        key.operand1 = op1 ? op1->exprId() : 0;
+        key.operand2 = op2 ? op2->exprId() : 0;
 
         if (tok->astParent()->isCast() && tok->astParent()->str() == "(") {
             const Token* typeStartToken;
@@ -1618,42 +1620,40 @@ namespace {
             key.parentOp += type;
         }
 
-        const auto& refs1 = followAllReferences(op1);
-        const auto& refs2 = followAllReferences(op2);
-
-        for (int i1 = 0; i1 < 1 + refs1.size(); ++i1) {
-            for (int i2 = 0; i2 < 1 + refs2.size(); ++i2) {
-                key.operand1 = op1 ? (i1 >= refs1.size() ? op1->exprId() : refs1[i1].token->exprId()) : 0;
-                key.operand2 = op2 ? (i2 >= refs2.size() ? op2->exprId() : refs2[i2].token->exprId()) : 0;
-
-                if (key.operand1 > key.operand2 && key.operand2 &&
-                    Token::Match(tok->astParent(), "%or%|%oror%|+|*|&|&&|^|==|!=")) {
-                    // In C++ the order of operands of + might matter
-                    if (!cpp ||
-                        key.parentOp != "+" ||
-                        !tok->astParent()->valueType() ||
-                        tok->astParent()->valueType()->isIntegral() ||
-                        tok->astParent()->valueType()->isFloat() ||
-                        tok->astParent()->valueType()->pointer > 0)
-                        std::swap(key.operand1, key.operand2);
-                }
-
-                const auto it = exprIdMap.find(key);
-                if (it == exprIdMap.end()) {
-                    if (i1 < refs1.size() || i2 < refs2.size())
-                        // try to find another reference
-                        continue;
-                    exprIdMap[key] = id;
-                    tok->astParent()->exprId(id);
-                    ++id;
-                } else {
-                    tok->astParent()->exprId(it->second);
-                }
-                setParentExprId(tok->astParent(), cpp, exprIdMap, id);
-                i1 = 1 + refs1.size();
+        for (const auto& ref: followAllReferences(op1)) {
+            if (ref.token->exprId() != 0) {
+                key.operand1 = ref.token->exprId();
                 break;
             }
         }
+        for (const auto& ref: followAllReferences(op2)) {
+            if (ref.token->exprId() != 0) {
+                key.operand2 = ref.token->exprId();
+                break;
+            }
+        }
+
+        if (key.operand1 > key.operand2 && key.operand2 &&
+            Token::Match(tok->astParent(), "%or%|%oror%|+|*|&|&&|^|==|!=")) {
+            // In C++ the order of operands of + might matter
+            if (!cpp ||
+                key.parentOp != "+" ||
+                !tok->astParent()->valueType() ||
+                tok->astParent()->valueType()->isIntegral() ||
+                tok->astParent()->valueType()->isFloat() ||
+                tok->astParent()->valueType()->pointer > 0)
+                std::swap(key.operand1, key.operand2);
+        }
+
+        const auto it = exprIdMap.find(key);
+        if (it == exprIdMap.end()) {
+            exprIdMap[key] = id;
+            tok->astParent()->exprId(id);
+            ++id;
+        } else {
+            tok->astParent()->exprId(it->second);
+        }
+        setParentExprId(tok->astParent(), cpp, exprIdMap, id);
     }
 }
 
