@@ -1269,7 +1269,10 @@ std::string Token::stringify(const stringifyOptions& options) const
     } else if (options.exprid && mImpl->mExprId != 0) {
         ret += '@';
         ret += (options.idtype ? "expr" : "");
-        ret += std::to_string(mImpl->mExprId);
+        if ((mImpl->mExprId & (1U << efIsUnique)) != 0)
+            ret += "UNIQUE";
+        else
+            ret += std::to_string(mImpl->mExprId);
     }
 
     return ret;
