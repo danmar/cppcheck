@@ -42,6 +42,7 @@ CheckOptions:
     else()
         target_include_directories(cppcheck-gui SYSTEM PRIVATE ${tinyxml2_INCLUDE_DIRS})
     endif()
+    target_include_directories(cppcheck-gui PRIVATE ${PROJECT_SOURCE_DIR}/externals/picojson/)
     if (NOT CMAKE_DISABLE_PRECOMPILE_HEADERS)
         target_precompile_headers(cppcheck-gui PRIVATE precompiled.h)
     endif()
