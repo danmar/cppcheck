@@ -94,6 +94,8 @@
 #include <QVariant>
 #include <Qt>
 
+#include "json.h"
+
 static const QString compile_commands_json("compile_commands.json");
 
 static QString fromNativePath(const QString& p) {
@@ -1005,25 +1007,31 @@ Settings MainWindow::getCppcheckSettings() {
 
             addonFilePath.replace(QChar('\\'), QChar('/'));
 
-            // TODO: use picojson to generate the JSON
-            QString json;
-            json += "{ \"script\":\"" + addonFilePath + "\"";
+            picojson::object obj;
+            obj["script"] = picojson::value(addonFilePath.toStdString());
             if (!pythonCmd.isEmpty())
-                json += ", \"python\":\"" + pythonCmd + "\"";
-            const QString misraFile = fromNativePath(mSettings->value(SETTINGS_MISRA_FILE).toString());
-            if (!isCppcheckPremium() && addon == "misra" && !misraFile.isEmpty()) {
-                QString arg;
-                if (misraFile.endsWith(".pdf", Qt::CaseInsensitive))
-                    arg = "--misra-pdf=" + misraFile;
-                else
-                    arg = "--rule-texts=" + misraFile;
-                json += ", \"args\":[\"" + arg + "\"]";
+                obj["python"] = picojson::value(pythonCmd.toStdString());
+
+            if (!isCppcheckPremium() && addon == "misra") {
+                const QString misraFile = fromNativePath(mSettings->value(SETTINGS_MISRA_FILE).toString());
+                if (!misraFile.isEmpty()) {
+                    QString arg;
+                    if (misraFile.endsWith(".pdf", Qt::CaseInsensitive))
+                        arg = "--misra-pdf=" + misraFile;
+                    else
+                        arg = "--rule-texts=" + misraFile;
+                    obj["args"] = picojson::value(arg.toStdString());
+                }
             }
-            json += " }";
-            result.addons.emplace(json.toStdString());
+            picojson::value json;
+            json.set(std::move(obj));
+            std::string json_str = json.serialize();
+
             AddonInfo addonInfo;
-            addonInfo.getAddonInfo(json.toStdString(), result.exename);
+            addonInfo.getAddonInfo(json_str, result.exename);
             result.addonInfos.emplace_back(std::move(addonInfo));
+
+            result.addons.emplace(std::move(json_str));
         }
 
         if (isCppcheckPremium()) {
