@@ -1621,13 +1621,13 @@ namespace {
         }
 
         for (const auto& ref: followAllReferences(op1)) {
-            if (ref.token->exprId() != 0) {
+            if (ref.token->exprId() != 0) { // cppcheck-suppress useStlAlgorithm
                 key.operand1 = ref.token->exprId();
                 break;
             }
         }
         for (const auto& ref: followAllReferences(op2)) {
-            if (ref.token->exprId() != 0) {
+            if (ref.token->exprId() != 0) { // cppcheck-suppress useStlAlgorithm
                 key.operand2 = ref.token->exprId();
                 break;
             }
