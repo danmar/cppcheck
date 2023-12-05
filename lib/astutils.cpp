@@ -2806,7 +2806,8 @@ Token* findVariableChanged(Token *start, const Token *end, int indirect, const n
     if (depth < 0)
         return start;
     auto getExprTok = memoize([&] {
-        return findExpression(start, exprid);
+        const auto* e = findExpression(start, exprid);
+        return e ? e : start;
     });
     for (Token *tok = start; tok != end; tok = tok->next()) {
         if (isExpressionChangedAt(getExprTok, tok, indirect, exprid, globalvar, settings, cpp, depth))
