@@ -263,7 +263,7 @@ static bool isLocalVarNoAutoDealloc(const Token *varTok, const bool isCpp)
     // non-pod variable
     if (isCpp) {
         // Possibly automatically deallocated memory
-        if (isAutoDealloc(var) && Token::Match(varTok, "%var% = new"))
+        if (isAutoDealloc(var) && Token::Match(varTok, "%var% [=({] new"))
             return false;
         if (!var->isPointer() && !var->typeStartToken()->isStandardType())
             return false;
@@ -328,7 +328,8 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
 
         // check each token
         {
-            const Token * nextTok = checkTokenInsideExpression(tok, varInfo);
+            const bool isInit = Token::Match(tok, "%var% {|(") && tok->variable() && tok == tok->variable()->nameToken();
+            const Token * nextTok = isInit ? nullptr : checkTokenInsideExpression(tok, varInfo);
             if (nextTok) {
                 tok = nextTok;
                 continue;
@@ -337,26 +338,33 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
 
 
         // look for end of statement
-        if (!Token::Match(tok, "[;{},]") || Token::Match(tok->next(), "[;{},]"))
+        const bool isInit = Token::Match(tok->tokAt(-1), "%var% {|(") && tok->tokAt(-1)->variable() && tok->tokAt(-1) == tok->tokAt(-1)->variable()->nameToken();
+        if ((!Token::Match(tok, "[;{},]") || Token::Match(tok->next(), "[;{},]")) && !(isInit && tok->str() == "("))
             continue;
 
         if (Token::Match(tok, "[;{},] %var% ["))
             continue;
 
-        tok = tok->next();
+        if (!isInit)
+            tok = tok->next();
         if (!tok || tok == endToken)
             break;
+
+        if (Token::Match(tok, "%name% (") && isUnevaluated(tok)) {
+            tok = tok->linkAt(1);
+            continue;
+        }
 
         if (Token::Match(tok, "const %type%"))
             tok = tok->tokAt(2);
 
-        while (tok->str() == "(")
+        while (!isInit && tok->str() == "(")
             tok = tok->next();
         while (tok->isUnaryOp("*") && tok->astOperand1()->isUnaryOp("&"))
             tok = tok->astOperand1()->astOperand1();
 
         // parse statement, skip to last member
-        const Token *varTok = tok;
+        const Token* varTok = isInit ? tok->tokAt(-1) : tok;
         while (Token::Match(varTok, "%name% ::|. %name% !!("))
             varTok = varTok->tokAt(2);
 
@@ -381,7 +389,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
         };
 
         // assignment..
-        if (const Token* const tokAssignOp = isAssignment(varTok)) {
+        if (const Token* const tokAssignOp = isInit ? varTok : isAssignment(varTok)) {
 
             if (Token::simpleMatch(tokAssignOp->astOperand1(), "."))
                 continue;

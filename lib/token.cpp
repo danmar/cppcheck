@@ -316,11 +316,13 @@ void Token::swapWithNext()
         std::swap(mFlags, mNext->mFlags);
         std::swap(mImpl, mNext->mImpl);
         if (mImpl->mTemplateSimplifierPointers)
+            // cppcheck-suppress shadowFunction - TODO: fix this
             for (auto *templateSimplifierPointer : *mImpl->mTemplateSimplifierPointers) {
                 templateSimplifierPointer->token(this);
             }
 
         if (mNext->mImpl->mTemplateSimplifierPointers)
+            // cppcheck-suppress shadowFunction - TODO: fix this
             for (auto *templateSimplifierPointer : *mNext->mImpl->mTemplateSimplifierPointers) {
                 templateSimplifierPointer->token(mNext);
             }
@@ -341,6 +343,7 @@ void Token::takeData(Token *fromToken)
     mImpl = fromToken->mImpl;
     fromToken->mImpl = nullptr;
     if (mImpl->mTemplateSimplifierPointers)
+        // cppcheck-suppress shadowFunction - TODO: fix this
         for (auto *templateSimplifierPointer : *mImpl->mTemplateSimplifierPointers) {
             templateSimplifierPointer->token(this);
         }
@@ -636,6 +639,7 @@ bool Token::simpleMatch(const Token *tok, const char pattern[], size_t pattern_l
         return false; // shortcut
     const char *current = pattern;
     const char *end = pattern + pattern_len;
+    // cppcheck-suppress shadowFunction - TODO: fix this
     const char *next = static_cast<const char*>(std::memchr(pattern, ' ', pattern_len));
     if (!next)
         next = end;
@@ -781,6 +785,7 @@ nonneg int Token::getStrLength(const Token *tok)
     assert(tok->mTokType == eString);
 
     int len = 0;
+    // cppcheck-suppress shadowFunction - TODO: fix this
     const std::string str(getStringLiteral(tok->str()));
     std::string::const_iterator it = str.cbegin();
     const std::string::const_iterator end = str.cend();
@@ -808,6 +813,7 @@ nonneg int Token::getStrArraySize(const Token *tok)
 {
     assert(tok != nullptr);
     assert(tok->tokType() == eString);
+    // cppcheck-suppress shadowFunction - TODO: fix this
     const std::string str(getStringLiteral(tok->str()));
     int sizeofstring = 1;
     for (int i = 0; i < (int)str.size(); i++) {
@@ -1110,6 +1116,7 @@ Token* Token::insertToken(const std::string& tokenStr, const std::string& origin
                         tok1 = tok1->previous()->findOpeningBracket();
                     if (tok1 && Token::Match(tok1->tokAt(-3), "%name% :: %name%")) {
                         tok1 = tok1->tokAt(-2);
+                        // cppcheck-suppress shadowFunction - TODO: fix this
                         std::string scope = tok1->strAt(-1);
                         while (Token::Match(tok1->tokAt(-2), ":: %name%")) {
                             scope = tok1->strAt(-3) + " :: " + scope;
@@ -1262,7 +1269,10 @@ std::string Token::stringify(const stringifyOptions& options) const
     } else if (options.exprid && mImpl->mExprId != 0) {
         ret += '@';
         ret += (options.idtype ? "expr" : "");
-        ret += std::to_string(mImpl->mExprId);
+        if ((mImpl->mExprId & (1U << efIsUnique)) != 0)
+            ret += "UNIQUE";
+        else
+            ret += std::to_string(mImpl->mExprId);
     }
 
     return ret;
@@ -1285,6 +1295,7 @@ std::string Token::stringifyList(const stringifyOptions& options, const std::vec
     std::string ret;
 
     unsigned int lineNumber = mImpl->mLineNumber - (options.linenumbers ? 1U : 0U);
+    // cppcheck-suppress shadowFunction - TODO: fix this
     unsigned int fileIndex = options.files ? ~0U : mImpl->mFileIndex;
     std::map<int, unsigned int> lineNumbers;
     for (const Token *tok = this; tok != end; tok = tok->next()) {
@@ -1701,6 +1712,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
 {
     std::string outs;
 
+    // cppcheck-suppress shadowFunction
     int fileIndex = -1;
     int line = 0;
     if (xml)
@@ -1708,6 +1720,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
     else
         outs += "\n\n##Value flow\n";
     for (const Token *tok = this; tok; tok = tok->next()) {
+        // cppcheck-suppress shadowFunction - TODO: fix this
         const auto* const values = tok->mImpl->mValues;
         if (!values)
             continue;
@@ -2246,6 +2259,7 @@ void Token::assignProgressValues(Token *tok)
 
 void Token::assignIndexes()
 {
+    // cppcheck-suppress shadowFunction - TODO: fix this
     int index = (mPrevious ? mPrevious->mImpl->mIndex : 0) + 1;
     for (Token *tok = this; tok; tok = tok->next())
         tok->mImpl->mIndex = index++;
@@ -2283,9 +2297,11 @@ const ::Type* Token::typeOf(const Token* tok, const Token** typeTok)
     if (tok->function())
         return tok->function()->retType;
     if (Token::simpleMatch(tok, "return")) {
+        // cppcheck-suppress shadowFunction - TODO: fix this
         const Scope *scope = tok->scope();
         if (!scope)
             return nullptr;
+        // cppcheck-suppress shadowFunction - TODO: fix this
         const Function *function = scope->function;
         if (!function)
             return nullptr;
@@ -2395,15 +2411,18 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
         return {var->typeStartToken(), var->typeEndToken()->next()};
     }
     if (Token::simpleMatch(tok, "return")) {
+        // cppcheck-suppress shadowFunction - TODO: fix this
         const Scope* scope = tok->scope();
         if (!scope)
             return {};
+        // cppcheck-suppress shadowFunction - TODO: fix this
         const Function* function = scope->function;
         if (!function)
             return {};
         return { function->retDef, function->returnDefEnd() };
     }
     if (tok->previous() && tok->previous()->function()) {
+        // cppcheck-suppress shadowFunction - TODO: fix this
         const Function *function = tok->previous()->function();
         return {function->retDef, function->returnDefEnd()};
     }

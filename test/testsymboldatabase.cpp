@@ -16,13 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "library.h"
-#include "platform.h"
-#include "settings.h"
-#include "symboldatabase.h"
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "library.h"
+#include "platform.h"
+#include "settings.h"
+#include "sourcelocation.h"
+#include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
@@ -76,10 +77,64 @@ private:
         typetok = nullptr;
     }
 
-    const static SymbolDatabase* getSymbolDB_inner(Tokenizer& tokenizer, const char* code, const char* filename) {
+    const SymbolDatabase* getSymbolDB_inner(Tokenizer& tokenizer, const char* code, const char* filename) {
         errout.str("");
         std::istringstream istr(code);
         return tokenizer.tokenize(istr, filename) ? tokenizer.getSymbolDatabase() : nullptr;
+    }
+
+    static const Token* findToken(Tokenizer& tokenizer, const std::string& expr, unsigned int exprline)
+    {
+        for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (Token::simpleMatch(tok, expr.c_str(), expr.size()) && tok->linenr() == exprline) {
+                return tok;
+            }
+        }
+        return nullptr;
+    }
+
+    static std::string asExprIdString(const Token* tok)
+    {
+        return tok->expressionString() + "@" + std::to_string(tok->exprId());
+    }
+
+    std::string testExprIdEqual(const char code[],
+                                const std::string& expr1,
+                                unsigned int exprline1,
+                                const std::string& expr2,
+                                unsigned int exprline2,
+                                SourceLocation loc = SourceLocation::current())
+    {
+        Tokenizer tokenizer(&settings1, this);
+        std::istringstream istr(code);
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), loc.file_name(), loc.line());
+
+        const Token* tok1 = findToken(tokenizer, expr1, exprline1);
+        const Token* tok2 = findToken(tokenizer, expr2, exprline2);
+
+        if (!tok1)
+            return "'" + expr1 + "'" + " not found";
+        if (!tok2)
+            return "'" + expr2 + "'" + " not found";
+        if (tok1->exprId() == 0)
+            return asExprIdString(tok1) + " has not exprId";
+        if (tok2->exprId() == 0)
+            return asExprIdString(tok2) + " has not exprId";
+
+        if (tok1->exprId() != tok2->exprId())
+            return asExprIdString(tok1) + " != " + asExprIdString(tok2);
+
+        return "";
+    }
+    bool testExprIdNotEqual(const char code[],
+                            const std::string& expr1,
+                            unsigned int exprline1,
+                            const std::string& expr2,
+                            unsigned int exprline2,
+                            SourceLocation loc = SourceLocation::current())
+    {
+        std::string result = testExprIdEqual(code, expr1, exprline1, expr2, exprline2, loc);
+        return !result.empty();
     }
 
     static const Scope *findFunctionScopeByToken(const SymbolDatabase * db, const Token *tok) {
@@ -530,6 +585,7 @@ private:
         TEST_CASE(unionWithConstructor);
 
         TEST_CASE(incomplete_type); // #9255 (infinite recursion)
+        TEST_CASE(exprIds);
     }
 
     void array() {
@@ -9999,6 +10055,214 @@ private:
                       "};");
 
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void exprIds()
+    {
+        const char* code;
+
+        code = "int f(int a) {\n"
+               "    return a +\n"
+               "           a;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "a", 2U, "a", 3U));
+
+        code = "int f(int a, int b) {\n"
+               "    return a +\n"
+               "           b;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, "a", 2U, "b", 3U));
+
+        code = "int f(int a) {\n"
+               "    int x = a++;\n"
+               "    int y = a++;\n"
+               "    return x + a;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, "++", 2U, "++", 3U));
+
+        code = "int f(int a) {\n"
+               "    int x = a;\n"
+               "    return x + a;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, "x", 3U, "a", 3U));
+
+        code = "int f(int a) {\n"
+               "    int& x = a;\n"
+               "    return x + a;\n"
+               "}\n";
+        TODO_ASSERT_EQUALS("", "x@2 != a@1", testExprIdEqual(code, "x", 3U, "a", 3U));
+
+        code = "int f(int a) {\n"
+               "    int& x = a;\n"
+               "    return (x + 1) +\n"
+               "           (a + 1);\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "+", 3U, "+", 4U));
+
+        code = "int& g(int& x) { return x; }\n"
+               "int f(int a) {\n"
+               "    return (g(a) + 1) +\n"
+               "           (a + 1);\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "+", 3U, "+", 4U));
+
+        code = "int f(int a, int b) {\n"
+               "    int x = (b-a)-a;\n"
+               "    int y = (b-a)-a;\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "- a ;", 2U, "- a ;", 3U));
+        ASSERT_EQUALS("", testExprIdEqual(code, "- a )", 2U, "- a )", 3U));
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, "- a )", 2U, "- a ;", 3U));
+
+        code = "int f(int a, int b) {\n"
+               "    int x = a-(b-a);\n"
+               "    int y = a-(b-a);\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "- ( b", 2U, "- ( b", 3U));
+        ASSERT_EQUALS("", testExprIdEqual(code, "- a )", 2U, "- a )", 3U));
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, "- a )", 2U, "- ( b", 3U));
+
+        code = "void f(int a, int b) {\n"
+               "    int x = (b+a)+a;\n"
+               "    int y = a+(b+a);\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "+ a ;", 2U, "+ ( b", 3U));
+        ASSERT_EQUALS("", testExprIdEqual(code, "+ a ) +", 2U, "+ a ) ;", 3U));
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, "+ a ;", 2U, "+ a )", 3U));
+
+        code = "void f(int a, int b) {\n"
+               "    int x = (b+a)+a;\n"
+               "    int y = a+(a+b);\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "+ a ;", 2U, "+ ( a", 3U));
+        ASSERT_EQUALS("", testExprIdEqual(code, "+ a ) +", 2U, "+ b ) ;", 3U));
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, "+ a ;", 2U, "+ b", 3U));
+
+        code = "struct A { int x; };\n"
+               "void f(A a, int b) {\n"
+               "    int x = (b-a.x)-a.x;\n"
+               "    int y = (b-a.x)-a.x;\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "- a . x ;", 3U, "- a . x ;", 4U));
+        ASSERT_EQUALS("", testExprIdEqual(code, "- a . x )", 3U, "- a . x )", 4U));
+
+        code = "struct A { int x; };\n"
+               "void f(A a, int b) {\n"
+               "    int x = a.x-(b-a.x);\n"
+               "    int y = a.x-(b-a.x);\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "- ( b", 3U, "- ( b", 4U));
+        ASSERT_EQUALS("", testExprIdEqual(code, "- a . x )", 3U, "- a . x )", 4U));
+
+        code = "struct A { int x; };\n"
+               "void f(A a) {\n"
+               "    int x = a.x;\n"
+               "    int y = a.x;\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, ". x", 3U, ". x", 4U));
+
+        code = "struct A { int x; };\n"
+               "void f(A a, A b) {\n"
+               "    int x = a.x;\n"
+               "    int y = b.x;\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, ". x", 3U, ". x", 4U));
+
+        code = "struct A { int y; };\n"
+               "struct B { A x; }\n"
+               "void f(B a) {\n"
+               "    int x = a.x.y;\n"
+               "    int y = a.x.y;\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, ". x . y", 4U, ". x . y", 5U));
+        ASSERT_EQUALS("", testExprIdEqual(code, ". y", 4U, ". y", 5U));
+
+        code = "struct A { int y; };\n"
+               "struct B { A x; }\n"
+               "void f(B a, B b) {\n"
+               "    int x = a.x.y;\n"
+               "    int y = b.x.y;\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, ". x . y", 4U, ". x . y", 5U));
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, ". y", 4U, ". y", 5U));
+
+        code = "struct A { int g(); };\n"
+               "struct B { A x; }\n"
+               "void f(B a) {\n"
+               "    int x = a.x.g();\n"
+               "    int y = a.x.g();\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, ". x . g ( )", 4U, ". x . g ( )", 5U));
+        ASSERT_EQUALS("", testExprIdEqual(code, ". g ( )", 4U, ". g ( )", 5U));
+
+        code = "struct A { int g(int, int); };\n"
+               "struct B { A x; }\n"
+               "void f(B a, int b, int c) {\n"
+               "    int x = a.x.g(b, c);\n"
+               "    int y = a.x.g(b, c);\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, ". x . g ( b , c )", 4U, ". x . g ( b , c )", 5U));
+        ASSERT_EQUALS("", testExprIdEqual(code, ". g ( b , c )", 4U, ". g ( b , c )", 5U));
+
+        code = "int g();\n"
+               "void f() {\n"
+               "    int x = g();\n"
+               "    int y = g();\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "(", 3U, "(", 4U));
+
+        code = "struct A { int g(); };\n"
+               "void f() {\n"
+               "    int x = A::g();\n"
+               "    int y = A::g();\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "(", 3U, "(", 4U));
+
+        code = "int g();\n"
+               "void f(int a, int b) {\n"
+               "    int x = g(a, b);\n"
+               "    int y = g(a, b);\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "(", 3U, "(", 4U));
+
+        code = "struct A { int g(); };\n"
+               "void f() {\n"
+               "    int x = A::g(a, b);\n"
+               "    int y = A::g(a, b);\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "(", 3U, "(", 4U));
+
+        code = "int g();\n"
+               "void f(int a, int b) {\n"
+               "    int x = g(a, b);\n"
+               "    int y = g(b, a);\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, "(", 3U, "(", 4U));
+
+        code = "struct A { int g(); };\n"
+               "void f() {\n"
+               "    int x = A::g(a, b);\n"
+               "    int y = A::g(b, a);\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, "(", 3U, "(", 4U));
     }
 };
 

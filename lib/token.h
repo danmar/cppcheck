@@ -907,10 +907,7 @@ public:
 
     bool isUniqueExprId() const
     {
-        if (mImpl->mExprId > 0) {
-            return (mImpl->mExprId & (1 << efIsUnique)) != 0;
-        }
-        return false;
+        return (mImpl->mExprId & (1 << efIsUnique)) != 0;
     }
 
     /**

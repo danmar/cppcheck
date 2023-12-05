@@ -111,7 +111,7 @@ protected:
     void printHelp() const;
 
 private:
-    bool isCppcheckPremium() const;
+    static bool isCppcheckPremium();
 
     template<typename T>
     bool parseNumberArg(const char* const arg, std::size_t offset, T& num, bool mustBePositive = false)
@@ -149,6 +149,8 @@ private:
      * @return Returns true if successful
      */
     bool loadAddons(Settings& settings);
+
+    bool loadCppcheckCfg();
 
     CmdLineLogger &mLogger;
 

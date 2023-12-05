@@ -99,7 +99,7 @@ private:
 public:
     Settings();
 
-    void loadCppcheckCfg();
+    std::string loadCppcheckCfg();
 
     /** @brief addons, either filename of python/json file or json data */
     std::unordered_set<std::string> addons;

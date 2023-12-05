@@ -22,6 +22,7 @@
 #include "cppcheckexecutor.h"
 #include "errortypes.h"
 #include "helpers.h"
+#include "path.h"
 #include "platform.h"
 #include "redirect.h"
 #include "settings.h"
@@ -101,7 +102,6 @@ private:
 
     void teardownTestInternal() override {
         logger->destroy();
-        // TODO: verify that the redirect output is empty
     }
 
     // add overload so the enums can be compared without a cast
@@ -119,9 +119,13 @@ private:
     void run() override {
         TEST_CASE(nooptions);
         TEST_CASE(helpshort);
+        TEST_CASE(helpshortExclusive);
         TEST_CASE(helplong);
+        TEST_CASE(helplongExclusive);
         TEST_CASE(version);
         TEST_CASE(versionWithCfg);
+        TEST_CASE(versionExclusive);
+        TEST_CASE(versionWithInvalidCfg);
         TEST_CASE(onefile);
         TEST_CASE(onepath);
         TEST_CASE(optionwithoutfile);
@@ -255,6 +259,7 @@ private:
         TEST_CASE(xmlverunknown);
         TEST_CASE(xmlverinvalid);
         TEST_CASE(doc);
+        TEST_CASE(docExclusive);
         TEST_CASE(showtimeFile);
         TEST_CASE(showtimeFileTotal);
         TEST_CASE(showtimeTop5);
@@ -264,6 +269,9 @@ private:
         TEST_CASE(showtimeEmpty);
         TEST_CASE(showtimeInvalid);
         TEST_CASE(errorlist);
+        TEST_CASE(errorlistWithCfg);
+        TEST_CASE(errorlistExclusive);
+        TEST_CASE(errorlistWithInvalidCfg);
         TEST_CASE(ignorepathsnopath);
 #if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
         TEST_CASE(exceptionhandling);
@@ -355,6 +363,8 @@ private:
         TEST_CASE(cppcheckBuildDirExistent);
         TEST_CASE(cppcheckBuildDirNonExistent);
         TEST_CASE(cppcheckBuildDirEmpty);
+
+        TEST_CASE(invalidCppcheckCfg);
     }
 
     void nooptions() {
@@ -362,7 +372,6 @@ private:
         const char * const argv[] = {"cppcheck"};
         ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(1, argv));
         ASSERT(startsWith(logger->str(), "Cppcheck - A tool for static C/C++ code analysis"));
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void helpshort() {
@@ -370,7 +379,13 @@ private:
         const char * const argv[] = {"cppcheck", "-h"};
         ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
         ASSERT(startsWith(logger->str(), "Cppcheck - A tool for static C/C++ code analysis"));
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void helpshortExclusive() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--library=missing", "-h"};
+        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
+        ASSERT(startsWith(logger->str(), "Cppcheck - A tool for static C/C++ code analysis"));
     }
 
     void helplong() {
@@ -378,7 +393,13 @@ private:
         const char * const argv[] = {"cppcheck", "--help"};
         ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
         ASSERT(startsWith(logger->str(), "Cppcheck - A tool for static C/C++ code analysis"));
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void helplongExclusive() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--library=missing", "--help"};
+        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
+        ASSERT(startsWith(logger->str(), "Cppcheck - A tool for static C/C++ code analysis"));
     }
 
     void version() {
@@ -386,12 +407,11 @@ private:
         const char * const argv[] = {"cppcheck", "--version"};
         ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("Cppcheck 2.13 dev\n", logger->str());
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void versionWithCfg() {
         REDIRECT;
-        ScopedFile file("cppcheck.cfg",
+        ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
                         "{\n"
                         "\"productName\": \"The Product\""
                         "}\n");
@@ -399,10 +419,25 @@ private:
         ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
         // TODO: somehow the config is not loaded on some systems
         (void)logger->str(); //ASSERT_EQUALS("The Product\n", logger->str()); // TODO: include version?
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
-    // TODO: test extraVersion
+    // TODO: test --version with extraVersion
+
+    void versionExclusive() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--library=missing", "--version"};
+        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("Cppcheck 2.13 dev\n", logger->str());
+    }
+
+    void versionWithInvalidCfg() {
+        REDIRECT;
+        ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
+                        "{\n");
+        const char * const argv[] = {"cppcheck", "--version"};
+        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS("cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 1 near: \n", logger->str());
+    }
 
     void onefile() {
         REDIRECT;
@@ -410,7 +445,6 @@ private:
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS(1, (int)parser->getPathNames().size());
         ASSERT_EQUALS("file.cpp", parser->getPathNames().at(0));
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void onepath() {
@@ -419,7 +453,6 @@ private:
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS(1, (int)parser->getPathNames().size());
         ASSERT_EQUALS("src", parser->getPathNames().at(0));
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void optionwithoutfile() {
@@ -428,7 +461,6 @@ private:
         ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS(0, (int)parser->getPathNames().size());
         ASSERT_EQUALS("cppcheck: error: no C or C++ source files found.\n", logger->str());
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void verboseshort() {
@@ -437,7 +469,6 @@ private:
         settings->verbose = false;
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->verbose);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void verboselong() {
@@ -446,7 +477,6 @@ private:
         settings->verbose = false;
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->verbose);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void debugSimplified() {
@@ -455,7 +485,6 @@ private:
         settings->debugSimplified = false;
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->debugSimplified);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void debugwarnings() {
@@ -464,7 +493,6 @@ private:
         settings->debugwarnings = false;
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->debugwarnings);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void forceshort() {
@@ -473,7 +501,6 @@ private:
         settings->force = false;
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->force);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void forcelong() {
@@ -482,7 +509,6 @@ private:
         settings->force = false;
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->force);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void relativePaths1() {
@@ -491,7 +517,6 @@ private:
         const char * const argv[] = {"cppcheck", "-rp", "file.cpp"};
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->relativePaths);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void relativePaths2() {
@@ -500,7 +525,6 @@ private:
         const char * const argv[] = {"cppcheck", "--relative-paths", "file.cpp"};
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->relativePaths);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void relativePaths3() {
@@ -513,7 +537,6 @@ private:
         ASSERT_EQUALS(2, settings->basePaths.size());
         ASSERT_EQUALS("C:/foo", settings->basePaths[0]);
         ASSERT_EQUALS("C:/bar", settings->basePaths[1]);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void relativePaths4() {
@@ -527,7 +550,6 @@ private:
         ASSERT_EQUALS(2, settings->basePaths.size());
         ASSERT_EQUALS("C:/foo", settings->basePaths[0]);
         ASSERT_EQUALS("C:/bar", settings->basePaths[1]);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void quietshort() {
@@ -536,7 +558,6 @@ private:
         settings->quiet = false;
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->quiet);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void quietlong() {
@@ -545,7 +566,6 @@ private:
         settings->quiet = false;
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->quiet);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void defines_noarg() {
@@ -578,7 +598,6 @@ private:
         settings->userDefines.clear();
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("_WIN32=1", settings->userDefines);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void defines2() {
@@ -587,7 +606,6 @@ private:
         settings->userDefines.clear();
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("_WIN32=1;NODEBUG=1", settings->userDefines);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void defines3() {
@@ -596,7 +614,6 @@ private:
         settings->userDefines.clear();
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("DEBUG=1", settings->userDefines);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void defines4() {
@@ -605,7 +622,6 @@ private:
         settings->userDefines.clear();
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("DEBUG=", settings->userDefines);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void enforceLanguage1() {
@@ -1574,7 +1590,13 @@ private:
         const char * const argv[] = {"cppcheck", "--doc"};
         ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
         ASSERT(startsWith(logger->str(), "## "));
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void docExclusive() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--library=missing", "--doc"};
+        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
+        ASSERT(startsWith(logger->str(), "## "));
     }
 
     void showtimeSummary() {
@@ -1653,11 +1675,39 @@ private:
         const char * const argv[] = {"cppcheck", "--errorlist"};
         ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
-        ASSERT(startsWith(GET_REDIRECT_OUTPUT, "<?xml"));
-        ASSERT(endsWith(GET_REDIRECT_OUTPUT, "</results>\n"));
+        const std::string errout_s = GET_REDIRECT_OUTPUT;
+        ASSERT(startsWith(errout_s, ErrorMessage::getXMLHeader("")));
+        ASSERT(endsWith(errout_s, "</results>\n"));
     }
 
-    // TODO: test --errorlist with product name
+    void errorlistWithCfg() {
+        REDIRECT;
+        ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
+                        R"({"productName": "The Product"}\n)");
+        const char * const argv[] = {"cppcheck", "--errorlist"};
+        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
+        ASSERT(startsWith(GET_REDIRECT_OUTPUT, ErrorMessage::getXMLHeader("The Product")));
+    }
+
+    void errorlistExclusive() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--library=missing", "--errorlist"};
+        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
+        const std::string errout_s = GET_REDIRECT_OUTPUT;
+        ASSERT(startsWith(errout_s, ErrorMessage::getXMLHeader("")));
+        ASSERT(endsWith(errout_s, "</results>\n"));
+    }
+
+    void errorlistWithInvalidCfg() {
+        REDIRECT;
+        ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
+                        "{\n");
+        const char * const argv[] = {"cppcheck", "--errorlist"};
+        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS("cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 1 near: \n", logger->str());
+    }
 
     void ignorepathsnopath() {
         REDIRECT;
@@ -1918,7 +1968,6 @@ private:
         settings->typedefMaxTime = 0;
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(12, settings->typedefMaxTime);
-        ASSERT_EQUALS("", logger->str());
     }
 
     void typedefMaxTimeInvalid() {
@@ -1994,7 +2043,6 @@ private:
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, settings->addons.size());
         ASSERT_EQUALS("misra", *settings->addons.cbegin());
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void addonMissing() {
@@ -2005,7 +2053,6 @@ private:
         ASSERT_EQUALS(1, settings->addons.size());
         ASSERT_EQUALS("misra2", *settings->addons.cbegin());
         ASSERT_EQUALS("Did not find addon misra2.py\n", logger->str());
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void signedChar() {
@@ -2014,7 +2061,6 @@ private:
         settings->platform.defaultSign = '\0';
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS('s', settings->platform.defaultSign);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void signedChar2() {
@@ -2023,7 +2069,6 @@ private:
         settings->platform.defaultSign = '\0';
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS('s', settings->platform.defaultSign);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void unsignedChar() {
@@ -2032,7 +2077,6 @@ private:
         settings->platform.defaultSign = '\0';
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS('u', settings->platform.defaultSign);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void unsignedChar2() {
@@ -2041,7 +2085,6 @@ private:
         settings->platform.defaultSign = '\0';
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS('u', settings->platform.defaultSign);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void signedCharUnsignedChar() {
@@ -2050,7 +2093,6 @@ private:
         settings->platform.defaultSign = '\0';
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS('u', settings->platform.defaultSign);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
 #ifdef HAVE_RULES
@@ -2124,7 +2166,6 @@ private:
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, settings->libraries.size());
         ASSERT_EQUALS("posix", *settings->libraries.cbegin());
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void libraryMissing() {
@@ -2135,7 +2176,6 @@ private:
         ASSERT_EQUALS(1, settings->libraries.size());
         ASSERT_EQUALS("posix2", *settings->libraries.cbegin());
         ASSERT_EQUALS("cppcheck: Failed to load library configuration file 'posix2'. File not found\n", logger->str());
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void ignorepaths1() {
@@ -2262,6 +2302,15 @@ private:
         const char * const argv[] = {"cppcheck", "--cppcheck-build-dir="};
         ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: Directory '' specified by --cppcheck-build-dir argument has to be existent.\n", logger->str());
+    }
+
+    void invalidCppcheckCfg() {
+        REDIRECT;
+        ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
+                        "{\n");
+        const char * const argv[] = {"cppcheck", "test.cpp"};
+        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS("cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 1 near: \n", logger->str());
     }
 };
 

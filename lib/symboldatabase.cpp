@@ -1571,16 +1571,101 @@ static std::string getIncompleteNameID(const Token* tok)
     return result + tok->expressionString();
 }
 
+namespace {
+    struct ExprIdKey {
+        std::string parentOp;
+        nonneg int operand1;
+        nonneg int operand2;
+        bool operator<(const ExprIdKey& k) const {
+            return std::tie(parentOp, operand1, operand2) < std::tie(k.parentOp, k.operand1, k.operand2);
+        }
+    };
+    using ExprIdMap = std::map<ExprIdKey, nonneg int>;
+    void setParentExprId(Token* tok, bool cpp, ExprIdMap& exprIdMap, nonneg int &id) {
+        if (!tok->astParent() || tok->astParent()->isControlFlowKeyword())
+            return;
+        const Token* op1 = tok->astParent()->astOperand1();
+        if (op1 && op1->exprId() == 0)
+            return;
+        const Token* op2 = tok->astParent()->astOperand2();
+        if (op2 && op2->exprId() == 0)
+            return;
+
+        if (tok->astParent()->isExpandedMacro() || Token::Match(tok->astParent(), "++|--")) {
+            tok->astParent()->exprId(id);
+            ++id;
+            setParentExprId(tok->astParent(), cpp, exprIdMap, id);
+            return;
+        }
+
+        ExprIdKey key;
+        key.parentOp = tok->astParent()->str();
+        key.operand1 = op1 ? op1->exprId() : 0;
+        key.operand2 = op2 ? op2->exprId() : 0;
+
+        if (tok->astParent()->isCast() && tok->astParent()->str() == "(") {
+            const Token* typeStartToken;
+            const Token* typeEndToken;
+            if (tok->astParent()->astOperand2()) {
+                typeStartToken = tok->astParent()->astOperand1();
+                typeEndToken = tok;
+            } else {
+                typeStartToken = tok->astParent()->next();
+                typeEndToken = tok->astParent()->link();
+            }
+            std::string type;
+            for (const Token* t = typeStartToken; t != typeEndToken; t = t->next()) {
+                type += " " + t->str();
+            }
+            key.parentOp += type;
+        }
+
+        for (const auto& ref: followAllReferences(op1)) {
+            if (ref.token->exprId() != 0) { // cppcheck-suppress useStlAlgorithm
+                key.operand1 = ref.token->exprId();
+                break;
+            }
+        }
+        for (const auto& ref: followAllReferences(op2)) {
+            if (ref.token->exprId() != 0) { // cppcheck-suppress useStlAlgorithm
+                key.operand2 = ref.token->exprId();
+                break;
+            }
+        }
+
+        if (key.operand1 > key.operand2 && key.operand2 &&
+            Token::Match(tok->astParent(), "%or%|%oror%|+|*|&|&&|^|==|!=")) {
+            // In C++ the order of operands of + might matter
+            if (!cpp ||
+                key.parentOp != "+" ||
+                !tok->astParent()->valueType() ||
+                tok->astParent()->valueType()->isIntegral() ||
+                tok->astParent()->valueType()->isFloat() ||
+                tok->astParent()->valueType()->pointer > 0)
+                std::swap(key.operand1, key.operand2);
+        }
+
+        const auto it = exprIdMap.find(key);
+        if (it == exprIdMap.end()) {
+            exprIdMap[key] = id;
+            tok->astParent()->exprId(id);
+            ++id;
+        } else {
+            tok->astParent()->exprId(it->second);
+        }
+        setParentExprId(tok->astParent(), cpp, exprIdMap, id);
+    }
+}
+
 void SymbolDatabase::createSymbolDatabaseExprIds()
 {
-    nonneg int base = 0;
     // Find highest varId
-    for (const Variable *var : mVariableList) {
-        if (!var)
-            continue;
-        base = std::max<MathLib::bigint>(base, var->declarationId());
+    nonneg int maximumVarId = 0;
+    for (const Token* tok = mTokenizer.list.front(); tok; tok = tok->next()) {
+        if (tok->varId() > maximumVarId)
+            maximumVarId = tok->varId();
     }
-    nonneg int id = base + 1;
+    nonneg int id = maximumVarId + 1;
     // Find incomplete vars that are used in constant context
     std::unordered_map<std::string, nonneg int> unknownConstantIds;
     const Token* inConstExpr = nullptr;
@@ -1611,7 +1696,6 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
     });
 
     for (const Scope * scope : exprScopes) {
-        nonneg int thisId = 0;
         std::unordered_map<std::string, std::vector<Token*>> exprs;
 
         std::unordered_map<std::string, nonneg int> unknownIds;
@@ -1638,62 +1722,65 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
         }
 
         // Assign IDs
+        ExprIdMap exprIdMap;
+        std::map<std::string, nonneg int> baseIds;
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->varId() > 0) {
                 tok->exprId(tok->varId());
-            } else if (isExpression(tok)) {
-                exprs[tok->str()].push_back(tok);
-                tok->exprId(id++);
-
-                if (id == std::numeric_limits<nonneg int>::max() / 4) {
-                    throw InternalError(nullptr, "Ran out of expression ids.", InternalError::INTERNAL);
-                }
-            } else if (isCPP() && Token::simpleMatch(tok, "this")) {
-                if (thisId == 0)
-                    thisId = id++;
-                tok->exprId(thisId);
-            }
-        }
-
-        // Apply CSE
-        for (const auto& p:exprs) {
-            const std::vector<Token*>& tokens = p.second;
-            const std::size_t N = tokens.size();
-            for (std::size_t i = 0; i < N; ++i) {
-                Token* const tok1 = tokens[i];
-                for (std::size_t j = i + 1; j < N; ++j) {
-                    Token* const tok2 = tokens[j];
-                    if (tok1->exprId() == tok2->exprId())
-                        continue;
-                    if (!isSameExpression(isCPP(), true, tok1, tok2, mSettings.library, false, false))
-                        continue;
-                    nonneg int const cid = std::min(tok1->exprId(), tok2->exprId());
-                    tok1->exprId(cid);
-                    tok2->exprId(cid);
-                }
-            }
-        }
-        // Mark expressions that are unique
-        std::unordered_map<nonneg int, Token*> exprMap;
-        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
-            if (tok->exprId() == 0)
-                continue;
-            auto p = exprMap.emplace(tok->exprId(), tok);
-            // Already exists so set it to null
-            if (!p.second) {
-                p.first->second = nullptr;
-            }
-        }
-        for (const auto& p : exprMap) {
-            if (!p.second)
-                continue;
-            if (p.second->variable()) {
-                const Variable* var = p.second->variable();
-                if (var->nameToken() != p.second)
+                if (tok->astParent() && tok->astParent()->exprId() == 0)
+                    setParentExprId(tok, mTokenizer.isCPP(), exprIdMap, id);
+            } else if (tok->astParent() && !tok->astOperand1() && !tok->astOperand2()) {
+                if (tok->tokType() == Token::Type::eBracket)
                     continue;
+                if (tok->astParent()->isAssignmentOp())
+                    continue;
+                if (tok->isControlFlowKeyword())
+                    continue;
+
+                if (Token::Match(tok, "%name% <") && tok->next()->link()) {
+                    tok->exprId(id);
+                    ++id;
+                } else {
+                    const auto it = baseIds.find(tok->str());
+                    if (it != baseIds.end()) {
+                        tok->exprId(it->second);
+                    } else {
+                        baseIds[tok->str()] = id;
+                        tok->exprId(id);
+                        ++id;
+                    }
+                }
+
+                setParentExprId(tok, mTokenizer.isCPP(), exprIdMap, id);
             }
-            p.second->setUniqueExprId();
         }
+        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+            if (tok->varId() == 0 && tok->exprId() > 0 && tok->astParent() && !tok->astOperand1() && !tok->astOperand2()) {
+                if (tok->isNumber() || tok->isKeyword() || Token::Match(tok->astParent(), ".|::") ||
+                    (Token::simpleMatch(tok->astParent(), "(") && precedes(tok, tok->astParent())))
+                    tok->exprId(0);
+            }
+        }
+    }
+
+    // Mark expressions that are unique
+    std::vector<std::pair<Token*, int>> uniqueExprId(id);
+    for (Token* tok = const_cast<Token*>(mTokenizer.list.front()); tok; tok = tok->next()) {
+        const auto id2 = tok->exprId();
+        if (id2 == 0 || id2 <= maximumVarId)
+            continue;
+        uniqueExprId[id2].first = tok;
+        uniqueExprId[id2].second++;
+    }
+    for (const auto& p : uniqueExprId) {
+        if (!p.first || p.second != 1)
+            continue;
+        if (p.first->variable()) {
+            const Variable* var = p.first->variable();
+            if (var->nameToken() != p.first)
+                continue;
+        }
+        p.first->setUniqueExprId();
     }
 }
 
@@ -2364,6 +2451,7 @@ const Type* Variable::smartPointerType() const
     while (Token::Match(typeTok, "%name%|::"))
         typeTok = typeTok->next();
     if (Token::Match(typeTok, "< %name% >")) {
+        // cppcheck-suppress shadowFunction - TODO: fix this
         const Scope* scope = typeTok->scope();
         const Type* ptrType{};
         while (scope && !ptrType) {

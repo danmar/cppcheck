@@ -1947,7 +1947,7 @@ void Tokenizer::simplifyTypedefCpp()
                     tok2->str(typeStart->str());
 
                     // restore qualification if it was removed
-                    if (typeStart->str() == "struct" || structRemoved) {
+                    if (Token::Match(typeStart, "class|struct|union") || structRemoved) {
                         if (structRemoved)
                             tok2 = tok2->previous();
 
