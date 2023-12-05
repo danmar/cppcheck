@@ -896,15 +896,15 @@ typedef struct {
     int* data;
 } S_memalign;
 
-S_memalign* posix_memalign_memleak(size_t n) {
-   S_memalign* s = malloc(sizeof(*s));   
-   s->N = n;   
-   if (0 != posix_memalign((void**)&s->data, 16, n * sizeof(int))) {
-       free(s);
-       return NULL;
-   }
-   memset(s->data, 0, n * sizeof(int));
-   return s;
+S_memalign* posix_memalign_memleak(size_t n) { // #12248
+    S_memalign* s = malloc(sizeof(*s));   
+    s->N = n;   
+    if (0 != posix_memalign((void**)&s->data, 16, n * sizeof(int))) {
+        free(s);
+        return NULL;
+    }
+    memset(s->data, 0, n * sizeof(int));
+    return s;
 }
 
 ssize_t nullPointer_send(int socket, const void *buf, size_t len, int flags)
