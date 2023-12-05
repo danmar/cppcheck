@@ -104,7 +104,7 @@ private:
             Settings s;
             ScopedFile file("cppcheck.cfg",
                             "{\n");
-            ASSERT_EQUALS("not a valid JSON - syntax error at line 1 near: ", s.loadCppcheckCfg());
+            ASSERT_EQUALS("not a valid JSON - syntax error at line 2 near: ", s.loadCppcheckCfg());
         }
         {
             Settings s;
