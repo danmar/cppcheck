@@ -1732,7 +1732,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
             } else if (tok->astParent() && !tok->astOperand1() && !tok->astOperand2()) {
                 if (tok->tokType() == Token::Type::eBracket)
                     continue;
-                if (tok->astParent()->isAssignmentOp())
+                if (tok->astParent()->str() == "=")
                     continue;
                 if (tok->isControlFlowKeyword())
                     continue;
