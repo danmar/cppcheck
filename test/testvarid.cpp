@@ -3959,7 +3959,7 @@ private:
     }
 
     void exprid8() {
-        const char code[] = "void f() {\n"
+        const char code[] = "void f() {\n" // #12249
                             "    std::string s;\n"
                             "    (((s += \"--\") += std::string()) += \"=\");\n"
                             "}\n";
