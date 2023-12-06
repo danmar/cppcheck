@@ -398,6 +398,17 @@ void memleak_asprintf7(const char* fmt, const int arg) {
         return;
 }
 
+void memleak_asprintf8(const char *fmt, const int arg) // #12204
+{
+    char* ptr;
+    int ret = asprintf(&ptr, fmt, arg);
+    if (-1 == ret) {
+        return;
+    }
+    printf("%s", ptr);
+    free(ptr);
+}
+
 void memleak_xmalloc()
 {
     char *p = (char*)xmalloc(10);
