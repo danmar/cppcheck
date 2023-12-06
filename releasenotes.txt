@@ -33,3 +33,4 @@ Other:
 - fixed CMake build with UBSAN and GCC
 - Added command-line options "--fsigned-char" and "--funsigned-char" to control the signess of the "char" type. This overrides previously specified "--platform" options and is overrides by following ones.
 - An error is now reported when the "cppcheck.cfg" is invalid. The CLI version will also exit with a failure in that case.
+- Fixed loading of addons from "cppcheck.cfg" in the GUI application.
