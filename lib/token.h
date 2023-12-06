@@ -212,18 +212,14 @@ public:
      * would return next from that one.
      */
     const Token *tokAt(int index) const;
-    Token *tokAt(int index) {
-        return const_cast<Token *>(const_cast<const Token *>(this)->tokAt(index));
-    }
+    Token *tokAt(int index);
 
     /**
      * @return the link to the token in given index, related to this token.
      * For example index 1 would return the link to next token.
      */
     const Token *linkAt(int index) const;
-    Token *linkAt(int index) {
-        return const_cast<Token *>(const_cast<const Token *>(this)->linkAt(index));
-    }
+    Token *linkAt(int index);
 
     /**
      * @return String of the token in given index, related to this token.
@@ -780,23 +776,15 @@ public:
     static Token *findsimplematch(Token * const startTok, const char (&pattern)[count]) {
         return findsimplematch(startTok, pattern, count-1);
     }
-    static Token *findsimplematch(Token * const startTok, const char pattern[], size_t pattern_len) {
-        return const_cast<Token *>(findsimplematch(const_cast<const Token *>(startTok), pattern, pattern_len));
-    }
+    static Token *findsimplematch(Token * const startTok, const char pattern[], size_t pattern_len);
     template<size_t count>
     static Token *findsimplematch(Token * const startTok, const char (&pattern)[count], const Token * const end) {
         return findsimplematch(startTok, pattern, count-1, end);
     }
-    static Token *findsimplematch(Token * const startTok, const char pattern[], size_t pattern_len, const Token * const end) {
-        return const_cast<Token *>(findsimplematch(const_cast<const Token *>(startTok), pattern, pattern_len, end));
-    }
+    static Token *findsimplematch(Token * const startTok, const char pattern[], size_t pattern_len, const Token * const end);
 
-    static Token *findmatch(Token * const startTok, const char pattern[], const nonneg int varId = 0) {
-        return const_cast<Token *>(findmatch(const_cast<const Token *>(startTok), pattern, varId));
-    }
-    static Token *findmatch(Token * const startTok, const char pattern[], const Token * const end, const nonneg int varId = 0) {
-        return const_cast<Token *>(findmatch(const_cast<const Token *>(startTok), pattern, end, varId));
-    }
+    static Token *findmatch(Token * const startTok, const char pattern[], const nonneg int varId = 0);
+    static Token *findmatch(Token * const startTok, const char pattern[], const Token * const end, const nonneg int varId = 0);
 
 private:
     /**
@@ -1170,9 +1158,7 @@ public:
      * Returns 0, if there is no next argument.
      */
     const Token* nextArgument() const;
-    Token *nextArgument() {
-        return const_cast<Token *>(const_cast<const Token *>(this)->nextArgument());
-    }
+    Token *nextArgument();
 
     /**
      * @return the first token of the next argument. Does only work on argument

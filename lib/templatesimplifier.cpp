@@ -554,12 +554,8 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
     return 0;
 }
 
-const Token *TemplateSimplifier::findTemplateDeclarationEnd(const Token *tok)
-{
-    return const_cast<const Token *>(findTemplateDeclarationEnd(const_cast<Token *>(tok)));
-}
-
-Token *TemplateSimplifier::findTemplateDeclarationEnd(Token *tok)
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+static T *findTemplateDeclarationEndImpl(T *tok)
 {
     if (Token::simpleMatch(tok, "template <")) {
         tok = tok->next()->findClosingBracket();
@@ -570,7 +566,7 @@ Token *TemplateSimplifier::findTemplateDeclarationEnd(Token *tok)
     if (!tok)
         return nullptr;
 
-    Token * tok2 = tok;
+    T * tok2 = tok;
     bool in_init = false;
     while (tok2 && !Token::Match(tok2, ";|{")) {
         if (tok2->str() == "<")
@@ -597,6 +593,16 @@ Token *TemplateSimplifier::findTemplateDeclarationEnd(Token *tok)
         tok = nullptr;
 
     return tok;
+}
+
+Token *TemplateSimplifier::findTemplateDeclarationEnd(Token *tok)
+{
+    return findTemplateDeclarationEndImpl(tok);
+}
+
+const Token *TemplateSimplifier::findTemplateDeclarationEnd(const Token *tok)
+{
+    return findTemplateDeclarationEndImpl(tok);
 }
 
 void TemplateSimplifier::eraseTokens(Token *begin, const Token *end)

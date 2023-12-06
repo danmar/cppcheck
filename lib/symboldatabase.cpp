@@ -6030,47 +6030,59 @@ const Scope *SymbolDatabase::findScopeByName(const std::string& name) const
 
 //---------------------------------------------------------------------------
 
-const Scope *Scope::findRecordInNestedList(const std::string & name, bool isC) const
+template<class S, class T, REQUIRES("S must be a Scope class", std::is_convertible<S*, const Scope*> ), REQUIRES("T must be a Type class", std::is_convertible<T*, const Type*> )>
+S* findRecordInNestedListImpl(S& thisScope, const std::string & name, bool isC)
 {
-    for (const Scope* scope: nestedList) {
-        if (scope->className == name && scope->type != eFunction)
+    for (S* scope: thisScope.nestedList) {
+        if (scope->className == name && scope->type != Scope::eFunction)
             return scope;
         if (isC) {
-            const Scope* nestedScope = scope->findRecordInNestedList(name, isC);
+            S* nestedScope = scope->findRecordInNestedList(name, isC);
             if (nestedScope)
                 return nestedScope;
         }
     }
 
-    const Type * nested_type = findType(name);
+    T * nested_type = thisScope.findType(name);
 
     if (nested_type) {
         if (nested_type->isTypeAlias()) {
             if (nested_type->typeStart == nested_type->typeEnd)
-                return findRecordInNestedList(nested_type->typeStart->str());
+                return thisScope.findRecordInNestedList(nested_type->typeStart->str()); // TODO: pass isC?
         } else
-            return nested_type->classScope;
+            return const_cast<S*>(nested_type->classScope);
     }
 
     return nullptr;
 }
 
+const Scope* Scope::findRecordInNestedList(const std::string & name, bool isC) const
+{
+    return findRecordInNestedListImpl<const Scope, const Type>(*this, name, isC);
+}
+
+Scope* Scope::findRecordInNestedList(const std::string & name, bool isC)
+{
+    return findRecordInNestedListImpl<Scope, Type>(*this, name, isC);
+}
+
 //---------------------------------------------------------------------------
 
-const Type* Scope::findType(const std::string & name) const
+template<class S, class T, REQUIRES("S must be a Scope class", std::is_convertible<S*, const Scope*> ), REQUIRES("T must be a Type class", std::is_convertible<T*, const Type*> )>
+T* findTypeImpl(S& thisScope, const std::string & name)
 {
-    auto it = definedTypesMap.find(name);
+    auto it = thisScope.definedTypesMap.find(name);
 
     // Type was found
-    if (definedTypesMap.end() != it)
+    if (thisScope.definedTypesMap.end() != it)
         return it->second;
 
     // is type defined in anonymous namespace..
-    it = definedTypesMap.find(emptyString);
-    if (it != definedTypesMap.end()) {
-        for (const Scope *scope : nestedList) {
-            if (scope->className.empty() && (scope->type == eNamespace || scope->isClassOrStructOrUnion())) {
-                const Type *t = scope->findType(name);
+    it = thisScope.definedTypesMap.find(emptyString);
+    if (it != thisScope.definedTypesMap.end()) {
+        for (S *scope : thisScope.nestedList) {
+            if (scope->className.empty() && (scope->type == thisScope.eNamespace || scope->isClassOrStructOrUnion())) {
+                T *t = scope->findType(name);
                 if (t)
                     return t;
             }
@@ -6079,6 +6091,16 @@ const Type* Scope::findType(const std::string & name) const
 
     // Type was not found
     return nullptr;
+}
+
+const Type* Scope::findType(const std::string& name) const
+{
+    return findTypeImpl<const Scope, const Type>(*this, name);
+}
+
+Type* Scope::findType(const std::string& name)
+{
+    return findTypeImpl<Scope, Type>(*this, name);
 }
 
 //---------------------------------------------------------------------------
