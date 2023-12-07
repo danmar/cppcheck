@@ -29,7 +29,9 @@
 # Create 2.8.x branch
 # git checkout -b 2.8.x ; git push -u origin 2.8.x
 #
-# Empty the releasenotes.txt in main branch
+# Release notes:
+# - ensure safety critical issues are listed properly
+# - empty the releasenotes.txt in main branch
 #
 # Update version numbers in:
 # sed -i -r "s/version 2[.][0-9]+([.]99)*/version 2.9/" cli/main.cpp
