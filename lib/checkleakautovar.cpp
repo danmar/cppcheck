@@ -967,7 +967,7 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
         while (Token::Match(arg, "%name% .|:: %name%"))
             arg = arg->tokAt(2);
 
-        if (Token::Match(arg, "%var% [-,)] !!.") || Token::Match(arg, "& %var%")) {
+        if (Token::Match(arg, "%var% [-,)] !!.") || Token::Match(arg, "& %var% !!.")) {
             // goto variable
             if (arg->str() == "&")
                 arg = arg->next();
@@ -979,6 +979,9 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
                 const Library::AllocFunc* deallocFunc = mSettings->library.getDeallocFuncInfo(tokName);
                 VarInfo::AllocInfo dealloc(deallocFunc ? deallocFunc->groupId : 0, VarInfo::DEALLOC, tokName);
                 if (const Library::AllocFunc* allocFunc = mSettings->library.getAllocFuncInfo(tokName)) {
+                    if (mSettings->library.getDeallocFuncInfo(tokName)) {
+                        changeAllocStatus(varInfo, dealloc.type == 0 ? allocation : dealloc, tokName, arg);
+                    }
                     if (allocFunc->arg == argNr && !(arg->variable() && arg->variable()->isArgument() && arg->valueType() && arg->valueType()->pointer > 1)) {
                         leakIfAllocated(arg, varInfo);
                         VarInfo::AllocInfo& varAlloc = varInfo.alloctype[arg->varId()];
@@ -1063,6 +1066,21 @@ void CheckLeakAutoVar::leakIfAllocated(const Token *vartok,
     }
 }
 
+static const Token* getOutparamAllocation(const Token* tok, const Settings* settings)
+{
+    if (!tok)
+        return nullptr;
+    int argn{};
+    const Token* ftok = getTokenArgumentFunction(tok, argn);
+    if (!ftok)
+        return nullptr;
+    if (const Library::AllocFunc* allocFunc = settings->library.getAllocFuncInfo(ftok)) {
+        if (allocFunc->arg == argn + 1)
+            return ftok;
+    }
+    return nullptr;
+}
+
 void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndOfScope)
 {
     const std::map<int, VarInfo::AllocInfo> &alloctype = varInfo.alloctype;
@@ -1117,7 +1135,9 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
             }
 
             // don't warn when returning after checking return value of outparam allocation
-            if (it->second.allocTok && (tok->scope()->type == Scope::ScopeType::eIf || tok->scope()->type== Scope::ScopeType::eElse)) {
+            const Token* outparamFunc{};
+            if ((tok->scope()->type == Scope::ScopeType::eIf || tok->scope()->type== Scope::ScopeType::eElse) &&
+                (outparamFunc = getOutparamAllocation(it->second.allocTok, mSettings))) {
                 const Scope* scope = tok->scope();
                 if (scope->type == Scope::ScopeType::eElse) {
                     scope = scope->bodyStart->tokAt(-2)->scope();
@@ -1125,11 +1145,22 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
                 const Token* const ifEnd = scope->bodyStart->previous();
                 const Token* const ifStart = ifEnd->link();
                 const Token* const alloc = it->second.allocTok;
-                if (precedes(ifStart, alloc) && succeeds(ifEnd, alloc)) {
-                    int argn{};
-                    if (const Token* ftok = getTokenArgumentFunction(alloc, argn))
-                        if (Token::Match(ftok->next()->astParent(), "%comp%"))
+                if (precedes(ifStart, alloc) && succeeds(ifEnd, alloc)) { // allocation and check in if
+                    if (Token::Match(outparamFunc->next()->astParent(), "%comp%"))
+                        continue;
+                } else { // allocation result assigned to variable
+                    const Token* const retAssign = outparamFunc->next()->astParent();
+                    if (Token::simpleMatch(retAssign, "=") && retAssign->astOperand1()->varId()) {
+                        bool isRetComp = false;
+                        for (const Token* tok2 = ifStart; tok2 != ifEnd; tok2 = tok2->next()) {
+                            if (tok2->varId() == retAssign->astOperand1()->varId()) {
+                                isRetComp = true;
+                                break;
+                            }
+                        }
+                        if (isRetComp)
                             continue;
+                    }
                 }
             }
 
