@@ -3969,11 +3969,17 @@ private:
                                 "4: }\n";
         ASSERT_EQUALS(expected, tokenizeExpr(code));
 
-        const char code2[] = "struct S { int* p; };\n"
-                             "S f() { return S{ std::make_unique<int>([]() { return 4; }()).release()}; }\n";
-        const char expected2[] = "1: struct S { int * p ; } ;\n"
-                                 "2: S f ( ) { return S@UNIQUE {@UNIQUE std ::@UNIQUE make_unique < int > (@UNIQUE [ ] ( ) { return 4 ; } ( ) ) .@UNIQUE release (@UNIQUE ) } ; }\n";
+        const char code2[] = "struct S { std::function<void()>* p; };\n"
+                             "S f() { return S{ std::make_unique<std::function<void()>>([]() {}).release()}; }";
+        const char expected2[] = "1: struct S { std :: function < void ( ) > * p ; } ;\n"
+                                 "2: S f ( ) { return S@UNIQUE {@UNIQUE std ::@UNIQUE make_unique < std :: function < void ( ) > > (@UNIQUE [ ] ( ) { } ) .@UNIQUE release (@UNIQUE ) } ; }\n";
         ASSERT_EQUALS(expected2, tokenizeExpr(code2));
+
+        const char code3[] = "struct S { int* p; };\n"
+                             "S f() { return S{ std::make_unique<int>([]() { return 4; }()).release()}; }\n";
+        const char expected3[] = "1: struct S { int * p ; } ;\n"
+                                 "2: S f ( ) { return S@UNIQUE {@UNIQUE std ::@UNIQUE make_unique < int > (@UNIQUE [ ] ( ) { return 4 ; } ( ) ) .@UNIQUE release (@UNIQUE ) } ; }\n";
+        ASSERT_EQUALS(expected3, tokenizeExpr(code3));
     }
 
     void structuredBindings() {
