@@ -3395,6 +3395,29 @@ private:
               "    std::transform(v1.begin(), v1.end(), v2.begin(), [](auto& x) { return &x; });\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("class T;\n" // #11869
+              "class E {\n"
+              "public:\n"
+              "    class F {\n"
+              "    public:\n"
+              "        explicit F(const T* t);\n"
+              "    };\n"
+              "};\n"
+              "void f(T& t) {\n"
+              "    std::list<E::F> c(1, E::F(&t));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (style) Parameter 't' can be declared as reference to const\n", errout.str());
+
+        check("struct T;\n"
+              "struct U {\n"
+              "    struct V { explicit V(const T* p); };\n"
+              "};\n"
+              "void g(U::V v);\n"
+              "void f(T& t) {\n"
+              "    g(U::V(&t));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Parameter 't' can be declared as reference to const\n", errout.str());
     }
 
     void constParameterCallback() {
@@ -3909,6 +3932,13 @@ private:
               "    std::cout << p << '\\n';\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n",
+                      errout.str());
+
+        check("struct S { const T* t; };\n" // #12206
+              "void f(S* s) {\n"
+              "    if (s->t.i) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 's' can be declared as pointer to const\n",
                       errout.str());
     }
 

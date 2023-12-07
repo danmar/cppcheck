@@ -5089,6 +5089,11 @@ private:
               "  return fwrite(s.c_str(), 1, s.length(), fp) == s.length();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(const std::string& s) {\n" // #9148
+              "    if (s.empty() || s.size() < 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 's.size()<1' is always false\n", errout.str());
     }
 
     void alwaysTrueLoop()
