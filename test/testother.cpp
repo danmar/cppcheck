@@ -3910,6 +3910,13 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n",
                       errout.str());
+
+        check("struct S { const T* t; };\n" // #12206
+              "void f(S* s) {\n"
+              "    if (s->t.i) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 's' can be declared as pointer to const\n",
+                      errout.str());
     }
 
     void switchRedundantAssignmentTest() {
