@@ -782,3 +782,46 @@ Line 6
   0 always 0
 '''.format(test_file_cpp, test_file_h_2, test_file_h, test_file_cpp, test_file_h_2, test_file_h, test_file_cpp)
     assert stderr == ''
+
+
+def test_file_duplicate(tmpdir):
+    test_file_a = os.path.join(tmpdir, 'a.c')
+    with open(test_file_a, 'wt'):
+        pass
+
+    args = [test_file_a, test_file_a, str(tmpdir)]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file_a)
+    ]
+    assert stderr == ''
+
+
+def test_file_duplicate_2(tmpdir):
+    test_file_a = os.path.join(tmpdir, 'a.c')
+    with open(test_file_a, 'wt'):
+        pass
+    test_file_b = os.path.join(tmpdir, 'b.c')
+    with open(test_file_b, 'wt'):
+        pass
+    test_file_c = os.path.join(tmpdir, 'c.c')
+    with open(test_file_c, 'wt'):
+        pass
+
+    args = [test_file_c, test_file_a, test_file_b, str(tmpdir), test_file_b, test_file_c, test_file_a, str(tmpdir)]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file_c),
+        '1/3 files checked 0% done',
+        'Checking {} ...'.format(test_file_a),
+        '2/3 files checked 0% done',
+        'Checking {} ...'.format(test_file_b),
+        '3/3 files checked 0% done'
+    ]
+    assert stderr == ''
