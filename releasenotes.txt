@@ -3,6 +3,7 @@ Release Notes for Cppcheck 2.13
 New checks:
 - passedByValueCallback for functions which take a parameter by value but are used as callbacks (subset of passedByValue)
 - returnImplicitInt for C functions without return type (previously reported as a debug message)
+- iterateByValue for iterating by value in a range-based for loop when a const reference could be used
 
 Improved checking:
 -
