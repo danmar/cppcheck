@@ -484,12 +484,14 @@ private:
     }
 
     void integerOverflow() { // #11794
-        const Settings settings;
+        const Settings settings(settingsBuilder().build());
         // TODO: needs to use preprocessing production code
         simplecpp::DUI dui;
         dui.std = "c++11";
         // this is set by the production code via cppcheck::Platform::getLimitDefines()
         dui.defines.emplace_back("INT_MIN=-2147483648");
+        dui.defines.emplace_back("INT32_MAX=2147483647");
+        dui.defines.emplace_back("int32_t=int");
 
         checkP("int fun(int x)\n"
                "{\n"
@@ -501,6 +503,13 @@ private:
                "    fun(INT_MIN);\n"
                "}", settings, "test.cpp", dui);
         ASSERT_EQUALS("[test.cpp:3]: (error) Signed integer overflow for expression '-x'.\n", errout.str());
+
+        checkP("void f() {\n" // #8399
+            "    int32_t i = INT32_MAX;\n"
+            "    i << 1;\n"
+            "    i << 2;\n"
+            "}", settings, "test.cpp", dui);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Signed integer overflow for expression 'i<<2'.\n", errout.str());
     }
 };
 
