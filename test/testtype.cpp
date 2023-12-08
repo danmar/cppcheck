@@ -505,10 +505,10 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Signed integer overflow for expression '-x'.\n", errout.str());
 
         checkP("void f() {\n" // #8399
-            "    int32_t i = INT32_MAX;\n"
-            "    i << 1;\n"
-            "    i << 2;\n"
-            "}", settings, "test.cpp", dui);
+               "    int32_t i = INT32_MAX;\n"
+               "    i << 1;\n"
+               "    i << 2;\n"
+               "}", settings, "test.cpp", dui);
         ASSERT_EQUALS("[test.cpp:4]: (error) Signed integer overflow for expression 'i<<2'.\n", errout.str());
     }
 };
