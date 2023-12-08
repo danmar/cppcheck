@@ -350,6 +350,7 @@ private:
         TEST_CASE(ignorepaths4);
         TEST_CASE(ignorefilepaths1);
         TEST_CASE(ignorefilepaths2);
+        TEST_CASE(ignorefilepaths3);
 
         TEST_CASE(checkconfig);
         TEST_CASE(unknownParam);
@@ -2226,6 +2227,14 @@ private:
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
         ASSERT_EQUALS("src/foo.cpp", parser->getIgnoredPaths()[0]);
+    }
+
+    void ignorefilepaths3() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "-i", "foo.cpp", "file.cpp"};
+        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
+        ASSERT_EQUALS("foo.cpp", parser->getIgnoredPaths()[0]);
     }
 
     void checkconfig() {
