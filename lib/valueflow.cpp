@@ -7329,8 +7329,8 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
         if (isConditional())
             return true;
         if (!condTok->hasKnownIntValue() && values.count(condTok->varId()) == 0) {
-            const auto& values = condTok->values();
-            return std::any_of(values.cbegin(), values.cend(), [](const ValueFlow::Value& v) {
+            const auto& values_ = condTok->values();
+            return std::any_of(values_.cbegin(), values_.cend(), [](const ValueFlow::Value& v) {
                 return v.isSymbolicValue() && Token::Match(v.tokvalue, "%oror%|&&");
             });
         }
