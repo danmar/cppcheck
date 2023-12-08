@@ -1244,10 +1244,14 @@ void CheckOther::checkPassByReference()
     const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Variable* var : symbolDatabase->variableList()) {
-        if (!var || !var->isArgument() || !var->isClass() || var->isPointer() || var->isArray() || var->isReference() || var->isEnumType())
+        if (!var || !var->isClass() || var->isPointer() || var->isArray() || var->isReference() || var->isEnumType())
             continue;
 
-        if (var->scope() && var->scope()->function->arg->link()->strAt(-1) == "...")
+        const bool isRangeBasedFor = astIsRangeBasedForDecl(var->nameToken());
+        if (!var->isArgument() && !isRangeBasedFor)
+            continue;
+
+        if (!isRangeBasedFor && var->scope() && var->scope()->function->arg->link()->strAt(-1) == "...")
             continue; // references could not be used as va_start parameters (#5824)
 
         const Token * const varDeclEndToken = var->declEndToken();
@@ -1275,25 +1279,27 @@ void CheckOther::checkPassByReference()
 
         const bool isConst = var->isConst();
         if (isConst) {
-            passedByValueError(var, inconclusive);
+            passedByValueError(var, inconclusive, isRangeBasedFor);
             continue;
         }
 
         // Check if variable could be const
-        if (!var->scope() || var->scope()->function->isImplicitlyVirtual())
+        if (!isRangeBasedFor && (!var->scope() || var->scope()->function->isImplicitlyVirtual()))
             continue;
 
         if (!isVariableChanged(var, mSettings, mTokenizer->isCPP())) {
-            passedByValueError(var, inconclusive);
+            passedByValueError(var, inconclusive, isRangeBasedFor);
         }
     }
 }
 
-void CheckOther::passedByValueError(const Variable* var, bool inconclusive)
+void CheckOther::passedByValueError(const Variable* var, bool inconclusive, bool isRangeBasedFor)
 {
-    std::string id = "passedByValue";
-    std::string msg = "$symbol:" + (var ? var->name() : "") + "\n"
-                      "Function parameter '$symbol' should be passed by const reference.";
+    std::string id = isRangeBasedFor ? "iterateByValue" : "passedByValue";
+    const std::string action = isRangeBasedFor ? "declared as": "passed by";
+    const std::string type = isRangeBasedFor ? "Range variable" : "Function parameter";
+    std::string msg = "$symbol:" + (var ? var->name() : "") + "\n" +
+                      type + " '$symbol' should be " + action + " const reference.";
     ErrorPath errorPath;
     if (var && var->scope() && var->scope()->function && var->scope()->function->functionPointerUsage) {
         id += "Callback";
@@ -1302,7 +1308,10 @@ void CheckOther::passedByValueError(const Variable* var, bool inconclusive)
     }
     if (var)
         errorPath.emplace_back(var->nameToken(), msg);
-    msg += "\nParameter '$symbol' is passed by value. It could be passed as a const reference which is usually faster and recommended in C++.";
+    if (isRangeBasedFor)
+        msg += "\nVariable '$symbol' is used to iterate by value. It could be declared as a const reference which is usually faster and recommended in C++.";
+    else
+        msg += "\nParameter '$symbol' is passed by value. It could be passed as a const reference which is usually faster and recommended in C++.";
     reportError(errorPath, Severity::performance, id.c_str(), msg, CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
