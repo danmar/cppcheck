@@ -6574,6 +6574,25 @@ private:
                               "    return 0;\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: a\n", errout.str());
+
+        functionVariableUsage("void f() {\n" // #9823
+                              "    auto cb = []() {\n"
+                              "        int i;\n"
+                              "    };\n"
+                              "    (void)cb;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: i\n", errout.str());
+
+        functionVariableUsage("void f() {\n" // #9822
+                              "    int i;\n"
+                              "    auto cb = []() {\n"
+                              "        int i;\n"
+                              "    };\n"
+                              "    (void)cb;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: i\n"
+                      "[test.cpp:4]: (style) Unused variable: i\n",
+                      errout.str());
     }
 
 
