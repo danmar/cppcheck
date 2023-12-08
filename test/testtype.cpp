@@ -484,7 +484,7 @@ private:
     }
 
     void integerOverflow() { // #11794
-        const Settings settings(settingsBuilder().build());
+        const Settings settings;
         // TODO: needs to use preprocessing production code
         simplecpp::DUI dui;
         dui.std = "c++11";
