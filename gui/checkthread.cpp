@@ -177,7 +177,7 @@ void CheckThread::runAddonsAndTools(const FileSettings *fileSettings, const QStr
             const QString clangPath = CheckThread::clangTidyCmd();
             if (!clangPath.isEmpty()) {
                 QDir dir(clangPath + "/../lib/clang");
-                for (QString ver : dir.entryList()) {
+                for (const QString& ver : dir.entryList()) {
                     QString includePath = dir.absolutePath() + '/' + ver + "/include";
                     if (ver[0] != '.' && QDir(includePath).exists()) {
                         args << "-isystem" << includePath;

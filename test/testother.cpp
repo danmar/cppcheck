@@ -289,6 +289,7 @@ private:
         TEST_CASE(constVariableArrayMember); // #10371
 
         TEST_CASE(knownPointerToBool);
+        TEST_CASE(iterateByValue);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -11706,6 +11707,16 @@ private:
               "    if (!ptr || !ptr()) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void iterateByValue() {
+        check("void f() {\n" // #9684
+              "    const std::set<std::string> ss = { \"a\", \"b\", \"c\" };\n"
+              "    for (auto s : ss)\n"
+              "        (void)s.size();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Range variable 's' should be declared as const reference.\n",
+                      errout.str());
     }
 };
 
