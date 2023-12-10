@@ -5625,6 +5625,26 @@ private:
         values = tokenValues(code, "x <", ValueFlow::Value::ValueType::UNINIT);
         ASSERT_EQUALS(0, values.size());
 
+        code = "bool do_something(int *p);\n"
+               "int getY();\n"
+               "bool bar();\n"
+               "void foo() {\n"
+               "    bool flag{true};\n"
+               "    int x;\n"
+               "    int y = getY();\n"
+               "    if (flag == true) {\n"
+               "        flag = bar();\n"
+               "    }\n"
+               "    if ((flag == true) && y > 0) {\n"
+               "        flag = do_something(&x);\n"
+               "    }\n"
+               "    for (int i = 0; (flag == true) && i < y; i++) {\n"
+               "        if (x < 0) {}\n"
+               "    }\n"
+               "}\n";
+        values = tokenValues(code, "x <", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
+
         code = "void g(bool *result, size_t *buflen) {\n" // #12091
                "    if (*result && *buflen >= 5) {}\n" // <- *buflen might not be initialized
                "}\n"
@@ -7237,6 +7257,24 @@ private:
                "    int& q = (&r)[0];\n"
                "}\n";
         valueOfTok(code, "&");
+
+        code = "bool a(int *);\n"
+               "void fn2(int b) {\n"
+               "  if (b) {\n"
+               "    bool c, d, e;\n"
+               "    if (c && d)\n"
+               "      return;\n"
+               "    if (e && a(&b)) {\n"
+               "    }\n"
+               "  }\n"
+               "}\n";
+        valueOfTok(code, "e");
+
+        code = "void f(int a, int b, int c) {\n"
+               "  if (c && (a || a && b))\n"
+               "    if (a && b) {}\n"
+               "}\n";
+        valueOfTok(code, "a");
     }
 
     void valueFlowHang() {

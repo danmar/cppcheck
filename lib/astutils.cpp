@@ -107,31 +107,17 @@ static int getArgumentPos(const Token* ftok, const Token* tokToFind){
     return findArgumentPos(startTok, tokToFind);
 }
 
-template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-static void astFlattenRecursive(T* tok, std::vector<T*>& result, const char* op, nonneg int depth = 0)
-{
-    ++depth;
-    if (!tok || depth >= 100)
-        return;
-    if (tok->str() == op) {
-        astFlattenRecursive(tok->astOperand1(), result, op, depth);
-        astFlattenRecursive(tok->astOperand2(), result, op, depth);
-    } else {
-        result.push_back(tok);
-    }
-}
-
 std::vector<const Token*> astFlatten(const Token* tok, const char* op)
 {
     std::vector<const Token*> result;
-    astFlattenRecursive(tok, result, op);
+    astFlattenCopy(tok, op, std::back_inserter(result));
     return result;
 }
 
 std::vector<Token*> astFlatten(Token* tok, const char* op)
 {
     std::vector<Token*> result;
-    astFlattenRecursive(tok, result, op);
+    astFlattenCopy(tok, op, std::back_inserter(result));
     return result;
 }
 
@@ -161,6 +147,15 @@ bool astHasVar(const Token * tok, nonneg int varid)
     if (tok->varId() == varid)
         return true;
     return astHasVar(tok->astOperand1(), varid) || astHasVar(tok->astOperand2(), varid);
+}
+
+bool astHasExpr(const Token* tok, nonneg int exprid)
+{
+    if (!tok)
+        return false;
+    if (tok->exprId() == exprid)
+        return true;
+    return astHasExpr(tok->astOperand1(), exprid) || astHasExpr(tok->astOperand2(), exprid);
 }
 
 static bool astIsCharWithSign(const Token *tok, ValueType::Sign sign)
