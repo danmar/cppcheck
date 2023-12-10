@@ -1260,7 +1260,7 @@ namespace {
         explicit Executor(ProgramMemory* pm = nullptr, const Settings* settings = nullptr) : pm(pm), settings(settings) {}
 
         std::unordered_map<nonneg int, ValueFlow::Value> executeAll(const std::vector<const Token*>& toks,
-                                                                    bool* b = nullptr) const
+                                                                    const bool* b = nullptr) const
         {
             std::unordered_map<nonneg int, ValueFlow::Value> result;
             auto state = *this;
@@ -1326,7 +1326,6 @@ namespace {
                 if (isTrueOrFalse(v, b))
                     return v;
                 allNegated &= isTrueOrFalse(v, !b);
-                ;
                 if (allNegated && negatedValue.isUninitValue())
                     negatedValue = v;
             }
