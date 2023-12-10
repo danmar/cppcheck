@@ -6334,6 +6334,14 @@ private:
                         "    if (pwd == NULL) {}\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:15] -> [test.cpp:17]: (warning) Uninitialized variable: pwd\n", errout.str());
+
+        // #12033
+        valueFlowUninit("void g(const char*p);\n"
+                        "void f() {\n"
+                        "    char buf[10];\n"
+                        "    g(buf);\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: buf\n", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
