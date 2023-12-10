@@ -2403,12 +2403,11 @@ private:
               "void g(const std::vector<int>& w) {\n"
               "    f(-1, w);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("test.cpp:5:warning:Array index -1 is out of bounds.\n"
-                           "test.cpp:8:note:Calling function 'f', 1st argument '-1' value is -1\n"
-                           "test.cpp:3:note:Assuming condition is false\n"
-                           "test.cpp:5:note:Negative array index\n",
-                           "",
-                           errout.str());
+        ASSERT_EQUALS("test.cpp:5:warning:Array index -1 is out of bounds.\n"
+                      "test.cpp:8:note:Calling function 'f', 1st argument '-1' value is -1\n"
+                      "test.cpp:3:note:Assuming condition is false\n"
+                      "test.cpp:5:note:Negative array index\n",
+                      errout.str());
 
         settings = oldSettings;
     }

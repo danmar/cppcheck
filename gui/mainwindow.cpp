@@ -94,6 +94,8 @@
 #include <QVariant>
 #include <Qt>
 
+#include "json.h"
+
 static const QString compile_commands_json("compile_commands.json");
 
 static QString fromNativePath(const QString& p) {
@@ -903,7 +905,43 @@ bool MainWindow::tryLoadLibrary(Library *library, const QString& filename)
     return true;
 }
 
-Settings MainWindow::getCppcheckSettings() {
+void MainWindow::loadAddon(Settings &settings, const QString &filesDir, const QString &pythonCmd, const QString& addon)
+{
+    QString addonFilePath = ProjectFile::getAddonFilePath(filesDir, addon);
+    if (addonFilePath.isEmpty())
+        return; // TODO: report an error
+
+    addonFilePath.replace(QChar('\\'), QChar('/'));
+
+    picojson::object obj;
+    obj["script"] = picojson::value(addonFilePath.toStdString());
+    if (!pythonCmd.isEmpty())
+        obj["python"] = picojson::value(pythonCmd.toStdString());
+
+    if (!isCppcheckPremium() && addon == "misra") {
+        const QString misraFile = fromNativePath(mSettings->value(SETTINGS_MISRA_FILE).toString());
+        if (!misraFile.isEmpty()) {
+            QString arg;
+            if (misraFile.endsWith(".pdf", Qt::CaseInsensitive))
+                arg = "--misra-pdf=" + misraFile;
+            else
+                arg = "--rule-texts=" + misraFile;
+            obj["args"] = picojson::value(arg.toStdString());
+        }
+    }
+    picojson::value json;
+    json.set(std::move(obj));
+    std::string json_str = json.serialize();
+
+    AddonInfo addonInfo;
+    addonInfo.getAddonInfo(json_str, settings.exename); // TODO: handle error
+    settings.addonInfos.emplace_back(std::move(addonInfo));
+
+    settings.addons.emplace(std::move(json_str));
+}
+
+Settings MainWindow::getCppcheckSettings()
+{
     saveSettings(); // Save settings
 
     Settings result;
@@ -914,10 +952,20 @@ Settings MainWindow::getCppcheckSettings() {
     if (!std)
         QMessageBox::critical(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=<directory> at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.").arg("std.cfg"));
 
+    const QString filesDir(getDataDir());
+    const QString pythonCmd = fromNativePath(mSettings->value(SETTINGS_PYTHON_PATH).toString());
+
     {
         const QString cfgErr = QString::fromStdString(result.loadCppcheckCfg());
         if (!cfgErr.isEmpty())
             QMessageBox::critical(this, tr("Error"), tr("Failed to load %1 - %2").arg("cppcheck.cfg").arg(cfgErr));
+
+        const auto cfgAddons = result.addons;
+        result.addons.clear();
+        for (const std::string& addon : cfgAddons) {
+            // TODO: support addons which are a script and not a file
+            loadAddon(result, filesDir, pythonCmd, QString::fromStdString(addon));
+        }
     }
 
     // If project file loaded, read settings from it
@@ -996,34 +1044,8 @@ Settings MainWindow::getCppcheckSettings() {
         for (const QString& s : mProjectFile->getCheckUnknownFunctionReturn())
             result.checkUnknownFunctionReturn.insert(s.toStdString());
 
-        QString filesDir(getDataDir());
-        const QString pythonCmd = fromNativePath(mSettings->value(SETTINGS_PYTHON_PATH).toString());
         for (const QString& addon : mProjectFile->getAddons()) {
-            QString addonFilePath = ProjectFile::getAddonFilePath(filesDir, addon);
-            if (addonFilePath.isEmpty())
-                continue;
-
-            addonFilePath.replace(QChar('\\'), QChar('/'));
-
-            // TODO: use picojson to generate the JSON
-            QString json;
-            json += "{ \"script\":\"" + addonFilePath + "\"";
-            if (!pythonCmd.isEmpty())
-                json += ", \"python\":\"" + pythonCmd + "\"";
-            const QString misraFile = fromNativePath(mSettings->value(SETTINGS_MISRA_FILE).toString());
-            if (!isCppcheckPremium() && addon == "misra" && !misraFile.isEmpty()) {
-                QString arg;
-                if (misraFile.endsWith(".pdf", Qt::CaseInsensitive))
-                    arg = "--misra-pdf=" + misraFile;
-                else
-                    arg = "--rule-texts=" + misraFile;
-                json += ", \"args\":[\"" + arg + "\"]";
-            }
-            json += " }";
-            result.addons.emplace(json.toStdString());
-            AddonInfo addonInfo;
-            addonInfo.getAddonInfo(json.toStdString(), result.exename);
-            result.addonInfos.emplace_back(std::move(addonInfo));
+            loadAddon(result, filesDir, pythonCmd, addon);
         }
 
         if (isCppcheckPremium()) {

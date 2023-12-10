@@ -7326,9 +7326,16 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
         return false;
     }
 
-    bool stopOnCondition(const Token* /*condTok*/) const override {
-        // TODO fix false negatives
-        return true; // isConditional();
+    bool stopOnCondition(const Token* condTok) const override {
+        if (isConditional())
+            return true;
+        if (!condTok->hasKnownIntValue() && values.count(condTok->varId()) == 0) {
+            const auto& values_ = condTok->values();
+            return std::any_of(values_.cbegin(), values_.cend(), [](const ValueFlow::Value& v) {
+                return v.isSymbolicValue() && Token::Match(v.tokvalue, "%oror%|&&");
+            });
+        }
+        return false;
     }
 
     bool updateScope(const Token* endBlock, bool /*modified*/) const override {

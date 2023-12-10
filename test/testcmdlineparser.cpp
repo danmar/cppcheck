@@ -436,7 +436,7 @@ private:
                         "{\n");
         const char * const argv[] = {"cppcheck", "--version"};
         ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
-        ASSERT_EQUALS("cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 1 near: \n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 2 near: \n", logger->str());
     }
 
     void onefile() {
@@ -1706,7 +1706,7 @@ private:
                         "{\n");
         const char * const argv[] = {"cppcheck", "--errorlist"};
         ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
-        ASSERT_EQUALS("cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 1 near: \n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 2 near: \n", logger->str());
     }
 
     void ignorepathsnopath() {
@@ -2310,7 +2310,7 @@ private:
                         "{\n");
         const char * const argv[] = {"cppcheck", "test.cpp"};
         ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
-        ASSERT_EQUALS("cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 1 near: \n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 2 near: \n", logger->str());
     }
 };
 

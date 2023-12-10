@@ -111,6 +111,7 @@ private:
         TEST_CASE(deallocuse10);
         TEST_CASE(deallocuse11); // #8302
         TEST_CASE(deallocuse12);
+        TEST_CASE(deallocuse13);
 
         TEST_CASE(doublefree1);
         TEST_CASE(doublefree2);
@@ -127,6 +128,7 @@ private:
         TEST_CASE(doublefree13); // #11008
         TEST_CASE(doublefree14); // #9708
         TEST_CASE(doublefree15);
+        TEST_CASE(doublefree16);
 
         // exit
         TEST_CASE(exit1);
@@ -908,6 +910,20 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void deallocuse13() {
+        check("void f() {\n" // #9695
+              "    auto* a = new int[2];\n"
+              "    delete[] a;\n"
+              "    a[1] = 0;\n"
+              "    auto* b = static_cast<int*>(malloc(8));\n"
+              "    free(b);\n"
+              "    b[1] = 0;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Dereferencing 'a' after it is deallocated / released\n"
+                      "[test.cpp:7]: (error) Dereferencing 'b' after it is deallocated / released\n",
+                      errout.str());
+    }
+
     void doublefree1() {  // #3895
         check("void f(char *p) {\n"
               "    if (x)\n"
@@ -1563,6 +1579,15 @@ private:
         check("void f(FILE* fp) {\n"
               "    static_cast<void>(fclose(fp));\n"
               "}", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void doublefree16() { // #12236
+        check("void f() {\n"
+              "    FILE* f = fopen(\"abc\", \"r\");\n"
+              "    decltype(fclose(f)) y;\n"
+              "    y = fclose(f);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

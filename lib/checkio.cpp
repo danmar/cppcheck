@@ -19,6 +19,7 @@
 //---------------------------------------------------------------------------
 #include "checkio.h"
 
+#include "astutils.h"
 #include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
@@ -152,6 +153,10 @@ void CheckIO::checkFileUsage()
     for (const Scope * scope : symbolDatabase->functionScopes) {
         int indent = 0;
         for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (Token::Match(tok, "%name% (") && isUnevaluated(tok)) {
+                tok = tok->linkAt(1);
+                continue;
+            }
             if (tok->str() == "{")
                 indent++;
             else if (tok->str() == "}") {

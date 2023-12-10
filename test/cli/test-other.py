@@ -153,115 +153,6 @@ def test_progress_j(tmpdir):
     assert stderr == ""
 
 
-@pytest.mark.timeout(10)
-def test_slow_array_many_floats(tmpdir):
-    # 11649
-    # cppcheck valueflow takes a long time when an array has many floats
-    filename = os.path.join(tmpdir, 'hang.c')
-    with open(filename, 'wt') as f:
-        f.write("const float f[] = {\n")
-        for i in range(20000):
-            f.write('    13.6f,\n')
-        f.write("};\n")
-    cppcheck([filename]) # should not take more than ~1 second
-
-
-@pytest.mark.timeout(10)
-def test_slow_array_many_strings(tmpdir):
-    # 11901
-    # cppcheck valueflow takes a long time when analyzing a file with many strings
-    filename = os.path.join(tmpdir, 'hang.c')
-    with open(filename, 'wt') as f:
-        f.write("const char *strings[] = {\n")
-        for i in range(20000):
-            f.write('    "abc",\n')
-        f.write("};\n")
-    cppcheck([filename]) # should not take more than ~1 second
-
-
-@pytest.mark.timeout(10)
-def test_slow_long_line(tmpdir):
-    # simplecpp #314
-    filename = os.path.join(tmpdir, 'hang.c')
-    with open(filename, 'wt') as f:
-        f.write("#define A() static const int a[] = {\\\n")
-        for i in range(5000):
-            f.write(" -123, 456, -789,\\\n")
-        f.write("};\n")
-    cppcheck([filename]) # should not take more than ~1 second
-
-
-@pytest.mark.timeout(60)
-def test_slow_large_constant_expression(tmpdir):
-    # 12182
-    filename = os.path.join(tmpdir, 'hang.c')
-    with open(filename, 'wt') as f:
-        f.write("""
-#define FLAG1 0
-#define FLAG2 0
-#define FLAG3 0
-#define FLAG4 0
-#define FLAG5 0
-#define FLAG6 0
-#define FLAG7 0
-#define FLAG8 0
-#define FLAG9 0
-#define FLAG10 0
-#define FLAG11 0
-#define FLAG12 0
-#define FLAG13 0
-#define FLAG14 0
-#define FLAG15 0
-#define FLAG16 0
-#define FLAG17 0
-#define FLAG18 0
-#define FLAG19 0
-#define FLAG20 0
-#define FLAG21 0
-#define FLAG22 0
-#define FLAG23 0
-#define FLAG24 0
-
-#define maxval(x, y) ((x) > (y) ? (x) : (y))
-
-#define E_SAMPLE_SIZE   maxval( FLAG1,                \
-                                  maxval( FLAG2,      \
-                                  maxval( FLAG3,      \
-                                  maxval( FLAG4,      \
-                                  maxval( FLAG5,      \
-                                  maxval( FLAG6,      \
-                                  maxval( FLAG7,      \
-                                  maxval( FLAG8,      \
-                                  maxval( FLAG9,      \
-                                  maxval( FLAG10,     \
-                                  maxval( FLAG11,     \
-                                  maxval( FLAG12,     \
-                                  maxval( FLAG13,     \
-                                  maxval( FLAG14,     \
-                                  FLAG15 ))))))))))))))
-
-#define SAMPLE_SIZE       maxval( E_SAMPLE_SIZE,      \
-                                  maxval( sizeof(st), \
-                                  maxval( FLAG16,     \
-                                  maxval( FLAG17,     \
-                                  maxval( FLAG18,     \
-                                  maxval( FLAG19,     \
-                                  maxval( FLAG20,     \
-                                  maxval( FLAG21,     \
-                                  maxval( FLAG22,     \
-                                  maxval( FLAG23,     \
-                                          FLAG24 ))))))))))
-
-typedef struct {
-    int n;
-} st;
-
-x = SAMPLE_SIZE;
-        """)
-
-    cppcheck([filename])
-
-
 def test_execute_addon_failure(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
     with open(test_file, 'wt') as f:
@@ -852,7 +743,7 @@ inline void f2()
 ##file {}
 2: void f2 ( )
 3: {{
-4: int i@var1 ; i@var1 =@expr1073741828 0 ;
+4: int i@var1 ; i@var1 = 0 ;
 5: }}
 
 ##file {}
@@ -861,7 +752,7 @@ inline void f2()
 2:
 3: void f1 ( )
 4: {{
-5: int i@var2 ; i@var2 =@expr1073741829 0 ;
+5: int i@var2 ; i@var2 = 0 ;
 6: }}
 
 ##file {}
@@ -871,7 +762,7 @@ inline void f2()
 3:
 4: void f ( )
 5: {{
-6: int i@var3 ; i@var3 =@expr1073741830 0 ;
+6: int i@var3 ; i@var3 = 0 ;
 7: }}
 
 
@@ -890,4 +781,47 @@ Line 6
   = always 0
   0 always 0
 '''.format(test_file_cpp, test_file_h_2, test_file_h, test_file_cpp, test_file_h_2, test_file_h, test_file_cpp)
+    assert stderr == ''
+
+
+def test_file_duplicate(tmpdir):
+    test_file_a = os.path.join(tmpdir, 'a.c')
+    with open(test_file_a, 'wt'):
+        pass
+
+    args = [test_file_a, test_file_a, str(tmpdir)]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file_a)
+    ]
+    assert stderr == ''
+
+
+def test_file_duplicate_2(tmpdir):
+    test_file_a = os.path.join(tmpdir, 'a.c')
+    with open(test_file_a, 'wt'):
+        pass
+    test_file_b = os.path.join(tmpdir, 'b.c')
+    with open(test_file_b, 'wt'):
+        pass
+    test_file_c = os.path.join(tmpdir, 'c.c')
+    with open(test_file_c, 'wt'):
+        pass
+
+    args = [test_file_c, test_file_a, test_file_b, str(tmpdir), test_file_b, test_file_c, test_file_a, str(tmpdir)]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file_c),
+        '1/3 files checked 0% done',
+        'Checking {} ...'.format(test_file_a),
+        '2/3 files checked 0% done',
+        'Checking {} ...'.format(test_file_b),
+        '3/3 files checked 0% done'
+    ]
     assert stderr == ''

@@ -67,7 +67,6 @@ private:
      */
     void check(unsigned int jobs, int files, int result, const std::string &data, const CheckOptions& opt = make_default_obj{}) {
         errout.str("");
-        output.str("");
 
         std::list<FileSettings> fileSettings;
 
@@ -265,7 +264,7 @@ private:
                                               $.executeCommandCalled = true,
                                               $.exe = exe,
                                               $.args = {"-quiet", "-checks=*,-clang-analyzer-*,-llvm*", file, "--"}*/));
-        ASSERT_EQUALS("Checking " + file + " ...\n", output.str());
+        ASSERT_EQUALS("Checking " + file + " ...\n", output_str());
     }
 
     // TODO: provide data which actually shows values above 0

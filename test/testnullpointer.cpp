@@ -140,6 +140,7 @@ private:
         TEST_CASE(nullpointer99); // #10602
         TEST_CASE(nullpointer100);        // #11636
         TEST_CASE(nullpointer101);        // #11382
+        TEST_CASE(nullpointer102);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -990,7 +991,7 @@ private:
 
         check("struct S { struct T { char c; } *p; };\n" // #6541
               "char f(S* s) { return s->p ? 'a' : s->p->c; }\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (warning) Either the condition 's->p' is redundant or there is possible null pointer dereference: p.\n",
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (warning) Either the condition 's->p' is redundant or there is possible null pointer dereference: s->p.\n",
                       errout.str());
     }
 
@@ -2839,6 +2840,20 @@ private:
               "void f(const Base* base) {\n"
               "    const Derived* derived = dynamic_cast<const Derived*>(base);\n"
               "    if (derived && !is_valid(*derived) || base == nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer102()
+    {
+        check("struct S { std::string str; };\n" // #11534
+              "struct T { S s; };\n"
+              "struct U { T t[1]; };\n"
+              "void f(const T& t, const U& u, std::string& str) {\n"
+              "    if (str.empty())\n"
+              "        str = t.s.str;\n"
+              "    else\n"
+              "        str = u.t[0].s.str;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

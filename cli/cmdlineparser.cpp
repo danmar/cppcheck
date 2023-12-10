@@ -198,6 +198,10 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
     assert(!(!pathnamesRef.empty() && !fileSettingsRef.empty()));
 
     if (!fileSettingsRef.empty()) {
+        // TODO: handle ignored?
+
+        // TODO: de-duplicate
+
         std::list<FileSettings> fileSettings;
         if (!mSettings.fileFilters.empty()) {
             // filter only for the selected filenames from all project files
@@ -241,6 +245,19 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
             if (!err.empty()) {
                 // TODO: bail out?
                 mLogger.printMessage(err);
+            }
+        }
+
+        // de-duplicate files
+        {
+            auto it = filesResolved.begin();
+            while (it != filesResolved.end()) {
+                const std::string& name = it->first;
+                // TODO: log if duplicated files were dropped
+                filesResolved.erase(std::remove_if(std::next(it), filesResolved.end(), [&](const std::pair<std::string, std::size_t>& entry) {
+                    return entry.first == name;
+                }), filesResolved.end());
+                ++it;
             }
         }
 

@@ -1130,14 +1130,10 @@ public:
     const Function *findFunction(const Token *tok, bool requireConst=false) const;
 
     const Scope *findRecordInNestedList(const std::string & name, bool isC = false) const;
-    Scope *findRecordInNestedList(const std::string & name) {
-        return const_cast<Scope *>(const_cast<const Scope *>(this)->findRecordInNestedList(name));
-    }
+    Scope *findRecordInNestedList(const std::string & name, bool isC = false);
 
     const Type* findType(const std::string& name) const;
-    Type* findType(const std::string& name) {
-        return const_cast<Type*>(const_cast<const Scope *>(this)->findType(name));
-    }
+    Type* findType(const std::string& name);
 
     /**
      * @brief find if name is in nested list

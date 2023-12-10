@@ -402,9 +402,9 @@ void Token::replace(Token *replaceThis, Token *start, Token *end)
     delete replaceThis;
 }
 
-const Token *Token::tokAt(int index) const
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+static T *tokAtImpl(T *tok, int index)
 {
-    const Token *tok = this;
     while (index > 0 && tok) {
         tok = tok->next();
         --index;
@@ -416,13 +416,34 @@ const Token *Token::tokAt(int index) const
     return tok;
 }
 
-const Token *Token::linkAt(int index) const
+const Token *Token::tokAt(int index) const
 {
-    const Token *tok = this->tokAt(index);
+    return tokAtImpl(this, index);
+}
+
+Token *Token::tokAt(int index)
+{
+    return tokAtImpl(this, index);
+}
+
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+static T *linkAtImpl(T *thisTok, int index)
+{
+    T *tok = thisTok->tokAt(index);
     if (!tok) {
-        throw InternalError(this, "Internal error. Token::linkAt called with index outside the tokens range.");
+        throw InternalError(thisTok, "Internal error. Token::linkAt called with index outside the tokens range.");
     }
     return tok->link();
+}
+
+const Token *Token::linkAt(int index) const
+{
+    return linkAtImpl(this, index);
+}
+
+Token *Token::linkAt(int index)
+{
+    return linkAtImpl(this, index);
 }
 
 const std::string &Token::strAt(int index) const
@@ -857,9 +878,10 @@ void Token::move(Token *srcStart, Token *srcEnd, Token *newLocation)
         tok->mImpl->mProgressValue = newLocation->mImpl->mProgressValue;
 }
 
-const Token* Token::nextArgument() const
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+static T* nextArgumentImpl(T *thisTok)
 {
-    for (const Token* tok = this; tok; tok = tok->next()) {
+    for (T* tok = thisTok; tok; tok = tok->next()) {
         if (tok->str() == ",")
             return tok->next();
         if (tok->link() && Token::Match(tok, "(|{|[|<"))
@@ -868,6 +890,16 @@ const Token* Token::nextArgument() const
             return nullptr;
     }
     return nullptr;
+}
+
+const Token* Token::nextArgument() const
+{
+    return nextArgumentImpl(this);
+}
+
+Token *Token::nextArgument()
+{
+    return nextArgumentImpl(this);
 }
 
 const Token* Token::nextArgumentBeforeCreateLinks2() const
@@ -1007,9 +1039,30 @@ Token * Token::findOpeningBracket()
 
 //---------------------------------------------------------------------------
 
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+static T *findsimplematchImpl(T * const startTok, const char pattern[], size_t pattern_len)
+{
+    for (T* tok = startTok; tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, pattern, pattern_len))
+            return tok;
+    }
+    return nullptr;
+}
+
 const Token *Token::findsimplematch(const Token * const startTok, const char pattern[], size_t pattern_len)
 {
-    for (const Token* tok = startTok; tok; tok = tok->next()) {
+    return findsimplematchImpl(startTok, pattern, pattern_len);
+}
+
+Token *Token::findsimplematch(Token * const startTok, const char pattern[], size_t pattern_len)
+{
+    return findsimplematchImpl(startTok, pattern, pattern_len);
+}
+
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+static T *findsimplematchImpl(T * const startTok, const char pattern[], size_t pattern_len, const Token * const end)
+{
+    for (T* tok = startTok; tok && tok != end; tok = tok->next()) {
         if (Token::simpleMatch(tok, pattern, pattern_len))
             return tok;
     }
@@ -1018,8 +1071,18 @@ const Token *Token::findsimplematch(const Token * const startTok, const char pat
 
 const Token *Token::findsimplematch(const Token * const startTok, const char pattern[], size_t pattern_len, const Token * const end)
 {
-    for (const Token* tok = startTok; tok && tok != end; tok = tok->next()) {
-        if (Token::simpleMatch(tok, pattern, pattern_len))
+    return findsimplematchImpl(startTok, pattern, pattern_len, end);
+}
+
+Token *Token::findsimplematch(Token * const startTok, const char pattern[], size_t pattern_len, const Token * const end) {
+    return findsimplematchImpl(startTok, pattern, pattern_len, end);
+}
+
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+static T *findmatchImpl(T * const startTok, const char pattern[], const nonneg int varId)
+{
+    for (T* tok = startTok; tok; tok = tok->next()) {
+        if (Token::Match(tok, pattern, varId))
             return tok;
     }
     return nullptr;
@@ -1027,7 +1090,17 @@ const Token *Token::findsimplematch(const Token * const startTok, const char pat
 
 const Token *Token::findmatch(const Token * const startTok, const char pattern[], const nonneg int varId)
 {
-    for (const Token* tok = startTok; tok; tok = tok->next()) {
+    return findmatchImpl(startTok, pattern, varId);
+}
+
+Token *Token::findmatch(Token * const startTok, const char pattern[], const nonneg int varId) {
+    return findmatchImpl(startTok, pattern, varId);
+}
+
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+static T *findmatchImpl(T * const startTok, const char pattern[], const Token * const end, const nonneg int varId)
+{
+    for (T* tok = startTok; tok && tok != end; tok = tok->next()) {
         if (Token::Match(tok, pattern, varId))
             return tok;
     }
@@ -1036,11 +1109,11 @@ const Token *Token::findmatch(const Token * const startTok, const char pattern[]
 
 const Token *Token::findmatch(const Token * const startTok, const char pattern[], const Token * const end, const nonneg int varId)
 {
-    for (const Token* tok = startTok; tok && tok != end; tok = tok->next()) {
-        if (Token::Match(tok, pattern, varId))
-            return tok;
-    }
-    return nullptr;
+    return findmatchImpl(startTok, pattern, end, varId);
+}
+
+Token *Token::findmatch(Token * const startTok, const char pattern[], const Token * const end, const nonneg int varId) {
+    return findmatchImpl(startTok, pattern, end, varId);
 }
 
 void Token::function(const Function *f)
@@ -1269,7 +1342,10 @@ std::string Token::stringify(const stringifyOptions& options) const
     } else if (options.exprid && mImpl->mExprId != 0) {
         ret += '@';
         ret += (options.idtype ? "expr" : "");
-        ret += std::to_string(mImpl->mExprId);
+        if ((mImpl->mExprId & (1U << efIsUnique)) != 0)
+            ret += "UNIQUE";
+        else
+            ret += std::to_string(mImpl->mExprId);
     }
 
     return ret;

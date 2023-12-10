@@ -321,7 +321,7 @@ If you can generate a compile database, then it is possible to import that in Cp
 
 In Linux you can use for instance the `bear` (build ear) utility to generate a compile database from arbitrary build tools:
 
-    bear make
+    bear -- make
 
 # Preprocessor Settings
 
@@ -966,7 +966,7 @@ To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The
 | avr.cfg | |
 | bento4.cfg | [Bento4](http://www.bento4.com/) |
 | boost.cfg | [Boost](http://www.boost.org/)|
-| bsd.cfg | [*BSD](https://www.freebsd.org/) |
+| bsd.cfg | [BSD](https://www.freebsd.org/) |
 | cairo.cfg | [cairo](https://www.cairographics.org/) |
 | cppcheck-lib.cfg | [Cppcheck](http://cppcheck.net/) | Used in selfcheck of the Cppcheck code base
 | cppunit.cfg | [CppUnit](https://sourceforge.net/projects/cppunit/) |
@@ -974,7 +974,7 @@ To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The
 | embedded_sql.cfg | |
 | emscripten.cfg | |
 | ginac.cfg | |
-| gnu.cfg | [*nix](https://www.gnu.org/) |
+| gnu.cfg | [GNU](https://www.gnu.org/) |
 | googletest.cfg | [GoogleTest](https://github.com/google/googletest) |
 | gtk.cfg | [GTK](https://www.gtk.org/) |
 | icu.cfg | |
@@ -997,7 +997,7 @@ To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The
 | pcre.cfg | [PCRE](https://pcre.org/) |
 | posix.cfg | [POSIX](https://pubs.opengroup.org/onlinepubs/9699919799/) |
 | python.cfg | |
-| qt.cfg | [Qt](https://www.qt.io/) |
+| qt.cfg | [Qt](https://doc.qt.io/qt.html) |
 | ruby.cfg | |
 | sdl.cfg | |
 | sfml.cfg | |

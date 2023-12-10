@@ -3,6 +3,7 @@ Release Notes for Cppcheck 2.13
 New checks:
 - passedByValueCallback for functions which take a parameter by value but are used as callbacks (subset of passedByValue)
 - returnImplicitInt for C functions without return type (previously reported as a debug message)
+- iterateByValue for iterating by value in a range-based for loop when a const reference could be used
 
 Improved checking:
 -
@@ -33,3 +34,4 @@ Other:
 - fixed CMake build with UBSAN and GCC
 - Added command-line options "--fsigned-char" and "--funsigned-char" to control the signess of the "char" type. This overrides previously specified "--platform" options and is overrides by following ones.
 - An error is now reported when the "cppcheck.cfg" is invalid. The CLI version will also exit with a failure in that case.
+- Fixed loading of addons from "cppcheck.cfg" in the GUI application.

@@ -4511,7 +4511,7 @@ private:
                "void f(Object *obj) {\n"
                "  if (valid(obj, K0)) {}\n"
                "}\n";
-        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 7U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 7U, 0));
         ASSERT_EQUALS(false, testValueOfXKnown(code, 7U, 0));
 
         code = "int f(int i) {\n"
@@ -5644,6 +5644,17 @@ private:
                "}\n";
         values = tokenValues(code, "x <", ValueFlow::Value::ValueType::UNINIT);
         ASSERT_EQUALS(0, values.size());
+
+        code = "void g(bool *result, size_t *buflen) {\n" // #12091
+               "    if (*result && *buflen >= 5) {}\n" // <- *buflen might not be initialized
+               "}\n"
+               "void f() {\n"
+               "    size_t bytesCopied;\n"
+               "    bool copied_all = true;\n"
+               "    g(&copied_all, &bytesCopied);\n"
+               "}";
+        values = tokenValues(code, "buflen >=", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(1, values.size());
     }
 
     void valueFlowConditionExpressions() {
