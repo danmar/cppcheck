@@ -2647,7 +2647,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
         while (Token::Match(ptok->astParent(), ".|::|["))
             ptok = ptok->astParent();
         int pindirect = indirect;
-        if(indirect == 0 && astIsLHS(tok2) && Token::Match(ptok, ". %var%") && astIsPointer(ptok->next()))
+        if (indirect == 0 && astIsLHS(tok2) && Token::Match(ptok, ". %var%") && astIsPointer(ptok->next()))
             pindirect = 1;
         bool inconclusive = false;
         bool isChanged = isVariableChangedByFunctionCall(ptok, pindirect, settings, &inconclusive);
