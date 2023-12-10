@@ -3250,6 +3250,8 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
                 continue;
             if (arg->isReference())
                 return ExprUsage::PassedByReference;
+            if (arg->isPointer() && indirect == 1)
+                return ExprUsage::PassedByReference;
         }
         if (!args.empty() && indirect == 0 && !addressOf)
             return ExprUsage::Used;
@@ -3293,6 +3295,8 @@ ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings,
         while (Token::simpleMatch(parent, "[") && parent->astParent())
             parent = parent->astParent();
         if (Token::Match(parent, "%assign%") && (astIsRHS(tok) || astIsLHS(parent->astOperand1())))
+            return ExprUsage::NotUsed;
+        if (Token::Match(parent, "++|--"))
             return ExprUsage::NotUsed;
         if (parent->isConstOp())
             return ExprUsage::NotUsed;
