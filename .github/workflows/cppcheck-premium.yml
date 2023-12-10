@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-22.04 # run on the latest image only
 
     env:
-      PREMIUM_VERSION: devdrop-20231105
+      PREMIUM_VERSION: devdrop-231210
 
     steps:
       - uses: actions/checkout@v3
