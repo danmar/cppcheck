@@ -940,9 +940,8 @@ private:
               "    free(p);\n"
               "    strcpy(p, q);\n"
               "}\n", false, &s);
-        TODO_ASSERT_EQUALS("[test.c:3]: (error) Dereferencing 'p' after it is deallocated / released\n",
-                           "",
-                           errout.str());
+        ASSERT_EQUALS("[test.c:3]: (error) Dereferencing 'p' after it is deallocated / released\n",
+                      errout.str());
 
         check("void f() {\n"
               "    int *p = (int*)malloc(4);\n"

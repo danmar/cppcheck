@@ -933,8 +933,7 @@ void CheckLeakAutoVar::changeAllocStatus(VarInfo &varInfo, const VarInfo::AllocI
 void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpeningPar, VarInfo &varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af)
 {
     // Ignore function call?
-    if (mSettings->library.isLeakIgnore(mSettings->library.getFunctionName(tokName)))
-        return;
+    const bool isLeakIgnore = mSettings->library.isLeakIgnore(mSettings->library.getFunctionName(tokName));
     if (mSettings->library.getReallocFuncInfo(tokName))
         return;
 
@@ -993,6 +992,8 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
                         varAlloc.allocTok = arg;
                     }
                 }
+                else if (isLeakIgnore)
+                    checkTokenInsideExpression(arg, varInfo);
                 else
                     changeAllocStatus(varInfo, dealloc.type == 0 ? allocation : dealloc, tokName, arg);
             }
