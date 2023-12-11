@@ -1640,7 +1640,7 @@ namespace {
         static bool updateValue(ValueFlow::Value& v, ValueFlow::Value x)
         {
             const bool returnValue = !x.isUninitValue() && !x.isImpossible();
-            if(v.isUninitValue() || returnValue)
+            if (v.isUninitValue() || returnValue)
                 v = std::move(x);
             return returnValue;
         }
@@ -1671,7 +1671,7 @@ namespace {
                 if (value.tokvalue->exprId() > 0 && !pm->hasValue(value.tokvalue->exprId()))
                     continue;
                 ValueFlow::Value v2 = pm->at(value.tokvalue->exprId());
-                if(!v2.isIntValue() && value.intvalue != 0)
+                if (!v2.isIntValue() && value.intvalue != 0)
                     continue;
                 v2.intvalue += value.intvalue;
                 if (updateValue(v, std::move(v2)))
