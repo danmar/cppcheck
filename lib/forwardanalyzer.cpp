@@ -40,6 +40,14 @@
 #include <vector>
 
 namespace {
+    struct OnExit {
+        std::function<void()> f;
+
+        ~OnExit() {
+            f();
+        }
+    };
+
     struct ForwardTraversal {
         enum class Progress { Continue, Break, Skip };
         enum class Terminate { None, Bail, Inconclusive };

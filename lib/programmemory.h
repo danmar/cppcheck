@@ -43,7 +43,7 @@ struct ExprIdToken {
     ExprIdToken() = default;
     // cppcheck-suppress noExplicitConstructor
     // NOLINTNEXTLINE(google-explicit-constructor)
-    ExprIdToken(const Token* tok);
+    ExprIdToken(const Token* tok) : tok(tok) {}
     // TODO: Make this constructor only available from ProgramMemory
     // cppcheck-suppress noExplicitConstructor
     // NOLINTNEXTLINE(google-explicit-constructor)
@@ -55,40 +55,10 @@ struct ExprIdToken {
         return getExpressionId() == rhs.getExpressionId();
     }
 
-    bool operator<(const ExprIdToken& rhs) const {
-        return getExpressionId() < rhs.getExpressionId();
-    }
-
     template<class T, class U>
     friend bool operator!=(const T& lhs, const U& rhs)
     {
         return !(lhs == rhs);
-    }
-
-    template<class T, class U>
-    friend bool operator<=(const T& lhs, const U& rhs)
-    {
-        return !(lhs > rhs);
-    }
-
-    template<class T, class U>
-    friend bool operator>(const T& lhs, const U& rhs)
-    {
-        return rhs < lhs;
-    }
-
-    template<class T, class U>
-    friend bool operator>=(const T& lhs, const U& rhs)
-    {
-        return !(lhs < rhs);
-    }
-
-    const Token& operator*() const NOEXCEPT {
-        return *tok;
-    }
-
-    const Token* operator->() const NOEXCEPT {
-        return tok;
     }
 
     struct Hash {
@@ -149,14 +119,6 @@ struct ProgramMemory {
         return mValues.end();
     }
 
-    friend bool operator==(const ProgramMemory& x, const ProgramMemory& y) {
-        return x.mValues == y.mValues;
-    }
-
-    friend bool operator!=(const ProgramMemory& x, const ProgramMemory& y) {
-        return x.mValues != y.mValues;
-    }
-
 private:
     Map mValues;
 };
@@ -195,14 +157,14 @@ void execute(const Token* expr,
  * \param condition   top ast token in condition
  * \param pm   program memory
  */
-bool conditionIsFalse(const Token* condition, ProgramMemory pm, const Settings* settings);
+bool conditionIsFalse(const Token* condition, ProgramMemory pm, const Settings* settings = nullptr);
 
 /**
  * Is condition always true when variable has given value?
  * \param condition   top ast token in condition
  * \param pm   program memory
  */
-bool conditionIsTrue(const Token* condition, ProgramMemory pm, const Settings* settings);
+bool conditionIsTrue(const Token* condition, ProgramMemory pm, const Settings* settings = nullptr);
 
 /**
  * Get program memory by looking backwards from given token.

@@ -4532,21 +4532,6 @@ private:
               "	static_assert(static_cast<int>(E::E1) == 1);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-
-        check("struct a {\n"
-              "  bool g();\n"
-              "  int h();\n"
-              "};\n"
-              "void f(a c, int d, int e) {\n"
-              "  if (c.g() && c.h()) {}\n"
-              "  else {\n"
-              "    bool u = false;\n"
-              "    if (d && e)\n"
-              "      u = true;\n"
-              "    if (u) {}\n"
-              "  }\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
