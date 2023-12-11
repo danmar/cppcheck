@@ -859,7 +859,7 @@ void memleak_scandir(void)
        which is allocated via malloc(3).  If filter is NULL, all entries are
        selected.*/
 
-    // TODO: cppcheck-suppress memleak
+    // cppcheck-suppress memleak
 }
 
 void no_memleak_scandir(void)
