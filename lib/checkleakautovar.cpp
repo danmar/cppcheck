@@ -679,16 +679,14 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 continue;
             functionCall(ftok, openingPar, varInfo, allocation, af);
 
-            const Token* const endPar = ftok->next()->link();
-            if (af)
-                tok = endPar;
+            tok = ftok->next()->link();
 
             // Handle scopes that might be noreturn
-            if (allocation.status == VarInfo::NOALLOC && Token::simpleMatch(endPar, ") ; }")) {
+            if (allocation.status == VarInfo::NOALLOC && Token::simpleMatch(tok, ") ; }")) {
                 if (ftok->isKeyword())
                     continue;
                 bool unknown = false;
-                if (mTokenizer->isScopeNoReturn(endPar->tokAt(2), &unknown)) {
+                if (mTokenizer->isScopeNoReturn(tok->tokAt(2), &unknown)) {
                     if (!unknown)
                         varInfo.clear();
                     else {
