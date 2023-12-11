@@ -7275,6 +7275,17 @@ private:
                "    if (a && b) {}\n"
                "}\n";
         valueOfTok(code, "a");
+
+        code = "void g(const char* fmt, ...);\n" // #12255
+               "void f(const char* fmt, const char* msg) {\n"
+               "    const char* p = msg;\n"
+               "    g(\"%s\", msg);\n"
+               "}\n"
+               "void g(const char* fmt, ...) {\n"
+               "    const char* q = fmt;\n"
+               "    if (*q > 0 && *q < 100) {}\n"
+               "}\n";
+        valueOfTok(code, "&&");
     }
 
     void valueFlowHang() {

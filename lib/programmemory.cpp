@@ -1341,6 +1341,8 @@ namespace {
 
             for (const auto& p : *pm) {
                 const Token* tok = p.first.tok;
+                if (!tok)
+                    continue;
                 const ValueFlow::Value& value = p.second;
 
                 if (tok->str() == expr->str() && !astHasExpr(tok, expr->exprId())) {
