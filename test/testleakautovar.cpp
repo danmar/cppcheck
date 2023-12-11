@@ -3024,7 +3024,7 @@ private:
               "    free(p);\n"
               "    strcpy(a, p);\n"
               "}");
-        TODO_ASSERT_EQUALS("error (free,use)", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dereferencing 'p' after it is deallocated / released\n", errout.str());
 
         check("void f(char *p) {\n"   // #3041 - assigning pointer when it's used
               "    free(p);\n"
