@@ -5645,6 +5645,22 @@ private:
         values = tokenValues(code, "x <", ValueFlow::Value::ValueType::UNINIT);
         ASSERT_EQUALS(0, values.size());
 
+        code = "void getX(int *p);\n"
+                "bool do_something();\n"
+                "void foo() {\n"
+                "  int x;\n"
+                "  bool flag;\n"
+                "  bool success;\n"
+                "  success = do_something();\n"
+                "  flag = success;\n"
+                "  if (success == true) {\n"
+                "    getX(&x);\n"
+                "  }\n"
+                "  for (int i = 0; (flag == true) && (i < x); ++i) {}\n"
+                "}\n";
+        values = tokenValues(code, "x ) ; ++ i", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
+
         code = "void g(bool *result, size_t *buflen) {\n" // #12091
                "    if (*result && *buflen >= 5) {}\n" // <- *buflen might not be initialized
                "}\n"
