@@ -466,7 +466,9 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
             const Token * closingParenthesis = tok->linkAt(1);
             for (const Token *innerTok = tok->tokAt(2); innerTok && innerTok != closingParenthesis; innerTok = innerTok->next()) {
                 // TODO: replace with checkTokenInsideExpression()
-                checkTokenInsideExpression(innerTok, varInfo);
+                const Token* const openingPar = isFunctionCall(innerTok);
+                if (!openingPar)
+                    checkTokenInsideExpression(innerTok, varInfo);
 
                 if (!isLocalVarNoAutoDealloc(innerTok, mTokenizer->isCPP()))
                     continue;
@@ -500,6 +502,15 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                         varAlloc.status = VarInfo::ALLOC;
                         varAlloc.allocTok = innerTok->tokAt(2);
                     }
+                }
+
+                // check for function call
+                if (openingPar) {
+                    const Library::AllocFunc* allocFunc = mSettings->library.getDeallocFuncInfo(innerTok);
+                    // innerTok is a function name
+                    const VarInfo::AllocInfo allocation(0, VarInfo::NOALLOC);
+                    functionCall(innerTok, openingPar, varInfo, allocation, allocFunc);
+                    innerTok = openingPar->link();
                 }
             }
 
