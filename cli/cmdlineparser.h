@@ -111,7 +111,7 @@ protected:
     void printHelp() const;
 
 private:
-    static bool isCppcheckPremium();
+    bool isCppcheckPremium() const;
 
     template<typename T>
     bool parseNumberArg(const char* const arg, std::size_t offset, T& num, bool mustBePositive = false)
