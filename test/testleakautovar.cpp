@@ -935,14 +935,6 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Dereferencing 's' after it is deallocated / released\n",
                       errout.str());
 
-        const Settings s = settingsBuilder().library("std.cfg").build();
-        check("void f(char *p, const char *q) {\n" // #11665
-              "    free(p);\n"
-              "    strcpy(p, q);\n"
-              "}\n", false, &s);
-        ASSERT_EQUALS("[test.c:3]: (error) Dereferencing 'p' after it is deallocated / released\n",
-                      errout.str());
-
         check("void f() {\n"
               "    int *p = (int*)malloc(4);\n"
               "    free(p);\n"
@@ -3025,6 +3017,13 @@ private:
               "    strcpy(a, p);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Dereferencing 'p' after it is deallocated / released\n", errout.str());
+
+        check("void f(char *p, const char *q) {\n" // #11665
+              "    free(p);\n"
+              "    strcpy(p, q);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dereferencing 'p' after it is deallocated / released\n",
+                      errout.str());
 
         check("void f(char *p) {\n"   // #3041 - assigning pointer when it's used
               "    free(p);\n"
