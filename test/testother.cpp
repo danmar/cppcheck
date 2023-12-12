@@ -101,6 +101,7 @@ private:
         TEST_CASE(varScope33);
         TEST_CASE(varScope34);
         TEST_CASE(varScope35);
+        TEST_CASE(varScope36);      // #12158
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1666,6 +1667,20 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) The scope of the variable 'buf' can be reduced.\n", errout.str());
     }
+
+    void varScope36() {
+        // #12158
+        check("void f( uint32_t value ) {\n"
+              "    uint32_t i = 0U;\n"
+              "    if ( value > 100U ) { }\n"
+              "    else if( value > 50U ) { }\n"
+              "    else{\n"
+              "         for( i = 0U; i < 5U; i++ ) {}"
+              "    }"
+              "}", nullptr, false);
+        ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 'i' can be reduced.\n", errout.str());
+    }
+
 
 #define checkOldStylePointerCast(code) checkOldStylePointerCast_(code, __FILE__, __LINE__)
     void checkOldStylePointerCast_(const char code[], const char* file, int line) {
