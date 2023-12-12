@@ -42,7 +42,7 @@ def create_gui_project_file(project_file, root_path=None, import_project=None, p
     f.close()
 
 
-def __lookup_cppcheck_exe():
+def lookup_cppcheck_exe():
     # path the script is located in
     script_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -63,7 +63,7 @@ def __lookup_cppcheck_exe():
 
 # Run Cppcheck with args
 def cppcheck(args, env=None):
-    exe = __lookup_cppcheck_exe()
+    exe = lookup_cppcheck_exe()
     assert exe is not None, 'no cppcheck binary found'
 
     logging.info(exe + ' ' + ' '.join(args))

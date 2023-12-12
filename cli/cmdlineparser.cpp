@@ -1629,10 +1629,10 @@ void CmdLineParser::printHelp() const
     mLogger.printRaw(oss.str());
 }
 
-bool CmdLineParser::isCppcheckPremium() {
-    Settings settings;
-    settings.loadCppcheckCfg(); // TODO: how to handle errors?
-    return startsWith(settings.cppcheckCfgProductName, "Cppcheck Premium");
+bool CmdLineParser::isCppcheckPremium() const {
+    if (mSettings.cppcheckCfgProductName.empty())
+        mSettings.loadCppcheckCfg();
+    return startsWith(mSettings.cppcheckCfgProductName, "Cppcheck Premium");
 }
 
 bool CmdLineParser::tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename)
