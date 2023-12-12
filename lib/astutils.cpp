@@ -3105,7 +3105,7 @@ bool isIteratorPair(const std::vector<const Token*>& args)
 
 const Token *findLambdaStartToken(const Token *last)
 {
-    if (!last || last->str() != "}")
+    if (!last || !last->isCpp() || last->str() != "}")
         return nullptr;
     const Token* tok = last->link();
     if (Token::simpleMatch(tok->astParent(), "("))
@@ -3115,7 +3115,7 @@ const Token *findLambdaStartToken(const Token *last)
     return nullptr;
 }
 
-template<class T>
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
 static T* findLambdaEndTokenGeneric(T* first)
 {
     auto maybeLambda = [](T* tok) -> bool {
@@ -3133,7 +3133,7 @@ static T* findLambdaEndTokenGeneric(T* first)
         return true;
     };
 
-    if (!first || first->str() != "[")
+    if (!first || !first->isCpp() || first->str() != "[")
         return nullptr;
     if (!maybeLambda(first->previous()))
         return nullptr;
@@ -3447,7 +3447,7 @@ bool isNullOperand(const Token *expr)
 {
     if (!expr)
         return false;
-    if (Token::Match(expr, "static_cast|const_cast|dynamic_cast|reinterpret_cast <"))
+    if (expr->isCpp() && Token::Match(expr, "static_cast|const_cast|dynamic_cast|reinterpret_cast <"))
         expr = expr->astParent();
     else if (!expr->isCast())
         return Token::Match(expr, "NULL|nullptr");
