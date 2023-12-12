@@ -828,7 +828,7 @@ def test_file_duplicate_2(tmpdir):
     assert stderr == ''
 
 
-def test_premium_with_relative_path(tmpdir):
+def test_premium_with_relative_path(tmpdir): #12254
 
 
     test_file = os.path.join(tmpdir, 'test.c')
@@ -838,7 +838,7 @@ def test_premium_with_relative_path(tmpdir):
     product_name = 'Cppcheck Premium ' + str(time.time())
 
     test_cfg = lookup_cppcheck_exe()
-    if(test_cfg.endswith('.exe')) :
+    if(test_cfg.endswith('.exe')):
         test_cfg = test_cfg[:-4]
     test_cfg += '.cfg'
     with open(test_cfg, 'wt') as f:
@@ -850,7 +850,7 @@ def test_premium_with_relative_path(tmpdir):
                 }
                 """.replace('NAME', product_name))
 
-    if os.path.isfile('cppcheck') :
+    if os.path.isfile('cppcheck'):
         os.chdir('test/cli')
 
     args = ['--premium=misra-c++-2008', test_file]
@@ -862,3 +862,5 @@ def test_premium_with_relative_path(tmpdir):
     _, stdout, stderr = cppcheck(['--version'])
     assert stdout == product_name + '\n'
     assert stderr == ''
+
+    os.remove(test_cfg)
