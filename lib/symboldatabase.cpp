@@ -1588,7 +1588,8 @@ namespace {
         if (op1 && op1->exprId() == 0)
             return;
         const Token* op2 = tok->astParent()->astOperand2();
-        if (op2 && op2->exprId() == 0 && !(isLambdaCaptureList(op2) || (op2->str() == "(" && isLambdaCaptureList(op2->astOperand1()))))
+        if (op2 && op2->exprId() == 0 &&
+            !(isLambdaCaptureList(op2) || (op2->str() == "(" && isLambdaCaptureList(op2->astOperand1()) || Token::simpleMatch(op2, "{ }"))))
             return;
 
         if (tok->astParent()->isExpandedMacro() || Token::Match(tok->astParent(), "++|--")) {
