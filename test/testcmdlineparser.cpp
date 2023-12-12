@@ -124,6 +124,7 @@ private:
         TEST_CASE(helplongExclusive);
         TEST_CASE(version);
         TEST_CASE(versionWithCfg);
+        TEST_CASE(versionSwitchWithCfg);
         TEST_CASE(versionExclusive);
         TEST_CASE(versionWithInvalidCfg);
         TEST_CASE(onefile);
@@ -419,6 +420,19 @@ private:
         ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
         // TODO: somehow the config is not loaded on some systems
         (void)logger->str(); //ASSERT_EQUALS("The Product\n", logger->str()); // TODO: include version?
+    }
+
+    void versionSwitchWithCfg() {
+        REDIRECT;
+        ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
+                        "{\n"
+                        "\"productName\": \"Cppcheck Premium 1.2.3.4\""
+                        "}\n");
+        const char * const argv[] = {"cppcheck", "--premium=misra-c++-2008", "--version", "file.cpp"};
+        // --premium=misra-c++-2008 should be recognized from cfg
+        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(4, argv));
+        // TODO: somehow the config is not loaded on some systems
+        ASSERT_EQUALS("Cppcheck Premium 1.2.3.4\n", logger->str());
     }
 
     // TODO: test --version with extraVersion

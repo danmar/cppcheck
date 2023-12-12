@@ -1629,7 +1629,7 @@ void CmdLineParser::printHelp() const
     mLogger.printRaw(oss.str());
 }
 
-bool CmdLineParser::isCppcheckPremium() const{
+bool CmdLineParser::isCppcheckPremium() const {
     if (mSettings.cppcheckCfgProductName.empty())
         mSettings.loadCppcheckCfg();
     return startsWith(mSettings.cppcheckCfgProductName, "Cppcheck Premium");

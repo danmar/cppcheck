@@ -826,24 +826,3 @@ def test_file_duplicate_2(tmpdir):
     ]
     assert stderr == ''
 
-
-def test_cgf_with_relative_path(tmpdir):
-
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    test_cfg = os.path.join(tmpdir, '../../cppcheck.cfg')
-    with open(test_cfg, 'wt') as f:
-        f.write("""
-                {
-                    "addons": [],
-                    "productName": "Cppcheck Premium 1.2.3.4",
-                    "about": "Cppcheck Premium 1.2.3.4"
-                }
-                """)
-
-    args = [test_file]
-
-    _, _, stderr = cppcheck(args)
-    assert stderr == ''
