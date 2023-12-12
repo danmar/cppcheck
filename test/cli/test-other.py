@@ -4,8 +4,9 @@
 import os
 import sys
 import pytest
+import time
 
-from testutils import cppcheck, assert_cppcheck
+from testutils import cppcheck, assert_cppcheck, lookup_cppcheck_exe
 
 
 def __test_missing_include(tmpdir, use_j):
@@ -826,3 +827,38 @@ def test_file_duplicate_2(tmpdir):
     ]
     assert stderr == ''
 
+
+def test_premium_with_relative_path(tmpdir):
+
+
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt'):
+        pass
+
+    product_name = 'Cppcheck Premium ' + str(time.time())
+
+    test_cfg = lookup_cppcheck_exe()
+    if(test_cfg.endswith('.exe')) :
+        test_cfg = test_cfg[:-4]
+    test_cfg += '.cfg'
+    with open(test_cfg, 'wt') as f:
+        f.write("""
+                {
+                    "addons": [],
+                    "productName": "NAME",
+                    "about": "Cppcheck Premium 1.2.3.4"
+                }
+                """.replace('NAME', product_name))
+
+    if os.path.isfile('cppcheck') :
+        os.chdir('test/cli')
+
+    args = ['--premium=misra-c++-2008', test_file]
+
+    exitcode, _, stderr = cppcheck(args)
+    assert exitcode == 0
+    assert stderr == ''
+
+    _, stdout, stderr = cppcheck(['--version'])
+    assert stdout == product_name + '\n'
+    assert stderr == ''
