@@ -2877,7 +2877,7 @@ private:
               "    return *m_P;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-        
+
         check("void f(int* p, const int* q) {\n" // #11873
               "    if (*q == -1)\n"
               "        *p = 0;\n"
