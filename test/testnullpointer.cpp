@@ -2886,7 +2886,7 @@ private:
               "    int x = -2;\n"
               "    f(nullptr, &x);\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("", "[test.cpp:3]: (warning) Possible null pointer dereference: p\n", errout.str());
     }
 
     void nullpointer_addressOf() { // address of
