@@ -2861,7 +2861,7 @@ private:
 
     void nullpointer103()
     {
-        check("struct S {\n"
+        check("struct S {\n" // #10572
               "    int f();\n"
               "    int* m_P{};\n"
               "};\n"
@@ -2875,6 +2875,16 @@ private:
               "        }\n"
               "    }\n"
               "    return *m_P;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        
+        check("void f(int* p, const int* q) {\n" // #11873
+              "    if (*q == -1)\n"
+              "        *p = 0;\n"
+              "}\n"
+              "void g() {\n"
+              "    int x = -2;\n"
+              "    f(nullptr, &x);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
