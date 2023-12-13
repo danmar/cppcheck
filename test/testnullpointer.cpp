@@ -2659,6 +2659,26 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:9] -> [test.cpp:8]: (warning) Either the condition 'ptr->y!=nullptr' is redundant or there is possible null pointer dereference: ptr->y.\n",
             errout.str());
+
+        check("bool argsMatch(const Token *first, const Token *second) {\n" // #6145
+              "    if (first->str() == \")\")\n"
+              "        return true;\n"
+              "    else if (first->next()->str() == \"=\")\n"
+              "        first = first->nextArgument();\n"
+              "    else if (second->next()->str() == \"=\") {\n"
+              "        second = second->nextArgument();\n"
+              "        if (second)\n"
+              "            second = second->tokAt(-2);\n"
+              "        if (!first || !second) {\n"
+              "            return !first && !second;\n"
+              "        }\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:10] -> [test.cpp:2]: (warning) Either the condition '!first' is redundant or there is possible null pointer dereference: first.\n"
+            "[test.cpp:10] -> [test.cpp:4]: (warning) Either the condition '!first' is redundant or there is possible null pointer dereference: first.\n",
+            errout.str());
     }
 
     void nullpointer90() // #6098
