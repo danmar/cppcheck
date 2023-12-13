@@ -141,6 +141,7 @@ private:
         TEST_CASE(nullpointer100);        // #11636
         TEST_CASE(nullpointer101);        // #11382
         TEST_CASE(nullpointer102);
+        TEST_CASE(nullpointer103);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2854,6 +2855,26 @@ private:
               "        str = t.s.str;\n"
               "    else\n"
               "        str = u.t[0].s.str;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer103()
+    {
+        check("struct S {\n"
+              "    int f();\n"
+              "    int* m_P{};\n"
+              "};\n"
+              "int S::f() {\n"
+              "    if (!m_P) {\n"
+              "        try {\n"
+              "            m_P = new int(1);\n"
+              "        }\n"
+              "        catch (...) {\n"
+              "            return 0;\n"
+              "        }\n"
+              "    }\n"
+              "    return *m_P;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
