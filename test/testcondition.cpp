@@ -5232,6 +5232,19 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #10701
+              "    std::string s;\n"
+              "    try {\n"
+              "        try {\n"
+              "            s = g();\n"
+              "        }\n"
+              "        catch (const Err& err) {}\n"
+              "    }\n"
+              "    catch (const std::exception& e) {}\n"
+              "    if (s != \"abc\") {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void multiConditionAlwaysTrue() {
