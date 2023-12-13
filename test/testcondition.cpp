@@ -5194,6 +5194,16 @@ private:
               "    for (int i = 0; i < N; a[i++] = false);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #8192
+              "    for (int i = 0; i > 10; ++i) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'i>10' is always false\n", "", errout.str());
+
+        check("void f() {\n"
+              "    for (int i = 1000; i < 20; ++i) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'i<20' is always false\n", errout.str());
     }
 
     void alwaysTrueTryCatch()
