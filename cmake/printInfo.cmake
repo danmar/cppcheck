@@ -1,4 +1,4 @@
-message( STATUS "------------------ General configuration for ${PROJECT_NAME} ${VERSION} -----------------")
+message( STATUS "------------------ General configuration for ${PROJECT_NAME} ${PROJECT_VERSION} -----------------")
 message( STATUS )
 message( STATUS "CMake Version =         ${CMAKE_VERSION}")
 message( STATUS "CMake Generator =       ${CMAKE_GENERATOR}")
