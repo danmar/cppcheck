@@ -586,3 +586,54 @@ def test_project_file_ignore_3(tmpdir):
     ]
 
     assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
+
+
+@pytest.mark.xfail
+def test_json_file_ignore(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        pass
+
+    compilation_db = [
+        {"directory": str(tmpdir),
+         "command": "c++ -o bug1.o -c bug1.cpp",
+         "file": "test.cpp",
+         "output": "test.o"}
+    ]
+
+    project_file = os.path.join(tmpdir, 'test.json')
+    with open(project_file, 'wt') as f:
+        f.write(json.dumps(compilation_db))
+
+    args = ['-itest.cpp', '--project={}'.format(project_file)]
+    out_lines = [
+        'cppcheck: error: no C or C++ source files found.',
+        'cppcheck: all paths were ignored'
+    ]
+
+    assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
+
+
+def test_json_file_ignore_2(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        pass
+
+    compilation_db = [
+        {"directory": str(tmpdir),
+         "command": "c++ -o bug1.o -c bug1.cpp",
+         "file": "test.cpp",
+         "output": "test.o"}
+    ]
+
+    project_file = os.path.join(tmpdir, 'test.json')
+    with open(project_file, 'wt') as f:
+        f.write(json.dumps(compilation_db))
+
+    args = ['-i{}'.format(test_file), '--project={}'.format(project_file)]
+    out_lines = [
+        'cppcheck: error: no C or C++ source files found.',
+        'cppcheck: all paths were ignored'
+    ]
+
+    assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)

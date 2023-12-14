@@ -198,8 +198,6 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
     assert(!(!pathnamesRef.empty() && !fileSettingsRef.empty()));
 
     if (!fileSettingsRef.empty()) {
-        // TODO: handle ignored?
-
         // TODO: de-duplicate
 
         std::list<FileSettings> fileSettings;
@@ -1247,8 +1245,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     substituteTemplateFormatStatic(mSettings.templateFormat);
     substituteTemplateLocationStatic(mSettings.templateLocation);
 
-    project.ignorePaths(mIgnoredPaths);
-
     if (mSettings.force || maxconfigs)
         mSettings.checkAllConfigurations = true;
 
@@ -1259,6 +1255,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         mSettings.maxConfigs = 1U;
 
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && mSettings.jobs > 1 && mSettings.buildDir.empty()) {
+        // TODO: bail out
         mLogger.printMessage("unusedFunction check can't be used with '-j' option. Disabling unusedFunction check.");
     }
 
@@ -1269,6 +1266,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
     // Print error only if we have "real" command and expect files
     if (mPathNames.empty() && project.guiProject.pathNames.empty() && project.fileSettings.empty()) {
+        // TODO: this message differs from the one reported in fillSettingsFromArgs()
         mLogger.printError("no C or C++ source files found.");
         return Result::Fail;
     }
@@ -1276,8 +1274,15 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     if (!project.guiProject.pathNames.empty())
         mPathNames = project.guiProject.pathNames;
 
-    if (!project.fileSettings.empty())
+    if (!project.fileSettings.empty()) {
+        project.ignorePaths(mIgnoredPaths);
+        if (project.fileSettings.empty()) {
+            mLogger.printError("no C or C++ source files found.");
+            mLogger.printMessage("all paths were ignored"); // TODO: log this differently?
+            return Result::Fail;
+        }
         mFileSettings = project.fileSettings;
+    }
 
     // Use paths _pathnames if no base paths for relative path output are given
     if (mSettings.basePaths.empty() && mSettings.relativePaths)
