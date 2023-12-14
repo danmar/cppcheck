@@ -2770,7 +2770,7 @@ static bool isExpressionChangedAt(const F& getExprTok,
     if (tok->isLiteral() || tok->isKeyword() || Token::Match(tok, ",|;|:"))
         return false;
     if (tok->exprId() != exprid) {
-        if (globalvar && !tok->isKeyword() && Token::Match(tok, "%name% (") && !(tok->function() && tok->function()->isAttributePure()))
+        if (globalvar && Token::Match(tok, "%name% (") && !(tok->function() && tok->function()->isAttributePure()))
             // TODO: Is global variable really changed by function call?
             return true;
         int i = 1;
