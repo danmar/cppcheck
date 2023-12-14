@@ -157,7 +157,7 @@ def test_project_empty_fields(tmpdir):
   </paths>
   <exclude/>
   <exclude>
-    <paths/>
+    <path/>
   </exclude>
   <function-contracts/>
   <variable-contracts/>
