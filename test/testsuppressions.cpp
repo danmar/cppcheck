@@ -200,7 +200,6 @@ private:
     unsigned int checkSuppression(std::map<std::string, std::string> &f, const std::string &suppression = emptyString) {
         // Clear the error log
         errout.str("");
-        output.str("");
 
         std::list<std::pair<std::string, std::size_t>> files;
         for (std::map<std::string, std::string>::const_iterator i = f.cbegin(); i != f.cend(); ++i) {
@@ -210,6 +209,7 @@ private:
         CppCheck cppCheck(*this, true, nullptr);
         Settings& settings = cppCheck.settings();
         settings.jobs = 1;
+        settings.quiet = true;
         settings.inlineSuppressions = true;
         settings.severity.enable(Severity::information);
         if (suppression == "unusedFunction")
@@ -234,13 +234,13 @@ private:
 
     unsigned int checkSuppressionThreads(const char code[], const std::string &suppression = emptyString) {
         errout.str("");
-        output.str("");
 
         std::list<std::pair<std::string, std::size_t>> files;
         files.emplace_back("test.cpp", strlen(code));
 
         Settings settings;
         settings.jobs = 2;
+        settings.quiet = true;
         settings.inlineSuppressions = true;
         settings.severity.enable(Severity::information);
         if (!suppression.empty()) {
@@ -264,13 +264,13 @@ private:
 #if !defined(WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
     unsigned int checkSuppressionProcesses(const char code[], const std::string &suppression = emptyString) {
         errout.str("");
-        output.str("");
 
         std::list<std::pair<std::string, std::size_t>> files;
         files.emplace_back("test.cpp", strlen(code));
 
         Settings settings;
         settings.jobs = 2;
+        settings.quiet = true;
         settings.inlineSuppressions = true;
         settings.severity.enable(Severity::information);
         if (!suppression.empty()) {
@@ -1089,6 +1089,7 @@ private:
 
         CppCheck cppCheck(*this, false, nullptr); // <- do not "use global suppressions". pretend this is a thread that just checks a file.
         Settings& settings = cppCheck.settings();
+        settings.quiet = true;
         settings.nomsg.addSuppressionLine("uninitvar");
         settings.exitCode = 1;
 
@@ -1123,6 +1124,7 @@ private:
 
         CppCheck cppCheck(*this, true, nullptr);
         Settings& settings = cppCheck.settings();
+        settings.quiet = true;
         settings.severity.enable(Severity::style);
         settings.inlineSuppressions = true;
         settings.relativePaths = true;

@@ -589,6 +589,9 @@ private:
 
         clang = "`-CXXRecordDecl 0x34cc5f8 <C:\\Foo\\Bar Baz\\1.cpp:2:1, col:7> col:7 class Foo";
         ASSERT_EQUALS("class Foo ;", parse(clang));
+
+        clang = "`-CXXRecordDecl 0x34cc5f8 <C:/Foo/Bar Baz/1.cpp:2:1, col:7> col:7 class Foo";
+        ASSERT_EQUALS("class Foo ;", parse(clang));
     }
 
     void cxxRecordDecl2() {

@@ -242,6 +242,7 @@ private:
         TEST_CASE(exprid5);
         TEST_CASE(exprid6);
         TEST_CASE(exprid7);
+        TEST_CASE(exprid8);
 
         TEST_CASE(structuredBindings);
     }
@@ -3955,6 +3956,42 @@ private:
                                 "3: if ( (@2 char ) a@1 ==@4 (@3 short ) a@1 ) { }\n"
                                 "4: }\n";
         ASSERT_EQUALS(expected, tokenizeExpr(code));
+    }
+
+    void exprid8() {
+        const char code[] = "void f() {\n" // #12249
+                            "    std::string s;\n"
+                            "    (((s += \"--\") += std::string()) += \"=\");\n"
+                            "}\n";
+        const char expected[] = "1: void f ( ) {\n"
+                                "2: std ::@UNIQUE string s@1 ;\n"
+                                "3: ( ( s@1 +=@UNIQUE \"--\"@UNIQUE ) +=@UNIQUE std ::@UNIQUE string (@UNIQUE ) ) +=@UNIQUE \"=\"@UNIQUE ;\n"
+                                "4: }\n";
+        ASSERT_EQUALS(expected, tokenizeExpr(code));
+
+        const char code2[] = "struct S { std::function<void()>* p; };\n"
+                             "S f() { return S{ std::make_unique<std::function<void()>>([]() {}).release()}; }";
+        const char expected2[] = "1: struct S { std :: function < void ( ) > * p ; } ;\n"
+                                 "2: S f ( ) { return S@UNIQUE {@UNIQUE std ::@UNIQUE make_unique < std :: function < void ( ) > > (@UNIQUE [ ] ( ) { } ) .@UNIQUE release (@UNIQUE ) } ; }\n";
+        ASSERT_EQUALS(expected2, tokenizeExpr(code2));
+
+        const char code3[] = "struct S { int* p; };\n"
+                             "S f() { return S{ std::make_unique<int>([]() { return 4; }()).release()}; }\n";
+        const char expected3[] = "1: struct S { int * p ; } ;\n"
+                                 "2: S f ( ) { return S@UNIQUE {@UNIQUE std ::@UNIQUE make_unique < int > (@UNIQUE [ ] ( ) { return 4 ; } ( ) ) .@UNIQUE release (@UNIQUE ) } ; }\n";
+        ASSERT_EQUALS(expected3, tokenizeExpr(code3));
+
+        const char code4[] = "std::unique_ptr<int> g(int i) { return std::make_unique<int>(i); }\n"
+                             "void h(int*);\n"
+                             "void f() {\n"
+                             "    h(g({}).get());\n"
+                             "}\n";
+        const char expected4[] = "1: std :: unique_ptr < int > g ( int i ) { return std ::@UNIQUE make_unique < int > (@UNIQUE i@1 ) ; }\n"
+                                 "2: void h ( int * ) ;\n"
+                                 "3: void f ( ) {\n"
+                                 "4: h (@UNIQUE g (@UNIQUE { } ) .@UNIQUE get (@UNIQUE ) ) ;\n"
+                                 "5: }\n";
+        ASSERT_EQUALS(expected4, tokenizeExpr(code4));
     }
 
     void structuredBindings() {

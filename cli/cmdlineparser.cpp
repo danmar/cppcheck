@@ -198,6 +198,10 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
     assert(!(!pathnamesRef.empty() && !fileSettingsRef.empty()));
 
     if (!fileSettingsRef.empty()) {
+        // TODO: handle ignored?
+
+        // TODO: de-duplicate
+
         std::list<FileSettings> fileSettings;
         if (!mSettings.fileFilters.empty()) {
             // filter only for the selected filenames from all project files
@@ -223,6 +227,11 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(mFileSettings), [&](const FileSettings &fs) {
             return mSettings.library.markupFile(fs.filename) && mSettings.library.processMarkupAfterCode(fs.filename);
         });
+
+        if (mFileSettings.empty()) {
+            mLogger.printError("could not find or open any of the paths given.");
+            return false;
+        }
     }
 
     if (!pathnamesRef.empty()) {
@@ -235,12 +244,34 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         const bool caseSensitive = true;
 #endif
         // Execute recursiveAddFiles() to each given file parameter
+        // TODO: verbose log which files were ignored?
         const PathMatch matcher(ignored, caseSensitive);
         for (const std::string &pathname : pathnamesRef) {
             const std::string err = FileLister::recursiveAddFiles(filesResolved, Path::toNativeSeparators(pathname), mSettings.library.markupExtensions(), matcher);
             if (!err.empty()) {
                 // TODO: bail out?
                 mLogger.printMessage(err);
+            }
+        }
+
+        if (filesResolved.empty()) {
+            mLogger.printError("could not find or open any of the paths given.");
+            // TODO: PathMatch should provide the information if files were ignored
+            if (!ignored.empty())
+                mLogger.printMessage("Maybe all paths were ignored?");
+            return false;
+        }
+
+        // de-duplicate files
+        {
+            auto it = filesResolved.begin();
+            while (it != filesResolved.end()) {
+                const std::string& name = it->first;
+                // TODO: log if duplicated files were dropped
+                filesResolved.erase(std::remove_if(std::next(it), filesResolved.end(), [&](const std::pair<std::string, std::size_t>& entry) {
+                    return entry.first == name;
+                }), filesResolved.end());
+                ++it;
             }
         }
 
@@ -266,13 +297,11 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         std::copy_if(files.cbegin(), files.cend(), std::inserter(mFiles, mFiles.end()), [&](const decltype(files)::value_type& entry) {
             return mSettings.library.markupFile(entry.first) && mSettings.library.processMarkupAfterCode(entry.first);
         });
-    }
 
-    if (mFiles.empty() && mFileSettings.empty()) {
-        mLogger.printError("could not find or open any of the paths given.");
-        if (!ignored.empty())
-            mLogger.printMessage("Maybe all paths were ignored?");
-        return false;
+        if (mFiles.empty()) {
+            mLogger.printError("could not find or open any of the paths given.");
+            return false;
+        }
     }
 
     return true;
@@ -1612,10 +1641,10 @@ void CmdLineParser::printHelp() const
     mLogger.printRaw(oss.str());
 }
 
-bool CmdLineParser::isCppcheckPremium() {
-    Settings settings;
-    settings.loadCppcheckCfg(); // TODO: how to handle errors?
-    return startsWith(settings.cppcheckCfgProductName, "Cppcheck Premium");
+bool CmdLineParser::isCppcheckPremium() const {
+    if (mSettings.cppcheckCfgProductName.empty())
+        mSettings.loadCppcheckCfg();
+    return startsWith(mSettings.cppcheckCfgProductName, "Cppcheck Premium");
 }
 
 bool CmdLineParser::tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename)

@@ -40,14 +40,6 @@
 #include <vector>
 
 namespace {
-    struct OnExit {
-        std::function<void()> f;
-
-        ~OnExit() {
-            f();
-        }
-    };
-
     struct ForwardTraversal {
         enum class Progress { Continue, Break, Skip };
         enum class Terminate { None, Bail, Inconclusive };
@@ -756,8 +748,11 @@ namespace {
                     ForwardTraversal tryTraversal = fork();
                     tryTraversal.updateRange(tok->next(), endBlock, depth - 1);
                     bool bail = tryTraversal.actions.isModified();
-                    if (bail)
+                    if (bail) {
+                        actions = tryTraversal.actions;
+                        terminate = tryTraversal.terminate;
                         return Break();
+                    }
 
                     while (Token::simpleMatch(endBlock, "} catch (")) {
                         Token* endCatch = endBlock->linkAt(2);

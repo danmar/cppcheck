@@ -593,6 +593,20 @@ void memleak_LocalAlloc()
     // cppcheck-suppress memleak
 }
 
+void memleak_dupenv_s() // #10646
+{
+    char* pValue;
+    size_t len;
+    errno_t err = _dupenv_s(&pValue, &len, "pathext");
+    if (err) return -1;
+    printf("pathext = %s\n", pValue);
+    free(pValue);
+    err = _dupenv_s(&pValue, &len, "nonexistentvariable");
+    if (err) return -1;
+    printf("nonexistentvariable = %s\n", pValue);
+    // cppcheck-suppress memleak
+}
+
 void resourceLeak_CreateSemaphoreA()
 {
     HANDLE hSemaphore;

@@ -4532,6 +4532,21 @@ private:
               "	static_assert(static_cast<int>(E::E1) == 1);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct a {\n"
+              "  bool g();\n"
+              "  int h();\n"
+              "};\n"
+              "void f(a c, int d, int e) {\n"
+              "  if (c.g() && c.h()) {}\n"
+              "  else {\n"
+              "    bool u = false;\n"
+              "    if (d && e)\n"
+              "      u = true;\n"
+              "    if (u) {}\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -5089,6 +5104,11 @@ private:
               "  return fwrite(s.c_str(), 1, s.length(), fp) == s.length();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(const std::string& s) {\n" // #9148
+              "    if (s.empty() || s.size() < 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 's.size()<1' is always false\n", errout.str());
     }
 
     void alwaysTrueLoop()
@@ -5210,6 +5230,19 @@ private:
               "    if( x ) {\n"
               "        g();\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #10701
+              "    std::string s;\n"
+              "    try {\n"
+              "        try {\n"
+              "            s = g();\n"
+              "        }\n"
+              "        catch (const Err& err) {}\n"
+              "    }\n"
+              "    catch (const std::exception& e) {}\n"
+              "    if (s != \"abc\") {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

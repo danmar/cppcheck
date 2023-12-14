@@ -891,6 +891,22 @@ void validCode(va_list valist_arg1, va_list valist_arg2)
     }
 }
 
+typedef struct {
+    size_t N;
+    int* data;
+} S_memalign;
+
+S_memalign* posix_memalign_memleak(size_t n) { // #12248
+    S_memalign* s = malloc(sizeof(*s));   
+    s->N = n;   
+    if (0 != posix_memalign((void**)&s->data, 16, n * sizeof(int))) {
+        free(s);
+        return NULL;
+    }
+    memset(s->data, 0, n * sizeof(int));
+    return s;
+}
+
 ssize_t nullPointer_send(int socket, const void *buf, size_t len, int flags)
 {
     // cppcheck-suppress nullPointer
@@ -1060,6 +1076,13 @@ void resourceLeak_fdopen(int fd)
     // cppcheck-suppress resourceLeak
 }
 
+void resourceLeak_fdopen2(const char* fn) // #2767
+{
+    int fi = open(fn, O_RDONLY);
+    FILE* fd = fdopen(fi, "r");
+    fclose(fd);
+}
+
 void resourceLeak_mkstemp(char *template)
 {
     // cppcheck-suppress unreadVariable
@@ -1125,12 +1148,6 @@ void noleak(int x, int y, int z)
     close(fd1);
     int fd2 = open("a", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
     close(fd2);
-    /* TODO: add configuration for open/fdopen
-        // #2830
-        int fd = open("path", O_RDONLY);
-        FILE *f = fdopen(fd, "rt");
-        fclose(f);
-     */
 }
 
 

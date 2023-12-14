@@ -603,7 +603,7 @@ void nullPointer_localtime_s(const std::time_t *restrict time, struct tm *restri
     (void)std::localtime_s(time, result);
 }
 
-void memleak_localtime_s(const std::time_t *restrict time, struct tm *restrict result)
+void memleak_localtime_s(const std::time_t *restrict time, struct tm *restrict result) // #9258
 {
     const time_t t = time(0);
     const struct tm* const now = new tm();

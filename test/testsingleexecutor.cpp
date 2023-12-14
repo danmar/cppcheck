@@ -72,7 +72,6 @@ private:
 
     void check(int files, int result, const std::string &data, const CheckOptions& opt = make_default_obj{}) {
         errout.str("");
-        output.str("");
 
         std::list<FileSettings> fileSettings;
 
@@ -169,7 +168,7 @@ private:
             expected += "Checking " + fprefix() + "_" + zpad3(i) + ".cpp ...\n";
             expected += std::to_string(i) + "/100 files checked " + std::to_string(i) + "% done\n";
         }
-        ASSERT_EQUALS(expected, output.str());
+        ASSERT_EQUALS(expected, output_str());
     }
 
     void many_files_showtime() {
@@ -259,7 +258,7 @@ private:
                         $.executeCommandCalled = true,
                         $.exe = exe,
                         $.args = {"-quiet", "-checks=*,-clang-analyzer-*,-llvm*", file, "--"}));
-        ASSERT_EQUALS("Checking " + file + " ...\n", output.str());
+        ASSERT_EQUALS("Checking " + file + " ...\n", output_str());
     }
 
 // TODO: provide data which actually shows values above 0

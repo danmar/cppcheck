@@ -2933,6 +2933,13 @@ private:
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2] -> [test.cpp:3]: (error) Using object that is a temporary.\n",
                       errout.str());
 
+        // #10833
+        check("struct A { std::string s; };\n"
+              "const std::string& f(A* a) {\n"
+              "    return a ? a->s : \"\";\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Reference to temporary returned.\n", errout.str());
+
         check("std::span<int> f() {\n"
               "    std::vector<int> v{};\n"
               "    return v;\n"
