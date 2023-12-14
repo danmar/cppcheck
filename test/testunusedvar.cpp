@@ -457,7 +457,7 @@ private:
             "void f() {\n"
             "   F f;\n"
             "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         // constructor with hidden definition
         functionVariableUsage(
@@ -471,7 +471,7 @@ private:
             "int main() {\n"
             "   A a;\n"
             "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         // side-effect variable
         functionVariableUsage(
