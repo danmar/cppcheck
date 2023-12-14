@@ -459,6 +459,20 @@ private:
             "}");
         TODO_ASSERT_EQUALS("error", "", errout.str());
 
+        // constructor with hidden definition
+        functionVariableUsage(
+            "class B {\n"
+            "public:\n"
+            "   B();\n"
+            "};\n"
+            "class A {\n"
+            "   B* b = new B;\n"
+            "};\n"
+            "int main() {\n"
+            "   A a;\n"
+            "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
         // side-effect variable
         functionVariableUsage(
             "class F {\n"
