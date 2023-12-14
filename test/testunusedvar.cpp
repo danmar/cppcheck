@@ -457,7 +457,7 @@ private:
             "void f() {\n"
             "   F f;\n"
             "}");
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("error", "", errout.str());
 
         // constructor with hidden definition
         functionVariableUsage(
