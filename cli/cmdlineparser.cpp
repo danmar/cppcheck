@@ -227,6 +227,11 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(mFileSettings), [&](const FileSettings &fs) {
             return mSettings.library.markupFile(fs.filename) && mSettings.library.processMarkupAfterCode(fs.filename);
         });
+
+        if (mFileSettings.empty()) {
+            mLogger.printError("could not find or open any of the paths given.");
+            return false;
+        }
     }
 
     if (!pathnamesRef.empty()) {
@@ -239,6 +244,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         const bool caseSensitive = true;
 #endif
         // Execute recursiveAddFiles() to each given file parameter
+        // TODO: verbose log which files were ignored?
         const PathMatch matcher(ignored, caseSensitive);
         for (const std::string &pathname : pathnamesRef) {
             const std::string err = FileLister::recursiveAddFiles(filesResolved, Path::toNativeSeparators(pathname), mSettings.library.markupExtensions(), matcher);
@@ -246,6 +252,14 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
                 // TODO: bail out?
                 mLogger.printMessage(err);
             }
+        }
+
+        if (filesResolved.empty()) {
+            mLogger.printError("could not find or open any of the paths given.");
+            // TODO: PathMatch should provide the information if files were ignored
+            if (!ignored.empty())
+                mLogger.printMessage("Maybe all paths were ignored?");
+            return false;
         }
 
         // de-duplicate files
@@ -283,13 +297,11 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         std::copy_if(files.cbegin(), files.cend(), std::inserter(mFiles, mFiles.end()), [&](const decltype(files)::value_type& entry) {
             return mSettings.library.markupFile(entry.first) && mSettings.library.processMarkupAfterCode(entry.first);
         });
-    }
 
-    if (mFiles.empty() && mFileSettings.empty()) {
-        mLogger.printError("could not find or open any of the paths given.");
-        if (!ignored.empty())
-            mLogger.printMessage("Maybe all paths were ignored?");
-        return false;
+        if (mFiles.empty()) {
+            mLogger.printError("could not find or open any of the paths given.");
+            return false;
+        }
     }
 
     return true;

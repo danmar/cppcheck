@@ -598,7 +598,11 @@ def test_file_filter_3(tmpdir):
 
 
 def test_file_filter_no_match(tmpdir):
-    args = ['--file-filter=*.c', 'test.cpp']
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt'):
+        pass
+
+    args = ['--file-filter=*.c', test_file]
     out_lines = [
         'cppcheck: error: could not find any files matching the filter.'
     ]
@@ -825,3 +829,17 @@ def test_file_duplicate_2(tmpdir):
         '3/3 files checked 0% done'
     ]
     assert stderr == ''
+
+
+def test_file_ignore(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt'):
+        pass
+
+    args = ['-itest.cpp', test_file]
+    out_lines = [
+        'cppcheck: error: could not find or open any of the paths given.',
+        'cppcheck: Maybe all paths were ignored?'
+    ]
+
+    assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
