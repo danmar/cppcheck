@@ -226,10 +226,10 @@ static std::string detectPython(const CppCheck::ExecuteCmdFn &executeCommand)
         std::string out;
 #ifdef _MSC_VER
         // FIXME: hack to avoid debug assertion with _popen() in executeCommand() for non-existing commands
-        const std::string cmd = std::string(py_exe) + " --version >NUL";
+        const std::string cmd = std::string(py_exe) + " --version >NUL 2>&1";
         if (system(cmd.c_str()) != 0) {
             // TODO: get more detailed error?
-            break;
+            continue;
         }
 #endif
         if (executeCommand(py_exe, split("--version"), "2>&1", out) == EXIT_SUCCESS && startsWith(out, "Python ") && std::isdigit(out[7])) {
