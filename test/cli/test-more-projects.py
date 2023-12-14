@@ -532,3 +532,57 @@ def test_project_file_ignore(tmpdir):
     ]
 
     assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
+
+
+def test_project_file_ignore_2(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        pass
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="{}"/>
+    </paths>
+    <exclude>
+        <path name="test.cpp"/>
+    </exclude>
+</project>""".format(test_file))
+
+    args = ['--project={}'.format(project_file)]
+    out_lines = [
+        'cppcheck: error: could not find or open any of the paths given.',
+        'cppcheck: Maybe all paths were ignored?'
+    ]
+
+    assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
+
+
+def test_project_file_ignore_3(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        pass
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="{}"/>
+    </paths>
+    <ignore>
+        <path name="test.cpp"/>
+    </ignore>
+</project>""".format(test_file))
+
+    args = ['--project={}'.format(project_file)]
+    out_lines = [
+        'cppcheck: error: could not find or open any of the paths given.',
+        'cppcheck: Maybe all paths were ignored?'
+    ]
+
+    assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
