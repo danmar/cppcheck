@@ -1630,8 +1630,9 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
 
 bool CheckUnusedVar::isVariableWithoutSideEffects(const Variable& var)
 {
-    if (var.isPointer())
-        return true;
+    // TODO why pointer is an automatic true
+    //if (var.isPointer())
+    //    return true;
 
     const Type* variableType = var.type();
     if (variableType) {
