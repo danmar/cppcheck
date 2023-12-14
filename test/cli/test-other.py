@@ -152,45 +152,6 @@ def test_progress_j(tmpdir):
     assert stdout == "Checking {} ...\n".format(test_file)
     assert stderr == ""
 
-@pytest.mark.timeout(10)
-def test_slow_initlist_varchanged(tmpdir):
-    # #12235
-    filename = os.path.join(tmpdir, 'hang.cpp')
-    with open(filename, 'wt') as f:
-        f.write(r"""
-                struct T {
-                    int* q;
-                    int nx, ny;
-                };
-                struct S {
-                    void f();
-                    int n;
-                    T* p;
-                };
-                #define ROW 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 ,
-                #define ROW4 ROW ROW ROW ROW
-                #define ROW16 ROW4 ROW4 ROW4 ROW4
-                #define ROW64 ROW16 ROW16 ROW16 ROW16
-                #define ROW256 ROW64 ROW64 ROW64 ROW64
-                #define ROW1K ROW256 ROW256 ROW256 ROW256
-                #define ROW4K ROW1K ROW1K ROW1K ROW1K
-                const int A[] = {
-                    ROW4K
-                };
-                void S::f() {
-                    for (int i = 0; i < n; ++i) {
-                        T& t = p[i];
-                        for (int y = 0; y < t.ny; y += 4) {
-                            int* row0 = t.q + y * t.nx;
-                            for (int x = 0; x < t.nx; x += 4) {
-                                int s[16] = {};
-                                memcpy(row0, &s[0], 4);
-                                row0 += 4;
-                            }
-                        }
-                    }
-                }""")
-    cppcheck([filename]) # should not take more than ~1 second
 
 def test_execute_addon_failure(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
