@@ -2762,6 +2762,8 @@ static bool isExpressionChangedAt(const F& getExprTok,
 {
     if (depth < 0)
         return true;
+    if (tok->isLiteral() || tok->isKeyword() || Token::Match(tok, ",|;|:"))
+        return false;
     if (tok->exprId() != exprid) {
         if (globalvar && !tok->isKeyword() && Token::Match(tok, "%name% (") && !(tok->function() && tok->function()->isAttributePure()))
             // TODO: Is global variable really changed by function call?
@@ -2806,8 +2808,7 @@ Token* findVariableChanged(Token *start, const Token *end, int indirect, const n
     if (depth < 0)
         return start;
     auto getExprTok = memoize([&] {
-        const auto* e = findExpression(start, exprid);
-        return e ? e : start;
+        return findExpression(start, exprid);
     });
     for (Token *tok = start; tok != end; tok = tok->next()) {
         if (isExpressionChangedAt(getExprTok, tok, indirect, exprid, globalvar, settings, cpp, depth))
