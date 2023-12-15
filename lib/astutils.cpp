@@ -2767,7 +2767,7 @@ static bool isExpressionChangedAt(const F& getExprTok,
 {
     if (depth < 0)
         return true;
-    if (tok->isLiteral() || tok->isKeyword() || Token::Match(tok, ",|;|:"))
+    if (tok->isLiteral() || tok->isKeyword() || tok->isStandardType() || Token::Match(tok, ",|;|:"))
         return false;
     if (tok->exprId() != exprid) {
         if (globalvar && Token::Match(tok, "%name% (") && !(tok->function() && tok->function()->isAttributePure()))
