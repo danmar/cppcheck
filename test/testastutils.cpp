@@ -243,6 +243,8 @@ private:
                                         "void f(int x) { g(&x); }\n",
                                         "{",
                                         "}"));
+
+        ASSERT_EQUALS(false, isVariableChanged("const int A[] = { 1, 2, 3 };", "[", "]"));
     }
 
 #define isVariableChangedByFunctionCall(code, pattern, inconclusive) isVariableChangedByFunctionCall_(code, pattern, inconclusive, __FILE__, __LINE__)
