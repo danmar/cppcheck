@@ -3358,9 +3358,9 @@ class MisraChecker:
                 continue
             if token.str != '(' or token.astParent:
                 continue
-            if not token.astOperand1 or not token.astOperand1.isName:
+            if token.astOperand1 is None or not token.astOperand1.isName:
                 continue
-            if token.astOperand1.variable is None or get_function_pointer_type(token.astOperand1.variable.typeStartToken) is None:
+            if token.astOperand1.varId and (token.astOperand1.variable is None or get_function_pointer_type(token.astOperand1.variable.typeStartToken) is None):
                 continue
             if token.valueType is None:
                 continue
