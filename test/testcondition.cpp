@@ -4547,6 +4547,14 @@ private:
               "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(int i) {\n" // #11741
+              "    i = -i - 1;\n"
+              "    if (i < 0 || i >= 20)\n"
+              "        return 0;\n"
+              "    return 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()

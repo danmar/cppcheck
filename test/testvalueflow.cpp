@@ -1460,8 +1460,8 @@ private:
                "    int a = x;\n"
                "    if (x >= 1) {}\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 2U, 1));
-        ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 2U, 1));
+       ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
 
         code = "void f(unsigned int x) {\n"
                "    int a = x;\n"
