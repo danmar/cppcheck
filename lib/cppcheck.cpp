@@ -427,7 +427,7 @@ unsigned int CppCheck::check(const std::string &path)
 {
     if (mSettings.clang) {
         if (!mSettings.quiet)
-            mErrorLogger.reportOut(std::string("Checking ") + path + "...", Color::FgGreen);
+            mErrorLogger.reportOut(std::string("Checking ") + path + " ...", Color::FgGreen);
 
         const std::string lang = Path::isCPP(path) ? "-x c++" : "-x c";
         const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, emptyString);
