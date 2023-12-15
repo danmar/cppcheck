@@ -1461,7 +1461,7 @@ private:
                "    if (x >= 1) {}\n"
                "}";
         TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 2U, 1));
-       ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
 
         code = "void f(unsigned int x) {\n"
                "    int a = x;\n"
