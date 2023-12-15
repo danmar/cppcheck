@@ -471,7 +471,7 @@ private:
             "int main() {\n"
             "   A a;\n"
             "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         // side-effect variable
         functionVariableUsage(
