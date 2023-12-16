@@ -173,6 +173,8 @@ private:
         TEST_CASE(enabledUnusedFunction);
         TEST_CASE(enabledMissingInclude);
         TEST_CASE(disabledMissingIncludeWithInformation);
+        TEST_CASE(enabledMissingIncludeWithInformation);
+        TEST_CASE(enabledMissingIncludeWithInformationReverseOrder);
 #ifdef CHECK_INTERNAL
         TEST_CASE(enabledInternal);
 #endif
@@ -846,6 +848,24 @@ private:
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT(settings->severity.isEnabled(Severity::information));
         ASSERT(!settings->checks.isEnabled(Checks::missingInclude));
+        ASSERT_EQUALS("", logger->str());
+    }
+
+    void enabledMissingIncludeWithInformation() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=information", "--enable=missingInclude", "file.cpp"};
+        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT(settings->severity.isEnabled(Severity::information));
+        ASSERT(settings->checks.isEnabled(Checks::missingInclude));
+        ASSERT_EQUALS("", logger->str());
+    }
+
+    void enabledMissingIncludeWithInformationReverseOrder() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=missingInclude", "--enable=information", "file.cpp"};
+        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT(settings->severity.isEnabled(Severity::information));
+        ASSERT(settings->checks.isEnabled(Checks::missingInclude));
         ASSERT_EQUALS("", logger->str());
     }
 
