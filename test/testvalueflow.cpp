@@ -7549,6 +7549,15 @@ private:
                "    str += s.to_string();\n"
                "}\n";
         valueOfTok(code, "s");
+
+        code = "void a(int e, int d, int c, int h) {\n"
+               "  std::vector<int> b;\n"
+               "  std::vector<int> f;\n"
+               "  if (b == f && h)\n"
+               "    return;\n"
+               "  if (b == f && b == f && c && e < d) {}\n"
+               "}\n";
+        valueOfTok(code, "b");
     }
 
     void valueFlowUnknownMixedOperators() {

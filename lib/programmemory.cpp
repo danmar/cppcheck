@@ -1290,6 +1290,7 @@ namespace {
             }))
                 return false;
             std::sort(conditions.begin(), conditions.end(), &TokenExprIdCompare);
+            conditions.erase(std::unique(conditions.begin(), conditions.end(), &TokenExprIdCompare), conditions.end());
             return !conditions.empty() && conditions.front()->exprId() != 0;
         }
 
@@ -1357,8 +1358,8 @@ namespace {
                         return value;
                     std::vector<const Token*> diffConditions1 = setDifference(conditions1, conditions2);
                     std::vector<const Token*> diffConditions2 = setDifference(conditions2, conditions1);
-                    pruneConditions(diffConditions1, b, condValues);
-                    pruneConditions(diffConditions2, b, executeAll(diffConditions2));
+                    pruneConditions(diffConditions1, !b, condValues);
+                    pruneConditions(diffConditions2, !b, executeAll(diffConditions2));
                     if (diffConditions1.size() != diffConditions2.size())
                         continue;
                     if (diffConditions1.size() == conditions1.size())
