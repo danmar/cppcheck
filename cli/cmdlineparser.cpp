@@ -553,7 +553,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     mLogger.printError(errmsg);
                     return Result::Fail;
                 }
-                if(std::string(argv[i] + 10).find("missingInclude") != std::string::npos) {
+                if (std::string(argv[i] + 10).find("missingInclude") != std::string::npos) {
                     --logMissingInclude;
                 }
             }
@@ -579,8 +579,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     ++logMissingInclude;
                     mSettings.addEnabled("missingInclude");
                 }
-                if(enable_arg.find("missingInclude") != std::string::npos) {
-                    --logMissingInclude ;
+                if (enable_arg.find("missingInclude") != std::string::npos) {
+                    --logMissingInclude;
                 }
             }
 
