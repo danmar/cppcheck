@@ -1674,8 +1674,6 @@ namespace {
                 if (!v2.isIntValue() && value.intvalue != 0)
                     continue;
                 v2.intvalue += value.intvalue;
-                if (updateValue(v, std::move(v2)))
-                    return v;
                 return v2;
             }
             if (const ValueFlow::Value* value = getImpossibleValue(expr))
