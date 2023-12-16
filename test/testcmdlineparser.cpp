@@ -172,6 +172,7 @@ private:
         TEST_CASE(enabledInformation);
         TEST_CASE(enabledUnusedFunction);
         TEST_CASE(enabledMissingInclude);
+        TEST_CASE(disabledMissingIncludeWithInformation);
 #ifdef CHECK_INTERNAL
         TEST_CASE(enabledInternal);
 #endif
@@ -839,6 +840,15 @@ private:
         ASSERT(settings->checks.isEnabled(Checks::missingInclude));
     }
 
+    void disabledMissingIncludeWithInformation() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--disable=missingInclude", "--enable=information", "file.cpp"};
+        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT(settings->severity.isEnabled(Severity::information));
+        ASSERT(!settings->checks.isEnabled(Checks::missingInclude));
+        ASSERT_EQUALS("", logger->str());
+    }
+
 #ifdef CHECK_INTERNAL
     void enabledInternal() {
         REDIRECT;
@@ -940,7 +950,7 @@ private:
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT(settings->severity.isEnabled(Severity::information));
         ASSERT(!settings->checks.isEnabled(Checks::missingInclude));
-        ASSERT_EQUALS("cppcheck: '--enable=information' will no longer implicitly enable 'missingInclude' starting with 2.16. Please enable it explicitly if you require it.\n", logger->str());
+        ASSERT_EQUALS("", logger->str());
     }
 
     void disableInformationPartial2() {
