@@ -457,6 +457,8 @@ def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True):
         cppcheck_cmd = os.path.join(cppcheck_path, 'cppcheck') + ' ' + options_rp
         cmd = nice_cmd + ' ' + cppcheck_cmd + ' ' + __jobs + ' ' + dir_to_scan
     returncode, stdout, stderr, elapsed_time = __run_command(cmd)
+    if returncode >= 1 and ('--unsafe-exitcode' in stdout):
+        returncode, stdout, stderr, elapsed_time = __run_command(cmd.replace(' --unsafe-exitcode', ''))
 
     # collect messages
     information_messages_list = []
