@@ -439,7 +439,7 @@ validatePlatforms: ${PlatformFilesCHECKED}
 /tmp/errorlist.xml: cppcheck
 	./cppcheck --errorlist >$@
 /tmp/example.xml: cppcheck
-	./cppcheck --xml --enable=all --inconclusive --max-configs=1 samples 2>/tmp/example.xml
+	./cppcheck --xml --enable=all --inconclusive --max-configs=1 samples -isamples/syntaxError/bad.c 2>/tmp/example.xml
 createXMLExamples:/tmp/errorlist.xml /tmp/example.xml
 .PHONY: validateXML
 validateXML: createXMLExamples
