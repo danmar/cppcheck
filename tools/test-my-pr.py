@@ -95,12 +95,12 @@ if __name__ == "__main__":
         print('Failed to switch to common ancestor of your branch and main')
         sys.exit(1)
 
-    if not lib.compile_cppcheck(main_dir):
+    if not lib.compile_cppcheck(main_dir): # TODO
         print('Failed to compile main of Cppcheck')
         sys.exit(1)
 
     print('Testing your PR from directory: ' + your_repo_dir)
-    if not lib.compile_cppcheck(your_repo_dir):
+    if not lib.compile_cppcheck(your_repo_dir): # TODO
         print('Failed to compile your version of Cppcheck')
         sys.exit(1)
 
@@ -155,7 +155,7 @@ if __name__ == "__main__":
         your_timeout = False
 
         libraries = lib.library_includes.get_libraries(source_path)
-        c, errout, info, time_main, cppcheck_options, timing_info = lib.scan_package(main_dir, source_path, libraries)
+        c, errout, info, time_main, cppcheck_options, timing_info = lib.scan_package(main_dir, source_path, libraries) # TODO
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)
@@ -168,7 +168,7 @@ if __name__ == "__main__":
                 main_crashed = True
         results_to_diff.append(errout)
 
-        c, errout, info, time_your, cppcheck_options, timing_info = lib.scan_package(your_repo_dir, source_path, libraries)
+        c, errout, info, time_your, cppcheck_options, timing_info = lib.scan_package(your_repo_dir, source_path, libraries) # TODO
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)

@@ -16,10 +16,7 @@ import copy
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.52"
-
-# Timeout for analysis with Cppcheck in seconds
-CPPCHECK_TIMEOUT = 30 * 60
+CLIENT_VERSION = "1.4.0"
 
 CPPCHECK_REPO_URL = "https://github.com/danmar/cppcheck.git"
 
@@ -179,11 +176,11 @@ def has_binary(cppcheck_path):
     return False
 
 
-def compile_version(cppcheck_path):
+def compile_version(cppcheck_path, build_opts):
     if has_binary(cppcheck_path):
         return True
     # Build
-    ret = compile_cppcheck(cppcheck_path)
+    ret = compile_cppcheck(cppcheck_path, build_opts)
     # Clean intermediate build files
     if __make_cmd == "msbuild.exe":
         exclude_bin = 'bin'
@@ -196,7 +193,7 @@ def compile_version(cppcheck_path):
     return ret
 
 
-def compile_cppcheck(cppcheck_path):
+def compile_cppcheck(cppcheck_path, build_opts):
     print('Compiling {}'.format(os.path.basename(cppcheck_path)))
 
     cppcheck_bin = __get_cppcheck_binary(cppcheck_path)
@@ -211,9 +208,10 @@ def compile_cppcheck(cppcheck_path):
             # append to cl.exe options - need to omit dash or slash since a dash is being prepended
             build_env["_CL_"] = __jobs.replace('j', 'MP', 1)
             # TODO: processes still exhaust all threads of the system
-            subprocess.check_call([__make_cmd, '-t:cli', os.path.join(cppcheck_path, 'cppcheck.sln'), '/property:Configuration=Release;Platform=x64'], cwd=cppcheck_path, env=build_env)
+            build_cmd = [__make_cmd, '-t:cli', os.path.join(cppcheck_path, 'cppcheck.sln'), build_opts[__make_cmd]]
+            subprocess.check_call(build_cmd, cwd=cppcheck_path, env=build_env)
         else:
-            build_cmd = [__make_cmd, __jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w']
+            build_cmd = [__make_cmd, __jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w', build_opts[__make_cmd]]
             build_env = os.environ
             if __make_cmd == 'mingw32-make':
                 # TODO: MinGW will always link even if no changes are present
@@ -241,6 +239,7 @@ def compile_cppcheck(cppcheck_path):
     return True
 
 
+# TODO: deprecate
 def get_cppcheck_versions():
     print('Connecting to server to get Cppcheck versions..')
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -251,6 +250,27 @@ def get_cppcheck_versions():
     if not versions:
         raise Exception('received empty response')
     return versions.decode('utf-8').split()
+
+
+def get_cppcheck_options():
+    print('Connecting to server to get Cppcheck options..')
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.connect(__server_address)
+        sock.send(b'GetCppcheckData\n') # TODO: send version
+        options = sock.recv(1024) # TODO: increase
+    # TODO: sock.recv() sometimes hangs and returns b'' afterwards
+    if not options:
+        raise Exception('received empty response')
+    import json
+    options_obj = json.loads(options.decode('utf-8'))
+    if not options_obj.v or options_obj.v != 1:
+        raise Exception("received invalid version '{}'".format(options_obj.v))
+    # v1
+    if options_obj.err is not None:
+        raise Exception('server provided error: {}'.format(options_obj.err))
+    if options_obj.note is not None:
+        print('server provided notice: {}'.format(options_obj.note))
+    return options_obj.versions, options_obj.build_opts, options_obj.cppcheck_opts, options_obj.timeout
 
 
 def get_packages_count():
@@ -394,7 +414,7 @@ def unpack_package(work_path, tgz, cpp_only=False, c_only=False, skip_files=None
     return temp_path, source_found
 
 
-def __run_command(cmd, print_cmd=True):
+def __run_command(cmd, timeout=None, print_cmd=True):
     if print_cmd:
         print(cmd)
     time_start = time.time()
@@ -404,7 +424,7 @@ def __run_command(cmd, print_cmd=True):
     else:
         p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, errors='surrogateescape', preexec_fn=os.setsid)
     try:
-        comm = p.communicate(timeout=CPPCHECK_TIMEOUT)
+        comm = p.communicate(timeout=timeout)
         return_code = p.returncode
         p = None
     except subprocess.TimeoutExpired:
@@ -431,7 +451,7 @@ def __run_command(cmd, print_cmd=True):
     return return_code, stdout, stderr, elapsed_time
 
 
-def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True):
+def scan_package(cppcheck_path, source_path, libraries, cppcheck_opts, timeout, capture_callstack=True):
     print('Analyze..')
     libs = ''
     for library in libraries:
@@ -440,12 +460,8 @@ def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True):
 
     dir_to_scan = source_path
 
-    # TODO: temporarily disabled timing information - use --showtime=top5_summary when next version is released
-    # TODO: remove missingInclude disabling when it no longer is implied by --enable=information
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
-    options = libs + ' --check-library --inconclusive --enable=style,information --inline-suppr --disable=missingInclude --suppress=unmatchedSuppression --template=daca2'
-    options += ' --debug-warnings --suppress=autoNoType --suppress=valueFlowBailout --suppress=bailoutUninitVar --suppress=symbolDatabaseWarning'
-    options += ' -D__GNUC__ --platform=unix64'
+    options = libs + cppcheck_opts
     options_rp = options + ' -rp={}'.format(dir_to_scan)
     if __make_cmd == 'msbuild.exe':
         cppcheck_cmd = os.path.join(cppcheck_path, 'bin', 'cppcheck.exe') + ' ' + options_rp
@@ -456,7 +472,7 @@ def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True):
             nice_cmd = ''
         cppcheck_cmd = os.path.join(cppcheck_path, 'cppcheck') + ' ' + options_rp
         cmd = nice_cmd + ' ' + cppcheck_cmd + ' ' + __jobs + ' ' + dir_to_scan
-    returncode, stdout, stderr, elapsed_time = __run_command(cmd)
+    returncode, stdout, stderr, elapsed_time = __run_command(cmd, timeout=timeout)
 
     # collect messages
     information_messages_list = []
