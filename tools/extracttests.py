@@ -94,8 +94,7 @@ class Extract:
         start_code = None
         disable = False
 
-        fin = open(filename, 'r')
-        for line in fin:
+        for line in open(filename, 'r'):
             # testclass starts
             res = re.match('class (' + name + ')', line)
             if res is not None:
@@ -159,9 +158,8 @@ class Extract:
                         'expected': expected}
                 self.nodes.append(node)
                 code = None
-
-        # close test file
-        fin.close()
+            elif re.match('\\s+ASSERT', line) is not None:
+                code = None
 
 
 def strtoxml(s):
