@@ -18,8 +18,6 @@ python3 $DIR/extracttests.py --code=$(pwd)/test1 $1
 
 cd test1
 
-$CPPCHECK -q --template=cppcheck1 --suppress="*" .
-
 $CPPCHECK -q --template=cppcheck1 . 2> 1.txt
 
 echo "(!x) => (x==0)"
