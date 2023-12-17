@@ -1097,12 +1097,13 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
     if (mSettings.useSingleJob() || !mSettings.buildDir.empty()) {
         // Analyse the tokens..
 
-        CTU::FileInfo *fi1 = CTU::getFileInfo(&tokenizer);
-        if (fi1) {
-            if (mSettings.useSingleJob())
-                mFileInfo.push_back(fi1);
+        if (CTU::FileInfo * const fi1 = CTU::getFileInfo(&tokenizer)) {
             if (!mSettings.buildDir.empty())
                 mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
+            if (mSettings.useSingleJob())
+                mFileInfo.push_back(fi1);
+            else
+                delete fi1;
         }
 
         // cppcheck-suppress shadowFunction - TODO: fix this
@@ -1110,12 +1111,13 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
             if (doUnusedFunctionOnly && dynamic_cast<const CheckUnusedFunctions*>(check) == nullptr)
                 continue;
 
-            Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
-            if (fi != nullptr) {
-                if (mSettings.useSingleJob())
-                    mFileInfo.push_back(fi);
+            if (Check::FileInfo * const fi = check->getFileInfo(&tokenizer, &mSettings)) {
                 if (!mSettings.buildDir.empty())
                     mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
+                if (mSettings.useSingleJob())
+                    mFileInfo.push_back(fi);
+                else
+                    delete fi;
             }
         }
     }
