@@ -1144,7 +1144,7 @@ private:
     void suppressingSyntaxErrors() { // syntaxErrors should be suppressible (#7076)
         const char code[] = "if if\n";
 
-        ASSERT_EQUALS(0, checkSuppression(code, "syntaxError:test.cpp:1"));
+        ASSERT_EQUALS(1, checkSuppression(code, "syntaxError:test.cpp:1"));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1159,7 +1159,7 @@ private:
                             "   fstp  QWORD PTR result  ; store a double (8 bytes)\n"
                             "   pop   EAX               ; restore EAX\n"
                             "}";
-        ASSERT_EQUALS(0, checkSuppression(code, ""));
+        ASSERT_EQUALS(1, checkSuppression(code, ""));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1177,7 +1177,7 @@ private:
                             "[!VAR \"BC\" = \"$BC + 1\"!][!//\n"
                             "[!ENDIF!][!//\n"
                             "};";
-        ASSERT_EQUALS(0, checkSuppression(code, "syntaxError:test.cpp:4"));
+        ASSERT_EQUALS(1, checkSuppression(code, "syntaxError:test.cpp:4"));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1211,15 +1211,17 @@ private:
     void suppressingSyntaxErrorAndExitCode() {
         const char code[] = "fi if;";
 
-        ASSERT_EQUALS(0, checkSuppression(code, "*:test.cpp"));
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(2, checkSuppression(code, "*:test.cpp"));
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());  // <- critical errors can't be suppressed with globbed id
 
         // multi files, but only suppression one
         std::map<std::string, std::string> mfiles;
         mfiles["test.cpp"] = "fi if;";
         mfiles["test2.cpp"] = "fi if";
-        ASSERT_EQUALS(2, checkSuppression(mfiles, "*:test.cpp"));
-        ASSERT_EQUALS("[test2.cpp:1]: (error) syntax error\n", errout.str());
+        ASSERT_EQUALS(3, checkSuppression(mfiles, "*:test.cpp"));
+        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n" // <- critical errors can't be suppressed with globbed id
+                      "[test2.cpp:1]: (error) syntax error\n",
+                      errout.str());
 
         // multi error in file, but only suppression one error
         const char code2[] = "fi fi\n"

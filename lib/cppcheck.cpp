@@ -1599,6 +1599,19 @@ void CppCheck::reportErr(const ErrorMessage &msg)
     const auto errorMessage = Suppressions::ErrorMessage::fromErrorMessage(msg, macroNames);
 
     if (mSettings.nomsg.isSuppressed(errorMessage, mUseGlobalSuppressions)) {
+        if (ErrorLogger::isCriticalErrorId(msg.id)) {
+            mExitCode = 1;
+
+            if (mSettings.nomsg.isSuppressedExplicitly(errorMessage, mUseGlobalSuppressions)) {
+                ErrorMessage temp;
+                temp.severity = Severity::none;
+                temp.id = msg.id;
+                mErrorLogger.reportErr(temp);
+            } else {
+                // Report critical error that is not explicitly suppressed
+                mErrorLogger.reportErr(msg);
+            }
+        }
         return;
     }
 

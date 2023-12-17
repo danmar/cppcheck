@@ -587,6 +587,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 if (!parseNumberArg(argv[i], 17, mSettings.exitCode))
                     return Result::Fail;
             }
+            // --unsafe-exitcode => for tests, critical errors will not force non-zero exitcode
+            else if (std::strcmp(argv[i], "--unsafe-exitcode") == 0) {
+                mSettings.unsafeExitCode = true;
+            }
 
             // Exception handling inside cppcheck client
             else if (std::strcmp(argv[i], "--exception-handling") == 0) {

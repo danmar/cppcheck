@@ -423,7 +423,8 @@ jobs:
         run: |
           ./cppcheck --error-exitcode=1 --inline-suppr --addon=threadsafety addons/test/threadsafety
           ./cppcheck --error-exitcode=1 --inline-suppr --addon=threadsafety --std=c++03 addons/test/threadsafety
-          ./cppcheck --error-exitcode=1 --inline-suppr --addon=misra addons/test/misra/crash*.c
+          ./cppcheck --error-exitcode=1 --dump addons/test/misra/crash*.c
+          python3 addons/misra.py --cli addons/test/misra/crash*.c.dump > /dev/null
           ./cppcheck --error-exitcode=1 --inline-suppr --addon=misra --enable=information addons/test/misra/config*.c
 
           ./cppcheck --addon=misra --enable=style --inline-suppr --enable=information --error-exitcode=1 addons/test/misra/misra-ctu-*-test.c
