@@ -418,19 +418,6 @@ bool Suppressions::isSuppressed(const Suppressions::ErrorMessage &errmsg, bool g
     return returnValue;
 }
 
-bool Suppressions::isSuppressedExplicitly(const Suppressions::ErrorMessage &errmsg, bool global)
-{
-    for (Suppression &s : mSuppressions) {
-        if (!global && !s.isLocal())
-            continue;
-        if (s.errorId != errmsg.errorId) // Error id must match exactly
-            continue;
-        if (s.isMatch(errmsg))
-            return true;
-    }
-    return false;
-}
-
 bool Suppressions::isSuppressed(const ::ErrorMessage &errmsg, const std::set<std::string>& macroNames)
 {
     if (mSuppressions.empty())

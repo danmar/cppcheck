@@ -203,14 +203,6 @@ public:
     bool isSuppressed(const ErrorMessage &errmsg, bool global = true);
 
     /**
-     * @brief Returns true if this message is "explicitly" suppressed. The suppression "id" must match textually exactly.
-     * @param errmsg error message
-     * @param global use global suppressions
-     * @return true if this error is explicitly suppressed.
-     */
-    bool isSuppressedExplicitly(const ErrorMessage &errmsg, bool global = true);
-
-    /**
      * @brief Returns true if this message should not be shown to the user.
      * @param errmsg error message
      * @return true if this error is suppressed.

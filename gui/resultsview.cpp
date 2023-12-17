@@ -168,9 +168,6 @@ void ResultsView::error(const ErrorItem &item)
 
     handleCriticalError(item);
 
-    if (item.severity == Severity::none)
-        return;
-
     if (mUI->mTree->addErrorItem(item)) {
         emit gotResults();
         mStatistics->addItem(item.tool(), ShowTypes::SeverityToShowType(item.severity));
@@ -565,14 +562,10 @@ void ResultsView::handleCriticalError(const ErrorItem &item)
             if (!mCriticalErrors.isEmpty())
                 mCriticalErrors += ",";
             mCriticalErrors += item.errorId;
-            if (item.severity == Severity::none)
-                mCriticalErrors += " (suppressed)";
         }
         QString msg = tr("There was a critical error with id '%1'").arg(item.errorId);
         if (!item.file0.isEmpty())
             msg += ", " + tr("when checking %1").arg(item.file0);
-        else
-            msg += ", " + tr("when checking a file");
         msg += ". " + tr("Analysis was aborted.");
         mUI->mLabelCriticalErrors->setText(msg);
         mUI->mLabelCriticalErrors->setVisible(true);

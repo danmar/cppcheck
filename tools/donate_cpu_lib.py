@@ -16,7 +16,7 @@ import copy
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.4.0"
+CLIENT_VERSION = "1.3.53"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -443,7 +443,7 @@ def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True):
     # TODO: temporarily disabled timing information - use --showtime=top5_summary when next version is released
     # TODO: remove missingInclude disabling when it no longer is implied by --enable=information
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
-    options = libs + ' --unsafe-exitcode --check-library --inconclusive --enable=style,information --inline-suppr --disable=missingInclude --suppress=unmatchedSuppression --template=daca2'
+    options = libs + ' --check-library --inconclusive --enable=style,information --inline-suppr --disable=missingInclude --suppress=unmatchedSuppression --template=daca2'
     options += ' --debug-warnings --suppress=autoNoType --suppress=valueFlowBailout --suppress=bailoutUninitVar --suppress=symbolDatabaseWarning'
     options += ' -D__GNUC__ --platform=unix64'
     options_rp = options + ' -rp={}'.format(dir_to_scan)
@@ -457,8 +457,6 @@ def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True):
         cppcheck_cmd = os.path.join(cppcheck_path, 'cppcheck') + ' ' + options_rp
         cmd = nice_cmd + ' ' + cppcheck_cmd + ' ' + __jobs + ' ' + dir_to_scan
     returncode, stdout, stderr, elapsed_time = __run_command(cmd)
-    if returncode >= 1 and ('--unsafe-exitcode' in stdout):
-        returncode, stdout, stderr, elapsed_time = __run_command(cmd.replace(' --unsafe-exitcode', ''))
 
     # collect messages
     information_messages_list = []

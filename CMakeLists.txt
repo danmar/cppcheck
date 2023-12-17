@@ -47,7 +47,7 @@ if(LIBXML2_XMLLINT_EXECUTABLE)
     add_custom_target(errorlist-xml $<TARGET_FILE:cppcheck> --errorlist > ${CMAKE_BINARY_DIR}/errorlist.xml
             DEPENDS cppcheck)
 
-    add_custom_target(example-xml $<TARGET_FILE:cppcheck> --xml --enable=all --inconclusive --max-configs=1 ${CMAKE_SOURCE_DIR}/samples -i${CMAKE_SOURCE_DIR}/samples/syntaxError/bad.c 2> ${CMAKE_BINARY_DIR}/example.xml
+    add_custom_target(example-xml $<TARGET_FILE:cppcheck> --xml --enable=all --inconclusive --max-configs=1 ${CMAKE_SOURCE_DIR}/samples 2> ${CMAKE_BINARY_DIR}/example.xml
             DEPENDS cppcheck)
 
     add_custom_target(createXMLExamples DEPENDS errorlist-xml example-xml)
