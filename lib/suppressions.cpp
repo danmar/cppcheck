@@ -428,6 +428,7 @@ bool Suppressions::isSuppressedExplicitly(const Suppressions::ErrorMessage &errm
         if (s.isMatch(errmsg))
             return true;
     }
+    return false;
 }
 
 bool Suppressions::isSuppressed(const ::ErrorMessage &errmsg, const std::set<std::string>& macroNames)
