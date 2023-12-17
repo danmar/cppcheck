@@ -37,12 +37,14 @@ private:
     class ErrorLogger2 : public ErrorLogger {
     public:
         std::list<std::string> ids;
+        std::list<ErrorMessage> errmsgs;
 
     private:
         void reportOut(const std::string & /*outmsg*/, Color /*c*/ = Color::Reset) override {}
 
         void reportErr(const ErrorMessage &msg) override {
             ids.push_back(msg.id);
+            errmsgs.push_back(msg);
         }
     };
 
@@ -51,6 +53,7 @@ private:
         TEST_CASE(checkWithFile);
         TEST_CASE(checkWithFS);
         TEST_CASE(suppress_error_library);
+        TEST_CASE(unique_errors);
     }
 
     void getErrorMessages() const {
@@ -147,8 +150,36 @@ private:
         ASSERT_EQUALS(0, errorLogger.ids.size());
     }
 
+    // TODO: hwo to actually get duplicated findings
+    void unique_errors()
+    {
+        ScopedFile file("inc.h",
+                        "inline void f()\n"
+                        "{\n"
+                        "  (void)*((int*)0);\n"
+                        "}");
+        ScopedFile test_file_a("a.cpp",
+                               "#include \"inc.h\"");
+        ScopedFile test_file_b("b.cpp",
+                               "#include \"inc.h\"");
+
+        ErrorLogger2 errorLogger;
+        CppCheck cppcheck(errorLogger, false, {});
+        ASSERT_EQUALS(1, cppcheck.check(test_file_a.path()));
+        ASSERT_EQUALS(1, cppcheck.check(test_file_b.path()));
+        // TODO: how to properly disable these warnings?
+        errorLogger.errmsgs.erase(std::remove_if(errorLogger.errmsgs.begin(), errorLogger.errmsgs.end(), [](const ErrorMessage& errmsg) {
+            return errmsg.id == "logChecker";
+        }), errorLogger.errmsgs.end());
+        // the internal errorlist is cleared after each check() call
+        ASSERT_EQUALS(2, errorLogger.errmsgs.size());
+        auto it = errorLogger.errmsgs.cbegin();
+        ASSERT_EQUALS("nullPointer", it->id);
+        ++it;
+        ASSERT_EQUALS("nullPointer", it->id);
+    }
+
     // TODO: test suppressions
-    // TODO: test unique errors
     // TODO: test all with FS
 };
 

@@ -70,6 +70,10 @@ public:
         return mFullPath;
     }
 
+    const std::string& name() const {
+        return mName;
+    }
+
     ScopedFile(const ScopedFile&) = delete;
     ScopedFile(ScopedFile&&) = delete;
     ScopedFile& operator=(const ScopedFile&) = delete;

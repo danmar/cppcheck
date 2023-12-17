@@ -1597,7 +1597,9 @@ void CppCheck::reportErr(const ErrorMessage &msg)
     if (errmsg.empty())
         return;
 
-    // Alert only about unique errors
+    // Alert only about unique errors.
+    // This makes sure the errors of a single check() call are unique.
+    // TODO: get rid of this? This is forwarded to another ErrorLogger which is also doing this
     if (!mErrorList.emplace(std::move(errmsg)).second)
         return;
 

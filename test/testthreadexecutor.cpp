@@ -150,6 +150,7 @@ private:
         TEST_CASE(showtime_summary);
         TEST_CASE(showtime_file_total);
         TEST_CASE(suppress_error_library);
+        TEST_CASE(unique_errors);
     }
 
     void deadlock_with_many_errors() {
@@ -342,8 +343,20 @@ private:
         settings = settingsOld;
     }
 
+    void unique_errors() {
+        SUPPRESS;
+        ScopedFile inc_h(fprefix() + ".h",
+                         "inline void f()\n"
+                         "{\n"
+                         "  (void)*((int*)0);\n"
+                         "}");
+        check(2, 2, 2,
+              "#include \"" + inc_h.name() +"\"");
+        // this is made unique by the executor
+        ASSERT_EQUALS("[" + inc_h.name() + ":3]: (error) Null pointer dereference: (int*)0\n", errout.str());
+    }
+
     // TODO: test whole program analysis
-    // TODO: test unique errors
 };
 
 class TestThreadExecutorFiles : public TestThreadExecutorBase {

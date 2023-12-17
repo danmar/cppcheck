@@ -154,6 +154,7 @@ private:
         TEST_CASE(showtime_summary);
         TEST_CASE(showtime_file_total);
         TEST_CASE(suppress_error_library);
+        TEST_CASE(unique_errors);
     }
 
     void many_files() {
@@ -335,6 +336,19 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
         settings = settingsOld;
+    }
+
+    void unique_errors() {
+        SUPPRESS;
+        ScopedFile inc_h(fprefix() + ".h",
+                         "inline void f()\n"
+                         "{\n"
+                         "  (void)*((int*)0);\n"
+                         "}");
+        check(2, 2,
+              "#include \"" + inc_h.name() + "\"");
+        // these are not actually made unique by the implementation. That needs to be done by the given ErrorLogger
+        ASSERT_EQUALS("[" + inc_h.name() + ":3]: (error) Null pointer dereference: (int*)0\n", errout.str());
     }
 
     // TODO: test whole program analysis
