@@ -1066,6 +1066,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 #endif
             }
 
+            // Safety certified behavior
+            else if (std::strcmp(argv[i], "--safety") == 0)
+                mSettings.safety = true;
+
             // show timing information..
             else if (std::strncmp(argv[i], "--showtime=", 11) == 0) {
                 const std::string showtimeMode = argv[i] + 11;

@@ -44,3 +44,6 @@ Other:
 - Markup files will now be processed after the regular source files when using multiple threads/processes (some issues remain - see Trac #12167 for details).
 - Added file name to ValueFlow "--debug" output.
 - Fixed build when using "clang-cl" in CMake.
+
+Safety critical fixes:
+- Added "--safety" option. It makes Cppcheck more strict about critical errors.

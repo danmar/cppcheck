@@ -66,6 +66,8 @@ std::string severityToString(Severity severity)
         return "information";
     case Severity::debug:
         return "debug";
+    case Severity::internal:
+        return "internal";
     }
     throw InternalError(nullptr, "Unknown severity");
 }
@@ -90,5 +92,7 @@ Severity severityFromString(const std::string& severity)
         return Severity::information;
     if (severity == "debug")
         return Severity::debug;
+    if (severity == "internal")
+        return Severity::internal;
     return Severity::none;
 }

@@ -1460,9 +1460,10 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
             errmsg.setmsg(text);
             const std::string severity = obj["severity"].get<std::string>();
             errmsg.severity = severityFromString(severity);
-            if (errmsg.severity == Severity::none) {
+            if (errmsg.severity == Severity::none || errmsg.severity == Severity::internal) {
                 if (!endsWith(errmsg.id, "-logChecker"))
                     continue;
+                errmsg.severity = Severity::internal;
             }
             else if (!mSettings.severity.isEnabled(errmsg.severity))
                 continue;
@@ -1568,7 +1569,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 // TODO: part of this logic is duplicated in Executor::hasToLog()
 void CppCheck::reportErr(const ErrorMessage &msg)
 {
-    if (msg.severity == Severity::none && (msg.id == "logChecker" || endsWith(msg.id, "-logChecker"))) {
+    if (msg.severity == Severity::internal) {
         mErrorLogger.reportErr(msg);
         return;
     }
@@ -1589,6 +1590,21 @@ void CppCheck::reportErr(const ErrorMessage &msg)
     const auto errorMessage = Suppressions::ErrorMessage::fromErrorMessage(msg, macroNames);
 
     if (mSettings.nomsg.isSuppressed(errorMessage, mUseGlobalSuppressions)) {
+        // Safety: Report critical errors to ErrorLogger
+        if (mSettings.safety && ErrorLogger::isCriticalErrorId(msg.id)) {
+            mExitCode = 1;
+
+            if (mSettings.nomsg.isSuppressedExplicitly(errorMessage, mUseGlobalSuppressions)) {
+                // Report with none severity to signal that there is this critical error but
+                // it is suppressed
+                ErrorMessage temp(msg);
+                temp.severity = Severity::internal;
+                mErrorLogger.reportErr(temp);
+            } else {
+                // Report critical error that is not explicitly suppressed
+                mErrorLogger.reportErr(msg);
+            }
+        }
         return;
     }
 
