@@ -86,7 +86,7 @@ private:
         ASSERT(foundTooManyConfigs);
     }
 
-    void checkWithFile()
+    void checkWithFile() const
     {
         ScopedFile file("test.cpp",
                         "int main()\n"
@@ -106,7 +106,7 @@ private:
         ASSERT_EQUALS("nullPointer", *errorLogger.ids.cbegin());
     }
 
-    void checkWithFS()
+    void checkWithFS() const
     {
         ScopedFile file("test.cpp",
                         "int main()\n"
@@ -128,7 +128,7 @@ private:
         ASSERT_EQUALS("nullPointer", *errorLogger.ids.cbegin());
     }
 
-    void suppress_error_library()
+    void suppress_error_library() const
     {
         ScopedFile file("test.cpp",
                         "int main()\n"
@@ -151,7 +151,7 @@ private:
     }
 
     // TODO: hwo to actually get duplicated findings
-    void unique_errors()
+    void unique_errors() const
     {
         ScopedFile file("inc.h",
                         "inline void f()\n"
