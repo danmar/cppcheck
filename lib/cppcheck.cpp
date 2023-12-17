@@ -1565,6 +1565,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
 //---------------------------------------------------------------------------
 
+// TODO: part of this logic is duplicated in Executor::hasToLog()
 void CppCheck::reportErr(const ErrorMessage &msg)
 {
     if (msg.severity == Severity::none && (msg.id == "logChecker" || endsWith(msg.id, "-logChecker"))) {
@@ -1574,17 +1575,6 @@ void CppCheck::reportErr(const ErrorMessage &msg)
 
     if (!mSettings.library.reportErrors(msg.file0))
         return;
-
-    const std::string errmsg = msg.toString(mSettings.verbose);
-    if (errmsg.empty())
-        return;
-
-    // Alert only about unique errors
-    if (std::find(mErrorList.cbegin(), mErrorList.cend(), errmsg) != mErrorList.cend())
-        return;
-
-    if (!mSettings.buildDir.empty())
-        mAnalyzerInformation.reportErr(msg);
 
     std::set<std::string> macroNames;
     if (!msg.callStack.empty()) {
@@ -1602,11 +1592,23 @@ void CppCheck::reportErr(const ErrorMessage &msg)
         return;
     }
 
+    // TODO: there should be no need for the verbose and default messages here
+    std::string errmsg = msg.toString(mSettings.verbose);
+    if (errmsg.empty())
+        return;
+
+    // Alert only about unique errors.
+    // This makes sure the errors of a single check() call are unique.
+    // TODO: get rid of this? This is forwarded to another ErrorLogger which is also doing this
+    if (!mErrorList.emplace(std::move(errmsg)).second)
+        return;
+
+    if (!mSettings.buildDir.empty())
+        mAnalyzerInformation.reportErr(msg);
+
     if (!mSettings.nofail.isSuppressed(errorMessage) && !mSettings.nomsg.isSuppressed(errorMessage)) {
         mExitCode = 1;
     }
-
-    mErrorList.push_back(errmsg);
 
     mErrorLogger.reportErr(msg);
     // check if plistOutput should be populated and the current output file is open and the error is not suppressed

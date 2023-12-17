@@ -35,6 +35,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -215,7 +216,8 @@ private:
      */
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
 
-    std::list<std::string> mErrorList;
+    // TODO: store hashes instead of the full messages
+    std::unordered_set<std::string> mErrorList;
     Settings mSettings;
 
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
