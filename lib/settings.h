@@ -358,9 +358,6 @@ public:
     /** @brief The maximum time in seconds for the typedef simplification */
     std::size_t typedefMaxTime{};
 
-    /** @brief Unsafe exitcode => do not force non-zero exitcode when there are critical errors */
-    bool unsafeExitCode = false;
-
     /** @brief defines given by the user */
     std::string userDefines;
 

@@ -118,10 +118,6 @@ public:
      */
     void writeCheckersReport() const;
 
-    bool hasCriticalErrors() const {
-        return !mCriticalErrors.empty();
-    }
-
 private:
     /**
      * Information about progress is directed here. This should be
@@ -291,12 +287,9 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck) const
 
     mStdLogger->writeCheckersReport();
 
-    if (!settings.unsafeExitCode && mStdLogger->hasCriticalErrors())
-        return settings.exitCode > 0 ? settings.exitCode : EXIT_FAILURE;
-
     if (returnValue)
         return settings.exitCode;
-    return EXIT_SUCCESS;
+    return 0;
 }
 
 void CppCheckExecutor::StdLogger::writeCheckersReport() const
@@ -405,10 +398,6 @@ void CppCheckExecutor::StdLogger::reportErr(const ErrorMessage &msg)
         if (!mCriticalErrors.empty())
             mCriticalErrors += ", ";
         mCriticalErrors += msg.id;
-        if (msg.severity == Severity::none) {
-            mCriticalErrors += " (suppressed)";
-            return;
-        }
     }
 
     if (mSettings.xml)

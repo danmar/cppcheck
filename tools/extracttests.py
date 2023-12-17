@@ -94,7 +94,8 @@ class Extract:
         start_code = None
         disable = False
 
-        for line in open(filename, 'r'):
+        fin = open(filename, 'r')
+        for line in fin:
             # testclass starts
             res = re.match('class (' + name + ')', line)
             if res is not None:
@@ -136,10 +137,6 @@ class Extract:
             if code is not None:
                 res = re.match('\\s+' + string, line)
                 if res is not None:
-                    if line.find('",') > line.find('"'):
-                        code = None
-                        continue
-
                     code = code + res.group(1)
                     if res.group(1).find('"') > 0:
                         code = None
@@ -162,8 +159,10 @@ class Extract:
                         'expected': expected}
                 self.nodes.append(node)
                 code = None
-            elif re.match('\\s+[TOD_]*ASSERT', line) is not None:
-                code = None
+
+        # close test file
+        fin.close()
+
 
 def strtoxml(s):
     """Convert string to xml/html format"""
