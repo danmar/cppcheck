@@ -136,6 +136,10 @@ class Extract:
             if code is not None:
                 res = re.match('\\s+' + string, line)
                 if res is not None:
+                    if line.find('",') > line.find('"'):
+                        code = None
+                        continue
+
                     code = code + res.group(1)
                     if res.group(1).find('"') > 0:
                         code = None
@@ -158,9 +162,8 @@ class Extract:
                         'expected': expected}
                 self.nodes.append(node)
                 code = None
-            elif re.match('\\s+ASSERT', line) is not None:
+            elif re.match('\\s+[TOD_]*ASSERT', line) is not None:
                 code = None
-
 
 def strtoxml(s):
     """Convert string to xml/html format"""
