@@ -291,7 +291,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck) const
 
     mStdLogger->writeCheckersReport();
 
-    if (mStdLogger->hasCriticalErrors())
+    if (!settings.unsafeExitCode && mStdLogger->hasCriticalErrors())
         return settings.exitCode > 0 ? settings.exitCode : EXIT_FAILURE;
 
     if (returnValue)
