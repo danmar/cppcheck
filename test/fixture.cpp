@@ -400,7 +400,7 @@ void TestFixture::reportOut(const std::string & outmsg, Color /*c*/)
 
 void TestFixture::reportErr(const ErrorMessage &msg)
 {
-    if (msg.severity == Severity::none && msg.id == "logChecker")
+    if (msg.severity == Severity::internal)
         return;
     const std::string errormessage(msg.toString(mVerbose, mTemplateFormat, mTemplateLocation));
     // TODO: remove the unique error handling?
