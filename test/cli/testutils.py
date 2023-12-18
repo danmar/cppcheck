@@ -1,7 +1,6 @@
 import logging
 import os
 import subprocess
-import tempfile
 import shutil
 
 # Create Cppcheck project file
@@ -80,10 +79,10 @@ def __lookup_cppcheck_exe(script_path=None):
 
 
 def __copy_and_prepare_cppcheck(tmpdir):
-    temp_file_name = "cppcheck"
+    file_name = "cppcheck"
     if sys.platform == "win32":
-        temp_file_name += ".exe"
-    exe = __create_temporary_copy(tmpdir, temp_file_name)
+        file_name += ".exe"
+    exe = __create_temporary_copy(tmpdir, file_name)
 
     #add minimum cfg
     if not os.path.exists(tmpdir + '/cfg'):
@@ -138,18 +137,3 @@ def assert_cppcheck(args, ec_exp=None, out_exp=None, err_exp=None, env=None):
     if err_exp is not None:
         err_lines = stderr.splitlines()
         assert err_lines == err_exp, stderr
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
