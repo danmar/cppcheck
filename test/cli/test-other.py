@@ -863,15 +863,9 @@ def test_build_dir_j_memleak(tmpdir): #12111
 
 
 def test_premium_with_relative_path(tmpdir):
-
-
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
     product_name = 'Cppcheck Premium ' + str(time.time())
 
-    test_cfg = tmpdir + 'cppcheck.cfg'
+    test_cfg = tmpdir.join('cppcheck.cfg')
     with open(test_cfg, 'wt') as f:
         f.write("""
                 {
@@ -881,15 +875,13 @@ def test_premium_with_relative_path(tmpdir):
                 }
                 """.replace('NAME', product_name))
 
-    #if os.path.isfile('cppcheck') :
-    #    os.chdir('test/cli')
-
     args = ['--premium=misra-c++-2008', 'test.c']
 
     exitcode, _, stderr = cppcheck(args, None, True, tmpdir)
     assert exitcode == 0
     assert stderr == ''
 
-    _, stdout, stderr = cppcheck(['--version'], None, True, tmpdir)
+    exitcode, stdout, stderr = cppcheck(['--version'], None, True, tmpdir)
     assert stdout == product_name + '\n'
     assert stderr == ''
+    assert exitcode == 0

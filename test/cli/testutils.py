@@ -44,14 +44,13 @@ def create_gui_project_file(project_file, root_path=None, import_project=None, p
     f.close()
 
 
-def create_temporary_copy(tmpdir, temp_file_name):
+def __create_temporary_copy(tmpdir, temp_file_name):
     temp_path = os.path.join(tmpdir, temp_file_name)
-    print (lookup_cppcheck_exe())
-    shutil.copy2(lookup_cppcheck_exe(), temp_path)
+    shutil.copy2(__lookup_cppcheck_exe(), temp_path)
     return temp_path
 
 
-def lookup_cppcheck_exe(script_path=None):
+def __lookup_cppcheck_exe(script_path=None):
     # path the script is located in
     if script_path == None:
         script_path = os.path.dirname(os.path.realpath(__file__))
@@ -84,27 +83,27 @@ def __copy_and_prepare_cppcheck(tmpdir):
     temp_file_name = "cppcheck"
     if sys.platform == "win32":
         temp_file_name += ".exe"
-    exe = create_temporary_copy(tmpdir, temp_file_name)
+    exe = __create_temporary_copy(tmpdir, temp_file_name)
 
     #add minimum cfg
-    test_cfg = tmpdir + 'cfg/std.cfg'
-    with open(test_cfg, 'wt') as f:
-        f.write("""
-                <?xml version="1.0"?>
-                <def format="2"/>
-                """)
+    if not os.path.exists(tmpdir + '/cfg'):
+        test_cfg_folder = tmpdir.mkdir('cfg')
+        test_cfg = test_cfg_folder.join('std.cfg')
+        if not os.path.exists(test_cfg):
+            with open(test_cfg, 'wt') as f:
+                f.write("""
+                        <?xml version="1.0"?>
+                        <def format="2"/>
+                        """)
     return exe
 
 
 # Run Cppcheck with args
 def cppcheck(args, env=None, remove_checkers_report=True, tmpdir=None):
     if tmpdir != None:
-        temp_file_name = "cppcheck"
-        if sys.platform == "win32":
-            temp_file_name += ".exe"
         exe = __copy_and_prepare_cppcheck(tmpdir)
     else:
-        exe = lookup_cppcheck_exe()
+        exe = __lookup_cppcheck_exe()
     assert exe is not None, 'no cppcheck binary found'
 
     logging.info(exe + ' ' + ' '.join(args))
@@ -139,3 +138,18 @@ def assert_cppcheck(args, ec_exp=None, out_exp=None, err_exp=None, env=None):
     if err_exp is not None:
         err_lines = stderr.splitlines()
         assert err_lines == err_exp, stderr
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
