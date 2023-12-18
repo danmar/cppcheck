@@ -35,6 +35,9 @@
 
 #include "xml.h"
 
+static const char ID_UNUSEDFUNCTION[] = "unusedFunction";
+static const char ID_CHECKERSREPORT[] = "checkersReport";
+
 Suppressions::ErrorMessage Suppressions::ErrorMessage::fromErrorMessage(const ::ErrorMessage &msg, const std::set<std::string> &macroNames)
 {
     Suppressions::ErrorMessage ret;
@@ -468,7 +471,9 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions
             continue;
         if (s.hash > 0)
             continue;
-        if (!unusedFunctionChecking && s.errorId == "unusedFunction")
+        if (s.errorId == ID_CHECKERSREPORT)
+            continue;
+        if (!unusedFunctionChecking && s.errorId == ID_UNUSEDFUNCTION)
             continue;
         if (tmpFile.empty() || !s.isLocal() || s.fileName != tmpFile)
             continue;
@@ -485,7 +490,9 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedGlobalSuppression
             continue;
         if (s.hash > 0)
             continue;
-        if (!unusedFunctionChecking && s.errorId == "unusedFunction")
+        if (!unusedFunctionChecking && s.errorId == ID_UNUSEDFUNCTION)
+            continue;
+        if (s.errorId == ID_CHECKERSREPORT)
             continue;
         if (s.isLocal())
             continue;
