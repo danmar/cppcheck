@@ -286,7 +286,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck) const
         cppcheck.tooManyConfigsError(emptyString,0U);
     }
 
-    if (settings.safety || settings.severity.isEnabled(Severity::information))
+    if (settings.safety || settings.severity.isEnabled(Severity::information) || !settings.checkersReportFilename.empty())
         mStdLogger->writeCheckersReport();
 
     if (settings.xml) {
@@ -303,11 +303,6 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck) const
 
 void CppCheckExecutor::StdLogger::writeCheckersReport()
 {
-    for (const Suppressions::Suppression& s : mSettings.nomsg.getSuppressions()) {
-        if (s.errorId == "checkersReport")
-            return;
-    }
-
     ErrorMessage msg;
     msg.severity = Severity::information;
     msg.id = "checkersReport";
@@ -324,7 +319,14 @@ void CppCheckExecutor::StdLogger::writeCheckersReport()
         what = "There was critical errors";
     msg.setmsg("Active checkers: " + what + " (use --checkers-report=<filename> to see details)");
 
-    reportErr(msg);
+    bool suppressed = false;
+    for (const Suppressions::Suppression& s : mSettings.nomsg.getSuppressions()) {
+        if (s.errorId == "checkersReport")
+            suppressed = true;
+    }
+
+    if (!suppressed)
+        reportErr(msg);
 
     if (!mSettings.checkersReportFilename.empty()) {
         std::ofstream fout(mSettings.checkersReportFilename);
