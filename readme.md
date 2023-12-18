@@ -33,14 +33,16 @@ To build the GUI, you need Qt.
 
 When building the command line tool, [PCRE](http://www.pcre.org/) is optional. It is used if you build with rules.
 
-There are multiple compilation choices:
-* qmake - cross platform build tool
-* cmake - cross platform build tool
-* Windows: Visual Studio (VS 2013 and above)
-* Windows: Qt Creator + mingw
-* gnu make
-* g++ 4.8 (or later)
-* clang++
+There are multiple build systems available:
+* GNU Make
+* CMake
+* Qt qmake
+* Microsoft Visual Studio 2013 and above
+
+The following compilers are being supported:
+* GCC 4.8 and above
+* Clang
+* Microsoft Visual Studio 18 (VS2013) and above
 
 ### cmake
 
