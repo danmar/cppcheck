@@ -118,6 +118,10 @@ public:
      */
     void writeCheckersReport() const;
 
+    bool hasCriticalErrors() const {
+        return !mCriticalErrors.empty();
+    }
+
 private:
     /**
      * Information about progress is directed here. This should be
@@ -288,9 +292,12 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck) const
 
     mStdLogger->writeCheckersReport();
 
+    if (settings.safety && mStdLogger->hasCriticalErrors())
+        return EXIT_FAILURE;
+
     if (returnValue)
         return settings.exitCode;
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 void CppCheckExecutor::StdLogger::writeCheckersReport() const
@@ -385,23 +392,28 @@ void CppCheckExecutor::StdLogger::reportProgress(const std::string &filename, co
 
 void CppCheckExecutor::StdLogger::reportErr(const ErrorMessage &msg)
 {
-    if (msg.severity == Severity::none && (msg.id == "logChecker" || endsWith(msg.id, "-logChecker"))) {
+    if (msg.severity == Severity::internal && (msg.id == "logChecker" || endsWith(msg.id, "-logChecker"))) {
         const std::string& checker = msg.shortMessage();
         mActiveCheckers.emplace(checker);
         return;
     }
+
+    if (ErrorLogger::isCriticalErrorId(msg.id) && mCriticalErrors.find(msg.id) == std::string::npos) {
+        if (!mCriticalErrors.empty())
+            mCriticalErrors += ", ";
+        mCriticalErrors += msg.id;
+        if (msg.severity == Severity::internal)
+            mCriticalErrors += " (suppressed)";
+    }
+
+    if (msg.severity == Severity::internal)
+        return;
 
     // TODO: we generate a different message here then we log below
     // TODO: there should be no need for verbose and default messages here
     // Alert only about unique errors
     if (!mShownErrors.insert(msg.toString(mSettings.verbose)).second)
         return;
-
-    if (ErrorLogger::isCriticalErrorId(msg.id) && mCriticalErrors.find(msg.id) == std::string::npos) {
-        if (!mCriticalErrors.empty())
-            mCriticalErrors += ", ";
-        mCriticalErrors += msg.id;
-    }
 
     if (mSettings.xml)
         reportErr(msg.toXML());
