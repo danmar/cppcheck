@@ -1595,7 +1595,7 @@ void CppCheck::reportErr(const ErrorMessage &msg)
             mExitCode = 1;
 
             if (mSettings.nomsg.isSuppressedExplicitly(errorMessage, mUseGlobalSuppressions)) {
-                // Report with none severity to signal that there is this critical error but
+                // Report with internal severity to signal that there is this critical error but
                 // it is suppressed
                 ErrorMessage temp(msg);
                 temp.severity = Severity::internal;
