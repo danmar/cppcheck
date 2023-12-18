@@ -286,7 +286,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck) const
         cppcheck.tooManyConfigsError(emptyString,0U);
     }
 
-    if (false && settings.severity.isEnabled(Severity::information)) // <- TODO: settings.safety
+    if (settings.safety || settings.severity.isEnabled(Severity::information))
         mStdLogger->writeCheckersReport();
 
     if (settings.xml) {
