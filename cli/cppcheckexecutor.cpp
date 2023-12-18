@@ -303,21 +303,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck) const
 
 void CppCheckExecutor::StdLogger::writeCheckersReport()
 {
-    ErrorMessage msg;
-    msg.severity = Severity::information;
-    msg.id = "checkersReport";
-
     CheckersReport checkersReport(mSettings, mActiveCheckers);
-
-    const int activeCheckers = checkersReport.getActiveCheckersCount();
-    const int totalCheckers = checkersReport.getAllCheckersCount();
-
-    std::string what;
-    if (mCriticalErrors.empty())
-        what = std::to_string(activeCheckers) + "/" + std::to_string(totalCheckers);
-    else
-        what = "There was critical errors";
-    msg.setmsg("Active checkers: " + what + " (use --checkers-report=<filename> to see details)");
 
     bool suppressed = false;
     for (const Suppressions::Suppression& s : mSettings.nomsg.getSuppressions()) {
@@ -325,8 +311,23 @@ void CppCheckExecutor::StdLogger::writeCheckersReport()
             suppressed = true;
     }
 
-    if (!suppressed)
+    if (!suppressed) {
+        ErrorMessage msg;
+        msg.severity = Severity::information;
+        msg.id = "checkersReport";
+
+        const int activeCheckers = checkersReport.getActiveCheckersCount();
+        const int totalCheckers = checkersReport.getAllCheckersCount();
+
+        std::string what;
+        if (mCriticalErrors.empty())
+            what = std::to_string(activeCheckers) + "/" + std::to_string(totalCheckers);
+        else
+            what = "There was critical errors";
+        msg.setmsg("Active checkers: " + what + " (use --checkers-report=<filename> to see details)");
+
         reportErr(msg);
+    }
 
     if (!mSettings.checkersReportFilename.empty()) {
         std::ofstream fout(mSettings.checkersReportFilename);
