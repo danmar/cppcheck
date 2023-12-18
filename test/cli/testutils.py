@@ -80,13 +80,20 @@ def cppcheck(args, env=None, remove_checkers_report=True):
     comm = p.communicate()
     stdout = comm[0].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
     stderr = comm[1].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
-    if remove_checkers_report and stderr.find('[checkersReport]\n') > 0:
-        start_id = stderr.find('[checkersReport]\n')
-        start_line = stderr.rfind('\n', 0, start_id)
-        if start_line <= 0:
-            stderr = ''
-        else:
-            stderr = stderr[:start_line + 1]
+    if remove_checkers_report:
+        if stderr.find('[checkersReport]\n') > 0:
+            start_id = stderr.find('[checkersReport]\n')
+            start_line = stderr.rfind('\n', 0, start_id)
+            if start_line <= 0:
+                stderr = ''
+            else:
+                stderr = stderr[:start_line + 1]
+        elif stderr.find(': (information) Active checkers: ') >= 0:
+            pos = stderr.find(': (information) Active checkers: ')
+            if pos == 0:
+                stderr = ''
+            elif stderr[pos - 1] == '\n':
+                stderr = stderr[:pos]
     return p.returncode, stdout, stderr
 
 
