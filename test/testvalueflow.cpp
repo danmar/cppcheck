@@ -876,6 +876,23 @@ private:
                "   y=x;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, ValueFlow::Value::MoveKind::MovedVariable));
+
+        code = "void g(std::string);\n"
+                "void foo(std::string x) {\n"
+                "  g(std::move(x));\n"
+                "  int counter = 0;\n"
+                "\n"
+                "  for (int i = 0; i < 5; i++) {\n"
+                "    if (i % 2 == 0) {\n"
+                "      x = std::to_string(i);\n"
+                "      counter++;\n"
+                "    }\n"
+                "  }\n"
+                "  for (int i = 0; i < counter; i++) {\n"
+                "      if(x > 5) {}\n"
+                "  }\n"
+                "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 13U, ValueFlow::Value::MoveKind::MovedVariable));
     }
 
     void valueFlowCalculations() {
@@ -5655,6 +5672,22 @@ private:
                "}";
         values = tokenValues(code, "buflen >=", ValueFlow::Value::ValueType::UNINIT);
         ASSERT_EQUALS(1, values.size());
+
+        code = "void foo() {\n"
+                "  int counter = 0;\n"
+                "  int x;\n"
+                "  for (int i = 0; i < 5; i++) {\n"
+                "    if (i % 2 == 0) {\n"
+                "      x = i;\n"
+                "      counter++;\n"
+                "    }\n"
+                "  }\n"
+                "  for (int i = 0; i < counter; i++) {\n"
+                "      if(x > 5) {}\n"
+                "  }\n"
+                "}\n";
+        values = tokenValues(code, "x > 5", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
     }
 
     void valueFlowConditionExpressions() {

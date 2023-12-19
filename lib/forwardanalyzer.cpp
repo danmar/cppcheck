@@ -443,7 +443,7 @@ namespace {
             if (checkElse && isDoWhile &&
                 (condTok->hasKnownIntValue() ||
                  (!bodyAnalysis.isModified() && !condAnalysis.isModified() && condAnalysis.isRead()))) {
-                if (updateRange(endBlock->link(), endBlock) == Progress::Break)
+                if (updateScope(endBlock) == Progress::Break)
                     return Break();
                 return updateRecursive(condTok);
             }
@@ -519,8 +519,16 @@ namespace {
             return updateLoop(endToken, endBlock, condTok, initTok, stepTok, true);
         }
 
-        Progress updateScope(Token* endBlock) {
-            return updateRange(endBlock->link(), endBlock);
+        Progress updateScope(Token* endBlock, int depth = 20) {
+            if (!endBlock)
+                return Break();
+            assert(endBlock->link());
+            Token* ctx = endBlock->link()->previous();
+            if (Token::simpleMatch(ctx, ")"))
+                ctx = ctx->link()->previous();
+            if (ctx)
+                analyzer->updateState(ctx);
+            return updateRange(endBlock->link(), endBlock, depth);
         }
 
         Progress updateRange(Token* start, const Token* end, int depth = 20) {
@@ -682,7 +690,7 @@ namespace {
                         thenBranch.escape = isEscapeScope(endBlock, thenBranch.escapeUnknown);
                         if (thenBranch.check) {
                             thenBranch.active = true;
-                            if (updateRange(endCond->next(), endBlock, depth - 1) == Progress::Break)
+                            if (updateScope(endBlock, depth - 1) == Progress::Break)
                                 return Break();
                         } else if (!elseBranch.check) {
                             thenBranch.active = true;
@@ -694,7 +702,7 @@ namespace {
                             elseBranch.escape = isEscapeScope(endBlock->linkAt(2), elseBranch.escapeUnknown);
                             if (elseBranch.check) {
                                 elseBranch.active = true;
-                                const Progress result = updateRange(endBlock->tokAt(2), endBlock->linkAt(2), depth - 1);
+                                const Progress result = updateScope(endBlock->linkAt(2), depth - 1);
                                 if (result == Progress::Break)
                                     return Break();
                             } else if (!thenBranch.check) {
@@ -746,7 +754,7 @@ namespace {
                 } else if (Token::simpleMatch(tok, "try {")) {
                     Token* endBlock = tok->next()->link();
                     ForwardTraversal tryTraversal = fork();
-                    tryTraversal.updateRange(tok->next(), endBlock, depth - 1);
+                    tryTraversal.updateScope(endBlock, depth - 1);
                     bool bail = tryTraversal.actions.isModified();
                     if (bail) {
                         actions = tryTraversal.actions;
@@ -760,7 +768,7 @@ namespace {
                             return Break();
                         endBlock = endCatch->linkAt(1);
                         ForwardTraversal ft = fork();
-                        ft.updateRange(endBlock->link(), endBlock, depth - 1);
+                        ft.updateScope(endBlock, depth - 1);
                         bail |= ft.terminate != Analyzer::Terminate::None || ft.actions.isModified();
                     }
                     if (bail)
@@ -880,6 +888,8 @@ Analyzer::Result valueFlowGenericForward(Token* start, const Token* end, const V
     if (a->invalid())
         return Analyzer::Result{Analyzer::Action::None, Analyzer::Terminate::Bail};
     ForwardTraversal ft{a, settings};
+    if(start)
+        ft.analyzer->updateState(start);
     ft.updateRange(start, end);
     return Analyzer::Result{ ft.actions, ft.terminate };
 }
