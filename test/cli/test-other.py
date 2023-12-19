@@ -6,7 +6,7 @@ import sys
 import pytest
 import time
 
-from testutils import cppcheck, assert_cppcheck
+from testutils import cppcheck, assert_cppcheck, copy_and_prepare_cppcheck
 
 
 def __test_missing_include(tmpdir, use_j):
@@ -865,6 +865,10 @@ def test_build_dir_j_memleak(tmpdir): #12111
 def test_premium_with_relative_path(tmpdir):
     product_name = 'Cppcheck Premium ' + str(time.time())
 
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        f.write('int main() {}')
+
     test_cfg = tmpdir.join('cppcheck.cfg')
     with open(test_cfg, 'wt') as f:
         f.write("""
@@ -875,13 +879,48 @@ def test_premium_with_relative_path(tmpdir):
                 }
                 """.replace('NAME', product_name))
 
-    args = ['--premium=misra-c++-2008', 'test.c']
+    args = ['--premium=misra-c++-2008', test_file]
 
-    exitcode, _, stderr = cppcheck(args, None, True, tmpdir)
-    assert exitcode == 0
+
+    cppcheck_exe = copy_and_prepare_cppcheck(tmpdir)
+
+    exitcode, _, stderr = cppcheck(args, None, True, cppcheck_exe)
     assert stderr == ''
+    assert exitcode == 0
 
-    exitcode, stdout, stderr = cppcheck(['--version'], None, True, tmpdir)
+
+    exitcode, stdout, stderr = cppcheck(['--version'], None, True, cppcheck_exe)
     assert stdout == product_name + '\n'
+    assert stderr == ''
+    assert exitcode == 0
+
+    os.remove(test_cfg)
+
+    exitcode, stdout, stderr = cppcheck(['--premium=misra-c++-2008'], None, cppcheck_exe)
+    assert stderr == ''
+    assert stdout == 'cppcheck: error: unrecognized command line option: "--premium=misra-c++-2008".\n'
+    assert exitcode == 1
+
+    exitcode, stdout, stderr = cppcheck(['--version'], None, cppcheck_exe)
+    assert stderr == ''
+    assert stdout == 'Cppcheck 2.13 dev' + '\n'
+    assert exitcode == 0
+
+def test_premium_with_relative_path2(tmpdir):
+    product_name = 'Cppcheck Premium ' + str(time.time())
+
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        f.write('int main() {}')
+
+    args = ['--premium=misra-c++-2008', test_file]
+
+    exitcode, stdout, stderr = cppcheck(args, None)
+    assert stderr == ''
+    assert stdout == 'cppcheck: error: unrecognized command line option: "--premium=misra-c++-2008".\n'
+    assert exitcode == 1
+
+    exitcode, stdout, stderr = cppcheck(['--version'], None)
+    assert stdout == 'Cppcheck 2.13 dev' + '\n'
     assert stderr == ''
     assert exitcode == 0

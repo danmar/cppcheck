@@ -49,16 +49,17 @@ def __create_temporary_copy(tmpdir, temp_file_name):
     return temp_path
 
 
-def __lookup_cppcheck_exe(script_path=None):
+def __lookup_cppcheck_exe(cppcheck_exe_path=None):
+
+    if cppcheck_exe_path is not None:
+        return cppcheck_exe_path
+    
     # path the script is located in
-    if script_path == None:
-        script_path = os.path.dirname(os.path.realpath(__file__))
+    script_path = os.path.dirname(os.path.realpath(__file__))
 
     exe_name = "cppcheck"
-
     if sys.platform == "win32":
         exe_name += ".exe"
-
     exe_path = None
 
     if 'TEST_CPPCHECK_EXE_LOOKUP_PATH' in os.environ:
@@ -78,31 +79,24 @@ def __lookup_cppcheck_exe(script_path=None):
     return exe_path
 
 
-def __copy_and_prepare_cppcheck(tmpdir):
-    file_name = "cppcheck"
-    if sys.platform == "win32":
-        file_name += ".exe"
-    exe = __create_temporary_copy(tmpdir, file_name)
+def copy_and_prepare_cppcheck(tmpdir):
+    exe = shutil.copy2(__lookup_cppcheck_exe(), tmpdir)
 
     #add minimum cfg
-    if not os.path.exists(tmpdir + '/cfg'):
-        test_cfg_folder = tmpdir.mkdir('cfg')
-        test_cfg = test_cfg_folder.join('std.cfg')
-        if not os.path.exists(test_cfg):
-            with open(test_cfg, 'wt') as f:
-                f.write("""
-                        <?xml version="1.0"?>
-                        <def format="2"/>
-                        """)
+    test_cfg_folder = tmpdir.mkdir('cfg')
+    test_cfg = test_cfg_folder.join('std.cfg')
+    with open(test_cfg, 'wt') as f:
+        f.write("""
+                <?xml version="1.0"?>
+                <def format="2"/>
+                """)
     return exe
 
 
 # Run Cppcheck with args
-def cppcheck(args, env=None, remove_checkers_report=True, tmpdir=None):
-    if tmpdir != None:
-        exe = __copy_and_prepare_cppcheck(tmpdir)
-    else:
-        exe = __lookup_cppcheck_exe()
+def cppcheck(args, env=None, remove_checkers_report=True, cppcheck_exe_path=None):
+    exe = __lookup_cppcheck_exe(cppcheck_exe_path)
+
     assert exe is not None, 'no cppcheck binary found'
 
     logging.info(exe + ' ' + ' '.join(args))
