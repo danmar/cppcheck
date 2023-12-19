@@ -116,7 +116,7 @@ public:
     /**
      * @brief Write the checkers report
      */
-    void writeCheckersReport() const;
+    void writeCheckersReport();
 
     bool hasCriticalErrors() const {
         return !mCriticalErrors.empty();
@@ -286,11 +286,12 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck) const
         cppcheck.tooManyConfigsError(emptyString,0U);
     }
 
+    if (settings.safety || settings.severity.isEnabled(Severity::information) || !settings.checkersReportFilename.empty())
+        mStdLogger->writeCheckersReport();
+
     if (settings.xml) {
         mStdLogger->reportErr(ErrorMessage::getXMLFooter());
     }
-
-    mStdLogger->writeCheckersReport();
 
     if (settings.safety && mStdLogger->hasCriticalErrors())
         return EXIT_FAILURE;
@@ -300,28 +301,39 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck) const
     return EXIT_SUCCESS;
 }
 
-void CppCheckExecutor::StdLogger::writeCheckersReport() const
+void CppCheckExecutor::StdLogger::writeCheckersReport()
 {
     CheckersReport checkersReport(mSettings, mActiveCheckers);
 
-    if (!mSettings.quiet) {
+    bool suppressed = false;
+    for (const Suppressions::Suppression& s : mSettings.nomsg.getSuppressions()) {
+        if (s.errorId == "checkersReport")
+            suppressed = true;
+    }
+
+    if (!suppressed) {
+        ErrorMessage msg;
+        msg.severity = Severity::information;
+        msg.id = "checkersReport";
+
         const int activeCheckers = checkersReport.getActiveCheckersCount();
         const int totalCheckers = checkersReport.getAllCheckersCount();
 
-        const std::string extra = mSettings.verbose ? " (use --checkers-report=<filename> to see details)" : "";
+        std::string what;
         if (mCriticalErrors.empty())
-            std::cout << "Active checkers: " << activeCheckers << "/" << totalCheckers << extra << std::endl;
+            what = std::to_string(activeCheckers) + "/" + std::to_string(totalCheckers);
         else
-            std::cout << "Active checkers: There was critical errors" << extra << std::endl;
+            what = "There was critical errors";
+        msg.setmsg("Active checkers: " + what + " (use --checkers-report=<filename> to see details)");
+
+        reportErr(msg);
     }
 
-    if (mSettings.checkersReportFilename.empty())
-        return;
-
-    std::ofstream fout(mSettings.checkersReportFilename);
-    if (fout.is_open())
-        fout << checkersReport.getReport(mCriticalErrors);
-
+    if (!mSettings.checkersReportFilename.empty()) {
+        std::ofstream fout(mSettings.checkersReportFilename);
+        if (fout.is_open())
+            fout << checkersReport.getReport(mCriticalErrors);
+    }
 }
 
 #ifdef _WIN32
