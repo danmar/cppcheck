@@ -519,7 +519,8 @@ namespace {
             return updateLoop(endToken, endBlock, condTok, initTok, stepTok, true);
         }
 
-        Progress updateScope(Token* endBlock, int depth = 20) {
+        Progress updateScope(Token* endBlock, int depth = 20)
+        {
             if (!endBlock)
                 return Break();
             assert(endBlock->link());
@@ -888,7 +889,7 @@ Analyzer::Result valueFlowGenericForward(Token* start, const Token* end, const V
     if (a->invalid())
         return Analyzer::Result{Analyzer::Action::None, Analyzer::Terminate::Bail};
     ForwardTraversal ft{a, settings};
-    if(start)
+    if (start)
         ft.analyzer->updateState(start);
     ft.updateRange(start, end);
     return Analyzer::Result{ ft.actions, ft.terminate };

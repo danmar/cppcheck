@@ -2969,7 +2969,8 @@ struct ValueFlowAnalyzer : Analyzer {
             makeConditional();
     }
 
-    void updateState(const Token* tok) override {
+    void updateState(const Token* tok) override
+    {
         // Update program state
         pms.removeModifiedVars(tok);
         pms.addState(tok, getProgramState());
