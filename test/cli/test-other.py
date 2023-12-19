@@ -884,24 +884,26 @@ def test_premium_with_relative_path(tmpdir):
 
     cppcheck_exe = copy_and_prepare_cppcheck(tmpdir)
 
-    exitcode, _, stderr = cppcheck(args, None, True, cppcheck_exe)
+    args.insert(0, cppcheck_exe)
+
+    exitcode, _, stderr = cppcheck(args)
     assert stderr == ''
     assert exitcode == 0
 
 
-    exitcode, stdout, stderr = cppcheck(['--version'], None, True, cppcheck_exe)
+    exitcode, stdout, stderr = cppcheck([cppcheck_exe, '--version'])
     assert stdout == product_name + '\n'
     assert stderr == ''
     assert exitcode == 0
 
     os.remove(test_cfg)
 
-    exitcode, stdout, stderr = cppcheck(['--premium=misra-c++-2008'], None, cppcheck_exe)
+    exitcode, stdout, stderr = cppcheck([cppcheck_exe, '--premium=misra-c++-2008'])
     assert stderr == ''
     assert stdout == 'cppcheck: error: unrecognized command line option: "--premium=misra-c++-2008".\n'
     assert exitcode == 1
 
-    exitcode, stdout, stderr = cppcheck(['--version'], None, cppcheck_exe)
+    exitcode, stdout, stderr = cppcheck([cppcheck_exe, '--version'])
     assert stderr == ''
     assert stdout == 'Cppcheck 2.13 dev' + '\n'
     assert exitcode == 0
@@ -915,12 +917,12 @@ def test_premium_with_relative_path2(tmpdir):
 
     args = ['--premium=misra-c++-2008', test_file]
 
-    exitcode, stdout, stderr = cppcheck(args, None)
+    exitcode, stdout, stderr = cppcheck(args)
     assert stderr == ''
     assert stdout == 'cppcheck: error: unrecognized command line option: "--premium=misra-c++-2008".\n'
     assert exitcode == 1
 
-    exitcode, stdout, stderr = cppcheck(['--version'], None)
+    exitcode, stdout, stderr = cppcheck(['--version'])
     assert stdout == 'Cppcheck 2.13 dev' + '\n'
     assert stderr == ''
     assert exitcode == 0

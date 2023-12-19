@@ -43,12 +43,6 @@ def create_gui_project_file(project_file, root_path=None, import_project=None, p
     f.close()
 
 
-def __create_temporary_copy(tmpdir, temp_file_name):
-    temp_path = os.path.join(tmpdir, temp_file_name)
-    shutil.copy2(__lookup_cppcheck_exe(), temp_path)
-    return temp_path
-
-
 def __lookup_cppcheck_exe(cppcheck_exe_path=None):
 
     if cppcheck_exe_path is not None:
@@ -94,13 +88,16 @@ def copy_and_prepare_cppcheck(tmpdir):
 
 
 # Run Cppcheck with args
-def cppcheck(args, env=None, remove_checkers_report=True, cppcheck_exe_path=None):
-    exe = __lookup_cppcheck_exe(cppcheck_exe_path)
+def cppcheck(args, env=None, remove_checkers_report=True):
+    exe = args[0]
+    if not exe == 'cppcheck' and not exe == 'cppcheck.exe' and not exe.endswith('/cppcheck') and not exe.endswith('/cppcheck.exe'):
+        exe = __lookup_cppcheck_exe()
+        args.insert(0, exe)
 
     assert exe is not None, 'no cppcheck binary found'
 
-    logging.info(exe + ' ' + ' '.join(args))
-    p = subprocess.Popen([exe] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+    logging.info(args)
+    p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
     comm = p.communicate()
     stdout = comm[0].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
     stderr = comm[1].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
