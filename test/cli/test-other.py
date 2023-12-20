@@ -869,6 +869,15 @@ def test_premium_with_relative_path(tmpdir):
     with open(test_file, 'wt') as f:
         f.write('int main() {}')
 
+    cppcheck_exe = copy_and_prepare_cppcheck(tmpdir)
+
+    # we should not recognize custom args without cfg
+    exitcode, stdout, stderr = cppcheck([cppcheck_exe, '--premium=misra-c++-2008', test_file])
+    assert stderr == ''
+    assert stdout == 'cppcheck: error: unrecognized command line option: "--premium=misra-c++-2008".\n'
+    assert exitcode == 1
+
+    # adding cfg
     test_cfg = tmpdir.join('cppcheck.cfg')
     with open(test_cfg, 'wt') as f:
         f.write("""
@@ -879,50 +888,19 @@ def test_premium_with_relative_path(tmpdir):
                 }
                 """.replace('NAME', product_name))
 
-    args = ['--premium=misra-c++-2008', test_file]
-
-
-    cppcheck_exe = copy_and_prepare_cppcheck(tmpdir)
-
-    args.insert(0, cppcheck_exe)
-
-    exitcode, _, stderr = cppcheck(args)
+    # should be fine now
+    exitcode, stdout, stderr = cppcheck([cppcheck_exe, '--premium=misra-c++-2008', test_file])
     assert stderr == ''
+    out_lines = [
+        'Checking {} ...'.format(test_file)
+    ]
+    lines = stdout.splitlines()
+    assert lines == out_lines
     assert exitcode == 0
 
-
+    # check the version it should be as in cfg
     exitcode, stdout, stderr = cppcheck([cppcheck_exe, '--version'])
     assert stdout == product_name + '\n'
     assert stderr == ''
     assert exitcode == 0
 
-    os.remove(test_cfg)
-
-    exitcode, stdout, stderr = cppcheck([cppcheck_exe, '--premium=misra-c++-2008'])
-    assert stderr == ''
-    assert stdout == 'cppcheck: error: unrecognized command line option: "--premium=misra-c++-2008".\n'
-    assert exitcode == 1
-
-    exitcode, stdout, stderr = cppcheck([cppcheck_exe, '--version'])
-    assert stderr == ''
-    assert stdout == 'Cppcheck 2.13 dev' + '\n'
-    assert exitcode == 0
-
-def test_premium_with_relative_path2(tmpdir):
-    product_name = 'Cppcheck Premium ' + str(time.time())
-
-    test_file = os.path.join(tmpdir, 'test.cpp')
-    with open(test_file, 'wt') as f:
-        f.write('int main() {}')
-
-    args = ['--premium=misra-c++-2008', test_file]
-
-    exitcode, stdout, stderr = cppcheck(args)
-    assert stderr == ''
-    assert stdout == 'cppcheck: error: unrecognized command line option: "--premium=misra-c++-2008".\n'
-    assert exitcode == 1
-
-    exitcode, stdout, stderr = cppcheck(['--version'])
-    assert stdout == 'Cppcheck 2.13 dev' + '\n'
-    assert stderr == ''
-    assert exitcode == 0
