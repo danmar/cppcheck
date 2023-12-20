@@ -878,28 +878,24 @@ def test_premium_with_relative_path(tmpdir):
     assert exitcode == 1
 
     # adding cppcheck.cfg
-    with open(tmpdir.join('cppcheck.cfg'), 'wt') as f:
+    with open(os.path.join(tmpdir, 'cppcheck.cfg'), 'wt') as f:
         f.write("""
                 {
                     "addons": [],
                     "productName": "NAME",
-                      "about": "Cppcheck Premium 1.2.3.4"
+                    "about": "Cppcheck Premium 1.2.3.4"
                 }
                 """.replace('NAME', product_name))
 
     # should be fine now
     exitcode, stdout, stderr = cppcheck([cppcheck_exe, '--premium=misra-c++-2008', test_file])
     assert stderr == ''
-    out_lines = [
-        'Checking {} ...'.format(test_file)
-    ]
-    lines = stdout.splitlines()
-    assert lines == out_lines
+    assert f'Checking {test_file} ...' == stdout.strip()
     assert exitcode == 0
 
     # check the version it should be as in cppcheck.cfg
     exitcode, stdout, stderr = cppcheck([cppcheck_exe, '--version'])
-    assert stdout == product_name + '\n'
+    assert stdout.strip() == product_name
     assert stderr == ''
     assert exitcode == 0
 
