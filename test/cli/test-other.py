@@ -871,15 +871,14 @@ def test_premium_with_relative_path(tmpdir):
 
     cppcheck_exe = copy_and_prepare_cppcheck(tmpdir)
 
-    # we should not recognize custom args without cfg
+    # we should not recognize custom args without cppcheck.cfg
     exitcode, stdout, stderr = cppcheck([cppcheck_exe, '--premium=misra-c++-2008', test_file])
     assert stderr == ''
     assert stdout == 'cppcheck: error: unrecognized command line option: "--premium=misra-c++-2008".\n'
     assert exitcode == 1
 
-    # adding cfg
-    test_cfg = tmpdir.join('cppcheck.cfg')
-    with open(test_cfg, 'wt') as f:
+    # adding cppcheck.cfg
+    with open(tmpdir.join('cppcheck.cfg'), 'wt') as f:
         f.write("""
                 {
                     "addons": [],
@@ -898,7 +897,7 @@ def test_premium_with_relative_path(tmpdir):
     assert lines == out_lines
     assert exitcode == 0
 
-    # check the version it should be as in cfg
+    # check the version it should be as in cppcheck.cfg
     exitcode, stdout, stderr = cppcheck([cppcheck_exe, '--version'])
     assert stdout == product_name + '\n'
     assert stderr == ''

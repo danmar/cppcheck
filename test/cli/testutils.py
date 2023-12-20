@@ -78,8 +78,7 @@ def copy_and_prepare_cppcheck(tmpdir):
 
     #add minimum cfg
     test_cfg_folder = tmpdir.mkdir('cfg')
-    test_cfg = test_cfg_folder.join('std.cfg')
-    with open(test_cfg, 'wt') as f:
+    with open(test_cfg_folder.join('std.cfg'), 'wt') as f:
         f.write("""
                 <?xml version="1.0"?>
                 <def format="2"/>

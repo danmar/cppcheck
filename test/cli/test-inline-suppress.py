@@ -76,10 +76,14 @@ def test_build_dir():
         args = f'--cppcheck-build-dir={tempdir} --enable=all --inline-suppr proj-inline-suppress/4.c'.split()
 
         ret, stdout, stderr = cppcheck(args)
+        for line in args:
+            print(line)
         assert ret == 0, stdout
         assert len(stderr) == 0
 
         ret, stdout, stderr = cppcheck(args)
+        for line in args:
+            print(line)
         assert ret == 0, stdout
         assert len(stderr) == 0
 
