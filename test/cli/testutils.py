@@ -43,10 +43,7 @@ def create_gui_project_file(project_file, root_path=None, import_project=None, p
     f.close()
 
 
-def __lookup_cppcheck_exe(cppcheck_exe_path=None):
-
-    if cppcheck_exe_path is not None:
-        return cppcheck_exe_path
+def __lookup_cppcheck_exe():
     
     # path the script is located in
     script_path = os.path.dirname(os.path.realpath(__file__))
@@ -88,20 +85,21 @@ def copy_and_prepare_cppcheck(tmpdir):
 
 # Run Cppcheck with args
 def cppcheck(args, env=None, remove_checkers_report=True):
-    exe = args[0]
+    args_to_use = args.copy()
+    exe = args_to_use[0]
     if not exe == 'cppcheck' and not exe == 'cppcheck.exe' and not exe.endswith('/cppcheck') and not exe.endswith('/cppcheck.exe'):
         exe = __lookup_cppcheck_exe()
-        args.insert(0, exe)
+        args_to_use.insert(0, exe)
 
     assert exe is not None, 'no cppcheck binary found'
 
     print('----------inside cppcheck call----------')
-    for line in args:
+    for line in args_to_use:
         print(line)
     print('----------inside cppcheck call----------')
 
-    logging.info(args)
-    p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+    logging.info(args_to_use)
+    p = subprocess.Popen(args_to_use, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
     comm = p.communicate()
     stdout = comm[0].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
     stderr = comm[1].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
