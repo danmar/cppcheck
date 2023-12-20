@@ -37,6 +37,7 @@ ShowTypes::ShowType ShowTypes::SeverityToShowType(Severity severity)
 {
     switch (severity) {
     case Severity::none:
+    case Severity::internal:
         return ShowTypes::ShowNone;
     case Severity::error:
         return ShowTypes::ShowErrors;

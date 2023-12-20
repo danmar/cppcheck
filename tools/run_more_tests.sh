@@ -18,6 +18,9 @@ python3 $DIR/extracttests.py --code=$(pwd)/test1 $1
 
 cd test1
 
+# ensure there are not critical errors in extracted tests
+$CPPCHECK -q --safety --suppress="*" .
+
 $CPPCHECK -q --template=cppcheck1 . 2> 1.txt
 
 echo "(!x) => (x==0)"
