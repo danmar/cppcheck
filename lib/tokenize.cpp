@@ -1211,7 +1211,7 @@ void Tokenizer::simplifyTypedefCpp()
         }
 
         /** @todo add support for union */
-        if (Token::Match(tok->next(), "enum %type% %type% ;") && tok->strAt(2) == tok->strAt(3)) {
+        if (Token::Match(tok->next(), "union %type% %type% ;") && tok->strAt(2) == tok->strAt(3)) {
             tok->deleteNext(3);
             tok->deleteThis();
             if (tok->next())
