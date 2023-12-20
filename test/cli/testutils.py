@@ -95,6 +95,11 @@ def cppcheck(args, env=None, remove_checkers_report=True):
 
     assert exe is not None, 'no cppcheck binary found'
 
+    print('----------inside cppcheck call----------')
+    for line in args:
+        print(line)
+    print('----------inside cppcheck call----------')
+
     logging.info(args)
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
     comm = p.communicate()

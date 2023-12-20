@@ -75,15 +75,19 @@ def test_build_dir():
     with tempfile.TemporaryDirectory() as tempdir:
         args = f'--cppcheck-build-dir={tempdir} --enable=all --inline-suppr proj-inline-suppress/4.c'.split()
 
+        print('----------Argument for first run----------')
         ret, stdout, stderr = cppcheck(args)
         for line in args:
             print(line)
+        print('----------Argument for first run----------')
         assert ret == 0, stdout
         assert len(stderr) == 0
 
+        print('----------Argument for second run----------')
         ret, stdout, stderr = cppcheck(args)
         for line in args:
             print(line)
+        print('----------Argument for second run----------')
         assert ret == 0, stdout
         assert len(stderr) == 0
 
