@@ -84,17 +84,17 @@ def copy_and_prepare_cppcheck(tmpdir):
 
 
 # Run Cppcheck with args
-def cppcheck(args, env=None, remove_checkers_report=True):
-    args_to_use = args.copy()
-    exe = args_to_use[0]
-    if not exe == 'cppcheck' and not exe == 'cppcheck.exe' and not exe.endswith('/cppcheck') and not exe.endswith('\\cppcheck.exe'):
+def cppcheck(args, env=None, remove_checkers_report=True, cppcheck_exe=None):
+    exe = None
+    if cppcheck_exe is not None:
+        exe = cppcheck_exe
+    else:
         exe = __lookup_cppcheck_exe()
-        args_to_use.insert(0, exe)
 
     assert exe is not None, 'no cppcheck binary found'
 
-    logging.info(args_to_use)
-    p = subprocess.Popen(args_to_use, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+    #logging.info(exe + ' ' + ' '.join(args))
+    p = subprocess.Popen([exe] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
     comm = p.communicate()
     stdout = comm[0].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
     stderr = comm[1].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')

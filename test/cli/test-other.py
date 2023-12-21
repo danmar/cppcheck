@@ -872,9 +872,9 @@ def test_premium_with_relative_path(tmpdir):
     cppcheck_exe = copy_and_prepare_cppcheck(tmpdir)
 
     # we should not recognize custom args without cppcheck.cfg
-    exitcode, stdout, stderr = cppcheck([cppcheck_exe, '--premium=misra-c++-2008', test_file])
+    exitcode, stdout, stderr = cppcheck(['--premium=misra-c++-2008', test_file], None, True, cppcheck_exe)
     assert stderr == ''
-    #assert stdout == 'cppcheck: error: unrecognized command line option: "--premium=misra-c++-2008".\n'
+    assert stdout == 'cppcheck: error: unrecognized command line option: "--premium=misra-c++-2008".\n'
     assert exitcode == 1
 
     # adding cppcheck.cfg
@@ -888,13 +888,13 @@ def test_premium_with_relative_path(tmpdir):
                 """.replace('NAME', product_name))
 
     # should be fine now
-    exitcode, stdout, stderr = cppcheck([cppcheck_exe, '--premium=misra-c++-2008', test_file])
+    exitcode, stdout, stderr = cppcheck(['--premium=misra-c++-2008', test_file], None, True, cppcheck_exe)
     assert stderr == ''
     assert f'Checking {test_file} ...' == stdout.strip()
     assert exitcode == 0
 
     # check the version it should be as in cppcheck.cfg
-    exitcode, stdout, stderr = cppcheck([cppcheck_exe, '--version'])
+    exitcode, stdout, stderr = cppcheck(['--version'], None, True, cppcheck_exe)
     assert stdout.strip() == product_name
     assert stderr == ''
     assert exitcode == 0
