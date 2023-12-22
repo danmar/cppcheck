@@ -38,7 +38,7 @@ class DataStruct:
 
 
 def reportError(filename, linenr, severity, msg):
-    message = "[{filename}:{linenr}] ( {severity} ) naming.py: {msg}\n".format(
+    message = "[{filename}:{linenr}] ( {severity} ) namingng.py: {msg}\n".format(
         filename=filename,
         linenr=linenr,
         severity=severity,
@@ -233,12 +233,12 @@ if __name__ == "__main__":
             print("Not enough errors found")
             sys.exit(1)
         target = [
-         '[namingng_test.c:8] ( style ) naming.py: Variable badui32 violates naming convention\n',
-         '[namingng_test.c:11] ( style ) naming.py: Variable a violates naming convention\n',
-         '[namingng_test.c:29] ( style ) naming.py: Variable badui32 violates naming convention\n',
-         '[namingng_test.c:20] ( style ) naming.py: Function ui16bad_underscore violates naming convention\n',
-         '[namingng_test.c:25] ( style ) naming.py: Function u32Bad violates naming convention\n',
-         '[namingng_test.c:37] ( style ) naming.py: Function Badui16 violates naming convention\n']
+         '[namingng_test.c:8] ( style ) namingng.py: Variable badui32 violates naming convention\n',
+         '[namingng_test.c:11] ( style ) namingng.py: Variable a violates naming convention\n',
+         '[namingng_test.c:29] ( style ) namingng.py: Variable badui32 violates naming convention\n',
+         '[namingng_test.c:20] ( style ) namingng.py: Function ui16bad_underscore violates naming convention\n',
+         '[namingng_test.c:25] ( style ) namingng.py: Function u32Bad violates naming convention\n',
+         '[namingng_test.c:37] ( style ) namingng.py: Function Badui16 violates naming convention\n']
         diff = set(errors) - set(target)
         if len(diff):
             print("Not the right errors found {}".format(str(diff)))
