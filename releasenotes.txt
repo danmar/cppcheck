@@ -5,12 +5,6 @@ New checks:
 - returnImplicitInt for C functions without return type (previously reported as a debug message)
 - iterateByValue for iterating by value in a range-based for loop when a const reference could be used
 
-Improved checking:
--
-
-GUI:
--
-
 Changed interface:
 - Final report of active checkers is reported as a normal information message instead.
 
@@ -44,3 +38,8 @@ Other:
 - Markup files will now be processed after the regular source files when using multiple threads/processes (some issues remain - see Trac #12167 for details).
 - Added file name to ValueFlow "--debug" output.
 - Fixed build when using "clang-cl" in CMake.
+
+Safety critical:
+- #10866 unsafe handling of unconditional #error
+- #12071 unsafe suppressions of critical errors
+- #12079 missing "misra-config" warning, calling unknown function in condition
