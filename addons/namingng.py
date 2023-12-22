@@ -219,7 +219,7 @@ if __name__ == "__main__":
                         help='A set of dumpfiles to process')
     parser.add_argument("--debugprint", action="store_true", default=False,
                         help="Add debug prints")
-    parser.add_argument("--configfile", type=str, default="naming.json",
+    parser.add_argument("--configfile", type=str, default="namingng.json",
                         help="Naming check config file")
     parser.add_argument("--verify", action="store_true", default=False,
                         help="verify this script. Must be executed in test folder !")

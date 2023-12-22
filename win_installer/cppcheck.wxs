@@ -156,7 +156,7 @@
               <File Id='misc.py' Name='misc.py' Source='$(var.AddonsDir)\misc.py' />
               <File Id='misra.py' Name='misra.py' Source='$(var.AddonsDir)\misra.py' />
               <File Id='misra_9.py' Name='misra_9.py' Source='$(var.AddonsDir)\misra_9.py' />
-              <File Id='naming.json' Name='naming.json' Source='$(var.AddonsDir)\naming.json' />
+              <File Id='namingng.json' Name='namingng.json' Source='$(var.AddonsDir)\namingng.json' />
               <File Id='naming.py' Name='naming.py' Source='$(var.AddonsDir)\naming.py' />
               <File Id='namingng.py' Name='namingng.py' Source='$(var.AddonsDir)\namingng.py' />
               <File Id='ROS_naming.json' Name='ROS_naming.json' Source='$(var.AddonsDir)\ROS_naming.json' />
