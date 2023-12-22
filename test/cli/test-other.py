@@ -278,6 +278,22 @@ extern const char* f()
     assert stderr == '{}:4:12: warning: strerror is MT-unsafe [threadsafety-unsafe-call]\n'.format(test_file)
 
 
+def test_addon_invalidjson(tmpdir):
+    addon_file = os.path.join(tmpdir, 'invalid.json')
+    with open(addon_file, 'wt') as f:
+        f.write("""
+{
+    "Script": "addons/something.py"
+}
+                """)
+
+    args = ['--addon={}'.format(addon_file), '--enable=all', 'nonexistent.cpp']
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode != 0
+    assert stdout == 'Loading {} failed. script must be set to a string value.\n'.format(addon_file)
+
+
 def test_addon_naming(tmpdir):
     # the addon does nothing without a config
     addon_file = os.path.join(tmpdir, 'naming1.json')
