@@ -674,7 +674,7 @@ int main(int argc, char **argv)
     fout << "dmake:\ttools/dmake.o cli/filelister.o $(libcppdir)/pathmatch.o $(libcppdir)/path.o $(libcppdir)/utils.o externals/simplecpp/simplecpp.o\n";
     fout << "\t$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)\n\n";
     fout << "run-dmake: dmake\n";
-    fout << "\t./dmake\n\n";
+    fout << "\t./dmake" << (release ? " --release" : "") << "\n\n"; // Make CI in release builds happy
     fout << "clean:\n";
     fout << "\trm -f build/*.cpp build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1\n\n";
     fout << "man:\tman/cppcheck.1\n\n";
