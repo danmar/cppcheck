@@ -207,7 +207,7 @@ if __name__ == "__main__":
     parser = cppcheckdata.ArgumentParser()
     parser.add_argument("--debugprint", action="store_true", default=False,
                         help="Add debug prints")
-    parser.add_argument("--configfile", type=str, default="naming.json",
+    parser.add_argument("--configfile", type=str, default="namingng.config.json",
                         help="Naming check config file")
 
     args = parser.parse_args()
