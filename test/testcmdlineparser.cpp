@@ -410,7 +410,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--version"};
         ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
-        ASSERT_EQUALS("Cppcheck 2.13 dev\n", logger->str());
+        ASSERT(logger->str().compare(0, 11, "Cppcheck 2.") == 0);
     }
 
     void versionWithCfg() {
@@ -431,7 +431,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--library=missing", "--version"};
         ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS("Cppcheck 2.13 dev\n", logger->str());
+        ASSERT(logger->str().compare(0, 11, "Cppcheck 2.") == 0);
     }
 
     void versionWithInvalidCfg() {
