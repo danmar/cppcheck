@@ -324,25 +324,112 @@ int Var;
     assert stderr == '{}:2:1: style: Variable Var violates naming convention [naming-varname]\n'.format(test_file)
 
 
-# the namingng addon only works standalone and not in CLI mode - see #12005
-@pytest.mark.skip
 def test_addon_namingng(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.cpp')
-    # TODO: trigger warning
+    addon_file = os.path.join(tmpdir, 'namingng.json')
+    addon_config_file = os.path.join(tmpdir, 'namingng.config.json')
+    with open(addon_file, 'wt') as f:
+        f.write("""
+{
+    "script": "addons/namingng.py",
+    "args": [
+        "--configfile=%s"
+    ]
+}
+                """%(addon_config_file).replace('\\','\\\\'))
+
+    with open(addon_config_file, 'wt') as f:
+        f.write("""
+{
+    "RE_FILE": [
+        "[^/]*[a-z][a-z0-9_]*[a-z0-9]\\.c\\Z"
+    ],
+    "RE_VARNAME": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
+    "RE_GLOBAL_VARNAME": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
+    "RE_FUNCTIONNAME": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
+    "var_prefixes": {"uint32_t": "ui32"},
+    "function_prefixes": {"uint16_t": "ui16",
+                          "uint32_t": "ui32"},
+    "skip_one_char_variables": false
+}
+                """.replace('\\','\\\\'))
+
+
+    test_include_file_basename = '_test.h'
+    test_include_file = os.path.join(tmpdir, test_include_file_basename)
+    with open(test_include_file, 'wt') as f:
+        f.write("""
+#ifndef TEST_H
+#define TEST_H
+
+void InvalidFunction();
+extern int _invalid_extern_global;
+
+#endif
+""")
+
+    test_file_basename = 'test_.c'
+    test_file = os.path.join(tmpdir, test_file_basename)
     with open(test_file, 'wt') as f:
         f.write("""
-typedef int MISRA_5_6_VIOLATION;
-        """)
+#include "{}"
 
-    args = ['--addon=namingng', '--enable=all', test_file]
+void invalid_function_();
+void _invalid_function();
+void valid_function1();
+void valid_function2(int _invalid_arg);
+void valid_function3(int invalid_arg_);
+void valid_function4(int valid_arg32);
+void valid_function5(uint32_t invalid_arg32);
+void valid_function6(uint32_t ui32_valid_arg);
+uint16_t invalid_function7(int valid_arg);
+uint16_t ui16_valid_function8(int valid_arg);
+
+int _invalid_global;
+static int _invalid_static_global;
+        """.format(test_include_file_basename))
+
+    args = ['--addon='+addon_file, '--verbose', '--enable=all', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
     lines = stdout.splitlines()
     assert lines == [
-        'Checking {} ...'.format(test_file)
+        'Checking {} ...'.format(test_file),
+        'Defines:',
+        'Undefines:',
+        'Includes:',
+        'Platform:native'
     ]
-    assert stderr == ''
+    lines = [line for line in stderr.splitlines() if line.strip() != '^' and line != '']
+    expect = [
+        '{}:0:0: style: File name {} violates naming convention [namingng-namingConvention]'.format(test_include_file,test_include_file_basename),
+        '{}:5:0: style: Function InvalidFunction violates naming convention [namingng-namingConvention]'.format(test_include_file),
+        'void InvalidFunction();',
+        '{}:6:0: style: Public member variable _invalid_extern_global violates naming convention [namingng-namingConvention]'.format(test_include_file),
+        'extern int _invalid_extern_global;',
+
+        '{}:0:0: style: File name {} violates naming convention [namingng-namingConvention]'.format(test_file,test_file_basename),
+        '{}:7:0: style: Variable _invalid_arg violates naming convention [namingng-namingConvention]'.format(test_file),
+        'void valid_function2(int _invalid_arg);',
+        '{}:8:0: style: Variable invalid_arg_ violates naming convention [namingng-namingConvention]'.format(test_file),
+        'void valid_function3(int invalid_arg_);',
+        '{}:10:22: style: Variable invalid_arg32 violates naming convention [namingng-namingConvention]'.format(test_file),
+        'void valid_function5(uint32_t invalid_arg32);',
+        '{}:4:0: style: Function invalid_function_ violates naming convention [namingng-namingConvention]'.format(test_file),
+        'void invalid_function_();',
+        '{}:5:0: style: Function _invalid_function violates naming convention [namingng-namingConvention]'.format(test_file),
+        'void _invalid_function();',
+        '{}:12:10: style: Function invalid_function7 violates naming convention [namingng-namingConvention]'.format(test_file),
+        'uint16_t invalid_function7(int valid_arg);',
+        '{}:15:0: style: Public member variable _invalid_global violates naming convention [namingng-namingConvention]'.format(test_file),
+        'int _invalid_global;',
+        '{}:16:0: style: Public member variable _invalid_static_global violates naming convention [namingng-namingConvention]'.format(test_file),
+        'static int _invalid_static_global;',
+    ]
+    # test sorted lines; the order of messages may vary and is not of importance
+    lines.sort()
+    expect.sort()
+    assert lines == expect
 
 
 def test_addon_findcasts(tmpdir):
