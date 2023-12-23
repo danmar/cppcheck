@@ -346,6 +346,15 @@ def test_addon_namingng(tmpdir):
     "RE_VARNAME": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
     "RE_GLOBAL_VARNAME": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
     "RE_FUNCTIONNAME": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
+    "include_guard": {
+        "input": "basename",
+        "prefix": "_",
+        "suffix": "",
+        "case": "upper",
+        "max_linenr": 5,
+        "RE_HEADERFILE": ".*\\.h\\Z",
+        "required": true
+    },
     "var_prefixes": {"uint32_t": "ui32"},
     "function_prefixes": {"uint16_t": "ui16",
                           "uint32_t": "ui32"},
@@ -353,6 +362,12 @@ def test_addon_namingng(tmpdir):
 }
                 """.replace('\\','\\\\'))
 
+    test_unguarded_include_file_basename = 'test_unguarded.h'
+    test_unguarded_include_file = os.path.join(tmpdir, test_unguarded_include_file_basename)
+    with open(test_unguarded_include_file, 'wt') as f:
+        f.write("""
+void InvalidFunctionUnguarded();
+""")
 
     test_include_file_basename = '_test.h'
     test_include_file = os.path.join(tmpdir, test_include_file_basename)
@@ -364,8 +379,10 @@ def test_addon_namingng(tmpdir):
 void InvalidFunction();
 extern int _invalid_extern_global;
 
+#include "{}"
+
 #endif
-""")
+""".format(test_unguarded_include_file))
 
     test_file_basename = 'test_.c'
     test_file = os.path.join(tmpdir, test_file_basename)
@@ -403,10 +420,17 @@ static int _invalid_static_global;
     lines = [line for line in stderr.splitlines() if line.strip() != '^' and line != '']
     expect = [
         '{}:0:0: style: File name {} violates naming convention [namingng-namingConvention]'.format(test_include_file,test_include_file_basename),
+        '{}:2:0: style: include guard naming violation; TEST_H != _TEST_H [namingng-includeGuardName]'.format(test_include_file),
+        '#ifndef TEST_H',
         '{}:5:0: style: Function InvalidFunction violates naming convention [namingng-namingConvention]'.format(test_include_file),
         'void InvalidFunction();',
         '{}:6:0: style: Public member variable _invalid_extern_global violates naming convention [namingng-namingConvention]'.format(test_include_file),
         'extern int _invalid_extern_global;',
+
+        '{}:0:0: style: File name {} violates naming convention [namingng-namingConvention]'.format(test_unguarded_include_file,test_unguarded_include_file_basename),
+        '{}:0:0: style: Missing include guard [namingng-includeGuardMissing]'.format(test_unguarded_include_file),
+        '{}:2:0: style: Function InvalidFunctionUnguarded violates naming convention [namingng-namingConvention]'.format(test_unguarded_include_file),
+        'void InvalidFunctionUnguarded();',
 
         '{}:0:0: style: File name {} violates naming convention [namingng-namingConvention]'.format(test_file,test_file_basename),
         '{}:7:0: style: Variable _invalid_arg violates naming convention [namingng-namingConvention]'.format(test_file),

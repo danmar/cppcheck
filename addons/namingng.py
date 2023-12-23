@@ -3,6 +3,7 @@
 # cppcheck addon for naming conventions
 # An enhanced version. Configuration is taken from a json file
 # It supports to check for type-based prefixes in function or variable names.
+# Aside from include guard naming, include guard presence can also be tested.
 #
 # Example usage (variable name must start with lowercase, function name must start with uppercase):
 # $ cppcheck --dump path-to-src/
@@ -14,6 +15,14 @@
 #    "RE_VARNAME": "[a-z]*[a-zA-Z0-9_]*\\Z",
 #    "RE_PRIVATE_MEMBER_VARIABLE": null,
 #    "RE_FUNCTIONNAME": "[a-z0-9A-Z]*\\Z",
+#    "include_guard": {
+#        "input": "path",
+#        "prefix": "GUARD_",
+#        "case": "upper",
+#        "max_linenr": 5,
+#        "RE_HEADERFILE": "[^/].*\\.h\\Z",
+#        "required": true
+#    },
 #    "var_prefixes": {"uint32_t": "ui32"},
 #    "function_prefixes": {"uint16_t": "ui16",
 #                          "uint32_t": "ui32"}
@@ -73,9 +82,114 @@ def evalExpr(conf, exp, mockToken, msgType):
         msg = msgType + ' ' + mockToken.str + ' violates naming convention'
         checkFalseRegex(mockToken, exp, msg)
 
+def check_include_guard_name(conf_ig,cfg,directive):
+    parts = directive.str.split()
+    if len(parts) != 2:
+        msg = 'syntax error'
+        reportNamingError(directive,msg,'syntax')
+        return None
+    guard_name = parts[1]
+
+    filename = directive.file
+    if conf_ig.get('input','path') == 'basename':
+        filename = os.path.basename(filename)
+    use_case = conf_ig.get('case','upper')
+    if use_case == 'upper':
+        filename = filename.upper()
+    elif use_case == 'lower':
+        filename = filename.lower()
+    elif use_case == 'keep':
+        pass # keep filename case as-is
+    else:
+        print("invalid config value for 'case': '%s'"%use_case,file=sys.stderr)
+        sys.exit(1)
+
+    barename = re.sub('[^A-Za-z0-9]','_',filename).strip('_')
+    expect_guard_name = conf_ig.get('prefix','') + barename + conf_ig.get('suffix','')
+    if expect_guard_name != guard_name:
+        msg = 'include guard naming violation; %s != %s'%(guard_name,expect_guard_name)
+        reportNamingError(directive,msg,'includeGuardName')
+
+    return guard_name
+
+def check_include_guard(conf_ig,cfg,unguarded_include_files):
+    # Scan for '#ifndef FILE_H' as the first directive, in the first N lines.
+    # Then test whether the next directive #defines the found name.
+    # Various tests are done:
+    # - check include guards for their naming and consistency
+    # - test whether include guards are in place
+    max_linenr = conf_ig.get('max_linenr', 5)
+
+    def report(directive,msg,errorId):
+        reportNamingError(directive,msg,errorId)
+
+    def report_pending_ifndef(directive):
+        report(directive,'include guard #ifndef is not followed by #define','includeGuardIncomplete')
+
+    last_fn = None
+    pending_ifndef = None
+    phase = 0
+    for directive in cfg.directives:
+        if last_fn != directive.file:
+            if pending_ifndef:
+                report_pending_ifndef(pending_ifndef)
+                pending_ifndef = None
+            last_fn = directive.file
+            phase = 0
+        if phase == -1:
+            # ignore (the remainder of) this file
+            continue
+        if not re.match(include_guard_header_re,directive.file):
+            phase = -1
+            continue
+
+        if directive.linenr > max_linenr:
+            if phase == 0 and conf_ig.get('required',1):
+                report(directive,'include guard not found before line %d'%max_linenr,'includeGuardMissing')
+                pass
+            phase = -1
+            continue
+
+        if phase == 0:
+            # looking for '#ifndef FILE_H'
+            if not directive.str.startswith('#ifndef'):
+                if conf_ig.get('required',1):
+                    report(directive,'first preprocessor directive should be include guard #ifndef','includeGuardMissing')
+                phase = -1
+                continue
+            guard_name = check_include_guard_name(conf_ig,cfg,directive)
+            if guard_name == None:
+                phase = -1
+                continue
+            pending_ifndef = directive
+            phase = 1
+        elif phase == 1:
+            pending_ifndef = None
+            # looking for '#define FILE_H'
+            if not directive.str.startswith('#define'):
+                report(directive,'second preprocessor directive should be include guard #define','includeGuardIncomplete')
+                phase = -1
+                continue
+            parts = directive.str.split()
+            if len(parts) == 1:
+                report(directive,'syntax error','syntax')
+                phase = -1
+                continue
+            if guard_name != parts[1]:
+                report(directive,'include guard does not guard; %s != %s'%(guard_name,parts[1]),'includeGuardAwayFromDuty',severity='warning')
+
+            unguarded_include_files.remove(directive.file)
+
+            phase = -1
+    if pending_ifndef:
+        report_pending_ifndef(pending_ifndef)
 
 def process(dumpfiles, configfile, debugprint=False):
     conf = loadConfig(configfile)
+
+    if "include_guard" in conf and conf["include_guard"]:
+        global include_guard_header_re
+        include_guard_header_re = conf["include_guard"].get('RE_HEADERFILE',"[^/].*\\.h\\Z")
 
     for afile in dumpfiles:
         if not afile[-5:] == '.dump':
@@ -104,6 +218,11 @@ def process(dumpfiles, configfile, debugprint=False):
                     msgType = 'Namespace'
                     for exp in conf["RE_NAMESPACE"]:
                         evalExpr(conf["RE_NAMESPACE"], exp, mockToken, msgType)
+
+        unguarded_include_files = []
+        if "include_guard" in conf and conf["include_guard"]:
+            if conf["include_guard"].get('required',1):
+                unguarded_include_files = [fn for fn in data.files if re.match(include_guard_header_re,fn)]
 
         for cfg in data.configurations:
             if not args.cli:
@@ -202,6 +321,14 @@ def process(dumpfiles, configfile, debugprint=False):
                         msgType = 'Class ' + fnc.type
                         for exp in conf["RE_CLASS_NAME"]:
                             evalExpr(conf["RE_CLASS_NAME"], exp, mockToken, msgType)
+
+            # Check include guard naming
+            if "include_guard" in conf and conf["include_guard"]:
+                check_include_guard(conf["include_guard"],cfg,unguarded_include_files)
+
+        for fn in unguarded_include_files:
+            mockToken = DataStruct(fn,0,os.path.basename(fn))
+            reportNamingError(mockToken,'Missing include guard','includeGuardMissing')
 
 if __name__ == "__main__":
     parser = cppcheckdata.ArgumentParser()
