@@ -132,8 +132,8 @@ rm $releasename.*
 cd ..
 
 # Generate version.txt
-make -j4
-rm cppcheck.cfg
+make -j12
+rm -f cppcheck.cfg
 ./cppcheck --version > upload/version.txt
 
 cd ~/cppcheck/upload
@@ -149,7 +149,7 @@ cp -R ~/cppcheck/cfg .
 cp -R ~/cppcheck/addons .
 cp -R ~/cppcheck/platforms .
 cd ~/cppcheck
-make clean ; make -j4 FILESDIR=~/.cppcheck/$tag MATCHCOMPILER=yes
+make clean ; make -j12 FILESDIR=~/.cppcheck/$tag MATCHCOMPILER=yes CXXFLAGS=-O2
 mv cppcheck ~/.cppcheck/cppcheck-$tag
 
 git checkout main
