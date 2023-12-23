@@ -1640,6 +1640,14 @@ namespace {
             return *it;
         }
 
+        static bool updateValue(ValueFlow::Value& v, ValueFlow::Value x)
+        {
+            const bool returnValue = !x.isUninitValue() && !x.isImpossible();
+            if (v.isUninitValue() || returnValue)
+                v = std::move(x);
+            return returnValue;
+        }
+
         ValueFlow::Value execute(const Token* expr)
         {
             depth--;
@@ -1648,13 +1656,29 @@ namespace {
                 }};
             if (depth < 0)
                 return unknown();
-            ValueFlow::Value v = executeImpl(expr);
-            if (!v.isUninitValue())
+            ValueFlow::Value v = unknown();
+            if (updateValue(v, executeImpl(expr)))
                 return v;
             if (!expr)
                 return v;
-            if (expr->exprId() > 0 && pm->hasValue(expr->exprId()))
-                return pm->at(expr->exprId());
+            if (expr->exprId() > 0 && pm->hasValue(expr->exprId())) {
+                if (updateValue(v, pm->at(expr->exprId())))
+                    return v;
+            }
+            // Find symbolic values
+            for (const ValueFlow::Value& value : expr->values()) {
+                if (!value.isSymbolicValue())
+                    continue;
+                if (!value.isKnown())
+                    continue;
+                if (value.tokvalue->exprId() > 0 && !pm->hasValue(value.tokvalue->exprId()))
+                    continue;
+                ValueFlow::Value v2 = pm->at(value.tokvalue->exprId());
+                if (!v2.isIntValue() && value.intvalue != 0)
+                    continue;
+                v2.intvalue += value.intvalue;
+                return v2;
+            }
             if (const ValueFlow::Value* value = getImpossibleValue(expr))
                 return *value;
             return v;
