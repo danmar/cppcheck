@@ -240,21 +240,25 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
                 if (!inlineSuppressionsBlockBegin.empty()) {
                     const Suppressions::Suppression lastBeginSuppression = inlineSuppressionsBlockBegin.back();
 
-                    for (const Suppressions::Suppression &supprBegin : inlineSuppressionsBlockBegin)
+                    auto supprBegin = inlineSuppressionsBlockBegin.begin();
+                    while (supprBegin != inlineSuppressionsBlockBegin.end())
                     {
-                        if (lastBeginSuppression.lineNumber != supprBegin.lineNumber)
+                        if (lastBeginSuppression.lineNumber != supprBegin->lineNumber) {
+                            ++supprBegin;
                             continue;
+                        }
 
-                        if (suppr.symbolName == supprBegin.symbolName && suppr.lineNumber > supprBegin.lineNumber) {
-                            suppr.lineBegin = supprBegin.lineNumber;
+                        if (suppr.symbolName == supprBegin->symbolName && suppr.lineNumber > supprBegin->lineNumber) {
+                            suppr.lineBegin = supprBegin->lineNumber;
                             suppr.lineEnd = suppr.lineNumber;
-                            suppr.lineNumber = supprBegin.lineNumber;
+                            suppr.lineNumber = supprBegin->lineNumber;
                             suppr.type = Suppressions::Type::block;
-                            inlineSuppressionsBlockBegin.remove(supprBegin);
+                            inlineSuppressionsBlockBegin.erase(supprBegin);
                             suppressions.addSuppression(std::move(suppr));
                             throwError = false;
                             break;
                         }
+                        ++supprBegin;
                     }
                 }
 

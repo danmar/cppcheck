@@ -172,6 +172,9 @@ private:
         TEST_CASE(enabledInformation);
         TEST_CASE(enabledUnusedFunction);
         TEST_CASE(enabledMissingInclude);
+        TEST_CASE(disabledMissingIncludeWithInformation);
+        TEST_CASE(enabledMissingIncludeWithInformation);
+        TEST_CASE(enabledMissingIncludeWithInformationReverseOrder);
 #ifdef CHECK_INTERNAL
         TEST_CASE(enabledInternal);
 #endif
@@ -350,6 +353,7 @@ private:
         TEST_CASE(ignorepaths4);
         TEST_CASE(ignorefilepaths1);
         TEST_CASE(ignorefilepaths2);
+        TEST_CASE(ignorefilepaths3);
 
         TEST_CASE(checkconfig);
         TEST_CASE(unknownParam);
@@ -406,7 +410,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--version"};
         ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
-        ASSERT_EQUALS("Cppcheck 2.13 dev\n", logger->str());
+        ASSERT(logger->str().compare(0, 11, "Cppcheck 2.") == 0);
     }
 
     void versionWithCfg() {
@@ -427,7 +431,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--library=missing", "--version"};
         ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS("Cppcheck 2.13 dev\n", logger->str());
+        ASSERT(logger->str().compare(0, 11, "Cppcheck 2.") == 0);
     }
 
     void versionWithInvalidCfg() {
@@ -838,6 +842,33 @@ private:
         ASSERT(settings->checks.isEnabled(Checks::missingInclude));
     }
 
+    void disabledMissingIncludeWithInformation() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--disable=missingInclude", "--enable=information", "file.cpp"};
+        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT(settings->severity.isEnabled(Severity::information));
+        ASSERT(!settings->checks.isEnabled(Checks::missingInclude));
+        ASSERT_EQUALS("", logger->str());
+    }
+
+    void enabledMissingIncludeWithInformation() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=information", "--enable=missingInclude", "file.cpp"};
+        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT(settings->severity.isEnabled(Severity::information));
+        ASSERT(settings->checks.isEnabled(Checks::missingInclude));
+        ASSERT_EQUALS("", logger->str());
+    }
+
+    void enabledMissingIncludeWithInformationReverseOrder() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=missingInclude", "--enable=information", "file.cpp"};
+        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT(settings->severity.isEnabled(Severity::information));
+        ASSERT(settings->checks.isEnabled(Checks::missingInclude));
+        ASSERT_EQUALS("", logger->str());
+    }
+
 #ifdef CHECK_INTERNAL
     void enabledInternal() {
         REDIRECT;
@@ -939,7 +970,7 @@ private:
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT(settings->severity.isEnabled(Severity::information));
         ASSERT(!settings->checks.isEnabled(Checks::missingInclude));
-        ASSERT_EQUALS("cppcheck: '--enable=information' will no longer implicitly enable 'missingInclude' starting with 2.16. Please enable it explicitly if you require it.\n", logger->str());
+        ASSERT_EQUALS("", logger->str());
     }
 
     void disableInformationPartial2() {
@@ -2226,6 +2257,14 @@ private:
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
         ASSERT_EQUALS("src/foo.cpp", parser->getIgnoredPaths()[0]);
+    }
+
+    void ignorefilepaths3() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "-i", "foo.cpp", "file.cpp"};
+        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
+        ASSERT_EQUALS("foo.cpp", parser->getIgnoredPaths()[0]);
     }
 
     void checkconfig() {

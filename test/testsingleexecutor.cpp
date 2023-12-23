@@ -153,6 +153,8 @@ private:
         TEST_CASE(showtime_file);
         TEST_CASE(showtime_summary);
         TEST_CASE(showtime_file_total);
+        TEST_CASE(suppress_error_library);
+        TEST_CASE(unique_errors);
     }
 
     void many_files() {
@@ -321,7 +323,36 @@ private:
         ASSERT(output_s.find("Check time: " + fprefix() + "_" + zpad3(2) + ".cpp: ") != std::string::npos);
     }
 
+    void suppress_error_library() {
+        SUPPRESS;
+        const Settings settingsOld = settings;
+        const char xmldata[] = R"(<def format="2"><markup ext=".cpp" reporterrors="false"/></def>)";
+        settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+        check(1, 0,
+              "int main()\n"
+              "{\n"
+              "  int i = *((int*)0);\n"
+              "  return 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        settings = settingsOld;
+    }
+
+    void unique_errors() {
+        SUPPRESS;
+        ScopedFile inc_h(fprefix() + ".h",
+                         "inline void f()\n"
+                         "{\n"
+                         "  (void)*((int*)0);\n"
+                         "}");
+        check(2, 2,
+              "#include \"" + inc_h.name() + "\"");
+        // these are not actually made unique by the implementation. That needs to be done by the given ErrorLogger
+        ASSERT_EQUALS("[" + inc_h.name() + ":3]: (error) Null pointer dereference: (int*)0\n", errout.str());
+    }
+
     // TODO: test whole program analysis
+    // TODO: test unique errors
 };
 
 class TestSingleExecutorFiles : public TestSingleExecutorBase {

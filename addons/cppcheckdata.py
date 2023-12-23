@@ -830,7 +830,7 @@ class Value:
         intvalue         integer value
         tokvalue         token value
         floatvalue       float value
-        movedValue
+        movedvalue
         uninit
         containerSize    container size
         bufferSize       buffer size
@@ -900,7 +900,7 @@ class Value:
         self.symbolic = IdMap.get(self._symbolicId)
 
     def __repr__(self):
-        attrs = ["intvalue", "tokvalue", "floatvalue", "movedValue", "uninit", 
+        attrs = ["intvalue", "tokvalue", "floatvalue", "movedvalue", "uninit", 
                  "bufferSize", "containerSize", "condition", "valueKind"]
         return "{}({})".format(
             "Value",

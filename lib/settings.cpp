@@ -119,6 +119,15 @@ std::string Settings::loadCppcheckCfg()
             }
         }
     }
+    {
+        const picojson::object::const_iterator it = obj.find("safety");
+        if (it != obj.cend()) {
+            const auto& v = it->second;
+            if (!v.is<bool>())
+                return "'safety' is not a bool";
+            safety = v.get<bool>();
+        }
+    }
 
     return "";
 }

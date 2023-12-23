@@ -459,6 +459,20 @@ private:
             "}");
         TODO_ASSERT_EQUALS("error", "", errout.str());
 
+        // constructor with hidden definition
+        functionVariableUsage(
+            "class B {\n"
+            "public:\n"
+            "   B();\n"
+            "};\n"
+            "class A {\n"
+            "   B* b = new B;\n"
+            "};\n"
+            "int main() {\n"
+            "   A a;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
         // side-effect variable
         functionVariableUsage(
             "class F {\n"
@@ -5407,6 +5421,23 @@ private:
                               "    return 0;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("bool argsMatch(const Token *first, const Token *second) {\n" // #6145
+                              "    if (first->str() == \")\")\n"
+                              "        return true;\n"
+                              "    else if (first->next()->str() == \"=\")\n"
+                              "        first = first->nextArgument();\n"
+                              "    else if (second->next()->str() == \"=\") {\n"
+                              "        second = second->nextArgument();\n"
+                              "        if (second)\n"
+                              "            second = second->tokAt(-2);\n"
+                              "        if (!first || !second) {\n"
+                              "            return !first && !second;\n"
+                              "        }\n"
+                              "    }\n"
+                              "    return false;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'first' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvarIfElse() {

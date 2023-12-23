@@ -3402,7 +3402,14 @@ void CheckClass::unsafeClassRefMemberError(const Token *tok, const std::string &
                 CWE(0), Certainty::normal);
 }
 
-namespace {
+// a Clang-built executable will crash when using the anonymous MyFileInfo later on - so put it in a unique namespace for now
+// see https://trac.cppcheck.net/ticket/12108 for more details
+#ifdef __clang__
+inline namespace CheckClass_internal
+#else
+namespace
+#endif
+{
     /* multifile checking; one definition rule violations */
     class MyFileInfo : public Check::FileInfo {
     public:

@@ -109,7 +109,13 @@ enum class Severity {
      * Debug message.
      * Debug-mode message useful for the developers.
      */
-    debug
+    debug,
+    /**
+     * Internal message.
+     * Message will not be shown to the user.
+     * Tracking what checkers is executed, tracking suppressed critical errors, etc.
+     */
+    internal
 };
 
 CPPCHECKLIB std::string severityToString(Severity severity);

@@ -1642,12 +1642,7 @@ void CheckUninitVar::valueFlowUninit()
                     const bool isarray = tok->variable()->isArray();
                     if (isarray && tok->variable()->isMember())
                         continue; // Todo: this is a bailout
-                    const bool ispointer = astIsPointer(tok) && !isarray;
                     const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
-                    if (ispointer && v->indirect == 1 && !deref)
-                        continue;
-                    if (isarray && !deref)
-                        continue;
                     uninitderef = deref && v->indirect == 0;
                     const bool isleaf = isLeafDot(tok) || uninitderef;
                     if (!isleaf && Token::Match(tok->astParent(), ". %name%") && (tok->astParent()->next()->varId() || tok->astParent()->next()->isEnumerator()))
@@ -1682,7 +1677,14 @@ static bool isVariableUsage(const Settings *settings, const Token *vartok, MathL
     return CheckUninitVar::isVariableUsage(vartok, settings->library, true, CheckUninitVar::Alloc::ARRAY);
 }
 
-namespace {
+// a Clang-built executable will crash when using the anonymous MyFileInfo later on - so put it in a unique namespace for now
+// see https://trac.cppcheck.net/ticket/12108 for more details
+#ifdef __clang__
+inline namespace CheckUninitVar_internal
+#else
+namespace
+#endif
+{
     /* data for multifile checking */
     class MyFileInfo : public Check::FileInfo {
     public:

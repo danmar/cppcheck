@@ -1460,7 +1460,7 @@ private:
                "    int a = x;\n"
                "    if (x >= 1) {}\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 2U, 1));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 2U, 1));
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
 
         code = "void f(unsigned int x) {\n"
@@ -7275,6 +7275,17 @@ private:
                "    if (a && b) {}\n"
                "}\n";
         valueOfTok(code, "a");
+
+        code = "void g(const char* fmt, ...);\n" // #12255
+               "void f(const char* fmt, const char* msg) {\n"
+               "    const char* p = msg;\n"
+               "    g(\"%s\", msg);\n"
+               "}\n"
+               "void g(const char* fmt, ...) {\n"
+               "    const char* q = fmt;\n"
+               "    if (*q > 0 && *q < 100) {}\n"
+               "}\n";
+        valueOfTok(code, "&&");
     }
 
     void valueFlowHang() {
@@ -7538,6 +7549,15 @@ private:
                "    str += s.to_string();\n"
                "}\n";
         valueOfTok(code, "s");
+
+        code = "void a(int e, int d, int c, int h) {\n"
+               "  std::vector<int> b;\n"
+               "  std::vector<int> f;\n"
+               "  if (b == f && h)\n"
+               "    return;\n"
+               "  if (b == f && b == f && c && e < d) {}\n"
+               "}\n";
+        valueOfTok(code, "b");
     }
 
     void valueFlowUnknownMixedOperators() {

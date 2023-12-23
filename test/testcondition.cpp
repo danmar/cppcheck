@@ -4547,6 +4547,14 @@ private:
               "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(int i) {\n" // #11741
+              "    i = -i - 1;\n"
+              "    if (i < 0 || i >= 20)\n"
+              "        return 0;\n"
+              "    return 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -5240,6 +5248,19 @@ private:
               "    if( x ) {\n"
               "        g();\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #10701
+              "    std::string s;\n"
+              "    try {\n"
+              "        try {\n"
+              "            s = g();\n"
+              "        }\n"
+              "        catch (const Err& err) {}\n"
+              "    }\n"
+              "    catch (const std::exception& e) {}\n"
+              "    if (s != \"abc\") {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -291,6 +291,15 @@ public:
     std::list<Rule> rules;
 #endif
 
+    /**
+     * @brief Safety certified behavior
+     * Show checkers report when Cppcheck finishes
+     * Make cppcheck checking more strict about critical errors
+     * - returns nonzero if there is critical errors
+     * - a critical error id is not suppressed (by mistake?) with glob pattern
+     */
+    bool safety = false;
+
     /** Do not only check how interface is used. Also check that interface is safe. */
     struct CPPCHECKLIB SafeChecks {
 

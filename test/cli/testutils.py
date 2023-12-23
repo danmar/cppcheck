@@ -51,18 +51,27 @@ def __lookup_cppcheck_exe():
     if sys.platform == "win32":
         exe_name += ".exe"
 
-    for base in (script_path + '/../../', './'):
-        for path in ('', 'bin/', 'bin/debug/'):
-            exe_path = base + path + exe_name
-            if os.path.isfile(exe_path):
-                print("using '{}'".format(exe_path))
-                return exe_path
+    exe_path = None
 
-    return None
+    if 'TEST_CPPCHECK_EXE_LOOKUP_PATH' in os.environ:
+        lookup_paths = [os.environ['TEST_CPPCHECK_EXE_LOOKUP_PATH']]
+    else:
+        lookup_paths = [os.path.join(script_path, '..', '..'), '.']
+
+    for base in lookup_paths:
+        for path in ('', 'bin', os.path.join('bin', 'debug')):
+            tmp_exe_path = os.path.join(base, path, exe_name)
+            if os.path.isfile(tmp_exe_path):
+                exe_path = tmp_exe_path
+                break
+
+    if exe_path:
+        print("using '{}'".format(exe_path))
+    return exe_path
 
 
 # Run Cppcheck with args
-def cppcheck(args, env=None):
+def cppcheck(args, env=None, remove_checkers_report=True):
     exe = __lookup_cppcheck_exe()
     assert exe is not None, 'no cppcheck binary found'
 
@@ -71,8 +80,20 @@ def cppcheck(args, env=None):
     comm = p.communicate()
     stdout = comm[0].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
     stderr = comm[1].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
-    if stdout.find('\nActive checkers:') > 0:
-        stdout = stdout[:1 + stdout.find('\nActive checkers:')]
+    if remove_checkers_report:
+        if stderr.find('[checkersReport]\n') > 0:
+            start_id = stderr.find('[checkersReport]\n')
+            start_line = stderr.rfind('\n', 0, start_id)
+            if start_line <= 0:
+                stderr = ''
+            else:
+                stderr = stderr[:start_line + 1]
+        elif stderr.find(': (information) Active checkers: ') >= 0:
+            pos = stderr.find(': (information) Active checkers: ')
+            if pos == 0:
+                stderr = ''
+            elif stderr[pos - 1] == '\n':
+                stderr = stderr[:pos]
     return p.returncode, stdout, stderr
 
 

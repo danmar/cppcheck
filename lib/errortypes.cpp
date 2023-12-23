@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,6 +66,8 @@ std::string severityToString(Severity severity)
         return "information";
     case Severity::debug:
         return "debug";
+    case Severity::internal:
+        return "internal";
     }
     throw InternalError(nullptr, "Unknown severity");
 }
@@ -90,5 +92,7 @@ Severity severityFromString(const std::string& severity)
         return Severity::information;
     if (severity == "debug")
         return Severity::debug;
+    if (severity == "internal")
+        return Severity::internal;
     return Severity::none;
 }

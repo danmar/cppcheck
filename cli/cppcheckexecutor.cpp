@@ -116,7 +116,11 @@ public:
     /**
      * @brief Write the checkers report
      */
-    void writeCheckersReport() const;
+    void writeCheckersReport();
+
+    bool hasCriticalErrors() const {
+        return !mCriticalErrors.empty();
+    }
 
 private:
     /**
@@ -140,7 +144,8 @@ private:
     /**
      * Used to filter out duplicate error messages.
      */
-    std::set<std::string> mShownErrors;
+    // TODO: store hashes instead of the full messages
+    std::unordered_set<std::string> mShownErrors;
 
     /**
      * Report progress time
@@ -281,39 +286,54 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck) const
         cppcheck.tooManyConfigsError(emptyString,0U);
     }
 
+    if (settings.safety || settings.severity.isEnabled(Severity::information) || !settings.checkersReportFilename.empty())
+        mStdLogger->writeCheckersReport();
+
     if (settings.xml) {
         mStdLogger->reportErr(ErrorMessage::getXMLFooter());
     }
 
-    mStdLogger->writeCheckersReport();
+    if (settings.safety && mStdLogger->hasCriticalErrors())
+        return EXIT_FAILURE;
 
     if (returnValue)
         return settings.exitCode;
-    return 0;
+    return EXIT_SUCCESS;
 }
 
-void CppCheckExecutor::StdLogger::writeCheckersReport() const
+void CppCheckExecutor::StdLogger::writeCheckersReport()
 {
     CheckersReport checkersReport(mSettings, mActiveCheckers);
 
-    if (!mSettings.quiet) {
+    bool suppressed = false;
+    for (const Suppressions::Suppression& s : mSettings.nomsg.getSuppressions()) {
+        if (s.errorId == "checkersReport")
+            suppressed = true;
+    }
+
+    if (!suppressed) {
+        ErrorMessage msg;
+        msg.severity = Severity::information;
+        msg.id = "checkersReport";
+
         const int activeCheckers = checkersReport.getActiveCheckersCount();
         const int totalCheckers = checkersReport.getAllCheckersCount();
 
-        const std::string extra = mSettings.verbose ? " (use --checkers-report=<filename> to see details)" : "";
+        std::string what;
         if (mCriticalErrors.empty())
-            std::cout << "Active checkers: " << activeCheckers << "/" << totalCheckers << extra << std::endl;
+            what = std::to_string(activeCheckers) + "/" + std::to_string(totalCheckers);
         else
-            std::cout << "Active checkers: There was critical errors" << extra << std::endl;
+            what = "There was critical errors";
+        msg.setmsg("Active checkers: " + what + " (use --checkers-report=<filename> to see details)");
+
+        reportErr(msg);
     }
 
-    if (mSettings.checkersReportFilename.empty())
-        return;
-
-    std::ofstream fout(mSettings.checkersReportFilename);
-    if (fout.is_open())
-        fout << checkersReport.getReport(mCriticalErrors);
-
+    if (!mSettings.checkersReportFilename.empty()) {
+        std::ofstream fout(mSettings.checkersReportFilename);
+        if (fout.is_open())
+            fout << checkersReport.getReport(mCriticalErrors);
+    }
 }
 
 #ifdef _WIN32
@@ -384,21 +404,28 @@ void CppCheckExecutor::StdLogger::reportProgress(const std::string &filename, co
 
 void CppCheckExecutor::StdLogger::reportErr(const ErrorMessage &msg)
 {
-    if (msg.severity == Severity::none && (msg.id == "logChecker" || endsWith(msg.id, "-logChecker"))) {
+    if (msg.severity == Severity::internal && (msg.id == "logChecker" || endsWith(msg.id, "-logChecker"))) {
         const std::string& checker = msg.shortMessage();
         mActiveCheckers.emplace(checker);
         return;
     }
 
-    // Alert only about unique errors
-    if (!mShownErrors.insert(msg.toString(mSettings.verbose)).second)
-        return;
-
     if (ErrorLogger::isCriticalErrorId(msg.id) && mCriticalErrors.find(msg.id) == std::string::npos) {
         if (!mCriticalErrors.empty())
             mCriticalErrors += ", ";
         mCriticalErrors += msg.id;
+        if (msg.severity == Severity::internal)
+            mCriticalErrors += " (suppressed)";
     }
+
+    if (msg.severity == Severity::internal)
+        return;
+
+    // TODO: we generate a different message here then we log below
+    // TODO: there should be no need for verbose and default messages here
+    // Alert only about unique errors
+    if (!mShownErrors.insert(msg.toString(mSettings.verbose)).second)
+        return;
 
     if (mSettings.xml)
         reportErr(msg.toXML());

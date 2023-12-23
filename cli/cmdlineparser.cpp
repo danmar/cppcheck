@@ -198,8 +198,6 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
     assert(!(!pathnamesRef.empty() && !fileSettingsRef.empty()));
 
     if (!fileSettingsRef.empty()) {
-        // TODO: handle ignored?
-
         // TODO: de-duplicate
 
         std::list<FileSettings> fileSettings;
@@ -227,6 +225,11 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(mFileSettings), [&](const FileSettings &fs) {
             return mSettings.library.markupFile(fs.filename) && mSettings.library.processMarkupAfterCode(fs.filename);
         });
+
+        if (mFileSettings.empty()) {
+            mLogger.printError("could not find or open any of the paths given.");
+            return false;
+        }
     }
 
     if (!pathnamesRef.empty()) {
@@ -239,6 +242,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         const bool caseSensitive = true;
 #endif
         // Execute recursiveAddFiles() to each given file parameter
+        // TODO: verbose log which files were ignored?
         const PathMatch matcher(ignored, caseSensitive);
         for (const std::string &pathname : pathnamesRef) {
             const std::string err = FileLister::recursiveAddFiles(filesResolved, Path::toNativeSeparators(pathname), mSettings.library.markupExtensions(), matcher);
@@ -246,6 +250,14 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
                 // TODO: bail out?
                 mLogger.printMessage(err);
             }
+        }
+
+        if (filesResolved.empty()) {
+            mLogger.printError("could not find or open any of the paths given.");
+            // TODO: PathMatch should provide the information if files were ignored
+            if (!ignored.empty())
+                mLogger.printMessage("Maybe all paths were ignored?");
+            return false;
         }
 
         // de-duplicate files
@@ -283,13 +295,11 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         std::copy_if(files.cbegin(), files.cend(), std::inserter(mFiles, mFiles.end()), [&](const decltype(files)::value_type& entry) {
             return mSettings.library.markupFile(entry.first) && mSettings.library.processMarkupAfterCode(entry.first);
         });
-    }
 
-    if (mFiles.empty() && mFileSettings.empty()) {
-        mLogger.printError("could not find or open any of the paths given.");
-        if (!ignored.empty())
-            mLogger.printMessage("Maybe all paths were ignored?");
-        return false;
+        if (mFiles.empty()) {
+            mLogger.printError("could not find or open any of the paths given.");
+            return false;
+        }
     }
 
     return true;
@@ -363,6 +373,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     bool maxconfigs = false;
 
     ImportProject project;
+
+    int8_t logMissingInclude{0};
 
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
@@ -539,6 +551,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     mLogger.printError(errmsg);
                     return Result::Fail;
                 }
+                if (std::string(argv[i] + 10).find("missingInclude") != std::string::npos) {
+                    --logMissingInclude;
+                }
             }
 
             // dump cppcheck data
@@ -558,9 +573,12 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     mSettings.addEnabled("performance");
                     mSettings.addEnabled("portability");
                 }
-                if (enable_arg.find("information") != std::string::npos) {
+                if (enable_arg.find("information") != std::string::npos && logMissingInclude == 0) {
+                    ++logMissingInclude;
                     mSettings.addEnabled("missingInclude");
-                    mLogger.printMessage("'--enable=information' will no longer implicitly enable 'missingInclude' starting with 2.16. Please enable it explicitly if you require it.");
+                }
+                if (enable_arg.find("missingInclude") != std::string::npos) {
+                    --logMissingInclude;
                 }
             }
 
@@ -1048,6 +1066,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 #endif
             }
 
+            // Safety certified behavior
+            else if (std::strcmp(argv[i], "--safety") == 0)
+                mSettings.safety = true;
+
             // show timing information..
             else if (std::strncmp(argv[i], "--showtime=", 11) == 0) {
                 const std::string showtimeMode = argv[i] + 11;
@@ -1222,6 +1244,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         }
     }
 
+    if (logMissingInclude == 1)
+        mLogger.printMessage("'--enable=information' will no longer implicitly enable 'missingInclude' starting with 2.16. Please enable it explicitly if you require it.");
+
     if (!loadCppcheckCfg())
         return Result::Fail;
 
@@ -1235,8 +1260,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     substituteTemplateFormatStatic(mSettings.templateFormat);
     substituteTemplateLocationStatic(mSettings.templateLocation);
 
-    project.ignorePaths(mIgnoredPaths);
-
     if (mSettings.force || maxconfigs)
         mSettings.checkAllConfigurations = true;
 
@@ -1247,6 +1270,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         mSettings.maxConfigs = 1U;
 
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && mSettings.jobs > 1 && mSettings.buildDir.empty()) {
+        // TODO: bail out
         mLogger.printMessage("unusedFunction check can't be used with '-j' option. Disabling unusedFunction check.");
     }
 
@@ -1257,6 +1281,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
     // Print error only if we have "real" command and expect files
     if (mPathNames.empty() && project.guiProject.pathNames.empty() && project.fileSettings.empty()) {
+        // TODO: this message differs from the one reported in fillSettingsFromArgs()
         mLogger.printError("no C or C++ source files found.");
         return Result::Fail;
     }
@@ -1264,8 +1289,15 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     if (!project.guiProject.pathNames.empty())
         mPathNames = project.guiProject.pathNames;
 
-    if (!project.fileSettings.empty())
+    if (!project.fileSettings.empty()) {
+        project.ignorePaths(mIgnoredPaths);
+        if (project.fileSettings.empty()) {
+            mLogger.printError("no C or C++ source files found.");
+            mLogger.printMessage("all paths were ignored"); // TODO: log this differently?
+            return Result::Fail;
+        }
         mFileSettings = project.fileSettings;
+    }
 
     // Use paths _pathnames if no base paths for relative path output are given
     if (mSettings.basePaths.empty() && mSettings.relativePaths)
@@ -1629,10 +1661,10 @@ void CmdLineParser::printHelp() const
     mLogger.printRaw(oss.str());
 }
 
-bool CmdLineParser::isCppcheckPremium() {
-    Settings settings;
-    settings.loadCppcheckCfg(); // TODO: how to handle errors?
-    return startsWith(settings.cppcheckCfgProductName, "Cppcheck Premium");
+bool CmdLineParser::isCppcheckPremium() const {
+    if (mSettings.cppcheckCfgProductName.empty())
+        mSettings.loadCppcheckCfg();
+    return startsWith(mSettings.cppcheckCfgProductName, "Cppcheck Premium");
 }
 
 bool CmdLineParser::tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename)

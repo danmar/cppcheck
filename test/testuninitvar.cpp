@@ -6313,7 +6313,7 @@ private:
                         "    f(a, b);\n"
                         "    printf(\"%s\", a);\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str());
 
         valueFlowUninit("void usage(const char *);\n" // #10330
                         "int main(int argc, char* argv[]) {\n"
@@ -6349,6 +6349,14 @@ private:
                         "    }\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #12033
+        valueFlowUninit("void g(const char*p);\n"
+                        "void f() {\n"
+                        "    char buf[10];\n"
+                        "    g(buf);\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: buf\n", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
@@ -6400,7 +6408,7 @@ private:
                         "    someType_t gVar;\n"
                         "    bar(&gVar);\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:5]: (warning) Uninitialized variable: p->flags\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Uninitialized variable: &gVar\n", errout.str());
 
         valueFlowUninit("typedef struct\n"
                         "{\n"
@@ -6932,7 +6940,7 @@ private:
                         "  foo(123, &abc);\n"
                         "  return abc.b;\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: abc.b\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: &abc\n", errout.str());
 
         valueFlowUninit("struct ABC { int a; int b; int c; };\n"
                         "void foo() {\n"

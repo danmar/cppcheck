@@ -226,10 +226,10 @@ static std::string detectPython(const CppCheck::ExecuteCmdFn &executeCommand)
         std::string out;
 #ifdef _MSC_VER
         // FIXME: hack to avoid debug assertion with _popen() in executeCommand() for non-existing commands
-        const std::string cmd = std::string(py_exe) + " --version >NUL";
+        const std::string cmd = std::string(py_exe) + " --version >NUL 2>&1";
         if (system(cmd.c_str()) != 0) {
             // TODO: get more detailed error?
-            break;
+            continue;
         }
 #endif
         if (executeCommand(py_exe, split("--version"), "2>&1", out) == EXIT_SUCCESS && startsWith(out, "Python ") && std::isdigit(out[7])) {
@@ -427,7 +427,7 @@ unsigned int CppCheck::check(const std::string &path)
 {
     if (mSettings.clang) {
         if (!mSettings.quiet)
-            mErrorLogger.reportOut(std::string("Checking ") + path + "...", Color::FgGreen);
+            mErrorLogger.reportOut(std::string("Checking ") + path + " ...", Color::FgGreen);
 
         const std::string lang = Path::isCPP(path) ? "-x c++" : "-x c";
         const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, emptyString);
@@ -1097,12 +1097,13 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
     if (mSettings.useSingleJob() || !mSettings.buildDir.empty()) {
         // Analyse the tokens..
 
-        CTU::FileInfo *fi1 = CTU::getFileInfo(&tokenizer);
-        if (fi1) {
-            if (mSettings.useSingleJob())
-                mFileInfo.push_back(fi1);
+        if (CTU::FileInfo * const fi1 = CTU::getFileInfo(&tokenizer)) {
             if (!mSettings.buildDir.empty())
                 mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
+            if (mSettings.useSingleJob())
+                mFileInfo.push_back(fi1);
+            else
+                delete fi1;
         }
 
         // cppcheck-suppress shadowFunction - TODO: fix this
@@ -1110,12 +1111,13 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
             if (doUnusedFunctionOnly && dynamic_cast<const CheckUnusedFunctions*>(check) == nullptr)
                 continue;
 
-            Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
-            if (fi != nullptr) {
-                if (mSettings.useSingleJob())
-                    mFileInfo.push_back(fi);
+            if (Check::FileInfo * const fi = check->getFileInfo(&tokenizer, &mSettings)) {
                 if (!mSettings.buildDir.empty())
                     mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
+                if (mSettings.useSingleJob())
+                    mFileInfo.push_back(fi);
+                else
+                    delete fi;
             }
         }
     }
@@ -1458,9 +1460,10 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
             errmsg.setmsg(text);
             const std::string severity = obj["severity"].get<std::string>();
             errmsg.severity = severityFromString(severity);
-            if (errmsg.severity == Severity::none) {
+            if (errmsg.severity == Severity::none || errmsg.severity == Severity::internal) {
                 if (!endsWith(errmsg.id, "-logChecker"))
                     continue;
+                errmsg.severity = Severity::internal;
             }
             else if (!mSettings.severity.isEnabled(errmsg.severity))
                 continue;
@@ -1563,26 +1566,16 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
 //---------------------------------------------------------------------------
 
+// TODO: part of this logic is duplicated in Executor::hasToLog()
 void CppCheck::reportErr(const ErrorMessage &msg)
 {
-    if (msg.severity == Severity::none && (msg.id == "logChecker" || endsWith(msg.id, "-logChecker"))) {
+    if (msg.severity == Severity::internal) {
         mErrorLogger.reportErr(msg);
         return;
     }
 
     if (!mSettings.library.reportErrors(msg.file0))
         return;
-
-    const std::string errmsg = msg.toString(mSettings.verbose);
-    if (errmsg.empty())
-        return;
-
-    // Alert only about unique errors
-    if (std::find(mErrorList.cbegin(), mErrorList.cend(), errmsg) != mErrorList.cend())
-        return;
-
-    if (!mSettings.buildDir.empty())
-        mAnalyzerInformation.reportErr(msg);
 
     std::set<std::string> macroNames;
     if (!msg.callStack.empty()) {
@@ -1597,14 +1590,41 @@ void CppCheck::reportErr(const ErrorMessage &msg)
     const auto errorMessage = Suppressions::ErrorMessage::fromErrorMessage(msg, macroNames);
 
     if (mSettings.nomsg.isSuppressed(errorMessage, mUseGlobalSuppressions)) {
+        // Safety: Report critical errors to ErrorLogger
+        if (mSettings.safety && ErrorLogger::isCriticalErrorId(msg.id)) {
+            mExitCode = 1;
+
+            if (mSettings.nomsg.isSuppressedExplicitly(errorMessage, mUseGlobalSuppressions)) {
+                // Report with internal severity to signal that there is this critical error but
+                // it is suppressed
+                ErrorMessage temp(msg);
+                temp.severity = Severity::internal;
+                mErrorLogger.reportErr(temp);
+            } else {
+                // Report critical error that is not explicitly suppressed
+                mErrorLogger.reportErr(msg);
+            }
+        }
         return;
     }
+
+    // TODO: there should be no need for the verbose and default messages here
+    std::string errmsg = msg.toString(mSettings.verbose);
+    if (errmsg.empty())
+        return;
+
+    // Alert only about unique errors.
+    // This makes sure the errors of a single check() call are unique.
+    // TODO: get rid of this? This is forwarded to another ErrorLogger which is also doing this
+    if (!mErrorList.emplace(std::move(errmsg)).second)
+        return;
+
+    if (!mSettings.buildDir.empty())
+        mAnalyzerInformation.reportErr(msg);
 
     if (!mSettings.nofail.isSuppressed(errorMessage) && !mSettings.nomsg.isSuppressed(errorMessage)) {
         mExitCode = 1;
     }
-
-    mErrorList.push_back(errmsg);
 
     mErrorLogger.reportErr(msg);
     // check if plistOutput should be populated and the current output file is open and the error is not suppressed

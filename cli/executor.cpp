@@ -37,15 +37,21 @@ Executor::Executor(const std::list<std::pair<std::string, std::size_t>> &files, 
     assert(!(!files.empty() && !fileSettings.empty()));
 }
 
+// TODO: this logic is duplicated in CppCheck::reportErr()
 bool Executor::hasToLog(const ErrorMessage &msg)
 {
+    if (!mSettings.library.reportErrors(msg.file0))
+        return false;
+
     if (!mSuppressions.isSuppressed(msg, {}))
     {
+        // TODO: there should be no need for verbose and default messages here
         std::string errmsg = msg.toString(mSettings.verbose);
+        if (errmsg.empty())
+            return false;
 
         std::lock_guard<std::mutex> lg(mErrorListSync);
-        if (std::find(mErrorList.cbegin(), mErrorList.cend(), errmsg) == mErrorList.cend()) {
-            mErrorList.emplace_back(std::move(errmsg));
+        if (mErrorList.emplace(std::move(errmsg)).second) {
             return true;
         }
     }

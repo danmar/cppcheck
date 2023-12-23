@@ -3980,6 +3980,18 @@ private:
         const char expected3[] = "1: struct S { int * p ; } ;\n"
                                  "2: S f ( ) { return S@UNIQUE {@UNIQUE std ::@UNIQUE make_unique < int > (@UNIQUE [ ] ( ) { return 4 ; } ( ) ) .@UNIQUE release (@UNIQUE ) } ; }\n";
         ASSERT_EQUALS(expected3, tokenizeExpr(code3));
+
+        const char code4[] = "std::unique_ptr<int> g(int i) { return std::make_unique<int>(i); }\n"
+                             "void h(int*);\n"
+                             "void f() {\n"
+                             "    h(g({}).get());\n"
+                             "}\n";
+        const char expected4[] = "1: std :: unique_ptr < int > g ( int i ) { return std ::@UNIQUE make_unique < int > (@UNIQUE i@1 ) ; }\n"
+                                 "2: void h ( int * ) ;\n"
+                                 "3: void f ( ) {\n"
+                                 "4: h (@UNIQUE g (@UNIQUE { } ) .@UNIQUE get (@UNIQUE ) ) ;\n"
+                                 "5: }\n";
+        ASSERT_EQUALS(expected4, tokenizeExpr(code4));
     }
 
     void structuredBindings() {
