@@ -72,7 +72,7 @@
 # git tag 2.8 ; git push --tags
 # ./createrelease 2.8
 #
-# copy msi from release-windows
+# copy msi from release-windows, install and test cppcheck
 # copy manual from build-manual
 #
 # Update download link on index.php main page
@@ -96,13 +96,14 @@
 # ./build-cppcheck.sh
 #
 # run daca with new release
-# 1. edit tools/donate-cpu-server.py. Update OLD_VERSION and VERSION
-# 2. scp -i ../.ssh/osuosl_id_rsa tools/donate-cpu-server.py danielmarjamaki@cppcheck1.osuosl.org:/var/daca@home/
+# 1. edit tools/donate-cpu-server.py. Update OLD_VERSION and SERVER_VERSION
+# 2. scp -i ~/.ssh/osuosl_id_rsa tools/donate-cpu-server.py danielmarjamaki@cppcheck1.osuosl.org:/var/daca@home/
 #
 # Backup:
-# * trac: cd /var && nice tar -zcf /home/danielmarjamaki/trac.tar.gz trac-cppcheck
-# * git: git checkout -f && git checkout main && git pull && tar -zcf ~/cppchecksolutions/backups/2.12.0-git.tar.gz .git
+# * trac: cd /var && nice tar -cJf trac.tar.xz trac-cppcheck
+# * git: git checkout -f && git checkout main && git pull && tar -cJf git.tar.xz .git
 # * Changelog
+# * ci status: screenshot(s) showing that all tests pass for tagged commit
 
 # Folder/tag to use
 folder=$1
