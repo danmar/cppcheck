@@ -2173,6 +2173,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 't' should be passed by const reference.\n", errout.str());
 
+        Settings settings0 = settingsBuilder(_settings).platform(Platform::Type::Unix64).build();
         check("struct S {\n" // #12138
               "    union {\n"
               "        int a = 0;\n"
@@ -2189,7 +2190,7 @@ private:
               "};\n"
               "void f(S s) {\n"
               "    if (s.x > s.y) {}\n"
-              "}\n");
+              "}\n", /*filename*/ nullptr, /*inconclusive*/ true, /*runSimpleChecks*/ true, /*verbose*/ false, &settings0);
         ASSERT_EQUALS("", errout.str());
 
         check("struct S { std::list<int> l; };\n" // #12147
