@@ -1642,12 +1642,7 @@ void CheckUninitVar::valueFlowUninit()
                     const bool isarray = tok->variable()->isArray();
                     if (isarray && tok->variable()->isMember())
                         continue; // Todo: this is a bailout
-                    const bool ispointer = astIsPointer(tok) && !isarray;
                     const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
-                    if (ispointer && v->indirect == 1 && !deref)
-                        continue;
-                    if (isarray && !deref)
-                        continue;
                     uninitderef = deref && v->indirect == 0;
                     const bool isleaf = isLeafDot(tok) || uninitderef;
                     if (!isleaf && Token::Match(tok->astParent(), ". %name%") && (tok->astParent()->next()->varId() || tok->astParent()->next()->isEnumerator()))
