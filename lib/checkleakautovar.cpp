@@ -466,6 +466,9 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
             const Token * closingParenthesis = tok->linkAt(1);
             for (const Token *innerTok = tok->tokAt(2); innerTok && innerTok != closingParenthesis; innerTok = innerTok->next()) {
                 // TODO: replace with checkTokenInsideExpression()
+                const Token* const openingPar = isFunctionCall(innerTok);
+                if (!openingPar)
+                    checkTokenInsideExpression(innerTok, varInfo);
 
                 if (!isLocalVarNoAutoDealloc(innerTok, mTokenizer->isCPP()))
                     continue;
@@ -502,7 +505,6 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 }
 
                 // check for function call
-                const Token * const openingPar = isFunctionCall(innerTok);
                 if (openingPar) {
                     const Library::AllocFunc* allocFunc = mSettings->library.getDeallocFuncInfo(innerTok);
                     // innerTok is a function name
@@ -805,7 +807,8 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
             const Token * vtok = typeEndTok->tokAt(3);
             const VarInfo::AllocInfo allocation(af ? af->groupId : (arrayDelete ? NEW_ARRAY : NEW), VarInfo::OWNED, ftok);
             changeAllocStatus(varInfo, allocation, vtok, vtok);
-        }
+        } else if (Token::Match(tok, "%var% ."))
+            checkTokenInsideExpression(tok, varInfo);
     }
     ret(endToken, varInfo, true);
     return true;
@@ -930,8 +933,7 @@ void CheckLeakAutoVar::changeAllocStatus(VarInfo &varInfo, const VarInfo::AllocI
 void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpeningPar, VarInfo &varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af)
 {
     // Ignore function call?
-    if (mSettings->library.isLeakIgnore(mSettings->library.getFunctionName(tokName)))
-        return;
+    const bool isLeakIgnore = mSettings->library.isLeakIgnore(mSettings->library.getFunctionName(tokName));
     if (mSettings->library.getReallocFuncInfo(tokName))
         return;
 
@@ -990,6 +992,8 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
                         varAlloc.allocTok = arg;
                     }
                 }
+                else if (isLeakIgnore)
+                    checkTokenInsideExpression(arg, varInfo);
                 else
                     changeAllocStatus(varInfo, dealloc.type == 0 ? allocation : dealloc, tokName, arg);
             }

@@ -6335,6 +6335,21 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:15] -> [test.cpp:17]: (warning) Uninitialized variable: pwd\n", errout.str());
 
+        valueFlowUninit("size_t Read(unsigned char* buffer, size_t len);\n" // #11540
+                        "void f() {\n"
+                        "    const int N = 100;\n"
+                        "    uint8_t data[N];\n"
+                        "    size_t data_size = 0;\n"
+                        "    for (int i = 0; i < 10; i++) {\n"
+                        "        if (!data_size)\n"
+                        "            data_size = Read(data, N);\n"
+                        "        if (!data_size)\n"
+                        "            return;\n"
+                        "        if (data[0] == 0x47) {}\n"
+                        "    }\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // #12033
         valueFlowUninit("void g(const char*p);\n"
                         "void f() {\n"
