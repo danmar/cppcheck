@@ -841,7 +841,7 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
                 if (rhs->varId() == tok->varId()) {
                     // simple assignment
                     varInfo.erase(tok->varId());
-                } else if (rhs->str() == "(" && !mSettings->library.returnValue(rhs->astOperand1()).empty()) {
+                } else if (rhs->astParent() && rhs->str() == "(" && !mSettings->library.returnValue(rhs->astOperand1()).empty()) {
                     // #9298, assignment through return value of a function
                     const std::string &returnValue = mSettings->library.returnValue(rhs->astOperand1());
                     if (startsWith(returnValue, "arg")) {
