@@ -121,7 +121,7 @@ void LibraryDialog::openCfg()
     if (!errmsg.isNull()) {
         QMessageBox msg(QMessageBox::Critical,
                         tr("Cppcheck"),
-                        tr("Failed to load %1. %2.").arg(selectedFile).arg(errmsg),
+                        tr("Failed to load %1. %2.").arg(selectedFile, errmsg),
                         QMessageBox::Ok,
                         this);
         msg.exec();
