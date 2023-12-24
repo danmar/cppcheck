@@ -2999,6 +2999,7 @@ private:
         TEST_CASE(returnedValue); // #9298
         TEST_CASE(deallocuse2);
         TEST_CASE(fclose_false_positive); // #9575
+        TEST_CASE(strcpy_false_negative);
     }
 
     void returnedValue() { // #9298
@@ -3037,6 +3038,13 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void strcpy_false_negative() { // #12289
+        check("void f() {\n"
+              "    char* buf = new char[12];\n"
+              "    strcpy(buf, \"123\");\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: buf\n", errout.str());
+    }
 };
 
 REGISTER_TEST(TestLeakAutoVarStrcpy)
