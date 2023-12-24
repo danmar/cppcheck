@@ -176,7 +176,7 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="compliancereportdialog.cpp" line="173"/>
         <source>Failed to import &apos;%1&apos; (%2), can not show files in compliance report</source>
-        <translation type="unfinished"></translation>
+        <translation>&apos;%1&apos; (%2)のインポートに失敗しました。コンプライアンスレポートに表示できません</translation>
     </message>
     <message>
         <source>Failed to import &apos;%1&apos;, can not show files in compliance report</source>
@@ -1153,7 +1153,7 @@ Do you want to load this project file instead?</source>
     <message>
         <location filename="mainwindow.cpp" line="961"/>
         <source>Failed to load %1 - %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 - %2 の読み込みに失敗</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1313"/>
@@ -1233,7 +1233,7 @@ Analysis is stopped.</source>
     <message>
         <location filename="mainwindow.cpp" line="1799"/>
         <source>Failed to import &apos;%1&apos; (%2), analysis is stopped</source>
-        <translation type="unfinished"></translation>
+        <translation>&apos;%1&apos; (%2) のインポートに失敗しました。解析は停止</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="2099"/>
@@ -2213,7 +2213,7 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="347"/>
         <source>internal</source>
-        <translation type="unfinished"></translation>
+        <translation>内部</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="692"/>
@@ -2435,7 +2435,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="resultsview.cpp" line="575"/>
         <source>when checking a file</source>
-        <translation type="unfinished"></translation>
+        <translation>ファイルをチェックするとき</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="576"/>
