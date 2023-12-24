@@ -22,6 +22,7 @@
 
 #include <QChar>
 #include <QColor>
+#include <QCryptographicHash>
 #include <QFont>
 #include <QFontMetrics>
 #include <QKeySequence>
@@ -37,7 +38,6 @@
 #include <QTextCursor>
 #include <QTextEdit>
 #include <QTextFormat>
-#include <QtCore>
 
 class QTextDocument;
 

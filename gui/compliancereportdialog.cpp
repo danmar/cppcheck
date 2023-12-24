@@ -37,6 +37,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QCoreApplication>
+#include <QCryptographicHash>
 #include <QDialogButtonBox>
 #include <QDir>
 #include <QFile>
@@ -52,7 +53,6 @@
 #include <QStringList>
 #include <QTemporaryFile>
 #include <QTextStream>
-#include <QtCore>
 
 static void addHeaders(const QString& file1, QSet<QString> &allFiles) {
     if (allFiles.contains(file1))
