@@ -43,7 +43,7 @@ option(BUILD_MANPAGE        "Enable man target to build manpage"                
 
 option(BUILD_GUI            "Build the qt application"                                      OFF)
 option(WITH_QCHART          "Enable QtCharts usage in the GUI"                              OFF)
-option(USE_QT6              "Prefer Qt6 when available"                                     OFF)
+option(USE_QT6              "Prefer Qt6 when available"                                     ON)
 option(REGISTER_GUI_TESTS   "Register GUI tests in CTest"                                   ON)
 
 option(HAVE_RULES           "Usage of rules (needs PCRE library and headers)"               OFF)
