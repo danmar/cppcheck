@@ -481,7 +481,7 @@
  </connections>
  <slots>
   <slot>loadFile()</slot>
-  <slot>showResult(const QListWidgetItem*)</slot>
+  <slot>showResult(QListWidgetItem*)</slot>
   <slot>loadFromClipboard()</slot>
   <slot>filter(QString)</slot>
   <slot>refreshResults()</slot>
