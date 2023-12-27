@@ -3,13 +3,6 @@
 name: undefined behaviour sanitizers
 
 on:
-  push:
-    branches:
-      - 'main'
-      - 'releases/**'
-    tags:
-      - '2.*'
-  pull_request:
 
 permissions:
   contents: read
