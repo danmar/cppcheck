@@ -38,6 +38,17 @@ class DataStruct:
 
 
 def reportError(filename, linenr, severity, msg):
+    if '--cli' in sys.argv:
+        msg = { 'file': filename,
+                'linenr': linenr,
+                'column': 0,
+                'severity': severity,
+                'message': msg,
+                'addon': 'namingng',
+                'errorId': 'mismatch'}
+        sys.stdout.write(json.dumps(msg) + '\n')
+        return ''
+
     message = "[{filename}:{linenr}] ( {severity} ) naming.py: {msg}\n".format(
         filename=filename,
         linenr=linenr,
@@ -214,40 +225,15 @@ def process(dumpfiles, configfile, debugprint=False):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Naming verification')
-    parser.add_argument('dumpfiles', type=str, nargs='+',
-                        help='A set of dumpfiles to process')
-    parser.add_argument("--debugprint", action="store_true", default=False,
-                        help="Add debug prints")
+    parser = cppcheckdata.ArgumentParser()
     parser.add_argument("--configfile", type=str, default="naming.json",
                         help="Naming check config file")
-    parser.add_argument("--verify", action="store_true", default=False,
-                        help="verify this script. Must be executed in test folder !")
+    parser.add_argument("--debugprint", action="store_true", default=False,
+                        help="Add debug prints")
+    parser.add_argument('dumpfiles', type=str, nargs='+',
+                        help='A set of dumpfiles to process')
 
     args = parser.parse_args()
-    errors = process(args.dumpfiles, args.configfile, args.debugprint)
-
-    if args.verify:
-        print(errors)
-        if len(errors) < 6:
-            print("Not enough errors found")
-            sys.exit(1)
-        target = [
-         '[namingng_test.c:8] ( style ) naming.py: Variable badui32 violates naming convention\n',
-         '[namingng_test.c:11] ( style ) naming.py: Variable a violates naming convention\n',
-         '[namingng_test.c:29] ( style ) naming.py: Variable badui32 violates naming convention\n',
-         '[namingng_test.c:20] ( style ) naming.py: Function ui16bad_underscore violates naming convention\n',
-         '[namingng_test.c:25] ( style ) naming.py: Function u32Bad violates naming convention\n',
-         '[namingng_test.c:37] ( style ) naming.py: Function Badui16 violates naming convention\n']
-        diff = set(errors) - set(target)
-        if len(diff):
-            print("Not the right errors found {}".format(str(diff)))
-            sys.exit(1)
-        print("Verification done\n")
-        sys.exit(0)
-
-    if len(errors):
-        print('Found errors: {}'.format(len(errors)))
-        sys.exit(1)
+    process(args.dumpfiles, args.configfile, args.debugprint)
 
     sys.exit(0)
