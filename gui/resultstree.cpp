@@ -816,7 +816,7 @@ void ResultsTree::startApplication(const QStandardItem *target, int application)
         }
 #endif // Q_OS_WIN
 
-        const QString cmdLine = QString("%1 %2").arg(program).arg(params);
+        const QString cmdLine = QString("%1 %2").arg(program, params);
 
         // this is reported as deprecated in Qt 5.15.2 but no longer in Qt 6
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))

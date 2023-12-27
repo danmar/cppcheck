@@ -55,7 +55,6 @@
 #include <QSize>
 #include <QSpinBox>
 #include <QVariant>
-#include <QtCore>
 
 static constexpr char ADDON_MISRA[]   = "misra";
 static constexpr char CODING_STANDARD_MISRA_C_2023[] = "misra-c-2023";

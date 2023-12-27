@@ -37,6 +37,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QCoreApplication>
+#include <QCryptographicHash>
 #include <QDialogButtonBox>
 #include <QDir>
 #include <QFile>
@@ -52,7 +53,6 @@
 #include <QStringList>
 #include <QTemporaryFile>
 #include <QTextStream>
-#include <QtCore>
 
 static void addHeaders(const QString& file1, QSet<QString> &allFiles) {
     if (allFiles.contains(file1))
@@ -170,7 +170,7 @@ void ComplianceReportDialog::save()
             } catch (InternalError &e) {
                 QMessageBox msg(QMessageBox::Critical,
                                 tr("Save compliance report"),
-                                tr("Failed to import '%1' (%2), can not show files in compliance report").arg(prjfile).arg(QString::fromStdString(e.errorMessage)),
+                                tr("Failed to import '%1' (%2), can not show files in compliance report").arg(prjfile, QString::fromStdString(e.errorMessage)),
                                 QMessageBox::Ok,
                                 this);
                 msg.exec();

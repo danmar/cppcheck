@@ -22,6 +22,7 @@
 
 #include <QChar>
 #include <QColor>
+#include <QCryptographicHash>
 #include <QFont>
 #include <QFontMetrics>
 #include <QKeySequence>
@@ -37,7 +38,6 @@
 #include <QTextCursor>
 #include <QTextEdit>
 #include <QTextFormat>
-#include <QtCore>
 
 class QTextDocument;
 
@@ -448,15 +448,14 @@ void CodeEditor::lineNumberAreaPaintEvent(const QPaintEvent *event)
 QString CodeEditor::generateStyleString()
 {
     QString bgcolor = QString("background:rgb(%1,%2,%3);")
-                      .arg(mWidgetStyle->widgetBGColor.red())
-                      .arg(mWidgetStyle->widgetBGColor.green())
-                      .arg(mWidgetStyle->widgetBGColor.blue());
+                      .arg(mWidgetStyle->widgetBGColor.red(),
+                           mWidgetStyle->widgetBGColor.green(),
+                           mWidgetStyle->widgetBGColor.blue());
     QString fgcolor = QString("color:rgb(%1,%2,%3);")
-                      .arg(mWidgetStyle->widgetFGColor.red())
-                      .arg(mWidgetStyle->widgetFGColor.green())
-                      .arg(mWidgetStyle->widgetFGColor.blue());
+                      .arg(mWidgetStyle->widgetFGColor.red(),
+                           mWidgetStyle->widgetFGColor.green(),
+                           mWidgetStyle->widgetFGColor.blue());
     QString style = QString("%1 %2")
-                    .arg(bgcolor)
-                    .arg(fgcolor);
+                    .arg(bgcolor, fgcolor);
     return style;
 }

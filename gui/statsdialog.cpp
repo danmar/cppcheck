@@ -182,9 +182,9 @@ void StatsDialog::pdfExport()
         "<font color=\"blue\"><h3>%9   :   %10</h3></font>\n"
         "<font color=\"blue\"><h3>%11  :   %12</h3></font>\n"
         "<font color=\"purple\"><h3>%13  :   %14</h3></font>\n")
-                         .arg(tr("Statistics"))
-                         .arg(QDate::currentDate().toString("dd.MM.yyyy"))
-                         .arg(tr("Errors"))
+                         .arg(tr("Statistics"),
+                              QDate::currentDate().toString("dd.MM.yyyy"),
+                              tr("Errors"))
                          .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowErrors))
                          .arg(tr("Warnings"))
                          .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowWarnings))
@@ -246,17 +246,17 @@ void StatsDialog::copyToClipboard()
         "\t%8:\t%9\n"
         "\t%10:\t%11\n"
         )
-                             .arg(projSettings)
-                             .arg(project)
-                             .arg(mUI->mProject->text())
-                             .arg(paths)
-                             .arg(mUI->mPaths->text())
-                             .arg(incPaths)
-                             .arg(mUI->mIncludePaths->text())
-                             .arg(defines)
-                             .arg(mUI->mDefines->text())
-                             .arg(undefines)
-                             .arg(mUI->mUndefines->text());
+                             .arg(projSettings,
+                                  project,
+                                  mUI->mProject->text(),
+                                  paths,
+                                  mUI->mPaths->text(),
+                                  incPaths,
+                                  mUI->mIncludePaths->text(),
+                                  defines)
+                             .arg(mUI->mDefines->text(),
+                                  undefines,
+                                  mUI->mUndefines->text());
 
     const QString previous = QString(
         "%1\n"
@@ -264,13 +264,13 @@ void StatsDialog::copyToClipboard()
         "\t%4:\t%5\n"
         "\t%6:\t%7\n"
         )
-                             .arg(prevScan)
-                             .arg(selPath)
-                             .arg(mUI->mPath->text())
-                             .arg(numFiles)
-                             .arg(mUI->mNumberOfFilesScanned->text())
-                             .arg(duration)
-                             .arg(mUI->mScanDuration->text());
+                             .arg(prevScan,
+                                  selPath,
+                                  mUI->mPath->text(),
+                                  numFiles,
+                                  mUI->mNumberOfFilesScanned->text(),
+                                  duration,
+                                  mUI->mScanDuration->text());
 
     const QString statistics = QString(
         "%1\n"
@@ -281,8 +281,8 @@ void StatsDialog::copyToClipboard()
         "\t%10:\t%11\n"
         "\t%12:\t%13\n"
         )
-                               .arg(stats)
-                               .arg(errors)
+                               .arg(stats,
+                                    errors)
                                .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowErrors))
                                .arg(warnings)
                                .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowWarnings))
@@ -308,17 +308,17 @@ void StatsDialog::copyToClipboard()
         " <tr><th>%10:</th><td>%11</td></tr>\n"
         "</table>\n"
         )
-                                 .arg(projSettings)
-                                 .arg(project)
-                                 .arg(mUI->mProject->text())
-                                 .arg(paths)
-                                 .arg(mUI->mPaths->text())
-                                 .arg(incPaths)
-                                 .arg(mUI->mIncludePaths->text())
-                                 .arg(defines)
-                                 .arg(mUI->mDefines->text())
-                                 .arg(undefines)
-                                 .arg(mUI->mUndefines->text());
+                                 .arg(projSettings,
+                                      project,
+                                      mUI->mProject->text(),
+                                      paths,
+                                      mUI->mPaths->text(),
+                                      incPaths,
+                                      mUI->mIncludePaths->text(),
+                                      defines)
+                                 .arg(mUI->mDefines->text(),
+                                      undefines,
+                                      mUI->mUndefines->text());
 
     const QString htmlPrevious = QString(
         "<h3>%1</h3>\n"
@@ -328,13 +328,13 @@ void StatsDialog::copyToClipboard()
         " <tr><th>%6:</th><td>%7</td></tr>\n"
         "</table>\n"
         )
-                                 .arg(prevScan)
-                                 .arg(selPath)
-                                 .arg(mUI->mPath->text())
-                                 .arg(numFiles)
-                                 .arg(mUI->mNumberOfFilesScanned->text())
-                                 .arg(duration)
-                                 .arg(mUI->mScanDuration->text());
+                                 .arg(prevScan,
+                                      selPath,
+                                      mUI->mPath->text(),
+                                      numFiles,
+                                      mUI->mNumberOfFilesScanned->text(),
+                                      duration,
+                                      mUI->mScanDuration->text());
 
     const QString htmlStatistics = QString(
         "<h3>%1</h3>\n"
@@ -346,8 +346,8 @@ void StatsDialog::copyToClipboard()
         " <tr><th>%12:</th><td>%13</td></tr>\n"
         "</table>\n"
         )
-                                   .arg(stats)
-                                   .arg(errors)
+                                   .arg(stats,
+                                        errors)
                                    .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowErrors))
                                    .arg(warnings)
                                    .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowWarnings))
