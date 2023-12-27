@@ -2969,6 +2969,13 @@ struct ValueFlowAnalyzer : Analyzer {
             makeConditional();
     }
 
+    void updateState(const Token* tok) override
+    {
+        // Update program state
+        pms.removeModifiedVars(tok);
+        pms.addState(tok, getProgramState());
+    }
+
     virtual void internalUpdate(Token* /*tok*/, const ValueFlow::Value& /*v*/, Direction /*d*/)
     {
         assert(false && "Internal update unimplemented.");
