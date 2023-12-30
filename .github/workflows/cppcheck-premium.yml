@@ -19,22 +19,23 @@ jobs:
     runs-on: ubuntu-22.04 # run on the latest image only
 
     env:
-      PREMIUM_VERSION: devdrop-20231105
+      PREMIUM_VERSION: 23.12.0
 
     steps:
       - uses: actions/checkout@v3
 
       - name: Download cppcheckpremium
         run: |
-          wget https://files.cppchecksolutions.com/cppcheckpremium-${{ env.PREMIUM_VERSION }}-amd64.tar.gz
+          wget https://files.cppchecksolutions.com/${{ env.PREMIUM_VERSION }}/ubuntu-22.04/cppcheckpremium-${{ env.PREMIUM_VERSION }}-amd64.tar.gz
+          #wget https://files.cppchecksolutions.com/cppcheckpremium-${{ env.PREMIUM_VERSION }}-amd64.tar.gz
           tar xzf cppcheckpremium-${{ env.PREMIUM_VERSION }}-amd64.tar.gz
 
       - name: Generate a license file
         run: |
           echo cppcheck > cppcheck.lic
-          echo 231231 >> cppcheck.lic
+          echo 241231 >> cppcheck.lic
           echo 80000 >> cppcheck.lic
-          echo 57e08c39523ab54d >> cppcheck.lic
+          echo 53b72a908d7aeeee >> cppcheck.lic
           echo path:lib >> cppcheck.lic
 
       - name: Check
