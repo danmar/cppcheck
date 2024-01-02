@@ -573,8 +573,12 @@ static bool iscpp11init_impl(const Token * const tok)
     }
 
     auto isCaseStmt = [](const Token* colonTok) {
-        if (!Token::Match(colonTok->tokAt(-1), "%name%|%num%|%char% :"))
+        if (!Token::Match(colonTok->tokAt(-1), "%name%|%num%|%char%|) :"))
             return false;
+        if (const Token* castTok = colonTok->tokAt(-1)->link()) {
+            if (Token::simpleMatch(castTok->astParent(), "case"))
+                return true;
+        }
         const Token* caseTok = colonTok->tokAt(-2);
         while (caseTok && Token::Match(caseTok->tokAt(-1), "::|%name%"))
             caseTok = caseTok->tokAt(-1);
