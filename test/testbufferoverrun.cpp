@@ -1697,6 +1697,24 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:3] -> [test.cpp:6]: (warning) Either the condition 'x<2' is redundant or the array 'a[3]' is accessed at index 3, which is out of bounds.\n",
             errout.str());
+
+        check("void f() {\n" // #2199
+              "    char a[5];\n"
+              "    for (int i = 0; i < 5; i++) {\n"
+              "        i += 8;\n"
+              "        a[i] = 0;\n"
+              "    }\n"
+              "}\n"
+              "void g() {\n"
+              "    char a[5];\n"
+              "    for (int i = 0; i < 5; i++) {\n"
+              "        a[i + 7] = 0;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:5]: (error) Array 'a[5]' accessed at index 8, which is out of bounds.\n"
+            "[test.cpp:11]: (error) Array 'a[5]' accessed at index 11, which is out of bounds.\n",
+            errout.str());
     }
 
     void array_index_59() // #10413
