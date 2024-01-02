@@ -41,14 +41,14 @@ import json
 
 # Auxiliary class
 class DataStruct:
-    def __init__(self, file, linenr, string):
+    def __init__(self, file, linenr, string, column=0):
         self.file = file
         self.linenr = linenr
         self.str = string
-        self.column = 0
+        self.column = column
 
-def reportNamingError(location,message,errorId='namingConvention',severity='style',extra=''):
-    cppcheckdata.reportError(location,severity,message,'namingng',errorId,extra)
+def reportNamingError(location,message,errorId='namingConvention',severity='style',extra='',column=None):
+    cppcheckdata.reportError(location,severity,message,'namingng',errorId,extra,columnOverride=column)
 
 def configError(error,fatal=True):
     print('config error: %s'%error)
@@ -167,8 +167,9 @@ def check_include_guard_name(conf_include_guard,cfg,directive):
     if len(parts) != 2:
         msg = 'syntax error'
         reportNamingError(directive,msg,'syntax')
-        return None
+        return None,None
     guard_name = parts[1]
+    guard_column = 1+directive.str.find(guard_name)
 
     filename = directive.file
     if conf_include_guard.get('input','path') == 'basename':
@@ -188,9 +189,9 @@ def check_include_guard_name(conf_include_guard,cfg,directive):
     expect_guard_name = conf_include_guard.get('prefix','') + barename + conf_include_guard.get('suffix','')
     if expect_guard_name != guard_name:
         msg = 'include guard naming violation; %s != %s'%(guard_name,expect_guard_name)
-        reportNamingError(directive,msg,'includeGuardName')
+        reportNamingError(directive,msg,'includeGuardName',column=guard_column)
 
-    return guard_name
+    return guard_name,guard_column
 
 def check_include_guard(conf_include_guard,cfg,unguarded_include_files):
     # Scan for '#ifndef FILE_H' as the first directive, in the first N lines.
@@ -200,11 +201,11 @@ def check_include_guard(conf_include_guard,cfg,unguarded_include_files):
     # - test whether include guards are in place
     max_linenr = conf_include_guard.get('max_linenr', 5)
 
-    def report(directive,msg,errorId):
-        reportNamingError(directive,msg,errorId)
+    def report(directive,msg,errorId,column=0):
+        reportNamingError(directive,msg,errorId,column=column)
 
-    def report_pending_ifndef(directive):
-        report(directive,'include guard #ifndef is not followed by #define','includeGuardIncomplete')
+    def report_pending_ifndef(directive,column):
+        report(directive,'include guard #ifndef is not followed by #define','includeGuardIncomplete',column=column)
 
     last_fn = None
     pending_ifndef = None
@@ -212,7 +213,7 @@ def check_include_guard(conf_include_guard,cfg,unguarded_include_files):
     for directive in cfg.directives:
         if last_fn != directive.file:
             if pending_ifndef:
-                report_pending_ifndef(pending_ifndef)
+                report_pending_ifndef(pending_ifndef,guard_column)
                 pending_ifndef = None
             last_fn = directive.file
             phase = 0
@@ -237,7 +238,7 @@ def check_include_guard(conf_include_guard,cfg,unguarded_include_files):
                     report(directive,'first preprocessor directive should be include guard #ifndef','includeGuardMissing')
                 phase = -1
                 continue
-            guard_name = check_include_guard_name(conf_include_guard,cfg,directive)
+            guard_name,guard_column = check_include_guard_name(conf_include_guard,cfg,directive)
             if guard_name == None:
                 phase = -1
                 continue
@@ -256,13 +257,13 @@ def check_include_guard(conf_include_guard,cfg,unguarded_include_files):
                 phase = -1
                 continue
             if guard_name != parts[1]:
-                report(directive,'include guard does not guard; %s != %s'%(guard_name,parts[1]),'includeGuardAwayFromDuty',severity='warning')
+                report(directive,'include guard does not guard; %s != %s'%(guard_name,parts[1]),'includeGuardAwayFromDuty',severity='warning',column=guard_column)
 
             unguarded_include_files.remove(directive.file)
 
             phase = -1
     if pending_ifndef:
-        report_pending_ifndef(pending_ifndef)
+        report_pending_ifndef(pending_ifndef,guard_column)
 
 def process(dumpfiles, configfile, debugprint=False):
     conf = loadConfig(configfile)
@@ -294,7 +295,7 @@ def process(dumpfiles, configfile, debugprint=False):
         if conf.namespace:
             for tk in data.rawTokens:
                 if tk.str == 'namespace':
-                    mockToken = DataStruct(tk.next.file, tk.next.linenr, tk.next.str)
+                    mockToken = DataStruct(tk.next.file, tk.next.linenr, tk.next.str, tk.next.column)
                     msgType = 'Namespace'
                     for exp in conf.namespace:
                         evalExpr(conf.namespace, exp, mockToken, msgType)
@@ -333,9 +334,10 @@ def process(dumpfiles, configfile, debugprint=False):
                                 reportNamingError(var.typeStartToken,
                                                     'Variable ' +
                                                     var.nameToken.str +
-                                                    ' violates naming convention')
+                                                    ' violates naming convention',
+                                                    column=var.nameToken.column)
 
-                        mockToken = DataStruct(var.typeStartToken.file, var.typeStartToken.linenr, var.nameToken.str)
+                        mockToken = DataStruct(var.typeStartToken.file, var.typeStartToken.linenr, var.nameToken.str, var.nameToken.column)
                         msgType = 'Variable'
                         for exp in conf.variable:
                             evalExpr(conf.variable, exp, mockToken, msgType)
@@ -346,7 +348,7 @@ def process(dumpfiles, configfile, debugprint=False):
                 for var in cfg.variables:
                     if (var.access is None) or var.access != 'Private':
                         continue
-                    mockToken = DataStruct(var.typeStartToken.file, var.typeStartToken.linenr, var.nameToken.str)
+                    mockToken = DataStruct(var.typeStartToken.file, var.typeStartToken.linenr, var.nameToken.str, var.nameToken.column)
                     msgType = 'Private member variable'
                     for exp in conf.private_member:
                         evalExpr(conf.private_member, exp, mockToken, msgType)
@@ -356,7 +358,7 @@ def process(dumpfiles, configfile, debugprint=False):
                 for var in cfg.variables:
                     if (var.access is None) or var.access != 'Public':
                         continue
-                    mockToken = DataStruct(var.typeStartToken.file, var.typeStartToken.linenr, var.nameToken.str)
+                    mockToken = DataStruct(var.typeStartToken.file, var.typeStartToken.linenr, var.nameToken.str, var.nameToken.column)
                     msgType = 'Public member variable'
                     for exp in conf.public_member:
                         evalExpr(conf.public_member, exp, mockToken, msgType)
@@ -366,7 +368,7 @@ def process(dumpfiles, configfile, debugprint=False):
                 for var in cfg.variables:
                     if (var.access is None) or var.access != 'Global':
                         continue
-                    mockToken = DataStruct(var.typeStartToken.file, var.typeStartToken.linenr, var.nameToken.str)
+                    mockToken = DataStruct(var.typeStartToken.file, var.typeStartToken.linenr, var.nameToken.str, var.nameToken.column)
                     msgType = 'Public member variable'
                     for exp in conf.global_variable:
                         evalExpr(conf.global_variable, exp, mockToken, msgType)
@@ -387,8 +389,8 @@ def process(dumpfiles, configfile, debugprint=False):
 
                         if retval and retval in conf.function_prefixes:
                             if not token.function.name.startswith(conf.function_prefixes[retval]):
-                                reportNamingError(token, 'Function ' + token.function.name + ' violates naming convention')
-                        mockToken = DataStruct(token.file, token.linenr, token.function.name)
+                                reportNamingError(token, 'Function ' + token.function.name + ' violates naming convention', column=token.column)
+                        mockToken = DataStruct(token.file, token.linenr, token.function.name, token.column)
                         msgType = 'Function'
                         for exp in conf.function_name:
                             evalExpr(conf.function_name, exp, mockToken, msgType)
@@ -398,7 +400,7 @@ def process(dumpfiles, configfile, debugprint=False):
                 for fnc in cfg.functions:
                     # Check if it is Constructor/Destructor
                     if fnc.type == 'Constructor' or fnc.type == 'Destructor':
-                        mockToken = DataStruct(fnc.tokenDef.file, fnc.tokenDef.linenr, fnc.name)
+                        mockToken = DataStruct(fnc.tokenDef.file, fnc.tokenDef.linenr, fnc.name, fnc.tokenDef.column)
                         msgType = 'Class ' + fnc.type
                         for exp in conf.class_name:
                             evalExpr(conf.class_name, exp, mockToken, msgType)

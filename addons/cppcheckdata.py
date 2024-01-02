@@ -1619,11 +1619,11 @@ def is_suppressed(location, message, errorId):
             return True
     return False
 
-def reportError(location, severity, message, addon, errorId, extra=''):
+def reportError(location, severity, message, addon, errorId, extra='', columnOverride=None):
     if '--cli' in sys.argv:
         msg = { 'file': location.file,
                 'linenr': location.linenr,
-                'column': location.column,
+                'column': location.column if columnOverride is None else columnOverride,
                 'severity': severity,
                 'message': message,
                 'addon': addon,
