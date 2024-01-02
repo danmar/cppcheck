@@ -3735,7 +3735,7 @@ private:
                         "}\n");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:8]: (warning) Uninitialized variable: x\n", errout.str());
 
-        valueFlowUninit("int do_something();\n"
+        valueFlowUninit("int do_something();\n" // #11983
                         "int set_st(int *x);\n"
                         "int bar();\n"
                         "void foo() {\n"
@@ -3753,6 +3753,22 @@ private:
                         "        }\n"
                         "    }\n"
                         "    if(status == 1 && x > 0){}\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("int h(bool, bool*);\n" // #11760
+                        "int f(bool t) {\n"
+                        "    int i = 0;\n"
+                        "    bool b;\n"
+                        "    if (t)\n"
+                        "        g();\n"
+                        "    if (i == 0)\n"
+                        "        i = h(t, &b);\n"
+                        "    if (i == 0 && b)\n"
+                        "        i = h(t, &b);\n"
+                        "    if (i == 0 && b)\n"
+                        "        i = h(t, &b);\n"
+                        "    return i;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
     }
