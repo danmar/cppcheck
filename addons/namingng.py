@@ -369,7 +369,7 @@ def process(dumpfiles, configfile, debugprint=False):
                     if (var.access is None) or var.access != 'Global':
                         continue
                     mockToken = DataStruct(var.typeStartToken.file, var.typeStartToken.linenr, var.nameToken.str, var.nameToken.column)
-                    msgType = 'Public member variable'
+                    msgType = 'Global variable'
                     for exp in conf.global_variable:
                         evalExpr(conf.global_variable, exp, mockToken, msgType)
 
