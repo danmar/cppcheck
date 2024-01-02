@@ -3973,6 +3973,15 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 's' can be declared as pointer to const\n",
                       errout.str());
+
+        check("void f(char *a1, char *a2) {\n" // #12252
+              "    char* b = new char[strlen(a1) + strlen(a2) + 2];\n"
+              "    sprintf(b, \"%s_%s\", a1, a2);\n"
+              "    delete[] b;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'a1' can be declared as pointer to const\n"
+                      "[test.cpp:1]: (style) Parameter 'a2' can be declared as pointer to const\n",
+                      errout.str());
     }
 
     void switchRedundantAssignmentTest() {
