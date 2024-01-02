@@ -346,6 +346,15 @@ def test_addon_namingng(tmpdir):
     "RE_VARNAME": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
     "RE_GLOBAL_VARNAME": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
     "RE_FUNCTIONNAME": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
+    "include_guard": {
+        "input": "basename",
+        "prefix": "_",
+        "suffix": "",
+        "case": "upper",
+        "max_linenr": 5,
+        "RE_HEADERFILE": ".*\\.h\\Z",
+        "required": true
+    },
     "var_prefixes": {"uint32_t": "ui32"},
     "function_prefixes": {"uint16_t": "ui16",
                           "uint32_t": "ui32"},
@@ -353,6 +362,12 @@ def test_addon_namingng(tmpdir):
 }
                 """.replace('\\','\\\\'))
 
+    test_unguarded_include_file_basename = 'test_unguarded.h'
+    test_unguarded_include_file = os.path.join(tmpdir, test_unguarded_include_file_basename)
+    with open(test_unguarded_include_file, 'wt') as f:
+        f.write("""
+void InvalidFunctionUnguarded();
+""")
 
     test_include_file_basename = '_test.h'
     test_include_file = os.path.join(tmpdir, test_include_file_basename)
@@ -364,8 +379,10 @@ def test_addon_namingng(tmpdir):
 void InvalidFunction();
 extern int _invalid_extern_global;
 
+#include "{}"
+
 #endif
-""")
+""".format(test_unguarded_include_file))
 
     test_file_basename = 'test_.c'
     test_file = os.path.join(tmpdir, test_file_basename)
@@ -403,10 +420,17 @@ static int _invalid_static_global;
     lines = [line for line in stderr.splitlines() if line.strip() != '^' and line != '']
     expect = [
         '{}:0:0: style: File name {} violates naming convention [namingng-namingConvention]'.format(test_include_file,test_include_file_basename),
+        '{}:2:0: style: include guard naming violation; TEST_H != _TEST_H [namingng-includeGuardName]'.format(test_include_file),
+        '#ifndef TEST_H',
         '{}:5:0: style: Function InvalidFunction violates naming convention [namingng-namingConvention]'.format(test_include_file),
         'void InvalidFunction();',
         '{}:6:0: style: Public member variable _invalid_extern_global violates naming convention [namingng-namingConvention]'.format(test_include_file),
         'extern int _invalid_extern_global;',
+
+        '{}:0:0: style: File name {} violates naming convention [namingng-namingConvention]'.format(test_unguarded_include_file,test_unguarded_include_file_basename),
+        '{}:0:0: style: Missing include guard [namingng-includeGuardMissing]'.format(test_unguarded_include_file),
+        '{}:2:0: style: Function InvalidFunctionUnguarded violates naming convention [namingng-namingConvention]'.format(test_unguarded_include_file),
+        'void InvalidFunctionUnguarded();',
 
         '{}:0:0: style: File name {} violates naming convention [namingng-namingConvention]'.format(test_file,test_file_basename),
         '{}:7:0: style: Variable _invalid_arg violates naming convention [namingng-namingConvention]'.format(test_file),
@@ -430,6 +454,87 @@ static int _invalid_static_global;
     lines.sort()
     expect.sort()
     assert lines == expect
+
+
+def test_addon_namingng_config(tmpdir):
+    addon_file = os.path.join(tmpdir, 'namingng.json')
+    addon_config_file = os.path.join(tmpdir, 'namingng.config.json')
+    with open(addon_file, 'wt') as f:
+        f.write("""
+{
+    "script": "addons/namingng.py",
+    "args": [
+        "--configfile=%s"
+    ]
+}
+                """%(addon_config_file).replace('\\','\\\\'))
+
+    with open(addon_config_file, 'wt') as f:
+        f.write("""
+{
+    "RE_FILE": "[^/]*[a-z][a-z0-9_]*[a-z0-9]\\.c\\Z",
+    "RE_NAMESPACE": false,
+    "RE_VARNAME": ["+bad pattern","[a-z]_good_pattern\\Z","(parentheses?"],
+    "RE_PRIVATE_MEMBER_VARIABLE": "[a-z][a-z0-9_]*[a-z0-9]\\Z",
+    "RE_PUBLIC_MEMBER_VARIABLE": "[a-z][a-z0-9_]*[a-z0-9]\\Z",
+    "RE_GLOBAL_VARNAME": "[a-z][a-z0-9_]*[a-z0-9]\\Z",
+    "RE_FUNCTIONNAME": "[a-z][a-z0-9_]*[a-z0-9]\\Z",
+    "RE_CLASS_NAME": "[a-z][a-z0-9_]*[a-z0-9]\\Z",
+    "_comment1": "these should all be arrays, or null, or not set",
+
+    "include_guard": true,
+    "var_prefixes": ["bad"],
+    "function_prefixes": false,
+    "_comment2": "these should all be dict",
+
+    "skip_one_char_variables": "false",
+    "_comment3": "this should be bool",
+
+    "RE_VAR_NAME": "typo"
+}
+                """.replace('\\','\\\\'))
+
+    test_file_basename = 'test.c'
+    test_file = os.path.join(tmpdir, test_file_basename)
+    with open(test_file, 'a') as f:
+        # only create the file
+        pass
+
+    args = ['--addon='+addon_file, '--verbose', '--enable=all', test_file]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file),
+        'Defines:',
+        'Undefines:',
+        'Includes:',
+        'Platform:native'
+    ]
+    lines = stderr.splitlines()
+    # ignore the first line, stating that the addon failed to run properly
+    lines.pop(0)
+    assert lines == [
+        "Output:",
+        "config error: RE_FILE must be list (not str), or not set",
+        "config error: RE_NAMESPACE must be list (not bool), or not set",
+        "config error: include_guard must be dict (not bool), or not set",
+        "config error: item '+bad pattern' of 'RE_VARNAME' is not a valid regular expression: nothing to repeat at position 0",
+        "config error: item '(parentheses?' of 'RE_VARNAME' is not a valid regular expression: missing ), unterminated subpattern at position 0",
+        "config error: var_prefixes must be dict (not list), or not set",
+        "config error: RE_PRIVATE_MEMBER_VARIABLE must be list (not str), or not set",
+        "config error: RE_PUBLIC_MEMBER_VARIABLE must be list (not str), or not set",
+        "config error: RE_GLOBAL_VARNAME must be list (not str), or not set",
+        "config error: RE_FUNCTIONNAME must be list (not str), or not set",
+        "config error: function_prefixes must be dict (not bool), or not set",
+        "config error: RE_CLASS_NAME must be list (not str), or not set",
+        "config error: skip_one_char_variables must be bool (not str), or not set",
+        "config error: unknown config key 'RE_VAR_NAME' [internalError]",
+        "",
+        "^",
+    ]
 
 
 def test_addon_findcasts(tmpdir):
