@@ -1020,7 +1020,7 @@ bool isAliasOf(const Token* tok, const Token* expr, int* indirect, bool* inconcl
                 if (val.isLocalLifetimeValue() || (pointer && val.isSymbolicValue() && val.intvalue == 0)) {
                     if (findAstNode(val.tokvalue,
                                     [&](const Token* aliasTok) {
-                        return ref.token != tok && aliasTok->exprId() == childTok->exprId();
+                        return aliasTok != childTok && aliasTok->exprId() == childTok->exprId();
                     })) {
                         if (val.isInconclusive() && inconclusive != nullptr) {
                             value = &val;
