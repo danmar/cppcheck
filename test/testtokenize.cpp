@@ -6788,6 +6788,19 @@ private:
                                              "    });\n"
                                              "}\n"));
 
+        ASSERT_NO_THROW(tokenizeAndStringify("struct A { A(int) {} };\n"
+                                             "void g(void (*)(int));\n"
+                                             "void f() {\n"
+                                             "    g([](int i) {\n"
+                                             "        switch (i) {\n"
+                                             "        case static_cast<int>(1): {\n"
+                                             "            A a(i);\n"
+                                             "            if (1) {}\n"
+                                             "        }\n"
+                                             "        }\n"
+                                             "    });\n"
+                                             "}\n"));
+
         // #11378
         ASSERT_EQUALS("gT{(&[{= 0return", testAst("auto g = T{ [&]() noexcept -> int { return 0; } };"));
 
