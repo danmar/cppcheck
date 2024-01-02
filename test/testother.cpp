@@ -3451,6 +3451,24 @@ private:
               "    g(U::V(&t));\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (style) Parameter 't' can be declared as reference to const\n", errout.str());
+
+        check("void f1(std::vector<int>& v) {\n" // #11207
+              "    auto it = v.cbegin();\n"
+              "    while (it != v.cend()) {\n"
+              "        if (*it > 12) {}\n"
+              "        ++it;\n"
+              "    }\n"
+              "}\n"
+              "void f2(std::vector<int>& v) {\n"
+              "    auto it = v.begin();\n"
+              "    while (it != v.end()) {\n"
+              "        if (*it > 12) {}\n"
+              "        ++it;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared as reference to const\n"
+                      "[test.cpp:8]: (style) Parameter 'v' can be declared as reference to const\n",
+                      errout.str());
     }
 
     void constParameterCallback() {

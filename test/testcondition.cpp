@@ -5117,6 +5117,39 @@ private:
               "    if (s.empty() || s.size() < 1) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 's.size()<1' is always false\n", errout.str());
+
+        check("void bar(std::vector<int>& vv) {\n" // #11464
+              "    class F {\n"
+              "    public:\n"
+              "        F(int, std::vector<int>& lv) : mV(lv) {\n"
+              "            mV.push_back(0);\n"
+              "        }\n"
+              "    private:\n"
+              "        std::vector<int>& mV;\n"
+              "    } fi(1, vv);\n"
+              "}\n"
+              "void g() {\n"
+              "    std::vector<int> v;\n"
+              "    bar(v);\n"
+              "    if (v.empty()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct F {\n"
+              "    F(int, std::vector<int>&lv) : mV(lv) {\n"
+              "        mV.push_back(0);\n"
+              "    }\n"
+              "    std::vector<int>& mV;\n"
+              "};\n"
+              "void g(std::vector<int>& vv) {\n"
+              "    F(1, vv);\n"
+              "}\n"
+              "void f() {\n"
+              "    std::vector<int> v;\n"
+              "    g(v);\n"
+              "    if (v.empty()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueLoop()
