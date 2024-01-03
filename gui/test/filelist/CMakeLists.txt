@@ -10,7 +10,8 @@ add_executable(test-filelist
         ${CMAKE_SOURCE_DIR}/lib/utils.cpp
         $<TARGET_OBJECTS:simplecpp_objs>
         )
-target_include_directories(test-filelist PRIVATE ${CMAKE_SOURCE_DIR}/gui ${CMAKE_SOURCE_DIR}/lib ${CMAKE_SOURCE_DIR}/externals/simplecpp)
+target_include_directories(test-filelist PRIVATE ${CMAKE_SOURCE_DIR}/gui ${CMAKE_SOURCE_DIR}/lib)
+target_externals_include_directories(test-filelist PRIVATE ${CMAKE_SOURCE_DIR}/externals/simplecpp)
 target_compile_definitions(test-filelist PRIVATE SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(test-filelist ${QT_CORE_LIB} ${QT_TEST_LIB})
 
