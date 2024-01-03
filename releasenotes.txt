@@ -16,4 +16,4 @@ Deprecations:
 -
 
 Other:
--
+- Added CMake option 'EXTERNALS_AS_SYSTEM' to treat external includes as 'SYSTEM' ones.
