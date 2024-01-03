@@ -815,7 +815,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
 }
 
 
-const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const tok, VarInfo &varInfo)
+const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const tok, VarInfo &varInfo, bool inFuncCall)
 {
     // Deallocation and then dereferencing pointer..
     if (tok->varId() > 0) {
@@ -862,7 +862,7 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
     }
 
     // check for function call
-    const Token * const openingPar = isFunctionCall(tok);
+    const Token * const openingPar = inFuncCall ? nullptr : isFunctionCall(tok);
     if (openingPar) {
         const Library::AllocFunc* allocFunc = mSettings->library.getDeallocFuncInfo(tok);
         VarInfo::AllocInfo alloc(allocFunc ? allocFunc->groupId : 0, VarInfo::DEALLOC, tok);
@@ -1045,7 +1045,7 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
             const VarInfo::AllocInfo sp_allocation(sp_af ? sp_af->groupId : (arrayDelete ? NEW_ARRAY : NEW), VarInfo::OWNED, allocTok);
             changeAllocStatus(varInfo, sp_allocation, vtok, vtok);
         } else {
-            checkTokenInsideExpression(arg, varInfo);
+            checkTokenInsideExpression(arg, varInfo, /*inFuncCall*/ isLeakIgnore);
         }
         // TODO: check each token in argument expression (could contain multiple variables)
         argNr++;
