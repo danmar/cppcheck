@@ -2752,6 +2752,15 @@ private:
               "        return 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Null pointer dereference: myNull\n", errout.str());
+
+        check("struct T { bool g() const; };\n"
+              "void f(T* p) {\n"
+              "    if (!p)\n"
+              "        return;\n"
+              "    while (p->g())\n"
+              "        p = nullptr;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Possible null pointer dereference: p\n", errout.str());
     }
 
     void nullpointer94() // #11040
