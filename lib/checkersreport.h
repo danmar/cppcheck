@@ -16,11 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef checkersReportH
+#define checkersReportH
 
-#include "settings.h"
+#include "config.h"
+
 #include <set>
 #include <string>
+
+class Settings;
 
 class CPPCHECKLIB CheckersReport {
 public:
@@ -41,4 +45,4 @@ private:
     int mAllCheckersCount = 0;
 };
 
-
+#endif

@@ -7,15 +7,48 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
-#include <windows.h>
-#include <stdio.h>
+#include <Windows.h>
+#include <WinCon.h>
+#include <cstdio>
 #include <direct.h>
-#include <stdlib.h>
-#include <time.h>
+#include <cstdlib>
+#include <ctime>
 #include <memory.h>
 #include <mbstring.h>
 #include <wchar.h>
 #include <atlstr.h>
+#include <string>
+
+void resourceLeak_OpenThread(const DWORD dwDesiredAccess, const BOOL bInheritHandle, const DWORD dwThreadId)
+{
+    HANDLE proc = OpenThread(dwDesiredAccess, bInheritHandle, dwThreadId);
+    if (proc != INVALID_HANDLE_VALUE) {}
+    // cppcheck-suppress resourceLeak
+}
+
+void resourceLeak_OpenProcess(const DWORD dwDesiredAccess, const BOOL bInheritHandle, const DWORD dwProcessId)
+{
+    HANDLE proc = OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId);
+    if (proc != INVALID_HANDLE_VALUE) {}
+    // cppcheck-suppress resourceLeak
+}
+
+/// https://learn.microsoft.com/en-us/windows/console/flushconsoleinputbuffer
+BOOL unreachableCode_FlushConsoleInputBuffer(int &val)
+{
+    const BOOL retVal = FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+    // still reachable after call FlushConsoleInputBuffer()
+    val = 42;
+    return retVal;
+}
+
+/// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew
+std::string constVariable_GetModuleFileName(void) {
+    char path[42];
+    if (GetModuleFileNameA(NULL, path, sizeof(path))==0)
+        return std::string();
+    return std::string{path};
+}
 
 int stringCompare_mbscmp(const unsigned char *string1, const unsigned char *string2)
 {
@@ -557,6 +590,20 @@ void memleak_LocalAlloc()
     (void)LocalFlags(pszBuf);
     LocalLock(pszBuf);
     LocalUnlock(pszBuf);
+    // cppcheck-suppress memleak
+}
+
+void memleak_dupenv_s() // #10646
+{
+    char* pValue;
+    size_t len;
+    errno_t err = _dupenv_s(&pValue, &len, "pathext");
+    if (err) return -1;
+    printf("pathext = %s\n", pValue);
+    free(pValue);
+    err = _dupenv_s(&pValue, &len, "nonexistentvariable");
+    if (err) return -1;
+    printf("nonexistentvariable = %s\n", pValue);
     // cppcheck-suppress memleak
 }
 

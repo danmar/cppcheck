@@ -26,7 +26,6 @@
 #include "color.h"
 #include "config.h"
 #include "errorlogger.h"
-#include "importproject.h"
 #include "settings.h"
 
 #include <cstddef>
@@ -34,10 +33,15 @@
 #include <functional>
 #include <list>
 #include <map>
+#include <set>
 #include <string>
+#include <unordered_set>
+#include <utility>
 #include <vector>
 
 class Tokenizer;
+enum class SHOWTIME_MODES;
+struct FileSettings;
 
 /// @addtogroup Core
 /// @{
@@ -50,12 +54,14 @@ class Tokenizer;
  */
 class CPPCHECKLIB CppCheck : ErrorLogger {
 public:
+    using ExecuteCmdFn = std::function<int (std::string,std::vector<std::string>,std::string,std::string&)>;
+
     /**
      * @brief Constructor.
      */
     CppCheck(ErrorLogger &errorLogger,
              bool useGlobalSuppressions,
-             std::function<bool(std::string,std::vector<std::string>,std::string,std::string&)> executeCommand);
+             ExecuteCmdFn executeCommand);
 
     /**
      * @brief Destructor.
@@ -77,7 +83,7 @@ public:
      *  settings()).
      */
     unsigned int check(const std::string &path);
-    unsigned int check(const ImportProject::FileSettings &fs);
+    unsigned int check(const FileSettings &fs);
 
     /**
      * @brief Check the file.
@@ -129,17 +135,20 @@ public:
     bool analyseWholeProgram();
 
     /** Analyze all files using clang-tidy */
-    void analyseClangTidy(const ImportProject::FileSettings &fileSettings);
+    void analyseClangTidy(const FileSettings &fileSettings);
 
     /** analyse whole program use .analyzeinfo files */
-    void analyseWholeProgram(const std::string &buildDir, const std::map<std::string, std::size_t> &files);
+    void analyseWholeProgram(const std::string &buildDir, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings);
 
     /** Check if the user wants to check for unused functions
      * and if it's possible at all */
     bool isUnusedFunctionCheckEnabled() const;
 
     /** Remove *.ctu-info files */
-    void removeCtuInfoFiles(const std::map<std::string, std::size_t>& files); // cppcheck-suppress functionConst // has side effects
+    void removeCtuInfoFiles(const std::list<std::pair<std::string, std::size_t>>& files, const std::list<FileSettings>& fileSettings); // cppcheck-suppress functionConst // has side effects
+
+    static void resetTimerResults();
+    static void printTimerResults(SHOWTIME_MODES mode);
 
 private:
 #ifdef HAVE_RULES
@@ -174,13 +183,13 @@ private:
     /**
      * Execute addons
      */
-    void executeAddons(const std::vector<std::string>& files);
-    void executeAddons(const std::string &dumpFile);
+    void executeAddons(const std::vector<std::string>& files, const std::string& file0);
+    void executeAddons(const std::string &dumpFile, const std::string& file0);
 
     /**
      * Execute addons
      */
-    void executeAddonsWholeProgram(const std::map<std::string, std::size_t> &files);
+    void executeAddonsWholeProgram(const std::list<std::pair<std::string, std::size_t>> &files);
 
 #ifdef HAVE_RULES
     /**
@@ -207,7 +216,8 @@ private:
      */
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
 
-    std::list<std::string> mErrorList;
+    // TODO: store hashes instead of the full messages
+    std::unordered_set<std::string> mErrorList;
     Settings mSettings;
 
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
@@ -216,6 +226,9 @@ private:
 
     /** @brief Current preprocessor configuration */
     std::string mCurrentConfig;
+
+    using Location = std::pair<std::string, int>;
+    std::map<Location, std::set<std::string>> mLocationMacros; // What macros are used on a location?
 
     unsigned int mExitCode{};
 
@@ -230,7 +243,7 @@ private:
     AnalyzerInformation mAnalyzerInformation;
 
     /** Callback for executing a shell command (exe, args, output) */
-    std::function<bool(std::string,std::vector<std::string>,std::string,std::string&)> mExecuteCommand;
+    ExecuteCmdFn mExecuteCommand;
 
     std::ofstream mPlistFile;
 };

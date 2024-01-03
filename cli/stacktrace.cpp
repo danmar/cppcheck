@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool lowMem)
     const int fd = fileno(output);
     void *callstackArray[32]= {nullptr}; // the less resources the better...
     const int currentdepth = backtrace(callstackArray, (int)getArrayLength(callstackArray));
-    const int offset=2; // some entries on top are within our own exception handling code or libc
+    constexpr int offset=2; // some entries on top are within our own exception handling code or libc
     if (maxdepth<0)
         maxdepth=currentdepth-offset;
     else

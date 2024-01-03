@@ -49,6 +49,7 @@ public:
     /** This constructor is used when registering the CheckClass */
     CheckExceptionSafety() : Check(myName()) {}
 
+private:
     /** This constructor is used when running checks. */
     CheckExceptionSafety(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
@@ -88,7 +89,6 @@ public:
     /** @brief %Check for rethrow not from catch scope */
     void rethrowNoCurrentException();
 
-private:
     /** Don't throw exceptions in destructors */
     void destructorsError(const Token * const tok, const std::string &className);
     void deallocThrowError(const Token * const tok, const std::string &varname);

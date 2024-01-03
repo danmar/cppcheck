@@ -426,7 +426,7 @@ protected:
      * @brief Read optional root path from XML.
      * @param reader XML stream reader.
      */
-    void readRootPath(QXmlStreamReader &reader);
+    void readRootPath(const QXmlStreamReader &reader);
 
     void readBuildDir(QXmlStreamReader &reader);
 

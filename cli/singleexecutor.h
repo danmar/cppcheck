@@ -22,18 +22,20 @@
 #include "executor.h"
 
 #include <cstddef>
-#include <map>
+#include <list>
 #include <string>
+#include <utility>
 
 class ErrorLogger;
 class Settings;
 class CppCheck;
 class Suppressions;
+struct FileSettings;
 
 class SingleExecutor : public Executor
 {
 public:
-    SingleExecutor(CppCheck &cppcheck, const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger);
+    SingleExecutor(CppCheck &cppcheck, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger);
     SingleExecutor(const SingleExecutor &) = delete;
     void operator=(const SingleExecutor &) = delete;
 

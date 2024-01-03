@@ -46,18 +46,9 @@ class Settings;
 class Type;
 class ValueType;
 class Variable;
-class TokenList;
 class ConstTokenRange;
 class Token;
-
-/**
- * @brief This struct stores pointers to the front and back tokens of the list this token is in.
- */
-struct TokensFrontBack {
-    Token *front{};
-    Token* back{};
-    const TokenList* list{};
-};
+struct TokensFrontBack;
 
 struct ScopeInfo2 {
     ScopeInfo2(std::string name_, const Token *bodyEnd_, std::set<std::string> usingNamespaces_ = std::set<std::string>()) : name(std::move(name_)), bodyEnd(bodyEnd_), usingNamespaces(std::move(usingNamespaces_)) {}
@@ -105,6 +96,9 @@ struct TokenImpl {
 
     // original name like size_t
     std::string* mOriginalName{};
+
+    // If this token came from a macro replacement list, this is the name of that macro
+    std::string mMacroName;
 
     // ValueType
     ValueType* mValueType{};
@@ -218,18 +212,14 @@ public:
      * would return next from that one.
      */
     const Token *tokAt(int index) const;
-    Token *tokAt(int index) {
-        return const_cast<Token *>(const_cast<const Token *>(this)->tokAt(index));
-    }
+    Token *tokAt(int index);
 
     /**
      * @return the link to the token in given index, related to this token.
      * For example index 1 would return the link to next token.
      */
     const Token *linkAt(int index) const;
-    Token *linkAt(int index) {
-        return const_cast<Token *>(const_cast<const Token *>(this)->linkAt(index));
-    }
+    Token *linkAt(int index);
 
     /**
      * @return String of the token in given index, related to this token.
@@ -441,6 +431,7 @@ public:
     void isSigned(const bool sign) {
         setFlag(fIsSigned, sign);
     }
+    // cppcheck-suppress unusedFunction
     bool isPointerCompare() const {
         return getFlag(fIsPointerCompare);
     }
@@ -460,10 +451,7 @@ public:
         setFlag(fIsStandardType, b);
     }
     bool isExpandedMacro() const {
-        return getFlag(fIsExpandedMacro);
-    }
-    void isExpandedMacro(const bool m) {
-        setFlag(fIsExpandedMacro, m);
+        return !mImpl->mMacroName.empty();
     }
     bool isCast() const {
         return getFlag(fIsCast);
@@ -549,6 +537,7 @@ public:
     bool getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint &value) const {
         return mImpl->getCppcheckAttribute(type, value);
     }
+    // cppcheck-suppress unusedFunction
     bool hasCppcheckAttributes() const {
         return nullptr != mImpl->mCppcheckAttributes;
     }
@@ -691,6 +680,7 @@ public:
         setFlag(fIsInitComma, b);
     }
 
+    // cppcheck-suppress unusedFunction
     bool isBitfield() const {
         return mImpl->mBits > 0;
     }
@@ -760,6 +750,13 @@ public:
         setFlag(fIsTemplateArg, value);
     }
 
+    std::string getMacroName() const {
+        return mImpl->mMacroName;
+    }
+    void setMacroName(std::string name) {
+        mImpl->mMacroName = std::move(name);
+    }
+
     template<size_t count>
     static const Token *findsimplematch(const Token * const startTok, const char (&pattern)[count]) {
         return findsimplematch(startTok, pattern, count-1);
@@ -779,23 +776,15 @@ public:
     static Token *findsimplematch(Token * const startTok, const char (&pattern)[count]) {
         return findsimplematch(startTok, pattern, count-1);
     }
-    static Token *findsimplematch(Token * const startTok, const char pattern[], size_t pattern_len) {
-        return const_cast<Token *>(findsimplematch(const_cast<const Token *>(startTok), pattern, pattern_len));
-    }
+    static Token *findsimplematch(Token * const startTok, const char pattern[], size_t pattern_len);
     template<size_t count>
     static Token *findsimplematch(Token * const startTok, const char (&pattern)[count], const Token * const end) {
         return findsimplematch(startTok, pattern, count-1, end);
     }
-    static Token *findsimplematch(Token * const startTok, const char pattern[], size_t pattern_len, const Token * const end) {
-        return const_cast<Token *>(findsimplematch(const_cast<const Token *>(startTok), pattern, pattern_len, end));
-    }
+    static Token *findsimplematch(Token * const startTok, const char pattern[], size_t pattern_len, const Token * const end);
 
-    static Token *findmatch(Token * const startTok, const char pattern[], const nonneg int varId = 0) {
-        return const_cast<Token *>(findmatch(const_cast<const Token *>(startTok), pattern, varId));
-    }
-    static Token *findmatch(Token * const startTok, const char pattern[], const Token * const end, const nonneg int varId = 0) {
-        return const_cast<Token *>(findmatch(const_cast<const Token *>(startTok), pattern, end, varId));
-    }
+    static Token *findmatch(Token * const startTok, const char pattern[], const nonneg int varId = 0);
+    static Token *findmatch(Token * const startTok, const char pattern[], const Token * const end, const nonneg int varId = 0);
 
 private:
     /**
@@ -906,10 +895,7 @@ public:
 
     bool isUniqueExprId() const
     {
-        if (mImpl->mExprId > 0) {
-            return (mImpl->mExprId & (1 << efIsUnique)) != 0;
-        }
-        return false;
+        return (mImpl->mExprId & (1 << efIsUnique)) != 0;
     }
 
     /**
@@ -962,6 +948,7 @@ public:
             options.files = true;
             return options;
         }
+        // cppcheck-suppress unusedFunction
         static stringifyOptions forDebugVarId() {
             stringifyOptions options = forDebug();
             options.varid = true;
@@ -1171,9 +1158,7 @@ public:
      * Returns 0, if there is no next argument.
      */
     const Token* nextArgument() const;
-    Token *nextArgument() {
-        return const_cast<Token *>(const_cast<const Token *>(this)->nextArgument());
-    }
+    Token *nextArgument();
 
     /**
      * @return the first token of the next argument. Does only work on argument
@@ -1301,7 +1286,7 @@ private:
         fIsPointerCompare       = (1ULL << 2),
         fIsLong                 = (1ULL << 3),
         fIsStandardType         = (1ULL << 4),
-        fIsExpandedMacro        = (1ULL << 5),
+        //fIsExpandedMacro        = (1ULL << 5),
         fIsCast                 = (1ULL << 6),
         fIsAttributeConstructor = (1ULL << 7),  // __attribute__((constructor)) __attribute__((constructor(priority)))
         fIsAttributeDestructor  = (1ULL << 8),  // __attribute__((destructor))  __attribute__((destructor(priority)))
@@ -1313,7 +1298,7 @@ private:
         fIsAttributeUsed        = (1ULL << 14), // __attribute__((used))
         fIsAttributePacked      = (1ULL << 15), // __attribute__((packed))
         fIsAttributeExport      = (1ULL << 16), // __attribute__((__visibility__("default"))), __declspec(dllexport)
-        fIsAttributeMaybeUnused = (1ULL << 17), // [[maybe_unsed]]
+        fIsAttributeMaybeUnused = (1ULL << 17), // [[maybe_unused]]
         fIsAttributeNodiscard   = (1ULL << 18), // __attribute__ ((warn_unused_result)), [[nodiscard]]
         fIsControlFlowKeyword   = (1ULL << 19), // if/switch/while/...
         fIsOperatorKeyword      = (1ULL << 20), // operator=, etc

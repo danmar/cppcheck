@@ -24,6 +24,7 @@
 #include <fstream> // IWYU pragma: keep
 #include <functional>
 #include <iostream>
+#include <list>
 #include <map>
 #include <set>
 #include <string>
@@ -38,7 +39,7 @@
 
 static std::string builddir(std::string filename)
 {
-    if (filename.compare(0,4,"lib/") == 0)
+    if (startsWith(filename,"lib/"))
         filename = "$(libcppdir)" + filename.substr(3);
     return filename;
 }
@@ -77,13 +78,13 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
          * Files are searched according to the following priority:
          * [test, tools] -> cli -> lib -> externals
          */
-        if (filename.compare(0, 4, "cli/") == 0)
+        if (startsWith(filename, "cli/"))
             getDeps("lib" + filename.substr(filename.find('/')), depfiles);
-        else if (filename.compare(0, 5, "test/") == 0)
+        else if (startsWith(filename, "test/"))
             getDeps("cli" + filename.substr(filename.find('/')), depfiles);
-        else if (filename.compare(0, 6, "tools/") == 0)
+        else if (startsWith(filename, "tools/"))
             getDeps("cli" + filename.substr(filename.find('/')), depfiles);
-        else if (filename.compare(0, 4, "lib/") == 0) {
+        else if (startsWith(filename, "lib/")) {
             for (const std::string & external : externalfolders)
                 getDeps(external + filename.substr(filename.find('/')), depfiles);
         }
@@ -126,7 +127,7 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
 static void compilefiles(std::ostream &fout, const std::vector<std::string> &files, const std::string &args)
 {
     for (const std::string &file : files) {
-        const bool external(file.compare(0,10,"externals/") == 0);
+        const bool external(startsWith(file,"externals/"));
         fout << objfile(file) << ": " << file;
         std::vector<std::string> depfiles;
         getDeps(file, depfiles);
@@ -139,16 +140,16 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
 
 static std::string getCppFiles(std::vector<std::string> &files, const std::string &path, bool recursive)
 {
-    std::map<std::string,size_t> filemap;
+    std::list<std::pair<std::string, std::size_t>> filelist;
     const std::set<std::string> extra;
     const std::vector<std::string> masks;
     const PathMatch matcher(masks);
-    std::string err = FileLister::addFiles(filemap, path, extra, recursive, matcher);
+    std::string err = FileLister::addFiles(filelist, path, extra, recursive, matcher);
     if (!err.empty())
         return err;
 
     // add *.cpp files to the "files" vector..
-    for (const std::pair<const std::string&, size_t> file : filemap) {
+    for (const std::pair<const std::string&, size_t> file : filelist) {
         if (endsWith(file.first, ".cpp"))
             files.push_back(file.first);
     }
@@ -233,14 +234,6 @@ static std::string make_vcxproj_cl_entry(const std::string& file, ClType type)
         outstr += "\r\n";
         outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>)";
         outstr += "\r\n";
-        outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>)";
-        outstr += "\r\n";
-        outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|Win32'">Create</PrecompiledHeader>)";
-        outstr += "\r\n";
-        outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|Win32'">Create</PrecompiledHeader>)";
-        outstr += "\r\n";
-        outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>)";
-        outstr += "\r\n";
         outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>)";
         outstr += "\r\n";
         outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|x64'">Create</PrecompiledHeader>)";
@@ -259,6 +252,25 @@ static std::string make_vcxproj_cl_entry(const std::string& file, ClType type)
     return outstr;
 }
 
+static std::vector<std::string> prioritizelib(const std::vector<std::string>& libfiles)
+{
+    std::map<std::string, std::size_t> priorities;
+    std::size_t prio = libfiles.size();
+    for (const auto &l : libfiles) {
+        priorities.emplace(l, prio--);
+    }
+    priorities["lib/valueflow.cpp"] = 1000;
+    priorities["lib/tokenize.cpp"] = 900;
+    priorities["lib/symboldatabase.cpp"] = 800;
+    std::vector<std::string> libfiles_prio = libfiles;
+    std::sort(libfiles_prio.begin(), libfiles_prio.end(), [&](const std::string &l1, const std::string &l2) {
+        const auto p1 = priorities.find(l1);
+        const auto p2 = priorities.find(l2);
+        return (p1 != priorities.end() ? p1->second : 0) > (p2 != priorities.end() ? p2->second : 0);
+    });
+    return libfiles_prio;
+}
+
 int main(int argc, char **argv)
 {
     const bool release(argc >= 2 && std::string(argv[1]) == "--release");
@@ -270,6 +282,7 @@ int main(int argc, char **argv)
         std::cerr << err << std::endl;
         return EXIT_FAILURE;
     }
+    const std::vector<std::string> libfiles_prio = prioritizelib(libfiles);
 
     std::vector<std::string> extfiles;
     err = getCppFiles(extfiles, "externals/", true);
@@ -314,6 +327,8 @@ int main(int argc, char **argv)
     libfiles_h.emplace_back("analyzer.h");
     libfiles_h.emplace_back("calculate.h");
     libfiles_h.emplace_back("config.h");
+    libfiles_h.emplace_back("filesettings.h");
+    libfiles_h.emplace_back("findtoken.h");
     libfiles_h.emplace_back("json.h");
     libfiles_h.emplace_back("precompiled.h");
     libfiles_h.emplace_back("smallvector.h");
@@ -321,6 +336,7 @@ int main(int argc, char **argv)
     libfiles_h.emplace_back("tokenrange.h");
     libfiles_h.emplace_back("valueptr.h");
     libfiles_h.emplace_back("version.h");
+    libfiles_h.emplace_back("xml.h");
     std::sort(libfiles_h.begin(), libfiles_h.end());
 
     std::vector<std::string> clifiles_h;
@@ -357,7 +373,7 @@ int main(int argc, char **argv)
         outstr += make_vcxproj_cl_entry(R"(..\externals\simplecpp\simplecpp.cpp)", Compile);
         outstr += make_vcxproj_cl_entry(R"(..\externals\tinyxml2\tinyxml2.cpp)", Compile);
 
-        for (const std::string &libfile: libfiles) {
+        for (const std::string &libfile: libfiles_prio) {
             const std::string l = libfile.substr(4);
             outstr += make_vcxproj_cl_entry(l, l == "check.cpp" ? Precompile : Compile);
         }
@@ -408,7 +424,7 @@ int main(int argc, char **argv)
                     fout1 << " \\\n" << std::string(11, ' ');
             }
             fout1 << "\n\nSOURCES += ";
-            for (const std::string &libfile : libfiles) {
+            for (const std::string &libfile : libfiles_prio) {
                 fout1 << "$${PWD}/" << libfile.substr(4);
                 if (libfile != libfiles.back())
                     fout1 << " \\\n" << std::string(11, ' ');
@@ -417,7 +433,7 @@ int main(int argc, char **argv)
         }
     }
 
-    static const char makefile[] = "Makefile";
+    static constexpr char makefile[] = "Makefile";
     std::ofstream fout(makefile, std::ios_base::trunc);
     if (!fout.is_open()) {
         std::cerr << "An error occurred while trying to open "
@@ -576,36 +592,26 @@ int main(int argc, char **argv)
 
     // Makefile settings..
     if (release) {
-        makeConditionalVariable(fout, "CXXFLAGS", "-std=c++0x -O2 -DNDEBUG -Wall -Wno-sign-compare");
+        makeConditionalVariable(fout, "CXXFLAGS", "-std=c++0x -O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-multichar");
     } else {
-        // TODO: add more compiler warnings.
-        // -Wlogical-op       : doesn't work on older GCC
-        // -Wsign-conversion  : too many warnings
-        // -Wunreachable-code : some GCC versions report lots of warnings
         makeConditionalVariable(fout, "CXXFLAGS",
                                 "-pedantic "
                                 "-Wall "
                                 "-Wextra "
                                 "-Wcast-qual "
-//                                "-Wconversion "  // danmar: gives fp. for instance: unsigned int sizeof_pointer = sizeof(void *);
-                                "-Wno-deprecated-declarations "
                                 "-Wfloat-equal "
-//                                "-Wlogical-op "
                                 "-Wmissing-declarations "
                                 "-Wmissing-format-attribute "
                                 "-Wno-long-long "
-//                                "-Woverloaded-virtual "  // danmar: we get fp when overloading analyseWholeProgram()
                                 "-Wpacked "
                                 "-Wredundant-decls "
                                 "-Wundef "
                                 "-Wno-shadow "
-//                                "-Wsign-conversion "
-//                                "-Wsign-promo "
                                 "-Wno-missing-field-initializers "
                                 "-Wno-missing-braces "
-//                                "-Wunreachable-code "
-                                "-Wno-sign-compare "  // danmar: I don't like this warning, it's very rarely a bug
+                                "-Wno-sign-compare "
                                 "-Wno-multichar "
+                                "-Woverloaded-virtual "
                                 "$(CPPCHK_GLIBCXX_DEBUG) "
                                 "-g");
     }
@@ -626,7 +632,7 @@ int main(int argc, char **argv)
          << "    ifeq ($(PCRE_CONFIG),)\n"
          << "        $(error Did not find pcre-config)\n"
          << "    endif\n"
-         << "    override CXXFLAGS += -DHAVE_RULES -DTIXML_USE_STL $(shell $(PCRE_CONFIG) --cflags)\n"
+         << "    override CXXFLAGS += -DHAVE_RULES $(shell $(PCRE_CONFIG) --cflags)\n"
          << "    ifdef LIBS\n"
          << "        LIBS += $(shell $(PCRE_CONFIG) --libs)\n"
          << "    else\n"
@@ -646,18 +652,18 @@ int main(int argc, char **argv)
     fout << "MAN_SOURCE=man/cppcheck.1.xml\n\n";
 
     fout << "\n###### Object Files\n\n";
-    fout << "LIBOBJ =      " << objfiles(libfiles) << "\n\n";
+    fout << "LIBOBJ =      " << objfiles(libfiles_prio) << "\n\n";
     fout << "EXTOBJ =      " << objfiles(extfiles) << "\n\n";
     fout << "CLIOBJ =      " << objfiles(clifiles) << "\n\n";
     fout << "TESTOBJ =     " << objfiles(testfiles) << "\n\n";
 
     fout << ".PHONY: run-dmake tags\n\n";
     fout << "\n###### Targets\n\n";
-    fout << "cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)\n";
+    fout << "cppcheck: $(EXTOBJ) $(LIBOBJ) $(CLIOBJ)\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "all:\tcppcheck testrunner\n\n";
     // TODO: generate from clifiles
-    fout << "testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/executor.o cli/processexecutor.o cli/singleexecutor.o cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/cppcheckexecutorseh.o cli/cppcheckexecutorsig.o cli/stacktrace.o cli/filelister.o\n";
+    fout << "testrunner: $(EXTOBJ) $(TESTOBJ) $(LIBOBJ) cli/executor.o cli/processexecutor.o cli/singleexecutor.o cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/cppcheckexecutorseh.o cli/cppcheckexecutorsig.o cli/stacktrace.o cli/filelister.o\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
@@ -668,7 +674,7 @@ int main(int argc, char **argv)
     fout << "dmake:\ttools/dmake.o cli/filelister.o $(libcppdir)/pathmatch.o $(libcppdir)/path.o $(libcppdir)/utils.o externals/simplecpp/simplecpp.o\n";
     fout << "\t$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)\n\n";
     fout << "run-dmake: dmake\n";
-    fout << "\t./dmake\n\n";
+    fout << "\t./dmake" << (release ? " --release" : "") << "\n\n"; // Make CI in release builds happy
     fout << "clean:\n";
     fout << "\trm -f build/*.cpp build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1\n\n";
     fout << "man:\tman/cppcheck.1\n\n";
@@ -753,7 +759,7 @@ int main(int argc, char **argv)
 
     fout << "\n###### Build\n\n";
 
-    compilefiles(fout, libfiles, "${INCLUDE_FOR_LIB}");
+    compilefiles(fout, libfiles_prio, "${INCLUDE_FOR_LIB}");
     compilefiles(fout, clifiles, "${INCLUDE_FOR_CLI}");
     compilefiles(fout, testfiles, "${INCLUDE_FOR_TEST}");
     compilefiles(fout, extfiles, emptyString);

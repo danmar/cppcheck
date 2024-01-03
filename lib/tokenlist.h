@@ -22,7 +22,6 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "token.h"
 
 #include <cstddef>
 #include <iosfwd>
@@ -30,6 +29,8 @@
 #include <vector>
 
 class Settings;
+class Token;
+class TokenList;
 
 namespace simplecpp {
     class TokenList;
@@ -38,6 +39,15 @@ namespace simplecpp {
 /// @addtogroup Core
 /// @{
 
+/**
+ * @brief This struct stores pointers to the front and back tokens of the list this token is in.
+ */
+struct TokensFrontBack {
+    Token *front{};
+    Token* back{};
+    const TokenList* list{};
+};
+
 class CPPCHECKLIB TokenList {
 public:
     explicit TokenList(const Settings* settings);
@@ -45,10 +55,6 @@ public:
 
     TokenList(const TokenList &) = delete;
     TokenList &operator=(const TokenList &) = delete;
-
-    void setSettings(const Settings *settings) {
-        mSettings = settings;
-    }
 
     /** @return the source file path. e.g. "file.cpp" */
     const std::string& getSourceFilePath() const;
@@ -205,7 +211,7 @@ private:
     std::vector<std::string> mOrigFiles;
 
     /** settings */
-    const Settings* mSettings{};
+    const Settings* const mSettings{};
 
     /** File is known to be C/C++ code */
     bool mIsC{};

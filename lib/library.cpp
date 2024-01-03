@@ -19,6 +19,7 @@
 #include "library.h"
 
 #include "astutils.h"
+#include "errortypes.h"
 #include "mathlib.h"
 #include "path.h"
 #include "symboldatabase.h"
@@ -39,7 +40,7 @@
 #include <stdexcept>
 #include <string>
 
-#include <tinyxml2.h>
+#include "xml.h"
 
 static std::vector<std::string> getnames(const char *names)
 {
@@ -174,6 +175,8 @@ Library::Container::Action Library::Container::actionFrom(const std::string& act
         return Container::Action::POP;
     if (actionName == "find")
         return Container::Action::FIND;
+    if (actionName == "find-const")
+        return Container::Action::FIND_CONST;
     if (actionName == "insert")
         return Container::Action::INSERT;
     if (actionName == "erase")
@@ -185,13 +188,6 @@ Library::Container::Action Library::Container::actionFrom(const std::string& act
     if (actionName == "change")
         return Container::Action::CHANGE;
     return Container::Action::NO_ACTION;
-}
-
-// cppcheck-suppress unusedFunction - only used in unit tests
-bool Library::loadxmldata(const char xmldata[], std::size_t len)
-{
-    tinyxml2::XMLDocument doc;
-    return (tinyxml2::XML_SUCCESS == doc.Parse(xmldata, len)) && (load(doc).errorcode == ErrorCode::OK);
 }
 
 Library::Error Library::load(const tinyxml2::XMLDocument &doc)
@@ -396,8 +392,10 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                             if (end)
                                 mExecutableBlocks[extension].setEnd(end);
                             const char * offset = blocknode->Attribute("offset");
-                            if (offset)
+                            if (offset) {
+                                // cppcheck-suppress templateInstantiation - TODO: fix this - see #11631
                                 mExecutableBlocks[extension].setOffset(strToInt<int>(offset));
+                            }
                         }
 
                         else
@@ -518,7 +516,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     for (const tinyxml2::XMLElement* memberNode = node->FirstChildElement(); memberNode; memberNode = memberNode->NextSiblingElement()) {
                         const char *memberName = memberNode->Attribute("name");
                         const char *memberTemplateParameter = memberNode->Attribute("templateParameter");
-                        struct Container::RangeItemRecordTypeItem member;
+                        Container::RangeItemRecordTypeItem member;
                         member.name = memberName ? memberName : "";
                         member.templateParameter = memberTemplateParameter ? strToInt<int>(memberTemplateParameter) : -1;
                         container.rangeItemRecordType.emplace_back(std::move(member));
@@ -710,6 +708,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                 mReturnValueType[name] = type;
             if (const char *container = functionnode->Attribute("container"))
                 mReturnValueContainer[name] = strToInt<int>(container);
+            // cppcheck-suppress shadowFunction - TODO: fix this
             if (const char *unknownReturnValues = functionnode->Attribute("unknownValues")) {
                 if (std::strcmp(unknownReturnValues, "all") == 0) {
                     std::vector<MathLib::bigint> values{LLONG_MIN, LLONG_MAX};
@@ -843,7 +842,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             const char* const severity = functionnode->Attribute("severity");
             if (severity == nullptr)
                 return Error(ErrorCode::MISSING_ATTRIBUTE, "severity");
-            wi.severity = Severity::fromString(severity);
+            wi.severity = severityFromString(severity);
 
             const char* const cstd = functionnode->Attribute("cstd");
             if (cstd) {
@@ -923,13 +922,13 @@ bool Library::isIntArgValid(const Token *ftok, int argnr, const MathLib::bigint 
     TokenList tokenList(nullptr);
     gettokenlistfromvalid(ac->valid, tokenList);
     for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
-        if (tok->isNumber() && argvalue == MathLib::toLongNumber(tok->str()))
+        if (tok->isNumber() && argvalue == MathLib::toBigNumber(tok->str()))
             return true;
-        if (Token::Match(tok, "%num% : %num%") && argvalue >= MathLib::toLongNumber(tok->str()) && argvalue <= MathLib::toLongNumber(tok->strAt(2)))
+        if (Token::Match(tok, "%num% : %num%") && argvalue >= MathLib::toBigNumber(tok->str()) && argvalue <= MathLib::toBigNumber(tok->strAt(2)))
             return true;
-        if (Token::Match(tok, "%num% : ,") && argvalue >= MathLib::toLongNumber(tok->str()))
+        if (Token::Match(tok, "%num% : ,") && argvalue >= MathLib::toBigNumber(tok->str()))
             return true;
-        if ((!tok->previous() || tok->previous()->str() == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toLongNumber(tok->strAt(1)))
+        if ((!tok->previous() || tok->previous()->str() == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toBigNumber(tok->strAt(1)))
             return true;
     }
     return false;
@@ -1174,7 +1173,7 @@ const Library::Container* Library::detectContainerInternal(const Token* const ty
         if (container.startPattern.empty())
             continue;
 
-        const int offset = (withoutStd && container.startPattern2.find("std :: ") == 0) ? 7 : 0;
+        const int offset = (withoutStd && startsWith(container.startPattern2, "std :: ")) ? 7 : 0;
 
         // If endPattern is undefined, it will always match, but itEndPattern has to be defined.
         if (detect != IteratorOnly && container.endPattern.empty()) {
@@ -1309,6 +1308,7 @@ bool Library::isCompliantValidationExpression(const char* p)
             error |= (*(p + 1) == '-');
         }
         else if (*p == ':') {
+            // cppcheck-suppress bitwiseOnBoolean - TODO: fix this
             error |= range | (*(p + 1) == '.');
             range = true;
             has_dot = false;
@@ -1323,6 +1323,7 @@ bool Library::isCompliantValidationExpression(const char* p)
             has_dot = false;
             has_E = false;
         } else if (*p == '.') {
+            // cppcheck-suppress bitwiseOnBoolean - TODO: fix this
             error |= has_dot | (!std::isdigit(*(p + 1)));
             has_dot = true;
         } else if (*p == 'E' || *p == 'e') {
@@ -1754,7 +1755,7 @@ std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
 
     // set varids
     for (Token* tok2 = tokenList->front(); tok2; tok2 = tok2->next()) {
-        if (tok2->str().compare(0, 3, "arg") != 0)
+        if (!startsWith(tok2->str(), "arg"))
             continue;
         nonneg int const id = strToInt<nonneg int>(tok2->str().c_str() + 3);
         tok2->varId(id);

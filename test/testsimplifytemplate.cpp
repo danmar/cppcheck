@@ -216,6 +216,7 @@ private:
         TEST_CASE(template175); // #10908
         TEST_CASE(template176); // #11146
         TEST_CASE(template177);
+        TEST_CASE(template178);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -307,7 +308,7 @@ private:
     }
 
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tok_(const char* file, int line, const char code[], bool debugwarnings = false, cppcheck::Platform::Type type = cppcheck::Platform::Type::Native) {
+    std::string tok_(const char* file, int line, const char code[], bool debugwarnings = false, Platform::Type type = Platform::Type::Native) {
         errout.str("");
 
         const Settings settings1 = settingsBuilder(settings).library("std.cfg").debugwarnings(debugwarnings).platform(type).build();
@@ -4162,7 +4163,8 @@ private:
 
     void template163() { // #9685 syntax error
         const char code[] = "extern \"C++\" template < typename T > T * test ( ) { return nullptr ; }";
-        ASSERT_EQUALS(code, tok(code));
+        const char expected[] = "template < typename T > T * test ( ) { return nullptr ; }";
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template164() {  // #9394
@@ -4516,6 +4518,34 @@ private:
                            "C<UTF8<>,MemoryPoolAllocator<>> c ; "
                            "class C<UTF8<>,MemoryPoolAllocator<>> { xyz < UTF8 < > , MemoryPoolAllocator < > > x ; } ;";
         ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template178() {
+        const char code[] = "template<typename T>\n" // #11893
+                            "void g() {\n"
+                            "    for (T i = 0; i < T{ 3 }; ++i) {}\n"
+                            "}\n"
+                            "void f() {\n"
+                            "    g<int>();\n"
+                            "}";
+        const char exp[] = "void g<int> ( ) ; void f ( ) { g<int> ( ) ; } void g<int> ( ) { for ( int i = 0 ; i < int { 3 } ; ++ i ) { } }";
+        ASSERT_EQUALS(exp, tok(code));
+
+        const char code2[] = "template<typename T>\n"
+                             "struct S {\n"
+                             "    T c;\n"
+                             "    template<typename U>\n"
+                             "    void g() {\n"
+                             "        for (U i = 0; i < U{ 3 }; ++i) {}\n"
+                             "    }\n"
+                             "};\n"
+                             "void f() {\n"
+                             "    S<char> s{};\n"
+                             "    s.g<int>();\n"
+                             "}";
+        const char exp2[] = "struct S<char> ; void f ( ) { S<char> s { } ; s . g<int> ( ) ; } struct S<char> { char c ; void g<int> ( ) ; } ; "
+                            "void S<char> :: g<int> ( ) { for ( int i = 0 ; i < int { 3 } ; ++ i ) { } }";
+        ASSERT_EQUALS(exp2, tok(code2));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
@@ -5229,7 +5259,7 @@ private:
     void template_array_type() {
         ASSERT_EQUALS("void foo<int[]> ( int [ ] x ) ; "
                       "void bar ( ) { int [ 3 ] y ; foo<int[]> ( y ) ; } "
-                      "void foo<int[]> ( int [ ] x ) { } ;",
+                      "void foo<int[]> ( int [ ] x ) { }",
                       tok("template <class T> void foo(T x) {};\n"
                           "void bar() {\n"
                           "  int[3] y;\n"
@@ -5318,6 +5348,8 @@ private:
         ASSERT_EQUALS(3U, templateParameters("template <class T, class... Args, class Tup = std::tuple<Args&&...>> void f() {}"));
         ASSERT_EQUALS(3U, templateParameters("template <class T, class... Args, class Tup = std::tuple<Args*...>> void f() {}"));
         ASSERT_EQUALS(1U, templateParameters("S<4 < sizeof(uintptr_t)> x;"));
+        ASSERT_EQUALS(2U, templateParameters("template <typename... Ts, typename = std::enable_if_t<std::is_same<Ts..., int>::value>> void g() {}")); // #11915
+        ASSERT_EQUALS(1U, templateParameters("S<N::M<O<\"A\"_I>>> s;")); // #10837
     }
 
     // Helper function to unit test TemplateSimplifier::getTemplateNamePosition

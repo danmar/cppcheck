@@ -19,6 +19,8 @@
 //---------------------------------------------------------------------------
 #include "checkio.h"
 
+#include "astutils.h"
+#include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
 #include "platform.h"
@@ -106,19 +108,19 @@ static OpenMode getMode(const std::string& str)
     return OpenMode::UNKNOWN_OM;
 }
 
-struct Filepointer {
-    OpenMode mode;
-    nonneg int mode_indent{};
-    enum class Operation {NONE, UNIMPORTANT, READ, WRITE, POSITIONING, OPEN, CLOSE, UNKNOWN_OP} lastOperation = Operation::NONE;
-    nonneg int op_indent{};
-    enum class AppendMode { UNKNOWN_AM, APPEND, APPEND_EX };
-    AppendMode append_mode = AppendMode::UNKNOWN_AM;
-    std::string filename;
-    explicit Filepointer(OpenMode mode_ = OpenMode::UNKNOWN_OM)
-        : mode(mode_) {}
-};
-
 namespace {
+    struct Filepointer {
+        OpenMode mode;
+        nonneg int mode_indent{};
+        enum class Operation {NONE, UNIMPORTANT, READ, WRITE, POSITIONING, OPEN, CLOSE, UNKNOWN_OP} lastOperation = Operation::NONE;
+        nonneg int op_indent{};
+        enum class AppendMode { UNKNOWN_AM, APPEND, APPEND_EX };
+        AppendMode append_mode = AppendMode::UNKNOWN_AM;
+        std::string filename;
+        explicit Filepointer(OpenMode mode_ = OpenMode::UNKNOWN_OM)
+            : mode(mode_) {}
+    };
+
     const std::unordered_set<std::string> whitelist = { "clearerr", "feof", "ferror", "fgetpos", "ftell", "setbuf", "setvbuf", "ungetc", "ungetwc" };
 }
 
@@ -151,6 +153,10 @@ void CheckIO::checkFileUsage()
     for (const Scope * scope : symbolDatabase->functionScopes) {
         int indent = 0;
         for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (Token::Match(tok, "%name% (") && isUnevaluated(tok)) {
+                tok = tok->linkAt(1);
+                continue;
+            }
             if (tok->str() == "{")
                 indent++;
             else if (tok->str() == "}") {
@@ -1715,7 +1721,7 @@ void CheckIO::wrongPrintfScanfArgumentsError(const Token* tok,
                                              nonneg int numFormat,
                                              nonneg int numFunction)
 {
-    const Severity::SeverityType severity = numFormat > numFunction ? Severity::error : Severity::warning;
+    const Severity severity = numFormat > numFunction ? Severity::error : Severity::warning;
     if (severity != Severity::error && !mSettings->severity.isEnabled(Severity::warning))
         return;
 
@@ -1749,7 +1755,7 @@ void CheckIO::wrongPrintfScanfPosixParameterPositionError(const Token* tok, cons
 
 void CheckIO::invalidScanfArgTypeError_s(const Token* tok, nonneg int numFormat, const std::string& specifier, const ArgumentInfo* argInfo)
 {
-    const Severity::SeverityType severity = getSeverity(argInfo);
+    const Severity severity = getSeverity(argInfo);
     if (!mSettings->severity.isEnabled(severity))
         return;
     std::ostringstream errmsg;
@@ -1765,7 +1771,7 @@ void CheckIO::invalidScanfArgTypeError_s(const Token* tok, nonneg int numFormat,
 }
 void CheckIO::invalidScanfArgTypeError_int(const Token* tok, nonneg int numFormat, const std::string& specifier, const ArgumentInfo* argInfo, bool isUnsigned)
 {
-    const Severity::SeverityType severity = getSeverity(argInfo);
+    const Severity severity = getSeverity(argInfo);
     if (!mSettings->severity.isEnabled(severity))
         return;
     std::ostringstream errmsg;
@@ -1810,7 +1816,7 @@ void CheckIO::invalidScanfArgTypeError_int(const Token* tok, nonneg int numForma
 }
 void CheckIO::invalidScanfArgTypeError_float(const Token* tok, nonneg int numFormat, const std::string& specifier, const ArgumentInfo* argInfo)
 {
-    const Severity::SeverityType severity = getSeverity(argInfo);
+    const Severity severity = getSeverity(argInfo);
     if (!mSettings->severity.isEnabled(severity))
         return;
     std::ostringstream errmsg;
@@ -1829,7 +1835,7 @@ void CheckIO::invalidScanfArgTypeError_float(const Token* tok, nonneg int numFor
 
 void CheckIO::invalidPrintfArgTypeError_s(const Token* tok, nonneg int numFormat, const ArgumentInfo* argInfo)
 {
-    const Severity::SeverityType severity = getSeverity(argInfo);
+    const Severity severity = getSeverity(argInfo);
     if (!mSettings->severity.isEnabled(severity))
         return;
     std::ostringstream errmsg;
@@ -1840,7 +1846,7 @@ void CheckIO::invalidPrintfArgTypeError_s(const Token* tok, nonneg int numFormat
 }
 void CheckIO::invalidPrintfArgTypeError_n(const Token* tok, nonneg int numFormat, const ArgumentInfo* argInfo)
 {
-    const Severity::SeverityType severity = getSeverity(argInfo);
+    const Severity severity = getSeverity(argInfo);
     if (!mSettings->severity.isEnabled(severity))
         return;
     std::ostringstream errmsg;
@@ -1851,7 +1857,7 @@ void CheckIO::invalidPrintfArgTypeError_n(const Token* tok, nonneg int numFormat
 }
 void CheckIO::invalidPrintfArgTypeError_p(const Token* tok, nonneg int numFormat, const ArgumentInfo* argInfo)
 {
-    const Severity::SeverityType severity = getSeverity(argInfo);
+    const Severity severity = getSeverity(argInfo);
     if (!mSettings->severity.isEnabled(severity))
         return;
     std::ostringstream errmsg;
@@ -1901,7 +1907,7 @@ static void printfFormatType(std::ostream& os, const std::string& specifier, boo
 
 void CheckIO::invalidPrintfArgTypeError_uint(const Token* tok, nonneg int numFormat, const std::string& specifier, const ArgumentInfo* argInfo)
 {
-    const Severity::SeverityType severity = getSeverity(argInfo);
+    const Severity severity = getSeverity(argInfo);
     if (!mSettings->severity.isEnabled(severity))
         return;
     std::ostringstream errmsg;
@@ -1915,7 +1921,7 @@ void CheckIO::invalidPrintfArgTypeError_uint(const Token* tok, nonneg int numFor
 
 void CheckIO::invalidPrintfArgTypeError_sint(const Token* tok, nonneg int numFormat, const std::string& specifier, const ArgumentInfo* argInfo)
 {
-    const Severity::SeverityType severity = getSeverity(argInfo);
+    const Severity severity = getSeverity(argInfo);
     if (!mSettings->severity.isEnabled(severity))
         return;
     std::ostringstream errmsg;
@@ -1928,7 +1934,7 @@ void CheckIO::invalidPrintfArgTypeError_sint(const Token* tok, nonneg int numFor
 }
 void CheckIO::invalidPrintfArgTypeError_float(const Token* tok, nonneg int numFormat, const std::string& specifier, const ArgumentInfo* argInfo)
 {
-    const Severity::SeverityType severity = getSeverity(argInfo);
+    const Severity severity = getSeverity(argInfo);
     if (!mSettings->severity.isEnabled(severity))
         return;
     std::ostringstream errmsg;
@@ -1941,7 +1947,7 @@ void CheckIO::invalidPrintfArgTypeError_float(const Token* tok, nonneg int numFo
     reportError(tok, severity, "invalidPrintfArgType_float", errmsg.str(), CWE686, Certainty::normal);
 }
 
-Severity::SeverityType CheckIO::getSeverity(const CheckIO::ArgumentInfo *argInfo)
+Severity CheckIO::getSeverity(const CheckIO::ArgumentInfo *argInfo)
 {
     return (argInfo && argInfo->typeToken && !argInfo->typeToken->originalName().empty()) ? Severity::portability : Severity::warning;
 }

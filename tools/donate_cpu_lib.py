@@ -16,7 +16,7 @@ import copy
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.47"
+CLIENT_VERSION = "1.3.53"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -440,10 +440,11 @@ def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True):
 
     dir_to_scan = source_path
 
+    # TODO: temporarily disabled timing information - use --showtime=top5_summary when next version is released
     # TODO: remove missingInclude disabling when it no longer is implied by --enable=information
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
-    options = libs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --inline-suppr --disable=missingInclude --suppress=unmatchedSuppression --template=daca2'
-    options += ' --debug-warnings --suppress=autoNoType --suppress=valueFlowBailout --suppress=bailoutUninitVar --suppress=symbolDatabaseWarning --suppress=valueFlowBailoutIncompleteVar'
+    options = libs + ' --check-library --inconclusive --enable=style,information --inline-suppr --disable=missingInclude --suppress=unmatchedSuppression --template=daca2'
+    options += ' --debug-warnings --suppress=autoNoType --suppress=valueFlowBailout --suppress=bailoutUninitVar --suppress=symbolDatabaseWarning'
     options += ' -D__GNUC__ --platform=unix64'
     options_rp = options + ' -rp={}'.format(dir_to_scan)
     if __make_cmd == 'msbuild.exe':
@@ -505,7 +506,7 @@ def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True):
                 sig_num = int(ie_line[sig_start_pos:ie_line.find(' ', sig_start_pos)])
             # break on the first signalled file for now
             break
-    print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')'))
+    print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')') + ' in {:.1f}s'.format(elapsed_time))
 
     options_j = options + ' ' + __jobs
 
@@ -607,25 +608,6 @@ def diff_results(ver1, results1, ver2, results2):
         ret += ver2 + ' ' + r2[i2] + '\n'
         i2 += 1
 
-    # if there are syntaxError/unknownMacro/etc then analysis stops.
-    # diffing normal checker warnings will not make much sense
-    bailout_ids = ('[syntaxError]', '[unknownMacro]')
-    has_bailout_id = False
-    for id in bailout_ids:
-        if (id in results1) or (id in results1):
-            has_bailout_id = True
-    if has_bailout_id:
-        def check_bailout(line):
-            for id in bailout_ids:
-                if line.endswith(id):
-                    return True
-            return False
-        out = ''
-        for line in ret.split('\n'):
-            if check_bailout(line):
-                out += line + '\n'
-        ret = out
-
     return ret
 
 
@@ -654,7 +636,7 @@ def upload_results(package, results):
 
     print('Uploading results.. ' + str(len(results)) + ' bytes')
     try:
-        try_retry(__upload, fargs=('write\n' + package, results + '\nDONE', 'Result'), max_tries=4, sleep_duration=30, sleep_factor=1)
+        try_retry(__upload, fargs=('write\n' + package, results + '\nDONE', 'Result'), max_tries=20, sleep_duration=15, sleep_factor=1)
     except Exception as e:
         print('Result upload failed ({})!'.format(e))
         return False
@@ -669,7 +651,7 @@ def upload_info(package, info_output):
 
     print('Uploading information output.. ' + str(len(info_output)) + ' bytes')
     try:
-        try_retry(__upload, fargs=('write_info\n' + package, info_output + '\nDONE', 'Information'), max_tries=3, sleep_duration=30, sleep_factor=1)
+        try_retry(__upload, fargs=('write_info\n' + package, info_output + '\nDONE', 'Information'), max_tries=20, sleep_duration=15, sleep_factor=1)
     except Exception as e:
         print('Information upload failed ({})!'.format(e))
         return False

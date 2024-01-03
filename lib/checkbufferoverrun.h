@@ -58,10 +58,10 @@ class Token;
  */
 class CPPCHECKLIB CheckBufferOverrun : public Check {
 public:
-
     /** This constructor is used when registering the CheckClass */
     CheckBufferOverrun() : Check(myName()) {}
 
+private:
     /** This constructor is used when running checks. */
     CheckBufferOverrun(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
@@ -97,8 +97,6 @@ public:
     /** @brief Analyse all file infos for all TU */
     bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
 
-private:
-
     void arrayIndex();
     void arrayIndexError(const Token* tok,
                          const std::vector<Dimension>& dimensions,
@@ -132,23 +130,9 @@ private:
     ValueFlow::Value getBufferSize(const Token *bufTok) const;
 
     // CTU
-
-    /** data for multifile checking */
-    class MyFileInfo : public Check::FileInfo {
-    public:
-        /** unsafe array index usage */
-        std::list<CTU::FileInfo::UnsafeUsage> unsafeArrayIndex;
-
-        /** unsafe pointer arithmetic */
-        std::list<CTU::FileInfo::UnsafeUsage> unsafePointerArith;
-
-        /** Convert MyFileInfo data into xml string */
-        std::string toString() const override;
-    };
-
-    static bool isCtuUnsafeBufferUsage(const Check *check, const Token *argtok, MathLib::bigint *offset, int type);
-    static bool isCtuUnsafeArrayIndex(const Check *check, const Token *argtok, MathLib::bigint *offset);
-    static bool isCtuUnsafePointerArith(const Check *check, const Token *argtok, MathLib::bigint *offset);
+    static bool isCtuUnsafeBufferUsage(const Settings *settings, const Token *argtok, MathLib::bigint *offset, int type);
+    static bool isCtuUnsafeArrayIndex(const Settings *settings, const Token *argtok, MathLib::bigint *offset);
+    static bool isCtuUnsafePointerArith(const Settings *settings, const Token *argtok, MathLib::bigint *offset);
 
     Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const override;
     static bool analyseWholeProgram1(const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap, const CTU::FileInfo::UnsafeUsage &unsafeUsage, int type, ErrorLogger &errorLogger);

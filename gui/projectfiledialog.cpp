@@ -55,14 +55,13 @@
 #include <QSize>
 #include <QSpinBox>
 #include <QVariant>
-#include <QtCore>
 
-static const char ADDON_MISRA[]   = "misra";
-static const char CODING_STANDARD_MISRA_C_2023[] = "misra-c-2023";
-static const char CODING_STANDARD_MISRA_CPP_2008[] = "misra-cpp-2008";
-static const char CODING_STANDARD_CERT_C[] = "cert-c-2016";
-static const char CODING_STANDARD_CERT_CPP[] = "cert-cpp-2016";
-static const char CODING_STANDARD_AUTOSAR[] = "autosar";
+static constexpr char ADDON_MISRA[]   = "misra";
+static constexpr char CODING_STANDARD_MISRA_C_2023[] = "misra-c-2023";
+static constexpr char CODING_STANDARD_MISRA_CPP_2008[] = "misra-cpp-2008";
+static constexpr char CODING_STANDARD_CERT_C[] = "cert-c-2016";
+static constexpr char CODING_STANDARD_CERT_CPP[] = "cert-cpp-2016";
+static constexpr char CODING_STANDARD_AUTOSAR[] = "autosar";
 
 /** Return paths from QListWidget */
 static QStringList getPaths(const QListWidget *list)
@@ -77,16 +76,16 @@ static QStringList getPaths(const QListWidget *list)
 }
 
 /** Platforms shown in the platform combobox */
-static const cppcheck::Platform::Type builtinPlatforms[] = {
-    cppcheck::Platform::Type::Native,
-    cppcheck::Platform::Type::Win32A,
-    cppcheck::Platform::Type::Win32W,
-    cppcheck::Platform::Type::Win64,
-    cppcheck::Platform::Type::Unix32,
-    cppcheck::Platform::Type::Unix64
+static constexpr Platform::Type builtinPlatforms[] = {
+    Platform::Type::Native,
+    Platform::Type::Win32A,
+    Platform::Type::Win32W,
+    Platform::Type::Win64,
+    Platform::Type::Unix32,
+    Platform::Type::Unix64
 };
 
-static const int numberOfBuiltinPlatforms = sizeof(builtinPlatforms) / sizeof(builtinPlatforms[0]);
+static constexpr int numberOfBuiltinPlatforms = sizeof(builtinPlatforms) / sizeof(builtinPlatforms[0]);
 
 QStringList ProjectFileDialog::getProjectConfigs(const QString &fileName)
 {
@@ -190,7 +189,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, bool premium, QWi
 
     // Platforms..
     Platforms platforms;
-    for (const cppcheck::Platform::Type builtinPlatform : builtinPlatforms)
+    for (const Platform::Type builtinPlatform : builtinPlatforms)
         mUI->mComboBoxPlatform->addItem(platforms.get(builtinPlatform).mTitle);
     QStringList platformFiles;
     for (QString sp : searchPaths) {
@@ -203,7 +202,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, bool premium, QWi
         for (const QFileInfo& item : dir.entryInfoList()) {
             const QString platformFile = item.fileName();
 
-            cppcheck::Platform plat2;
+            Platform plat2;
             if (!plat2.loadFromFile(applicationFilePath.toStdString().c_str(), platformFile.toStdString()))
                 continue;
 
@@ -336,8 +335,8 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     } else {
         int i;
         for (i = 0; i < numberOfBuiltinPlatforms; ++i) {
-            const cppcheck::Platform::Type p = builtinPlatforms[i];
-            if (platform == cppcheck::Platform::toString(p))
+            const Platform::Type p = builtinPlatforms[i];
+            if (platform == Platform::toString(p))
                 break;
         }
         if (i < numberOfBuiltinPlatforms)
@@ -445,7 +444,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     else {
         const int i = mUI->mComboBoxPlatform->currentIndex();
         if (i>=0 && i < numberOfBuiltinPlatforms)
-            projectFile->setPlatform(cppcheck::Platform::toString(builtinPlatforms[i]));
+            projectFile->setPlatform(Platform::toString(builtinPlatforms[i]));
         else
             projectFile->setPlatform(QString());
     }

@@ -27,6 +27,7 @@
 #include "mathlib.h"
 #include "sourcelocation.h"
 #include "token.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <cctype>
@@ -35,14 +36,10 @@
 #include <map>
 #include <set>
 #include <string>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
-namespace cppcheck {
-    class Platform;
-}
-
+class Platform;
 class ErrorLogger;
 class Function;
 class Scope;
@@ -349,6 +346,7 @@ public:
      * Is variable in a namespace.
      * @return true if in a namespace, false if not
      */
+    // cppcheck-suppress unusedFunction
     bool isNamespace() const {
         return mAccess == AccessControl::Namespace;
     }
@@ -544,7 +542,7 @@ public:
      * @return length of dimension
      */
     MathLib::bigint dimension(nonneg int index_) const {
-        return mDimensions[index_].num;
+        return mDimensions.at(index_).num;
     }
 
     /**
@@ -552,7 +550,11 @@ public:
      * @return length of dimension known
      */
     bool dimensionKnown(nonneg int index_) const {
-        return mDimensions[index_].known;
+        return mDimensions.at(index_).known;
+    }
+
+    void setDimensions(const std::vector<Dimension> &dimensions_) {
+        mDimensions = dimensions_;
     }
 
     /**
@@ -747,7 +749,7 @@ class CPPCHECKLIB Function {
 public:
     enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction, eLambda };
 
-    Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef);
+    Function(const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef);
     Function(const Token *tokenDef, const std::string &clangType);
 
     const std::string &name() const {
@@ -1061,7 +1063,7 @@ public:
 
     bool isAnonymous() const {
         // TODO: Check if class/struct is anonymous
-        return className.size() > 9 && className.compare(0,9,"Anonymous") == 0 && std::isdigit(className[9]);
+        return className.size() > 9 && startsWith(className,"Anonymous") && std::isdigit(className[9]);
     }
 
     const Enumerator * findEnumerator(const std::string & name) const {
@@ -1128,14 +1130,10 @@ public:
     const Function *findFunction(const Token *tok, bool requireConst=false) const;
 
     const Scope *findRecordInNestedList(const std::string & name, bool isC = false) const;
-    Scope *findRecordInNestedList(const std::string & name) {
-        return const_cast<Scope *>(const_cast<const Scope *>(this)->findRecordInNestedList(name));
-    }
+    Scope *findRecordInNestedList(const std::string & name, bool isC = false);
 
     const Type* findType(const std::string& name) const;
-    Type* findType(const std::string& name) {
-        return const_cast<Type*>(const_cast<const Scope *>(this)->findType(name));
-    }
+    Type* findType(const std::string& name);
 
     /**
      * @brief find if name is in nested list
@@ -1249,18 +1247,18 @@ public:
     ErrorPath debugPath; ///< debug path to the type
 
     ValueType() = default;
-    ValueType(enum Sign s, enum Type t, nonneg int p)
+    ValueType(Sign s, Type t, nonneg int p)
         : sign(s),
         type(t),
         pointer(p)
     {}
-    ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c)
+    ValueType(Sign s, Type t, nonneg int p, nonneg int c)
         : sign(s),
         type(t),
         pointer(p),
         constness(c)
     {}
-    ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c, std::string otn)
+    ValueType(Sign s, Type t, nonneg int p, nonneg int c, std::string otn)
         : sign(s),
         type(t),
         pointer(p),
@@ -1296,7 +1294,7 @@ public:
 
     bool isConst(nonneg int indirect = 0) const;
 
-    MathLib::bigint typeSize(const cppcheck::Platform &platform, bool p=false) const;
+    MathLib::bigint typeSize(const Platform &platform, bool p=false) const;
 
     /// Check if type is the same ignoring const and references
     bool isTypeEqual(const ValueType* that) const;
@@ -1355,6 +1353,7 @@ public:
         return const_cast<Scope *>(this->findScope(tok, const_cast<const Scope *>(startScope)));
     }
 
+    // cppcheck-suppress unusedFunction
     bool isVarId(nonneg int varid) const {
         return varid < mVariableList.size();
     }
@@ -1371,6 +1370,8 @@ public:
      * @brief output a debug message
      */
     void debugMessage(const Token *tok, const std::string &type, const std::string &msg) const;
+
+    void returnImplicitIntError(const Token *tok) const;
 
     void printOut(const char * title = nullptr) const;
     void printVariable(const Variable *var, const char *indent) const;
@@ -1433,7 +1434,7 @@ private:
     void debugSymbolDatabase() const;
 
     void addClassFunction(Scope **scope, const Token **tok, const Token *argStart);
-    Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);
+    static Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);
     Function *addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
     void addNewFunction(Scope **scope, const Token **tok);
     bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart, const Token** declEnd) const;

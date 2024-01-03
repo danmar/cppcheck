@@ -62,8 +62,8 @@ void CsvReport::writeError(const ErrorItem &error)
      */
 
     const QString file = QDir::toNativeSeparators(error.errorPath.back().file);
-    QString line = QString("%1,%2,").arg(file).arg(error.errorPath.back().line);
-    line += QString("%1,%2,%3").arg(GuiSeverity::toString(error.severity)).arg(error.errorId).arg(error.summary);
+    QString line = QString("%1,%2,").arg(file, error.errorPath.back().line);
+    line += QString("%1,%2,%3").arg(GuiSeverity::toString(error.severity), error.errorId, error.summary);
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
     mTxtWriter << line << Qt::endl;
 #else

@@ -22,7 +22,6 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "errortypes.h"
 #include "tokenlist.h"
 
 #include <cassert>
@@ -39,7 +38,7 @@ class Token;
 class TemplateSimplifier;
 class ErrorLogger;
 class Preprocessor;
-class VariableMap;
+enum class Severity;
 
 namespace simplecpp {
     class TokenList;
@@ -164,6 +163,7 @@ public:
 
     /** Insert array size where it isn't given */
     void arraySize();
+    void arraySizeAfterValueFlow(); // cppcheck-suppress functionConst
 
     /** Simplify labels and 'case|default' syntaxes.
      */
@@ -268,7 +268,7 @@ public:
 
     /**
      */
-    bool isMemberFunction(const Token *openParen) const;
+    static bool isMemberFunction(const Token *openParen);
 
     /**
      */
@@ -365,16 +365,7 @@ public:
      * @param endsWith    string after function head
      * @return token matching with endsWith if syntax seems to be a function head else nullptr
      */
-    const Token * isFunctionHead(const Token *tok, const std::string &endsWith) const;
-
-    /**
-     * is token pointing at function head?
-     * @param tok         A '(' or ')' token in a possible function head
-     * @param endsWith    string after function head
-     * @param cpp         c++ code
-     * @return token matching with endsWith if syntax seems to be a function head else nullptr
-     */
-    static const Token * isFunctionHead(const Token *tok, const std::string &endsWith, bool cpp);
+    static const Token * isFunctionHead(const Token *tok, const std::string &endsWith);
 
     const Preprocessor *getPreprocessor() const {
         assert(mPreprocessor);
@@ -572,28 +563,19 @@ private:
     /**
      * report error message
      */
-    void reportError(const Token* tok, const Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive = false) const;
-    void reportError(const std::list<const Token*>& callstack, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive = false) const;
+    void reportError(const Token* tok, const Severity severity, const std::string& id, const std::string& msg, bool inconclusive = false) const;
+    void reportError(const std::list<const Token*>& callstack, Severity severity, const std::string& id, const std::string& msg, bool inconclusive = false) const;
 
     bool duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef) const;
 
     void unsupportedTypedef(const Token *tok) const;
 
-    void setVarIdClassDeclaration(Token* const startToken, // cppcheck-suppress functionConst // has side effects
-                                  VariableMap& variableMap,
-                                  const nonneg int scopeStartVarId,
-                                  std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers);
-
-    void setVarIdStructMembers(Token **tok1,
-                               std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
-                               nonneg int &varId) const;
-
-    void setVarIdClassFunction(const std::string &classname, // cppcheck-suppress functionConst // has side effects
-                               Token * const startToken,
-                               const Token * const endToken,
-                               const std::map<std::string, nonneg int> &varlist,
-                               std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
-                               nonneg int &varId_);
+    static void setVarIdClassFunction(const std::string &classname,
+                                      Token * const startToken,
+                                      const Token * const endToken,
+                                      const std::map<std::string, nonneg int> &varlist,
+                                      std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
+                                      nonneg int &varId_);
 
     /**
      * Output list of unknown types.
@@ -603,15 +585,9 @@ private:
     /** Find end of SQL (or PL/SQL) block */
     static const Token *findSQLBlockEnd(const Token *tokSQLStart);
 
-    bool operatorEnd(const Token * tok) const;
+    static bool operatorEnd(const Token * tok);
 
 public:
-
-    /** Was there templates in the code? */
-    bool codeWithTemplates() const {
-        return mCodeWithTemplates;
-    }
-
     const SymbolDatabase *getSymbolDatabase() const {
         return mSymbolDatabase;
     }
@@ -723,12 +699,6 @@ private:
 
     /** unnamed count "Unnamed0", "Unnamed1", "Unnamed2", ... */
     nonneg int mUnnamedCount{};
-
-    /**
-     * was there any templates? templates that are "unused" are
-     * removed from the token list
-     */
-    bool mCodeWithTemplates{};
 
     /**
      * TimerResults

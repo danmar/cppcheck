@@ -67,7 +67,7 @@ jobs:
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
-          tools: 'tools_openssl_x64,qt.tools.openssl.win_x64'
+          tools: 'tools_opensslv3_x64'
           cache: true
 
       - name: Create .qm
@@ -121,8 +121,8 @@ jobs:
           xcopy /s gui\help win_installer\files\help || exit /b !errorlevel!
           del win_installer\files\translations\*.qm || exit /b !errorlevel!
           move gui\*.qm win_installer\files\translations || exit /b !errorlevel!
-          :: copy libcrypto-1_1-x64.dll and libssl-1_1-x64.dll
-          copy %RUNNER_WORKSPACE%\Qt\Tools\OpenSSL\Win_x64\bin\lib*.dll win_installer\files || exit /b !errorlevel!
+          :: copy libcrypto-3-x64.dll and libssl-3-x64.dll
+          copy %RUNNER_WORKSPACE%\Qt\Tools\OpenSSLv3\Win_x64\bin\lib*.dll win_installer\files || exit /b !errorlevel!
 
       - name: Build Installer
         run: |
@@ -142,4 +142,28 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: deploy
+          path: win_installer\files
+
+      - name: Clean up deploy
+        run: |
+          del win_installer\files\addons\*.dll || exit /b !errorlevel!
+          del win_installer\files\addons\*.pyd || exit /b !errorlevel!
+          del win_installer\files\addons\base_library.zip || exit /b !errorlevel!
+          rmdir /s /q win_installer\files\bearer || exit /b !errorlevel!
+          rmdir /s /q win_installer\files\help || exit /b !errorlevel!
+          rmdir /s /q win_installer\files\iconengines || exit /b !errorlevel!
+          rmdir /s /q win_installer\files\imageformats || exit /b !errorlevel!
+          rmdir /s /q win_installer\files\printsupport || exit /b !errorlevel!
+          rmdir /s /q win_installer\files\sqldrivers || exit /b !errorlevel!      
+          ren win_installer\files\translations lang || exit /b !errorlevel!
+          del win_installer\files\d3dcompiler_47.dll || exit /b !errorlevel!
+          del win_installer\files\libEGL.dll || exit /b !errorlevel!
+          del win_installer\files\libGLESv2.dll || exit /b !errorlevel!
+          del win_installer\files\opengl32sw.dll || exit /b !errorlevel!
+          del win_installer\files\Qt5Svg.dll || exit /b !errorlevel!
+          del win_installer\files\vc_redist.x64.exe || exit /b !errorlevel!
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: portable
           path: win_installer\files

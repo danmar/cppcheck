@@ -33,6 +33,8 @@ struct Analyzer {
     struct Action {
 
         Action() = default;
+        Action(const Action&) = default;
+        Action& operator=(const Action& rhs) = default;
 
         template<class T,
                  REQUIRES("T must be convertible to unsigned int", std::is_convertible<T, unsigned int> ),
@@ -179,6 +181,8 @@ struct Analyzer {
     virtual bool stopOnCondition(const Token* condTok) const = 0;
     /// The condition that will be assumed during analysis
     virtual void assume(const Token* tok, bool state, unsigned int flags = 0) = 0;
+    /// Update the state of the program at the token
+    virtual void updateState(const Token* tok) = 0;
     /// Return analyzer for expression at token
     virtual ValuePtr<Analyzer> reanalyze(Token* tok, const std::string& msg = emptyString) const = 0;
     virtual bool invalid() const {

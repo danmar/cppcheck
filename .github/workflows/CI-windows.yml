@@ -4,7 +4,14 @@
 
 name: CI-windows
 
-on: [push,pull_request]
+on:
+  push:
+    branches:
+      - 'main'
+      - 'releases/**'
+    tags:
+      - '2.*'
+  pull_request:
 
 permissions:
   contents: read
@@ -21,7 +28,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-2019, windows-2022]
-        qt_ver: [5.15.2, 6.2.4, 6.5.0]
+        qt_ver: [5.15.2, 6.6.0]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -32,7 +39,7 @@ jobs:
       - name: Set up Visual Studio environment
         uses: ilammy/msvc-dev-cmd@v1
         with:
-          arch: x64 # no 32-bit Qt available
+          arch: x64
 
       - name: Install Qt ${{ matrix.qt_ver }}
         uses: jurplel/install-qt-action@v3
@@ -60,7 +67,7 @@ jobs:
       - name: Build GUI release (CMake)
         if: startsWith(matrix.qt_ver, '6')
         run: |
-          cmake -S . -B build -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_QT6=On || exit /b !errorlevel!
+          cmake -S . -B build -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On || exit /b !errorlevel!
           cmake --build build --target cppcheck-gui || exit /b !errorlevel!
 
       # TODO: deploy with CMake/Qt6
@@ -69,7 +76,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-2019, windows-2022]
-        arch: [x64, x86]
+        config: [debug, release]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -81,16 +88,17 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python 3.11
+      - name: Set up Python 3.12
+        if: matrix.config == 'release'
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           check-latest: true
 
       - name: Set up Visual Studio environment
         uses: ilammy/msvc-dev-cmd@v1
         with:
-          arch: ${{ matrix.arch }}
+          arch: x64
 
       - name: Cache PCRE
         id: cache-pcre
@@ -100,7 +108,7 @@ jobs:
             externals\pcre.h
             externals\pcre.lib
             externals\pcre64.lib
-          key: pcre-${{ env.PCRE_VERSION }}-${{ matrix.arch }}-bin-win
+          key: pcre-${{ env.PCRE_VERSION }}-x64-bin-win
 
       - name: Download PCRE
         if: steps.cache-pcre.outputs.cache-hit != 'true'
@@ -115,15 +123,12 @@ jobs:
           cmake . -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DPCRE_BUILD_PCRECPP=Off -DPCRE_BUILD_TESTS=Off -DPCRE_BUILD_PCREGREP=Off || exit /b !errorlevel!
           nmake || exit /b !errorlevel!
           copy pcre.h ..\externals || exit /b !errorlevel!
-          if "${{ matrix.arch }}" == "x86" (
-            copy pcre.lib ..\externals\pcre.lib || exit /b !errorlevel!
-          ) else (
-            copy pcre.lib ..\externals\pcre64.lib || exit /b !errorlevel!
-          )
+          copy pcre.lib ..\externals\pcre64.lib || exit /b !errorlevel!
         env:
           CL: /MP
 
       - name: Install missing Python packages
+        if: matrix.config == 'release'
         run: |
           python -m pip install pip --upgrade || exit /b !errorlevel!
           python -m pip install pytest || exit /b !errorlevel!
@@ -133,52 +138,46 @@ jobs:
       - name: Run CMake
         if: false # TODO: enable
         run: |
-          set ARCH=${{ matrix.arch }}
-          if "${{ matrix.arch }}" == "x86" (
-            set ARCH=Win32
-          )
           cmake -S . -B build -DBUILD_TESTS=On || exit /b !errorlevel!
 
       - name: Build CLI debug configuration using MSBuild
+        if: matrix.config == 'debug'
         run: |
-          set ARCH=${{ matrix.arch }}
-          if "${{ matrix.arch }}" == "x86" (
-            set ARCH=Win32
-          )
           :: cmake --build build --target check --config Debug || exit /b !errorlevel!
-          msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE;Platform=%ARCH% -maxcpucount || exit /b !errorlevel!
+          msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE;Platform=x64 -maxcpucount || exit /b !errorlevel!
 
       - name: Run Debug test
+        if: matrix.config == 'debug'
         run: .\bin\debug\testrunner.exe || exit /b !errorlevel!
 
       - name: Build CLI release configuration using MSBuild
+        if: matrix.config == 'release'
         run: |
-          set ARCH=${{ matrix.arch }}
-          if "${{ matrix.arch }}" == "x86" (
-            set ARCH=Win32
-          )
           :: cmake --build build --target check --config Release || exit /b !errorlevel!
-          msbuild -m cppcheck.sln /p:Configuration=Release-PCRE;Platform=%ARCH% -maxcpucount || exit /b !errorlevel!
+          msbuild -m cppcheck.sln /p:Configuration=Release-PCRE;Platform=x64 -maxcpucount || exit /b !errorlevel!
 
       - name: Run Release test
+        if: matrix.config == 'release'
         run: .\bin\testrunner.exe || exit /b !errorlevel!
 
       - name: Run test/cli
+        if: matrix.config == 'release'
         run: |
           :: since FILESDIR is not set copy the binary to the root so the addons are found
           :: copy .\build\bin\Release\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
           copy .\bin\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
           copy .\bin\cppcheck-core.dll .\cppcheck-core.dll || exit /b !errorlevel!
           cd test/cli || exit /b !errorlevel!
-          :: python -m pytest --suppress-no-test-exit-code test-clang-import.py || exit /b !errorlevel!
-          python -m pytest test-helloworld.py || exit /b !errorlevel!
-          python -m pytest test-inline-suppress.py || exit /b !errorlevel!
-          python -m pytest test-more-projects.py || exit /b !errorlevel!
-          python -m pytest test-other.py || exit /b !errorlevel!
-          python -m pytest test-proj2.py || exit /b !errorlevel!
-          python -m pytest test-suppress-syntaxError.py || exit /b !errorlevel!
+          :: python -m pytest -Werror --strict-markers -vv --suppress-no-test-exit-code test-clang-import.py || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv test-helloworld.py || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv test-inline-suppress.py || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv test-more-projects.py || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv test-other.py || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv test-proj2.py || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv test-suppress-syntaxError.py || exit /b !errorlevel!
 
       - name: Test addons
+        if: matrix.config == 'release'
         run: |
           .\cppcheck --addon=threadsafety addons\test\threadsafety || exit /b !errorlevel!
           .\cppcheck --addon=threadsafety --std=c++03 addons\test\threadsafety || exit /b !errorlevel!
@@ -203,6 +202,4 @@ jobs:
           rem python3 ..\naming.py --var='[a-z].*' --function='[a-z].*' naming_test.c.dump || exit /b !errorlevel!
           ..\..\cppcheck --dump naming_test.cpp || exit /b !errorlevel!
           python3 ..\naming.py --var='[a-z].*' --function='[a-z].*' naming_test.cpp.dump || exit /b !errorlevel!
-          ..\..\cppcheck --dump namingng_test.c || exit /b !errorlevel!
-          python3 ..\namingng.py --configfile ..\naming.json --verify namingng_test.c.dump || exit /b !errorlevel!
 

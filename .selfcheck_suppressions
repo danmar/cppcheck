@@ -1,26 +1,28 @@
 missingIncludeSystem
-shadowFunction
-bitwiseOnBoolean
 
 # temporary suppressions - fix the warnings!
 simplifyUsing:lib/valueptr.h
 varid0:gui/projectfile.cpp
-templateInstantiation
+naming-privateMemberVariable:gui/test/cppchecklibrarydata/testcppchecklibrarydata.h
+symbolDatabaseWarning:*/moc_*.cpp
+simplifyUsing:*/moc_*.cpp
 
 # warnings in Qt generated code we cannot fix
-symbolDatabaseWarning:gui/temp/moc_*.cpp
-simplifyUsing:gui/temp/moc_*.cpp
-funcArgNamesDifferent:gui/temp/moc_*.cpp
-symbolDatabaseWarning:tools/triage/temp/moc_*.cpp
-naming-varname:gui/temp/ui_*.h
-naming-varname:cmake.output/gui/ui_*.h
-functionStatic:gui/temp/ui_fileview.h
-functionStatic:cmake.output/gui/ui_fileview.h
+funcArgNamesDifferent:*/moc_*.cpp
+naming-varname:*/ui_*.h
+functionStatic:*/ui_fileview.h
 
 # --debug-warnings suppressions
 valueFlowBailout
 valueFlowBailoutIncompleteVar
 autoNoType
-bailoutUninitVar
 
-*:externals/*/*
+naming-varname:externals/simplecpp/simplecpp.h
+naming-privateMemberVariable:externals/simplecpp/simplecpp.h
+
+# these warnings need to be addressed upstream
+uninitMemberVar:externals/tinyxml2/tinyxml2.h
+noExplicitConstructor:externals/tinyxml2/tinyxml2.h
+missingOverride:externals/tinyxml2/tinyxml2.h
+invalidPrintfArgType_sint:externals/tinyxml2/tinyxml2.h
+naming-privateMemberVariable:externals/tinyxml2/tinyxml2.h

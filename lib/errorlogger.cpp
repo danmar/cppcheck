@@ -20,8 +20,8 @@
 
 #include "color.h"
 #include "cppcheck.h"
-#include "mathlib.h"
 #include "path.h"
+#include "suppressions.h"
 #include "token.h"
 #include "tokenlist.h"
 #include "utils.h"
@@ -37,7 +37,7 @@
 #include <unordered_map>
 #include <utility>
 
-#include <tinyxml2.h>
+#include "xml.h"
 
 const std::set<std::string> ErrorLogger::mCriticalErrorIds{
     "cppcheckError",
@@ -45,7 +45,10 @@ const std::set<std::string> ErrorLogger::mCriticalErrorIds{
     "internalAstError",
     "instantiationError",
     "internalError",
+    "misra-config",
     "premium-internalError",
+    "premium-invalidArgument",
+    "premium-invalidLicense",
     "preprocessorErrorDirective",
     "syntaxError",
     "unknownMacro"
@@ -56,7 +59,7 @@ ErrorMessage::ErrorMessage()
 {}
 
 // TODO: id and msg are swapped compared to other calls
-ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1, Severity::SeverityType severity, const std::string &msg, std::string id, Certainty certainty) :
+ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1, Severity severity, const std::string &msg, std::string id, Certainty certainty) :
     callStack(std::move(callStack)), // locations for this error message
     id(std::move(id)),               // set the message id
     file0(std::move(file1)),
@@ -71,7 +74,7 @@ ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1,
 
 
 // TODO: id and msg are swapped compared to other calls
-ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1, Severity::SeverityType severity, const std::string &msg, std::string id, const CWE &cwe, Certainty certainty) :
+ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1, Severity severity, const std::string &msg, std::string id, const CWE &cwe, Certainty certainty) :
     callStack(std::move(callStack)), // locations for this error message
     id(std::move(id)),               // set the message id
     file0(std::move(file1)),
@@ -84,7 +87,7 @@ ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1,
     setmsg(msg);
 }
 
-ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, std::string id, const std::string& msg, Certainty certainty)
+ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity severity, std::string id, const std::string& msg, Certainty certainty)
     : id(std::move(id)), severity(severity), cwe(0U), certainty(certainty), hash(0)
 {
     // Format callstack
@@ -103,7 +106,7 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
 }
 
 
-ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, std::string id, const std::string& msg, const CWE &cwe, Certainty certainty)
+ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity severity, std::string id, const std::string& msg, const CWE &cwe, Certainty certainty)
     : id(std::move(id)), severity(severity), cwe(cwe.id), certainty(certainty)
 {
     // Format callstack
@@ -123,7 +126,7 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
     hash = 0; // calculateWarningHash(list, hashWarning.str());
 }
 
-ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty)
+ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty)
     : id(id), severity(severity), cwe(cwe.id), certainty(certainty)
 {
     // Format callstack
@@ -135,7 +138,7 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
 
         std::string info = e.second;
 
-        if (info.compare(0,8,"$symbol:") == 0 && info.find('\n') < info.size()) {
+        if (startsWith(info,"$symbol:") && info.find('\n') < info.size()) {
             const std::string::size_type pos = info.find('\n');
             const std::string &symbolName = info.substr(8, pos - 8);
             info = replaceStr(info.substr(pos+1), "$symbol", symbolName);
@@ -163,9 +166,10 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
     id = attr ? attr : unknown;
 
     attr = errmsg->Attribute("severity");
-    severity = attr ? Severity::fromString(attr) : Severity::none;
+    severity = attr ? severityFromString(attr) : Severity::none;
 
     attr = errmsg->Attribute("cwe");
+    // cppcheck-suppress templateInstantiation - TODO: fix this - see #11631
     cwe.id = attr ? strToInt<unsigned short>(attr) : 0;
 
     attr = errmsg->Attribute("inconclusive");
@@ -215,7 +219,7 @@ void ErrorMessage::setmsg(const std::string &msg)
     if (pos == std::string::npos) {
         mShortMessage = replaceStr(msg, "$symbol", symbolName);
         mVerboseMessage = replaceStr(msg, "$symbol", symbolName);
-    } else if (msg.compare(0,8,"$symbol:") == 0) {
+    } else if (startsWith(msg,"$symbol:")) {
         mSymbolNames += msg.substr(8, pos-7);
         setmsg(msg.substr(pos + 1));
     } else {
@@ -231,7 +235,7 @@ static void serializeString(std::string &oss, const std::string & str)
     oss += str;
 }
 
-ErrorMessage ErrorMessage::fromInternalError(const InternalError &internalError, const TokenList *tokenList, const std::string &filename)
+ErrorMessage ErrorMessage::fromInternalError(const InternalError &internalError, const TokenList *tokenList, const std::string &filename, const std::string& msg)
 {
     if (internalError.token)
         assert(tokenList != nullptr); // we need to make sure we can look up the provided token
@@ -251,9 +255,12 @@ ErrorMessage ErrorMessage::fromInternalError(const InternalError &internalError,
     ErrorMessage errmsg(std::move(locationList),
                         tokenList ? tokenList->getSourceFilePath() : filename,
                         Severity::error,
-                        internalError.errorMessage,
+                        (msg.empty() ? "" : (msg + ": ")) + internalError.errorMessage,
                         internalError.id,
                         Certainty::normal);
+    // TODO: find a better way
+    if (!internalError.details.empty())
+        errmsg.mVerboseMessage = errmsg.mVerboseMessage + ": " + internalError.details;
     return errmsg;
 }
 
@@ -262,7 +269,7 @@ std::string ErrorMessage::serialize() const
     // Serialize this message into a simple string
     std::string oss;
     serializeString(oss, id);
-    serializeString(oss, Severity::toString(severity));
+    serializeString(oss, severityToString(severity));
     serializeString(oss, std::to_string(cwe.id));
     serializeString(oss, std::to_string(hash));
     serializeString(oss, file0);
@@ -281,11 +288,11 @@ std::string ErrorMessage::serialize() const
 
     for (std::list<ErrorMessage::FileLocation>::const_iterator loc = callStack.cbegin(); loc != callStack.cend(); ++loc) {
         std::string frame;
-        frame += std::to_string((*loc).line);
+        frame += std::to_string(loc->line);
         frame += '\t';
-        frame += std::to_string((*loc).column);
+        frame += std::to_string(loc->column);
         frame += '\t';
-        frame += (*loc).getfile(false);
+        frame += loc->getfile(false);
         frame += '\t';
         frame += loc->getOrigFile(false);
         frame += '\t';
@@ -340,7 +347,7 @@ void ErrorMessage::deserialize(const std::string &data)
         throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - insufficient elements");
 
     id = std::move(results[0]);
-    severity = Severity::fromString(results[1]);
+    severity = severityFromString(results[1]);
     cwe.id = 0;
     if (!results[2].empty()) {
         std::string err;
@@ -478,7 +485,7 @@ std::string ErrorMessage::toXML() const
     tinyxml2::XMLPrinter printer(nullptr, false, 2);
     printer.OpenElement("error", false);
     printer.PushAttribute("id", id.c_str());
-    printer.PushAttribute("severity", Severity::toString(severity).c_str());
+    printer.PushAttribute("severity", severityToString(severity).c_str());
     printer.PushAttribute("msg", fixInvalidChars(mShortMessage).c_str());
     printer.PushAttribute("verbose", fixInvalidChars(mVerboseMessage).c_str());
     if (cwe.id)
@@ -493,9 +500,9 @@ std::string ErrorMessage::toXML() const
 
     for (std::list<FileLocation>::const_reverse_iterator it = callStack.crbegin(); it != callStack.crend(); ++it) {
         printer.OpenElement("location", false);
-        printer.PushAttribute("file", (*it).getfile().c_str());
-        printer.PushAttribute("line", std::max((*it).line,0));
-        printer.PushAttribute("column", (*it).column);
+        printer.PushAttribute("file", it->getfile().c_str());
+        printer.PushAttribute("line", std::max(it->line,0));
+        printer.PushAttribute("column", it->column);
         if (!it->getinfo().empty())
             printer.PushAttribute("info", fixInvalidChars(it->getinfo()).c_str());
         printer.CloseElement(false);
@@ -611,11 +618,14 @@ static void replaceColors(std::string& source) {
     replace(source, substitutionMap);
 }
 
+// TODO: remove default parameters
 std::string ErrorMessage::toString(bool verbose, const std::string &templateFormat, const std::string &templateLocation) const
 {
     // Save this ErrorMessage in plain text.
 
+    // TODO: should never happen - remove this
     // No template is given
+    // (not 100%) equivalent templateFormat: {callstack} ({severity}{inconclusive:, inconclusive}) {message}
     if (templateFormat.empty()) {
         std::string text;
         if (!callStack.empty()) {
@@ -624,7 +634,7 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
         }
         if (severity != Severity::none) {
             text += '(';
-            text += Severity::toString(severity);
+            text += severityToString(severity);
             if (certainty == Certainty::inconclusive)
                 text += ", inconclusive";
             text += ") ";
@@ -646,7 +656,7 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
         findAndReplace(result, replaceFrom, replaceWith);
         pos1 = result.find("{inconclusive:", pos1);
     }
-    findAndReplace(result, "{severity}", Severity::toString(severity));
+    findAndReplace(result, "{severity}", severityToString(severity));
     findAndReplace(result, "{cwe}", std::to_string(cwe.id));
     findAndReplace(result, "{message}", verbose ? mVerboseMessage : mShortMessage);
     if (!callStack.empty()) {
@@ -877,7 +887,7 @@ std::string ErrorLogger::plistData(const ErrorMessage &msg)
 
     plist << "   </array>\r\n"
           << "   <key>description</key><string>" << ErrorLogger::toxml(msg.shortMessage()) << "</string>\r\n"
-          << "   <key>category</key><string>" << Severity::toString(msg.severity) << "</string>\r\n"
+          << "   <key>category</key><string>" << severityToString(msg.severity) << "</string>\r\n"
           << "   <key>type</key><string>" << ErrorLogger::toxml(msg.shortMessage()) << "</string>\r\n"
           << "   <key>check_name</key><string>" << msg.id << "</string>\r\n"
           << "   <!-- This hash is experimental and going to change! -->\r\n"

@@ -194,7 +194,7 @@ void ThreadHandler::stop()
     }
 }
 
-void ThreadHandler::initialize(ResultsView *view)
+void ThreadHandler::initialize(const ResultsView *view)
 {
     connect(&mResults, &ThreadResult::progress,
             view, &ResultsView::progress);

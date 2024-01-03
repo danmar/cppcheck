@@ -17,7 +17,7 @@
  */
 
 #include "errortypes.h"
-#include "mathlib.h"
+#include "helpers.h"
 #include "platform.h"
 #include "settings.h"
 #include "standards.h"
@@ -28,13 +28,12 @@
 #include <sstream> // IWYU pragma: keep
 #include <string>
 
-
 class TestVarID : public TestFixture {
 public:
     TestVarID() : TestFixture("TestVarID") {}
 
 private:
-    const Settings settings = settingsBuilder().c(Standards::C89).cpp(Standards::CPPLatest).platform(cppcheck::Platform::Type::Unix64).build();
+    const Settings settings = settingsBuilder().c(Standards::C89).cpp(Standards::CPPLatest).platform(Platform::Type::Unix64).build();
     void run() override {
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -100,10 +99,12 @@ private:
         TEST_CASE(varid66);
         TEST_CASE(varid67); // #11711 - NOT function pointer
         TEST_CASE(varid68); // #11740 - switch (str_chars(&strOut)[0])
+        TEST_CASE(varid69);
         TEST_CASE(varid_for_1);
         TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
+        TEST_CASE(varid_cpp_keywords_in_c_code3);
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -141,11 +142,13 @@ private:
         TEST_CASE(varid_in_class23);    // #11293
         TEST_CASE(varid_in_class24);
         TEST_CASE(varid_in_class25);
+        TEST_CASE(varid_in_class26);
         TEST_CASE(varid_namespace_1);   // #7272
         TEST_CASE(varid_namespace_2);   // #7000
         TEST_CASE(varid_namespace_3);   // #8627
         TEST_CASE(varid_namespace_4);
         TEST_CASE(varid_namespace_5);
+        TEST_CASE(varid_namespace_6);
         TEST_CASE(varid_initList);
         TEST_CASE(varid_initListWithBaseTemplate);
         TEST_CASE(varid_initListWithScope);
@@ -234,6 +237,12 @@ private:
 
         TEST_CASE(exprid1);
         TEST_CASE(exprid2);
+        TEST_CASE(exprid3);
+        TEST_CASE(exprid4);
+        TEST_CASE(exprid5);
+        TEST_CASE(exprid6);
+        TEST_CASE(exprid7);
+        TEST_CASE(exprid8);
 
         TEST_CASE(structuredBindings);
     }
@@ -258,9 +267,11 @@ private:
     std::string tokenizeExpr_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         errout.str("");
 
+        std::vector<std::string> files(1, filename);
         Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC((tokenizer.tokenize)(istr, filename), file, line);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
+
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // result..
         Token::stringifyOptions options = Token::stringifyOptions::forDebugExprId();
@@ -1241,6 +1252,16 @@ private:
         ASSERT_EQUALS(expected1, tokenize(code1, "test.cpp"));
     }
 
+    void varid69() {
+        const char code1[] = "void f() {\n"
+                             "    auto g = [](int&, int& r, int i) {};\n"
+                             "}";
+        const char expected1[] = "1: void f ( ) {\n"
+                                 "2: auto g@1 ; g@1 = [ ] ( int & , int & r@2 , int i@3 ) { } ;\n"
+                                 "3: }\n";
+        ASSERT_EQUALS(expected1, tokenize(code1, "test.cpp"));
+    }
+
     void varid_for_1() {
         const char code[] = "void foo(int a, int b) {\n"
                             "  for (int a=1,b=2;;) {}\n"
@@ -1286,6 +1307,12 @@ private:
                             "                          EXTENT_DO_ACCOUNTING, 0, 0, NULL, mask);\n"
                             "}";
         tokenize(code, "test.c");
+    }
+
+    void varid_cpp_keywords_in_c_code3() { // #12120
+        const char code[] = "const struct class *p;";
+        const char expected[] = "1: const struct class * p@1 ;\n";
+        ASSERT_EQUALS(expected, tokenize(code, "test.c"));
     }
 
     void varidFunctionCall1() {
@@ -2085,6 +2112,31 @@ private:
         ASSERT_EQUALS(expected, tokenize(code, "test.cpp", &s));
     }
 
+    void varid_in_class26() {
+        const char *code{}, *expected{}; // #11334
+        code = "struct S {\n"
+               "    union {\n"
+               "        uint8_t u8[4];\n"
+               "        uint32_t u32;\n"
+               "    };\n"
+               "    void f();\n"
+               "};\n"
+               "void S::f() {\n"
+               "    u8[0] = 0;\n"
+               "}\n";
+        expected = "1: struct S {\n"
+                   "2: union {\n"
+                   "3: uint8_t u8@1 [ 4 ] ;\n"
+                   "4: uint32_t u32@2 ;\n"
+                   "5: } ;\n"
+                   "6: void f ( ) ;\n"
+                   "7: } ;\n"
+                   "8: void S :: f ( ) {\n"
+                   "9: u8@1 [ 0 ] = 0 ;\n"
+                   "10: }\n";
+        ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
+    }
+
     void varid_namespace_1() { // #7272
         const char code[] = "namespace Blah {\n"
                             "  struct foo { int x;};\n"
@@ -2189,6 +2241,29 @@ private:
                       "7: void bar :: dostuff ( ) { int x2@2 ; x2@2 = x@1 * 2 ; }\n"
                       "8: }\n"
                       "9: }\n", tokenize(code, "test.cpp"));
+    }
+
+    void varid_namespace_6() {
+        const char code[] = "namespace N {\n" // #12077
+                            "    namespace O {\n"
+                            "        U::U(int* map) : id(0) {\n"
+                            "            this->p = map;\n"
+                            "        }\n"
+                            "        void U::f() {\n"
+                            "            std::map<Vec2i, int>::iterator iter;\n"
+                            "        }\n"
+                            "    }\n"
+                            "}";
+        ASSERT_EQUALS("1: namespace N {\n"
+                      "2: namespace O {\n"
+                      "3: U :: U ( int * map@1 ) : id ( 0 ) {\n"
+                      "4: this . p = map@1 ;\n"
+                      "5: }\n"
+                      "6: void U :: f ( ) {\n"
+                      "7: std :: map < Vec2i , int > :: iterator iter@2 ;\n"
+                      "8: }\n"
+                      "9: }\n"
+                      "10: }\n", tokenize(code, "test.cpp"));
     }
 
     void varid_initList() {
@@ -3793,9 +3868,9 @@ private:
             "2: int x ; int y ;\n"
             "3: } ;\n"
             "4: int f ( A a , A b ) {\n"
-            "5: int x@5 ; x@5 =@9 a@3 .@10 x@6 +@11 b@4 .@12 x@7 ;\n"
-            "6: int y@8 ; y@8 =@1073741837 b@4 .@12 x@7 +@11 a@3 .@10 x@6 ;\n"
-            "7: return x@5 +@1073741841 y@8 +@1073741842 a@3 .@1073741843 y@9 +@1073741844 b@4 .@1073741845 y@10 ;\n"
+            "5: int x@5 ; x@5 =@UNIQUE a@3 .@11 x@6 +@13 b@4 .@12 x@7 ;\n"
+            "6: int y@8 ; y@8 =@UNIQUE b@4 .@12 x@7 +@13 a@3 .@11 x@6 ;\n"
+            "7: return x@5 +@UNIQUE y@8 +@UNIQUE a@3 .@UNIQUE y@9 +@UNIQUE b@4 .@UNIQUE y@10 ;\n"
             "8: }\n";
 
         ASSERT_EQUALS(expected, actual);
@@ -3812,12 +3887,111 @@ private:
 
         const char expected[] = "1: struct S { std :: unique_ptr < int > u ; } ;\n"
                                 "2: auto f ; f = [ ] ( const S & s ) . std :: unique_ptr < int > {\n"
-                                "3: if (@5 auto p@4 =@1073741830 s@3 .@1073741831 u@5 .@1073741832 get (@1073741833 ) ) {\n"
-                                "4: return std ::@1073741834 make_unique < int > (@1073741835 *@1073741836 p@4 ) ; }\n"
+                                "3: if ( auto p@4 =@UNIQUE s@3 .@UNIQUE u@5 .@UNIQUE get (@UNIQUE ) ) {\n"
+                                "4: return std ::@UNIQUE make_unique < int > (@UNIQUE *@UNIQUE p@4 ) ; }\n"
                                 "5: return nullptr ;\n"
                                 "6: } ;\n";
 
         ASSERT_EQUALS(expected, actual);
+    }
+
+    void exprid3() {
+        const char code[] = "void f(bool b, int y) {\n"
+                            "    if (b && y > 0) {}\n"
+                            "    while (b && y > 0) {}\n"
+                            "}\n";
+        const char expected[] = "1: void f ( bool b , int y ) {\n"
+                                "2: if ( b@1 &&@5 y@2 >@4 0 ) { }\n"
+                                "3: while ( b@1 &&@5 y@2 >@4 0 ) { }\n"
+                                "4: }\n";
+        ASSERT_EQUALS(expected, tokenizeExpr(code));
+    }
+
+    void exprid4() {
+        // expanded macro..
+        const char code[] = "#define ADD(x,y)  x+y\n"
+                            "int f(int a, int b) {\n"
+                            "    return ADD(a,b) + ADD(a,b);\n"
+                            "}\n";
+        const char expected[] = "2: int f ( int a , int b ) {\n"
+                                "3: return a@1 $+@UNIQUE b@2 +@UNIQUE a@1 $+@UNIQUE b@2 ;\n"
+                                "4: }\n";
+        ASSERT_EQUALS(expected, tokenizeExpr(code));
+    }
+
+    void exprid5() {
+        // references..
+        const char code[] = "int foo(int a) {\n"
+                            "    int& r = a;\n"
+                            "    return (a+a)*(r+r);\n"
+                            "}\n";
+        const char expected[] = "1: int foo ( int a ) {\n"
+                                "2: int & r@2 =@UNIQUE a@1 ;\n"
+                                "3: return ( a@1 +@4 a@1 ) *@UNIQUE ( r@2 +@4 r@2 ) ;\n"
+                                "4: }\n";
+        ASSERT_EQUALS(expected, tokenizeExpr(code));
+    }
+
+    void exprid6() {
+        // ++ and -- should have UNIQUE exprid
+        const char code[] = "void foo(int *a) {\n"
+                            "    *a++ = 0;\n"
+                            "    if (*a++ == 32) {}\n"
+                            "}\n";
+        const char expected[] = "1: void foo ( int * a ) {\n"
+                                "2: *@UNIQUE a@1 ++@UNIQUE = 0 ;\n"
+                                "3: if ( *@UNIQUE a@1 ++@UNIQUE ==@UNIQUE 32 ) { }\n"
+                                "4: }\n";
+        ASSERT_EQUALS(expected, tokenizeExpr(code));
+    }
+
+    void exprid7() {
+        // different casts
+        const char code[] = "void foo(int a) {\n"
+                            "    if ((char)a == (short)a) {}\n"
+                            "    if ((char)a == (short)a) {}\n"
+                            "}\n";
+        const char expected[] = "1: void foo ( int a ) {\n"
+                                "2: if ( (@2 char ) a@1 ==@4 (@3 short ) a@1 ) { }\n"
+                                "3: if ( (@2 char ) a@1 ==@4 (@3 short ) a@1 ) { }\n"
+                                "4: }\n";
+        ASSERT_EQUALS(expected, tokenizeExpr(code));
+    }
+
+    void exprid8() {
+        const char code[] = "void f() {\n" // #12249
+                            "    std::string s;\n"
+                            "    (((s += \"--\") += std::string()) += \"=\");\n"
+                            "}\n";
+        const char expected[] = "1: void f ( ) {\n"
+                                "2: std ::@UNIQUE string s@1 ;\n"
+                                "3: ( ( s@1 +=@UNIQUE \"--\"@UNIQUE ) +=@UNIQUE std ::@UNIQUE string (@UNIQUE ) ) +=@UNIQUE \"=\"@UNIQUE ;\n"
+                                "4: }\n";
+        ASSERT_EQUALS(expected, tokenizeExpr(code));
+
+        const char code2[] = "struct S { std::function<void()>* p; };\n"
+                             "S f() { return S{ std::make_unique<std::function<void()>>([]() {}).release()}; }";
+        const char expected2[] = "1: struct S { std :: function < void ( ) > * p ; } ;\n"
+                                 "2: S f ( ) { return S@UNIQUE {@UNIQUE std ::@UNIQUE make_unique < std :: function < void ( ) > > (@UNIQUE [ ] ( ) { } ) .@UNIQUE release (@UNIQUE ) } ; }\n";
+        ASSERT_EQUALS(expected2, tokenizeExpr(code2));
+
+        const char code3[] = "struct S { int* p; };\n"
+                             "S f() { return S{ std::make_unique<int>([]() { return 4; }()).release()}; }\n";
+        const char expected3[] = "1: struct S { int * p ; } ;\n"
+                                 "2: S f ( ) { return S@UNIQUE {@UNIQUE std ::@UNIQUE make_unique < int > (@UNIQUE [ ] ( ) { return 4 ; } ( ) ) .@UNIQUE release (@UNIQUE ) } ; }\n";
+        ASSERT_EQUALS(expected3, tokenizeExpr(code3));
+
+        const char code4[] = "std::unique_ptr<int> g(int i) { return std::make_unique<int>(i); }\n"
+                             "void h(int*);\n"
+                             "void f() {\n"
+                             "    h(g({}).get());\n"
+                             "}\n";
+        const char expected4[] = "1: std :: unique_ptr < int > g ( int i ) { return std ::@UNIQUE make_unique < int > (@UNIQUE i@1 ) ; }\n"
+                                 "2: void h ( int * ) ;\n"
+                                 "3: void f ( ) {\n"
+                                 "4: h (@UNIQUE g (@UNIQUE { } ) .@UNIQUE get (@UNIQUE ) ) ;\n"
+                                 "5: }\n";
+        ASSERT_EQUALS(expected4, tokenizeExpr(code4));
     }
 
     void structuredBindings() {

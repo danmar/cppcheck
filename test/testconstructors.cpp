@@ -116,6 +116,7 @@ private:
         TEST_CASE(initvar_chained_assign);      // BUG 2270433
         TEST_CASE(initvar_2constructors);       // BUG 2270353
         TEST_CASE(initvar_constvar);
+        TEST_CASE(initvar_mutablevar);
         TEST_CASE(initvar_staticvar);
         TEST_CASE(initvar_brace_init);
         TEST_CASE(initvar_union);
@@ -192,6 +193,7 @@ private:
         TEST_CASE(uninitVarArray8);
         TEST_CASE(uninitVarArray9); // ticket #6957, #6959
         TEST_CASE(uninitVarArray10);
+        TEST_CASE(uninitVarArray11);
         TEST_CASE(uninitVarArray2D);
         TEST_CASE(uninitVarArray3D);
         TEST_CASE(uninitVarCpp11Init1);
@@ -1194,6 +1196,18 @@ private:
     }
 
 
+    void initvar_mutablevar() {
+        check("class Foo {\n"
+              "public:\n"
+              "    Foo() { update(); }\n"
+              "private:\n"
+              "    void update() const;\n"
+              "    mutable int x;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+
     void initvar_staticvar() {
         check("class Fred\n"
               "{\n"
@@ -1454,6 +1468,22 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("template <class T>\n" // #12128
+              "struct B {\n"
+              "    T x;\n"
+              "};\n"
+              "struct D : B<double> {\n"
+              "    D(double x) : B{ x } {}\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct B {\n"
+              "    int x;\n"
+              "};\n"
+              "struct D : B {\n"
+              "    D(int i) : B{ i } {}\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void initvar_derived_pod_struct_with_union() {
@@ -3149,6 +3179,20 @@ private:
                       "[test.cpp:10]: (warning) Member variable 'S::c' is not initialized in the constructor.\n"
                       "[test.cpp:10]: (warning) Member variable 'S::d' is not initialized in the constructor.\n",
                       errout.str());
+    }
+
+    void uninitVarArray11() {
+        check("class C {\n" // #12150
+              "private:\n"
+              "    int buf[10];\n"
+              "public:\n"
+              "    C() {\n"
+              "        for (int& i : buf)\n"
+              "            i = 0;\n"
+              "    }\n"
+              "};\n");
+
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitVarArray2D() {

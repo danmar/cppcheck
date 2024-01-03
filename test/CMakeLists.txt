@@ -36,7 +36,7 @@ if (BUILD_TESTS)
         target_link_libraries(testrunner cppcheck-core)
     endif()
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        # $ is used in dinit() dessignated initialization helper
+        # $ is used in dinit() designated initialization helper
         target_compile_options_safe(testrunner -Wno-dollar-in-identifier-extension)
     endif()
 
@@ -168,10 +168,26 @@ if (BUILD_TESTS)
 
         # Set cost of the more expensive tests to help improve parallel scheduling
         # of tests
-        fixture_cost(TestIO 20)
-        fixture_cost(cfg-std_c 8)
-        fixture_cost(TestThreadExecutor 5)
-        fixture_cost(TestLeakAutoVarRecursiveCountLimit 4)
-        fixture_cost(TestTokenizer 4)
+        #
+        # To collect data to update this list remove "<cmake-build-folder>/Testing/Temporary/CTestCostData.txt",
+        # disable the fixture_cost() statements below and run a Debug build with "ctest -j1" several times.
+        # Afterwards run it with "ctest -j11" and immediately cancel the run and update the list accordingly to the
+        # first eleven tests chosen.
+        #
+        # NOTE: The TestProcessExecutor* tests are not the slowest but they invoke processes which max out the system
+        # and negatively impact the run-time of the other tests
+        if (TRUE)
+            fixture_cost(TestProcessExecutorFiles 1.10)
+            fixture_cost(TestProcessExecutorFS 1.09)
+            fixture_cost(cfg-std_c 1.08)
+            fixture_cost(TestIO 1.07)
+            fixture_cost(cfg-std_cpp 1.06)
+            fixture_cost(TestCondition 1.05)
+            fixture_cost(TestValueFlow 1.04)
+            fixture_cost(TestLeakAutoVarRecursiveCountLimit 1.03)
+            fixture_cost(TestBufferOverrun 1.02)
+            fixture_cost(TestClass 1.01)
+            fixture_cost(TestStl 1.00)
+        endif()
     endif()
 endif()

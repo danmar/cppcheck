@@ -79,7 +79,7 @@ protected:
      * @brief Read and parse error item from XML stream.
      * @param reader XML stream reader to use.
      */
-    ErrorItem readError(QXmlStreamReader *reader);
+    ErrorItem readError(const QXmlStreamReader *reader);
 
 private:
     /**

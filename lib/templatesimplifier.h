@@ -152,7 +152,6 @@ public:
          */
         TokenAndName(Token *token, std::string scope, const Token *nameToken, const Token *paramEnd);
         TokenAndName(const TokenAndName& other);
-        TokenAndName(TokenAndName&& other) NOEXCEPT;
         ~TokenAndName();
 
         bool operator == (const TokenAndName & rhs) const {
@@ -307,11 +306,8 @@ public:
     /**
      * Simplify templates
      * @param maxtime time when the simplification should be stopped
-     * @param codeWithTemplates output parameter that is set if code contains templates
      */
-    void simplifyTemplates(
-        const std::time_t maxtime,
-        bool &codeWithTemplates);
+    void simplifyTemplates(const std::time_t maxtime);
 
     /**
      * Simplify constant calculations such as "1+2" => "3"

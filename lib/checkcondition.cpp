@@ -29,6 +29,7 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "utils.h"
 #include "vfvalue.h"
 
 #include "checkother.h" // comparisonNonZeroExpressionLessThanZero and testIfNonZeroExpressionIsPositive
@@ -42,10 +43,10 @@
 #include <vector>
 
 // CWE ids used
-static const struct CWE uncheckedErrorConditionCWE(391U);
-static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
-static const struct CWE CWE570(570U);   // Expression is Always False
-static const struct CWE CWE571(571U);   // Expression is Always True
+static const CWE uncheckedErrorConditionCWE(391U);
+static const CWE CWE398(398U);   // Indicator of Poor Code Quality
+static const CWE CWE570(570U);   // Expression is Always False
+static const CWE CWE571(571U);   // Expression is Always True
 
 //---------------------------------------------------------------------------
 
@@ -105,7 +106,7 @@ void CheckCondition::assignIf()
 
             if (Token::Match(tok->next(), "%num% [&|]")) {
                 bitop = tok->strAt(2).at(0);
-                num = MathLib::toLongNumber(tok->next()->str());
+                num = MathLib::toBigNumber(tok->next()->str());
             } else {
                 const Token *endToken = Token::findsimplematch(tok, ";");
 
@@ -115,7 +116,7 @@ void CheckCondition::assignIf()
 
                 if (endToken && Token::Match(endToken->tokAt(-2), "[&|] %num% ;")) {
                     bitop = endToken->strAt(-2).at(0);
-                    num = MathLib::toLongNumber(endToken->previous()->str());
+                    num = MathLib::toBigNumber(endToken->previous()->str());
                 }
             }
 
@@ -168,7 +169,7 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
 
     for (const Token *tok2 = startTok; tok2; tok2 = tok2->next()) {
         if ((bitop == '&') && Token::Match(tok2->tokAt(2), "%varid% %cop% %num% ;", varid) && tok2->strAt(3) == std::string(1U, bitop)) {
-            const MathLib::bigint num2 = MathLib::toLongNumber(tok2->strAt(4));
+            const MathLib::bigint num2 = MathLib::toBigNumber(tok2->strAt(4));
             if (0 == (num & num2))
                 mismatchingBitAndError(assignTok, num, tok2, num2);
         }
@@ -176,7 +177,7 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
             return true;
         }
         if (bitop == '&' && Token::Match(tok2, "%varid% &= %num% ;", varid)) {
-            const MathLib::bigint num2 = MathLib::toLongNumber(tok2->strAt(2));
+            const MathLib::bigint num2 = MathLib::toBigNumber(tok2->strAt(2));
             if (0 == (num & num2))
                 mismatchingBitAndError(assignTok, num, tok2, num2);
         }
@@ -211,7 +212,7 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
                 }
                 if (Token::Match(tok2,"&&|%oror%|( %varid% ==|!= %num% &&|%oror%|)", varid)) {
                     const Token *vartok = tok2->next();
-                    const MathLib::bigint num2 = MathLib::toLongNumber(vartok->strAt(2));
+                    const MathLib::bigint num2 = MathLib::toBigNumber(vartok->strAt(2));
                     if ((num & num2) != ((bitop=='&') ? num2 : num)) {
                         const std::string& op(vartok->strAt(1));
                         const bool alwaysTrue = op == "!=";
@@ -243,7 +244,7 @@ void CheckCondition::assignIfError(const Token *tok1, const Token *tok2, const s
     reportError(locations,
                 Severity::style,
                 "assignIfError",
-                "Mismatching assignment and comparison, comparison '" + condition + "' is always " + std::string(result ? "true" : "false") + ".", CWE398, Certainty::normal);
+                "Mismatching assignment and comparison, comparison '" + condition + "' is always " + std::string(bool_to_string(result)) + ".", CWE398, Certainty::normal);
 }
 
 
@@ -265,11 +266,11 @@ void CheckCondition::mismatchingBitAndError(const Token *tok1, const MathLib::bi
 static void getnumchildren(const Token *tok, std::list<MathLib::bigint> &numchildren)
 {
     if (tok->astOperand1() && tok->astOperand1()->isNumber())
-        numchildren.push_back(MathLib::toLongNumber(tok->astOperand1()->str()));
+        numchildren.push_back(MathLib::toBigNumber(tok->astOperand1()->str()));
     else if (tok->astOperand1() && tok->str() == tok->astOperand1()->str())
         getnumchildren(tok->astOperand1(), numchildren);
     if (tok->astOperand2() && tok->astOperand2()->isNumber())
-        numchildren.push_back(MathLib::toLongNumber(tok->astOperand2()->str()));
+        numchildren.push_back(MathLib::toBigNumber(tok->astOperand2()->str()));
     else if (tok->astOperand2() && tok->str() == tok->astOperand2()->str())
         getnumchildren(tok->astOperand2(), numchildren);
 }
@@ -370,7 +371,7 @@ void CheckCondition::comparison()
             std::swap(expr1,expr2);
         if (!expr2->isNumber())
             continue;
-        const MathLib::bigint num2 = MathLib::toLongNumber(expr2->str());
+        const MathLib::bigint num2 = MathLib::toBigNumber(expr2->str());
         if (num2 < 0)
             continue;
         if (!Token::Match(expr1,"[&|]"))
@@ -421,8 +422,8 @@ void CheckCondition::comparisonError(const Token *tok, const std::string &bitop,
     std::ostringstream expression;
     expression << std::hex << "(X " << bitop << " 0x" << value1 << ") " << op << " 0x" << value2;
 
-    const std::string errmsg("Expression '" + expression.str() + "' is always " + (result?"true":"false") + ".\n"
-                             "The expression '" + expression.str() + "' is always " + (result?"true":"false") +
+    const std::string errmsg("Expression '" + expression.str() + "' is always " + bool_to_string(result) + ".\n"
+                             "The expression '" + expression.str() + "' is always " + bool_to_string(result) +
                              ". Check carefully constants and operators used, these errors might be hard to "
                              "spot sometimes. In case of complex expression it might help to split it to "
                              "separate expressions.");
@@ -462,8 +463,8 @@ bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * 
         if (!isSameExpression(mTokenizer->isCPP(), true, expr1, expr2, mSettings->library, pure, false))
             return false;
 
-        const MathLib::bigint value1 = MathLib::toLongNumber(num1->str());
-        const MathLib::bigint value2 = MathLib::toLongNumber(num2->str());
+        const MathLib::bigint value1 = MathLib::toBigNumber(num1->str());
+        const MathLib::bigint value2 = MathLib::toBigNumber(num2->str());
         if (cond2->str() == "&")
             return ((value1 & value2) == value2);
         return ((value1 & value2) > 0);
@@ -504,7 +505,7 @@ void CheckCondition::duplicateCondition()
             continue;
 
         ErrorPath errorPath;
-        if (!isExpressionChanged(cond1, scope.classDef->next(), cond2, mSettings, mTokenizer->isCPP()) &&
+        if (!findExpressionChanged(cond1, scope.classDef->next(), cond2, mSettings, mTokenizer->isCPP()) &&
             isSameExpression(mTokenizer->isCPP(), true, cond1, cond2, mSettings->library, true, true, &errorPath))
             duplicateConditionError(cond1, cond2, errorPath);
     }
@@ -553,10 +554,12 @@ void CheckCondition::multiCondition()
 
             if (tok2->astOperand2()) {
                 ErrorPath errorPath;
-                if (isOverlappingCond(cond1, tok2->astOperand2(), true) && !isExpressionChanged(cond1, cond1, tok2->astOperand2(), mSettings, mTokenizer->isCPP()))
+                if (isOverlappingCond(cond1, tok2->astOperand2(), true) &&
+                    !findExpressionChanged(cond1, cond1, tok2->astOperand2(), mSettings, mTokenizer->isCPP()))
                     overlappingElseIfConditionError(tok2->astOperand2(), cond1->linenr());
-                else if (isOppositeCond(true, mTokenizer->isCPP(), cond1, tok2->astOperand2(), mSettings->library, true, true, &errorPath) &&
-                         !isExpressionChanged(cond1, cond1, tok2->astOperand2(), mSettings, mTokenizer->isCPP()))
+                else if (isOppositeCond(
+                             true, mTokenizer->isCPP(), cond1, tok2->astOperand2(), mSettings->library, true, true, &errorPath) &&
+                         !findExpressionChanged(cond1, cond1, tok2->astOperand2(), mSettings, mTokenizer->isCPP()))
                     oppositeElseIfConditionError(cond1, tok2->astOperand2(), errorPath);
             }
         }
@@ -708,7 +711,7 @@ void CheckCondition::multiCondition2()
                     const Token * condStartToken = tok->str() == "if" ? tok->next() : tok;
                     const Token * condEndToken = tok->str() == "if" ? condStartToken->link() : Token::findsimplematch(condStartToken, ";");
                     // Does condition modify tracked variables?
-                    if (isExpressionChanged(cond1, condStartToken, condEndToken, mSettings, mTokenizer->isCPP()))
+                    if (findExpressionChanged(cond1, condStartToken, condEndToken, mSettings, mTokenizer->isCPP()))
                         break;
 
                     // Condition..
@@ -992,7 +995,7 @@ static bool checkFloatRelation(const std::string &op, const double value1, const
 }
 
 template<class T>
-T getvalue3(const T value1, const T value2)
+static T getvalue3(const T value1, const T value2)
 {
     const T min = std::min(value1, value2);
     if (min== std::numeric_limits<T>::max())
@@ -1266,11 +1269,11 @@ void CheckCondition::checkIncorrectLogicOperator()
 
             const double d1 = (isfloat) ? MathLib::toDoubleNumber(value1) : 0;
             const double d2 = (isfloat) ? MathLib::toDoubleNumber(value2) : 0;
-            const MathLib::bigint i1 = (isfloat) ? 0 : MathLib::toLongNumber(value1);
-            const MathLib::bigint i2 = (isfloat) ? 0 : MathLib::toLongNumber(value2);
+            const MathLib::bigint i1 = (isfloat) ? 0 : MathLib::toBigNumber(value1);
+            const MathLib::bigint i2 = (isfloat) ? 0 : MathLib::toBigNumber(value2);
             const bool useUnsignedInt = (std::numeric_limits<MathLib::bigint>::max()==i1) || (std::numeric_limits<MathLib::bigint>::max()==i2);
-            const MathLib::biguint u1 = (useUnsignedInt) ? MathLib::toLongNumber(value1) : 0;
-            const MathLib::biguint u2 = (useUnsignedInt) ? MathLib::toLongNumber(value2) : 0;
+            const MathLib::biguint u1 = (useUnsignedInt) ? MathLib::toBigNumber(value1) : 0;
+            const MathLib::biguint u2 = (useUnsignedInt) ? MathLib::toBigNumber(value2) : 0;
             // evaluate if expression is always true/false
             bool alwaysTrue = true, alwaysFalse = true;
             bool firstTrue = true, secondTrue = true;
@@ -1620,7 +1623,7 @@ void CheckCondition::alwaysTrueFalseError(const Token* tok, const Token* conditi
     const bool alwaysTrue = value && (value->intvalue != 0 || value->isImpossible());
     const std::string expr = tok ? tok->expressionString() : std::string("x");
     const std::string conditionStr = (Token::simpleMatch(condition, "return") ? "Return value" : "Condition");
-    const std::string errmsg = conditionStr + " '" + expr + "' is always " + (alwaysTrue ? "true" : "false");
+    const std::string errmsg = conditionStr + " '" + expr + "' is always " + bool_to_string(alwaysTrue);
     const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
     reportError(errorPath,
                 Severity::style,
@@ -1694,7 +1697,7 @@ void CheckCondition::checkInvalidTestForOverflow()
                         result = (cmp == ">" || cmp == ">=");
                     else
                         result = (cmp == "<" || cmp == "<=");
-                    invalidTestForOverflow(tok, lhs->valueType(), result ? "true" : "false");
+                    invalidTestForOverflow(tok, lhs->valueType(), bool_to_string(result));
                     continue;
                 }
 
@@ -1911,8 +1914,8 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
-    if (mSettings->platform.type == cppcheck::Platform::Type::Native ||
-        mSettings->platform.type == cppcheck::Platform::Type::Unspecified)
+    if (mSettings->platform.type == Platform::Type::Native ||
+        mSettings->platform.type == Platform::Type::Unspecified)
         return;
 
     logChecker("CheckCondition::checkCompareValueOutOfTypeRange"); // style,platform
@@ -2031,7 +2034,7 @@ void CheckCondition::compareValueOutOfTypeRangeError(const Token *comparison, co
         comparison,
         Severity::style,
         "compareValueOutOfTypeRangeError",
-        "Comparing expression of type '" + type + "' against value " + std::to_string(value) + ". Condition is always " + (result ? "true" : "false") + ".",
+        "Comparing expression of type '" + type + "' against value " + std::to_string(value) + ". Condition is always " + bool_to_string(result) + ".",
         CWE398,
         Certainty::normal);
 }

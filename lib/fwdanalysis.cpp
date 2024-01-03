@@ -93,7 +93,7 @@ static bool hasVolatileCastOrVar(const Token *expr)
     return ret;
 }
 
-struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<nonneg int> &exprVarIds, bool local, bool inInnerClass, int depth)
+FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<nonneg int> &exprVarIds, bool local, bool inInnerClass, int depth)
 {
     // Parse the given tokens
     if (++depth > 1000)
@@ -182,7 +182,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 }
 
                 // check loop body again..
-                const struct FwdAnalysis::Result &result = checkRecursive(expr, tok->link(), tok, exprVarIds, local, inInnerClass, depth);
+                const FwdAnalysis::Result &result = checkRecursive(expr, tok->link(), tok, exprVarIds, local, inInnerClass, depth);
                 if (result.type == Result::Type::BAILOUT || result.type == Result::Type::READ)
                     return result;
             }
@@ -317,6 +317,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 // ({ .. })
                 if (hasGccCompoundStatement(parent->astParent()->astOperand2()))
                     return Result(Result::Type::BAILOUT);
+                // cppcheck-suppress shadowFunction - TODO: fix this
                 const bool reassign = isSameExpression(mCpp, false, expr, parent, mLibrary, false, false, nullptr);
                 if (reassign)
                     return Result(Result::Type::WRITE, parent->astParent());
@@ -498,7 +499,9 @@ bool FwdAnalysis::unusedValue(const Token *expr, const Token *startToken, const 
 
 bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) const
 {
-    if (expr->isUnaryOp("*"))
+    if (expr->isUnaryOp("*") && !expr->astOperand1()->isUnaryOp("&"))
+        return true;
+    if (Token::simpleMatch(expr, ". *"))
         return true;
 
     const bool macro = false;
@@ -540,7 +543,7 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
             continue;
 
         for (const Token *subexpr = expr; subexpr; subexpr = subexpr->astOperand1()) {
-            if (isSameExpression(mCpp, macro, subexpr, addrOf, mLibrary, pure, followVar))
+            if (subexpr != addrOf && isSameExpression(mCpp, macro, subexpr, addrOf, mLibrary, pure, followVar))
                 return true;
         }
     }

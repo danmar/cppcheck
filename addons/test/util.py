@@ -25,11 +25,13 @@ def dump_create(fpath, *argv):
     p.communicate()
     if p.returncode != 0:
         raise OSError("cppcheck returns error code: %d" % p.returncode)
-    subprocess.Popen(["sync"])
+    p = subprocess.Popen(["sync"])
+    p.communicate()
 
 
 def dump_remove(fpath):
-    subprocess.Popen(["rm", "-f", fpath + ".dump"])
+    p = subprocess.Popen(["rm", "-f", fpath + ".dump"])
+    p.communicate()
 
 
 def convert_json_output(raw_json_strings):

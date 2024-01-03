@@ -57,12 +57,12 @@ class SelectFontWeightCombo : public QComboBox {
 public:
     explicit SelectFontWeightCombo(QWidget* parent);
 
-    void setWeight(const QFont::Weight& weight);
+    void setWeight(QFont::Weight weight);
     const QFont::Weight& getWeight();
 
 signals:
     // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
-    void weightChanged(const QFont::Weight& newWeight);
+    void weightChanged(QFont::Weight newWeight);
 
 public slots:
     void updateWeight();

@@ -22,6 +22,7 @@
 
 #include <QChar>
 #include <QColor>
+#include <QCryptographicHash>
 #include <QFont>
 #include <QFontMetrics>
 #include <QKeySequence>
@@ -37,7 +38,6 @@
 #include <QTextCursor>
 #include <QTextEdit>
 #include <QTextFormat>
-#include <QtCore>
 
 class QTextDocument;
 
@@ -152,7 +152,7 @@ Highlighter::Highlighter(QTextDocument *parent,
     mQuotationFormat.setForeground(mWidgetStyle->quoteColor);
     mQuotationFormat.setFontWeight(mWidgetStyle->quoteWeight);
     // We use lazy `*?` instead greed `*` quantifier to find the real end of the c-string.
-    // We use negative lookbehind assertion `(?<!\)` to ignore `\"` sequience in the c-string.
+    // We use negative lookbehind assertion `(?<!\)` to ignore `\"` sequence in the c-string.
     rule.pattern = QRegularExpression("\".*?(?<!\\\\)\"");
     rule.format = mQuotationFormat;
     rule.ruleRole = RuleRole::Quote;
@@ -420,7 +420,7 @@ void CodeEditor::highlightErrorLine()
     setExtraSelections(extraSelections);
 }
 
-void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
+void CodeEditor::lineNumberAreaPaintEvent(const QPaintEvent *event)
 {
     QPainter painter(mLineNumberArea);
     painter.fillRect(event->rect(), mWidgetStyle->lineNumBGColor);
@@ -448,15 +448,14 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 QString CodeEditor::generateStyleString()
 {
     QString bgcolor = QString("background:rgb(%1,%2,%3);")
-                      .arg(mWidgetStyle->widgetBGColor.red())
-                      .arg(mWidgetStyle->widgetBGColor.green())
-                      .arg(mWidgetStyle->widgetBGColor.blue());
+                      .arg(mWidgetStyle->widgetBGColor.red(),
+                           mWidgetStyle->widgetBGColor.green(),
+                           mWidgetStyle->widgetBGColor.blue());
     QString fgcolor = QString("color:rgb(%1,%2,%3);")
-                      .arg(mWidgetStyle->widgetFGColor.red())
-                      .arg(mWidgetStyle->widgetFGColor.green())
-                      .arg(mWidgetStyle->widgetFGColor.blue());
+                      .arg(mWidgetStyle->widgetFGColor.red(),
+                           mWidgetStyle->widgetFGColor.green(),
+                           mWidgetStyle->widgetFGColor.blue());
     QString style = QString("%1 %2")
-                    .arg(bgcolor)
-                    .arg(fgcolor);
+                    .arg(bgcolor, fgcolor);
     return style;
 }

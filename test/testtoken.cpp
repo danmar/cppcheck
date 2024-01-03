@@ -106,6 +106,7 @@ private:
         TEST_CASE(canFindMatchingBracketsWithTooManyClosing);
         TEST_CASE(canFindMatchingBracketsWithTooManyOpening);
         TEST_CASE(findClosingBracket);
+        TEST_CASE(findClosingBracket2);
 
         TEST_CASE(expressionString);
 
@@ -637,8 +638,11 @@ private:
         givenACodeSampleToTokenize nonNumeric("abc", true);
         ASSERT_EQUALS(false, Token::Match(nonNumeric.tokens(), "%num%"));
 
-        givenACodeSampleToTokenize binary("101010b", true);
-        ASSERT_EQUALS(true, Token::Match(binary.tokens(), "%num%"));
+        givenACodeSampleToTokenize msLiteral("5ms", true); // #11438
+        ASSERT_EQUALS(false, Token::Match(msLiteral.tokens(), "%num%"));
+
+        givenACodeSampleToTokenize sLiteral("3s", true);
+        ASSERT_EQUALS(false, Token::Match(sLiteral.tokens(), "%num%"));
 
         givenACodeSampleToTokenize octal("0123", true);
         ASSERT_EQUALS(true, Token::Match(octal.tokens(), "%num%"));
@@ -651,9 +655,6 @@ private:
 
         givenACodeSampleToTokenize floatingPoint("0.0f", true);
         ASSERT_EQUALS(true, Token::Match(floatingPoint.tokens(), "%num%"));
-
-        givenACodeSampleToTokenize doublePrecision("0.0d", true);
-        ASSERT_EQUALS(true, Token::Match(doublePrecision.tokens(), "%num%"));
 
         givenACodeSampleToTokenize signedLong("0L", true);
         ASSERT_EQUALS(true, Token::Match(signedLong.tokens(), "%num%"));
@@ -1082,6 +1083,13 @@ private:
 
         const Token* const t = var.tokens()->next()->findClosingBracket();
         ASSERT(Token::simpleMatch(t, "> struct"));
+    }
+
+    void findClosingBracket2() const {
+        givenACodeSampleToTokenize var("const auto g = []<typename T>() {};\n"); // #11275
+
+        const Token* const t = Token::findsimplematch(var.tokens(), "<");
+        ASSERT(t && Token::simpleMatch(t->findClosingBracket(), ">"));
     }
 
     void expressionString() const {

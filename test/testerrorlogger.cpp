@@ -20,13 +20,12 @@
 #include "cppcheck.h"
 #include "errorlogger.h"
 #include "errortypes.h"
-#include "suppressions.h"
 #include "fixture.h"
 
 #include <list>
 #include <string>
 
-#include <tinyxml2.h>
+#include "xml.h"
 
 class TestErrorLogger : public TestFixture {
 public:
@@ -44,6 +43,7 @@ private:
         TEST_CASE(ErrorMessageConstructLocations);
         TEST_CASE(ErrorMessageVerbose);
         TEST_CASE(ErrorMessageVerboseLocations);
+        TEST_CASE(ErrorMessageFromInternalError);
         TEST_CASE(CustomFormat);
         TEST_CASE(CustomFormat2);
         TEST_CASE(CustomFormatLocations);
@@ -153,6 +153,36 @@ private:
         ASSERT_EQUALS("[foo.cpp:5] -> [bar.cpp:8]: (error) Verbose error", msg.toString(true));
     }
 
+    void ErrorMessageFromInternalError() const {
+        // TODO: test with token
+        {
+            InternalError internalError(nullptr, "message", InternalError::INTERNAL);
+            const auto msg = ErrorMessage::fromInternalError(internalError, nullptr, "file.c");
+            ASSERT_EQUALS(1, msg.callStack.size());
+            const auto &loc = *msg.callStack.cbegin();
+            ASSERT_EQUALS(0, loc.fileIndex);
+            ASSERT_EQUALS(0, loc.line);
+            ASSERT_EQUALS(0, loc.column);
+            ASSERT_EQUALS("message", msg.shortMessage());
+            ASSERT_EQUALS("message", msg.verboseMessage());
+            ASSERT_EQUALS("[file.c:0]: (error) message", msg.toString(false));
+            ASSERT_EQUALS("[file.c:0]: (error) message", msg.toString(true));
+        }
+        {
+            InternalError internalError(nullptr, "message", "details", InternalError::INTERNAL);
+            const auto msg = ErrorMessage::fromInternalError(internalError, nullptr, "file.cpp", "msg");
+            ASSERT_EQUALS(1, msg.callStack.size());
+            const auto &loc = *msg.callStack.cbegin();
+            ASSERT_EQUALS(0, loc.fileIndex);
+            ASSERT_EQUALS(0, loc.line);
+            ASSERT_EQUALS(0, loc.column);
+            ASSERT_EQUALS("msg: message", msg.shortMessage());
+            ASSERT_EQUALS("msg: message: details", msg.verboseMessage());
+            ASSERT_EQUALS("[file.cpp:0]: (error) msg: message", msg.toString(false));
+            ASSERT_EQUALS("[file.cpp:0]: (error) msg: message: details", msg.toString(true));
+        }
+    }
+
     void CustomFormat() const {
         std::list<ErrorMessage::FileLocation> locs(1, fooCpp5);
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.\nVerbose error", "errorId", Certainty::normal);
@@ -251,7 +281,7 @@ private:
         ASSERT(doc.Parse(xmldata, sizeof(xmldata)) == tinyxml2::XML_SUCCESS);
         ErrorMessage msg(doc.FirstChildElement());
         ASSERT_EQUALS("errorId", msg.id);
-        ASSERT_EQUALS(Severity::error, msg.severity);
+        ASSERT_EQUALS(static_cast<int>(Severity::error), static_cast<int>(msg.severity));
         ASSERT_EQUALS(123u, msg.cwe.id);
         ASSERT_EQUALS(static_cast<int>(Certainty::inconclusive), static_cast<int>(msg.certainty));
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
@@ -300,7 +330,7 @@ private:
         ErrorMessage msg2;
         ASSERT_NO_THROW(msg2.deserialize(msg_str));
         ASSERT_EQUALS("errorId", msg2.id);
-        ASSERT_EQUALS(Severity::error, msg2.severity);
+        ASSERT_EQUALS(static_cast<int>(Severity::error), static_cast<int>(msg2.severity));
         ASSERT_EQUALS("test.cpp", msg2.file0);
         ASSERT_EQUALS(static_cast<int>(Certainty::inconclusive), static_cast<int>(msg2.certainty));
         ASSERT_EQUALS("Programming error", msg2.shortMessage());
@@ -388,7 +418,7 @@ private:
         ErrorMessage msg2;
         ASSERT_NO_THROW(msg2.deserialize(msg_str));
         ASSERT_EQUALS("errorId", msg2.id);
-        ASSERT_EQUALS(Severity::error, msg2.severity);
+        ASSERT_EQUALS(static_cast<int>(Severity::error), static_cast<int>(msg2.severity));
         ASSERT_EQUALS("1.c", msg2.file0);
         ASSERT_EQUALS("Illegal character in \"foo\\001bar\"", msg2.shortMessage());
         ASSERT_EQUALS("Illegal character in \"foo\\001bar\"", msg2.verboseMessage());

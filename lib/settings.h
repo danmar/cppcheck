@@ -21,9 +21,9 @@
 #define settingsH
 //---------------------------------------------------------------------------
 
+#include "addoninfo.h"
 #include "config.h"
 #include "errortypes.h"
-#include "importproject.h"
 #include "library.h"
 #include "platform.h"
 #include "standards.h"
@@ -99,10 +99,13 @@ private:
 public:
     Settings();
 
-    void loadCppcheckCfg();
+    std::string loadCppcheckCfg();
 
     /** @brief addons, either filename of python/json file or json data */
     std::unordered_set<std::string> addons;
+
+    /** @brief the loaded addons infos */
+    std::vector<AddonInfo> addonInfos;
 
     /** @brief Path to the python interpreter to be used to run addons. */
     std::string addonPython;
@@ -186,8 +189,10 @@ public:
     /** @brief Name of the language that is enforced. Empty per default. */
     Language enforcedLang{};
 
+#if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
     /** @brief Is --exception-handling given */
     bool exceptionHandling{};
+#endif
 
     // argv[0]
     std::string exename;
@@ -241,7 +246,7 @@ public:
     /** @brief write results (--output-file=&lt;file&gt;) */
     std::string outputFile;
 
-    cppcheck::Platform platform;
+    Platform platform;
 
     /** @brief Experimental: --performance-valueflow-max-time=T */
     int performanceValueFlowMaxTime = -1;
@@ -261,8 +266,6 @@ public:
     /** @brief Using -E for debugging purposes */
     bool preprocessOnly{};
 
-    ImportProject project;
-
     /** @brief Is --quiet given? */
     bool quiet{};
 
@@ -272,21 +275,30 @@ public:
     /** @brief --report-progress */
     int reportProgress{-1};
 
+#ifdef HAVE_RULES
     /** Rule */
     struct CPPCHECKLIB Rule {
         std::string tokenlist = "normal"; // use normal tokenlist
         std::string pattern;
         std::string id = "rule"; // default id
         std::string summary;
-        Severity::SeverityType severity = Severity::style; // default severity
+        Severity severity = Severity::style; // default severity
     };
 
-#ifdef HAVE_RULES
     /**
      * @brief Extra rules
      */
     std::list<Rule> rules;
 #endif
+
+    /**
+     * @brief Safety certified behavior
+     * Show checkers report when Cppcheck finishes
+     * Make cppcheck checking more strict about critical errors
+     * - returns nonzero if there is critical errors
+     * - a critical error id is not suppressed (by mistake?) with glob pattern
+     */
+    bool safety = false;
 
     /** Do not only check how interface is used. Also check that interface is safe. */
     struct CPPCHECKLIB SafeChecks {
@@ -331,7 +343,7 @@ public:
 
     SafeChecks safeChecks;
 
-    SimpleEnableGroup<Severity::SeverityType> severity;
+    SimpleEnableGroup<Severity> severity;
     SimpleEnableGroup<Certainty> certainty;
     SimpleEnableGroup<Checks> checks;
 
@@ -435,7 +447,7 @@ public:
     void setCheckLevelNormal();
 
 private:
-    static std::string parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity::SeverityType>, SimpleEnableGroup<Checks>> &groups);
+    static std::string parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity>, SimpleEnableGroup<Checks>> &groups);
     std::string applyEnabled(const std::string &str, bool enable);
 };
 

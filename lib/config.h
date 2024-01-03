@@ -41,8 +41,26 @@
 #  include <crtdbg.h>
 #endif
 
+// compatibility macros
+#ifndef __has_builtin
+#define __has_builtin(x) 0
+#endif
+
+#ifndef __has_include
+#define __has_include(x) 0
+#endif
+
+#ifndef __has_cpp_attribute
+#define __has_cpp_attribute(x) 0
+#endif
+
+#ifndef __has_feature
+#define __has_feature(x) 0
+#endif
+
 // C++11 noexcept
-#if (defined(__GNUC__) && (__GNUC__ >= 5)) \
+#if defined(__cpp_noexcept_function_type) || \
+    (defined(__GNUC__) && (__GNUC__ >= 5)) \
     || defined(__clang__) \
     || defined(__CPPCHECK__)
 #  define NOEXCEPT noexcept
@@ -51,7 +69,8 @@
 #endif
 
 // C++11 noreturn
-#if (defined(__GNUC__) && (__GNUC__ >= 5)) \
+#if __has_cpp_attribute (noreturn) \
+    || (defined(__GNUC__) && (__GNUC__ >= 5)) \
     || defined(__clang__) \
     || defined(__CPPCHECK__)
 #  define NORETURN [[noreturn]]
@@ -62,7 +81,9 @@
 #endif
 
 // fallthrough
-#if defined(__clang__)
+#if __cplusplus >= 201703L && __has_cpp_attribute (fallthrough)
+#  define FALLTHROUGH [[fallthrough]]
+#elif defined(__clang__)
 #  define FALLTHROUGH [[clang::fallthrough]]
 #elif (defined(__GNUC__) && (__GNUC__ >= 7))
 #  define FALLTHROUGH __attribute__((fallthrough))
@@ -71,7 +92,9 @@
 #endif
 
 // unused
-#if defined(__GNUC__) \
+#if __cplusplus >= 201703L && __has_cpp_attribute (maybe_unused)
+#  define UNUSED [[maybe_unused]]
+#elif defined(__GNUC__) \
     || defined(__clang__) \
     || defined(__CPPCHECK__)
 #  define UNUSED __attribute__((unused))
@@ -80,7 +103,8 @@
 #endif
 
 // warn_unused
-#if (defined(__clang__) && (__clang_major__ >= 15))
+#if __has_cpp_attribute (gnu::warn_unused) || \
+    (defined(__clang__) && (__clang_major__ >= 15))
 #  define WARN_UNUSED [[gnu::warn_unused]]
 #else
 #  define WARN_UNUSED
@@ -103,10 +127,8 @@ static const std::string emptyString;
 #define nonneg
 #endif
 
-#if defined(__has_feature)
 #if __has_feature(address_sanitizer)
 #define ASAN 1
-#endif
 #endif
 
 #ifndef ASAN
@@ -159,6 +181,7 @@ static const std::string emptyString;
 #define USE_WINDOWS_SEH
 #endif
 
+// TODO: __GLIBC__ is dependent on the features.h include and not a built-in compiler define, so it might be problematic to depend on it
 #if !defined(NO_UNIX_BACKTRACE_SUPPORT) && defined(__GNUC__) && defined(__GLIBC__) && !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__NetBSD__) && !defined(__SVR4) && !defined(__QNX__)
 #define USE_UNIX_BACKTRACE_SUPPORT
 #endif

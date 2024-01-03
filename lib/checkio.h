@@ -23,7 +23,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "errortypes.h"
 #include "tokenize.h"
 
 #include <ostream>
@@ -34,16 +33,20 @@ class Settings;
 class Token;
 class Variable;
 class ErrorLogger;
+enum class Severity;
 
 /// @addtogroup Checks
 /// @{
 
 /** @brief %Check input output operations. */
 class CPPCHECKLIB CheckIO : public Check {
+    friend class TestIO;
+
 public:
     /** @brief This constructor is used when registering CheckIO */
     CheckIO() : Check(myName()) {}
 
+private:
     /** @brief This constructor is used when running checks. */
     CheckIO(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
@@ -70,7 +73,6 @@ public:
     /** @brief %Checks type and number of arguments given to functions like printf or scanf*/
     void checkWrongPrintfScanfArguments();
 
-private:
     class ArgumentInfo {
     public:
         ArgumentInfo(const Token *arg, const Settings *settings, bool _isCPP);
@@ -130,7 +132,7 @@ private:
     void invalidLengthModifierError(const Token* tok, nonneg int numFormat, const std::string& modifier);
     void invalidScanfFormatWidthError(const Token* tok, nonneg int numFormat, int width, const Variable *var, const std::string& specifier);
     static void argumentType(std::ostream & os, const ArgumentInfo * argInfo);
-    static Severity::SeverityType getSeverity(const ArgumentInfo *argInfo);
+    static Severity getSeverity(const ArgumentInfo *argInfo);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckIO c(nullptr, settings, errorLogger);

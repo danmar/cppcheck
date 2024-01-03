@@ -20,6 +20,7 @@
 #include "errortypes.h"
 #include "settings.h"
 #include "fixture.h"
+#include "helpers.h"
 
 class TestSettings : public TestFixture {
 public:
@@ -28,6 +29,7 @@ public:
 private:
     void run() override {
         TEST_CASE(simpleEnableGroup);
+        TEST_CASE(loadCppcheckCfg);
     }
 
     void simpleEnableGroup() const {
@@ -84,6 +86,128 @@ private:
         ASSERT_EQUALS(false, group.isEnabled(Checks::unusedFunction));
         ASSERT_EQUALS(false, group.isEnabled(Checks::missingInclude));
         ASSERT_EQUALS(false, group.isEnabled(Checks::internalCheck));
+    }
+
+    void loadCppcheckCfg()
+    {
+        {
+            Settings s;
+            ASSERT_EQUALS("", s.loadCppcheckCfg());
+        }
+        {
+            Settings s;
+            ScopedFile file("cppcheck.cfg",
+                            "{}\n");
+            ASSERT_EQUALS("", s.loadCppcheckCfg());
+        }
+        {
+            Settings s;
+            ScopedFile file("cppcheck.cfg",
+                            "{\n");
+            ASSERT_EQUALS("not a valid JSON - syntax error at line 2 near: ", s.loadCppcheckCfg());
+        }
+        {
+            Settings s;
+            ScopedFile file("cppcheck.cfg",
+                            R"({"productName": ""}\n)");
+            ASSERT_EQUALS("", s.loadCppcheckCfg());
+            ASSERT_EQUALS("", s.cppcheckCfgProductName);
+        }
+        {
+            Settings s;
+            ScopedFile file("cppcheck.cfg",
+                            R"({"productName": "product"}\n)");
+            ASSERT_EQUALS("", s.loadCppcheckCfg());
+            ASSERT_EQUALS("product", s.cppcheckCfgProductName);
+        }
+        {
+            Settings s;
+            ScopedFile file("cppcheck.cfg",
+                            R"({"productName": 1}\n)");
+            ASSERT_EQUALS("'productName' is not a string", s.loadCppcheckCfg());
+        }
+        {
+            Settings s;
+            ScopedFile file("cppcheck.cfg",
+                            R"({"about": ""}\n)");
+            ASSERT_EQUALS("", s.loadCppcheckCfg());
+            ASSERT_EQUALS("", s.cppcheckCfgAbout);
+        }
+        {
+            Settings s;
+            ScopedFile file("cppcheck.cfg",
+                            R"({"about": "about"}\n)");
+            ASSERT_EQUALS("", s.loadCppcheckCfg());
+            ASSERT_EQUALS("about", s.cppcheckCfgAbout);
+        }
+        {
+            Settings s;
+            ScopedFile file("cppcheck.cfg",
+                            R"({"about": 1}\n)");
+            ASSERT_EQUALS("'about' is not a string", s.loadCppcheckCfg());
+        }
+        {
+            Settings s;
+            ScopedFile file("cppcheck.cfg",
+                            R"({"addons": []}\n)");
+            ASSERT_EQUALS("", s.loadCppcheckCfg());
+            ASSERT_EQUALS(0, s.addons.size());
+        }
+        {
+            Settings s;
+            ScopedFile file("cppcheck.cfg",
+                            R"({"addons": 1}\n)");
+            ASSERT_EQUALS("'addons' is not an array", s.loadCppcheckCfg());
+        }
+        {
+            Settings s;
+            ScopedFile file("cppcheck.cfg",
+                            R"({"addons": ["addon"]}\n)");
+            ASSERT_EQUALS("", s.loadCppcheckCfg());
+            ASSERT_EQUALS(1, s.addons.size());
+            ASSERT_EQUALS("addon", *s.addons.cbegin());
+        }
+        {
+            Settings s;
+            ScopedFile file("cppcheck.cfg",
+                            R"({"addons": [1]}\n)");
+            ASSERT_EQUALS("'addons' array entry is not a string", s.loadCppcheckCfg());
+        }
+        {
+            Settings s;
+            ScopedFile file("cppcheck.cfg",
+                            R"({"addons": []}\n)");
+            ASSERT_EQUALS("", s.loadCppcheckCfg());
+            ASSERT_EQUALS(0, s.addons.size());
+        }
+        {
+            Settings s;
+            ScopedFile file("cppcheck.cfg",
+                            R"({"suppressions": 1}\n)");
+            ASSERT_EQUALS("'suppressions' is not an array", s.loadCppcheckCfg());
+        }
+        {
+            Settings s;
+            ScopedFile file("cppcheck.cfg",
+                            R"({"suppressions": ["id"]}\n)");
+            ASSERT_EQUALS("", s.loadCppcheckCfg());
+            ASSERT_EQUALS(1, s.nomsg.getSuppressions().size());
+            ASSERT_EQUALS("id", s.nomsg.getSuppressions().cbegin()->errorId);
+        }
+        {
+            Settings s;
+            ScopedFile file("cppcheck.cfg",
+                            R"({"suppressions": [""]}\n)");
+            ASSERT_EQUALS("could not parse suppression '' - Failed to add suppression. No id.", s.loadCppcheckCfg());
+        }
+        {
+            Settings s;
+            ScopedFile file("cppcheck.cfg",
+                            R"({"suppressions": [1]}\n)");
+            ASSERT_EQUALS("'suppressions' array entry is not a string", s.loadCppcheckCfg());
+        }
+
+        // TODO: test with FILESDIR
     }
 };
 

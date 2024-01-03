@@ -1,6 +1,11 @@
 file(GLOB_RECURSE hdrs "*.h")
 file(GLOB_RECURSE srcs "*.cpp")
 
+# move the slowest files to the top
+set(srcs_slow "${CMAKE_CURRENT_SOURCE_DIR}/valueflow.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/tokenize.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/symboldatabase.cpp")
+list(REMOVE_ITEM srcs ${srcs_slow})
+list(INSERT srcs 0 ${srcs_slow})
+
 function(build_src output filename)
     get_filename_component(file ${filename} NAME)
     set(outfile ${CMAKE_CURRENT_BINARY_DIR}/build/mc_${file})

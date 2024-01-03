@@ -39,7 +39,6 @@
 #include <QString>
 #include <QStringList>
 #include <QVariant>
-#include <QtCore>
 
 
 static void ShowUsage();

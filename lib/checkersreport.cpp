@@ -17,8 +17,16 @@
  */
 
 #include "checkersreport.h"
+
 #include "checkers.h"
+#include "errortypes.h"
+#include "settings.h"
+
+#include <map>
 #include <sstream>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 
 static bool isCppcheckPremium(const Settings& settings) {
     return (settings.cppcheckCfgProductName.compare(0, 16, "Cppcheck Premium") == 0);
@@ -129,26 +137,35 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
 
     const bool cppcheckPremium = isCppcheckPremium(mSettings);
 
-    fout << std::endl << std::endl;
-    fout << "Premium checkers" << std::endl;
-    fout << "----------------" << std::endl;
-    if (!cppcheckPremium) {
-        fout << "Cppcheck Premium is not used" << std::endl;
-    } else {
-        maxCheckerSize = 0;
-        for (const auto& checkReq: checkers::premiumCheckers) {
+    auto reportSection = [&fout, cppcheckPremium]
+                             (const std::string& title,
+                             const Settings& settings,
+                             const std::set<std::string>& activeCheckers,
+                             const std::map<std::string, std::string>& premiumCheckers,
+                             const std::string& substring) {
+        fout << std::endl << std::endl;
+        fout << title << std::endl;
+        fout << std::string(title.size(), '-') << std::endl;
+        if (!cppcheckPremium) {
+            fout << "Not available, Cppcheck Premium is not used" << std::endl;
+            return;
+        }
+        int maxCheckerSize = 0;
+        for (const auto& checkReq: premiumCheckers) {
             const std::string& checker = checkReq.first;
-            if (checker.size() > maxCheckerSize)
+            if (checker.find(substring) != std::string::npos && checker.size() > maxCheckerSize)
                 maxCheckerSize = checker.size();
         }
-        for (const auto& checkReq: checkers::premiumCheckers) {
+        for (const auto& checkReq: premiumCheckers) {
             const std::string& checker = checkReq.first;
+            if (checker.find(substring) == std::string::npos)
+                continue;
             std::string req = checkReq.second;
-            bool active = cppcheckPremium && mActiveCheckers.count(checkReq.first) > 0;
+            bool active = cppcheckPremium && activeCheckers.count(checker) > 0;
             if (req == "warning")
-                active &= mSettings.severity.isEnabled(Severity::warning);
+                active &= settings.severity.isEnabled(Severity::warning);
             else if (req == "style")
-                active &= mSettings.severity.isEnabled(Severity::style);
+                active &= settings.severity.isEnabled(Severity::style);
             else if (!req.empty())
                 active = false; // FIXME: handle req
             fout << (active ? "Yes  " : "No   ") << checker;
@@ -160,7 +177,12 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
                 fout << std::string(maxCheckerSize + 4 - checker.size(), ' ') << "require:" + req;
             fout << std::endl;
         }
-    }
+    };
+
+    reportSection("Premium checkers", mSettings, mActiveCheckers, checkers::premiumCheckers, "::");
+    reportSection("Autosar", mSettings, mActiveCheckers, checkers::premiumCheckers, "Autosar: ");
+    reportSection("Cert C", mSettings, mActiveCheckers, checkers::premiumCheckers, "Cert C: ");
+    reportSection("Cert C++", mSettings, mActiveCheckers, checkers::premiumCheckers, "Cert C++: ");
 
     int misra = 0;
     if (mSettings.premiumArgs.find("misra-c-2012") != std::string::npos)
@@ -202,6 +224,8 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
             fout << '\n';
         }
     }
+
+    reportSection("Misra C++ 2008", mSettings, mActiveCheckers, checkers::premiumCheckers, "Misra C++: ");
 
     return fout.str();
 }

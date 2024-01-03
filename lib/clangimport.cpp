@@ -412,9 +412,9 @@ std::string clangimport::AstNode::getSpelling() const
             return "";
     }
     const std::string &str = mExtTokens[typeIndex - 1];
-    if (str.compare(0,4,"col:") == 0)
+    if (startsWith(str,"col:"))
         return "";
-    if (str.compare(0,8,"<invalid") == 0)
+    if (startsWith(str,"<invalid"))
         return "";
     if (nodeType == RecordDecl && str == "struct")
         return "";
@@ -499,9 +499,9 @@ void clangimport::AstNode::dumpAst(int num, int indent) const
 void clangimport::AstNode::setLocations(TokenList *tokenList, int file, int line, int col)
 {
     for (const std::string &ext: mExtTokens) {
-        if (ext.compare(0, 5, "<col:") == 0)
+        if (startsWith(ext, "<col:"))
             col = strToInt<int>(ext.substr(5, ext.find_first_of(",>", 5) - 5));
-        else if (ext.compare(0, 6, "<line:") == 0) {
+        else if (startsWith(ext, "<line:")) {
             line = strToInt<int>(ext.substr(6, ext.find_first_of(":,>", 6) - 6));
             const auto pos = ext.find(", col:");
             if (pos != std::string::npos)
@@ -509,7 +509,7 @@ void clangimport::AstNode::setLocations(TokenList *tokenList, int file, int line
         } else if (ext[0] == '<') {
             const std::string::size_type colon = ext.find(':');
             if (colon != std::string::npos) {
-                const bool windowsPath = colon == 2 && ext.size() > 4 && ext[3] == '\\';
+                const bool windowsPath = colon == 2 && ext.size() > 3 && ext[2] == ':';
                 const std::string::size_type sep1 = windowsPath ? ext.find(':', 4) : colon;
                 const std::string::size_type sep2 = ext.find(':', sep1 + 1);
                 file = tokenList->appendFileIfNew(ext.substr(1, sep1 - 1));
@@ -542,7 +542,7 @@ const ::Type * clangimport::AstNode::addTypeTokens(TokenList *tokenList, const s
         return addTypeTokens(tokenList, str.substr(0, str.find("\':\'") + 1), scope);
     }
 
-    if (str.compare(0, 16, "'enum (anonymous") == 0)
+    if (startsWith(str, "'enum (anonymous"))
         return nullptr;
 
     std::string type;
@@ -734,7 +734,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == BreakStmt)
         return addtoken(tokenList, "break");
     if (nodeType == CharacterLiteral) {
-        const int c = MathLib::toLongNumber(mExtTokens.back());
+        const int c = MathLib::toBigNumber(mExtTokens.back());
         if (c == 0)
             return addtoken(tokenList, "\'\\0\'");
         if (c == '\r')
@@ -943,7 +943,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == DeclRefExpr) {
         int addrIndex = mExtTokens.size() - 1;
-        while (addrIndex > 1 && mExtTokens[addrIndex].compare(0,2,"0x") != 0)
+        while (addrIndex > 1 && !startsWith(mExtTokens[addrIndex],"0x"))
             --addrIndex;
         const std::string addr = mExtTokens[addrIndex];
         std::string name = unquote(getSpelling());
@@ -985,14 +985,14 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == EnumDecl) {
         int colIndex = mExtTokens.size() - 1;
-        while (colIndex > 0 && mExtTokens[colIndex].compare(0,4,"col:") != 0 && mExtTokens[colIndex].compare(0,5,"line:") != 0)
+        while (colIndex > 0 && !startsWith(mExtTokens[colIndex],"col:") && !startsWith(mExtTokens[colIndex],"line:"))
             --colIndex;
         if (colIndex == 0)
             return nullptr;
 
         mData->enumValue = 0;
         Token *enumtok = addtoken(tokenList, "enum");
-        Token *nametok = nullptr;
+        const Token *nametok = nullptr;
         {
             int nameIndex = mExtTokens.size() - 1;
             while (nameIndex > colIndex && mExtTokens[nameIndex][0] == '\'')
@@ -1131,10 +1131,10 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         Token *s = getChild(0)->createTokens(tokenList);
         Token *dot = addtoken(tokenList, ".");
         std::string memberName = getSpelling();
-        if (memberName.compare(0, 2, "->") == 0) {
+        if (startsWith(memberName, "->")) {
             dot->originalName("->");
             memberName = memberName.substr(2);
-        } else if (memberName.compare(0, 1, ".") == 0) {
+        } else if (startsWith(memberName, ".")) {
             memberName = memberName.substr(1);
         }
         if (memberName.empty())
@@ -1150,7 +1150,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
             return nullptr;
         const Token *defToken = addtoken(tokenList, "namespace");
         const std::string &s = mExtTokens[mExtTokens.size() - 2];
-        const Token* nameToken = (s.compare(0, 4, "col:") == 0 || s.compare(0, 5, "line:") == 0) ?
+        const Token* nameToken = (startsWith(s, "col:") || startsWith(s, "line:")) ?
                                  addtoken(tokenList, mExtTokens.back()) : nullptr;
         Scope *scope = createScope(tokenList, Scope::ScopeType::eNamespace, children, defToken);
         if (nameToken)

@@ -21,20 +21,17 @@
 #include "checkbufferoverrun.h"
 #include "ctu.h"
 #include "errortypes.h"
+#include "helpers.h"
 #include "standards.h"
 #include "platform.h"
 #include "settings.h"
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <map>
 #include <list>
 #include <sstream> // IWYU pragma: keep
 #include <string>
-#include <utility>
 #include <vector>
-
-#include <simplecpp.h>
 
 class TestBufferOverrun : public TestFixture {
 public:
@@ -71,7 +68,8 @@ private:
         runChecks<CheckBufferOverrun>(tokenizer, this);
     }
 
-    void checkP(const char code[], const char* filename = "test.cpp")
+#define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkP_(const char* file, int line, const char code[], const char* filename = "test.cpp")
     {
         // Clear the error buffer..
         errout.str("");
@@ -79,20 +77,12 @@ private:
         const Settings settings = settingsBuilder(settings0).severity(Severity::performance)
                                   .c(Standards::CLatest).cpp(Standards::CPPLatest).certainty(Certainty::inconclusive).build();
 
-        // Raw tokens..
         std::vector<std::string> files(1, filename);
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        // Preprocess..
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+        Tokenizer tokenizer(&settings, this);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenizer..
-        Tokenizer tokenizer(&settings, this);
-        tokenizer.createTokens(std::move(tokens2));
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check for buffer overruns..
         runChecks<CheckBufferOverrun>(tokenizer, this);
@@ -1706,6 +1696,24 @@ private:
               "}\n");
         ASSERT_EQUALS(
             "[test.cpp:3] -> [test.cpp:6]: (warning) Either the condition 'x<2' is redundant or the array 'a[3]' is accessed at index 3, which is out of bounds.\n",
+            errout.str());
+
+        check("void f() {\n" // #2199
+              "    char a[5];\n"
+              "    for (int i = 0; i < 5; i++) {\n"
+              "        i += 8;\n"
+              "        a[i] = 0;\n"
+              "    }\n"
+              "}\n"
+              "void g() {\n"
+              "    char a[5];\n"
+              "    for (int i = 0; i < 5; i++) {\n"
+              "        a[i + 7] = 0;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:5]: (error) Array 'a[5]' accessed at index 8, which is out of bounds.\n"
+            "[test.cpp:11]: (error) Array 'a[5]' accessed at index 11, which is out of bounds.\n",
             errout.str());
     }
 
@@ -3607,17 +3615,17 @@ private:
     }
 
     void buffer_overrun_readSizeFromCfg() {
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def>\n"
-                               "  <podtype name=\"u8\" sign=\"u\" size=\"1\"/>\n"
-                               "  <function name=\"mystrcpy\">\n"
-                               "    <noreturn>false</noreturn>\n"
-                               "    <arg nr=\"1\">\n"
-                               "      <minsize type=\"strlen\" arg=\"2\"/>\n"
-                               "    </arg>\n"
-                               "    <arg nr=\"2\"/>\n"
-                               "  </function>\n"
-                               "</def>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "  <podtype name=\"u8\" sign=\"u\" size=\"1\"/>\n"
+                                   "  <function name=\"mystrcpy\">\n"
+                                   "    <noreturn>false</noreturn>\n"
+                                   "    <arg nr=\"1\">\n"
+                                   "      <minsize type=\"strlen\" arg=\"2\"/>\n"
+                                   "    </arg>\n"
+                                   "    <arg nr=\"2\"/>\n"
+                                   "  </function>\n"
+                                   "</def>";
         const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         // Attempt to get size from Cfg files, no false positives if size is not specified
@@ -4159,17 +4167,17 @@ private:
     // extracttests.disable
 
     void minsize_argvalue() {
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def>\n"
-                               "  <function name=\"mymemset\">\n"
-                               "    <noreturn>false</noreturn>\n"
-                               "    <arg nr=\"1\">\n"
-                               "      <minsize type=\"argvalue\" arg=\"3\"/>\n"
-                               "    </arg>\n"
-                               "    <arg nr=\"2\"/>\n"
-                               "    <arg nr=\"3\"/>\n"
-                               "  </function>\n"
-                               "</def>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "  <function name=\"mymemset\">\n"
+                                   "    <noreturn>false</noreturn>\n"
+                                   "    <arg nr=\"1\">\n"
+                                   "      <minsize type=\"argvalue\" arg=\"3\"/>\n"
+                                   "    </arg>\n"
+                                   "    <arg nr=\"2\"/>\n"
+                                   "    <arg nr=\"3\"/>\n"
+                                   "  </function>\n"
+                                   "</def>";
         Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).severity(Severity::warning).build();
         settings.platform.sizeof_wchar_t = 4;
 
@@ -4296,18 +4304,18 @@ private:
     }
 
     void minsize_sizeof() {
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def>\n"
-                               "  <function name=\"mystrncpy\">\n"
-                               "    <noreturn>false</noreturn>\n"
-                               "    <arg nr=\"1\">\n"
-                               "      <minsize type=\"strlen\" arg=\"2\"/>\n"
-                               "      <minsize type=\"argvalue\" arg=\"3\"/>\n"
-                               "    </arg>\n"
-                               "    <arg nr=\"2\"/>\n"
-                               "    <arg nr=\"3\"/>\n"
-                               "  </function>\n"
-                               "</def>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "  <function name=\"mystrncpy\">\n"
+                                   "    <noreturn>false</noreturn>\n"
+                                   "    <arg nr=\"1\">\n"
+                                   "      <minsize type=\"strlen\" arg=\"2\"/>\n"
+                                   "      <minsize type=\"argvalue\" arg=\"3\"/>\n"
+                                   "    </arg>\n"
+                                   "    <arg nr=\"2\"/>\n"
+                                   "    <arg nr=\"3\"/>\n"
+                                   "  </function>\n"
+                                   "</def>";
         const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         check("void f() {\n"
@@ -4356,19 +4364,19 @@ private:
     }
 
     void minsize_strlen() {
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def>\n"
-                               "  <function name=\"mysprintf\">\n"
-                               "    <noreturn>false</noreturn>\n"
-                               "    <formatstr/>\n"
-                               "    <arg nr=\"1\">\n"
-                               "      <minsize type=\"strlen\" arg=\"2\"/>\n"
-                               "    </arg>\n"
-                               "    <arg nr=\"2\">\n"
-                               "      <formatstr/>\n"
-                               "    </arg>\n"
-                               "  </function>\n"
-                               "</def>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "  <function name=\"mysprintf\">\n"
+                                   "    <noreturn>false</noreturn>\n"
+                                   "    <formatstr/>\n"
+                                   "    <arg nr=\"1\">\n"
+                                   "      <minsize type=\"strlen\" arg=\"2\"/>\n"
+                                   "    </arg>\n"
+                                   "    <arg nr=\"2\">\n"
+                                   "      <formatstr/>\n"
+                                   "    </arg>\n"
+                                   "  </function>\n"
+                                   "</def>";
         const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         // formatstr..
@@ -4469,17 +4477,17 @@ private:
     }
 
     void minsize_mul() {
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def>\n"
-                               "  <function name=\"myfread\">\n"
-                               "    <arg nr=\"1\">\n"
-                               "      <minsize type=\"mul\" arg=\"2\" arg2=\"3\"/>\n"
-                               "    </arg>\n"
-                               "    <arg nr=\"2\"/>\n"
-                               "    <arg nr=\"3\"/>\n"
-                               "    <arg nr=\"4\"/>\n"
-                               "  </function>\n"
-                               "</def>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "  <function name=\"myfread\">\n"
+                                   "    <arg nr=\"1\">\n"
+                                   "      <minsize type=\"mul\" arg=\"2\" arg2=\"3\"/>\n"
+                                   "    </arg>\n"
+                                   "    <arg nr=\"2\"/>\n"
+                                   "    <arg nr=\"3\"/>\n"
+                                   "    <arg nr=\"4\"/>\n"
+                                   "  </function>\n"
+                                   "</def>";
         const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         check("void f() {\n"
@@ -4966,7 +4974,8 @@ private:
 
     void getErrorMessages() {
         // Ticket #2292: segmentation fault when using --errorlist
-        getCheck<CheckBufferOverrun>().getErrorMessages(this, nullptr);
+        const Check& c = getCheck<CheckBufferOverrun>();
+        c.getErrorMessages(this, nullptr);
     }
 
     void arrayIndexThenCheck() {
@@ -5161,9 +5170,9 @@ private:
 
         // Check code..
         std::list<Check::FileInfo*> fileInfo;
-        CheckBufferOverrun checkBO(&tokenizer, &settings0, this);
-        fileInfo.push_back(checkBO.getFileInfo(&tokenizer, &settings0));
-        checkBO.analyseWholeProgram(ctu, fileInfo, settings0, *this);
+        Check& c = getCheck<CheckBufferOverrun>();
+        fileInfo.push_back(c.getFileInfo(&tokenizer, &settings0));
+        c.analyseWholeProgram(ctu, fileInfo, settings0, *this);
         while (!fileInfo.empty()) {
             delete fileInfo.back();
             fileInfo.pop_back();

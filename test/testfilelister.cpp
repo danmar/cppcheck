@@ -21,8 +21,10 @@
 #include "pathmatch.h"
 #include "fixture.h"
 
+#include <algorithm>
 #include <cstddef>
-#include <map>
+#include <list>
+#include <stdexcept>
 #include <string>
 #include <vector>
 #include <utility>
@@ -43,7 +45,11 @@ private:
     static std::string findBaseDir() {
         std::string basedir;
         while (!Path::isDirectory(Path::join(basedir, ".github"))) {
+            const std::string abspath = Path::getAbsoluteFilePath(basedir);
             basedir += "../";
+            // no more going up
+            if (Path::getAbsoluteFilePath(basedir) == abspath)
+                throw std::runtime_error("could not find repository root directory");
         }
         return basedir;
     }
@@ -52,7 +58,7 @@ private:
         const std::string adddir = findBaseDir() + ".";
 
         // Recursively add add files..
-        std::map<std::string, std::size_t> files;
+        std::list<std::pair<std::string, std::size_t>> files;
         std::vector<std::string> masks;
         PathMatch matcher(masks);
         std::string err = FileLister::recursiveAddFiles(files, adddir, matcher);
@@ -68,19 +74,25 @@ private:
         const std::string dirprefix = adddir + "/";
 #endif
 
+        const auto find_file = [&](const std::string& name) {
+            return std::find_if(files.cbegin(), files.cend(), [&name](const std::pair<std::string, std::size_t>& entry) {
+                return entry.first == name;
+            });
+        };
+
         // Make sure source files are added..
-        ASSERT(files.find(dirprefix + "cli/main.cpp") != files.end());
-        ASSERT(files.find(dirprefix + "lib/token.cpp") != files.end());
-        ASSERT(files.find(dirprefix + "lib/tokenize.cpp") != files.end());
-        ASSERT(files.find(dirprefix + "gui/main.cpp") != files.end());
-        ASSERT(files.find(dirprefix + "test/testfilelister.cpp") != files.end());
+        ASSERT(find_file(dirprefix + "cli/main.cpp") != files.end());
+        ASSERT(find_file(dirprefix + "lib/token.cpp") != files.end());
+        ASSERT(find_file(dirprefix + "lib/tokenize.cpp") != files.end());
+        ASSERT(find_file(dirprefix + "gui/main.cpp") != files.end());
+        ASSERT(find_file(dirprefix + "test/testfilelister.cpp") != files.end());
 
         // Make sure headers are not added..
-        ASSERT(files.find(dirprefix + "lib/tokenize.h") == files.end());
+        ASSERT(find_file(dirprefix + "lib/tokenize.h") == files.end());
     }
 
     void recursiveAddFilesEmptyPath() const {
-        std::map<std::string, std::size_t> files;
+        std::list<std::pair<std::string, std::size_t>> files;
         const std::string err = FileLister::recursiveAddFiles(files, "", PathMatch({}));
         ASSERT_EQUALS("no path specified", err);
     }
@@ -88,7 +100,7 @@ private:
     void excludeFile1() const {
         const std::string basedir = findBaseDir();
 
-        std::map<std::string, std::size_t> files;
+        std::list<std::pair<std::string, std::size_t>> files;
         std::vector<std::string> ignored{"lib/token.cpp"};
         PathMatch matcher(ignored);
         std::string err = FileLister::recursiveAddFiles(files, basedir + "lib/token.cpp", matcher);
@@ -99,7 +111,7 @@ private:
     void excludeFile2() const {
         const std::string basedir = findBaseDir();
 
-        std::map<std::string, std::size_t> files;
+        std::list<std::pair<std::string, std::size_t>> files;
         std::vector<std::string> ignored;
         PathMatch matcher(ignored);
         std::string err = FileLister::recursiveAddFiles(files, basedir + "lib/token.cpp", matcher);

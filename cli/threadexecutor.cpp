@@ -20,15 +20,14 @@
 
 #include "config.h"
 #include "cppcheck.h"
-#include "cppcheckexecutor.h"
 #include "errorlogger.h"
-#include "importproject.h"
+#include "filesettings.h"
 #include "settings.h"
+#include "timer.h"
 
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
-#include <functional>
 #include <future>
 #include <iostream>
 #include <list>
@@ -40,8 +39,9 @@
 
 enum class Color;
 
-ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
-    : Executor(files, settings, suppressions, errorLogger)
+ThreadExecutor::ThreadExecutor(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand)
+    : Executor(files, fileSettings, settings, suppressions, errorLogger)
+    , mExecuteCommand(std::move(executeCommand))
 {
     assert(mSettings.jobs > 1);
 }
@@ -81,8 +81,8 @@ private:
 class ThreadData
 {
 public:
-    ThreadData(ThreadExecutor &threadExecutor, ErrorLogger &errorLogger, const Settings &settings, const std::map<std::string, std::size_t> &files, const std::list<ImportProject::FileSettings> &fileSettings)
-        : mFiles(files), mFileSettings(fileSettings), mSettings(settings), logForwarder(threadExecutor, errorLogger)
+    ThreadData(ThreadExecutor &threadExecutor, ErrorLogger &errorLogger, const Settings &settings, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings> &fileSettings, CppCheck::ExecuteCmdFn executeCommand)
+        : mFiles(files), mFileSettings(fileSettings), mSettings(settings), mExecuteCommand(std::move(executeCommand)), logForwarder(threadExecutor, errorLogger)
     {
         mItNextFile = mFiles.begin();
         mItNextFileSettings = mFileSettings.begin();
@@ -93,7 +93,7 @@ public:
         });
     }
 
-    bool next(const std::string *&file, const ImportProject::FileSettings *&fs, std::size_t &fileSize) {
+    bool next(const std::string *&file, const FileSettings *&fs, std::size_t &fileSize) {
         std::lock_guard<std::mutex> l(mFileSync);
         if (mItNextFile != mFiles.end()) {
             file = &mItNextFile->first;
@@ -113,8 +113,8 @@ public:
         return false;
     }
 
-    unsigned int check(ErrorLogger &errorLogger, const std::string *file, const ImportProject::FileSettings *fs) const {
-        CppCheck fileChecker(errorLogger, false, CppCheckExecutor::executeCommand);
+    unsigned int check(ErrorLogger &errorLogger, const std::string *file, const FileSettings *fs) const {
+        CppCheck fileChecker(errorLogger, false, mExecuteCommand);
         fileChecker.settings() = mSettings; // this is a copy
 
         unsigned int result;
@@ -140,10 +140,10 @@ public:
     }
 
 private:
-    const std::map<std::string, std::size_t> &mFiles;
-    std::map<std::string, std::size_t>::const_iterator mItNextFile;
-    const std::list<ImportProject::FileSettings> &mFileSettings;
-    std::list<ImportProject::FileSettings>::const_iterator mItNextFileSettings;
+    const std::list<std::pair<std::string, std::size_t>> &mFiles;
+    std::list<std::pair<std::string, std::size_t>>::const_iterator mItNextFile;
+    const std::list<FileSettings> &mFileSettings;
+    std::list<FileSettings>::const_iterator mItNextFileSettings;
 
     std::size_t mProcessedFiles{};
     std::size_t mTotalFiles{};
@@ -152,6 +152,7 @@ private:
 
     std::mutex mFileSync;
     const Settings &mSettings;
+    CppCheck::ExecuteCmdFn mExecuteCommand;
 
 public:
     SyncLogForwarder logForwarder;
@@ -162,7 +163,7 @@ static unsigned int STDCALL threadProc(ThreadData *data)
     unsigned int result = 0;
 
     const std::string *file;
-    const ImportProject::FileSettings *fs;
+    const FileSettings *fs;
     std::size_t fileSize;
 
     while (data->next(file, fs, fileSize)) {
@@ -179,7 +180,7 @@ unsigned int ThreadExecutor::check()
     std::vector<std::future<unsigned int>> threadFutures;
     threadFutures.reserve(mSettings.jobs);
 
-    ThreadData data(*this, mErrorLogger, mSettings, mFiles, mSettings.project.fileSettings);
+    ThreadData data(*this, mErrorLogger, mSettings, mFiles, mFileSettings, mExecuteCommand);
 
     for (unsigned int i = 0; i < mSettings.jobs; ++i) {
         try {
@@ -191,7 +192,12 @@ unsigned int ThreadExecutor::check()
         }
     }
 
-    return std::accumulate(threadFutures.begin(), threadFutures.end(), 0U, [](unsigned int v, std::future<unsigned int>& f) {
+    unsigned int result = std::accumulate(threadFutures.begin(), threadFutures.end(), 0U, [](unsigned int v, std::future<unsigned int>& f) {
         return v + f.get();
     });
+
+    if (mSettings.showtime == SHOWTIME_MODES::SHOWTIME_SUMMARY || mSettings.showtime == SHOWTIME_MODES::SHOWTIME_TOP5_SUMMARY)
+        CppCheck::printTimerResults(mSettings.showtime);
+
+    return result;
 }

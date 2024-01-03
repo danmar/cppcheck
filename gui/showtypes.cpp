@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #include "showtypes.h"
 
 #include "common.h"
+#include "errortypes.h"
 
 #include <QSettings>
 
@@ -32,10 +33,11 @@ ShowTypes::~ShowTypes()
     save();
 }
 
-ShowTypes::ShowType ShowTypes::SeverityToShowType(Severity::SeverityType severity)
+ShowTypes::ShowType ShowTypes::SeverityToShowType(Severity severity)
 {
     switch (severity) {
     case Severity::none:
+    case Severity::internal:
         return ShowTypes::ShowNone;
     case Severity::error:
         return ShowTypes::ShowErrors;
@@ -54,7 +56,7 @@ ShowTypes::ShowType ShowTypes::SeverityToShowType(Severity::SeverityType severit
     }
 }
 
-Severity::SeverityType ShowTypes::ShowTypeToSeverity(ShowTypes::ShowType type)
+Severity ShowTypes::ShowTypeToSeverity(ShowTypes::ShowType type)
 {
     switch (type) {
     case ShowTypes::ShowStyle:
@@ -117,7 +119,7 @@ bool ShowTypes::isShown(ShowTypes::ShowType category) const
     return mVisible[category];
 }
 
-bool ShowTypes::isShown(Severity::SeverityType severity) const
+bool ShowTypes::isShown(Severity severity) const
 {
     return isShown(ShowTypes::SeverityToShowType(severity));
 }

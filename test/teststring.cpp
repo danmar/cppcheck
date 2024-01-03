@@ -19,14 +19,14 @@
 
 #include "checkstring.h"
 #include "errortypes.h"
+#include "helpers.h"
 #include "settings.h"
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <simplecpp.h>
-
 #include <sstream> // IWYU pragma: keep
-
+#include <string>
+#include <vector>
 
 class TestString : public TestFixture {
 public:
@@ -62,24 +62,17 @@ private:
         TEST_CASE(deadStrcmp);
     }
 
-    void check(const char code[], const char filename[] = "test.cpp") {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
-        // Raw tokens..
         std::vector<std::string> files(1, filename);
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        // Preprocess..
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+        Tokenizer tokenizer(&settings, this);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        tokenizer.createTokens(std::move(tokens2));
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check char variable usage..
         runChecks<CheckString>(tokenizer, this);
@@ -797,6 +790,12 @@ private:
               "    if (*p == '\\0')\n"
               "        return *p == '\\0';\n"
               "    return false;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const int* p, const int* q) {\n"
+              "    assert((p != NULL && q != NULL) || !\"abc\");\n"
+              "    ASSERT((void*)(\"def\") == 0);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

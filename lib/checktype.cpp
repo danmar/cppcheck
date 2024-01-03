@@ -30,9 +30,13 @@
 #include "tokenize.h"
 #include "valueflow.h"
 
+#include <algorithm>
 #include <cmath>
+#include <cstddef>
+#include <iterator>
 #include <list>
 #include <sstream>
+#include <utility>
 #include <vector>
 
 //---------------------------------------------------------------------------
@@ -48,16 +52,16 @@ namespace {
 //
 
 // CWE ids used:
-static const struct CWE CWE195(195U);   // Signed to Unsigned Conversion Error
-static const struct CWE CWE197(197U);   // Numeric Truncation Error
-static const struct CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
-static const struct CWE CWE190(190U);   // Integer Overflow or Wraparound
+static const CWE CWE195(195U);   // Signed to Unsigned Conversion Error
+static const CWE CWE197(197U);   // Numeric Truncation Error
+static const CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
+static const CWE CWE190(190U);   // Integer Overflow or Wraparound
 
 
 void CheckType::checkTooBigBitwiseShift()
 {
     // unknown sizeof(int) => can't run this checker
-    if (mSettings->platform.type == cppcheck::Platform::Type::Unspecified)
+    if (mSettings->platform.type == Platform::Type::Unspecified)
         return;
 
     logChecker("CheckType::checkTooBigBitwiseShift"); // platform
@@ -108,7 +112,7 @@ void CheckType::checkTooBigBitwiseShift()
 
 void CheckType::tooBigBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits)
 {
-    const char id[] = "shiftTooManyBits";
+    constexpr char id[] = "shiftTooManyBits";
 
     if (!tok) {
         reportError(tok, Severity::error, id, "Shifting 32-bit value by 40 bits is undefined behaviour", CWE758, Certainty::normal);
@@ -127,7 +131,7 @@ void CheckType::tooBigBitwiseShiftError(const Token *tok, int lhsbits, const Val
 
 void CheckType::tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits)
 {
-    const char id[] = "shiftTooManyBitsSigned";
+    constexpr char id[] = "shiftTooManyBitsSigned";
 
     const bool cpp14 = mSettings->standards.cpp >= Standards::CPP14;
 
@@ -140,7 +144,7 @@ void CheckType::tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, con
     }
 
 
-    Severity::SeverityType severity = rhsbits.errorSeverity() ? Severity::error : Severity::warning;
+    Severity severity = rhsbits.errorSeverity() ? Severity::error : Severity::warning;
     if (cpp14)
         severity = Severity::portability;
 
@@ -163,7 +167,7 @@ void CheckType::tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, con
 void CheckType::checkIntegerOverflow()
 {
     // unknown sizeof(int) => can't run this checker
-    if (mSettings->platform.type == cppcheck::Platform::Type::Unspecified || mSettings->platform.int_bit >= MathLib::bigint_bits)
+    if (mSettings->platform.type == Platform::Type::Unspecified || mSettings->platform.int_bit >= MathLib::bigint_bits)
         return;
 
     logChecker("CheckType::checkIntegerOverflow"); // platform
@@ -201,8 +205,8 @@ void CheckType::checkIntegerOverflow()
             continue;
 
         // For left shift, it's common practice to shift into the sign bit
-        //if (tok->str() == "<<" && value->intvalue > 0 && value->intvalue < (((MathLib::bigint)1) << bits))
-        //    continue;
+        if (tok->str() == "<<" && value->intvalue > 0 && value->intvalue < (((MathLib::bigint)1) << bits))
+            continue;
 
         integerOverflowError(tok, *value);
     }
@@ -472,7 +476,7 @@ void CheckType::checkFloatToIntegerOverflow(const Token *tok, const ValueType *v
             floatToIntegerOverflowError(tok, f);
         else if ((-f.floatValue) > std::exp2(mSettings->platform.long_long_bit - 1))
             floatToIntegerOverflowError(tok, f);
-        else if (mSettings->platform.type != cppcheck::Platform::Type::Unspecified) {
+        else if (mSettings->platform.type != Platform::Type::Unspecified) {
             int bits = 0;
             if (vtint->type == ValueType::Type::CHAR)
                 bits = mSettings->platform.char_bit;

@@ -127,6 +127,12 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <option>--force</option>
       </arg>
       <arg choice="opt">
+        <option>--fsigned-char</option>
+      </arg>
+      <arg choice="opt">
+        <option>--funsigned-char</option>
+      </arg>
+      <arg choice="opt">
         <option>--help</option>
       </arg>
       <arg choice="opt">
@@ -188,6 +194,9 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       </arg>
       <arg choice="opt">
         <option>--rule-file=&lt;file&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--showtime=&lt;mode&gt;</option>
       </arg>
       <arg choice="opt">
         <option>--std=&lt;id&gt;</option>
@@ -345,6 +354,22 @@ Example: '-UDEBUG'</para>
         <listitem>
           <para>Force checking of files that have a lot of configurations. Error is printed if such a file is found so there is no reason to use this by
 default. If used together with --max-configs=, the last option is the one that is effective.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+            <option>--fsigned-char</option>
+        </term>
+        <listitem>
+            <para>Treat char type as signed. This overrides previous --platform options and is overridden by following ones.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>--funsigned-char</option>
+        </term>
+        <listitem>
+          <para>Treat char type as unsigned. This overrides previous --platform options and is overridden by following ones.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -545,11 +570,21 @@ There are false positives with this option. Each result must be carefully invest
       </varlistentry>
       <varlistentry>
         <term>
+          <option>--showtime=&lt;mode&gt;</option>
+        </term>
+        <listitem>
+          <para>Show timing information. The available mode are:
+            <glosslist><glossentry><glossterm>none</glossterm><glossdef><para>Show nothing (default)</para></glossdef></glossentry><glossentry><glossterm>file</glossterm><glossdef><para>Show for each processed file</para></glossdef></glossentry><glossentry><glossterm>file-total</glossterm><glossdef><para>Show total time only for each processed file</para></glossdef></glossentry><glossentry><glossterm>summary</glossterm><glossdef><para>Show a summary at the end</para></glossdef></glossentry><glossentry><glossterm>top5_file</glossterm><glossdef><para>Show the top 5 for each processed file</para></glossdef></glossentry><glossentry><glossterm>top5_summary</glossterm><glossdef><para>Show the top 5 summary at the end</para></glossdef></glossentry><glossentry><glossterm>top5</glossterm><glossdef><para>Alias for top5_file (deprecated)</para></glossdef></glossentry></glosslist>
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
           <option>--std=&lt;id&gt;</option>
         </term>
         <listitem>
           <para>Set standard. The available options are:
-            <glosslist><glossentry><glossterm>c89</glossterm><glossdef><para>C code is C89 compatible</para></glossdef></glossentry><glossentry><glossterm>c99</glossterm><glossdef><para>C code is C99 compatible</para></glossdef></glossentry><glossentry><glossterm>c11</glossterm><glossdef><para>C code is C11 compatible (default)</para></glossdef></glossentry><glossentry><glossterm>c++03</glossterm><glossdef><para>C++ code is C++03 compatible</para></glossdef></glossentry><glossentry><glossterm>c++11</glossterm><glossdef><para>C++ code is C++11 compatible (default)</para></glossdef></glossentry></glosslist>
+            <glosslist><glossentry><glossterm>c89</glossterm><glossdef><para>C code is C89 compatible</para></glossdef></glossentry><glossentry><glossterm>c99</glossterm><glossdef><para>C code is C99 compatible</para></glossdef></glossentry><glossentry><glossterm>c11</glossterm><glossdef><para>C code is C11 compatible (default)</para></glossdef></glossentry><glossentry><glossterm>c++03</glossterm><glossdef><para>C++ code is C++03 compatible</para></glossdef></glossentry><glossentry><glossterm>c++11</glossterm><glossdef><para>C++ code is C++11 compatible</para></glossdef></glossentry><glossentry><glossterm>c++14</glossterm><glossdef><para>C++ code is C++14 compatible</para></glossdef></glossentry><glossentry><glossterm>c++17</glossterm><glossdef><para>C++ code is C++17 compatible</para></glossdef></glossentry><glossentry><glossterm>c++20</glossterm><glossdef><para>C++ code is C++20 compatible (default)</para></glossdef></glossentry></glosslist>
           </para>
         </listitem>
       </varlistentry>

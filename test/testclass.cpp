@@ -19,19 +19,16 @@
 #include "check.h"
 #include "checkclass.h"
 #include "errortypes.h"
+#include "helpers.h"
 #include "preprocessor.h"
 #include "settings.h"
 #include "fixture.h"
 #include "tokenize.h"
 
 #include <list>
-#include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
-#include <utility>
 #include <vector>
-
-#include <simplecpp.h>
 
 class TestClass : public TestFixture {
 public:
@@ -184,6 +181,7 @@ private:
         TEST_CASE(const90);
         TEST_CASE(const91);
         TEST_CASE(const92);
+        TEST_CASE(const93);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -3447,11 +3445,11 @@ private:
     }
 
     void memsetOnStdPodType() { // Ticket #5901
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def>\n"
-                               "  <podtype name=\"std::uint8_t\" sign=\"u\" size=\"1\"/>\n"
-                               "  <podtype name=\"std::atomic_bool\"/>\n"
-                               "</def>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "  <podtype name=\"std::uint8_t\" sign=\"u\" size=\"1\"/>\n"
+                                   "  <podtype name=\"std::atomic_bool\"/>\n"
+                                   "</def>";
         const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         checkNoMemset("class A {\n"
@@ -6623,6 +6621,17 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'S::f' can be const.\n"
                       "[test.cpp:8]: (performance, inconclusive) Technically the member function 'S::g' can be static (but you may consider moving to unnamed namespace).\n",
                       errout.str());
+
+        checkConst("class C {\n" // #11653
+                   "public:\n"
+                   "    void f(bool b) const;\n"
+                   "};\n"
+                   "void C::f(bool b) const {\n"
+                   "    if (b)\n"
+                   "        f(false);\n"
+                   "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (performance, inconclusive) Technically the member function 'C::f' can be static (but you may consider moving to unnamed namespace).\n",
+                      errout.str());
     }
 
     void const90() { // #11637
@@ -6667,6 +6676,21 @@ private:
                    "struct S<0> {};\n"
                    "struct D : S<150> {};\n");
         // don't hang
+    }
+
+    void const93() { // #12162
+        checkConst("struct S {\n"
+                   "    bool f() {\n"
+                   "        return m.cbegin()->first == 0;\n"
+                   "    }\n"
+                   "    bool g() {\n"
+                   "        return m.count(0);\n"
+                   "    }\n"
+                   "    std::map<int, int> m;\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Technically the member function 'S::f' can be const.\n"
+                      "[test.cpp:5]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
+                      errout.str());
     }
 
     void const_handleDefaultParameters() {
@@ -8409,26 +8433,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    #define checkUselessOverride(code) checkUselessOverride_(code, __FILE__, __LINE__)
-    void checkUselessOverride_(const char code[], const char* file, int line) {
+    #define checkUselessOverride(...) checkUselessOverride_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkUselessOverride_(const char* file, int line, const char code[]) {
         // Clear the error log
         errout.str("");
 
         const Settings settings = settingsBuilder().severity(Severity::style).build();
 
-        // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        // Preprocess..
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
-
-        // Tokenize..
         Tokenizer tokenizer(&settings, this);
-        tokenizer.createTokens(std::move(tokens2));
+        PreprocessorHelper::preprocess(code, files, tokenizer);
+
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check..
@@ -8777,7 +8792,7 @@ private:
 
     void ctu(const std::vector<std::string> &code) {
         const Settings settings;
-        auto &check = getCheck<CheckClass>();
+        Check &check = getCheck<CheckClass>();
 
         // getFileInfo
         std::list<Check::FileInfo*> fileInfo;
@@ -8835,9 +8850,8 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
-        CheckClass checkClass(&tokenizer, &settings1, this);
-
-        Check::FileInfo * fileInfo = (checkClass.getFileInfo)(&tokenizer, &settings1);
+        const Check& c = getCheck<CheckClass>();
+        Check::FileInfo * fileInfo = (c.getFileInfo)(&tokenizer, &settings1);
 
         delete fileInfo;
     }

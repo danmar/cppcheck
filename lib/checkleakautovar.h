@@ -57,7 +57,7 @@ public:
     };
     enum Usage { USED, NORET };
     std::map<int, AllocInfo> alloctype;
-    std::map<int, std::pair<std::string, Usage>> possibleUsage;
+    std::map<int, std::pair<const Token*, Usage>> possibleUsage;
     std::set<int> conditionalAlloc;
     std::set<int> referenced;
 
@@ -93,7 +93,7 @@ public:
     }
 
     /** set possible usage for all variables */
-    void possibleUsageAll(const std::pair<std::string, Usage>& functionUsage);
+    void possibleUsageAll(const std::pair<const Token*, Usage>& functionUsage);
 
     void print();
 };
@@ -111,6 +111,7 @@ public:
     /** This constructor is used when registering the CheckLeakAutoVar */
     CheckLeakAutoVar() : Check(myName()) {}
 
+private:
     /** This constructor is used when running checks. */
     CheckLeakAutoVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
@@ -119,8 +120,6 @@ public:
         CheckLeakAutoVar checkLeakAutoVar(&tokenizer, tokenizer.getSettings(), errorLogger);
         checkLeakAutoVar.check();
     }
-
-private:
 
     /** check for leaks in all scopes */
     void check();
@@ -160,12 +159,12 @@ private:
     void doubleFreeError(const Token *tok, const Token *prevFreeTok, const std::string &varname, int type);
 
     /** message: user configuration is needed to complete analysis */
-    void configurationInfo(const Token* tok, const std::pair<std::string, VarInfo::Usage>& functionUsage);
+    void configurationInfo(const Token* tok, const std::pair<const Token*, VarInfo::Usage>& functionUsage);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckLeakAutoVar c(nullptr, settings, errorLogger);
         c.deallocReturnError(nullptr, nullptr, "p");
-        c.configurationInfo(nullptr, { "f", VarInfo::USED });  // user configuration is needed to complete analysis
+        c.configurationInfo(nullptr, { nullptr, VarInfo::USED });  // user configuration is needed to complete analysis
         c.doubleFreeError(nullptr, nullptr, "varname", 0);
     }
 

@@ -171,7 +171,7 @@ void Summaries::loadReturn(const std::string &buildDir, std::set<std::string> &s
         std::string line;
         while (std::getline(fin, line)) {
             // Get function name
-            const std::string::size_type pos1 = 0;
+            constexpr std::string::size_type pos1 = 0;
             const std::string::size_type pos2 = line.find(' ', pos1);
             const std::string functionName = (pos2 == std::string::npos) ? line : line.substr(0, pos2);
             std::vector<std::string> call = getSummaryData(line, "call");

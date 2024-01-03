@@ -26,6 +26,8 @@
 #include "tokenize.h"
 
 #include <cstddef>
+#include <iterator>
+#include <list>
 #include <vector>
 
 //---------------------------------------------------------------------------
@@ -41,9 +43,9 @@ namespace {
 //---------------------------------------------------------------------------
 
 // CWE ids used:
-static const struct CWE CWE664(664U);   // Improper Control of a Resource Through its Lifetime
-static const struct CWE CWE688(688U);   // Function Call With Incorrect Variable or Reference as Argument
-static const struct CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
+static const CWE CWE664(664U);   // Improper Control of a Resource Through its Lifetime
+static const CWE CWE688(688U);   // Function Call With Incorrect Variable or Reference as Argument
+static const CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 
 void CheckVaarg::va_start_argument()
 {

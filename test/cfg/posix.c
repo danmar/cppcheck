@@ -30,6 +30,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <time.h>
 #if !(defined(__APPLE__) && defined(__MACH__))
 #include <mqueue.h>
 #endif
@@ -167,6 +168,14 @@ void invalidFunctionArgStr_mbsnrtowcs(void)
     wcscpy (wenough, L"DEF");
     // No warning is expected for - #11119
     if (mbsnrtowcs (wenough, &cp, 1, 10, &s) != 1 || wcscmp (wenough, L"AEF") != 0) {}
+}
+
+struct tm * ignoredReturnValue_localtime(const time_t *tp)
+{
+    // cppcheck-suppress [ignoredReturnValue,localtimeCalled]
+    localtime(tp);
+    // cppcheck-suppress localtimeCalled
+    return localtime(tp);
 }
 
 int nullPointer_getpwuid_r(uid_t uid, struct passwd *pwd, char *buffer, size_t bufsize, struct passwd **result)
@@ -850,7 +859,7 @@ void memleak_scandir(void)
        which is allocated via malloc(3).  If filter is NULL, all entries are
        selected.*/
 
-    // TODO: cppcheck-suppress memleak
+    // cppcheck-suppress memleak
 }
 
 void no_memleak_scandir(void)
@@ -880,6 +889,22 @@ void validCode(va_list valist_arg1, va_list valist_arg2)
     if (handle) {
         dlclose(handle);
     }
+}
+
+typedef struct {
+    size_t N;
+    int* data;
+} S_memalign;
+
+S_memalign* posix_memalign_memleak(size_t n) { // #12248
+    S_memalign* s = malloc(sizeof(*s));   
+    s->N = n;   
+    if (0 != posix_memalign((void**)&s->data, 16, n * sizeof(int))) {
+        free(s);
+        return NULL;
+    }
+    memset(s->data, 0, n * sizeof(int));
+    return s;
 }
 
 ssize_t nullPointer_send(int socket, const void *buf, size_t len, int flags)
@@ -1051,6 +1076,13 @@ void resourceLeak_fdopen(int fd)
     // cppcheck-suppress resourceLeak
 }
 
+void resourceLeak_fdopen2(const char* fn) // #2767
+{
+    int fi = open(fn, O_RDONLY);
+    FILE* fd = fdopen(fi, "r");
+    fclose(fd);
+}
+
 void resourceLeak_mkstemp(char *template)
 {
     // cppcheck-suppress unreadVariable
@@ -1116,12 +1148,6 @@ void noleak(int x, int y, int z)
     close(fd1);
     int fd2 = open("a", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
     close(fd2);
-    /* TODO: add configuration for open/fdopen
-        // #2830
-        int fd = open("path", O_RDONLY);
-        FILE *f = fdopen(fd, "rt");
-        fclose(f);
-     */
 }
 
 

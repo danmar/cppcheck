@@ -27,14 +27,17 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <initializer_list>
 #include <limits>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 struct SelectMapKeys {
     template<class Pair>
+    // NOLINTNEXTLINE(readability-const-return-type) - false positive
     typename Pair::first_type operator()(const Pair& p) const {
         return p.first;
     }
@@ -44,6 +47,14 @@ struct SelectMapValues {
     template<class Pair>
     typename Pair::second_type operator()(const Pair& p) const {
         return p.second;
+    }
+};
+
+struct OnExit {
+    std::function<void()> f;
+
+    ~OnExit() {
+        f();
     }
 };
 
@@ -79,6 +90,22 @@ struct EnumClassHash {
         return static_cast<std::size_t>(t);
     }
 };
+
+inline bool startsWith(const std::string& str, const char start[], std::size_t startlen)
+{
+    return str.compare(0, startlen, start) == 0;
+}
+
+template<std::size_t N>
+bool startsWith(const std::string& str, const char (&start)[N])
+{
+    return startsWith(str, start, N - 1);
+}
+
+inline bool startsWith(const std::string& str, const std::string& start)
+{
+    return startsWith(str, start.c_str(), start.length());
+}
 
 inline bool endsWith(const std::string &str, char c)
 {
@@ -265,6 +292,7 @@ T strToInt(const std::string& str)
  * \return size of array
  * */
 template<typename T, int size>
+// cppcheck-suppress unusedFunction - only used in conditional code
 std::size_t getArrayLength(const T (& /*unused*/)[size])
 {
     return size;
@@ -314,9 +342,23 @@ static inline std::string id_string(const void* p)
     return id_string_i(reinterpret_cast<uintptr_t>(p));
 }
 
-static inline std::string bool_to_string(bool b)
+static inline const char* bool_to_string(bool b)
 {
     return b ? "true" : "false";
+}
+
+namespace cppcheck
+{
+    NORETURN inline void unreachable()
+    {
+#if defined(__GNUC__)
+        __builtin_unreachable();
+#elif defined(_MSC_VER)
+        __assume(false);
+#else
+#error "no unreachable implementation"
+#endif
+    }
 }
 
 #endif

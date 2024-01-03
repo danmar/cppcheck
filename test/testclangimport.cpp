@@ -589,6 +589,9 @@ private:
 
         clang = "`-CXXRecordDecl 0x34cc5f8 <C:\\Foo\\Bar Baz\\1.cpp:2:1, col:7> col:7 class Foo";
         ASSERT_EQUALS("class Foo ;", parse(clang));
+
+        clang = "`-CXXRecordDecl 0x34cc5f8 <C:/Foo/Bar Baz/1.cpp:2:1, col:7> col:7 class Foo";
+        ASSERT_EQUALS("class Foo ;", parse(clang));
     }
 
     void cxxRecordDecl2() {
@@ -1050,7 +1053,7 @@ private:
 
 
 #define GET_SYMBOL_DB(AST) \
-    const Settings settings = settingsBuilder().clang().platform(cppcheck::Platform::Type::Unix64).build(); \
+    const Settings settings = settingsBuilder().clang().platform(Platform::Type::Unix64).build(); \
     Tokenizer tokenizer(&settings, this); \
     { \
         std::istringstream istr(AST); \

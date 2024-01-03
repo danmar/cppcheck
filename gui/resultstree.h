@@ -20,7 +20,6 @@
 #ifndef RESULTSTREE_H
 #define RESULTSTREE_H
 
-#include "errortypes.h"
 #include "showtypes.h"
 
 #include <QObject>
@@ -40,6 +39,7 @@ class ThreadHandler;
 class QContextMenuEvent;
 class QKeyEvent;
 class QSettings;
+enum class Severity;
 
 /// @addtogroup GUI
 /// @{
@@ -335,7 +335,7 @@ protected:
      *
      * @param severity Severity
      */
-    static QString severityToIcon(Severity::SeverityType severity);
+    static QString severityToIcon(Severity severity);
 
     /**
      * @brief Helper function to open an error within target with application*
@@ -344,7 +344,7 @@ protected:
      * @param application Index of the application to open with. Giving -1
      *  (default value) will open the default application.
      */
-    void startApplication(QStandardItem *target, int application = -1);
+    void startApplication(const QStandardItem *target, int application = -1);
 
     /**
      * @brief Helper function returning the filename/full path of the error tree item \a target.
@@ -352,7 +352,7 @@ protected:
      * @param target The error tree item containing the filename/full path
      * @param fullPath Whether or not to retrieve the full path or only the filename.
      */
-    static QString getFilePath(QStandardItem *target, bool fullPath);
+    static QString getFilePath(const QStandardItem *target, bool fullPath);
 
     /**
      * @brief Context menu event (user right clicked on the tree)
@@ -382,7 +382,7 @@ protected:
      * @param severity Severity to convert
      * @return Severity as translated string
      */
-    static QString severityToTranslatedString(Severity::SeverityType severity);
+    static QString severityToTranslatedString(Severity severity);
 
     /**
      * @brief Load all settings

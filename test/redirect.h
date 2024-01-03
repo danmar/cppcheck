@@ -19,12 +19,9 @@
 
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
-// NOLINTNEXTLINE(readability-redundant-declaration) - TODO: fix this
-extern std::ostringstream errout;
-// NOLINTNEXTLINE(readability-redundant-declaration) - TODO: fix this
-extern std::ostringstream output;
 /**
  * @brief Utility class for capturing cout and cerr to ostringstream buffers
  * for later use. Uses RAII to stop redirection when the object goes out of
@@ -47,34 +44,35 @@ public:
     }
 
     /** Revert cout and cerr behaviour */
-    ~RedirectOutputError() {
+    ~RedirectOutputError() noexcept(false) {
         std::cout.rdbuf(_oldCout); // restore cout's original streambuf
         std::cerr.rdbuf(_oldCerr); // restore cerrs's original streambuf
 
-        errout << _err.str();
-        output << _out.str();
+        {
+            const std::string s = _out.str();
+            if (!s.empty())
+                throw std::runtime_error("unconsumed stdout: " + s); // cppcheck-suppress exceptThrowInDestructor - FP #11031
+        }
+
+        {
+            const std::string s = _err.str();
+            if (!s.empty())
+                throw std::runtime_error("consumed stderr: " + s);
+        }
     }
 
-    /** Return what would be printed to cout. See also clearOutput() */
-    std::string getOutput() const {
-        return _out.str();
-    }
-
-    /** Normally called after getOutput() to prevent same text to be returned
-       twice. */
-    void clearOutput() {
+    /** Return what would be printed to cout. */
+    std::string getOutput() {
+        std::string s = _out.str();
         _out.str("");
+        return s;
     }
 
-    /** Return what would be printed to cerr. See also clearErrout() */
-    std::string getErrout() const {
-        return _err.str();
-    }
-
-    /** Normally called after getErrout() to prevent same text to be returned
-       twice. */
-    void clearErrout() {
+    /** Return what would be printed to cerr. */
+    std::string getErrout() {
+        std::string s = _err.str();
         _err.str("");
+        return s;
     }
 
 private:
@@ -112,9 +110,7 @@ private:
 
 #define REDIRECT RedirectOutputError redir
 #define GET_REDIRECT_OUTPUT redir.getOutput()
-#define CLEAR_REDIRECT_OUTPUT redir.clearOutput()
 #define GET_REDIRECT_ERROUT redir.getErrout()
-#define CLEAR_REDIRECT_ERROUT redir.clearErrout()
 
 #define SUPPRESS SuppressOutput supprout
 

@@ -24,7 +24,6 @@
 #include "color.h"
 #include "config.h"
 #include "errorlogger.h"
-#include "errortypes.h"
 #include "library.h"
 #include "platform.h"
 #include "settings.h"
@@ -39,6 +38,8 @@
 
 class options;
 class Tokenizer;
+enum class Certainty;
+enum class Severity;
 
 class TestFixture : public ErrorLogger {
 private:
@@ -61,6 +62,8 @@ protected:
 
     bool prepareTest(const char testname[]);
     virtual void prepareTestInternal() {}
+    void teardownTest();
+    virtual void teardownTestInternal() {}
     std::string getLocationStr(const char * const filename, const unsigned int linenr) const;
 
     bool assert_(const char * const filename, const unsigned int linenr, const bool condition) const;
@@ -117,7 +120,7 @@ protected:
     static T& getCheck()
     {
         for (Check *check : Check::instances()) {
-            //cppcheck-suppress [constVariablePointer, useStlAlgorithm] - TODO: fix constVariable FP
+            //cppcheck-suppress useStlAlgorithm
             if (T* c = dynamic_cast<T*>(check))
                 return *c;
         }
@@ -127,7 +130,7 @@ protected:
     template<typename T>
     static void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
     {
-        T& check = getCheck<T>();
+        Check& check = getCheck<T>();
         check.runChecks(tokenizer, errorLogger);
     }
 
@@ -137,7 +140,7 @@ protected:
         explicit SettingsBuilder(const TestFixture &fixture) : fixture(fixture) {}
         SettingsBuilder(const TestFixture &fixture, Settings settings) : fixture(fixture), settings(std::move(settings)) {}
 
-        SettingsBuilder& severity(Severity::SeverityType sev, bool b = true) {
+        SettingsBuilder& severity(Severity sev, bool b = true) {
             if (REDUNDANT_CHECK && settings.severity.isEnabled(sev) == b)
                 throw std::runtime_error("redundant setting: severity");
             settings.severity.setEnabled(sev, b);
@@ -199,7 +202,7 @@ protected:
 
         SettingsBuilder& libraryxml(const char xmldata[], std::size_t len);
 
-        SettingsBuilder& platform(cppcheck::Platform::Type type);
+        SettingsBuilder& platform(Platform::Type type);
 
         SettingsBuilder& checkConfiguration() {
             if (REDUNDANT_CHECK && settings.checkConfiguration)
@@ -233,10 +236,22 @@ protected:
         return SettingsBuilder(*this, std::move(settings));
     }
 
-public:
+    std::string output_str() {
+        std::string s = mOutput.str();
+        mOutput.str("");
+        return s;
+    }
+
+    std::ostringstream errout;
+
+private:
+    std::ostringstream mOutput;
+
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
     void reportErr(const ErrorMessage &msg) override;
     void run(const std::string &str);
+
+public:
     static void printHelp();
     const std::string classname;
 
@@ -245,14 +260,8 @@ public:
     static std::size_t runTests(const options& args);
 };
 
-// TODO: fix these
-// NOLINTNEXTLINE(readability-redundant-declaration)
-extern std::ostringstream errout;
-// NOLINTNEXTLINE(readability-redundant-declaration)
-extern std::ostringstream output;
-
 // TODO: most asserts do not actually assert i.e. do not return
-#define TEST_CASE( NAME )  do { if (prepareTest(#NAME)) { setVerbose(false); NAME(); } } while (false)
+#define TEST_CASE( NAME )  do { if (prepareTest(#NAME)) { setVerbose(false); NAME(); teardownTest(); } } while (false)
 #define ASSERT( CONDITION )  if (!assert_(__FILE__, __LINE__, (CONDITION))) return
 #define ASSERT_LOC( CONDITION, FILE_, LINE_ )  assert_(FILE_, LINE_, (CONDITION))
 #define CHECK_EQUALS( EXPECTED, ACTUAL )  assertEquals(__FILE__, __LINE__, (EXPECTED), (ACTUAL))
@@ -273,6 +282,6 @@ extern std::ostringstream output;
 #define LOAD_LIB_2_EXE( LIB, NAME, EXE ) do { if (((LIB).load((EXE), NAME).errorcode != Library::ErrorCode::OK)) throw std::runtime_error("library '" + std::string(NAME) + "' not found"); } while (false)
 #define LOAD_LIB_2( LIB, NAME ) LOAD_LIB_2_EXE(LIB, NAME, exename.c_str())
 
-#define PLATFORM( P, T ) do { std::string errstr; assertEquals(__FILE__, __LINE__, true, P.set(cppcheck::Platform::toString(T), errstr, {exename}), errstr); } while (false)
+#define PLATFORM( P, T ) do { std::string errstr; assertEquals(__FILE__, __LINE__, true, P.set(Platform::toString(T), errstr, {exename}), errstr); } while (false)
 
 #endif // fixtureH

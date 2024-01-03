@@ -18,6 +18,7 @@
 
 #include "mainwindow.h"
 
+#include "addoninfo.h"
 #include "applicationlist.h"
 #include "aboutdialog.h"
 #include "analyzerinfo.h"
@@ -25,6 +26,7 @@
 #include "cppcheck.h"
 #include "errortypes.h"
 #include "filelist.h"
+#include "filesettings.h"
 #include "compliancereportdialog.h"
 #include "fileviewdialog.h"
 #include "helpdialog.h"
@@ -48,12 +50,12 @@
 #include "ui_mainwindow.h"
 
 #include <algorithm>
-#include <functional>
 #include <iterator>
 #include <list>
 #include <set>
 #include <string>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include <QApplication>
@@ -92,6 +94,8 @@
 #include <QVariant>
 #include <Qt>
 
+#include "json.h"
+
 static const QString compile_commands_json("compile_commands.json");
 
 static QString fromNativePath(const QString& p) {
@@ -117,7 +121,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     {
         Settings tempSettings;
         tempSettings.exename = QCoreApplication::applicationFilePath().toStdString();
-        tempSettings.loadCppcheckCfg();
+        tempSettings.loadCppcheckCfg(); // TODO: how to handle error?
         mCppcheckCfgProductName = QString::fromStdString(tempSettings.cppcheckCfgProductName);
         mCppcheckCfgAbout = QString::fromStdString(tempSettings.cppcheckCfgAbout);
     }
@@ -242,7 +246,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI->mActionEditProjectFile->setEnabled(mProjectFile != nullptr);
 
     for (int i = 0; i < mPlatforms.getCount(); i++) {
-        Platform platform = mPlatforms.mPlatforms[i];
+        PlatformData platform = mPlatforms.mPlatforms[i];
         QAction *action = new QAction(this);
         platform.mActMainWindow = action;
         mPlatforms.mPlatforms[i] = platform;
@@ -269,15 +273,16 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI->mActionEnforceCpp->setActionGroup(mSelectLanguageActions);
     mUI->mActionAutoDetectLanguage->setActionGroup(mSelectLanguageActions);
 
+    // TODO: we no longer default to a Windows platform in CLI - so we should probably also get rid of this in the GUI
     // For Windows platforms default to Win32 checked platform.
     // For other platforms default to unspecified/default which means the
     // platform Cppcheck GUI was compiled on.
 #if defined(_WIN32)
-    const cppcheck::Platform::Type defaultPlatform = cppcheck::Platform::Type::Win32W;
+    constexpr Platform::Type defaultPlatform = Platform::Type::Win32W;
 #else
-    const cppcheck::Platform::Type defaultPlatform = cppcheck::Platform::Type::Unspecified;
+    constexpr Platform::Type defaultPlatform = Platform::Type::Unspecified;
 #endif
-    Platform &platform = mPlatforms.get((cppcheck::Platform::Type)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
+    PlatformData &platform = mPlatforms.get((Platform::Type)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
     platform.mActMainWindow->setChecked(true);
 
     mNetworkAccessManager = new QNetworkAccessManager(this);
@@ -493,7 +498,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         p.ignorePaths(v);
 
         if (!mProjectFile->getAnalyzeAllVsConfigs()) {
-            const cppcheck::Platform::Type platform = (cppcheck::Platform::Type) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
+            const Platform::Type platform = (Platform::Type) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
             std::vector<std::string> configurations;
             const QStringList configs = mProjectFile->getVsConfigurations();
             std::transform(configs.cbegin(), configs.cend(), std::back_inserter(configurations), [](const QString& e) {
@@ -599,7 +604,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
         std::transform(fileNames.cbegin(), fileNames.cend(), std::back_inserter(sourcefiles), [](const QString& s) {
             return s.toStdString();
         });
-        AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.userDefines, checkSettings.project.fileSettings);
+        AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.userDefines, {});
     }
 
     mThread->setCheckFiles(true);
@@ -709,7 +714,7 @@ void MainWindow::analyzeFiles()
 
         if (file0.endsWith(".sln")) {
             QStringList configs;
-            for (std::list<ImportProject::FileSettings>::const_iterator it = p.fileSettings.cbegin(); it != p.fileSettings.cend(); ++it) {
+            for (std::list<FileSettings>::const_iterator it = p.fileSettings.cbegin(); it != p.fileSettings.cend(); ++it) {
                 const QString cfg(QString::fromStdString(it->cfg));
                 if (!configs.contains(cfg))
                     configs.push_back(cfg);
@@ -856,7 +861,7 @@ bool MainWindow::tryLoadLibrary(Library *library, const QString& filename)
     const Library::Error error = loadLibrary(library, filename);
     if (error.errorcode != Library::ErrorCode::OK) {
         if (error.errorcode == Library::ErrorCode::UNKNOWN_ELEMENT) {
-            QMessageBox::information(this, tr("Information"), tr("The library '%1' contains unknown elements:\n%2").arg(filename).arg(error.reason.c_str()));
+            QMessageBox::information(this, tr("Information"), tr("The library '%1' contains unknown elements:\n%2").arg(filename, error.reason.c_str()));
             return true;
         }
 
@@ -894,10 +899,45 @@ bool MainWindow::tryLoadLibrary(Library *library, const QString& filename)
         }
         if (!error.reason.empty())
             errmsg += " '" + QString::fromStdString(error.reason) + "'";
-        QMessageBox::information(this, tr("Information"), tr("Failed to load the selected library '%1'.\n%2").arg(filename).arg(errmsg));
+        QMessageBox::information(this, tr("Information"), tr("Failed to load the selected library '%1'.\n%2").arg(filename, errmsg));
         return false;
     }
     return true;
+}
+
+void MainWindow::loadAddon(Settings &settings, const QString &filesDir, const QString &pythonCmd, const QString& addon)
+{
+    QString addonFilePath = ProjectFile::getAddonFilePath(filesDir, addon);
+    if (addonFilePath.isEmpty())
+        return; // TODO: report an error
+
+    addonFilePath.replace(QChar('\\'), QChar('/'));
+
+    picojson::object obj;
+    obj["script"] = picojson::value(addonFilePath.toStdString());
+    if (!pythonCmd.isEmpty())
+        obj["python"] = picojson::value(pythonCmd.toStdString());
+
+    if (!isCppcheckPremium() && addon == "misra") {
+        const QString misraFile = fromNativePath(mSettings->value(SETTINGS_MISRA_FILE).toString());
+        if (!misraFile.isEmpty()) {
+            QString arg;
+            if (misraFile.endsWith(".pdf", Qt::CaseInsensitive))
+                arg = "--misra-pdf=" + misraFile;
+            else
+                arg = "--rule-texts=" + misraFile;
+            obj["args"] = picojson::value(arg.toStdString());
+        }
+    }
+    picojson::value json;
+    json.set(std::move(obj));
+    std::string json_str = json.serialize();
+
+    AddonInfo addonInfo;
+    addonInfo.getAddonInfo(json_str, settings.exename); // TODO: handle error
+    settings.addonInfos.emplace_back(std::move(addonInfo));
+
+    settings.addons.emplace(std::move(json_str));
 }
 
 Settings MainWindow::getCppcheckSettings()
@@ -912,7 +952,21 @@ Settings MainWindow::getCppcheckSettings()
     if (!std)
         QMessageBox::critical(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=<directory> at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.").arg("std.cfg"));
 
-    result.loadCppcheckCfg();
+    const QString filesDir(getDataDir());
+    const QString pythonCmd = fromNativePath(mSettings->value(SETTINGS_PYTHON_PATH).toString());
+
+    {
+        const QString cfgErr = QString::fromStdString(result.loadCppcheckCfg());
+        if (!cfgErr.isEmpty())
+            QMessageBox::critical(this, tr("Error"), tr("Failed to load %1 - %2").arg("cppcheck.cfg", cfgErr));
+
+        const auto cfgAddons = result.addons;
+        result.addons.clear();
+        for (const std::string& addon : cfgAddons) {
+            // TODO: support addons which are a script and not a file
+            loadAddon(result, filesDir, pythonCmd, QString::fromStdString(addon));
+        }
+    }
 
     // If project file loaded, read settings from it
     if (mProjectFile) {
@@ -966,9 +1020,9 @@ Settings MainWindow::getCppcheckSettings()
             const QString applicationFilePath = QCoreApplication::applicationFilePath();
             result.platform.loadFromFile(applicationFilePath.toStdString().c_str(), platform.toStdString());
         } else {
-            for (int i = cppcheck::Platform::Type::Native; i <= cppcheck::Platform::Type::Unix64; i++) {
-                const cppcheck::Platform::Type p = (cppcheck::Platform::Type)i;
-                if (platform == cppcheck::Platform::toString(p)) {
+            for (int i = Platform::Type::Native; i <= Platform::Type::Unix64; i++) {
+                const Platform::Type p = (Platform::Type)i;
+                if (platform == Platform::toString(p)) {
                     result.platform.set(p);
                     break;
                 }
@@ -990,30 +1044,8 @@ Settings MainWindow::getCppcheckSettings()
         for (const QString& s : mProjectFile->getCheckUnknownFunctionReturn())
             result.checkUnknownFunctionReturn.insert(s.toStdString());
 
-        QString filesDir(getDataDir());
-        const QString pythonCmd = fromNativePath(mSettings->value(SETTINGS_PYTHON_PATH).toString());
         for (const QString& addon : mProjectFile->getAddons()) {
-            QString addonFilePath = ProjectFile::getAddonFilePath(filesDir, addon);
-            if (addonFilePath.isEmpty())
-                continue;
-
-            addonFilePath.replace(QChar('\\'), QChar('/'));
-
-            QString json;
-            json += "{ \"script\":\"" + addonFilePath + "\"";
-            if (!pythonCmd.isEmpty())
-                json += ", \"python\":\"" + pythonCmd + "\"";
-            const QString misraFile = fromNativePath(mSettings->value(SETTINGS_MISRA_FILE).toString());
-            if (!isCppcheckPremium() && addon == "misra" && !misraFile.isEmpty()) {
-                QString arg;
-                if (misraFile.endsWith(".pdf", Qt::CaseInsensitive))
-                    arg = "--misra-pdf=" + misraFile;
-                else
-                    arg = "--rule-texts=" + misraFile;
-                json += ", \"args\":[\"" + arg + "\"]";
-            }
-            json += " }";
-            result.addons.emplace(json.toStdString());
+            loadAddon(result, filesDir, pythonCmd, addon);
         }
 
         if (isCppcheckPremium()) {
@@ -1055,8 +1087,8 @@ Settings MainWindow::getCppcheckSettings()
     result.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
     result.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
     result.certainty.setEnabled(Certainty::inconclusive, mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool());
-    if (!mProjectFile || result.platform.type == cppcheck::Platform::Type::Unspecified)
-        result.platform.set((cppcheck::Platform::Type) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
+    if (!mProjectFile || result.platform.type == Platform::Type::Unspecified)
+        result.platform.set((Platform::Type) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
     result.standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
     result.standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
     result.enforcedLang = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
@@ -1747,12 +1779,15 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
             case ImportProject::Type::FAILURE:
                 errorMessage = tr("Failed to import project file");
                 break;
+            case ImportProject::Type::NONE:
+                // can never happen
+                break;
             }
 
             if (!errorMessage.isEmpty()) {
                 QMessageBox msg(QMessageBox::Critical,
                                 tr("Cppcheck"),
-                                tr("Failed to import '%1': %2\n\nAnalysis is stopped.").arg(prjfile).arg(errorMessage),
+                                tr("Failed to import '%1': %2\n\nAnalysis is stopped.").arg(prjfile, errorMessage),
                                 QMessageBox::Ok,
                                 this);
                 msg.exec();
@@ -1761,7 +1796,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
         } catch (InternalError &e) {
             QMessageBox msg(QMessageBox::Critical,
                             tr("Cppcheck"),
-                            tr("Failed to import '%1', analysis is stopped").arg(prjfile),
+                            tr("Failed to import '%1' (%2), analysis is stopped").arg(prjfile, QString::fromStdString(e.errorMessage)),
                             QMessageBox::Ok,
                             this);
             msg.exec();
@@ -1806,6 +1841,7 @@ void MainWindow::newProjectFile()
     mProjectFile = new ProjectFile(this);
     mProjectFile->setActiveProject();
     mProjectFile->setFilename(filepath);
+    mProjectFile->setProjectName(filename.left(filename.indexOf(".")));
     mProjectFile->setBuildDir(filename.left(filename.indexOf(".")) + "-cppcheck-build-dir");
 
     ProjectFileDialog dlg(mProjectFile, isCppcheckPremium(), this);
@@ -1978,7 +2014,7 @@ void MainWindow::selectPlatform()
 {
     QAction *action = qobject_cast<QAction *>(sender());
     if (action) {
-        const cppcheck::Platform::Type platform = (cppcheck::Platform::Type) action->data().toInt();
+        const Platform::Type platform = (Platform::Type) action->data().toInt();
         mSettings->setValue(SETTINGS_CHECKED_PLATFORM, platform);
     }
 }
@@ -2064,7 +2100,7 @@ void MainWindow::replyFinished(QNetworkReply *reply) {
                 }
                 mUI->mButtonHideInformation->setVisible(true);
                 mUI->mLabelInformation->setVisible(true);
-                mUI->mLabelInformation->setText(tr("New version available: %1. %2").arg(str.trimmed()).arg(install));
+                mUI->mLabelInformation->setText(tr("New version available: %1. %2").arg(str.trimmed(), install));
             }
         }
     }

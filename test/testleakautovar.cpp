@@ -19,19 +19,14 @@
 
 #include "checkleakautovar.h"
 #include "errortypes.h"
-#include "library.h"
+#include "helpers.h"
 #include "settings.h"
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
-#include <unordered_map>
-#include <utility>
 #include <vector>
-
-#include <simplecpp.h>
 
 class TestLeakAutoVarStrcpy;
 class TestLeakAutoVarWindows;
@@ -44,27 +39,29 @@ private:
     Settings settings;
 
     void run() override {
-        int id = 0;
-        while (!Library::ismemory(++id));
-        settings.library.setalloc("malloc", id, -1);
-        settings.library.setrealloc("realloc", id, -1);
-        settings.library.setdealloc("free", id, 1);
-        while (!Library::isresource(++id));
-        settings.library.setalloc("socket", id, -1);
-        settings.library.setdealloc("close", id, 1);
-        while (!Library::isresource(++id));
-        settings.library.setalloc("fopen", id, -1);
-        settings.library.setrealloc("freopen", id, -1, 3);
-        settings.library.setdealloc("fclose", id, 1);
-        settings.library.smartPointers["std::shared_ptr"];
-        settings.library.smartPointers["std::unique_ptr"];
-        settings.library.smartPointers["std::unique_ptr"].unique = true;
-
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def>\n"
-                               "  <podtype name=\"uint8_t\" sign=\"u\" size=\"1\"/>\n"
-                               "</def>";
-        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "  <podtype name=\"uint8_t\" sign=\"u\" size=\"1\"/>\n"
+                                   "  <memory>\n"
+                                   "    <alloc>malloc</alloc>\n"
+                                   "    <realloc>realloc</realloc>\n"
+                                   "    <dealloc>free</dealloc>\n"
+                                   "  </memory>\n"
+                                   "  <resource>\n"
+                                   "    <alloc>socket</alloc>\n"
+                                   "    <dealloc>close</dealloc>\n"
+                                   "  </resource>\n"
+                                   "  <resource>\n"
+                                   "    <alloc>fopen</alloc>\n"
+                                   "    <realloc realloc-arg=\"3\">freopen</realloc>\n"
+                                   "    <dealloc>fclose</dealloc>\n"
+                                   "  </resource>\n"
+                                   "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
+                                   "  <smart-pointer class-name=\"std::unique_ptr\">\n"
+                                   "    <unique/>\n"
+                                   "  </smart-pointer>\n"
+                                   "</def>";
+        settings = settingsBuilder(settings).libraryxml(xmldata, sizeof(xmldata)).build();
 
         // Assign
         TEST_CASE(assign1);
@@ -91,6 +88,7 @@ private:
         TEST_CASE(assign22); // #9139
         TEST_CASE(assign23);
         TEST_CASE(assign24); // #7440
+        TEST_CASE(assign25);
 
         TEST_CASE(isAutoDealloc);
 
@@ -113,6 +111,8 @@ private:
         TEST_CASE(deallocuse10);
         TEST_CASE(deallocuse11); // #8302
         TEST_CASE(deallocuse12);
+        TEST_CASE(deallocuse13);
+        TEST_CASE(deallocuse14);
 
         TEST_CASE(doublefree1);
         TEST_CASE(doublefree2);
@@ -128,6 +128,8 @@ private:
         TEST_CASE(doublefree12); // #10502
         TEST_CASE(doublefree13); // #11008
         TEST_CASE(doublefree14); // #9708
+        TEST_CASE(doublefree15);
+        TEST_CASE(doublefree16);
 
         // exit
         TEST_CASE(exit1);
@@ -573,6 +575,30 @@ private:
         ASSERT_EQUALS("[test.c:5]: (error) Memory leak: p\n", errout.str());
     }
 
+    void assign25() {
+        check("void f() {\n" // #11796
+              "    int* p{ new int };\n"
+              "    int* q(new int);\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: p\n"
+                      "[test.cpp:4]: (error) Memory leak: q\n",
+                      errout.str());
+
+        check("struct S : B {\n" // #12239
+              "    void f();\n"
+              "    void g();\n"
+              "};\n"
+              "void S::f() {\n"
+              "    FD* fd(new FD(this));\n"
+              "    fd->exec();\n"
+              "}\n"
+              "void S::g() {\n"
+              "    FD* fd{ new FD(this) };\n"
+              "    fd->exec();\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void isAutoDealloc() {
         check("void f() {\n"
               "    char *p = new char[100];"
@@ -603,6 +629,14 @@ private:
               "    b = Bar(*new Foo(data));\n"
               "}", /*cpp*/ true);
         ASSERT_EQUALS("[test.cpp:4]: (information) --check-library: Function Foo() should have <use>/<leak-ignore> configuration\n", errout.str());
+
+        check("class B {};\n"
+              "    class D : public B {};\n"
+              "    void g() {\n"
+              "        auto d = new D();\n"
+              "        if (d) {}\n"
+              "}", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: d\n", errout.str());
     }
 
     void realloc1() {
@@ -875,6 +909,39 @@ private:
               "  *out = f->x;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void deallocuse13() {
+        check("void f() {\n" // #9695
+              "    auto* a = new int[2];\n"
+              "    delete[] a;\n"
+              "    a[1] = 0;\n"
+              "    auto* b = static_cast<int*>(malloc(8));\n"
+              "    free(b);\n"
+              "    b[1] = 0;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Dereferencing 'a' after it is deallocated / released\n"
+                      "[test.cpp:7]: (error) Dereferencing 'b' after it is deallocated / released\n",
+                      errout.str());
+    }
+
+    void deallocuse14() {
+        check("struct S { void f(); };\n" // #10905
+              "void g() {\n"
+              "    S* s = new S;\n"
+              "    delete s;\n"
+              "    s->f();\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Dereferencing 's' after it is deallocated / released\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    int *p = (int*)malloc(4);\n"
+              "    free(p);\n"
+              "    if (*p == 5) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.c:4]: (error) Dereferencing 'p' after it is deallocated / released\n",
+                      errout.str());
     }
 
     void doublefree1() {  // #3895
@@ -1528,6 +1595,22 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void doublefree15() { // #11966
+        check("void f(FILE* fp) {\n"
+              "    static_cast<void>(fclose(fp));\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void doublefree16() { // #12236
+        check("void f() {\n"
+              "    FILE* f = fopen(\"abc\", \"r\");\n"
+              "    decltype(fclose(f)) y;\n"
+              "    y = fclose(f);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void exit1() {
         check("void f() {\n"
               "    char *p = malloc(10);\n"
@@ -1581,6 +1664,16 @@ private:
               "    s->p = NULL;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        const Settings s = settingsBuilder().library("std.cfg").build();
+        check("struct S {};\n"
+              "void f(int i, std::vector<std::unique_ptr<S>> &v) {\n"
+              "    if (i < 1) {\n"
+              "        auto s = new S;\n"
+              "        v.push_back(std::unique_ptr<S>(s));\n"
+              "    }\n"
+              "}\n", &s);
+        ASSERT_EQUALS("", errout.str()); // don't crash
     }
 
     void goto1() {
@@ -2764,18 +2857,18 @@ private:
     }
 
     void functionCallCastConfig() { // #9652
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def format=\"2\">\n"
-                               "  <function name=\"free_func\">\n"
-                               "    <noreturn>false</noreturn>\n"
-                               "    <arg nr=\"1\">\n"
-                               "      <not-uninit/>\n"
-                               "    </arg>\n"
-                               "    <arg nr=\"2\">\n"
-                               "      <not-uninit/>\n"
-                               "    </arg>\n"
-                               "  </function>\n"
-                               "</def>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def format=\"2\">\n"
+                                   "  <function name=\"free_func\">\n"
+                                   "    <noreturn>false</noreturn>\n"
+                                   "    <arg nr=\"1\">\n"
+                                   "      <not-uninit/>\n"
+                                   "    </arg>\n"
+                                   "    <arg nr=\"2\">\n"
+                                   "      <not-uninit/>\n"
+                                   "    </arg>\n"
+                                   "  </function>\n"
+                                   "</def>";
         const Settings settingsFunctionCall = settingsBuilder(settings).libraryxml(xmldata, sizeof(xmldata)).build();
 
         check("void test_func()\n"
@@ -2801,20 +2894,30 @@ private:
     }
 
     void functionCallLeakIgnoreConfig() { // #7923
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def format=\"2\">\n"
-                               "  <function name=\"SomeClass::someMethod\">\n"
-                               "    <leak-ignore/>\n"
-                               "    <noreturn>false</noreturn>\n"
-                               "    <arg nr=\"1\" direction=\"in\"/>\n"
-                               "  </function>\n"
-                               "</def>\n";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def format=\"2\">\n"
+                                   "  <function name=\"SomeClass::someMethod\">\n"
+                                   "    <leak-ignore/>\n"
+                                   "    <noreturn>false</noreturn>\n"
+                                   "    <arg nr=\"1\" direction=\"in\"/>\n"
+                                   "  </function>\n"
+                                   "</def>\n";
         const Settings settingsLeakIgnore = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
         check("void f() {\n"
               "    double* a = new double[1024];\n"
               "    SomeClass::someMethod(a);\n"
               "}\n", settingsLeakIgnore);
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: a\n", errout.str());
+
+        check("void bar(int* p) {\n"
+              "    if (p)\n"
+              "        free(p);\n"
+              "}\n"
+              "void f() {\n"
+              "    int* p = malloc(4);\n"
+              "    bar(p);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
@@ -2827,24 +2930,17 @@ public:
 private:
     const Settings settings = settingsBuilder().library("std.cfg").checkLibrary().build();
 
-    void checkP(const char code[], bool cpp = false) {
+#define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkP_(const char* file, int line, const char code[], bool cpp = false) {
         // Clear the error buffer..
         errout.str("");
 
-        // Raw tokens..
         std::vector<std::string> files(1, cpp?"test.cpp":"test.c");
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        // Preprocess..
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+        Tokenizer tokenizer(&settings, this);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenizer..
-        Tokenizer tokenizer(&settings, this);
-        tokenizer.createTokens(std::move(tokens2));
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check for leaks..
         runChecks<CheckLeakAutoVar>(tokenizer, this);
@@ -2874,7 +2970,10 @@ private:
     }
 };
 
+#if !defined(__MINGW32__)
+// TODO: this crashes with a stack overflow for MinGW in the CI
 REGISTER_TEST(TestLeakAutoVarRecursiveCountLimit)
+#endif
 
 class TestLeakAutoVarStrcpy : public TestFixture {
 public:
@@ -2900,6 +2999,7 @@ private:
         TEST_CASE(returnedValue); // #9298
         TEST_CASE(deallocuse2);
         TEST_CASE(fclose_false_positive); // #9575
+        TEST_CASE(strcpy_false_negative);
     }
 
     void returnedValue() { // #9298
@@ -2917,7 +3017,14 @@ private:
               "    free(p);\n"
               "    strcpy(a, p);\n"
               "}");
-        TODO_ASSERT_EQUALS("error (free,use)", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dereferencing 'p' after it is deallocated / released\n", errout.str());
+
+        check("void f(char *p, const char *q) {\n" // #11665
+              "    free(p);\n"
+              "    strcpy(p, q);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dereferencing 'p' after it is deallocated / released\n",
+                      errout.str());
 
         check("void f(char *p) {\n"   // #3041 - assigning pointer when it's used
               "    free(p);\n"
@@ -2931,6 +3038,13 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void strcpy_false_negative() { // #12289
+        check("void f() {\n"
+              "    char* buf = new char[12];\n"
+              "    strcpy(buf, \"123\");\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: buf\n", errout.str());
+    }
 };
 
 REGISTER_TEST(TestLeakAutoVarStrcpy)
@@ -2995,8 +3109,7 @@ private:
               "  HeapFree(MyHeap, 0, a);"
               "  HeapFree(MyHeap, 0, b);"
               "}");
-        TODO_ASSERT_EQUALS("[test.c:1] (error) Resource leak: MyHeap",
-                           "", errout.str());
+        ASSERT_EQUALS("[test.c:1]: (error) Resource leak: MyHeap\n", errout.str());
 
         check("void f() {"
               "  HANDLE MyHeap = HeapCreate(0, 0, 0);"
@@ -3004,9 +3117,9 @@ private:
               "  int *b = HeapAlloc(MyHeap, 0, sizeof(int));"
               "  HeapFree(MyHeap, 0, a);"
               "}");
-        TODO_ASSERT_EQUALS("[test.c:1] (error) Memory leak: MyHeap\n"
-                           "[test.c:1] (error) Memory leak: b",
-                           "[test.c:1]: (error) Memory leak: b\n", errout.str());
+        ASSERT_EQUALS("[test.c:1]: (error) Resource leak: MyHeap\n"
+                      "[test.c:1]: (error) Memory leak: b\n",
+                      errout.str());
     }
 };
 

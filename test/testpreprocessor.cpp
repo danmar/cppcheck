@@ -262,6 +262,8 @@ private:
         TEST_CASE(testMissingSystemInclude5);
         TEST_CASE(testMissingIncludeMixed);
         TEST_CASE(testMissingIncludeCheckConfig);
+
+        TEST_CASE(limitsDefines);
     }
 
     // TODO: merge with `PreprocessorHelper::getcode()`
@@ -480,7 +482,7 @@ private:
 
         // preprocess code with unix32 platform..
         {
-            const Settings settings = settingsBuilder().platform(cppcheck::Platform::Type::Unix32).build();
+            const Settings settings = settingsBuilder().platform(Platform::Type::Unix32).build();
             Preprocessor preprocessor(settings, this);
             preprocessor.setPlatformInfo(&tokens);
             ASSERT_EQUALS("\n1", preprocessor.getcode(tokens, "", files, false));
@@ -488,7 +490,7 @@ private:
 
         // preprocess code with unix64 platform..
         {
-            const Settings settings = settingsBuilder().platform(cppcheck::Platform::Type::Unix64).build();
+            const Settings settings = settingsBuilder().platform(Platform::Type::Unix64).build();
             Preprocessor preprocessor(settings, this);
             preprocessor.setPlatformInfo(&tokens);
             ASSERT_EQUALS("\n\n\n2", preprocessor.getcode(tokens, "", files, false));
@@ -2679,6 +2681,17 @@ private:
                       "test.c:6:0: information: Include file: \"header4.h\" not found. [missingInclude]\n"
                       "test.c:9:0: information: Include file: \"" + missing3 + "\" not found. [missingInclude]\n"
                       "test.c:11:0: information: Include file: <" + missing4 + "> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout.str());
+    }
+
+    void limitsDefines() {
+        // #11928 / #10045
+        const char code[] = "void f(long l) {\n"
+                            "  if (l > INT_MAX) {}\n"
+                            "}";
+        const std::string actual = PreprocessorHelper::getcode(preprocessor0, code, "", "test.c");
+        ASSERT_EQUALS("void f ( long l ) {\n"
+                      "if ( l > $2147483647 ) { }\n"
+                      "}", actual);
     }
 };
 

@@ -25,7 +25,6 @@
 
 #include <algorithm>
 #include <cstdlib>
-#include <fstream>
 #include <sys/stat.h>
 #include <utility>
 
@@ -46,9 +45,11 @@
 
 
 /** Is the filesystem case insensitive? */
-static bool caseInsensitiveFilesystem()
+static constexpr bool caseInsensitiveFilesystem()
 {
-#ifdef _WIN32
+#if defined(_WIN32) || (defined(__APPLE__) && defined(__MACH__))
+    // Windows is case insensitive
+    // MacOS is case insensitive by default (also supports case sensitivity)
     return true;
 #else
     // TODO: Non-windows filesystems might be case insensitive
@@ -59,11 +60,11 @@ static bool caseInsensitiveFilesystem()
 std::string Path::toNativeSeparators(std::string path)
 {
 #if defined(_WIN32)
-    const char separ = '/';
-    const char native = '\\';
+    constexpr char separ = '/';
+    constexpr char native = '\\';
 #else
-    const char separ = '\\';
-    const char native = '/';
+    constexpr char separ = '\\';
+    constexpr char native = '/';
 #endif
     std::replace(path.begin(), path.end(), separ, native);
     return path;
@@ -71,8 +72,8 @@ std::string Path::toNativeSeparators(std::string path)
 
 std::string Path::fromNativeSeparators(std::string path)
 {
-    const char nonnative = '\\';
-    const char newsepar = '/';
+    constexpr char nonnative = '\\';
+    constexpr char newsepar = '/';
     std::replace(path.begin(), path.end(), nonnative, newsepar);
     return path;
 }
@@ -169,7 +170,7 @@ bool Path::isAbsolute(const std::string& path)
         return false;
 
     // On Windows, 'C:\foo\bar' is an absolute path, while 'C:foo\bar' is not
-    return nativePath.compare(0, 2, "\\\\") == 0 || (std::isalpha(nativePath[0]) != 0 && nativePath.compare(1, 2, ":\\") == 0);
+    return startsWith(nativePath, "\\\\") || (std::isalpha(nativePath[0]) != 0 && nativePath.compare(1, 2, ":\\") == 0);
 #else
     return !nativePath.empty() && nativePath[0] == '/';
 #endif
@@ -225,7 +226,7 @@ bool Path::acceptFile(const std::string &path, const std::set<std::string> &extr
 bool Path::isHeader(const std::string &path)
 {
     const std::string extension = getFilenameExtensionInLowerCase(path);
-    return (extension.compare(0, 2, ".h") == 0);
+    return startsWith(extension, ".h");
 }
 
 std::string Path::getAbsoluteFilePath(const std::string& filePath)
@@ -249,9 +250,9 @@ std::string Path::getAbsoluteFilePath(const std::string& filePath)
 std::string Path::stripDirectoryPart(const std::string &file)
 {
 #if defined(_WIN32) && !defined(__MINGW32__)
-    const char native = '\\';
+    constexpr char native = '\\';
 #else
-    const char native = '/';
+    constexpr char native = '/';
 #endif
 
     const std::string::size_type p = file.rfind(native);
@@ -283,7 +284,7 @@ bool Path::isDirectory(const std::string &path)
     return file_type(path) == S_IFDIR;
 }
 
-std::string Path::join(std::string path1, std::string path2) {
+std::string Path::join(const std::string& path1, const std::string& path2) {
     if (path1.empty() || path2.empty())
         return path1 + path2;
     if (path2.front() == '/')

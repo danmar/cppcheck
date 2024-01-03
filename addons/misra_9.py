@@ -311,8 +311,7 @@ class InitializerParser:
                 if self.ed and self.ed.isValue:
                     if not isDesignated and len(self.rootStack) > 0 and self.rootStack[-1][1] == self.root:
                         self.rootStack[-1][0].markStuctureViolation(self.token)
-
-                    if isFirstElement and self.token.str == '0' and self.token.next.str == '}':
+                    if isFirstElement and self.token.isInt and self.token.getKnownIntValue() == 0 and self.token.next.str == '}':
                         # Zero initializer causes recursive initialization
                         self.root.initializeChildren()
                     elif self.token.isString and self.ed.valueType and self.ed.valueType.pointer > 0:
@@ -396,38 +395,6 @@ class InitializerParser:
                     break
 
 def misra_9_x(self, data, rule, rawTokens = None):
-    # If there are arrays with unknown size constants then we need to warn about missing configuration
-    # and bailout
-    has_config_errors = False
-    for var in data.variables:
-        if not var.isArray or var.nameToken is None or not cppcheckdata.simpleMatch(var.nameToken.next,'['):
-            continue
-        tok = var.nameToken.next
-        while tok.str == '[':
-            sz = tok.astOperand2
-            if sz and sz.getKnownIntValue() is None:
-                has_var = False
-                unknown_constant = False
-                tokens = [sz]
-                while len(tokens) > 0:
-                    t = tokens[-1]
-                    tokens = tokens[:-1]
-                    if t:
-                        if t.isName and t.getKnownIntValue() is None:
-                            if t.varId or t.variable:
-                                has_var = True
-                                continue
-                            unknown_constant = True
-                            cppcheckdata.reportError(sz, 'error', 'Unknown constant {}, please review configuration'.format(t.str), 'misra', 'config')
-                            has_config_errors = True
-                        if t.isArithmeticalOp:
-                            tokens += [t.astOperand1, t.astOperand2]
-                if not unknown_constant and not has_var:
-                    cppcheckdata.reportError(sz, 'error', 'Unknown array size, please review configuration', 'misra', 'config')
-                    has_config_errors = True
-            tok = tok.link.next
-    if has_config_errors:
-        return
 
     parser = InitializerParser()
 
@@ -532,11 +499,29 @@ def createRecordChildrenDefs(ed, var):
         child = ElementDef("pointer", var.nameToken, var.nameToken.valueType)
         ed.addChild(child)
         return
+    child_dict = {}
     for variable in valueType.typeScope.varlist:
         if variable is var:
             continue
         child = getElementDef(variable.nameToken)
-        ed.addChild(child)
+        child_dict[variable.nameToken] = child
+    for scopes in valueType.typeScope.nestedList:
+        varscope = False
+        if scopes.nestedIn == valueType.typeScope:
+            for variable in valueType.typeScope.varlist:
+                if variable.nameToken and variable.nameToken.valueType and variable.nameToken.valueType.typeScope == scopes:
+                    varscope = True
+                    break
+            if not varscope:
+                ed1 = ElementDef("record", scopes.Id, valueType)
+                for variable in scopes.varlist:
+                    child = getElementDef(variable.nameToken)
+                    ed1.addChild(child)
+                child_dict[scopes.bodyStart] = ed1
+    sorted_keys = sorted(list(child_dict.keys()), key=lambda k: "%s %s %s" % (k.file, k.linenr, k.column))
+    for _key in sorted_keys:
+        ed.addChild(child_dict[_key])
+
 
 def getElementByDesignator(ed, token):
     if not token.str in [ '.', '[' ]:

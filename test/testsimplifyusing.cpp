@@ -18,20 +18,17 @@
 
 
 #include "errortypes.h"
+#include "helpers.h"
 #include "platform.h"
 #include "settings.h"
 #include "fixture.h"
 #include "token.h"
 #include "tokenize.h"
+#include "utils.h"
 
-#include <simplecpp.h>
-
-#include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
-#include <utility>
 #include <vector>
-
 
 class TestSimplifyUsing : public TestFixture {
 public:
@@ -70,6 +67,7 @@ private:
         TEST_CASE(simplifyUsing26); // #11090
         TEST_CASE(simplifyUsing27);
         TEST_CASE(simplifyUsing28);
+        TEST_CASE(simplifyUsing29);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -96,7 +94,7 @@ private:
     }
 
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tok_(const char* file, int line, const char code[], cppcheck::Platform::Type type = cppcheck::Platform::Type::Native, bool debugwarnings = true, bool preprocess = false) {
+    std::string tok_(const char* file, int line, const char code[], Platform::Type type = Platform::Type::Native, bool debugwarnings = true, bool preprocess = false) {
         errout.str("");
 
         const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings(debugwarnings).platform(type).build();
@@ -104,15 +102,8 @@ private:
         Tokenizer tokenizer(&settings, this);
 
         if (preprocess) {
-            std::vector<std::string> files{ "test.cpp" };
-            std::istringstream istr(code);
-            const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-            simplecpp::TokenList tokens2(files);
-            std::map<std::string, simplecpp::TokenList*> filedata;
-            simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
-
-            tokenizer.createTokens(std::move(tokens2));
+            std::vector<std::string> files(1, "test.cpp");
+            PreprocessorHelper::preprocess(code, files, tokenizer);
         }
 
         std::istringstream istr(code);
@@ -415,7 +406,7 @@ private:
                             "    FP_M(val);"
                             "};";
 
-        TODO_ASSERT_THROW(tok(code, cppcheck::Platform::Type::Native, false), InternalError); // TODO: Do not throw AST validation exception
+        TODO_ASSERT_THROW(tok(code, Platform::Type::Native, false), InternalError); // TODO: Do not throw AST validation exception
         //ASSERT_EQUALS("", errout.str());
     }
 
@@ -679,7 +670,15 @@ private:
                             "    T* p{ new T };\n"
                             "}\n";
         const char expected[] = "void f ( ) { int * p { new int } ; }";
-        ASSERT_EQUALS(expected, tok(code, cppcheck::Platform::Type::Native, /*debugwarnings*/ true));
+        ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyUsing29() { // #11981
+        const char code[] = "using T = int*;\n"
+                            "void f(T = T()) {}\n";
+        const char expected[] = "void f ( int * = ( int * ) 0 ) { }";
+        ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -733,11 +732,11 @@ private:
 
         const char exp[] = "int i ;";
 
-        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Unix32));
-        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Unix64));
-        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Win32A));
-        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Win32W));
-        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Win64));
+        ASSERT_EQUALS(exp, tok(code, Platform::Type::Unix32));
+        ASSERT_EQUALS(exp, tok(code, Platform::Type::Unix64));
+        ASSERT_EQUALS(exp, tok(code, Platform::Type::Win32A));
+        ASSERT_EQUALS(exp, tok(code, Platform::Type::Win32W));
+        ASSERT_EQUALS(exp, tok(code, Platform::Type::Win64));
     }
 
     void simplifyUsing9042() {
@@ -757,7 +756,7 @@ private:
                            "} ; "
                            "template < class T > class s { } ;";
 
-        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Win64));
+        ASSERT_EQUALS(exp, tok(code, Platform::Type::Win64));
     }
 
     void simplifyUsing9191() {
@@ -1390,8 +1389,8 @@ private:
                             "STAMP(A, int);\n"
                             "STAMP(B, A);\n"
                             "STAMP(C, B);\n";
-        tok(code, cppcheck::Platform::Type::Native, /*debugwarnings*/ true, /*preprocess*/ true);
-        ASSERT_EQUALS(errout.str().compare(0, 64, "[test.cpp:6]: (debug) Failed to parse 'using C = S < S < S < int"), 0);
+        tok(code, Platform::Type::Native, /*debugwarnings*/ true, /*preprocess*/ true);
+        ASSERT(startsWith(errout.str(), "[test.cpp:6]: (debug) Failed to parse 'using C = S < S < S < int"));
     }
 
     void scopeInfo1() {

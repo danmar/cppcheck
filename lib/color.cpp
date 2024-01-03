@@ -40,7 +40,7 @@ static bool isStreamATty(const std::ostream & os)
 }
 #endif
 
-std::ostream& operator<<(std::ostream & os, const Color& c)
+std::ostream& operator<<(std::ostream & os, Color c)
 {
 #ifndef _WIN32
     if (!gDisableColors && isStreamATty(os))
@@ -51,7 +51,7 @@ std::ostream& operator<<(std::ostream & os, const Color& c)
     return os;
 }
 
-std::string toString(const Color& c)
+std::string toString(Color c)
 {
 #ifndef _WIN32
     std::stringstream ss;

@@ -51,13 +51,20 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang
     add_compile_options(-Wno-missing-braces)
     add_compile_options(-Wno-sign-compare)
     add_compile_options(-Wno-multichar)
+    add_compile_options(-Woverloaded-virtual)       # when a function declaration hides virtual functions from a base class
+
+    # TODO: evaluate
+    #add_compile_options(-Wconversion)  # danmar: gives fp. for instance: unsigned int sizeof_pointer = sizeof(void *);
+    #add_compile_options(-Wlogical-op) # doesn't work on older GCC
+    #add_compile_options(-Wsign-conversion) # too many warnings
+    #add_compile_options(-Wunreachable-code) # some GCC versions report lots of warnings
+    #add_compile_options(-Wsign-promo)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # use pipes instead of temporary files - greatly reduces I/O usage
     add_compile_options(-pipe)
 
-    add_compile_options(-Woverloaded-virtual)       # when a function declaration hides virtual functions from a base class
     add_compile_options(-Wno-maybe-uninitialized)   # there are some false positives
     add_compile_options(-Wsuggest-attribute=noreturn)
     add_compile_options(-Wno-shadow)                # whenever a local variable or type declaration shadows another one
@@ -81,53 +88,48 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         add_link_options(-lc++)
     endif()
 
-   # TODO: fix and enable these warnings - or move to suppression list below
+    # TODO: fix and enable these warnings - or move to suppression list below
     add_compile_options_safe(-Wno-documentation-unknown-command) # TODO: Clang currently does not support all commands
-   add_compile_options_safe(-Wno-inconsistent-missing-destructor-override) # caused by Qt moc code
-   add_compile_options_safe(-Wno-unused-exception-parameter)
-   add_compile_options_safe(-Wno-old-style-cast)
-   add_compile_options_safe(-Wno-sign-conversion)
-   add_compile_options_safe(-Wno-shadow-field-in-constructor)
-   add_compile_options_safe(-Wno-covered-switch-default)
-   add_compile_options_safe(-Wno-shorten-64-to-32)
-   add_compile_options_safe(-Wno-zero-as-null-pointer-constant) # TODO: enable when warnings are fixed in in simplecpp and tinyxml2
-   add_compile_options_safe(-Wno-implicit-int-conversion)
-   add_compile_options_safe(-Wno-double-promotion)
-   add_compile_options_safe(-Wno-shadow-field)
-   add_compile_options_safe(-Wno-shadow-uncaptured-local)
-   add_compile_options_safe(-Wno-implicit-float-conversion)
-   add_compile_options_safe(-Wno-switch-enum)
-   add_compile_options_safe(-Wno-float-conversion)
-   add_compile_options_safe(-Wno-enum-enum-conversion)
-   add_compile_options_safe(-Wno-date-time)
-   add_compile_options_safe(-Wno-suggest-override) # TODO: enable when warnings are fixed in in tinyxml2
-   add_compile_options_safe(-Wno-suggest-destructor-override) # TODO: enable when warnings are fixed in in tinyxml2
-   add_compile_options_safe(-Wno-extra-semi-stmt) # TODO: enable when warnings are fixed in in tinyxml2
-   add_compile_options(-Wno-disabled-macro-expansion)
-   add_compile_options_safe(-Wno-bitwise-instead-of-logical)
+    add_compile_options_safe(-Wno-unused-exception-parameter)
+    add_compile_options_safe(-Wno-old-style-cast)
+    add_compile_options_safe(-Wno-sign-conversion)
+    add_compile_options_safe(-Wno-shadow-field-in-constructor)
+    add_compile_options_safe(-Wno-covered-switch-default)
+    add_compile_options_safe(-Wno-shorten-64-to-32)
+    add_compile_options_safe(-Wno-implicit-int-conversion)
+    add_compile_options_safe(-Wno-double-promotion)
+    add_compile_options_safe(-Wno-shadow-field)
+    add_compile_options_safe(-Wno-shadow-uncaptured-local)
+    add_compile_options_safe(-Wno-implicit-float-conversion)
+    add_compile_options_safe(-Wno-switch-enum)
+    add_compile_options_safe(-Wno-float-conversion)
+    add_compile_options_safe(-Wno-enum-enum-conversion)
+    add_compile_options_safe(-Wno-date-time)
+    add_compile_options(-Wno-disabled-macro-expansion)
+    add_compile_options_safe(-Wno-bitwise-instead-of-logical)
 
-   # these cannot be fixed properly without adopting later C++ standards
-   add_compile_options_safe(-Wno-unsafe-buffer-usage)
-   add_compile_options_safe(-Wno-global-constructors)
-   add_compile_options_safe(-Wno-exit-time-destructors)
+    # these cannot be fixed properly without adopting later C++ standards
+    add_compile_options_safe(-Wno-unsafe-buffer-usage)
+    add_compile_options_safe(-Wno-global-constructors)
+    add_compile_options_safe(-Wno-exit-time-destructors)
 
-   # can only be partially addressed
-   add_compile_options(-Wno-padded)
+    # can only be partially addressed
+    add_compile_options(-Wno-padded)
 
-   # no need for C++98 compatibility
-   add_compile_options(-Wno-c++98-compat)
-   add_compile_options(-Wno-c++98-compat-pedantic)
+    # no need for C++98 compatibility
+    add_compile_options(-Wno-c++98-compat)
+    add_compile_options(-Wno-c++98-compat-pedantic)
 
-   # only need to be addressed to work around issues in older compilers
-   add_compile_options_safe(-Wno-return-std-move-in-c++11)
+    # only needs to be addressed to work around issues in older compilers
+    add_compile_options_safe(-Wno-return-std-move-in-c++11)
 
     # warnings we are currently not interested in
-   add_compile_options(-Wno-four-char-constants)
-   add_compile_options(-Wno-weak-vtables)
+    add_compile_options(-Wno-four-char-constants)
+    add_compile_options(-Wno-weak-vtables)
 
-   if(ENABLE_COVERAGE OR ENABLE_COVERAGE_XML)
+    if(ENABLE_COVERAGE OR ENABLE_COVERAGE_XML)
       message(FATAL_ERROR "Do not use clang to generate code coverage. Use GCC instead.")
-   endif()
+    endif()
 endif()
 
 if (MSVC)
@@ -188,7 +190,7 @@ if (MSVC)
     # Linker - General
     add_link_options($<$<CONFIG:Debug>:/INCREMENTAL>) # Enable Incremental Linking - Yes
 
-    add_link_options(/NOLOGO) # SUppress Startup Banner - Yes
+    add_link_options(/NOLOGO) # Suppress Startup Banner - Yes
     # Ignore Import Library - Yes
 
     # Linker - Debugging

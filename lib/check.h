@@ -61,10 +61,12 @@ public:
     /** This constructor is used when registering the CheckClass */
     explicit Check(const std::string &aname);
 
+protected:
     /** This constructor is used when running checks. */
     Check(std::string aname, const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger), mName(std::move(aname)) {}
 
+public:
     virtual ~Check() {
         if (!mTokenizer)
             instances().remove(this);
@@ -127,33 +129,33 @@ public:
         return false;
     }
 
+protected:
     static std::string getMessageId(const ValueFlow::Value &value, const char id[]);
 
-protected:
     const Tokenizer* const mTokenizer{};
     const Settings* const mSettings{};
     ErrorLogger* const mErrorLogger{};
 
     /** report an error */
-    void reportError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg) {
+    void reportError(const Token *tok, const Severity severity, const std::string &id, const std::string &msg) {
         reportError(tok, severity, id, msg, CWE(0U), Certainty::normal);
     }
 
     /** report an error */
-    void reportError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty certainty) {
+    void reportError(const Token *tok, const Severity severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty certainty) {
         const std::list<const Token *> callstack(1, tok);
         reportError(callstack, severity, id, msg, cwe, certainty);
     }
 
     /** report an error */
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg) {
+    void reportError(const std::list<const Token *> &callstack, Severity severity, const std::string &id, const std::string &msg) {
         reportError(callstack, severity, id, msg, CWE(0U), Certainty::normal);
     }
 
     /** report an error */
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty certainty);
+    void reportError(const std::list<const Token *> &callstack, Severity severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty certainty);
 
-    void reportError(const ErrorPath &errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty);
+    void reportError(const ErrorPath &errorPath, Severity severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty);
 
     /** log checker */
     void logChecker(const char id[]);

@@ -22,6 +22,7 @@
 #include "libraryaddfunctiondialog.h"
 #include "libraryeditargdialog.h"
 #include "path.h"
+#include "utils.h"
 
 #include "ui_librarydialog.h"
 
@@ -46,18 +47,20 @@ class QWidget;
 
 // TODO: get/compare functions from header
 
-class FunctionListItem : public QListWidgetItem {
-public:
-    FunctionListItem(QListWidget *view,
-                     CppcheckLibraryData::Function *function,
-                     bool selected)
-        : QListWidgetItem(view), function(function) {
-        setText(function->name);
-        setFlags(flags() | Qt::ItemIsEditable);
-        setSelected(selected);
-    }
-    CppcheckLibraryData::Function *function;
-};
+namespace {
+    class FunctionListItem : public QListWidgetItem {
+    public:
+        FunctionListItem(QListWidget *view,
+                         CppcheckLibraryData::Function *function,
+                         bool selected)
+            : QListWidgetItem(view), function(function) {
+            setText(function->name);
+            setFlags(flags() | Qt::ItemIsEditable);
+            setSelected(selected);
+        }
+        CppcheckLibraryData::Function *function;
+    };
+}
 
 LibraryDialog::LibraryDialog(QWidget *parent) :
     QDialog(parent),
@@ -118,7 +121,7 @@ void LibraryDialog::openCfg()
     if (!errmsg.isNull()) {
         QMessageBox msg(QMessageBox::Critical,
                         tr("Cppcheck"),
-                        tr("Failed to load %1. %2.").arg(selectedFile).arg(errmsg),
+                        tr("Failed to load %1. %2.").arg(selectedFile, errmsg),
                         QMessageBox::Ok,
                         this);
         msg.exec();
@@ -343,11 +346,11 @@ QString LibraryDialog::getArgText(const CppcheckLibraryData::Function::Arg &arg)
     if (arg.nr != CppcheckLibraryData::Function::Arg::ANY)
         s += QString::number(arg.nr);
 
-    s += "\n    not bool: " + QString(arg.notbool ? "true" : "false");
-    s += "\n    not null: " + QString(arg.notnull ? "true" : "false");
-    s += "\n    not uninit: " + QString(arg.notuninit ? "true" : "false");
-    s += "\n    format string: " + QString(arg.formatstr ? "true" : "false");
-    s += "\n    strz: " + QString(arg.strz ? "true" : "false");
+    s += "\n    not bool: " + QString(bool_to_string(arg.notbool));
+    s += "\n    not null: " +  QString(bool_to_string(arg.notnull));
+    s += "\n    not uninit: " +  QString(bool_to_string(arg.notuninit));
+    s += "\n    format string: " +  QString(bool_to_string(arg.formatstr));
+    s += "\n    strz: " +  QString(bool_to_string(arg.strz));
     s += "\n    valid: " + QString(arg.valid.isEmpty() ? "any" : arg.valid);
     for (const CppcheckLibraryData::Function::Arg::MinSize &minsize : arg.minsizes) {
         s += "\n    minsize: " + minsize.type + " " + minsize.arg + " " + minsize.arg2;

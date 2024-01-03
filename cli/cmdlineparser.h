@@ -20,13 +20,18 @@
 #define CMDLINE_PARSER_H
 
 #include <cstddef>
+#include <list>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "cmdlinelogger.h"
+#include "filesettings.h"
 #include "utils.h"
 
 class Settings;
 class Suppressions;
+class Library;
 
 /// @addtogroup CLI
 /// @{
@@ -44,32 +49,31 @@ class CmdLineParser {
 public:
     /**
      * The constructor.
+     * @param logger The logger instance to log messages through
      * @param settings Settings instance that will be modified according to
      * options user has given.
      * @param suppressions Suppressions instance that keeps the suppressions
      * @param suppressionsNoFail Suppressions instance that keeps the "do not fail" suppressions
      */
-    CmdLineParser(Settings &settings, Suppressions &suppressions, Suppressions &suppressionsNoFail);
+    CmdLineParser(CmdLineLogger &logger, Settings &settings, Suppressions &suppressions, Suppressions &suppressionsNoFail);
+
+    enum class Result { Success, Exit, Fail };
+
+    /**
+     * @brief Parse command line args and fill settings and file lists
+     * from there.
+     *
+     * @param argc argc from main()
+     * @param argv argv from main()
+     * @return false when errors are found in the input
+     */
+    bool fillSettingsFromArgs(int argc, const char* const argv[]);
 
     /**
      * Parse given command line.
      * @return true if command line was ok, false if there was an error.
      */
-    bool parseFromArgs(int argc, const char* const argv[]);
-
-    /**
-     * Return if user wanted to see program version.
-     */
-    bool getShowVersion() const {
-        return mShowVersion;
-    }
-
-    /**
-     * Return if user wanted to see list of error messages.
-     */
-    bool getShowErrorMessages() const {
-        return mShowErrorMessages;
-    }
+    Result parseFromArgs(int argc, const char* const argv[]);
 
     /**
      * Return the path names user gave to command line.
@@ -79,17 +83,17 @@ public:
     }
 
     /**
-     * Return if help is shown to user.
+     * Return the files user gave to command line.
      */
-    bool getShowHelp() const {
-        return mShowHelp;
+    const std::list<std::pair<std::string, std::size_t>>& getFiles() const {
+        return mFiles;
     }
 
     /**
-     * Return if we should exit after printing version, help etc.
+     * Return the file settings read from command line.
      */
-    bool exitAfterPrinting() const {
-        return mExitAfterPrint;
+    const std::list<FileSettings>& getFileSettings() const {
+        return mFileSettings;
     }
 
     /**
@@ -99,57 +103,64 @@ public:
         return mIgnoredPaths;
     }
 
-#if defined(_WIN64) || defined(_WIN32)
-    // temporary variable to "un-break" tests
-    static bool SHOW_DEF_PLATFORM_MSG;
-#endif
-
 protected:
 
     /**
      * Print help text to the console.
      */
-    void printHelp();
-
-    /**
-     * Print message (to stdout).
-     */
-    static void printMessage(const std::string &message);
-
-    /**
-     * Print error message (to stdout).
-     */
-    static void printError(const std::string &message);
+    void printHelp() const;
 
 private:
     bool isCppcheckPremium() const;
 
     template<typename T>
-    static bool parseNumberArg(const char* const arg, std::size_t offset, T& num, bool mustBePositive = false)
+    bool parseNumberArg(const char* const arg, std::size_t offset, T& num, bool mustBePositive = false)
     {
         T tmp;
         std::string err;
         if (!strToInt(arg + offset, tmp, &err)) {
-            printError("argument to '" + std::string(arg, offset) + "' is not valid - " + err + ".");
+            mLogger.printError("argument to '" + std::string(arg, offset) + "' is not valid - " + err + ".");
             return false;
         }
         if (mustBePositive && tmp < 0) {
-            printError("argument to '" + std::string(arg, offset) + "' needs to be a positive integer.");
+            mLogger.printError("argument to '" + std::string(arg, offset) + "' needs to be a positive integer.");
             return false;
         }
         num = tmp;
         return true;
     }
 
+    /**
+     * Tries to load a library and prints warning/error messages
+     * @return false, if an error occurred (except unknown XML elements)
+     */
+    bool tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename);
+
+    /**
+     * @brief Load libraries
+     * @param settings Settings
+     * @return Returns true if successful
+     */
+    bool loadLibraries(Settings& settings);
+
+    /**
+     * @brief Load addons
+     * @param settings Settings
+     * @return Returns true if successful
+     */
+    bool loadAddons(Settings& settings);
+
+    bool loadCppcheckCfg();
+
+    CmdLineLogger &mLogger;
+
     std::vector<std::string> mPathNames;
+    std::list<std::pair<std::string, std::size_t>> mFiles;
+    std::list<FileSettings> mFileSettings;
     std::vector<std::string> mIgnoredPaths;
     Settings &mSettings;
     Suppressions &mSuppressions;
     Suppressions &mSuppressionsNoFail;
-    bool mShowHelp{};
-    bool mShowVersion{};
-    bool mShowErrorMessages{};
-    bool mExitAfterPrint{};
     std::string mVSConfig;
 };
 

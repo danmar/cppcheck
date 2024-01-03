@@ -18,7 +18,6 @@
 
 #include "check.h"
 #include "errortypes.h"
-#include "mathlib.h"
 #include "preprocessor.h"
 #include "settings.h"
 #include "fixture.h"
@@ -812,7 +811,7 @@ private:
     }
 
     void garbageCode85() { // #6784
-        ASSERT_THROW(checkCode("{ } { } typedef void ( *VoidFunc() ) ( ) ; VoidFunc"), InternalError); // do not crash
+        checkCode("{ } { } typedef void ( *VoidFunc() ) ( ) ; VoidFunc"); // do not crash
     }
 
     void garbageCode86() { // #6785

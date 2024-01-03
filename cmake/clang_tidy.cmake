@@ -1,5 +1,5 @@
 if (NOT CMAKE_DISABLE_PRECOMPILE_HEADERS)
-    # clang-tidy and clang need to have the same version when precompiled headers are beign used
+    # clang-tidy and clang need to have the same version when precompiled headers are being used
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         string(REGEX MATCHALL "[0-9]+" _clang_ver_parts "${CMAKE_CXX_COMPILER_VERSION}")
         LIST(GET _clang_ver_parts 0 _clang_major)

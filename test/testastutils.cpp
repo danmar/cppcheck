@@ -173,14 +173,13 @@ private:
         ASSERT_EQUALS(true, isReturnScope("void positiveTokenOffset() { return; }", 7));
     }
 
-#define isSameExpression(code, tokStr1, tokStr2) isSameExpression_(code, tokStr1, tokStr2, __FILE__, __LINE__)
-    bool isSameExpression_(const char code[], const char tokStr1[], const char tokStr2[], const char* file, int line) {
+#define isSameExpression(...) isSameExpression_(__FILE__, __LINE__, __VA_ARGS__)
+    bool isSameExpression_(const char* file, int line, const char code[], const char tokStr1[], const char tokStr2[]) {
         const Settings settings;
         Library library;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
-        tokenizer.simplifyTokens1("");
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), tokStr1, strlen(tokStr1));
         const Token * const tok2 = Token::findsimplematch(tok1->next(), tokStr2, strlen(tokStr2));
         return (isSameExpression)(false, false, tok1, tok2, library, false, true, nullptr);
@@ -231,9 +230,12 @@ private:
                           "  if (b) { (int)((INTOF(8))result >> b); }\n"
                           "}", "if", "}");
         // #9235
-        ASSERT_EQUALS(true, isVariableChanged("void f() {\n"
-                                              "    int &a = a;\n"
-                                              "}\n", "= a", "}"));
+        ASSERT_EQUALS(false,
+                      isVariableChanged("void f() {\n"
+                                        "    int &a = a;\n"
+                                        "}\n",
+                                        "= a",
+                                        "}"));
 
         ASSERT_EQUALS(false, isVariableChanged("void f(const A& a) { a.f(); }", "{", "}"));
         ASSERT_EQUALS(true,
@@ -241,6 +243,8 @@ private:
                                         "void f(int x) { g(&x); }\n",
                                         "{",
                                         "}"));
+
+        ASSERT_EQUALS(false, isVariableChanged("const int A[] = { 1, 2, 3 };", "[", "]"));
     }
 
 #define isVariableChangedByFunctionCall(code, pattern, inconclusive) isVariableChangedByFunctionCall_(code, pattern, inconclusive, __FILE__, __LINE__)
@@ -395,7 +399,7 @@ private:
         const Token* const start = Token::findsimplematch(tokenizer.tokens(), startPattern, strlen(startPattern));
         const Token* const end = Token::findsimplematch(start, endPattern, strlen(endPattern));
         const Token* const expr = Token::findsimplematch(tokenizer.tokens(), var, strlen(var));
-        return (isExpressionChanged)(expr, start, end, &settings, true);
+        return (findExpressionChanged)(expr, start, end, &settings, true);
     }
 
     void isExpressionChangedTest()

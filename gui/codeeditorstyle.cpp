@@ -18,8 +18,6 @@
 
 #include "codeeditorstyle.h"
 
-#include <utility>
-
 #include <QSettings>
 #include <QStringList>
 #include <QVariant>
@@ -32,31 +30,32 @@ CodeEditorStyle::CodeEditorStyle(
     // cppcheck-suppress naming-varname - TODO: fix this
     QColor LnNumFGColor, QColor LnNumBGColor,
     // cppcheck-suppress naming-varname - TODO: fix this
-    QColor KeyWdFGColor, const QFont::Weight& KeyWdWeight,
+    QColor KeyWdFGColor, QFont::Weight KeyWdWeight,
     // cppcheck-suppress naming-varname - TODO: fix this
-    QColor ClsFGColor, const QFont::Weight& ClsWeight,
+    QColor ClsFGColor, QFont::Weight ClsWeight,
     // cppcheck-suppress naming-varname - TODO: fix this
-    QColor QteFGColor, const QFont::Weight& QteWeight,
+    QColor QteFGColor, QFont::Weight QteWeight,
     // cppcheck-suppress naming-varname - TODO: fix this
-    QColor CmtFGColor, const QFont::Weight& CmtWeight,
+    QColor CmtFGColor, QFont::Weight CmtWeight,
     // cppcheck-suppress naming-varname - TODO: fix this
     QColor SymbFGColor, QColor SymbBGColor,
-    const QFont::Weight& SymbWeight) :
-    widgetFGColor(std::move(CtrlFGColor)),
-    widgetBGColor(std::move(CtrlBGColor)),
-    highlightBGColor(std::move(HiLiBGColor)),
-    lineNumFGColor(std::move(LnNumFGColor)),
-    lineNumBGColor(std::move(LnNumBGColor)),
-    keywordColor(std::move(KeyWdFGColor)),
+    // cppcheck-suppress naming-varname - TODO: fix this
+    QFont::Weight SymbWeight) :
+    widgetFGColor(CtrlFGColor),
+    widgetBGColor(CtrlBGColor),
+    highlightBGColor(HiLiBGColor),
+    lineNumFGColor(LnNumFGColor),
+    lineNumBGColor(LnNumBGColor),
+    keywordColor(KeyWdFGColor),
     keywordWeight(KeyWdWeight),
-    classColor(std::move(ClsFGColor)),
+    classColor(ClsFGColor),
     classWeight(ClsWeight),
-    quoteColor(std::move(QteFGColor)),
+    quoteColor(QteFGColor),
     quoteWeight(QteWeight),
-    commentColor(std::move(CmtFGColor)),
+    commentColor(CmtFGColor),
     commentWeight(CmtWeight),
-    symbolFGColor(std::move(SymbFGColor)),
-    symbolBGColor(std::move(SymbBGColor)),
+    symbolFGColor(SymbFGColor),
+    symbolBGColor(SymbBGColor),
     symbolWeight(SymbWeight)
 {}
 

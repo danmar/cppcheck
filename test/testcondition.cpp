@@ -18,35 +18,32 @@
 
 #include "checkcondition.h"
 #include "errortypes.h"
-#include "library.h"
+#include "helpers.h"
 #include "platform.h"
 #include "preprocessor.h"
 #include "settings.h"
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <map>
+#include <limits>
 #include <sstream> // IWYU pragma: keep
 #include <string>
-#include <utility>
 #include <vector>
-
-#include <simplecpp.h>
 
 class TestCondition : public TestFixture {
 public:
     TestCondition() : TestFixture("TestCondition") {}
 
 private:
-    const Settings settings0 = settingsBuilder().library("qt.cfg").library("std.cfg").severity(Severity::style).severity(Severity::warning).platform(cppcheck::Platform::Type::Native).build();
-    Settings settings1 = settingsBuilder().severity(Severity::style).severity(Severity::warning).platform(cppcheck::Platform::Type::Native).build();
+    const Settings settings0 = settingsBuilder().library("qt.cfg").library("std.cfg").severity(Severity::style).severity(Severity::warning).build();
+    Settings settings1 = settingsBuilder().severity(Severity::style).severity(Severity::warning).build();
 
     void run() override {
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
                            "<def>\n"
                            "  <function name=\"bar\"> <pure/> </function>\n"
                            "</def>";
-        ASSERT(settings1.library.loadxmldata(cfg, sizeof(cfg)));
+        settings1 = settingsBuilder(settings1).libraryxml(cfg, sizeof(cfg)).build();
 
         TEST_CASE(assignAndCompare);   // assignment and comparison don't match
         TEST_CASE(mismatchingBitAnd);  // overlapping bitmasks
@@ -127,35 +124,26 @@ private:
         TEST_CASE(knownConditionIncrementLoop); // #9808
     }
 
-    void check(const char code[], const Settings &settings, const char* filename = "test.cpp") {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], const Settings &settings, const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
-        // Raw tokens..
-        std::vector<std::string> files(1, filename);
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        // Preprocess..
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
-
         Preprocessor preprocessor(settings);
-        preprocessor.setDirectives(tokens1);
+        std::vector<std::string> files(1, filename);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
+        PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
 
         // Tokenizer..
-        Tokenizer tokenizer(&settings, this, &preprocessor);
-        tokenizer.createTokens(std::move(tokens2));
-        tokenizer.simplifyTokens1("");
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Run checks..
         runChecks<CheckCondition>(tokenizer, this);
     }
 
-    void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
+    void check_(const char* file, int line, const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
         const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive, inconclusive).build();
-        check(code, settings, filename);
+        check_(file, line, code, settings, filename);
     }
 
     void assignAndCompare() {
@@ -4498,7 +4486,11 @@ private:
               "        if (o[1] == '\\0') {}\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (style) Condition 'o[1]=='\\0'' is always false\n", errout.str());
+        if (std::numeric_limits<char>::is_signed) {
+            ASSERT_EQUALS("[test.cpp:6]: (style) Condition 'o[1]=='\\0'' is always false\n", errout.str());
+        } else {
+            ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (style) Condition 'o[1]=='\\0'' is always false\n", errout.str());
+        }
 
         check("void f(int x) {\n" // #11449
               "    int i = x;\n"
@@ -4538,6 +4530,29 @@ private:
         check("enum E { E0, E1 };\n"
               "void f() {\n"
               "	static_assert(static_cast<int>(E::E1) == 1);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct a {\n"
+              "  bool g();\n"
+              "  int h();\n"
+              "};\n"
+              "void f(a c, int d, int e) {\n"
+              "  if (c.g() && c.h()) {}\n"
+              "  else {\n"
+              "    bool u = false;\n"
+              "    if (d && e)\n"
+              "      u = true;\n"
+              "    if (u) {}\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(int i) {\n" // #11741
+              "    i = -i - 1;\n"
+              "    if (i < 0 || i >= 20)\n"
+              "        return 0;\n"
+              "    return 1;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -4728,6 +4743,16 @@ private:
         check("bool f(const int* it, const int* end) {\n"
               "	return (it != end) && *it++ &&\n"
               "           (it != end) && *it;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #12116
+        check("void f(int n) {\n"
+              "    for (int i = 0; i < N; ++i) {\n"
+              "        if (i < n) {}\n"
+              "        else if (i > n) {}\n"
+              "        else {}\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -4940,6 +4965,11 @@ private:
               "    if (j >= 0) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i) {\n" // #12039
+              "    if ((128 + i < 255 ? 128 + i : 255) > 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueContainer() {
@@ -5011,10 +5041,14 @@ private:
               "       buffer.back() == '\\n' ||\n"
               "       buffer.back() == '\\0') {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'buffer.back()=='\\0'' is always false\n", errout.str());
+        if (std::numeric_limits<char>::is_signed) {
+            ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'buffer.back()=='\\0'' is always false\n", errout.str());
+        } else {
+            ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Condition 'buffer.back()=='\\0'' is always false\n", errout.str());
+        }
 
         // #9353
-        check("typedef struct { std::string s; } X;\n"
+        check("struct X { std::string s; };\n"
               "void f(const std::vector<X>&v) {\n"
               "    for (std::vector<X>::const_iterator it = v.begin(); it != v.end(); ++it)\n"
               "        if (!it->s.empty()) {\n"
@@ -5022,6 +5056,15 @@ private:
               "        }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (style) Condition '!it->s.empty()' is always true\n", errout.str());
+
+        check("struct X { std::string s; };\n"
+              "void f(const std::vector<struct X>&v) {\n"
+              "    for (std::vector<struct X>::const_iterator it = v.begin(); it != v.end(); ++it)\n"
+              "        if (!it->s.empty()) {\n"
+              "            if (!it->s.empty()) {}\n"
+              "        }\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (style) Condition '!it->s.empty()' is always true\n", "", errout.str());
 
         // #10508
         check("bool f(const std::string& a, const std::string& b) {\n"
@@ -5067,6 +5110,44 @@ private:
               "  s += std::to_string(i);\n"
               "  s += \"\\n\";\n"
               "  return fwrite(s.c_str(), 1, s.length(), fp) == s.length();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const std::string& s) {\n" // #9148
+              "    if (s.empty() || s.size() < 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 's.size()<1' is always false\n", errout.str());
+
+        check("void bar(std::vector<int>& vv) {\n" // #11464
+              "    class F {\n"
+              "    public:\n"
+              "        F(int, std::vector<int>& lv) : mV(lv) {\n"
+              "            mV.push_back(0);\n"
+              "        }\n"
+              "    private:\n"
+              "        std::vector<int>& mV;\n"
+              "    } fi(1, vv);\n"
+              "}\n"
+              "void g() {\n"
+              "    std::vector<int> v;\n"
+              "    bar(v);\n"
+              "    if (v.empty()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct F {\n"
+              "    F(int, std::vector<int>&lv) : mV(lv) {\n"
+              "        mV.push_back(0);\n"
+              "    }\n"
+              "    std::vector<int>& mV;\n"
+              "};\n"
+              "void g(std::vector<int>& vv) {\n"
+              "    F(1, vv);\n"
+              "}\n"
+              "void f() {\n"
+              "    std::vector<int> v;\n"
+              "    g(v);\n"
+              "    if (v.empty()) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -5154,6 +5235,16 @@ private:
               "    for (int i = 0; i < N; a[i++] = false);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #8192
+              "    for (int i = 0; i > 10; ++i) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'i>10' is always false\n", "", errout.str());
+
+        check("void f() {\n"
+              "    for (int i = 1000; i < 20; ++i) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'i<20' is always false\n", errout.str());
     }
 
     void alwaysTrueTryCatch()
@@ -5190,6 +5281,19 @@ private:
               "    if( x ) {\n"
               "        g();\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #10701
+              "    std::string s;\n"
+              "    try {\n"
+              "        try {\n"
+              "            s = g();\n"
+              "        }\n"
+              "        catch (const Err& err) {}\n"
+              "    }\n"
+              "    catch (const std::exception& e) {}\n"
+              "    if (s != \"abc\") {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -5701,7 +5805,7 @@ private:
     }
 
     void compareOutOfTypeRange() {
-        const Settings settingsUnix64 = settingsBuilder().severity(Severity::style).platform(cppcheck::Platform::Type::Unix64).build();
+        const Settings settingsUnix64 = settingsBuilder().severity(Severity::style).platform(Platform::Type::Unix64).build();
 
         check("void f(unsigned char c) {\n"
               "  if (c == 256) {}\n"

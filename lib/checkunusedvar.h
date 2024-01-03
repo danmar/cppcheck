@@ -45,10 +45,13 @@ class Function;
 /** @brief Various small checks */
 
 class CPPCHECKLIB CheckUnusedVar : public Check {
+    friend class TestUnusedVar;
+
 public:
     /** @brief This constructor is used when registering the CheckClass */
     CheckUnusedVar() : Check(myName()) {}
 
+private:
     /** @brief This constructor is used when running checks. */
     CheckUnusedVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
@@ -69,7 +72,6 @@ public:
     /** @brief %Check that all struct members are used */
     void checkStructMemberUsage();
 
-private:
     bool isRecordTypeWithoutSideEffects(const Type* type);
     bool isVariableWithoutSideEffects(const Variable& var);
     bool isEmptyType(const Type* type);

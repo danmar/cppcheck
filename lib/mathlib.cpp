@@ -49,7 +49,7 @@ MathLib::value::value(const std::string &s)
         throw InternalError(nullptr, "Invalid value: " + s);
 
     mType = MathLib::value::Type::INT;
-    mIntValue = MathLib::toLongNumber(s);
+    mIntValue = MathLib::toBigNumber(s);
 
     if (isIntHex(s) && mIntValue < 0)
         mIsUnsigned = true;
@@ -286,7 +286,7 @@ MathLib::value MathLib::value::shiftRight(const MathLib::value &v) const
 }
 
 // TODO: remove handling of non-literal stuff
-MathLib::biguint MathLib::toULongNumber(const std::string & str)
+MathLib::biguint MathLib::toBigUNumber(const std::string & str)
 {
     // hexadecimal numbers:
     if (isIntHex(str)) {
@@ -294,9 +294,9 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
             const biguint ret = std::stoull(str, nullptr, 16);
             return ret;
         } catch (const std::out_of_range& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str);
+            throw InternalError(nullptr, "Internal Error. MathLib::toBigUNumber: out_of_range: " + str);
         } catch (const std::invalid_argument& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: invalid_argument: " + str);
+            throw InternalError(nullptr, "Internal Error. MathLib::toBigUNumber: invalid_argument: " + str);
         }
     }
 
@@ -306,9 +306,9 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
             const biguint ret = std::stoull(str, nullptr, 8);
             return ret;
         } catch (const std::out_of_range& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str);
+            throw InternalError(nullptr, "Internal Error. MathLib::toBigUNumber: out_of_range: " + str);
         } catch (const std::invalid_argument& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: invalid_argument: " + str);
+            throw InternalError(nullptr, "Internal Error. MathLib::toBigUNumber: invalid_argument: " + str);
         }
     }
 
@@ -347,13 +347,13 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
         if (idx != str.size()) {
             const std::string s = str.substr(idx);
             if (!isValidIntegerSuffix(s, true))
-                throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: input was not completely consumed: " + str);
+                throw InternalError(nullptr, "Internal Error. MathLib::toBigUNumber: input was not completely consumed: " + str);
         }
         return ret;
     } catch (const std::out_of_range& /*e*/) {
-        throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str);
+        throw InternalError(nullptr, "Internal Error. MathLib::toBigUNumber: out_of_range: " + str);
     } catch (const std::invalid_argument& /*e*/) {
-        throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: invalid_argument: " + str);
+        throw InternalError(nullptr, "Internal Error. MathLib::toBigUNumber: invalid_argument: " + str);
     }
 }
 
@@ -365,7 +365,7 @@ unsigned int MathLib::encodeMultiChar(const std::string& str)
 }
 
 // TODO: remove handling of non-literal stuff
-MathLib::bigint MathLib::toLongNumber(const std::string & str)
+MathLib::bigint MathLib::toBigNumber(const std::string & str)
 {
     // hexadecimal numbers:
     if (isIntHex(str)) {
@@ -373,9 +373,9 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
             const biguint ret = std::stoull(str, nullptr, 16);
             return (bigint)ret;
         } catch (const std::out_of_range& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str);
+            throw InternalError(nullptr, "Internal Error. MathLib::toBigNumber: out_of_range: " + str);
         } catch (const std::invalid_argument& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: invalid_argument: " + str);
+            throw InternalError(nullptr, "Internal Error. MathLib::toBigNumber: invalid_argument: " + str);
         }
     }
 
@@ -385,9 +385,9 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
             const biguint ret = std::stoull(str, nullptr, 8);
             return ret;
         } catch (const std::out_of_range& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str);
+            throw InternalError(nullptr, "Internal Error. MathLib::toBigNumber: out_of_range: " + str);
         } catch (const std::invalid_argument& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: invalid_argument: " + str);
+            throw InternalError(nullptr, "Internal Error. MathLib::toBigNumber: invalid_argument: " + str);
         }
     }
 
@@ -427,13 +427,13 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
         if (idx != str.size()) {
             const std::string s = str.substr(idx);
             if (!isValidIntegerSuffix(s, true))
-                throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: input was not completely consumed: " + str);
+                throw InternalError(nullptr, "Internal Error. MathLib::toBigNumber: input was not completely consumed: " + str);
         }
         return ret;
     } catch (const std::out_of_range& /*e*/) {
-        throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str);
+        throw InternalError(nullptr, "Internal Error. MathLib::toBigNumber: out_of_range: " + str);
     } catch (const std::invalid_argument& /*e*/) {
-        throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: invalid_argument: " + str);
+        throw InternalError(nullptr, "Internal Error. MathLib::toBigNumber: invalid_argument: " + str);
     }
 }
 
@@ -494,7 +494,7 @@ double MathLib::toDoubleNumber(const std::string &str)
         }
     }
     if (isIntHex(str))
-        return static_cast<double>(toLongNumber(str));
+        return static_cast<double>(toBigNumber(str));
 #ifdef _LIBCPP_VERSION
     if (isFloat(str)) // Workaround libc++ bug at https://github.com/llvm/llvm-project/issues/18156
         // TODO: handle locale
@@ -1059,7 +1059,7 @@ std::string MathLib::add(const std::string & first, const std::string & second)
     return (value(first) + value(second)).str();
 #else
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        return std::to_string(toLongNumber(first) + toLongNumber(second)) + intsuffix(first, second);
+        return std::to_string(toBigNumber(first) + toBigNumber(second)) + intsuffix(first, second);
     }
 
     double d1 = toDoubleNumber(first);
@@ -1081,7 +1081,7 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
     return (value(first) - value(second)).str();
 #else
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        return std::to_string(toLongNumber(first) - toLongNumber(second)) + intsuffix(first, second);
+        return std::to_string(toBigNumber(first) - toBigNumber(second)) + intsuffix(first, second);
     }
 
     if (first == second)
@@ -1106,13 +1106,13 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
     return (value(first) / value(second)).str();
 #else
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        const bigint a = toLongNumber(first);
-        const bigint b = toLongNumber(second);
+        const bigint a = toBigNumber(first);
+        const bigint b = toBigNumber(second);
         if (b == 0)
             throw InternalError(nullptr, "Internal Error: Division by zero");
         if (a == std::numeric_limits<bigint>::min() && std::abs(b)<=1)
             throw InternalError(nullptr, "Internal Error: Division overflow");
-        return std::to_string(toLongNumber(first) / b) + intsuffix(first, second);
+        return std::to_string(toBigNumber(first) / b) + intsuffix(first, second);
     }
     if (isNullValue(second)) {
         if (isNullValue(first))
@@ -1129,7 +1129,7 @@ std::string MathLib::multiply(const std::string &first, const std::string &secon
     return (value(first) * value(second)).str();
 #else
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        return std::to_string(toLongNumber(first) * toLongNumber(second)) + intsuffix(first, second);
+        return std::to_string(toBigNumber(first) * toBigNumber(second)) + intsuffix(first, second);
     }
     return toString(toDoubleNumber(first) * toDoubleNumber(second));
 #endif
@@ -1141,10 +1141,10 @@ std::string MathLib::mod(const std::string &first, const std::string &second)
     return (value(first) % value(second)).str();
 #else
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        const bigint b = toLongNumber(second);
+        const bigint b = toBigNumber(second);
         if (b == 0)
             throw InternalError(nullptr, "Internal Error: Division by zero");
-        return std::to_string(toLongNumber(first) % b) + intsuffix(first, second);
+        return std::to_string(toBigNumber(first) % b) + intsuffix(first, second);
     }
     return toString(std::fmod(toDoubleNumber(first),toDoubleNumber(second)));
 #endif
@@ -1169,13 +1169,13 @@ std::string MathLib::calculate(const std::string &first, const std::string &seco
         return MathLib::mod(first, second);
 
     case '&':
-        return std::to_string(MathLib::toLongNumber(first) & MathLib::toLongNumber(second)) + intsuffix(first,second);
+        return std::to_string(MathLib::toBigNumber(first) & MathLib::toBigNumber(second)) + intsuffix(first, second);
 
     case '|':
-        return std::to_string(MathLib::toLongNumber(first) | MathLib::toLongNumber(second)) + intsuffix(first,second);
+        return std::to_string(MathLib::toBigNumber(first) | MathLib::toBigNumber(second)) + intsuffix(first, second);
 
     case '^':
-        return std::to_string(MathLib::toLongNumber(first) ^ MathLib::toLongNumber(second)) + intsuffix(first,second);
+        return std::to_string(MathLib::toBigNumber(first) ^ MathLib::toBigNumber(second)) + intsuffix(first, second);
 
     default:
         throw InternalError(nullptr, std::string("Unexpected action '") + action + "' in MathLib::calculate(). Please report this to Cppcheck developers.");

@@ -7,9 +7,11 @@
 # Command in cppcheck directory:
 # PYTHONPATH=./addons python3 -m pytest addons/test/test-misra.py
 
+import os
 import pytest
 import re
 import sys
+import tempfile
 
 from .util import dump_create, dump_remove, convert_json_output
 
@@ -17,14 +19,12 @@ from .util import dump_create, dump_remove, convert_json_output
 TEST_SOURCE_FILES = ['./addons/test/misra/misra-test.c']
 
 
-def setup_module(module):
-    for f in TEST_SOURCE_FILES:
-        dump_create(f)
-
-
-def teardown_module(module):
-    for f in TEST_SOURCE_FILES:
-        dump_remove(f)
+def remove_misra_config(s:str):
+    ret = ''
+    for line in s.splitlines():
+        if '[misra-config]' not in line:
+            ret += line + '\n'
+    return ret
 
 
 @pytest.fixture(scope="function")
@@ -34,6 +34,15 @@ def checker():
     args = parser.parse_args([])
     settings = MisraSettings(args)
     return MisraChecker(settings)
+
+
+@pytest.fixture
+def test_files():
+    for f in TEST_SOURCE_FILES:
+        dump_create(f)
+    yield
+    for f in TEST_SOURCE_FILES:
+        dump_remove(f)
 
 
 def test_loadRuleTexts_structure(checker):
@@ -75,7 +84,7 @@ def test_rules_misra_severity(checker):
     assert(checker.ruleTexts[2104].misra_severity == '')
 
 
-def test_json_out(checker, capsys):
+def test_json_out(checker, capsys, test_files):
     sys.argv.append("--cli")
     checker.loadRuleTexts("./addons/test/misra/misra_rules_dummy.txt")
     checker.parseDump("./addons/test/misra/misra-test.c.dump")
@@ -88,20 +97,20 @@ def test_json_out(checker, capsys):
     assert("Advisory" in json_output['c2012-20.1'][0]['extra'])
 
 
-def test_rules_cppcheck_severity(checker, capsys):
+def test_rules_cppcheck_severity(checker, capsys, test_files):
     checker.loadRuleTexts("./addons/test/misra/misra_rules_dummy.txt")
     checker.parseDump("./addons/test/misra/misra-test.c.dump")
     captured = capsys.readouterr().err
-    assert("(error)" not in captured)
+    assert("(error)" not in remove_misra_config(captured))
     assert("(warning)" not in captured)
     assert("(style)" in captured)
 
-def test_rules_cppcheck_severity_custom(checker, capsys):
+def test_rules_cppcheck_severity_custom(checker, capsys, test_files):
     checker.loadRuleTexts("./addons/test/misra/misra_rules_dummy.txt")
     checker.setSeverity("custom-severity")
     checker.parseDump("./addons/test/misra/misra-test.c.dump")
     captured = capsys.readouterr().err
-    assert("(error)" not in captured)
+    assert("(error)" not in remove_misra_config(captured))
     assert("(warning)" not in captured)
     assert("(style)" not in captured)
     assert("(custom-severity)" in captured)
@@ -159,3 +168,10 @@ def test_arguments_regression():
             sys.argv.remove(arg)
     finally:
         sys.argv = sys_argv_old
+
+
+def test_read_ctu_info_line(checker):
+    assert checker.read_ctu_info_line('{') is None
+    assert checker.read_ctu_info_line('{"summary":"123"}') is None
+    assert checker.read_ctu_info_line('{"data":123}') is None
+    assert checker.read_ctu_info_line('{"summary":"123","data":123}') is not None

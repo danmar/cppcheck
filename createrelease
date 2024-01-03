@@ -13,6 +13,9 @@
 # make clean && make CXXFLAGS=-O2 MATCHCOMPILER=yes -j4
 # ./cppcheck -D__CPPCHECK__ -D__GNUC__ -DCHECK_INTERNAL -DHAVE_RULES --std=c++11 --library=cppcheck-lib --library=qt --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h --suppress=functionConst --suppress=functionStatic --xml cli gui/*.cpp lib 2> selfcheck.xml
 #
+# Generate lib/checkers.cpp (TODO the premium checkers should not be statically coded)
+# cd ~/cppchecksolutions/cppcheck && python3 tools/get_checkers.py > lib/checkers.cpp
+#
 # Update translations
 #   lupdate gui.pro
 #
@@ -29,12 +32,16 @@
 # Create 2.8.x branch
 # git checkout -b 2.8.x ; git push -u origin 2.8.x
 #
+# Release notes:
+# - ensure safety critical issues are listed properly
+# - empty the releasenotes.txt in main branch
+#
 # Update version numbers in:
-# sed -i -r "s/version 2[.][0-9]+([.]99)*/version 2.9/" cli/main.cpp
-# sed -i -r "s|2[.][0-9]+([.]99)*|2.9.0|" cmake/versions.cmake # version must have 3 parts.
-# sed -i -r "s/MINOR [0-9]+/MINOR 9/" lib/version.h
-# sed -i -r "s/2[.][0-9]+([.]99)*/2.9/" win_installer/productInfo.wxi
-# sed -i -r "s/subtitle: Version 2\.[0-9]+/subtitle: Version 2.9/" man/*.md
+# sed -i -r "s/version 2[.][0-9]+([.]99)*/version 2.13.0/" cli/main.cpp
+# sed -i -r "s|2[.][0-9]+([.]99)*|2.13.0|" cmake/versions.cmake # version must have 3 parts.
+# sed -i -r "s/CPPCHECK_MINOR_VERSION [0-9]+/CPPCHECK_MINOR_VERSION 13/" lib/version.h
+# sed -i -r "s/2[.][0-9]+([.]99)*( dev)*/2.13.0/" win_installer/productInfo.wxi
+# sed -i -r "s/subtitle: Version 2\.[0-9]+.*/subtitle: Version 2.13/" man/*.md
 # Ensure that "-rc1" is added in productInfo.wxi and lib/version.h
 # Verify:
 # grep '\.99' */*.[ch]* && grep '[0-9][0-9] dev' */*.[ch]*
@@ -45,7 +52,10 @@
 #
 # Update the Makefile:
 # make dmake && ./dmake --release
+# Uppdatera CI så att dmake körs med --release
 # git commit -a -m "2.8: Updated Makefile"
+#
+# Ensure that CI is happy
 #
 # Tag:
 # git tag 2.8-rc1
@@ -53,8 +63,6 @@
 #
 # Release
 # =======
-#
-# Write release notes
 #
 # Remove "-rc1" from versions. Test: git grep "\-rc[0-9]"
 #
@@ -64,10 +72,20 @@
 # git tag 2.8 ; git push --tags
 # ./createrelease 2.8
 #
-# copy msi from release-windows
+# copy msi from release-windows, install and test cppcheck
 # copy manual from build-manual
 #
 # Update download link on index.php main page
+#
+# Write Changelog
+# git log 2.11..2.12 > Changelog
+# <edit>
+#
+# Trac:
+# 1. Create ticket "2.12 safety cosmetic changes"
+# 2. Check priorities for all tickets in milestone. Should be: safety-*
+# 3. Create new milestone
+# 4. Close old milestone
 #
 # write a news
 #
@@ -75,19 +93,21 @@
 #
 # compile new democlient:
 # ssh -t danielmarjamaki,cppcheck@shell.sourceforge.net create
-# ./build-cppcheck.sh 2.8
+# ./build-cppcheck.sh
 #
 # run daca with new release
-# 1. edit tools/donate-cpu-server.py. Update OLD_VERSION and VERSION
-# 2. scp -i ../.ssh/osuosl_id_rsa tools/donate-cpu-server.py danielmarjamaki@cppcheck1.osuosl.org:/var/daca@home/
+# 1. edit tools/donate-cpu-server.py. Update OLD_VERSION and SERVER_VERSION
+# 2. scp -i ~/.ssh/osuosl_id_rsa tools/donate-cpu-server.py danielmarjamaki@cppcheck1.osuosl.org:/var/daca@home/
 #
-# self check, fix stylistic issues:
-# ./cppcheck -D__CPPCHECK__ -D__GNUC__ -DCHECK_INTERNAL -DHAVE_RULES --library=cppcheck-lib --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h cli gui/*.cpp lib
-#
-# Set debug version (see 803eea912c9512c810a7e78d58bb927d89a6daa1)
+# Backup:
+# * trac: cd /var && nice tar -cJf trac.tar.xz trac-cppcheck
+# * git: git checkout -f && git checkout main && git pull && tar -cJf git.tar.xz .git
+# * Changelog
+# * ci status: screenshot(s) showing that all tests pass for tagged commit
 
-# Tag to use
-tag=$1
+# Folder/tag to use
+folder=$1
+tag=$folder.0
 
 # Name of release
 releasename=cppcheck-$tag
@@ -98,6 +118,7 @@ cd ~/cppcheck
 
 git checkout $tag
 
+rm -rf upload
 mkdir -p upload
 
 make clean
@@ -107,16 +128,17 @@ git archive --format=tar --prefix=$releasename/ $tag | gzip > upload/$releasenam
 git archive --format=tar --prefix=$releasename/ $tag | bzip2 > upload/$releasename.tar.bz2
 git archive --format=zip -9 --prefix=$releasename/ $tag > upload/$releasename.zip
 cd upload
-scp $releasename.* danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/$tag/
+scp $releasename.* danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/$folder/
 rm $releasename.*
 cd ..
 
 # Generate version.txt
-make -j4
+make -j12
+rm -f cppcheck.cfg
 ./cppcheck --version > upload/version.txt
 
 cd ~/cppcheck/upload
-scp * danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
+scp version.txt danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
 
 cd ~/cppcheck
 rm -rf upload
@@ -128,7 +150,7 @@ cp -R ~/cppcheck/cfg .
 cp -R ~/cppcheck/addons .
 cp -R ~/cppcheck/platforms .
 cd ~/cppcheck
-make clean ; make -j4 FILESDIR=~/.cppcheck/$tag MATCHCOMPILER=yes
+make clean ; make -j12 FILESDIR=~/.cppcheck/$tag MATCHCOMPILER=yes CXXFLAGS=-O2
 mv cppcheck ~/.cppcheck/cppcheck-$tag
 
 git checkout main

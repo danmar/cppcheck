@@ -19,18 +19,15 @@
 #include "cppcheckexecutor.h"
 
 #include "analyzerinfo.h"
-#include "checkers.h"
 #include "checkersreport.h"
+#include "cmdlinelogger.h"
 #include "cmdlineparser.h"
 #include "color.h"
 #include "config.h"
 #include "cppcheck.h"
+#include "errorlogger.h"
 #include "errortypes.h"
-#include "filelister.h"
-#include "importproject.h"
-#include "library.h"
-#include "path.h"
-#include "pathmatch.h"
+#include "filesettings.h"
 #include "settings.h"
 #include "singleexecutor.h"
 #include "suppressions.h"
@@ -45,14 +42,12 @@
 #endif
 
 #include <algorithm>
-#include <cassert>
 #include <cstdio>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
-#include <functional>
+#include <ctime>
 #include <iostream>
-#include <iterator>
 #include <list>
-#include <memory>
+#include <set>
 #include <sstream> // IWYU pragma: keep
 #include <utility>
 #include <vector>
@@ -69,191 +64,160 @@
 #include <windows.h>
 #endif
 
-class XMLErrorMessagesLogger : public ErrorLogger
+class CmdLineLoggerStd : public CmdLineLogger
 {
-    void reportOut(const std::string & outmsg, Color /*c*/ = Color::Reset) override
+public:
+    CmdLineLoggerStd() = default;
+
+    void printMessage(const std::string &message) override
     {
-        std::cout << outmsg << std::endl;
+        printRaw("cppcheck: " + message);
     }
 
-    void reportErr(const ErrorMessage &msg) override
+    void printError(const std::string &message) override
     {
-        reportOut(msg.toXML());
+        printMessage("error: " + message);
     }
 
-    void reportProgress(const std::string & /*filename*/, const char /*stage*/[], const std::size_t /*value*/) override
-    {}
+    void printRaw(const std::string &message) override
+    {
+        std::cout << message << std::endl;
+    }
+};
+
+class CppCheckExecutor::StdLogger : public ErrorLogger
+{
+public:
+    explicit StdLogger(const Settings& settings)
+        : mSettings(settings)
+    {
+        if (!mSettings.outputFile.empty()) {
+            mErrorOutput = new std::ofstream(settings.outputFile);
+        }
+    }
+
+    ~StdLogger() override {
+        delete mErrorOutput;
+    }
+
+    StdLogger(const StdLogger&) = delete;
+    StdLogger& operator=(const SingleExecutor &) = delete;
+
+    void resetLatestProgressOutputTime() {
+        mLatestProgressOutputTime = std::time(nullptr);
+    }
+
+    /**
+     * Helper function to print out errors. Appends a line change.
+     * @param errmsg String printed to error stream
+     */
+    void reportErr(const std::string &errmsg);
+
+    /**
+     * @brief Write the checkers report
+     */
+    void writeCheckersReport();
+
+    bool hasCriticalErrors() const {
+        return !mCriticalErrors.empty();
+    }
+
+private:
+    /**
+     * Information about progress is directed here. This should be
+     * called by the CppCheck class only.
+     *
+     * @param outmsg Progress message e.g. "Checking main.cpp..."
+     */
+    void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
+
+    /** xml output of errors */
+    void reportErr(const ErrorMessage &msg) override;
+
+    void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
+
+    /**
+     * Pointer to current settings; set while check() is running for reportError().
+     */
+    const Settings& mSettings;
+
+    /**
+     * Used to filter out duplicate error messages.
+     */
+    // TODO: store hashes instead of the full messages
+    std::unordered_set<std::string> mShownErrors;
+
+    /**
+     * Report progress time
+     */
+    std::time_t mLatestProgressOutputTime{};
+
+    /**
+     * Error output
+     */
+    std::ofstream* mErrorOutput{};
+
+    /**
+     * Checkers that has been executed
+     */
+    std::set<std::string> mActiveCheckers;
+
+    /**
+     * True if there are critical errors
+     */
+    std::string mCriticalErrors;
 };
 
 // TODO: do not directly write to stdout
 
+#if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
 /*static*/ FILE* CppCheckExecutor::mExceptionOutput = stdout;
-
-CppCheckExecutor::~CppCheckExecutor()
-{
-    delete mErrorOutput;
-}
-
-bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* const argv[])
-{
-    CmdLineParser parser(settings, settings.nomsg, settings.nofail);
-    const bool success = parser.parseFromArgs(argc, argv);
-
-    if (success) {
-        if (parser.getShowVersion() && !parser.getShowErrorMessages()) {
-            if (!settings.cppcheckCfgProductName.empty()) {
-                std::cout << settings.cppcheckCfgProductName << std::endl;
-            } else {
-                const char * const extraVersion = CppCheck::extraVersion();
-                if (*extraVersion != 0)
-                    std::cout << "Cppcheck " << CppCheck::version() << " ("
-                              << extraVersion << ')' << std::endl;
-                else
-                    std::cout << "Cppcheck " << CppCheck::version() << std::endl;
-            }
-        }
-
-        if (parser.getShowErrorMessages()) {
-            XMLErrorMessagesLogger xmlLogger;
-            std::cout << ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName);
-            CppCheck::getErrorMessages(xmlLogger);
-            std::cout << ErrorMessage::getXMLFooter() << std::endl;
-        }
-
-        if (parser.exitAfterPrinting()) {
-            Settings::terminate();
-            return true;
-        }
-    } else {
-        return false;
-    }
-
-    // Libraries must be loaded before FileLister is executed to ensure markup files will be
-    // listed properly.
-    if (!loadLibraries(settings))
-        return false;
-
-    // Check that all include paths exist
-    {
-        for (std::list<std::string>::iterator iter = settings.includePaths.begin();
-             iter != settings.includePaths.end();
-             ) {
-            const std::string path(Path::toNativeSeparators(*iter));
-            if (Path::isDirectory(path))
-                ++iter;
-            else {
-                // If the include path is not found, warn user and remove the non-existing path from the list.
-                if (settings.severity.isEnabled(Severity::information))
-                    std::cout << "(information) Couldn't find path given by -I '" << path << '\'' << std::endl;
-                iter = settings.includePaths.erase(iter);
-            }
-        }
-    }
-
-    // Output a warning for the user if he tries to exclude headers
-    const std::vector<std::string>& ignored = parser.getIgnoredPaths();
-    const bool warn = std::any_of(ignored.cbegin(), ignored.cend(), [](const std::string& i) {
-        return Path::isHeader(i);
-    });
-    if (warn) {
-        std::cout << "cppcheck: filename exclusion does not apply to header (.h and .hpp) files." << std::endl;
-        std::cout << "cppcheck: Please use --suppress for ignoring results from the header files." << std::endl;
-    }
-
-    const std::vector<std::string>& pathnames = parser.getPathNames();
-
-#if defined(_WIN32)
-    // For Windows we want case-insensitive path matching
-    const bool caseSensitive = false;
-#else
-    const bool caseSensitive = true;
 #endif
-    if (!settings.project.fileSettings.empty() && !settings.fileFilters.empty()) {
-        // filter only for the selected filenames from all project files
-        std::list<ImportProject::FileSettings> newList;
-
-        const std::list<ImportProject::FileSettings>& fileSettings = settings.project.fileSettings;
-        std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(newList), [&](const ImportProject::FileSettings& fs) {
-            return matchglobs(settings.fileFilters, fs.filename);
-        });
-        if (!newList.empty())
-            settings.project.fileSettings = newList;
-        else {
-            std::cout << "cppcheck: error: could not find any files matching the filter." << std::endl;
-            return false;
-        }
-    } else if (!pathnames.empty()) {
-        // Execute recursiveAddFiles() to each given file parameter
-        const PathMatch matcher(ignored, caseSensitive);
-        for (const std::string &pathname : pathnames) {
-            std::string err = FileLister::recursiveAddFiles(mFiles, Path::toNativeSeparators(pathname), settings.library.markupExtensions(), matcher);
-            if (!err.empty()) {
-                std::cout << "cppcheck: " << err << std::endl;
-            }
-        }
-    }
-
-    if (mFiles.empty() && settings.project.fileSettings.empty()) {
-        std::cout << "cppcheck: error: could not find or open any of the paths given." << std::endl;
-        if (!ignored.empty())
-            std::cout << "cppcheck: Maybe all paths were ignored?" << std::endl;
-        return false;
-    }
-    if (!settings.fileFilters.empty() && settings.project.fileSettings.empty()) {
-        std::map<std::string, std::size_t> newMap;
-        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i)
-            if (matchglobs(settings.fileFilters, i->first)) {
-                newMap[i->first] = i->second;
-            }
-        mFiles = newMap;
-        if (mFiles.empty()) {
-            std::cout << "cppcheck: error: could not find any files matching the filter." << std::endl;
-            return false;
-        }
-
-    }
-
-    return true;
-}
 
 int CppCheckExecutor::check(int argc, const char* const argv[])
 {
     CheckUnusedFunctions::clear();
 
     Settings settings;
-    if (!parseFromArgs(settings, argc, argv)) {
+    CmdLineLoggerStd logger;
+    CmdLineParser parser(logger, settings, settings.nomsg, settings.nofail);
+    if (!parser.fillSettingsFromArgs(argc, argv)) {
         return EXIT_FAILURE;
     }
     if (Settings::terminated()) {
         return EXIT_SUCCESS;
     }
 
-    CppCheck cppCheck(*this, true, executeCommand);
+    settings.loadSummaries();
+
+    mFiles = parser.getFiles();
+    mFileSettings = parser.getFileSettings();
+
+    mStdLogger = new StdLogger(settings);
+
+    CppCheck cppCheck(*mStdLogger, true, executeCommand);
     cppCheck.settings() = settings;
-    mSettings = &settings;
 
-    int ret;
-    if (settings.exceptionHandling)
-        ret = check_wrapper(cppCheck);
-    else
-        ret = check_internal(cppCheck);
+    const int ret = check_wrapper(cppCheck);
 
-    mSettings = nullptr;
+    delete mStdLogger;
+    mStdLogger = nullptr;
     return ret;
 }
 
 int CppCheckExecutor::check_wrapper(CppCheck& cppcheck)
 {
 #ifdef USE_WINDOWS_SEH
-    return check_wrapper_seh(*this, &CppCheckExecutor::check_internal, cppcheck);
+    if (cppcheck.settings().exceptionHandling)
+        return check_wrapper_seh(*this, &CppCheckExecutor::check_internal, cppcheck);
 #elif defined(USE_UNIX_SIGNAL_HANDLING)
-    return check_wrapper_sig(*this, &CppCheckExecutor::check_internal, cppcheck);
-#else
-    return check_internal(cppcheck);
+    if (cppcheck.settings().exceptionHandling)
+        return check_wrapper_sig(*this, &CppCheckExecutor::check_internal, cppcheck);
 #endif
+    return check_internal(cppcheck);
 }
 
-bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::map<std::string, std::size_t> &files, ErrorLogger& errorLogger) {
+bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::list<std::pair<std::string, std::size_t>> &files, ErrorLogger& errorLogger) {
     const auto& suppressions = settings.nomsg.getSuppressions();
     if (std::any_of(suppressions.begin(), suppressions.end(), [](const Suppressions::Suppression& s) {
         return s.errorId == "unmatchedSuppression" && s.fileName.empty() && s.lineNumber == Suppressions::Suppression::NO_LINE;
@@ -262,7 +226,7 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedF
 
     bool err = false;
     if (settings.useSingleJob()) {
-        for (std::map<std::string, std::size_t>::const_iterator i = files.cbegin(); i != files.cend(); ++i) {
+        for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = files.cbegin(); i != files.cend(); ++i) {
             err |= Suppressions::reportUnmatchedSuppressions(
                 settings.nomsg.getUnmatchedLocalSuppressions(i->first, unusedFunctionCheckEnabled), errorLogger);
         }
@@ -274,51 +238,46 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedF
 /*
  * That is a method which gets called from check_wrapper
  * */
-int CppCheckExecutor::check_internal(CppCheck& cppcheck)
+int CppCheckExecutor::check_internal(CppCheck& cppcheck) const
 {
-    Settings& settings = cppcheck.settings();
+    const auto& settings = cppcheck.settings();
+    auto& suppressions = cppcheck.settings().nomsg;
 
     if (settings.reportProgress >= 0)
-        mLatestProgressOutputTime = std::time(nullptr);
-
-    if (!settings.outputFile.empty()) {
-        mErrorOutput = new std::ofstream(settings.outputFile);
-    }
+        mStdLogger->resetLatestProgressOutputTime();
 
     if (settings.xml) {
-        reportErr(ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName));
+        mStdLogger->reportErr(ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName));
     }
 
     if (!settings.buildDir.empty()) {
-        settings.loadSummaries();
-
         std::list<std::string> fileNames;
-        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i)
+        for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i)
             fileNames.emplace_back(i->first);
-        AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.userDefines, settings.project.fileSettings);
+        AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.userDefines, mFileSettings);
     }
 
     if (!settings.checkersReportFilename.empty())
         std::remove(settings.checkersReportFilename.c_str());
 
-    unsigned int returnValue = 0;
+    unsigned int returnValue;
     if (settings.useSingleJob()) {
         // Single process
-        SingleExecutor executor(cppcheck, mFiles, settings, settings.nomsg, *this);
+        SingleExecutor executor(cppcheck, mFiles, mFileSettings, settings, suppressions, *mStdLogger);
         returnValue = executor.check();
     } else {
 #if defined(THREADING_MODEL_THREAD)
-        ThreadExecutor executor(mFiles, settings, settings.nomsg, *this);
+        ThreadExecutor executor(mFiles, mFileSettings, settings, suppressions, *mStdLogger, CppCheckExecutor::executeCommand);
 #elif defined(THREADING_MODEL_FORK)
-        ProcessExecutor executor(mFiles, settings, settings.nomsg, *this);
+        ProcessExecutor executor(mFiles, mFileSettings, settings, suppressions, *mStdLogger, CppCheckExecutor::executeCommand);
 #endif
         returnValue = executor.check();
     }
 
-    cppcheck.analyseWholeProgram(settings.buildDir, mFiles);
+    cppcheck.analyseWholeProgram(settings.buildDir, mFiles, mFileSettings);
 
     if (settings.severity.isEnabled(Severity::information) || settings.checkConfiguration) {
-        const bool err = reportSuppressions(settings, cppcheck.isUnusedFunctionCheckEnabled(), mFiles, *this);
+        const bool err = reportSuppressions(settings, cppcheck.isUnusedFunctionCheckEnabled(), mFiles, *mStdLogger);
         if (err && returnValue == 0)
             returnValue = settings.exitCode;
     }
@@ -327,66 +286,54 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         cppcheck.tooManyConfigsError(emptyString,0U);
     }
 
+    if (settings.safety || settings.severity.isEnabled(Severity::information) || !settings.checkersReportFilename.empty())
+        mStdLogger->writeCheckersReport();
+
     if (settings.xml) {
-        reportErr(ErrorMessage::getXMLFooter());
+        mStdLogger->reportErr(ErrorMessage::getXMLFooter());
     }
 
-    writeCheckersReport(settings);
+    if (settings.safety && mStdLogger->hasCriticalErrors())
+        return EXIT_FAILURE;
 
     if (returnValue)
         return settings.exitCode;
-    return 0;
+    return EXIT_SUCCESS;
 }
 
-void CppCheckExecutor::writeCheckersReport(const Settings& settings) const
+void CppCheckExecutor::StdLogger::writeCheckersReport()
 {
-    CheckersReport checkersReport(settings, mActiveCheckers);
+    CheckersReport checkersReport(mSettings, mActiveCheckers);
 
-    if (!settings.quiet) {
+    bool suppressed = false;
+    for (const Suppressions::Suppression& s : mSettings.nomsg.getSuppressions()) {
+        if (s.errorId == "checkersReport")
+            suppressed = true;
+    }
+
+    if (!suppressed) {
+        ErrorMessage msg;
+        msg.severity = Severity::information;
+        msg.id = "checkersReport";
+
         const int activeCheckers = checkersReport.getActiveCheckersCount();
         const int totalCheckers = checkersReport.getAllCheckersCount();
 
-        const std::string extra = settings.verbose ? " (use --checkers-report=<filename> to see details)" : "";
+        std::string what;
         if (mCriticalErrors.empty())
-            std::cout << "Active checkers: " << activeCheckers << "/" << totalCheckers << extra << std::endl;
+            what = std::to_string(activeCheckers) + "/" + std::to_string(totalCheckers);
         else
-            std::cout << "Active checkers: There was critical errors" << extra << std::endl;
+            what = "There was critical errors";
+        msg.setmsg("Active checkers: " + what + " (use --checkers-report=<filename> to see details)");
+
+        reportErr(msg);
     }
 
-    if (settings.checkersReportFilename.empty())
-        return;
-
-    std::ofstream fout(settings.checkersReportFilename);
-    if (fout.is_open())
-        fout << checkersReport.getReport(mCriticalErrors);
-
-}
-
-bool CppCheckExecutor::loadLibraries(Settings& settings)
-{
-    if (!tryLoadLibrary(settings.library, settings.exename, "std.cfg")) {
-        const std::string msg("Failed to load std.cfg. Your Cppcheck installation is broken, please re-install.");
-#ifdef FILESDIR
-        const std::string details("The Cppcheck binary was compiled with FILESDIR set to \""
-                                  FILESDIR "\" and will therefore search for "
-                                  "std.cfg in " FILESDIR "/cfg.");
-#else
-        const std::string cfgfolder(Path::fromNativeSeparators(Path::getPathFromFilename(settings.exename)) + "cfg");
-        const std::string details("The Cppcheck binary was compiled without FILESDIR set. Either the "
-                                  "std.cfg should be available in " + cfgfolder + " or the FILESDIR "
-                                  "should be configured.");
-#endif
-        std::cout << msg << " " << details << std::endl;
-        return false;
+    if (!mSettings.checkersReportFilename.empty()) {
+        std::ofstream fout(mSettings.checkersReportFilename);
+        if (fout.is_open())
+            fout << checkersReport.getReport(mCriticalErrors);
     }
-
-    bool result = true;
-    for (const auto& lib : settings.libraries) {
-        if (!tryLoadLibrary(settings.library, settings.exename, lib.c_str())) {
-            result = false;
-        }
-    }
-    return result;
 }
 
 #ifdef _WIN32
@@ -402,7 +349,7 @@ static inline std::string ansiToOEM(const std::string &msg, bool doConvert)
         // ansi code page characters to wide characters
         MultiByteToWideChar(CP_ACP, 0, msg.data(), msglength, wcContainer.data(), msglength);
         // wide characters to oem codepage characters
-        WideCharToMultiByte(CP_OEMCP, 0, wcContainer.data(), msglength, const_cast<char *>(result.data()), msglength, nullptr, nullptr);
+        WideCharToMultiByte(CP_OEMCP, 0, wcContainer.data(), msglength, &result[0], msglength, nullptr, nullptr);
 
         return result; // hope for return value optimization
     }
@@ -413,16 +360,16 @@ static inline std::string ansiToOEM(const std::string &msg, bool doConvert)
 #define ansiToOEM(msg, doConvert) (msg)
 #endif
 
-void CppCheckExecutor::reportErr(const std::string &errmsg)
+void CppCheckExecutor::StdLogger::reportErr(const std::string &errmsg)
 {
     if (mErrorOutput)
         *mErrorOutput << errmsg << std::endl;
     else {
-        std::cerr << ansiToOEM(errmsg, (mSettings == nullptr) ? true : !mSettings->xml) << std::endl;
+        std::cerr << ansiToOEM(errmsg, !mSettings.xml) << std::endl;
     }
 }
 
-void CppCheckExecutor::reportOut(const std::string &outmsg, Color c)
+void CppCheckExecutor::StdLogger::reportOut(const std::string &outmsg, Color c)
 {
     if (c == Color::Reset)
         std::cout << ansiToOEM(outmsg, true) << std::endl;
@@ -431,7 +378,7 @@ void CppCheckExecutor::reportOut(const std::string &outmsg, Color c)
 }
 
 // TODO: remove filename parameter?
-void CppCheckExecutor::reportProgress(const std::string &filename, const char stage[], const std::size_t value)
+void CppCheckExecutor::StdLogger::reportProgress(const std::string &filename, const char stage[], const std::size_t value)
 {
     (void)filename;
 
@@ -440,7 +387,7 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
 
     // Report progress messages every x seconds
     const std::time_t currentTime = std::time(nullptr);
-    if (currentTime >= (mLatestProgressOutputTime + mSettings->reportProgress))
+    if (currentTime >= (mLatestProgressOutputTime + mSettings.reportProgress))
     {
         mLatestProgressOutputTime = currentTime;
 
@@ -455,32 +402,38 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
     }
 }
 
-void CppCheckExecutor::reportErr(const ErrorMessage &msg)
+void CppCheckExecutor::StdLogger::reportErr(const ErrorMessage &msg)
 {
-    assert(mSettings != nullptr);
-
-    if (msg.severity == Severity::none && (msg.id == "logChecker" || endsWith(msg.id, "-logChecker"))) {
+    if (msg.severity == Severity::internal && (msg.id == "logChecker" || endsWith(msg.id, "-logChecker"))) {
         const std::string& checker = msg.shortMessage();
         mActiveCheckers.emplace(checker);
         return;
     }
 
-    // Alert only about unique errors
-    if (!mShownErrors.insert(msg.toString(mSettings->verbose)).second)
-        return;
-
     if (ErrorLogger::isCriticalErrorId(msg.id) && mCriticalErrors.find(msg.id) == std::string::npos) {
         if (!mCriticalErrors.empty())
             mCriticalErrors += ", ";
         mCriticalErrors += msg.id;
+        if (msg.severity == Severity::internal)
+            mCriticalErrors += " (suppressed)";
     }
 
-    if (mSettings->xml)
+    if (msg.severity == Severity::internal)
+        return;
+
+    // TODO: we generate a different message here then we log below
+    // TODO: there should be no need for verbose and default messages here
+    // Alert only about unique errors
+    if (!mShownErrors.insert(msg.toString(mSettings.verbose)).second)
+        return;
+
+    if (mSettings.xml)
         reportErr(msg.toXML());
     else
-        reportErr(msg.toString(mSettings->verbose, mSettings->templateFormat, mSettings->templateLocation));
+        reportErr(msg.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation));
 }
 
+#if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
 void CppCheckExecutor::setExceptionOutput(FILE* exceptionOutput)
 {
     mExceptionOutput = exceptionOutput;
@@ -490,57 +443,14 @@ FILE* CppCheckExecutor::getExceptionOutput()
 {
     return mExceptionOutput;
 }
-
-bool CppCheckExecutor::tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename)
-{
-    const Library::Error err = destination.load(basepath.c_str(), filename);
-
-    if (err.errorcode == Library::ErrorCode::UNKNOWN_ELEMENT)
-        std::cout << "cppcheck: Found unknown elements in configuration file '" << filename << "': " << err.reason << std::endl;
-    else if (err.errorcode != Library::ErrorCode::OK) {
-        std::cout << "cppcheck: Failed to load library configuration file '" << filename << "'. ";
-        switch (err.errorcode) {
-        case Library::ErrorCode::OK:
-            break;
-        case Library::ErrorCode::FILE_NOT_FOUND:
-            std::cout << "File not found";
-            break;
-        case Library::ErrorCode::BAD_XML:
-            std::cout << "Bad XML";
-            break;
-        case Library::ErrorCode::UNKNOWN_ELEMENT:
-            std::cout << "Unexpected element";
-            break;
-        case Library::ErrorCode::MISSING_ATTRIBUTE:
-            std::cout << "Missing attribute";
-            break;
-        case Library::ErrorCode::BAD_ATTRIBUTE_VALUE:
-            std::cout << "Bad attribute value";
-            break;
-        case Library::ErrorCode::UNSUPPORTED_FORMAT:
-            std::cout << "File is of unsupported format version";
-            break;
-        case Library::ErrorCode::DUPLICATE_PLATFORM_TYPE:
-            std::cout << "Duplicate platform type";
-            break;
-        case Library::ErrorCode::PLATFORM_TYPE_REDEFINED:
-            std::cout << "Platform type redefined";
-            break;
-        }
-        if (!err.reason.empty())
-            std::cout << " '" + err.reason + "'";
-        std::cout << std::endl;
-        return false;
-    }
-    return true;
-}
+#endif
 
 /**
  * Execute a shell command and read the output from it. Returns true if command terminated successfully.
  */
-// cppcheck-suppress passedByValue - used as callback so we need to preserve the signature
+// cppcheck-suppress passedByValueCallback - used as callback so we need to preserve the signature
 // NOLINTNEXTLINE(performance-unnecessary-value-param) - used as callback so we need to preserve the signature
-bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output_)
+int CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output_)
 {
     output_.clear();
 
@@ -567,9 +477,12 @@ bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> 
 #else
     FILE *p = popen(cmd.c_str(), "r");
 #endif
+    //std::cout << "invoking command '" << cmd << "'" << std::endl;
     if (!p) {
-        // TODO: read errno
-        return false;
+        // TODO: how to provide to caller?
+        //const int err = errno;
+        //std::cout << "popen() errno " << std::to_string(err) << std::endl;
+        return -1;
     }
     char buffer[1024];
     while (fgets(buffer, sizeof(buffer), p) != nullptr)
@@ -580,14 +493,20 @@ bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> 
 #else
     const int res = pclose(p);
 #endif
-    if (res == -1) { // error occured
-        // TODO: read errno
-        return false;
+    if (res == -1) { // error occurred
+        // TODO: how to provide to caller?
+        //const int err = errno;
+        //std::cout << "pclose() errno " << std::to_string(err) << std::endl;
+        return res;
     }
-    if (res != 0) { // process failed
-        // TODO: need to get error details
-        return false;
+#if !defined(WIN32) && !defined(__MINGW32__)
+    if (WIFEXITED(res)) {
+        return WEXITSTATUS(res);
     }
-    return true;
+    if (WIFSIGNALED(res)) {
+        return WTERMSIG(res);
+    }
+#endif
+    return res;
 }
 

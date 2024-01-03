@@ -3,7 +3,8 @@
 include($$PWD/pcrerules.pri)
 include($$PWD/../externals/externals.pri)
 INCLUDEPATH += $$PWD
-HEADERS += $${PWD}/analyzer.h \
+HEADERS += $${PWD}/addoninfo.h \
+           $${PWD}/analyzer.h \
            $${PWD}/analyzerinfo.h \
            $${PWD}/astutils.h \
            $${PWD}/calculate.h \
@@ -16,6 +17,7 @@ HEADERS += $${PWD}/analyzer.h \
            $${PWD}/checkbufferoverrun.h \
            $${PWD}/checkclass.h \
            $${PWD}/checkcondition.h \
+           $${PWD}/checkers.h \
            $${PWD}/checkersreport.h \
            $${PWD}/checkexceptionsafety.h \
            $${PWD}/checkfunctions.h \
@@ -41,6 +43,8 @@ HEADERS += $${PWD}/analyzer.h \
            $${PWD}/ctu.h \
            $${PWD}/errorlogger.h \
            $${PWD}/errortypes.h \
+           $${PWD}/filesettings.h \
+           $${PWD}/findtoken.h \
            $${PWD}/forwardanalyzer.h \
            $${PWD}/fwdanalysis.h \
            $${PWD}/importproject.h \
@@ -73,9 +77,14 @@ HEADERS += $${PWD}/analyzer.h \
            $${PWD}/valueflow.h \
            $${PWD}/valueptr.h \
            $${PWD}/version.h \
-           $${PWD}/vfvalue.h
+           $${PWD}/vfvalue.h \
+           $${PWD}/xml.h
 
-SOURCES += $${PWD}/analyzerinfo.cpp \
+SOURCES += $${PWD}/valueflow.cpp \
+           $${PWD}/tokenize.cpp \
+           $${PWD}/symboldatabase.cpp \
+           $${PWD}/addoninfo.cpp \
+           $${PWD}/analyzerinfo.cpp \
            $${PWD}/astutils.cpp \
            $${PWD}/check.cpp \
            $${PWD}/check64bit.cpp \
@@ -86,6 +95,7 @@ SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/checkbufferoverrun.cpp \
            $${PWD}/checkclass.cpp \
            $${PWD}/checkcondition.cpp \
+           $${PWD}/checkers.cpp \
            $${PWD}/checkersreport.cpp \
            $${PWD}/checkexceptionsafety.cpp \
            $${PWD}/checkfunctions.cpp \
@@ -127,12 +137,9 @@ SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/settings.cpp \
            $${PWD}/summaries.cpp \
            $${PWD}/suppressions.cpp \
-           $${PWD}/symboldatabase.cpp \
            $${PWD}/templatesimplifier.cpp \
            $${PWD}/timer.cpp \
            $${PWD}/token.cpp \
-           $${PWD}/tokenize.cpp \
            $${PWD}/tokenlist.cpp \
            $${PWD}/utils.cpp \
-           $${PWD}/valueflow.cpp \
            $${PWD}/vfvalue.cpp

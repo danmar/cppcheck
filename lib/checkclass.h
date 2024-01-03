@@ -26,7 +26,6 @@
 #include "tokenize.h"
 #include "symboldatabase.h"
 
-#include <cstddef>
 #include <list>
 #include <map>
 #include <set>
@@ -51,10 +50,18 @@ namespace tinyxml2 {
 
 /** @brief %Check classes. Uninitialized member variables, non-conforming operators, missing virtual destructor, etc */
 class CPPCHECKLIB CheckClass : public Check {
+    friend class TestClass;
+    friend class TestConstructors;
+    friend class TestUnusedPrivateFunction;
+
 public:
     /** @brief This constructor is used when registering the CheckClass */
     CheckClass() : Check(myName()) {}
 
+    /** @brief Set of the STL types whose operator[] is not const */
+    static const std::set<std::string> stl_containers_not_const;
+
+private:
     /** @brief This constructor is used when running checks. */
     CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
 
@@ -156,33 +163,6 @@ public:
     /** @brief Unsafe class check - const reference member */
     void checkUnsafeClassRefMember();
 
-
-    /* multifile checking; one definition rule violations */
-    class MyFileInfo : public Check::FileInfo {
-    public:
-        struct NameLoc {
-            std::string className;
-            std::string fileName;
-            int lineNumber;
-            int column;
-            std::size_t hash;
-
-            bool operator==(const NameLoc& other) const {
-                return isSameLocation(other) && hash == other.hash;
-            }
-
-            bool isSameLocation(const NameLoc& other) const {
-                return fileName == other.fileName &&
-                       lineNumber == other.lineNumber &&
-                       column == other.column;
-            }
-        };
-        std::vector<NameLoc> classDefinitions;
-
-        /** Convert MyFileInfo data into xml string */
-        std::string toString() const override;
-    };
-
     /** @brief Parse current TU and extract file info */
     Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const override;
 
@@ -191,10 +171,6 @@ public:
     /** @brief Analyse all file infos for all TU */
     bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
 
-    /** @brief Set of the STL types whose operator[] is not const */
-    static const std::set<std::string> stl_containers_not_const;
-
-private:
     const SymbolDatabase* mSymbolDatabase{};
 
     // Reporting errors..

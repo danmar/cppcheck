@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,12 +42,12 @@ namespace {
 }
 
 // CWE ids used:
-static const struct CWE CWE570(570U);   // Expression is Always False
-static const struct CWE CWE571(571U);   // Expression is Always True
-static const struct CWE CWE595(595U);   // Comparison of Object References Instead of Object Contents
-static const struct CWE CWE628(628U);   // Function Call with Incorrectly Specified Arguments
-static const struct CWE CWE665(665U);   // Improper Initialization
-static const struct CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
+static const CWE CWE570(570U);   // Expression is Always False
+static const CWE CWE571(571U);   // Expression is Always True
+static const CWE CWE595(595U);   // Comparison of Object References Instead of Object Contents
+static const CWE CWE628(628U);   // Function Call with Incorrectly Specified Arguments
+static const CWE CWE665(665U);   // Improper Initialization
+static const CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 
 //---------------------------------------------------------------------------
 // Writing string literal is UB
@@ -73,8 +73,7 @@ void CheckString::stringLiteralWrite()
 
 void CheckString::stringLiteralWriteError(const Token *tok, const Token *strValue)
 {
-    std::list<const Token *> callstack;
-    callstack.push_back(tok);
+    std::list<const Token*> callstack{ tok };
     if (strValue)
         callstack.push_back(strValue);
 
@@ -141,7 +140,7 @@ void CheckString::checkAlwaysTrueOrFalseStringCompare()
 
 void CheckString::alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2)
 {
-    const std::size_t stringLen = 10;
+    constexpr std::size_t stringLen = 10;
     const std::string string1 = (str1.size() < stringLen) ? str1 : (str1.substr(0, stringLen-2) + "..");
     const std::string string2 = (str2.size() < stringLen) ? str2 : (str2.substr(0, stringLen-2) + "..");
 
@@ -255,9 +254,13 @@ void CheckString::strPlusCharError(const Token *tok)
 static bool isMacroUsage(const Token* tok)
 {
     if (const Token* parent = tok->astParent()) {
+        while (parent && parent->isCast())
+            parent = parent->astParent();
+        if (!parent)
+            return false;
         if (parent->isExpandedMacro())
             return true;
-        if (parent->isUnaryOp("!")) {
+        if (parent->isUnaryOp("!") || parent->isComparisonOp()) {
             int argn{};
             const Token* ftok = getTokenArgumentFunction(parent, argn);
             if (ftok && !ftok->function())
@@ -288,7 +291,7 @@ void CheckString::checkIncorrectStringCompare()
                 tok = tok->next()->link();
 
             if (Token::simpleMatch(tok, ". substr (") && Token::Match(tok->tokAt(3)->nextArgument(), "%num% )")) {
-                const MathLib::biguint clen = MathLib::toULongNumber(tok->linkAt(2)->strAt(-1));
+                const MathLib::biguint clen = MathLib::toBigUNumber(tok->linkAt(2)->strAt(-1));
                 const Token* begin = tok->previous();
                 for (;;) { // Find start of statement
                     while (begin->link() && Token::Match(begin, "]|)|>"))
@@ -328,7 +331,7 @@ void CheckString::incorrectStringBooleanError(const Token *tok, const std::strin
 {
     const bool charLiteral = isCharLiteral(string);
     const std::string literalType = charLiteral ? "char" : "string";
-    const std::string result = getCharLiteral(string) == "\\0" ? "false" : "true";
+    const std::string result = bool_to_string(getCharLiteral(string) != "\\0");
     reportError(tok,
                 Severity::warning,
                 charLiteral ? "incorrectCharBooleanError" : "incorrectStringBooleanError",

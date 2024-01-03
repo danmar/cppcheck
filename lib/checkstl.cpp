@@ -41,7 +41,6 @@
 #include <set>
 #include <sstream>
 #include <tuple>
-#include <type_traits>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -52,20 +51,20 @@ namespace {
 }
 
 // CWE IDs used:
-static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
-static const struct CWE CWE597(597U);   // Use of Wrong Operator in String Comparison
-static const struct CWE CWE628(628U);   // Function Call with Incorrectly Specified Arguments
-static const struct CWE CWE664(664U);   // Improper Control of a Resource Through its Lifetime
-static const struct CWE CWE667(667U);   // Improper Locking
-static const struct CWE CWE704(704U);   // Incorrect Type Conversion or Cast
-static const struct CWE CWE762(762U);   // Mismatched Memory Management Routines
-static const struct CWE CWE786(786U);   // Access of Memory Location Before Start of Buffer
-static const struct CWE CWE788(788U);   // Access of Memory Location After End of Buffer
-static const struct CWE CWE825(825U);   // Expired Pointer Dereference
-static const struct CWE CWE833(833U);   // Deadlock
-static const struct CWE CWE834(834U);   // Excessive Iteration
+static const CWE CWE398(398U);   // Indicator of Poor Code Quality
+static const CWE CWE597(597U);   // Use of Wrong Operator in String Comparison
+static const CWE CWE628(628U);   // Function Call with Incorrectly Specified Arguments
+static const CWE CWE664(664U);   // Improper Control of a Resource Through its Lifetime
+static const CWE CWE667(667U);   // Improper Locking
+static const CWE CWE704(704U);   // Incorrect Type Conversion or Cast
+static const CWE CWE762(762U);   // Mismatched Memory Management Routines
+static const CWE CWE786(786U);   // Access of Memory Location Before Start of Buffer
+static const CWE CWE788(788U);   // Access of Memory Location After End of Buffer
+static const CWE CWE825(825U);   // Expired Pointer Dereference
+static const CWE CWE833(833U);   // Deadlock
+static const CWE CWE834(834U);   // Excessive Iteration
 
-static bool isElementAccessYield(const Library::Container::Yield& yield)
+static bool isElementAccessYield(Library::Container::Yield yield)
 {
     return contains({Library::Container::Yield::ITEM, Library::Container::Yield::AT_INDEX}, yield);
 }
@@ -748,8 +747,8 @@ bool CheckStl::checkIteratorPair(const Token* tok1, const Token* tok2)
     }
 
     if (Token::Match(tok1->astParent(), "%comp%|-")) {
-        if (astIsIntegral(tok1, false) || astIsIntegral(tok2, false) || astIsFloat(tok1, false) ||
-            astIsFloat(tok2, false))
+        if (astIsIntegral(tok1, true) || astIsIntegral(tok2, true) ||
+            astIsFloat(tok1, true) || astIsFloat(tok2, true))
             return false;
     }
     const Token* iter1 = getIteratorExpression(tok1);
@@ -761,10 +760,12 @@ bool CheckStl::checkIteratorPair(const Token* tok1, const Token* tok2)
     return false;
 }
 
-struct ArgIteratorInfo {
-    const Token* tok;
-    const Library::ArgumentChecks::IteratorInfo* info;
-};
+namespace {
+    struct ArgIteratorInfo {
+        const Token* tok;
+        const Library::ArgumentChecks::IteratorInfo* info;
+    };
+}
 
 void CheckStl::mismatchingContainers()
 {
@@ -914,102 +915,104 @@ static const Token* getInvalidMethod(const Token* tok)
     return nullptr;
 }
 
-struct InvalidContainerAnalyzer {
-    struct Info {
-        struct Reference {
-            const Token* tok;
-            ErrorPath errorPath;
-            const Token* ftok;
-        };
-        std::unordered_map<int, Reference> expressions;
+namespace {
+    struct InvalidContainerAnalyzer {
+        struct Info {
+            struct Reference {
+                const Token* tok;
+                ErrorPath errorPath;
+                const Token* ftok;
+            };
+            std::unordered_map<int, Reference> expressions;
 
-        void add(const std::vector<Reference>& refs) {
-            for (const Reference& r : refs) {
-                add(r);
-            }
-        }
-        void add(const Reference& r) {
-            if (!r.tok)
-                return;
-            expressions.insert(std::make_pair(r.tok->exprId(), r));
-        }
-
-        std::vector<Reference> invalidTokens() const {
-            std::vector<Reference> result;
-            std::transform(expressions.cbegin(), expressions.cend(), std::back_inserter(result), SelectMapValues{});
-            return result;
-        }
-    };
-    std::unordered_map<const Function*, Info> invalidMethods;
-
-    std::vector<Info::Reference> invalidatesContainer(const Token* tok) const {
-        std::vector<Info::Reference> result;
-        if (Token::Match(tok, "%name% (")) {
-            const Function* f = tok->function();
-            if (!f)
-                return result;
-            ErrorPathItem epi = std::make_pair(tok, "Calling function " + tok->str());
-            const bool dependsOnThis = exprDependsOnThis(tok->next());
-            auto it = invalidMethods.find(f);
-            if (it != invalidMethods.end()) {
-                std::vector<Info::Reference> refs = it->second.invalidTokens();
-                std::copy_if(refs.cbegin(), refs.cend(), std::back_inserter(result), [&](const Info::Reference& r) {
-                    const Variable* var = r.tok->variable();
-                    if (!var)
-                        return false;
-                    if (dependsOnThis && !var->isLocal() && !var->isGlobal() && !var->isStatic())
-                        return true;
-                    if (!var->isArgument())
-                        return false;
-                    if (!var->isReference())
-                        return false;
-                    return true;
-                });
-                std::vector<const Token*> args = getArguments(tok);
-                for (Info::Reference& r : result) {
-                    r.errorPath.push_front(epi);
-                    r.ftok = tok;
-                    const Variable* var = r.tok->variable();
-                    if (!var)
-                        continue;
-                    if (var->isArgument()) {
-                        const int n = getArgumentPos(var, f);
-                        const Token* tok2 = nullptr;
-                        if (n >= 0 && n < args.size())
-                            tok2 = args[n];
-                        r.tok = tok2;
-                    }
+            void add(const std::vector<Reference>& refs) {
+                for (const Reference& r : refs) {
+                    add(r);
                 }
             }
-        } else if (astIsContainer(tok)) {
-            const Token* ftok = getInvalidMethod(tok);
-            if (ftok) {
-                ErrorPath ep;
-                ep.emplace_front(ftok,
-                                 "After calling '" + ftok->expressionString() +
-                                 "', iterators or references to the container's data may be invalid .");
-                result.emplace_back(Info::Reference{tok, ep, ftok});
+            void add(const Reference& r) {
+                if (!r.tok)
+                    return;
+                expressions.insert(std::make_pair(r.tok->exprId(), r));
             }
-        }
-        return result;
-    }
 
-    void analyze(const SymbolDatabase* symboldatabase) {
-        for (const Scope* scope : symboldatabase->functionScopes) {
-            const Function* f = scope->function;
-            if (!f)
-                continue;
-            for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-                if (Token::Match(tok, "if|while|for|goto|return"))
-                    break;
-                std::vector<Info::Reference> c = invalidatesContainer(tok);
-                if (c.empty())
+            std::vector<Reference> invalidTokens() const {
+                std::vector<Reference> result;
+                std::transform(expressions.cbegin(), expressions.cend(), std::back_inserter(result), SelectMapValues{});
+                return result;
+            }
+        };
+        std::unordered_map<const Function*, Info> invalidMethods;
+
+        std::vector<Info::Reference> invalidatesContainer(const Token* tok) const {
+            std::vector<Info::Reference> result;
+            if (Token::Match(tok, "%name% (")) {
+                const Function* f = tok->function();
+                if (!f)
+                    return result;
+                ErrorPathItem epi = std::make_pair(tok, "Calling function " + tok->str());
+                const bool dependsOnThis = exprDependsOnThis(tok->next());
+                auto it = invalidMethods.find(f);
+                if (it != invalidMethods.end()) {
+                    std::vector<Info::Reference> refs = it->second.invalidTokens();
+                    std::copy_if(refs.cbegin(), refs.cend(), std::back_inserter(result), [&](const Info::Reference& r) {
+                        const Variable* var = r.tok->variable();
+                        if (!var)
+                            return false;
+                        if (dependsOnThis && !var->isLocal() && !var->isGlobal() && !var->isStatic())
+                            return true;
+                        if (!var->isArgument())
+                            return false;
+                        if (!var->isReference())
+                            return false;
+                        return true;
+                    });
+                    std::vector<const Token*> args = getArguments(tok);
+                    for (Info::Reference& r : result) {
+                        r.errorPath.push_front(epi);
+                        r.ftok = tok;
+                        const Variable* var = r.tok->variable();
+                        if (!var)
+                            continue;
+                        if (var->isArgument()) {
+                            const int n = getArgumentPos(var, f);
+                            const Token* tok2 = nullptr;
+                            if (n >= 0 && n < args.size())
+                                tok2 = args[n];
+                            r.tok = tok2;
+                        }
+                    }
+                }
+            } else if (astIsContainer(tok)) {
+                const Token* ftok = getInvalidMethod(tok);
+                if (ftok) {
+                    ErrorPath ep;
+                    ep.emplace_front(ftok,
+                                     "After calling '" + ftok->expressionString() +
+                                     "', iterators or references to the container's data may be invalid .");
+                    result.emplace_back(Info::Reference{tok, ep, ftok});
+                }
+            }
+            return result;
+        }
+
+        void analyze(const SymbolDatabase* symboldatabase) {
+            for (const Scope* scope : symboldatabase->functionScopes) {
+                const Function* f = scope->function;
+                if (!f)
                     continue;
-                invalidMethods[f].add(c);
+                for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+                    if (Token::Match(tok, "if|while|for|goto|return"))
+                        break;
+                    std::vector<Info::Reference> c = invalidatesContainer(tok);
+                    if (c.empty())
+                        continue;
+                    invalidMethods[f].add(c);
+                }
             }
         }
-    }
-};
+    };
+}
 
 static const Token* getLoopContainer(const Token* tok)
 {
@@ -1513,13 +1516,15 @@ void CheckStl::if_find()
                         for (int j = 0; j < container->type_templateArgNo; j++)
                             tok2 = tok2->nextTemplateArgument();
 
-                        container = mSettings->library.detectContainer(tok2); // innner container
+                        container = mSettings->library.detectContainer(tok2); // inner container
                     } else
                         container = nullptr;
                 }
             }
 
-            if (container && container->getAction(funcTok->str()) == Library::Container::Action::FIND) {
+            Library::Container::Action action{};
+            if (container &&
+                ((action = container->getAction(funcTok->str())) == Library::Container::Action::FIND || action == Library::Container::Action::FIND_CONST)) {
                 if (if_findCompare(funcTok->next(), container->stdStringLike))
                     continue;
 
@@ -1930,8 +1935,8 @@ void CheckStl::string_c_str()
 
     // Find all functions that take std::string as argument
     struct StrArg {
-        nonneg int n; // cppcheck-suppress unusedStructMember // FP used through iterator/pair
-        std::string argtype; // cppcheck-suppress unusedStructMember
+        nonneg int n;
+        std::string argtype;
     };
     std::multimap<const Function*, StrArg> c_strFuncParam;
     if (printPerformance) {
@@ -2493,8 +2498,7 @@ void CheckStl::dereferenceInvalidIteratorError(const Token* tok, const ValueFlow
     if (value->condition) {
         reportError(errorPath, Severity::warning, "derefInvalidIteratorRedundantCheck", errmsgcond, CWE825, (inconclusive || value->isInconclusive()) ? Certainty::inconclusive : Certainty::normal);
     } else {
-        std::string errmsg;
-        errmsg = std::string(value->isKnown() ? "Dereference" : "Possible dereference") + " of an invalid iterator";
+        std::string errmsg = std::string(value->isKnown() ? "Dereference" : "Possible dereference") + " of an invalid iterator";
         if (!varname.empty())
             errmsg = "$symbol:" + varname + '\n' + errmsg + ": $symbol";
 
@@ -2707,7 +2711,7 @@ namespace {
         const Token* bodyTok = nullptr;
         const Token* loopVar = nullptr;
         const Settings* settings = nullptr;
-        std::set<nonneg int> varsChanged = {};
+        std::set<nonneg int> varsChanged;
 
         explicit LoopAnalyzer(const Token* tok, const Settings* psettings)
             : bodyTok(tok->next()->link()->next()), settings(psettings)
@@ -2877,6 +2881,8 @@ void CheckStl::useStlAlgorithm()
             if (Token::simpleMatch(splitTok, ":")) {
                 loopVar = splitTok->previous();
                 if (loopVar->varId() == 0)
+                    continue;
+                if (Token::simpleMatch(splitTok->astOperand2(), "{"))
                     continue;
             }
             else { // iterator-based loop?
