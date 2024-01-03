@@ -943,7 +943,7 @@ private:
         ASSERT_EQUALS("[test.c:4]: (error) Dereferencing 'p' after it is deallocated / released\n",
                       errout.str());
 
-        check("void g(int);\n"
+        check("int g(int);\n"
               "void f(int* p) {\n"
               "    free(p);\n"
               "    g(*p);\n"
@@ -964,6 +964,19 @@ private:
               "int h(int* p) {\n"
               "    free(p);\n"
               "    return g(1 + *p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.c:4]: (error) Dereferencing 'p' after it is deallocated / released\n"
+                      "[test.c:7] -> [test.c:8]: (error) Returning/dereferencing 'p' after it is deallocated / released\n",
+                      errout.str());
+
+        check("int g(int, int);\n"
+              "void f(int* p) {\n"
+              "    free(p);\n"
+              "    g(0, 1 + *p);\n"
+              "}\n"
+              "int h(int* p) {\n"
+              "    free(p);\n"
+              "    return g(0, 1 + *p);\n"
               "}\n");
         ASSERT_EQUALS("[test.c:4]: (error) Dereferencing 'p' after it is deallocated / released\n"
                       "[test.c:7] -> [test.c:8]: (error) Returning/dereferencing 'p' after it is deallocated / released\n",
