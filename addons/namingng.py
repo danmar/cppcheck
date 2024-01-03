@@ -55,6 +55,26 @@ def configError(error,fatal=True):
     if fatal:
         sys.exit(1)
 
+def validateConfigREs(list_or_dict,json_key):
+    have_error = False
+    for item in list_or_dict:
+        try:
+            re.compile(item)
+        except re.error as err:
+            configError("item '%s' of '%s' is not a valid regular expression: %s"%(item,json_key,err),fatal=False)
+            have_error = True
+            continue
+        if not isinstance(list_or_dict,dict):
+            continue
+        # item is actually a dict key; check value
+        value = list_or_dict[item]
+        if (not isinstance(value,list) or len(value) != 2
+                or not isinstance(value[0],bool) or not isinstance(value[1],str)):
+            configError("item '%s' of '%s' must be an array [bool,string]"%(item,json_key),fatal=False)
+            have_error = True
+
+    return have_error
+
 def loadConfig(configfile):
     if not os.path.exists(configfile):
         configError("cannot find config file '%s'"%configfile)
@@ -82,18 +102,18 @@ def loadConfig(configfile):
     config = Config()
 
     mapping = {
-        'file':                     ('RE_FILE', list),
-        'namespace':                ('RE_NAMESPACE', list),
-        'include_guard':            ('include_guard', dict),
-        'variable':                 ('RE_VARNAME', list),
-        'variable_prefixes':        ('var_prefixes', dict, {}),
-        'private_member':           ('RE_PRIVATE_MEMBER_VARIABLE', list),
-        'public_member':            ('RE_PUBLIC_MEMBER_VARIABLE', list),
-        'global_variable':          ('RE_GLOBAL_VARNAME', list),
-        'function_name':            ('RE_FUNCTIONNAME', list),
-        'function_prefixes':        ('function_prefixes', dict, {}),
-        'class_name':               ('RE_CLASS_NAME', list),
-        'skip_one_char_variables':  ('skip_one_char_variables', bool),
+        'file':                     ('RE_FILE', (list,)),
+        'namespace':                ('RE_NAMESPACE', (list,dict)),
+        'include_guard':            ('include_guard', (dict,)),
+        'variable':                 ('RE_VARNAME', (list,dict)),
+        'variable_prefixes':        ('var_prefixes', (dict,), {}),
+        'private_member':           ('RE_PRIVATE_MEMBER_VARIABLE', (list,dict)),
+        'public_member':            ('RE_PUBLIC_MEMBER_VARIABLE', (list,dict)),
+        'global_variable':          ('RE_GLOBAL_VARNAME', (list,dict)),
+        'function_name':            ('RE_FUNCTIONNAME', (list,dict)),
+        'function_prefixes':        ('function_prefixes', (dict,), {}),
+        'class_name':               ('RE_CLASS_NAME', (list,dict)),
+        'skip_one_char_variables':  ('skip_one_char_variables', (bool,)),
     }
 
     # parse defined keys and store as members of config object
@@ -103,23 +123,18 @@ def loadConfig(configfile):
         default = None if len(opts)<3 else opts[2]
 
         value = data.pop(json_key,default)
-        if value is not None and not isinstance(value, req_type):
-            req_typename = req_type.__name__
+        if value is not None and type(value) not in req_type:
+            req_typename = ' or '.join([tp.__name__ for tp in req_type])
             got_typename = type(value).__name__
             configError('%s must be %s (not %s), or not set'%(json_key,req_typename,got_typename),fatal=False)
             have_error = True
             continue
 
-        if req_type == list and value is not None:
-            # type 'list' implies a list of regular expressions
-            for item in value:
-                try:
-                    re.compile(item)
-                except re.error as err:
-                    configError("item '%s' of '%s' is not a valid regular expression: %s"%(item,json_key,err),fatal=False)
-                    have_error = True
-            if have_error:
-                continue
+        # type list implies that this is either a list of REs or a dict with RE keys
+        if list in req_type and value is not None:
+            re_error = validateConfigREs(value,json_key)
+            if re_error:
+                have_error = True
 
         setattr(config,key,value)
 
@@ -135,32 +150,17 @@ def loadConfig(configfile):
     return config
 
 
-def checkTrueRegex(data, expr, msg):
-    res = re.match(expr, data.str)
-    if res:
-        reportNamingError(data,msg)
-
-
-def checkFalseRegex(data, expr, msg):
-    res = re.match(expr, data.str)
-    if not res:
-        reportNamingError(data,msg)
-
-
 def evalExpr(conf, exp, mockToken, msgType):
+    report_as_error = False
+    msg = msgType + ' ' + mockToken.str + ' violates naming convention'
+
     if isinstance(conf, dict):
-        if conf[exp][0]:
-            msg = msgType + ' ' + mockToken.str + ' violates naming convention : ' + conf[exp][1]
-            checkTrueRegex(mockToken, exp, msg)
-        elif ~conf[exp][0]:
-            msg = msgType + ' ' + mockToken.str + ' violates naming convention : ' + conf[exp][1]
-            checkFalseRegex(mockToken, exp, msg)
-        else:
-            msg = msgType + ' ' + mockToken.str + ' violates naming convention : ' + conf[exp][0]
-            checkFalseRegex(mockToken, exp, msg)
-    else:
-        msg = msgType + ' ' + mockToken.str + ' violates naming convention'
-        checkFalseRegex(mockToken, exp, msg)
+        report_as_error = conf[exp][0]
+        msg += ': ' + conf[exp][1]
+
+    res = re.match(exp,mockToken.str)
+    if bool(res) == report_as_error:
+        reportNamingError(mockToken,msg)
 
 def check_include_guard_name(conf_include_guard,cfg,directive):
     parts = directive.str.split()
