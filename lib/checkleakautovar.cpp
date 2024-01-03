@@ -1045,6 +1045,8 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
             const VarInfo::AllocInfo sp_allocation(sp_af ? sp_af->groupId : (arrayDelete ? NEW_ARRAY : NEW), VarInfo::OWNED, allocTok);
             changeAllocStatus(varInfo, sp_allocation, vtok, vtok);
         } else {
+            while (arg->isUnaryOp("*") || arg->isUnaryOp("&"))
+                arg = arg->astOperand1();
             checkTokenInsideExpression(arg, varInfo);
         }
         // TODO: check each token in argument expression (could contain multiple variables)

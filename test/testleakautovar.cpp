@@ -942,6 +942,14 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.c:4]: (error) Dereferencing 'p' after it is deallocated / released\n",
                       errout.str());
+
+        check("void g(int);\n"
+              "void f(int* p) {\n"
+              "    free(p);\n"
+              "    g(*p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.c:4]: (error) Dereferencing 'p' after it is deallocated / released\n",
+                      errout.str());
     }
 
     void doublefree1() {  // #3895
