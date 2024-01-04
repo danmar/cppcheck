@@ -1045,7 +1045,11 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
             const VarInfo::AllocInfo sp_allocation(sp_af ? sp_af->groupId : (arrayDelete ? NEW_ARRAY : NEW), VarInfo::OWNED, allocTok);
             changeAllocStatus(varInfo, sp_allocation, vtok, vtok);
         } else {
-            checkTokenInsideExpression(arg, varInfo, /*inFuncCall*/ isLeakIgnore);
+            const Token* const nextArg = funcArg->nextArgument();
+            do {
+                checkTokenInsideExpression(arg, varInfo, /*inFuncCall*/ isLeakIgnore);
+                arg = arg->next();
+            } while ((nextArg && arg != nextArg) || (!nextArg && arg != tokOpeningPar->link()));
         }
         // TODO: check each token in argument expression (could contain multiple variables)
         argNr++;
@@ -1111,7 +1115,7 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
             for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
                 if (tok2->str() == ";")
                     break;
-                if (!Token::Match(tok2, "return|(|{|,"))
+                if (!Token::Match(tok2, "return|(|{|,|*"))
                     continue;
 
                 const Token* tok3 = tok2->next();
