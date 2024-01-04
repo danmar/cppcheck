@@ -2489,3 +2489,73 @@ void f() {}
 
     # no dump file should have been generated
     assert not os.path.exists(str(test_file) + '.dump')
+
+
+def test_duplicate_suppression(tmp_path):
+    test_file = tmp_path / 'file.cpp'
+    with open(test_file, 'wt'):
+        pass
+
+    args = [
+        '-q',
+        '--suppress=uninitvar',
+        '--suppress=uninitvar',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == [
+        "cppcheck: error: suppression 'uninitvar' already exists"
+    ]
+    assert stderr == ''
+
+
+def test_duplicate_suppressions_list(tmp_path):
+    suppr_file = tmp_path / 'suppressions'
+    with open(suppr_file, 'wt') as f:
+        f.write('''
+uninitvar
+uninitvar
+''')
+
+    test_file = tmp_path / 'file.cpp'
+    with open(test_file, 'wt'):
+        pass
+
+    args = [
+        '-q',
+        '--suppressions-list={}'.format(suppr_file),
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == [
+        "cppcheck: error: suppression 'uninitvar' already exists"
+    ]
+    assert stderr == ''
+
+
+def test_duplicate_suppressions_mixed(tmp_path):
+    suppr_file = tmp_path / 'suppressions'
+    with open(suppr_file, 'wt') as f:
+        f.write('uninitvar')
+
+    test_file = tmp_path / 'file.cpp'
+    with open(test_file, 'wt'):
+        pass
+
+    args = [
+        '-q',
+        '--suppress=uninitvar',
+        '--suppressions-list={}'.format(suppr_file),
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == [
+        "cppcheck: error: suppression 'uninitvar' already exists"
+    ]
+    assert stderr == ''
