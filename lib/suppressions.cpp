@@ -258,10 +258,7 @@ std::string SuppressionList::addSuppression(SuppressionList::Suppression suppres
     auto foundSuppression = std::find_if(mSuppressions.begin(), mSuppressions.end(),
                                          std::bind(&Suppression::isSameParameters, &suppression, std::placeholders::_1));
     if (foundSuppression != mSuppressions.end()) {
-        // Update matched state of existing global suppression
-        if (!suppression.isLocal() && suppression.matched)
-            foundSuppression->matched = suppression.matched;
-        return "";
+        return "suppression '" + suppression.toString() + "' already exists";
     }
 
     // Check that errorId is valid..
@@ -295,6 +292,21 @@ std::string SuppressionList::addSuppressions(std::list<Suppression> suppressions
             return errmsg;
     }
     return "";
+}
+
+bool SuppressionList::updateSuppressionState(const SuppressionList::Suppression& suppression)
+{
+    // Check if suppression is already in list
+    auto foundSuppression = std::find_if(mSuppressions.begin(), mSuppressions.end(),
+                                         std::bind(&Suppression::isSameParameters, &suppression, std::placeholders::_1));
+    if (foundSuppression != mSuppressions.end()) {
+        // Update matched state of existing global suppression
+        if (!suppression.isLocal() && suppression.matched)
+            foundSuppression->matched = suppression.matched;
+        return true;
+    }
+
+    return false;
 }
 
 void SuppressionList::ErrorMessage::setFileName(std::string s)
@@ -584,4 +596,23 @@ bool SuppressionList::reportUnmatchedSuppressions(const std::list<SuppressionLis
         err = true;
     }
     return err;
+}
+
+std::string SuppressionList::Suppression::toString() const
+{
+    std::string s;
+    s+= errorId;
+    if (!fileName.empty()) {
+        s += ':';
+        s += fileName;
+        if (lineNumber != -1) {
+            s += ':';
+            s += std::to_string(lineNumber);
+        }
+    }
+    if (!symbolName.empty()) {
+        s += ':';
+        s += symbolName;
+    }
+    return s;
 }
