@@ -601,7 +601,12 @@ unsigned int CppCheck::check(const FileSettings &fs)
         return returnValue;
     }
     const unsigned int returnValue = temp.checkFile(fs.file, fs.cfg);
-    mSettings.supprs.nomsg.addSuppressions(temp.mSettings.supprs.nomsg.getSuppressions());
+    for (const auto& suppr : temp.mSettings.supprs.nomsg.getSuppressions())
+    {
+        const bool res = mSettings.supprs.nomsg.updateSuppressionState(suppr);
+        if (!res)
+            throw InternalError(nullptr, "could not update suppression '" + suppr.errorId + "'"); // TODO: remove
+    }
     if (mUnusedFunctionsCheck)
         mUnusedFunctionsCheck->updateFunctionData(*temp.mUnusedFunctionsCheck);
     while (!temp.mFileInfo.empty()) {
