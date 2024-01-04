@@ -425,3 +425,9 @@ void g_abort_test()
     //cppcheck-suppress unreachableCode
     printf("Never reached");
 }
+
+gchar* g_strchug_string_free_test(GString* t) // #12301
+{
+    gchar* p = g_strchug(g_string_free(t, FALSE));
+    return p;
+}
