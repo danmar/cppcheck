@@ -1,6 +1,6 @@
 if (MSVC)
     # Visual Studio only sets _DEBUG
-    add_compile_definitions($<$<CONFIG:Debug>:-DDEBUG>)
+    add_compile_definitions($<$<CONFIG:Debug>:DEBUG>)
 
     add_definitions(-DWIN32)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -22,7 +22,7 @@ if (CPPCHK_GLIBCXX_DEBUG AND UNIX AND CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 if (HAVE_RULES)
-    add_definitions(-DHAVE_RULES -DTIXML_USE_STL)
+    add_definitions(-DHAVE_RULES)
 endif()
 
 if (Boost_FOUND)

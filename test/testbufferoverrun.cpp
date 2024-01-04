@@ -1697,6 +1697,24 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:3] -> [test.cpp:6]: (warning) Either the condition 'x<2' is redundant or the array 'a[3]' is accessed at index 3, which is out of bounds.\n",
             errout.str());
+
+        check("void f() {\n" // #2199
+              "    char a[5];\n"
+              "    for (int i = 0; i < 5; i++) {\n"
+              "        i += 8;\n"
+              "        a[i] = 0;\n"
+              "    }\n"
+              "}\n"
+              "void g() {\n"
+              "    char a[5];\n"
+              "    for (int i = 0; i < 5; i++) {\n"
+              "        a[i + 7] = 0;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:5]: (error) Array 'a[5]' accessed at index 8, which is out of bounds.\n"
+            "[test.cpp:11]: (error) Array 'a[5]' accessed at index 11, which is out of bounds.\n",
+            errout.str());
     }
 
     void array_index_59() // #10413
@@ -3597,17 +3615,17 @@ private:
     }
 
     void buffer_overrun_readSizeFromCfg() {
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def>\n"
-                               "  <podtype name=\"u8\" sign=\"u\" size=\"1\"/>\n"
-                               "  <function name=\"mystrcpy\">\n"
-                               "    <noreturn>false</noreturn>\n"
-                               "    <arg nr=\"1\">\n"
-                               "      <minsize type=\"strlen\" arg=\"2\"/>\n"
-                               "    </arg>\n"
-                               "    <arg nr=\"2\"/>\n"
-                               "  </function>\n"
-                               "</def>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "  <podtype name=\"u8\" sign=\"u\" size=\"1\"/>\n"
+                                   "  <function name=\"mystrcpy\">\n"
+                                   "    <noreturn>false</noreturn>\n"
+                                   "    <arg nr=\"1\">\n"
+                                   "      <minsize type=\"strlen\" arg=\"2\"/>\n"
+                                   "    </arg>\n"
+                                   "    <arg nr=\"2\"/>\n"
+                                   "  </function>\n"
+                                   "</def>";
         const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         // Attempt to get size from Cfg files, no false positives if size is not specified
@@ -4149,17 +4167,17 @@ private:
     // extracttests.disable
 
     void minsize_argvalue() {
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def>\n"
-                               "  <function name=\"mymemset\">\n"
-                               "    <noreturn>false</noreturn>\n"
-                               "    <arg nr=\"1\">\n"
-                               "      <minsize type=\"argvalue\" arg=\"3\"/>\n"
-                               "    </arg>\n"
-                               "    <arg nr=\"2\"/>\n"
-                               "    <arg nr=\"3\"/>\n"
-                               "  </function>\n"
-                               "</def>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "  <function name=\"mymemset\">\n"
+                                   "    <noreturn>false</noreturn>\n"
+                                   "    <arg nr=\"1\">\n"
+                                   "      <minsize type=\"argvalue\" arg=\"3\"/>\n"
+                                   "    </arg>\n"
+                                   "    <arg nr=\"2\"/>\n"
+                                   "    <arg nr=\"3\"/>\n"
+                                   "  </function>\n"
+                                   "</def>";
         Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).severity(Severity::warning).build();
         settings.platform.sizeof_wchar_t = 4;
 
@@ -4286,18 +4304,18 @@ private:
     }
 
     void minsize_sizeof() {
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def>\n"
-                               "  <function name=\"mystrncpy\">\n"
-                               "    <noreturn>false</noreturn>\n"
-                               "    <arg nr=\"1\">\n"
-                               "      <minsize type=\"strlen\" arg=\"2\"/>\n"
-                               "      <minsize type=\"argvalue\" arg=\"3\"/>\n"
-                               "    </arg>\n"
-                               "    <arg nr=\"2\"/>\n"
-                               "    <arg nr=\"3\"/>\n"
-                               "  </function>\n"
-                               "</def>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "  <function name=\"mystrncpy\">\n"
+                                   "    <noreturn>false</noreturn>\n"
+                                   "    <arg nr=\"1\">\n"
+                                   "      <minsize type=\"strlen\" arg=\"2\"/>\n"
+                                   "      <minsize type=\"argvalue\" arg=\"3\"/>\n"
+                                   "    </arg>\n"
+                                   "    <arg nr=\"2\"/>\n"
+                                   "    <arg nr=\"3\"/>\n"
+                                   "  </function>\n"
+                                   "</def>";
         const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         check("void f() {\n"
@@ -4346,19 +4364,19 @@ private:
     }
 
     void minsize_strlen() {
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def>\n"
-                               "  <function name=\"mysprintf\">\n"
-                               "    <noreturn>false</noreturn>\n"
-                               "    <formatstr/>\n"
-                               "    <arg nr=\"1\">\n"
-                               "      <minsize type=\"strlen\" arg=\"2\"/>\n"
-                               "    </arg>\n"
-                               "    <arg nr=\"2\">\n"
-                               "      <formatstr/>\n"
-                               "    </arg>\n"
-                               "  </function>\n"
-                               "</def>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "  <function name=\"mysprintf\">\n"
+                                   "    <noreturn>false</noreturn>\n"
+                                   "    <formatstr/>\n"
+                                   "    <arg nr=\"1\">\n"
+                                   "      <minsize type=\"strlen\" arg=\"2\"/>\n"
+                                   "    </arg>\n"
+                                   "    <arg nr=\"2\">\n"
+                                   "      <formatstr/>\n"
+                                   "    </arg>\n"
+                                   "  </function>\n"
+                                   "</def>";
         const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         // formatstr..
@@ -4459,17 +4477,17 @@ private:
     }
 
     void minsize_mul() {
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def>\n"
-                               "  <function name=\"myfread\">\n"
-                               "    <arg nr=\"1\">\n"
-                               "      <minsize type=\"mul\" arg=\"2\" arg2=\"3\"/>\n"
-                               "    </arg>\n"
-                               "    <arg nr=\"2\"/>\n"
-                               "    <arg nr=\"3\"/>\n"
-                               "    <arg nr=\"4\"/>\n"
-                               "  </function>\n"
-                               "</def>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "  <function name=\"myfread\">\n"
+                                   "    <arg nr=\"1\">\n"
+                                   "      <minsize type=\"mul\" arg=\"2\" arg2=\"3\"/>\n"
+                                   "    </arg>\n"
+                                   "    <arg nr=\"2\"/>\n"
+                                   "    <arg nr=\"3\"/>\n"
+                                   "    <arg nr=\"4\"/>\n"
+                                   "  </function>\n"
+                                   "</def>";
         const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         check("void f() {\n"

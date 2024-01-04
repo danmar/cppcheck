@@ -20,9 +20,10 @@
 #define filelisterH
 
 #include <cstddef>
-#include <map>
+#include <list>
 #include <set>
 #include <string>
+#include <utility>
 
 class PathMatch;
 
@@ -37,12 +38,12 @@ public:
      * Add source files from given directory and all subdirectries to the
      * given map. Only files with accepted extensions
      * (*.c;*.cpp;*.cxx;*.c++;*.cc;*.txx) are added.
-     * @param files output map that associates the size of each file with its name
+     * @param files output list that associates the size of each file with its name
      * @param path root path
      * @param ignored ignored paths
      * @return On success, an empty string is returned. On error, a error message is returned.
      */
-    static std::string recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const PathMatch& ignored) {
+    static std::string recursiveAddFiles(std::list<std::pair<std::string, std::size_t>> &files, const std::string &path, const PathMatch& ignored) {
         const std::set<std::string> extra;
         return recursiveAddFiles(files, path, extra, ignored);
     }
@@ -52,27 +53,27 @@ public:
      * Add source files from given directory and all subdirectries to the
      * given map. Only files with accepted extensions
      * (*.c;*.cpp;*.cxx;*.c++;*.cc;*.txx) are added.
-     * @param files output map that associates the size of each file with its name
+     * @param files output list that associates the size of each file with its name
      * @param path root path
      * @param extra Extra file extensions
      * @param ignored ignored paths
      * @return On success, an empty string is returned. On error, a error message is returned.
      */
-    static std::string recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored);
+    static std::string recursiveAddFiles(std::list<std::pair<std::string, std::size_t>> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored);
 
     /**
      * @brief (Recursively) add source files to a map.
      * Add source files from given directory and all subdirectries to the
      * given map. Only files with accepted extensions
      * (*.c;*.cpp;*.cxx;*.c++;*.cc;*.txx) are added.
-     * @param files output map that associates the size of each file with its name
+     * @param files output list that associates the size of each file with its name
      * @param path root path
      * @param extra Extra file extensions
      * @param recursive Enable recursion
      * @param ignored ignored paths
      * @return On success, an empty string is returned. On error, a error message is returned.
      */
-    static std::string addFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored);
+    static std::string addFiles(std::list<std::pair<std::string, std::size_t>> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored);
 };
 
 /// @}

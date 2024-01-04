@@ -193,6 +193,7 @@ private:
         TEST_CASE(uninitVarArray8);
         TEST_CASE(uninitVarArray9); // ticket #6957, #6959
         TEST_CASE(uninitVarArray10);
+        TEST_CASE(uninitVarArray11);
         TEST_CASE(uninitVarArray2D);
         TEST_CASE(uninitVarArray3D);
         TEST_CASE(uninitVarCpp11Init1);
@@ -3178,6 +3179,20 @@ private:
                       "[test.cpp:10]: (warning) Member variable 'S::c' is not initialized in the constructor.\n"
                       "[test.cpp:10]: (warning) Member variable 'S::d' is not initialized in the constructor.\n",
                       errout.str());
+    }
+
+    void uninitVarArray11() {
+        check("class C {\n" // #12150
+              "private:\n"
+              "    int buf[10];\n"
+              "public:\n"
+              "    C() {\n"
+              "        for (int& i : buf)\n"
+              "            i = 0;\n"
+              "    }\n"
+              "};\n");
+
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitVarArray2D() {

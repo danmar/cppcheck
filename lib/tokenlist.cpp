@@ -43,7 +43,7 @@
 // How many compileExpression recursions are allowed?
 // For practical code this could be endless. But in some special torture test
 // there needs to be a limit.
-static const int AST_MAX_DEPTH = 150;
+static constexpr int AST_MAX_DEPTH = 150;
 
 
 TokenList::TokenList(const Settings* settings) :
@@ -396,17 +396,19 @@ std::size_t TokenList::calculateHash() const
 
 //---------------------------------------------------------------------------
 
-struct AST_state {
-    std::stack<Token*> op;
-    int depth{};
-    int inArrayAssignment{};
-    bool cpp;
-    int assign{};
-    bool inCase{}; // true from case to :
-    bool stopAtColon{}; // help to properly parse ternary operators
-    const Token* functionCallEndPar{};
-    explicit AST_state(bool cpp) : cpp(cpp) {}
-};
+namespace {
+    struct AST_state {
+        std::stack<Token*> op;
+        int depth{};
+        int inArrayAssignment{};
+        bool cpp;
+        int assign{};
+        bool inCase{}; // true from case to :
+        bool stopAtColon{}; // help to properly parse ternary operators
+        const Token* functionCallEndPar{};
+        explicit AST_state(bool cpp) : cpp(cpp) {}
+    };
+}
 
 static Token* skipDecl(Token* tok, std::vector<Token*>* inner = nullptr)
 {
@@ -571,8 +573,12 @@ static bool iscpp11init_impl(const Token * const tok)
     }
 
     auto isCaseStmt = [](const Token* colonTok) {
-        if (!Token::Match(colonTok->tokAt(-1), "%name%|%num%|%char% :"))
+        if (!Token::Match(colonTok->tokAt(-1), "%name%|%num%|%char%|) :"))
             return false;
+        if (const Token* castTok = colonTok->linkAt(-1)) {
+            if (Token::simpleMatch(castTok->astParent(), "case"))
+                return true;
+        }
         const Token* caseTok = colonTok->tokAt(-2);
         while (caseTok && Token::Match(caseTok->tokAt(-1), "::|%name%"))
             caseTok = caseTok->tokAt(-1);
@@ -1454,8 +1460,11 @@ static Token * createAstAtToken(Token *tok, bool cpp)
             return tok2;
     }
     if (Token::Match(tok, "%type%") && !Token::Match(tok, "return|throw|if|while|new|delete")) {
+        bool isStandardTypeOrQualifier = false;
         Token* type = tok;
         while (Token::Match(type, "%type%|*|&|<")) {
+            if (type->isName() && (type->isStandardType() || Token::Match(type, "const|mutable|static|volatile")))
+                isStandardTypeOrQualifier = true;
             if (type->str() == "<") {
                 if (type->link())
                     type = type->link();
@@ -1464,6 +1473,8 @@ static Token * createAstAtToken(Token *tok, bool cpp)
             }
             type = type->next();
         }
+        if (isStandardTypeOrQualifier && Token::Match(type, "%var% [;,)]"))
+            return type;
         if (Token::Match(type, "( * *| %var%") &&
             Token::Match(type->link()->previous(), "%var%|] ) (") &&
             Token::Match(type->link()->linkAt(1), ") [;,)]"))
@@ -1698,16 +1709,18 @@ void TokenList::createAst() const
     }
 }
 
-struct OnException {
-    std::function<void()> f;
+namespace {
+    struct OnException {
+        std::function<void()> f;
 
-    ~OnException() {
+        ~OnException() {
 #ifndef _MSC_VER
-        if (std::uncaught_exception())
-            f();
+            if (std::uncaught_exception())
+                f();
 #endif
-    }
-};
+        }
+    };
+}
 
 void TokenList::validateAst() const
 {
@@ -2051,14 +2064,13 @@ bool TokenList::isKeyword(const std::string &str) const
         if (cpp_types.find(str) != cpp_types.end())
             return false;
 
-        // TODO: properly apply configured standard
-        if (!mSettings || mSettings->standards.cpp >= Standards::CPP20) {
-            static const auto& cpp20_keywords = Keywords::getAll(Standards::cppstd_t::CPP20);
-            return cpp20_keywords.find(str) != cpp20_keywords.end();
+        if (mSettings) {
+            const auto &cpp_keywords = Keywords::getAll(mSettings->standards.cpp);
+            return cpp_keywords.find(str) != cpp_keywords.end();
         }
 
-        static const auto& cpp_keywords = Keywords::getAll(Standards::cppstd_t::CPP11);
-        return cpp_keywords.find(str) != cpp_keywords.end();
+        static const auto& latest_cpp_keywords = Keywords::getAll(Standards::cppstd_t::CPPLatest);
+        return latest_cpp_keywords.find(str) != latest_cpp_keywords.end();
     }
 
     // TODO: integrate into Keywords?
@@ -2067,7 +2079,11 @@ bool TokenList::isKeyword(const std::string &str) const
     if (c_types.find(str) != c_types.end())
         return false;
 
-    // TODO: use configured standard
-    static const auto& c_keywords = Keywords::getAll(Standards::cstd_t::C99);
-    return c_keywords.find(str) != c_keywords.end();
+    if (mSettings) {
+        const auto &c_keywords = Keywords::getAll(mSettings->standards.c);
+        return c_keywords.find(str) != c_keywords.end();
+    }
+
+    static const auto& latest_c_keywords = Keywords::getAll(Standards::cstd_t::CLatest);
+    return latest_c_keywords.find(str) != latest_c_keywords.end();
 }

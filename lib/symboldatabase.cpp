@@ -206,7 +206,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     // skip variable declaration
                     else if (Token::Match(tok2, "*|&|>"))
                         continue;
-                    else if (Token::Match(tok2, "%name% (") && mTokenizer.isFunctionHead(tok2->next(), "{;"))
+                    else if (Token::Match(tok2, "%name% (") && Tokenizer::isFunctionHead(tok2->next(), "{;"))
                         continue;
                     else if (Token::Match(tok2, "%name% [|="))
                         continue;
@@ -531,7 +531,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             // class function?
             else if (isFunction(tok, scope, &funcStart, &argStart, &declEnd)) {
                 if (tok->previous()->str() != "::" || tok->strAt(-2) == scope->className) {
-                    Function function(&mTokenizer, tok, scope, funcStart, argStart);
+                    Function function(tok, scope, funcStart, argStart);
 
                     // save the access type
                     function.access = access[scope];
@@ -547,7 +547,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     function.arg = function.argDef;
 
                     // out of line function
-                    if (const Token *endTok = mTokenizer.isFunctionHead(end, ";")) {
+                    if (const Token *endTok = Tokenizer::isFunctionHead(end, ";")) {
                         tok = endTok;
                         scope->addFunction(function);
                     }
@@ -1101,23 +1101,18 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
     }
 
     // Set function call pointers
+    const Token* inTemplateArg = nullptr;
     for (Token* tok = mTokenizer.list.front(); tok != mTokenizer.list.back(); tok = tok->next()) {
+        if (inTemplateArg == nullptr && tok->link() && tok->str() == "<")
+            inTemplateArg = tok->link();
+        if (inTemplateArg == tok)
+            inTemplateArg = nullptr;
         if (tok->isName() && !tok->function() && tok->varId() == 0 && ((tok->astParent() && tok->astParent()->isComparisonOp()) || Token::Match(tok, "%name% [{(,)>;]")) && !isReservedName(tok->str())) {
             if (tok->next()->str() == ">" && !tok->next()->link())
                 continue;
 
-            bool isTemplateArg = false;
-            if (!Token::Match(tok->next(), "(|{")) {
-                const Token *start = tok;
-                while (Token::Match(start->tokAt(-2), "%name% ::"))
-                    start = start->tokAt(-2);
-                if (!Token::Match(start->previous(), "[(,<=]") && !Token::simpleMatch(start->previous(), "::") && !Token::Match(start->tokAt(-2), "[(,<=] &") && !Token::Match(start, "%name% ;"))
-                    continue;
-                isTemplateArg = Token::simpleMatch(start->previous(), "<") || Token::simpleMatch(start->tokAt(-2), "<");
-            }
-
             const Function *function = findFunction(tok);
-            if (!function || (isTemplateArg && function->isConstructor()))
+            if (!function || (inTemplateArg && function->isConstructor()))
                 continue;
 
             tok->function(function);
@@ -1576,16 +1571,102 @@ static std::string getIncompleteNameID(const Token* tok)
     return result + tok->expressionString();
 }
 
+namespace {
+    struct ExprIdKey {
+        std::string parentOp;
+        nonneg int operand1;
+        nonneg int operand2;
+        bool operator<(const ExprIdKey& k) const {
+            return std::tie(parentOp, operand1, operand2) < std::tie(k.parentOp, k.operand1, k.operand2);
+        }
+    };
+    using ExprIdMap = std::map<ExprIdKey, nonneg int>;
+    void setParentExprId(Token* tok, bool cpp, ExprIdMap& exprIdMap, nonneg int &id) {
+        if (!tok->astParent() || tok->astParent()->isControlFlowKeyword())
+            return;
+        const Token* op1 = tok->astParent()->astOperand1();
+        if (op1 && op1->exprId() == 0)
+            return;
+        const Token* op2 = tok->astParent()->astOperand2();
+        if (op2 && op2->exprId() == 0 &&
+            !(isLambdaCaptureList(op2) || (op2->str() == "(" && isLambdaCaptureList(op2->astOperand1())) || Token::simpleMatch(op2, "{ }")))
+            return;
+
+        if (tok->astParent()->isExpandedMacro() || Token::Match(tok->astParent(), "++|--")) {
+            tok->astParent()->exprId(id);
+            ++id;
+            setParentExprId(tok->astParent(), cpp, exprIdMap, id);
+            return;
+        }
+
+        ExprIdKey key;
+        key.parentOp = tok->astParent()->str();
+        key.operand1 = op1 ? op1->exprId() : 0;
+        key.operand2 = op2 ? op2->exprId() : 0;
+
+        if (tok->astParent()->isCast() && tok->astParent()->str() == "(") {
+            const Token* typeStartToken;
+            const Token* typeEndToken;
+            if (tok->astParent()->astOperand2()) {
+                typeStartToken = tok->astParent()->astOperand1();
+                typeEndToken = tok;
+            } else {
+                typeStartToken = tok->astParent()->next();
+                typeEndToken = tok->astParent()->link();
+            }
+            std::string type;
+            for (const Token* t = typeStartToken; t != typeEndToken; t = t->next()) {
+                type += " " + t->str();
+            }
+            key.parentOp += type;
+        }
+
+        for (const auto& ref: followAllReferences(op1)) {
+            if (ref.token->exprId() != 0) { // cppcheck-suppress useStlAlgorithm
+                key.operand1 = ref.token->exprId();
+                break;
+            }
+        }
+        for (const auto& ref: followAllReferences(op2)) {
+            if (ref.token->exprId() != 0) { // cppcheck-suppress useStlAlgorithm
+                key.operand2 = ref.token->exprId();
+                break;
+            }
+        }
+
+        if (key.operand1 > key.operand2 && key.operand2 &&
+            Token::Match(tok->astParent(), "%or%|%oror%|+|*|&|&&|^|==|!=")) {
+            // In C++ the order of operands of + might matter
+            if (!cpp ||
+                key.parentOp != "+" ||
+                !tok->astParent()->valueType() ||
+                tok->astParent()->valueType()->isIntegral() ||
+                tok->astParent()->valueType()->isFloat() ||
+                tok->astParent()->valueType()->pointer > 0)
+                std::swap(key.operand1, key.operand2);
+        }
+
+        const auto it = exprIdMap.find(key);
+        if (it == exprIdMap.end()) {
+            exprIdMap[key] = id;
+            tok->astParent()->exprId(id);
+            ++id;
+        } else {
+            tok->astParent()->exprId(it->second);
+        }
+        setParentExprId(tok->astParent(), cpp, exprIdMap, id);
+    }
+}
+
 void SymbolDatabase::createSymbolDatabaseExprIds()
 {
-    nonneg int base = 0;
     // Find highest varId
-    for (const Variable *var : mVariableList) {
-        if (!var)
-            continue;
-        base = std::max<MathLib::bigint>(base, var->declarationId());
+    nonneg int maximumVarId = 0;
+    for (const Token* tok = mTokenizer.list.front(); tok; tok = tok->next()) {
+        if (tok->varId() > maximumVarId)
+            maximumVarId = tok->varId();
     }
-    nonneg int id = base + 1;
+    nonneg int id = maximumVarId + 1;
     // Find incomplete vars that are used in constant context
     std::unordered_map<std::string, nonneg int> unknownConstantIds;
     const Token* inConstExpr = nullptr;
@@ -1616,7 +1697,6 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
     });
 
     for (const Scope * scope : exprScopes) {
-        nonneg int thisId = 0;
         std::unordered_map<std::string, std::vector<Token*>> exprs;
 
         std::unordered_map<std::string, nonneg int> unknownIds;
@@ -1643,62 +1723,65 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
         }
 
         // Assign IDs
+        ExprIdMap exprIdMap;
+        std::map<std::string, nonneg int> baseIds;
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->varId() > 0) {
                 tok->exprId(tok->varId());
-            } else if (isExpression(tok)) {
-                exprs[tok->str()].push_back(tok);
-                tok->exprId(id++);
-
-                if (id == std::numeric_limits<nonneg int>::max() / 4) {
-                    throw InternalError(nullptr, "Ran out of expression ids.", InternalError::INTERNAL);
-                }
-            } else if (isCPP() && Token::simpleMatch(tok, "this")) {
-                if (thisId == 0)
-                    thisId = id++;
-                tok->exprId(thisId);
-            }
-        }
-
-        // Apply CSE
-        for (const auto& p:exprs) {
-            const std::vector<Token*>& tokens = p.second;
-            const std::size_t N = tokens.size();
-            for (std::size_t i = 0; i < N; ++i) {
-                Token* const tok1 = tokens[i];
-                for (std::size_t j = i + 1; j < N; ++j) {
-                    Token* const tok2 = tokens[j];
-                    if (tok1->exprId() == tok2->exprId())
-                        continue;
-                    if (!isSameExpression(isCPP(), true, tok1, tok2, mSettings.library, false, false))
-                        continue;
-                    nonneg int const cid = std::min(tok1->exprId(), tok2->exprId());
-                    tok1->exprId(cid);
-                    tok2->exprId(cid);
-                }
-            }
-        }
-        // Mark expressions that are unique
-        std::unordered_map<nonneg int, Token*> exprMap;
-        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
-            if (tok->exprId() == 0)
-                continue;
-            auto p = exprMap.emplace(tok->exprId(), tok);
-            // Already exists so set it to null
-            if (!p.second) {
-                p.first->second = nullptr;
-            }
-        }
-        for (const auto& p : exprMap) {
-            if (!p.second)
-                continue;
-            if (p.second->variable()) {
-                const Variable* var = p.second->variable();
-                if (var->nameToken() != p.second)
+                if (tok->astParent() && tok->astParent()->exprId() == 0)
+                    setParentExprId(tok, mTokenizer.isCPP(), exprIdMap, id);
+            } else if (tok->astParent() && !tok->astOperand1() && !tok->astOperand2()) {
+                if (tok->tokType() == Token::Type::eBracket)
                     continue;
+                if (tok->astParent()->str() == "=")
+                    continue;
+                if (tok->isControlFlowKeyword())
+                    continue;
+
+                if (Token::Match(tok, "%name% <") && tok->next()->link()) {
+                    tok->exprId(id);
+                    ++id;
+                } else {
+                    const auto it = baseIds.find(tok->str());
+                    if (it != baseIds.end()) {
+                        tok->exprId(it->second);
+                    } else {
+                        baseIds[tok->str()] = id;
+                        tok->exprId(id);
+                        ++id;
+                    }
+                }
+
+                setParentExprId(tok, mTokenizer.isCPP(), exprIdMap, id);
             }
-            p.second->setUniqueExprId();
         }
+        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+            if (tok->varId() == 0 && tok->exprId() > 0 && tok->astParent() && !tok->astOperand1() && !tok->astOperand2()) {
+                if (tok->isNumber() || tok->isKeyword() || Token::Match(tok->astParent(), ".|::") ||
+                    (Token::simpleMatch(tok->astParent(), "(") && precedes(tok, tok->astParent())))
+                    tok->exprId(0);
+            }
+        }
+    }
+
+    // Mark expressions that are unique
+    std::vector<std::pair<Token*, int>> uniqueExprId(id);
+    for (Token* tok = const_cast<Token*>(mTokenizer.list.front()); tok; tok = tok->next()) {
+        const auto id2 = tok->exprId();
+        if (id2 == 0 || id2 <= maximumVarId)
+            continue;
+        uniqueExprId[id2].first = tok;
+        uniqueExprId[id2].second++;
+    }
+    for (const auto& p : uniqueExprId) {
+        if (!p.first || p.second != 1)
+            continue;
+        if (p.first->variable()) {
+            const Variable* var = p.first->variable();
+            if (var->nameToken() != p.first)
+                continue;
+        }
+        p.first->setUniqueExprId();
     }
 }
 
@@ -1864,7 +1947,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
         const Token* tok1 = tok->previous();
         const Token* tok2 = tok->next()->link()->next();
 
-        if (!mTokenizer.isFunctionHead(tok->next(), ";:{"))
+        if (!Tokenizer::isFunctionHead(tok->next(), ";:{"))
             return false;
 
         // skip over destructor "~"
@@ -1997,7 +2080,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
              Token::simpleMatch(tok->linkAt(1), ") {") &&
              (!tok->previous() || Token::Match(tok->previous(), ";|}"))) {
         if (mTokenizer.isC()) {
-            debugMessage(tok, "debug", "SymbolDatabase::isFunction found C function '" + tok->str() + "' without a return type.");
+            returnImplicitIntError(tok);
             *funcStart = tok;
             *argStart = tok->next();
             *declEnd = tok->linkAt(1)->next();
@@ -2178,6 +2261,10 @@ Variable& Variable::operator=(const Variable &var)
     if (this == &var)
         return *this;
 
+    ValueType* vt = nullptr;
+    if (var.mValueType)
+        vt = new ValueType(*var.mValueType);
+
     mNameToken = var.mNameToken;
     mTypeStartToken = var.mTypeStartToken;
     mTypeEndToken = var.mTypeEndToken;
@@ -2188,9 +2275,7 @@ Variable& Variable::operator=(const Variable &var)
     mScope = var.mScope;
     mDimensions = var.mDimensions;
     delete mValueType;
-    mValueType = nullptr;
-    if (var.mValueType)
-        mValueType = new ValueType(*var.mValueType);
+    mValueType = vt;
 
     return *this;
 }
@@ -2344,9 +2429,9 @@ void Variable::setValueType(const ValueType &valueType)
         if (declType && !declType->next()->valueType())
             return;
     }
+    ValueType* vt = new ValueType(valueType);
     delete mValueType;
-    mValueType = nullptr;
-    mValueType = new ValueType(valueType);
+    mValueType = vt;
     if ((mValueType->pointer > 0) && (!isArray() || Token::Match(mNameToken->previous(), "( * %name% )")))
         setFlag(fIsPointer, true);
     setFlag(fIsConst, mValueType->constness & (1U << mValueType->pointer));
@@ -2367,6 +2452,7 @@ const Type* Variable::smartPointerType() const
     while (Token::Match(typeTok, "%name%|::"))
         typeTok = typeTok->next();
     if (Token::Match(typeTok, "< %name% >")) {
+        // cppcheck-suppress shadowFunction - TODO: fix this
         const Scope* scope = typeTok->scope();
         const Type* ptrType{};
         while (scope && !ptrType) {
@@ -2416,8 +2502,7 @@ static bool isOperator(const Token *tokenDef)
     return name.size() > 8 && startsWith(name,"operator") && std::strchr("+-*/%&|~^<>!=[(", name[8]);
 }
 
-Function::Function(const Tokenizer *mTokenizer,
-                   const Token *tok,
+Function::Function(const Token *tok,
                    const Scope *scope,
                    const Token *tokDef,
                    const Token *tokArgDef)
@@ -2518,7 +2603,7 @@ Function::Function(const Tokenizer *mTokenizer,
             tok = tok->next();
     }
 
-    if (mTokenizer->isFunctionHead(end, ":{")) {
+    if (Tokenizer::isFunctionHead(end, ":{")) {
         // assume implementation is inline (definition and implementation same)
         token = tokenDef;
         arg = argDef;
@@ -3166,7 +3251,7 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
 
 Function* SymbolDatabase::addGlobalFunctionDecl(Scope*& scope, const Token *tok, const Token *argStart, const Token* funcStart)
 {
-    Function function(&mTokenizer, tok, scope, funcStart, argStart);
+    Function function(tok, scope, funcStart, argStart);
     scope->addFunction(std::move(function));
     return &scope->functionList.back();
 }
@@ -3230,7 +3315,7 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                         if (!func->hasBody()) {
                             const Token *closeParen = (*tok)->next()->link();
                             if (closeParen) {
-                                const Token *eq = mTokenizer.isFunctionHead(closeParen, ";");
+                                const Token *eq = Tokenizer::isFunctionHead(closeParen, ";");
                                 if (eq && Token::simpleMatch(eq->tokAt(-2), "= default ;")) {
                                     func->isDefault(true);
                                     return;
@@ -3252,7 +3337,8 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
             }
         }
 
-        if (scope1->className == tok1->str() && (scope1->type != Scope::eFunction)) {
+        const bool isAnonymousNamespace = (scope1->type == Scope::eNamespace && scope1->className.empty());
+        if ((scope1->className == tok1->str() && (scope1->type != Scope::eFunction)) || isAnonymousNamespace) {
             // do the scopes match (same scope) or do their names match (multiple namespaces)
             if ((*scope == scope1->nestedIn) || (*scope &&
                                                  (*scope)->className == scope1->nestedIn->className &&
@@ -3284,6 +3370,8 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                         tok1 = tok1->tokAt(2);
                     scope2 = scope2->findRecordInNestedList(tok1->str());
                 }
+                if (scope2 && isAnonymousNamespace)
+                    scope2 = scope2->findRecordInNestedList(tok1->str());
 
                 if (count == 1 && scope2) {
                     match = true;
@@ -3300,7 +3388,7 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                     if (func->argsMatch(scope1, func->argDef, (*tok)->next(), path, path_length)) {
                         const Token *closeParen = (*tok)->next()->link();
                         if (closeParen) {
-                            const Token *eq = mTokenizer.isFunctionHead(closeParen, ";");
+                            const Token *eq = Tokenizer::isFunctionHead(closeParen, ";");
                             if (eq && Token::simpleMatch(eq->tokAt(-2), "= default ;")) {
                                 func->isDefault(true);
                                 return;
@@ -3515,6 +3603,19 @@ void SymbolDatabase::debugMessage(const Token *tok, const std::string &type, con
                                   Severity::debug,
                                   type,
                                   msg,
+                                  Certainty::normal);
+        mErrorLogger->reportErr(errmsg);
+    }
+}
+
+void SymbolDatabase::returnImplicitIntError(const Token *tok) const
+{
+    if (tok && mSettings.severity.isEnabled(Severity::portability) && mSettings.standards.c != Standards::C89 && mErrorLogger) {
+        const std::list<const Token*> locationList(1, tok);
+        const ErrorMessage errmsg(locationList, &mTokenizer.list,
+                                  Severity::portability,
+                                  "returnImplicitInt",
+                                  "Omitted return type of function '" + tok->str() + "' defaults to int, this is not supported by ISO C99 and later standards.",
                                   Certainty::normal);
         mErrorLogger->reportErr(errmsg);
     }
@@ -5071,9 +5172,13 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
         else {
             // FIXME search base class here
 
+            const Scope* temp = nullptr;
+            if (scope)
+                temp = scope->findRecordInNestedList(tok1->str());
             // find first scope
             while (scope && scope->nestedIn) {
-                const Scope* temp = scope->nestedIn->findRecordInNestedList(tok1->str());
+                if (!temp)
+                    temp = scope->nestedIn->findRecordInNestedList(tok1->str());
                 if (!temp && scope->functionOf)
                     temp = scope->functionOf->findRecordInNestedList(tok1->str());
                 if (temp) {
@@ -5848,8 +5953,11 @@ const Function* SymbolDatabase::findFunction(const Token* const tok) const
             if (tok1)
                 tok1 = tok1->tokAt(2);
 
-            if (currScope && tok1)
-                return currScope->findFunction(tok1);
+            if (currScope && tok1) {
+                const Function* func = currScope->findFunction(tok1);
+                if (func)
+                    return func;
+            }
         }
     }
 
@@ -5923,47 +6031,59 @@ const Scope *SymbolDatabase::findScopeByName(const std::string& name) const
 
 //---------------------------------------------------------------------------
 
-const Scope *Scope::findRecordInNestedList(const std::string & name, bool isC) const
+template<class S, class T, REQUIRES("S must be a Scope class", std::is_convertible<S*, const Scope*> ), REQUIRES("T must be a Type class", std::is_convertible<T*, const Type*> )>
+S* findRecordInNestedListImpl(S& thisScope, const std::string & name, bool isC)
 {
-    for (const Scope* scope: nestedList) {
-        if (scope->className == name && scope->type != eFunction)
+    for (S* scope: thisScope.nestedList) {
+        if (scope->className == name && scope->type != Scope::eFunction)
             return scope;
         if (isC) {
-            const Scope* nestedScope = scope->findRecordInNestedList(name, isC);
+            S* nestedScope = scope->findRecordInNestedList(name, isC);
             if (nestedScope)
                 return nestedScope;
         }
     }
 
-    const Type * nested_type = findType(name);
+    T * nested_type = thisScope.findType(name);
 
     if (nested_type) {
         if (nested_type->isTypeAlias()) {
             if (nested_type->typeStart == nested_type->typeEnd)
-                return findRecordInNestedList(nested_type->typeStart->str());
+                return thisScope.findRecordInNestedList(nested_type->typeStart->str()); // TODO: pass isC?
         } else
-            return nested_type->classScope;
+            return const_cast<S*>(nested_type->classScope);
     }
 
     return nullptr;
 }
 
+const Scope* Scope::findRecordInNestedList(const std::string & name, bool isC) const
+{
+    return findRecordInNestedListImpl<const Scope, const Type>(*this, name, isC);
+}
+
+Scope* Scope::findRecordInNestedList(const std::string & name, bool isC)
+{
+    return findRecordInNestedListImpl<Scope, Type>(*this, name, isC);
+}
+
 //---------------------------------------------------------------------------
 
-const Type* Scope::findType(const std::string & name) const
+template<class S, class T, REQUIRES("S must be a Scope class", std::is_convertible<S*, const Scope*> ), REQUIRES("T must be a Type class", std::is_convertible<T*, const Type*> )>
+T* findTypeImpl(S& thisScope, const std::string & name)
 {
-    auto it = definedTypesMap.find(name);
+    auto it = thisScope.definedTypesMap.find(name);
 
     // Type was found
-    if (definedTypesMap.end() != it)
+    if (thisScope.definedTypesMap.end() != it)
         return it->second;
 
     // is type defined in anonymous namespace..
-    it = definedTypesMap.find(emptyString);
-    if (it != definedTypesMap.end()) {
-        for (const Scope *scope : nestedList) {
-            if (scope->className.empty() && (scope->type == eNamespace || scope->isClassOrStructOrUnion())) {
-                const Type *t = scope->findType(name);
+    it = thisScope.definedTypesMap.find(emptyString);
+    if (it != thisScope.definedTypesMap.end()) {
+        for (S *scope : thisScope.nestedList) {
+            if (scope->className.empty() && (scope->type == thisScope.eNamespace || scope->isClassOrStructOrUnion())) {
+                T *t = scope->findType(name);
                 if (t)
                     return t;
             }
@@ -5972,6 +6092,16 @@ const Type* Scope::findType(const std::string & name) const
 
     // Type was not found
     return nullptr;
+}
+
+const Type* Scope::findType(const std::string& name) const
+{
+    return findTypeImpl<const Scope, const Type>(*this, name);
+}
+
+Type* Scope::findType(const std::string& name)
+{
+    return findTypeImpl<Scope, Type>(*this, name);
 }
 
 //---------------------------------------------------------------------------
@@ -6359,7 +6489,7 @@ static void setAutoTokenProperties(Token * const autoTok)
         autoTok->isStandardType(true);
 }
 
-bool isContainerYieldElement(Library::Container::Yield yield)
+static bool isContainerYieldElement(Library::Container::Yield yield)
 {
     return yield == Library::Container::Yield::ITEM || yield == Library::Container::Yield::AT_INDEX ||
            yield == Library::Container::Yield::BUFFER || yield == Library::Container::Yield::BUFFER_NT;

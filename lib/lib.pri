@@ -43,6 +43,7 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/ctu.h \
            $${PWD}/errorlogger.h \
            $${PWD}/errortypes.h \
+           $${PWD}/filesettings.h \
            $${PWD}/findtoken.h \
            $${PWD}/forwardanalyzer.h \
            $${PWD}/fwdanalysis.h \
@@ -76,7 +77,8 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/valueflow.h \
            $${PWD}/valueptr.h \
            $${PWD}/version.h \
-           $${PWD}/vfvalue.h
+           $${PWD}/vfvalue.h \
+           $${PWD}/xml.h
 
 SOURCES += $${PWD}/valueflow.cpp \
            $${PWD}/tokenize.cpp \

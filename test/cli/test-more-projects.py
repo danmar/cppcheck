@@ -2,7 +2,7 @@
 import json
 import os
 import pytest
-from testutils import cppcheck
+from testutils import cppcheck, assert_cppcheck
 
 
 def test_project_force_U(tmpdir):
@@ -157,7 +157,7 @@ def test_project_empty_fields(tmpdir):
   </paths>
   <exclude/>
   <exclude>
-    <paths/>
+    <path/>
   </exclude>
   <function-contracts/>
   <variable-contracts/>
@@ -291,3 +291,349 @@ def test_clang_tidy(tmpdir):
         'Checking {} ...'.format(test_file)
     ]
     assert stderr == ''
+
+
+def test_project_file_filter(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        pass
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="{}"/>
+    </paths>
+</project>""".format(test_file))
+
+    args = ['--file-filter=*.cpp', '--project={}'.format(project_file)]
+    out_lines = [
+        'Checking {} ...'.format(test_file)
+    ]
+
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
+
+
+def test_project_file_filter_2(tmpdir):
+    test_file_1 = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file_1, 'wt') as f:
+        pass
+    test_file_2 = os.path.join(tmpdir, 'test.c')
+    with open(test_file_2, 'wt') as f:
+        pass
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="{}"/>
+        <dir name="{}"/>
+    </paths>
+</project>""".format(test_file_1, test_file_2))
+
+    args = ['--file-filter=*.cpp', '--project={}'.format(project_file)]
+    out_lines = [
+        'Checking {} ...'.format(test_file_1)
+    ]
+
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
+
+
+def test_project_file_filter_3(tmpdir):
+    test_file_1 = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file_1, 'wt') as f:
+        pass
+    test_file_2 = os.path.join(tmpdir, 'test.c')
+    with open(test_file_2, 'wt') as f:
+        pass
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="{}"/>
+        <dir name="{}"/>
+    </paths>
+</project>""".format(test_file_1, test_file_2))
+
+    args = ['--file-filter=*.c', '--project={}'.format(project_file)]
+    out_lines = [
+        'Checking {} ...'.format(test_file_2)
+    ]
+
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
+
+
+def test_project_file_filter_no_match(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        pass
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="{}"/>
+    </paths>
+</project>""".format(test_file))
+
+    args = ['--file-filter=*.c', '--project={}'.format(project_file)]
+    out_lines = [
+        'cppcheck: error: could not find any files matching the filter.'
+    ]
+
+    assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
+
+
+def test_project_file_order(tmpdir):
+    test_file_a = os.path.join(tmpdir, 'a.c')
+    with open(test_file_a, 'wt'):
+        pass
+    test_file_b = os.path.join(tmpdir, 'b.c')
+    with open(test_file_b, 'wt'):
+        pass
+    test_file_c = os.path.join(tmpdir, 'c.c')
+    with open(test_file_c, 'wt'):
+        pass
+    test_file_d = os.path.join(tmpdir, 'd.c')
+    with open(test_file_d, 'wt'):
+        pass
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+    </paths>
+</project>""".format(test_file_c, test_file_d, test_file_b, test_file_a))
+
+    args = ['--project={}'.format(project_file)]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file_c),
+        '1/4 files checked 0% done',
+        'Checking {} ...'.format(test_file_d),
+        '2/4 files checked 0% done',
+        'Checking {} ...'.format(test_file_b),
+        '3/4 files checked 0% done',
+        'Checking {} ...'.format(test_file_a),
+        '4/4 files checked 0% done'
+    ]
+    assert stderr == ''
+
+
+def test_project_file_duplicate(tmpdir):
+    test_file_a = os.path.join(tmpdir, 'a.c')
+    with open(test_file_a, 'wt'):
+        pass
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+    </paths>
+</project>""".format(test_file_a, test_file_a, tmpdir))
+
+    args = ['--project={}'.format(project_file)]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file_a)
+    ]
+    assert stderr == ''
+
+
+def test_project_file_duplicate_2(tmpdir):
+    test_file_a = os.path.join(tmpdir, 'a.c')
+    with open(test_file_a, 'wt'):
+        pass
+    test_file_b = os.path.join(tmpdir, 'b.c')
+    with open(test_file_b, 'wt'):
+        pass
+    test_file_c = os.path.join(tmpdir, 'c.c')
+    with open(test_file_c, 'wt'):
+        pass
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+    </paths>
+</project>""".format(test_file_c, test_file_a, test_file_b, tmpdir, test_file_b, test_file_c, test_file_a, tmpdir))
+
+    args = ['--project={}'.format(project_file)]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file_c),
+        '1/3 files checked 0% done',
+        'Checking {} ...'.format(test_file_a),
+        '2/3 files checked 0% done',
+        'Checking {} ...'.format(test_file_b),
+        '3/3 files checked 0% done'
+    ]
+    assert stderr == ''
+
+
+def test_project_file_ignore(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        pass
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="{}"/>
+    </paths>
+</project>""".format(test_file))
+
+    args = ['-itest.cpp', '--project={}'.format(project_file)]
+    out_lines = [
+        'cppcheck: error: could not find or open any of the paths given.',
+        'cppcheck: Maybe all paths were ignored?'
+    ]
+
+    assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
+
+
+def test_project_file_ignore_2(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        pass
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="{}"/>
+    </paths>
+    <exclude>
+        <path name="test.cpp"/>
+    </exclude>
+</project>""".format(test_file))
+
+    args = ['--project={}'.format(project_file)]
+    out_lines = [
+        'cppcheck: error: could not find or open any of the paths given.',
+        'cppcheck: Maybe all paths were ignored?'
+    ]
+
+    assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
+
+
+def test_project_file_ignore_3(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        pass
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="{}"/>
+    </paths>
+    <ignore>
+        <path name="test.cpp"/>
+    </ignore>
+</project>""".format(test_file))
+
+    args = ['--project={}'.format(project_file)]
+    out_lines = [
+        'cppcheck: error: could not find or open any of the paths given.',
+        'cppcheck: Maybe all paths were ignored?'
+    ]
+
+    assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
+
+
+@pytest.mark.xfail
+def test_json_file_ignore(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        pass
+
+    compilation_db = [
+        {"directory": str(tmpdir),
+         "command": "c++ -o bug1.o -c bug1.cpp",
+         "file": "test.cpp",
+         "output": "test.o"}
+    ]
+
+    project_file = os.path.join(tmpdir, 'test.json')
+    with open(project_file, 'wt') as f:
+        f.write(json.dumps(compilation_db))
+
+    args = ['-itest.cpp', '--project={}'.format(project_file)]
+    out_lines = [
+        'cppcheck: error: no C or C++ source files found.',
+        'cppcheck: all paths were ignored'
+    ]
+
+    assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
+
+
+def test_json_file_ignore_2(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        pass
+
+    compilation_db = [
+        {"directory": str(tmpdir),
+         "command": "c++ -o bug1.o -c bug1.cpp",
+         "file": "test.cpp",
+         "output": "test.o"}
+    ]
+
+    project_file = os.path.join(tmpdir, 'test.json')
+    with open(project_file, 'wt') as f:
+        f.write(json.dumps(compilation_db))
+
+    args = ['-i{}'.format(test_file), '--project={}'.format(project_file)]
+    out_lines = [
+        'cppcheck: error: no C or C++ source files found.',
+        'cppcheck: all paths were ignored'
+    ]
+
+    assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)

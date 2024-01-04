@@ -697,6 +697,11 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             return true;
         }
 
+        // bailout if there is a pointer to member
+        if (Token::Match(tok, "%varid% . *", var.declarationId())) {
+            return true;
+        }
+
         if (tok->str() == "?") {
             if (!tok->astOperand2())
                 return true;
@@ -1129,8 +1134,9 @@ static bool isVoidCast(const Token *tok)
     return Token::simpleMatch(tok, "(") && tok->isCast() && tok->valueType() && tok->valueType()->type == ValueType::Type::VOID && tok->valueType()->pointer == 0;
 }
 
-const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, const Library& library, bool pointer, Alloc alloc, int indirect)
+const Token* CheckUninitVar::isVariableUsage(const Token *vartok, const Library& library, bool pointer, Alloc alloc, int indirect)
 {
+    const bool cpp = vartok->isCpp();
     const Token *valueExpr = vartok;   // non-dereferenced , no address of value as variable
     while (Token::Match(valueExpr->astParent(), ".|::") && astIsRhs(valueExpr))
         valueExpr = valueExpr->astParent();
@@ -1334,7 +1340,7 @@ const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, cons
 
 const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect) const
 {
-    return CheckUninitVar::isVariableUsage(mTokenizer->isCPP(), vartok, mSettings->library, pointer, alloc, indirect);
+    return isVariableUsage(vartok, mSettings->library, pointer, alloc, indirect);
 }
 
 /***
@@ -1590,18 +1596,6 @@ void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string
                 "$symbol:" + membername + "\nUninitialized struct member: $symbol", CWE_USE_OF_UNINITIALIZED_VARIABLE, Certainty::normal);
 }
 
-static bool isLeafDot(const Token* tok)
-{
-    if (!tok)
-        return false;
-    const Token * parent = tok->astParent();
-    if (!Token::simpleMatch(parent, "."))
-        return false;
-    if (parent->astOperand2() == tok && !Token::simpleMatch(parent->astParent(), "."))
-        return true;
-    return isLeafDot(parent);
-}
-
 void CheckUninitVar::valueFlowUninit()
 {
     logChecker("CheckUninitVar::valueFlowUninit");
@@ -1648,12 +1642,7 @@ void CheckUninitVar::valueFlowUninit()
                     const bool isarray = tok->variable()->isArray();
                     if (isarray && tok->variable()->isMember())
                         continue; // Todo: this is a bailout
-                    const bool ispointer = astIsPointer(tok) && !isarray;
                     const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
-                    if (ispointer && v->indirect == 1 && !deref)
-                        continue;
-                    if (isarray && !deref)
-                        continue;
                     uninitderef = deref && v->indirect == 0;
                     const bool isleaf = isLeafDot(tok) || uninitderef;
                     if (!isleaf && Token::Match(tok->astParent(), ". %name%") && (tok->astParent()->next()->varId() || tok->astParent()->next()->isEnumerator()))
@@ -1681,21 +1670,21 @@ void CheckUninitVar::valueFlowUninit()
     }
 }
 
-Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
-{
-    const CheckUninitVar checker(tokenizer, settings, nullptr);
-    return checker.getFileInfo();
-}
-
 // NOLINTNEXTLINE(readability-non-const-parameter) - used as callback so we need to preserve the signature
-static bool isVariableUsage(const Check *check, const Token *vartok, MathLib::bigint *value)
+static bool isVariableUsage(const Settings *settings, const Token *vartok, MathLib::bigint *value)
 {
     (void)value;
-    const CheckUninitVar *c = dynamic_cast<const CheckUninitVar *>(check);
-    return c && c->isVariableUsage(vartok, true, CheckUninitVar::Alloc::ARRAY);
+    return CheckUninitVar::isVariableUsage(vartok, settings->library, true, CheckUninitVar::Alloc::ARRAY);
 }
 
-namespace {
+// a Clang-built executable will crash when using the anonymous MyFileInfo later on - so put it in a unique namespace for now
+// see https://trac.cppcheck.net/ticket/12108 for more details
+#ifdef __clang__
+inline namespace CheckUninitVar_internal
+#else
+namespace
+#endif
+{
     /* data for multifile checking */
     class MyFileInfo : public Check::FileInfo {
     public:
@@ -1710,9 +1699,9 @@ namespace {
     };
 }
 
-Check::FileInfo *CheckUninitVar::getFileInfo() const
+Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
-    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(mTokenizer, mSettings, this, ::isVariableUsage);
+    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, ::isVariableUsage);
     if (unsafeUsage.empty())
         return nullptr;
 

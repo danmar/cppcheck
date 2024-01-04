@@ -311,8 +311,7 @@ class InitializerParser:
                 if self.ed and self.ed.isValue:
                     if not isDesignated and len(self.rootStack) > 0 and self.rootStack[-1][1] == self.root:
                         self.rootStack[-1][0].markStuctureViolation(self.token)
-
-                    if isFirstElement and self.token.str == '0' and self.token.next.str == '}':
+                    if isFirstElement and self.token.isInt and self.token.getKnownIntValue() == 0 and self.token.next.str == '}':
                         # Zero initializer causes recursive initialization
                         self.root.initializeChildren()
                     elif self.token.isString and self.ed.valueType and self.ed.valueType.pointer > 0:
@@ -500,11 +499,29 @@ def createRecordChildrenDefs(ed, var):
         child = ElementDef("pointer", var.nameToken, var.nameToken.valueType)
         ed.addChild(child)
         return
+    child_dict = {}
     for variable in valueType.typeScope.varlist:
         if variable is var:
             continue
         child = getElementDef(variable.nameToken)
-        ed.addChild(child)
+        child_dict[variable.nameToken] = child
+    for scopes in valueType.typeScope.nestedList:
+        varscope = False
+        if scopes.nestedIn == valueType.typeScope:
+            for variable in valueType.typeScope.varlist:
+                if variable.nameToken and variable.nameToken.valueType and variable.nameToken.valueType.typeScope == scopes:
+                    varscope = True
+                    break
+            if not varscope:
+                ed1 = ElementDef("record", scopes.Id, valueType)
+                for variable in scopes.varlist:
+                    child = getElementDef(variable.nameToken)
+                    ed1.addChild(child)
+                child_dict[scopes.bodyStart] = ed1
+    sorted_keys = sorted(list(child_dict.keys()), key=lambda k: "%s %s %s" % (k.file, k.linenr, k.column))
+    for _key in sorted_keys:
+        ed.addChild(child_dict[_key])
+
 
 def getElementByDesignator(ed, token):
     if not token.str in [ '.', '[' ]:

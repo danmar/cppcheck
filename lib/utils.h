@@ -27,6 +27,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <initializer_list>
 #include <limits>
 #include <stdexcept>
@@ -36,6 +37,7 @@
 
 struct SelectMapKeys {
     template<class Pair>
+    // NOLINTNEXTLINE(readability-const-return-type) - false positive
     typename Pair::first_type operator()(const Pair& p) const {
         return p.first;
     }
@@ -45,6 +47,14 @@ struct SelectMapValues {
     template<class Pair>
     typename Pair::second_type operator()(const Pair& p) const {
         return p.second;
+    }
+};
+
+struct OnExit {
+    std::function<void()> f;
+
+    ~OnExit() {
+        f();
     }
 };
 

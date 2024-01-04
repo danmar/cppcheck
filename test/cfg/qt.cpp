@@ -321,6 +321,13 @@ void duplicateExpression_QString_Compare(QString style) //#8723
     {}
 }
 
+void QVector_uninit()
+{
+    int i;
+    // cppcheck-suppress [uninitvar, unreadVariable]
+    QVector<int> v(i);
+}
+
 void QStack1(QStack<int> intStackArg)
 {
     for (int i = 0; i <= intStackArg.size(); ++i) {
@@ -579,4 +586,17 @@ namespace {
     public:
         Q_PROPERTY(QHash<QString, int> hash READ hash WRITE setHash)
     };
+}
+
+struct SEstimateSize {
+    inline const QString& get() const { return m; }
+    QString m;
+};
+
+class QString;
+
+void dontCrashEstimateSize(const SEstimateSize& s) {
+    // cppcheck-suppress redundantCopyLocalConst
+    QString q = s.get();
+    if (!q.isNull()) {}
 }

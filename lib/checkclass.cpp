@@ -33,13 +33,12 @@
 
 #include <algorithm>
 #include <cctype>
-#include <cstddef>
 #include <cstring>
 #include <iterator>
 #include <utility>
 #include <unordered_map>
 
-#include <tinyxml2.h>
+#include "xml.h"
 
 namespace CTU {
     class FileInfo;
@@ -660,12 +659,11 @@ std::vector<CheckClass::Usage> CheckClass::createUsageList(const Scope *scope)
 
 void CheckClass::assignVar(std::vector<Usage> &usageList, nonneg int varid)
 {
-    for (Usage& usage: usageList) {
-        if (usage.var->declarationId() == varid) {
-            usage.assign = true;
-            return;
-        }
-    }
+    auto it = std::find_if(usageList.begin(), usageList.end(), [varid](const Usage& usage) {
+        return usage.var->declarationId() == varid;
+    });
+    if (it != usageList.end())
+        it->assign = true;
 }
 
 void CheckClass::assignVar(std::vector<Usage> &usageList, const Token* vartok)
@@ -674,23 +672,21 @@ void CheckClass::assignVar(std::vector<Usage> &usageList, const Token* vartok)
         assignVar(usageList, vartok->varId());
         return;
     }
-    for (Usage& usage: usageList) {
+    auto it = std::find_if(usageList.begin(), usageList.end(), [vartok](const Usage& usage) {
         // FIXME: This is a workaround when varid is not set for a derived member
-        if (usage.var->name() == vartok->str()) {
-            usage.assign = true;
-            return;
-        }
-    }
+        return usage.var->name() == vartok->str();
+    });
+    if (it != usageList.end())
+        it->assign = true;
 }
 
 void CheckClass::initVar(std::vector<Usage> &usageList, nonneg int varid)
 {
-    for (Usage& usage: usageList) {
-        if (usage.var->declarationId() == varid) {
-            usage.init = true;
-            return;
-        }
-    }
+    auto it = std::find_if(usageList.begin(), usageList.end(), [varid](const Usage& usage) {
+        return usage.var->declarationId() == varid;
+    });
+    if (it != usageList.end())
+        it->init = true;
 }
 
 void CheckClass::assignAllVar(std::vector<Usage> &usageList)
@@ -1064,6 +1060,11 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             assignVar(usage, ftok->next()->varId());
         } else if (Token::Match(ftok, "* this . %name% =")) {
             assignVar(usage, ftok->tokAt(3)->varId());
+        } else if (astIsRangeBasedForDecl(ftok)) {
+            if (const Variable* rangeVar = ftok->astParent()->astOperand1()->variable()) {
+                if (rangeVar->isReference() && !rangeVar->isConst())
+                    assignVar(usage, ftok->varId());
+            }
         }
 
         // The functions 'clear' and 'Clear' are supposed to initialize variable.
@@ -1118,8 +1119,7 @@ void CheckClass::missingMemberCopyError(const Token *tok, Function::Type functio
     const std::string message =
         "$symbol:" + classname + "::" + varname + "\n" +
         "Member variable '$symbol' is not assigned in the " + ctor + " constructor. Should it be " + action;
-    const char id[] = "missingMemberCopy";
-    reportError(tok, Severity::warning, id, message, CWE398, Certainty::inconclusive);
+    reportError(tok, Severity::warning, "missingMemberCopy", message, CWE398, Certainty::inconclusive);
 }
 
 void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive)
@@ -2479,6 +2479,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                             return false;
                         const Token* assignTok = end->next()->astParent();
                         if (var && assignTok && assignTok->isAssignmentOp() && assignTok->astOperand1() && assignTok->astOperand1()->variable()) {
+                            // cppcheck-suppress shadowFunction - TODO: fix this
                             const Variable* assignVar = assignTok->astOperand1()->variable();
                             if (assignVar->isPointer() && !assignVar->isConst() && var->typeScope()) {
                                 const auto& funcMap = var->typeScope()->functionMap;
@@ -2523,16 +2524,19 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                      ((lastVarTok->valueType()->container->getYield(end->str()) == Library::Container::Yield::START_ITERATOR) ||
                       (lastVarTok->valueType()->container->getYield(end->str()) == Library::Container::Yield::END_ITERATOR))
                      && (tok1->previous()->isComparisonOp() ||
-                         (tok1->previous()->isAssignmentOp() && tok1->tokAt(-2)->variable() && Token::Match(tok1->tokAt(-2)->variable()->typeEndToken(), "const_iterator|const_reverse_iterator")))))
-                    ;
+                         (tok1->previous()->isAssignmentOp() && tok1->tokAt(-2)->variable() && Token::Match(tok1->tokAt(-2)->variable()->typeEndToken(), "const_iterator|const_reverse_iterator"))))) {
+                    // empty body
+                }
                 else if (var->smartPointerType() && var->smartPointerType()->classScope && isConstMemberFunc(var->smartPointerType()->classScope, end)) {
-                    ;
+                    // empty body
                 } else if (var->isSmartPointer() && Token::simpleMatch(tok1->next(), ".") && tok1->next()->originalName().empty() && mSettings->library.isFunctionConst(end)) {
-                    ;
+                    // empty body
                 } else if (hasOverloadedMemberAccess(end, var->typeScope())) {
-                    ;
-                } else if (!var->typeScope() || (end->function() != func && !isConstMemberFunc(var->typeScope(), end)))
-                    return false;
+                    // empty body
+                } else if (!var->typeScope() || (end->function() != func && !isConstMemberFunc(var->typeScope(), end))) {
+                    if (!mSettings->library.isFunctionConst(end))
+                        return false;
+                }
             }
 
             // Assignment
@@ -3398,7 +3402,14 @@ void CheckClass::unsafeClassRefMemberError(const Token *tok, const std::string &
                 CWE(0), Certainty::normal);
 }
 
-namespace {
+// a Clang-built executable will crash when using the anonymous MyFileInfo later on - so put it in a unique namespace for now
+// see https://trac.cppcheck.net/ticket/12108 for more details
+#ifdef __clang__
+inline namespace CheckClass_internal
+#else
+namespace
+#endif
+{
     /* multifile checking; one definition rule violations */
     class MyFileInfo : public Check::FileInfo {
     public:

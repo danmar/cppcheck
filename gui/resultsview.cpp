@@ -161,12 +161,15 @@ void ResultsView::progress(int value, const QString& description)
 
 void ResultsView::error(const ErrorItem &item)
 {
-    if (item.severity == Severity::none && (item.errorId == "logChecker" || item.errorId.endsWith("-logChecker"))) {
+    if (item.severity == Severity::internal && (item.errorId == "logChecker" || item.errorId.endsWith("-logChecker"))) {
         mStatistics->addChecker(item.message);
         return;
     }
 
     handleCriticalError(item);
+
+    if (item.severity == Severity::internal)
+        return;
 
     if (mUI->mTree->addErrorItem(item)) {
         emit gotResults();
@@ -460,7 +463,7 @@ void ResultsView::updateDetails(const QModelIndex &index)
 
     const QString file0 = data["file0"].toString();
     if (!file0.isEmpty() && Path::isHeader(data["file"].toString().toStdString()))
-        formattedMsg += QString("\n\n%1: %2").arg(tr("First included by")).arg(QDir::toNativeSeparators(file0));
+        formattedMsg += QString("\n\n%1: %2").arg(tr("First included by"), QDir::toNativeSeparators(file0));
 
     if (data["cwe"].toInt() > 0)
         formattedMsg.prepend("CWE: " + QString::number(data["cwe"].toInt()) + "\n");
@@ -562,10 +565,14 @@ void ResultsView::handleCriticalError(const ErrorItem &item)
             if (!mCriticalErrors.isEmpty())
                 mCriticalErrors += ",";
             mCriticalErrors += item.errorId;
+            if (item.severity == Severity::internal)
+                mCriticalErrors += " (suppressed)";
         }
         QString msg = tr("There was a critical error with id '%1'").arg(item.errorId);
         if (!item.file0.isEmpty())
             msg += ", " + tr("when checking %1").arg(item.file0);
+        else
+            msg += ", " + tr("when checking a file");
         msg += ". " + tr("Analysis was aborted.");
         mUI->mLabelCriticalErrors->setText(msg);
         mUI->mLabelCriticalErrors->setVisible(true);

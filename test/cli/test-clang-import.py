@@ -5,7 +5,7 @@ import os
 import re
 import subprocess
 import pytest
-from testutils import cppcheck
+from testutils import cppcheck, assert_cppcheck
 
 try:
     subprocess.call(['clang', '--version'])
@@ -122,3 +122,14 @@ def test_ast_control_flow():
 def test_ast():
     check_ast('struct S { int x; }; S* foo() { return new S(); }')
 
+def test_log(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt'):
+        pass
+
+    args = ['--clang', test_file]
+    out_lines = [
+        'Checking {} ...'.format(test_file),
+    ]
+
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)

@@ -1989,6 +1989,23 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("bool f(const std::vector<int>& a, const std::vector<int>& b) {\n" // #11469
+              "    return (a.begin() - a.end()) == (b.begin() - b.end());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    const std::vector<int>* vec() const { return &v; }\n"
+              "    const std::vector<int> v;\n"
+              "};\n"
+              "void f(const S& a, const S& b) {\n"
+              "    if (a.vec()->begin() - a.vec()->end() != b.vec()->begin() - b.vec()->end()) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("",
+                           "[test.cpp:6]: (warning) Iterators to containers from different expressions 'a.vec()' and 'a.vec()' are used together.\n"
+                           "[test.cpp:6]: (warning) Iterators to containers from different expressions 'b.vec()' and 'b.vec()' are used together.\n",
+                           errout.str());
     }
 
     void iteratorSameExpression() {
@@ -2386,12 +2403,11 @@ private:
               "void g(const std::vector<int>& w) {\n"
               "    f(-1, w);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("test.cpp:5:warning:Array index -1 is out of bounds.\n"
-                           "test.cpp:8:note:Calling function 'f', 1st argument '-1' value is -1\n"
-                           "test.cpp:3:note:Assuming condition is false\n"
-                           "test.cpp:5:note:Negative array index\n",
-                           "",
-                           errout.str());
+        ASSERT_EQUALS("test.cpp:5:warning:Array index -1 is out of bounds.\n"
+                      "test.cpp:8:note:Calling function 'f', 1st argument '-1' value is -1\n"
+                      "test.cpp:3:note:Assuming condition is false\n"
+                      "test.cpp:5:note:Negative array index\n",
+                      errout.str());
 
         settings = oldSettings;
     }

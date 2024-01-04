@@ -46,8 +46,8 @@ static std::string mandatoryAttibuteMissing(const QXmlStreamReader &xmlReader, c
 {
     throw std::runtime_error(QObject::tr("line %1: Mandatory attribute '%2' missing in '%3'")
                              .arg(xmlReader.lineNumber())
-                             .arg(attributeName)
-                             .arg(xmlReader.name().toString()).toStdString());
+                             .arg(attributeName, xmlReader.name().toString())
+                             .toStdString());
 }
 
 static CppcheckLibraryData::Container loadContainer(QXmlStreamReader &xmlReader)
@@ -453,7 +453,7 @@ static CppcheckLibraryData::Markup loadMarkup(QXmlStreamReader &xmlReader)
     return markup;
 }
 
-static CppcheckLibraryData::Entrypoint loadEntrypoint(QXmlStreamReader &xmlReader)
+static CppcheckLibraryData::Entrypoint loadEntrypoint(const QXmlStreamReader &xmlReader)
 {
     CppcheckLibraryData::Entrypoint entrypoint;
     entrypoint.name = xmlReader.attributes().value("name").toString();
@@ -697,14 +697,14 @@ static void writeFunction(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData
     }
     if (!function.notOverlappingDataArgs.isEmpty()) {
         xmlWriter.writeStartElement("not-overlapping-data");
-        foreach (const QString value, function.notOverlappingDataArgs) {
+        foreach (const QString& value, function.notOverlappingDataArgs) {
             xmlWriter.writeAttribute(function.notOverlappingDataArgs.key(value), value);
         }
         xmlWriter.writeEndElement();
     }
     if (!function.containerAttributes.isEmpty()) {
         xmlWriter.writeStartElement("container");
-        foreach (const QString value, function.containerAttributes) {
+        foreach (const QString& value, function.containerAttributes) {
             xmlWriter.writeAttribute(function.containerAttributes.key(value), value);
         }
         xmlWriter.writeEndElement();

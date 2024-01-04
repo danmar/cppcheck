@@ -42,7 +42,7 @@ jobs:
       - name: Install missing software on ubuntu
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake make libpcre3-dev libboost-container-dev
+          sudo apt-get install -y cmake make libpcre3-dev libboost-container-dev libxml2-utils
 
       - name: Install clang
         run: |
@@ -58,6 +58,12 @@ jobs:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
           cache: true
+
+      - name: Install missing Python packages
+        run: |
+          python3 -m pip install pip --upgrade
+          python3 -m pip install pytest
+          python3 -m pip install pytest-timeout
 
       - name: CMake
         run: |
@@ -76,6 +82,22 @@ jobs:
 
       - name: Run tests
         run: ./cmake.output/bin/testrunner
+
+      - name: Run cfg tests
+        run: |
+          cmake --build cmake.output --target checkcfg -- -j $(nproc)
+
+      # TODO: we should use CTest instead to parallelize tests but the start-up overhead will slow things down
+      - name: Run CTest
+        if: false
+        run: |
+          ctest --test-dir cmake.output --output-on-failure -j$(nproc)
+
+      - name: Run test/cli
+        run: |
+          pwd=$(pwd)
+          cd test/cli
+          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv test-*.py
 
       - name: Generate dependencies
         if: false

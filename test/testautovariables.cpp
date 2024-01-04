@@ -121,6 +121,7 @@ private:
         TEST_CASE(returnReference23);
         TEST_CASE(returnReference24); // #10098
         TEST_CASE(returnReference25); // #10983
+        TEST_CASE(returnReference26);
         TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
@@ -1649,6 +1650,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void returnReference26()
+    {
+        check("const int& f() {\n" // #12153
+              "    int x = 234;\n"
+              "    int& s{ x };\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Reference to local variable returned.\n", errout.str());
+    }
+
     void returnReferenceFunction() {
         check("int& f(int& a) {\n"
               "    return a;\n"
@@ -2133,6 +2144,15 @@ private:
               "    (void)s.i;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:9]: (error) Using reference to dangling temporary.\n", errout.str());
+
+        check("std::string f() {\n" // #12173
+              "    std::string s;\n"
+              "    for (auto& c : { \"a\", \"b\", \"c\" }) {\n"
+              "        s += c;\n"
+              "    }\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testglobalnamespace() {
@@ -2912,6 +2932,13 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2] -> [test.cpp:3]: (error) Using object that is a temporary.\n",
                       errout.str());
+
+        // #10833
+        check("struct A { std::string s; };\n"
+              "const std::string& f(A* a) {\n"
+              "    return a ? a->s : \"\";\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Reference to temporary returned.\n", errout.str());
 
         check("std::span<int> f() {\n"
               "    std::vector<int> v{};\n"

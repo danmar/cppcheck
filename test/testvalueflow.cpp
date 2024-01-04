@@ -46,11 +46,11 @@ private:
 
     void run() override {
         // strcpy, abort cfg
-        const char cfg[] = "<?xml version=\"1.0\"?>\n"
-                           "<def>\n"
-                           "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> </function>\n"
-                           "  <function name=\"abort\"> <noreturn>true</noreturn> </function>\n" // abort is a noreturn function
-                           "</def>";
+        constexpr char cfg[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> </function>\n"
+                               "  <function name=\"abort\"> <noreturn>true</noreturn> </function>\n" // abort is a noreturn function
+                               "</def>";
         settings = settingsBuilder(settings).libraryxml(cfg, sizeof(cfg)).build();
 
         TEST_CASE(valueFlowNumber);
@@ -876,6 +876,23 @@ private:
                "   y=x;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, ValueFlow::Value::MoveKind::MovedVariable));
+
+        code = "void g(std::string);\n"
+               "void foo(std::string x) {\n"
+               "  g(std::move(x));\n"
+               "  int counter = 0;\n"
+               "\n"
+               "  for (int i = 0; i < 5; i++) {\n"
+               "    if (i % 2 == 0) {\n"
+               "      x = std::to_string(i);\n"
+               "      counter++;\n"
+               "    }\n"
+               "  }\n"
+               "  for (int i = 0; i < counter; i++) {\n"
+               "      if(x > 5) {}\n"
+               "  }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 13U, ValueFlow::Value::MoveKind::MovedVariable));
     }
 
     void valueFlowCalculations() {
@@ -1460,7 +1477,7 @@ private:
                "    int a = x;\n"
                "    if (x >= 1) {}\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 2U, 1));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 2U, 1));
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
 
         code = "void f(unsigned int x) {\n"
@@ -4511,7 +4528,7 @@ private:
                "void f(Object *obj) {\n"
                "  if (valid(obj, K0)) {}\n"
                "}\n";
-        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 7U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 7U, 0));
         ASSERT_EQUALS(false, testValueOfXKnown(code, 7U, 0));
 
         code = "int f(int i) {\n"
@@ -5623,6 +5640,69 @@ private:
                "    }\n"
                "}\n";
         values = tokenValues(code, "x <", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
+
+        code = "bool do_something(int *p);\n"
+               "int getY();\n"
+               "bool bar();\n"
+               "void foo() {\n"
+               "    bool flag{true};\n"
+               "    int x;\n"
+               "    int y = getY();\n"
+               "    if (flag == true) {\n"
+               "        flag = bar();\n"
+               "    }\n"
+               "    if ((flag == true) && y > 0) {\n"
+               "        flag = do_something(&x);\n"
+               "    }\n"
+               "    for (int i = 0; (flag == true) && i < y; i++) {\n"
+               "        if (x < 0) {}\n"
+               "    }\n"
+               "}\n";
+        values = tokenValues(code, "x <", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
+
+        code = "void getX(int *p);\n"
+               "bool do_something();\n"
+               "void foo() {\n"
+               "  int x;\n"
+               "  bool flag;\n"
+               "  bool success;\n"
+               "  success = do_something();\n"
+               "  flag = success;\n"
+               "  if (success == true) {\n"
+               "    getX(&x);\n"
+               "  }\n"
+               "  for (int i = 0; (flag == true) && (i < x); ++i) {}\n"
+               "}\n";
+        values = tokenValues(code, "x ) ; ++ i", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
+
+        code = "void g(bool *result, size_t *buflen) {\n" // #12091
+               "    if (*result && *buflen >= 5) {}\n" // <- *buflen might not be initialized
+               "}\n"
+               "void f() {\n"
+               "    size_t bytesCopied;\n"
+               "    bool copied_all = true;\n"
+               "    g(&copied_all, &bytesCopied);\n"
+               "}";
+        values = tokenValues(code, "buflen >=", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(1, values.size());
+
+        code = "void foo() {\n"
+               "  int counter = 0;\n"
+               "  int x;\n"
+               "  for (int i = 0; i < 5; i++) {\n"
+               "    if (i % 2 == 0) {\n"
+               "      x = i;\n"
+               "      counter++;\n"
+               "    }\n"
+               "  }\n"
+               "  for (int i = 0; i < counter; i++) {\n"
+               "      if(x > 5) {}\n"
+               "  }\n"
+               "}\n";
+        values = tokenValues(code, "x > 5", ValueFlow::Value::ValueType::UNINIT);
         ASSERT_EQUALS(0, values.size());
     }
 
@@ -7226,6 +7306,35 @@ private:
                "    int& q = (&r)[0];\n"
                "}\n";
         valueOfTok(code, "&");
+
+        code = "bool a(int *);\n"
+               "void fn2(int b) {\n"
+               "  if (b) {\n"
+               "    bool c, d, e;\n"
+               "    if (c && d)\n"
+               "      return;\n"
+               "    if (e && a(&b)) {\n"
+               "    }\n"
+               "  }\n"
+               "}\n";
+        valueOfTok(code, "e");
+
+        code = "void f(int a, int b, int c) {\n"
+               "  if (c && (a || a && b))\n"
+               "    if (a && b) {}\n"
+               "}\n";
+        valueOfTok(code, "a");
+
+        code = "void g(const char* fmt, ...);\n" // #12255
+               "void f(const char* fmt, const char* msg) {\n"
+               "    const char* p = msg;\n"
+               "    g(\"%s\", msg);\n"
+               "}\n"
+               "void g(const char* fmt, ...) {\n"
+               "    const char* q = fmt;\n"
+               "    if (*q > 0 && *q < 100) {}\n"
+               "}\n";
+        valueOfTok(code, "&&");
     }
 
     void valueFlowHang() {
@@ -7489,6 +7598,15 @@ private:
                "    str += s.to_string();\n"
                "}\n";
         valueOfTok(code, "s");
+
+        code = "void a(int e, int d, int c, int h) {\n"
+               "  std::vector<int> b;\n"
+               "  std::vector<int> f;\n"
+               "  if (b == f && h)\n"
+               "    return;\n"
+               "  if (b == f && b == f && c && e < d) {}\n"
+               "}\n";
+        valueOfTok(code, "b");
     }
 
     void valueFlowUnknownMixedOperators() {

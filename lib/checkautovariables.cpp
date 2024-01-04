@@ -471,6 +471,8 @@ static bool isDeadTemporary(bool cpp, const Token* tok, const Token* expr, const
         if (!precedes(nextAfterAstRightmostLeaf(tok->astTop()), nextAfterAstRightmostLeaf(expr->astTop())))
             return false;
         const Token* parent = tok->astParent();
+        if (Token::simpleMatch(parent, "{") && Token::simpleMatch(parent->astParent(), ":"))
+            parent = parent->astParent();
         // Is in a for loop
         if (astIsRHS(tok) && Token::simpleMatch(parent, ":") && Token::simpleMatch(parent->astParent(), "(") && Token::simpleMatch(parent->astParent()->previous(), "for (")) {
             const Token* braces = parent->astParent()->link()->next();

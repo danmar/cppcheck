@@ -647,7 +647,8 @@ def get_function_pointer_type(tok):
     ret += '('
     tok = tok.next.next
     while tok and (tok.str not in '()'):
-        ret += ' ' + tok.str
+        if tok.varId is None:
+            ret += ' ' + tok.str
         tok = tok.next
     if (tok is None) or tok.str != ')':
         return None
@@ -2519,6 +2520,20 @@ class MisraChecker:
                 self.reportError(token, 11, 3)
 
     def misra_11_4(self, data):
+        # Get list of macro definitions
+        macros = {}
+        for directive in data.directives:
+            #define X ((peripheral_t *)0x40000U)
+            res = re.match(r'#define ([A-Za-z0-9_]+).*', directive.str)
+            if res:
+                if res.group(1) in macros:
+                    macros[res.group(1)].append(directive)
+                else:
+                    macros[res.group(1)] = [directive]
+
+        # If macro definition is non-compliant then warn about the macro definition instead of
+        # the macro usages. To reduce diagnostics for a non-compliant macro.
+        bad_macros = []
         for token in data.tokenlist:
             if not isCast(token):
                 continue
@@ -2529,6 +2544,17 @@ class MisraChecker:
             if vt2.pointer > 0 and vt1.pointer == 0 and (vt1.isIntegral() or vt1.isEnum()) and vt2.type != 'void':
                 self.reportError(token, 11, 4)
             elif vt1.pointer > 0 and vt2.pointer == 0 and (vt2.isIntegral() or vt2.isEnum()) and vt1.type != 'void':
+                if token.macroName is not None and \
+                   token.macroName == token.astOperand1.macroName and \
+                   token.astOperand1.isInt and \
+                   token.link.previous.str == '*' and \
+                   token.macroName == token.link.previous.macroName and \
+                   token.macroName in macros and \
+                   len(macros[token.macroName]) == 1:
+                    if token.macroName not in bad_macros:
+                        bad_macros.append(token.macroName)
+                        self.reportError(macros[token.macroName][0], 11, 4)
+                    continue
                 self.reportError(token, 11, 4)
 
     def misra_11_5(self, data):
@@ -2562,7 +2588,7 @@ class MisraChecker:
             vt2 = token.astOperand1.valueType
             if not vt1 or not vt2:
                 continue
-            if vt1.pointer == 1 and vt1.type == 'void' and vt2.pointer == 0 and token.astOperand1.str != "0":
+            if vt1.pointer == 1 and vt1.type == 'void' and vt2.pointer == 0 and token.astOperand1.getKnownIntValue() != 0:
                 self.reportError(token, 11, 6)
             elif vt1.pointer == 0 and vt1.type != 'void' and vt2.pointer == 1 and vt2.type == 'void':
                 self.reportError(token, 11, 6)
@@ -3315,6 +3341,10 @@ class MisraChecker:
                     continue
                 if isKeyword(tok.str) or isStdLibId(tok.str):
                     continue
+                if tok.astParent is None:
+                    continue
+                if tok.astParent.str == "." and tok.astParent.valueType:
+                    continue
                 self.report_config_error(tok, "Variable '%s' is unknown" % tok.str)
 
     def misra_17_6(self, rawTokens):
@@ -3328,7 +3358,9 @@ class MisraChecker:
                 continue
             if token.str != '(' or token.astParent:
                 continue
-            if not token.previous.isName or token.previous.varId:
+            if token.astOperand1 is None or not token.astOperand1.isName:
+                continue
+            if token.astOperand1.varId and (token.astOperand1.variable is None or get_function_pointer_type(token.astOperand1.variable.typeStartToken) is None):
                 continue
             if token.valueType is None:
                 continue
@@ -4618,6 +4650,19 @@ class MisraChecker:
             self.executeCheck(2209, self.misra_22_9, cfg)
             self.executeCheck(2210, self.misra_22_10, cfg)
 
+    def read_ctu_info_line(self, line):
+        if not line.startswith('{'):
+            return None
+        try:
+            ctu_info = json.loads(line)
+        except json.decoder.JSONDecodeError:
+            return None
+        if 'summary' not in ctu_info:
+            return None
+        if 'data' not in ctu_info:
+            return None
+        return ctu_info
+
     def analyse_ctu_info(self, ctu_info_files):
         all_typedef_info = {}
         all_tagname_info = {}
@@ -4639,12 +4684,11 @@ class MisraChecker:
         try:
             for filename in ctu_info_files:
                 for line in open(filename, 'rt'):
-                    if not line.startswith('{'):
+                    s = self.read_ctu_info_line(line)
+                    if s is None:
                         continue
-
-                    s = json.loads(line)
-                    summary_type = s['summary']
-                    summary_data = s['data']
+                    summary_type = s.get('summary', '')
+                    summary_data = s.get('data', None)
 
                     if summary_type == 'MisraTypedefInfo':
                         for new_typedef_info in summary_data:

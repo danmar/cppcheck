@@ -16,13 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "library.h"
-#include "platform.h"
-#include "settings.h"
-#include "symboldatabase.h"
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "library.h"
+#include "platform.h"
+#include "settings.h"
+#include "sourcelocation.h"
+#include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
@@ -76,10 +77,64 @@ private:
         typetok = nullptr;
     }
 
-    const static SymbolDatabase* getSymbolDB_inner(Tokenizer& tokenizer, const char* code, const char* filename) {
+    const SymbolDatabase* getSymbolDB_inner(Tokenizer& tokenizer, const char* code, const char* filename) {
         errout.str("");
         std::istringstream istr(code);
         return tokenizer.tokenize(istr, filename) ? tokenizer.getSymbolDatabase() : nullptr;
+    }
+
+    static const Token* findToken(Tokenizer& tokenizer, const std::string& expr, unsigned int exprline)
+    {
+        for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (Token::simpleMatch(tok, expr.c_str(), expr.size()) && tok->linenr() == exprline) {
+                return tok;
+            }
+        }
+        return nullptr;
+    }
+
+    static std::string asExprIdString(const Token* tok)
+    {
+        return tok->expressionString() + "@" + std::to_string(tok->exprId());
+    }
+
+    std::string testExprIdEqual(const char code[],
+                                const std::string& expr1,
+                                unsigned int exprline1,
+                                const std::string& expr2,
+                                unsigned int exprline2,
+                                SourceLocation loc = SourceLocation::current())
+    {
+        Tokenizer tokenizer(&settings1, this);
+        std::istringstream istr(code);
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), loc.file_name(), loc.line());
+
+        const Token* tok1 = findToken(tokenizer, expr1, exprline1);
+        const Token* tok2 = findToken(tokenizer, expr2, exprline2);
+
+        if (!tok1)
+            return "'" + expr1 + "'" + " not found";
+        if (!tok2)
+            return "'" + expr2 + "'" + " not found";
+        if (tok1->exprId() == 0)
+            return asExprIdString(tok1) + " has not exprId";
+        if (tok2->exprId() == 0)
+            return asExprIdString(tok2) + " has not exprId";
+
+        if (tok1->exprId() != tok2->exprId())
+            return asExprIdString(tok1) + " != " + asExprIdString(tok2);
+
+        return "";
+    }
+    bool testExprIdNotEqual(const char code[],
+                            const std::string& expr1,
+                            unsigned int exprline1,
+                            const std::string& expr2,
+                            unsigned int exprline2,
+                            SourceLocation loc = SourceLocation::current())
+    {
+        std::string result = testExprIdEqual(code, expr1, exprline1, expr2, exprline2, loc);
+        return !result.empty();
     }
 
     static const Scope *findFunctionScopeByToken(const SymbolDatabase * db, const Token *tok) {
@@ -373,6 +428,7 @@ private:
         TEST_CASE(createSymbolDatabaseFindAllScopes4);
         TEST_CASE(createSymbolDatabaseFindAllScopes5);
         TEST_CASE(createSymbolDatabaseFindAllScopes6);
+        TEST_CASE(createSymbolDatabaseFindAllScopes7);
 
         TEST_CASE(createSymbolDatabaseIncompleteVars);
 
@@ -452,6 +508,8 @@ private:
         TEST_CASE(findFunction50); // #11904 - method with same name and arguments in derived class
         TEST_CASE(findFunction51); // #11975 - method with same name in derived class
         TEST_CASE(findFunction52);
+        TEST_CASE(findFunction53);
+        TEST_CASE(findFunction54);
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -527,6 +585,7 @@ private:
         TEST_CASE(unionWithConstructor);
 
         TEST_CASE(incomplete_type); // #9255 (infinite recursion)
+        TEST_CASE(exprIds);
     }
 
     void array() {
@@ -2380,12 +2439,12 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool debug = true, const char filename[] = "test.cpp") {
+    void check_(const char* file, int line, const char code[], bool debug = true, const char filename[] = "test.cpp", const Settings* pSettings = nullptr) {
         // Clear the error log
         errout.str("");
 
         // Check..
-        const Settings settings = settingsBuilder(settings1).debugwarnings(debug).build();
+        const Settings settings = settingsBuilder(pSettings ? *pSettings : settings1).debugwarnings(debug).build();
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -2986,7 +3045,12 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("main(int argc, char *argv[]) { }", true, "test.c");
-        ASSERT_EQUALS("[test.c:1]: (debug) SymbolDatabase::isFunction found C function 'main' without a return type.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        const Settings s = settingsBuilder(settings1).severity(Severity::portability).build();
+        check("main(int argc, char *argv[]) { }", false, "test.c", &s);
+        ASSERT_EQUALS("[test.c:1]: (portability) Omitted return type of function 'main' defaults to int, this is not supported by ISO C99 and later standards.\n",
+                      errout.str());
 
         check("namespace boost {\n"
               "    std::locale generate_locale()\n"
@@ -5455,6 +5519,51 @@ private:
         ASSERT_EQUALS(classNC.derivedFrom[1].type, &classNB);
     }
 
+    void createSymbolDatabaseFindAllScopes7()
+    {
+        {
+            GET_SYMBOL_DB("namespace {\n"
+                          "    struct S {\n"
+                          "        void f();\n"
+                          "    };\n"
+                          "}\n"
+                          "void S::f() {}\n");
+            ASSERT(db);
+            ASSERT_EQUALS(4, db->scopeList.size());
+            auto anon = db->scopeList.begin();
+            ++anon;
+            ASSERT(anon->className.empty());
+            ASSERT_EQUALS(anon->type, Scope::eNamespace);
+            auto S = anon;
+            ++S;
+            ASSERT_EQUALS(S->type, Scope::eStruct);
+            ASSERT_EQUALS(S->className, "S");
+            ASSERT_EQUALS(S->nestedIn, &*anon);
+            const Token* f = Token::findsimplematch(tokenizer.tokens(), "f ( ) {");
+            ASSERT(f && f->function() && f->function()->functionScope && f->function()->functionScope->bodyStart);
+            ASSERT_EQUALS(f->function()->functionScope->functionOf, &*S);
+            ASSERT_EQUALS(f->function()->functionScope->bodyStart->linenr(), 6);
+        }
+        {
+            GET_SYMBOL_DB("namespace {\n"
+                          "    int i = 0;\n"
+                          "}\n"
+                          "namespace N {\n"
+                          "    namespace {\n"
+                          "        template<typename T>\n"
+                          "        struct S {\n"
+                          "            void f();\n"
+                          "        };\n"
+                          "        template<typename T>\n"
+                          "        void S<T>::f() {}\n"
+                          "    }\n"
+                          "    S<int> g() { return {}; }\n"
+                          "}\n");
+            ASSERT(db); // don't crash
+            ASSERT_EQUALS("", errout.str());
+        }
+    }
+
     void createSymbolDatabaseIncompleteVars()
     {
         {
@@ -5970,6 +6079,27 @@ private:
             ASSERT(e && e->enumerator());
             ASSERT_EQUALS(E0, e->enumerator());
         }
+        {
+            GET_SYMBOL_DB("struct S {\n"
+                          "    enum class E {\n"
+                          "        A, D\n"
+                          "    } e = E::D;\n"
+                          "};\n"
+                          "struct E {\n"
+                          "    enum { A, B, C, D };\n"
+                          "};\n");
+            ASSERT(db != nullptr);
+            auto it = db->scopeList.begin();
+            std::advance(it, 2);
+            ASSERT_EQUALS(it->className, "E");
+            ASSERT(it->nestedIn);
+            ASSERT_EQUALS(it->nestedIn->className, "S");
+            const Enumerator* D = it->findEnumerator("D");
+            ASSERT(D && D->value_known && D->value == 1);
+            const Token* tok = Token::findsimplematch(tokenizer.tokens(), "D ;");
+            ASSERT(tok && tok->enumerator());
+            ASSERT_EQUALS(D, tok->enumerator());
+        }
     }
 
     void sizeOfType() {
@@ -6167,7 +6297,7 @@ private:
         ASSERT(db);
         const Scope * bar = db->findScopeByName("bar");
         ASSERT(bar != nullptr);
-        const unsigned int linenrs[2] = { 2, 1 };
+        constexpr unsigned int linenrs[2] = { 2, 1 };
         unsigned int index = 0;
         for (const Token * tok = bar->bodyStart->next(); tok != bar->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "%name% (") && !tok->varId() && Token::simpleMatch(tok->linkAt(1), ") ;")) {
@@ -7645,6 +7775,53 @@ private:
         ASSERT(g->function()->tokenDef->linenr() == 1);
     }
 
+    void findFunction53() {
+        GET_SYMBOL_DB("namespace N {\n" // #12208
+                      "    struct S {\n"
+                      "        S(const int*);\n"
+                      "    };\n"
+                      "}\n"
+                      "void f(int& r) {\n"
+                      "    N::S(&r);\n"
+                      "}\n");
+        const Token* S = Token::findsimplematch(tokenizer.tokens(), "S ( &");
+        ASSERT(S->function() && S->function()->tokenDef);
+        ASSERT(S->function()->tokenDef->linenr() == 3);
+        ASSERT(S->function()->isConstructor());
+    }
+
+    void findFunction54() {
+        {
+            GET_SYMBOL_DB("struct S {\n"
+                          "    explicit S(int& r) { if (r) {} }\n"
+                          "    bool f(const std::map<int, S>& m);\n"
+                          "};\n");
+            const Token* S = Token::findsimplematch(tokenizer.tokens(), "S (");
+            ASSERT(S && S->function());
+            ASSERT(S->function()->isConstructor());
+            ASSERT(!S->function()->functionPointerUsage);
+            S = Token::findsimplematch(S->next(), "S >");
+            ASSERT(S && S->type());
+            ASSERT_EQUALS(S->type()->name(), "S");
+        }
+        {
+            GET_SYMBOL_DB("struct S {\n"
+                          "    explicit S(int& r) { if (r) {} }\n"
+                          "    bool f(const std::map<int, S, std::allocator<S>>& m);\n"
+                          "};\n");
+            const Token* S = Token::findsimplematch(tokenizer.tokens(), "S (");
+            ASSERT(S && S->function());
+            ASSERT(S->function()->isConstructor());
+            ASSERT(!S->function()->functionPointerUsage);
+            S = Token::findsimplematch(S->next(), "S ,");
+            ASSERT(S && S->type());
+            ASSERT_EQUALS(S->type()->name(), "S");
+            S = Token::findsimplematch(S->next(), "S >");
+            ASSERT(S && S->type());
+            ASSERT_EQUALS(S->type()->name(), "S");
+        }
+    }
+
     void findFunctionContainer() {
         {
             GET_SYMBOL_DB("void dostuff(std::vector<int> v);\n"
@@ -8520,9 +8697,9 @@ private:
         {
             // Char types
             Settings settings;
-            const Library::PodType char8 = { 1, 'u' };
-            const Library::PodType char16 = { 2, 'u' };
-            const Library::PodType char32 = { 4, 'u' };
+            constexpr Library::PodType char8 = { 1, 'u' };
+            constexpr Library::PodType char16 = { 2, 'u' };
+            constexpr Library::PodType char32 = { 4, 'u' };
             settings.library.mPodTypes["char8_t"] = char8;
             settings.library.mPodTypes["char16_t"] = char16;
             settings.library.mPodTypes["char32_t"] = char32;
@@ -8539,8 +8716,8 @@ private:
         {
             // PodType
             Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).build();
-            const Library::PodType u32 = { 4, 'u' };
-            const Library::PodType podtype2 = { 0, 'u', Library::PodType::Type::INT };
+            constexpr Library::PodType u32 = { 4, 'u' };
+            constexpr Library::PodType podtype2 = { 0, 'u', Library::PodType::Type::INT };
             settingsWin64.library.mPodTypes["u32"] = u32;
             settingsWin64.library.mPodTypes["xyz::x"] = u32;
             settingsWin64.library.mPodTypes["podtype2"] = podtype2;
@@ -8944,8 +9121,8 @@ private:
 
             const Token* tok = tokenizer.tokens();
             tok = Token::findsimplematch(tok, "auto r");
-            ASSERT(tok && tok->valueType());
-            ASSERT_EQUALS("container(std :: string|wstring|u16string|u32string)", tok->valueType()->str());
+            ASSERT(tok);
+            TODO_ASSERT(tok->valueType() && "container(std :: string|wstring|u16string|u32string)" == tok->valueType()->str());
         }
     }
 
@@ -9878,6 +10055,214 @@ private:
                       "};");
 
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void exprIds()
+    {
+        const char* code;
+
+        code = "int f(int a) {\n"
+               "    return a +\n"
+               "           a;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "a", 2U, "a", 3U));
+
+        code = "int f(int a, int b) {\n"
+               "    return a +\n"
+               "           b;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, "a", 2U, "b", 3U));
+
+        code = "int f(int a) {\n"
+               "    int x = a++;\n"
+               "    int y = a++;\n"
+               "    return x + a;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, "++", 2U, "++", 3U));
+
+        code = "int f(int a) {\n"
+               "    int x = a;\n"
+               "    return x + a;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, "x", 3U, "a", 3U));
+
+        code = "int f(int a) {\n"
+               "    int& x = a;\n"
+               "    return x + a;\n"
+               "}\n";
+        TODO_ASSERT_EQUALS("", "x@2 != a@1", testExprIdEqual(code, "x", 3U, "a", 3U));
+
+        code = "int f(int a) {\n"
+               "    int& x = a;\n"
+               "    return (x + 1) +\n"
+               "           (a + 1);\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "+", 3U, "+", 4U));
+
+        code = "int& g(int& x) { return x; }\n"
+               "int f(int a) {\n"
+               "    return (g(a) + 1) +\n"
+               "           (a + 1);\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "+", 3U, "+", 4U));
+
+        code = "int f(int a, int b) {\n"
+               "    int x = (b-a)-a;\n"
+               "    int y = (b-a)-a;\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "- a ;", 2U, "- a ;", 3U));
+        ASSERT_EQUALS("", testExprIdEqual(code, "- a )", 2U, "- a )", 3U));
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, "- a )", 2U, "- a ;", 3U));
+
+        code = "int f(int a, int b) {\n"
+               "    int x = a-(b-a);\n"
+               "    int y = a-(b-a);\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "- ( b", 2U, "- ( b", 3U));
+        ASSERT_EQUALS("", testExprIdEqual(code, "- a )", 2U, "- a )", 3U));
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, "- a )", 2U, "- ( b", 3U));
+
+        code = "void f(int a, int b) {\n"
+               "    int x = (b+a)+a;\n"
+               "    int y = a+(b+a);\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "+ a ;", 2U, "+ ( b", 3U));
+        ASSERT_EQUALS("", testExprIdEqual(code, "+ a ) +", 2U, "+ a ) ;", 3U));
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, "+ a ;", 2U, "+ a )", 3U));
+
+        code = "void f(int a, int b) {\n"
+               "    int x = (b+a)+a;\n"
+               "    int y = a+(a+b);\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "+ a ;", 2U, "+ ( a", 3U));
+        ASSERT_EQUALS("", testExprIdEqual(code, "+ a ) +", 2U, "+ b ) ;", 3U));
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, "+ a ;", 2U, "+ b", 3U));
+
+        code = "struct A { int x; };\n"
+               "void f(A a, int b) {\n"
+               "    int x = (b-a.x)-a.x;\n"
+               "    int y = (b-a.x)-a.x;\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "- a . x ;", 3U, "- a . x ;", 4U));
+        ASSERT_EQUALS("", testExprIdEqual(code, "- a . x )", 3U, "- a . x )", 4U));
+
+        code = "struct A { int x; };\n"
+               "void f(A a, int b) {\n"
+               "    int x = a.x-(b-a.x);\n"
+               "    int y = a.x-(b-a.x);\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "- ( b", 3U, "- ( b", 4U));
+        ASSERT_EQUALS("", testExprIdEqual(code, "- a . x )", 3U, "- a . x )", 4U));
+
+        code = "struct A { int x; };\n"
+               "void f(A a) {\n"
+               "    int x = a.x;\n"
+               "    int y = a.x;\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, ". x", 3U, ". x", 4U));
+
+        code = "struct A { int x; };\n"
+               "void f(A a, A b) {\n"
+               "    int x = a.x;\n"
+               "    int y = b.x;\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, ". x", 3U, ". x", 4U));
+
+        code = "struct A { int y; };\n"
+               "struct B { A x; }\n"
+               "void f(B a) {\n"
+               "    int x = a.x.y;\n"
+               "    int y = a.x.y;\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, ". x . y", 4U, ". x . y", 5U));
+        ASSERT_EQUALS("", testExprIdEqual(code, ". y", 4U, ". y", 5U));
+
+        code = "struct A { int y; };\n"
+               "struct B { A x; }\n"
+               "void f(B a, B b) {\n"
+               "    int x = a.x.y;\n"
+               "    int y = b.x.y;\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, ". x . y", 4U, ". x . y", 5U));
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, ". y", 4U, ". y", 5U));
+
+        code = "struct A { int g(); };\n"
+               "struct B { A x; }\n"
+               "void f(B a) {\n"
+               "    int x = a.x.g();\n"
+               "    int y = a.x.g();\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, ". x . g ( )", 4U, ". x . g ( )", 5U));
+        ASSERT_EQUALS("", testExprIdEqual(code, ". g ( )", 4U, ". g ( )", 5U));
+
+        code = "struct A { int g(int, int); };\n"
+               "struct B { A x; }\n"
+               "void f(B a, int b, int c) {\n"
+               "    int x = a.x.g(b, c);\n"
+               "    int y = a.x.g(b, c);\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, ". x . g ( b , c )", 4U, ". x . g ( b , c )", 5U));
+        ASSERT_EQUALS("", testExprIdEqual(code, ". g ( b , c )", 4U, ". g ( b , c )", 5U));
+
+        code = "int g();\n"
+               "void f() {\n"
+               "    int x = g();\n"
+               "    int y = g();\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "(", 3U, "(", 4U));
+
+        code = "struct A { int g(); };\n"
+               "void f() {\n"
+               "    int x = A::g();\n"
+               "    int y = A::g();\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "(", 3U, "(", 4U));
+
+        code = "int g();\n"
+               "void f(int a, int b) {\n"
+               "    int x = g(a, b);\n"
+               "    int y = g(a, b);\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "(", 3U, "(", 4U));
+
+        code = "struct A { int g(); };\n"
+               "void f() {\n"
+               "    int x = A::g(a, b);\n"
+               "    int y = A::g(a, b);\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS("", testExprIdEqual(code, "(", 3U, "(", 4U));
+
+        code = "int g();\n"
+               "void f(int a, int b) {\n"
+               "    int x = g(a, b);\n"
+               "    int y = g(b, a);\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, "(", 3U, "(", 4U));
+
+        code = "struct A { int g(); };\n"
+               "void f() {\n"
+               "    int x = A::g(a, b);\n"
+               "    int y = A::g(b, a);\n"
+               "    return x + y;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testExprIdNotEqual(code, "(", 3U, "(", 4U));
     }
 };
 

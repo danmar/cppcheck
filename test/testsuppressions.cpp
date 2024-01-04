@@ -20,6 +20,7 @@
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
 #include "errortypes.h"
+#include "filesettings.h"
 #include "processexecutor.h"
 #include "settings.h"
 #include "suppressions.h"
@@ -50,6 +51,7 @@ private:
         TEST_CASE(suppressionsDosFormat);     // Ticket #1836
         TEST_CASE(suppressionsFileNameWithColon);    // Ticket #1919 - filename includes colon
         TEST_CASE(suppressionsGlob);
+        TEST_CASE(suppressionsGlobId);
         TEST_CASE(suppressionsFileNameWithExtraPath);
         TEST_CASE(suppressionsSettings);
         TEST_CASE(suppressionsSettingsThreads);
@@ -170,6 +172,14 @@ private:
         }
     }
 
+    void suppressionsGlobId() const {
+        Suppressions suppressions;
+        std::istringstream s("a*\n");
+        ASSERT_EQUALS("", suppressions.parseFile(s));
+        ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("abc", "xyz.cpp", 1)));
+        ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("def", "xyz.cpp", 1)));
+    }
+
     void suppressionsFileNameWithExtraPath() const {
         // Ticket #2797
         Suppressions suppressions;
@@ -190,16 +200,16 @@ private:
     unsigned int checkSuppression(std::map<std::string, std::string> &f, const std::string &suppression = emptyString) {
         // Clear the error log
         errout.str("");
-        output.str("");
 
-        std::map<std::string, std::size_t> files;
+        std::list<std::pair<std::string, std::size_t>> files;
         for (std::map<std::string, std::string>::const_iterator i = f.cbegin(); i != f.cend(); ++i) {
-            files[i->first] = i->second.size();
+            files.emplace_back(i->first, i->second.size());
         }
 
         CppCheck cppCheck(*this, true, nullptr);
         Settings& settings = cppCheck.settings();
         settings.jobs = 1;
+        settings.quiet = true;
         settings.inlineSuppressions = true;
         settings.severity.enable(Severity::information);
         if (suppression == "unusedFunction")
@@ -207,7 +217,9 @@ private:
         if (!suppression.empty()) {
             EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));
         }
-        SingleExecutor executor(cppCheck, files, settings, settings.nomsg, *this);
+        // TODO: test with FS
+        std::list<FileSettings> fileSettings;
+        SingleExecutor executor(cppCheck, files, fileSettings, settings, settings.nomsg, *this);
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(files.size());
         for (std::map<std::string, std::string>::const_iterator i = f.cbegin(); i != f.cend(); ++i)
@@ -222,22 +234,24 @@ private:
 
     unsigned int checkSuppressionThreads(const char code[], const std::string &suppression = emptyString) {
         errout.str("");
-        output.str("");
 
-        std::map<std::string, std::size_t> files;
-        files["test.cpp"] = strlen(code);
+        std::list<std::pair<std::string, std::size_t>> files;
+        files.emplace_back("test.cpp", strlen(code));
 
         Settings settings;
         settings.jobs = 2;
+        settings.quiet = true;
         settings.inlineSuppressions = true;
         settings.severity.enable(Severity::information);
         if (!suppression.empty()) {
             EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));
         }
-        ThreadExecutor executor(files, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
+        // TODO: test with FS
+        std::list<FileSettings> fileSettings;
+        ThreadExecutor executor(files, fileSettings, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(files.size());
-        for (std::map<std::string, std::size_t>::const_iterator i = files.cbegin(); i != files.cend(); ++i)
+        for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = files.cbegin(); i != files.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->first, code));
 
         const unsigned int exitCode = executor.check();
@@ -250,22 +264,24 @@ private:
 #if !defined(WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
     unsigned int checkSuppressionProcesses(const char code[], const std::string &suppression = emptyString) {
         errout.str("");
-        output.str("");
 
-        std::map<std::string, std::size_t> files;
-        files["test.cpp"] = strlen(code);
+        std::list<std::pair<std::string, std::size_t>> files;
+        files.emplace_back("test.cpp", strlen(code));
 
         Settings settings;
         settings.jobs = 2;
+        settings.quiet = true;
         settings.inlineSuppressions = true;
         settings.severity.enable(Severity::information);
         if (!suppression.empty()) {
             EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));
         }
-        ProcessExecutor executor(files, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
+        // TODO: test with FS
+        std::list<FileSettings> fileSettings;
+        ProcessExecutor executor(files, fileSettings, settings, settings.nomsg, *this, CppCheckExecutor::executeCommand);
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(files.size());
-        for (std::map<std::string, std::size_t>::const_iterator i = files.cbegin(); i != files.cend(); ++i)
+        for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = files.cbegin(); i != files.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->first, code));
 
         const unsigned int exitCode = executor.check();
@@ -1073,6 +1089,7 @@ private:
 
         CppCheck cppCheck(*this, false, nullptr); // <- do not "use global suppressions". pretend this is a thread that just checks a file.
         Settings& settings = cppCheck.settings();
+        settings.quiet = true;
         settings.nomsg.addSuppressionLine("uninitvar");
         settings.exitCode = 1;
 
@@ -1107,6 +1124,7 @@ private:
 
         CppCheck cppCheck(*this, true, nullptr);
         Settings& settings = cppCheck.settings();
+        settings.quiet = true;
         settings.severity.enable(Severity::style);
         settings.inlineSuppressions = true;
         settings.relativePaths = true;

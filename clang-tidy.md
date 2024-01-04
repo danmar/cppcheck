@@ -71,10 +71,6 @@ These might change the behavior of code which might not be intended (need to fil
 
 This leads to a mismatch of raw string literals and regular ones and does reduce the readability.
 
-`readability-convert-member-functions-to-static`<br/>
-
-Disabled because of false positives with Qt `slot` methods (see https://github.com/llvm/llvm-project/issues/57520).
-
 `-clang-analyzer-*`<br/>
 
 Disabled because of false positives (needs to file an upstream bug report).
@@ -112,10 +108,6 @@ Produces a lot of false positives since it is too vague in its analysis.
 
 Produces warnings which might be considered false positives starting with C++11 - see https://github.com/llvm/llvm-project/issues/54526.
 
-`readability-redundant-access-specifiers`<br/>
-
-Reports warning with the Qt `<access-specifier> slots:` syntax in class declarations - see https://github.com/llvm/llvm-project/issues/60055.
-
 `modernize-avoid-c-arrays`<br/>
 
 Produces warnings when `const char[]` is being used which is quite common in our code. Does not make sense to enable before C++17 when `std::string_view` becomes available.
@@ -126,7 +118,6 @@ Also reports a false positive about templates which deduce the array length: htt
 We run this separately via `clang-include-cleaner` in the `iwyu.yml` workflow as the findings of the include checkers still need to be reviewed manually before applying them. 
 
 `bugprone-branch-clone`<br/>
-`readability-const-return-type`<br/>
 `modernize-return-braced-init-list`<br/>
 `misc-throw-by-value-catch-by-reference`<br/>
 `readability-avoid-const-params-in-decls`<br/>
@@ -160,6 +151,8 @@ To be evaluated (need to enable explicitly).
 
 These apply to codebases which use later standards then C++11 (C++17 is used when building with Qt6) so we cannot simply apply them.
 
+### Disabled for performance reasons
+
 `portability-std-allocator-const`<br/>
 
 Only necessary for code which is exclusively compiled with `libc++`. Also disabled for performance reasons - see https://github.com/llvm/llvm-project/issues/57527#issuecomment-1237935132.
@@ -183,3 +176,25 @@ We are currently using our own `naming.json` to enforce naming schemes. Also dis
 `portability-simd-intrinsics`<br/>
 
 We are not using SIMD instructions and it suggests to use `std::experiemental::` features which might not be commonly available. Also disabled for performance reasons - see https://github.com/llvm/llvm-project/issues/57527#issuecomment-1237935132.
+
+`modernize-macro-to-enum`<br/>
+
+It does not seem to produce any warnings for us (needs to be investigated) and it is one of the more expensive checks.
+
+`misc-unused-using-decls`
+
+This is the most expensive check for several files and it is providing much in terms of code quality. Reported upstream as https://github.com/llvm/llvm-project/issues/72300.
+
+`modernize-use-nullptr`
+
+This is already covered by the `-Wzero-as-null-pointer-constant` compiler warning so there is no need for an additional check.
+
+### Disabled for GUI only
+
+`readability-convert-member-functions-to-static`<br/>
+
+Disabled because of false positives with Qt `slot` methods (see https://github.com/llvm/llvm-project/issues/57520).
+
+`readability-redundant-access-specifiers`<br/>
+
+Reports warning with the Qt `<access-specifier> slots:` syntax in class declarations - see https://github.com/llvm/llvm-project/issues/60055.

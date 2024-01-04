@@ -25,6 +25,7 @@
 #include "color.h"
 #include "ctu.h"
 #include "errortypes.h"
+#include "filesettings.h"
 #include "library.h"
 #include "path.h"
 #include "platform.h"
@@ -69,7 +70,7 @@
 
 #include <simplecpp.h>
 
-#include <tinyxml2.h>
+#include "xml.h"
 
 #ifdef HAVE_RULES
 #ifdef _WIN32
@@ -80,10 +81,10 @@
 
 class SymbolDatabase;
 
-static const char Version[] = CPPCHECK_VERSION_STRING;
-static const char ExtraVersion[] = "";
+static constexpr char Version[] = CPPCHECK_VERSION_STRING;
+static constexpr char ExtraVersion[] = "";
 
-static const char FILELIST[] = "cppcheck-addon-ctu-file-list";
+static constexpr char FILELIST[] = "cppcheck-addon-ctu-file-list";
 
 static TimerResults s_timerResults;
 
@@ -225,10 +226,10 @@ static std::string detectPython(const CppCheck::ExecuteCmdFn &executeCommand)
         std::string out;
 #ifdef _MSC_VER
         // FIXME: hack to avoid debug assertion with _popen() in executeCommand() for non-existing commands
-        const std::string cmd = std::string(py_exe) + " --version >NUL";
+        const std::string cmd = std::string(py_exe) + " --version >NUL 2>&1";
         if (system(cmd.c_str()) != 0) {
             // TODO: get more detailed error?
-            break;
+            continue;
         }
 #endif
         if (executeCommand(py_exe, split("--version"), "2>&1", out) == EXIT_SUCCESS && startsWith(out, "Python ") && std::isdigit(out[7])) {
@@ -426,7 +427,7 @@ unsigned int CppCheck::check(const std::string &path)
 {
     if (mSettings.clang) {
         if (!mSettings.quiet)
-            mErrorLogger.reportOut(std::string("Checking ") + path + "...", Color::FgGreen);
+            mErrorLogger.reportOut(std::string("Checking ") + path + " ...", Color::FgGreen);
 
         const std::string lang = Path::isCPP(path) ? "-x c++" : "-x c";
         const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, emptyString);
@@ -521,7 +522,7 @@ unsigned int CppCheck::check(const std::string &path)
             }
 
             // run addons
-            executeAddons(dumpFile);
+            executeAddons(dumpFile, path);
 
         } catch (const InternalError &e) {
             const ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, path, "Bailing out from analysis: Processing Clang AST dump failed");
@@ -545,7 +546,7 @@ unsigned int CppCheck::check(const std::string &path, const std::string &content
     return checkFile(Path::simplifyPath(path), emptyString, &iss);
 }
 
-unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
+unsigned int CppCheck::check(const FileSettings &fs)
 {
     CppCheck temp(mErrorLogger, mUseGlobalSuppressions, mExecuteCommand);
     temp.mSettings = mSettings;
@@ -929,6 +930,24 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 // #error etc during preprocessing
                 configurationError.push_back((mCurrentConfig.empty() ? "\'\'" : mCurrentConfig) + " : [" + o.location.file() + ':' + std::to_string(o.location.line) + "] " + o.msg);
                 --checkCount; // don't count invalid configurations
+
+                if (!hasValidConfig && currCfg == *configurations.rbegin()) {
+                    // If there is no valid configuration then report error..
+                    std::string file = Path::fromNativeSeparators(o.location.file());
+                    if (mSettings.relativePaths)
+                        file = Path::getRelativePath(file, mSettings.basePaths);
+
+                    const ErrorMessage::FileLocation loc1(file, o.location.line, o.location.col);
+                    std::list<ErrorMessage::FileLocation> callstack(1, loc1);
+
+                    ErrorMessage errmsg(callstack,
+                                        filename,
+                                        Severity::error,
+                                        o.msg,
+                                        "preprocessorErrorDirective",
+                                        Certainty::normal);
+                    reportErr(errmsg);
+                }
                 continue;
 
             } catch (const TerminateException &) {
@@ -966,7 +985,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             fdump.close();
         }
 
-        executeAddons(dumpFile);
+        executeAddons(dumpFile, Path::simplifyPath(filename));
 
     } catch (const TerminateException &) {
         // Analysis is terminated
@@ -1043,6 +1062,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
     const std::time_t maxTime = mSettings.checksMaxTime > 0 ? std::time(nullptr) + mSettings.checksMaxTime : 0;
 
     // call all "runChecks" in all registered Check classes
+    // cppcheck-suppress shadowFunction - TODO: fix this
     for (Check *check : Check::instances()) {
         if (Settings::terminated())
             return;
@@ -1077,24 +1097,27 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
     if (mSettings.useSingleJob() || !mSettings.buildDir.empty()) {
         // Analyse the tokens..
 
-        CTU::FileInfo *fi1 = CTU::getFileInfo(&tokenizer);
-        if (fi1) {
-            if (mSettings.useSingleJob())
-                mFileInfo.push_back(fi1);
+        if (CTU::FileInfo * const fi1 = CTU::getFileInfo(&tokenizer)) {
             if (!mSettings.buildDir.empty())
                 mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
+            if (mSettings.useSingleJob())
+                mFileInfo.push_back(fi1);
+            else
+                delete fi1;
         }
 
+        // cppcheck-suppress shadowFunction - TODO: fix this
         for (const Check *check : Check::instances()) {
             if (doUnusedFunctionOnly && dynamic_cast<const CheckUnusedFunctions*>(check) == nullptr)
                 continue;
 
-            Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
-            if (fi != nullptr) {
-                if (mSettings.useSingleJob())
-                    mFileInfo.push_back(fi);
+            if (Check::FileInfo * const fi = check->getFileInfo(&tokenizer, &mSettings)) {
                 if (!mSettings.buildDir.empty())
                     mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
+                if (mSettings.useSingleJob())
+                    mFileInfo.push_back(fi);
+                else
+                    delete fi;
             }
         }
     }
@@ -1370,15 +1393,15 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
 }
 #endif
 
-void CppCheck::executeAddons(const std::string& dumpFile)
+void CppCheck::executeAddons(const std::string& dumpFile, const std::string& file0)
 {
     if (!dumpFile.empty()) {
         std::vector<std::string> f{dumpFile};
-        executeAddons(f);
+        executeAddons(f, file0);
     }
 }
 
-void CppCheck::executeAddons(const std::vector<std::string>& files)
+void CppCheck::executeAddons(const std::vector<std::string>& files, const std::string& file0)
 {
     if (mSettings.addons.empty() || files.empty())
         return;
@@ -1437,20 +1460,21 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             errmsg.setmsg(text);
             const std::string severity = obj["severity"].get<std::string>();
             errmsg.severity = severityFromString(severity);
-            if (errmsg.severity == Severity::none) {
+            if (errmsg.severity == Severity::none || errmsg.severity == Severity::internal) {
                 if (!endsWith(errmsg.id, "-logChecker"))
                     continue;
+                errmsg.severity = Severity::internal;
             }
             else if (!mSettings.severity.isEnabled(errmsg.severity))
                 continue;
-            errmsg.file0 = ((files.size() == 1) ? files[0] : "");
+            errmsg.file0 = file0;
 
             reportErr(errmsg);
         }
     }
 }
 
-void CppCheck::executeAddonsWholeProgram(const std::map<std::string, std::size_t> &files)
+void CppCheck::executeAddonsWholeProgram(const std::list<std::pair<std::string, std::size_t>> &files)
 {
     if (mSettings.addons.empty())
         return;
@@ -1462,7 +1486,7 @@ void CppCheck::executeAddonsWholeProgram(const std::map<std::string, std::size_t
     }
 
     try {
-        executeAddons(ctuInfoFiles);
+        executeAddons(ctuInfoFiles, "");
     } catch (const InternalError& e) {
         const ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, "", "Bailing out from analysis: Whole program analysis failed");
         reportErr(errmsg);
@@ -1542,26 +1566,16 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
 //---------------------------------------------------------------------------
 
+// TODO: part of this logic is duplicated in Executor::hasToLog()
 void CppCheck::reportErr(const ErrorMessage &msg)
 {
-    if (msg.severity == Severity::none && (msg.id == "logChecker" || endsWith(msg.id, "-logChecker"))) {
+    if (msg.severity == Severity::internal) {
         mErrorLogger.reportErr(msg);
         return;
     }
 
     if (!mSettings.library.reportErrors(msg.file0))
         return;
-
-    const std::string errmsg = msg.toString(mSettings.verbose);
-    if (errmsg.empty())
-        return;
-
-    // Alert only about unique errors
-    if (std::find(mErrorList.cbegin(), mErrorList.cend(), errmsg) != mErrorList.cend())
-        return;
-
-    if (!mSettings.buildDir.empty())
-        mAnalyzerInformation.reportErr(msg);
 
     std::set<std::string> macroNames;
     if (!msg.callStack.empty()) {
@@ -1576,14 +1590,41 @@ void CppCheck::reportErr(const ErrorMessage &msg)
     const auto errorMessage = Suppressions::ErrorMessage::fromErrorMessage(msg, macroNames);
 
     if (mSettings.nomsg.isSuppressed(errorMessage, mUseGlobalSuppressions)) {
+        // Safety: Report critical errors to ErrorLogger
+        if (mSettings.safety && ErrorLogger::isCriticalErrorId(msg.id)) {
+            mExitCode = 1;
+
+            if (mSettings.nomsg.isSuppressedExplicitly(errorMessage, mUseGlobalSuppressions)) {
+                // Report with internal severity to signal that there is this critical error but
+                // it is suppressed
+                ErrorMessage temp(msg);
+                temp.severity = Severity::internal;
+                mErrorLogger.reportErr(temp);
+            } else {
+                // Report critical error that is not explicitly suppressed
+                mErrorLogger.reportErr(msg);
+            }
+        }
         return;
     }
+
+    // TODO: there should be no need for the verbose and default messages here
+    std::string errmsg = msg.toString(mSettings.verbose);
+    if (errmsg.empty())
+        return;
+
+    // Alert only about unique errors.
+    // This makes sure the errors of a single check() call are unique.
+    // TODO: get rid of this? This is forwarded to another ErrorLogger which is also doing this
+    if (!mErrorList.emplace(std::move(errmsg)).second)
+        return;
+
+    if (!mSettings.buildDir.empty())
+        mAnalyzerInformation.reportErr(msg);
 
     if (!mSettings.nofail.isSuppressed(errorMessage) && !mSettings.nomsg.isSuppressed(errorMessage)) {
         mExitCode = 1;
     }
-
-    mErrorList.push_back(errmsg);
 
     mErrorLogger.reportErr(msg);
     // check if plistOutput should be populated and the current output file is open and the error is not suppressed
@@ -1625,7 +1666,7 @@ void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
     Preprocessor::getErrorMessages(&errorlogger, &s);
 }
 
-void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
+void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
 {
     std::string allIncludes;
     for (const std::string &inc : fileSettings.includePaths) {
@@ -1635,9 +1676,9 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
     const std::string allDefines = getDefinesFlags(fileSettings.defines);
 
 #ifdef _WIN32
-    const char exe[] = "clang-tidy.exe";
+    constexpr char exe[] = "clang-tidy.exe";
 #else
-    const char exe[] = "clang-tidy";
+    constexpr char exe[] = "clang-tidy";
 #endif
 
     const std::string args = "-quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename + "\" -- " + allIncludes + allDefines;
@@ -1716,16 +1757,17 @@ bool CppCheck::analyseWholeProgram()
             ctu.nestedCalls.insert(ctu.nestedCalls.end(), fi2->nestedCalls.cbegin(), fi2->nestedCalls.cend());
         }
     }
+    // cppcheck-suppress shadowFunction - TODO: fix this
     for (Check *check : Check::instances())
         errors |= check->analyseWholeProgram(&ctu, mFileInfo, mSettings, *this);  // TODO: ctu
     return errors && (mExitCode > 0);
 }
 
-void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<std::string, std::size_t> &files)
+void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings)
 {
-    executeAddonsWholeProgram(files);
+    executeAddonsWholeProgram(files); // TODO: pass FileSettings
     if (buildDir.empty()) {
-        removeCtuInfoFiles(files);
+        removeCtuInfoFiles(files, fileSettings);
         return;
     }
     if (mSettings.checks.isEnabled(Checks::unusedFunction))
@@ -1766,6 +1808,7 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
                 ctuFileInfo.loadFromXml(e);
                 continue;
             }
+            // cppcheck-suppress shadowFunction - TODO: fix this
             for (const Check *check : Check::instances()) {
                 if (checkClassAttr == check->name())
                     fileInfoList.push_back(check->loadFileInfoFromXml(e));
@@ -1777,6 +1820,7 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
     CTU::maxCtuDepth = mSettings.maxCtuDepth;
 
     // Analyse the tokens
+    // cppcheck-suppress shadowFunction - TODO: fix this
     for (Check *check : Check::instances())
         check->analyseWholeProgram(&ctuFileInfo, fileInfoList, mSettings, *this);
 
@@ -1789,7 +1833,7 @@ bool CppCheck::isUnusedFunctionCheckEnabled() const
     return (mSettings.useSingleJob() && mSettings.checks.isEnabled(Checks::unusedFunction));
 }
 
-void CppCheck::removeCtuInfoFiles(const std::map<std::string, std::size_t> &files)
+void CppCheck::removeCtuInfoFiles(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings)
 {
     if (mSettings.buildDir.empty()) {
         for (const auto& f: files) {
@@ -1797,7 +1841,7 @@ void CppCheck::removeCtuInfoFiles(const std::map<std::string, std::size_t> &file
             const std::string &ctuInfoFileName = getCtuInfoFileName(dumpFileName);
             std::remove(ctuInfoFileName.c_str());
         }
-        for (const auto& fs: mSettings.project.fileSettings) {
+        for (const auto& fs: fileSettings) {
             const std::string &dumpFileName = getDumpFileName(mSettings, fs.filename);
             const std::string &ctuInfoFileName = getCtuInfoFileName(dumpFileName);
             std::remove(ctuInfoFileName.c_str());

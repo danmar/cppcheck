@@ -87,6 +87,11 @@ static std::string parseAddonInfo(AddonInfo& addoninfo, const picojson::value &j
         return "";
     }
 
+    if (!obj.count("script") || !obj["script"].is<std::string>())
+    {
+        return "Loading " + fileName + " failed. script must be set to a string value.";
+    }
+
     return addoninfo.getAddonInfo(obj["script"].get<std::string>(), exename);
 }
 

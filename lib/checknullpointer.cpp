@@ -514,6 +514,7 @@ static std::string arithmeticTypeString(const Token *tok)
 
 void CheckNullPointer::pointerArithmeticError(const Token* tok, const ValueFlow::Value *value, bool inconclusive)
 {
+    // cppcheck-suppress shadowFunction - TODO: fix this
     std::string arithmetic = arithmeticTypeString(tok);
     std::string errmsg;
     if (tok && tok->str()[0] == '-') {
@@ -532,6 +533,7 @@ void CheckNullPointer::pointerArithmeticError(const Token* tok, const ValueFlow:
 
 void CheckNullPointer::redundantConditionWarning(const Token* tok, const ValueFlow::Value *value, const Token *condition, bool inconclusive)
 {
+    // cppcheck-suppress shadowFunction - TODO: fix this
     std::string arithmetic = arithmeticTypeString(tok);
     std::string errmsg;
     if (tok && tok->str()[0] == '-') {
@@ -549,15 +551,21 @@ void CheckNullPointer::redundantConditionWarning(const Token* tok, const ValueFl
 }
 
 // NOLINTNEXTLINE(readability-non-const-parameter) - used as callback so we need to preserve the signature
-static bool isUnsafeUsage(const Check *check, const Token *vartok, MathLib::bigint *value)
+static bool isUnsafeUsage(const Settings *settings, const Token *vartok, MathLib::bigint *value)
 {
     (void)value;
-    const CheckNullPointer *checkNullPointer = dynamic_cast<const CheckNullPointer *>(check);
     bool unknown = false;
-    return checkNullPointer && checkNullPointer->isPointerDeRef(vartok, unknown);
+    return CheckNullPointer::isPointerDeRef(vartok, unknown, settings);
 }
 
-namespace {
+// a Clang-built executable will crash when using the anonymous MyFileInfo later on - so put it in a unique namespace for now
+// see https://trac.cppcheck.net/ticket/12108 for more details
+#ifdef __clang__
+inline namespace CheckNullPointer_internal
+#else
+namespace
+#endif
+{
     /* data for multifile checking */
     class MyFileInfo : public Check::FileInfo {
     public:
@@ -572,11 +580,9 @@ namespace {
     };
 }
 
-
 Check::FileInfo *CheckNullPointer::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
-    CheckNullPointer check(tokenizer, settings, nullptr);
-    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, &check, ::isUnsafeUsage);
+    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, isUnsafeUsage);
     if (unsafeUsage.empty())
         return nullptr;
 

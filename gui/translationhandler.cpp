@@ -32,7 +32,7 @@
 
 
 // Provide own translations for standard buttons. This (garbage) code is needed to enforce them to appear in .ts files even after "lupdate gui.pro"
-static UNUSED void unused()
+UNUSED static void unused()
 {
     Q_UNUSED(QT_TRANSLATE_NOOP("QPlatformTheme", "OK"))
     Q_UNUSED(QT_TRANSLATE_NOOP("QPlatformTheme", "Cancel"))

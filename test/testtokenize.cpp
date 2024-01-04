@@ -171,6 +171,7 @@ private:
         TEST_CASE(removeParentheses25);      // daca@home - a=(b,c)
         TEST_CASE(removeParentheses26);      // Ticket #8875 a[0](0)
         TEST_CASE(removeParentheses27);
+        TEST_CASE(removeParentheses28);      // #12164 - don't remove parentheses in '(expr1) ? (expr2) : (expr3);'
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -272,6 +273,7 @@ private:
         TEST_CASE(cpp14template); // Ticket #6708
 
         TEST_CASE(arraySize);
+        TEST_CASE(arraySizeAfterValueFlow);
 
         TEST_CASE(labels);
         TEST_CASE(simplifyInitVar);
@@ -1546,8 +1548,47 @@ private:
 
 
     void simplifyExternC() {
-        ASSERT_EQUALS("int foo ( ) ;", tokenizeAndStringify("extern \"C\" int foo();"));
-        ASSERT_EQUALS("int foo ( ) ;", tokenizeAndStringify("extern \"C\" { int foo(); }"));
+        const char expected[] = "int foo ( ) ;";
+        {
+            const char code[] = "extern \"C\" int foo();";
+            // tokenize..
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            // Expected result..
+            ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+            ASSERT(tokenizer.tokens()->next()->isExternC());
+        }
+        {
+            const char code[] = "extern \"C\" { int foo(); }";
+            // tokenize..
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            // Expected result..
+            ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+            ASSERT(tokenizer.tokens()->next()->isExternC());
+        }
+        {
+            const char code[] = "extern \"C++\" int foo();";
+            // tokenize..
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            // Expected result..
+            ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+            ASSERT(!tokenizer.tokens()->next()->isExternC());
+        }
+        {
+            const char code[] = "extern \"C++\" { int foo(); }";
+            // tokenize..
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            // Expected result..
+            ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+            ASSERT(!tokenizer.tokens()->next()->isExternC());
+        }
     }
 
     void simplifyFunctionParameters() {
@@ -1808,7 +1849,7 @@ private:
     void removeParentheses15() {
         ASSERT_EQUALS("a = b ? c : 123 ;", tokenizeAndStringify("a = b ? c : (123);"));
         ASSERT_EQUALS("a = b ? c : ( 123 + 456 ) ;", tokenizeAndStringify("a = b ? c : ((123)+(456));"));
-        ASSERT_EQUALS("a = b ? 123 : c ;", tokenizeAndStringify("a = b ? (123) : c;"));
+        ASSERT_EQUALS("a = b ? ( 123 ) : c ;", tokenizeAndStringify("a = b ? (123) : c;"));
 
         // #4316
         ASSERT_EQUALS("a = b ? c : ( d = 1 , 0 ) ;", tokenizeAndStringify("a = b ? c : (d=1,0);"));
@@ -1914,6 +1955,12 @@ private:
                                   "void f ( S s , int j ) {\n"
                                   "g ( j , ( decltype ( s . i ) ) j * s . i ) ;\n"
                                   "}";
+        ASSERT_EQUALS(exp, tokenizeAndStringify(code));
+    }
+
+    void removeParentheses28() { // Ticket #12164
+        static char code[] = "temp1 = (value > 100U) ? (value+100U) : (value-50U);";
+        static const char exp[] = "temp1 = ( value > 100U ) ? ( value + 100U ) : ( value - 50U ) ;";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code));
     }
 
@@ -4154,6 +4201,11 @@ private:
         ASSERT_EQUALS("; int a [ 5 ] = { 1 , 2 , [ 2 ] = 5 , 3 , 4 } ;", tokenizeAndStringify(";int a[]={ 1, 2, [2] = 5, 3, 4 };"));
         ASSERT_EQUALS("; int a [ ] = { 1 , 2 , [ x ] = 5 , 3 , 4 } ;", tokenizeAndStringify(";int a[]={ 1, 2, [x] = 5, 3, 4 };"));
         ASSERT_EQUALS("; const char c [ 4 ] = \"abc\" ;", tokenizeAndStringify(";const char c[] = { \"abc\" };"));
+    }
+
+    void arraySizeAfterValueFlow() {
+        const char code[] = "enum {X=10}; int a[] = {[X]=1};";
+        ASSERT_EQUALS("enum Anonymous0 { X = 10 } ; int a [ 11 ] = { [ X ] = 1 } ;", tokenizeAndStringify(code));
     }
 
     void labels() {
@@ -6477,6 +6529,7 @@ private:
 
         ASSERT_EQUALS("", testAst("void f(enum E* var){}"));
         ASSERT_EQUALS("", testAst("void f(enum E*& var){}"));
+        ASSERT_EQUALS("", testAst("void f(bool& var){}"));
     }
 
     void astunaryop() const { // unary operators
@@ -6731,6 +6784,19 @@ private:
                                              "                if (c) {}\n"
                                              "            }\n"
                                              "            break;\n"
+                                             "        }\n"
+                                             "    });\n"
+                                             "}\n"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("struct A { A(int) {} };\n"
+                                             "void g(void (*)(int));\n"
+                                             "void f() {\n"
+                                             "    g([](int i) {\n"
+                                             "        switch (i) {\n"
+                                             "        case static_cast<int>(1): {\n"
+                                             "            A a(i);\n"
+                                             "            if (1) {}\n"
+                                             "        }\n"
                                              "        }\n"
                                              "    });\n"
                                              "}\n"));

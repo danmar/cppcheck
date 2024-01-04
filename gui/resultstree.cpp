@@ -60,25 +60,25 @@
 #include <QVariantMap>
 #include <Qt>
 
-static const char COLUMN[] = "column";
-static const char CWE[] = "cwe";
-static const char ERRORID[] = "id";
-static const char FILENAME[] = "file";
-static const char FILE0[] = "file0";
-static const char HASH[] = "hash";
-static const char HIDE[] = "hide";
-static const char INCONCLUSIVE[] = "inconclusive";
-static const char LINE[] = "line";
-static const char MESSAGE[] = "message";
-static const char SEVERITY[] = "severity";
-static const char SINCEDATE[] = "sinceDate";
-static const char SYMBOLNAMES[] = "symbolNames";
-static const char SUMMARY[] = "summary";
-static const char TAGS[] = "tags";
+static constexpr char COLUMN[] = "column";
+static constexpr char CWE[] = "cwe";
+static constexpr char ERRORID[] = "id";
+static constexpr char FILENAME[] = "file";
+static constexpr char FILE0[] = "file0";
+static constexpr char HASH[] = "hash";
+static constexpr char HIDE[] = "hide";
+static constexpr char INCONCLUSIVE[] = "inconclusive";
+static constexpr char LINE[] = "line";
+static constexpr char MESSAGE[] = "message";
+static constexpr char SEVERITY[] = "severity";
+static constexpr char SINCEDATE[] = "sinceDate";
+static constexpr char SYMBOLNAMES[] = "symbolNames";
+static constexpr char SUMMARY[] = "summary";
+static constexpr char TAGS[] = "tags";
 
 // These must match column headers given in ResultsTree::translate()
-static const int COLUMN_SINCE_DATE = 6;
-static const int COLUMN_TAGS       = 7;
+static constexpr int COLUMN_SINCE_DATE = 6;
+static constexpr int COLUMN_TAGS       = 7;
 
 ResultsTree::ResultsTree(QWidget * parent) :
     QTreeView(parent)
@@ -342,6 +342,9 @@ QString ResultsTree::severityToTranslatedString(Severity severity)
 
     case Severity::debug:
         return tr("debug");
+
+    case Severity::internal:
+        return tr("internal");
 
     case Severity::none:
     default:
@@ -643,8 +646,8 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             }
 
             //Create an action for the application
-            QAction *recheckSelectedFiles   = new QAction(tr("Recheck"), &menu);
-            QAction *copy                   = new QAction(tr("Copy"), &menu);
+            QAction *recheckAction          = new QAction(tr("Recheck"), &menu);
+            QAction *copyAction             = new QAction(tr("Copy"), &menu);
             QAction *hide                   = new QAction(tr("Hide"), &menu);
             QAction *hideallid              = new QAction(tr("Hide all with id"), &menu);
             QAction *opencontainingfolder   = new QAction(tr("Open containing folder"), &menu);
@@ -654,26 +657,31 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 opencontainingfolder->setDisabled(true);
             }
             if (mThread->isChecking())
-                recheckSelectedFiles->setDisabled(true);
+                recheckAction->setDisabled(true);
             else
-                recheckSelectedFiles->setDisabled(false);
+                recheckAction->setDisabled(false);
 
-            menu.addAction(recheckSelectedFiles);
+            menu.addAction(recheckAction);
             menu.addSeparator();
-            menu.addAction(copy);
+            menu.addAction(copyAction);
             menu.addSeparator();
             menu.addAction(hide);
             menu.addAction(hideallid);
 
             QAction *suppress = new QAction(tr("Suppress selected id(s)"), &menu);
+            {
+                QVariantMap data = mContextItem->data().toMap();
+                const QString messageId = data[ERRORID].toString();
+                suppress->setEnabled(!ErrorLogger::isCriticalErrorId(messageId.toStdString()));
+            }
             menu.addAction(suppress);
             connect(suppress, &QAction::triggered, this, &ResultsTree::suppressSelectedIds);
 
             menu.addSeparator();
             menu.addAction(opencontainingfolder);
 
-            connect(recheckSelectedFiles, SIGNAL(triggered()), this, SLOT(recheckSelectedFiles()));
-            connect(copy, SIGNAL(triggered()), this, SLOT(copy()));
+            connect(recheckAction, SIGNAL(triggered()), this, SLOT(recheckAction()));
+            connect(copyAction, SIGNAL(triggered()), this, SLOT(copyAction()));
             connect(hide, SIGNAL(triggered()), this, SLOT(hideResult()));
             connect(hideallid, SIGNAL(triggered()), this, SLOT(hideAllIdResult()));
             connect(opencontainingfolder, SIGNAL(triggered()), this, SLOT(openContainingFolder()));
@@ -808,7 +816,7 @@ void ResultsTree::startApplication(const QStandardItem *target, int application)
         }
 #endif // Q_OS_WIN
 
-        const QString cmdLine = QString("%1 %2").arg(program).arg(params);
+        const QString cmdLine = QString("%1 %2").arg(program, params);
 
         // this is reported as deprecated in Qt 5.15.2 but no longer in Qt 6
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))

@@ -19,6 +19,20 @@
 #include <atlstr.h>
 #include <string>
 
+void resourceLeak_OpenThread(const DWORD dwDesiredAccess, const BOOL bInheritHandle, const DWORD dwThreadId)
+{
+    HANDLE proc = OpenThread(dwDesiredAccess, bInheritHandle, dwThreadId);
+    if (proc != INVALID_HANDLE_VALUE) {}
+    // cppcheck-suppress resourceLeak
+}
+
+void resourceLeak_OpenProcess(const DWORD dwDesiredAccess, const BOOL bInheritHandle, const DWORD dwProcessId)
+{
+    HANDLE proc = OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId);
+    if (proc != INVALID_HANDLE_VALUE) {}
+    // cppcheck-suppress resourceLeak
+}
+
 /// https://learn.microsoft.com/en-us/windows/console/flushconsoleinputbuffer
 BOOL unreachableCode_FlushConsoleInputBuffer(int &val)
 {
@@ -576,6 +590,20 @@ void memleak_LocalAlloc()
     (void)LocalFlags(pszBuf);
     LocalLock(pszBuf);
     LocalUnlock(pszBuf);
+    // cppcheck-suppress memleak
+}
+
+void memleak_dupenv_s() // #10646
+{
+    char* pValue;
+    size_t len;
+    errno_t err = _dupenv_s(&pValue, &len, "pathext");
+    if (err) return -1;
+    printf("pathext = %s\n", pValue);
+    free(pValue);
+    err = _dupenv_s(&pValue, &len, "nonexistentvariable");
+    if (err) return -1;
+    printf("nonexistentvariable = %s\n", pValue);
     // cppcheck-suppress memleak
 }
 

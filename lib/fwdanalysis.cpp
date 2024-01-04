@@ -317,6 +317,7 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *
                 // ({ .. })
                 if (hasGccCompoundStatement(parent->astParent()->astOperand2()))
                     return Result(Result::Type::BAILOUT);
+                // cppcheck-suppress shadowFunction - TODO: fix this
                 const bool reassign = isSameExpression(mCpp, false, expr, parent, mLibrary, false, false, nullptr);
                 if (reassign)
                     return Result(Result::Type::WRITE, parent->astParent());
@@ -499,6 +500,8 @@ bool FwdAnalysis::unusedValue(const Token *expr, const Token *startToken, const 
 bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) const
 {
     if (expr->isUnaryOp("*") && !expr->astOperand1()->isUnaryOp("&"))
+        return true;
+    if (Token::simpleMatch(expr, ". *"))
         return true;
 
     const bool macro = false;

@@ -2,7 +2,10 @@
 # Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
 name: include-what-you-use
 
-on: workflow_dispatch
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -83,7 +86,7 @@ jobs:
       - name: iwyu_tool
         run: |
           PWD=$(pwd)
-          iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --max_line_length=1024 -Xiwyu --comment_style=long -Xiwyu --quoted_includes_first -Xiwyu --update_comments -Xiwyu --mapping_file=$PWD/qt5.imp > iwyu.log
+          iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --max_line_length=1024 -Xiwyu --comment_style=long -Xiwyu --quoted_includes_first -Xiwyu --update_comments -Xiwyu --mapping_file=$PWD/qt5.imp -I/usr/lib/clang/17/include > iwyu.log
 
       - uses: actions/upload-artifact@v3
         if: success() || failure()

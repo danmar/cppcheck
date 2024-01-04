@@ -38,7 +38,6 @@ class Token;
 class TemplateSimplifier;
 class ErrorLogger;
 class Preprocessor;
-class VariableMap;
 enum class Severity;
 
 namespace simplecpp {
@@ -164,6 +163,7 @@ public:
 
     /** Insert array size where it isn't given */
     void arraySize();
+    void arraySizeAfterValueFlow(); // cppcheck-suppress functionConst
 
     /** Simplify labels and 'case|default' syntaxes.
      */
@@ -268,7 +268,7 @@ public:
 
     /**
      */
-    bool isMemberFunction(const Token *openParen) const;
+    static bool isMemberFunction(const Token *openParen);
 
     /**
      */
@@ -365,16 +365,7 @@ public:
      * @param endsWith    string after function head
      * @return token matching with endsWith if syntax seems to be a function head else nullptr
      */
-    const Token * isFunctionHead(const Token *tok, const std::string &endsWith) const;
-
-    /**
-     * is token pointing at function head?
-     * @param tok         A '(' or ')' token in a possible function head
-     * @param endsWith    string after function head
-     * @param cpp         c++ code
-     * @return token matching with endsWith if syntax seems to be a function head else nullptr
-     */
-    static const Token * isFunctionHead(const Token *tok, const std::string &endsWith, bool cpp);
+    static const Token * isFunctionHead(const Token *tok, const std::string &endsWith);
 
     const Preprocessor *getPreprocessor() const {
         assert(mPreprocessor);
@@ -579,21 +570,12 @@ private:
 
     void unsupportedTypedef(const Token *tok) const;
 
-    void setVarIdClassDeclaration(Token* const startToken, // cppcheck-suppress functionConst // has side effects
-                                  VariableMap& variableMap,
-                                  const nonneg int scopeStartVarId,
-                                  std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers);
-
-    void setVarIdStructMembers(Token **tok1,
-                               std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
-                               nonneg int &varId) const;
-
-    void setVarIdClassFunction(const std::string &classname, // cppcheck-suppress functionConst // has side effects
-                               Token * const startToken,
-                               const Token * const endToken,
-                               const std::map<std::string, nonneg int> &varlist,
-                               std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
-                               nonneg int &varId_);
+    static void setVarIdClassFunction(const std::string &classname,
+                                      Token * const startToken,
+                                      const Token * const endToken,
+                                      const std::map<std::string, nonneg int> &varlist,
+                                      std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
+                                      nonneg int &varId_);
 
     /**
      * Output list of unknown types.
@@ -603,7 +585,7 @@ private:
     /** Find end of SQL (or PL/SQL) block */
     static const Token *findSQLBlockEnd(const Token *tokSQLStart);
 
-    bool operatorEnd(const Token * tok) const;
+    static bool operatorEnd(const Token * tok);
 
 public:
     const SymbolDatabase *getSymbolDatabase() const {

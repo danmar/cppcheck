@@ -1296,14 +1296,14 @@ private:
     }
 
     void checkIgnoredReturnValue() {
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def version=\"2\">\n"
-                               "  <function name=\"mystrcmp,foo::mystrcmp\">\n"
-                               "    <use-retval/>\n"
-                               "    <arg nr=\"1\"/>\n"
-                               "    <arg nr=\"2\"/>\n"
-                               "  </function>\n"
-                               "</def>";
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def version=\"2\">\n"
+                                   "  <function name=\"mystrcmp,foo::mystrcmp\">\n"
+                                   "    <use-retval/>\n"
+                                   "    <arg nr=\"1\"/>\n"
+                                   "    <arg nr=\"2\"/>\n"
+                                   "  </function>\n"
+                                   "</def>";
         const Settings settings2 = settingsBuilder().severity(Severity::warning).libraryxml(xmldata, sizeof(xmldata)).build();
 
         check("void foo() {\n"

@@ -51,6 +51,8 @@ ScopedFile::ScopedFile(std::string name, const std::string &content, std::string
     , mFullPath(Path::join(mPath, mName))
 {
     if (!mPath.empty() && mPath != Path::getCurrentPath()) {
+        if (Path::isDirectory(mPath))
+            throw std::runtime_error("ScopedFile(" + mFullPath + ") - directory already exists");
 #ifdef _WIN32
         if (!CreateDirectoryA(mPath.c_str(), nullptr))
             throw std::runtime_error("ScopedFile(" + mFullPath + ") - could not create directory");
@@ -59,6 +61,9 @@ ScopedFile::ScopedFile(std::string name, const std::string &content, std::string
             throw std::runtime_error("ScopedFile(" + mFullPath + ") - could not create directory");
 #endif
     }
+
+    if (Path::isFile(mFullPath))
+        throw std::runtime_error("ScopedFile(" + mFullPath + ") - file already exists");
 
     std::ofstream of(mFullPath);
     if (!of.is_open())
@@ -75,7 +80,7 @@ ScopedFile::~ScopedFile() {
         // TODO: remove all files
         // TODO: simplify the function call
         // hack to be able to delete *.plist output files
-        std::map<std::string, std::size_t> files;
+        std::list<std::pair<std::string, std::size_t>> files;
         const std::string res = FileLister::addFiles(files, mPath, {".plist"}, false, PathMatch({}));
         if (!res.empty()) {
             std::cout << "ScopedFile(" << mPath + ") - generating file list failed (" << res << ")" << std::endl;

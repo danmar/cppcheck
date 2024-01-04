@@ -36,24 +36,24 @@
 #include <sstream>
 #include <utility>
 
-#include <tinyxml2.h>
+#include "xml.h"
 //---------------------------------------------------------------------------
 
-static const char ATTR_CALL_ID[] = "call-id";
-static const char ATTR_CALL_FUNCNAME[] = "call-funcname";
-static const char ATTR_CALL_ARGNR[] = "call-argnr";
-static const char ATTR_CALL_ARGEXPR[] = "call-argexpr";
-static const char ATTR_CALL_ARGVALUETYPE[] = "call-argvaluetype";
-static const char ATTR_CALL_ARGVALUE[] = "call-argvalue";
-static const char ATTR_WARNING[] = "warning";
-static const char ATTR_LOC_FILENAME[] = "file";
-static const char ATTR_LOC_LINENR[] = "line";
-static const char ATTR_LOC_COLUMN[] = "col";
-static const char ATTR_INFO[] = "info";
-static const char ATTR_MY_ID[] = "my-id";
-static const char ATTR_MY_ARGNR[] = "my-argnr";
-static const char ATTR_MY_ARGNAME[] = "my-argname";
-static const char ATTR_VALUE[] = "value";
+static constexpr char ATTR_CALL_ID[] = "call-id";
+static constexpr char ATTR_CALL_FUNCNAME[] = "call-funcname";
+static constexpr char ATTR_CALL_ARGNR[] = "call-argnr";
+static constexpr char ATTR_CALL_ARGEXPR[] = "call-argexpr";
+static constexpr char ATTR_CALL_ARGVALUETYPE[] = "call-argvaluetype";
+static constexpr char ATTR_CALL_ARGVALUE[] = "call-argvalue";
+static constexpr char ATTR_WARNING[] = "warning";
+static constexpr char ATTR_LOC_FILENAME[] = "file";
+static constexpr char ATTR_LOC_LINENR[] = "line";
+static constexpr char ATTR_LOC_COLUMN[] = "col";
+static constexpr char ATTR_INFO[] = "info";
+static constexpr char ATTR_MY_ID[] = "my-id";
+static constexpr char ATTR_MY_ARGNR[] = "my-argnr";
+static constexpr char ATTR_MY_ARGNAME[] = "my-argname";
+static constexpr char ATTR_VALUE[] = "value";
 
 int CTU::maxCtuDepth = 2;
 
@@ -436,7 +436,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
     return fileInfo;
 }
 
-static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(const Tokenizer *tokenizer, const Settings *settings, const Scope *scope, int argnr, const Check *check, bool (*isUnsafeUsage)(const Check *check, const Token *argtok, MathLib::bigint *value))
+static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(const Tokenizer *tokenizer, const Settings *settings, const Scope *scope, int argnr, bool (*isUnsafeUsage)(const Settings *settings, const Token *argtok, MathLib::bigint *value))
 {
     std::list<std::pair<const Token *, MathLib::bigint>> ret;
     const Variable * const argvar = scope->function->getArgumentVar(argnr);
@@ -460,7 +460,7 @@ static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(co
         if (tok2->variable() != argvar)
             continue;
         MathLib::bigint value = 0;
-        if (!isUnsafeUsage(check, tok2, &value))
+        if (!isUnsafeUsage(settings, tok2, &value))
             return ret; // TODO: Is this a read? then continue..
         ret.emplace_back(tok2, value);
         return ret;
@@ -468,7 +468,7 @@ static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(co
     return ret;
 }
 
-std::list<CTU::FileInfo::UnsafeUsage> CTU::getUnsafeUsage(const Tokenizer *tokenizer, const Settings *settings, const Check *check, bool (*isUnsafeUsage)(const Check *check, const Token *argtok, MathLib::bigint *value))
+std::list<CTU::FileInfo::UnsafeUsage> CTU::getUnsafeUsage(const Tokenizer *tokenizer, const Settings *settings, bool (*isUnsafeUsage)(const Settings *settings, const Token *argtok, MathLib::bigint *value))
 {
     std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
 
@@ -482,7 +482,7 @@ std::list<CTU::FileInfo::UnsafeUsage> CTU::getUnsafeUsage(const Tokenizer *token
 
         // "Unsafe" functions unconditionally reads data before it is written..
         for (int argnr = 0; argnr < function->argCount(); ++argnr) {
-            for (const std::pair<const Token *, MathLib::bigint> &v : getUnsafeFunction(tokenizer, settings, &scope, argnr, check, isUnsafeUsage)) {
+            for (const std::pair<const Token *, MathLib::bigint> &v : getUnsafeFunction(tokenizer, settings, &scope, argnr, isUnsafeUsage)) {
                 const Token *tok = v.first;
                 const MathLib::bigint val = v.second;
                 unsafeUsage.emplace_back(CTU::getFunctionId(tokenizer, function), argnr+1, tok->str(), CTU::FileInfo::Location(tokenizer,tok), val);

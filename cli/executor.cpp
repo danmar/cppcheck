@@ -24,22 +24,34 @@
 #include "suppressions.h"
 
 #include <algorithm>
+#include <cassert>
 #include <sstream> // IWYU pragma: keep
 #include <utility>
 
-Executor::Executor(const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
-    : mFiles(files), mSettings(settings), mSuppressions(suppressions), mErrorLogger(errorLogger)
-{}
+struct FileSettings;
 
+Executor::Executor(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
+    : mFiles(files), mFileSettings(fileSettings), mSettings(settings), mSuppressions(suppressions), mErrorLogger(errorLogger)
+{
+    // the two inputs may only be used exclusively
+    assert(!(!files.empty() && !fileSettings.empty()));
+}
+
+// TODO: this logic is duplicated in CppCheck::reportErr()
 bool Executor::hasToLog(const ErrorMessage &msg)
 {
+    if (!mSettings.library.reportErrors(msg.file0))
+        return false;
+
     if (!mSuppressions.isSuppressed(msg, {}))
     {
+        // TODO: there should be no need for verbose and default messages here
         std::string errmsg = msg.toString(mSettings.verbose);
+        if (errmsg.empty())
+            return false;
 
         std::lock_guard<std::mutex> lg(mErrorListSync);
-        if (std::find(mErrorList.cbegin(), mErrorList.cend(), errmsg) == mErrorList.cend()) {
-            mErrorList.emplace_back(std::move(errmsg));
+        if (mErrorList.emplace(std::move(errmsg)).second) {
             return true;
         }
     }

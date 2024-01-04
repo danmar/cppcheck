@@ -116,6 +116,21 @@ const Token* findExpression(const nonneg int exprid,
                             const std::function<bool(const Token*)>& pred);
 const Token* findExpression(const Token* start, const nonneg int exprid);
 
+template<class T, class OuputIterator, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+void astFlattenCopy(T* tok, const char* op, OuputIterator out, nonneg int depth = 100)
+{
+    --depth;
+    if (!tok || depth < 0)
+        return;
+    if (tok->str() == op) {
+        astFlattenCopy(tok->astOperand1(), op, out, depth);
+        astFlattenCopy(tok->astOperand2(), op, out, depth);
+    } else {
+        *out = tok;
+        ++out;
+    }
+}
+
 std::vector<const Token*> astFlatten(const Token* tok, const char* op);
 std::vector<Token*> astFlatten(Token* tok, const char* op);
 
@@ -123,6 +138,7 @@ nonneg int astCount(const Token* tok, const char* op, int depth = 100);
 
 bool astHasToken(const Token* root, const Token * tok);
 
+bool astHasExpr(const Token* tok, nonneg int exprid);
 bool astHasVar(const Token * tok, nonneg int varid);
 
 bool astIsPrimitive(const Token* tok);
@@ -417,6 +433,8 @@ bool isLikelyStreamRead(bool cpp, const Token *op);
 bool isCPPCast(const Token* tok);
 
 bool isConstVarExpression(const Token* tok, std::function<bool(const Token*)> skipPredicate = nullptr);
+
+bool isLeafDot(const Token* tok);
 
 enum class ExprUsage { None, NotUsed, PassedByReference, Used, Inconclusive };
 

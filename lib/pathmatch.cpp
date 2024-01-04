@@ -38,6 +38,7 @@ bool PathMatch::match(const std::string &path) const
     if (path.empty())
         return false;
 
+    // TODO: align the exclusion logic with ImportProject::ignorePaths()
     for (std::vector<std::string>::const_iterator i = mExcludedPaths.cbegin(); i != mExcludedPaths.cend(); ++i) {
         const std::string excludedPath((!Path::isAbsolute(path) && Path::isAbsolute(*i)) ? Path::getRelativePath(*i, mWorkingDirectory) : *i);
 

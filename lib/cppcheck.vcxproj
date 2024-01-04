@@ -132,6 +132,7 @@
     <ClInclude Include="ctu.h" />
     <ClInclude Include="errorlogger.h" />
     <ClInclude Include="errortypes.h" />
+    <ClInclude Include="filesettings.h" />
     <ClInclude Include="findtoken.h" />
     <ClInclude Include="forwardanalyzer.h" />
     <ClInclude Include="fwdanalysis.h" />
@@ -166,6 +167,7 @@
     <ClInclude Include="valueptr.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="vfvalue.h" />
+    <ClInclude Include="xml.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="version.rc" />

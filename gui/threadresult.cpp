@@ -22,6 +22,7 @@
 #include "erroritem.h"
 #include "errorlogger.h"
 #include "errortypes.h"
+#include "importproject.h"
 
 #include <numeric>
 
@@ -68,13 +69,13 @@ QString ThreadResult::getNextFile()
     return mFiles.takeFirst();
 }
 
-ImportProject::FileSettings ThreadResult::getNextFileSettings()
+FileSettings ThreadResult::getNextFileSettings()
 {
     std::lock_guard<std::mutex> locker(mutex);
     if (mFileSettings.empty()) {
-        return ImportProject::FileSettings();
+        return FileSettings();
     }
-    const ImportProject::FileSettings fs = mFileSettings.front();
+    const FileSettings fs = mFileSettings.front();
     mFileSettings.pop_front();
     return fs;
 }
@@ -106,7 +107,7 @@ void ThreadResult::setProject(const ImportProject &prj)
 
     // Determine the total size of all of the files to check, so that we can
     // show an accurate progress estimate
-    mMaxProgress = std::accumulate(prj.fileSettings.begin(), prj.fileSettings.end(), quint64{ 0 }, [](quint64 v, const ImportProject::FileSettings& fs) {
+    mMaxProgress = std::accumulate(prj.fileSettings.begin(), prj.fileSettings.end(), quint64{ 0 }, [](quint64 v, const FileSettings& fs) {
         return v + QFile(QString::fromStdString(fs.filename)).size();
     });
 }

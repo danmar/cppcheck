@@ -24,6 +24,7 @@
 #include <fstream> // IWYU pragma: keep
 #include <functional>
 #include <iostream>
+#include <list>
 #include <map>
 #include <set>
 #include <string>
@@ -139,16 +140,16 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
 
 static std::string getCppFiles(std::vector<std::string> &files, const std::string &path, bool recursive)
 {
-    std::map<std::string,size_t> filemap;
+    std::list<std::pair<std::string, std::size_t>> filelist;
     const std::set<std::string> extra;
     const std::vector<std::string> masks;
     const PathMatch matcher(masks);
-    std::string err = FileLister::addFiles(filemap, path, extra, recursive, matcher);
+    std::string err = FileLister::addFiles(filelist, path, extra, recursive, matcher);
     if (!err.empty())
         return err;
 
     // add *.cpp files to the "files" vector..
-    for (const std::pair<const std::string&, size_t> file : filemap) {
+    for (const std::pair<const std::string&, size_t> file : filelist) {
         if (endsWith(file.first, ".cpp"))
             files.push_back(file.first);
     }
@@ -326,6 +327,7 @@ int main(int argc, char **argv)
     libfiles_h.emplace_back("analyzer.h");
     libfiles_h.emplace_back("calculate.h");
     libfiles_h.emplace_back("config.h");
+    libfiles_h.emplace_back("filesettings.h");
     libfiles_h.emplace_back("findtoken.h");
     libfiles_h.emplace_back("json.h");
     libfiles_h.emplace_back("precompiled.h");
@@ -334,6 +336,7 @@ int main(int argc, char **argv)
     libfiles_h.emplace_back("tokenrange.h");
     libfiles_h.emplace_back("valueptr.h");
     libfiles_h.emplace_back("version.h");
+    libfiles_h.emplace_back("xml.h");
     std::sort(libfiles_h.begin(), libfiles_h.end());
 
     std::vector<std::string> clifiles_h;
@@ -430,7 +433,7 @@ int main(int argc, char **argv)
         }
     }
 
-    static const char makefile[] = "Makefile";
+    static constexpr char makefile[] = "Makefile";
     std::ofstream fout(makefile, std::ios_base::trunc);
     if (!fout.is_open()) {
         std::cerr << "An error occurred while trying to open "
@@ -629,7 +632,7 @@ int main(int argc, char **argv)
          << "    ifeq ($(PCRE_CONFIG),)\n"
          << "        $(error Did not find pcre-config)\n"
          << "    endif\n"
-         << "    override CXXFLAGS += -DHAVE_RULES -DTIXML_USE_STL $(shell $(PCRE_CONFIG) --cflags)\n"
+         << "    override CXXFLAGS += -DHAVE_RULES $(shell $(PCRE_CONFIG) --cflags)\n"
          << "    ifdef LIBS\n"
          << "        LIBS += $(shell $(PCRE_CONFIG) --libs)\n"
          << "    else\n"
@@ -671,7 +674,7 @@ int main(int argc, char **argv)
     fout << "dmake:\ttools/dmake.o cli/filelister.o $(libcppdir)/pathmatch.o $(libcppdir)/path.o $(libcppdir)/utils.o externals/simplecpp/simplecpp.o\n";
     fout << "\t$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)\n\n";
     fout << "run-dmake: dmake\n";
-    fout << "\t./dmake\n\n";
+    fout << "\t./dmake" << (release ? " --release" : "") << "\n\n"; // Make CI in release builds happy
     fout << "clean:\n";
     fout << "\trm -f build/*.cpp build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1\n\n";
     fout << "man:\tman/cppcheck.1\n\n";

@@ -33,7 +33,10 @@
 #include <sstream> // IWYU pragma: keep
 #include <utility>
 
-#include <tinyxml2.h>
+#include "xml.h"
+
+static const char ID_UNUSEDFUNCTION[] = "unusedFunction";
+static const char ID_CHECKERSREPORT[] = "checkersReport";
 
 Suppressions::ErrorMessage Suppressions::ErrorMessage::fromErrorMessage(const ::ErrorMessage &msg, const std::set<std::string> &macroNames)
 {
@@ -58,9 +61,10 @@ static bool isAcceptedErrorIdChar(char c)
     case '_':
     case '-':
     case '.':
+    case '*':
         return true;
     default:
-        return std::isalnum(c);
+        return c > 0 && std::isalnum(c);
     }
 }
 
@@ -255,14 +259,12 @@ std::string Suppressions::addSuppression(Suppressions::Suppression suppression)
     if (suppression.errorId.empty() && suppression.hash == 0)
         return "Failed to add suppression. No id.";
 
-    if (suppression.errorId != "*") {
-        for (std::string::size_type pos = 0; pos < suppression.errorId.length(); ++pos) {
-            if (suppression.errorId[pos] < 0 || !isAcceptedErrorIdChar(suppression.errorId[pos])) {
-                return "Failed to add suppression. Invalid id \"" + suppression.errorId + "\"";
-            }
-            if (pos == 0 && std::isdigit(suppression.errorId[pos])) {
-                return "Failed to add suppression. Invalid id \"" + suppression.errorId + "\"";
-            }
+    for (std::string::size_type pos = 0; pos < suppression.errorId.length(); ++pos) {
+        if (!isAcceptedErrorIdChar(suppression.errorId[pos])) {
+            return "Failed to add suppression. Invalid id \"" + suppression.errorId + "\"";
+        }
+        if (pos == 0 && std::isdigit(suppression.errorId[pos])) {
+            return "Failed to add suppression. Invalid id \"" + suppression.errorId + "\"";
         }
     }
 
@@ -419,6 +421,19 @@ bool Suppressions::isSuppressed(const Suppressions::ErrorMessage &errmsg, bool g
     return returnValue;
 }
 
+bool Suppressions::isSuppressedExplicitly(const Suppressions::ErrorMessage &errmsg, bool global)
+{
+    for (Suppression &s : mSuppressions) {
+        if (!global && !s.isLocal())
+            continue;
+        if (s.errorId != errmsg.errorId) // Error id must match exactly
+            continue;
+        if (s.isMatch(errmsg))
+            return true;
+    }
+    return false;
+}
+
 bool Suppressions::isSuppressed(const ::ErrorMessage &errmsg, const std::set<std::string>& macroNames)
 {
     if (mSuppressions.empty())
@@ -456,7 +471,9 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions
             continue;
         if (s.hash > 0)
             continue;
-        if (!unusedFunctionChecking && s.errorId == "unusedFunction")
+        if (s.errorId == ID_CHECKERSREPORT)
+            continue;
+        if (!unusedFunctionChecking && s.errorId == ID_UNUSEDFUNCTION)
             continue;
         if (tmpFile.empty() || !s.isLocal() || s.fileName != tmpFile)
             continue;
@@ -473,7 +490,9 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedGlobalSuppression
             continue;
         if (s.hash > 0)
             continue;
-        if (!unusedFunctionChecking && s.errorId == "unusedFunction")
+        if (!unusedFunctionChecking && s.errorId == ID_UNUSEDFUNCTION)
+            continue;
+        if (s.errorId == ID_CHECKERSREPORT)
             continue;
         if (s.isLocal())
             continue;

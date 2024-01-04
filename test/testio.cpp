@@ -549,6 +549,14 @@ private:
               "    fclose(f[1]);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #12236
+        check("void f() {\n"
+              "    FILE* f = fopen(\"abc\", \"r\");\n"
+              "    decltype(fclose(f)) y;\n"
+              "    y = fclose(f);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void fileIOwithoutPositioning() {

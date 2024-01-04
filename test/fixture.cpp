@@ -32,10 +32,7 @@
 #include <sstream>
 #include <string>
 
-#include <tinyxml2.h>
-
-std::ostringstream errout;
-std::ostringstream output;
+#include "xml.h"
 
 /**
  * TestRegistry
@@ -48,23 +45,25 @@ namespace {
     };
 }
 using TestSet = std::set<TestFixture*, CompareFixtures>;
-class TestRegistry {
-    TestSet _tests;
-public:
+namespace {
+    class TestRegistry {
+        TestSet _tests;
+    public:
 
-    static TestRegistry &theInstance() {
-        static TestRegistry testreg;
-        return testreg;
-    }
+        static TestRegistry &theInstance() {
+            static TestRegistry testreg;
+            return testreg;
+        }
 
-    void addTest(TestFixture *t) {
-        _tests.insert(t);
-    }
+        void addTest(TestFixture *t) {
+            _tests.insert(t);
+        }
 
-    const TestSet &tests() const {
-        return _tests;
-    }
-};
+        const TestSet &tests() const {
+            return _tests;
+        }
+    };
+}
 
 
 
@@ -107,10 +106,28 @@ bool TestFixture::prepareTest(const char testname[])
         } else {
             std::cout << classname << "::" << mTestname << std::endl;
         }
-        teardownTestInternal();
         return true;
     }
     return false;
+}
+
+void TestFixture::teardownTest()
+{
+    teardownTestInternal();
+
+    // TODO: enable
+    /*
+        {
+        const std::string s = errout.str();
+        if (!s.empty())
+            throw std::runtime_error("unconsumed ErrorLogger err: " + s);
+        }
+     */
+    {
+        const std::string s = output_str();
+        if (!s.empty())
+            throw std::runtime_error("unconsumed ErrorLogger out: " + s);
+    }
 }
 
 std::string TestFixture::getLocationStr(const char * const filename, const unsigned int linenr) const
@@ -378,14 +395,15 @@ std::size_t TestFixture::runTests(const options& args)
 
 void TestFixture::reportOut(const std::string & outmsg, Color /*c*/)
 {
-    output << outmsg << std::endl;
+    mOutput << outmsg << std::endl;
 }
 
 void TestFixture::reportErr(const ErrorMessage &msg)
 {
-    if (msg.severity == Severity::none && msg.id == "logChecker")
+    if (msg.severity == Severity::internal)
         return;
     const std::string errormessage(msg.toString(mVerbose, mTemplateFormat, mTemplateLocation));
+    // TODO: remove the unique error handling?
     if (errout.str().find(errormessage) == std::string::npos)
         errout << errormessage << std::endl;
 }

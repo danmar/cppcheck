@@ -140,6 +140,8 @@ private:
         TEST_CASE(nullpointer99); // #10602
         TEST_CASE(nullpointer100);        // #11636
         TEST_CASE(nullpointer101);        // #11382
+        TEST_CASE(nullpointer102);
+        TEST_CASE(nullpointer103);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -990,7 +992,7 @@ private:
 
         check("struct S { struct T { char c; } *p; };\n" // #6541
               "char f(S* s) { return s->p ? 'a' : s->p->c; }\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (warning) Either the condition 's->p' is redundant or there is possible null pointer dereference: p.\n",
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (warning) Either the condition 's->p' is redundant or there is possible null pointer dereference: s->p.\n",
                       errout.str());
     }
 
@@ -2657,6 +2659,26 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:9] -> [test.cpp:8]: (warning) Either the condition 'ptr->y!=nullptr' is redundant or there is possible null pointer dereference: ptr->y.\n",
             errout.str());
+
+        check("bool argsMatch(const Token *first, const Token *second) {\n" // #6145
+              "    if (first->str() == \")\")\n"
+              "        return true;\n"
+              "    else if (first->next()->str() == \"=\")\n"
+              "        first = first->nextArgument();\n"
+              "    else if (second->next()->str() == \"=\") {\n"
+              "        second = second->nextArgument();\n"
+              "        if (second)\n"
+              "            second = second->tokAt(-2);\n"
+              "        if (!first || !second) {\n"
+              "            return !first && !second;\n"
+              "        }\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:10] -> [test.cpp:2]: (warning) Either the condition '!first' is redundant or there is possible null pointer dereference: first.\n"
+            "[test.cpp:10] -> [test.cpp:4]: (warning) Either the condition '!first' is redundant or there is possible null pointer dereference: first.\n",
+            errout.str());
     }
 
     void nullpointer90() // #6098
@@ -2841,6 +2863,50 @@ private:
               "    if (derived && !is_valid(*derived) || base == nullptr) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer102()
+    {
+        check("struct S { std::string str; };\n" // #11534
+              "struct T { S s; };\n"
+              "struct U { T t[1]; };\n"
+              "void f(const T& t, const U& u, std::string& str) {\n"
+              "    if (str.empty())\n"
+              "        str = t.s.str;\n"
+              "    else\n"
+              "        str = u.t[0].s.str;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer103()
+    {
+        check("struct S {\n" // #10572
+              "    int f();\n"
+              "    int* m_P{};\n"
+              "};\n"
+              "int S::f() {\n"
+              "    if (!m_P) {\n"
+              "        try {\n"
+              "            m_P = new int(1);\n"
+              "        }\n"
+              "        catch (...) {\n"
+              "            return 0;\n"
+              "        }\n"
+              "    }\n"
+              "    return *m_P;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int* p, const int* q) {\n" // #11873
+              "    if (*q == -1)\n"
+              "        *p = 0;\n"
+              "}\n"
+              "void g() {\n"
+              "    int x = -2;\n"
+              "    f(nullptr, &x);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("", "[test.cpp:3]: (warning) Possible null pointer dereference: p\n", errout.str());
     }
 
     void nullpointer_addressOf() { // address of

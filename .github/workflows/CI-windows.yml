@@ -28,7 +28,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-2019, windows-2022]
-        qt_ver: [5.15.2, 6.2.4, 6.5.3]
+        qt_ver: [5.15.2, 6.6.0]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -202,6 +202,4 @@ jobs:
           rem python3 ..\naming.py --var='[a-z].*' --function='[a-z].*' naming_test.c.dump || exit /b !errorlevel!
           ..\..\cppcheck --dump naming_test.cpp || exit /b !errorlevel!
           python3 ..\naming.py --var='[a-z].*' --function='[a-z].*' naming_test.cpp.dump || exit /b !errorlevel!
-          ..\..\cppcheck --dump namingng_test.c || exit /b !errorlevel!
-          python3 ..\namingng.py --configfile ..\naming.json --verify namingng_test.c.dump || exit /b !errorlevel!
 

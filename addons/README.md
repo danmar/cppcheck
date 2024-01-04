@@ -33,8 +33,10 @@ Addons are scripts that analyses Cppcheck dump files to check compatibility with
   Helper class for reading Cppcheck dump files within an addon.
 - misra_9.py
   Implementation of the MISRA 9.x rules used by `misra` addon. 
-- naming.json
+- namingng.config.json
   Example configuration for `namingng` addon. 
+- namingng.json
+  Example JSON file that can be used using --addon=namingng.json, referring to namingng.py and namingng.config.json
 - ROS_naming.json
   Example configuration for the `namingng` addon enforcing the [ROS naming convention for C++ ](http://wiki.ros.org/CppStyleGuide#Files).
 - runaddon.py

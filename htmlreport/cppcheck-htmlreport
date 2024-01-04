@@ -408,8 +408,8 @@ def filter_bar(enabled):
     ,'\n        | '
     ,''.join([filter_button(enabled, tool, 'toggleTool') for tool in ['cppcheck', 'clang-tidy']])
     ,'\n        | '
-    ,'\n        <label class="severityHeader">File: <input type="text" oninput="filterFile(this.value)"/></label>'
-    ,'\n        <label class="severityHeader">Filter: <input type="text" oninput="filterText(this.value)"/></label>'
+    ,'\n        <label class="severityHeader">File: <input type="search" oninput="filterFile(this.value)"/></label>'
+    ,'\n        <label class="severityHeader">Filter: <input type="search" oninput="filterText(this.value)"/></label>'
     ,'\n      </div>\n'])
 
 def git_blame(errors, path, file, blame_options):
