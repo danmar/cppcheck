@@ -1622,13 +1622,14 @@ private:
         }
 
         {
-            const char code[] = "struct B {};\n" // #12141
+            const char code[] = "struct B {};\n"
                                 "typedef const struct B CB;\n"
                                 "namespace N {\n"
                                 "    struct D : public CB {};\n"
-                                "}\n";
+                                "}\n"
+                                "CB cb;\n";
 
-            const char expected[] = "struct B { } ; namespace N { struct D : public B { } ; }";
+            const char expected[] = "struct B { } ; namespace N { struct D : public B { } ; } const struct B cb ;";
             ASSERT_EQUALS(expected, tok(code));
             ASSERT_EQUALS("", errout.str());
         }

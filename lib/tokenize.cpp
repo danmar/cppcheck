@@ -822,10 +822,13 @@ namespace {
             }
 
             // don't add class|struct|union in inheritance list
-            if (Token::Match(tok->previous(), "public|private|protected") && Token::Match(mRangeType.first, "const| class|struct|union"))
-                mRangeType.first = mRangeType.first->tokAt(mRangeType.first->str() == "const" ? 2 : 1);
+            auto rangeType = mRangeType;
+            if (Token::Match(tok->previous(), "public|private|protected")) {
+                while (Token::Match(rangeType.first, "const|class|struct|union"))
+                    rangeType.first = rangeType.first->next();
+            }
 
-            Token* const tok2 = insertTokens(tok, mRangeType);
+            Token* const tok2 = insertTokens(tok, rangeType);
             Token* const tok3 = insertTokens(tok2, mRangeTypeQualifiers);
 
             Token *after = tok3;
