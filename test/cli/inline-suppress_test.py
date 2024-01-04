@@ -172,6 +172,7 @@ def __test_compile_commands_unused_function_suppression(tmpdir, use_j):
     assert ret == 0, stdout
 
 
+@pytest.mark.xfail(strict=True)  # TODO: need to propagate back inline suppressions
 def test_compile_commands_unused_function_suppression(tmpdir):
     __test_compile_commands_unused_function_suppression(tmpdir, False)
 
@@ -351,3 +352,63 @@ def test_unused_function_unmatched_build_dir(tmpdir):
 @pytest.mark.xfail(strict=True)
 def test_unused_function_unmatched_build_dir_j(tmpdir):
     __test_unused_function_unmatched_build_dir(tmpdir, ['-j2'])
+
+
+# no error as inline suppressions are currently not being propagated back
+def test_duplicate(tmpdir):
+    args = [
+        '-q',
+        '--template=simple',
+        '--cppcheck-build-dir={}'.format(tmpdir),
+        '--enable=all',
+        '--inline-suppr',
+        'proj-inline-suppress/duplicate.cpp'
+    ]
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    lines = stderr.splitlines()
+    assert lines == []
+    assert stdout == ''
+    assert ret == 0, stdout
+
+
+# no error as inline suppressions are currently not being propagated back
+def test_duplicate_cmd(tmpdir):
+    args = [
+        '-q',
+        '--template=simple',
+        '--cppcheck-build-dir={}'.format(tmpdir),
+        '--enable=all',
+        '--inline-suppr',
+        '--suppress=unreadVariable',
+        'proj-inline-suppress/4.c'
+    ]
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    lines = stderr.splitlines()
+    assert lines == []
+    assert stdout == ''
+    assert ret == 0, stdout
+
+
+# no error as inline suppressions are currently not being propagated back
+def test_duplicate_file(tmpdir):
+    suppr_file = os.path.join(tmpdir, 'suppressions')
+    with open(suppr_file, 'wt') as f:
+        f.write('''unreadVariable''')
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--cppcheck-build-dir={}'.format(tmpdir),
+        '--enable=all',
+        '--inline-suppr',
+        '--suppressions-list={}'.format(suppr_file),
+        'proj-inline-suppress/4.c'
+    ]
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    lines = stderr.splitlines()
+    assert lines == []
+    assert stdout == ''
+    assert ret == 0, stdout
