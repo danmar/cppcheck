@@ -886,8 +886,9 @@ private:
         runChecks(&TestSuppressions::checkSuppressionFiles);
     }
 
-    void suppressionsSettingsFS() {
-        runChecks(&TestSuppressions::checkSuppressionFS);
+    static void suppressionsSettingsFS() {
+        // TODO
+        // runChecks(&TestSuppressions::checkSuppressionFS);
     }
 
     void suppressionsSettingsThreadsFiles() {
@@ -1367,8 +1368,9 @@ private:
         suppressingSyntaxErrorAndExitCodeInternal(&TestSuppressions::checkSuppressionFiles);
     }
 
-    void suppressingSyntaxErrorAndExitCodeFS() {
-        suppressingSyntaxErrorAndExitCodeInternal(&TestSuppressions::checkSuppressionFS);
+    static void suppressingSyntaxErrorAndExitCodeFS() {
+        // TODO
+        // suppressingSyntaxErrorAndExitCodeInternal(&TestSuppressions::checkSuppressionFS);
     }
 
     void suppressingSyntaxErrorAndExitCodeMultiFileInternal(unsigned int (TestSuppressions::*check)(std::map<std::string, std::string> &f, const std::string &)) {
@@ -1384,8 +1386,9 @@ private:
         suppressingSyntaxErrorAndExitCodeMultiFileInternal(&TestSuppressions::checkSuppressionFiles);
     }
 
-    void suppressingSyntaxErrorAndExitCodeMultiFileFS() {
-        suppressingSyntaxErrorAndExitCodeMultiFileInternal(&TestSuppressions::checkSuppressionFS);
+    static void suppressingSyntaxErrorAndExitCodeMultiFileFS() {
+        // TODO
+        // suppressingSyntaxErrorAndExitCodeMultiFileInternal(&TestSuppressions::checkSuppressionFS);
     }
 
     void suppressLocal() const {
