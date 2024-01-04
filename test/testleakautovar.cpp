@@ -3000,6 +3000,7 @@ private:
         TEST_CASE(deallocuse2);
         TEST_CASE(fclose_false_positive); // #9575
         TEST_CASE(strcpy_false_negative);
+        TEST_CASE(doubleFree);
     }
 
     void returnedValue() { // #9298
@@ -3044,6 +3045,15 @@ private:
               "    strcpy(buf, \"123\");\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: buf\n", errout.str());
+    }
+
+    void doubleFree() {
+        check("void f(char* p) {\n"
+              "    free(p);\n"
+              "    printf(\"%s\", strdup(\"abc\"));\n"
+              "    free(p);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
