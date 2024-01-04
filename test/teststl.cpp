@@ -312,7 +312,10 @@ private:
                     "  std::string s;\n"
                     "  x = s.begin() + 1;\n"
                     "}");
-        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in expression 's.begin()+1' because 's' is empty.\n", errout.str());
+        ASSERT_EQUALS(
+            "test.cpp:3:error:Out of bounds access in expression 's.begin()+1' because 's' is empty.\n"
+            "test.cpp:3:error:Out of bounds access in expression 's.begin()+1' because 's' is empty.\n",   // duplicate
+            errout.str());
 
         checkNormal("void f(int x) {\n"
                     "  std::string s;\n"
@@ -1720,7 +1723,8 @@ private:
               "    {\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers 'l1' and 'l2' are used together.\n",
+        ASSERT_EQUALS("[test.cpp:5]: (error) Iterators of different containers 'l1' and 'l2' are used together.\n"
+                      "[test.cpp:5]: (error) Iterators of different containers 'l1' and 'l2' are used together.\n", // duplicate
                       errout.str());
     }
 
@@ -3723,7 +3727,11 @@ private:
                            "    if (f.x.size() == 0) {}\n"
                            "}";
         check(code, false, Standards::CPP03);
-        ASSERT_EQUALS("[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n"
+            "[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n",   // duplicate
+            errout.str());
+
         check(code);
         ASSERT_EQUALS("", errout.str());
     }
@@ -3741,7 +3749,10 @@ private:
                            "    if (zzz->x.size() > 0) { }\n"
                            "}";
         check(code, false, Standards::CPP03);
-        ASSERT_EQUALS("[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n"
+            "[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n",   // duplicate
+            errout.str());
 
         code = "namespace N {\n"
                "    class Zzz {\n"
@@ -3755,7 +3766,11 @@ private:
                "    if (zzz->x.size() > 0) { }\n"
                "}";
         check(code, false, Standards::CPP03);
-        ASSERT_EQUALS("[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n"
+            "[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n",   // duplicate
+            errout.str());
+
         check(code);
         ASSERT_EQUALS("", errout.str());
     }

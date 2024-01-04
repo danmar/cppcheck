@@ -3431,7 +3431,10 @@ private:
               "    char* s = 0;\n"
               "    printf(\"%s\", s);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference: s\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (error) Null pointer dereference: s\n"
+            "[test.cpp:3]: (error) Null pointer dereference\n",
+            errout.str());
 
         check("void f() {\n"
               "    char *s = 0;\n"
@@ -3453,7 +3456,10 @@ private:
               "    char* s = 0;\n"
               "    printf(\"%u%s\", 123, s);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference: s\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (error) Null pointer dereference: s\n"
+            "[test.cpp:3]: (error) Null pointer dereference\n",
+            errout.str());
 
 
         check("void f() {\n"
@@ -3496,12 +3502,18 @@ private:
         check("void f(char* s) {\n"
               "    sscanf(s, \"%s\", 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (error) Null pointer dereference\n"
+            "[test.cpp:2]: (error) Null pointer dereference\n",   // duplicate
+            errout.str());
 
         check("void f() {\n"
               "    scanf(\"%d\", 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (error) Null pointer dereference\n"
+            "[test.cpp:2]: (error) Null pointer dereference\n",   // duplicate
+            errout.str());
 
         check("void f(char* foo) {\n"
               "    char location[200];\n"
@@ -3520,7 +3532,11 @@ private:
               "    int* iVal = 0;\n"
               "    sscanf(dummy, \"%d\", iVal);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference: iVal\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (error) Null pointer dereference: iVal\n"
+            "[test.cpp:3]: (error) Null pointer dereference\n"
+            "[test.cpp:3]: (error) Null pointer dereference\n",   // duplicate
+            errout.str());
 
         check("void f(char *dummy) {\n"
               "    int* iVal;\n"
@@ -3537,7 +3553,10 @@ private:
         check("void f(char* dummy) {\n"
               "    sscanf(dummy, \"%*d%u\", 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (error) Null pointer dereference\n"
+            "[test.cpp:2]: (error) Null pointer dereference\n",   // duplicate
+            errout.str());
     }
 
     void nullpointer_in_return() {
@@ -4258,7 +4277,10 @@ private:
         check("void f(char *p = 0) {\n"
               "    std::cout << p ? *p : 0;\n" // Due to operator precedence, this is equivalent to: (std::cout << p) ? *p : 0;
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Possible null pointer dereference if the default parameter value is used: p\n"
+            "[test.cpp:2]: (warning) Possible null pointer dereference if the default parameter value is used: p\n",   // duplicate
+            errout.str());
 
         check("void f(int *p = 0) {\n"
               "    std::cout << (p ? *p : 0);\n"
