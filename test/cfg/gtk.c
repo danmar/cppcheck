@@ -230,6 +230,25 @@ void g_assert_test()
     g_assert(a = 5);
 }
 
+void g_assert_true_false_test()
+{
+    gboolean t = TRUE;
+    gboolean f = FALSE;
+    g_assert_true(t);
+    // cppcheck-suppress checkLibraryNoReturn
+    g_assert_false(f);
+}
+
+void g_assert_null_nonnull_test()
+{
+    char * gpt = g_malloc(1);
+    g_assert_nonnull(gpt);
+    gpt[0] = 0;
+    g_free(gpt);
+    // cppcheck-suppress checkLibraryNoReturn
+    g_assert_null(NULL);
+}
+
 void g_print_test()
 {
     // cppcheck-suppress invalidPrintfArgType_uint
