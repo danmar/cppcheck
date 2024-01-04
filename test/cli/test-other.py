@@ -347,7 +347,10 @@ def test_addon_namingng(tmpdir):
     "RE_NAMESPACE": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
     "RE_VARNAME": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
     "RE_PUBLIC_MEMBER_VARIABLE": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
-    "RE_PRIVATE_MEMBER_VARIABLE": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
+    "RE_PRIVATE_MEMBER_VARIABLE": {
+        ".*_tmp\\Z":[true,"illegal suffix _tmp"],
+        "priv_.*\\Z":[false,"required prefix priv_ missing"]
+    },
     "RE_GLOBAL_VARNAME": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
     "RE_FUNCTIONNAME": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
     "include_guard": {
@@ -410,10 +413,12 @@ static int _invalid_static_global;
 
 class _clz {
 public:
-    _clz() : _invalid_public(0), _invalid_private(0) { }
+    _clz() : _invalid_public(0), _invalid_private(0), priv_good(0), priv_bad_tmp(0) { }
     int _invalid_public;
 private:
     char _invalid_private;
+    int priv_good;
+    int priv_bad_tmp;
 };
 
 namespace _invalid_namespace { }
@@ -480,15 +485,18 @@ namespace _invalid_namespace { }
         'static int _invalid_static_global;',
         '           ^',
         '{}:20:5: style: Class Constructor _clz violates naming convention [namingng-namingConvention]'.format(test_file),
-        '    _clz() : _invalid_public(0), _invalid_private(0) { }',
+        '    _clz() : _invalid_public(0), _invalid_private(0), priv_good(0), priv_bad_tmp(0) { }',
         '    ^',
         '{}:21:9: style: Public member variable _invalid_public violates naming convention [namingng-namingConvention]'.format(test_file),
         '    int _invalid_public;',
         '        ^',
-        '{}:23:10: style: Private member variable _invalid_private violates naming convention [namingng-namingConvention]'.format(test_file),
+        '{}:23:10: style: Private member variable _invalid_private violates naming convention: required prefix priv_ missing [namingng-namingConvention]'.format(test_file),
         '    char _invalid_private;',
         '         ^',
-        '{}:26:11: style: Namespace _invalid_namespace violates naming convention [namingng-namingConvention]'.format(test_file),
+        '{}:25:9: style: Private member variable priv_bad_tmp violates naming convention: illegal suffix _tmp [namingng-namingConvention]'.format(test_file),
+        '    int priv_bad_tmp;',
+        '        ^',
+        '{}:28:11: style: Namespace _invalid_namespace violates naming convention [namingng-namingConvention]'.format(test_file),
         'namespace _invalid_namespace { }',
         '          ^',
     ]
@@ -518,7 +526,12 @@ def test_addon_namingng_config(tmpdir):
     "RE_NAMESPACE": false,
     "RE_VARNAME": ["+bad pattern","[a-z]_good_pattern\\Z","(parentheses?"],
     "RE_PRIVATE_MEMBER_VARIABLE": "[a-z][a-z0-9_]*[a-z0-9]\\Z",
-    "RE_PUBLIC_MEMBER_VARIABLE": "[a-z][a-z0-9_]*[a-z0-9]\\Z",
+    "RE_PUBLIC_MEMBER_VARIABLE": {
+        "tmp_.*\\Z":[true,"illegal prefix tmp_"],
+        "bad_.*\\Z":true,
+        "public_.*\\Z":[false],
+        "pub_.*\\Z":[0,"required prefix pub_ missing"]
+    },
     "RE_GLOBAL_VARNAME": "[a-z][a-z0-9_]*[a-z0-9]\\Z",
     "RE_FUNCTIONNAME": "[a-z][a-z0-9_]*[a-z0-9]\\Z",
     "RE_CLASS_NAME": "[a-z][a-z0-9_]*[a-z0-9]\\Z",
@@ -561,17 +574,19 @@ def test_addon_namingng_config(tmpdir):
     assert lines == [
         "Output:",
         "config error: RE_FILE must be list (not str), or not set",
-        "config error: RE_NAMESPACE must be list (not bool), or not set",
+        "config error: RE_NAMESPACE must be list or dict (not bool), or not set",
         "config error: include_guard must be dict (not bool), or not set",
         "config error: item '+bad pattern' of 'RE_VARNAME' is not a valid regular expression: nothing to repeat at position 0",
         "config error: item '(parentheses?' of 'RE_VARNAME' is not a valid regular expression: missing ), unterminated subpattern at position 0",
         "config error: var_prefixes must be dict (not list), or not set",
-        "config error: RE_PRIVATE_MEMBER_VARIABLE must be list (not str), or not set",
-        "config error: RE_PUBLIC_MEMBER_VARIABLE must be list (not str), or not set",
-        "config error: RE_GLOBAL_VARNAME must be list (not str), or not set",
-        "config error: RE_FUNCTIONNAME must be list (not str), or not set",
+        "config error: RE_PRIVATE_MEMBER_VARIABLE must be list or dict (not str), or not set",
+        "config error: item 'bad_.*\\Z' of 'RE_PUBLIC_MEMBER_VARIABLE' must be an array [bool,string]",
+        "config error: item 'public_.*\\Z' of 'RE_PUBLIC_MEMBER_VARIABLE' must be an array [bool,string]",
+        "config error: item 'pub_.*\\Z' of 'RE_PUBLIC_MEMBER_VARIABLE' must be an array [bool,string]",
+        "config error: RE_GLOBAL_VARNAME must be list or dict (not str), or not set",
+        "config error: RE_FUNCTIONNAME must be list or dict (not str), or not set",
         "config error: function_prefixes must be dict (not bool), or not set",
-        "config error: RE_CLASS_NAME must be list (not str), or not set",
+        "config error: RE_CLASS_NAME must be list or dict (not str), or not set",
         "config error: skip_one_char_variables must be bool (not str), or not set",
         "config error: unknown config key 'RE_VAR_NAME' [internalError]",
         "",

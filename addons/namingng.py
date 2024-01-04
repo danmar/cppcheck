@@ -55,16 +55,35 @@ def configError(error,fatal=True):
     if fatal:
         sys.exit(1)
 
+def validateConfigREs(list_or_dict,json_key):
+    have_error = False
+    for item in list_or_dict:
+        try:
+            re.compile(item)
+        except re.error as err:
+            configError("item '%s' of '%s' is not a valid regular expression: %s"%(item,json_key,err),fatal=False)
+            have_error = True
+            continue
+        if not isinstance(list_or_dict,dict):
+            continue
+        # item is actually a dict key; check value
+        value = list_or_dict[item]
+        if (not isinstance(value,list) or len(value) != 2
+                or not isinstance(value[0],bool) or not isinstance(value[1],str)):
+            configError("item '%s' of '%s' must be an array [bool,string]"%(item,json_key),fatal=False)
+            have_error = True
+
+    return have_error
+
 def loadConfig(configfile):
     if not os.path.exists(configfile):
         configError("cannot find config file '%s'"%configfile)
 
     try:
         with open(configfile) as fh:
-            try:
-                data = json.load(fh)
-            except json.JSONDecodeError as e:
-                configError("error parsing config file as JSON at line %d: %s"%(e.lineno,e.msg))
+            data = json.load(fh)
+    except json.JSONDecodeError as e:
+        configError("error parsing config file as JSON at line %d: %s"%(e.lineno,e.msg))
     except Exception as e:
         configError("error opening config file '%s': %s"%(configfile,e))
 
@@ -82,18 +101,18 @@ def loadConfig(configfile):
     config = Config()
 
     mapping = {
-        'file':                     ('RE_FILE', list),
-        'namespace':                ('RE_NAMESPACE', list),
-        'include_guard':            ('include_guard', dict),
-        'variable':                 ('RE_VARNAME', list),
-        'variable_prefixes':        ('var_prefixes', dict, {}),
-        'private_member':           ('RE_PRIVATE_MEMBER_VARIABLE', list),
-        'public_member':            ('RE_PUBLIC_MEMBER_VARIABLE', list),
-        'global_variable':          ('RE_GLOBAL_VARNAME', list),
-        'function_name':            ('RE_FUNCTIONNAME', list),
-        'function_prefixes':        ('function_prefixes', dict, {}),
-        'class_name':               ('RE_CLASS_NAME', list),
-        'skip_one_char_variables':  ('skip_one_char_variables', bool),
+        'file':                     ('RE_FILE', (list,)),
+        'namespace':                ('RE_NAMESPACE', (list,dict)),
+        'include_guard':            ('include_guard', (dict,)),
+        'variable':                 ('RE_VARNAME', (list,dict)),
+        'variable_prefixes':        ('var_prefixes', (dict,), {}),
+        'private_member':           ('RE_PRIVATE_MEMBER_VARIABLE', (list,dict)),
+        'public_member':            ('RE_PUBLIC_MEMBER_VARIABLE', (list,dict)),
+        'global_variable':          ('RE_GLOBAL_VARNAME', (list,dict)),
+        'function_name':            ('RE_FUNCTIONNAME', (list,dict)),
+        'function_prefixes':        ('function_prefixes', (dict,), {}),
+        'class_name':               ('RE_CLASS_NAME', (list,dict)),
+        'skip_one_char_variables':  ('skip_one_char_variables', (bool,)),
     }
 
     # parse defined keys and store as members of config object
@@ -103,23 +122,18 @@ def loadConfig(configfile):
         default = None if len(opts)<3 else opts[2]
 
         value = data.pop(json_key,default)
-        if value is not None and not isinstance(value, req_type):
-            req_typename = req_type.__name__
+        if value is not None and type(value) not in req_type:
+            req_typename = ' or '.join([tp.__name__ for tp in req_type])
             got_typename = type(value).__name__
             configError('%s must be %s (not %s), or not set'%(json_key,req_typename,got_typename),fatal=False)
             have_error = True
             continue
 
-        if req_type == list and value is not None:
-            # type 'list' implies a list of regular expressions
-            for item in value:
-                try:
-                    re.compile(item)
-                except re.error as err:
-                    configError("item '%s' of '%s' is not a valid regular expression: %s"%(item,json_key,err),fatal=False)
-                    have_error = True
-            if have_error:
-                continue
+        # type list implies that this is either a list of REs or a dict with RE keys
+        if list in req_type and value is not None:
+            re_error = validateConfigREs(value,json_key)
+            if re_error:
+                have_error = True
 
         setattr(config,key,value)
 
@@ -135,34 +149,19 @@ def loadConfig(configfile):
     return config
 
 
-def checkTrueRegex(data, expr, msg):
-    res = re.match(expr, data.str)
-    if res:
-        reportNamingError(data,msg)
-
-
-def checkFalseRegex(data, expr, msg):
-    res = re.match(expr, data.str)
-    if not res:
-        reportNamingError(data,msg)
-
-
 def evalExpr(conf, exp, mockToken, msgType):
-    if isinstance(conf, dict):
-        if conf[exp][0]:
-            msg = msgType + ' ' + mockToken.str + ' violates naming convention : ' + conf[exp][1]
-            checkTrueRegex(mockToken, exp, msg)
-        elif ~conf[exp][0]:
-            msg = msgType + ' ' + mockToken.str + ' violates naming convention : ' + conf[exp][1]
-            checkFalseRegex(mockToken, exp, msg)
-        else:
-            msg = msgType + ' ' + mockToken.str + ' violates naming convention : ' + conf[exp][0]
-            checkFalseRegex(mockToken, exp, msg)
-    else:
-        msg = msgType + ' ' + mockToken.str + ' violates naming convention'
-        checkFalseRegex(mockToken, exp, msg)
+    report_as_error = False
+    msg = msgType + ' ' + mockToken.str + ' violates naming convention'
 
-def check_include_guard_name(conf_include_guard,cfg,directive):
+    if isinstance(conf, dict):
+        report_as_error = conf[exp][0]
+        msg += ': ' + conf[exp][1]
+
+    res = re.match(exp,mockToken.str)
+    if bool(res) == report_as_error:
+        reportNamingError(mockToken,msg)
+
+def check_include_guard_name(conf,directive):
     parts = directive.str.split()
     if len(parts) != 2:
         msg = 'syntax error'
@@ -172,9 +171,9 @@ def check_include_guard_name(conf_include_guard,cfg,directive):
     guard_column = 1+directive.str.find(guard_name)
 
     filename = directive.file
-    if conf_include_guard.get('input','path') == 'basename':
+    if conf.include_guard.get('input','path') == 'basename':
         filename = os.path.basename(filename)
-    use_case = conf_include_guard.get('case','upper')
+    use_case = conf.include_guard.get('case','upper')
     if use_case == 'upper':
         filename = filename.upper()
     elif use_case == 'lower':
@@ -186,20 +185,20 @@ def check_include_guard_name(conf_include_guard,cfg,directive):
         sys.exit(1)
 
     barename = re.sub('[^A-Za-z0-9]','_',filename).strip('_')
-    expect_guard_name = conf_include_guard.get('prefix','') + barename + conf_include_guard.get('suffix','')
+    expect_guard_name = conf.include_guard.get('prefix','') + barename + conf.include_guard.get('suffix','')
     if expect_guard_name != guard_name:
         msg = 'include guard naming violation; %s != %s'%(guard_name,expect_guard_name)
         reportNamingError(directive,msg,'includeGuardName',column=guard_column)
 
     return guard_name,guard_column
 
-def check_include_guard(conf_include_guard,cfg,unguarded_include_files):
+def check_include_guards(conf,cfg,unguarded_include_files):
     # Scan for '#ifndef FILE_H' as the first directive, in the first N lines.
     # Then test whether the next directive #defines the found name.
     # Various tests are done:
     # - check include guards for their naming and consistency
     # - test whether include guards are in place
-    max_linenr = conf_include_guard.get('max_linenr', 5)
+    max_linenr = conf.include_guard.get('max_linenr', 5)
 
     def report(directive,msg,errorId,column=0):
         reportNamingError(directive,msg,errorId,column=column)
@@ -225,20 +224,19 @@ def check_include_guard(conf_include_guard,cfg,unguarded_include_files):
             continue
 
         if directive.linenr > max_linenr:
-            if phase == 0 and conf_include_guard.get('required',1):
+            if phase == 0 and conf.include_guard.get('required',1):
                 report(directive,'include guard not found before line %d'%max_linenr,'includeGuardMissing')
-                pass
             phase = -1
             continue
 
         if phase == 0:
             # looking for '#ifndef FILE_H'
             if not directive.str.startswith('#ifndef'):
-                if conf_include_guard.get('required',1):
+                if conf.include_guard.get('required',1):
                     report(directive,'first preprocessor directive should be include guard #ifndef','includeGuardMissing')
                 phase = -1
                 continue
-            guard_name,guard_column = check_include_guard_name(conf_include_guard,cfg,directive)
+            guard_name,guard_column = check_include_guard_name(conf,directive)
             if guard_name == None:
                 phase = -1
                 continue
@@ -265,7 +263,7 @@ def check_include_guard(conf_include_guard,cfg,unguarded_include_files):
     if pending_ifndef:
         report_pending_ifndef(pending_ifndef,guard_column)
 
-def process(dumpfiles, configfile, debugprint=False):
+def process(dumpfiles, configfile):
     conf = loadConfig(configfile)
 
     if conf.include_guard:
@@ -278,140 +276,135 @@ def process(dumpfiles, configfile, debugprint=False):
         if not args.cli:
             print('Checking ' + afile + '...')
         data = cppcheckdata.CppcheckData(afile)
+        process_data(conf,data)
 
-        # Check File naming
-        if conf.file:
-            for source_file in data.files:
-                basename = os.path.basename(source_file)
-                good = False
-                for exp in conf.file:
-                    good |= bool(re.match(exp, source_file))
-                    good |= bool(re.match(exp, basename))
-                if not good:
-                    mockToken = DataStruct(source_file, 0, basename)
-                    reportNamingError(mockToken, 'File name ' + basename + ' violates naming convention')
+def check_file_naming(conf,data):
+    for source_file in data.files:
+        basename = os.path.basename(source_file)
+        good = False
+        for exp in conf.file:
+            good |= bool(re.match(exp, source_file))
+            good |= bool(re.match(exp, basename))
+        if not good:
+            mockToken = DataStruct(source_file, 0, basename)
+            reportNamingError(mockToken, 'File name ' + basename + ' violates naming convention')
 
-        # Check Namespace naming
-        if conf.namespace:
-            for tk in data.rawTokens:
-                if tk.str == 'namespace':
-                    mockToken = DataStruct(tk.next.file, tk.next.linenr, tk.next.str, tk.next.column)
-                    msgType = 'Namespace'
-                    for exp in conf.namespace:
-                        evalExpr(conf.namespace, exp, mockToken, msgType)
+def check_namespace_naming(conf,data):
+    for tk in data.rawTokens:
+        if tk.str != 'namespace':
+            continue
+        mockToken = DataStruct(tk.next.file, tk.next.linenr, tk.next.str, tk.next.column)
+        for exp in conf.namespace:
+            evalExpr(conf.namespace, exp, mockToken, 'Namespace')
 
-        unguarded_include_files = []
+def check_variable_naming(conf,cfg):
+    for var in cfg.variables:
+        if not var.nameToken:
+            continue
+        if var.access in ('Global','Public','Private'):
+            continue
+        prev = var.nameToken.previous
+        varType = prev.str
+        while "*" in varType and len(varType.replace("*", "")) == 0:
+            prev = prev.previous
+            varType = prev.str + varType
+
+        if args.debugprint:
+            print("Variable Name: " + str(var.nameToken.str))
+            print("original Type Name: " + str(var.nameToken.valueType.originalTypeName))
+            print("Type Name: " + var.nameToken.valueType.type)
+            print("Sign: " + str(var.nameToken.valueType.sign))
+            print("variable type: " + varType)
+            print("\n")
+            print("\t-- {} {}".format(varType, str(var.nameToken.str)))
+
+        if conf.skip_one_char_variables and len(var.nameToken.str) == 1:
+            continue
+        if varType in conf.variable_prefixes:
+            prefix = conf.variable_prefixes[varType]
+            if not var.nameToken.str.startswith(prefix):
+                reportNamingError(var.typeStartToken,
+                                    'Variable ' +
+                                    var.nameToken.str +
+                                    ' violates naming convention',
+                                    column=var.nameToken.column)
+
+        mockToken = DataStruct(var.typeStartToken.file, var.typeStartToken.linenr, var.nameToken.str, var.nameToken.column)
+        for exp in conf.variable:
+            evalExpr(conf.variable, exp, mockToken, 'Variable')
+
+# Naming check for Global, Private and Public member variables
+def check_gpp_naming(conf_list,cfg,access,message):
+    for var in cfg.variables:
+        if var.access != access:
+            continue
+        mockToken = DataStruct(var.typeStartToken.file, var.typeStartToken.linenr, var.nameToken.str, var.nameToken.column)
+        for exp in conf_list:
+            evalExpr(conf_list, exp, mockToken, message)
+
+def check_function_naming(conf,cfg):
+    for token in cfg.tokenlist:
+        if not token.function:
+            continue
+        if token.function.type in ('Constructor', 'Destructor', 'CopyConstructor', 'MoveConstructor'):
+            continue
+        retval = token.previous.str
+        prev = token.previous
+        while "*" in retval and len(retval.replace("*", "")) == 0:
+            prev = prev.previous
+            retval = prev.str + retval
+        if args.debugprint:
+            print("\t:: {} {}".format(retval, token.function.name))
+
+        if retval and retval in conf.function_prefixes:
+            if not token.function.name.startswith(conf.function_prefixes[retval]):
+                reportNamingError(token, 'Function ' + token.function.name + ' violates naming convention', column=token.column)
+        mockToken = DataStruct(token.file, token.linenr, token.function.name, token.column)
+        msgType = 'Function'
+        for exp in conf.function_name:
+            evalExpr(conf.function_name, exp, mockToken, msgType)
+
+def check_class_naming(conf,cfg):
+    for fnc in cfg.functions:
+        if fnc.type not in ('Constructor','Destructor'):
+            continue
+        mockToken = DataStruct(fnc.tokenDef.file, fnc.tokenDef.linenr, fnc.name, fnc.tokenDef.column)
+        msgType = 'Class ' + fnc.type
+        for exp in conf.class_name:
+            evalExpr(conf.class_name, exp, mockToken, msgType)
+
+def process_data(conf,data):
+    if conf.file:
+        check_file_naming(conf,data)
+
+    if conf.namespace:
+        check_namespace_naming(conf,data)
+
+    unguarded_include_files = []
+    if conf.include_guard and conf.include_guard.get('required',1):
+        unguarded_include_files = [fn for fn in data.files if re.match(include_guard_header_re,fn)]
+
+    for cfg in data.configurations:
+        if not args.cli:
+            print('Checking config %s...' % cfg.name)
+        if conf.variable:
+            check_variable_naming(conf,cfg)
+        if conf.private_member:
+            check_gpp_naming(conf.private_member,cfg,'Private','Private member variable')
+        if conf.public_member:
+            check_gpp_naming(conf.public_member,cfg,'Public','Public member variable')
+        if conf.global_variable:
+            check_gpp_naming(conf.global_variable,cfg,'Global','Global variable')
+        if conf.function_name:
+            check_function_naming(conf,cfg)
+        if conf.class_name:
+            check_class_naming(conf,cfg)
         if conf.include_guard:
-            if conf.include_guard.get('required',1):
-                unguarded_include_files = [fn for fn in data.files if re.match(include_guard_header_re,fn)]
+            check_include_guards(conf,cfg,unguarded_include_files)
 
-        for cfg in data.configurations:
-            if not args.cli:
-                print('Checking %s, config %s...' % (afile, cfg.name))
-            if conf.variable:
-                for var in cfg.variables:
-                    if var.nameToken and var.access != 'Global' and var.access != 'Public' and var.access != 'Private':
-                        prev = var.nameToken.previous
-                        varType = prev.str
-                        while "*" in varType and len(varType.replace("*", "")) == 0:
-                            prev = prev.previous
-                            varType = prev.str + varType
-
-                        if debugprint:
-                            print("Variable Name: " + str(var.nameToken.str))
-                            print("original Type Name: " + str(var.nameToken.valueType.originalTypeName))
-                            print("Type Name: " + var.nameToken.valueType.type)
-                            print("Sign: " + str(var.nameToken.valueType.sign))
-                            print("variable type: " + varType)
-                            print("\n")
-                            print("\t-- {} {}".format(varType, str(var.nameToken.str)))
-
-                        if conf.skip_one_char_variables and len(var.nameToken.str) == 1:
-                            continue
-                        if varType in conf.variable_prefixes:
-                            prefix = conf.variable_prefixes[varType]
-                            if not var.nameToken.str.startswith(prefix):
-                                reportNamingError(var.typeStartToken,
-                                                    'Variable ' +
-                                                    var.nameToken.str +
-                                                    ' violates naming convention',
-                                                    column=var.nameToken.column)
-
-                        mockToken = DataStruct(var.typeStartToken.file, var.typeStartToken.linenr, var.nameToken.str, var.nameToken.column)
-                        msgType = 'Variable'
-                        for exp in conf.variable:
-                            evalExpr(conf.variable, exp, mockToken, msgType)
-
-            # Check Private Variable naming
-            if conf.private_member:
-                # TODO: Not converted yet
-                for var in cfg.variables:
-                    if (var.access is None) or var.access != 'Private':
-                        continue
-                    mockToken = DataStruct(var.typeStartToken.file, var.typeStartToken.linenr, var.nameToken.str, var.nameToken.column)
-                    msgType = 'Private member variable'
-                    for exp in conf.private_member:
-                        evalExpr(conf.private_member, exp, mockToken, msgType)
-
-            # Check Public Member Variable naming
-            if conf.public_member:
-                for var in cfg.variables:
-                    if (var.access is None) or var.access != 'Public':
-                        continue
-                    mockToken = DataStruct(var.typeStartToken.file, var.typeStartToken.linenr, var.nameToken.str, var.nameToken.column)
-                    msgType = 'Public member variable'
-                    for exp in conf.public_member:
-                        evalExpr(conf.public_member, exp, mockToken, msgType)
-
-            # Check Global Variable naming
-            if conf.global_variable:
-                for var in cfg.variables:
-                    if (var.access is None) or var.access != 'Global':
-                        continue
-                    mockToken = DataStruct(var.typeStartToken.file, var.typeStartToken.linenr, var.nameToken.str, var.nameToken.column)
-                    msgType = 'Global variable'
-                    for exp in conf.global_variable:
-                        evalExpr(conf.global_variable, exp, mockToken, msgType)
-
-            # Check Functions naming
-            if conf.function_name:
-                for token in cfg.tokenlist:
-                    if token.function:
-                        if token.function.type in ('Constructor', 'Destructor', 'CopyConstructor', 'MoveConstructor'):
-                            continue
-                        retval = token.previous.str
-                        prev = token.previous
-                        while "*" in retval and len(retval.replace("*", "")) == 0:
-                            prev = prev.previous
-                            retval = prev.str + retval
-                        if debugprint:
-                            print("\t:: {} {}".format(retval, token.function.name))
-
-                        if retval and retval in conf.function_prefixes:
-                            if not token.function.name.startswith(conf.function_prefixes[retval]):
-                                reportNamingError(token, 'Function ' + token.function.name + ' violates naming convention', column=token.column)
-                        mockToken = DataStruct(token.file, token.linenr, token.function.name, token.column)
-                        msgType = 'Function'
-                        for exp in conf.function_name:
-                            evalExpr(conf.function_name, exp, mockToken, msgType)
-
-            # Check Class naming
-            if conf.class_name:
-                for fnc in cfg.functions:
-                    # Check if it is Constructor/Destructor
-                    if fnc.type == 'Constructor' or fnc.type == 'Destructor':
-                        mockToken = DataStruct(fnc.tokenDef.file, fnc.tokenDef.linenr, fnc.name, fnc.tokenDef.column)
-                        msgType = 'Class ' + fnc.type
-                        for exp in conf.class_name:
-                            evalExpr(conf.class_name, exp, mockToken, msgType)
-
-            # Check include guard naming
-            if conf.include_guard:
-                check_include_guard(conf.include_guard,cfg,unguarded_include_files)
-
-        for fn in unguarded_include_files:
-            mockToken = DataStruct(fn,0,os.path.basename(fn))
-            reportNamingError(mockToken,'Missing include guard','includeGuardMissing')
+    for fn in unguarded_include_files:
+        mockToken = DataStruct(fn,0,os.path.basename(fn))
+        reportNamingError(mockToken,'Missing include guard','includeGuardMissing')
 
 if __name__ == "__main__":
     parser = cppcheckdata.ArgumentParser()
@@ -421,6 +414,6 @@ if __name__ == "__main__":
                         help="Naming check config file")
 
     args = parser.parse_args()
-    process(args.dumpfile, args.configfile, args.debugprint)
+    process(args.dumpfile, args.configfile)
 
     sys.exit(0)
