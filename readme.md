@@ -27,22 +27,24 @@ You can stop the script whenever you like with Ctrl C.
 
 ## Compiling
 
-Any C++11 compiler should work. For compilers with partial C++11 support it may work. If your compiler has the C++11 features that are available in Visual Studio 2013 / GCC 4.8 then it will work.
+Cppcheck requires a C++ compiler with (partial) C++11 support. Minimum required versions are GCC 5.1 / Clang 3.5 / Visual Studio 2015.
 
-To build the GUI, you need Qt.
+To build the GUI application, you need to use the CMake or qmake (deprecated) build system.
 
 When building the command line tool, [PCRE](http://www.pcre.org/) is optional. It is used if you build with rules.
 
 There are multiple compilation choices:
-* qmake - cross platform build tool
-* cmake - cross platform build tool
-* Windows: Visual Studio (VS 2013 and above)
-* Windows: Qt Creator + mingw
-* gnu make
-* g++ 4.8 (or later)
-* clang++
+* qmake - cross platform build tool (deprecated)
+* CMake - cross platform build tool
+* Windows: Visual Studio
+* Windows: Qt Creator + MinGW
+* GNU make
+* GCC (g++)
+* Clang (clang++)
 
-### cmake
+### CMake
+
+The minimum required version is CMake 3.5.
 
 Example, compiling Cppcheck with cmake:
 
