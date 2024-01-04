@@ -1537,6 +1537,8 @@ private:
             ASSERT_EQUALS("unknown element 'eid' in suppressions XML 'suppressparsexml.xml', expected id/fileName/lineNumber/symbolName/hash.", supprList.parseXmlFile(file.path().c_str()));
         }
     }
+
+    // TODO: test updateSuppressionState
 };
 
 REGISTER_TEST(TestSuppressions)
