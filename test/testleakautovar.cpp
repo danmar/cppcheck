@@ -3089,7 +3089,7 @@ private:
     void doubleFree() {
         check("void f(char* p) {\n"
               "    free(p);\n"
-              "    printf(\"%s\", strdup(\"abc\"));\n"
+              "    printf(\"%s\", p = strdup(\"abc\"));\n"
               "    free(p);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
