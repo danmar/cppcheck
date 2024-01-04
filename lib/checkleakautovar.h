@@ -135,7 +135,7 @@ private:
      * @param varInfo Variable info
      * @return next token to process (if no other checks needed for this token). NULL if other checks could be performed.
      */
-    const Token * checkTokenInsideExpression(const Token * const tok, VarInfo &varInfo);
+    const Token * checkTokenInsideExpression(const Token * const tok, VarInfo &varInfo, bool inFuncCall = false);
 
     /** parse function call */
     void functionCall(const Token *tokName, const Token *tokOpeningPar, VarInfo &varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af);

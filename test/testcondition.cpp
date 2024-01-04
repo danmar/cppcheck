@@ -472,6 +472,15 @@ private:
         ASSERT_EQUALS("",errout.str());
         check("void f(int a) {\n assert( (a | 0x07) < 7U );\n}");
         ASSERT_EQUALS("",errout.str()); //correct for negative 'a'
+
+        check("void f(int i) {\n" // #11998
+              "    if ((i & 0x100) == 0x200) {}\n"
+              "    if (0x200 == (i & 0x100)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The if condition is the same as the previous if condition\n"
+                      "[test.cpp:2]: (style) Expression '(X & 0x100) == 0x200' is always false.\n"
+                      "[test.cpp:3]: (style) Expression '(X & 0x100) == 0x200' is always false.\n",
+                      errout.str());
     }
 
 #define checkPureFunction(code) checkPureFunction_(code, __FILE__, __LINE__)

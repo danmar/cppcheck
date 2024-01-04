@@ -269,7 +269,10 @@ private:
               "    if ((5 && x)==3 || (8 && x)==9)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n"
+            "[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n",   // duplicate
+            errout.str());
 
         check("void f(int x) {\n"
               "    if ((5 && x)!=3)\n"

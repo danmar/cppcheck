@@ -403,9 +403,7 @@ void TestFixture::reportErr(const ErrorMessage &msg)
     if (msg.severity == Severity::internal)
         return;
     const std::string errormessage(msg.toString(mVerbose, mTemplateFormat, mTemplateLocation));
-    // TODO: remove the unique error handling?
-    if (errout.str().find(errormessage) == std::string::npos)
-        errout << errormessage << std::endl;
+    errout << errormessage << std::endl;
 }
 
 void TestFixture::setTemplateFormat(const std::string &templateFormat)

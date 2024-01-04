@@ -3071,7 +3071,10 @@ private:
         check("testing::testing()\n"
               "{\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1]: (debug) Executable scope 'testing' with unknown function.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (debug) Executable scope 'testing' with unknown function.\n"
+            "[test.cpp:1]: (debug) Executable scope 'testing' with unknown function.\n", // duplicate
+            errout.str());
     }
 
     void symboldatabase5() {
@@ -3194,7 +3197,9 @@ private:
         check("::y(){x}");
 
         ASSERT_EQUALS("[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n"
-                      "[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n", errout.str());
+                      "[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n"
+                      "[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n", // duplicate
+                      errout.str());
     }
 
     void symboldatabase20() {

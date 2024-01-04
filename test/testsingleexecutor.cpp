@@ -348,7 +348,10 @@ private:
         check(2, 2,
               "#include \"" + inc_h.name() + "\"");
         // these are not actually made unique by the implementation. That needs to be done by the given ErrorLogger
-        ASSERT_EQUALS("[" + inc_h.name() + ":3]: (error) Null pointer dereference: (int*)0\n", errout.str());
+        ASSERT_EQUALS(
+            "[" + inc_h.name() + ":3]: (error) Null pointer dereference: (int*)0\n"
+            "[" + inc_h.name() + ":3]: (error) Null pointer dereference: (int*)0\n",
+            errout.str());
     }
 
     // TODO: test whole program analysis

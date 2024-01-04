@@ -663,7 +663,10 @@ private:
               "    struct S s;\n"
               "    g(&s);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (error) Address of local auto-variable assigned to a function parameter.\n"
+            "[test.cpp:4]: (error) Address of local auto-variable assigned to a function parameter.\n",   // duplicate
+            errout.str());
     }
 
     void testinvaliddealloc() {
@@ -2508,7 +2511,8 @@ private:
               "    }\n"
               "};");
         ASSERT_EQUALS(
-            "[test.cpp:6] -> [test.cpp:6] -> [test.cpp:6] -> [test.cpp:4] -> [test.cpp:7]: (error) Non-local variable 'm' will use object that points to local variable 'x'.\n",
+            "[test.cpp:6] -> [test.cpp:6] -> [test.cpp:6] -> [test.cpp:4] -> [test.cpp:7]: (error) Non-local variable 'm' will use object that points to local variable 'x'.\n"
+            "[test.cpp:6] -> [test.cpp:6] -> [test.cpp:6] -> [test.cpp:4] -> [test.cpp:7]: (error) Non-local variable 'm' will use object that points to local variable 'x'.\n", // duplicate
             errout.str());
 
         check("std::vector<int>::iterator f(std::vector<int> v) {\n"
@@ -3795,7 +3799,8 @@ private:
               "    return v;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n",
+            "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n"
+            "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n", // duplicate
             errout.str());
 
         check("std::vector<int*> f() {\n"
@@ -3804,7 +3809,8 @@ private:
               "    return v;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n",
+            "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n"
+            "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n", // duplicate
             errout.str());
 
         check("std::vector<int*> f() {\n"
@@ -3812,7 +3818,8 @@ private:
               "    return {&i, &i};\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n",
+            "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n"
+            "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n", // duplicate
             errout.str());
 
         check("std::vector<int*> f(int& x) {\n"

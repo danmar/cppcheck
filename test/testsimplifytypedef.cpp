@@ -1644,7 +1644,8 @@ private:
 
         checkSimplifyTypedef(code);
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp:6541:(valueFlow) bailout: valueFlowAfterCondition: bailing in conditional block\n",
+            "[test.cpp:3]: (debug) valueflow.cpp:6541:(valueFlow) bailout: valueFlowAfterCondition: bailing in conditional block\n"
+            "[test.cpp:3]: (debug) valueflow.cpp:6541:(valueFlow) bailout: valueFlowAfterCondition: bailing in conditional block\n", // duplicate
             errout.str());
     }
 

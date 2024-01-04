@@ -343,7 +343,14 @@ def test_addon_namingng(tmpdir):
     "RE_FILE": [
         "[^/]*[a-z][a-z0-9_]*[a-z0-9]\\.c\\Z"
     ],
+    "RE_CLASS_NAME": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
+    "RE_NAMESPACE": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
     "RE_VARNAME": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
+    "RE_PUBLIC_MEMBER_VARIABLE": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
+    "RE_PRIVATE_MEMBER_VARIABLE": {
+        ".*_tmp\\Z":[true,"illegal suffix _tmp"],
+        "priv_.*\\Z":[false,"required prefix priv_ missing"]
+    },
     "RE_GLOBAL_VARNAME": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
     "RE_FUNCTIONNAME": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
     "include_guard": {
@@ -384,11 +391,11 @@ extern int _invalid_extern_global;
 #endif
 """.format(test_unguarded_include_file))
 
-    test_file_basename = 'test_.c'
+    test_file_basename = 'test_.cpp'
     test_file = os.path.join(tmpdir, test_file_basename)
     with open(test_file, 'wt') as f:
         f.write("""
-#include "{}"
+#include "%s"
 
 void invalid_function_();
 void _invalid_function();
@@ -403,7 +410,19 @@ uint16_t ui16_valid_function8(int valid_arg);
 
 int _invalid_global;
 static int _invalid_static_global;
-        """.format(test_include_file_basename))
+
+class _clz {
+public:
+    _clz() : _invalid_public(0), _invalid_private(0), priv_good(0), priv_bad_tmp(0) { }
+    int _invalid_public;
+private:
+    char _invalid_private;
+    int priv_good;
+    int priv_bad_tmp;
+};
+
+namespace _invalid_namespace { }
+        """%(test_include_file_basename))
 
     args = ['--addon='+addon_file, '--verbose', '--enable=all', test_file]
 
@@ -417,38 +436,69 @@ static int _invalid_static_global;
         'Includes:',
         'Platform:native'
     ]
-    lines = [line for line in stderr.splitlines() if line.strip() != '^' and line != '']
+    lines = [line for line in stderr.splitlines() if line != '']
     expect = [
         '{}:0:0: style: File name {} violates naming convention [namingng-namingConvention]'.format(test_include_file,test_include_file_basename),
-        '{}:2:0: style: include guard naming violation; TEST_H != _TEST_H [namingng-includeGuardName]'.format(test_include_file),
+        '^',
+        '{}:2:9: style: include guard naming violation; TEST_H != _TEST_H [namingng-includeGuardName]'.format(test_include_file),
         '#ifndef TEST_H',
-        '{}:5:0: style: Function InvalidFunction violates naming convention [namingng-namingConvention]'.format(test_include_file),
+        '        ^',
+        '{}:5:6: style: Function InvalidFunction violates naming convention [namingng-namingConvention]'.format(test_include_file),
         'void InvalidFunction();',
-        '{}:6:0: style: Public member variable _invalid_extern_global violates naming convention [namingng-namingConvention]'.format(test_include_file),
+        '     ^',
+        '{}:6:12: style: Global variable _invalid_extern_global violates naming convention [namingng-namingConvention]'.format(test_include_file),
         'extern int _invalid_extern_global;',
+        '           ^',
 
         '{}:0:0: style: File name {} violates naming convention [namingng-namingConvention]'.format(test_unguarded_include_file,test_unguarded_include_file_basename),
+        '^',
         '{}:0:0: style: Missing include guard [namingng-includeGuardMissing]'.format(test_unguarded_include_file),
-        '{}:2:0: style: Function InvalidFunctionUnguarded violates naming convention [namingng-namingConvention]'.format(test_unguarded_include_file),
+        '^',
+        '{}:2:6: style: Function InvalidFunctionUnguarded violates naming convention [namingng-namingConvention]'.format(test_unguarded_include_file),
         'void InvalidFunctionUnguarded();',
+        '     ^',
 
         '{}:0:0: style: File name {} violates naming convention [namingng-namingConvention]'.format(test_file,test_file_basename),
-        '{}:7:0: style: Variable _invalid_arg violates naming convention [namingng-namingConvention]'.format(test_file),
+        '^',
+        '{}:7:26: style: Variable _invalid_arg violates naming convention [namingng-namingConvention]'.format(test_file),
         'void valid_function2(int _invalid_arg);',
-        '{}:8:0: style: Variable invalid_arg_ violates naming convention [namingng-namingConvention]'.format(test_file),
+        '                         ^',
+        '{}:8:26: style: Variable invalid_arg_ violates naming convention [namingng-namingConvention]'.format(test_file),
         'void valid_function3(int invalid_arg_);',
-        '{}:10:22: style: Variable invalid_arg32 violates naming convention [namingng-namingConvention]'.format(test_file),
+        '                         ^',
+        '{}:10:31: style: Variable invalid_arg32 violates naming convention [namingng-namingConvention]'.format(test_file),
         'void valid_function5(uint32_t invalid_arg32);',
-        '{}:4:0: style: Function invalid_function_ violates naming convention [namingng-namingConvention]'.format(test_file),
+        '                              ^',
+        '{}:4:6: style: Function invalid_function_ violates naming convention [namingng-namingConvention]'.format(test_file),
         'void invalid_function_();',
-        '{}:5:0: style: Function _invalid_function violates naming convention [namingng-namingConvention]'.format(test_file),
+        '     ^',
+        '{}:5:6: style: Function _invalid_function violates naming convention [namingng-namingConvention]'.format(test_file),
         'void _invalid_function();',
+        '     ^',
         '{}:12:10: style: Function invalid_function7 violates naming convention [namingng-namingConvention]'.format(test_file),
         'uint16_t invalid_function7(int valid_arg);',
-        '{}:15:0: style: Public member variable _invalid_global violates naming convention [namingng-namingConvention]'.format(test_file),
+        '         ^',
+        '{}:15:5: style: Global variable _invalid_global violates naming convention [namingng-namingConvention]'.format(test_file),
         'int _invalid_global;',
-        '{}:16:0: style: Public member variable _invalid_static_global violates naming convention [namingng-namingConvention]'.format(test_file),
+        '    ^',
+        '{}:16:12: style: Global variable _invalid_static_global violates naming convention [namingng-namingConvention]'.format(test_file),
         'static int _invalid_static_global;',
+        '           ^',
+        '{}:20:5: style: Class Constructor _clz violates naming convention [namingng-namingConvention]'.format(test_file),
+        '    _clz() : _invalid_public(0), _invalid_private(0), priv_good(0), priv_bad_tmp(0) { }',
+        '    ^',
+        '{}:21:9: style: Public member variable _invalid_public violates naming convention [namingng-namingConvention]'.format(test_file),
+        '    int _invalid_public;',
+        '        ^',
+        '{}:23:10: style: Private member variable _invalid_private violates naming convention: required prefix priv_ missing [namingng-namingConvention]'.format(test_file),
+        '    char _invalid_private;',
+        '         ^',
+        '{}:25:9: style: Private member variable priv_bad_tmp violates naming convention: illegal suffix _tmp [namingng-namingConvention]'.format(test_file),
+        '    int priv_bad_tmp;',
+        '        ^',
+        '{}:28:11: style: Namespace _invalid_namespace violates naming convention [namingng-namingConvention]'.format(test_file),
+        'namespace _invalid_namespace { }',
+        '          ^',
     ]
     # test sorted lines; the order of messages may vary and is not of importance
     lines.sort()
@@ -476,7 +526,12 @@ def test_addon_namingng_config(tmpdir):
     "RE_NAMESPACE": false,
     "RE_VARNAME": ["+bad pattern","[a-z]_good_pattern\\Z","(parentheses?"],
     "RE_PRIVATE_MEMBER_VARIABLE": "[a-z][a-z0-9_]*[a-z0-9]\\Z",
-    "RE_PUBLIC_MEMBER_VARIABLE": "[a-z][a-z0-9_]*[a-z0-9]\\Z",
+    "RE_PUBLIC_MEMBER_VARIABLE": {
+        "tmp_.*\\Z":[true,"illegal prefix tmp_"],
+        "bad_.*\\Z":true,
+        "public_.*\\Z":[false],
+        "pub_.*\\Z":[0,"required prefix pub_ missing"]
+    },
     "RE_GLOBAL_VARNAME": "[a-z][a-z0-9_]*[a-z0-9]\\Z",
     "RE_FUNCTIONNAME": "[a-z][a-z0-9_]*[a-z0-9]\\Z",
     "RE_CLASS_NAME": "[a-z][a-z0-9_]*[a-z0-9]\\Z",
@@ -519,17 +574,19 @@ def test_addon_namingng_config(tmpdir):
     assert lines == [
         "Output:",
         "config error: RE_FILE must be list (not str), or not set",
-        "config error: RE_NAMESPACE must be list (not bool), or not set",
+        "config error: RE_NAMESPACE must be list or dict (not bool), or not set",
         "config error: include_guard must be dict (not bool), or not set",
         "config error: item '+bad pattern' of 'RE_VARNAME' is not a valid regular expression: nothing to repeat at position 0",
         "config error: item '(parentheses?' of 'RE_VARNAME' is not a valid regular expression: missing ), unterminated subpattern at position 0",
         "config error: var_prefixes must be dict (not list), or not set",
-        "config error: RE_PRIVATE_MEMBER_VARIABLE must be list (not str), or not set",
-        "config error: RE_PUBLIC_MEMBER_VARIABLE must be list (not str), or not set",
-        "config error: RE_GLOBAL_VARNAME must be list (not str), or not set",
-        "config error: RE_FUNCTIONNAME must be list (not str), or not set",
+        "config error: RE_PRIVATE_MEMBER_VARIABLE must be list or dict (not str), or not set",
+        "config error: item 'bad_.*\\Z' of 'RE_PUBLIC_MEMBER_VARIABLE' must be an array [bool,string]",
+        "config error: item 'public_.*\\Z' of 'RE_PUBLIC_MEMBER_VARIABLE' must be an array [bool,string]",
+        "config error: item 'pub_.*\\Z' of 'RE_PUBLIC_MEMBER_VARIABLE' must be an array [bool,string]",
+        "config error: RE_GLOBAL_VARNAME must be list or dict (not str), or not set",
+        "config error: RE_FUNCTIONNAME must be list or dict (not str), or not set",
         "config error: function_prefixes must be dict (not bool), or not set",
-        "config error: RE_CLASS_NAME must be list (not str), or not set",
+        "config error: RE_CLASS_NAME must be list or dict (not str), or not set",
         "config error: skip_one_char_variables must be bool (not str), or not set",
         "config error: unknown config key 'RE_VAR_NAME' [internalError]",
         "",
