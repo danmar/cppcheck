@@ -704,6 +704,14 @@ private:
                                   "    T* operator->() const { return (T*)p; }\n"
                                   "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkDuplInheritedMembers("struct B { virtual int& get() = 0; };\n" // #12311
+                                  "struct D : B {\n"
+                                  "    int i{};\n"
+                                  "    int& get() override { return i; }\n"
+                                  "    const int& get() const { return i; }\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkCopyConstructor(code) checkCopyConstructor_(code, __FILE__, __LINE__)
