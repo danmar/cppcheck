@@ -2438,7 +2438,7 @@ private:
         errout.str("");
 
         // Check..
-        const Settings settings = settingsBuilder(pSettings ? *pSettings : settings1).debugwarnings(debug).build();
+        const Settings settings = settingsBuilder(pSettings ? *pSettings : settings1).debugwarnings(debug).exhaustive().build();
 
         // Tokenize..
         Tokenizer tokenizer(settings, this);

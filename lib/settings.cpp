@@ -243,6 +243,7 @@ void Settings::loadSummaries()
 void Settings::setCheckLevelExhaustive()
 {
     // Checking can take a little while. ~ 10 times slower than normal analysis is OK.
+    checkLevel = CheckLevel::exhaustive;
     performanceValueFlowMaxIfCount = -1;
     performanceValueFlowMaxSubFunctionArgs = 256;
 }
@@ -250,6 +251,7 @@ void Settings::setCheckLevelExhaustive()
 void Settings::setCheckLevelNormal()
 {
     // Checking should finish in reasonable time.
+    checkLevel = CheckLevel::normal;
     performanceValueFlowMaxSubFunctionArgs = 8;
     performanceValueFlowMaxIfCount = 100;
 }

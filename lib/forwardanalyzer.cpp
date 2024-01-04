@@ -21,11 +21,13 @@
 #include "analyzer.h"
 #include "astutils.h"
 #include "config.h"
+#include "errorlogger.h"
 #include "errortypes.h"
 #include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
+#include "tokenlist.h"
 #include "utils.h"
 #include "valueptr.h"
 #include "vfvalue.h"
@@ -45,16 +47,19 @@ namespace {
     struct ForwardTraversal {
         enum class Progress { Continue, Break, Skip };
         enum class Terminate { None, Bail, Inconclusive };
-        ForwardTraversal(const ValuePtr<Analyzer>& analyzer, const Settings& settings)
-            : analyzer(analyzer), settings(settings)
+        ForwardTraversal(const ValuePtr<Analyzer>& analyzer, const TokenList& tokenList, ErrorLogger* const errorLogger, const Settings& settings)
+            : analyzer(analyzer), tokenList(tokenList), errorLogger(errorLogger), settings(settings)
         {}
         ValuePtr<Analyzer> analyzer;
+        const TokenList& tokenList;
+        ErrorLogger* const errorLogger;
         const Settings& settings;
         Analyzer::Action actions;
         bool analyzeOnly{};
         bool analyzeTerminate{};
         Analyzer::Terminate terminate = Analyzer::Terminate::None;
         std::vector<Token*> loopEnds;
+        int branchCount = 0;
 
         Progress Break(Analyzer::Terminate t = Analyzer::Terminate::None) {
             if ((!analyzeOnly || analyzeTerminate) && t != Analyzer::Terminate::None)
@@ -648,6 +653,10 @@ namespace {
                     }
                 } else if (tok->isControlFlowKeyword() && Token::Match(tok, "if|while|for (") &&
                            Token::simpleMatch(tok->next()->link(), ") {")) {
+                    if (settings.checkLevel == Settings::CheckLevel::normal && ++branchCount > 4) {
+                        reportError(Severity::information, "normalCheckLevelMaxBranches", "Limit analysis of branches. Use --check-level=exhausive to analyze all branches.");
+                        return Break(Analyzer::Terminate::Bail);
+                    }
                     Token* endCond = tok->next()->link();
                     Token* endBlock = endCond->next()->link();
                     Token* condTok = getCondTok(tok);
@@ -828,6 +837,15 @@ namespace {
             return Progress::Continue;
         }
 
+        void reportError(Severity severity, const std::string& id, const std::string& msg) {
+            if (errorLogger) {
+                const ErrorMessage::FileLocation loc(tokenList.getSourceFilePath(), 1, 1);
+                const std::list<ErrorMessage::FileLocation> callstack{loc};
+                const ErrorMessage errmsg(callstack, tokenList.getSourceFilePath(), severity, msg, id, Certainty::normal);
+                errorLogger->reportErr(errmsg);
+            }
+        }
+
         static bool isFunctionCall(const Token* tok)
         {
             if (!Token::simpleMatch(tok, "("))
@@ -886,24 +904,24 @@ namespace {
     };
 }
 
-Analyzer::Result valueFlowGenericForward(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings& settings)
+Analyzer::Result valueFlowGenericForward(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const TokenList& tokenList, ErrorLogger* const errorLogger, const Settings& settings)
 {
     if (a->invalid())
         return Analyzer::Result{Analyzer::Action::None, Analyzer::Terminate::Bail};
-    ForwardTraversal ft{a, settings};
+    ForwardTraversal ft{a, tokenList, errorLogger, settings};
     if (start)
         ft.analyzer->updateState(start);
     ft.updateRange(start, end);
     return Analyzer::Result{ ft.actions, ft.terminate };
 }
 
-Analyzer::Result valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>& a, const Settings& settings)
+Analyzer::Result valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>& a, const TokenList& tokenList, ErrorLogger* const errorLogger, const Settings& settings)
 {
     if (Settings::terminated())
         throw TerminateException();
     if (a->invalid())
         return Analyzer::Result{Analyzer::Action::None, Analyzer::Terminate::Bail};
-    ForwardTraversal ft{a, settings};
+    ForwardTraversal ft{a, tokenList, errorLogger, settings};
     ft.updateRecursive(start);
     return Analyzer::Result{ ft.actions, ft.terminate };
 }

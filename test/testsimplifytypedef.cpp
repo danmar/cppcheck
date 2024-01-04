@@ -237,7 +237,7 @@ private:
         errout.str("");
 
         // show warnings about unhandled typedef
-        const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings(debugwarnings).platform(type).build();
+        const Settings settings = settingsBuilder(settings0).exhaustive().certainty(Certainty::inconclusive).debugwarnings(debugwarnings).platform(type).build();
         Tokenizer tokenizer(settings, this);
 
         std::istringstream istr(code);

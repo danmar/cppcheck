@@ -444,6 +444,12 @@ public:
     void setCheckLevelExhaustive();
     void setCheckLevelNormal();
 
+    enum class CheckLevel {
+        exhaustive,
+        normal
+    };
+    CheckLevel checkLevel = CheckLevel::normal;
+
 private:
     static std::string parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity>, SimpleEnableGroup<Checks>> &groups);
     std::string applyEnabled(const std::string &str, bool enable);

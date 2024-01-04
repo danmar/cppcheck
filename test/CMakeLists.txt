@@ -118,6 +118,7 @@ if (BUILD_TESTS)
                         COMMAND $<TARGET_FILE:cppcheck>
                         --library=${LIBRARY}
                         --check-library
+                        --check-level=exhaustive
                         --platform=${PLATFORM}
                         --enable=style,information
                         --inconclusive
