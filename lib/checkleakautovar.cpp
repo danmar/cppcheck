@@ -815,7 +815,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
 }
 
 
-const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const tok, VarInfo &varInfo)
+const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const tok, VarInfo &varInfo, bool inFuncCall)
 {
     // Deallocation and then dereferencing pointer..
     if (tok->varId() > 0) {
@@ -862,7 +862,7 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
     }
 
     // check for function call
-    const Token * const openingPar = isFunctionCall(tok);
+    const Token * const openingPar = inFuncCall ? nullptr : isFunctionCall(tok);
     if (openingPar) {
         const Library::AllocFunc* allocFunc = mSettings->library.getDeallocFuncInfo(tok);
         VarInfo::AllocInfo alloc(allocFunc ? allocFunc->groupId : 0, VarInfo::DEALLOC, tok);
@@ -1047,7 +1047,7 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
         } else {
             const Token* const nextArg = funcArg->nextArgument();
             do {
-                checkTokenInsideExpression(arg, varInfo);
+                checkTokenInsideExpression(arg, varInfo, /*inFuncCall*/ isLeakIgnore);
                 arg = arg->next();
             } while ((nextArg && arg != nextArg) || (!nextArg && arg != tokOpeningPar->link()));
         }

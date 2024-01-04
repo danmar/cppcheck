@@ -798,6 +798,14 @@ private:
               "    ASSERT((void*)(\"def\") == 0);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("class C {\n" // #6109
+              "    void check(const char code[], bool validate = true, const char* filename = \"test.cpp\");\n"
+              "    void f() {\n"
+              "        check(\"class A<B&, C>;\", \"test.C\");\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Conversion of string literal \"test.C\" to bool always evaluates to true.\n", errout.str());
     }
 
     void deadStrcmp() {
