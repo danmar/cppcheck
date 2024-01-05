@@ -107,3 +107,23 @@ def assert_cppcheck(args, ec_exp=None, out_exp=None, err_exp=None, env=None):
     if err_exp is not None:
         err_lines = stderr.splitlines()
         assert err_lines == err_exp, stderr
+
+# Run addon with args
+def addon_standalone(addon_py_basename, args, env=None):
+    exe = __lookup_cppcheck_exe()
+    assert exe is not None, 'no cppcheck binary found (trying to find addons path)'
+
+    addons_path = os.path.join(os.path.dirname(exe),'addons')
+    assert os.path.exists(addons_path)
+
+    addon_py = os.path.join(addons_path,addon_py_basename)
+    assert os.path.exists(addon_py)
+
+    execute = [sys.executable,addon_py] + args
+
+    logging.info(' '.join(execute))
+    p = subprocess.Popen(execute, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+    comm = p.communicate()
+    stdout = comm[0].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
+    stderr = comm[1].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
+    return p.returncode, stdout, stderr
