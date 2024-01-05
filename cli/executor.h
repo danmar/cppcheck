@@ -45,7 +45,7 @@ public:
     virtual ~Executor() = default;
 
     Executor(const Executor &) = delete;
-    void operator=(const Executor &) = delete;
+    Executor& operator=(const Executor &) = delete;
 
     virtual unsigned int check() = 0;
 
