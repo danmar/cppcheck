@@ -33,8 +33,10 @@
 #include <time.h>
 #include <string.h>
 #include <strings.h>
-#if !(defined(__APPLE__) && defined(__MACH__))
+#if defined(__APPLE__)
 #include <xlocale.h>
+#endif
+#if !(defined(__APPLE__) && defined(__MACH__))
 #include <mqueue.h>
 #endif
 #include <stdlib.h>
