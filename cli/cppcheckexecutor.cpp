@@ -448,6 +448,7 @@ void CppCheckExecutor::setExceptionOutput(FILE* exceptionOutput)
 #endif
 }
 
+// cppcheck-suppress unusedFunction - only used by USE_WINDOWS_SEH code
 FILE* CppCheckExecutor::getExceptionOutput()
 {
     return mExceptionOutput;
