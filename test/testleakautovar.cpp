@@ -981,6 +981,11 @@ private:
         ASSERT_EQUALS("[test.c:4]: (error) Dereferencing 'p' after it is deallocated / released\n"
                       "[test.c:7] -> [test.c:8]: (error) Returning/dereferencing 'p' after it is deallocated / released\n",
                       errout.str());
+
+        check("void f() {\n"
+              "    FOREACH(callables, ());\n"
+              "}\n");
+        ASSERT_EQUALS("[test.c:2]: (information) --check-library: Function FOREACH() should have <noreturn> configuration\n", errout.str()); // don't crash
     }
 
     void doublefree1() {  // #3895
