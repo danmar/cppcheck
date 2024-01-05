@@ -431,7 +431,7 @@ def __run_command(cmd, print_cmd=True):
     return return_code, stdout, stderr, elapsed_time
 
 
-def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True):
+def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True, enable='style,information', debug_warnings=True, check_level=None):
     print('Analyze..')
     libs = ''
     for library in libraries:
@@ -441,11 +441,17 @@ def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True):
     dir_to_scan = source_path
 
     # TODO: temporarily disabled timing information - use --showtime=top5_summary when next version is released
-    # TODO: remove missingInclude disabling when it no longer is implied by --enable=information
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
-    options = libs + ' --check-library --inconclusive --enable=style,information --inline-suppr --disable=missingInclude --suppress=unmatchedSuppression --template=daca2'
-    options += ' --debug-warnings --suppress=autoNoType --suppress=valueFlowBailout --suppress=bailoutUninitVar --suppress=symbolDatabaseWarning'
-    options += ' -D__GNUC__ --platform=unix64'
+    options = f'{libs} --enable={enable} --inconclusive --inline-suppr --template=daca2 -D__GNUC__ --platform=unix64'
+    if 'information' in enable:
+        # TODO: remove missingInclude disabling when it no longer is implied by --enable=information
+        options += ' --disable=missingInclude'
+        options += ' --suppress=unmatchedSuppression'
+    if check_level:
+        options += f' --check-level={check_level}'
+    if debug_warnings:
+        options += ' --check-library --debug-warnings --suppress=autoNoType --suppress=valueFlowBailout' \
+                   ' --suppress=bailoutUninitVar --suppress=symbolDatabaseWarning'
     options_rp = options + ' -rp={}'.format(dir_to_scan)
     if __make_cmd == 'msbuild.exe':
         cppcheck_cmd = os.path.join(cppcheck_path, 'bin', 'cppcheck.exe') + ' ' + options_rp
