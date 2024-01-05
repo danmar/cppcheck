@@ -1708,8 +1708,8 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
         const std::string errorString = line.substr(endErrorPos, line.length());
 
         std::string fixedpath = Path::simplifyPath(line.substr(0, endNamePos));
-        const int64_t lineNumber = strToInt<int64_t>(lineNumString);
-        const int64_t column = strToInt<int64_t>(columnNumString);
+        const auto lineNumber = strToInt<int64_t>(lineNumString);
+        const auto column = strToInt<int64_t>(columnNumString);
         fixedpath = Path::toNativeSeparators(std::move(fixedpath));
 
         ErrorMessage errmsg;
