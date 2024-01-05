@@ -1,19 +1,19 @@
 # Cppcheck addons
 
-Addons are scripts that analyses Cppcheck dump files to check compatibility with secure coding standards and to locate various issues.
+Addons are scripts designed to analyze Cppcheck dump files, ensuring compatibility with secure coding standards and identifying a variety of issues.
 
 ## Supported addons
 
 + [misra.py](https://github.com/danmar/cppcheck/blob/main/addons/misra.py) 
-  Used to verify compliance with MISRA C 2012 - a proprietary set of guidelines to avoid such questionable code, developed for embedded systems. Since this standard is proprietary, cppcheck does not display error text by specifying only the number of violated rules (for example, [c2012-21.3]). If you want to display full texts for violated rules, you will need to create a text file containing MISRA rules, which you will have to pass when calling the script with `--rule-texts` key. Some examples of rule texts files available in [tests directory](https://github.com/danmar/cppcheck/blob/main/addons/test/misra/).
+  This addon is designed to check compliance with the MISRA C 2012 guidelines, a specialized set of rules developed for embedded systems aimed at preventing questionable code practices. As this standard is proprietary, Cppcheck will only indicate the number of each violated rule (e.g., [c2012-21.3]) without displaying the error text. To access detailed descriptions of the violated rules, users need to create a text file with the MISRA rules and use the `--rule-texts` option when executing the script. Examples of such rule text files can be found in the [tests directory](https://github.com/danmar/cppcheck/blob/main/addons/test/misra/) on the Cppcheck GitHub repository.
 + [y2038.py](https://github.com/danmar/cppcheck/blob/main/addons/y2038.py) 
-  Checks Linux system for [year 2038 problem](https://en.wikipedia.org/wiki/Year_2038_problem) safety. This required [modified environment](https://github.com/3adev/y2038). See complete description [here](https://github.com/danmar/cppcheck/blob/main/addons/doc/y2038.txt).
+  Checks Linux kernel source for [year 2038 problem](https://en.wikipedia.org/wiki/Year_2038_problem) safety. This requires [modified environment](https://github.com/3adev/y2038). See complete description [here](https://github.com/danmar/cppcheck/blob/main/addons/doc/y2038.txt).
 + [threadsafety.py](https://github.com/danmar/cppcheck/blob/main/addons/threadsafety.py) 
-  Analyse Cppcheck dump files to locate threadsafety issues like static local objects used by multiple threads.
+  This addon analyses Cppcheck dump files to identify thread safety issues, such as the use of static local objects by multiple threads.
 + [naming.py](https://github.com/danmar/cppcheck/blob/main/addons/naming.py)
-  Enforces naming conventions across the code.
+  This addon enforces naming conventions across the code.
 + [namingng.py](https://github.com/danmar/cppcheck/blob/main/addons/namingng.py)
-  Enforces naming conventions across the code. Enhanced version with support for type prefixes in variable and function names.
+  This addon enforces naming conventions across the code. Enhanced version with support for type prefixes in variable and function names, fine grained control of allowed and forbidden patterns, file naming, include guard naming, presence and validity.
 + [findcasts.py](https://github.com/danmar/cppcheck/blob/main/addons/findcasts.py)
   Locates casts in the code.
 + [misc.py](https://github.com/danmar/cppcheck/blob/main/addons/misc.py)
@@ -31,13 +31,13 @@ Addons are scripts that analyses Cppcheck dump files to check compatibility with
   Configuration file for documentation generation.
 - cppcheckdata.py
   Helper class for reading Cppcheck dump files within an addon.
-- misra_9.py
+- misra\_9.py
   Implementation of the MISRA 9.x rules used by `misra` addon. 
 - namingng.config.json
   Example configuration for `namingng` addon. 
 - namingng.json
   Example JSON file that can be used using --addon=namingng.json, referring to namingng.py and namingng.config.json
-- ROS_naming.json
+- ROS\_naming.json
   Example configuration for the `namingng` addon enforcing the [ROS naming convention for C++ ](http://wiki.ros.org/CppStyleGuide#Files).
 - runaddon.py
   Internal helper used by Cppcheck binary to run the addons.
