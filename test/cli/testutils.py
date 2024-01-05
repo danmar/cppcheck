@@ -1,6 +1,7 @@
 import logging
 import os
 import subprocess
+import shutil
 
 # Create Cppcheck project file
 import sys
@@ -43,14 +44,13 @@ def create_gui_project_file(project_file, root_path=None, import_project=None, p
 
 
 def __lookup_cppcheck_exe():
+    
     # path the script is located in
     script_path = os.path.dirname(os.path.realpath(__file__))
 
     exe_name = "cppcheck"
-
     if sys.platform == "win32":
         exe_name += ".exe"
-
     exe_path = None
 
     if 'TEST_CPPCHECK_EXE_LOOKUP_PATH' in os.environ:
@@ -70,12 +70,30 @@ def __lookup_cppcheck_exe():
     return exe_path
 
 
+def copy_and_prepare_cppcheck(tmpdir):
+    exe = shutil.copy2(__lookup_cppcheck_exe(), tmpdir)
+
+    #add minimum cfg
+    test_cfg_folder = tmpdir.mkdir('cfg')
+    with open(test_cfg_folder.join('std.cfg'), 'wt') as f:
+        f.write("""
+                <?xml version="1.0"?>
+                <def format="2"/>
+                """)
+    return exe
+
+
 # Run Cppcheck with args
-def cppcheck(args, env=None, remove_checkers_report=True):
-    exe = __lookup_cppcheck_exe()
+def cppcheck(args, env=None, remove_checkers_report=True, cppcheck_exe=None):
+    exe = None
+    if cppcheck_exe is not None:
+        exe = cppcheck_exe
+    else:
+        exe = __lookup_cppcheck_exe()
+
     assert exe is not None, 'no cppcheck binary found'
 
-    logging.info(exe + ' ' + ' '.join(args))
+    #logging.info(exe + ' ' + ' '.join(args))
     p = subprocess.Popen([exe] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
     comm = p.communicate()
     stdout = comm[0].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')

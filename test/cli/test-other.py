@@ -4,8 +4,9 @@
 import os
 import sys
 import pytest
+import time
 
-from testutils import cppcheck, assert_cppcheck
+from testutils import cppcheck, assert_cppcheck, copy_and_prepare_cppcheck
 
 
 def __test_missing_include(tmpdir, use_j):
@@ -1124,3 +1125,42 @@ def test_build_dir_j_memleak(tmpdir): #12111
     ]
 
     assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
+
+
+def test_premium_with_relative_path(tmpdir):
+    product_name = 'Cppcheck Premium ' + str(time.time())
+
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        f.write('int main() {}')
+
+    cppcheck_exe = copy_and_prepare_cppcheck(tmpdir)
+
+    # we should not recognize custom args without cppcheck.cfg
+    exitcode, stdout, stderr = cppcheck(['--premium=misra-c++-2008', test_file], None, True, cppcheck_exe)
+    assert stderr == ''
+    assert stdout == 'cppcheck: error: unrecognized command line option: "--premium=misra-c++-2008".\n'
+    assert exitcode == 1
+
+    # adding cppcheck.cfg
+    with open(os.path.join(tmpdir, 'cppcheck.cfg'), 'wt') as f:
+        f.write("""
+                {
+                    "addons": [],
+                    "productName": "NAME",
+                    "about": "Cppcheck Premium 1.2.3.4"
+                }
+                """.replace('NAME', product_name))
+
+    # should be fine now
+    exitcode, stdout, stderr = cppcheck(['--premium=misra-c++-2008', test_file], None, True, cppcheck_exe)
+    assert stderr == ''
+    assert f'Checking {test_file} ...' == stdout.strip()
+    assert exitcode == 0
+
+    # check the version it should be as in cppcheck.cfg
+    exitcode, stdout, stderr = cppcheck(['--version'], None, True, cppcheck_exe)
+    assert stdout.strip() == product_name
+    assert stderr == ''
+    assert exitcode == 0
+
