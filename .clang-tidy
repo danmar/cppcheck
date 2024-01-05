@@ -47,7 +47,6 @@ Checks: >
         -modernize-replace-auto-ptr,
         -modernize-return-braced-init-list,
         -modernize-type-traits,
-        -modernize-use-auto,
         -modernize-use-nodiscard,
         -modernize-use-trailing-return-type,
         -performance-avoid-endl,

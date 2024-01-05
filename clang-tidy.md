@@ -34,7 +34,6 @@ These are coding guidelines we do not follow. Some of the checks might be explic
 `readability-braces-around-statements`<br/>
 `readability-isolate-declaration`<br/>
 `modernize-use-trailing-return-type`<br/>
-`modernize-use-auto`<br/>
 `readability-uppercase-literal-suffix`<br/>
 `readability-else-after-return`<br/>
 `readability-identifier-length`<br/>
@@ -152,6 +151,10 @@ To be evaluated (need to enable explicitly).
 `modernize-use-nodiscard`</br>
 
 These apply to codebases which use later standards then C++11 (C++17 is used when building with Qt6) so we cannot simply apply them.
+
+`modernize-use-auto`<br/>
+
+This cannot be enabled as it might lead to changes in the constness of iterators - see https://github.com/llvm/llvm-project/issues/84324.
 
 ### Disabled for performance reasons
 

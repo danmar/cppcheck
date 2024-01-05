@@ -198,7 +198,7 @@ void Variables::alias(nonneg int varid1, nonneg int varid2, bool replace)
 
     if (replace) {
         // remove var1 from all aliases
-        for (std::set<nonneg int>::const_iterator i = var1->_aliases.cbegin(); i != var1->_aliases.cend(); ++i) {
+        for (auto i = var1->_aliases.cbegin(); i != var1->_aliases.cend(); ++i) {
             VariableUsage *temp = find(*i);
 
             if (temp)
@@ -210,7 +210,7 @@ void Variables::alias(nonneg int varid1, nonneg int varid2, bool replace)
     }
 
     // var1 gets all var2s aliases
-    for (std::set<nonneg int>::const_iterator i = var2->_aliases.cbegin(); i != var2->_aliases.cend(); ++i) {
+    for (auto i = var2->_aliases.cbegin(); i != var2->_aliases.cend(); ++i) {
         if (*i != varid1)
             var1->_aliases.insert(*i);
     }
@@ -230,7 +230,7 @@ void Variables::clearAliases(nonneg int varid)
 
     if (usage) {
         // remove usage from all aliases
-        for (std::set<nonneg int>::const_iterator i = usage->_aliases.cbegin(); i != usage->_aliases.cend(); ++i) {
+        for (auto i = usage->_aliases.cbegin(); i != usage->_aliases.cend(); ++i) {
             VariableUsage *temp = find(*i);
 
             if (temp)
@@ -247,7 +247,7 @@ void Variables::eraseAliases(nonneg int varid)
     VariableUsage *usage = find(varid);
 
     if (usage) {
-        for (std::set<nonneg int>::const_iterator aliases = usage->_aliases.cbegin(); aliases != usage->_aliases.cend(); ++aliases)
+        for (auto aliases = usage->_aliases.cbegin(); aliases != usage->_aliases.cend(); ++aliases)
             erase(*aliases);
     }
 }
@@ -327,7 +327,7 @@ void Variables::writeAliases(nonneg int varid, const Token* tok)
     VariableUsage *usage = find(varid);
 
     if (usage) {
-        for (std::set<nonneg int>::const_iterator aliases = usage->_aliases.cbegin(); aliases != usage->_aliases.cend(); ++aliases) {
+        for (auto aliases = usage->_aliases.cbegin(); aliases != usage->_aliases.cend(); ++aliases) {
             VariableUsage *aliased = find(*aliases);
 
             if (aliased) {
@@ -352,7 +352,7 @@ void Variables::use(nonneg int varid, const Token* tok)
         usage->use();
         usage->_lastAccess = tok;
 
-        for (std::set<nonneg int>::const_iterator aliases = usage->_aliases.cbegin(); aliases != usage->_aliases.cend(); ++aliases) {
+        for (auto aliases = usage->_aliases.cbegin(); aliases != usage->_aliases.cend(); ++aliases) {
             VariableUsage *aliased = find(*aliases);
 
             if (aliased) {
@@ -373,7 +373,7 @@ void Variables::modified(nonneg int varid, const Token* tok)
         usage->_modified = true;
         usage->_lastAccess = tok;
 
-        for (std::set<nonneg int>::const_iterator aliases = usage->_aliases.cbegin(); aliases != usage->_aliases.cend(); ++aliases) {
+        for (auto aliases = usage->_aliases.cbegin(); aliases != usage->_aliases.cend(); ++aliases) {
             VariableUsage *aliased = find(*aliases);
 
             if (aliased) {
@@ -694,7 +694,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
     // Find declarations if the scope is executable..
     if (scope->isExecutable()) {
         // Find declarations
-        for (std::list<Variable>::const_iterator i = scope->varlist.cbegin(); i != scope->varlist.cend(); ++i) {
+        for (auto i = scope->varlist.cbegin(); i != scope->varlist.cend(); ++i) {
             if (i->isThrow() || i->isExtern())
                 continue;
             Variables::VariableType type = Variables::none;
@@ -1321,7 +1321,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
 
 
         // Check usage of all variables in the current scope..
-        for (std::map<nonneg int, Variables::VariableUsage>::const_iterator it = variables.varUsage().cbegin();
+        for (auto it = variables.varUsage().cbegin();
              it != variables.varUsage().cend();
              ++it) {
             const Variables::VariableUsage &usage = it->second;
