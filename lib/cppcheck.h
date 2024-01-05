@@ -200,6 +200,8 @@ private:
     void executeRules(const std::string &tokenlist, const Tokenizer &tokenizer);
 #endif
 
+    unsigned int checkClang(const std::string &path);
+
     /**
      * @brief Errors and warnings are directed here.
      *

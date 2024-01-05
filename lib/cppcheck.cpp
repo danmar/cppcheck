@@ -423,119 +423,126 @@ static bool reportClangErrors(std::istream &is, const std::function<void(const E
     return false;
 }
 
-unsigned int CppCheck::check(const std::string &path)
+unsigned int CppCheck::checkClang(const std::string &path)
 {
-    if (mSettings.clang) {
-        if (!mSettings.quiet)
-            mErrorLogger.reportOut(std::string("Checking ") + path + " ...", Color::FgGreen);
+    if (!mSettings.quiet)
+        mErrorLogger.reportOut(std::string("Checking ") + path + " ...", Color::FgGreen);
 
-        const std::string lang = Path::isCPP(path) ? "-x c++" : "-x c";
-        const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, emptyString);
-        const std::string clangcmd = analyzerInfo + ".clang-cmd";
-        const std::string clangStderr = analyzerInfo + ".clang-stderr";
-        const std::string clangAst = analyzerInfo + ".clang-ast";
-        std::string exe = mSettings.clangExecutable;
+    // TODO: this ignores the configured language
+    const std::string lang = Path::isCPP(path) ? "-x c++" : "-x c";
+    const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, emptyString);
+    const std::string clangcmd = analyzerInfo + ".clang-cmd";
+    const std::string clangStderr = analyzerInfo + ".clang-stderr";
+    const std::string clangAst = analyzerInfo + ".clang-ast";
+    std::string exe = mSettings.clangExecutable;
 #ifdef _WIN32
-        // append .exe if it is not a path
-        if (Path::fromNativeSeparators(mSettings.clangExecutable).find('/') == std::string::npos) {
-            exe += ".exe";
-        }
+    // append .exe if it is not a path
+    if (Path::fromNativeSeparators(mSettings.clangExecutable).find('/') == std::string::npos) {
+        exe += ".exe";
+    }
 #endif
 
-        std::string flags(lang + " ");
-        if (Path::isCPP(path) && !mSettings.standards.stdValue.empty())
-            flags += "-std=" + mSettings.standards.stdValue + " ";
+    std::string flags(lang + " ");
+    // TODO: does not apply C standard
+    if (Path::isCPP(path) && !mSettings.standards.stdValue.empty())
+        flags += "-std=" + mSettings.standards.stdValue + " ";
 
-        for (const std::string &i: mSettings.includePaths)
-            flags += "-I" + i + " ";
+    for (const std::string &i: mSettings.includePaths)
+        flags += "-I" + i + " ";
 
-        flags += getDefinesFlags(mSettings.userDefines);
+    flags += getDefinesFlags(mSettings.userDefines);
 
-        const std::string args2 = "-fsyntax-only -Xclang -ast-dump -fno-color-diagnostics " + flags + path;
-        const std::string redirect2 = analyzerInfo.empty() ? std::string("2>&1") : ("2> " + clangStderr);
-        if (!mSettings.buildDir.empty()) {
-            std::ofstream fout(clangcmd);
-            fout << exe << " " << args2 << " " << redirect2 << std::endl;
-        } else if (mSettings.verbose && !mSettings.quiet) {
-            mErrorLogger.reportOut(exe + " " + args2);
-        }
-
-        std::string output2;
-        if (mExecuteCommand(exe,split(args2),redirect2,output2) != EXIT_SUCCESS || output2.find("TranslationUnitDecl") == std::string::npos) {
-            std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "'" << std::endl;
-            return 0;
-        }
-
-        // Ensure there are not syntax errors...
-        std::vector<ErrorMessage> compilerWarnings;
-        if (!mSettings.buildDir.empty()) {
-            std::ifstream fin(clangStderr);
-            auto reportError = [this](const ErrorMessage& errorMessage) {
-                reportErr(errorMessage);
-            };
-            if (reportClangErrors(fin, reportError, compilerWarnings))
-                return 0;
-        } else {
-            std::istringstream istr(output2);
-            auto reportError = [this](const ErrorMessage& errorMessage) {
-                reportErr(errorMessage);
-            };
-            if (reportClangErrors(istr, reportError, compilerWarnings))
-                return 0;
-        }
-
-        if (!mSettings.buildDir.empty()) {
-            std::ofstream fout(clangAst);
-            fout << output2 << std::endl;
-        }
-
-        try {
-            std::istringstream ast(output2);
-            Tokenizer tokenizer(&mSettings, this);
-            tokenizer.list.appendFileIfNew(path);
-            clangimport::parseClangAstDump(&tokenizer, ast);
-            ValueFlow::setValues(tokenizer.list,
-                                 const_cast<SymbolDatabase&>(*tokenizer.getSymbolDatabase()),
-                                 this,
-                                 &mSettings,
-                                 &s_timerResults);
-            if (mSettings.debugnormal)
-                tokenizer.printDebugOutput(1);
-            checkNormalTokens(tokenizer);
-
-            // create dumpfile
-            std::ofstream fdump;
-            std::string dumpFile;
-            createDumpFile(mSettings, path, fdump, dumpFile);
-            if (fdump.is_open()) {
-                fdump << "<dump cfg=\"\">\n";
-                for (const ErrorMessage& errmsg: compilerWarnings)
-                    fdump << "  <clang-warning file=\"" << toxml(errmsg.callStack.front().getfile()) << "\" line=\"" << errmsg.callStack.front().line << "\" column=\"" << errmsg.callStack.front().column << "\" message=\"" << toxml(errmsg.shortMessage()) << "\"/>\n";
-                fdump << "  <standards>\n";
-                fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>\n";
-                fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>\n";
-                fdump << "  </standards>\n";
-                tokenizer.dump(fdump);
-                fdump << "</dump>\n";
-                fdump << "</dumps>\n";
-                fdump.close();
-            }
-
-            // run addons
-            executeAddons(dumpFile, path);
-
-        } catch (const InternalError &e) {
-            const ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, path, "Bailing out from analysis: Processing Clang AST dump failed");
-            reportErr(errmsg);
-        } catch (const TerminateException &) {
-            // Analysis is terminated
-            return mExitCode;
-        } catch (const std::exception &e) {
-            internalError(path, std::string("Processing Clang AST dump failed: ") + e.what());
-        }
-
-        return mExitCode;
+    const std::string args2 = "-fsyntax-only -Xclang -ast-dump -fno-color-diagnostics " + flags + path;
+    const std::string redirect2 = analyzerInfo.empty() ? std::string("2>&1") : ("2> " + clangStderr);
+    if (!mSettings.buildDir.empty()) {
+        std::ofstream fout(clangcmd);
+        fout << exe << " " << args2 << " " << redirect2 << std::endl;
+    } else if (mSettings.verbose && !mSettings.quiet) {
+        mErrorLogger.reportOut(exe + " " + args2);
     }
+
+    std::string output2;
+    if (mExecuteCommand(exe,split(args2),redirect2,output2) != EXIT_SUCCESS || output2.find("TranslationUnitDecl") == std::string::npos) {
+        std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "'" << std::endl;
+        return 0;
+    }
+
+    // Ensure there are not syntax errors...
+    std::vector<ErrorMessage> compilerWarnings;
+    if (!mSettings.buildDir.empty()) {
+        std::ifstream fin(clangStderr);
+        auto reportError = [this](const ErrorMessage& errorMessage) {
+            reportErr(errorMessage);
+        };
+        if (reportClangErrors(fin, reportError, compilerWarnings))
+            return 0;
+    } else {
+        std::istringstream istr(output2);
+        auto reportError = [this](const ErrorMessage& errorMessage) {
+            reportErr(errorMessage);
+        };
+        if (reportClangErrors(istr, reportError, compilerWarnings))
+            return 0;
+    }
+
+    if (!mSettings.buildDir.empty()) {
+        std::ofstream fout(clangAst);
+        fout << output2 << std::endl;
+    }
+
+    try {
+        std::istringstream ast(output2);
+        Tokenizer tokenizer(&mSettings, this);
+        tokenizer.list.appendFileIfNew(path);
+        clangimport::parseClangAstDump(&tokenizer, ast);
+        ValueFlow::setValues(tokenizer.list,
+                             const_cast<SymbolDatabase&>(*tokenizer.getSymbolDatabase()),
+                             this,
+                             &mSettings,
+                             &s_timerResults);
+        if (mSettings.debugnormal)
+            tokenizer.printDebugOutput(1);
+        checkNormalTokens(tokenizer);
+
+        // create dumpfile
+        std::ofstream fdump;
+        std::string dumpFile;
+        createDumpFile(mSettings, path, fdump, dumpFile);
+        if (fdump.is_open()) {
+            // TODO: use tinyxml2 to create XML
+            fdump << "<dump cfg=\"\">\n";
+            for (const ErrorMessage& errmsg: compilerWarnings)
+                fdump << "  <clang-warning file=\"" << toxml(errmsg.callStack.front().getfile()) << "\" line=\"" << errmsg.callStack.front().line << "\" column=\"" << errmsg.callStack.front().column << "\" message=\"" << toxml(errmsg.shortMessage()) << "\"/>\n";
+            fdump << "  <standards>\n";
+            fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>\n";
+            fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>\n";
+            fdump << "  </standards>\n";
+            tokenizer.dump(fdump);
+            fdump << "</dump>\n";
+            fdump << "</dumps>\n";
+            fdump.close();
+        }
+
+        // run addons
+        executeAddons(dumpFile, path);
+
+    } catch (const InternalError &e) {
+        const ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, path, "Bailing out from analysis: Processing Clang AST dump failed");
+        reportErr(errmsg);
+    } catch (const TerminateException &) {
+        // Analysis is terminated
+        return mExitCode;
+    } catch (const std::exception &e) {
+        internalError(path, std::string("Processing Clang AST dump failed: ") + e.what());
+    }
+
+    return mExitCode;
+}
+
+unsigned int CppCheck::check(const std::string &path)
+{
+    if (mSettings.clang)
+        return checkClang(path);
 
     return checkFile(Path::simplifyPath(path), emptyString);
 }

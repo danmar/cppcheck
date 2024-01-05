@@ -31,14 +31,17 @@ struct CPPCHECKLIB FileSettings {
     std::string cfg;
     std::string filename;
     std::string defines;
+    // TODO: handle differently
     std::string cppcheckDefines() const {
         return defines + (msc ? ";_MSC_VER=1900" : "") + (useMfc ? ";__AFXWIN_H__=1" : "");
     }
     std::set<std::string> undefs;
     std::list<std::string> includePaths;
+    // only used by clang mode
     std::list<std::string> systemIncludePaths;
     std::string standard;
     Platform::Type platformType = Platform::Type::Unspecified;
+    // TODO: get rid of these
     bool msc{};
     bool useMfc{};
 };
