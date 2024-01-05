@@ -1048,6 +1048,9 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
             const Token* const nextArg = funcArg->nextArgument();
             do {
                 checkTokenInsideExpression(arg, varInfo, /*inFuncCall*/ isLeakIgnore);
+
+                if (isLambdaCaptureList(arg))
+                    break;
                 arg = arg->next();
             } while ((nextArg && arg != nextArg) || (!nextArg && arg != tokOpeningPar->link()));
         }

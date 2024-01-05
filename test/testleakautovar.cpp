@@ -981,6 +981,20 @@ private:
         ASSERT_EQUALS("[test.c:4]: (error) Dereferencing 'p' after it is deallocated / released\n"
                       "[test.c:7] -> [test.c:8]: (error) Returning/dereferencing 'p' after it is deallocated / released\n",
                       errout.str());
+
+        check("int f() {\n" // #12321
+              "    std::invoke([](int i) {\n"
+              "        int* p = (int*)malloc(4);\n"
+              "        *p = 0;\n"
+              "        if (i) {\n"
+              "            free(p);\n"
+              "            return;\n"
+              "        }\n"
+              "        free(p);\n"
+              "    }, 1);\n"
+              "    return 0;\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void doublefree1() {  // #3895
