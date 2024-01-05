@@ -1046,10 +1046,10 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
             changeAllocStatus(varInfo, sp_allocation, vtok, vtok);
         } else {
             const Token* const nextArg = funcArg->nextArgument();
-            do {
+            while (arg && ((nextArg && arg != nextArg) || (!nextArg && arg != tokOpeningPar->link()))) {
                 checkTokenInsideExpression(arg, varInfo, /*inFuncCall*/ isLeakIgnore);
                 arg = arg->next();
-            } while ((nextArg && arg != nextArg) || (!nextArg && arg != tokOpeningPar->link()));
+            }
         }
         // TODO: check each token in argument expression (could contain multiple variables)
         argNr++;
