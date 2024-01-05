@@ -110,7 +110,7 @@ void ResultsTree::initialize(QSettings *settings, ApplicationList *list, ThreadH
 
 QStandardItem *ResultsTree::createNormalItem(const QString &name)
 {
-    QStandardItem *item = new QStandardItem(name);
+    auto *item = new QStandardItem(name);
     item->setData(name, Qt::ToolTipRole);
     item->setEditable(false);
     return item;
@@ -118,7 +118,7 @@ QStandardItem *ResultsTree::createNormalItem(const QString &name)
 
 QStandardItem *ResultsTree::createCheckboxItem(bool checked)
 {
-    QStandardItem *item = new QStandardItem;
+    auto *item = new QStandardItem;
     item->setCheckable(true);
     item->setCheckState(checked ? Qt::Checked : Qt::Unchecked);
     item->setEnabled(false);
@@ -127,7 +127,7 @@ QStandardItem *ResultsTree::createCheckboxItem(bool checked)
 
 QStandardItem *ResultsTree::createLineNumberItem(const QString &linenumber)
 {
-    QStandardItem *item = new QStandardItem();
+    auto *item = new QStandardItem();
     item->setData(QVariant(linenumber.toInt()), Qt::DisplayRole);
     item->setToolTip(linenumber);
     item->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
@@ -611,7 +611,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
 
         //Create a signal mapper so we don't have to store data to class
         //member variables
-        QSignalMapper *signalMapper = new QSignalMapper(this);
+        auto *signalMapper = new QSignalMapper(this);
 
         if (mContextItem && mApplications->getApplicationCount() > 0 && mContextItem->parent()) {
             //Create an action for the application
@@ -619,7 +619,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             if (defaultApplicationIndex < 0)
                 defaultApplicationIndex = 0;
             const Application& app = mApplications->getApplication(defaultApplicationIndex);
-            QAction *start = new QAction(app.getName(), &menu);
+            auto *start = new QAction(app.getName(), &menu);
             if (multipleSelection)
                 start->setDisabled(true);
 
@@ -646,11 +646,11 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             }
 
             //Create an action for the application
-            QAction *recheckAction          = new QAction(tr("Recheck"), &menu);
-            QAction *copyAction             = new QAction(tr("Copy"), &menu);
-            QAction *hide                   = new QAction(tr("Hide"), &menu);
-            QAction *hideallid              = new QAction(tr("Hide all with id"), &menu);
-            QAction *opencontainingfolder   = new QAction(tr("Open containing folder"), &menu);
+            auto *recheckAction          = new QAction(tr("Recheck"), &menu);
+            auto *copyAction             = new QAction(tr("Copy"), &menu);
+            auto *hide                   = new QAction(tr("Hide"), &menu);
+            auto *hideallid              = new QAction(tr("Hide all with id"), &menu);
+            auto *opencontainingfolder   = new QAction(tr("Open containing folder"), &menu);
 
             if (multipleSelection) {
                 hideallid->setDisabled(true);
@@ -668,7 +668,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addAction(hide);
             menu.addAction(hideallid);
 
-            QAction *suppress = new QAction(tr("Suppress selected id(s)"), &menu);
+            auto *suppress = new QAction(tr("Suppress selected id(s)"), &menu);
             {
                 QVariantMap data = mContextItem->data().toMap();
                 const QString messageId = data[ERRORID].toString();
@@ -691,7 +691,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 menu.addSeparator();
                 QMenu *tagMenu = menu.addMenu(tr("Tag"));
                 {
-                    QAction *action = new QAction(tr("No tag"), tagMenu);
+                    auto *action = new QAction(tr("No tag"), tagMenu);
                     tagMenu->addAction(action);
                     connect(action, &QAction::triggered, [=]() {
                         tagSelectedItems(QString());
@@ -699,7 +699,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 }
 
                 for (const QString& tagstr : currentProject->getTags()) {
-                    QAction *action = new QAction(tagstr, tagMenu);
+                    auto *action = new QAction(tagstr, tagMenu);
                     tagMenu->addAction(action);
                     connect(action, &QAction::triggered, [=]() {
                         tagSelectedItems(tagstr);

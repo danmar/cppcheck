@@ -140,7 +140,7 @@ void SettingsDialog::initTranslationsList()
 {
     const QString current = mTranslator->getCurrentLanguage();
     for (const TranslationInfo& translation : mTranslator->getTranslations()) {
-        QListWidgetItem *item = new QListWidgetItem;
+        auto *item = new QListWidgetItem;
         item->setText(translation.mName);
         item->setData(mLangCodeRole, QVariant(translation.mCode));
         mUI->mListLanguages->addItem(item);

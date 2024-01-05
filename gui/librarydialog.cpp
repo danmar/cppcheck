@@ -185,7 +185,7 @@ void LibraryDialog::saveCfgAs()
 
 void LibraryDialog::addFunction()
 {
-    LibraryAddFunctionDialog *d = new LibraryAddFunctionDialog;
+    auto *d = new LibraryAddFunctionDialog;
     if (d->exec() == QDialog::Accepted && !d->functionName().isEmpty()) {
 
         CppcheckLibraryData::Function f;

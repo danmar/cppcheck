@@ -648,7 +648,7 @@ Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType 
 {
     SymbolDatabase *symbolDatabase = mData->mSymbolDatabase;
 
-    Scope *nestedIn = const_cast<Scope *>(getNestedInScope(tokenList));
+    auto *nestedIn = const_cast<Scope *>(getNestedInScope(tokenList));
 
     symbolDatabase->scopeList.emplace_back(nullptr, nullptr, nestedIn);
     Scope *scope = &symbolDatabase->scopeList.back();
@@ -974,7 +974,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == EnumConstantDecl) {
         Token *nameToken = addtoken(tokenList, getSpelling());
-        Scope *scope = const_cast<Scope *>(nameToken->scope());
+        auto *scope = const_cast<Scope *>(nameToken->scope());
         scope->enumeratorList.emplace_back(nameToken->scope());
         Enumerator *e = &scope->enumeratorList.back();
         e->name = nameToken;
@@ -1326,7 +1326,7 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
         addFullScopeNameTokens(tokenList, mData->getScope(mExtTokens[2]));
 
     Token *nameToken = addtoken(tokenList, getSpelling() + getTemplateParameters());
-    Scope *nestedIn = const_cast<Scope *>(nameToken->scope());
+    auto *nestedIn = const_cast<Scope *>(nameToken->scope());
 
     if (prev) {
         const std::string addr = *(std::find(mExtTokens.cbegin(), mExtTokens.cend(), "prev") + 1);
@@ -1343,7 +1343,7 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
             nestedIn->functionList.back().retDef = startToken;
     }
 
-    Function * const function = const_cast<Function*>(nameToken->function());
+    auto * const function = const_cast<Function*>(nameToken->function());
 
     if (!prev) {
         auto accessControl = mData->scopeAccessControl.find(tokenList->back()->scope());
@@ -1486,7 +1486,7 @@ Token * clangimport::AstNode::createTokensVarDecl(TokenList *tokenList)
     else if (startToken->str() != "static")
         startToken = startToken->next();
     Token *vartok1 = addtoken(tokenList, name);
-    Scope *scope = const_cast<Scope *>(tokenList->back()->scope());
+    auto *scope = const_cast<Scope *>(tokenList->back()->scope());
     scope->varlist.emplace_back(vartok1, unquote(type), startToken, vartok1->previous(), 0, scope->defaultAccess(), recordType, scope);
     mData->varDecl(addr, vartok1, &scope->varlist.back());
     if (mExtTokens.back() == "cinit" && !children.empty()) {
@@ -1542,7 +1542,7 @@ static void setValues(const Tokenizer *tokenizer, const SymbolDatabase *symbolDa
         scope.definedType->sizeOf = typeSize;
     }
 
-    for (Token *tok = const_cast<Token*>(tokenizer->tokens()); tok; tok = tok->next()) {
+    for (auto *tok = const_cast<Token*>(tokenizer->tokens()); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
             ValueType vt = ValueType::parseDecl(tok->tokAt(2), *settings);
             const int sz = vt.typeSize(settings->platform, true);
@@ -1568,7 +1568,7 @@ void clangimport::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
     TokenList *tokenList = &tokenizer->list;
 
     tokenizer->createSymbolDatabase();
-    SymbolDatabase *symbolDatabase = const_cast<SymbolDatabase *>(tokenizer->getSymbolDatabase());
+    auto *symbolDatabase = const_cast<SymbolDatabase *>(tokenizer->getSymbolDatabase());
     symbolDatabase->scopeList.emplace_back(nullptr, nullptr, nullptr);
     symbolDatabase->scopeList.back().type = Scope::ScopeType::eGlobal;
     symbolDatabase->scopeList.back().check = symbolDatabase;

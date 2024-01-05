@@ -309,7 +309,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
 {
     const SymbolDatabase * const symbolDatabase = tokenizer->getSymbolDatabase();
 
-    FileInfo *fileInfo = new FileInfo;
+    auto *fileInfo = new FileInfo;
 
     // Parse all functions in TU
     for (const Scope &scope : symbolDatabase->scopeList) {
@@ -513,7 +513,7 @@ static bool findPath(const std::string &callId,
         if (c->callArgNr != callArgNr)
             continue;
 
-        const CTU::FileInfo::FunctionCall *functionCall = dynamic_cast<const CTU::FileInfo::FunctionCall *>(c);
+        const auto *functionCall = dynamic_cast<const CTU::FileInfo::FunctionCall *>(c);
         if (functionCall) {
             if (!warning && functionCall->warning)
                 continue;
@@ -537,7 +537,7 @@ static bool findPath(const std::string &callId,
             return true;
         }
 
-        const CTU::FileInfo::NestedCall *nestedCall = dynamic_cast<const CTU::FileInfo::NestedCall *>(c);
+        const auto *nestedCall = dynamic_cast<const CTU::FileInfo::NestedCall *>(c);
         if (!nestedCall)
             continue;
 
@@ -570,7 +570,7 @@ std::list<ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(InvalidValueTy
         if (!path[index])
             continue;
 
-        const CTU::FileInfo::FunctionCall *functionCall = dynamic_cast<const CTU::FileInfo::FunctionCall *>(path[index]);
+        const auto *functionCall = dynamic_cast<const CTU::FileInfo::FunctionCall *>(path[index]);
 
         if (functionCall) {
             if (functionCallPtr)
