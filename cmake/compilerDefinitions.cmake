@@ -1,4 +1,6 @@
 if (MSVC)
+    # add_compile_definitions() requires CMake 3.12
+
     # Visual Studio only sets _DEBUG
     add_compile_definitions($<$<CONFIG:Debug>:DEBUG>)
 

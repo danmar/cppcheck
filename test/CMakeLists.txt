@@ -60,12 +60,7 @@ if (BUILD_TESTS)
     endif()
 
     if (REGISTER_TESTS)
-        # CMP0057 requires 3.3 - if (IN_LIST)
-        # CMP0064 requires 3.4 - if (TEST)
-        # CMAKE_MATCH_<n> usage for if (MATCHES) requires 3.9
-        cmake_minimum_required(VERSION 3.9)
-        cmake_policy(SET CMP0064 NEW)
-        cmake_policy(SET CMP0057 NEW)
+        # CMAKE_MATCH_<n> usage for if (MATCHES) requires CMake 3.9
 
         find_package(Threads REQUIRED)
         include(ProcessorCount)
