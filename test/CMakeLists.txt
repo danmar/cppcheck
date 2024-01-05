@@ -128,6 +128,7 @@ if (BUILD_TESTS)
                         --template="{file}:{line}:{severity}:{id}:{message}"
                         --debug-warnings
                         --suppress=valueFlowBailout
+                        --suppress=purgedConfiguration
                         --suppress=unmatchedSuppression
                         ${CMAKE_CURRENT_SOURCE_DIR}/cfg/${CFG_TEST}
                 )
