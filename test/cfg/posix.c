@@ -102,6 +102,17 @@ int nullPointer_posix_trace_getnext_event(trace_id_t trid, struct posix_trace_ev
 }
 #endif // __TRACE_H__
 
+size_t nullPointer_strxfrm_l(char *restrict dest, const char *restrict src, size_t count, locale_t locale)
+{
+    (void)strxfrm_l(dest, src, count, locale);
+    // In case the 3rd argument is 0, the 1st argument is permitted to be a null pointer. (#6306)
+    (void)strxfrm_l(NULL, src, 0, locale);
+    (void)strxfrm_l(NULL, src, 1, locale);
+    (void)strxfrm_l(NULL, src, count, locale);
+    // cppcheck-suppress nullPointer
+    return strxfrm_l(dest, NULL, count, locale);
+}
+
 void nullPointer_pthread_attr_getstack(const pthread_attr_t *attr, void *stackaddr, size_t stacksize) {
     // cppcheck-suppress nullPointer
     (void) pthread_attr_getstack(NULL, &stackaddr, &stacksize);
