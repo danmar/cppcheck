@@ -31,14 +31,16 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include <time.h>
+#include <string.h>
+#include <strings.h>
 #if !(defined(__APPLE__) && defined(__MACH__))
+#include <xlocale.h>
 #include <mqueue.h>
 #endif
 #include <stdlib.h>
 #include <unistd.h>
 #include <wchar.h>
-#include <string.h>
-#include <strings.h>
+
 
 #if !(defined(__APPLE__) && defined(__MACH__))
 void nullPointer_mq_timedsend(mqd_t mqdes, const char* msg_ptr, size_t msg_len, unsigned msg_prio, const struct timespec* abs_timeout) {
