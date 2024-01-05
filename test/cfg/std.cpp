@@ -4290,6 +4290,28 @@ void nullPointer_istream_read(std::istream &f)
     f.read(NULL, 10);
 }
 
+std::size_t nullPointer_strxfrm(char *dest, const char *src, std::size_t count)
+{
+    (void)strxfrm(dest, src, count);
+    // In case the 3rd argument is 0, the 1st argument is permitted to be a null pointer. (#6306)
+    (void)strxfrm(nullptr, src, 0);
+    (void)strxfrm(nullptr, src, 1);
+    (void)strxfrm(nullptr, src, count);
+    // cppcheck-suppress nullPointer
+    return strxfrm(dest, nullptr, count);
+}
+
+std::size_t nullPointer_wcsxfrm(wchar_t *dest, const wchar_t *src, std::size_t count)
+{
+    (void)wcsxfrm(dest, src, count);
+    // In case the 3rd argument is 0, the 1st argument is permitted to be a null pointer. (#6306)
+    (void)wcsxfrm(nullptr, src, 0);
+    (void)wcsxfrm(nullptr, src, 1);
+    (void)wcsxfrm(nullptr, src, count);
+    // cppcheck-suppress nullPointer
+    return wcsxfrm(dest, nullptr, count);
+}
+
 void nullPointer_asctime(void)
 {
     const struct tm *tm = 0;
