@@ -588,6 +588,7 @@ void *bufferAccessOutOfBounds_memchr(void *s, int c, size_t n)
 #ifdef __STDC_LIB_EXT1__
 void uninitvar_localtime_s(const std::time_t *restrict time, struct tm *restrict result)
 {
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     const std::time_t *restrict Time;
     // TODO cppcheck-suppress uninitvar
     (void)std::localtime_s(Time, result);
@@ -640,6 +641,7 @@ void invalidFunctionArg_std_string_substr(const std::string &str, std::size_t po
     (void)str.substr(pos,-1);
     // no warning is expected for
     (void)str.substr(pos,len);
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     (void)str.substr(pos, std::string::npos);
 }
 
@@ -4602,8 +4604,10 @@ void stdbind()
     std::bind(stdbind_helper, 1);
 
     // TODO cppcheck-suppress unreadVariable
+    // cppcheck-suppress autoNoType
     auto f1 = std::bind(stdbind_helper, _1);
     // TODO cppcheck-suppress unreadVariable
+    // cppcheck-suppress autoNoType
     auto f2 = std::bind(stdbind_helper, 10);
 }
 
@@ -4778,6 +4782,7 @@ void smartPtr_get()
 
 void smartPtr_get2(std::vector<std::unique_ptr<int>>& v)
 {
+    // cppcheck-suppress autoNoType
     for (auto& u : v) {
         int* p = u.get();
         *p = 0;

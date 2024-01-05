@@ -234,6 +234,7 @@ void validCode()
     hSemaphore1 = CreateSemaphore(NULL, 0, 1, NULL);
     CloseHandle(hSemaphore1);
     HANDLE hSemaphore2;
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     hSemaphore2 = CreateSemaphoreEx(NULL, 0, 1, NULL, 0, SEMAPHORE_ALL_ACCESS);
     CloseHandle(hSemaphore2);
     HANDLE hSemaphore3;

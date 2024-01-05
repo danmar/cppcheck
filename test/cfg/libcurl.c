@@ -15,6 +15,7 @@ void validCode()
     CURL *curl = curl_easy_init();
     if (curl) {
         CURLcode res;
+        // cppcheck-suppress valueFlowBailoutIncompleteVar
         curl_easy_setopt(curl, CURLOPT_URL, "http://example.com");
         res = curl_easy_perform(curl);
         if (res != CURLE_OK) {

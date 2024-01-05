@@ -185,6 +185,7 @@ size_t bufferAccessOutOfBounds_wcsrtombs(char * dest, const wchar_t ** src, size
 void bufferAccessOutOfBounds(void)
 {
     char a[5];
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     fgets(a,5,stdin);
     // cppcheck-suppress bufferAccessOutOfBounds
     fgets(a,6,stdin);

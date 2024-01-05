@@ -289,6 +289,7 @@ void g_new_if_test()
     };
 
     const struct a * pNew3;
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     if (pNew3 = g_new(struct a, 6)) {
         printf("%p", pNew3);
     }

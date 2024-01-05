@@ -895,6 +895,7 @@ void validCode(va_list valist_arg1, va_list valist_arg2)
     void *ptr;
     if (posix_memalign(&ptr, sizeof(void *), sizeof(void *)) == 0)
         free(ptr);
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     syslog(LOG_ERR, "err %u", 0U);
     syslog(LOG_WARNING, "warn %d %d", 5, 1);
     vsyslog(LOG_EMERG, "emerg %d", valist_arg1);
