@@ -986,6 +986,20 @@ private:
               "    FOREACH(callables, ());\n"
               "}\n");
         ASSERT_EQUALS("[test.c:2]: (information) --check-library: Function FOREACH() should have <noreturn> configuration\n", errout.str()); // don't crash
+
+        check("int f() {\n" // #12321
+              "    std::invoke([](int i) {\n"
+              "        int* p = (int*)malloc(4);\n"
+              "        *p = 0;\n"
+              "        if (i) {\n"
+              "            free(p);\n"
+              "            return;\n"
+              "        }\n"
+              "        free(p);\n"
+              "    }, 1);\n"
+              "    return 0;\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void doublefree1() {  // #3895
