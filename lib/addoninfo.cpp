@@ -52,47 +52,73 @@ static std::string parseAddonInfo(AddonInfo& addoninfo, const picojson::value &j
         return "Loading " + fileName + " failed. " + json_error;
     }
     if (!json.is<picojson::object>())
-        return "Loading " + fileName + " failed. Bad json.";
-    picojson::object obj = json.get<picojson::object>();
-    if (obj.count("args")) {
-        if (!obj["args"].is<picojson::array>())
-            return "Loading " + fileName + " failed. args must be array.";
-        for (const picojson::value &v : obj["args"].get<picojson::array>())
-            addoninfo.args += " " + v.get<std::string>();
-    }
+        return "Loading " + fileName + " failed. JSON is not an object.";
 
-    if (obj.count("ctu")) {
-        // ctu is specified in the config file
-        if (!obj["ctu"].is<bool>())
-            return "Loading " + fileName + " failed. ctu must be boolean.";
-        addoninfo.ctu = obj["ctu"].get<bool>();
-    } else {
-        addoninfo.ctu = false;
-    }
-
-    if (obj.count("python")) {
-        // Python was defined in the config file
-        if (obj["python"].is<picojson::array>()) {
-            return "Loading " + fileName +" failed. python must not be an array.";
-        }
-        addoninfo.python = obj["python"].get<std::string>();
-    } else {
-        addoninfo.python = "";
-    }
-
-    if (obj.count("executable")) {
-        if (!obj["executable"].is<std::string>())
-            return "Loading " + fileName + " failed. executable must be a string.";
-        addoninfo.executable = getFullPath(obj["executable"].get<std::string>(), fileName);
-        return "";
-    }
-
-    if (!obj.count("script") || !obj["script"].is<std::string>())
+    // TODO: remove/complete default value handling for missing fields
+    const picojson::object& obj = json.get<picojson::object>();
     {
-        return "Loading " + fileName + " failed. script must be set to a string value.";
+        const auto it = obj.find("args");
+        if (it != obj.cend()) {
+            const auto& val = it->second;
+            if (!val.is<picojson::array>())
+                return "Loading " + fileName + " failed. 'args' must be an array.";
+            for (const picojson::value &v : val.get<picojson::array>()) {
+                if (!v.is<std::string>())
+                    return "Loading " + fileName + " failed. 'args' entry is not a string.";
+                addoninfo.args += " " + v.get<std::string>();
+            }
+        }
     }
 
-    return addoninfo.getAddonInfo(obj["script"].get<std::string>(), exename);
+    {
+        const auto it = obj.find("ctu");
+        if (it != obj.cend()) {
+            const auto& val = it->second;
+            // ctu is specified in the config file
+            if (!val.is<bool>())
+                return "Loading " + fileName + " failed. 'ctu' must be a boolean.";
+            addoninfo.ctu = val.get<bool>();
+        }
+        else {
+            addoninfo.ctu = false;
+        }
+    }
+
+    {
+        const auto it = obj.find("python");
+        if (it != obj.cend()) {
+            const auto& val = it->second;
+            // Python was defined in the config file
+            if (!val.is<std::string>()) {
+                return "Loading " + fileName +" failed. 'python' must be a string.";
+            }
+            addoninfo.python = val.get<std::string>();
+        }
+        else {
+            addoninfo.python = "";
+        }
+    }
+
+    {
+        const auto it = obj.find("executable");
+        if (it != obj.cend()) {
+            const auto& val = it->second;
+            if (!val.is<std::string>())
+                return "Loading " + fileName + " failed. 'executable' must be a string.";
+            addoninfo.executable = getFullPath(val.get<std::string>(), fileName);
+            return ""; // TODO: why bail out?
+        }
+    }
+
+    const auto it = obj.find("script");
+    if (it == obj.cend())
+        return "Loading " + fileName + " failed. 'script' is missing.";
+
+    const auto& val = it->second;
+    if (!val.is<std::string>())
+        return "Loading " + fileName + " failed. 'script' must be a string.";
+
+    return addoninfo.getAddonInfo(val.get<std::string>(), exename);
 }
 
 std::string AddonInfo::getAddonInfo(const std::string &fileName, const std::string &exename) {

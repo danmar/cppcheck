@@ -4,6 +4,7 @@
 import os
 import sys
 import pytest
+import json
 
 from testutils import cppcheck, assert_cppcheck
 
@@ -276,22 +277,6 @@ extern const char* f()
         'Checking {} ...'.format(test_file)
     ]
     assert stderr == '{}:4:12: warning: strerror is MT-unsafe [threadsafety-unsafe-call]\n'.format(test_file)
-
-
-def test_addon_invalidjson(tmpdir):
-    addon_file = os.path.join(tmpdir, 'invalid.json')
-    with open(addon_file, 'wt') as f:
-        f.write("""
-{
-    "Script": "addons/something.py"
-}
-                """)
-
-    args = ['--addon={}'.format(addon_file), '--enable=all', 'nonexistent.cpp']
-
-    exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode != 0
-    assert stdout == 'Loading {} failed. script must be set to a string value.\n'.format(addon_file)
 
 
 def test_addon_naming(tmpdir):
@@ -644,12 +629,10 @@ def test_invalid_addon_json(tmpdir):
                 """)
 
     test_file = os.path.join(tmpdir, 'file.cpp')
-    with open(test_file, 'wt') as f:
-        f.write("""
-typedef int MISRA_5_6_VIOLATION;
-                """)
+    with open(test_file, 'wt'):
+        pass
 
-    args = ['--addon={}'.format(addon_file), '--enable=all', test_file]
+    args = ['--addon={}'.format(addon_file), test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 1
@@ -1124,3 +1107,56 @@ def test_build_dir_j_memleak(tmpdir): #12111
     ]
 
     assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
+
+
+def __test_addon_json_invalid(tmpdir, addon_json, expected):
+    addon_file = os.path.join(tmpdir, 'invalid.json')
+    with open(addon_file, 'wt') as f:
+        f.write(addon_json)
+
+    test_file = os.path.join(tmpdir, 'file.cpp')
+    with open(test_file, 'wt'):
+        pass
+
+    args = ['--addon={}'.format(addon_file), test_file]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 1
+    lines = stdout.splitlines()
+    assert len(lines) == 1
+    assert lines == [
+        'Loading {} failed. {}'.format(addon_file, expected)
+    ]
+    assert stderr == ''
+
+
+def test_addon_json_invalid_no_obj(tmpdir):
+    __test_addon_json_invalid(tmpdir, json.dumps([]), "JSON is not an object.")
+
+
+def test_addon_json_invalid_args_1(tmpdir):
+    __test_addon_json_invalid(tmpdir, json.dumps({'args':0}), "'args' must be an array.")
+
+
+def test_addon_json_invalid_args_2(tmpdir):
+    __test_addon_json_invalid(tmpdir, json.dumps({'args':[0]}), "'args' entry is not a string.")
+
+
+def test_addon_json_invalid_ctu(tmpdir):
+    __test_addon_json_invalid(tmpdir, json.dumps({'ctu':0}), "'ctu' must be a boolean.")
+
+
+def test_addon_json_invalid_python(tmpdir):
+    __test_addon_json_invalid(tmpdir, json.dumps({'python':0}), "'python' must be a string.")
+
+
+def test_addon_json_invalid_executable(tmpdir):
+    __test_addon_json_invalid(tmpdir, json.dumps({'executable':0}), "'executable' must be a string.")
+
+
+def test_addon_json_invalid_script_1(tmpdir):
+    __test_addon_json_invalid(tmpdir, json.dumps({'Script':''}), "'script' is missing.")
+
+
+def test_addon_json_invalid_script_2(tmpdir):
+    __test_addon_json_invalid(tmpdir, json.dumps({'script':0}), "'script' must be a string.")
