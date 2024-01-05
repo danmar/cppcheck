@@ -1,9 +1,15 @@
 #!/bin/bash
 #
 # uncrustify-0.72 is used to format cppcheck source code.
-# source code: https://github.com/uncrustify/uncrustify/archive/refs/tags/uncrustify-0.72.0.zip
-# building in Linux: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make
-# building in Windows: mkdir build && cd build && cmake -G"NMake Makefiles" -DCMAKE_BUILD_TYPE=Release .. && nmake
+#
+# 1. Download source code: https://github.com/uncrustify/uncrustify/archive/refs/tags/uncrustify-0.72.0.zip
+#    It's important that all Cppcheck developers use the exact same version so we don't get a "format battle".
+# 2. Building:
+#    - Linux: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make
+#    - Windows: mkdir build && cd build && cmake -G"NMake Makefiles" -DCMAKE_BUILD_TYPE=Release .. && nmake
+# 3. Ensure that the binary "uncrustify" is found by runformat. Either:
+#    - you can put uncrustify in your PATH
+#    - you can create an environment variable UNCRUSTIFY that has the full path of the binary
 
 UNCRUSTIFY_VERSION="0.72.0"
 UNCRUSTIFY="${UNCRUSTIFY-uncrustify}"
