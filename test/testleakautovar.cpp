@@ -998,7 +998,7 @@ private:
               "        free(p);\n"
               "    }, 1);\n"
               "    return 0;\n"
-              "}\n", "test.cpp");
+              "}\n", /*cpp*/ true);
         ASSERT_EQUALS("", errout.str());
     }
 
