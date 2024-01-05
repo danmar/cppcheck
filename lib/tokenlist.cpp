@@ -1854,7 +1854,7 @@ void TokenList::simplifyPlatformTypes()
     if (!mSettings)
         return;
 
-    const bool isCPP11  = mSettings->standards.cpp >= Standards::CPP11;
+    const bool isCPP11 = mIsCpp && (mSettings->standards.cpp >= Standards::CPP11);
 
     enum { isLongLong, isLong, isInt } type;
 
@@ -1996,7 +1996,7 @@ void TokenList::simplifyStdType()
             continue;
         }
 
-        if (Token::Match(tok, "char|short|int|long|unsigned|signed|double|float") || (mSettings->standards.c >= Standards::C99 && Token::Match(tok, "complex|_Complex"))) {
+        if (Token::Match(tok, "char|short|int|long|unsigned|signed|double|float") || (mIsC && (mSettings->standards.c >= Standards::C99) && Token::Match(tok, "complex|_Complex"))) {
             bool isFloat= false;
             bool isSigned = false;
             bool isUnsigned = false;
@@ -2019,7 +2019,7 @@ void TokenList::simplifyStdType()
                 else if (Token::Match(tok2, "float|double")) {
                     isFloat = true;
                     typeSpec = tok2;
-                } else if (mSettings->standards.c >= Standards::C99 && Token::Match(tok2, "complex|_Complex"))
+                } else if (mIsC && (mSettings->standards.c >= Standards::C99) && Token::Match(tok2, "complex|_Complex"))
                     isComplex = !isFloat || tok2->str() == "_Complex" || Token::Match(tok2->next(), "*|&|%name%"); // Ensure that "complex" is not the variables name
                 else if (Token::Match(tok2, "char|int")) {
                     if (!typeSpec)
