@@ -3345,17 +3345,6 @@ void Tokenizer::simplifyUsingError(const Token* usingStart, const Token* usingEn
     }
 }
 
-bool Tokenizer::createTokens(std::istream &code,
-                             const std::string& FileName)
-{
-    return list.createTokens(code, FileName);
-}
-
-void Tokenizer::createTokens(simplecpp::TokenList&& tokenList)
-{
-    list.createTokens(std::move(tokenList));
-}
-
 bool Tokenizer::simplifyTokens1(const std::string &configuration)
 {
     // Fill the map mTypeSize..
@@ -3441,7 +3430,7 @@ bool Tokenizer::tokenize(std::istream &code,
                          const char FileName[],
                          const std::string &configuration)
 {
-    if (!createTokens(code, FileName))
+    if (!list.createTokens(code, FileName))
         return false;
 
     return simplifyTokens1(configuration);

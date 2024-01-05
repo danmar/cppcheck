@@ -39,10 +39,6 @@ class ErrorLogger;
 class Preprocessor;
 enum class Severity;
 
-namespace simplecpp {
-    class TokenList;
-}
-
 /// @addtogroup Core
 /// @{
 
@@ -82,9 +78,6 @@ public:
      * \return true if scope ends with a function call that might be 'noreturn'
      */
     bool isScopeNoReturn(const Token *endScopeToken, bool *unknown = nullptr) const;
-
-    bool createTokens(std::istream &code, const std::string& FileName);
-    void createTokens(simplecpp::TokenList&& tokenList);
 
     bool simplifyTokens1(const std::string &configuration);
     /**
