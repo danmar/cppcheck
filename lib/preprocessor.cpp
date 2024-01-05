@@ -232,6 +232,7 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
         // Add the suppressions.
         for (SuppressionList::Suppression &suppr : inlineSuppressions) {
             suppr.fileName = relativeFilename;
+            suppr.isInline = true; // TODO: set earlier
 
             if (SuppressionList::Type::blockBegin == suppr.type)
             {
