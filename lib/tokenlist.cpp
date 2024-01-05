@@ -1722,10 +1722,10 @@ namespace {
     };
 }
 
-void TokenList::validateAst() const
+void TokenList::validateAst(bool print) const
 {
     OnException oe{[&] {
-            if (mSettings && mSettings->debugnormal)
+            if (print)
                 mTokensFrontBack.front->printOut();
         }};
     // Check for some known issues in AST to avoid crash/hang later on

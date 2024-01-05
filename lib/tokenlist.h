@@ -171,7 +171,7 @@ public:
      * Check abstract syntax tree.
      * Throws InternalError on failure
      */
-    void validateAst() const;
+    void validateAst(bool print) const;
 
     /**
      * Verify that the given token is an element of the tokenlist.

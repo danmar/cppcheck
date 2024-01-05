@@ -3361,10 +3361,10 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     if (mTimerResults) {
         Timer t("Tokenizer::simplifyTokens1::createAst", mSettings->showtime, mTimerResults);
         list.createAst();
-        list.validateAst();
+        list.validateAst(mSettings->debugnormal);
     } else {
         list.createAst();
-        list.validateAst();
+        list.validateAst(mSettings->debugnormal);
     }
 
     if (mTimerResults) {
