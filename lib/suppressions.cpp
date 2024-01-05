@@ -493,6 +493,8 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppre
 {
     std::list<Suppression> result;
     for (const Suppression &s : mSuppressions) {
+        if (s.isInline)
+            continue;
         if (s.matched || ((s.lineNumber != Suppression::NO_LINE) && !s.checked))
             continue;
         if (s.type == SuppressionList::Type::macro)
@@ -514,6 +516,8 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedGlobalSuppr
 {
     std::list<Suppression> result;
     for (const Suppression &s : mSuppressions) {
+        if (s.isInline)
+            continue;
         if (s.matched || ((s.lineNumber != Suppression::NO_LINE) && !s.checked))
             continue;
         if (s.hash > 0)
@@ -523,6 +527,25 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedGlobalSuppr
         if (s.errorId == ID_CHECKERSREPORT)
             continue;
         if (s.isLocal())
+            continue;
+        result.push_back(s);
+    }
+    return result;
+}
+
+std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedInlineSuppressions(const bool unusedFunctionChecking) const
+{
+    std::list<SuppressionList::Suppression> result;
+    for (const SuppressionList::Suppression &s : SuppressionList::mSuppressions) {
+        if (!s.isInline)
+            continue;
+        if (!s.checked)
+            continue;
+        if (s.matched)
+            continue;
+        if (s.hash > 0)
+            continue;
+        if (!unusedFunctionChecking && s.errorId == ID_UNUSEDFUNCTION)
             continue;
         result.push_back(s);
     }
