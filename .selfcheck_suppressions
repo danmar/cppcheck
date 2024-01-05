@@ -3,13 +3,13 @@ missingIncludeSystem
 # temporary suppressions - fix the warnings!
 simplifyUsing:lib/valueptr.h
 varid0:gui/projectfile.cpp
-naming-privateMemberVariable:gui/test/cppchecklibrarydata/testcppchecklibrarydata.h
+naming-namingConvention:gui/test/cppchecklibrarydata/testcppchecklibrarydata.h
 symbolDatabaseWarning:*/moc_*.cpp
 simplifyUsing:*/moc_*.cpp
 
 # warnings in Qt generated code we cannot fix
 funcArgNamesDifferent:*/moc_*.cpp
-naming-varname:*/ui_*.h
+naming-namingConvention:*/ui_*.h
 functionStatic:*/ui_fileview.h
 
 # --debug-warnings suppressions
@@ -17,12 +17,11 @@ valueFlowBailout
 valueFlowBailoutIncompleteVar
 autoNoType
 
-naming-varname:externals/simplecpp/simplecpp.h
-naming-privateMemberVariable:externals/simplecpp/simplecpp.h
+naming-namingConvention:externals/simplecpp/simplecpp.h
 
 # these warnings need to be addressed upstream
 uninitMemberVar:externals/tinyxml2/tinyxml2.h
 noExplicitConstructor:externals/tinyxml2/tinyxml2.h
 missingOverride:externals/tinyxml2/tinyxml2.h
 invalidPrintfArgType_sint:externals/tinyxml2/tinyxml2.h
-naming-privateMemberVariable:externals/tinyxml2/tinyxml2.h
+naming-namingConvention:externals/tinyxml2/tinyxml2.h

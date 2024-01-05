@@ -306,7 +306,7 @@ int Var;
     assert lines == [
         'Checking {} ...'.format(test_file)
     ]
-    assert stderr == '{}:2:1: style: Variable Var violates naming convention [naming-varname]\n'.format(test_file)
+    assert stderr == '{}:2:5: style: Global variable Var violates naming convention [naming-namingConvention]\n'.format(test_file)
 
 
 def test_addon_namingng(tmpdir):
@@ -331,6 +331,7 @@ def test_addon_namingng(tmpdir):
     "RE_CLASS_NAME": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
     "RE_NAMESPACE": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
     "RE_VARNAME": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
+    "RE_CONST": ["const_[a-z][a-z0-9_]*[a-z0-9]\\Z"],
     "RE_PUBLIC_MEMBER_VARIABLE": ["[a-z][a-z0-9_]*[a-z0-9]\\Z"],
     "RE_PRIVATE_MEMBER_VARIABLE": {
         ".*_tmp\\Z":[true,"illegal suffix _tmp"],
@@ -400,9 +401,11 @@ class _clz {
 public:
     _clz() : _invalid_public(0), _invalid_private(0), priv_good(0), priv_bad_tmp(0) { }
     int _invalid_public;
+    const int random_number = 4;
+    const int const_zero = 0;
 private:
     char _invalid_private;
-    int priv_good;
+    int priv_good = random_number*const_zero;
     int priv_bad_tmp;
 };
 
@@ -475,13 +478,16 @@ namespace _invalid_namespace { }
         '{}:21:9: style: Public member variable _invalid_public violates naming convention [namingng-namingConvention]'.format(test_file),
         '    int _invalid_public;',
         '        ^',
-        '{}:23:10: style: Private member variable _invalid_private violates naming convention: required prefix priv_ missing [namingng-namingConvention]'.format(test_file),
+        '{}:22:15: style: Constant random_number violates naming convention [namingng-namingConvention]'.format(test_file),
+        '    const int random_number = 4;',
+        '              ^',
+        '{}:25:10: style: Private member variable _invalid_private violates naming convention: required prefix priv_ missing [namingng-namingConvention]'.format(test_file),
         '    char _invalid_private;',
         '         ^',
-        '{}:25:9: style: Private member variable priv_bad_tmp violates naming convention: illegal suffix _tmp [namingng-namingConvention]'.format(test_file),
+        '{}:27:9: style: Private member variable priv_bad_tmp violates naming convention: illegal suffix _tmp [namingng-namingConvention]'.format(test_file),
         '    int priv_bad_tmp;',
         '        ^',
-        '{}:28:11: style: Namespace _invalid_namespace violates naming convention [namingng-namingConvention]'.format(test_file),
+        '{}:30:11: style: Namespace _invalid_namespace violates naming convention [namingng-namingConvention]'.format(test_file),
         'namespace _invalid_namespace { }',
         '          ^',
     ]

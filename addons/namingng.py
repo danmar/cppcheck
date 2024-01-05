@@ -39,6 +39,8 @@ import re
 import argparse
 import json
 
+addon_name = os.path.basename(sys.argv[0]).replace('.py','')
+
 # Auxiliary class
 class DataStruct:
     def __init__(self, file, linenr, string, column=0):
@@ -48,7 +50,7 @@ class DataStruct:
         self.column = column
 
 def reportNamingError(location,message,errorId='namingConvention',severity='style',extra='',column=None):
-    cppcheckdata.reportError(location,severity,message,'namingng',errorId,extra,columnOverride=column)
+    cppcheckdata.reportError(location,severity,message,addon_name,errorId,extra,columnOverride=column)
 
 def configError(error,fatal=True):
     print('config error: %s'%error)
@@ -75,6 +77,56 @@ def validateConfigREs(list_or_dict,json_key):
 
     return have_error
 
+def configMapping():
+    return {
+        'file':                     ('RE_FILE', (list,)),
+        'namespace':                ('RE_NAMESPACE', (list,dict)),
+        'include_guard':            ('include_guard', (dict,)),
+        'variable':                 ('RE_VARNAME', (list,dict)),
+        'variable_prefixes':        ('var_prefixes', (dict,), {}),
+        'private_member':           ('RE_PRIVATE_MEMBER_VARIABLE', (list,dict)),
+        'const':                    ('RE_CONST', (list,dict)),
+        'public_member':            ('RE_PUBLIC_MEMBER_VARIABLE', (list,dict)),
+        'global_variable':          ('RE_GLOBAL_VARNAME', (list,dict)),
+        'function_name':            ('RE_FUNCTIONNAME', (list,dict)),
+        'function_prefixes':        ('function_prefixes', (dict,), {}),
+        'class_name':               ('RE_CLASS_NAME', (list,dict)),
+        'skip_one_char_variables':  ('skip_one_char_variables', (bool,)),
+    }
+
+def genDeprecatedConfig():
+    class Config:
+        pass
+    config = Config()
+
+    mapping = configMapping()
+    for key,opts in mapping.items():
+        default = None if len(opts)<3 else opts[2]
+        setattr(config,key,default)
+
+    have_error = False
+    def validate(re):
+        have_error |= validateConfigRE([re])
+
+    if args.var:
+        setattr(config,'variable',[args.var])
+        setattr(config,'global_variable',[args.var])
+
+    if args.const:
+        setattr(config,'const',[args.const])
+
+    if args.private_member_variable:
+        setattr(config,'private_member',[args.private_member_variable])
+
+    if args.function:
+        setattr(config,'function',[args.function])
+
+    if have_error:
+        sys.exit(0)
+
+    return config
+
+
 def loadConfig(configfile):
     if not os.path.exists(configfile):
         configError("cannot find config file '%s'"%configfile)
@@ -100,20 +152,7 @@ def loadConfig(configfile):
         pass
     config = Config()
 
-    mapping = {
-        'file':                     ('RE_FILE', (list,)),
-        'namespace':                ('RE_NAMESPACE', (list,dict)),
-        'include_guard':            ('include_guard', (dict,)),
-        'variable':                 ('RE_VARNAME', (list,dict)),
-        'variable_prefixes':        ('var_prefixes', (dict,), {}),
-        'private_member':           ('RE_PRIVATE_MEMBER_VARIABLE', (list,dict)),
-        'public_member':            ('RE_PUBLIC_MEMBER_VARIABLE', (list,dict)),
-        'global_variable':          ('RE_GLOBAL_VARNAME', (list,dict)),
-        'function_name':            ('RE_FUNCTIONNAME', (list,dict)),
-        'function_prefixes':        ('function_prefixes', (dict,), {}),
-        'class_name':               ('RE_CLASS_NAME', (list,dict)),
-        'skip_one_char_variables':  ('skip_one_char_variables', (bool,)),
-    }
+    mapping = configMapping()
 
     # parse defined keys and store as members of config object
     for key,opts in mapping.items():
@@ -263,9 +302,7 @@ def check_include_guards(conf,cfg,unguarded_include_files):
     if pending_ifndef:
         report_pending_ifndef(pending_ifndef,guard_column)
 
-def process(dumpfiles, configfile):
-    conf = loadConfig(configfile)
-
+def process(dumpfiles, conf):
     if conf.include_guard:
         global include_guard_header_re
         include_guard_header_re = conf.include_guard.get('RE_HEADERFILE',"[^/].*\\.h\\Z")
@@ -334,9 +371,11 @@ def check_variable_naming(conf,cfg):
             evalExpr(conf.variable, exp, mockToken, 'Variable')
 
 # Naming check for Global, Private and Public member variables
-def check_gpp_naming(conf_list,cfg,access,message):
+def check_gpp_naming(conf_list,cfg,access,message,require_const=False):
     for var in cfg.variables:
         if var.access != access:
+            continue
+        if require_const and not var.isConst:
             continue
         mockToken = DataStruct(var.typeStartToken.file, var.typeStartToken.linenr, var.nameToken.str, var.nameToken.column)
         for exp in conf_list:
@@ -393,6 +432,8 @@ def process_data(conf,data):
             check_gpp_naming(conf.private_member,cfg,'Private','Private member variable')
         if conf.public_member:
             check_gpp_naming(conf.public_member,cfg,'Public','Public member variable')
+        if conf.const:
+            check_gpp_naming(conf.const,cfg,'Public','Constant',require_const=True)
         if conf.global_variable:
             check_gpp_naming(conf.global_variable,cfg,'Global','Global variable')
         if conf.function_name:
@@ -406,14 +447,32 @@ def process_data(conf,data):
         mockToken = DataStruct(fn,0,os.path.basename(fn))
         reportNamingError(mockToken,'Missing include guard','includeGuardMissing')
 
-if __name__ == "__main__":
+def main():
     parser = cppcheckdata.ArgumentParser()
     parser.add_argument("--debugprint", action="store_true", default=False,
                         help="Add debug prints")
     parser.add_argument("--configfile", type=str, default="namingng.config.json",
                         help="Naming check config file")
+    # The following flags are implemented to provide backward compatibility with the former naming.py addon.
+    parser.add_argument("--var", type=str,
+                        help="[deprecated] specify RE_VARNAME and RE_GLOBAL_VARIABLE")
+    parser.add_argument("--const", type=str,
+                        help="[deprecated] specify RE_CONSTNAME")
+    parser.add_argument("--private-member-variable", type=str,
+                        help="[deprecated] specify RE_PRIVATE_MEMBER_VARIABLE")
+    parser.add_argument("--function", type=str,
+                        help="[deprecated] specify RE_FUNCTIONNAME")
 
+    global args
     args = parser.parse_args()
-    process(args.dumpfile, args.configfile)
 
+    if args.var or args.const or args.private_member_variable or args.function:
+        conf = genDeprecatedConfig()
+    else:
+        conf = loadConfig(args.configfile)
+
+    process(args.dumpfile, conf)
+
+if __name__ == "__main__":
+    main()
     sys.exit(0)

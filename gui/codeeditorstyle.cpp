@@ -23,23 +23,23 @@
 #include <QVariant>
 
 CodeEditorStyle::CodeEditorStyle(
-    // cppcheck-suppress naming-varname - TODO: fix this
+    // cppcheck-suppress naming-namingConvention - TODO: fix this
     QColor CtrlFGColor, QColor CtrlBGColor,
-    // cppcheck-suppress naming-varname - TODO: fix this
+    // cppcheck-suppress naming-namingConvention - TODO: fix this
     QColor HiLiBGColor,
-    // cppcheck-suppress naming-varname - TODO: fix this
+    // cppcheck-suppress naming-namingConvention - TODO: fix this
     QColor LnNumFGColor, QColor LnNumBGColor,
-    // cppcheck-suppress naming-varname - TODO: fix this
+    // cppcheck-suppress naming-namingConvention - TODO: fix this
     QColor KeyWdFGColor, QFont::Weight KeyWdWeight,
-    // cppcheck-suppress naming-varname - TODO: fix this
+    // cppcheck-suppress naming-namingConvention - TODO: fix this
     QColor ClsFGColor, QFont::Weight ClsWeight,
-    // cppcheck-suppress naming-varname - TODO: fix this
+    // cppcheck-suppress naming-namingConvention - TODO: fix this
     QColor QteFGColor, QFont::Weight QteWeight,
-    // cppcheck-suppress naming-varname - TODO: fix this
+    // cppcheck-suppress naming-namingConvention - TODO: fix this
     QColor CmtFGColor, QFont::Weight CmtWeight,
-    // cppcheck-suppress naming-varname - TODO: fix this
+    // cppcheck-suppress naming-namingConvention - TODO: fix this
     QColor SymbFGColor, QColor SymbBGColor,
-    // cppcheck-suppress naming-varname - TODO: fix this
+    // cppcheck-suppress naming-namingConvention - TODO: fix this
     QFont::Weight SymbWeight) :
     widgetFGColor(CtrlFGColor),
     widgetBGColor(CtrlBGColor),
