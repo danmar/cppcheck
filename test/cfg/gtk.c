@@ -2,7 +2,7 @@
 // Test library configuration for gtk.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=gtk --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr --library=gtk test/cfg/gtk.cpp
+// $ cppcheck --check-library --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr --library=gtk test/cfg/gtk.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -228,6 +228,25 @@ void g_assert_test()
     // cppcheck-suppress checkLibraryNoReturn
     // cppcheck-suppress assignmentInAssert
     g_assert(a = 5);
+}
+
+void g_assert_true_false_test()
+{
+    gboolean t = TRUE;
+    gboolean f = FALSE;
+    g_assert_true(t);
+    // cppcheck-suppress checkLibraryNoReturn
+    g_assert_false(f);
+}
+
+void g_assert_null_nonnull_test()
+{
+    char * gpt = g_malloc(1);
+    g_assert_nonnull(gpt);
+    gpt[0] = 0;
+    g_free(gpt);
+    // cppcheck-suppress checkLibraryNoReturn
+    g_assert_null(NULL);
 }
 
 void g_print_test()
