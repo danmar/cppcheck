@@ -810,6 +810,10 @@ unsigned int CppCheck::check(const FileSettings &fs)
     const unsigned int returnValue = temp.checkFile(fs.file, fs.cfg);
     for (const auto& suppr : temp.mSettings.supprs.nomsg.getSuppressions())
     {
+        // skip inline suppressions - are handled in checkFile()
+        if (suppr.isInline)
+            continue;
+
         const bool res = mSettings.supprs.nomsg.updateSuppressionState(suppr);
         if (!res)
         {
@@ -1173,8 +1177,10 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     fdump << "</dump>" << std::endl;
                 }
 
-                // Need to call this even if the hash will skip this configuration
-                mSettings.supprs.nomsg.markUnmatchedInlineSuppressionsAsChecked(tokenizer);
+                if (mSettings.inlineSuppressions) {
+                    // Need to call this even if the hash will skip this configuration
+                    mSettings.supprs.nomsg.markUnmatchedInlineSuppressionsAsChecked(tokenizer);
+                }
 
                 // Skip if we already met the same simplified token list
                 if (mSettings.force || mSettings.maxConfigs > 1) {
@@ -1263,10 +1269,20 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
         mErrorLogger.reportErr(errmsg);
     }
 
-    // In jointSuppressionReport mode, unmatched suppressions are
-    // collected after all files are processed
-    if (!mSettings.useSingleJob() && (mSettings.severity.isEnabled(Severity::information) || mSettings.checkConfiguration)) {
-        SuppressionList::reportUnmatchedSuppressions(mSettings.supprs.nomsg.getUnmatchedLocalSuppressions(file, (bool)mUnusedFunctionsCheck), mErrorLogger);
+    // TODO: this is done too early causing the whole program analysis suppressions to be reported as unmatched
+    if (mSettings.severity.isEnabled(Severity::information) || mSettings.checkConfiguration) {
+        if (mSettings.inlineSuppressions)
+        {
+            // TODO: check result?
+            SuppressionList::reportUnmatchedSuppressions(mSettings.supprs.nomsg.getUnmatchedInlineSuppressions(false), mErrorLogger);
+        }
+
+        // In jointSuppressionReport mode, unmatched suppressions are
+        // collected after all files are processed
+        if (!mSettings.useSingleJob()) {
+            // TODO: check result?
+            SuppressionList::reportUnmatchedSuppressions(mSettings.supprs.nomsg.getUnmatchedLocalSuppressions(file, (bool)mUnusedFunctionsCheck), mErrorLogger);
+        }
     }
 
     if (analyzerInformation) {
