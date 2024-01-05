@@ -2382,6 +2382,30 @@ void uninitvar_ldexp(void)
     (void)std::ldexp(ldc,e3);
 }
 
+void invalidFunctionArg_lgamma(float f, double d, long double ld)
+{
+    (void)lgamma(d);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lgamma(-0.1);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lgamma(0.0);
+    (void)lgamma(0.1);
+
+    (void)lgammaf(f);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lgammaf(-0.1f);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lgammaf(0.0f);
+    (void)lgammaf(0.1f);
+
+    (void)lgammal(ld);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lgammal(-0.1L);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lgammal(0.0L);
+    (void)lgammal(0.1L);
+}
+
 void uninitvar_lgamma(void)
 {
     float f;
