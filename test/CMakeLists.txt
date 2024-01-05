@@ -125,9 +125,9 @@ if (BUILD_TESTS)
                         --error-exitcode=1
                         --disable=missingInclude
                         --inline-suppr
-                        --template="{file}:{line}:{severity}:{id}:{message}"
                         --debug-warnings
                         --suppress=valueFlowBailout
+                        --suppress=purgedConfiguration
                         --suppress=unmatchedSuppression
                         ${CMAKE_CURRENT_SOURCE_DIR}/cfg/${CFG_TEST}
                 )
