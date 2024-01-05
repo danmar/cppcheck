@@ -80,12 +80,13 @@ void TokenList::deallocateTokens()
 
 void TokenList::determineCppC()
 {
-    if (!mSettings) {
-        mIsC = Path::isC(getSourceFilePath());
-        mIsCpp = Path::isCPP(getSourceFilePath());
+    if (mSettings && (mSettings->enforcedLang != Settings::Language::None)) {
+        mLang = mSettings->enforcedLang;
     } else {
-        mIsC = mSettings->enforcedLang == Settings::Language::C || (mSettings->enforcedLang == Settings::Language::None && Path::isC(getSourceFilePath()));
-        mIsCpp = mSettings->enforcedLang == Settings::Language::CPP || (mSettings->enforcedLang == Settings::Language::None && Path::isCPP(getSourceFilePath()));
+        if (Path::isC(getSourceFilePath()))
+            mLang = Settings::Language::C;
+        else if (Path::isCPP(getSourceFilePath()))
+            mLang = Settings::Language::CPP;
     }
 }
 
@@ -1854,7 +1855,7 @@ void TokenList::simplifyPlatformTypes()
     if (!mSettings)
         return;
 
-    const bool isCPP11 = mIsCpp && (mSettings->standards.cpp >= Standards::CPP11);
+    const bool isCPP11 = isCPP() && (mSettings->standards.cpp >= Standards::CPP11);
 
     enum { isLongLong, isLong, isInt } type;
 
@@ -1996,7 +1997,7 @@ void TokenList::simplifyStdType()
             continue;
         }
 
-        if (Token::Match(tok, "char|short|int|long|unsigned|signed|double|float") || (mIsC && (mSettings->standards.c >= Standards::C99) && Token::Match(tok, "complex|_Complex"))) {
+        if (Token::Match(tok, "char|short|int|long|unsigned|signed|double|float") || (isC() && (mSettings->standards.c >= Standards::C99) && Token::Match(tok, "complex|_Complex"))) {
             bool isFloat= false;
             bool isSigned = false;
             bool isUnsigned = false;
@@ -2019,7 +2020,7 @@ void TokenList::simplifyStdType()
                 else if (Token::Match(tok2, "float|double")) {
                     isFloat = true;
                     typeSpec = tok2;
-                } else if (mIsC && (mSettings->standards.c >= Standards::C99) && Token::Match(tok2, "complex|_Complex"))
+                } else if (isC() && (mSettings->standards.c >= Standards::C99) && Token::Match(tok2, "complex|_Complex"))
                     isComplex = !isFloat || tok2->str() == "_Complex" || Token::Match(tok2->next(), "*|&|%name%"); // Ensure that "complex" is not the variables name
                 else if (Token::Match(tok2, "char|int")) {
                     if (!typeSpec)
@@ -2057,7 +2058,7 @@ void TokenList::simplifyStdType()
 
 bool TokenList::isKeyword(const std::string &str) const
 {
-    if (mIsCpp) {
+    if (isCPP()) {
         // TODO: integrate into keywords?
         // types and literals are not handled as keywords
         static const std::unordered_set<std::string> cpp_types = {"bool", "false", "true"};
