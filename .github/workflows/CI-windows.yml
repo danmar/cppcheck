@@ -172,6 +172,7 @@ jobs:
           python -m pytest -Werror --strict-markers -vv test-helloworld.py || exit /b !errorlevel!
           python -m pytest -Werror --strict-markers -vv test-inline-suppress.py || exit /b !errorlevel!
           python -m pytest -Werror --strict-markers -vv test-more-projects.py || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv test-addons.py || exit /b !errorlevel!
           python -m pytest -Werror --strict-markers -vv test-other.py || exit /b !errorlevel!
           python -m pytest -Werror --strict-markers -vv test-proj2.py || exit /b !errorlevel!
           python -m pytest -Werror --strict-markers -vv test-suppress-syntaxError.py || exit /b !errorlevel!
