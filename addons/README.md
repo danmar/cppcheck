@@ -65,3 +65,58 @@ When using the graphical interface `cppcheck-gui`, the selection and configurati
 
 ![Screenshot](https://raw.githubusercontent.com/danmar/cppcheck/main/addons/doc/img/cppcheck-gui-addons.png)
 
+### Using namingng.py
+
+The `namingng.py` addon can be invoked using:
+
+```bash
+ADDONS=$(dirname $(which cppcheck))/addons/
+cp $ADDONS/namingng*.json .
+cppcheck --addon=namingng.json --enable=all test.c
+```
+
+Or in standalone mode, using:
+
+```bash
+ADDONS=$(dirname $(which cppcheck))/addons/
+cp $ADDONS/namingng*.json .
+cppcheck --dump test.c
+$ADDONS/namingng.py test.c.dump
+```
+
+These commands utilize the example namingng.json file, referencing the namingng.config.json config file. Customize the config file to meet your project's specific requirements.
+
+The config file, structured as a JSON object, allows you to set rules for:
+- files and directories (`RE_FILE`)
+- include guards (including checking presence and validity) (`include_guard`)
+- namespaces (`RE_NAMESPACE`)
+- variables (global, local, private/public members) (`RE_GLOBAL_VARNAME`, `RE_VARNAME`, `RE_PRIVATE_MEMBER_VARIABLE`, `RE_PUBLIC_MEMBER_VARIABLE`)
+- functions (`RE_FUNCTIONNAME`)
+- classes (`RE_CLASS_NAME`)
+
+Optional rules include function and local variable name prefixes (`function_prefixes` and `variable_prefixes`), and the ability to skip one-character variable names (`skip_one_char_variables`). Removing any option from the config file disables that specific check.
+
+Options starting with `RE_` accept either a list or a dictionary:
+- A list contains regular expressions that must all match.
+- A dictionary contains key-value pairs, where the key is a regular expression, and the value is an array `[bool,string]`. The boolean indicates what match result is to be reported as an error, and string a message that is appended to the reported error.
+
+Regular expressions follow Pythons `re` module syntax, which has the following specifics:
+- No opening/closing delimiter such as `/`, so `/` need not be escaped.
+- Implied `^` for start-of-string, but not `$` for end-of-string.
+- `\Z` matches end of string (written as `\\Z` due to escaping)
+- `$` matches end of string, or newline.
+
+`RE_FILE` can only be a list. The file check fails for a file if no pattern matches either the basename or the full path. The full path is either an absolute or relative path, depending on the build setup. This can be used to specify different rules for different paths, e.g.
+
+```
+    "RE_FILE":[
+        "/.*",                                  // matches any absolute path, typically includes internal to libraries
+        "Drivers/.*",                           // matches anything under Drivers/, containing boilerplate code
+        "Core/Src/[a-z][a-z0-9_]+.c\\Z",        // ensures all application C code is under Core/Src/ with lowercase, numbers and underscore, starting with [a-z]
+        "Core/Inc/[a-z][a-z0-9_]+.h\\Z",        // ensures all application headers are under Core/Src/ with lowercase, numbers and underscore, starting with [a-z]
+        "Modules/[a-z]+/",                      // ensures that any module is included with a simple lowercase string
+        "[a-z0-9_]*.inc\\Z",                    // suffix .inc is always acceptable, anywhere in the project
+    ],
+```
+
+These configurations not only enforce file naming conventions but also implement rules regarding the placement of various files in your project.
