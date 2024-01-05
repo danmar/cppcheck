@@ -44,20 +44,56 @@ Addons are scripts designed to analyze Cppcheck dump files, ensuring compatibili
 
 ## Usage
 
-### Command line interface
+Addons can be used in three ways:
+- Using the `--addon` argument to cppcheck
+- Standalone, working on cppcheck dump files
+- In the GUI `cppcheck-gui`
+
+### Using the --addon argument to cppcheck
+
+There are several ways to specify an addon on the commandline of cppcheck:
+- `--addon=misc` to make cppcheck look for `misc.py` as in next bullet
+- `--addon=misc.py` to make cppcheck look for `misc.py` in the current directory and the addon directory
+- `--addon=rela/file.py` to load `file.py` from a relative path `./rela/`
+- `--addon=/abs/file.py` to load `file.py` from an absolute path `/abs/`
+- `--addon=misc.json` to load `misc.json` in the current directory, and [parse as JSON](#JSON-specification)
+- `--addon=rela/misc.json` to load `misc.json` from a relative path `./rela/misc.json`, and [parse as JSON](#JSON-specification)
+- `--addon=/abs/misc.json` to load `misc.json` from an absolute path `/abs/misc.json`, and [parse as JSON](#JSON-specification)
+- `--addon={"script":"misc.py"}` to [parse the JSON](#JSON-specification) given as the argument
+
+The addon directory is `addons/` below the directory where `cppcheck` resides, i.e.
 
 ```bash
-cppcheck --addon=misc src/test.c
+ADDONS=$(dirname $(which cppcheck))/addons/
+echo $ADDONS
 ```
 
-It is also possible to call scripts as follows:
+#### JSON specification
+
+In case JSON is used to specify the addon, the JSON should be structured as follows:
+
+```json
+{
+    "script":"namingng.py",
+    "args":[
+        "--configfile=namingng.config.json"
+    ]
+}
+```
+
+### Standalone
+
+To run an addon in standalone mode, first create a dump file, then give it as an argument to one or more addon scripts:
+
 ```bash
-cppcheck --dump --quiet src/test.c
-python misc.py src/test.c.dump
-python misra.py --rule-texts=~/misra_rules.txt src/test.c.dump
+cppcheck --dump test.c
+ADDONS=$(dirname $(which cppcheck))/addons/
+$ADDONS/namingng.py test.c.dump
+$ADDONS/misc.py test.c.dump
+$ADDONS/misra.py --rule-texts=~/misra_rules.txt test.c.dump
 ```
 
-This allows you to add additional parameters when calling the script (for example, `--rule-texts` for `misra.py`). The full list of available parameters can be found by calling any script with the `--help` flag.
+This allows you to add additional parameters when calling the script (for example, `--rule-texts` for `misra.py`). Note that [using JSON](#JSON-specification) this is also possible with addons specified on the cppcheck commandline, by adding arguments to the addon to the `args` list. The full list of available parameters can be found by calling any script with the `--help` flag.
 
 ### GUI
 
@@ -65,13 +101,19 @@ When using the graphical interface `cppcheck-gui`, the selection and configurati
 
 ![Screenshot](https://raw.githubusercontent.com/danmar/cppcheck/main/addons/doc/img/cppcheck-gui-addons.png)
 
-### Using namingng.py
 
-The `namingng.py` addon can be invoked using:
+## Configuring addons
+
+Addons can have configuration options, which are described below.
+
+### Configuring namingng.py
+
+The `namingng.py` addon can be invoked using the methods described above, e.g. utilizing the example `namingng.json` file, referencing the `namingng.config.json` config file:
 
 ```bash
 ADDONS=$(dirname $(which cppcheck))/addons/
-cp $ADDONS/namingng*.json .
+cp $ADDONS/namingng.json .              # copy JSON addon file
+cp $ADDONS/namingng.config.json .       # copy JSON addon config file
 cppcheck --addon=namingng.json --enable=all test.c
 ```
 
@@ -79,12 +121,12 @@ Or in standalone mode, using:
 
 ```bash
 ADDONS=$(dirname $(which cppcheck))/addons/
-cp $ADDONS/namingng*.json .
+cp $ADDONS/namingng.config.json .       # copy JSON addon config file
 cppcheck --dump test.c
 $ADDONS/namingng.py test.c.dump
 ```
 
-These commands utilize the example namingng.json file, referencing the namingng.config.json config file. Customize the config file to meet your project's specific requirements.
+Both commands utilize the example `namingng.config.json` config file. Customize the config file to meet your project's specific requirements.
 
 The config file, structured as a JSON object, allows you to set rules for:
 - files and directories (`RE_FILE`)
