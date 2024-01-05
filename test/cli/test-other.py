@@ -2,11 +2,13 @@
 # python -m pytest test-other.py
 
 import os
+from glob import glob
+import re
 import sys
 import pytest
 import json
 
-from testutils import cppcheck, assert_cppcheck
+from testutils import cppcheck, assert_cppcheck, addon_standalone
 
 
 def __test_missing_include(tmpdir, use_j):
@@ -310,17 +312,18 @@ int Var;
 
 
 def test_addon_namingng(tmpdir):
+    addon_py = 'namingng.py'
     addon_file = os.path.join(tmpdir, 'namingng.json')
     addon_config_file = os.path.join(tmpdir, 'namingng.config.json')
     with open(addon_file, 'wt') as f:
         f.write("""
 {
-    "script": "addons/namingng.py",
+    "script": "addons/%s",
     "args": [
         "--configfile=%s"
     ]
 }
-                """%(addon_config_file).replace('\\','\\\\'))
+                """%(addon_py,addon_config_file.replace('\\','\\\\')))
 
     with open(addon_config_file, 'wt') as f:
         f.write("""
@@ -409,7 +412,7 @@ private:
 namespace _invalid_namespace { }
         """%(test_include_file_basename))
 
-    args = ['--addon='+addon_file, '--verbose', '--enable=all', test_file]
+    args = ['--addon='+addon_file, '--dump', '--verbose', '--enable=all', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -490,6 +493,32 @@ namespace _invalid_namespace { }
     expect.sort()
     assert lines == expect
 
+    # Perform same analysis again, but now in standalone mode.
+    dump_files = glob(os.path.join(tmpdir,'*.dump'))
+    assert len(dump_files) == 1
+
+    dump_file = dump_files[0]
+    assert dump_file == test_file+'.dump'
+
+    args = ['--configfile='+addon_config_file,dump_file]
+    exitcode, stdout, stderr = addon_standalone(addon_py,args)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {}...'.format(dump_file),
+        'Checking config ...',
+    ]
+
+    # Trim column information and adapt to standalone output format.
+    lines = [line for line in stderr.splitlines() if line != '']
+    def standaloneize(line):
+        pat = '([^:]+):([0-9]+):[0-9]+: ([^:]+): (.*)'
+        repl = '[\\1:\\2] (\\3) \\4'
+        return re.sub(pat,repl,line,1)
+    expect_standalone = [standaloneize(line) for line in lines if line.strip() != '^']
+    lines.sort()
+    expect_standalone.sort()
+    assert lines == expect_standalone
 
 def test_addon_namingng_config(tmpdir):
     addon_file = os.path.join(tmpdir, 'namingng.json')
