@@ -362,7 +362,7 @@ void StatsDialog::copyToClipboard()
 
     const QString htmlSummary = htmlSettings + htmlPrevious + htmlStatistics;
 
-    QMimeData *mimeData = new QMimeData();
+    auto *mimeData = new QMimeData();
     mimeData->setText(textSummary);
     mimeData->setHtml(htmlSummary);
     clipboard->setMimeData(mimeData);
@@ -384,14 +384,14 @@ void StatsDialog::setStatistics(const CheckStatistics *stats)
 #ifdef QT_CHARTS_LIB
 QChartView *createChart(const QString &statsFile, const QString &tool)
 {
-    QChart *chart = new QChart;
+    auto *chart = new QChart;
     chart->addSeries(numberOfReports(statsFile, tool + "-error"));
     chart->addSeries(numberOfReports(statsFile, tool + "-warning"));
     chart->addSeries(numberOfReports(statsFile, tool + "-style"));
     chart->addSeries(numberOfReports(statsFile, tool + "-performance"));
     chart->addSeries(numberOfReports(statsFile, tool + "-portability"));
 
-    QDateTimeAxis *axisX = new QDateTimeAxis;
+    auto *axisX = new QDateTimeAxis;
     axisX->setTitleText("Date");
     chart->addAxis(axisX, Qt::AlignBottom);
 
@@ -399,7 +399,7 @@ QChartView *createChart(const QString &statsFile, const QString &tool)
         s->attachAxis(axisX);
     }
 
-    QValueAxis *axisY = new QValueAxis;
+    auto *axisY = new QValueAxis;
     axisY->setLabelFormat("%i");
     axisY->setTitleText("Count");
     chart->addAxis(axisY, Qt::AlignLeft);
@@ -407,7 +407,7 @@ QChartView *createChart(const QString &statsFile, const QString &tool)
     qreal maxY = 0;
     for (QAbstractSeries *s : chart->series()) {
         s->attachAxis(axisY);
-        if (const QLineSeries *ls = dynamic_cast<const QLineSeries*>(s)) {
+        if (const auto *ls = dynamic_cast<const QLineSeries*>(s)) {
             for (QPointF p : ls->points()) {
                 if (p.y() > maxY)
                     maxY = p.y();
@@ -419,14 +419,14 @@ QChartView *createChart(const QString &statsFile, const QString &tool)
     //chart->createDefaultAxes();
     chart->setTitle(tool);
 
-    QChartView *chartView = new QChartView(chart);
+    auto *chartView = new QChartView(chart);
     chartView->setRenderHint(QPainter::Antialiasing);
     return chartView;
 }
 
 QLineSeries *numberOfReports(const QString &fileName, const QString &severity)
 {
-    QLineSeries *series = new QLineSeries();
+    auto *series = new QLineSeries();
     series->setName(severity);
     QFile f(fileName);
     if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {

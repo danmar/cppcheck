@@ -1285,15 +1285,15 @@ void CheckCondition::checkIncorrectLogicOperator()
                 // 5 => testvalue is larger than both value1 and value2
                 bool result1, result2;
                 if (isfloat) {
-                    const double testvalue = getvalue<double>(test, d1, d2);
+                    const auto testvalue = getvalue<double>(test, d1, d2);
                     result1 = checkFloatRelation(op1, testvalue, d1);
                     result2 = checkFloatRelation(op2, testvalue, d2);
                 } else if (useUnsignedInt) {
-                    const MathLib::biguint testvalue = getvalue<MathLib::biguint>(test, u1, u2);
+                    const auto testvalue = getvalue<MathLib::biguint>(test, u1, u2);
                     result1 = checkIntRelation(op1, testvalue, u1);
                     result2 = checkIntRelation(op2, testvalue, u2);
                 } else {
-                    const MathLib::bigint testvalue = getvalue<MathLib::bigint>(test, i1, i2);
+                    const auto testvalue = getvalue<MathLib::bigint>(test, i1, i2);
                     result1 = checkIntRelation(op1, testvalue, i1);
                     result2 = checkIntRelation(op2, testvalue, i2);
                 }

@@ -1705,7 +1705,7 @@ Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const S
     if (unsafeUsage.empty())
         return nullptr;
 
-    MyFileInfo *fileInfo = new MyFileInfo;
+    auto *fileInfo = new MyFileInfo;
     fileInfo->unsafeUsage = unsafeUsage;
     return fileInfo;
 }
@@ -1716,7 +1716,7 @@ Check::FileInfo * CheckUninitVar::loadFileInfoFromXml(const tinyxml2::XMLElement
     if (unsafeUsage.empty())
         return nullptr;
 
-    MyFileInfo *fileInfo = new MyFileInfo;
+    auto *fileInfo = new MyFileInfo;
     fileInfo->unsafeUsage = unsafeUsage;
     return fileInfo;
 }

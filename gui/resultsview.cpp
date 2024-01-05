@@ -436,7 +436,7 @@ void ResultsView::readErrorsXml(const QString &filename)
 
 void ResultsView::updateDetails(const QModelIndex &index)
 {
-    const QStandardItemModel *model = qobject_cast<const QStandardItemModel*>(mUI->mTree->model());
+    const auto *model = qobject_cast<const QStandardItemModel*>(mUI->mTree->model());
     QStandardItem *item = model->itemFromIndex(index);
 
     if (!item) {

@@ -16,7 +16,7 @@ void validCode()
 
     int rc = sqlite3_open("/db", &db);
     if (rc != SQLITE_OK) {
-        fprintf(stderr, "Error opening sqlite3 db: %s\n", sqlite3_errmsg(db));
+        printf("Error opening sqlite3 db: %s\n", sqlite3_errmsg(db));
         sqlite3_close(db);
     } else {
         sqlite3_close(db);

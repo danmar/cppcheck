@@ -948,7 +948,7 @@ bool CheckBufferOverrun::isCtuUnsafePointerArith(const Settings *settings, const
 /** @brief Parse current TU and extract file info */
 Check::FileInfo *CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
-    MyFileInfo *fileInfo = new MyFileInfo;
+    auto *fileInfo = new MyFileInfo;
     fileInfo->unsafeArrayIndex = CTU::getUnsafeUsage(tokenizer, settings, isCtuUnsafeArrayIndex);
     fileInfo->unsafePointerArith = CTU::getUnsafeUsage(tokenizer, settings, isCtuUnsafePointerArith);
     if (fileInfo->unsafeArrayIndex.empty() && fileInfo->unsafePointerArith.empty()) {
@@ -964,7 +964,7 @@ Check::FileInfo * CheckBufferOverrun::loadFileInfoFromXml(const tinyxml2::XMLEle
     const std::string arrayIndex("array-index");
     const std::string pointerArith("pointer-arith");
 
-    MyFileInfo *fileInfo = new MyFileInfo;
+    auto *fileInfo = new MyFileInfo;
     for (const tinyxml2::XMLElement *e = xmlElement->FirstChildElement(); e; e = e->NextSiblingElement()) {
         if (e->Name() == arrayIndex)
             fileInfo->unsafeArrayIndex = CTU::loadUnsafeUsageListFromXml(e);

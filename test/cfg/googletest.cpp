@@ -15,12 +15,15 @@ namespace ExampleNamespace {
     constexpr long long TOLERANCE = 10;
 
     // #9397 syntaxError when MATCHER_P is not known
+    // cppcheck-suppress symbolDatabaseWarning
     MATCHER_P(ExampleMatcherPTest, expected, "")
     {
+        // cppcheck-suppress valueFlowBailoutIncompleteVar
         return ((arg <= (expected + TOLERANCE)) && (arg >= (expected - TOLERANCE)));
     }
 
     // syntaxError when MATCHER is not known
+    // cppcheck-suppress symbolDatabaseWarning
     MATCHER(ExampleMatcherTest, "")
     {
         return (arg == TOLERANCE);

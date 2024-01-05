@@ -1376,7 +1376,7 @@ void TemplateSimplifier::simplifyTemplateAliases()
         }
 
         if (found) {
-            Token *end = const_cast<Token *>(aliasDeclaration.aliasEndToken());
+            auto *end = const_cast<Token *>(aliasDeclaration.aliasEndToken());
 
             // remove declaration tokens
             if (aliasDeclaration.token()->previous())
@@ -3227,7 +3227,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     // process uninstantiated templates
     // TODO: remove the specialized check and handle all uninstantiated templates someday.
     if (!instantiated && specialized) {
-        Token * tok2 = const_cast<Token *>(templateDeclaration.nameToken());
+        auto * tok2 = const_cast<Token *>(templateDeclaration.nameToken());
         if (mErrorLogger && !mTokenList.getFiles().empty())
             mErrorLogger->reportProgress(mTokenList.getFiles()[0], "TemplateSimplifier::simplifyTemplateInstantiations()", tok2->progressValue());
 

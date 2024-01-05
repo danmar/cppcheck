@@ -31,14 +31,18 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include <time.h>
+#include <string.h>
+#include <strings.h>
+#if defined(__APPLE__)
+#include <xlocale.h>
+#endif
 #if !(defined(__APPLE__) && defined(__MACH__))
 #include <mqueue.h>
 #endif
 #include <stdlib.h>
 #include <unistd.h>
 #include <wchar.h>
-#include <string.h>
-#include <strings.h>
+
 
 #if !(defined(__APPLE__) && defined(__MACH__))
 void nullPointer_mq_timedsend(mqd_t mqdes, const char* msg_ptr, size_t msg_len, unsigned msg_prio, const struct timespec* abs_timeout) {
@@ -101,6 +105,17 @@ int nullPointer_posix_trace_getnext_event(trace_id_t trid, struct posix_trace_ev
     return posix_trace_getnext_event(trid, event, data, num_bytes, data_len, unavailable);
 }
 #endif // __TRACE_H__
+
+size_t nullPointer_strxfrm_l(char *restrict dest, const char *restrict src, size_t count, locale_t locale)
+{
+    (void)strxfrm_l(dest, src, count, locale);
+    // In case the 3rd argument is 0, the 1st argument is permitted to be a null pointer. (#6306)
+    (void)strxfrm_l(NULL, src, 0, locale);
+    (void)strxfrm_l(NULL, src, 1, locale);
+    (void)strxfrm_l(NULL, src, count, locale);
+    // cppcheck-suppress nullPointer
+    return strxfrm_l(dest, NULL, count, locale);
+}
 
 void nullPointer_pthread_attr_getstack(const pthread_attr_t *attr, void *stackaddr, size_t stacksize) {
     // cppcheck-suppress nullPointer
@@ -880,6 +895,7 @@ void validCode(va_list valist_arg1, va_list valist_arg2)
     void *ptr;
     if (posix_memalign(&ptr, sizeof(void *), sizeof(void *)) == 0)
         free(ptr);
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     syslog(LOG_ERR, "err %u", 0U);
     syslog(LOG_WARNING, "warn %d %d", 5, 1);
     vsyslog(LOG_EMERG, "emerg %d", valist_arg1);

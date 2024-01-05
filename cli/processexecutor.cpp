@@ -107,11 +107,11 @@ namespace {
         void writeToPipe(PipeSignal type, const std::string &data) const
         {
             {
-                const char t = static_cast<char>(type);
+                const auto t = static_cast<char>(type);
                 writeToPipeInternal(type, &t, 1);
             }
 
-            const unsigned int len = static_cast<unsigned int>(data.length());
+            const auto len = static_cast<unsigned int>(data.length());
             {
                 static constexpr std::size_t l_size = sizeof(unsigned int);
                 writeToPipeInternal(type, &len, l_size);

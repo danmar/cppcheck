@@ -316,7 +316,7 @@ QVector<int>::iterator QVector2()
 // cppcheck-suppress passedByValue
 void duplicateExpression_QString_Compare(QString style) //#8723
 {
-    // cppcheck-suppress duplicateExpression
+    // cppcheck-suppress [duplicateExpression,valueFlowBailoutIncompleteVar]
     if (style.compare( "x", Qt::CaseInsensitive ) == 0 || style.compare( "x", Qt::CaseInsensitive ) == 0)
     {}
 }

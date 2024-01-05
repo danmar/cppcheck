@@ -588,6 +588,7 @@ void *bufferAccessOutOfBounds_memchr(void *s, int c, size_t n)
 #ifdef __STDC_LIB_EXT1__
 void uninitvar_localtime_s(const std::time_t *restrict time, struct tm *restrict result)
 {
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     const std::time_t *restrict Time;
     // TODO cppcheck-suppress uninitvar
     (void)std::localtime_s(Time, result);
@@ -640,6 +641,7 @@ void invalidFunctionArg_std_string_substr(const std::string &str, std::size_t po
     (void)str.substr(pos,-1);
     // no warning is expected for
     (void)str.substr(pos,len);
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     (void)str.substr(pos, std::string::npos);
 }
 
@@ -4290,6 +4292,28 @@ void nullPointer_istream_read(std::istream &f)
     f.read(NULL, 10);
 }
 
+std::size_t nullPointer_strxfrm(char *dest, const char *src, std::size_t count)
+{
+    (void)strxfrm(dest, src, count);
+    // In case the 3rd argument is 0, the 1st argument is permitted to be a null pointer. (#6306)
+    (void)strxfrm(nullptr, src, 0);
+    (void)strxfrm(nullptr, src, 1);
+    (void)strxfrm(nullptr, src, count);
+    // cppcheck-suppress nullPointer
+    return strxfrm(dest, nullptr, count);
+}
+
+std::size_t nullPointer_wcsxfrm(wchar_t *dest, const wchar_t *src, std::size_t count)
+{
+    (void)wcsxfrm(dest, src, count);
+    // In case the 3rd argument is 0, the 1st argument is permitted to be a null pointer. (#6306)
+    (void)wcsxfrm(nullptr, src, 0);
+    (void)wcsxfrm(nullptr, src, 1);
+    (void)wcsxfrm(nullptr, src, count);
+    // cppcheck-suppress nullPointer
+    return wcsxfrm(dest, nullptr, count);
+}
+
 void nullPointer_asctime(void)
 {
     const struct tm *tm = 0;
@@ -4580,8 +4604,10 @@ void stdbind()
     std::bind(stdbind_helper, 1);
 
     // TODO cppcheck-suppress unreadVariable
+    // cppcheck-suppress autoNoType
     auto f1 = std::bind(stdbind_helper, _1);
     // TODO cppcheck-suppress unreadVariable
+    // cppcheck-suppress autoNoType
     auto f2 = std::bind(stdbind_helper, 10);
 }
 
@@ -4756,6 +4782,7 @@ void smartPtr_get()
 
 void smartPtr_get2(std::vector<std::unique_ptr<int>>& v)
 {
+    // cppcheck-suppress autoNoType
     for (auto& u : v) {
         int* p = u.get();
         *p = 0;

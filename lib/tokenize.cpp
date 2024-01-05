@@ -821,7 +821,14 @@ namespace {
                 }
             }
 
-            Token* const tok2 = insertTokens(tok, mRangeType);
+            // don't add class|struct|union in inheritance list
+            auto rangeType = mRangeType;
+            if (Token::Match(tok->previous(), "public|private|protected")) {
+                while (Token::Match(rangeType.first, "const|class|struct|union"))
+                    rangeType.first = rangeType.first->next();
+            }
+
+            Token* const tok2 = insertTokens(tok, rangeType);
             Token* const tok3 = insertTokens(tok2, mRangeTypeQualifiers);
 
             Token *after = tok3;
@@ -3915,7 +3922,7 @@ void Tokenizer::simplifyLabelsCaseDefault()
     int indentLevel = 0;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // Simplify labels in the executable scope..
-        Token *start = const_cast<Token *>(startOfExecutableScope(tok));
+        auto *start = const_cast<Token *>(startOfExecutableScope(tok));
         if (start) {
             tok = start;
             executablescope = true;

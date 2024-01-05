@@ -1608,6 +1608,31 @@ private:
             ASSERT_EQUALS(expected, tok(code));
             ASSERT_EQUALS("", errout.str());
         }
+
+        {
+            const char code[] = "struct B {};\n" // #12141
+                                "typedef struct B B;\n"
+                                "namespace N {\n"
+                                "    struct D : public B {};\n"
+                                "}\n";
+
+            const char expected[] = "struct B { } ; namespace N { struct D : public B { } ; }";
+            ASSERT_EQUALS(expected, tok(code));
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "struct B {};\n"
+                                "typedef const struct B CB;\n"
+                                "namespace N {\n"
+                                "    struct D : public CB {};\n"
+                                "}\n"
+                                "CB cb;\n";
+
+            const char expected[] = "struct B { } ; namespace N { struct D : public B { } ; } const struct B cb ;";
+            ASSERT_EQUALS(expected, tok(code));
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void simplifyTypedef45() {

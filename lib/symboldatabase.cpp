@@ -1052,7 +1052,7 @@ void SymbolDatabase::createSymbolDatabaseSetScopePointers()
 
         const_cast<Token *>(bodyEnd)->scope(&scope);
 
-        for (Token* tok = const_cast<Token *>(bodyStart); tok != bodyEnd; tok = tok->next()) {
+        for (auto* tok = const_cast<Token *>(bodyStart); tok != bodyEnd; tok = tok->next()) {
             if (bodyStart != bodyEnd && tok->str() == "{") {
                 bool isEndOfScope = false;
                 for (Scope* innerScope: scope.nestedList) {
@@ -1702,7 +1702,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
         std::unordered_map<std::string, nonneg int> unknownIds;
         // Assign IDs to incomplete vars which are part of an expression
         // Such variables should be assumed global
-        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+        for (auto* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->isIncompleteVar())
                 continue;
             if (!isExpression(tok->astParent()))
@@ -1725,7 +1725,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
         // Assign IDs
         ExprIdMap exprIdMap;
         std::map<std::string, nonneg int> baseIds;
-        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+        for (auto* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->varId() > 0) {
                 tok->exprId(tok->varId());
                 if (tok->astParent() && tok->astParent()->exprId() == 0)
@@ -1794,7 +1794,7 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
             continue;
         // check each array dimension
         for (const Dimension &const_dimension : var->dimensions()) {
-            Dimension &dimension = const_cast<Dimension &>(const_dimension);
+            auto &dimension = const_cast<Dimension &>(const_dimension);
             if (dimension.num != 0 || !dimension.tok)
                 continue;
 
@@ -3383,7 +3383,7 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
         if (match) {
             auto range = scope1->functionMap.equal_range((*tok)->str());
             for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
-                Function * func = const_cast<Function *>(it->second);
+                auto * func = const_cast<Function *>(it->second);
                 if (!func->hasBody()) {
                     if (func->argsMatch(scope1, func->argDef, (*tok)->next(), path, path_length)) {
                         const Token *closeParen = (*tok)->next()->link();
@@ -6502,7 +6502,7 @@ static bool isContainerYieldPointer(Library::Container::Yield yield)
 
 void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, SourceLocation loc)
 {
-    ValueType* valuetypePtr = new ValueType(valuetype);
+    auto* valuetypePtr = new ValueType(valuetype);
     if (mSettings.debugnormal || mSettings.debugwarnings)
         valuetypePtr->setDebugPath(tok, loc);
     tok->setValueType(valuetypePtr);
@@ -6584,7 +6584,7 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
                 setValueType(var1Tok, vt);
                 if (var1Tok != parent->previous())
                     setValueType(parent->previous(), vt);
-                Variable *var = const_cast<Variable *>(parent->previous()->variable());
+                auto *var = const_cast<Variable *>(parent->previous()->variable());
                 if (var) {
                     ValueType vt2_(*vt2);
                     if (vt2_.pointer == 0 && autoTok->strAt(1) == "*")
@@ -6737,7 +6737,7 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
                     varvt.constness |= 1;
             }
             setValueType(parent->previous(), varvt);
-            Variable *var = const_cast<Variable *>(parent->previous()->variable());
+            auto *var = const_cast<Variable *>(parent->previous()->variable());
             if (var) {
                 var->setValueType(varvt);
                 if (vt2->typeScope && vt2->typeScope->definedType) {
@@ -6803,7 +6803,7 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
                 if (isconst)
                     varvt.constness |= (1 << autovt.pointer);
                 setValueType(parent->previous(), varvt);
-                Variable * var = const_cast<Variable *>(parent->previous()->variable());
+                auto * var = const_cast<Variable *>(parent->previous()->variable());
                 if (var) {
                     var->setValueType(varvt);
                     if (templateArgType && templateArgType->classScope && templateArgType->classScope->definedType) {

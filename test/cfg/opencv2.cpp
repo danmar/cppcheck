@@ -14,6 +14,7 @@
 void validCode(const char* argStr)
 {
     cv::Mat image;
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     image = cv::imread(argStr, cv::IMREAD_COLOR);
     if (!image.data) {
         printf("No image data \n");

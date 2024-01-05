@@ -182,7 +182,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, bool premium, QWi
     libs.sort();
     mUI->mLibraries->clear();
     for (const QString &lib : libs) {
-        QListWidgetItem* item = new QListWidgetItem(lib, mUI->mLibraries);
+        auto* item = new QListWidgetItem(lib, mUI->mLibraries);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable); // set checkable flag
         item->setCheckState(Qt::Unchecked); // AND initialize check state
     }
@@ -604,7 +604,7 @@ void ProjectFileDialog::setProjectConfigurations(const QStringList &configs)
     mUI->mListVsConfigs->clear();
     mUI->mListVsConfigs->setEnabled(!configs.isEmpty() && !mUI->mChkAllVsConfigs->isChecked());
     for (const QString &cfg : configs) {
-        QListWidgetItem* item = new QListWidgetItem(cfg, mUI->mListVsConfigs);
+        auto* item = new QListWidgetItem(cfg, mUI->mListVsConfigs);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable); // set checkable flag
         item->setCheckState(Qt::Unchecked);
     }
@@ -621,7 +621,7 @@ void ProjectFileDialog::addIncludeDir(const QString &dir)
         return;
 
     const QString newdir = QDir::toNativeSeparators(dir);
-    QListWidgetItem *item = new QListWidgetItem(newdir);
+    auto *item = new QListWidgetItem(newdir);
     item->setFlags(item->flags() | Qt::ItemIsEditable);
     mUI->mListIncludeDirs->addItem(item);
 }
@@ -632,7 +632,7 @@ void ProjectFileDialog::addCheckPath(const QString &path)
         return;
 
     const QString newpath = QDir::toNativeSeparators(path);
-    QListWidgetItem *item = new QListWidgetItem(newpath);
+    auto *item = new QListWidgetItem(newpath);
     item->setFlags(item->flags() | Qt::ItemIsEditable);
     mUI->mListCheckPaths->addItem(item);
 }
@@ -643,7 +643,7 @@ void ProjectFileDialog::addExcludePath(const QString &path)
         return;
 
     const QString newpath = QDir::toNativeSeparators(path);
-    QListWidgetItem *item = new QListWidgetItem(newpath);
+    auto *item = new QListWidgetItem(newpath);
     item->setFlags(item->flags() | Qt::ItemIsEditable);
     mUI->mListExcludedPaths->addItem(item);
 }
