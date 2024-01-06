@@ -2664,7 +2664,7 @@ void CheckClass::initializerListOrder()
                     tok = tok->next();
 
                     // find all variable initializations in list
-                    while (tok && tok != func->functionScope->bodyStart) {
+                    for (; tok && tok != func->functionScope->bodyStart; tok = tok->next()) {
                         if (Token::Match(tok, "%name% (|{")) {
                             const Variable *var = scope->getVariable(tok->str());
                             if (var)
@@ -2677,9 +2677,8 @@ void CheckClass::initializerListOrder()
                                 if (auto var2 = tok2->variable())
                                     vars.back().initArgs.emplace_back(var2);
                             }
-                            tok = end->next();
-                        } else
-                            tok = tok->next();
+                            tok = end;
+                        }
                     }
 
                     for (int j = 0; j < vars.size(); j++) {
