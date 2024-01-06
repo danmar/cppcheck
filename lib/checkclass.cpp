@@ -2628,11 +2628,11 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
 
 namespace { // avoid one-definition-rule violation
     struct VarInfo {
-        VarInfo(const Variable* _var, const Token* _tok)
+        VarInfo(const Variable *_var, const Token *_tok)
             : var(_var), tok(_tok) {}
 
-        const Variable* var;
-        const Token* tok;
+        const Variable *var;
+        const Token *tok;
         std::vector<std::pair<const Variable*, const Token*>> initArgs;
     };
 }
@@ -2651,13 +2651,13 @@ void CheckClass::initializerListOrder()
 
     logChecker("CheckClass::initializerListOrder"); // style,inconclusive
 
-    for (const Scope* scope : mSymbolDatabase->classAndStructScopes) {
+    for (const Scope *scope : mSymbolDatabase->classAndStructScopes) {
 
         // iterate through all member functions looking for constructors
         for (std::list<Function>::const_iterator func = scope->functionList.cbegin(); func != scope->functionList.cend(); ++func) {
             if (func->isConstructor() && func->hasBody()) {
                 // check for initializer list
-                const Token* tok = func->arg->link()->next();
+                const Token *tok = func->arg->link()->next();
 
                 if (tok->str() == ":") {
                     std::vector<VarInfo> vars;
@@ -2666,7 +2666,7 @@ void CheckClass::initializerListOrder()
                     // find all variable initializations in list
                     while (tok && tok != func->functionScope->bodyStart) {
                         if (Token::Match(tok, "%name% (|{")) {
-                            const Variable* var = scope->getVariable(tok->str());
+                            const Variable *var = scope->getVariable(tok->str());
                             if (var)
                                 vars.emplace_back(var, tok);
 
@@ -2676,8 +2676,7 @@ void CheckClass::initializerListOrder()
                                     vars.back().initArgs.emplace_back(var2, tok2);
                             }
                             tok = end->next();
-                        }
-                        else
+                        } else
                             tok = tok->next();
                     }
 
@@ -2692,7 +2691,7 @@ void CheckClass::initializerListOrder()
                             continue;
                         // check for out of order initialization
                         if (vars[j].var->index() < vars[j - 1].var->index())
-                            initializerListError(vars[j].tok, vars[j].var->nameToken(), scope->className, vars[j].var->name());
+                            initializerListError(vars[j].tok,vars[j].var->nameToken(), scope->className, vars[j].var->name());
                     }
                 }
             }
