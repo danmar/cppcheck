@@ -2873,28 +2873,33 @@ private:
         }
         {
             const char code[] = "float complex x;";
-            const char expected[] = "_Complex float x ;";
+            const char expected[] = "float complex x ;";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "float complex x;";
+            const char expected[] = "_Complex float x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Native, "test.c"));
         }
         {
             const char code[] = "complex float x;";
             const char expected[] = "_Complex float x ;";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Native, "test.c"));
         }
         {
             const char code[] = "complex long double x;";
             const char expected[] = "_Complex long double x ;";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Native, "test.c"));
         }
         {
             const char code[] = "long double complex x;";
             const char expected[] = "_Complex long double x ;";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Native, "test.c"));
         }
         {
             const char code[] = "double complex;";
             const char expected[] = "double complex ;";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Native, "test.c"));
         }
     }
 
@@ -5975,7 +5980,7 @@ private:
         tokenList.prepareTernaryOpForAST();
         tokenList.list.createAst();
 
-        tokenList.list.validateAst();
+        tokenList.list.validateAst(false);
 
         // Basic AST validation
         for (const Token *tok = tokenList.list.front(); tok; tok = tok->next()) {

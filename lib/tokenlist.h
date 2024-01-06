@@ -22,13 +22,13 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "settings.h"
 
 #include <cstddef>
 #include <iosfwd>
 #include <string>
 #include <vector>
 
-class Settings;
 class Token;
 class TokenList;
 
@@ -61,12 +61,12 @@ public:
 
     /** Is the code C. Used for bailouts */
     bool isC() const {
-        return mIsC;
+        return mLang == Settings::Language::C;
     }
 
     /** Is the code CPP. Used for bailouts */
     bool isCPP() const {
-        return mIsCpp;
+        return mLang == Settings::Language::CPP;
     }
 
     /**
@@ -171,7 +171,7 @@ public:
      * Check abstract syntax tree.
      * Throws InternalError on failure
      */
-    void validateAst() const;
+    void validateAst(bool print) const;
 
     /**
      * Verify that the given token is an element of the tokenlist.
@@ -214,8 +214,7 @@ private:
     const Settings* const mSettings{};
 
     /** File is known to be C/C++ code */
-    bool mIsC{};
-    bool mIsCpp{};
+    Settings::Language mLang{Settings::Language::None};
 };
 
 /// @}
