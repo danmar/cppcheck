@@ -2674,7 +2674,7 @@ void CheckClass::initializerListOrder()
 
                             const Token* const end = tok->next()->link();
                             for (const Token* tok2 = tok->next(); tok2 != end; tok2 = tok2->next()) {
-                                if (auto var2 = tok2->variable())
+                                if (const Variable* var2 = tok2->variable())
                                     vars.back().initArgs.emplace_back(var2);
                             }
                             tok = end;
