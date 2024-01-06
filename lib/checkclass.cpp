@@ -2628,11 +2628,12 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
 
 namespace { // avoid one-definition-rule violation
     struct VarInfo {
-        VarInfo(const Variable *_var, const Token *_tok)
+        VarInfo(const Variable* _var, const Token* _tok)
             : var(_var), tok(_tok) {}
 
-        const Variable *var;
-        const Token *tok;
+        const Variable* var;
+        const Token* tok;
+        std::vector<std::pair<const Variable*, const Token*>> initArgs;
     };
 }
 
@@ -2650,13 +2651,13 @@ void CheckClass::initializerListOrder()
 
     logChecker("CheckClass::initializerListOrder"); // style,inconclusive
 
-    for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
+    for (const Scope* scope : mSymbolDatabase->classAndStructScopes) {
 
         // iterate through all member functions looking for constructors
         for (std::list<Function>::const_iterator func = scope->functionList.cbegin(); func != scope->functionList.cend(); ++func) {
             if (func->isConstructor() && func->hasBody()) {
                 // check for initializer list
-                const Token *tok = func->arg->link()->next();
+                const Token* tok = func->arg->link()->next();
 
                 if (tok->str() == ":") {
                     std::vector<VarInfo> vars;
@@ -2665,20 +2666,33 @@ void CheckClass::initializerListOrder()
                     // find all variable initializations in list
                     while (tok && tok != func->functionScope->bodyStart) {
                         if (Token::Match(tok, "%name% (|{")) {
-                            const Variable *var = scope->getVariable(tok->str());
+                            const Variable* var = scope->getVariable(tok->str());
                             if (var)
                                 vars.emplace_back(var, tok);
 
-                            tok = tok->next()->link()->next();
-                        } else
+                            const Token* const end = tok->next()->link();
+                            for (const Token* tok2 = tok->next(); tok2 != end; tok2 = tok2->next()) {
+                                if (auto var2 = tok2->variable())
+                                    vars.back().initArgs.emplace_back(var2, tok2);
+                            }
+                            tok = end->next();
+                        }
+                        else
                             tok = tok->next();
                     }
 
-                    // need at least 2 members to have out of order initialization
-                    for (int j = 1; j < vars.size(); j++) {
+                    for (int j = 0; j < vars.size(); j++) {
+                        // check for use of uninitialized arguments
+                        for (const auto& arg : vars[j].initArgs)
+                            if (vars[j].var->index() < arg.first->index())
+                                initializerListError(vars[j].tok, vars[j].var->nameToken(), scope->className, vars[j].var->name(), /*isArgument*/ true);
+
+                        // need at least 2 members to have out of order initialization
+                        if (j == 0)
+                            continue;
                         // check for out of order initialization
                         if (vars[j].var->index() < vars[j - 1].var->index())
-                            initializerListError(vars[j].tok,vars[j].var->nameToken(), scope->className, vars[j].var->name());
+                            initializerListError(vars[j].tok, vars[j].var->nameToken(), scope->className, vars[j].var->name());
                     }
                 }
             }
@@ -2686,15 +2700,18 @@ void CheckClass::initializerListOrder()
     }
 }
 
-void CheckClass::initializerListError(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &varname)
+void CheckClass::initializerListError(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &varname, bool isArgument)
 {
     std::list<const Token *> toks = { tok1, tok2 };
+    const std::string msg = isArgument ?
+        "Member variable '$symbol' uses an uninitialized argument due to the order of declarations." :
+        "Member variable '$symbol' is in the wrong place in the initializer list.";
     reportError(toks, Severity::style, "initializerList",
-                "$symbol:" + classname + "::" + varname +"\n"
-                "Member variable '$symbol' is in the wrong place in the initializer list.\n"
-                "Member variable '$symbol' is in the wrong place in the initializer list. "
+                "$symbol:" + classname + "::" + varname + '\n' +
+                msg + '\n' +
+                msg + ' ' +
                 "Members are initialized in the order they are declared, not in the "
-                "order they are in the initializer list.  Keeping the initializer list "
+                "order they are in the initializer list. Keeping the initializer list "
                 "in the same order that the members were declared prevents order dependent "
                 "initialization errors.", CWE398, Certainty::inconclusive);
 }

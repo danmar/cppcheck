@@ -215,6 +215,7 @@ private:
         TEST_CASE(qualifiedNameMember); // #10872
 
         TEST_CASE(initializerListOrder);
+        TEST_CASE(initializerListArgument);
         TEST_CASE(initializerListUsage);
         TEST_CASE(selfInitialization);
 
@@ -7577,6 +7578,18 @@ private:
                                   "    int a, b;\n"
                                   "};");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void initializerListArgument() {
+        checkInitializerListOrder("struct A { A(); };\n" // #12322
+                                  "struct B { explicit B(const A* a); };\n"
+                                  "struct C {\n"
+                                  "    C() : b(&a) {}\n"
+                                  "    B b;\n"
+                                  "    const A a;\n"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (style, inconclusive) Member variable 'C::b' uses an uninitialized argument due to the order of declarations.\n",
+                      errout.str());
     }
 
 #define checkInitializationListUsage(code) checkInitializationListUsage_(code, __FILE__, __LINE__)
