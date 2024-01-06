@@ -1,7 +1,7 @@
 TEMPLATE = app
 TARGET = test-projectfile
 DEPENDPATH += .
-INCLUDEPATH += . ../../../externals/simplecpp ../../../externals/tinyxml2 ../../../externals/picojson
+INCLUDEPATH += . ../../../externals/simplecpp ../../../externals/tinyxml2 ../../../externals/picojson ../../../externals/valijson
 OBJECTS_DIR = ../../temp
 MOC_DIR = ../../temp
 
@@ -19,4 +19,5 @@ SOURCES += testprojectfile.cpp \
 
 HEADERS += testprojectfile.h \
     ../../projectfile.h \
-    ../../../externals/picojson/picojson.h
+    ../../../externals/picojson/picojson.h \
+    ../../../externals/valijson/valijson_picojson_bundled.hpp
