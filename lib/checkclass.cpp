@@ -2669,12 +2669,6 @@ void CheckClass::initializerListOrder()
                             if (var)
                                 vars.emplace_back(var, tok);
 
-                            if (Token::Match(tok->tokAt(2), "%name% =")) {
-                                var = scope->getVariable(tok->strAt(2));
-
-                                if (var)
-                                    vars.emplace_back(var, tok->tokAt(2));
-                            }
                             tok = tok->next()->link()->next();
                         } else
                             tok = tok->next();

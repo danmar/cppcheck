@@ -7571,6 +7571,12 @@ private:
                                   "};");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::b' is in the wrong place in the initializer list.\n"
                       "[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::a' is in the wrong place in the initializer list.\n", errout.str());
+
+        checkInitializerListOrder("struct S {\n"
+                                  "    S() : b(a = 1) {}\n"
+                                  "    int a, b;\n"
+                                  "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkInitializationListUsage(code) checkInitializationListUsage_(code, __FILE__, __LINE__)
