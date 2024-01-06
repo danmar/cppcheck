@@ -1997,7 +1997,7 @@ void TokenList::simplifyStdType()
             continue;
         }
 
-        if (Token::Match(tok, "char|short|int|long|unsigned|signed|double|float") || (isC() && (mSettings->standards.c >= Standards::C99) && Token::Match(tok, "complex|_Complex"))) {
+        if (Token::Match(tok, "char|short|int|long|unsigned|signed|double|float") || (isC() && (!mSettings || (mSettings->standards.c >= Standards::C99)) && Token::Match(tok, "complex|_Complex"))) {
             bool isFloat= false;
             bool isSigned = false;
             bool isUnsigned = false;
@@ -2020,7 +2020,7 @@ void TokenList::simplifyStdType()
                 else if (Token::Match(tok2, "float|double")) {
                     isFloat = true;
                     typeSpec = tok2;
-                } else if (isC() && (mSettings->standards.c >= Standards::C99) && Token::Match(tok2, "complex|_Complex"))
+                } else if (isC() && (!mSettings || (mSettings->standards.c >= Standards::C99)) && Token::Match(tok2, "complex|_Complex"))
                     isComplex = !isFloat || tok2->str() == "_Complex" || Token::Match(tok2->next(), "*|&|%name%"); // Ensure that "complex" is not the variables name
                 else if (Token::Match(tok2, "char|int")) {
                     if (!typeSpec)
