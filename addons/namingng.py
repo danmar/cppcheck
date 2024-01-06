@@ -38,6 +38,9 @@ import os
 import re
 import argparse
 import json
+import jsonschema
+
+config_schema = os.path.join(os.path.dirname(sys.argv[0]),'addon-namingng-config.schema.json')
 
 # Auxiliary class
 class DataStruct:
@@ -55,44 +58,26 @@ def configError(error,fatal=True):
     if fatal:
         sys.exit(1)
 
-def validateConfigREs(list_or_dict,json_key):
-    have_error = False
-    for item in list_or_dict:
-        try:
-            re.compile(item)
-        except re.error as err:
-            configError("item '%s' of '%s' is not a valid regular expression: %s"%(item,json_key,err),fatal=False)
-            have_error = True
-            continue
-        if not isinstance(list_or_dict,dict):
-            continue
-        # item is actually a dict key; check value
-        value = list_or_dict[item]
-        if (not isinstance(value,list) or len(value) != 2
-                or not isinstance(value[0],bool) or not isinstance(value[1],str)):
-            configError("item '%s' of '%s' must be an array [bool,string]"%(item,json_key),fatal=False)
-            have_error = True
-
-    return have_error
-
 def loadConfig(configfile):
     if not os.path.exists(configfile):
         configError("cannot find config file '%s'"%configfile)
 
     try:
+        what = 'config file'
         with open(configfile) as fh:
             data = json.load(fh)
+        what = 'JSON schema'
+        with open(config_schema) as fh:
+            schema = json.load(fh)
     except json.JSONDecodeError as e:
-        configError("error parsing config file as JSON at line %d: %s"%(e.lineno,e.msg))
+        configError("error parsing %s as JSON at line %d: %s"%(what,e.lineno,e.msg))
     except Exception as e:
-        configError("error opening config file '%s': %s"%(configfile,e))
+        configError("error opening %s '%s': %s"%(what,configfile,e))
 
-    if not isinstance(data, dict):
-        configError('config file must contain a JSON object at the top level')
-
-    # All errors are emitted before bailing out, to make the unit test more
-    # effective.
-    have_error = False
+    try:
+        jsonschema.validate(instance=data,schema=schema)
+    except Exception as e:
+        configError("error validating config JSON: %s"%(e))
 
     # Put config items in a class, so that settings can be accessed using
     # config.feature
@@ -101,53 +86,28 @@ def loadConfig(configfile):
     config = Config()
 
     mapping = {
-        'file':                     ('RE_FILE', (list,)),
-        'namespace':                ('RE_NAMESPACE', (list,dict)),
-        'include_guard':            ('include_guard', (dict,)),
-        'variable':                 ('RE_VARNAME', (list,dict)),
-        'variable_prefixes':        ('var_prefixes', (dict,), {}),
-        'private_member':           ('RE_PRIVATE_MEMBER_VARIABLE', (list,dict)),
-        'public_member':            ('RE_PUBLIC_MEMBER_VARIABLE', (list,dict)),
-        'global_variable':          ('RE_GLOBAL_VARNAME', (list,dict)),
-        'function_name':            ('RE_FUNCTIONNAME', (list,dict)),
-        'function_prefixes':        ('function_prefixes', (dict,), {}),
-        'class_name':               ('RE_CLASS_NAME', (list,dict)),
-        'skip_one_char_variables':  ('skip_one_char_variables', (bool,)),
+        'file':                     ('RE_FILE',),
+        'namespace':                ('RE_NAMESPACE',),
+        'include_guard':            ('include_guard',),
+        'variable':                 ('RE_VARNAME',),
+        'variable_prefixes':        ('var_prefixes', {}),
+        'private_member':           ('RE_PRIVATE_MEMBER_VARIABLE',),
+        'public_member':            ('RE_PUBLIC_MEMBER_VARIABLE',),
+        'global_variable':          ('RE_GLOBAL_VARNAME',),
+        'function_name':            ('RE_FUNCTIONNAME',),
+        'function_prefixes':        ('function_prefixes', {}),
+        'class_name':               ('RE_CLASS_NAME',),
+        'skip_one_char_variables':  ('skip_one_char_variables',),
     }
 
     # parse defined keys and store as members of config object
     for key,opts in mapping.items():
         json_key = opts[0]
-        req_type = opts[1]
-        default = None if len(opts)<3 else opts[2]
-
+        default = None if len(opts)<3 else opts[1]
         value = data.pop(json_key,default)
-        if value is not None and type(value) not in req_type:
-            req_typename = ' or '.join([tp.__name__ for tp in req_type])
-            got_typename = type(value).__name__
-            configError('%s must be %s (not %s), or not set'%(json_key,req_typename,got_typename),fatal=False)
-            have_error = True
-            continue
-
-        # type list implies that this is either a list of REs or a dict with RE keys
-        if list in req_type and value is not None:
-            re_error = validateConfigREs(value,json_key)
-            if re_error:
-                have_error = True
-
         setattr(config,key,value)
 
-    # check remaining keys, only accept underscore-prefixed comments
-    for key,value in data.items():
-        if key == '' or key[0] != '_':
-            configError("unknown config key '%s'"%key,fatal=False)
-            have_error = True
-
-    if have_error:
-        sys.exit(1)
-
     return config
-
 
 def evalExpr(conf, exp, mockToken, msgType):
     report_as_error = False
