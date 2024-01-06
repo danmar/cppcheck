@@ -1165,3 +1165,16 @@ def test_addon_json_invalid_script_1(tmpdir):
 
 def test_addon_json_invalid_script_2(tmpdir):
     __test_addon_json_invalid(tmpdir, json.dumps({'script':0}), "'script' must be a string.")
+
+
+def test_unknown_extension(tmpdir):
+    test_file = os.path.join(tmpdir, 'test_2')
+    with open(test_file, 'wt') as f:
+        f.write('''
+void f() { }
+''')
+
+    exitcode, stdout, stderr = cppcheck(['-q', test_file])
+    assert exitcode == 0, stderr
+    assert stdout == ''
+    assert stderr == ''

@@ -651,9 +651,12 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     try {
         if (mSettings.library.markupFile(filename)) {
             if (mUnusedFunctionsCheck && mSettings.isUnusedFunctionCheckEnabled() && mSettings.buildDir.empty()) {
+                // this is not a real source file - we just want to tokenize it. treat it as C anyways as the language needs to be determined.
                 Tokenizer tokenizer(mSettings, this);
-                if (fileStream)
+                tokenizer.list.setLang(Standards::Language::C);
+                if (fileStream) {
                     tokenizer.list.createTokens(*fileStream, filename);
+                }
                 else {
                     std::ifstream in(filename);
                     tokenizer.list.createTokens(in, filename);
@@ -821,7 +824,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             }
             Tokenizer tokenizer2(mSettings, this);
             std::istringstream istr2(code);
-            tokenizer2.list.createTokens(istr2);
+            tokenizer2.list.createTokens(istr2, Path::identify(*files.begin()));
             executeRules("define", tokenizer2);
         }
 #endif

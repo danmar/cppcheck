@@ -560,11 +560,11 @@ namespace {
             replaceAll(c, "$(Configuration)", p.configuration);
             replaceAll(c, "$(Platform)", p.platformStr);
 
-            // TODO : Better evaluation
-            Settings s;
-            std::istringstream istr(c);
+            // TODO: evaluate without using the Tokenizer
+            const Settings s;
             Tokenizer tokenizer(s);
-            tokenizer.tokenize(istr,"vcxproj");
+            std::istringstream istr(c);
+            tokenizer.tokenize(istr,"vcxproj.c");
             for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
                 if (tok->str() == "(" && tok->astOperand1() && tok->astOperand2()) {
                     if (tok->astOperand1()->expressionString() == "Configuration.Contains")
