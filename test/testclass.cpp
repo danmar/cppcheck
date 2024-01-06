@@ -7590,6 +7590,12 @@ private:
                                   "};");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (style, inconclusive) Member variable 'C::b' uses an uninitialized argument due to the order of declarations.\n",
                       errout.str());
+
+        checkInitializerListOrder("struct S {\n"
+                                  "    S(const std::string& f, std::string i, int b, int c) : a(0), b(b), c(c) {}\n"
+                                  "    int a, b, c;\n"
+                                  "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkInitializationListUsage(code) checkInitializationListUsage_(code, __FILE__, __LINE__)
