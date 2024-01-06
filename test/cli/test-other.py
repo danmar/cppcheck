@@ -781,7 +781,12 @@ def test_showtime_top5_file(tmpdir):
     assert len(lines) == 7
     assert lines[0] == ''
     for i in range(1, 5):
-        assert lines[i].endswith(' - 1 result(s))')
+        if lines[i].startswith('valueFlowLifetime'):
+            assert lines[i].endswith(' - 2 result(s))')
+        elif lines[i].startswith('valueFlowEnumValue'):
+            assert lines[i].endswith(' - 2 result(s))')
+        else:
+            assert lines[i].endswith(' - 1 result(s))')
     assert lines[6].startswith('Overall time:')
     assert stderr == ''
 
