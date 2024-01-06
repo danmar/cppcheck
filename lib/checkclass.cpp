@@ -2633,7 +2633,7 @@ namespace { // avoid one-definition-rule violation
 
         const Variable *var;
         const Token *tok;
-        std::vector<std::pair<const Variable*, const Token*>> initArgs;
+        std::vector<const Variable*> initArgs;
     };
 }
 
@@ -2669,11 +2669,13 @@ void CheckClass::initializerListOrder()
                             const Variable *var = scope->getVariable(tok->str());
                             if (var)
                                 vars.emplace_back(var, tok);
+                            else
+                                continue;
 
                             const Token* const end = tok->next()->link();
                             for (const Token* tok2 = tok->next(); tok2 != end; tok2 = tok2->next()) {
                                 if (auto var2 = tok2->variable())
-                                    vars.back().initArgs.emplace_back(var2, tok2);
+                                    vars.back().initArgs.emplace_back(var2);
                             }
                             tok = end->next();
                         } else
@@ -2683,7 +2685,7 @@ void CheckClass::initializerListOrder()
                     for (int j = 0; j < vars.size(); j++) {
                         // check for use of uninitialized arguments
                         for (const auto& arg : vars[j].initArgs)
-                            if (vars[j].var->index() < arg.first->index())
+                            if (vars[j].var->index() < arg->index())
                                 initializerListError(vars[j].tok, vars[j].var->nameToken(), scope->className, vars[j].var->name(), /*isArgument*/ true);
 
                         // need at least 2 members to have out of order initialization
