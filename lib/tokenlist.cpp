@@ -50,6 +50,9 @@ TokenList::TokenList(const Settings* settings) :
     mSettings(settings)
 {
     mTokensFrontBack.list = this;
+    if (mSettings && (mSettings->enforcedLang != Settings::Language::None)) {
+        mLang = mSettings->enforcedLang;
+    }
 }
 
 TokenList::~TokenList()
@@ -80,9 +83,8 @@ void TokenList::deallocateTokens()
 
 void TokenList::determineCppC()
 {
-    if (mSettings && (mSettings->enforcedLang != Settings::Language::None)) {
-        mLang = mSettings->enforcedLang;
-    } else {
+    // only try to determine it if it wasn't enforced
+    if (mLang == Settings::Language::None) {
         if (Path::isC(getSourceFilePath()))
             mLang = Settings::Language::C;
         else if (Path::isCPP(getSourceFilePath()))
