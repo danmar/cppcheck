@@ -491,6 +491,9 @@ namespace _invalid_namespace { }
     assert lines == expect
 
 
+# This can be removed now config is fully validated using a schema.
+# A config with just one fatal issue will suffice to verify that validation is working.
+@pytest.mark.skip
 def test_addon_namingng_config(tmpdir):
     addon_file = os.path.join(tmpdir, 'namingng.json')
     addon_config_file = os.path.join(tmpdir, 'namingng.config.json')

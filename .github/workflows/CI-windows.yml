@@ -134,6 +134,7 @@ jobs:
           python -m pip install pytest || exit /b !errorlevel!
           python -m pip install pytest-custom_exit_code || exit /b !errorlevel!
           python -m pip install pytest-timeout || exit /b !errorlevel!
+          python -m pip install jsonschema || exit /b !errorlevel!
 
       - name: Run CMake
         if: false # TODO: enable
@@ -173,6 +174,7 @@ jobs:
           python -m pytest -Werror --strict-markers -vv test-inline-suppress.py || exit /b !errorlevel!
           python -m pytest -Werror --strict-markers -vv test-more-projects.py || exit /b !errorlevel!
           python -m pytest -Werror --strict-markers -vv test-other.py || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv test-json.py || exit /b !errorlevel!
           python -m pytest -Werror --strict-markers -vv test-proj2.py || exit /b !errorlevel!
           python -m pytest -Werror --strict-markers -vv test-suppress-syntaxError.py || exit /b !errorlevel!
 

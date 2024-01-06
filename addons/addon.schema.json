@@ -1,0 +1,35 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://cppcheck.com/addon.schema.json",
+    "title": "Addon",
+    "description": "Cppcheck addon format",
+    "type": "object",
+    "properties": {
+        "script": {
+            "description": "The Python script containing the addon code.",
+            "type": "string"
+        },
+        "args": {
+            "description": "Arguments to pass to the script.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 1
+        },
+        "python": {
+            "description": "The full path of the Python interpreter to use.",
+            "type": "string"
+        },
+        "ctu": {
+            "description": "Whether the addon is instructed to perform analysis across multiple translation units.",
+            "type": "boolean"
+        },
+        "executable": {
+            "description": "Override default 'python <script>' invocation [deprecated].",
+            "type": "string"
+        }
+    },
+    "additionalProperties": false,
+    "required": ["script"]
+}
