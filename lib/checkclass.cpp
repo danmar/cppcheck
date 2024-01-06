@@ -2651,7 +2651,7 @@ void CheckClass::initializerListOrder()
 
     logChecker("CheckClass::initializerListOrder"); // style,inconclusive
 
-    for (const Scope *scope : mSymbolDatabase->classAndStructScopes) {
+    for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
 
         // iterate through all member functions looking for constructors
         for (std::list<Function>::const_iterator func = scope->functionList.cbegin(); func != scope->functionList.cend(); ++func) {
@@ -2703,8 +2703,8 @@ void CheckClass::initializerListError(const Token *tok1, const Token *tok2, cons
 {
     std::list<const Token *> toks = { tok1, tok2 };
     const std::string msg = isArgument ?
-        "Member variable '$symbol' uses an uninitialized argument due to the order of declarations." :
-        "Member variable '$symbol' is in the wrong place in the initializer list.";
+                            "Member variable '$symbol' uses an uninitialized argument due to the order of declarations." :
+                            "Member variable '$symbol' is in the wrong place in the initializer list.";
     reportError(toks, Severity::style, "initializerList",
                 "$symbol:" + classname + "::" + varname + '\n' +
                 msg + '\n' +
