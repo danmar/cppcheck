@@ -632,17 +632,17 @@ private:
     void enforceLanguage1() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "file.cpp"};
-        settings->enforcedLang = Settings::Language::None;
+        settings->enforcedLang = Standards::Language::None;
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(2, argv));
-        ASSERT_EQUALS(Settings::Language::None, settings->enforcedLang);
+        ASSERT_EQUALS(Standards::Language::None, settings->enforcedLang);
     }
 
     void enforceLanguage2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-x", "c++", "file.cpp"};
-        settings->enforcedLang = Settings::Language::None;
+        settings->enforcedLang = Standards::Language::None;
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
-        ASSERT_EQUALS(Settings::Language::CPP, settings->enforcedLang);
+        ASSERT_EQUALS(Standards::Language::CPP, settings->enforcedLang);
     }
 
     void enforceLanguage3() {
@@ -662,17 +662,17 @@ private:
     void enforceLanguage5() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--language=c++", "file.cpp"};
-        settings->enforcedLang = Settings::Language::None;
+        settings->enforcedLang = Standards::Language::None;
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS(Settings::Language::CPP, settings->enforcedLang);
+        ASSERT_EQUALS(Standards::Language::CPP, settings->enforcedLang);
     }
 
     void enforceLanguage6() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--language=c", "file.cpp"};
-        settings->enforcedLang = Settings::Language::None;
+        settings->enforcedLang = Standards::Language::None;
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS(Settings::Language::C, settings->enforcedLang);
+        ASSERT_EQUALS(Standards::Language::C, settings->enforcedLang);
     }
 
     void enforceLanguage7() {
