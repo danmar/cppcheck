@@ -42,6 +42,7 @@
 #include <set>
 #include <sstream> // IWYU pragma: keep
 #include <stack>
+#include <type_traits>
 #include <unordered_set>
 #include <utility>
 

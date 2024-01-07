@@ -43,11 +43,11 @@
 #include <iomanip>
 #include <iostream>
 #include <iterator>
-#include <limits>
 #include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 //---------------------------------------------------------------------------

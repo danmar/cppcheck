@@ -22,6 +22,7 @@
 #include "filesettings.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "settings.h"
 
 #include <algorithm>
 #include <list>

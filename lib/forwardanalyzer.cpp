@@ -26,10 +26,12 @@
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
+#include "utils.h"
 #include "valueptr.h"
 #include "vfvalue.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cstdio>
 #include <functional>
 #include <list>

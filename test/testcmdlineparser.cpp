@@ -20,6 +20,7 @@
 #include "cmdlineparser.h"
 #include "config.h"
 #include "cppcheckexecutor.h"
+#include "errorlogger.h"
 #include "errortypes.h"
 #include "helpers.h"
 #include "path.h"

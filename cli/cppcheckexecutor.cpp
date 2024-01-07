@@ -50,6 +50,7 @@
 #include <list>
 #include <set>
 #include <sstream> // IWYU pragma: keep
+#include <unordered_set>
 #include <utility>
 #include <vector>
 

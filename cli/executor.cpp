@@ -20,10 +20,10 @@
 
 #include "color.h"
 #include "errorlogger.h"
+#include "library.h"
 #include "settings.h"
 #include "suppressions.h"
 
-#include <algorithm>
 #include <cassert>
 #include <sstream> // IWYU pragma: keep
 #include <utility>
