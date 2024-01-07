@@ -6373,6 +6373,12 @@ private:
                         "    g(buf);\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: buf\n", errout.str());
+
+        valueFlowUninit("void f() {\n" // #12288
+                        "    char buf[100];\n"
+                        "    char* p = new (buf) char[100];\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
