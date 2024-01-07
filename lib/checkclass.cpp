@@ -2675,7 +2675,7 @@ void CheckClass::initializerListOrder()
                             const Token* const end = tok->next()->link();
                             for (const Token* tok2 = tok->next(); tok2 != end; tok2 = tok2->next()) {
                                 if (const Variable* var2 = scope->getVariable(tok2->str())) {
-                                    if (var->isPointer() && var2->isArray())
+                                    if (var->isPointer() && (var2->isArray() || Token::simpleMatch(tok2->astParent(), "&")))
                                         continue;
                                     vars.back().initArgs.emplace_back(var2);
                                 }
