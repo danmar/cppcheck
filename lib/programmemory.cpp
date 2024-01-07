@@ -34,13 +34,12 @@
 #include <cassert>
 #include <cmath>
 #include <functional>
+#include <iterator>
 #include <list>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include <iostream>
 
 ExprIdToken::ExprIdToken(const Token* tok) : tok(tok), exprid(tok ? tok->exprId() : 0) {}
 

@@ -26,7 +26,7 @@ SUPPRESS_WARNING_CLANG_PUSH("-Wextra-semi-stmt")
 SUPPRESS_WARNING_CLANG_PUSH("-Wsuggest-override")
 SUPPRESS_WARNING_CLANG_PUSH("-Wsuggest-destructor-override")
 
-#include <tinyxml2.h>
+#include <tinyxml2.h> // IWYU pragma: export
 
 SUPPRESS_WARNING_CLANG_POP
 SUPPRESS_WARNING_CLANG_POP
