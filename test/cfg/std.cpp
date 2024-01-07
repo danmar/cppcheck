@@ -2406,6 +2406,30 @@ void invalidFunctionArg_lgamma(float f, double d, long double ld)
     (void)lgammal(0.1L);
 }
 
+void invalidFunctionArg_tgamma(float f, double d, long double ld)
+{
+    (void)tgamma(d);
+    // cppcheck-suppress invalidFunctionArg
+    (void)tgamma(-0.1);
+    // cppcheck-suppress invalidFunctionArg
+    (void)tgamma(0.0);
+    (void)tgamma(0.1);
+
+    (void)tgammaf(f);
+    // cppcheck-suppress invalidFunctionArg
+    (void)tgammaf(-0.1f);
+    // cppcheck-suppress invalidFunctionArg
+    (void)tgammaf(0.0f);
+    (void)tgammaf(0.1f);
+
+    (void)tgammal(ld);
+    // cppcheck-suppress invalidFunctionArg
+    (void)tgammal(-0.1L);
+    // cppcheck-suppress invalidFunctionArg
+    (void)tgammal(0.0L);
+    (void)tgammal(0.1L);
+}
+
 void uninitvar_lgamma(void)
 {
     float f;

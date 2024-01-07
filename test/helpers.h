@@ -37,8 +37,8 @@ namespace simplecpp {
 
 class givenACodeSampleToTokenize {
 private:
-    Tokenizer tokenizer;
     const Settings settings;
+    Tokenizer tokenizer;
 
 public:
     explicit givenACodeSampleToTokenize(const char sample[], bool createOnly = false, bool cpp = true)
