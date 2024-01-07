@@ -2673,14 +2673,15 @@ void CheckClass::initializerListOrder()
                                 continue;
 
                             const Token* const end = tok->next()->link();
-                            for (const Token* tok2 = tok->next(); tok2 != end; tok2 = tok2->next()) {
-                                if (const Variable* var2 = scope->getVariable(tok2->str())) {
-                                    if (var->isPointer() && (var2->isArray() || Token::simpleMatch(tok2->astParent(), "&")))
+                            for (; tok != end; tok = tok->next()) {
+                                if (const Variable* argVar = scope->getVariable(tok->str())) {
+                                    if (var->isPointer() && (argVar->isArray() || Token::simpleMatch(tok->astParent(), "&")))
                                         continue;
-                                    vars.back().initArgs.emplace_back(var2);
+                                    if (Token::simpleMatch(tok->astParent(), "="))
+                                        continue;
+                                    vars.back().initArgs.emplace_back(argVar);
                                 }
                             }
-                            tok = end;
                         }
                     }
 

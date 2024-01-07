@@ -7610,6 +7610,12 @@ private:
                                   "    int i;\n"
                                   "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkInitializerListOrder("struct S {\n"
+                                  "    S() : a(b = 1) {}\n"
+                                  "    int a, b;\n"
+                                  "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkInitializationListUsage(code) checkInitializationListUsage_(code, __FILE__, __LINE__)
