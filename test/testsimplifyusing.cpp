@@ -99,7 +99,7 @@ private:
 
         const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings(debugwarnings).platform(type).build();
 
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
 
         if (preprocess) {
             std::vector<std::string> files(1, "test.cpp");

@@ -268,7 +268,7 @@ private:
         const Settings *settings1 = s ? s : &settings;
 
         // Tokenize..
-        Tokenizer tokenizer(settings1, this, &preprocessor);
+        Tokenizer tokenizer(*settings1, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -284,7 +284,7 @@ private:
 
         std::vector<std::string> files(1, "test.cpp");
         Preprocessor preprocessor(settings);
-        Tokenizer tokenizer(&settings, this, &preprocessor);
+        Tokenizer tokenizer(settings, this, &preprocessor);
         PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
 
         // Tokenizer..
@@ -302,7 +302,7 @@ private:
 
         Preprocessor preprocessor(settings);
         std::vector<std::string> files(1, filename);
-        Tokenizer tokenizer(&settings, this, &preprocessor);
+        Tokenizer tokenizer(settings, this, &preprocessor);
         PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
 
         // Tokenizer..
@@ -2003,7 +2003,7 @@ private:
         errout.str("");
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 

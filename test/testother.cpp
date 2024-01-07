@@ -314,7 +314,7 @@ private:
         Preprocessor preprocessor(*settings);
 
         // Tokenize..
-        Tokenizer tokenizer(settings, this, &preprocessor);
+        Tokenizer tokenizer(*settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename ? filename : "test.cpp"), file, line);
 
@@ -344,7 +344,7 @@ private:
 
         Preprocessor preprocessor(*settings);
         std::vector<std::string> files(1, filename);
-        Tokenizer tokenizer(settings, this, &preprocessor);
+        Tokenizer tokenizer(*settings, this, &preprocessor);
         PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
 
         // Tokenizer..
@@ -1709,7 +1709,7 @@ private:
         Preprocessor preprocessor(settings);
 
         // Tokenize..
-        Tokenizer tokenizerCpp(&settings, this, &preprocessor);
+        Tokenizer tokenizerCpp(settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizerCpp.tokenize(istr, "test.cpp"), file, line);
 
@@ -1911,7 +1911,7 @@ private:
         Preprocessor preprocessor(settings);
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this, &preprocessor);
+        Tokenizer tokenizer(settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 

@@ -238,7 +238,7 @@ private:
 
         // show warnings about unhandled typedef
         const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings(debugwarnings).platform(type).build();
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
 
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -249,7 +249,7 @@ private:
     std::string simplifyTypedef(const char code[]) {
         errout.str("");
 
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(settings1, this);
 
         std::istringstream istr(code);
         tokenizer.list.createTokens(istr);
@@ -265,7 +265,7 @@ private:
         errout.str("");
 
         std::vector<std::string> files(1, "test.cpp");
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(settings0, this);
         PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenize..
@@ -281,7 +281,7 @@ private:
         // Tokenize..
         // show warnings about unhandled typedef
         const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings().build();
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
     }
@@ -290,7 +290,7 @@ private:
     std::string simplifyTypedefC(const char code[]) {
         errout.str("");
 
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(settings1, this);
 
         std::istringstream istr(code);
         tokenizer.list.createTokens(istr, "file.c");

@@ -167,7 +167,7 @@ private:
         errout.str("");
 
         const Settings settings = settingsBuilder(settings0).platform(type).build();
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
 
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -178,7 +178,7 @@ private:
     std::string tok_(const char* file, int line, const char code[], const char filename[], bool simplify = true) {
         errout.str("");
 
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(settings0, this);
 
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
@@ -195,7 +195,7 @@ private:
         const Settings settings = settingsBuilder(settings1).debugwarnings().platform(platform).cpp(cpp11 ? Standards::CPP11 : Standards::CPP03).build();
 
         // tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, linenr);
 
@@ -221,7 +221,7 @@ private:
     std::string tokenizeDebugListing_(const char* file, int line, const char code[], bool simplify = false, const char filename[] = "test.cpp") {
         errout.str("");
 
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(settings0, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
@@ -264,7 +264,7 @@ private:
 
         const char expected[] =  "a = L\"hello world\" ;";
 
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(settings0, this);
         std::istringstream istr(code);
         ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
@@ -276,7 +276,7 @@ private:
 
         const char expected[] =  "abcd = u\"abcd\" ;";
 
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(settings0, this);
         std::istringstream istr(code);
         ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
@@ -288,7 +288,7 @@ private:
 
         const char expected[] =  "abcd = U\"abcd\" ;";
 
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(settings0, this);
         std::istringstream istr(code);
         ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
@@ -300,7 +300,7 @@ private:
 
         const char expected[] =  "abcd = u8\"abcd\" ;";
 
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(settings0, this);
         std::istringstream istr(code);
         ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
@@ -312,7 +312,7 @@ private:
 
         const char expected[] =  "abcdef = L\"abcdef\" ;";
 
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(settings0, this);
         std::istringstream istr(code);
         ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
@@ -1492,7 +1492,7 @@ private:
     std::string simplifyKnownVariables_(const char code[], const char* file, int line) {
         errout.str("");
 
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(settings0, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 

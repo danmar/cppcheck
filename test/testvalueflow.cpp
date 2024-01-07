@@ -195,7 +195,7 @@ private:
 #define testValueOfXKnown(...) testValueOfXKnown_(__FILE__, __LINE__, __VA_ARGS__)
     bool testValueOfXKnown_(const char* file, int line, const char code[], unsigned int linenr, int value) {
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -217,7 +217,7 @@ private:
 
     bool testValueOfXKnown_(const char* file, int line, const char code[], unsigned int linenr, const std::string& expr, int value) {
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -240,7 +240,7 @@ private:
 #define testValueOfXImpossible(...) testValueOfXImpossible_(__FILE__, __LINE__, __VA_ARGS__)
     bool testValueOfXImpossible_(const char* file, int line, const char code[], unsigned int linenr, int value) {
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -263,7 +263,7 @@ private:
     bool testValueOfXImpossible_(const char* file, int line, const char code[], unsigned int linenr, const std::string& expr, int value)
     {
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -286,7 +286,7 @@ private:
 #define testValueOfXInconclusive(code, linenr, value) testValueOfXInconclusive_(code, linenr, value, __FILE__, __LINE__)
     bool testValueOfXInconclusive_(const char code[], unsigned int linenr, int value, const char* file, int line) {
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -311,7 +311,7 @@ private:
         const Settings *settings1 = s ? s : &settings;
 
         // Tokenize..
-        Tokenizer tokenizer(settings1, this);
+        Tokenizer tokenizer(*settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -330,7 +330,7 @@ private:
     bool testValueOfX_(const char* file, int line, const char code[], unsigned int linenr, const std::string& expr, int value)
     {
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -348,7 +348,7 @@ private:
 
     bool testValueOfX_(const char* file, int line, const char code[], unsigned int linenr, double value, double diff) {
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -367,7 +367,7 @@ private:
 #define getErrorPathForX(code, linenr) getErrorPathForX_(code, linenr, __FILE__, __LINE__)
     std::string getErrorPathForX_(const char code[], unsigned int linenr, const char* file, int line) {
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -391,7 +391,7 @@ private:
 
     bool testValueOfX_(const char* file, int line, const char code[], unsigned int linenr, const char value[], ValueFlow::Value::ValueType type) {
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -411,7 +411,7 @@ private:
 #define testLifetimeOfX(...) testLifetimeOfX_(__FILE__, __LINE__, __VA_ARGS__)
     bool testLifetimeOfX_(const char* file, int line, const char code[], unsigned int linenr, const char value[], ValueFlow::Value::LifetimeScope lifetimeScope = ValueFlow::Value::LifetimeScope::Local) {
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -430,7 +430,7 @@ private:
 
     bool testValueOfX_(const char* file, int line, const char code[], unsigned int linenr, int value, ValueFlow::Value::ValueType type) {
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -448,7 +448,7 @@ private:
 
     bool testValueOfX_(const char* file, int line, const char code[], unsigned int linenr, ValueFlow::Value::MoveKind moveKind) {
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -467,7 +467,7 @@ private:
 #define testConditionalValueOfX(code, linenr, value) testConditionalValueOfX_(code, linenr, value, __FILE__, __LINE__)
     bool testConditionalValueOfX_(const char code[], unsigned int linenr, int value, const char* file, int line) {
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -489,7 +489,7 @@ private:
         errout.str("");
 
         std::vector<std::string> files(1, "test.cpp");
-        Tokenizer tokenizer(&s, this);
+        Tokenizer tokenizer(s, this);
         PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenize..
@@ -498,7 +498,7 @@ private:
 
 #define tokenValues(...) tokenValues_(__FILE__, __LINE__, __VA_ARGS__)
     std::list<ValueFlow::Value> tokenValues_(const char* file, int line, const char code[], const char tokstr[], const Settings *s = nullptr) {
-        Tokenizer tokenizer(s ? s : &settings, this);
+        Tokenizer tokenizer(s ? *s : settings, this);
         std::istringstream istr(code);
         errout.str("");
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -517,7 +517,7 @@ private:
 #define lifetimeValues(...) lifetimeValues_(__FILE__, __LINE__, __VA_ARGS__)
     std::vector<std::string> lifetimeValues_(const char* file, int line, const char code[], const char tokstr[], const Settings *s = nullptr) {
         std::vector<std::string> result;
-        Tokenizer tokenizer(s ? s : &settings, this);
+        Tokenizer tokenizer(s ? *s : settings, this);
         std::istringstream istr(code);
         errout.str("");
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);

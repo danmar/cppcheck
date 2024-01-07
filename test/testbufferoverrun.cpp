@@ -48,7 +48,7 @@ private:
         const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
@@ -57,7 +57,7 @@ private:
     }
 
     void check_(const char* file, int line, const char code[], const Settings &settings, const char filename[] = "test.cpp") {
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
@@ -78,7 +78,7 @@ private:
                                   .c(Standards::CLatest).cpp(Standards::CPPLatest).certainty(Certainty::inconclusive).build();
 
         std::vector<std::string> files(1, filename);
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenizer..
@@ -5175,7 +5175,7 @@ private:
         errout.str("");
 
         // Tokenize..
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(settings0, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 

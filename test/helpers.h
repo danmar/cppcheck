@@ -42,7 +42,7 @@ private:
 
 public:
     explicit givenACodeSampleToTokenize(const char sample[], bool createOnly = false, bool cpp = true)
-        : tokenizer(&settings, nullptr) {
+        : tokenizer(settings, nullptr) {
         std::istringstream iss(sample);
         if (createOnly)
             tokenizer.list.createTokens(iss, cpp ? "test.cpp" : "test.c");

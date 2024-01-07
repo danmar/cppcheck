@@ -58,7 +58,7 @@ private:
         const Settings settings1 = settingsBuilder(settings).severity(Severity::warning).severity(Severity::portability).cpp(standard).build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
@@ -75,7 +75,7 @@ private:
 
         Preprocessor preprocessor(settings1);
         std::vector<std::string> files(1, filename);
-        Tokenizer tokenizer(&settings1, this, &preprocessor);
+        Tokenizer tokenizer(settings1, this, &preprocessor);
         PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer, dui);
 
         // Tokenizer..
