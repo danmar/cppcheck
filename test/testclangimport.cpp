@@ -142,7 +142,7 @@ private:
         const Settings settings = settingsBuilder().clang().build();
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(clang);
-        clangimport::parseClangAstDump(&tokenizer, istr);
+        clangimport::parseClangAstDump(tokenizer, istr);
         if (!tokenizer.tokens()) {
             return std::string();
         }
@@ -1057,7 +1057,7 @@ private:
     Tokenizer tokenizer(&settings, this); \
     { \
         std::istringstream istr(AST); \
-        clangimport::parseClangAstDump(&tokenizer, istr); \
+        clangimport::parseClangAstDump(tokenizer, istr); \
     } \
     const SymbolDatabase *db = tokenizer.getSymbolDatabase(); \
     ASSERT(db)

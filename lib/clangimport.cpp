@@ -1523,9 +1523,9 @@ static void setTypes(TokenList &tokenList)
     }
 }
 
-static void setValues(const Tokenizer *tokenizer, const SymbolDatabase *symbolDatabase)
+static void setValues(const Tokenizer &tokenizer, const SymbolDatabase *symbolDatabase)
 {
-    const Settings * const settings = tokenizer->getSettings();
+    const Settings * const settings = tokenizer.getSettings();
 
     for (const Scope& scope : symbolDatabase->scopeList) {
         if (!scope.definedType)
@@ -1542,7 +1542,7 @@ static void setValues(const Tokenizer *tokenizer, const SymbolDatabase *symbolDa
         scope.definedType->sizeOf = typeSize;
     }
 
-    for (auto *tok = const_cast<Token*>(tokenizer->tokens()); tok; tok = tok->next()) {
+    for (auto *tok = const_cast<Token*>(tokenizer.tokens()); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
             ValueType vt = ValueType::parseDecl(tok->tokAt(2), *settings);
             const int sz = vt.typeSize(settings->platform, true);
@@ -1563,18 +1563,18 @@ static void setValues(const Tokenizer *tokenizer, const SymbolDatabase *symbolDa
     }
 }
 
-void clangimport::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
+void clangimport::parseClangAstDump(Tokenizer &tokenizer, std::istream &f)
 {
-    TokenList &tokenList = tokenizer->list;
+    TokenList &tokenList = tokenizer.list;
 
-    tokenizer->createSymbolDatabase();
-    auto *symbolDatabase = const_cast<SymbolDatabase *>(tokenizer->getSymbolDatabase());
+    tokenizer.createSymbolDatabase();
+    auto *symbolDatabase = const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase());
     symbolDatabase->scopeList.emplace_back(nullptr, nullptr, nullptr);
     symbolDatabase->scopeList.back().type = Scope::ScopeType::eGlobal;
     symbolDatabase->scopeList.back().check = symbolDatabase;
 
     clangimport::Data data;
-    data.mSettings = tokenizer->getSettings();
+    data.mSettings = tokenizer.getSettings();
     data.mSymbolDatabase = symbolDatabase;
     std::string line;
     std::vector<AstNodePtr> tree;
