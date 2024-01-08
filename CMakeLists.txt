@@ -56,8 +56,8 @@ if(LIBXML2_XMLLINT_EXECUTABLE)
 
     add_custom_target(createXMLExamples DEPENDS errorlist-xml example-xml)
 
-    if(PYTHON_EXECUTABLE)
-        add_custom_target(checkCWEEntries ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/listErrorsWithoutCWE.py -F ${CMAKE_BINARY_DIR}/errorlist.xml
+    if(Python_EXECUTABLE)
+        add_custom_target(checkCWEEntries ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/listErrorsWithoutCWE.py -F ${CMAKE_BINARY_DIR}/errorlist.xml
                 DEPENDS errorlist-xml)
     endif()
 

@@ -1,3 +1,5 @@
+# TODO: bail out when Python_EXECUTABLE is not set
+
 if (NOT CMAKE_DISABLE_PRECOMPILE_HEADERS)
     # clang-tidy and clang need to have the same version when precompiled headers are being used
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -24,7 +26,7 @@ if (RUN_CLANG_TIDY_NAMES)
         message(STATUS "NPROC=${NPROC}")
 
         # disable all compiler warnings since we are just interested in the tidy ones
-        add_custom_target(run-clang-tidy ${PYTHON_EXECUTABLE} ${RUN_CLANG_TIDY} -p=${CMAKE_BINARY_DIR} -j ${NPROC} -quiet)
+        add_custom_target(run-clang-tidy ${Python_EXECUTABLE} ${RUN_CLANG_TIDY} -p=${CMAKE_BINARY_DIR} -j ${NPROC} -quiet)
         if (BUILD_GUI)
             add_dependencies(run-clang-tidy gui-build-deps)
             if (BUILD_TESTS)

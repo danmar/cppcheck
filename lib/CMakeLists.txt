@@ -15,7 +15,7 @@ function(build_src output filename)
     endif()
     add_custom_command(
         OUTPUT ${outfile}
-        COMMAND ${PYTHON_EXECUTABLE} "${PROJECT_SOURCE_DIR}/tools/matchcompiler.py" 
+        COMMAND ${Python_EXECUTABLE} "${PROJECT_SOURCE_DIR}/tools/matchcompiler.py"
                 --read-dir="${CMAKE_CURRENT_SOURCE_DIR}" 
                 --prefix="mc_" 
                 --line 
