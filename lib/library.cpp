@@ -1060,14 +1060,18 @@ bool Library::isuninitargbad(const Token *ftok, int argnr, int indirect, bool *h
 /** get allocation info for function */
 const Library::AllocFunc* Library::getAllocFuncInfo(const Token *tok) const
 {
-    const std::string funcname = getFunctionName(tok);
+    std::string funcname = getFunctionName(tok);
+    if (startsWith(funcname, "std::"))
+        funcname.erase(0, 5);
     return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(mAlloc, funcname);
 }
 
 /** get deallocation info for function */
 const Library::AllocFunc* Library::getDeallocFuncInfo(const Token *tok) const
 {
-    const std::string funcname = getFunctionName(tok);
+    std::string funcname = getFunctionName(tok);
+    if (startsWith(funcname, "std::"))
+        funcname.erase(0, 5);
     return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(mDealloc, funcname);
 }
 

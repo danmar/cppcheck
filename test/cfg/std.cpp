@@ -4860,3 +4860,16 @@ void std_vector_data_arithmetic()
     buf.resize(1);
     memcpy(buf.data() + 0, "", 1);
 }
+
+void memleak_std_malloc() // #12332
+{
+    void* p = std::malloc(1);
+    //cppcheck-suppress memleak
+}
+
+void unusedAllocatedMemory_std_free()
+{
+    //cppcheck-suppress unusedAllocatedMemory
+    void* p = std::malloc(1);
+    std::free(p);
+}
