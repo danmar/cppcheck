@@ -2677,6 +2677,8 @@ void CheckClass::initializerListOrder()
                                 if (const Variable* argVar = scope->getVariable(tok->str())) {
                                     if (var->isPointer() && (argVar->isArray() || Token::simpleMatch(tok->astParent(), "&")))
                                         continue;
+                                    if (var->isReference())
+                                        continue;
                                     if (Token::simpleMatch(tok->astParent(), "="))
                                         continue;
                                     vars.back().initArgs.emplace_back(argVar);
