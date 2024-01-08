@@ -237,6 +237,7 @@ bool Path::acceptFile(const std::string &path, const std::set<std::string> &extr
     return (identify(path, &header) != Standards::Language::None && !header) || extra.find(getFilenameExtension(path)) != extra.end();
 }
 
+// cppcheck-suppress unusedFunction
 bool Path::isHeader(const std::string &path)
 {
     const std::string extension = getFilenameExtensionInLowerCase(path);
