@@ -442,16 +442,16 @@ def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True, 
 
     # TODO: temporarily disabled timing information - use --showtime=top5_summary when next version is released
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
-    options = f'{libs} --enable={enable} --inconclusive --inline-suppr --template=daca2 -D__GNUC__ --platform=unix64'
+    options = '{} --inconclusive --enable={} --inline-suppr --template=daca2'.format(libs, enable)
     if 'information' in enable:
         # TODO: remove missingInclude disabling when it no longer is implied by --enable=information
-        options += ' --disable=missingInclude'
-        options += ' --suppress=unmatchedSuppression'
+        options += ' --disable=missingInclude --suppress=unmatchedSuppression'
     if check_level:
         options += f' --check-level={check_level}'
     if debug_warnings:
         options += ' --check-library --debug-warnings --suppress=autoNoType --suppress=valueFlowBailout' \
                    ' --suppress=bailoutUninitVar --suppress=symbolDatabaseWarning'
+    options += ' -D__GNUC__ --platform=unix64'
     options_rp = options + ' -rp={}'.format(dir_to_scan)
     if __make_cmd == 'msbuild.exe':
         cppcheck_cmd = os.path.join(cppcheck_path, 'bin', 'cppcheck.exe') + ' ' + options_rp
