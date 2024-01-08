@@ -246,6 +246,7 @@ bool Path::isHeader(const std::string &path)
 
 Standards::Language Path::identify(const std::string &path, bool *header)
 {
+    // cppcheck-suppress uninitvar - TODO: FP
     if (header)
         *header = false;
 
