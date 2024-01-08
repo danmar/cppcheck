@@ -181,7 +181,9 @@ void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::pair<const
 {
     if (mSettings->checkLibrary && functionUsage.second == VarInfo::USED &&
         (!functionUsage.first || !functionUsage.first->function() || !functionUsage.first->function()->hasBody())) {
-        const std::string funcStr = functionUsage.first ? mSettings->library.getFunctionName(functionUsage.first) : "f";
+        std::string funcStr = functionUsage.first ? mSettings->library.getFunctionName(functionUsage.first) : "f";
+        if (funcStr.empty())
+            funcStr = "unknown::" + functionUsage.first->str();
         reportError(tok,
                     Severity::information,
                     "checkLibraryUseIgnore",

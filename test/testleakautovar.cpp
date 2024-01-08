@@ -3003,6 +3003,12 @@ private:
               "    bar(p);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int n) {\n"
+              "    char* p = new char[n];\n"
+              "    v.push_back(p);\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:4]: (information) --check-library: Function unknown::push_back() should have <use>/<leak-ignore> configuration\n", errout.str());
     }
 };
 
