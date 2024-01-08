@@ -1583,6 +1583,7 @@ void uninitvar_fdim(void)
 
 void uninitvar_fclose(void)
 {
+    // cppcheck-suppress unassignedVariable
     FILE *stream;
     // cppcheck-suppress uninitvar
     (void)std::fclose(stream);
@@ -1815,6 +1816,7 @@ void uninitvar_fread(void)
 
 void uninitvar_free(void)
 {
+    // cppcheck-suppress unassignedVariable
     void *block;
     // cppcheck-suppress uninitvar
     std::free(block);
@@ -4863,6 +4865,7 @@ void std_vector_data_arithmetic()
 
 void memleak_std_malloc() // #12332
 {
+    //cppcheck-suppress [unreadVariable, constVariablePointer]
     void* p = std::malloc(1);
     //cppcheck-suppress memleak
 }
