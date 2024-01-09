@@ -7632,6 +7632,20 @@ private:
                                   "    int j;\n"
                                   "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkInitializerListOrder("struct S {\n"
+                                  "    S() : a(i) {}\n"
+                                  "    int a;\n"
+                                  "    static int i;\n"
+                                  "};\n"
+                                  "int S::i = 0;");
+        ASSERT_EQUALS("", errout.str());
+
+        checkInitializerListOrder("struct S {\n"
+                                  "    S(int b) : a(b) {}\n"
+                                  "    int a, b{};\n"
+                                  "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkInitializationListUsage(code) checkInitializationListUsage_(code, __FILE__, __LINE__)

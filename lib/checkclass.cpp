@@ -2677,6 +2677,10 @@ void CheckClass::initializerListOrder()
                                 if (const Variable* argVar = scope->getVariable(tok->str())) {
                                     if (scope != argVar->scope())
                                         continue;
+                                    if (argVar->isStatic())
+                                        continue;
+                                    if (tok->variable() && tok->variable()->isArgument())
+                                        continue;
                                     if (var->isPointer() && (argVar->isArray() || Token::simpleMatch(tok->astParent(), "&")))
                                         continue;
                                     if (var->isReference())
