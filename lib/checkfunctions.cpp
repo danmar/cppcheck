@@ -88,7 +88,7 @@ void CheckFunctions::checkProhibitedFunctions()
 
                 const Library::WarnInfo* wi = mSettings->library.getWarnInfo(tok);
                 if (wi) {
-                    if (mSettings->severity.isEnabled(wi->severity) && mSettings->standards.c >= wi->standards.c && mSettings->standards.cpp >= wi->standards.cpp) {
+                    if (mSettings->severity.isEnabled(wi->severity) && ((tok->isC() && mSettings->standards.c >= wi->standards.c) || (tok->isCpp() && mSettings->standards.cpp >= wi->standards.cpp))) {
                         const std::string daca = mSettings->daca ? "prohibited" : "";
                         reportError(tok, wi->severity, daca + tok->str() + "Called", wi->message, CWE477, Certainty::normal);
                     }
@@ -423,7 +423,7 @@ void CheckFunctions::missingReturnError(const Token* tok)
 //---------------------------------------------------------------------------
 void CheckFunctions::checkMathFunctions()
 {
-    const bool styleC99 = mSettings->severity.isEnabled(Severity::style) && mSettings->standards.c != Standards::C89 && mSettings->standards.cpp != Standards::CPP03;
+    const bool styleC99 = mSettings->severity.isEnabled(Severity::style) && ((mTokenizer->isC() && mSettings->standards.c != Standards::C89) || (mTokenizer->isCPP() && mSettings->standards.cpp != Standards::CPP03));
     const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
 
     if (!styleC99 && !printWarnings && !mSettings->isPremiumEnabled("wrongmathcall"))

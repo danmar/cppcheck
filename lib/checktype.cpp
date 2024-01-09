@@ -133,7 +133,7 @@ void CheckType::tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, con
 {
     constexpr char id[] = "shiftTooManyBitsSigned";
 
-    const bool cpp14 = mSettings->standards.cpp >= Standards::CPP14;
+    const bool cpp14 = ((tok && tok->isCpp()) || (mTokenizer && mTokenizer->isCPP())) && (mSettings->standards.cpp >= Standards::CPP14);
 
     std::string behaviour = "undefined";
     if (cpp14)
