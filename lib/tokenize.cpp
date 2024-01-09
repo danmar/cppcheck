@@ -5973,6 +5973,8 @@ void Tokenizer::dump(std::ostream &out) const
             outs += " isAttributeExport=\"true\"";
         if (tok->isAttributeMaybeUnused())
             outs += " isAttributeMaybeUnused=\"true\"";
+        if (tok->isAttributeUnused())
+            outs += " isAttributeUnused=\"true\"";
         if (tok->link()) {
             outs += " link=\"";
             outs += id_string(tok->link());
