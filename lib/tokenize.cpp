@@ -5971,6 +5971,8 @@ void Tokenizer::dump(std::ostream &out) const
             outs += " isAtomic=\"true\"";
         if (tok->isAttributeExport())
             outs += " isAttributeExport=\"true\"";
+        if (tok->isAttributeMaybeUnused())
+            outs += " isAttributeMaybeUnused=\"true\"";
         if (tok->link()) {
             outs += " link=\"";
             outs += id_string(tok->link());
