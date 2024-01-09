@@ -7623,6 +7623,15 @@ private:
                                   "    int i{};\n"
                                   "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkInitializerListOrder("struct B {\n"
+                                  "    int a{}, b{};\n"
+                                  "};\n"
+                                  "struct D : B {\n"
+                                  "    D() : B(), j(b) {}\n"
+                                  "    int j;\n"
+                                  "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkInitializationListUsage(code) checkInitializationListUsage_(code, __FILE__, __LINE__)
