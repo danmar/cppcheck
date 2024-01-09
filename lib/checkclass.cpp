@@ -2633,6 +2633,7 @@ namespace { // avoid one-definition-rule violation
 
         const Variable *var;
         const Token *tok;
+        std::vector<const Variable*> initArgs;
     };
 }
 
@@ -2663,25 +2664,38 @@ void CheckClass::initializerListOrder()
                     tok = tok->next();
 
                     // find all variable initializations in list
-                    while (tok && tok != func->functionScope->bodyStart) {
+                    for (; tok && tok != func->functionScope->bodyStart; tok = tok->next()) {
                         if (Token::Match(tok, "%name% (|{")) {
                             const Variable *var = scope->getVariable(tok->str());
                             if (var)
                                 vars.emplace_back(var, tok);
+                            else
+                                continue;
 
-                            if (Token::Match(tok->tokAt(2), "%name% =")) {
-                                var = scope->getVariable(tok->strAt(2));
-
-                                if (var)
-                                    vars.emplace_back(var, tok->tokAt(2));
+                            const Token* const end = tok->next()->link();
+                            for (; tok != end; tok = tok->next()) {
+                                if (const Variable* argVar = scope->getVariable(tok->str())) {
+                                    if (var->isPointer() && (argVar->isArray() || Token::simpleMatch(tok->astParent(), "&")))
+                                        continue;
+                                    if (var->isReference())
+                                        continue;
+                                    if (Token::simpleMatch(tok->astParent(), "="))
+                                        continue;
+                                    vars.back().initArgs.emplace_back(argVar);
+                                }
                             }
-                            tok = tok->next()->link()->next();
-                        } else
-                            tok = tok->next();
+                        }
                     }
 
-                    // need at least 2 members to have out of order initialization
-                    for (int j = 1; j < vars.size(); j++) {
+                    for (int j = 0; j < vars.size(); j++) {
+                        // check for use of uninitialized arguments
+                        for (const auto& arg : vars[j].initArgs)
+                            if (vars[j].var->index() < arg->index())
+                                initializerListError(vars[j].tok, vars[j].var->nameToken(), scope->className, vars[j].var->name(), /*isArgument*/ true);
+
+                        // need at least 2 members to have out of order initialization
+                        if (j == 0)
+                            continue;
                         // check for out of order initialization
                         if (vars[j].var->index() < vars[j - 1].var->index())
                             initializerListError(vars[j].tok,vars[j].var->nameToken(), scope->className, vars[j].var->name());
@@ -2692,15 +2706,18 @@ void CheckClass::initializerListOrder()
     }
 }
 
-void CheckClass::initializerListError(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &varname)
+void CheckClass::initializerListError(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &varname, bool isArgument)
 {
     std::list<const Token *> toks = { tok1, tok2 };
+    const std::string msg = isArgument ?
+                            "Member variable '$symbol' uses an uninitialized argument due to the order of declarations." :
+                            "Member variable '$symbol' is in the wrong place in the initializer list.";
     reportError(toks, Severity::style, "initializerList",
-                "$symbol:" + classname + "::" + varname +"\n"
-                "Member variable '$symbol' is in the wrong place in the initializer list.\n"
-                "Member variable '$symbol' is in the wrong place in the initializer list. "
+                "$symbol:" + classname + "::" + varname + '\n' +
+                msg + '\n' +
+                msg + ' ' +
                 "Members are initialized in the order they are declared, not in the "
-                "order they are in the initializer list.  Keeping the initializer list "
+                "order they are in the initializer list. Keeping the initializer list "
                 "in the same order that the members were declared prevents order dependent "
                 "initialization errors.", CWE398, Certainty::inconclusive);
 }

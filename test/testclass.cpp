@@ -215,6 +215,7 @@ private:
         TEST_CASE(qualifiedNameMember); // #10872
 
         TEST_CASE(initializerListOrder);
+        TEST_CASE(initializerListArgument);
         TEST_CASE(initializerListUsage);
         TEST_CASE(selfInitialization);
 
@@ -7571,6 +7572,57 @@ private:
                                   "};");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::b' is in the wrong place in the initializer list.\n"
                       "[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::a' is in the wrong place in the initializer list.\n", errout.str());
+
+        checkInitializerListOrder("struct S {\n"
+                                  "    S() : b(a = 1) {}\n"
+                                  "    int a, b;\n"
+                                  "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void initializerListArgument() {
+        checkInitializerListOrder("struct A { A(); };\n" // #12322
+                                  "struct B { explicit B(const A* a); };\n"
+                                  "struct C {\n"
+                                  "    C() : b(&a) {}\n"
+                                  "    B b;\n"
+                                  "    const A a;\n"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (style, inconclusive) Member variable 'C::b' uses an uninitialized argument due to the order of declarations.\n",
+                      errout.str());
+
+        checkInitializerListOrder("struct S {\n"
+                                  "    S(const std::string& f, std::string i, int b, int c) : a(0), b(b), c(c) {}\n"
+                                  "    int a, b, c;\n"
+                                  "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkInitializerListOrder("struct S {\n"
+                                  "    S() : p(a) {}\n"
+                                  "    int* p;\n"
+                                  "    int a[1];\n"
+                                  "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkInitializerListOrder("struct S {\n"
+                                  "    S() : p(&i) {}\n"
+                                  "    int* p;\n"
+                                  "    int i;\n"
+                                  "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkInitializerListOrder("struct S {\n"
+                                  "    S() : a(b = 1) {}\n"
+                                  "    int a, b;\n"
+                                  "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkInitializerListOrder("struct S {\n"
+                                  "    S() : r(i) {}\n"
+                                  "    int& r;\n"
+                                  "    int i{};\n"
+                                  "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkInitializationListUsage(code) checkInitializationListUsage_(code, __FILE__, __LINE__)
