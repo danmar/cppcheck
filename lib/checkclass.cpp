@@ -2679,6 +2679,8 @@ void CheckClass::initializerListOrder()
                                         continue;
                                     if (argVar->isStatic())
                                         continue;
+                                    if (tok->variable() && tok->variable()->isArgument())
+                                        continue;
                                     if (var->isPointer() && (argVar->isArray() || Token::simpleMatch(tok->astParent(), "&")))
                                         continue;
                                     if (var->isReference())
