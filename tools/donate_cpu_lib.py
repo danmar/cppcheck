@@ -447,7 +447,7 @@ def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True, 
         # TODO: remove missingInclude disabling when it no longer is implied by --enable=information
         options += ' --disable=missingInclude --suppress=unmatchedSuppression'
     if check_level:
-        options += f' --check-level={check_level}'
+        options += ' --check-level=' + check_level
     if debug_warnings:
         options += ' --check-library --debug-warnings --suppress=autoNoType --suppress=valueFlowBailout' \
                    ' --suppress=bailoutUninitVar --suppress=symbolDatabaseWarning'
