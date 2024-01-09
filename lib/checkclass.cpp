@@ -2675,6 +2675,8 @@ void CheckClass::initializerListOrder()
                             const Token* const end = tok->next()->link();
                             for (; tok != end; tok = tok->next()) {
                                 if (const Variable* argVar = scope->getVariable(tok->str())) {
+                                    if (scope != argVar->scope())
+                                        continue;
                                     if (var->isPointer() && (argVar->isArray() || Token::simpleMatch(tok->astParent(), "&")))
                                         continue;
                                     if (var->isReference())
