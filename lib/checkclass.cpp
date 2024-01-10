@@ -2666,13 +2666,13 @@ void CheckClass::initializerListOrder()
                     // find all variable initializations in list
                     for (; tok && tok != func->functionScope->bodyStart; tok = tok->next()) {
                         if (Token::Match(tok, "%name% (|{")) {
+                            const Token* const end = tok->linkAt(1);
                             const Variable *var = scope->getVariable(tok->str());
                             if (var)
                                 vars.emplace_back(var, tok);
                             else
-                                continue;
+                                tok = end;
 
-                            const Token* const end = tok->next()->link();
                             for (; tok != end; tok = tok->next()) {
                                 if (const Variable* argVar = scope->getVariable(tok->str())) {
                                     if (scope != argVar->scope())
