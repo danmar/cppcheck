@@ -7578,6 +7578,29 @@ private:
                                   "    int a, b;\n"
                                   "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkInitializerListOrder("struct S {\n"
+                                  "    int nCols() const;\n"
+                                  "    int nRows() const;\n"
+                                  "};\n"
+                                  "struct B {\n"
+                                  "    const char* m_name;\n"
+                                  "    int nCols;\n"
+                                  "    int nRows;\n"
+                                  "    B(const char* p_name, int nR, int nC)\n"
+                                  "        : m_name(p_name)\n"
+                                  "        , nCols(nC)\n"
+                                  "        , nRows(nR)\n"
+                                  "    {}\n"
+                                  "};\n"
+                                  "struct D : public B {\n"
+                                  "    const int  m_i;\n"
+                                  "    D(const S& s, int _i)\n"
+                                  "        : B(\"abc\", s.nRows(), s.nCols())\n"
+                                  "        , m_i(_i)\n"
+                                  "    {}\n"
+                                  "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void initializerListArgument() {
