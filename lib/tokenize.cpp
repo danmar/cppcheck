@@ -9665,6 +9665,7 @@ void Tokenizer::simplifyNamespaceStd()
         if (Token::Match(tok->previous(), ".|::|namespace"))
             continue;
         const Library::Container* ctr{};
+        const Library::SmartPointer* ptr{};
         if (Token::simpleMatch(tok->next(), "(")) {
             if (isFunctionHead(tok->next(), "{"))
                 userFunctions.insert(tok->str());
@@ -9678,7 +9679,8 @@ void Tokenizer::simplifyNamespaceStd()
             if (userFunctions.find(tok->str()) == userFunctions.end() && mSettings->library.matchArguments(tok, "std::" + tok->str()))
                 insert = true;
         } else if (Token::simpleMatch(tok->next(), "<") &&
-                   (mSettings->library.detectContainerOrIterator(tok, nullptr, /*withoutStd*/ true) || mSettings->library.detectSmartPointer(tok, /*withoutStd*/ true)))
+                   (((ctr = mSettings->library.detectContainerOrIterator(tok, nullptr, /*withoutStd*/ true)) != nullptr && startsWith(ctr->startPattern, "std ::")) ||
+                    ((ptr = mSettings->library.detectSmartPointer(tok, /*withoutStd*/ true)) != nullptr && startsWith(ptr->name, "std::"))))
             insert = true;
         else if (mSettings->library.hasAnyTypeCheck("std::" + tok->str()) ||
                  mSettings->library.podtype("std::" + tok->str()) ||
