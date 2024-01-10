@@ -4860,3 +4860,9 @@ void std_vector_data_arithmetic()
     buf.resize(1);
     memcpy(buf.data() + 0, "", 1);
 }
+
+std::string global_scope_std() // #12355
+{
+    ::std::stringstream ss;
+    return ss.str();
+}

@@ -71,6 +71,16 @@ bool QString7(QString s, const QString& l) {
     return l.startsWith(s);
 }
 
+namespace // #12355
+{
+    using namespace std;
+    QString QString_std(QString s)
+    {
+        s.replace("abc", "def");
+        return s;
+    }
+}
+
 void QByteArray1(QByteArray byteArrayArg)
 {
     for (int i = 0; i <= byteArrayArg.size(); ++i) {
