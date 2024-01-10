@@ -71,7 +71,7 @@ bool QString7(QString s, const QString& l) {
     return l.startsWith(s);
 }
 
-namespace // #12355
+namespace NTestStd // #12355
 {
     using namespace std;
     QString QString_std(QString s)
