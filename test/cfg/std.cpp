@@ -2527,6 +2527,8 @@ void uninitvar_srand(void)
     unsigned int seed;
     // cppcheck-suppress uninitvar
     (void)std::srand(seed);
+    // cppcheck-suppress ignoredReturnValue
+    std::rand();
 }
 
 void uninitvar_ldiv(void)
