@@ -7611,7 +7611,7 @@ private:
                                   "    B b;\n"
                                   "    const A a;\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (style, inconclusive) Member variable 'C::b' uses an uninitialized argument due to the order of declarations.\n",
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (style, inconclusive) Member variable 'C::b' uses an uninitialized argument 'a' due to the order of declarations.\n",
                       errout.str());
 
         checkInitializerListOrder("struct S {\n"
