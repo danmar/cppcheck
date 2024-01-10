@@ -2697,7 +2697,7 @@ void CheckClass::initializerListOrder()
                         // check for use of uninitialized arguments
                         for (const auto& arg : vars[j].initArgs)
                             if (vars[j].var->index() < arg->index())
-                                initializerListError(vars[j].tok, vars[j].var->nameToken(), scope->className, vars[j].var->name(), /*isArgument*/ true);
+                                initializerListError(vars[j].tok, vars[j].var->nameToken(), scope->className, vars[j].var->name(), arg->name());
 
                         // need at least 2 members to have out of order initialization
                         if (j == 0)
@@ -2712,12 +2712,12 @@ void CheckClass::initializerListOrder()
     }
 }
 
-void CheckClass::initializerListError(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &varname, bool isArgument)
+void CheckClass::initializerListError(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &varname, const std::string& argname)
 {
     std::list<const Token *> toks = { tok1, tok2 };
-    const std::string msg = isArgument ?
-                            "Member variable '$symbol' uses an uninitialized argument due to the order of declarations." :
-                            "Member variable '$symbol' is in the wrong place in the initializer list.";
+    const std::string msg = argname.empty() ?
+                            "Member variable '$symbol' is in the wrong place in the initializer list." :
+                            "Member variable '$symbol' uses an uninitialized argument '" + argname + "' due to the order of declarations.";
     reportError(toks, Severity::style, "initializerList",
                 "$symbol:" + classname + "::" + varname + '\n' +
                 msg + '\n' +
