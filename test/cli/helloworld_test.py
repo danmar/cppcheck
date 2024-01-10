@@ -224,7 +224,7 @@ def test_checkers_report():
 
 
 def __test_missing_include_system(use_j):
-    args = ['--enable=missingInclude', '--suppress=zerodiv', '--template={file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]', 'helloworld']
+    args = ['--enable=missingInclude', '--suppress=zerodiv', '--template=simple', 'helloworld']
     if use_j:
         args.insert(0, '-j2')
 

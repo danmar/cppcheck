@@ -412,7 +412,7 @@ void TestFixture::setTemplateFormat(const std::string &templateFormat)
         mTemplateFormat = "{file}:{line}:{severity}:{message}";
         mTemplateLocation = "{file}:{line}:note:{info}";
     }
-    else if (templateFormat == "simple") {
+    else if (templateFormat == "simple") { // TODO: use the existing one in CmdLineParser
         mTemplateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]";
         mTemplateLocation = "";
     }
