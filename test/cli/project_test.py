@@ -3,6 +3,7 @@
 import pytest
 import os
 import json
+import sys
 from testutils import cppcheck
 
 
@@ -49,6 +50,8 @@ def test_json_entry_file_not_found(tmpdir):
     ]
 
     expected = "'{}' from compilation database does not exist".format(os.path.join(tmpdir, "bug1.cpp"))
+    if sys.platform == "win32":
+        expected = expected.replace('\\', '/')
 
     _test_project_error(tmpdir, "json", json.dumps(compilation_db), expected)
 
@@ -117,7 +120,9 @@ def test_sln_project_file_not_found(tmpdir):
               "EndProject\r\n"
 
     expected = "Visual Studio project file is not a valid XML - XML_ERROR_FILE_NOT_FOUND\n" \
-               "cppcheck: error: failed to load '{}' from Visual Studio solution".format(os.path.join(tmpdir, "cli\\cli.vcxproj"))
+               "cppcheck: error: failed to load '{}' from Visual Studio solution".format(os.path.join(tmpdir, "cli/cli.vcxproj"))
+    if sys.platform == "win32":
+        expected = expected.replace('\\', '/')
 
     _test_project_error(tmpdir, "sln", content, expected)
 
