@@ -2814,15 +2814,24 @@ private:
         ASSERT_EQUALS(3, func->argCount());
     }
 
-    void functionArgs20() { // #11769
-        const char code[] = "void f(void *(*g)(void *) = [](void *p) { return p; }) {}";
-        GET_SYMBOL_DB(code);
-        ASSERT(db != nullptr);
-        const Scope *scope = db->functionScopes.front();
-        const Function *func = scope->function;
-        ASSERT_EQUALS(1, func->argCount());
-        const Variable* arg = func->getArgumentVar(0);
-        TODO_ASSERT(arg->hasDefault());
+    void functionArgs20() {
+        {
+            const char code[] = "void f(void *(*g)(void *) = [](void *p) { return p; }) {}"; // #11769
+            GET_SYMBOL_DB(code);
+            ASSERT(db != nullptr);
+            const Scope *scope = db->functionScopes.front();
+            const Function *func = scope->function;
+            ASSERT_EQUALS(1, func->argCount());
+            const Variable* arg = func->getArgumentVar(0);
+            TODO_ASSERT(arg->hasDefault());
+        }
+        {
+            const char code[] = "void f() { auto g = [&](const std::function<int(int)>& h = [](int i) -> int { return i; }) {}; }"; // #12338
+            GET_SYMBOL_DB(code);
+            ASSERT(db != nullptr);
+            ASSERT_EQUALS(3, db->scopeList.size());
+            ASSERT_EQUALS(Scope::ScopeType::eLambda, db->scopeList.back().type);
+        }
     }
 
     void functionArgs21() {
