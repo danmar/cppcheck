@@ -910,6 +910,18 @@ void std_priority_queue_top_ignoredReturnValue(const std::priority_queue<int>& p
     pq.top();
 }
 
+void std_tie_ignoredReturnValue(int a, int b)
+{
+    std::set<int> s;
+    std::set<int>::iterator it;
+    bool b;
+    std::tie(it, b) = s.insert(1);
+    // cppcheck-suppress ignoredReturnValue
+    std::tie();
+    // cppcheck-suppress ignoredReturnValue
+    std::tie(a, b);
+}
+
 void valid_code()
 {
     std::vector<int> vecInt{0, 1, 2};
