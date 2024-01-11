@@ -1061,7 +1061,7 @@ bool Library::isuninitargbad(const Token *ftok, int argnr, int indirect, bool *h
 const Library::AllocFunc* Library::getAllocFuncInfo(const Token *tok) const
 {
     std::string funcname = getFunctionName(tok);
-    if (startsWith(funcname, "std::"))
+    if (tok->isCpp() && startsWith(funcname, "std::"))
         funcname.erase(0, 5);
     return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(mAlloc, funcname);
 }
@@ -1070,7 +1070,7 @@ const Library::AllocFunc* Library::getAllocFuncInfo(const Token *tok) const
 const Library::AllocFunc* Library::getDeallocFuncInfo(const Token *tok) const
 {
     std::string funcname = getFunctionName(tok);
-    if (startsWith(funcname, "std::"))
+    if (tok->isCpp() && startsWith(funcname, "std::"))
         funcname.erase(0, 5);
     return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(mDealloc, funcname);
 }
@@ -1078,7 +1078,9 @@ const Library::AllocFunc* Library::getDeallocFuncInfo(const Token *tok) const
 /** get reallocation info for function */
 const Library::AllocFunc* Library::getReallocFuncInfo(const Token *tok) const
 {
-    const std::string funcname = getFunctionName(tok);
+    std::string funcname = getFunctionName(tok);
+    if (tok->isCpp() && startsWith(funcname, "std::"))
+        funcname.erase(0, 5);
     return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(mRealloc, funcname);
 }
 

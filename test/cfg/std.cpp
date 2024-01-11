@@ -4872,6 +4872,13 @@ void memleak_std_malloc() // #12332
     //cppcheck-suppress memleak
 }
 
+void memleak_std_realloc(void* block, size_t newsize)
+{
+    //cppcheck-suppress [unreadVariable, constVariablePointer]
+    void* p = std::realloc(block, newsize);
+    //cppcheck-suppress memleak
+}
+
 void unusedAllocatedMemory_std_free()
 {
     //cppcheck-suppress unusedAllocatedMemory
