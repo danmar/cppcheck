@@ -38,6 +38,7 @@
 #include <map>
 #include <memory>
 #include <numeric>
+#include <queue>
 #include <string_view>
 #include <unordered_map>
 #include <unordered_set>
@@ -897,6 +898,16 @@ int std_map_find_constref(std::map<int, int>& m) // #11857
     std::map<int, int>::iterator it = r.find(42);
     int* p = &it->second;
     return ++*p;
+}
+
+void std_queue_front_ignoredReturnValue(const std::queue& q) {
+    // cppcheck-suppress ignoredReturnValue
+    q.front();
+}
+
+void std_priority_queue_top_ignoredReturnValue(const std::priority_queue& pq) {
+    // cppcheck-suppress ignoredReturnValue
+    pq.top();
 }
 
 void valid_code()
