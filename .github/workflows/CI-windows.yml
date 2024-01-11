@@ -168,13 +168,7 @@ jobs:
           copy .\bin\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
           copy .\bin\cppcheck-core.dll .\cppcheck-core.dll || exit /b !errorlevel!
           cd test/cli || exit /b !errorlevel!
-          :: python -m pytest -Werror --strict-markers -vv --suppress-no-test-exit-code test-clang-import.py || exit /b !errorlevel!
-          python -m pytest -Werror --strict-markers -vv test-helloworld.py || exit /b !errorlevel!
-          python -m pytest -Werror --strict-markers -vv test-inline-suppress.py || exit /b !errorlevel!
-          python -m pytest -Werror --strict-markers -vv test-more-projects.py || exit /b !errorlevel!
-          python -m pytest -Werror --strict-markers -vv test-other.py || exit /b !errorlevel!
-          python -m pytest -Werror --strict-markers -vv test-proj2.py || exit /b !errorlevel!
-          python -m pytest -Werror --strict-markers -vv test-suppress-syntaxError.py || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv || exit /b !errorlevel!
 
       - name: Test addons
         if: matrix.config == 'release'
