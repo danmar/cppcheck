@@ -916,8 +916,8 @@ void std_tie_ignoredReturnValue(int a, int b)
 {
     std::set<int> s;
     std::set<int>::iterator it;
-    bool b;
-    std::tie(it, b) = s.insert(1);
+    bool success;
+    std::tie(it, success) = s.insert(1);
     // cppcheck-suppress ignoredReturnValue
     std::tie();
     // cppcheck-suppress ignoredReturnValue
