@@ -25,6 +25,7 @@
 #define __STDC_WANT_LIB_EXT1__ 1
 #include <ctime>
 #include <cwchar>
+#include <exception>
 #include <fstream>
 #include <functional>
 #ifndef __STDC_NO_THREADS__
@@ -922,6 +923,12 @@ void std_tie_ignoredReturnValue(int a, int b)
     std::tie();
     // cppcheck-suppress ignoredReturnValue
     std::tie(a, b);
+}
+
+void std_exception_ignoredReturnValue(const std::exception& e)
+{
+    // cppcheck-suppress ignoredReturnValue
+    e.what();
 }
 
 void valid_code()
