@@ -1829,7 +1829,7 @@ void uninitvar_freopen(void)
     FILE *stream;
     // cppcheck-suppress uninitvar
     FILE * p = std::freopen(filename,mode,stream);
-    free(p);
+    std::fclose(p);
 }
 
 void uninitvar_frexp(void)
