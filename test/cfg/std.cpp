@@ -900,12 +900,12 @@ int std_map_find_constref(std::map<int, int>& m) // #11857
     return ++*p;
 }
 
-void std_queue_front_ignoredReturnValue(const std::queue& q) {
+void std_queue_front_ignoredReturnValue(const std::queue<int>& q) {
     // cppcheck-suppress ignoredReturnValue
     q.front();
 }
 
-void std_priority_queue_top_ignoredReturnValue(const std::priority_queue& pq) {
+void std_priority_queue_top_ignoredReturnValue(const std::priority_queue<int>& pq) {
     // cppcheck-suppress ignoredReturnValue
     pq.top();
 }
