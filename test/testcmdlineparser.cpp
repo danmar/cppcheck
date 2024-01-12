@@ -1192,27 +1192,27 @@ private:
         REDIRECT;
         settings->cppcheckCfgProductName = "Cppcheck Premium 0.0.0";
         {
-        const char * const argv[] = {"cppcheck", "--premium=misra-c-2012", "file.c"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+            const char * const argv[] = {"cppcheck", "--premium=misra-c-2012", "file.c"};
+            ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         }
         {
-        const char * const argv[] = {"cppcheck", "--premium=misra-c++-2023", "file.c"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+            const char * const argv[] = {"cppcheck", "--premium=misra-c++-2023", "file.c"};
+            ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         }
         {
-        const char * const argv[] = {"cppcheck", "--premium=cert-c++-2016", "file.c"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+            const char * const argv[] = {"cppcheck", "--premium=cert-c++-2016", "file.c"};
+            ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         }
         // invalid options
         {
-        const char * const argv[] = {"cppcheck", "--premium=misra", "file.c"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS("cppcheck: error: invalid --premium option 'misra'.\n", logger->str());
+            const char * const argv[] = {"cppcheck", "--premium=misra", "file.c"};
+            ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+            ASSERT_EQUALS("cppcheck: error: invalid --premium option 'misra'.\n", logger->str());
         }
         {
-        const char * const argv[] = {"cppcheck", "--premium=cert", "file.c"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS("cppcheck: error: invalid --premium option 'cert'.\n", logger->str());
+            const char * const argv[] = {"cppcheck", "--premium=cert", "file.c"};
+            ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+            ASSERT_EQUALS("cppcheck: error: invalid --premium option 'cert'.\n", logger->str());
         }
         settings->cppcheckCfgProductName.clear();
         settings->premiumArgs.clear();
