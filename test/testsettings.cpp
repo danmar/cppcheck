@@ -30,6 +30,7 @@ private:
     void run() override {
         TEST_CASE(simpleEnableGroup);
         TEST_CASE(loadCppcheckCfg);
+        TEST_CASE(loadCppcheckCfgSafety);
     }
 
     void simpleEnableGroup() const {
@@ -208,6 +209,34 @@ private:
         }
 
         // TODO: test with FILESDIR
+    }
+
+    void loadCppcheckCfgSafety() const
+    {
+        // Test the "safety" flag
+        {
+            Settings s;
+            s.safety = false;
+            ScopedFile file("cppcheck.cfg", "{}");
+            ASSERT_EQUALS("", s.loadCppcheckCfg());
+            ASSERT_EQUALS(false, s.safety);
+        }
+
+        {
+            Settings s;
+            s.safety = true;
+            ScopedFile file("cppcheck.cfg", "{\"safety\": false}");
+            ASSERT_EQUALS("", s.loadCppcheckCfg());
+            ASSERT_EQUALS(true, s.safety);
+        }
+
+        {
+            Settings s;
+            s.safety = false;
+            ScopedFile file("cppcheck.cfg", "{\"safety\": true}");
+            ASSERT_EQUALS("", s.loadCppcheckCfg());
+            ASSERT_EQUALS(true, s.safety);
+        }
     }
 };
 
