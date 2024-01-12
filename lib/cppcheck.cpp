@@ -1872,7 +1872,6 @@ void CppCheck::printTimerResults(SHOWTIME_MODES mode)
 }
 
 bool CppCheck::isPremiumCodingStandardId(const std::string& id) const {
-    std::vector<std::string> premiumCodingStandards;
     if (mSettings.premiumArgs.find("--misra") != std::string::npos) {
         if (startsWith(id, "misra-") || startsWith(id, "premium-misra-"))
             return true;
