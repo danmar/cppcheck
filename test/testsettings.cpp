@@ -211,7 +211,7 @@ private:
         // TODO: test with FILESDIR
     }
 
-    void loadCppcheckCfgSafety()
+    void loadCppcheckCfgSafety() const
     {
         // Test the "safety" flag
         {
