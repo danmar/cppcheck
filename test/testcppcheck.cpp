@@ -181,7 +181,7 @@ private:
         ASSERT_EQUALS("nullPointer", it->id);
     }
 
-    void isPremiumCodingStandardId() {
+    void isPremiumCodingStandardId() const {
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(errorLogger, false, {});
 
