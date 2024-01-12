@@ -890,23 +890,23 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             // Special Cppcheck Premium options
             else if (std::strncmp(argv[i], "--premium=", 10) == 0 && isCppcheckPremium()) {
-                const std::string valid = " "
-                                          "autosar "
-                                          "cert-c-2016 "
-                                          "cert-c++-2016 "
-                                          "misra-c-2012 "
-                                          "misra-c-2023 "
-                                          "misra-c++-2008 "
-                                          "misra-c++-2023 "
-                                          "bughunting "
-                                          "safety ";
+                const std::set<std::string> valid{
+                    "autosar",
+                    "cert-c-2016",
+                    "cert-c++-2016",
+                    "misra-c-2012",
+                    "misra-c-2023",
+                    "misra-c++-2008",
+                    "misra-c++-2023",
+                    "bughunting",
+                    "safety"};
 
                 if (std::strcmp(argv[i], "--premium=safety") == 0)
                     mSettings.safety = true;
                 if (!mSettings.premiumArgs.empty())
                     mSettings.premiumArgs += " ";
                 const std::string p(argv[i] + 10);
-                if (valid.find(" " + p + " ") == std::string::npos && !startsWith(p, "cert-c-int-precision=")) {
+                if (!valid.count(p) && !startsWith(p, "cert-c-int-precision=")) {
                     mLogger.printError("invalid --premium option '" + p + "'.");
                     return Result::Fail;
                 }
