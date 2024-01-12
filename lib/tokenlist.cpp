@@ -1375,8 +1375,8 @@ const Token* findLambdaEndTokenWithoutAST(const Token* tok) {
         tok = tok->link()->next();
     if (Token::simpleMatch(tok, ".")) { // trailing return type
         tok = tok->next();
-        while (Token::Match(tok, "%type%|%name%|::|&|&&|*|<")) {
-            if (tok->str() == "<")
+        while (Token::Match(tok, "%type%|%name%|::|&|&&|*|<|(")) {
+            if (tok->link())
                 tok = tok->link()->next();
             else
                 tok = tok->next();

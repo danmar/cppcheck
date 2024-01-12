@@ -2841,6 +2841,15 @@ private:
             ASSERT_EQUALS(3, db->scopeList.size());
             ASSERT_EQUALS(Scope::ScopeType::eLambda, db->scopeList.back().type);
         }
+        {
+            const char code[] = "void f() {\n"
+                                "    auto g = [&](const std::function<int(int)>& h = [](int i) -> decltype(0) { return i; }) {};\n"
+                                "}\n";
+            GET_SYMBOL_DB(code);
+            ASSERT(db != nullptr);
+            ASSERT_EQUALS(3, db->scopeList.size());
+            ASSERT_EQUALS(Scope::ScopeType::eLambda, db->scopeList.back().type);
+        }
     }
 
     void functionArgs21() {
