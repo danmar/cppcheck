@@ -150,6 +150,8 @@ public:
     static void resetTimerResults();
     static void printTimerResults(SHOWTIME_MODES mode);
 
+    bool isPremiumCodingStandardId(const std::string& id) const;
+
 private:
 #ifdef HAVE_RULES
     /** Are there "simple" rules */
