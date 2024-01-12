@@ -1743,7 +1743,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
                     ++id;
                 } else {
                     const auto it = baseIds.find(tok->str());
-                    if (it != baseIds.end() && compareTokenFlags(tok, it->second.second, /*macor*/ true)) {
+                    if (it != baseIds.end() && compareTokenFlags(tok, it->second.second, /*macro*/ true)) {
                         tok->exprId(it->second.first);
                     } else {
                         baseIds[tok->str()] = { id, tok };
