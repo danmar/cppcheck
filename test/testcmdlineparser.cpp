@@ -213,6 +213,7 @@ private:
         TEST_CASE(maxConfigsMissingCount);
         TEST_CASE(maxConfigsInvalid);
         TEST_CASE(maxConfigsTooSmall);
+        TEST_CASE(premiumSafety);
         TEST_CASE(reportProgress1);
         TEST_CASE(reportProgress2);
         TEST_CASE(reportProgress3);
@@ -1184,6 +1185,17 @@ private:
         // Fails since limit must be greater than 0
         ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--max-configs=' must be greater than 0.\n", logger->str());
+    }
+
+    void premiumSafety() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--premium=safety", "file.cpp"};
+        settings->safety = false;
+        settings->cppcheckCfgProductName = "Cppcheck Premium 0.0.0";
+        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings->safety);
+        settings->safety = false;
+        settings->cppcheckCfgProductName.clear();
     }
 
     void reportProgress1() {

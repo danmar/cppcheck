@@ -125,7 +125,7 @@ std::string Settings::loadCppcheckCfg()
             const auto& v = it->second;
             if (!v.is<bool>())
                 return "'safety' is not a bool";
-            safety = v.get<bool>();
+            safety |= v.get<bool>();
         }
     }
 
