@@ -1472,8 +1472,12 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
                     continue;
                 errmsg.severity = Severity::internal;
             }
-            else if (!mSettings.severity.isEnabled(errmsg.severity))
-                continue;
+            else if (!mSettings.severity.isEnabled(errmsg.severity)) {
+                // Do not filter out premium misra/cert/autosar messages that has been
+                // explicitly enabled with a --premium option
+                if (!isPremiumCodingStandardId(errmsg.id))
+                    continue;
+            }
             errmsg.file0 = file0;
 
             reportErr(errmsg);
@@ -1865,4 +1869,17 @@ void CppCheck::resetTimerResults()
 void CppCheck::printTimerResults(SHOWTIME_MODES mode)
 {
     s_timerResults.showResults(mode);
+}
+
+bool CppCheck::isPremiumCodingStandardId(const std::string& id) const {
+    std::vector<std::string> premiumCodingStandards;
+    if (mSettings.premiumArgs.find("--misra") != std::string::npos) {
+        if (startsWith(id, "misra-") || startsWith(id, "premium-misra-"))
+            return true;
+    }
+    if (mSettings.premiumArgs.find("--cert") != std::string::npos && startsWith(id, "premium-cert-"))
+        return true;
+    if (mSettings.premiumArgs.find("--autosar") != std::string::npos && startsWith(id, "premium-autosar-"))
+        return true;
+    return false;
 }
