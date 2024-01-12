@@ -243,6 +243,7 @@ private:
         TEST_CASE(exprid6);
         TEST_CASE(exprid7);
         TEST_CASE(exprid8);
+        TEST_CASE(exprid9);
 
         TEST_CASE(structuredBindings);
     }
@@ -3992,6 +3993,19 @@ private:
                                  "4: h (@UNIQUE g (@UNIQUE { } ) .@UNIQUE get (@UNIQUE ) ) ;\n"
                                  "5: }\n";
         ASSERT_EQUALS(expected4, tokenizeExpr(code4));
+    }
+
+    void exprid9()
+    {
+        const char code[] = "void f(const std::type_info& type) {\n" // #12340
+                            "    if (type == typeid(unsigned int)) {}\n"
+                            "    else if (type == typeid(int)) {}\n"
+                            "}\n";
+        const char expected[] = "1: void f ( const std :: type_info & type ) {\n"
+                                "2: if ( type@1 ==@UNIQUE typeid (@UNIQUE unsigned int@UNIQUE ) ) { }\n"
+                                "3: else { if ( type@1 ==@UNIQUE typeid (@UNIQUE int@UNIQUE ) ) { } }\n"
+                                "4: }\n";
+        ASSERT_EQUALS(expected, tokenizeExpr(code));
     }
 
     void structuredBindings() {
