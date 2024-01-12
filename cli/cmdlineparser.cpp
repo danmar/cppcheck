@@ -889,11 +889,26 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             // Special Cppcheck Premium options
             else if (std::strncmp(argv[i], "--premium=", 10) == 0 && isCppcheckPremium()) {
+                const std::set<std::string> valid{
+                    "autosar",
+                    "cert-c-2016",
+                    "cert-c++-2016",
+                    "misra-c-2012",
+                    "misra-c-2023",
+                    "misra-c++-2008",
+                    "misra-c++-2023",
+                    "bughunting",
+                    "safety"};
+
                 if (std::strcmp(argv[i], "--premium=safety") == 0)
                     mSettings.safety = true;
                 if (!mSettings.premiumArgs.empty())
                     mSettings.premiumArgs += " ";
                 const std::string p(argv[i] + 10);
+                if (!valid.count(p) && !startsWith(p, "cert-c-int-precision=")) {
+                    mLogger.printError("invalid --premium option '" + p + "'.");
+                    return Result::Fail;
+                }
                 mSettings.premiumArgs += "--" + p;
                 if (p == "misra-c-2012" || p == "misra-c-2023")
                     mSettings.addons.emplace("misra");
@@ -1515,10 +1530,11 @@ void CmdLineParser::printHelp() const
             "                          * cert-c++-2016     Cert C++ 2016 checking\n"
             "                          * misra-c-2012      Misra C 2012\n"
             "                          * misra-c-2023      Misra C 2023\n"
-            "                          * misra-c++-2008    Misra C++ 2008 (partial)\n"
+            "                          * misra-c++-2008    Misra C++ 2008\n"
             "                         Other:\n"
             "                          * bughunting        Soundy analysis\n"
-            "                          * cert-c-int-precision=BITS  Integer precision to use in Cert C analysis.\n";
+            "                          * cert-c-int-precision=BITS  Integer precision to use in Cert C analysis.\n"
+            "                          * safety            Safe mode\n";
     }
 
     oss <<
