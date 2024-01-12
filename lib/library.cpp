@@ -1010,8 +1010,12 @@ std::string Library::getFunctionName(const Token *ftok) const
     if (ftok->astParent()) {
         bool error = false;
         const Token * tok = ftok->astParent()->isUnaryOp("&") ? ftok->astParent()->astOperand1() : ftok->next()->astOperand1();
-        const std::string ret = getFunctionName(tok, error);
-        return error ? std::string() : ret;
+        std::string ret = getFunctionName(tok, error);
+        if (error)
+            return {};
+        if (startsWith(ret, "::"))
+            ret.erase(0, 2);
+        return ret;
     }
 
     // Lookup function name without using AST..

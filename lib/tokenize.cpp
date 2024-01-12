@@ -9647,6 +9647,18 @@ void Tokenizer::simplifyBitfields()
     }
 }
 
+static bool isStdContainerOrIterator(const Token* tok, const Settings* settings)
+{
+    const Library::Container* ctr = settings->library.detectContainerOrIterator(tok, nullptr, /*withoutStd*/ true);
+    return ctr && startsWith(ctr->startPattern, "std ::");
+}
+
+static bool isStdSmartPointer(const Token* tok, const Settings* settings)
+{
+    const Library::SmartPointer* ptr = settings->library.detectSmartPointer(tok, /*withoutStd*/ true);
+    return ptr && startsWith(ptr->name, "std::");
+}
+
 // Add std:: in front of std classes, when using namespace std; was given
 void Tokenizer::simplifyNamespaceStd()
 {
@@ -9677,11 +9689,11 @@ void Tokenizer::simplifyNamespaceStd()
             if (userFunctions.find(tok->str()) == userFunctions.end() && mSettings->library.matchArguments(tok, "std::" + tok->str()))
                 insert = true;
         } else if (Token::simpleMatch(tok->next(), "<") &&
-                   (mSettings->library.detectContainerOrIterator(tok, nullptr, /*withoutStd*/ true) || mSettings->library.detectSmartPointer(tok, /*withoutStd*/ true)))
+                   (isStdContainerOrIterator(tok, mSettings) || isStdSmartPointer(tok, mSettings)))
             insert = true;
         else if (mSettings->library.hasAnyTypeCheck("std::" + tok->str()) ||
                  mSettings->library.podtype("std::" + tok->str()) ||
-                 mSettings->library.detectContainerOrIterator(tok, nullptr, /*withoutStd*/ true))
+                 isStdContainerOrIterator(tok, mSettings))
             insert = true;
 
         if (insert) {
