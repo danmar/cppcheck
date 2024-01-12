@@ -275,7 +275,7 @@ const Token* isInLoopCondition(const Token* tok);
 CPPCHECKLIB bool isUsedAsBool(const Token* const tok, const Settings* settings = nullptr);
 
 /**
- * Are the tokens' flags equal? 
+ * Are the tokens' flags equal?
  */
 bool compareTokenFlags(const Token* tok1, const Token* tok2, bool macro);
 

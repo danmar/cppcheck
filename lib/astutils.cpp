@@ -1627,7 +1627,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         }
         return false;
     }
-    
+
     if (!compareTokenFlags(tok1, tok2, macro))
         return false;
 
