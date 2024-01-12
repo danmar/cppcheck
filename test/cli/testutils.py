@@ -66,6 +66,7 @@ def __lookup_cppcheck_exe():
                 break
 
     if exe_path:
+        exe_path = os.path.abspath(exe_path)
         print("using '{}'".format(exe_path))
     return exe_path
 
