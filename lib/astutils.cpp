@@ -2418,6 +2418,9 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     if (deref && indirect > 0)
         indirect--;
 
+    if (indirect == 1 && tok->isCpp() && tok->tokAt(-1) && Token::simpleMatch(tok->tokAt(-2), "new (")) // placement new TODO: fix AST
+        return true;
+
     int argnr;
     tok = getTokenArgumentFunction(tok, argnr);
     if (!tok)
