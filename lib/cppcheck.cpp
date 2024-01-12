@@ -494,7 +494,7 @@ unsigned int CppCheck::checkClang(const std::string &path)
         std::istringstream ast(output2);
         Tokenizer tokenizer(&mSettings, this);
         tokenizer.list.appendFileIfNew(path);
-        clangimport::parseClangAstDump(&tokenizer, ast);
+        clangimport::parseClangAstDump(tokenizer, ast);
         ValueFlow::setValues(tokenizer.list,
                              const_cast<SymbolDatabase&>(*tokenizer.getSymbolDatabase()),
                              this,
