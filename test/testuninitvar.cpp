@@ -113,7 +113,7 @@ private:
         const Settings settings1 = settingsBuilder(s ? *s : settings).debugwarnings(debugwarnings).build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, fname), file, line);
 
@@ -5380,7 +5380,7 @@ private:
         // Tokenize..
         const Settings s = settingsBuilder(settings).debugwarnings(false).build();
 
-        Tokenizer tokenizer(&s, this);
+        Tokenizer tokenizer(s, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, fname), file, line);
 
@@ -7593,7 +7593,7 @@ private:
         errout.str("");
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 

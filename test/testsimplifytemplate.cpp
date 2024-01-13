@@ -312,7 +312,7 @@ private:
         errout.str("");
 
         const Settings settings1 = settingsBuilder(settings).library("std.cfg").debugwarnings(debugwarnings).platform(type).build();
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(settings1, this);
 
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -5287,7 +5287,7 @@ private:
     }
 
     unsigned int templateParameters(const char code[]) {
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
 
         std::istringstream istr(code);
         tokenizer.createTokens(istr, "test.cpp");
@@ -5354,7 +5354,7 @@ private:
 
     // Helper function to unit test TemplateSimplifier::getTemplateNamePosition
     int templateNamePositionHelper(const char code[], unsigned offset = 0) {
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
 
         std::istringstream istr(code);
         tokenizer.createTokens(istr, "test.cpp");
@@ -5424,7 +5424,7 @@ private:
 
     // Helper function to unit test TemplateSimplifier::findTemplateDeclarationEnd
     bool findTemplateDeclarationEndHelper(const char code[], const char pattern[], unsigned offset = 0) {
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
 
         std::istringstream istr(code);
         tokenizer.createTokens(istr, "test.cpp");
@@ -5453,7 +5453,7 @@ private:
 
     // Helper function to unit test TemplateSimplifier::getTemplateParametersInDeclaration
     bool getTemplateParametersInDeclarationHelper(const char code[], const std::vector<std::string> & params) {
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
 
         std::istringstream istr(code);
         tokenizer.createTokens(istr, "test.cpp");
@@ -5756,7 +5756,7 @@ private:
 
 #define instantiateMatch(code, numberOfArguments, patternAfter) instantiateMatch_(code, numberOfArguments, patternAfter, __FILE__, __LINE__)
     bool instantiateMatch_(const char code[], const std::size_t numberOfArguments, const char patternAfter[], const char* file, int line) {
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
 
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp", ""), file, line);

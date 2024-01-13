@@ -113,7 +113,7 @@ private:
             settings_ = &settings;
 
         // Tokenize..
-        Tokenizer tokenizer(settings_, this);
+        Tokenizer tokenizer(*settings_, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 

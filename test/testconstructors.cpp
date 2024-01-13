@@ -42,7 +42,7 @@ private:
         const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -56,7 +56,7 @@ private:
         errout.str("");
 
         // Tokenize..
-        Tokenizer tokenizer(&s, this);
+        Tokenizer tokenizer(s, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 

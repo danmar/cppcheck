@@ -495,7 +495,7 @@ unsigned int CppCheck::checkClang(const std::string &path)
 
     try {
         std::istringstream ast(output2);
-        Tokenizer tokenizer(&mSettings, this);
+        Tokenizer tokenizer(mSettings, this);
         tokenizer.list.appendFileIfNew(path);
         clangimport::parseClangAstDump(tokenizer, ast);
         ValueFlow::setValues(tokenizer.list,
@@ -663,7 +663,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         }
 
         if (mSettings.library.markupFile(filename)) {
-            Tokenizer tokenizer(&mSettings, this, &preprocessor);
+            Tokenizer tokenizer(mSettings, this, &preprocessor);
             tokenizer.createTokens(std::move(tokens1));
             checkUnusedFunctions.getFileInfo(&tokenizer, &mSettings);
             return EXIT_SUCCESS;
@@ -795,7 +795,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 if (startsWith(dir.str,"#define ") || startsWith(dir.str,"#include "))
                     code += "#line " + std::to_string(dir.linenr) + " \"" + dir.file + "\"\n" + dir.str + '\n';
             }
-            Tokenizer tokenizer2(&mSettings, this);
+            Tokenizer tokenizer2(mSettings, this);
             std::istringstream istr2(code);
             tokenizer2.list.createTokens(istr2);
             executeRules("define", tokenizer2);
@@ -856,7 +856,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 continue;
             }
 
-            Tokenizer tokenizer(&mSettings, this, &preprocessor);
+            Tokenizer tokenizer(mSettings, this, &preprocessor);
             if (mSettings.showtime != SHOWTIME_MODES::SHOWTIME_NONE)
                 tokenizer.setTimerResults(&s_timerResults);
 

@@ -254,7 +254,7 @@ private:
 
         const Settings *settings1 = s ? s : &settings;
 
-        Tokenizer tokenizer(settings1, this);
+        Tokenizer tokenizer(*settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC((tokenizer.tokenize)(istr, filename), file, line);
 
@@ -269,7 +269,7 @@ private:
         errout.str("");
 
         std::vector<std::string> files(1, filename);
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         PreprocessorHelper::preprocess(code, files, tokenizer);
 
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
@@ -284,7 +284,7 @@ private:
     std::string compareVaridsForVariable_(const char* file, int line, const char code[], const char varname[], const char filename[] = "test.cpp") {
         errout.str("");
 
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC((tokenizer.tokenize)(istr, filename), file, line);
 

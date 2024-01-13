@@ -90,7 +90,7 @@ private:
         const Settings settings1 = settingsBuilder(s ? *s : settings).platform(platform).build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -537,7 +537,7 @@ private:
     }
 
     void multipleFiles() {
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         CheckUnusedFunctions c(&tokenizer, &settings, nullptr);
 
         // Clear the error buffer..
@@ -552,7 +552,7 @@ private:
             // Clear the error buffer..
             errout.str("");
 
-            Tokenizer tokenizer2(&settings, this);
+            Tokenizer tokenizer2(settings, this);
             std::istringstream istr(code);
             ASSERT(tokenizer2.tokenize(istr, fname.str().c_str()));
 

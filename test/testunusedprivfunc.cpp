@@ -94,7 +94,7 @@ private:
         const Settings settings1 = settingsBuilder(settings).platform(platform).build();
 
         std::vector<std::string> files(1, "test.cpp");
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(settings1, this);
         PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenize..

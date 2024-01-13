@@ -137,7 +137,7 @@ private:
 #define MatchCheck(...) MatchCheck_(__FILE__, __LINE__, __VA_ARGS__)
     bool MatchCheck_(const char* file, int line, const std::string& code, const std::string& pattern, unsigned int varid = 0) {
         const Settings settings;
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(";" + code + ";");
         try {
             ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);

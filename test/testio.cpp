@@ -96,7 +96,7 @@ private:
         PLATFORM(settings1.platform, platform);
 
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(settings1, this);
         std::istringstream istr(code);
         const std::string file_in = cpp ? "test.cpp" : "test.c";
         ASSERT_LOC(tokenizer.tokenize(istr, file_in.c_str()), file, line);

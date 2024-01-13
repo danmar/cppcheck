@@ -289,7 +289,7 @@ private:
         Preprocessor preprocessor(settings);
 
         // tokenize..
-        Tokenizer tokenizer(&settings, this, &preprocessor);
+        Tokenizer tokenizer(settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
@@ -303,7 +303,7 @@ private:
 
 #define getSyntaxError(code) getSyntaxError_(code, __FILE__, __LINE__)
     std::string getSyntaxError_(const char code[], const char* file, int line) {
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         try {
             ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -321,7 +321,7 @@ private:
         const char code[] = "class __declspec(dllexport) x final { };";
         {
             errout.str("");
-            Tokenizer tokenizer(&settings, this);
+            Tokenizer tokenizer(settings, this);
             std::istringstream istr(code);
             ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             ASSERT_EQUALS("", errout.str());
@@ -368,7 +368,7 @@ private:
                             " )\n"
                             "}";
 
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         try {
             ASSERT(tokenizer.tokenize(istr, "test.cpp"));
@@ -403,14 +403,14 @@ private:
 
         {
             errout.str("");
-            Tokenizer tokenizer(&settings, this);
+            Tokenizer tokenizer(settings, this);
             std::istringstream istr(code);
             ASSERT(tokenizer.tokenize(istr, "test.c"));
             ASSERT_EQUALS("", errout.str());
         }
         {
             errout.str("");
-            Tokenizer tokenizer(&settings, this);
+            Tokenizer tokenizer(settings, this);
             std::istringstream istr(code);
             ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             ASSERT_EQUALS("[test.cpp:1]: (information) The code 'class x y {' is not handled. You can use -I or --include to add handling of this code.\n", errout.str());

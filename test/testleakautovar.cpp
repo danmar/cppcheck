@@ -239,7 +239,7 @@ private:
         const Settings settings1 = settingsBuilder(s ? *s : settings).checkLibrary().build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, cpp ? "test.cpp" : "test.c"), file, line);
 
@@ -254,7 +254,7 @@ private:
         const Settings settings0 = settingsBuilder(s).checkLibrary().build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(settings0, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -2994,7 +2994,7 @@ private:
         errout.str("");
 
         std::vector<std::string> files(1, cpp?"test.cpp":"test.c");
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenizer..
@@ -3045,7 +3045,7 @@ private:
         errout.str("");
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -3130,7 +3130,7 @@ private:
         errout.str("");
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.c"), file, line);
 

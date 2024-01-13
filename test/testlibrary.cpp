@@ -580,14 +580,14 @@ private:
         ASSERT_EQUALS(library.functions.size(), 1U);
 
         {
-            Tokenizer tokenizer(&settings, nullptr);
+            Tokenizer tokenizer(settings, nullptr);
             std::istringstream istr("CString str; str.Format();");
             ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             ASSERT(library.isnotnoreturn(Token::findsimplematch(tokenizer.tokens(), "Format")));
         }
 
         {
-            Tokenizer tokenizer(&settings, nullptr);
+            Tokenizer tokenizer(settings, nullptr);
             std::istringstream istr("HardDrive hd; hd.Format();");
             ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             ASSERT(!library.isnotnoreturn(Token::findsimplematch(tokenizer.tokens(), "Format")));
@@ -606,14 +606,14 @@ private:
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
         {
-            Tokenizer tokenizer(&settings, nullptr);
+            Tokenizer tokenizer(settings, nullptr);
             std::istringstream istr("struct X : public Base { void dostuff() { f(0); } };");
             ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             ASSERT(library.isnullargbad(Token::findsimplematch(tokenizer.tokens(), "f"),1));
         }
 
         {
-            Tokenizer tokenizer(&settings, nullptr);
+            Tokenizer tokenizer(settings, nullptr);
             std::istringstream istr("struct X : public Base { void dostuff() { f(1,2); } };");
             ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             ASSERT(!library.isnullargbad(Token::findsimplematch(tokenizer.tokens(), "f"),1));
