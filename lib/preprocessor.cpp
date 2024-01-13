@@ -937,8 +937,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
 
 void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings &settings)
 {
-    Settings settings2(settings);
-    Preprocessor preprocessor(settings2, errorLogger);
+    Preprocessor preprocessor(settings, errorLogger);
     preprocessor.missingInclude(emptyString, 1, emptyString, UserHeader);
     preprocessor.missingInclude(emptyString, 1, emptyString, SystemHeader);
     preprocessor.error(emptyString, 1, "#error message");   // #error ..
