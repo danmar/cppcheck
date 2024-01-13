@@ -1,45 +1,8 @@
-Release Notes for Cppcheck 2.13
+Release Notes for Cppcheck 2.13.1
 
-New checks:
-- passedByValueCallback for functions which take a parameter by value but are used as callbacks (subset of passedByValue)
-- returnImplicitInt for C functions without return type (previously reported as a debug message)
-- iterateByValue for iterating by value in a range-based for loop when a const reference could be used
-
-Changed interface:
-- Final report of active checkers is reported as a normal information message instead.
-
-Deprecations:
-- "--showtime=top5" has been deprecated and will be removed in Cppcheck 2.14. Please use --showtime=top5_file or --showtime=top5_summary instead.
-- Building with Qt5 has been deprecated (it went EOL in May 2023) and will be removed in a future version - please use Qt6 instead.
-
-Other:
-- Windows builds now default to the `native` platform instead of `win32A` or `win64`. Please specify it explicitly if you depend on it.
-- The undocumented and deprecated command-line options `--template <template>` and `--template-format <template>` has been removed. Please use `--template=` and `--template-format=` instead.
-- "--showtime=summary" will now show a single summary at the end instead of showing it after each file when using the thread execution (default on Windows)
-- added "--showtime=none" to disable any previously specified showtime report. "--showtime=" without parameter is no longer valid.
-- Multiple "--project" options are now prohibited. These would have overlapped each other and lead to unexpected behavior. Please use separate runs with a single "--project" option instead.
-- "--project" can also no longer be used in conjunction with additional source files.
-- If a addon cannot be found it will bail out immediately instead of continously writing errors and failing the analysis at the end.
-- clang-tidy was not invoked when the process-based executor (only available on Linux / default) was used.
-- Added CMake option "BUILD_MANPAGE" which adds the "man" target which will build the manpage. This requires xsltproc and the docbook XSLs to be installed.
-- Added some library configurations to the official Windows installer.
-- Removed some unused Qt DLLs from the official Windows installer.
-- Improved inline suppressions:
-  - You can suppress warnings in a block of code using "-begin" and "-end".
-  - You can suppress warnings in current file using "-file".
-  - You can suppress all warnings where macro is used using "-macro"
-- Cppcheck will now error out when an option, which requires code which is not compiled in, is being specified. In the past it might have silently ignored it or reported it as unknown.
-- Several macros defined by "limits.h"/"climits" will now be generated from the used platform condiguration and passed to the analysis.
-- fixed CMake build with UBSAN and GCC
-- Files will now be processed in the order as specified via the command-line.
-- Added command-line options "--fsigned-char" and "--funsigned-char" to control the signess of the "char" type. This overrides previously specified "--platform" options and is overrides by following ones.
-- An error is now reported when the "cppcheck.cfg" is invalid. The CLI version will also exit with a failure in that case.
-- Fixed loading of addons from "cppcheck.cfg" in the GUI application.
-- Markup files will now be processed after the regular source files when using multiple threads/processes (some issues remain - see Trac #12167 for details).
-- Added file name to ValueFlow "--debug" output.
-- Fixed build when using "clang-cl" in CMake.
+Usability:
+ * #12342: Show premium autosar/misra/cert style issues even if --enable is not used
+ * #12344: Better validation of --premium options
 
 Safety critical:
-- #10866 unsafe handling of unconditional #error
-- #12071 unsafe suppressions of critical errors
-- #12079 missing "misra-config" warning, calling unknown function in condition
+ * #12341: If --premium=safety is used then go to "safety mode". Do not override this in cppcheck.cfg
