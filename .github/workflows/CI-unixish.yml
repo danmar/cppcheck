@@ -391,11 +391,11 @@ jobs:
       - name: Run test/cli
         run: |
           cd test/cli
-          python3 -m pytest -Werror --strict-markers -vv test-*.py
+          python3 -m pytest -Werror --strict-markers -vv
           cd ../../..
           ln -s cppcheck 'cpp check'
           cd 'cpp check/test/cli'
-          python3 -m pytest -Werror --strict-markers -vv test-*.py
+          python3 -m pytest -Werror --strict-markers -vv
 
       - name: Run cfg tests
         if: matrix.os != 'ubuntu-22.04'

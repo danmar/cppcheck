@@ -455,9 +455,11 @@ bool ImportProject::importSln(std::istream &istr, const std::string &path, const
         if (pos1 == std::string::npos)
             continue;
         std::string vcxproj(line.substr(pos1+1, pos-pos1+7));
+        vcxproj = Path::toNativeSeparators(std::move(vcxproj));
         if (!Path::isAbsolute(vcxproj))
             vcxproj = path + vcxproj;
-        if (!importVcxproj(Path::fromNativeSeparators(vcxproj), variables, emptyString, fileFilters)) {
+        vcxproj = Path::fromNativeSeparators(std::move(vcxproj));
+        if (!importVcxproj(vcxproj, variables, emptyString, fileFilters)) {
             printError("failed to load '" + vcxproj + "' from Visual Studio solution");
             return false;
         }
