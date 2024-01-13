@@ -29,6 +29,9 @@ SUPPRESS_WARNING_CLANG_PUSH("-Wzero-as-null-pointer-constant")
 #define PICOJSON_USE_INT64
 #include <picojson.h>
 
+#define VALIJSON_USE_EXCEPTIONS 0
+#include <valijson_picojson_bundled.hpp>
+
 SUPPRESS_WARNING_CLANG_POP
 SUPPRESS_WARNING_CLANG_POP
 SUPPRESS_WARNING_CLANG_POP

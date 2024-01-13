@@ -168,7 +168,7 @@ ifndef PREFIX
 endif
 
 ifndef INCLUDE_FOR_LIB
-    INCLUDE_FOR_LIB=-Ilib -isystem externals -isystem externals/picojson -isystem externals/simplecpp -isystem externals/tinyxml2
+    INCLUDE_FOR_LIB=-Ilib -isystem externals -isystem externals/picojson -isystem externals/valijson -isystem externals/simplecpp -isystem externals/tinyxml2
 endif
 
 ifndef INCLUDE_FOR_CLI

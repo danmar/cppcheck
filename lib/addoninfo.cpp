@@ -46,25 +46,64 @@ static std::string getFullPath(const std::string &fileName, const std::string &e
     return "";
 }
 
-static std::string parseAddonInfo(AddonInfo& addoninfo, const picojson::value &json, const std::string &fileName, const std::string &exename) {
+static std::string validateJSON(const picojson::value &json, const std::string &schema_fn)
+{
+    auto validatorSchema = std::make_shared<valijson::Schema>();
+    std::ifstream fin(schema_fn);
+    if (!fin.is_open())
+        return "Failed to open " + schema_fn;
+    picojson::value schema_json;
+    fin >> schema_json;
+
+    auto schemaAdapter = valijson::adapters::PicoJsonAdapter(schema_json);
+    valijson::SchemaParser parser;
+    parser.populateSchema(schemaAdapter, *validatorSchema);
+    //std::cout << "Schema:" << std::endl << schemaStr << std::endl << std::endl;;
+
+    auto targetAdapter = valijson::adapters::PicoJsonAdapter(json);
+    valijson::ValidationResults results;
+    auto validator = valijson::Validator();
+    auto isValid = validator.validate(
+        *validatorSchema,
+        targetAdapter,
+        &results);
+    if (!isValid) {
+        std::string result("JSON schema validation failed");
+        std::string sep(": ");
+        valijson::ValidationResults::Error error;
+        while (results.popError(error)) {
+            result += sep;
+            sep = ", ";
+            for (const std::string &contextElement : error.context) {
+                result += contextElement;
+                result += " ";
+            }
+            result += error.description;
+        }
+        return result;
+    }
+
+    return "";
+}
+
+static std::string parseAddonInfo(AddonInfo& addoninfo, const picojson::value &json, const std::string &report_filename, const std::string &exename) {
     const std::string& json_error = picojson::get_last_error();
     if (!json_error.empty()) {
-        return "Loading " + fileName + " failed. " + json_error;
+        return "Loading " + report_filename + " failed. " + json_error;
     }
-    if (!json.is<picojson::object>())
-        return "Loading " + fileName + " failed. JSON is not an object.";
+
+    std::string schema = getFullPath("addon.schema.json",exename);
+    std::string issues = validateJSON(json,schema);
+    if (!issues.empty()) {
+        return "Loading " + report_filename + " failed. " + issues;
+    }
 
     // TODO: remove/complete default value handling for missing fields
     const picojson::object& obj = json.get<picojson::object>();
     {
         const auto it = obj.find("args");
         if (it != obj.cend()) {
-            const auto& val = it->second;
-            if (!val.is<picojson::array>())
-                return "Loading " + fileName + " failed. 'args' must be an array.";
-            for (const picojson::value &v : val.get<picojson::array>()) {
-                if (!v.is<std::string>())
-                    return "Loading " + fileName + " failed. 'args' entry is not a string.";
+            for (const picojson::value &v : it->second.get<picojson::array>()) {
                 addoninfo.args += " " + v.get<std::string>();
             }
         }
@@ -73,11 +112,8 @@ static std::string parseAddonInfo(AddonInfo& addoninfo, const picojson::value &j
     {
         const auto it = obj.find("ctu");
         if (it != obj.cend()) {
-            const auto& val = it->second;
             // ctu is specified in the config file
-            if (!val.is<bool>())
-                return "Loading " + fileName + " failed. 'ctu' must be a boolean.";
-            addoninfo.ctu = val.get<bool>();
+            addoninfo.ctu = it->second.get<bool>();
         }
         else {
             addoninfo.ctu = false;
@@ -87,12 +123,8 @@ static std::string parseAddonInfo(AddonInfo& addoninfo, const picojson::value &j
     {
         const auto it = obj.find("python");
         if (it != obj.cend()) {
-            const auto& val = it->second;
             // Python was defined in the config file
-            if (!val.is<std::string>()) {
-                return "Loading " + fileName +" failed. 'python' must be a string.";
-            }
-            addoninfo.python = val.get<std::string>();
+            addoninfo.python = it->second.get<std::string>();
         }
         else {
             addoninfo.python = "";
@@ -102,22 +134,12 @@ static std::string parseAddonInfo(AddonInfo& addoninfo, const picojson::value &j
     {
         const auto it = obj.find("executable");
         if (it != obj.cend()) {
-            const auto& val = it->second;
-            if (!val.is<std::string>())
-                return "Loading " + fileName + " failed. 'executable' must be a string.";
-            addoninfo.executable = getFullPath(val.get<std::string>(), fileName);
+            addoninfo.executable = getFullPath(it->second.get<std::string>(), exename);
             return ""; // TODO: why bail out?
         }
     }
 
-    const auto it = obj.find("script");
-    if (it == obj.cend())
-        return "Loading " + fileName + " failed. 'script' is missing.";
-
-    const auto& val = it->second;
-    if (!val.is<std::string>())
-        return "Loading " + fileName + " failed. 'script' must be a string.";
-
+    const auto& val = obj.find("script")->second;
     return addoninfo.getAddonInfo(val.get<std::string>(), exename);
 }
 
@@ -126,7 +148,7 @@ std::string AddonInfo::getAddonInfo(const std::string &fileName, const std::stri
         picojson::value json;
         const std::string err = picojson::parse(json, fileName);
         (void)err; // TODO: report
-        return parseAddonInfo(*this, json, fileName, exename);
+        return parseAddonInfo(*this, json, "inline JSON", exename);
     }
     if (fileName.find('.') == std::string::npos)
         return getAddonInfo(fileName + ".py", exename);

@@ -1,0 +1,141 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://cppcheck.com/addon.schema.json",
+    "title": "Addon namingng config",
+    "description": "namingng configuration format",
+    "type": "object",
+    "properties": {
+        "RE_FILE": {
+            "description": "Patterns for filenames",
+            "$ref": "#/definitions/re_list_or_none"
+        },
+        "RE_NAMESPACE": {
+            "description": "Patterns for namespaces",
+            "$ref": "#/definitions/re_list_or_dict_or_none"
+        },
+        "RE_VARNAME": {
+            "description": "Patterns for variable names",
+            "$ref": "#/definitions/re_list_or_dict_or_none"
+        },
+        "RE_PRIVATE_MEMBER_VARIABLE": {
+            "description": "Patterns for private member variable names",
+            "$ref": "#/definitions/re_list_or_dict_or_none"
+        },
+        "RE_PUBLIC_MEMBER_VARIABLE": {
+            "description": "Patterns for public member variable names",
+            "$ref": "#/definitions/re_list_or_dict_or_none"
+        },
+        "RE_GLOBAL_VARNAME": {
+            "description": "Patterns for global variable names",
+            "$ref": "#/definitions/re_list_or_dict_or_none"
+        },
+        "RE_FUNCTIONNAME": {
+            "description": "Patterns for function names",
+            "$ref": "#/definitions/re_list_or_dict_or_none"
+        },
+        "RE_CLASS_NAME": {
+            "description": "Patterns for class names",
+            "$ref": "#/definitions/re_list_or_dict_or_none"
+        },
+        "var_prefixes": {
+            "description": "Variable prefixes per type",
+            "$ref": "#/definitions/prefix_dict"
+        },
+        "function_prefixes": {
+            "description": "Variable prefixes per return type",
+            "$ref": "#/definitions/prefix_dict"
+        },
+        "skip_one_char_variables": {
+            "description": "Whether to ignore one-character local variables (default: false)",
+            "type":"boolean"
+        },
+        "include_guard": {
+            "properties": {
+                "input": {
+                    "description": "What to take as input for the include guard name (default: path)",
+                    "enum": ["path","basename"]
+                },
+                "case": {
+                    "description": "What case the include guard name is in (default: upper)",
+                    "enum": ["upper","lower","keep"]
+                },
+                "prefix": {
+                    "description": "Include guard prefix",
+                    "type": "string"
+                },
+                "suffix": {
+                    "description": "Include guard suffix",
+                    "type": "string"
+                },
+                "max_linenr": {
+                    "description": "Don't consider include guards found after this line number (default: 5)",
+                    "type": "number"
+                },
+                "required": {
+                    "description": "Whether include guards are required for include files (default: true)",
+                    "type": "boolean"
+                },
+                "RE_HEADERFILE": {
+                    "description": "Pattern used to determine whether a file is an include file (default: relative paths ending in .h)",
+                    "$ref": "#/definitions/python_re"
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false,
+    "required": [],
+    "definitions": {
+        "re_list_or_dict_or_none":{
+            "anyOf": [
+                { "$ref": "#/definitions/re_list" },
+                { "$ref": "#/definitions/re_dict" },
+                { "type": "null" }
+            ]
+        },
+        "re_list_or_none":{
+            "anyOf": [
+                { "$ref": "#/definitions/re_list" },
+                { "type": "null" }
+            ]
+        },
+        "re_list": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/python_re"
+            },
+            "minItems":1
+        },
+        "re_dict": {
+            "type": "object",
+            "propertyNames": {
+                "$ref": "#/definitions/python_re"
+            },
+            "patternProperties": {
+                "": {
+                    "type": "array",
+                    "prefixItems": [
+                        { "type": "boolean" },
+                        { "type": "string" }
+                    ],
+                    "minItems": 2,
+                    "unevaluatedItems": false
+                }
+            }
+        },
+        "prefix_dict": {
+            "type": "object",
+            "patternProperties": {
+                "^[a-zA-Z0-9_*&]+$": {
+                    "type":"string",
+                    "pattern": "^[a-zA-Z0-9_]+$"
+                }
+            },
+            "additionalProperties": false
+        },
+        "python_re": {
+            "type": "string",
+            "format": "python_re"
+        }
+    }
+}
