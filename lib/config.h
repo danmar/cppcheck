@@ -110,6 +110,17 @@
 #  define WARN_UNUSED
 #endif
 
+// deprecated
+#if defined(__GNUC__) \
+    || defined(__clang__) \
+    || defined(__CPPCHECK__)
+#  define DEPRECATED __attribute__((deprecated))
+#elif defined(_MSC_VER)
+#  define DEPRECATED __declspec(deprecated)
+#else
+#  define DEPRECATED
+#endif
+
 #define REQUIRES(msg, ...) class=typename std::enable_if<__VA_ARGS__::value>::type
 
 #include <string>

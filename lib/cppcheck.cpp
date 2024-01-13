@@ -195,9 +195,11 @@ static void createDumpFile(const Settings& settings,
         language = " language=\"cpp\"";
         break;
     case Standards::Language::None:
-        if (Path::isCPP(filename))
+        // TODO: error out on unknown language?
+        const Standards::Language lang = Path::identify(filename);
+        if (lang == Standards::Language::CPP)
             language = " language=\"cpp\"";
-        else if (Path::isC(filename))
+        else if (lang == Standards::Language::C)
             language = " language=\"c\"";
         break;
     }
@@ -429,7 +431,8 @@ unsigned int CppCheck::checkClang(const std::string &path)
         mErrorLogger.reportOut(std::string("Checking ") + path + " ...", Color::FgGreen);
 
     // TODO: this ignores the configured language
-    const std::string lang = Path::isCPP(path) ? "-x c++" : "-x c";
+    const bool isCpp = Path::identify(path) == Standards::Language::CPP;
+    const std::string langOpt = isCpp ? "-x c++" : "-x c";
     const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, emptyString);
     const std::string clangcmd = analyzerInfo + ".clang-cmd";
     const std::string clangStderr = analyzerInfo + ".clang-stderr";
@@ -442,9 +445,9 @@ unsigned int CppCheck::checkClang(const std::string &path)
     }
 #endif
 
-    std::string flags(lang + " ");
+    std::string flags(langOpt + " ");
     // TODO: does not apply C standard
-    if (Path::isCPP(path) && !mSettings.standards.stdValue.empty())
+    if (isCpp && !mSettings.standards.stdValue.empty())
         flags += "-std=" + mSettings.standards.stdValue + " ";
 
     for (const std::string &i: mSettings.includePaths)

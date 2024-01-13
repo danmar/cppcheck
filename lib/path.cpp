@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <sys/stat.h>
+#include <unordered_set>
 #include <utility>
 
 #include <simplecpp.h>
@@ -193,6 +194,18 @@ std::string Path::getRelativePath(const std::string& absolutePath, const std::ve
     return absolutePath;
 }
 
+static const std::unordered_set<std::string> cpp_src_exts = {
+    ".cpp", ".cxx", ".cc", ".c++", ".tpp", ".txx", ".ipp", ".ixx"
+};
+
+static const std::unordered_set<std::string> c_src_exts = {
+    ".c", ".cl"
+};
+
+static const std::unordered_set<std::string> header_exts = {
+    ".h", ".hpp", ".h++", ".hxx", ".hh"
+};
+
 bool Path::isC(const std::string &path)
 {
     // In unix, ".C" is considered C++ file
@@ -220,13 +233,51 @@ bool Path::isCPP(const std::string &path)
 
 bool Path::acceptFile(const std::string &path, const std::set<std::string> &extra)
 {
-    return !Path::isHeader(path) && (Path::isCPP(path) || Path::isC(path) || extra.find(getFilenameExtension(path)) != extra.end());
+    bool header = false;
+    return (identify(path, &header) != Standards::Language::None && !header) || extra.find(getFilenameExtension(path)) != extra.end();
 }
 
+// cppcheck-suppress unusedFunction
 bool Path::isHeader(const std::string &path)
 {
     const std::string extension = getFilenameExtensionInLowerCase(path);
     return startsWith(extension, ".h");
+}
+
+Standards::Language Path::identify(const std::string &path, bool *header)
+{
+    // cppcheck-suppress uninitvar - TODO: FP
+    if (header)
+        *header = false;
+
+    std::string ext = getFilenameExtension(path);
+    if (ext == ".C")
+        return Standards::Language::CPP;
+    if (c_src_exts.find(ext) != c_src_exts.end())
+        return Standards::Language::C;
+    // cppcheck-suppress knownConditionTrueFalse - TODO: FP
+    if (!caseInsensitiveFilesystem())
+        strTolower(ext);
+    if (ext == ".h") {
+        if (header)
+            *header = true;
+        return Standards::Language::C; // treat as C for now
+    }
+    if (cpp_src_exts.find(ext) != cpp_src_exts.end())
+        return Standards::Language::CPP;
+    if (header_exts.find(ext) != header_exts.end()) {
+        if (header)
+            *header = true;
+        return Standards::Language::CPP;
+    }
+    return Standards::Language::None;
+}
+
+bool Path::isHeader2(const std::string &path)
+{
+    bool header;
+    (void)Path::identify(path, &header);
+    return header;
 }
 
 std::string Path::getAbsoluteFilePath(const std::string& filePath)
