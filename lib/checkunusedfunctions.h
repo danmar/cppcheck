@@ -68,17 +68,16 @@ public:
     /** @brief Parse current TU and extract file info */
     Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const override;
 
-    /** @brief Analyse all file infos for all TU */
-    bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
-
     std::string analyzerInfo() const;
 
     /** @brief Combine and analyze all analyzerInfos for all TUs */
-    static void analyseWholeProgram(const Settings &settings, ErrorLogger * const errorLogger, const std::string &buildDir);
+    static void analyseWholeProgram2(const Settings &settings, ErrorLogger * const errorLogger, const std::string &buildDir);
 
     static void getErrorMessages(ErrorLogger *errorLogger) {
         unusedFunctionError(errorLogger, emptyString, 0, 0, "funcName");
     }
+
+    static bool check(const Settings& settings, ErrorLogger &errorLogger);
 
 private:
     static void clear();

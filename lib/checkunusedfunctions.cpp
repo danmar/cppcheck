@@ -384,14 +384,11 @@ Check::FileInfo *CheckUnusedFunctions::getFileInfo(const Tokenizer *tokenizer, c
     return nullptr;
 }
 
-bool CheckUnusedFunctions::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
+bool CheckUnusedFunctions::check(const Settings& settings, ErrorLogger &errorLogger)
 {
-    (void)ctu;
-    (void)fileInfo;
     CheckUnusedFunctions dummy(nullptr, &settings, &errorLogger);
-    dummy.
-    logChecker("CheckUnusedFunctions::analyseWholeProgram"); // unusedFunctions
-    return check(&errorLogger, settings);
+    dummy.logChecker("CheckUnusedFunctions::analyseWholeProgram");
+    return instance.check(&errorLogger, settings);
 }
 
 CheckUnusedFunctions::FunctionDecl::FunctionDecl(const Function *f)
@@ -421,7 +418,7 @@ namespace {
     };
 }
 
-void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLogger * const errorLogger, const std::string &buildDir)
+void CheckUnusedFunctions::analyseWholeProgram2(const Settings &settings, ErrorLogger * const errorLogger, const std::string &buildDir)
 {
     std::map<std::string, Location> decls;
     std::set<std::string> calls;
