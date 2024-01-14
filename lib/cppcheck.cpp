@@ -642,7 +642,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 std::ifstream in(filename);
                 tokenizer.list.createTokens(in, filename);
             }
-            checkUnusedFunctions.getFileInfo(&tokenizer, &mSettings);
+            CheckUnusedFunctions::parseTokens(&tokenizer, &mSettings);
             return EXIT_SUCCESS;
         }
 

@@ -62,6 +62,8 @@ public:
     // * What functions are declared
     void parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings);
 
+    static void parseTokens(const Tokenizer *tokenizer, const Settings *settings);
+
     // Return true if an error is reported.
     bool check(ErrorLogger * const errorLogger, const Settings& settings) const;
 

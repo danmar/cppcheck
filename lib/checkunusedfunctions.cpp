@@ -370,12 +370,17 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
         Check::writeToErrorList(errmsg);
 }
 
-Check::FileInfo *CheckUnusedFunctions::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
+void CheckUnusedFunctions::parseTokens(const Tokenizer *tokenizer, const Settings *settings)
 {
     if (!settings->checks.isEnabled(Checks::unusedFunction))
-        return nullptr;
+        return;
     if (settings->useSingleJob() && settings->buildDir.empty())
         instance.parseTokens(*tokenizer, tokenizer->list.getFiles().front().c_str(), settings);
+}
+
+Check::FileInfo *CheckUnusedFunctions::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
+{
+    parseTokens(tokenizer, settings);
     return nullptr;
 }
 
