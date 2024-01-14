@@ -48,6 +48,7 @@ class CPPCHECKLIB CheckUnusedFunctions : public Check {
     friend class TestSingleExecutorBase;
     friend class TestProcessExecutorBase;
     friend class TestThreadExecutorBase;
+    friend class TestUnusedFunctions;
 
 public:
     /** @brief This constructor is used when registering the CheckUnusedFunctions */
@@ -63,9 +64,6 @@ public:
     void parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings);
 
     static void parseTokens(const Tokenizer *tokenizer, const Settings *settings);
-
-    // Return true if an error is reported.
-    bool check(ErrorLogger * const errorLogger, const Settings& settings) const;
 
     /** @brief Parse current TU and extract file info */
     Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const override;
@@ -84,6 +82,9 @@ public:
 
 private:
     static void clear();
+
+    // Return true if an error is reported.
+    bool check(ErrorLogger * const errorLogger, const Settings& settings) const;
 
     void getErrorMessages(ErrorLogger */*errorLogger*/, const Settings * /*settings*/) const override {}
 
