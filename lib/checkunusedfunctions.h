@@ -76,12 +76,14 @@ public:
     /** @brief Combine and analyze all analyzerInfos for all TUs */
     static void analyseWholeProgram(const Settings &settings, ErrorLogger * const errorLogger, const std::string &buildDir);
 
+    static void getErrorMessages(ErrorLogger *errorLogger) {
+        unusedFunctionError(errorLogger, emptyString, 0, 0, "funcName");
+    }
+
 private:
     static void clear();
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings * /*settings*/) const override {
-        CheckUnusedFunctions::unusedFunctionError(errorLogger, emptyString, 0, 0, "funcName");
-    }
+    void getErrorMessages(ErrorLogger */*errorLogger*/, const Settings * /*settings*/) const override {}
 
     void runChecks(const Tokenizer & /*tokenizer*/, ErrorLogger * /*errorLogger*/) override {}
 

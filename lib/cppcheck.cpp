@@ -1683,6 +1683,7 @@ void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
     for (std::list<Check *>::const_iterator it = Check::instances().cbegin(); it != Check::instances().cend(); ++it)
         (*it)->getErrorMessages(&errorlogger, &s);
 
+    CheckUnusedFunctions::getErrorMessages(&errorlogger);
     Preprocessor::getErrorMessages(&errorlogger, s);
 }
 
