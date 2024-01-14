@@ -5,16 +5,18 @@ import os
 import pytest
 from testutils import cppcheck
 
-PROJECT_DIR = 'QML-Samples-TableView'
+__script_dir = os.path.dirname(os.path.abspath(__file__))
+
+PROJECT_DIR = os.path.join(__script_dir, 'QML-Samples-TableView')
 
 
 def test_unused_functions():
-    ret, stdout, stderr = cppcheck(['--template=simple', '--library=qt', '--enable=unusedFunction', PROJECT_DIR])
+    ret, stdout, stderr = cppcheck(['-q', '--template=simple', '--library=qt', '--enable=unusedFunction', PROJECT_DIR])
     # there are unused functions. But fillSampleData is not unused because that is referenced from main.qml
     assert stderr.splitlines() == [
-        "QML-Samples-TableView/samplemodel.cpp:9:0: style: The function 'rowCount' is never used. [unusedFunction]",
-        "QML-Samples-TableView/samplemodel.cpp:15:0: style: The function 'data' is never used. [unusedFunction]",
-        "QML-Samples-TableView/samplemodel.cpp:38:0: style: The function 'roleNames' is never used. [unusedFunction]"
+        "{}/samplemodel.cpp:9:0: style: The function 'rowCount' is never used. [unusedFunction]".format(PROJECT_DIR),
+        "{}/samplemodel.cpp:15:0: style: The function 'data' is never used. [unusedFunction]".format(PROJECT_DIR),
+        "{}/samplemodel.cpp:38:0: style: The function 'roleNames' is never used. [unusedFunction]".format(PROJECT_DIR)
     ]
     assert ret == 0, stdout
 
@@ -26,9 +28,9 @@ def test_unused_functions_j(tmpdir):
     ret, stdout, stderr = cppcheck(['--template=simple', '--library=qt', '--enable=unusedFunction', '-j2', '--cppcheck-build-dir={}'.format(build_dir), PROJECT_DIR])
     # there are unused functions. But fillSampleData is not unused because that is referenced from main.qml
     assert stderr.splitlines() == [
-        "QML-Samples-TableView/samplemodel.cpp:9:0: style: The function 'rowCount' is never used. [unusedFunction]",
-        "QML-Samples-TableView/samplemodel.cpp:15:0: style: The function 'data' is never used. [unusedFunction]",
-        "QML-Samples-TableView/samplemodel.cpp:38:0: style: The function 'roleNames' is never used. [unusedFunction]"
+        "{}/samplemodel.cpp:9:0: style: The function 'rowCount' is never used. [unusedFunction]".format(PROJECT_DIR),
+        "{}/samplemodel.cpp:15:0: style: The function 'data' is never used. [unusedFunction]".format(PROJECT_DIR),
+        "{}/samplemodel.cpp:38:0: style: The function 'roleNames' is never used. [unusedFunction]".format(PROJECT_DIR)
     ]
     assert ret == 0, stdout
 
