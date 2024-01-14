@@ -378,12 +378,6 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer *tokenizer, const Setting
         instance.parseTokens(*tokenizer, tokenizer->list.getFiles().front().c_str(), settings);
 }
 
-Check::FileInfo *CheckUnusedFunctions::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
-{
-    parseTokens(tokenizer, settings);
-    return nullptr;
-}
-
 bool CheckUnusedFunctions::check(const Settings& settings, ErrorLogger &errorLogger)
 {
     CheckUnusedFunctions dummy(nullptr, &settings, &errorLogger);

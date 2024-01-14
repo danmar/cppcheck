@@ -65,9 +65,6 @@ public:
 
     static void parseTokens(const Tokenizer *tokenizer, const Settings *settings);
 
-    /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const override;
-
     std::string analyzerInfo() const;
 
     /** @brief Combine and analyze all analyzerInfos for all TUs */
