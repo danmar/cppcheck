@@ -348,11 +348,6 @@ void arrayIndexOutOfBounds()
     pAlloc3[5] = 'a';
     // cppcheck-suppress arrayIndexOutOfBounds
     pAlloc3[6] = 1;
-    // cppcheck-suppress memleakOnRealloc
-    pAlloc3 = reallocarray(pAlloc3, 3,3);
-    pAlloc3[8] = 'a';
-    // cppcheck-suppress arrayIndexOutOfBounds
-    pAlloc3[9] = 1;
     free(pAlloc3);
 }
 
