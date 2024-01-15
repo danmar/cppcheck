@@ -2467,7 +2467,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     }
 
     if (const Variable* var = tok->variable()) {
-        if (tok == var->nameToken() && var->isConst() && var->isReference())
+        if (tok == var->nameToken() && (!var->isReference() || var->isConst()) && (var->isStlType() || !var->isClass())) // const ref or passed to (copy) ctor
             return false;
     }
 

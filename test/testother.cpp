@@ -3502,6 +3502,14 @@ private:
                       "[test.cpp:10]: (style) Parameter 's' can be declared as pointer to const\n"
                       "[test.cpp:14]: (style) Parameter 's' can be declared as pointer to const\n",
                       errout.str());
+
+        check("struct S {\n"
+              "    S(std::string& r);\n"
+              "};\n"
+              "void f(std::string& str) {\n"
+              "    const S& s(str);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constParameterCallback() {
