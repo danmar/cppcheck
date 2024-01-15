@@ -237,7 +237,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             for (const tinyxml2::XMLElement *memorynode = node->FirstChildElement(); memorynode; memorynode = memorynode->NextSiblingElement()) {
                 const std::string memorynodename = memorynode->Name();
                 const auto names = getnames(memorynode->GetText());
-                if (memorynodename == "alloc" || memorynodename == "realloc") {                    
+                if (memorynodename == "alloc" || memorynodename == "realloc") {
                     AllocFunc temp = {0};
                     temp.groupId = allocationId;
 
