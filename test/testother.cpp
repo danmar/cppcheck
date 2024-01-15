@@ -3480,7 +3480,7 @@ private:
                       "[test.cpp:8]: (style) Parameter 'v' can be declared as reference to const\n",
                       errout.str());
 
-        check("void cb(const std::string&);\n" // #12350
+        check("void cb(const std::string&);\n" // #12350, #12351
               "void f(std::string& s) {\n"
               "    const std::string& str(s);\n"
               "    cb(str);\n"
@@ -3492,10 +3492,15 @@ private:
               "void h(std::string* s) {\n"
               "    const std::string& str(*s);\n"
               "    cb(str);\n"
+              "}\n"
+              "void k(std::string* s) {\n"
+              "    const std::string& str = *s;\n"
+              "    cb(str);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 's' can be declared as reference to const\n"
                       "[test.cpp:6]: (style) Parameter 's' can be declared as reference to const\n"
-                      "[test.cpp:10]: (style) Parameter 's' can be declared as pointer to const\n",
+                      "[test.cpp:10]: (style) Parameter 's' can be declared as pointer to const\n"
+                      "[test.cpp:14]: (style) Parameter 's' can be declared as pointer to const\n",
                       errout.str());
     }
 
