@@ -890,6 +890,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             // Special Cppcheck Premium options
             else if (std::strncmp(argv[i], "--premium=", 10) == 0 && isCppcheckPremium()) {
+                if (std::strcmp(argv[i], "--premium=safety") == 0)
+                    mSettings.safety = true;
                 if (!mSettings.premiumArgs.empty())
                     mSettings.premiumArgs += " ";
                 const std::string p(argv[i] + 10);
