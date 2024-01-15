@@ -713,6 +713,17 @@ private:
                                   "    const int& get() const { return i; }\n"
                                   "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkDuplInheritedMembers("class Base {\n" // #12353
+                                  "    public:\n"
+                                  "        void One();\n"
+                                  "        void Two();\n"
+                                  "};\n"
+                                  "class Derived : public Base {\n"
+                                  "public:\n"
+                                  "    void Two() = delete;\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkCopyConstructor(code) checkCopyConstructor_(code, __FILE__, __LINE__)
