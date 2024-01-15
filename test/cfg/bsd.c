@@ -159,3 +159,14 @@ void arrayIndexOutOfBounds(void)
     free(pAlloc);
 }
 
+void reallocarray_memleak(void) {
+    char *a = (char *)malloc(10);\n"
+    // cppcheck-suppress memleakOnRealloc
+    a = reallocarray(a, 100, 2);\n"
+}
+
+void reallocarray_notused(void)
+{
+    // cppcheck-suppress leakReturnValNotUsed
+    reallocarray(NULL, 10, 10);
+}
