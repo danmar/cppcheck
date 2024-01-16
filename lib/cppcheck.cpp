@@ -631,8 +631,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         mPlistFile.close();
     }
 
-    CheckUnusedFunctions checkUnusedFunctions;
-
     try {
         if (mSettings.library.markupFile(filename)) {
             if (mSettings.checks.isEnabled(Checks::unusedFunction) &&
@@ -937,10 +935,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 // Check normal tokens
                 checkNormalTokens(tokenizer);
 
-                // Analyze info..
-                if (!mSettings.buildDir.empty())
-                    checkUnusedFunctions.parseTokens(tokenizer, filename.c_str(), mSettings);
-
 #ifdef HAVE_RULES
                 // handling of "simple" rules has been removed.
                 if (hasRule("simple"))
@@ -1021,7 +1015,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     }
 
     if (!mSettings.buildDir.empty()) {
-        mAnalyzerInformation.setFileInfo("CheckUnusedFunctions", checkUnusedFunctions.analyzerInfo());
         mAnalyzerInformation.close();
     }
 
@@ -1076,6 +1069,8 @@ void CppCheck::checkRawTokens(const Tokenizer &tokenizer)
 
 void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 {
+    CheckUnusedFunctions unusedFunctionsChecker;
+
     // TODO: this should actually be the behavior if only "--enable=unusedFunction" is specified - see #10648
     const char* unusedFunctionOnly = std::getenv("UNUSEDFUNCTION_ONLY");
     const bool doUnusedFunctionOnly = unusedFunctionOnly && (std::strcmp(unusedFunctionOnly, "1") == 0);
@@ -1109,11 +1104,19 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
         }
     }
 
+    if (!mSettings.buildDir.empty()) {
+        unusedFunctionsChecker.parseTokens(tokenizer, tokenizer.list.getFiles().front().c_str(), mSettings);
+    }
+    if (mSettings.checks.isEnabled(Checks::unusedFunction) &&
+        mSettings.useSingleJob() &&
+        mSettings.buildDir.empty()) {
+        CheckUnusedFunctions::parseTokens(tokenizer, mSettings);
+    }
+
     if (mSettings.clang) {
         // TODO: Use CTU for Clang analysis
         return;
     }
-
 
     if (mSettings.useSingleJob() || !mSettings.buildDir.empty()) {
         // Analyse the tokens..
@@ -1140,12 +1143,10 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
                 }
             }
         }
+    }
 
-        if (mSettings.checks.isEnabled(Checks::unusedFunction) &&
-            mSettings.useSingleJob() &&
-            mSettings.buildDir.empty()) {
-            CheckUnusedFunctions::parseTokens(tokenizer, mSettings);
-        }
+    if (!mSettings.buildDir.empty()) {
+        mAnalyzerInformation.setFileInfo("CheckUnusedFunctions", unusedFunctionsChecker.analyzerInfo());
     }
 
 #ifdef HAVE_RULES
