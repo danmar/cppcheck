@@ -21,6 +21,7 @@
 #include "checkunusedfunctions.h"
 
 #include "astutils.h"
+#include "check.h"
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "library.h"
@@ -380,8 +381,9 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer *tokenizer, const Setting
 
 bool CheckUnusedFunctions::check(const Settings& settings, ErrorLogger &errorLogger)
 {
-    CheckUnusedFunctions dummy(nullptr, &settings, &errorLogger);
-    dummy.logChecker("CheckUnusedFunctions::analyseWholeProgram");
+    // TODO
+    //CheckUnusedFunctions dummy(nullptr, &settings, &errorLogger);
+    //dummy.logChecker("CheckUnusedFunctions::analyseWholeProgram");
     return instance.check(&errorLogger, settings);
 }
 
@@ -412,7 +414,7 @@ namespace {
     };
 }
 
-void CheckUnusedFunctions::analyseWholeProgram2(const Settings &settings, ErrorLogger * const errorLogger, const std::string &buildDir)
+void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLogger * const errorLogger, const std::string &buildDir)
 {
     std::map<std::string, Location> decls;
     std::set<std::string> calls;

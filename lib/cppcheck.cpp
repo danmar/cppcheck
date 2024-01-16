@@ -631,7 +631,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         mPlistFile.close();
     }
 
-    CheckUnusedFunctions checkUnusedFunctions(nullptr, nullptr, nullptr);
+    CheckUnusedFunctions checkUnusedFunctions;
 
     try {
         if (mSettings.library.markupFile(filename)) {
@@ -1076,39 +1076,39 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
     const char* unusedFunctionOnly = std::getenv("UNUSEDFUNCTION_ONLY");
     const bool doUnusedFunctionOnly = unusedFunctionOnly && (std::strcmp(unusedFunctionOnly, "1") == 0);
 
-    const std::time_t maxTime = mSettings.checksMaxTime > 0 ? std::time(nullptr) + mSettings.checksMaxTime : 0;
+    if (!doUnusedFunctionOnly) {
+        const std::time_t maxTime = mSettings.checksMaxTime > 0 ? std::time(nullptr) + mSettings.checksMaxTime : 0;
 
-    // call all "runChecks" in all registered Check classes
-    // cppcheck-suppress shadowFunction - TODO: fix this
-    for (Check *check : Check::instances()) {
-        if (Settings::terminated())
-            return;
+        // call all "runChecks" in all registered Check classes
+        // cppcheck-suppress shadowFunction - TODO: fix this
+        for (Check *check : Check::instances()) {
+            if (Settings::terminated())
+                return;
 
-        if (maxTime > 0 && std::time(nullptr) > maxTime) {
-            if (mSettings.debugwarnings) {
-                ErrorMessage::FileLocation loc;
-                loc.setfile(tokenizer.list.getFiles()[0]);
-                ErrorMessage errmsg({std::move(loc)},
-                                    emptyString,
-                                    Severity::debug,
-                                    "Checks maximum time exceeded",
-                                    "checksMaxTime",
-                                    Certainty::normal);
-                reportErr(errmsg);
+            if (maxTime > 0 && std::time(nullptr) > maxTime) {
+                if (mSettings.debugwarnings) {
+                    ErrorMessage::FileLocation loc;
+                    loc.setfile(tokenizer.list.getFiles()[0]);
+                    ErrorMessage errmsg({std::move(loc)},
+                                        emptyString,
+                                        Severity::debug,
+                                        "Checks maximum time exceeded",
+                                        "checksMaxTime",
+                                        Certainty::normal);
+                    reportErr(errmsg);
+                }
+                return;
             }
-            return;
+
+            Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &s_timerResults);
+            check->runChecks(tokenizer, this);
         }
-
-        if (doUnusedFunctionOnly && dynamic_cast<CheckUnusedFunctions*>(check) == nullptr)
-            continue;
-
-        Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &s_timerResults);
-        check->runChecks(tokenizer, this);
     }
 
-    if (mSettings.clang)
+    if (mSettings.clang) {
         // TODO: Use CTU for Clang analysis
         return;
+    }
 
 
     if (mSettings.useSingleJob() || !mSettings.buildDir.empty()) {
@@ -1123,18 +1123,17 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
                 delete fi1;
         }
 
-        // cppcheck-suppress shadowFunction - TODO: fix this
-        for (const Check *check : Check::instances()) {
-            if (doUnusedFunctionOnly && dynamic_cast<const CheckUnusedFunctions*>(check) == nullptr)
-                continue;
-
-            if (Check::FileInfo * const fi = check->getFileInfo(&tokenizer, &mSettings)) {
-                if (!mSettings.buildDir.empty())
-                    mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
-                if (mSettings.useSingleJob())
-                    mFileInfo.push_back(fi);
-                else
-                    delete fi;
+        if (!doUnusedFunctionOnly) {
+            // cppcheck-suppress shadowFunction - TODO: fix this
+            for (const Check *check : Check::instances()) {
+                if (Check::FileInfo * const fi = check->getFileInfo(&tokenizer, &mSettings)) {
+                    if (!mSettings.buildDir.empty())
+                        mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
+                    if (mSettings.useSingleJob())
+                        mFileInfo.push_back(fi);
+                    else
+                        delete fi;
+                }
             }
         }
 
@@ -1798,7 +1797,7 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<
         return;
     }
     if (mSettings.checks.isEnabled(Checks::unusedFunction))
-        CheckUnusedFunctions::analyseWholeProgram2(mSettings, this, buildDir);
+        CheckUnusedFunctions::analyseWholeProgram(mSettings, this, buildDir);
     std::list<Check::FileInfo*> fileInfoList;
     CTU::FileInfo ctuFileInfo;
 
