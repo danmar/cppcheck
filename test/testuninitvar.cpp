@@ -1851,6 +1851,14 @@ private:
                        "    return a[0];\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+                
+        checkUninitVar("int f() {\n" // #12355
+                       "    const int x[10](1, 2);\n"
+                       "    if (x[0] == 1) {}\n"
+                       "    return x[0];\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_pointertoarray() {
@@ -6373,6 +6381,14 @@ private:
                         "    g(buf);\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: buf\n", errout.str());
+
+        // #12355
+        valueFlowUninit("int f() {\n"
+                        "    const int x[10](1, 2);\n"
+                        "    if (x[0] == 1) {}\n"
+                        "    return x[0];\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value

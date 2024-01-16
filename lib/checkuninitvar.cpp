@@ -162,7 +162,7 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
                 tok = tok->next();
             while (Token::simpleMatch(tok->link(), "] ["))
                 tok = tok->link()->next();
-            if (Token::Match(tok->link(), "] =|{"))
+            if (Token::Match(tok->link(), "] =|{|("))
                 continue;
         }
 
