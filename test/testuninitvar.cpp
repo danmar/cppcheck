@@ -1852,7 +1852,6 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
-                
         checkUninitVar("int f() {\n" // #12355
                        "    const int x[10](1, 2);\n"
                        "    if (x[0] == 1) {}\n"
