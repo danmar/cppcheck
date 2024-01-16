@@ -9987,8 +9987,10 @@ void Tokenizer::simplifyBorland()
 
 void Tokenizer::createSymbolDatabase()
 {
-    if (!mSymbolDatabase)
-        mSymbolDatabase = new SymbolDatabase(*this, mSettings, mErrorLogger);
+    if (!mSymbolDatabase) {
+        assert(mErrorLogger != nullptr);
+        mSymbolDatabase = new SymbolDatabase(*this, mSettings, *mErrorLogger);
+    }
     mSymbolDatabase->validate();
 }
 

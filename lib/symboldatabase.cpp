@@ -52,7 +52,7 @@
 #include <unordered_set>
 //---------------------------------------------------------------------------
 
-SymbolDatabase::SymbolDatabase(Tokenizer& tokenizer, const Settings& settings, ErrorLogger* errorLogger)
+SymbolDatabase::SymbolDatabase(Tokenizer& tokenizer, const Settings& settings, ErrorLogger& errorLogger)
     : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger)
 {
     if (!mTokenizer.tokens())
@@ -169,10 +169,9 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
     // find all scopes
     for (const Token *tok = mTokenizer.tokens(); tok; tok = tok ? tok->next() : nullptr) {
         // #5593 suggested to add here:
-        if (mErrorLogger)
-            mErrorLogger->reportProgress(mTokenizer.list.getSourceFilePath(),
-                                         "SymbolDatabase",
-                                         tok->progressValue());
+        mErrorLogger.reportProgress(mTokenizer.list.getSourceFilePath(),
+                                    "SymbolDatabase",
+                                    tok->progressValue());
         // Locate next class
         if ((tok->isCpp() && tok->isKeyword() &&
              ((Token::Match(tok, "class|struct|union|namespace ::| %name% final| {|:|::|<") &&
@@ -2087,14 +2086,14 @@ void SymbolDatabase::validateExecutableScopes() const
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope* const scope = functionScopes[i];
         const Function* const function = scope->function;
-        if (mErrorLogger && scope->isExecutable() && !function) {
+        if (scope->isExecutable() && !function) {
             const std::list<const Token*> callstack(1, scope->classDef);
             const std::string msg = std::string("Executable scope '") + scope->classDef->str() + "' with unknown function.";
             const ErrorMessage errmsg(callstack, &mTokenizer.list, Severity::debug,
                                       "symbolDatabaseWarning",
                                       msg,
                                       Certainty::normal);
-            mErrorLogger->reportErr(errmsg);
+            mErrorLogger.reportErr(errmsg);
         }
     }
 }
@@ -2152,7 +2151,7 @@ void SymbolDatabase::debugSymbolDatabase() const
     for (const Token* tok = mTokenizer.list.front(); tok != mTokenizer.list.back(); tok = tok->next()) {
         if (tok->astParent() && tok->astParent()->getTokenDebug() == tok->getTokenDebug())
             continue;
-        if (mErrorLogger && tok->getTokenDebug() == TokenDebug::ValueType) {
+        if (tok->getTokenDebug() == TokenDebug::ValueType) {
 
             std::string msg = "Value type is ";
             ErrorPath errorPath;
@@ -2164,7 +2163,7 @@ void SymbolDatabase::debugSymbolDatabase() const
                 msg += "missing";
             }
             errorPath.emplace_back(tok, "");
-            mErrorLogger->reportErr(
+            mErrorLogger.reportErr(
                 {errorPath, &mTokenizer.list, Severity::debug, "valueType", msg, CWE{0}, Certainty::normal});
         }
     }
@@ -3584,27 +3583,27 @@ std::string Type::name() const
 
 void SymbolDatabase::debugMessage(const Token *tok, const std::string &type, const std::string &msg) const
 {
-    if (tok && mSettings.debugwarnings && mErrorLogger) {
+    if (tok && mSettings.debugwarnings) {
         const std::list<const Token*> locationList(1, tok);
         const ErrorMessage errmsg(locationList, &mTokenizer.list,
                                   Severity::debug,
                                   type,
                                   msg,
                                   Certainty::normal);
-        mErrorLogger->reportErr(errmsg);
+        mErrorLogger.reportErr(errmsg);
     }
 }
 
 void SymbolDatabase::returnImplicitIntError(const Token *tok) const
 {
-    if (tok && mSettings.severity.isEnabled(Severity::portability) && (tok->isC() && mSettings.standards.c != Standards::C89) && mErrorLogger) {
+    if (tok && mSettings.severity.isEnabled(Severity::portability) && (tok->isC() && mSettings.standards.c != Standards::C89)) {
         const std::list<const Token*> locationList(1, tok);
         const ErrorMessage errmsg(locationList, &mTokenizer.list,
                                   Severity::portability,
                                   "returnImplicitInt",
                                   "Omitted return type of function '" + tok->str() + "' defaults to int, this is not supported by ISO C99 and later standards.",
                                   Certainty::normal);
-        mErrorLogger->reportErr(errmsg);
+        mErrorLogger.reportErr(errmsg);
     }
 }
 
