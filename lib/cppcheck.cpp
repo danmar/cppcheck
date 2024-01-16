@@ -635,14 +635,18 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
     try {
         if (mSettings.library.markupFile(filename)) {
-            Tokenizer tokenizer(mSettings, this);
-            if (fileStream)
-                tokenizer.list.createTokens(*fileStream, filename);
-            else {
-                std::ifstream in(filename);
-                tokenizer.list.createTokens(in, filename);
+            if (mSettings.checks.isEnabled(Checks::unusedFunction) &&
+                mSettings.useSingleJob() &&
+                mSettings.buildDir.empty()) {
+                Tokenizer tokenizer(mSettings, this);
+                if (fileStream)
+                    tokenizer.list.createTokens(*fileStream, filename);
+                else {
+                    std::ifstream in(filename);
+                    tokenizer.list.createTokens(in, filename);
+                }
+                CheckUnusedFunctions::parseTokens(tokenizer, mSettings);
             }
-            CheckUnusedFunctions::parseTokens(tokenizer, mSettings);
             return EXIT_SUCCESS;
         }
 
@@ -1137,7 +1141,11 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
             }
         }
 
-        CheckUnusedFunctions::parseTokens(tokenizer, mSettings);
+        if (mSettings.checks.isEnabled(Checks::unusedFunction) &&
+            mSettings.useSingleJob() &&
+            mSettings.buildDir.empty()) {
+            CheckUnusedFunctions::parseTokens(tokenizer, mSettings);
+        }
     }
 
 #ifdef HAVE_RULES
