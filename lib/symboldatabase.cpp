@@ -1724,7 +1724,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
 
         // Assign IDs
         ExprIdMap exprIdMap;
-        std::map<std::string, nonneg int> baseIds;
+        std::map<std::string, std::pair<nonneg int, const Token*>> baseIds;
         for (auto* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->varId() > 0) {
                 tok->exprId(tok->varId());
@@ -1743,10 +1743,10 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
                     ++id;
                 } else {
                     const auto it = baseIds.find(tok->str());
-                    if (it != baseIds.end()) {
-                        tok->exprId(it->second);
+                    if (it != baseIds.end() && compareTokenFlags(tok, it->second.second, /*macro*/ true)) {
+                        tok->exprId(it->second.first);
                     } else {
-                        baseIds[tok->str()] = id;
+                        baseIds[tok->str()] = { id, tok };
                         tok->exprId(id);
                         ++id;
                     }

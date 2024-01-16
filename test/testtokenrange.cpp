@@ -102,7 +102,7 @@ private:
 
     void scopeExample() const {
         const Settings settings;
-        Tokenizer tokenizer{ &settings, nullptr };
+        Tokenizer tokenizer(settings);
         std::istringstream sample("void a(){} void main(){ if(true){a();} }");
         ASSERT(tokenizer.tokenize(sample, "test.cpp"));
 

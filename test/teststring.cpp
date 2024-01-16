@@ -68,7 +68,7 @@ private:
         errout.str("");
 
         std::vector<std::string> files(1, filename);
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenize..

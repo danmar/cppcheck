@@ -85,10 +85,7 @@ void TokenList::determineCppC()
 {
     // only try to determine it if it wasn't enforced
     if (mLang == Standards::Language::None) {
-        if (Path::isC(getSourceFilePath()))
-            mLang = Standards::Language::C;
-        else if (Path::isCPP(getSourceFilePath()))
-            mLang = Standards::Language::CPP;
+        mLang = Path::identify(getSourceFilePath());
     }
 }
 
@@ -1373,6 +1370,15 @@ const Token* findLambdaEndTokenWithoutAST(const Token* tok) {
     tok = tok->link()->next();
     if (Token::simpleMatch(tok, "(") && tok->link())
         tok = tok->link()->next();
+    if (Token::simpleMatch(tok, ".")) { // trailing return type
+        tok = tok->next();
+        while (Token::Match(tok, "%type%|%name%|::|&|&&|*|<|(")) {
+            if (tok->link())
+                tok = tok->link()->next();
+            else
+                tok = tok->next();
+        }
+    }
     if (!(Token::simpleMatch(tok, "{") && tok->link()))
         return nullptr;
     return tok->link()->next();

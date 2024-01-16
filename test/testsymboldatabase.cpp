@@ -45,20 +45,20 @@
 class TestSymbolDatabase;
 
 #define GET_SYMBOL_DB_STD(code) \
-    Tokenizer tokenizer(&settings1, this); \
+    Tokenizer tokenizer(settings1, this); \
     LOAD_LIB_2(settings1.library, "std.cfg"); \
     const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, "test.cpp"); \
     ASSERT(db); \
     do {} while (false)
 
 #define GET_SYMBOL_DB(code) \
-    Tokenizer tokenizer(&settings1, this); \
+    Tokenizer tokenizer(settings1, this); \
     const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, "test.cpp"); \
     ASSERT(db); \
     do {} while (false)
 
 #define GET_SYMBOL_DB_C(code) \
-    Tokenizer tokenizer(&settings1, this); \
+    Tokenizer tokenizer(settings1, this); \
     const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, "test.c"); \
     do {} while (false)
 
@@ -105,7 +105,7 @@ private:
                                 unsigned int exprline2,
                                 SourceLocation loc = SourceLocation::current())
     {
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), loc.file_name(), loc.line());
 
@@ -2447,7 +2447,7 @@ private:
         const Settings settings = settingsBuilder(pSettings ? *pSettings : settings1).debugwarnings(debug).build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
@@ -2814,15 +2814,42 @@ private:
         ASSERT_EQUALS(3, func->argCount());
     }
 
-    void functionArgs20() { // #11769
-        const char code[] = "void f(void *(*g)(void *) = [](void *p) { return p; }) {}";
-        GET_SYMBOL_DB(code);
-        ASSERT(db != nullptr);
-        const Scope *scope = db->functionScopes.front();
-        const Function *func = scope->function;
-        ASSERT_EQUALS(1, func->argCount());
-        const Variable* arg = func->getArgumentVar(0);
-        TODO_ASSERT(arg->hasDefault());
+    void functionArgs20() {
+        {
+            const char code[] = "void f(void *(*g)(void *) = [](void *p) { return p; }) {}"; // #11769
+            GET_SYMBOL_DB(code);
+            ASSERT(db != nullptr);
+            const Scope *scope = db->functionScopes.front();
+            const Function *func = scope->function;
+            ASSERT_EQUALS(1, func->argCount());
+            const Variable* arg = func->getArgumentVar(0);
+            TODO_ASSERT(arg->hasDefault());
+        }
+        {
+            const char code[] = "void f() { auto g = [&](const std::function<int(int)>& h = [](int i) -> int { return i; }) {}; }"; // #12338
+            GET_SYMBOL_DB(code);
+            ASSERT(db != nullptr);
+            ASSERT_EQUALS(3, db->scopeList.size());
+            ASSERT_EQUALS(Scope::ScopeType::eLambda, db->scopeList.back().type);
+        }
+        {
+            const char code[] = "void f() {\n"
+                                "    auto g = [&](const std::function<const std::vector<int>&(const std::vector<int>&)>& h = [](const std::vector<int>& v) -> const std::vector<int>& { return v; }) {};\n"
+                                "}\n";
+            GET_SYMBOL_DB(code);
+            ASSERT(db != nullptr);
+            ASSERT_EQUALS(3, db->scopeList.size());
+            ASSERT_EQUALS(Scope::ScopeType::eLambda, db->scopeList.back().type);
+        }
+        {
+            const char code[] = "void f() {\n"
+                                "    auto g = [&](const std::function<int(int)>& h = [](int i) -> decltype(0) { return i; }) {};\n"
+                                "}\n";
+            GET_SYMBOL_DB(code);
+            ASSERT(db != nullptr);
+            ASSERT_EQUALS(3, db->scopeList.size());
+            ASSERT_EQUALS(Scope::ScopeType::eLambda, db->scopeList.back().type);
+        }
     }
 
     void functionArgs21() {
@@ -8423,7 +8450,7 @@ private:
     }
 #define typeOf(...) typeOf_(__FILE__, __LINE__, __VA_ARGS__)
     std::string typeOf_(const char* file, int line, const char code[], const char pattern[], const char filename[] = "test.cpp", const Settings *settings = nullptr) {
-        Tokenizer tokenizer(settings ? settings : &settings2, this);
+        Tokenizer tokenizer(settings ? *settings : settings2, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
         const Token* tok;

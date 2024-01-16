@@ -1,19 +1,6 @@
 /*
  * simplecpp - A simple and high-fidelity C/C++ preprocessor library
- * Copyright (C) 2016-2022 Daniel Marjamäki.
- *
- * This library is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation, either
- * version 3 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2016-2023 simplecpp team
  */
 
 #if defined(_WIN32) || defined(__CYGWIN__) || defined(__MINGW32__)
@@ -699,17 +686,20 @@ void simplecpp::TokenList::readfile(Stream &stream, const std::string &filename,
 
         TokenString currentToken;
 
-        if (cback() && cback()->location.line == location.line && cback()->previous && cback()->previous->op == '#' && isLastLinePreprocessor() && (lastLine() == "# error" || lastLine() == "# warning")) {
-            char prev = ' ';
-            while (stream.good() && (prev == '\\' || (ch != '\r' && ch != '\n'))) {
-                currentToken += ch;
-                prev = ch;
-                ch = stream.readChar();
+        if (cback() && cback()->location.line == location.line && cback()->previous && cback()->previous->op == '#') {
+            const Token* const llTok = lastLineTok();
+            if (llTok && llTok->op == '#' && llTok->next && (llTok->next->str() == "error" || llTok->next->str() == "warning")) {
+                char prev = ' ';
+                while (stream.good() && (prev == '\\' || (ch != '\r' && ch != '\n'))) {
+                    currentToken += ch;
+                    prev = ch;
+                    ch = stream.readChar();
+                }
+                stream.ungetChar();
+                push_back(new Token(currentToken, location));
+                location.adjust(currentToken);
+                continue;
             }
-            stream.ungetChar();
-            push_back(new Token(currentToken, location));
-            location.adjust(currentToken);
-            continue;
         }
 
         // number or name
@@ -841,12 +831,16 @@ void simplecpp::TokenList::readfile(Stream &stream, const std::string &filename,
             else
                 back()->setstr(prefix + s);
 
-            if (newlines > 0 && isLastLinePreprocessor() && lastLine().compare(0,9,"# define ") == 0) {
-                multiline += newlines;
-                location.adjust(s);
-            } else {
-                location.adjust(currentToken);
+            if (newlines > 0 ) {
+                const Token * const llTok = lastLineTok();
+                if (llTok && llTok->op == '#' && llTok->next && llTok->next->str() == "define" && llTok->next->next) {
+                    multiline += newlines;
+                    location.adjust(s);
+                    continue;
+                }
             }
+
+            location.adjust(currentToken);
             continue;
         }
 
@@ -854,10 +848,13 @@ void simplecpp::TokenList::readfile(Stream &stream, const std::string &filename,
             currentToken += ch;
         }
 
-        if (*currentToken.begin() == '<' && isLastLinePreprocessor() && lastLine() == "# include") {
-            currentToken = readUntil(stream, location, '<', '>', outputList);
-            if (currentToken.size() < 2U)
-                return;
+        if (*currentToken.begin() == '<') {
+            const Token * const llTok = lastLineTok();
+            if (llTok && llTok->op == '#' && llTok->next && llTok->next->str() == "include") {
+                currentToken = readUntil(stream, location, '<', '>', outputList);
+                if (currentToken.size() < 2U)
+                    return;
+            }
         }
 
         push_back(new Token(currentToken, location));
@@ -1377,7 +1374,7 @@ std::string simplecpp::TokenList::lastLine(int maxsize) const
     return ret;
 }
 
-bool simplecpp::TokenList::isLastLinePreprocessor(int maxsize) const
+const simplecpp::Token* simplecpp::TokenList::lastLineTok(int maxsize) const
 {
     const Token* prevTok = nullptr;
     int count = 0;
@@ -1387,10 +1384,16 @@ bool simplecpp::TokenList::isLastLinePreprocessor(int maxsize) const
         if (tok->comment)
             continue;
         if (++count > maxsize)
-            return false;
+            return nullptr;
         prevTok = tok;
     }
-    return prevTok && prevTok->str()[0] == '#';
+    return prevTok;
+}
+
+bool simplecpp::TokenList::isLastLinePreprocessor(int maxsize) const
+{
+    const Token * const prevTok = lastLineTok(maxsize);
+    return prevTok && prevTok->op == '#';
 }
 
 unsigned int simplecpp::TokenList::fileIndex(const std::string &filename)
@@ -1959,6 +1962,24 @@ namespace simplecpp {
             // Macro parameter..
             {
                 TokenList temp(files);
+                if (tok->str() == "__VA_OPT__") {
+                    if (sameline(tok, tok->next) && tok->next->str() == "(") {
+                        tok = tok->next;
+                        int paren = 1;
+                        while (sameline(tok, tok->next)) {
+                            if (tok->next->str() == "(")
+                              ++paren;
+                            else if (tok->next->str() == ")")
+                              --paren;                            
+                            if (paren == 0)
+                              return tok->next->next;
+                            tok = tok->next;
+                            if (parametertokens.front()->next->str() != ")" && parametertokens.size() > args.size())
+                              tok = expandToken(output, loc, tok, macros, expandedmacros, parametertokens)->previous;
+                        }
+                    }
+                    throw Error(tok->location, "Missing parenthesis for __VA_OPT__(content)");
+                }
                 if (expandArg(&temp, tok, loc, macros, expandedmacros, parametertokens)) {
                     if (tok->str() == "__VA_ARGS__" && temp.empty() && output->cback() && output->cback()->str() == "," &&
                         tok->nextSkipComments() && tok->nextSkipComments()->str() == ")")

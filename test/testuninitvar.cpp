@@ -113,7 +113,7 @@ private:
         const Settings settings1 = settingsBuilder(s ? *s : settings).debugwarnings(debugwarnings).build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, fname), file, line);
 
@@ -5387,7 +5387,7 @@ private:
         // Tokenize..
         const Settings s = settingsBuilder(settings).debugwarnings(false).build();
 
-        Tokenizer tokenizer(&s, this);
+        Tokenizer tokenizer(s, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, fname), file, line);
 
@@ -6380,6 +6380,12 @@ private:
                         "    g(buf);\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: buf\n", errout.str());
+
+        valueFlowUninit("void f() {\n" // #12288
+                        "    char buf[100];\n"
+                        "    char* p = new (buf) char[100];\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
 
         // #12355
         valueFlowUninit("int f() {\n"
@@ -7602,7 +7608,7 @@ private:
         errout.str("");
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 

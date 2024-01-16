@@ -16,7 +16,7 @@ def __test_missing_include(tmpdir, use_j):
                 #include "test.h"
                 """)
 
-    args = ['--enable=missingInclude', '--template={file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]', test_file]
+    args = ['--enable=missingInclude', '--template=simple', test_file]
     if use_j:
         args.insert(0, '-j2')
 
@@ -247,7 +247,7 @@ extern void f()
 }
         """)
 
-    args = ['--addon=y2038', '--enable=all', '--template={file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]', test_file]
+    args = ['--addon=y2038', '--enable=all', '--template=simple', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -268,7 +268,7 @@ extern const char* f()
 }
         """)
 
-    args = ['--addon=threadsafety', '--enable=all', '--template={file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]', test_file]
+    args = ['--addon=threadsafety', '--enable=all', '--template=simple', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -298,7 +298,7 @@ def test_addon_naming(tmpdir):
 int Var;
         """)
 
-    args = ['--addon={}'.format(addon_file), '--enable=all', '--template={file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]', test_file]
+    args = ['--addon={}'.format(addon_file), '--enable=all', '--template=simple', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -590,7 +590,7 @@ def test_addon_findcasts(tmpdir):
         }
         """)
 
-    args = ['--addon=findcasts', '--enable=all', '--template={file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]', test_file]
+    args = ['--addon=findcasts', '--enable=all', '--template=simple', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -611,7 +611,7 @@ extern void f()
 }
         """)
 
-    args = ['--addon=misc', '--enable=all', '--template={file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]', test_file]
+    args = ['--addon=misc', '--enable=all', '--template=simple', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -757,7 +757,7 @@ def test_unused_function_include(tmpdir):
                 };
                 """)
 
-    args = ['--enable=unusedFunction', '--inline-suppr', '--template={file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]', test_cpp_file]
+    args = ['--enable=unusedFunction', '--inline-suppr', '--template=simple', test_cpp_file]
 
     _, _, stderr = cppcheck(args)
     assert stderr == "{}:4:0: style: The function 'f' is never used. [unusedFunction]\n".format(test_h_file)

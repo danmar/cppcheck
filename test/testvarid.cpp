@@ -243,6 +243,7 @@ private:
         TEST_CASE(exprid6);
         TEST_CASE(exprid7);
         TEST_CASE(exprid8);
+        TEST_CASE(exprid9);
 
         TEST_CASE(structuredBindings);
     }
@@ -253,7 +254,7 @@ private:
 
         const Settings *settings1 = s ? s : &settings;
 
-        Tokenizer tokenizer(settings1, this);
+        Tokenizer tokenizer(*settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC((tokenizer.tokenize)(istr, filename), file, line);
 
@@ -268,7 +269,7 @@ private:
         errout.str("");
 
         std::vector<std::string> files(1, filename);
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         PreprocessorHelper::preprocess(code, files, tokenizer);
 
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
@@ -283,7 +284,7 @@ private:
     std::string compareVaridsForVariable_(const char* file, int line, const char code[], const char varname[], const char filename[] = "test.cpp") {
         errout.str("");
 
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         ASSERT_LOC((tokenizer.tokenize)(istr, filename), file, line);
 
@@ -2812,6 +2813,14 @@ private:
     }
 
     void varid_header() {
+        ASSERT_EQUALS("1: class A@1 ;\n"
+                      "2: struct B {\n"
+                      "3: void setData ( const A@1 & a ) ;\n"
+                      "4: } ;\n",
+                      tokenize("class A;\n"
+                               "struct B {\n"
+                               "    void setData(const A & a);\n"
+                               "}; ", "test.h"));
         ASSERT_EQUALS("1: class A ;\n"
                       "2: struct B {\n"
                       "3: void setData ( const A & a@1 ) ;\n"
@@ -2819,7 +2828,15 @@ private:
                       tokenize("class A;\n"
                                "struct B {\n"
                                "    void setData(const A & a);\n"
-                               "}; ", "test.h"));
+                               "}; ", "test.hpp"));
+        ASSERT_EQUALS("1: void f ( )\n"
+                      "2: {\n"
+                      "3: int class@1 ;\n"
+                      "4: }\n",
+                      tokenize("void f()\n"
+                               "{\n"
+                               "    int class;\n"
+                               "}", "test.h"));
     }
 
     void varid_rangeBasedFor() {
@@ -3992,6 +4009,19 @@ private:
                                  "4: h (@UNIQUE g (@UNIQUE { } ) .@UNIQUE get (@UNIQUE ) ) ;\n"
                                  "5: }\n";
         ASSERT_EQUALS(expected4, tokenizeExpr(code4));
+    }
+
+    void exprid9()
+    {
+        const char code[] = "void f(const std::type_info& type) {\n" // #12340
+                            "    if (type == typeid(unsigned int)) {}\n"
+                            "    else if (type == typeid(int)) {}\n"
+                            "}\n";
+        const char expected[] = "1: void f ( const std :: type_info & type ) {\n"
+                                "2: if ( type@1 ==@UNIQUE typeid (@UNIQUE unsigned int@UNIQUE ) ) { }\n"
+                                "3: else { if ( type@1 ==@UNIQUE typeid (@UNIQUE int@UNIQUE ) ) { } }\n"
+                                "4: }\n";
+        ASSERT_EQUALS(expected, tokenizeExpr(code));
     }
 
     void structuredBindings() {

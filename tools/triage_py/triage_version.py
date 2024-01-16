@@ -154,6 +154,8 @@ for entry in versions:
         else:
             # TODO: re-add inconclusive: {callstack}: ({severity}{inconclusive:, inconclusive}) {message
             cmd.append('--template={callstack}: ({severity}) {message} [{id}]')
+    if Version(version) >= Version('2.13'):
+        cmd.append('--suppress=checkersReport')
     # TODO: how to pass additional options?
     if args.perf:
         cmd.append('--error-exitcode=0')

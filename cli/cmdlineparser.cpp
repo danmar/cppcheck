@@ -185,7 +185,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
     // Output a warning for the user if he tries to exclude headers
     const std::vector<std::string>& ignored = getIgnoredPaths();
     const bool warn = std::any_of(ignored.cbegin(), ignored.cend(), [](const std::string& i) {
-        return Path::isHeader(i);
+        return Path::isHeader2(i);
     });
     if (warn) {
         mLogger.printMessage("filename exclusion does not apply to header (.h and .hpp) files.");
@@ -890,9 +890,26 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             // Special Cppcheck Premium options
             else if (std::strncmp(argv[i], "--premium=", 10) == 0 && isCppcheckPremium()) {
+                const std::set<std::string> valid{
+                    "autosar",
+                    "cert-c-2016",
+                    "cert-c++-2016",
+                    "misra-c-2012",
+                    "misra-c-2023",
+                    "misra-c++-2008",
+                    "misra-c++-2023",
+                    "bughunting",
+                    "safety"};
+
+                if (std::strcmp(argv[i], "--premium=safety") == 0)
+                    mSettings.safety = true;
                 if (!mSettings.premiumArgs.empty())
                     mSettings.premiumArgs += " ";
                 const std::string p(argv[i] + 10);
+                if (!valid.count(p) && !startsWith(p, "cert-c-int-precision=")) {
+                    mLogger.printError("invalid --premium option '" + p + "'.");
+                    return Result::Fail;
+                }
                 mSettings.premiumArgs += "--" + p;
                 if (p == "misra-c-2012" || p == "misra-c-2023")
                     mSettings.addons.emplace("misra");
@@ -1183,6 +1200,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     mSettings.templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]\\n{code}";
                     mSettings.templateLocation = "{file}:{line}:{column}: note: {info}\\n{code}";
                     mSettings.daca = true;
+                } else if (mSettings.templateFormat == "simple") {
+                    mSettings.templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]";
+                    mSettings.templateLocation = "";
                 }
                 // TODO: bail out when no placeholders are found?
             }
@@ -1514,10 +1534,11 @@ void CmdLineParser::printHelp() const
             "                          * cert-c++-2016     Cert C++ 2016 checking\n"
             "                          * misra-c-2012      Misra C 2012\n"
             "                          * misra-c-2023      Misra C 2023\n"
-            "                          * misra-c++-2008    Misra C++ 2008 (partial)\n"
+            "                          * misra-c++-2008    Misra C++ 2008\n"
             "                         Other:\n"
             "                          * bughunting        Soundy analysis\n"
-            "                          * cert-c-int-precision=BITS  Integer precision to use in Cert C analysis.\n";
+            "                          * cert-c-int-precision=BITS  Integer precision to use in Cert C analysis.\n"
+            "                          * safety            Safe mode\n";
     }
 
     oss <<

@@ -25,6 +25,7 @@
 #define __STDC_WANT_LIB_EXT1__ 1
 #include <ctime>
 #include <cwchar>
+#include <exception>
 #include <fstream>
 #include <functional>
 #ifndef __STDC_NO_THREADS__
@@ -38,7 +39,10 @@
 #include <map>
 #include <memory>
 #include <numeric>
+#include <queue>
+#include <set>
 #include <string_view>
+#include <tuple>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -897,6 +901,34 @@ int std_map_find_constref(std::map<int, int>& m) // #11857
     std::map<int, int>::iterator it = r.find(42);
     int* p = &it->second;
     return ++*p;
+}
+
+void std_queue_front_ignoredReturnValue(const std::queue<int>& q) {
+    // cppcheck-suppress ignoredReturnValue
+    q.front();
+}
+
+void std_priority_queue_top_ignoredReturnValue(const std::priority_queue<int>& pq) {
+    // cppcheck-suppress ignoredReturnValue
+    pq.top();
+}
+
+void std_tie_ignoredReturnValue(int a, int b)
+{
+    std::set<int> s;
+    std::set<int>::iterator it;
+    bool success;
+    std::tie(it, success) = s.insert(1);
+    // cppcheck-suppress ignoredReturnValue
+    std::tie();
+    // cppcheck-suppress ignoredReturnValue
+    std::tie(a, b);
+}
+
+void std_exception_ignoredReturnValue(const std::exception& e)
+{
+    // cppcheck-suppress ignoredReturnValue
+    e.what();
 }
 
 void valid_code()
@@ -4859,4 +4891,10 @@ void std_vector_data_arithmetic()
     std::vector<char> buf;
     buf.resize(1);
     memcpy(buf.data() + 0, "", 1);
+}
+
+std::string global_scope_std() // #12355
+{
+    ::std::stringstream ss;
+    return ss.str();
 }

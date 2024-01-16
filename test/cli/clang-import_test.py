@@ -4,6 +4,8 @@
 import os
 import re
 import subprocess
+import sys
+
 import pytest
 from testutils import cppcheck, assert_cppcheck
 
@@ -11,6 +13,11 @@ try:
     subprocess.call(['clang', '--version'])
 except OSError:
     pytest.skip("'clang' does not exist", allow_module_level=True)
+
+
+# the IDs differ with Visual Studio
+if sys.platform == 'win32':
+    pytest.skip(allow_module_level=True)
 
 
 def get_debug_section(title, stdout):
@@ -129,7 +136,7 @@ def test_log(tmpdir):
 
     args = ['--clang', test_file]
     out_lines = [
-        'Checking {} ...'.format(test_file),
+        'Checking {} ...'.format(test_file).replace('\\', '/'),
     ]
 
     assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)

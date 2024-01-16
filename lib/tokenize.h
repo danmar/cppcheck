@@ -59,7 +59,7 @@ class CPPCHECKLIB Tokenizer {
     friend class TemplateSimplifier;
 
 public:
-    explicit Tokenizer(const Settings * settings, ErrorLogger *errorLogger = nullptr, const Preprocessor *preprocessor = nullptr);
+    explicit Tokenizer(const Settings & settings, ErrorLogger *errorLogger = nullptr, const Preprocessor *preprocessor = nullptr);
     ~Tokenizer();
 
     void setTimerResults(TimerResults *tr) {
@@ -640,8 +640,9 @@ public:
      */
     static const Token * startOfExecutableScope(const Token * tok);
 
+    // TODO: return reference
     const Settings *getSettings() const {
-        return mSettings;
+        return &mSettings;
     }
 
     void calculateScopes();
@@ -668,7 +669,7 @@ private:
     void setPodTypes();
 
     /** settings */
-    const Settings * const mSettings;
+    const Settings & mSettings;
 
     /** errorlogger */
     ErrorLogger* const mErrorLogger;
