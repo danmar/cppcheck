@@ -253,6 +253,7 @@ private:
         TEST_CASE(templatesCppcheck1);
         TEST_CASE(templatesDaca2);
         TEST_CASE(templatesSelfcheck);
+        TEST_CASE(templatesSimple);
         TEST_CASE(templatesNoPlaceholder);
         TEST_CASE(templateFormatInvalid);
         TEST_CASE(templateFormatEmpty);
@@ -1551,6 +1552,16 @@ private:
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]\n{code}", settings->templateFormat);
         ASSERT_EQUALS("{file}:{line}:{column}: note: {info}\n{code}", settings->templateLocation);
+    }
+
+    void templatesSimple() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--template=simple", "file.cpp"};
+        settings->templateFormat.clear();
+        settings->templateLocation.clear();
+        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]", settings->templateFormat);
+        ASSERT_EQUALS("", settings->templateLocation);
     }
 
     // TODO: we should bail out on this

@@ -1200,6 +1200,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     mSettings.templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]\\n{code}";
                     mSettings.templateLocation = "{file}:{line}:{column}: note: {info}\\n{code}";
                     mSettings.daca = true;
+                } else if (mSettings.templateFormat == "simple") {
+                    mSettings.templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]";
+                    mSettings.templateLocation = "";
                 }
                 // TODO: bail out when no placeholders are found?
             }
