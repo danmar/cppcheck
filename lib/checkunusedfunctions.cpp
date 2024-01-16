@@ -375,11 +375,15 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
         instance.parseTokens(tokenizer, tokenizer.list.getFiles().front().c_str(), settings);
 }
 
+#define logChecker(id) \
+    do { \
+        const ErrorMessage errmsg({}, nullptr, Severity::internal, "logChecker", id, CWE(0U), Certainty::normal); \
+        errorLogger.reportErr(errmsg); \
+    } while (false)
+
 bool CheckUnusedFunctions::check(const Settings& settings, ErrorLogger &errorLogger)
 {
-    // TODO
-    //CheckUnusedFunctions dummy(nullptr, &settings, &errorLogger);
-    //dummy.logChecker("CheckUnusedFunctions::analyseWholeProgram");
+    logChecker("CheckUnusedFunctions::check"); // unusedFunction
     return instance.check(errorLogger, settings);
 }
 
