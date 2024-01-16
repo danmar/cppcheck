@@ -642,7 +642,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 std::ifstream in(filename);
                 tokenizer.list.createTokens(in, filename);
             }
-            CheckUnusedFunctions::parseTokens(&tokenizer, &mSettings);
+            CheckUnusedFunctions::parseTokens(tokenizer, mSettings);
             return EXIT_SUCCESS;
         }
 
@@ -935,7 +935,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
                 // Analyze info..
                 if (!mSettings.buildDir.empty())
-                    checkUnusedFunctions.parseTokens(tokenizer, filename.c_str(), &mSettings);
+                    checkUnusedFunctions.parseTokens(tokenizer, filename.c_str(), mSettings);
 
 #ifdef HAVE_RULES
                 // handling of "simple" rules has been removed.
@@ -1137,7 +1137,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
             }
         }
 
-        CheckUnusedFunctions::parseTokens(&tokenizer, &mSettings);
+        CheckUnusedFunctions::parseTokens(tokenizer, mSettings);
     }
 
 #ifdef HAVE_RULES
@@ -1684,7 +1684,7 @@ void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
     for (std::list<Check *>::const_iterator it = Check::instances().cbegin(); it != Check::instances().cend(); ++it)
         (*it)->getErrorMessages(&errorlogger, &s);
 
-    CheckUnusedFunctions::getErrorMessages(&errorlogger);
+    CheckUnusedFunctions::getErrorMessages(errorlogger);
     Preprocessor::getErrorMessages(&errorlogger, s);
 }
 
@@ -1797,7 +1797,7 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<
         return;
     }
     if (mSettings.checks.isEnabled(Checks::unusedFunction))
-        CheckUnusedFunctions::analyseWholeProgram(mSettings, this, buildDir);
+        CheckUnusedFunctions::analyseWholeProgram(mSettings, *this, buildDir);
     std::list<Check::FileInfo*> fileInfoList;
     CTU::FileInfo ctuFileInfo;
 

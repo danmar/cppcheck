@@ -50,15 +50,15 @@ public:
     // Parse current tokens and determine..
     // * Check what functions are used
     // * What functions are declared
-    void parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings);
+    void parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings &settings);
 
-    static void parseTokens(const Tokenizer *tokenizer, const Settings *settings);
+    static void parseTokens(const Tokenizer &tokenizer, const Settings &settings);
 
     std::string analyzerInfo() const;
 
-    static void analyseWholeProgram(const Settings &settings, ErrorLogger * const errorLogger, const std::string &buildDir);
+    static void analyseWholeProgram(const Settings &settings, ErrorLogger& errorLogger, const std::string &buildDir);
 
-    static void getErrorMessages(ErrorLogger *errorLogger) {
+    static void getErrorMessages(ErrorLogger &errorLogger) {
         unusedFunctionError(errorLogger, emptyString, 0, 0, "funcName");
     }
 
@@ -68,9 +68,9 @@ private:
     static void clear();
 
     // Return true if an error is reported.
-    bool check(ErrorLogger * const errorLogger, const Settings& settings) const;
+    bool check(ErrorLogger& errorLogger, const Settings& settings) const;
 
-    static void unusedFunctionError(ErrorLogger * const errorLogger,
+    static void unusedFunctionError(ErrorLogger& errorLogger,
                                     const std::string &filename, unsigned int fileIndex, unsigned int lineNumber,
                                     const std::string &funcname);
 
