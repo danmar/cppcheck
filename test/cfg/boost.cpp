@@ -12,7 +12,7 @@
 #include <boost/endian/conversion.hpp>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
-
+#include <boost/smart_ptr/scoped_array.hpp>
 
 BOOST_FORCEINLINE void boost_forceinline_test()
 {}
