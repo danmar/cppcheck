@@ -35,12 +35,15 @@ public:
 
 private:
 
+    // TODO: test with C code
+
     void run() override {
         TEST_CASE(findLambdaEndTokenTest);
         TEST_CASE(findLambdaStartTokenTest);
         TEST_CASE(isNullOperandTest);
         TEST_CASE(isReturnScopeTest);
-        TEST_CASE(isSameExpressionTest);
+        TEST_CASE(isSameExpressionCpp);
+        TEST_CASE(isSameExpressionC);
         TEST_CASE(isVariableChangedTest);
         TEST_CASE(isVariableChangedByFunctionCallTest);
         TEST_CASE(isExpressionChangedTest);
@@ -174,42 +177,53 @@ private:
     }
 
 #define isSameExpression(...) isSameExpression_(__FILE__, __LINE__, __VA_ARGS__)
-    bool isSameExpression_(const char* file, int line, const char code[], const char tokStr1[], const char tokStr2[]) {
+    bool isSameExpression_(const char* file, int line, const char code[], const char tokStr1[], const char tokStr2[], bool cpp) {
         const Settings settings;
         Library library;
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        ASSERT_LOC(tokenizer.tokenize(istr, cpp ? "test.cpp" : "test.c"), file, line);
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), tokStr1, strlen(tokStr1));
         const Token * const tok2 = Token::findsimplematch(tok1->next(), tokStr2, strlen(tokStr2));
-        return (isSameExpression)(false, false, tok1, tok2, library, false, true, nullptr);
+        return (isSameExpression)(cpp, false, tok1, tok2, library, false, true, nullptr);
     }
 
-    void isSameExpressionTest() {
-        ASSERT_EQUALS(true,  isSameExpression("x = 1 + 1;", "1", "1"));
-        ASSERT_EQUALS(false, isSameExpression("x = 1 + 1u;", "1", "1u"));
-        ASSERT_EQUALS(true,  isSameExpression("x = 1.0 + 1.0;", "1.0", "1.0"));
-        ASSERT_EQUALS(false, isSameExpression("x = 1.0f + 1.0;", "1.0f", "1.0"));
-        ASSERT_EQUALS(false, isSameExpression("x = 1L + 1;", "1L", "1"));
-        ASSERT_EQUALS(true,  isSameExpression("x = 0.0f + 0x0p+0f;", "0.0f", "0x0p+0f"));
-        ASSERT_EQUALS(true,  isSameExpression("x < x;", "x", "x"));
-        ASSERT_EQUALS(false, isSameExpression("x < y;", "x", "y"));
-        ASSERT_EQUALS(true,  isSameExpression("(x + 1) < (x + 1);", "+", "+"));
-        ASSERT_EQUALS(false, isSameExpression("(x + 1) < (x + 1L);", "+", "+"));
-        ASSERT_EQUALS(true,  isSameExpression("(1 + x) < (x + 1);", "+", "+"));
-        ASSERT_EQUALS(false, isSameExpression("(1.0l + x) < (1.0 + x);", "+", "+"));
-        ASSERT_EQUALS(true,  isSameExpression("(0.0 + x) < (x + 0x0p+0);", "+", "+"));
-        ASSERT_EQUALS(true,  isSameExpression("void f() {double y = 1e1; (x + y) < (x + 10.0); } ", "+", "+"));
-        ASSERT_EQUALS(true,  isSameExpression("void f() {double y = 1e1; (x + 10.0) < (y + x); } ", "+", "+"));
-        ASSERT_EQUALS(true,  isSameExpression("void f() {double y = 1e1; double z = 10.0; (x + y) < (x + z); } ", "+", "+"));
-        ASSERT_EQUALS(true,  isSameExpression("A + A", "A", "A"));
+    void isSameExpressionTestInternal(bool cpp) {
+        ASSERT_EQUALS(true,  isSameExpression("x = 1 + 1;", "1", "1", cpp));
+        ASSERT_EQUALS(false, isSameExpression("x = 1 + 1u;", "1", "1u", cpp));
+        ASSERT_EQUALS(true,  isSameExpression("x = 1.0 + 1.0;", "1.0", "1.0", cpp));
+        ASSERT_EQUALS(false, isSameExpression("x = 1.0f + 1.0;", "1.0f", "1.0", cpp));
+        ASSERT_EQUALS(false, isSameExpression("x = 1L + 1;", "1L", "1", cpp));
+        ASSERT_EQUALS(true,  isSameExpression("x = 0.0f + 0x0p+0f;", "0.0f", "0x0p+0f", cpp));
+        ASSERT_EQUALS(true,  isSameExpression("x < x;", "x", "x", cpp));
+        ASSERT_EQUALS(false, isSameExpression("x < y;", "x", "y", cpp));
+        ASSERT_EQUALS(true,  isSameExpression("(x + 1) < (x + 1);", "+", "+", cpp));
+        ASSERT_EQUALS(false, isSameExpression("(x + 1) < (x + 1L);", "+", "+", cpp));
+        ASSERT_EQUALS(!cpp,  isSameExpression("(1 + x) < (x + 1);", "+", "+", cpp));
+        ASSERT_EQUALS(false, isSameExpression("(1.0l + x) < (1.0 + x);", "+", "+", cpp));
+        ASSERT_EQUALS(!cpp,  isSameExpression("(0.0 + x) < (x + 0x0p+0);", "+", "+", cpp));
+        ASSERT_EQUALS(true,  isSameExpression("void f() {double y = 1e1; (x + y) < (x + 10.0); } ", "+", "+", cpp));
+        ASSERT_EQUALS(!cpp,  isSameExpression("void f() {double y = 1e1; (x + 10.0) < (y + x); } ", "+", "+", cpp));
+        ASSERT_EQUALS(true,  isSameExpression("void f() {double y = 1e1; double z = 10.0; (x + y) < (x + z); } ", "+", "+", cpp));
+        ASSERT_EQUALS(true,  isSameExpression("A + A", "A", "A", cpp));
+
+        // the remaining test cases are not valid C code
+        if (!cpp)
+            return;
 
         //https://trac.cppcheck.net/ticket/9700
-        ASSERT_EQUALS(true, isSameExpression("A::B + A::B;", "::", "::"));
-        ASSERT_EQUALS(false, isSameExpression("A::B + A::C;", "::", "::"));
-        ASSERT_EQUALS(true, isSameExpression("A::B* get() { if(x) return new A::B(true); else return new A::B(true); }", "new", "new"));
-        ASSERT_EQUALS(false, isSameExpression("A::B* get() { if(x) return new A::B(true); else return new A::C(true); }", "new", "new"));
-        ASSERT_EQUALS(true, true);
+        ASSERT_EQUALS(true, isSameExpression("A::B + A::B;", "::", "::", cpp));
+        ASSERT_EQUALS(false, isSameExpression("A::B + A::C;", "::", "::", cpp));
+        ASSERT_EQUALS(true, isSameExpression("A::B* get() { if(x) return new A::B(true); else return new A::B(true); }", "new", "new", cpp));
+        ASSERT_EQUALS(false, isSameExpression("A::B* get() { if(x) return new A::B(true); else return new A::C(true); }", "new", "new", cpp));
+    }
+
+    void isSameExpressionCpp() {
+        isSameExpressionTestInternal(true);
+    }
+
+    void isSameExpressionC() {
+        isSameExpressionTestInternal(false);
     }
 
 #define isVariableChanged(code, startPattern, endPattern) isVariableChanged_(code, startPattern, endPattern, __FILE__, __LINE__)
@@ -220,7 +234,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), startPattern, strlen(startPattern));
         const Token * const tok2 = Token::findsimplematch(tokenizer.tokens(), endPattern, strlen(endPattern));
-        return (isVariableChanged)(tok1, tok2, 1, false, &settings, true);
+        return (isVariableChanged)(tok1, tok2, 1, false, &settings, /*cpp*/ true);
     }
 
     void isVariableChangedTest() {
@@ -399,7 +413,7 @@ private:
         const Token* const start = Token::findsimplematch(tokenizer.tokens(), startPattern, strlen(startPattern));
         const Token* const end = Token::findsimplematch(start, endPattern, strlen(endPattern));
         const Token* const expr = Token::findsimplematch(tokenizer.tokens(), var, strlen(var));
-        return (findExpressionChanged)(expr, start, end, &settings, true);
+        return (findExpressionChanged)(expr, start, end, &settings, /*cpp*/ true);
     }
 
     void isExpressionChangedTest()
