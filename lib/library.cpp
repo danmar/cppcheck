@@ -219,10 +219,13 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     const auto names = getnames(memorynode->GetText());
                     for (const auto& n : names) {
                         const std::map<std::string, AllocFunc>::const_iterator it = mDealloc.find(n);
-                        if (it != mDealloc.end())
+                        if (it != mDealloc.end()) {
                             allocationId = it->second.groupId;
+                            break;
+                        }
                     }
-                    break;
+                    if (allocationId != 0)
+                        break;
                 }
             }
             if (allocationId == 0) {
