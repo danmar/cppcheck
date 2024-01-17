@@ -3920,6 +3920,28 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
     std::cout << std::endl;
 }
 
+static std::string functionTypeToString(Function::Type type)
+{
+    switch (type) {
+    case Function::eConstructor:
+        return "Constructor";
+    case Function::eCopyConstructor:
+        return "CopyConstructor";
+    case Function::eMoveConstructor:
+        return "MoveConstructor";
+    case Function::eOperatorEqual:
+        return "OperatorEqual";
+    case Function::eDestructor:
+        return "Destructor";
+    case Function::eFunction:
+        return  "Function";
+    case Function::eLambda:
+        return "Lambda";
+    default:
+        return "Unknown";
+    }
+}
+
 void SymbolDatabase::printOut(const char *title) const
 {
     std::cout << std::setiosflags(std::ios::boolalpha);
@@ -3937,14 +3959,7 @@ void SymbolDatabase::printOut(const char *title) const
         for (auto func = scope->functionList.cbegin(); func != scope->functionList.cend(); ++func) {
             std::cout << "    Function: " << &*func << std::endl;
             std::cout << "        name: " << tokenToString(func->tokenDef, mTokenizer) << std::endl;
-            std::cout << "        type: " << (func->type == Function::eConstructor? "Constructor" :
-                                              func->type == Function::eCopyConstructor ? "CopyConstructor" :
-                                              func->type == Function::eMoveConstructor ? "MoveConstructor" :
-                                              func->type == Function::eOperatorEqual ? "OperatorEqual" :
-                                              func->type == Function::eDestructor ? "Destructor" :
-                                              func->type == Function::eFunction ? "Function" :
-                                              func->type == Function::eLambda ? "Lambda" :
-                                              "Unknown") << std::endl;
+            std::cout << "        type: " << functionTypeToString() << std::endl;
             std::cout << "        access: " << accessControlToString(func->access) << std::endl;
             std::cout << "        hasBody: " << func->hasBody() << std::endl;
             std::cout << "        isInline: " << func->isInline() << std::endl;
@@ -4218,14 +4233,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
                     outs += ErrorLogger::toxml(function->name());
                     outs += '\"';
                     outs += " type=\"";
-                    outs += (function->type == Function::eConstructor? "Constructor" :
-                             function->type == Function::eCopyConstructor ? "CopyConstructor" :
-                             function->type == Function::eMoveConstructor ? "MoveConstructor" :
-                             function->type == Function::eOperatorEqual ? "OperatorEqual" :
-                             function->type == Function::eDestructor ? "Destructor" :
-                             function->type == Function::eFunction ? "Function" :
-                             function->type == Function::eLambda ? "Lambda" :
-                             "Unknown");
+                    outs += functionTypeToString(function->type);
                     outs += '\"';
                     if (function->nestedIn->definedType) {
                         if (function->hasVirtualSpecifier())
