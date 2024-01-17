@@ -474,6 +474,8 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
                     tok = tok->next();
 
                 tok = tok->next();
+                if (!tok)
+                    return tokOld;
                 if (tok->str() == "*")
                     tok = tok->next();
 
