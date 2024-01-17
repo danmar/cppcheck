@@ -831,10 +831,10 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
             } else {
                 // check if tok is assigned into another variable
                 const Token *rhs = tok;
-                bool isAssignee = false;
+                bool isAssignment = false;
                 while (rhs->astParent()) {
-                    if (rhs->astParent()->str() == "=" && astIsRHS(rhs)) {
-                        isAssignee = true;
+                    if (rhs->astParent()->str() == "=") {
+                        isAssignment = true;
                         break;
                     }
                     rhs = rhs->astParent();
@@ -842,7 +842,7 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
                 while (rhs->isCast()) {
                     rhs = rhs->astOperand2() ? rhs->astOperand2() : rhs->astOperand1();
                 }
-                if (rhs->varId() == tok->varId() && isAssignee) {
+                if (rhs->varId() == tok->varId() && isAssignment) {
                     // simple assignment
                     varInfo.erase(tok->varId());
                 } else if (rhs->astParent() && rhs->str() == "(" && !mSettings->library.returnValue(rhs->astOperand1()).empty()) {
