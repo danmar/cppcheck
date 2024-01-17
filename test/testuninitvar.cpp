@@ -1851,6 +1851,13 @@ private:
                        "    return a[0];\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("int f() {\n" // #12355
+                       "    const int x[10](1, 2);\n"
+                       "    if (x[0] == 1) {}\n"
+                       "    return x[0];\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_pointertoarray() {
@@ -6377,6 +6384,14 @@ private:
         valueFlowUninit("void f() {\n" // #12288
                         "    char buf[100];\n"
                         "    char* p = new (buf) char[100];\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #12355
+        valueFlowUninit("int f() {\n"
+                        "    const int x[10](1, 2);\n"
+                        "    if (x[0] == 1) {}\n"
+                        "    return x[0];\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
     }

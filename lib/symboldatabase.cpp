@@ -2309,12 +2309,12 @@ void Variable::evaluate(const Settings* settings)
 {
     // Is there initialization in variable declaration
     const Token *initTok = mNameToken ? mNameToken->next() : nullptr;
-    while (Token::Match(initTok, "[|(")) {
+    while (Token::Match(initTok, "[")) {
         initTok = initTok->link()->next();
         if (Token::simpleMatch(initTok, ")"))
             initTok = initTok->next();
     }
-    if (Token::Match(initTok, "=|{") || (initTok && initTok->isSplittedVarDeclEq()))
+    if (Token::Match(initTok, "[={(]") || (initTok && initTok->isSplittedVarDeclEq()))
         setFlag(fIsInit, true);
 
     if (!settings)
