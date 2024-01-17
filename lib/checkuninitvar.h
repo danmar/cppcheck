@@ -81,7 +81,7 @@ private:
 
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckUninitVar checkUninitVar(&tokenizer, tokenizer.getSettings(), errorLogger);
+        CheckUninitVar checkUninitVar(&tokenizer, &tokenizer.getSettings(), errorLogger);
         checkUninitVar.valueFlowUninit();
         checkUninitVar.check();
     }

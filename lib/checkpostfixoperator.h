@@ -55,7 +55,7 @@ private:
         if (tokenizer.isC())
             return;
 
-        CheckPostfixOperator checkPostfixOperator(&tokenizer, tokenizer.getSettings(), errorLogger);
+        CheckPostfixOperator checkPostfixOperator(&tokenizer, &tokenizer.getSettings(), errorLogger);
         checkPostfixOperator.postfixOperator();
     }
 

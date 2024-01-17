@@ -50,7 +50,7 @@ private:
 
     /** run checks, the token list is not simplified */
     void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckAssert checkAssert(&tokenizer, tokenizer.getSettings(), errorLogger);
+        CheckAssert checkAssert(&tokenizer, &tokenizer.getSettings(), errorLogger);
         checkAssert.assertWithSideEffects();
     }
 

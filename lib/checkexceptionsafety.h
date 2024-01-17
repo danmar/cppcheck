@@ -58,7 +58,7 @@ private:
         if (tokenizer.isC())
             return;
 
-        CheckExceptionSafety checkExceptionSafety(&tokenizer, tokenizer.getSettings(), errorLogger);
+        CheckExceptionSafety checkExceptionSafety(&tokenizer, &tokenizer.getSettings(), errorLogger);
         checkExceptionSafety.destructors();
         checkExceptionSafety.deallocThrow();
         checkExceptionSafety.checkRethrowCopy();

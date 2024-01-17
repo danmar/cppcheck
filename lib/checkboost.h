@@ -52,7 +52,7 @@ private:
         if (!tokenizer.isCPP())
             return;
 
-        CheckBoost checkBoost(&tokenizer, tokenizer.getSettings(), errorLogger);
+        CheckBoost checkBoost(&tokenizer, &tokenizer.getSettings(), errorLogger);
         checkBoost.checkBoostForeachModification();
     }
 

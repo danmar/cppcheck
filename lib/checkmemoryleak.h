@@ -177,7 +177,7 @@ private:
         : Check(myName(), tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {}
 
     void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, tokenizer.getSettings(), errorLogger);
+        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &tokenizer.getSettings(), errorLogger);
         checkMemoryLeak.checkReallocUsage();
     }
 
@@ -234,7 +234,7 @@ private:
         if (!tokenizer.isCPP())
             return;
 
-        CheckMemoryLeakInClass checkMemoryLeak(&tokenizer, tokenizer.getSettings(), errorLogger);
+        CheckMemoryLeakInClass checkMemoryLeak(&tokenizer, &tokenizer.getSettings(), errorLogger);
         checkMemoryLeak.check();
     }
 
@@ -278,7 +278,7 @@ private:
         : Check(myName(), tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {}
 
     void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckMemoryLeakStructMember checkMemoryLeak(&tokenizer, tokenizer.getSettings(), errorLogger);
+        CheckMemoryLeakStructMember checkMemoryLeak(&tokenizer, &tokenizer.getSettings(), errorLogger);
         checkMemoryLeak.check();
     }
 
@@ -315,7 +315,7 @@ private:
         : Check(myName(), tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {}
 
     void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckMemoryLeakNoVar checkMemoryLeak(&tokenizer, tokenizer.getSettings(), errorLogger);
+        CheckMemoryLeakNoVar checkMemoryLeak(&tokenizer, &tokenizer.getSettings(), errorLogger);
         checkMemoryLeak.check();
     }
 

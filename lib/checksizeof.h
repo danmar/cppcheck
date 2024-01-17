@@ -50,7 +50,7 @@ private:
 
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer& tokenizer, ErrorLogger* errorLogger) override {
-        CheckSizeof checkSizeof(&tokenizer, tokenizer.getSettings(), errorLogger);
+        CheckSizeof checkSizeof(&tokenizer, &tokenizer.getSettings(), errorLogger);
 
         // Checks
         checkSizeof.sizeofsizeof();

@@ -299,7 +299,7 @@ void CheckType::signConversionError(const Token *tok, const ValueFlow::Value *ne
 //---------------------------------------------------------------------------
 // Checking for long cast of int result   const long x = var1 * var2;
 //---------------------------------------------------------------------------
-static bool checkTypeCombination(const ValueType& src, const ValueType& tgt, const Settings* settings)
+static bool checkTypeCombination(const ValueType& src, const ValueType& tgt, const Settings& settings)
 {
     static const std::pair<ValueType::Type, ValueType::Type> typeCombinations[] = {
         { ValueType::Type::INT, ValueType::Type::LONG },
@@ -343,7 +343,7 @@ void CheckType::checkLongCast()
 
         if (!lhstype || !rhstype)
             continue;
-        if (!checkTypeCombination(*rhstype, *lhstype, mSettings))
+        if (!checkTypeCombination(*rhstype, *lhstype, *mSettings))
             continue;
 
         // assign int result to long/longlong const nonpointer?
@@ -370,7 +370,7 @@ void CheckType::checkLongCast()
             if (tok->str() == "return") {
                 if (Token::Match(tok->astOperand1(), "<<|*")) {
                     const ValueType *type = tok->astOperand1()->valueType();
-                    if (type && checkTypeCombination(*type, *retVt, mSettings) &&
+                    if (type && checkTypeCombination(*type, *retVt, *mSettings) &&
                         type->pointer == 0U &&
                         type->originalTypeName.empty())
                         ret = tok;

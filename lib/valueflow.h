@@ -48,18 +48,18 @@ class ValuePtr;
 
 namespace ValueFlow {
     /// Constant folding of expression. This can be used before the full ValueFlow has been executed (ValueFlow::setValues).
-    const Value * valueFlowConstantFoldAST(Token *expr, const Settings *settings);
+    const Value * valueFlowConstantFoldAST(Token *expr, const Settings &settings);
 
     /// Perform valueflow analysis.
     void setValues(TokenList& tokenlist,
                    SymbolDatabase& symboldatabase,
                    ErrorLogger* errorLogger,
-                   const Settings* settings,
+                   const Settings& settings,
                    TimerResultsIntf* timerResults);
 
     std::string eitherTheConditionIsRedundant(const Token *condition);
 
-    size_t getSizeOf(const ValueType &vt, const Settings *settings);
+    size_t getSizeOf(const ValueType &vt, const Settings &settings);
 
     const Value* findValue(const std::list<Value>& values,
                            const Settings* settings,
@@ -69,7 +69,7 @@ namespace ValueFlow {
 
     Value asImpossible(Value v);
 
-    bool isContainerSizeChanged(const Token* tok, int indirect, const Settings* settings = nullptr, int depth = 20);
+    bool isContainerSizeChanged(const Token* tok, int indirect, const Settings& settings, int depth = 20);
 
     struct LifetimeToken {
         const Token* token{};
@@ -119,7 +119,7 @@ namespace ValueFlow {
 
     const Variable* getLifetimeVariable(const Token* tok);
 
-    bool isLifetimeBorrowed(const Token *tok, const Settings *settings);
+    bool isLifetimeBorrowed(const Token *tok, const Settings &settings);
 
     std::string lifetimeMessage(const Token *tok, const Value *val, Value::ErrorPath &errorPath);
 

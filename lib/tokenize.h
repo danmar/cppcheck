@@ -640,9 +640,8 @@ public:
      */
     static const Token * startOfExecutableScope(const Token * tok);
 
-    // TODO: return reference
-    const Settings *getSettings() const {
-        return &mSettings;
+    const Settings &getSettings() const {
+        return mSettings;
     }
 
     void calculateScopes();

@@ -324,7 +324,7 @@ public:
      * @param tok token with C-string
      * @param settings Settings
      **/
-    static nonneg int getStrSize(const Token *tok, const Settings *const settings);
+    static nonneg int getStrSize(const Token *tok, const Settings & settings);
 
     const ValueType *valueType() const {
         return mImpl->mValueType;
@@ -1232,7 +1232,7 @@ public:
     const ValueFlow::Value* getContainerSizeValue(const MathLib::bigint val) const;
 
     const Token *getValueTokenMaxStrLength() const;
-    const Token *getValueTokenMinStrSize(const Settings *settings, MathLib::bigint* path = nullptr) const;
+    const Token *getValueTokenMinStrSize(const Settings &settings, MathLib::bigint* path = nullptr) const;
 
     /** Add token value. Return true if value is added. */
     bool addValue(const ValueFlow::Value &value);

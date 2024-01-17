@@ -208,7 +208,7 @@ class CPPCHECKLIB Variable {
      * @param isContainer Is the array container-like?
      * @return true if array, false if not
      */
-    bool arrayDimensions(const Settings* settings, bool& isContainer);
+    bool arrayDimensions(const Settings& settings, bool& isContainer);
 
 public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
@@ -899,7 +899,7 @@ public:
     void isConstexpr(bool state) {
         setFlag(fIsConstexpr, state);
     }
-    bool isSafe(const Settings *settings) const;
+    bool isSafe(const Settings &settings) const;
 
     const Token* tokenDef{};          ///< function name token in class definition
     const Token* argDef{};            ///< function argument start '(' in class definition
@@ -1146,7 +1146,7 @@ public:
                      const Scope *scope_, const Settings* settings);
 
     /** @brief initialize varlist */
-    void getVariableList(const Settings* settings);
+    void getVariableList(const Settings& settings);
 
     const Function *getDestructor() const;
 
@@ -1167,7 +1167,7 @@ public:
      * @param settings Settings
      * @return pointer to last token
      */
-    const Token *checkVariable(const Token *tok, AccessControl varaccess, const Settings* settings);
+    const Token *checkVariable(const Token *tok, AccessControl varaccess, const Settings& settings);
 
     /**
      * @brief get variable from name
@@ -1195,7 +1195,7 @@ private:
     void findFunctionInBase(const std::string & name, nonneg int args, std::vector<const Function *> & matches) const;
 
     /** @brief initialize varlist */
-    void getVariableList(const Settings* settings, const Token *start, const Token *end);
+    void getVariableList(const Settings& settings, const Token *start, const Token *end);
 };
 
 enum class Reference {
