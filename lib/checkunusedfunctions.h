@@ -44,6 +44,11 @@ namespace CTU {
 /// @{
 
 class CPPCHECKLIB CheckUnusedFunctions : public Check {
+    friend class TestSuppressions;
+    friend class TestSingleExecutorBase;
+    friend class TestProcessExecutorBase;
+    friend class TestThreadExecutorBase;
+
 public:
     /** @brief This constructor is used when registering the CheckUnusedFunctions */
     CheckUnusedFunctions() : Check(myName()) {}
@@ -51,8 +56,6 @@ public:
     /** @brief This constructor is used when running checks. */
     CheckUnusedFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
-
-    static void clear();
 
     // Parse current tokens and determine..
     // * Check what functions are used
@@ -74,6 +77,8 @@ public:
     static void analyseWholeProgram(const Settings &settings, ErrorLogger * const errorLogger, const std::string &buildDir);
 
 private:
+    static void clear();
+
     void getErrorMessages(ErrorLogger *errorLogger, const Settings * /*settings*/) const override {
         CheckUnusedFunctions::unusedFunctionError(errorLogger, emptyString, 0, 0, "funcName");
     }
