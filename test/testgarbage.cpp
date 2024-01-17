@@ -252,6 +252,7 @@ private:
         TEST_CASE(garbageCode221);
         TEST_CASE(garbageCode222); // #10763
         TEST_CASE(garbageCode223); // #11639
+        TEST_CASE(garbageCode224);
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1718,6 +1719,9 @@ private:
     }
     void garbageCode223() { // #11639
         ASSERT_THROW(checkCode("struct{}*"), InternalError);  // don't crash
+    }
+    void garbageCode224() {
+        checkCode("void f(){ auto* b = dynamic_cast<const }");  // don't crash
     }
 
     void syntaxErrorFirstToken() {
