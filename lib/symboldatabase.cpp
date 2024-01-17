@@ -3808,6 +3808,28 @@ static std::string accessControlToString(AccessControl access)
     return "Unknown";
 }
 
+static const char* functionTypeToString(Function::Type type)
+{
+    switch (type) {
+    case Function::eConstructor:
+        return "Constructor";
+    case Function::eCopyConstructor:
+        return "CopyConstructor";
+    case Function::eMoveConstructor:
+        return "MoveConstructor";
+    case Function::eOperatorEqual:
+        return "OperatorEqual";
+    case Function::eDestructor:
+        return "Destructor";
+    case Function::eFunction:
+        return "Function";
+    case Function::eLambda:
+        return "Lambda";
+    default:
+        return "Unknown";
+    }
+}
+
 static std::string tokenToString(const Token* tok, const Tokenizer& tokenizer)
 {
     std::ostringstream oss;
@@ -3918,28 +3940,6 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
             std::cout << "?";
     }
     std::cout << std::endl;
-}
-
-static std::string functionTypeToString(Function::Type type)
-{
-    switch (type) {
-    case Function::eConstructor:
-        return "Constructor";
-    case Function::eCopyConstructor:
-        return "CopyConstructor";
-    case Function::eMoveConstructor:
-        return "MoveConstructor";
-    case Function::eOperatorEqual:
-        return "OperatorEqual";
-    case Function::eDestructor:
-        return "Destructor";
-    case Function::eFunction:
-        return  "Function";
-    case Function::eLambda:
-        return "Lambda";
-    default:
-        return "Unknown";
-    }
 }
 
 void SymbolDatabase::printOut(const char *title) const
