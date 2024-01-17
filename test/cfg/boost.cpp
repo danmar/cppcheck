@@ -88,3 +88,10 @@ void macros()
     }
     BOOST_SCOPED_ENUM_DECLARE_END(future_errc)
 }
+
+void containerOutOfBounds_scoped_array(std::size_t n) // #12356
+{
+    boost::scoped_array<int> d(new int[n] {});
+    for (size_t i = 0; i < n; i++)
+        if (d[i]) {}
+}
