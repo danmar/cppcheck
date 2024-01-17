@@ -839,7 +839,7 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
                 while (rhs->isCast()) {
                     rhs = rhs->astOperand2() ? rhs->astOperand2() : rhs->astOperand1();
                 }
-                if (rhs->varId() == tok->varId()) {
+                if (rhs->varId() == tok->varId() && rhs->astTop()->isAssignmentOp()) {
                     // simple assignment
                     varInfo.erase(tok->varId());
                 } else if (rhs->astParent() && rhs->str() == "(" && !mSettings->library.returnValue(rhs->astOperand1()).empty()) {
