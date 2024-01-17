@@ -66,17 +66,18 @@ def __lookup_cppcheck_exe():
                 break
 
     if exe_path:
+        exe_path = os.path.abspath(exe_path)
         print("using '{}'".format(exe_path))
     return exe_path
 
 
 # Run Cppcheck with args
-def cppcheck(args, env=None, remove_checkers_report=True):
+def cppcheck(args, env=None, remove_checkers_report=True, cwd=None):
     exe = __lookup_cppcheck_exe()
     assert exe is not None, 'no cppcheck binary found'
 
     logging.info(exe + ' ' + ' '.join(args))
-    p = subprocess.Popen([exe] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+    p = subprocess.Popen([exe] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, cwd=cwd)
     comm = p.communicate()
     stdout = comm[0].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
     stderr = comm[1].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
