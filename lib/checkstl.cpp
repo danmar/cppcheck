@@ -237,7 +237,7 @@ void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerNa
     } else if (containerSize->intvalue == 0) {
         if (containerSize->condition)
             errmsg = ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or expression '" + expression + "' cause access out of bounds.";
-        else if (indexValue == nullptr && !index.empty())
+        else if (indexValue == nullptr && !index.empty() && tok->valueType() && tok->valueType()->type == ValueType::ITERATOR)
             errmsg = "Out of bounds access in expression '" + expression + "' because '$symbol' is empty and '" + index + "' may be non-zero.";
         else
             errmsg = "Out of bounds access in expression '" + expression + "' because '$symbol' is empty.";
