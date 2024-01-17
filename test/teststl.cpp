@@ -70,6 +70,7 @@ private:
         TEST_CASE(iterator26); // #9176
         TEST_CASE(iterator27); // #10378
         TEST_CASE(iterator28); // #10450
+        TEST_CASE(iterator29);
         TEST_CASE(iteratorExpression);
         TEST_CASE(iteratorSameExpression);
         TEST_CASE(mismatchingContainerIterator);
@@ -1844,6 +1845,37 @@ private:
               "    return 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:10]: (style) Consider using std::find_if algorithm instead of a raw loop.\n", errout.str());
+    }
+
+    void iterator29()
+    {
+        // #11511
+        check("std::vector<int>& g();\n"
+              "void f() {\n"
+              "    auto v = g();\n"
+              "    auto it = g().begin();\n"
+              "    while (it != g().end())\n"
+              "        it = v.erase(it);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Iterator 'it' from different container 'v' are used together.\n", errout.str());
+
+        check("std::vector<int>& g(int);\n"
+              "void f(int i, int j) {\n"
+              "    auto& r = g(i);\n"
+              "    auto it = g(j).begin();\n"
+              "    while (it != g(j).end())\n"
+              "        it = r.erase(it);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Iterator 'it' from different container 'r' are used together.\n", errout.str());
+
+        check("std::vector<int>& g();\n"
+              "void f() {\n"
+              "    auto& r = g();\n"
+              "    auto it = g().begin();\n"
+              "    while (it != g().end())\n"
+              "        it = r.erase(it);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void iteratorExpression() {
