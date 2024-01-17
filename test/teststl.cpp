@@ -320,7 +320,7 @@ private:
 
         checkNormal("void f(int x) {\n"
                     "  std::string s;\n"
-                    "  x = s.begin() + x;\n"
+                    "  auto it = s.begin() + x;\n"
                     "}");
         ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in expression 's.begin()+x' because 's' is empty and 'x' may be non-zero.\n", errout.str());
 
@@ -377,7 +377,7 @@ private:
                     "    if(v.at(b?42:0)) {}\n"
                     "}\n");
         ASSERT_EQUALS(
-            "test.cpp:3:error:Out of bounds access in expression 'v.at(b?42:0)' because 'v' is empty and 'b?42:0' may be non-zero.\n",
+            "test.cpp:3:error:Out of bounds access in expression 'v.at(b?42:0)' because 'v' is empty.\n",
             errout.str());
 
         checkNormal("void f(std::vector<int> v, bool b){\n"
@@ -2246,7 +2246,7 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:6]: (error) Out of bounds access in expression 'foo[ii]' because 'foo' is empty and 'ii' may be non-zero.\n",
+            "[test.cpp:6]: (error) Out of bounds access in expression 'foo[ii]' because 'foo' is empty.\n",
             errout.str());
 
         check("void foo(std::vector<int> foo) {\n"
@@ -2351,7 +2351,7 @@ private:
                   "    }\n"
                   "}");
             ASSERT_EQUALS(
-                "[test.cpp:11]: (error) Out of bounds access in expression 'foo[ii]' because 'foo' is empty and 'ii' may be non-zero.\n",
+                "[test.cpp:11]: (error) Out of bounds access in expression 'foo[ii]' because 'foo' is empty.\n",
                 errout.str());
         }
 

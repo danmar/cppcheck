@@ -12,7 +12,7 @@
 #include <boost/endian/conversion.hpp>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
-
+#include <boost/smart_ptr/scoped_array.hpp>
 
 BOOST_FORCEINLINE void boost_forceinline_test()
 {}
@@ -87,4 +87,11 @@ void macros()
         no_state
     }
     BOOST_SCOPED_ENUM_DECLARE_END(future_errc)
+}
+
+void containerOutOfBounds_scoped_array(std::size_t n) // #12356
+{
+    boost::scoped_array<int> d(new int[n] {});
+    for (std::size_t i = 0; i < n; i++)
+        if (d[i]) {}
 }
