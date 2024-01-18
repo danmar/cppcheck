@@ -662,7 +662,7 @@ void CheckFunctions::checkLibraryMatchFunctions()
             continue;
 
         const Token* start = tok;
-        while (Token::Match(start->tokAt(-2), "%name% ::"))
+        while (Token::Match(start->tokAt(-2), "%name% ::") && !start->tokAt(-2)->isKeyword())
             start = start->tokAt(-2);
         if (mSettings->library.detectContainerOrIterator(start))
             continue;
