@@ -455,12 +455,19 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: p\n", errout.str());
     }
 
-    void assign21() { // #10186
-        check("void f(int **x) {\n"
+    void assign21() {
+        check("void f(int **x) {\n" // #10186
               "    void *p = malloc(10);\n"
               "    *x = (int*)p;\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { int i; };\n" // #10996
+              "void f() {\n"
+              "    S* s = new S();\n"
+              "    (void)s;\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: s\n", errout.str());
     }
 
     void assign22() { // #9139
