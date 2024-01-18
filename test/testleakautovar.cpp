@@ -1730,8 +1730,14 @@ private:
               "        auto s = new S;\n"
               "        v.push_back(std::unique_ptr<S>(s));\n"
               "    }\n"
-              "}\n", &s);
+              "}\n", /*cpp*/ true, &s);
         ASSERT_EQUALS("", errout.str()); // don't crash
+
+        check("void g(size_t len) {\n" // #12365
+              "    char* b = new char[len + 1]{};\n"
+              "    std::string str = std::string(b);\n"
+              "}", /*cpp*/ true, &s);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: b\n", errout.str());
     }
 
     void goto1() {

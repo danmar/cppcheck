@@ -937,6 +937,8 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
     const bool isLeakIgnore = mSettings->library.isLeakIgnore(mSettings->library.getFunctionName(tokName));
     if (mSettings->library.getReallocFuncInfo(tokName))
         return;
+    if (tokName->next()->valueType() && tokName->next()->valueType()->container && tokName->next()->valueType()->container->stdStringLike)
+        return;
 
     const Token * const tokFirstArg = tokOpeningPar->next();
     if (!tokFirstArg || tokFirstArg->str() == ")") {
@@ -1182,6 +1184,7 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
 
             else if (used != PtrUsage::PTR && !it->second.managed() && !var->isReference()) {
                 const auto use = possibleUsage.find(varid);
+                const Token* useTok{};
                 if (use == possibleUsage.end()) {
                     leakError(tok, var->name(), it->second.type);
                 } else {
