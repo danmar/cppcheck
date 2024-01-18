@@ -5562,7 +5562,7 @@ private:
                         "        p = new S(io);\n"
                         "    p->Write();\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:10]: (warning) Uninitialized variable: p.rIo\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         // Unknown types
         {

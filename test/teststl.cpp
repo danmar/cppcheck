@@ -925,7 +925,7 @@ private:
                     "    std::string_view sv(s);\n"
                     "    return s[2];\n"
                     "}\n");
-        TODO_ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression 's[2]' because 's' is empty.\n", "", errout.str());
+        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression 's[2]' because 's' is empty.\n", errout.str());
     }
 
     void outOfBoundsSymbolic()
