@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "checkunusedfunctions.h"
 #include "cppcheck.h"
 #include "filesettings.h"
 #include "fixture.h"
@@ -72,6 +73,8 @@ private:
 
     void check(int files, int result, const std::string &data, const CheckOptions& opt = make_default_obj{}) {
         errout.str("");
+
+        CheckUnusedFunctions::clear();
 
         std::list<FileSettings> fileSettings;
 

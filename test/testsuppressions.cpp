@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "checkunusedfunctions.h"
 #include "config.h"
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
@@ -229,6 +230,8 @@ private:
         // Clear the error log
         errout.str("");
 
+        CheckUnusedFunctions::clear();
+
         std::list<FileSettings> fileSettings;
 
         std::list<std::pair<std::string, std::size_t>> filelist;
@@ -281,6 +284,8 @@ private:
     unsigned int _checkSuppressionThreads(const char code[], bool useFS, const std::string &suppression = emptyString) {
         errout.str("");
 
+        CheckUnusedFunctions::clear();
+
         std::list<FileSettings> fileSettings;
 
         std::list<std::pair<std::string, std::size_t>> filelist;
@@ -328,6 +333,8 @@ private:
 
     unsigned int _checkSuppressionProcesses(const char code[], bool useFS, const std::string &suppression = emptyString) {
         errout.str("");
+
+        CheckUnusedFunctions::clear();
 
         std::list<FileSettings> fileSettings;
 
@@ -1352,7 +1359,7 @@ private:
         // multi error in file, but only suppression one error
         const char code2[] = "fi fi\n"
                              "if if;";
-        ASSERT_EQUALS(2, (this->*check)(code2, "*:test.cpp:1"));  // suppress all error at line 1 of test.cpp
+        ASSERT_EQUALS(1, (this->*check)(code2, "*:test.cpp:1"));  // suppress all error at line 1 of test.cpp
         ASSERT_EQUALS("[test.cpp:2]: (error) syntax error\n", errout.str());
 
         // multi error in file, but only suppression one error (2)
@@ -1361,7 +1368,7 @@ private:
                              "    int b = y/0;\n"
                              "}\n"
                              "f(0, 1);\n";
-        ASSERT_EQUALS(2, (this->*check)(code3, "zerodiv:test.cpp:3"));  // suppress 'errordiv' at line 3 of test.cpp
+        ASSERT_EQUALS(1, (this->*check)(code3, "zerodiv:test.cpp:3"));  // suppress 'errordiv' at line 3 of test.cpp
     }
 
     void suppressingSyntaxErrorAndExitCodeFiles() {
@@ -1378,7 +1385,7 @@ private:
         std::map<std::string, std::string> mfiles;
         mfiles["test.cpp"] = "fi if;";
         mfiles["test2.cpp"] = "fi if";
-        ASSERT_EQUALS(2, (this->*check)(mfiles, "*:test.cpp"));
+        ASSERT_EQUALS(1, (this->*check)(mfiles, "*:test.cpp"));
         ASSERT_EQUALS("[test2.cpp:1]: (error) syntax error\n", errout.str());
     }
 
