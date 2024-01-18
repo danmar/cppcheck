@@ -301,8 +301,25 @@ void TestFixture::assertThrowFail(const char * const filename, const unsigned in
 void TestFixture::assertNoThrowFail(const char * const filename, const unsigned int linenr) const
 {
     ++fails_counter;
+
+    std::string ex_msg;
+
+    try {
+        // cppcheck-suppress rethrowNoCurrentException
+        throw;
+    }
+    catch (const InternalError& e) {
+        ex_msg = e.errorMessage;
+    }
+    catch (const std::exception& e) {
+        ex_msg = e.what();
+    }
+    catch (...) {
+        ex_msg = "unknown exception";
+    }
+
     errmsg << getLocationStr(filename, linenr) << ": Assertion failed. "
-           << "Unexpected exception was thrown"  << std::endl << "_____" << std::endl;
+           << "Unexpected exception was thrown: " << ex_msg << std::endl << "_____" << std::endl;
 
 }
 
