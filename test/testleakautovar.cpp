@@ -597,6 +597,33 @@ private:
               "    fd->exec();\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n" // #12327
+              "    char* m_p;\n"
+              "    C(char* p) : m_p(p) {}\n"
+              "};\n"
+              "std::list<C> gli;\n"
+              "void f() {\n"
+              "    std::list<C> li;\n"
+              "    char* p = new char[1];\n"
+              "    C c(p);\n"
+              "    li.push_back(c);\n"
+              "    C c2(li.front());\n"
+              "    delete[] c2.m_p;\n"
+              "}\n"
+              "void g() {\n"
+              "    char* p = new char[1];\n"
+              "    C c(p);\n"
+              "    gli.push_back(c);\n"
+              "}\n"
+              "void h() {\n"
+              "    std::list<C> li;\n"
+              "    char* p = new char[1];\n"
+              "    C c(p);\n"
+              "    li.push_back(c);\n"
+              "    delete[] li.front().m_p;\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void isAutoDealloc() {
@@ -2976,6 +3003,12 @@ private:
               "    bar(p);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int n) {\n"
+              "    char* p = new char[n];\n"
+              "    v.push_back(p);\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:4]: (information) --check-library: Function unknown::push_back() should have <use>/<leak-ignore> configuration\n", errout.str());
     }
 };
 

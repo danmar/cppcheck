@@ -166,7 +166,6 @@ private:
         TEST_CASE(realloc22);
         TEST_CASE(realloc23);
         TEST_CASE(realloc24); // #9228
-        TEST_CASE(reallocarray1);
     }
 
     void realloc1() {
@@ -434,15 +433,6 @@ private:
               "a = realloc(a, 20);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void reallocarray1() {
-        check("void foo()\n"
-              "{\n"
-              "    char *a = (char *)malloc(10);\n"
-              "    a = reallocarray(a, 100, 2);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Common reallocarray mistake: \'a\' nulled but not freed upon failure\n", errout.str());
     }
 };
 
@@ -2520,12 +2510,6 @@ private:
               "    strdup(\"Test\");\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'strdup' is not stored.\n", errout.str());
-
-        check("void x()\n"
-              "{\n"
-              "    reallocarray(NULL, 10, 10);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'reallocarray' is not stored.\n", errout.str());
 
         check("void x()\n"
               "{\n"

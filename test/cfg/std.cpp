@@ -1615,6 +1615,7 @@ void uninitvar_fdim(void)
 
 void uninitvar_fclose(void)
 {
+    // cppcheck-suppress unassignedVariable
     FILE *stream;
     // cppcheck-suppress uninitvar
     (void)std::fclose(stream);
@@ -1847,6 +1848,7 @@ void uninitvar_fread(void)
 
 void uninitvar_free(void)
 {
+    // cppcheck-suppress unassignedVariable
     void *block;
     // cppcheck-suppress uninitvar
     std::free(block);
@@ -1859,7 +1861,7 @@ void uninitvar_freopen(void)
     FILE *stream;
     // cppcheck-suppress uninitvar
     FILE * p = std::freopen(filename,mode,stream);
-    free(p);
+    std::fclose(p);
 }
 
 void uninitvar_frexp(void)
@@ -2557,6 +2559,8 @@ void uninitvar_srand(void)
     unsigned int seed;
     // cppcheck-suppress uninitvar
     (void)std::srand(seed);
+    // cppcheck-suppress ignoredReturnValue
+    std::rand();
 }
 
 void uninitvar_ldiv(void)
@@ -4891,6 +4895,27 @@ void std_vector_data_arithmetic()
     std::vector<char> buf;
     buf.resize(1);
     memcpy(buf.data() + 0, "", 1);
+}
+
+void memleak_std_malloc() // #12332
+{
+    //cppcheck-suppress [unreadVariable, constVariablePointer]
+    void* p = std::malloc(1);
+    //cppcheck-suppress memleak
+}
+
+void memleak_std_realloc(void* block, size_t newsize)
+{
+    //cppcheck-suppress [unreadVariable, constVariablePointer]
+    void* p = std::realloc(block, newsize);
+    //cppcheck-suppress memleak
+}
+
+void unusedAllocatedMemory_std_free()
+{
+    //cppcheck-suppress unusedAllocatedMemory
+    void* p = std::malloc(1);
+    std::free(p);
 }
 
 std::string global_scope_std() // #12355

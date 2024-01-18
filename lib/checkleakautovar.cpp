@@ -181,7 +181,9 @@ void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::pair<const
 {
     if (mSettings->checkLibrary && functionUsage.second == VarInfo::USED &&
         (!functionUsage.first || !functionUsage.first->function() || !functionUsage.first->function()->hasBody())) {
-        const std::string funcStr = functionUsage.first ? mSettings->library.getFunctionName(functionUsage.first) : "f";
+        std::string funcStr = functionUsage.first ? mSettings->library.getFunctionName(functionUsage.first) : "f";
+        if (funcStr.empty())
+            funcStr = "unknown::" + functionUsage.first->str();
         reportError(tok,
                     Severity::information,
                     "checkLibraryUseIgnore",
@@ -329,7 +331,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
 
         // check each token
         {
-            const bool isInit = Token::Match(tok, "%var% {|(") && tok->variable() && tok == tok->variable()->nameToken();
+            const bool isInit = Token::Match(tok, "%var% {|(") && tok->variable() && tok == tok->variable()->nameToken() && tok->variable()->isPointer();
             const Token * nextTok = isInit ? nullptr : checkTokenInsideExpression(tok, varInfo);
             if (nextTok) {
                 tok = nextTok;
@@ -1184,7 +1186,7 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
                 const auto use = possibleUsage.find(varid);
                 if (use == possibleUsage.end()) {
                     leakError(tok, var->name(), it->second.type);
-                } else {
+                } else if (!use->second.first->variable()) { // TODO: handle constructors
                     configurationInfo(tok, use->second);
                 }
             }
