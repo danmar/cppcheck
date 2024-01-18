@@ -43,6 +43,7 @@ private:
         TEST_CASE(multiple_testcases);
         TEST_CASE(multiple_testcases_ignore_duplicates);
         TEST_CASE(invalid_switches);
+        TEST_CASE(summary);
     }
 
 
@@ -120,6 +121,12 @@ private:
         std::set<std::string> expected {"TestClass::TestMethod"};
         ASSERT(expected == args.which_test());
         ASSERT_EQUALS(true, args.quiet());
+    }
+
+    void summary() const {
+        const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-n"};
+        options args(sizeof argv / sizeof argv[0], argv);
+        ASSERT_EQUALS(false, args.summary());
     }
 };
 

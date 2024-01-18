@@ -323,7 +323,8 @@ void TestFixture::printHelp()
         "\n"
         "Options:\n"
         "    -q                   Do not print the test cases that have run.\n"
-        "    -h, --help           Print this help.\n";
+        "    -h, --help           Print this help.\n"
+        "    -n                   Print no summaries.\n";
 }
 
 void TestFixture::run(const std::string &str)
@@ -378,15 +379,19 @@ std::size_t TestFixture::runTests(const options& args)
         }
     }
 
-    std::cout << "\n\nTesting Complete\nNumber of tests: " << countTests << std::endl;
-    std::cout << "Number of todos: " << todos_counter;
-    if (succeeded_todos_counter > 0)
-        std::cout << " (" << succeeded_todos_counter << " succeeded)";
-    std::cout << std::endl;
+    if (args.summary()) {
+        std::cout << "\n\nTesting Complete\nNumber of tests: " << countTests << std::endl;
+        std::cout << "Number of todos: " << todos_counter;
+        if (succeeded_todos_counter > 0)
+            std::cout << " (" << succeeded_todos_counter << " succeeded)";
+        std::cout << std::endl;
+    }
     // calling flush here, to do all output before the error messages (in case the output is buffered)
     std::cout.flush();
 
-    std::cerr << "Tests failed: " << fails_counter << std::endl << std::endl;
+    if (args.summary()) {
+        std::cerr << "Tests failed: " << fails_counter << std::endl << std::endl;
+    }
     std::cerr << errmsg.str();
 
     std::cerr.flush();
