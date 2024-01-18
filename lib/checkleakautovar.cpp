@@ -1184,7 +1184,6 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
 
             else if (used != PtrUsage::PTR && !it->second.managed() && !var->isReference()) {
                 const auto use = possibleUsage.find(varid);
-                const Token* useTok{};
                 if (use == possibleUsage.end()) {
                     leakError(tok, var->name(), it->second.type);
                 } else {
