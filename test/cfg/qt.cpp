@@ -437,6 +437,7 @@ void MacroTest3()
     QVERIFY2(2 >= 0, message.constData());
 }
 
+// cppcheck-suppress constParameterReference
 void validCode(int * pIntPtr, QString & qstrArg, double d)
 {
     Q_UNUSED(d)
