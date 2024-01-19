@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "checkunusedfunctions.h"
 #include "redirect.h"
 #include "settings.h"
 #include "filesettings.h"
@@ -67,6 +68,8 @@ private:
      */
     void check(unsigned int jobs, int files, int result, const std::string &data, const CheckOptions& opt = make_default_obj{}) {
         errout.str("");
+
+        CheckUnusedFunctions::clear();
 
         std::list<FileSettings> fileSettings;
 

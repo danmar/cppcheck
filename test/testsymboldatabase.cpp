@@ -3002,17 +3002,25 @@ private:
         ASSERT_EQUALS(2U, fredAType->classDef->linenr());
     }
 
-    void needInitialization() { // #10259
+    void needInitialization() {
         const auto oldSettings = settings1;
         settings1.debugwarnings = true;
-
-        GET_SYMBOL_DB("template <typename T>\n"
-                      "struct A {\n"
-                      "    using type = T;\n"
-                      "    type t_;\n"
-                      "};\n");
-        ASSERT_EQUALS("", errout.str());
-
+        {
+            GET_SYMBOL_DB("template <typename T>\n" // #10259
+                          "struct A {\n"
+                          "    using type = T;\n"
+                          "    type t_;\n"
+                          "};\n");
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            GET_SYMBOL_DB("class T;\n" // #12367
+                          "struct S {\n"
+                          "    S(T& t);\n"
+                          "    T& _t;\n"
+                          "};\n");
+            ASSERT_EQUALS("", errout.str());
+        }
         settings1 = oldSettings;
     }
 

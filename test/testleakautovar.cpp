@@ -455,12 +455,19 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: p\n", errout.str());
     }
 
-    void assign21() { // #10186
-        check("void f(int **x) {\n"
+    void assign21() {
+        check("void f(int **x) {\n" // #10186
               "    void *p = malloc(10);\n"
               "    *x = (int*)p;\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { int i; };\n" // #10996
+              "void f() {\n"
+              "    S* s = new S();\n"
+              "    (void)s;\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: s\n", errout.str());
     }
 
     void assign22() { // #9139
@@ -595,6 +602,33 @@ private:
               "void S::g() {\n"
               "    FD* fd{ new FD(this) };\n"
               "    fd->exec();\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n" // #12327
+              "    char* m_p;\n"
+              "    C(char* p) : m_p(p) {}\n"
+              "};\n"
+              "std::list<C> gli;\n"
+              "void f() {\n"
+              "    std::list<C> li;\n"
+              "    char* p = new char[1];\n"
+              "    C c(p);\n"
+              "    li.push_back(c);\n"
+              "    C c2(li.front());\n"
+              "    delete[] c2.m_p;\n"
+              "}\n"
+              "void g() {\n"
+              "    char* p = new char[1];\n"
+              "    C c(p);\n"
+              "    gli.push_back(c);\n"
+              "}\n"
+              "void h() {\n"
+              "    std::list<C> li;\n"
+              "    char* p = new char[1];\n"
+              "    C c(p);\n"
+              "    li.push_back(c);\n"
+              "    delete[] li.front().m_p;\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
     }
@@ -1730,8 +1764,14 @@ private:
               "        auto s = new S;\n"
               "        v.push_back(std::unique_ptr<S>(s));\n"
               "    }\n"
-              "}\n", &s);
+              "}\n", /*cpp*/ true, &s);
         ASSERT_EQUALS("", errout.str()); // don't crash
+
+        check("void g(size_t len) {\n" // #12365
+              "    char* b = new char[len + 1]{};\n"
+              "    std::string str = std::string(b);\n"
+              "}", /*cpp*/ true, &s);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: b\n", errout.str());
     }
 
     void goto1() {
@@ -2976,6 +3016,12 @@ private:
               "    bar(p);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int n) {\n"
+              "    char* p = new char[n];\n"
+              "    v.push_back(p);\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:4]: (information) --check-library: Function unknown::push_back() should have <use>/<leak-ignore> configuration\n", errout.str());
     }
 };
 

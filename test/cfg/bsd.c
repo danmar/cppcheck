@@ -144,3 +144,30 @@ void uninitvar(void)
     // cppcheck-suppress uninitvar
     (void) arc4random_uniform(uint32Uninit);
 }
+
+void arrayIndexOutOfBounds(void)
+{
+    char * pAlloc = calloc(2, 3);
+    pAlloc[5] = 'a';
+    // cppcheck-suppress arrayIndexOutOfBounds
+    pAlloc[6] = 1;
+    // cppcheck-suppress memleakOnRealloc
+    pAlloc = reallocarray(pAlloc, 3, 3);
+    pAlloc[8] = 'a';
+    // cppcheck-suppress arrayIndexOutOfBounds
+    pAlloc[9] = 1;
+    free(pAlloc);
+}
+
+void reallocarray_memleak(void) {
+    char *a = (char *)malloc(10);
+    // cppcheck-suppress [memleakOnRealloc, unreadVariable]
+    a = reallocarray(a, 100, 2);
+    // cppcheck-suppress memleak
+}
+
+void reallocarray_notused(void)
+{
+    // cppcheck-suppress [leakReturnValNotUsed, ignoredReturnValue]
+    reallocarray(NULL, 10, 10);
+}

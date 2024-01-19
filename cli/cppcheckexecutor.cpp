@@ -33,8 +33,6 @@
 #include "suppressions.h"
 #include "utils.h"
 
-#include "checkunusedfunctions.h"
-
 #if defined(THREADING_MODEL_THREAD)
 #include "threadexecutor.h"
 #elif defined(THREADING_MODEL_FORK)
@@ -178,8 +176,6 @@ private:
 
 int CppCheckExecutor::check(int argc, const char* const argv[])
 {
-    CheckUnusedFunctions::clear();
-
     Settings settings;
     CmdLineLoggerStd logger;
     CmdLineParser parser(logger, settings, settings.nomsg, settings.nofail);
