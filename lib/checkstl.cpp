@@ -649,8 +649,8 @@ void CheckStl::iterators()
 void CheckStl::mismatchingContainerIteratorError(const Token* containerTok, const Token* iterTok, const Token* containerTok2)
 {
     const std::string container(containerTok ? containerTok->expressionString() : std::string("v1"));
-    const std::string iter(iterTok ? iterTok->expressionString() : std::string("it"));
     const std::string container2(containerTok2 ? containerTok2->expressionString() : std::string("v2"));
+    const std::string iter(iterTok ? iterTok->expressionString() : std::string("it"));
     reportError(containerTok,
                 Severity::error,
                 "mismatchingContainerIterator",
