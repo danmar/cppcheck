@@ -937,7 +937,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                         bool unknown = false;
 
                         for (const Variable& var: scope.varlist) {
-                            if (var.isClass()) {
+                            if (var.isClass() && !var.isReference()) {
                                 if (var.type()) {
                                     // does this type need initialization?
                                     if (var.type()->needInitialization == Type::NeedInitialization::True && !var.hasDefault() && !var.isStatic())
