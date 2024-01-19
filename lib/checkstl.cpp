@@ -646,14 +646,15 @@ void CheckStl::iterators()
     }
 }
 
-void CheckStl::mismatchingContainerIteratorError(const Token* tok, const Token* iterTok)
+void CheckStl::mismatchingContainerIteratorError(const Token* containerTok, const Token* iterTok, const Token* containerTok2)
 {
-    const std::string container(tok ? tok->expressionString() : std::string("v1"));
+    const std::string container(containerTok ? containerTok->expressionString() : std::string("v1"));
     const std::string iter(iterTok ? iterTok->expressionString() : std::string("it"));
-    reportError(tok,
+    const std::string container2(containerTok2 ? containerTok2->expressionString() : std::string("v2"));
+    reportError(containerTok,
                 Severity::error,
                 "mismatchingContainerIterator",
-                "Iterator '" + iter + "' from different container '" + container + "' are used together.",
+                "Iterator '" + iter + "' referring to container '" + container2 + "' is used with container '" + container + "'.",
                 CWE664,
                 Certainty::normal);
 }
@@ -869,7 +870,7 @@ void CheckStl::mismatchingContainerIterator()
                 continue;
             if (isSameIteratorContainerExpression(tok, val.tokvalue, mSettings->library))
                 continue;
-            mismatchingContainerIteratorError(tok, iterTok);
+            mismatchingContainerIteratorError(tok, iterTok, val.tokvalue);
         }
     }
 }

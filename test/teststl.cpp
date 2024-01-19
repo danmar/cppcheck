@@ -1108,7 +1108,7 @@ private:
               "    l2.insert(it, 0);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n"
-                      "[test.cpp:6]: (error) Iterator 'it' from different container 'l2' are used together.\n",
+                      "[test.cpp:6]: (error) Iterator 'it' referring to container 'l1' is used with container 'l2'.\n",
                       errout.str());
 
         check("void foo() {\n" // #5803
@@ -1857,7 +1857,7 @@ private:
               "    while (it != g().end())\n"
               "        it = v.erase(it);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Iterator 'it' from different container 'v' are used together.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Iterator 'it' referring to container 'g()' is used with container 'v'.\n", errout.str());
 
         check("std::vector<int>& g(int);\n"
               "void f(int i, int j) {\n"
@@ -1866,7 +1866,7 @@ private:
               "    while (it != g(j).end())\n"
               "        it = r.erase(it);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Iterator 'it' from different container 'r' are used together.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Iterator 'it' referring to container 'g(j)' is used with container 'r'.\n", errout.str());
 
         check("std::vector<int>& g();\n"
               "void f() {\n"
@@ -2085,13 +2085,13 @@ private:
               "    a.insert(b.end(), value);\n"
               "    return a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Iterator 'b.end()' from different container 'a' are used together.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Iterator 'b.end()' referring to container 'b' is used with container 'a'.\n", errout.str());
 
         check("std::vector<int> f(std::vector<int> a, std::vector<int> b) {\n"
               "    a.erase(b.begin());\n"
               "    return a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Iterator 'b.begin()' from different container 'a' are used together.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Iterator 'b.begin()' referring to container 'b' is used with container 'a'.\n", errout.str());
 
         // #9973
         check("void f() {\n"
