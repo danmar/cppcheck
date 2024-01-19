@@ -1793,7 +1793,8 @@ bool CppCheck::analyseWholeProgram()
     for (Check *check : Check::instances())
         errors |= check->analyseWholeProgram(&ctu, mFileInfo, mSettings, *this);  // TODO: ctu
 
-    errors |= CheckUnusedFunctions::check(mSettings, *this);
+    if (mSettings.checks.isEnabled(Checks::unusedFunction))
+        errors |= CheckUnusedFunctions::check(mSettings, *this);
 
     return errors && (mExitCode > 0);
 }
@@ -1859,7 +1860,8 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<
     for (Check *check : Check::instances())
         check->analyseWholeProgram(&ctuFileInfo, fileInfoList, mSettings, *this);
 
-    CheckUnusedFunctions::check(mSettings, *this);
+    if (mSettings.checks.isEnabled(Checks::unusedFunction))
+        CheckUnusedFunctions::check(mSettings, *this);
 
     for (Check::FileInfo *fi : fileInfoList)
         delete fi;
