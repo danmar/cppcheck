@@ -1654,7 +1654,8 @@ void CheckUninitVar::valueFlowUninit()
                 if (!v->subexpressions.empty() && usage == ExprUsage::PassedByReference)
                     continue;
                 bool inconclusive = false;
-                if (usage == ExprUsage::Used && v->tokvalue && tok->variable() && tok->variable()->isArgument() && !isVariableChangedByFunctionCall(v->tokvalue, v->indirect, mSettings, &inconclusive) || inconclusive)
+                if (usage == ExprUsage::Used && v->tokvalue && tok->variable() && tok->variable()->isArgument() &&
+                    (!isVariableChangedByFunctionCall(v->tokvalue, v->indirect, mSettings, &inconclusive) || inconclusive))
                     continue;
                 if (usage != ExprUsage::Used) {
                     if (!(Token::Match(tok->astParent(), ". %name% (") && uninitderef) &&
