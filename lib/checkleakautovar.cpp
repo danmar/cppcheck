@@ -181,7 +181,9 @@ void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::pair<const
 {
     if (mSettings->checkLibrary && functionUsage.second == VarInfo::USED &&
         (!functionUsage.first || !functionUsage.first->function() || !functionUsage.first->function()->hasBody())) {
-        const std::string funcStr = functionUsage.first ? mSettings->library.getFunctionName(functionUsage.first) : "f";
+        std::string funcStr = functionUsage.first ? mSettings->library.getFunctionName(functionUsage.first) : "f";
+        if (funcStr.empty())
+            funcStr = "unknown::" + functionUsage.first->str();
         reportError(tok,
                     Severity::information,
                     "checkLibraryUseIgnore",
@@ -329,7 +331,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
 
         // check each token
         {
-            const bool isInit = Token::Match(tok, "%var% {|(") && tok->variable() && tok == tok->variable()->nameToken();
+            const bool isInit = Token::Match(tok, "%var% {|(") && tok->variable() && tok == tok->variable()->nameToken() && tok->variable()->isPointer();
             const Token * nextTok = isInit ? nullptr : checkTokenInsideExpression(tok, varInfo);
             if (nextTok) {
                 tok = nextTok;
@@ -831,15 +833,18 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
             } else {
                 // check if tok is assigned into another variable
                 const Token *rhs = tok;
+                bool isAssignment = false;
                 while (rhs->astParent()) {
-                    if (rhs->astParent()->str() == "=")
+                    if (rhs->astParent()->str() == "=") {
+                        isAssignment = true;
                         break;
+                    }
                     rhs = rhs->astParent();
                 }
                 while (rhs->isCast()) {
                     rhs = rhs->astOperand2() ? rhs->astOperand2() : rhs->astOperand1();
                 }
-                if (rhs->varId() == tok->varId()) {
+                if (rhs->varId() == tok->varId() && isAssignment) {
                     // simple assignment
                     varInfo.erase(tok->varId());
                 } else if (rhs->astParent() && rhs->str() == "(" && !mSettings->library.returnValue(rhs->astOperand1()).empty()) {
@@ -936,6 +941,8 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
     // Ignore function call?
     const bool isLeakIgnore = mSettings->library.isLeakIgnore(mSettings->library.getFunctionName(tokName));
     if (mSettings->library.getReallocFuncInfo(tokName))
+        return;
+    if (tokName->next()->valueType() && tokName->next()->valueType()->container && tokName->next()->valueType()->container->stdStringLike)
         return;
 
     const Token * const tokFirstArg = tokOpeningPar->next();
@@ -1184,7 +1191,7 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
                 const auto use = possibleUsage.find(varid);
                 if (use == possibleUsage.end()) {
                     leakError(tok, var->name(), it->second.type);
-                } else {
+                } else if (!use->second.first->variable()) { // TODO: handle constructors
                     configurationInfo(tok, use->second);
                 }
             }

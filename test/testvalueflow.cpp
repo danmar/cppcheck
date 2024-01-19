@@ -6828,6 +6828,7 @@ private:
 
         LOAD_LIB_2(settings.library, "std.cfg");
         LOAD_LIB_2(settings.library, "posix.cfg");
+        LOAD_LIB_2(settings.library, "bsd.cfg");
 
         code = "void* f() {\n"
                "  void* x = malloc(10);\n"
