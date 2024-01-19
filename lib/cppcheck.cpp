@@ -632,6 +632,18 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     CheckUnusedFunctions checkUnusedFunctions(nullptr, nullptr, nullptr);
 
     try {
+        if (mSettings.library.markupFile(filename)) {
+            Tokenizer tokenizer(mSettings, this);
+            if (fileStream)
+                tokenizer.list.createTokens(*fileStream, filename);
+            else {
+                std::ifstream in(filename);
+                tokenizer.list.createTokens(in, filename);
+            }
+            checkUnusedFunctions.getFileInfo(&tokenizer, &mSettings);
+            return EXIT_SUCCESS;
+        }
+
         Preprocessor preprocessor(mSettings, this);
         std::set<std::string> configurations;
 
@@ -660,13 +672,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                                 Certainty::normal);
             reportErr(errmsg);
             return mExitCode;
-        }
-
-        if (mSettings.library.markupFile(filename)) {
-            Tokenizer tokenizer(mSettings, this, &preprocessor);
-            tokenizer.createTokens(std::move(tokens1));
-            checkUnusedFunctions.getFileInfo(&tokenizer, &mSettings);
-            return EXIT_SUCCESS;
         }
 
         if (!preprocessor.loadFiles(tokens1, files))
