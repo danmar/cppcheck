@@ -1359,7 +1359,7 @@ void MainWindow::enableCheckButtons(bool enable)
     mUI->mActionAnalyzeDirectory->setEnabled(enable);
 
     if (isCppcheckPremium()) {
-        mUI->mActionComplianceReport->setEnabled(enable && mProjectFile && (mProjectFile->getAddons().contains("misra") || mProjectFile->getCodingStandards().size() >= 1));
+        mUI->mActionComplianceReport->setEnabled(enable && mProjectFile && (mProjectFile->getAddons().contains("misra") || !mProjectFile->getCodingStandards().empty()));
     }
 }
 
