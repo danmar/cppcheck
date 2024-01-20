@@ -96,17 +96,13 @@ ComplianceReportDialog::ComplianceReportDialog(ProjectFile* projectFile, QString
     mUI->mEditProjectName->setText(projectFile->getProjectName());
     connect(mUI->buttonBox, &QDialogButtonBox::clicked, this, &ComplianceReportDialog::buttonClicked);
     mUI->mCodingStandard->clear();
-    if (projectFile->getCodingStandards().contains("misra-c-2023"))
-        mUI->mCodingStandard->addItem("Misra C 2023");
-    else if (projectFile->getAddons().contains("misra"))
+    if (!projectFile->getCodingStandards().contains("misra-c-2023") && projectFile->getAddons().contains("misra"))
         mUI->mCodingStandard->addItem("Misra C 2012");
-    if (projectFile->getCodingStandards().contains("misra-c++-2008"))
-        mUI->mCodingStandard->addItem("Misra C++ 2008");
-    if (projectFile->getCodingStandards().contains("cert-c-2016"))
-        mUI->mCodingStandard->addItem("Cert C");
-    if (projectFile->getCodingStandards().contains("cert-c++-2016"))
-        mUI->mCodingStandard->addItem("Cert C++");
-    mUI->mCodingStandard->addItems(projectFile->getCodingStandards());
+    for (QString std: projectFile->getCodingStandards()) {
+        std[0] = std[0].toUpper();
+        std = std.replace("-", " ").replace(" c ", " C ").replace(" cpp ", " C++ ").replace(" c++ ", " C++ ");
+        mUI->mCodingStandard->addItem(std);
+    }
 }
 
 ComplianceReportDialog::~ComplianceReportDialog()
