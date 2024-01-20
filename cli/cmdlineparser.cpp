@@ -913,6 +913,13 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.premiumArgs += "--" + p;
                 if (p == "misra-c-2012" || p == "misra-c-2023")
                     mSettings.addons.emplace("misra");
+                if (startsWith(p, "autosar") || startsWith(p, "cert") || startsWith(p, "misra")) {
+                    // Ensure that all rules related to the coding standard are enabled
+                    mSettings.addEnabled("warning");
+                    mSettings.addEnabled("style");
+                    mSettings.addEnabled("performance");
+                    mSettings.addEnabled("portability");
+                }
             }
 
             // --project
