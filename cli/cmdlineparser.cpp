@@ -914,10 +914,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 if (p == "misra-c-2012" || p == "misra-c-2023")
                     mSettings.addons.emplace("misra");
                 if (startsWith(p, "autosar") || startsWith(p, "cert") || startsWith(p, "misra")) {
-                    // Ensure that all rules related to the coding standard are enabled
+                    // All checkers related to the coding standard should be enabled. The coding standards
+                    // do not all undefined behavior or portability issues.
                     mSettings.addEnabled("warning");
-                    mSettings.addEnabled("style");
-                    mSettings.addEnabled("performance");
                     mSettings.addEnabled("portability");
                 }
             }

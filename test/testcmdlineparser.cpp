@@ -1208,31 +1208,31 @@ private:
             settings->severity.clear();
             const char * const argv[] = {"cppcheck", "--premium=autosar", "file.c"};
             ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-            ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::style));
+            ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::warning));
         }
         {
             settings->severity.clear();
             const char * const argv[] = {"cppcheck", "--premium=misra-c-2012", "file.c"};
             ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-            ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::style));
+            ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::warning));
         }
         {
             settings->severity.clear();
             const char * const argv[] = {"cppcheck", "--premium=misra-c++-2023", "file.c"};
             ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-            ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::style));
+            ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::warning));
         }
         {
             settings->severity.clear();
             const char * const argv[] = {"cppcheck", "--premium=cert-c++-2016", "file.c"};
             ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-            ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::style));
+            ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::warning));
         }
         {
             settings->severity.clear();
             const char * const argv[] = {"cppcheck", "--premium=safety", "file.c"};
             ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-            ASSERT_EQUALS(false, settings->severity.isEnabled(Severity::style));
+            ASSERT_EQUALS(false, settings->severity.isEnabled(Severity::warning));
         }
         // invalid options
         {
