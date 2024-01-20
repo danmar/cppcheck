@@ -166,7 +166,7 @@ void ComplianceReportDialog::save()
             } catch (InternalError &e) {
                 QMessageBox msg(QMessageBox::Critical,
                                 tr("Save compliance report"),
-                                tr("Failed to import '%1' (%2), can not show files in compliance report").arg(prjfile, QString::fromStdString(e.errorMessage)),
+                                tr("Failed to import '%1' (%2), can not show files in compliance report").arg(prjfile).arg(QString::fromStdString(e.errorMessage)),
                                 QMessageBox::Ok,
                                 this);
                 msg.exec();
