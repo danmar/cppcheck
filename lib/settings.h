@@ -263,6 +263,8 @@ public:
     /** @brief Extra arguments for Cppcheck Premium addon */
     std::string premiumArgs;
 
+    bool isPremiumEnabled(const char id[]) const;
+
     /** @brief Using -E for debugging purposes */
     bool preprocessOnly{};
 

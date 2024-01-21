@@ -154,7 +154,7 @@ void CheckOther::checkCastIntToCharAndBackError(const Token *tok, const std::str
 //---------------------------------------------------------------------------
 void CheckOther::clarifyCalculation()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("clarifyCalculation"))
         return;
 
     logChecker("CheckOther::clarifyCalculation"); // style
@@ -296,7 +296,10 @@ void CheckOther::suspiciousSemicolonError(const Token* tok)
 void CheckOther::warningOldStylePointerCast()
 {
     // Only valid on C++ code
-    if (!mSettings->severity.isEnabled(Severity::style) || !mTokenizer->isCPP())
+    if (!mTokenizer->isCPP())
+        return;
+
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("cstyleCast"))
         return;
 
     logChecker("CheckOther::warningOldStylePointerCast"); // style,c++
@@ -402,7 +405,7 @@ void CheckOther::invalidPointerCastError(const Token* tok, const std::string& fr
 
 void CheckOther::checkRedundantAssignment()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("redundantAssignment"))
         return;
 
     logChecker("CheckOther::checkRedundantAssignment"); // style
@@ -747,7 +750,11 @@ void CheckOther::suspiciousCaseInSwitchError(const Token* tok, const std::string
 //---------------------------------------------------------------------------
 void CheckOther::checkUnreachableCode()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    // misra-c-2012-2.1
+    // misra-c-2023-2.1
+    // misra-cpp-2008-0-1-1
+    // autosar
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("unreachableCode"))
         return;
 
     logChecker("CheckOther::checkUnreachableCode"); // style
@@ -901,7 +908,7 @@ void CheckOther::checkVariableScope()
     if (mSettings->clang)
         return;
 
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("variableScope"))
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1489,7 +1496,9 @@ static const Token* getVariableChangedStart(const Variable* p)
 
 void CheckOther::checkConstPointer()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) &&
+        !mSettings->isPremiumEnabled("constParameter") &&
+        !mSettings->isPremiumEnabled("constPointer"))
         return;
 
     logChecker("CheckOther::checkConstPointer"); // style
@@ -2048,7 +2057,7 @@ void CheckOther::zerodivError(const Token *tok, const ValueFlow::Value *value)
 
 void CheckOther::checkNanInArithmeticExpression()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("nanInArithmeticExpression"))
         return;
     logChecker("CheckOther::checkNanInArithmeticExpression"); // style
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
@@ -2078,7 +2087,7 @@ void CheckOther::checkMisusedScopedObject()
     if (mTokenizer->isC())
         return;
 
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("unusedScopedObject"))
         return;
 
     logChecker("CheckOther::checkMisusedScopedObject"); // style,c++
@@ -2708,7 +2717,7 @@ void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* to
 //---------------------------------------------------------------------------
 void CheckOther::checkSignOfUnsignedVariable()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("unsignedLessThanZero"))
         return;
 
     logChecker("CheckOther::checkSignOfUnsignedVariable"); // style
@@ -3115,7 +3124,7 @@ void CheckOther::varFuncNullUBError(const Token *tok)
 
 void CheckOther::checkRedundantPointerOp()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("redundantPointerOp"))
         return;
 
     logChecker("CheckOther::checkRedundantPointerOp"); // style
@@ -3207,7 +3216,7 @@ void CheckOther::raceAfterInterlockedDecrementError(const Token* tok)
 
 void CheckOther::checkUnusedLabel()
 {
-    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->severity.isEnabled(Severity::warning))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->severity.isEnabled(Severity::warning) && !mSettings->isPremiumEnabled("unusedLabel"))
         return;
 
     logChecker("CheckOther::checkUnusedLabel"); // style,warning
@@ -3415,7 +3424,7 @@ void CheckOther::checkFuncArgNamesDifferent()
     const bool inconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
     const bool warning = mSettings->severity.isEnabled(Severity::warning);
 
-    if (!(warning || (style && inconclusive)))
+    if (!(warning || (style && inconclusive)) && !mSettings->isPremiumEnabled("funcArgNamesDifferent"))
         return;
 
     logChecker("CheckOther::checkFuncArgNamesDifferent"); // style,warning,inconclusive
@@ -3556,7 +3565,7 @@ static const Token *findShadowed(const Scope *scope, const std::string &varname,
 
 void CheckOther::checkShadowVariables()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("shadowVariables"))
         return;
     logChecker("CheckOther::checkShadowVariables"); // style
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -3637,7 +3646,7 @@ static bool isVariableExprHidden(const Token* tok)
 
 void CheckOther::checkKnownArgument()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("knownArgument"))
         return;
     logChecker("CheckOther::checkKnownArgument"); // style
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -3738,7 +3747,7 @@ void CheckOther::knownArgumentError(const Token *tok, const Token *ftok, const V
 
 void CheckOther::checkKnownPointerToBool()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("knownPointerToBool"))
         return;
     logChecker("CheckOther::checkKnownPointerToBool"); // style
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -3837,7 +3846,7 @@ void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *
 
 void CheckOther::checkModuloOfOne()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("moduloofone"))
         return;
 
     logChecker("CheckOther::checkModuloOfOne"); // style

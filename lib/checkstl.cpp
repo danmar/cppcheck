@@ -1789,7 +1789,7 @@ void CheckStl::sizeError(const Token *tok)
 
 void CheckStl::redundantCondition()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("redundantIfRemove"))
         return;
 
     logChecker("CheckStl::redundantCondition"); // style
@@ -2843,7 +2843,7 @@ namespace {
 
 void CheckStl::useStlAlgorithm()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("useStlAlgorithm"))
         return;
 
     logChecker("CheckStl::useStlAlgorithm"); // style
@@ -3075,7 +3075,7 @@ static bool isKnownEmptyContainer(const Token* tok)
 
 void CheckStl::knownEmptyContainer()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("knownEmptyContainer"))
         return;
     logChecker("CheckStl::knownEmptyContainer"); // style
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {

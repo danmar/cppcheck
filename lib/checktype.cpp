@@ -322,7 +322,7 @@ static bool checkTypeCombination(const ValueType& src, const ValueType& tgt, con
 
 void CheckType::checkLongCast()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("truncLongCastAssignment"))
         return;
 
     logChecker("CheckType::checkLongCast"); // style

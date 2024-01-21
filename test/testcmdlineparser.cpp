@@ -776,6 +776,7 @@ private:
 
     void enabledAll() {
         REDIRECT;
+        settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=all", "file.cpp"};
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->severity.isEnabled(Severity::style));
@@ -787,6 +788,7 @@ private:
 
     void enabledStyle() {
         REDIRECT;
+        settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=style", "file.cpp"};
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->severity.isEnabled(Severity::style));
@@ -799,6 +801,7 @@ private:
 
     void enabledPerformance() {
         REDIRECT;
+        settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=performance", "file.cpp"};
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(!settings->severity.isEnabled(Severity::style));
@@ -811,6 +814,7 @@ private:
 
     void enabledPortability() {
         REDIRECT;
+        settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=portability", "file.cpp"};
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(!settings->severity.isEnabled(Severity::style));
@@ -823,6 +827,7 @@ private:
 
     void enabledInformation() {
         REDIRECT;
+        settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=information", "file.cpp"};
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->severity.isEnabled(Severity::information));
@@ -832,6 +837,7 @@ private:
 
     void enabledUnusedFunction() {
         REDIRECT;
+        settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=unusedFunction", "file.cpp"};
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->checks.isEnabled(Checks::unusedFunction));
@@ -839,6 +845,7 @@ private:
 
     void enabledMissingInclude() {
         REDIRECT;
+        settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=missingInclude", "file.cpp"};
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->checks.isEnabled(Checks::missingInclude));
@@ -846,6 +853,7 @@ private:
 
     void disabledMissingIncludeWithInformation() {
         REDIRECT;
+        settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--disable=missingInclude", "--enable=information", "file.cpp"};
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT(settings->severity.isEnabled(Severity::information));
@@ -855,6 +863,7 @@ private:
 
     void enabledMissingIncludeWithInformation() {
         REDIRECT;
+        settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=information", "--enable=missingInclude", "file.cpp"};
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT(settings->severity.isEnabled(Severity::information));
@@ -864,6 +873,7 @@ private:
 
     void enabledMissingIncludeWithInformationReverseOrder() {
         REDIRECT;
+        settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=missingInclude", "--enable=information", "file.cpp"};
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT(settings->severity.isEnabled(Severity::information));
@@ -874,6 +884,7 @@ private:
 #ifdef CHECK_INTERNAL
     void enabledInternal() {
         REDIRECT;
+        settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=internal", "file.cpp"};
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->checks.isEnabled(Checks::internalCheck));
@@ -882,6 +893,7 @@ private:
 
     void enabledMultiple() {
         REDIRECT;
+        settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=missingInclude,portability,warning", "file.cpp"};
         ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(!settings->severity.isEnabled(Severity::style));
@@ -1191,16 +1203,34 @@ private:
         REDIRECT;
         settings->cppcheckCfgProductName = "Cppcheck Premium 0.0.0";
         {
+            settings->severity.clear();
+            const char * const argv[] = {"cppcheck", "--premium=autosar", "file.c"};
+            ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+            ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::warning));
+        }
+        {
+            settings->severity.clear();
             const char * const argv[] = {"cppcheck", "--premium=misra-c-2012", "file.c"};
             ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+            ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::warning));
         }
         {
+            settings->severity.clear();
             const char * const argv[] = {"cppcheck", "--premium=misra-c++-2023", "file.c"};
             ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+            ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::warning));
         }
         {
+            settings->severity.clear();
             const char * const argv[] = {"cppcheck", "--premium=cert-c++-2016", "file.c"};
             ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+            ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::warning));
+        }
+        {
+            settings->severity.clear();
+            const char * const argv[] = {"cppcheck", "--premium=safety", "file.c"};
+            ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+            ASSERT_EQUALS(false, settings->severity.isEnabled(Severity::warning));
         }
         // invalid options
         {

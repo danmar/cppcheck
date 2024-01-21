@@ -71,8 +71,8 @@ def __lookup_cppcheck_exe():
 
 
 # Run Cppcheck with args
-def cppcheck(args, env=None, remove_checkers_report=True):
-    exe = __lookup_cppcheck_exe()
+def cppcheck(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_exe=None):
+    exe = cppcheck_exe if cppcheck_exe else __lookup_cppcheck_exe()
     assert exe is not None, 'no cppcheck binary found'
 
     logging.info(exe + ' ' + ' '.join(args))

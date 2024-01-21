@@ -5,6 +5,10 @@
 # Create release candidate
 # ========================
 #
+# check every isPremiumEnabled call:
+# - every id should be in --errorlist
+# - premiumaddon: check coverage.py
+#
 # Windows installer:
 # - ensure latest build was successful
 # - ensure cfg files etc are included (win_installer/cppcheck.wxs)

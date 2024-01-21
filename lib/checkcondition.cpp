@@ -87,7 +87,7 @@ bool CheckCondition::isAliased(const std::set<int> &vars) const
 
 void CheckCondition::assignIf()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("assignIf"))
         return;
 
     logChecker("CheckCondition::assignIf"); // style
@@ -306,7 +306,7 @@ static bool isOperandExpanded(const Token *tok)
 
 void CheckCondition::checkBadBitmaskCheck()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("badBitmaskCheck"))
         return;
 
     logChecker("CheckCondition::checkBadBitmaskCheck"); // style
@@ -354,7 +354,7 @@ void CheckCondition::badBitmaskCheckError(const Token *tok, bool isNoOp)
 
 void CheckCondition::comparison()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("comparisonError"))
         return;
 
     logChecker("CheckCondition::comparison"); // style
@@ -474,7 +474,7 @@ bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * 
 
 void CheckCondition::duplicateCondition()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("duplicateCondition"))
         return;
 
     logChecker("CheckCondition::duplicateCondition"); // style
@@ -525,7 +525,7 @@ void CheckCondition::duplicateConditionError(const Token *tok1, const Token *tok
 
 void CheckCondition::multiCondition()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("multiCondition"))
         return;
 
     logChecker("CheckCondition::multiCondition"); // style
@@ -1125,7 +1125,7 @@ void CheckCondition::checkIncorrectLogicOperator()
 {
     const bool printStyle = mSettings->severity.isEnabled(Severity::style);
     const bool printWarning = mSettings->severity.isEnabled(Severity::warning);
-    if (!printWarning && !printStyle)
+    if (!printWarning && !printStyle && !mSettings->isPremiumEnabled("incorrectLogicOperator"))
         return;
     const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
 
@@ -1417,7 +1417,7 @@ static int countPar(const Token *tok1, const Token *tok2)
 //---------------------------------------------------------------------------
 void CheckCondition::clarifyCondition()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("clarifyCondition"))
         return;
 
     const bool isC = mTokenizer->isC();
@@ -1483,7 +1483,9 @@ void CheckCondition::clarifyConditionError(const Token *tok, bool assign, bool b
 
 void CheckCondition::alwaysTrueFalse()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) &&
+        !mSettings->isPremiumEnabled("alwaysTrue") &&
+        !mSettings->isPremiumEnabled("alwaysFalse"))
         return;
 
     logChecker("CheckCondition::alwaysTrueFalse"); // style
@@ -1785,7 +1787,7 @@ void CheckCondition::pointerAdditionResultNotNullError(const Token *tok, const T
 
 void CheckCondition::checkDuplicateConditionalAssign()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("duplicateConditionalAssign"))
         return;
 
     logChecker("CheckCondition::checkDuplicateConditionalAssign"); // style
@@ -1864,7 +1866,7 @@ void CheckCondition::duplicateConditionalAssignError(const Token *condTok, const
 
 void CheckCondition::checkAssignmentInCondition()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("assignmentInCondition"))
         return;
 
     logChecker("CheckCondition::checkAssignmentInCondition"); // style
@@ -1911,7 +1913,7 @@ void CheckCondition::assignmentInCondition(const Token *eq)
 
 void CheckCondition::checkCompareValueOutOfTypeRange()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("compareValueOutOfTypeRange"))
         return;
 
     if (mSettings->platform.type == Platform::Type::Native ||
