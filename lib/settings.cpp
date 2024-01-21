@@ -379,7 +379,7 @@ static const std::set<std::string> misra_cpp_checkers{
 
 bool Settings::isPremiumEnabled(const char id[]) const
 {
-    if (premiumArgs.find("autosar") != std::string::npos && autosar_checkers.count(id) && misra_cpp_checkers.count(id))
+    if (premiumArgs.find("autosar") != std::string::npos && autosar_checkers.count(id))
         return true;
     if (premiumArgs.find("cert-c-") != std::string::npos && cert_c_checkers.count(id))
         return true;
