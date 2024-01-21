@@ -210,7 +210,7 @@ void CheckAutoVariables::assignFunctionArg()
 {
     const bool printStyle = mSettings->severity.isEnabled(Severity::style);
     const bool printWarning = mSettings->severity.isEnabled(Severity::warning);
-    if (!printStyle && !printWarning)
+    if (!printStyle && !printWarning && !mSettings->isPremiumEnabled("uselessAssignmentPtrArg"))
         return;
 
     logChecker("CheckAutoVariables::assignFunctionArg"); // style,warning
