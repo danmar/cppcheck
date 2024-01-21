@@ -339,6 +339,7 @@ static const std::set<std::string> cert_cpp_checkers{
 static const std::set<std::string> misra_c_checkers{
     "alwaysFalse", "duplicateBreak",
     "alwaysTrue", "redundantCondition", "redundantAssignment", "redundantAssignInSwitch", "unreadVariable",
+    "unusedVariable",
     "unusedLabel",
     "shadowVariable",
     "funcArgNamesDifferent",
