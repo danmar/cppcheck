@@ -40,7 +40,6 @@ def test_misra_c_builtin_style_checks(tmpdir):
         f.write('void foo() { int x; y = 0; }')
 
     exe = copy_cppcheck_premium(tmpdir)
-    logging.info('exe: %s', exe)
     _, stdout, stderr = cppcheck(['--premium=autosar', test_file], cppcheck_exe=exe)
     assert '' in stdout
     assert '[unusedVariable]' in stderr
