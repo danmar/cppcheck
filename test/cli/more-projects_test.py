@@ -106,8 +106,8 @@ def test_project_unspecified_platform(tmpdir):
         f.write("int x;")
 
     ret, stdout, stderr = cppcheck(['--project=' + project_file, '--template=cppcheck1', '-q'])
-    assert ret == 0, stdout
-    assert stdout == "cppcheck: 'Unspecified' is a deprecated platform type and will be removed in Cppcheck 2.14. Please use 'unspecified' instead.\n"
+    assert ret == 1, stdout
+    assert stdout == "cppcheck: error: unrecognized platform: 'Unspecified'.\n"
     assert stderr == ''
 
 
