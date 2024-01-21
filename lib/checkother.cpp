@@ -1487,7 +1487,7 @@ static const Token* getVariableChangedStart(const Variable* p)
 
 void CheckOther::checkConstPointer()
 {
-    if (!mSettings->severity.isEnabled(Severity::style) && 
+    if (!mSettings->severity.isEnabled(Severity::style) &&
         !mSettings->isPremiumEnabled("constParameter") &&
         !mSettings->isPremiumEnabled("constPointer"))
         return;

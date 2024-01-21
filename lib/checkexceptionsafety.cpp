@@ -330,7 +330,7 @@ void CheckExceptionSafety::noexceptThrowError(const Token * const tok)
 void CheckExceptionSafety::unhandledExceptionSpecification()
 {
     if ((!mSettings->severity.isEnabled(Severity::style) || !mSettings->certainty.isEnabled(Certainty::inconclusive)) &&
-         !mSettings->isPremiumEnabled("unhandledexceptionspecification"))
+        !mSettings->isPremiumEnabled("unhandledexceptionspecification"))
         return;
 
     logChecker("CheckExceptionSafety::unhandledExceptionSpecification"); // style,inconclusive
