@@ -4281,6 +4281,14 @@ class MisraChecker:
             errorId = 'c2012-' + str(num1) + '.' + str(num2)
             misra_severity = 'Undefined'
             cppcheck_severity = 'style'
+            if self.path_premium_addon and ruleNum not in self.ruleTexts:
+                for line in cppcheckdata.cmd_output([self.path_premium_addon, '--cli', '--get-rule-text=' + errorId]).split('\n'):
+                    if len(line) > 1 and not line.startswith('{'):
+                        errmsg = line.strip()
+                        rule = Rule(num1, num2)
+                        rule.text = errmsg
+                        self.ruleTexts[rule.num] = rule
+                        break
             if ruleNum in self.ruleTexts:
                 errmsg = self.ruleTexts[ruleNum].text
                 if self.ruleTexts[ruleNum].misra_severity:
@@ -4291,11 +4299,6 @@ class MisraChecker:
                     errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
                 else:
                     errmsg = 'misra violation (rule-texts-file not found: ' + self.ruleText_filename + ')'
-                if self.path_premium_addon:
-                    for line in cppcheckdata.cmd_output([self.path_premium_addon, '--cli', '--get-rule-text=' + errorId]).split('\n'):
-                        if len(line) > 1 and not line.startswith('{'):
-                            errmsg = line.strip()
-                            break
             else:
                 errmsg = 'misra violation %s with no text in the supplied rule-texts-file' % (ruleNum)
 
