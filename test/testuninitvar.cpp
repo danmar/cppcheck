@@ -5562,7 +5562,9 @@ private:
                         "        p = new S(io);\n"
                         "    p->Write();\n"
                         "}");
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:10]: (warning) Uninitialized variable: p\n",
+                           "[test.cpp:8] -> [test.cpp:10]: (warning) Uninitialized variable: p.rIo\n",
+                           errout.str());
 
         // Unknown types
         {
@@ -6108,7 +6110,7 @@ private:
                         "    increment(n);\n"
                         "    return n;\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (warning) Uninitialized variable: i\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         // #11412
         valueFlowUninit("void f(int n) {\n"
@@ -6392,6 +6394,16 @@ private:
                         "    const int x[10](1, 2);\n"
                         "    if (x[0] == 1) {}\n"
                         "    return x[0];\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void f(bool* p) {\n" // #12287
+                        "    if (p)\n"
+                        "        *p = true; \n"
+                        "}\n"
+                        "void g() {\n"
+                        "    bool b;\n"
+                        "    f(&b);\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -7712,6 +7724,14 @@ private:
             "    lookupStem(h, &stem);\n"
             "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        ctu("void increment(int& i) { ++i; }\n" // #6475
+            "int f() {\n"
+            "    int n;\n"
+            "    increment(n);\n"
+            "    return n;\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Using argument i that points at uninitialized variable n\n", errout.str());
     }
 };
 

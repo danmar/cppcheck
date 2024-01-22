@@ -38,6 +38,7 @@
 #include <iterator>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <numeric>
 #include <queue>
 #include <set>
@@ -4929,4 +4930,8 @@ std::string global_scope_std() // #12355
     std::vector<::std::size_t> v;
     // cppcheck-suppress containerOutOfBounds
     return v.front();
+
+void unique_lock_const_ref(std::mutex& m)
+{
+    std::unique_lock lock(m);
 }

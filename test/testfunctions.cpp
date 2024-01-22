@@ -2041,6 +2041,11 @@ private:
               "    if (t.at(0)) {}\n"
               "};\n", "test.cpp", &s);
         ASSERT_EQUALS("", errout.str());
+
+        check("::std::string f(const char* c) {\n" // #12365
+              "    return ::std::string(c);\n"
+              "}\n", "test.cpp", &s);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkUseStandardLibrary1() {

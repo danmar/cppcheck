@@ -44,13 +44,6 @@
 
 class TestSymbolDatabase;
 
-#define GET_SYMBOL_DB_STD(code) \
-    Tokenizer tokenizer(settings1, this); \
-    LOAD_LIB_2(settings1.library, "std.cfg"); \
-    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, "test.cpp"); \
-    ASSERT(db); \
-    do {} while (false)
-
 #define GET_SYMBOL_DB(code) \
     Tokenizer tokenizer(settings1, this); \
     const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, "test.cpp"); \
@@ -62,6 +55,12 @@ class TestSymbolDatabase;
     const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, "test.c"); \
     do {} while (false)
 
+#define GET_SYMBOL_DB_DBG(code) \
+    Tokenizer tokenizer(settingsDbg, this); \
+    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, "test.cpp"); \
+    ASSERT(db); \
+    do {} while (false)
+
 class TestSymbolDatabase : public TestFixture {
 public:
     TestSymbolDatabase() : TestFixture("TestSymbolDatabase") {}
@@ -69,8 +68,9 @@ public:
 private:
     const Token* vartok{nullptr};
     const Token* typetok{nullptr};
-    Settings settings1 = settingsBuilder().library("std.cfg").build();
+    const Settings settings1 = settingsBuilder().library("std.cfg").build();
     const Settings settings2 = settingsBuilder().platform(Platform::Type::Unspecified).build();
+    const Settings settingsDbg = settingsBuilder().library("std.cfg").debugwarnings(true).build();
 
     void reset() {
         vartok = nullptr;
@@ -2174,8 +2174,7 @@ private:
     }
 
     void functionDeclarations2() {
-        const Settings settingsOld = settings1;
-        GET_SYMBOL_DB_STD("std::array<int,2> foo(int x);");
+        GET_SYMBOL_DB("std::array<int,2> foo(int x);");
 
         // 1 scopes: Global
         ASSERT(db && db->scopeList.size() == 1);
@@ -2193,13 +2192,10 @@ private:
         const Token*parenthesis = foo->tokenDef->next();
         ASSERT(parenthesis->str() == "(" && parenthesis->previous()->str() == "foo");
         ASSERT(parenthesis->valueType()->type == ValueType::Type::CONTAINER);
-
-        settings1 = settingsOld;
     }
 
     void constexprFunction() {
-        const Settings settingsOld = settings1;
-        GET_SYMBOL_DB_STD("constexpr int foo();");
+        GET_SYMBOL_DB("constexpr int foo();");
 
         // 1 scopes: Global
         ASSERT(db && db->scopeList.size() == 1);
@@ -2214,8 +2210,6 @@ private:
         ASSERT(foo->tokenDef->str() == "foo");
         ASSERT(!foo->hasBody());
         ASSERT(foo->isConstexpr());
-
-        settings1 = settingsOld;
     }
 
     void constructorInitialization() {
@@ -3002,18 +2996,23 @@ private:
         ASSERT_EQUALS(2U, fredAType->classDef->linenr());
     }
 
-    void needInitialization() { // #10259
-        const auto oldSettings = settings1;
-        settings1.debugwarnings = true;
-
-        GET_SYMBOL_DB("template <typename T>\n"
-                      "struct A {\n"
-                      "    using type = T;\n"
-                      "    type t_;\n"
-                      "};\n");
-        ASSERT_EQUALS("", errout.str());
-
-        settings1 = oldSettings;
+    void needInitialization() {
+        {
+            GET_SYMBOL_DB_DBG("template <typename T>\n" // #10259
+                              "struct A {\n"
+                              "    using type = T;\n"
+                              "    type t_;\n"
+                              "};\n");
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            GET_SYMBOL_DB_DBG("class T;\n" // #12367
+                              "struct S {\n"
+                              "    S(T& t);\n"
+                              "    T& _t;\n"
+                              "};\n");
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void tryCatch1() {
@@ -5035,11 +5034,8 @@ private:
     }
 
     void symboldatabase83() { // #9431
-        const Settings settingsOld = settings1;
-        settings1.debugwarnings = true;
-        GET_SYMBOL_DB("struct a { a() noexcept; };\n"
-                      "a::a() noexcept = default;");
-        settings1 = settingsOld;
+        GET_SYMBOL_DB_DBG("struct a { a() noexcept; };\n"
+                          "a::a() noexcept = default;");
         const Scope *scope = db->findScopeByName("a");
         ASSERT(scope);
         ASSERT(scope->functionList.size() == 1);
@@ -5053,11 +5049,8 @@ private:
 
     void symboldatabase84() {
         {
-            const bool old = settings1.debugwarnings;
-            settings1.debugwarnings = true;
-            GET_SYMBOL_DB("struct a { a() noexcept(false); };\n"
-                          "a::a() noexcept(false) = default;");
-            settings1.debugwarnings = old;
+            GET_SYMBOL_DB_DBG("struct a { a() noexcept(false); };\n"
+                              "a::a() noexcept(false) = default;");
             const Scope *scope = db->findScopeByName("a");
             ASSERT(scope);
             ASSERT(scope->functionList.size() == 1);
@@ -5069,11 +5062,8 @@ private:
             ASSERT_EQUALS("", errout.str());
         }
         {
-            const bool old = settings1.debugwarnings;
-            settings1.debugwarnings = true;
-            GET_SYMBOL_DB("struct a { a() noexcept(true); };\n"
-                          "a::a() noexcept(true) = default;");
-            settings1.debugwarnings = old;
+            GET_SYMBOL_DB_DBG("struct a { a() noexcept(true); };\n"
+                              "a::a() noexcept(true) = default;");
             const Scope *scope = db->findScopeByName("a");
             ASSERT(scope);
             ASSERT(scope->functionList.size() == 1);
@@ -5375,46 +5365,43 @@ private:
     }
 
     void symboldatabase104() {
-        const bool oldDebug = settings1.debugwarnings;
-        settings1.debugwarnings = true;
         {
-            GET_SYMBOL_DB("struct S {\n" // #11535
-                          "    void f1(char* const c);\n"
-                          "    void f2(char* const c);\n"
-                          "    void f3(char* const);\n"
-                          "    void f4(char* c);\n"
-                          "    void f5(char* c);\n"
-                          "    void f6(char*);\n"
-                          "};\n"
-                          "void S::f1(char* c) {}\n"
-                          "void S::f2(char*) {}\n"
-                          "void S::f3(char* c) {}\n"
-                          "void S::f4(char* const c) {}\n"
-                          "void S::f5(char* const) {}\n"
-                          "void S::f6(char* const c) {}\n");
+            GET_SYMBOL_DB_DBG("struct S {\n" // #11535
+                              "    void f1(char* const c);\n"
+                              "    void f2(char* const c);\n"
+                              "    void f3(char* const);\n"
+                              "    void f4(char* c);\n"
+                              "    void f5(char* c);\n"
+                              "    void f6(char*);\n"
+                              "};\n"
+                              "void S::f1(char* c) {}\n"
+                              "void S::f2(char*) {}\n"
+                              "void S::f3(char* c) {}\n"
+                              "void S::f4(char* const c) {}\n"
+                              "void S::f5(char* const) {}\n"
+                              "void S::f6(char* const c) {}\n");
             ASSERT(db != nullptr);
             ASSERT_EQUALS("", errout.str());
         }
         {
-            GET_SYMBOL_DB("struct S2 {\n" // #11602
-                          "    enum E {};\n"
-                          "};\n"
-                          "struct S1 {\n"
-                          "    void f(S2::E) const;\n"
-                          "};\n"
-                          "void S1::f(const S2::E) const {}\n");
+            GET_SYMBOL_DB_DBG("struct S2 {\n" // #11602
+                              "    enum E {};\n"
+                              "};\n"
+                              "struct S1 {\n"
+                              "    void f(S2::E) const;\n"
+                              "};\n"
+                              "void S1::f(const S2::E) const {}\n");
             ASSERT(db != nullptr);
             ASSERT_EQUALS("", errout.str());
         }
         {
-            GET_SYMBOL_DB("struct S {\n"
-                          "    void f(const bool b = false);\n"
-                          "};\n"
-                          "void S::f(const bool b) {}\n");
+            GET_SYMBOL_DB_DBG("struct S {\n"
+                              "    void f(const bool b = false);\n"
+                              "};\n"
+                              "void S::f(const bool b) {}\n");
             ASSERT(db != nullptr);
             ASSERT_EQUALS("", errout.str());
         }
-        settings1.debugwarnings = oldDebug;
     }
 
     void createSymbolDatabaseFindAllScopes1() {

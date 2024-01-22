@@ -833,15 +833,18 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
             } else {
                 // check if tok is assigned into another variable
                 const Token *rhs = tok;
+                bool isAssignment = false;
                 while (rhs->astParent()) {
-                    if (rhs->astParent()->str() == "=")
+                    if (rhs->astParent()->str() == "=") {
+                        isAssignment = true;
                         break;
+                    }
                     rhs = rhs->astParent();
                 }
                 while (rhs->isCast()) {
                     rhs = rhs->astOperand2() ? rhs->astOperand2() : rhs->astOperand1();
                 }
-                if (rhs->varId() == tok->varId()) {
+                if (rhs->varId() == tok->varId() && isAssignment) {
                     // simple assignment
                     varInfo.erase(tok->varId());
                 } else if (rhs->astParent() && rhs->str() == "(" && !mSettings->library.returnValue(rhs->astOperand1()).empty()) {
@@ -938,6 +941,8 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
     // Ignore function call?
     const bool isLeakIgnore = mSettings->library.isLeakIgnore(mSettings->library.getFunctionName(tokName));
     if (mSettings->library.getReallocFuncInfo(tokName))
+        return;
+    if (tokName->next()->valueType() && tokName->next()->valueType()->container && tokName->next()->valueType()->container->stdStringLike)
         return;
 
     const Token * const tokFirstArg = tokOpeningPar->next();

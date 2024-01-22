@@ -242,7 +242,9 @@ void CheckFunctions::invalidFunctionArgStrError(const Token *tok, const std::str
 //---------------------------------------------------------------------------
 void CheckFunctions::checkIgnoredReturnValue()
 {
-    if (!mSettings->severity.isEnabled(Severity::warning) && !mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::warning) &&
+        !mSettings->severity.isEnabled(Severity::style) &&
+        !mSettings->isPremiumEnabled("ignoredReturnValue"))
         return;
 
     logChecker("CheckFunctions::checkIgnoredReturnValue"); // style,warning
@@ -424,7 +426,7 @@ void CheckFunctions::checkMathFunctions()
     const bool styleC99 = mSettings->severity.isEnabled(Severity::style) && mSettings->standards.c != Standards::C89 && mSettings->standards.cpp != Standards::CPP03;
     const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
 
-    if (!styleC99 && !printWarnings)
+    if (!styleC99 && !printWarnings && !mSettings->isPremiumEnabled("wrongmathcall"))
         return;
 
     logChecker("CheckFunctions::checkMathFunctions"); // style,warning,c99,c++11
@@ -662,7 +664,7 @@ void CheckFunctions::checkLibraryMatchFunctions()
             continue;
 
         const Token* start = tok;
-        while (Token::Match(start->tokAt(-2), "%name% ::"))
+        while (Token::Match(start->tokAt(-2), "%name% ::") && !start->tokAt(-2)->isKeyword())
             start = start->tokAt(-2);
         if (mSettings->library.detectContainerOrIterator(start))
             continue;

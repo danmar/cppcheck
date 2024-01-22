@@ -127,7 +127,7 @@ void CheckClass::constructors()
 {
     const bool printStyle = mSettings->severity.isEnabled(Severity::style);
     const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
-    if (!printStyle && !printWarnings)
+    if (!printStyle && !printWarnings && !mSettings->isPremiumEnabled("uninitMemberVar"))
         return;
 
     logChecker("CheckClass::checkConstructors"); // style,warning
@@ -336,7 +336,7 @@ void CheckClass::constructors()
 
 void CheckClass::checkExplicitConstructors()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("noExplicitConstructor"))
         return;
 
     logChecker("CheckClass::checkExplicitConstructors"); // style
@@ -1275,7 +1275,7 @@ static bool checkFunctionUsage(const Function *privfunc, const Scope* scope)
 
 void CheckClass::privateFunctions()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("unusedPrivateFunction"))
         return;
 
     logChecker("CheckClass::privateFunctions"); // style
@@ -1564,7 +1564,7 @@ void CheckClass::memsetErrorFloat(const Token *tok, const std::string &type)
 
 void CheckClass::operatorEqRetRefThis()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("operatorEqRetRefThis"))
         return;
 
     logChecker("CheckClass::operatorEqRetRefThis"); // style
@@ -2090,7 +2090,9 @@ void CheckClass::checkConst()
     if (!mSettings->certainty.isEnabled(Certainty::inconclusive))
         return;
 
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) &&
+        !mSettings->isPremiumEnabled("functionConst") &&
+        !mSettings->isPremiumEnabled("functionStatic"))
         return;
 
     logChecker("CheckClass::checkConst"); // style,inconclusive
@@ -2639,7 +2641,7 @@ namespace { // avoid one-definition-rule violation
 
 void CheckClass::initializerListOrder()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("initializerList"))
         return;
 
     // This check is not inconclusive.  However it only determines if the initialization
@@ -3137,7 +3139,7 @@ void CheckClass::copyCtorAndEqOperatorError(const Token *tok, const std::string 
 
 void CheckClass::checkOverride()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("missingOverride"))
         return;
     if (mSettings->standards.cpp < Standards::CPP11)
         return;
@@ -3237,7 +3239,7 @@ static bool compareTokenRanges(const Token* start1, const Token* end1, const Tok
 
 void CheckClass::checkUselessOverride()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("uselessOverride"))
         return;
 
     logChecker("CheckClass::checkUselessOverride"); // style

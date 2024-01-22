@@ -46,8 +46,8 @@ static std::string mandatoryAttibuteMissing(const QXmlStreamReader &xmlReader, c
 {
     throw std::runtime_error(QObject::tr("line %1: Mandatory attribute '%2' missing in '%3'")
                              .arg(xmlReader.lineNumber())
-                             .arg(attributeName, xmlReader.name().toString())
-                             .toStdString());
+                             .arg(attributeName)
+                             .arg(xmlReader.name().toString()).toStdString());
 }
 
 static CppcheckLibraryData::Container loadContainer(QXmlStreamReader &xmlReader)
