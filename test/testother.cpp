@@ -35,12 +35,9 @@ public:
     TestOther() : TestFixture("TestOther") {}
 
 private:
-    /*const*/ Settings _settings;
+    /*const*/ Settings _settings = settingsBuilder().library("std.cfg").build();
 
     void run() override {
-        LOAD_LIB_2(_settings.library, "std.cfg");
-
-
         TEST_CASE(emptyBrackets);
 
         TEST_CASE(zeroDiv1);
@@ -355,8 +352,7 @@ private:
     }
 
     void checkInterlockedDecrement(const char code[]) {
-        /*const*/ Settings settings;
-        settings.platform.type = Platform::Type::Win32A;
+        /*const*/ Settings settings = settingsBuilder().platform(Platform::Type::Win32A).build();
 
         check(code, nullptr, false, true, false, &settings);
     }
@@ -8199,10 +8195,9 @@ private:
         }
 
         {
-            /*const*/ Settings s = settingsBuilder().checkUnusedTemplates().build();
             check("template<int n> void foo(unsigned int x) {\n"
                   "if (x <= 0);\n"
-                  "}", &s);
+                  "}");
             ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
         }
 
@@ -11093,13 +11088,11 @@ private:
     }
 
     void forwardAndUsed() {
-        /*const*/ Settings s = settingsBuilder().checkUnusedTemplates().build();
-
         check("template<typename T>\n"
               "void f(T && t) {\n"
               "    g(std::forward<T>(t));\n"
               "    T s = t;\n"
-              "}", &s);
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Access of forwarded variable 't'.\n", errout.str());
     }
 

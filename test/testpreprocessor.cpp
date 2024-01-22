@@ -368,8 +368,7 @@ private:
 
     void error3() {
         errout.str("");
-        /*const*/ Settings settings;
-        settings.userDefines = "__cplusplus";
+        const auto settings = dinit(Settings, $.userDefines = "__cplusplus");
         Preprocessor preprocessor(settings, this);
         const std::string code("#error hello world!\n");
         PreprocessorHelper::getcode(preprocessor, code, "X", "test.c");
@@ -381,8 +380,7 @@ private:
         // In included file
         {
             errout.str("");
-            /*const*/ Settings settings;
-            settings.userDefines = "TEST";
+            const auto settings = dinit(Settings, $.userDefines = "TEST");
             Preprocessor preprocessor(settings, this);
             const std::string code("#file \"ab.h\"\n#error hello world!\n#endfile");
             PreprocessorHelper::getcode(preprocessor, code, "TEST", "test.c");
@@ -392,8 +390,7 @@ private:
         // After including a file
         {
             errout.str("");
-            /*const*/ Settings settings;
-            settings.userDefines = "TEST";
+            const auto settings = dinit(Settings, $.userDefines = "TEST");
             Preprocessor preprocessor(settings, this);
             const std::string code("#file \"ab.h\"\n\n#endfile\n#error aaa");
             PreprocessorHelper::getcode(preprocessor, code, "TEST", "test.c");
@@ -403,9 +400,10 @@ private:
 
     void error5() {
         errout.str("");
-        /*const*/ Settings settings;
-        settings.userDefines = "FOO";
-        settings.force = true; // No message if --force is given
+        // No message if --force is given
+        const auto settings = dinit(Settings,
+                                    $.userDefines = "TEST",
+                                        $.force = true);
         Preprocessor preprocessor(settings, this);
         const std::string code("#error hello world!\n");
         PreprocessorHelper::getcode(preprocessor, code, "X", "test.c");
@@ -2315,8 +2313,7 @@ private:
 
     void wrongPathOnErrorDirective() {
         errout.str("");
-        /*const*/ Settings settings;
-        settings.userDefines = "foo";
+        const auto settings = dinit(Settings, $.userDefines = "foo");
         Preprocessor preprocessor(settings, this);
         const std::string code("#error hello world!\n");
         PreprocessorHelper::getcode(preprocessor, code, "X", "./././test.c");

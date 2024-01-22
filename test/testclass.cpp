@@ -35,8 +35,10 @@ public:
     TestClass() : TestFixture("TestClass") {}
 
 private:
-    /*const*/ Settings settings0 = settingsBuilder().severity(Severity::style).library("std.cfg").build();
+    const Settings settings0 = settingsBuilder().severity(Severity::style).library("std.cfg").build();
     const Settings settings1 = settingsBuilder().severity(Severity::warning).library("std.cfg").build();
+    const Settings settings2 = settingsBuilder().severity(Severity::style).library("std.cfg").certainty(Certainty::inconclusive).build();
+    const Settings settings3 = settingsBuilder().severity(Severity::style).library("std.cfg").severity(Severity::warning).build();
 
     void run() override {
         TEST_CASE(virtualDestructor1);      // Base class not found => no error
@@ -731,15 +733,15 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings0);
+        Preprocessor preprocessor(settings3);
 
         // Tokenize..
-        Tokenizer tokenizer(settings0, this, &preprocessor);
+        Tokenizer tokenizer(settings3, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
-        CheckClass checkClass(&tokenizer, &settings0, this);
+        CheckClass checkClass(&tokenizer, &settings3, this);
         checkClass.copyconstructors();
     }
 
@@ -2617,19 +2619,17 @@ private:
         // Clear the error log
         errout.str("");
 
-        // TODO: subsequent tests depend on these changes - should use SettingsBuilder
-        settings0.certainty.setEnabled(Certainty::inconclusive, inconclusive);
-        settings0.severity.enable(Severity::warning);
+        const Settings s = settingsBuilder(settings0).certainty(Certainty::inconclusive, inconclusive).severity(Severity::warning).build();
 
-        Preprocessor preprocessor(settings0);
+        Preprocessor preprocessor(s);
 
         // Tokenize..
-        Tokenizer tokenizer(settings0, this, &preprocessor);
+        Tokenizer tokenizer(s, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
-        CheckClass checkClass(&tokenizer, &settings0, this);
+        CheckClass checkClass(&tokenizer, &s, this);
         checkClass.virtualDestructor();
     }
 
@@ -7554,16 +7554,14 @@ private:
         errout.str("");
 
         // Check..
-        settings0.certainty.setEnabled(Certainty::inconclusive, true);
-
-        Preprocessor preprocessor(settings0);
+        Preprocessor preprocessor(settings2);
 
         // Tokenize..
-        Tokenizer tokenizer(settings0, this, &preprocessor);
+        Tokenizer tokenizer(settings2, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        CheckClass checkClass(&tokenizer, &settings0, this);
+        CheckClass checkClass(&tokenizer, &settings2, this);
         checkClass.initializerListOrder();
     }
 

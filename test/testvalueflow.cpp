@@ -633,8 +633,6 @@ private:
         const char *code;
         std::vector<std::string> lifetimes;
 
-        LOAD_LIB_2(settings.library, "std.cfg");
-
         code  = "void f() {\n"
                 "    int a = 1;\n"
                 "    auto x = [&]() { return a + 1; };\n"
@@ -1012,7 +1010,6 @@ private:
 
         // ~
         code  = "x = ~0U;";
-        PLATFORM(settings.platform, Platform::Type::Native); // ensure platform is native
         values = tokenValues(code,"~");
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(~0U, values.back().intvalue);
@@ -6070,8 +6067,6 @@ private:
     void valueFlowContainerSize() {
         const char *code;
 
-        LOAD_LIB_2(settings.library, "std.cfg");
-
         // condition
         code = "void f(const std::list<int> &ints) {\n"
                "  if (!static_cast<bool>(ints.empty()))\n"
@@ -6856,8 +6851,6 @@ private:
     {
         const char* code;
 
-        LOAD_LIB_2(settings.library, "std.cfg");
-
         code = "int f() {\n"
                "    std::vector<int> v = {1, 2, 3, 4};\n"
                "    int x = v[1];\n"
@@ -6883,9 +6876,8 @@ private:
     void valueFlowDynamicBufferSize() {
         const char *code;
 
-        LOAD_LIB_2(settings.library, "std.cfg");
-        LOAD_LIB_2(settings.library, "posix.cfg");
-        LOAD_LIB_2(settings.library, "bsd.cfg");
+        const Settings settingsOld = settings;
+        settings = settingsBuilder(settings).library("posix.cfg").library("bsd.cfg").build();
 
         code = "void* f() {\n"
                "  void* x = malloc(10);\n"
@@ -6919,6 +6911,8 @@ private:
                "  return x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 100,  ValueFlow::Value::ValueType::BUFFER_SIZE));
+
+        settings = settingsOld;
     }
 
     void valueFlowSafeFunctionParameterValues() {
