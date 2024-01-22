@@ -1743,8 +1743,9 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=top5", "file.cpp"};
         settings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS("cppcheck: error: unrecognized --showtime mode: 'top5'. Supported modes: file, file-total, summary, top5_file, top5_summary.\n", logger->str());
+        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_TOP5_FILE);
+        ASSERT_EQUALS("cppcheck: --showtime=top5 is deprecated and will be removed in Cppcheck 2.14. Please use --showtime=top5_file or --showtime=top5_summary instead.\n", logger->str());
     }
 
     void showtimeTop5File() {
@@ -1782,7 +1783,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=top10", "file.cpp"};
         ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS("cppcheck: error: unrecognized --showtime mode: 'top10'. Supported modes: file, file-total, summary, top5_file, top5_summary.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: unrecognized --showtime mode: 'top10'. Supported modes: file, file-total, summary, top5, top5_file, top5_summary.\n", logger->str());
     }
 
     void errorlist() {
