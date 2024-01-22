@@ -1466,7 +1466,7 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList &tokenList)
         const_cast<Scope *>(classToken->scope())->definedTypesMap[className] = scope->definedType;
     }
     addtoken(tokenList, ";");
-    const_cast<Token *>(tokenList.back())->scope(classToken->scope());
+    tokenList.back()->scope(classToken->scope());
 }
 
 Token * clangimport::AstNode::createTokensVarDecl(TokenList &tokenList)
