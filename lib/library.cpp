@@ -434,7 +434,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const char* const startPattern = node->Attribute("startPattern");
             if (startPattern) {
                 container.startPattern = startPattern;
-                container.startPattern2 = container.startPattern + " !!::";
+                container.startPattern2 = container.startPattern.back() == '<' ? container.startPattern : (container.startPattern + " !!::");
             }
             const char* const endPattern = node->Attribute("endPattern");
             if (endPattern)

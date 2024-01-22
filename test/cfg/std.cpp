@@ -4923,3 +4923,10 @@ std::string global_scope_std() // #12355
     ::std::stringstream ss;
     return ss.str();
 }
+
+::std::size_t global_scope_std2() // #12378
+{
+    std::vector<::std::size_t> v;
+    // cppcheck-suppress containerOutOfBounds
+    return v.front();
+}
