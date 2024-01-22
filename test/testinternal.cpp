@@ -30,7 +30,7 @@ public:
     TestInternal() : TestFixture("TestInternal") {}
 
 private:
-    Settings settings;
+    /*const*/ Settings settings;
 
     void run() override {
         settings.addEnabled("internal");

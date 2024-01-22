@@ -1837,7 +1837,7 @@ private:
     }
 
     void checkLibraryMatchFunctions() {
-        Settings s = settingsBuilder(settings).checkLibrary().debugwarnings().build();
+        /*const*/ Settings s = settingsBuilder(settings).checkLibrary().debugwarnings().build();
         s.daca = true;
 
         check("void f() {\n"

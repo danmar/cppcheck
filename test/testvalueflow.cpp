@@ -42,7 +42,7 @@ public:
     TestValueFlow() : TestFixture("TestValueFlow") {}
 
 private:
-    Settings settings = settingsBuilder().library("std.cfg").exhaustive().build();
+    /*const*/ Settings settings = settingsBuilder().library("std.cfg").exhaustive().build();
 
     void run() override {
         // strcpy, abort cfg
@@ -3946,7 +3946,7 @@ private:
     void valueFlowRightShift() {
         const char *code;
         /* Set some temporary fixed values to simplify testing */
-        Settings s = settings;
+        /*const*/ Settings s = settings;
         s.platform.int_bit = 32;
         s.platform.long_bit = 64;
         s.platform.long_long_bit = MathLib::bigint_bits * 2;
@@ -6924,7 +6924,7 @@ private:
     void valueFlowSafeFunctionParameterValues() {
         const char *code;
         std::list<ValueFlow::Value> values;
-        Settings s = settingsBuilder().exhaustive().library("std.cfg").build();
+        /*const*/ Settings s = settingsBuilder().exhaustive().library("std.cfg").build();
         s.safeChecks.classes = s.safeChecks.externalFunctions = s.safeChecks.internalFunctions = true;
 
         code = "short f(short x) {\n"
@@ -6975,7 +6975,7 @@ private:
     void valueFlowUnknownFunctionReturn() {
         const char *code;
         std::list<ValueFlow::Value> values;
-        Settings s = settingsBuilder().exhaustive().library("std.cfg").build();
+        /*const*/ Settings s = settingsBuilder().exhaustive().library("std.cfg").build();
         s.checkUnknownFunctionReturn.insert("rand");
 
         code = "x = rand();";
@@ -8433,7 +8433,7 @@ private:
     }
 
     void performanceIfCount() {
-        Settings s(settings);
+        /*const*/ Settings s(settings);
         s.performanceValueFlowMaxIfCount = 1;
 
         const char *code;

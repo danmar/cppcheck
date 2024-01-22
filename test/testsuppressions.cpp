@@ -296,7 +296,7 @@ private:
             fileSettings.emplace_back(std::move(fs));
         }
 
-        Settings settings;
+        /*const*/ Settings settings;
         settings.jobs = 2;
         settings.quiet = true;
         settings.inlineSuppressions = true;
@@ -346,7 +346,7 @@ private:
             fileSettings.emplace_back(std::move(fs));
         }
 
-        Settings settings;
+        /*const*/ Settings settings;
         settings.jobs = 2;
         settings.quiet = true;
         settings.inlineSuppressions = true;

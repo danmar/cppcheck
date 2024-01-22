@@ -30,7 +30,7 @@ public:
     TestExceptionSafety() : TestFixture("TestExceptionSafety") {}
 
 private:
-    Settings settings;
+    /*const*/ Settings settings;
 
     void run() override {
         settings.severity.fill();

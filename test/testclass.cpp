@@ -35,7 +35,7 @@ public:
     TestClass() : TestFixture("TestClass") {}
 
 private:
-    Settings settings0 = settingsBuilder().severity(Severity::style).library("std.cfg").build();
+    /*const*/ Settings settings0 = settingsBuilder().severity(Severity::style).library("std.cfg").build();
     const Settings settings1 = settingsBuilder().severity(Severity::warning).library("std.cfg").build();
 
     void run() override {
@@ -8738,7 +8738,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Settings settings = settingsBuilder().severity(Severity::warning).build();
+        /*const*/ Settings settings = settingsBuilder().severity(Severity::warning).build();
         settings.safeChecks.classes = true;
 
         Preprocessor preprocessor(settings);

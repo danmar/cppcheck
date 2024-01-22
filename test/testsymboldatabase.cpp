@@ -8451,12 +8451,12 @@ private:
         // stringification
         ASSERT_EQUALS("", ValueType().str());
 
-        Settings s;
+        /*const*/ Settings s;
         s.platform.int_bit = 16;
         s.platform.long_bit = 32;
         s.platform.long_long_bit = 64;
 
-        Settings sSameSize;
+        /*const*/ Settings sSameSize;
         sSameSize.platform.int_bit = 32;
         sSameSize.platform.long_bit = 64;
         sSameSize.platform.long_long_bit = 64;
@@ -8715,7 +8715,7 @@ private:
         // Library types
         {
             // Char types
-            Settings settings;
+            /*const*/ Settings settings;
             constexpr Library::PodType char8 = { 1, 'u' };
             constexpr Library::PodType char16 = { 2, 'u' };
             constexpr Library::PodType char32 = { 4, 'u' };
@@ -8734,7 +8734,7 @@ private:
         }
         {
             // PodType
-            Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).build();
+            /*const*/ Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).build();
             constexpr Library::PodType u32 = { 4, 'u' };
             constexpr Library::PodType podtype2 = { 0, 'u', Library::PodType::Type::INT };
             settingsWin64.library.mPodTypes["u32"] = u32;
@@ -8755,7 +8755,7 @@ private:
         }
         {
             // PlatformType
-            Settings settingsUnix32 = settingsBuilder().platform(Platform::Type::Unix32).build();
+            /*const*/ Settings settingsUnix32 = settingsBuilder().platform(Platform::Type::Unix32).build();
             Library::PlatformType s32;
             s32.mType = "int";
             settingsUnix32.library.mPlatforms[settingsUnix32.platform.toString()].mPlatformTypes["s32"] = s32;
@@ -8765,7 +8765,7 @@ private:
         }
         {
             // PlatformType - wchar_t
-            Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).build();
+            /*const*/ Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).build();
             Library::PlatformType lpctstr;
             lpctstr.mType = "wchar_t";
             settingsWin64.library.mPlatforms[settingsWin64.platform.toString()].mPlatformTypes["LPCTSTR"] = lpctstr;
@@ -8863,7 +8863,7 @@ private:
 
         // std::make_shared
         {
-            Settings set;
+            /*const*/ Settings set;
             Library::SmartPointer sharedPtr;
             sharedPtr.name = "std::shared_ptr";
             set.library.smartPointers["std::shared_ptr"] = sharedPtr;
@@ -8883,7 +8883,7 @@ private:
         }
         // Smart pointer
         {
-            Settings set;
+            /*const*/ Settings set;
             Library::SmartPointer myPtr;
             myPtr.name = "MyPtr";
             set.library.smartPointers["MyPtr"] = myPtr;

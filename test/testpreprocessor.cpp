@@ -368,7 +368,7 @@ private:
 
     void error3() {
         errout.str("");
-        Settings settings;
+        /*const*/ Settings settings;
         settings.userDefines = "__cplusplus";
         Preprocessor preprocessor(settings, this);
         const std::string code("#error hello world!\n");
@@ -381,7 +381,7 @@ private:
         // In included file
         {
             errout.str("");
-            Settings settings;
+            /*const*/ Settings settings;
             settings.userDefines = "TEST";
             Preprocessor preprocessor(settings, this);
             const std::string code("#file \"ab.h\"\n#error hello world!\n#endfile");
@@ -392,7 +392,7 @@ private:
         // After including a file
         {
             errout.str("");
-            Settings settings;
+            /*const*/ Settings settings;
             settings.userDefines = "TEST";
             Preprocessor preprocessor(settings, this);
             const std::string code("#file \"ab.h\"\n\n#endfile\n#error aaa");
@@ -403,7 +403,7 @@ private:
 
     void error5() {
         errout.str("");
-        Settings settings;
+        /*const*/ Settings settings;
         settings.userDefines = "FOO";
         settings.force = true; // No message if --force is given
         Preprocessor preprocessor(settings, this);
@@ -1959,7 +1959,7 @@ private:
     void inline_suppressions() {
         errout.str("");
 
-        Settings settings;
+        /*const*/ Settings settings;
         settings.inlineSuppressions = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
@@ -2315,7 +2315,7 @@ private:
 
     void wrongPathOnErrorDirective() {
         errout.str("");
-        Settings settings;
+        /*const*/ Settings settings;
         settings.userDefines = "foo";
         Preprocessor preprocessor(settings, this);
         const std::string code("#error hello world!\n");
@@ -2407,7 +2407,7 @@ private:
 
     // test for existing local include
     void testMissingInclude() {
-        Settings settings;
+        /*const*/ Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
@@ -2426,7 +2426,7 @@ private:
 
     // test for missing local include
     void testMissingInclude2() {
-        Settings settings;
+        /*const*/ Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
@@ -2443,7 +2443,7 @@ private:
 
     // test for missing local include - no include path given
     void testMissingInclude3() {
-        Settings settings;
+        /*const*/ Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
@@ -2462,7 +2462,7 @@ private:
 
     // test for existing local include - include path provided
     void testMissingInclude4() {
-        Settings settings;
+        /*const*/ Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
@@ -2482,7 +2482,7 @@ private:
 
     // test for existing local include - absolute path
     void testMissingInclude5() {
-        Settings settings;
+        /*const*/ Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
@@ -2502,7 +2502,7 @@ private:
 
     // test for missing local include - absolute path
     void testMissingInclude6() {
-        Settings settings;
+        /*const*/ Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
@@ -2521,7 +2521,7 @@ private:
 
     // test for missing system include - system includes are not searched for in relative path
     void testMissingSystemInclude() {
-        Settings settings;
+        /*const*/ Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
@@ -2540,7 +2540,7 @@ private:
 
     // test for missing system include
     void testMissingSystemInclude2() {
-        Settings settings;
+        /*const*/ Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
@@ -2557,7 +2557,7 @@ private:
 
     // test for existing system include in system include path
     void testMissingSystemInclude3() {
-        Settings settings;
+        /*const*/ Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
@@ -2578,7 +2578,7 @@ private:
 
     // test for existing system include - absolute path
     void testMissingSystemInclude4() {
-        Settings settings;
+        /*const*/ Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
@@ -2598,7 +2598,7 @@ private:
 
     // test for missing system include - absolute path
     void testMissingSystemInclude5() {
-        Settings settings;
+        /*const*/ Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
@@ -2617,7 +2617,7 @@ private:
 
     // test for missing local and system include
     void testMissingIncludeMixed() {
-        Settings settings;
+        /*const*/ Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
@@ -2641,7 +2641,7 @@ private:
     }
 
     void testMissingIncludeCheckConfig() {
-        Settings settings;
+        /*const*/ Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
