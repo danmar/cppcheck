@@ -944,11 +944,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
                     // keep existing platform from command-line intact
                     if (!platform.empty()) {
-                        if (platform == "Unspecified") {
-                            mLogger.printMessage("'Unspecified' is a deprecated platform type and will be removed in Cppcheck 2.14. Please use 'unspecified' instead.");
-                            platform = "unspecified";
-                        }
-
                         std::string errstr;
                         const std::vector<std::string> paths = {projectFile, argv[0]};
                         if (!mSettings.platform.set(platform, errstr, paths)) {
