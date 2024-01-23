@@ -206,7 +206,7 @@ private:
     void iteratorsError(const Token* tok, const std::string& containerName1, const std::string& containerName2);
     void iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName1, const std::string& containerName2);
     void iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName);
-    void mismatchingContainerIteratorError(const Token* tok, const Token* iterTok);
+    void mismatchingContainerIteratorError(const Token* containerTok, const Token* iterTok, const Token* containerTok2);
     void mismatchingContainersError(const Token* tok1, const Token* tok2);
     void mismatchingContainerExpressionError(const Token *tok1, const Token *tok2);
     void sameIteratorExpressionError(const Token *tok);
@@ -247,7 +247,7 @@ private:
         c.iteratorsError(nullptr, nullptr, "container");
         c.invalidContainerLoopError(nullptr, nullptr, errorPath);
         c.invalidContainerError(nullptr, nullptr, nullptr, errorPath);
-        c.mismatchingContainerIteratorError(nullptr, nullptr);
+        c.mismatchingContainerIteratorError(nullptr, nullptr, nullptr);
         c.mismatchingContainersError(nullptr, nullptr);
         c.mismatchingContainerExpressionError(nullptr, nullptr);
         c.sameIteratorExpressionError(nullptr);

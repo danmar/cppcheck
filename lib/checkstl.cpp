@@ -231,21 +231,21 @@ void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerNa
         if (indexValue && indexValue->condition)
             errmsg = ValueFlow::eitherTheConditionIsRedundant(indexValue->condition) + " or '" + index +
                      "' can have the value " + indexValueString(*indexValue, containerName) + ". Expression '" +
-                     expression + "' cause access out of bounds.";
+                     expression + "' causes access out of bounds.";
         else
             errmsg = "Out of bounds access in expression '" + expression + "'";
     } else if (containerSize->intvalue == 0) {
         if (containerSize->condition)
-            errmsg = ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or expression '" + expression + "' cause access out of bounds.";
+            errmsg = ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or expression '" + expression + "' causes access out of bounds.";
         else if (indexValue == nullptr && !index.empty() && tok->valueType() && tok->valueType()->type == ValueType::ITERATOR)
             errmsg = "Out of bounds access in expression '" + expression + "' because '$symbol' is empty and '" + index + "' may be non-zero.";
         else
             errmsg = "Out of bounds access in expression '" + expression + "' because '$symbol' is empty.";
     } else if (indexValue) {
         if (containerSize->condition)
-            errmsg = ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or $symbol size can be " + std::to_string(containerSize->intvalue) + ". Expression '" + expression + "' cause access out of bounds.";
+            errmsg = ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or size of '$symbol' can be " + std::to_string(containerSize->intvalue) + ". Expression '" + expression + "' causes access out of bounds.";
         else if (indexValue->condition)
-            errmsg = ValueFlow::eitherTheConditionIsRedundant(indexValue->condition) + " or '" + index + "' can have the value " + indexValueString(*indexValue) + ". Expression '" + expression + "' cause access out of bounds.";
+            errmsg = ValueFlow::eitherTheConditionIsRedundant(indexValue->condition) + " or '" + index + "' can have the value " + indexValueString(*indexValue) + ". Expression '" + expression + "' causes access out of bounds.";
         else
             errmsg = "Out of bounds access in '" + expression + "', if '$symbol' size is " + std::to_string(containerSize->intvalue) + " and '" + index + "' is " + indexValueString(*indexValue);
     } else {
@@ -646,14 +646,15 @@ void CheckStl::iterators()
     }
 }
 
-void CheckStl::mismatchingContainerIteratorError(const Token* tok, const Token* iterTok)
+void CheckStl::mismatchingContainerIteratorError(const Token* containerTok, const Token* iterTok, const Token* containerTok2)
 {
-    const std::string container(tok ? tok->expressionString() : std::string("v1"));
+    const std::string container(containerTok ? containerTok->expressionString() : std::string("v1"));
+    const std::string container2(containerTok2 ? containerTok2->expressionString() : std::string("v2"));
     const std::string iter(iterTok ? iterTok->expressionString() : std::string("it"));
-    reportError(tok,
+    reportError(containerTok,
                 Severity::error,
                 "mismatchingContainerIterator",
-                "Iterator '" + iter + "' from different container '" + container + "' are used together.",
+                "Iterator '" + iter + "' referring to container '" + container2 + "' is used with container '" + container + "'.",
                 CWE664,
                 Certainty::normal);
 }
@@ -869,7 +870,7 @@ void CheckStl::mismatchingContainerIterator()
                 continue;
             if (isSameIteratorContainerExpression(tok, val.tokvalue, mSettings->library))
                 continue;
-            mismatchingContainerIteratorError(tok, iterTok);
+            mismatchingContainerIteratorError(tok, iterTok, val.tokvalue);
         }
     }
 }
