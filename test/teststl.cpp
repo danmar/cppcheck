@@ -2135,6 +2135,16 @@ private:
               "    s.v.erase(s.v.begin() + m);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11093
+        check("struct S {\n"
+              "    std::vector<int> v1, v2;\n"
+              "    void f(bool b) {\n"
+              "        std::vector<int>& v = b ? v1 : v2;\n"
+              "        v.erase(v.begin());\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Dereferencing invalid pointer

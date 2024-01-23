@@ -866,6 +866,8 @@ void CheckStl::mismatchingContainerIterator()
             ValueFlow::Value val = getLifetimeIteratorValue(iterTok);
             if (!val.tokvalue)
                 continue;
+            if (!val.isKnown() && Token::simpleMatch(val.tokvalue->astParent(), ":"))
+                continue;
             if (val.lifetimeKind != ValueFlow::Value::LifetimeKind::Iterator)
                 continue;
             if (isSameIteratorContainerExpression(tok, val.tokvalue, mSettings->library))
