@@ -1270,7 +1270,7 @@ namespace {
                 ValueFlow::Value r = state.execute(tok);
                 if (r.isUninitValue())
                     continue;
-                result.insert(std::make_pair(tok->exprId(), r));
+                result.emplace(tok->exprId(), r);
                 // Short-circuit evaluation
                 if (b && isTrueOrFalse(r, *b))
                     break;
