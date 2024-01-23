@@ -1270,9 +1270,10 @@ namespace {
                 ValueFlow::Value r = state.execute(tok);
                 if (r.isUninitValue())
                     continue;
-                result.emplace(tok->exprId(), r);
+                const bool brk = b && isTrueOrFalse(r, *b);
+                result.emplace(tok->exprId(), std::move(r));
                 // Short-circuit evaluation
-                if (b && isTrueOrFalse(r, *b))
+                if (brk)
                     break;
             }
             return result;
