@@ -67,7 +67,7 @@ void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
     },
         subvalue);
     if (subexpr)
-        mValues[subexpr] = subvalue;
+        mValues[subexpr] = std::move(subvalue);
 }
 const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossible) const
 {
