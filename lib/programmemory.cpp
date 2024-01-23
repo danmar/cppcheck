@@ -183,10 +183,10 @@ bool ProgramMemory::empty() const
     return mValues.empty();
 }
 
-void ProgramMemory::replace(const ProgramMemory &pm)
+void ProgramMemory::replace(ProgramMemory pm)
 {
     for (auto&& p : pm.mValues) {
-        mValues[p.first] = p.second;
+        mValues[p.first] = std::move(p.second);
     }
 }
 
@@ -448,12 +448,12 @@ void ProgramMemoryState::insert(const ProgramMemory &pm, const Token* origin)
     state.insert(pm);
 }
 
-void ProgramMemoryState::replace(const ProgramMemory &pm, const Token* origin)
+void ProgramMemoryState::replace(ProgramMemory pm, const Token* origin)
 {
     if (origin)
-        for (auto&& p : pm)
+        for (const auto& p : pm)
             origins[p.first.getExpressionId()] = origin;
-    state.replace(pm);
+    state.replace(std::move(pm));
 }
 
 static void addVars(ProgramMemory& pm, const ProgramMemory::Map& vars)
@@ -472,7 +472,7 @@ void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& va
     ProgramMemory local = pm;
     fillProgramMemoryFromAssignments(pm, tok, settings, local, vars);
     addVars(pm, vars);
-    replace(pm, tok);
+    replace(std::move(pm), tok);
 }
 
 void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
