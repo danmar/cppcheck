@@ -8775,35 +8775,33 @@ private:
         }
         {
             // Container
-            Settings sC;
-            Library::Container c;
-            c.startPattern = "C";
-            c.startPattern2 = "C !!::";
-            sC.library.containers["C"] = c;
+            constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                       "<def>\n"
+                                       "  <container id=\"C\" startPattern=\"C\"/>\n"
+                                       "</def>";
+            const Settings sC = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
             ASSERT_EQUALS("container(C) *", typeOf("C*c=new C;","new","test.cpp",&sC));
             ASSERT_EQUALS("container(C) *", typeOf("x=(C*)c;","(","test.cpp",&sC));
             ASSERT_EQUALS("container(C)", typeOf("C c = C();","(","test.cpp",&sC));
         }
         {
             // Container (vector)
-            Settings set;
-            Library::Container vector;
-            vector.startPattern = "Vector <";
-            vector.startPattern2 = "Vector !!::";
-            vector.type_templateArgNo = 0;
-            vector.arrayLike_indexOp = true;
-            vector.functions["front"] =
-                Library::Container::Function{Library::Container::Action::NO_ACTION, Library::Container::Yield::ITEM};
-            vector.functions["data"] =
-                Library::Container::Function{Library::Container::Action::NO_ACTION, Library::Container::Yield::BUFFER};
-            vector.functions["begin"] = Library::Container::Function{Library::Container::Action::NO_ACTION,
-                                                                     Library::Container::Yield::START_ITERATOR};
-            set.library.containers["Vector"] = vector;
-            Library::Container string;
-            string.startPattern = "test :: string";
-            string.startPattern2 = "test :: string !!::";
-            string.arrayLike_indexOp = string.stdStringLike = true;
-            set.library.containers["test::string"] = string;
+            constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                       "<def>\n"
+                                       "  <container id=\"Vector\" startPattern=\"Vector &lt;\">\n"
+                                       "    <type templateParameter=\"0\"/>\n"
+                                       "    <access indexOperator=\"array-like\">\n"
+                                       "      <function name=\"front\" yields=\"item\"/>\n"
+                                       "      <function name=\"data\" yields=\"buffer\"/>\n"
+                                       "      <function name=\"begin\" yields=\"start-iterator\"/>\n"
+                                       "    </access>\n"
+                                       "  </container>\n"
+                                       "  <container id=\"test::string\" startPattern=\"test :: string\">\n"
+                                       "    <type string=\"std-like\"/>\n"
+                                       "    <access indexOperator=\"array-like\"/>\n"
+                                       "  </container>\n"
+                                       "</def>";
+            const Settings set = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
             ASSERT_EQUALS("signed int", typeOf("Vector<int> v; v[0]=3;", "[", "test.cpp", &set));
             ASSERT_EQUALS("container(test :: string)", typeOf("{return test::string();}", "(", "test.cpp", &set));
             ASSERT_EQUALS(
@@ -8876,11 +8874,11 @@ private:
         // return
         {
             // Container
-            Settings sC;
-            Library::Container c;
-            c.startPattern = "C";
-            c.startPattern2 = "C !!::";
-            sC.library.containers["C"] = c;
+            constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                       "<def>\n"
+                                       "  <container id=\"C\" startPattern=\"C\"/>\n"
+                                       "</def>";
+            const Settings sC = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
             ASSERT_EQUALS("container(C)", typeOf("C f(char *p) { char data[10]; return data; }", "return", "test.cpp", &sC));
         }
         // Smart pointer
