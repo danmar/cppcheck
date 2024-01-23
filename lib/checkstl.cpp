@@ -712,10 +712,11 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
     if (kind == ValueFlow::Value::LifetimeKind::Address || kind == ValueFlow::Value::LifetimeKind::Iterator) {
         const auto address1 = getAddressContainer(tok1);
         const auto address2 = getAddressContainer(tok2);
-        for (std::size_t i = 0; i < address1.size(); ++i)
-            for (std::size_t j = 0; j < address2.size(); ++j)
-                if (isSameExpression(true, false, address1[i], address2[j], library, false, false))
-                    return true;
+        return std::any_of(address1.begin(), address1.end(), [&](const Token* tok1) {
+            return std::any_of(address2.begin(), address2.end(), [&](const Token* tok2) {
+                return isSameExpression(true, false, tok1, tok2, library, false, false);
+            });
+        });
     }
     return false;
 }
