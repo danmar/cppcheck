@@ -2145,6 +2145,31 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #12377
+        check("void f(bool b) {\n"
+              "    std::vector<int> *pv;\n"
+              "    if (b) {\n"
+              "        std::vector<int>& r = get1();\n"
+              "        pv = &r;\n"
+              "    }\n"
+              "    else {\n"
+              "        std::vector<int>& r = get2();\n"
+              "        pv = &r;\n"
+              "    }\n"
+              "    std::vector<int>::iterator it = pv->begin();\n"
+              "    it = pv->erase(it, it + 2);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    std::vector<int> v;\n"
+              "    void f() {\n"
+              "        std::vector<int>* p = &v;\n"
+              "        p->insert(std::find(p->begin(), p->end(), 0), 1);\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Dereferencing invalid pointer

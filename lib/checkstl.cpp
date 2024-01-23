@@ -686,11 +686,19 @@ void CheckStl::sameIteratorExpressionError(const Token *tok)
     reportError(tok, Severity::style, "sameIteratorExpression", "Same iterators expression are used for algorithm.", CWE664, Certainty::normal);
 }
 
-static const Token* getAddressContainer(const Token* tok)
+static std::vector<const Token*> getAddressContainer(const Token* tok)
 {
     if (Token::simpleMatch(tok, "[") && tok->astOperand1())
-        return tok->astOperand1();
-    return tok;
+        return { tok->astOperand1() };
+    std::vector<ValueFlow::Value> values = ValueFlow::getLifetimeObjValues(tok, /*inconclusive*/ false);
+    std::vector<const Token*> res;
+    for (const auto& v : values) {
+        if (v.tokvalue)
+            res.emplace_back(v.tokvalue);
+    }
+    if (res.empty())
+        res.emplace_back(tok);
+    return res;
 }
 
 static bool isSameIteratorContainerExpression(const Token* tok1,
@@ -701,8 +709,13 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
     if (isSameExpression(true, false, tok1, tok2, library, false, false)) {
         return !astIsContainerOwned(tok1) || !isTemporary(true, tok1, &library);
     }
-    if (kind == ValueFlow::Value::LifetimeKind::Address) {
-        return isSameExpression(true, false, getAddressContainer(tok1), getAddressContainer(tok2), library, false, false);
+    if (kind == ValueFlow::Value::LifetimeKind::Address || kind == ValueFlow::Value::LifetimeKind::Iterator) {
+        const auto address1 = getAddressContainer(tok1);
+        const auto address2 = getAddressContainer(tok2);
+        for (std::size_t i = 0; i < address1.size(); ++i)
+            for (std::size_t j = 0; j < address2.size(); ++j)
+                if (isSameExpression(true, false, address1[i], address2[j], library, false, false))
+                    return true;
     }
     return false;
 }
