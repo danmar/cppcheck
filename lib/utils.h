@@ -347,6 +347,13 @@ static inline const char* bool_to_string(bool b)
     return b ? "true" : "false";
 }
 
+/**
+ * Remove heading and trailing whitespaces from the input parameter.
+ * If string is all spaces/tabs, return empty string.
+ * @param s The string to trim.
+ */
+CPPCHECKLIB std::string trim(const std::string& s);
+
 namespace cppcheck
 {
     NORETURN inline void unreachable()

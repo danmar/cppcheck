@@ -129,3 +129,12 @@ void strTolower(std::string& str)
         return std::tolower(c);
     });
 }
+
+std::string trim(const std::string& s)
+{
+    const std::string::size_type beg = s.find_first_not_of(" \t");
+    if (beg == std::string::npos)
+        return "";
+    const std::string::size_type end = s.find_last_not_of(" \t");
+    return s.substr(beg, end - beg + 1);
+}
