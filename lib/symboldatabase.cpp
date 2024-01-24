@@ -2874,7 +2874,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             if (second)
                 second = second->tokAt(-2);
             if (!second) { // End of argument list (second)
-                return false;
+                return !first->nextArgument();
             }
         }
 

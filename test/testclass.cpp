@@ -8530,6 +8530,16 @@ private:
                       "};\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:8]: (style) The function 'operator->' overrides a function in a base class but is not marked with a 'override' specifier.\n",
                       errout.str());
+
+        checkOverride("class Base {\n" // #12131
+                      "    virtual int Calculate(int arg) = 0;\n"
+                      "};\n"
+                      "class Derived : public Base {\n"
+                      "    int Calculate(int arg = 0) {\n"
+                      "        return arg * 2;\n"
+                      "    }\n"
+                      "};\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) The function 'Calculate' overrides a function in a base class but is not marked with a 'override' specifier.\n", errout.str());
     }
 
     void overrideCVRefQualifiers() {
