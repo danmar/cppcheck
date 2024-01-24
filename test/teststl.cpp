@@ -2031,17 +2031,14 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("struct S {\n"
+        check("struct S {\n" // #11469
               "    const std::vector<int>* vec() const { return &v; }\n"
               "    const std::vector<int> v;\n"
               "};\n"
               "void f(const S& a, const S& b) {\n"
               "    if (a.vec()->begin() - a.vec()->end() != b.vec()->begin() - b.vec()->end()) {}\n"
               "}\n");
-        TODO_ASSERT_EQUALS("",
-                           "[test.cpp:6]: (warning) Iterators to containers from different expressions 'a.vec()' and 'a.vec()' are used together.\n"
-                           "[test.cpp:6]: (warning) Iterators to containers from different expressions 'b.vec()' and 'b.vec()' are used together.\n",
-                           errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void iteratorSameExpression() {

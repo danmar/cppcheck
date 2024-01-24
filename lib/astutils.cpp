@@ -439,7 +439,15 @@ bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknow
         if (Token::simpleMatch(tok->astOperand1(), "typeid"))
             return false;
         if (tok->valueType()) {
-            return tok->valueType()->reference == Reference::None;
+            if (tok->valueType()->pointer > 0) {
+                const Token* const parent = tok->astParent();
+                if (Token::simpleMatch(parent, "&"))
+                    return true;
+                if (Token::simpleMatch(parent, "return") && parent->valueType()->reference != Reference::None &&
+                    parent->valueType()->container && parent->valueType()->container->stdStringLike)
+                    return true;
+            }
+            return tok->valueType()->reference == Reference::None && tok->valueType()->pointer == 0;
         }
         const Token* ftok = nullptr;
         if (Token::simpleMatch(tok->previous(), ">") && tok->previous()->link())
