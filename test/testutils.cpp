@@ -38,6 +38,7 @@ private:
         TEST_CASE(strToInt);
         TEST_CASE(id_string);
         TEST_CASE(startsWith);
+        TEST_CASE(trim);
     }
 
     void isValidGlobPattern() const {
@@ -356,6 +357,41 @@ private:
         ASSERT(!::startsWith("tes", "test"));
         ASSERT(!::startsWith("2test", "t"));
         ASSERT(!::startsWith("t", "test"));
+    }
+
+    void trim() const
+    {
+        ASSERT_EQUALS("test", ::trim("test"));
+        ASSERT_EQUALS("test", ::trim(" test"));
+        ASSERT_EQUALS("test", ::trim("test "));
+        ASSERT_EQUALS("test", ::trim(" test "));
+        ASSERT_EQUALS("test", ::trim("  test"));
+        ASSERT_EQUALS("test", ::trim("test  "));
+        ASSERT_EQUALS("test", ::trim("  test  "));
+        ASSERT_EQUALS("test", ::trim("\ttest"));
+        ASSERT_EQUALS("test", ::trim("test\t"));
+        ASSERT_EQUALS("test", ::trim("\ttest\t"));
+        ASSERT_EQUALS("test", ::trim("\t\ttest"));
+        ASSERT_EQUALS("test", ::trim("test\t\t"));
+        ASSERT_EQUALS("test", ::trim("\t\ttest\t\t"));
+        ASSERT_EQUALS("test", ::trim(" \ttest"));
+        ASSERT_EQUALS("test", ::trim("test\t "));
+        ASSERT_EQUALS("test", ::trim(" \ttest\t"));
+        ASSERT_EQUALS("test", ::trim("\t \ttest"));
+        ASSERT_EQUALS("test", ::trim("test\t \t"));
+        ASSERT_EQUALS("test", ::trim("\t \ttest\t \t"));
+
+        ASSERT_EQUALS("test test", ::trim("test test"));
+        ASSERT_EQUALS("test test", ::trim(" test test"));
+        ASSERT_EQUALS("test test", ::trim("test test "));
+        ASSERT_EQUALS("test test", ::trim(" test test "));
+        ASSERT_EQUALS("test\ttest", ::trim(" test\ttest"));
+        ASSERT_EQUALS("test\ttest", ::trim("test\ttest "));
+        ASSERT_EQUALS("test\ttest", ::trim(" test\ttest "));
+
+        ASSERT_EQUALS("test", ::trim("\ntest", "\n"));
+        ASSERT_EQUALS("test", ::trim("test\n", "\n"));
+        ASSERT_EQUALS("test", ::trim("\ntest\n", "\n"));
     }
 };
 
