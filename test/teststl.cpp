@@ -2161,6 +2161,10 @@ private:
               "    std::vector<int> v{ 1, 2, 3 };\n"
               "    auto it = v.begin();\n"
               "    v.erase(it);\n"
+              "}\n"
+              "void m() {\n"
+              "    std::vector<int> v{ 1, 2, 3 };\n"
+              "    v.erase(v.end() - 1);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Function 'erase()' must not be called on the end iterator 'v.begin()'.\n"
                       "[test.cpp:7]: (error) Function 'erase()' must not be called on the end iterator 'v.end()'.\n"

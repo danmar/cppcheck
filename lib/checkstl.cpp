@@ -3149,11 +3149,13 @@ void CheckStl::eraseEndIterator()
             if (args.size() != 1) // empty range is ok
                 continue;
 
-            if (args[0]->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_END))
-                eraseEndIteratorError(tok->tokAt(2), args[0]);
+            if (const ValueFlow::Value* itValue = args[0]->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_END)) {
+                if (itValue->intvalue == 0)
+                    eraseEndIteratorError(tok->tokAt(2), args[0]);
+            }
             else if (args[0]->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_START)) {
-                if (const ValueFlow::Value* size = tok->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
-                    if (size->intvalue == 0)
+                if (const ValueFlow::Value* sizeValue = tok->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
+                    if (sizeValue->intvalue == 0)
                         eraseEndIteratorError(tok->tokAt(2), args[0]);
             }
         }
