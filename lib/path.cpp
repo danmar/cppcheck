@@ -20,11 +20,17 @@
 #undef __STRICT_ANSI__
 #endif
 
+//#define LOG_EMACS_MARKER
+
 #include "path.h"
 #include "utils.h"
 
 #include <algorithm>
+#include <cstdio>
 #include <cstdlib>
+#ifdef LOG_EMACS_MARKER
+#include <iostream>
+#endif
 #include <sys/stat.h>
 #include <unordered_set>
 #include <utility>
@@ -210,16 +216,102 @@ static const std::unordered_set<std::string> header_exts = {
 bool Path::acceptFile(const std::string &path, const std::set<std::string> &extra)
 {
     bool header = false;
-    return (identify(path, &header) != Standards::Language::None && !header) || extra.find(getFilenameExtension(path)) != extra.end();
+    return (identify(path, false, &header) != Standards::Language::None && !header) || extra.find(getFilenameExtension(path)) != extra.end();
 }
 
-Standards::Language Path::identify(const std::string &path, bool *header)
+static bool hasEmacsCppMarker(const char* path)
+{
+    // TODO: identify is called three times for each file
+    // Preprocessor::loadFiles() -> createDUI()
+    // Preprocessor::preprocess() -> createDUI()
+    // TokenList::createTokens() -> TokenList::determineCppC()
+#ifdef LOG_EMACS_MARKER
+    std::cout << path << '\n';
+#endif
+
+    FILE *fp = fopen(path, "rt");
+    if (!fp)
+        return false;
+    std::string buf(128, '\0');
+    {
+        // TODO: read the whole first line only
+        const char * const res = fgets(const_cast<char*>(buf.data()), buf.size(), fp);
+        fclose(fp);
+        fp = nullptr;
+        if (!res)
+            return false; // failed to read file
+    }
+    // TODO: replace with regular expression
+    const auto pos1 = buf.find("-*-");
+    if (pos1 == std::string::npos)
+        return false; // no start marker
+    const auto pos_nl = buf.find_first_of("\r\n");
+    if (pos_nl != std::string::npos && (pos_nl < pos1)) {
+#ifdef LOG_EMACS_MARKER
+        std::cout << path << " - Emacs marker not on the first line" << '\n';
+#endif
+        return false; // not on first line
+    }
+    const auto pos2 = buf.find("-*-", pos1 + 3);
+    // TODO: make sure we have read the whole line before bailing out
+    if (pos2 == std::string::npos) {
+#ifdef LOG_EMACS_MARKER
+        std::cout << path << " - Emacs marker not terminated" << '\n';
+#endif
+        return false; // no end marker
+    }
+#ifdef LOG_EMACS_MARKER
+    std::cout << "Emacs marker: '"  << buf.substr(pos1, (pos2 + 3) - pos1) << "'" << '\n';
+#endif
+    // TODO: support /* */ comments
+    const std::string buf_trim = trim(buf); // trim whitespaces
+    if (buf_trim[0] != '/' || buf_trim[1] != '/') {
+#ifdef LOG_EMACS_MARKER
+        std::cout << path << " - Emacs marker not in a comment: '"  << buf.substr(pos1, (pos2 + 3) - pos1) << "'" << '\n';
+#endif
+        return false; // not a comment
+    }
+
+    // there are more variations with lowercase and no whitespaces
+    // -*- C++ -*-
+    // -*- Mode: C++; -*-
+    // -*- Mode: C++; c-basic-offset: 8 -*-
+    std::string marker = trim(buf.substr(pos1 + 3, pos2 - pos1 - 3), " ;");
+    // cut off additional attributes
+    const auto pos_semi = marker.find(';');
+    if (pos_semi != std::string::npos)
+        marker.resize(pos_semi);
+    findAndReplace(marker, "mode:", "");
+    findAndReplace(marker, "Mode:", "");
+    marker = trim(marker);
+    if (marker == "C++" || marker == "c++")
+        return true; // C++ marker found
+
+    //if (marker == "C" || marker == "c")
+    //    return false;
+#ifdef LOG_EMACS_MARKER
+    std::cout << path << " - unmatched Emacs marker: '"  << marker << "'" << '\n';
+#endif
+
+    return false; // marker is not a C++ one
+}
+
+Standards::Language Path::identify(const std::string &path, bool cppHeaderProbe, bool *header)
 {
     // cppcheck-suppress uninitvar - TODO: FP
     if (header)
         *header = false;
 
     std::string ext = getFilenameExtension(path);
+    // standard library headers have no extension
+    if (cppHeaderProbe && ext.empty()) {
+        if (hasEmacsCppMarker(path.c_str())) {
+            if (header)
+                *header = true;
+            return Standards::Language::CPP;
+        }
+        return Standards::Language::None;
+    }
     if (ext == ".C")
         return Standards::Language::CPP;
     if (c_src_exts.find(ext) != c_src_exts.end())
@@ -230,7 +322,9 @@ Standards::Language Path::identify(const std::string &path, bool *header)
     if (ext == ".h") {
         if (header)
             *header = true;
-        return Standards::Language::C; // treat as C for now
+        if (cppHeaderProbe && hasEmacsCppMarker(path.c_str()))
+            return Standards::Language::CPP;
+        return Standards::Language::C;
     }
     if (cpp_src_exts.find(ext) != cpp_src_exts.end())
         return Standards::Language::CPP;
@@ -245,7 +339,7 @@ Standards::Language Path::identify(const std::string &path, bool *header)
 bool Path::isHeader(const std::string &path)
 {
     bool header;
-    (void)Path::identify(path, &header);
+    (void)identify(path, false, &header);
     return header;
 }
 

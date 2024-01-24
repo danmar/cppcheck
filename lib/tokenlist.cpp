@@ -96,7 +96,7 @@ void TokenList::determineCppC()
     // only try to determine if it wasn't enforced
     if (mLang == Standards::Language::None) {
         ASSERT_LANG(!getSourceFilePath().empty());
-        mLang = Path::identify(getSourceFilePath());
+        mLang = Path::identify(getSourceFilePath(), mSettings ? mSettings->cppHeaderProbe : false);
         // TODO: cannot enable assert as this might occur for unknown extensions
         //ASSERT_LANG(mLang != Standards::Language::None);
         if (mLang == Standards::Language::None) {

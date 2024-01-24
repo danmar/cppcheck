@@ -1487,3 +1487,32 @@ def test_markup_lang(tmpdir):
 
     exitcode, stdout, _ = cppcheck(args)
     assert exitcode == 0, stdout
+
+
+def test_cpp_probe(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.h')
+    with open(test_file, 'wt') as f:
+        f.writelines([
+            'class A {};'
+        ])
+
+    args = ['-q', '--template=simple', '--cpp-header-probe', '--verbose', test_file]
+    err_lines = [
+        # TODO: fix that awkward format
+        "{}:1:1: error: Code 'classA{{' is invalid C code.: Use --std, -x or --language to enforce C++. Or --cpp-header-probe to identify C++ headers via the Emacs marker. [syntaxError]".format(test_file)
+    ]
+
+    assert_cppcheck(args, ec_exp=0, err_exp=err_lines, out_exp=[])
+
+
+def test_cpp_probe_2(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.h')
+    with open(test_file, 'wt') as f:
+        f.writelines([
+            '// -*- C++ -*-',
+            'class A {};'
+        ])
+
+    args = ['-q', '--template=simple', '--cpp-header-probe', test_file]
+
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=[])

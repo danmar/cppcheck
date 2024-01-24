@@ -8067,7 +8067,7 @@ void Tokenizer::unmatchedToken(const Token *tok) const
 void Tokenizer::syntaxErrorC(const Token *tok, const std::string &what) const
 {
     printDebugOutput(0);
-    throw InternalError(tok, "Code '"+what+"' is invalid C code. Use --std or --language to configure the language.", InternalError::SYNTAX);
+    throw InternalError(tok, "Code '"+what+"' is invalid C code.", "Use --std, -x or --language to enforce C++. Or --cpp-header-probe to identify C++ headers via the Emacs marker.", InternalError::SYNTAX);
 }
 
 void Tokenizer::unknownMacroError(const Token *tok1) const

@@ -294,6 +294,7 @@ public:
 // *INDENT-ON*
 #define ASSERT_EQUALS_WITHOUT_LINENUMBERS( EXPECTED, ACTUAL )  assertEqualsWithoutLineNumbers(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define ASSERT_EQUALS_DOUBLE( EXPECTED, ACTUAL, TOLERANCE )  assertEqualsDouble(__FILE__, __LINE__, EXPECTED, ACTUAL, TOLERANCE)
+#define ASSERT_EQUALS_LOC_MSG( EXPECTED, ACTUAL, MSG, FILE_, LINE_ )  assertEquals(FILE_, LINE_, EXPECTED, ACTUAL, MSG)
 #define ASSERT_EQUALS_MSG( EXPECTED, ACTUAL, MSG )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL, MSG)
 #define ASSERT_EQUALS_ENUM( EXPECTED, ACTUAL )  if (!assertEqualsEnum(__FILE__, __LINE__, (EXPECTED), (ACTUAL))) return
 #define ASSERT_THROW( CMD, EXCEPTION ) do { try { CMD; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&) {} catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
