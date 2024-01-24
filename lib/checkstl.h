@@ -78,6 +78,7 @@ private:
         checkStl.mismatchingContainers();
         checkStl.mismatchingContainerIterator();
         checkStl.knownEmptyContainer();
+        checkStl.eraseEndIterator();
 
         checkStl.stlBoundaries();
         checkStl.checkDereferenceInvalidIterator();
@@ -183,6 +184,8 @@ private:
 
     void knownEmptyContainer();
 
+    void eraseEndIterator();
+
     void checkMutexes();
 
     bool isContainerSize(const Token *containerToken, const Token *expr) const;
@@ -233,6 +236,8 @@ private:
     void useStlAlgorithmError(const Token *tok, const std::string &algoName);
 
     void knownEmptyContainerError(const Token *tok, const std::string& algo);
+
+    void eraseEndIteratorError(const Token* ftok, const Token* itertok);
 
     void globalLockGuardError(const Token *tok);
     void localMutexError(const Token *tok);

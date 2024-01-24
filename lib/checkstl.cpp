@@ -3117,6 +3117,49 @@ void CheckStl::knownEmptyContainer()
     }
 }
 
+void CheckStl::eraseEndIteratorError(const Token *ftok, const Token* itertok)
+{
+    const std::string func = ftok ? ftok->str() : std::string("erase");
+    const std::string iter = itertok ? itertok->expressionString() : std::string("it");
+
+    const std::string msg = "Function '" + func + "()' must not be called on the end iterator '" + iter + "'.";
+
+    reportError(ftok, Severity::error,
+                "eraseEndIterator",
+                msg, CWE398, Certainty::normal);
+}
+
+void CheckStl::eraseEndIterator()
+{
+    logChecker("CheckStl::eraseEndIterator");
+    for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
+        for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
+
+            if (!tok->valueType())
+                continue;
+            const Library::Container* container = tok->valueType()->container;
+            if (!container)
+                continue;
+            if (!Token::Match(tok->next(), ". %name% ("))
+                continue;
+            const Library::Container::Action action = container->getAction(tok->strAt(2));
+            if (action != Library::Container::Action::ERASE)
+                continue;
+            const std::vector<const Token*> args = getArguments(tok->tokAt(2));
+            if (args.size() != 1) // empty range is ok
+                continue;
+
+            if (args[0]->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_END))
+                eraseEndIteratorError(tok->tokAt(2), args[0]);
+            else if (args[0]->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_START)) {
+                if (const ValueFlow::Value* size = tok->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
+                    if (size->intvalue == 0)
+                        eraseEndIteratorError(tok->tokAt(2), args[0]);
+            }
+        }
+    }
+}
+
 static bool isMutex(const Variable* var)
 {
     const Token* tok = Token::typeDecl(var->nameToken()).first;

@@ -74,6 +74,7 @@ private:
         TEST_CASE(iteratorExpression);
         TEST_CASE(iteratorSameExpression);
         TEST_CASE(mismatchingContainerIterator);
+        TEST_CASE(eraseEndIterator);
 
         TEST_CASE(dereference);
         TEST_CASE(dereference_break);  // #3644 - handle "break"
@@ -2137,6 +2138,37 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void eraseEndIterator() {
+        check("void f() {\n"
+              "    std::vector<int> v;\n"
+              "    v.erase(v.begin());\n"
+              "}\n"
+              "void g() {\n"
+              "    std::vector<int> v;\n"
+              "    v.erase(v.end());\n"
+              "}\n"
+              "void h() {\n"
+              "    std::vector<int> v;\n"
+              "    auto it = v.begin();\n"
+              "    v.erase(it);\n"
+              "}\n"
+              "void j() {\n"
+              "    std::vector<int> v{ 1, 2, 3 };\n"
+              "    auto it = v.end();\n"
+              "    v.erase(it);\n"
+              "}\n"
+              "void k() {\n"
+              "    std::vector<int> v{ 1, 2, 3 };\n"
+              "    auto it = v.begin();\n"
+              "    v.erase(it);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Function 'erase()' must not be called on the end iterator 'v.begin()'.\n"
+                      "[test.cpp:7]: (error) Function 'erase()' must not be called on the end iterator 'v.end()'.\n"
+                      "[test.cpp:12]: (error) Function 'erase()' must not be called on the end iterator 'it'.\n"
+                      "[test.cpp:17]: (error) Function 'erase()' must not be called on the end iterator 'it'.\n",
+                      errout.str());
+    }
+
     // Dereferencing invalid pointer
     void dereference() {
         check("void f()\n"
@@ -2196,7 +2228,9 @@ private:
               "    ints.erase(iter);\n"
               "    std::cout << iter->first << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6]: (error) Iterator 'iter' used after element has been erased.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6]: (error) Iterator 'iter' used after element has been erased.\n"
+                      "[test.cpp:6]: (error) Function 'erase()' must not be called on the end iterator 'iter'.\n",
+                      errout.str());
 
         // Reverse iterator
         check("void f()\n"
@@ -2207,7 +2241,9 @@ private:
               "    ints.erase(iter);\n"
               "    std::cout << iter->first << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6]: (error) Iterator 'iter' used after element has been erased.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6]: (error) Iterator 'iter' used after element has been erased.\n"
+                      "[test.cpp:6]: (error) Function 'erase()' must not be called on the end iterator 'iter'.\n",
+                      errout.str());
     }
 
     void dereference_auto() {
