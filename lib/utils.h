@@ -351,8 +351,9 @@ static inline const char* bool_to_string(bool b)
  * Remove heading and trailing whitespaces from the input parameter.
  * If string is all spaces/tabs, return empty string.
  * @param s The string to trim.
+ * @param t The characters to trim.
  */
-CPPCHECKLIB std::string trim(const std::string& s);
+CPPCHECKLIB std::string trim(const std::string& s, const std::string& t = " \t");
 
 namespace cppcheck
 {
