@@ -707,9 +707,8 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
     if (astContainerYield(tok2) == Library::Container::Yield::ITEM)
         return true;
     const Token* const parent = tok2->astParent();
-    if (Token::simpleMatch(parent, ".") && Token::simpleMatch(parent->astParent(), "(") && Token::simpleMatch(parent->astParent()->astParent(), "*"))
-        return true;
-    return false;
+    return Token::simpleMatch(parent, ".") && Token::simpleMatch(parent->astParent(), "(") &&
+           Token::simpleMatch(parent->astParent()->astParent(), "*");
 }
 
 static ValueFlow::Value getLifetimeIteratorValue(const Token* tok, MathLib::bigint path = 0)
