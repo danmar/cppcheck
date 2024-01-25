@@ -2170,6 +2170,16 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    std::vector<int> v;\n"
+              "    void f(int i) {\n"
+              "        std::vector<int>* p = &v;\n"
+              "        if (p->size() > i)\n"
+              "            p->erase(p->begin() + i, p->end());\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Dereferencing invalid pointer
