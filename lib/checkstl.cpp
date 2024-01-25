@@ -704,6 +704,11 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
     if (kind == ValueFlow::Value::LifetimeKind::Address) {
         return isSameExpression(true, false, getAddressContainer(tok1), getAddressContainer(tok2), library, false, false);
     }
+    if (astContainerYield(tok2) == Library::Container::Yield::ITEM)
+        return true;
+    const Token* const parent = tok2->astParent();
+    if (Token::simpleMatch(parent, ".") && Token::simpleMatch(parent->astParent(), "(") && Token::simpleMatch(parent->astParent()->astParent(), "*"))
+        return true;
     return false;
 }
 
