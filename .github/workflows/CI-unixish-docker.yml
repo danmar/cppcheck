@@ -60,8 +60,10 @@ jobs:
       # needs to be called after the package installation since
       # - it doesn't call "apt-get update"
       # - it doesn't support centos
+      #
+      # needs to be to fixated on 1.2.11 so it works with older images - see https://github.com/hendrikmuhs/ccache-action/issues/178
       - name: ccache
-        uses: hendrikmuhs/ccache-action@v1.2
+        uses: hendrikmuhs/ccache-action@v1.2.11
         if: matrix.image != 'ubuntu:14.04' # no support for --set-config
         with:
           key: ${{ github.workflow }}-${{ matrix.image }}
@@ -134,8 +136,10 @@ jobs:
       # needs to be called after the package installation since
       # - it doesn't call "apt-get update"
       # - it doesn't support centos
+      #
+      # needs to be to fixated on 1.2.11 so it works with older images - see https://github.com/hendrikmuhs/ccache-action/issues/178
       - name: ccache
-        uses: hendrikmuhs/ccache-action@v1.2
+        uses: hendrikmuhs/ccache-action@v1.2.11
         if: matrix.image != 'ubuntu:14.04' # no support for --set-config
         with:
           key: ${{ github.workflow }}-${{ matrix.image }}
