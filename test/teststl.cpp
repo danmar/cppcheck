@@ -74,7 +74,7 @@ private:
         TEST_CASE(iteratorExpression);
         TEST_CASE(iteratorSameExpression);
         TEST_CASE(mismatchingContainerIterator);
-        TEST_CASE(eraseEndIterator);
+        TEST_CASE(eraseIteratorOutOfBounds);
 
         TEST_CASE(dereference);
         TEST_CASE(dereference_break);  // #3644 - handle "break"
@@ -2138,38 +2138,52 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void eraseEndIterator() {
+    void eraseIteratorOutOfBounds() {
         check("void f() {\n"
               "    std::vector<int> v;\n"
               "    v.erase(v.begin());\n"
-              "}\n"
-              "void g() {\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Function 'erase()' must not be called on the iterator 'v.begin()' since it is out of bounds.\n", errout.str());
+
+        check("void f() {\n"
               "    std::vector<int> v;\n"
               "    v.erase(v.end());\n"
-              "}\n"
-              "void h() {\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Function 'erase()' must not be called on the iterator 'v.end()' since it is out of bounds.\n", errout.str());
+
+        check("void f() {\n"
               "    std::vector<int> v;\n"
               "    auto it = v.begin();\n"
               "    v.erase(it);\n"
-              "}\n"
-              "void j() {\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Function 'erase()' must not be called on the iterator 'it' since it is out of bounds.\n", errout.str());
+
+        check("void f() {\n"
               "    std::vector<int> v{ 1, 2, 3 };\n"
               "    auto it = v.end();\n"
               "    v.erase(it);\n"
-              "}\n"
-              "void k() {\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Function 'erase()' must not be called on the iterator 'it' since it is out of bounds.\n", errout.str());
+
+        check("void f() {\n"
               "    std::vector<int> v{ 1, 2, 3 };\n"
               "    auto it = v.begin();\n"
               "    v.erase(it);\n"
-              "}\n"
-              "void m() {\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
               "    std::vector<int> v{ 1, 2, 3 };\n"
               "    v.erase(v.end() - 1);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Function 'erase()' must not be called on the end iterator 'v.begin()'.\n"
-                      "[test.cpp:7]: (error) Function 'erase()' must not be called on the end iterator 'v.end()'.\n"
-                      "[test.cpp:12]: (error) Function 'erase()' must not be called on the end iterator 'it'.\n"
-                      "[test.cpp:17]: (error) Function 'erase()' must not be called on the end iterator 'it'.\n",
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::vector<int> v{ 1, 2, 3 };\n"
+              "    v.erase(v.begin() - 1);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Function 'erase()' must not be called on the iterator 'v.begin()-1' since it is out of bounds.\n"
+                      "[test.cpp:3]: (error) Dereference of an invalid iterator: v.begin()-1\n",
                       errout.str());
     }
 

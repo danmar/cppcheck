@@ -78,7 +78,7 @@ private:
         checkStl.mismatchingContainers();
         checkStl.mismatchingContainerIterator();
         checkStl.knownEmptyContainer();
-        checkStl.eraseEndIterator();
+        checkStl.eraseIteratorOutOfBounds();
 
         checkStl.stlBoundaries();
         checkStl.checkDereferenceInvalidIterator();
@@ -184,7 +184,7 @@ private:
 
     void knownEmptyContainer();
 
-    void eraseEndIterator();
+    void eraseIteratorOutOfBounds();
 
     void checkMutexes();
 
@@ -237,7 +237,7 @@ private:
 
     void knownEmptyContainerError(const Token *tok, const std::string& algo);
 
-    void eraseEndIteratorError(const Token* ftok, const Token* itertok);
+    void eraseIteratorOutOfBoundsError(const Token* ftok, const Token* itertok);
 
     void globalLockGuardError(const Token *tok);
     void localMutexError(const Token *tok);
