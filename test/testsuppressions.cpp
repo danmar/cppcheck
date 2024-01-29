@@ -1190,9 +1190,14 @@ private:
         ASSERT_EQUALS("", settings.supprs.nomsg.addSuppressionLine("uninitvar"));
         settings.exitCode = 1;
 
-        const char code[] = "int f() { int a; return a; }";
-        ASSERT_EQUALS(0, cppCheck.check(FileWithDetails("test.c"), code)); // <- no unsuppressed error is seen
-        ASSERT_EQUALS("[test.c:1]: (error) Uninitialized variable: a\n", errout_str()); // <- report error so ThreadExecutor can suppress it and make sure the global suppression is matched.
+        ScopedFile file("test.cpp",
+                        "int f()\n"
+                        "{\n"
+                        "  int a;\n"
+                        "  return a;\n"
+                        "}");
+        ASSERT_EQUALS(0, cppCheck.check(file.path())); // <- no unsuppressed error is seen
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str()); // <- report error so ThreadExecutor can suppress it and make sure the global suppression is matched.
     }
 
     void inlinesuppress_unusedFunction() const { // #4210, #4946 - wrong report of "unmatchedSuppression" for "unusedFunction"
@@ -1223,16 +1228,16 @@ private:
         settings.inlineSuppressions = true;
         settings.relativePaths = true;
         settings.basePaths.emplace_back("/somewhere");
-        const char code[] =
-            "struct Point\n"
-            "{\n"
-            "    // cppcheck-suppress unusedStructMember\n"
-            "    int x;\n"
-            "    // cppcheck-suppress unusedStructMember\n"
-            "    int y;\n"
-            "};";
-        ASSERT_EQUALS(0, cppCheck.check(FileWithDetails("/somewhere/test.cpp"), code));
-        ASSERT_EQUALS("",errout_str());
+        ScopedFile file("test.cpp",
+                        "struct Point\n"
+                        "{\n"
+                        "    // cppcheck-suppress unusedStructMember\n"
+                        "    int x;\n"
+                        "    // cppcheck-suppress unusedStructMember\n"
+                        "    int y;\n"
+                        "};");
+        ASSERT_EQUALS(0, cppCheck.check(file.path()));
+        ASSERT_EQUALS("",errout.str());
     }
 
     void suppressingSyntaxErrorsInternal(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) { // syntaxErrors should be suppressible (#7076)
