@@ -37,10 +37,12 @@
 
 namespace {
     struct ReverseTraversal {
-        ReverseTraversal(const ValuePtr<Analyzer>& analyzer, const Settings& settings)
-            : analyzer(analyzer), settings(settings)
+        ReverseTraversal(const ValuePtr<Analyzer>& analyzer, const TokenList& tokenlist, ErrorLogger* const errorLogger, const Settings& settings)
+            : analyzer(analyzer), tokenlist(tokenlist), errorLogger(errorLogger), settings(settings)
         {}
         ValuePtr<Analyzer> analyzer;
+        const TokenList& tokenlist;
+        ErrorLogger* const errorLogger;
         const Settings& settings;
 
         std::pair<bool, bool> evalCond(const Token* tok) const {
@@ -239,6 +241,8 @@ namespace {
                                 valueFlowGenericForward(nextAfterAstRightmostLeaf(assignTok->astOperand2()),
                                                         assignTok->astOperand2()->scope()->bodyEnd,
                                                         a,
+                                                        tokenlist,
+                                                        errorLogger,
                                                         settings);
                             }
                             // Assignment to
@@ -251,8 +255,10 @@ namespace {
                                 valueFlowGenericForward(nextAfterAstRightmostLeaf(assignTok->astOperand2()),
                                                         assignTok->astOperand2()->scope()->bodyEnd,
                                                         a,
+                                                        tokenlist,
+                                                        errorLogger,
                                                         settings);
-                                valueFlowGenericReverse(assignTok->astOperand1()->previous(), end, a, settings);
+                                valueFlowGenericReverse(assignTok->astOperand1()->previous(), end, a, tokenlist, errorLogger, settings);
                             }
                         }
                     }
@@ -285,7 +291,7 @@ namespace {
                             break;
                         if (condAction.isModified())
                             break;
-                        valueFlowGenericForward(condTok, analyzer, settings);
+                        valueFlowGenericForward(condTok, analyzer, tokenlist, errorLogger, settings);
                     }
                     Token* thenEnd;
                     const bool hasElse = Token::simpleMatch(tok->link()->tokAt(-2), "} else {");
@@ -314,7 +320,7 @@ namespace {
                         break;
 
                     if (!thenAction.isModified() && !elseAction.isModified())
-                        valueFlowGenericForward(condTok, analyzer, settings);
+                        valueFlowGenericForward(condTok, analyzer, tokenlist, errorLogger, settings);
                     else if (condAction.isRead())
                         break;
                     // If the condition modifies the variable then bail
@@ -333,7 +339,7 @@ namespace {
                     }
                     Token* condTok = getCondTokFromEnd(tok->link());
                     if (condTok) {
-                        Analyzer::Result r = valueFlowGenericForward(condTok, analyzer, settings);
+                        Analyzer::Result r = valueFlowGenericForward(condTok, analyzer, tokenlist, errorLogger, settings);
                         if (r.action.isModified())
                             break;
                     }
@@ -389,10 +395,10 @@ namespace {
     };
 }
 
-void valueFlowGenericReverse(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings& settings)
+void valueFlowGenericReverse(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const TokenList& tokenlist, ErrorLogger* const errorLogger, const Settings& settings)
 {
     if (a->invalid())
         return;
-    ReverseTraversal rt{a, settings};
+    ReverseTraversal rt{a, tokenlist, errorLogger, settings};
     rt.traverse(start, end);
 }

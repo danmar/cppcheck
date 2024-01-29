@@ -42,7 +42,7 @@ public:
     TestValueFlow() : TestFixture("TestValueFlow") {}
 
 private:
-    Settings settings = settingsBuilder().library("std.cfg").build();
+    Settings settings = settingsBuilder().library("std.cfg").exhaustive().build();
 
     void run() override {
         // strcpy, abort cfg
@@ -485,7 +485,7 @@ private:
 
 #define bailout(...) bailout_(__FILE__, __LINE__, __VA_ARGS__)
     void bailout_(const char* file, int line, const char code[]) {
-        const Settings s = settingsBuilder().debugwarnings().build();
+        const Settings s = settingsBuilder().debugwarnings().exhaustive().build();
         errout.str("");
 
         std::vector<std::string> files(1, "test.cpp");
@@ -6924,7 +6924,7 @@ private:
     void valueFlowSafeFunctionParameterValues() {
         const char *code;
         std::list<ValueFlow::Value> values;
-        Settings s = settingsBuilder().library("std.cfg").build();
+        Settings s = settingsBuilder().exhaustive().library("std.cfg").build();
         s.safeChecks.classes = s.safeChecks.externalFunctions = s.safeChecks.internalFunctions = true;
 
         code = "short f(short x) {\n"
@@ -6975,7 +6975,7 @@ private:
     void valueFlowUnknownFunctionReturn() {
         const char *code;
         std::list<ValueFlow::Value> values;
-        Settings s = settingsBuilder().library("std.cfg").build();
+        Settings s = settingsBuilder().exhaustive().library("std.cfg").build();
         s.checkUnknownFunctionReturn.insert("rand");
 
         code = "x = rand();";

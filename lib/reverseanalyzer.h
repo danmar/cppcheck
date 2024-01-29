@@ -20,11 +20,13 @@
 #define reverseanalyzerH
 
 struct Analyzer;
+class ErrorLogger;
 class Settings;
 class Token;
+class TokenList;
 template<class T>
 class ValuePtr;
 
-void valueFlowGenericReverse(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings& settings);
+void valueFlowGenericReverse(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const TokenList& tokenlist, ErrorLogger* const errorLogger, const Settings& settings);
 
 #endif

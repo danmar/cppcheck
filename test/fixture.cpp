@@ -402,6 +402,8 @@ void TestFixture::reportErr(const ErrorMessage &msg)
 {
     if (msg.severity == Severity::internal)
         return;
+    if (msg.severity == Severity::information && msg.id == "normalCheckLevelMaxBranches")
+        return;
     const std::string errormessage(msg.toString(mVerbose, mTemplateFormat, mTemplateLocation));
     errout << errormessage << std::endl;
 }
@@ -420,6 +422,11 @@ void TestFixture::setTemplateFormat(const std::string &templateFormat)
         mTemplateFormat = templateFormat;
         mTemplateLocation = "";
     }
+}
+
+TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::exhaustive() {
+    settings.setCheckLevelExhaustive();
+    return *this;
 }
 
 TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::library(const char lib[]) {
