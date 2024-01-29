@@ -1516,7 +1516,7 @@ class MisraChecker:
         for token in cfg.tokenlist:
             if not token.isName:
                 continue
-            if token.function and token.scope.isExecutable:
+            if token.function and token != token.function.tokenDef:
                 if (not token.function.isStatic) and (token.str not in names):
                     names.append({'name': token.str, 'file': token.file})
             elif token.variable:
