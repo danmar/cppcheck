@@ -2155,6 +2155,12 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<int>& a, std::vector<std::vector<int>::iterator>& b) {\n"
+              "    auto it = b.begin();\n"
+              "    a.erase(*it);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Dereferencing invalid pointer

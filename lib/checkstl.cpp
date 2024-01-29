@@ -872,6 +872,8 @@ void CheckStl::mismatchingContainerIterator()
                 continue;
             if (val.lifetimeKind != ValueFlow::Value::LifetimeKind::Iterator)
                 continue;
+            if (iterTok->str() == "*" && iterTok->astOperand1()->valueType() && iterTok->astOperand1()->valueType()->type == ValueType::ITERATOR)
+                continue;
             if (isSameIteratorContainerExpression(tok, val.tokvalue, mSettings->library))
                 continue;
             mismatchingContainerIteratorError(tok, iterTok, val.tokvalue);
