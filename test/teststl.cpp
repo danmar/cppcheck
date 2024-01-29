@@ -2135,6 +2135,32 @@ private:
               "    s.v.erase(s.v.begin() + m);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11067
+        check("struct S {\n"
+              "    std::vector<int> v;\n"
+              "    std::list<std::vector<int>::const_iterator> li;\n"
+              "    void f();\n"
+              "};\n"
+              "void S::f() {\n"
+              "    v.erase(*li.begin());\n"
+              "    li.pop_front();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::set<std::string>& a, std::stack<std::set<std::string>::iterator>& b) {\n"
+              "    while (!b.empty()) {\n"
+              "        a.erase(b.top());\n"
+              "        b.pop();\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<int>& a, std::vector<std::vector<int>::iterator>& b) {\n"
+              "    auto it = b.begin();\n"
+              "    a.erase(*it);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Dereferencing invalid pointer
