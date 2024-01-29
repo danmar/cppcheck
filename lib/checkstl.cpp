@@ -3132,7 +3132,7 @@ void CheckStl::eraseIteratorOutOfBoundsError(const Token *ftok, const Token* ite
 
     reportError(ftok, isConditional ? Severity::warning : Severity::error,
                 "eraseIteratorOutOfBounds",
-                msg, CWE398, Certainty::normal);
+                msg, CWE628, Certainty::normal);
 }
 
 static const ValueFlow::Value* getIterValue(const Token* tok, ValueFlow::Value::ValueType vt)
