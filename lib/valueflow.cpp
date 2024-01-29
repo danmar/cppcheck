@@ -1105,6 +1105,53 @@ static void setTokenValueCast(Token *parent, const ValueType &valueType, const V
     }
 }
 
+template<class F>
+static size_t accumulateStructMembers(const Scope* scope, F f)
+{
+    size_t total = 0;
+    for(const Variable& var:scope->varlist) {
+        if(var.isStatic())
+            continue;
+        if(const ValueType* vt = var.valueType()) {
+            if (vt->type == ValueType::Type::RECORD && vt->typeScope == scope)
+                return 0;
+            total = f(total, *vt);
+        }
+        if(total == 0)
+            return 0;
+    }
+    return total;
+}
+
+static size_t bitCeil(size_t x)
+{
+    if (x <= 1)
+        return 1;
+    --x;
+    x |= x >> 1;
+    x |= x >> 2;
+    x |= x >> 4;
+    x |= x >> 8;
+    x |= x >> 16;
+    x |= x >> 32;
+    return x+1;
+}
+
+static size_t getAlignOf(const ValueType &vt, const Settings &settings)
+{
+    if(vt.pointer || vt.isPrimitive()) {
+        auto align = ValueFlow::getSizeOf(vt, settings);
+        return align == 0 ? 0 : bitCeil(align);
+    } 
+    if (vt.type == ValueType::Type::RECORD && vt.typeScope) {
+        return accumulateStructMembers(vt.typeScope, [&](size_t max, const ValueType& vt2) {
+            size_t a = getAlignOf(vt2, settings);
+            return std::max(max, a);
+        });
+    }
+    return 0;
+}
+
 static nonneg int getSizeOfType(const Token *typeTok, const Settings &settings)
 {
     const ValueType &valueType = ValueType::parseDecl(typeTok, settings);
@@ -1134,7 +1181,23 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings)
         return settings.platform.sizeof_double;
     if (vt.type == ValueType::Type::LONGDOUBLE)
         return settings.platform.sizeof_long_double;
-
+    if (vt.type == ValueType::Type::RECORD && vt.typeScope) {
+        size_t total = accumulateStructMembers(vt.typeScope, [&](size_t total, const ValueType& vt2) -> size_t {
+            size_t n = ValueFlow::getSizeOf(vt2, settings);
+            size_t a = getAlignOf(vt2, settings);
+            if (n == 0 || a == 0)
+                return 0;
+            size_t padding = (a - (total % a)) % a;
+            return total + padding + n;
+        });
+        if (total == 0)
+            return 0;
+        size_t align = getAlignOf(vt, settings);
+        if(align == 0)
+            return 0;
+        total += (align - (total % align)) % align;
+        return total;
+    }
     return 0;
 }
 
