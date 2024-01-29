@@ -709,6 +709,8 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
     if (isSameExpression(true, false, tok1, tok2, library, false, false)) {
         return !astIsContainerOwned(tok1) || !isTemporary(true, tok1, &library);
     }
+    if (astContainerYield(tok2) == Library::Container::Yield::ITEM)
+        return true;
     if (kind == ValueFlow::Value::LifetimeKind::Address || kind == ValueFlow::Value::LifetimeKind::Iterator) {
         const auto address1 = getAddressContainer(tok1);
         const auto address2 = getAddressContainer(tok2);
@@ -718,7 +720,7 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
             });
         });
     }
-    return astContainerYield(tok2) == Library::Container::Yield::ITEM;
+    return false;
 }
 
 static ValueFlow::Value getLifetimeIteratorValue(const Token* tok, MathLib::bigint path = 0)
