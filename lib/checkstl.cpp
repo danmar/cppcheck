@@ -3125,7 +3125,7 @@ void CheckStl::eraseIteratorOutOfBoundsError(const Token *ftok, const Token* ite
     const bool isConditional = val && val->isPossible();
     std::string msg;
     if (isConditional) {
-       msg = ValueFlow::eitherTheConditionIsRedundant(val->condition) + " or function '" + func + "()' is called on the iterator '" + iter + "' which is out of bounds.";
+        msg = ValueFlow::eitherTheConditionIsRedundant(val->condition) + " or function '" + func + "()' is called on the iterator '" + iter + "' which is out of bounds.";
     } else {
         msg = "Calling function '" + func + "()' on the iterator '" + iter + "' which is out of bounds.";
     }
