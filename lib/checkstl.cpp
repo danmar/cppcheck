@@ -718,7 +718,7 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
             });
         });
     }
-    return false;
+    return astContainerYield(tok2) == Library::Container::Yield::ITEM;
 }
 
 static ValueFlow::Value getLifetimeIteratorValue(const Token* tok, MathLib::bigint path = 0)
@@ -883,6 +883,8 @@ void CheckStl::mismatchingContainerIterator()
             if (!val.isKnown() && Token::simpleMatch(val.tokvalue->astParent(), ":"))
                 continue;
             if (val.lifetimeKind != ValueFlow::Value::LifetimeKind::Iterator)
+                continue;
+            if (iterTok->str() == "*" && iterTok->astOperand1()->valueType() && iterTok->astOperand1()->valueType()->type == ValueType::ITERATOR)
                 continue;
             if (isSameIteratorContainerExpression(tok, val.tokvalue, mSettings->library))
                 continue;
