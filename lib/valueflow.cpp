@@ -1109,15 +1109,15 @@ template<class F>
 static size_t accumulateStructMembers(const Scope* scope, F f)
 {
     size_t total = 0;
-    for(const Variable& var:scope->varlist) {
-        if(var.isStatic())
+    for (const Variable& var : scope->varlist) {
+        if (var.isStatic())
             continue;
-        if(const ValueType* vt = var.valueType()) {
+        if (const ValueType* vt = var.valueType()) {
             if (vt->type == ValueType::Type::RECORD && vt->typeScope == scope)
                 return 0;
             total = f(total, *vt);
         }
-        if(total == 0)
+        if (total == 0)
             return 0;
     }
     return total;
@@ -1134,15 +1134,15 @@ static size_t bitCeil(size_t x)
     x |= x >> 8;
     x |= x >> 16;
     x |= x >> 32;
-    return x+1;
+    return x + 1;
 }
 
-static size_t getAlignOf(const ValueType &vt, const Settings &settings)
+static size_t getAlignOf(const ValueType& vt, const Settings& settings)
 {
-    if(vt.pointer || vt.isPrimitive()) {
+    if (vt.pointer || vt.isPrimitive()) {
         auto align = ValueFlow::getSizeOf(vt, settings);
         return align == 0 ? 0 : bitCeil(align);
-    } 
+    }
     if (vt.type == ValueType::Type::RECORD && vt.typeScope) {
         return accumulateStructMembers(vt.typeScope, [&](size_t max, const ValueType& vt2) {
             size_t a = getAlignOf(vt2, settings);
@@ -1193,7 +1193,7 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings)
         if (total == 0)
             return 0;
         size_t align = getAlignOf(vt, settings);
-        if(align == 0)
+        if (align == 0)
             return 0;
         total += (align - (total % align)) % align;
         return total;
