@@ -59,6 +59,7 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+#include <filesystem>
 
 #include "json.h"
 
@@ -622,7 +623,14 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mUnusedFunctionsCheck)
         mUnusedFunctionsCheck.reset(new CheckUnusedFunctions());
 
-    mExitCode = 0;
+    if (!Path::isFile(filename)) {
+        std::string fixedpath = Path::simplifyPath(filename);
+        fixedpath = Path::toNativeSeparators(fixedpath);
+        mErrorLogger.reportOut(std::string("File ") + fixedpath + ' ' +  std::string("does not exists. Skipping..."), Color::FgMagenta);
+        return mExitCode;
+    }
+
+    FilesDeleter filesDeleter;
 
     if (Settings::terminated())
         return mExitCode;
