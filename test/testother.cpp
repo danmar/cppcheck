@@ -8232,6 +8232,18 @@ private:
               "   if (y < x) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (style) Checking if unsigned expression 'y' is less than zero.\n", errout.str());
+
+        // #12387
+        check("template<typename T>\n"
+              "void f(T t) {\n"
+              "    if constexpr (std::numeric_limits<T>::is_signed) {\n"
+              "        if (t < 0) {}\n"
+              "    }\n"
+              "}\n"
+              "void g() {\n"
+              "    f<uint32_t>(0);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkSignOfPointer() {

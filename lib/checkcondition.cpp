@@ -1567,7 +1567,7 @@ void CheckCondition::alwaysTrueFalse()
             {
                 const ValueFlow::Value *zeroValue = nullptr;
                 const Token *nonZeroExpr = nullptr;
-                if (CheckOther::comparisonNonZeroExpressionLessThanZero(tok, &zeroValue, &nonZeroExpr) ||
+                if (CheckOther::comparisonNonZeroExpressionLessThanZero(tok, &zeroValue, &nonZeroExpr, /*suppress*/ true) ||
                     CheckOther::testIfNonZeroExpressionIsPositive(tok, &zeroValue, &nonZeroExpr))
                     continue;
             }
