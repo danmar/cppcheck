@@ -2143,27 +2143,27 @@ private:
               "    std::vector<int> v;\n"
               "    v.erase(v.begin());\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Function 'erase()' must not be called on the iterator 'v.begin()' since it is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Calling function 'erase()' on the iterator 'v.begin()' which is out of bounds.\n", errout.str());
 
         check("void f() {\n"
               "    std::vector<int> v;\n"
               "    v.erase(v.end());\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Function 'erase()' must not be called on the iterator 'v.end()' since it is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Calling function 'erase()' on the iterator 'v.end()' which is out of bounds.\n", errout.str());
 
         check("void f() {\n"
               "    std::vector<int> v;\n"
               "    auto it = v.begin();\n"
               "    v.erase(it);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Function 'erase()' must not be called on the iterator 'it' since it is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Calling function 'erase()' on the iterator 'it' which is out of bounds.\n", errout.str());
 
         check("void f() {\n"
               "    std::vector<int> v{ 1, 2, 3 };\n"
               "    auto it = v.end();\n"
               "    v.erase(it);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Function 'erase()' must not be called on the iterator 'it' since it is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Calling function 'erase()' on the iterator 'it' which is out of bounds.\n", errout.str());
 
         check("void f() {\n"
               "    std::vector<int> v{ 1, 2, 3 };\n"
@@ -2182,7 +2182,7 @@ private:
               "    std::vector<int> v{ 1, 2, 3 };\n"
               "    v.erase(v.begin() - 1);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Function 'erase()' must not be called on the iterator 'v.begin()-1' since it is out of bounds.\n"
+        ASSERT_EQUALS("[test.cpp:3]: (error) Calling function 'erase()' on the iterator 'v.begin()-1' which is out of bounds.\n"
                       "[test.cpp:3]: (error) Dereference of an invalid iterator: v.begin()-1\n",
                       errout.str());
     }
@@ -2247,7 +2247,7 @@ private:
               "    std::cout << iter->first << std::endl;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6]: (error) Iterator 'iter' used after element has been erased.\n"
-                      "[test.cpp:6]: (error) Function 'erase()' must not be called on the end iterator 'iter'.\n",
+                      "[test.cpp:6]: (error) Calling function 'erase()' on the iterator 'iter' which is out of bounds.\n",
                       errout.str());
 
         // Reverse iterator
@@ -2260,7 +2260,7 @@ private:
               "    std::cout << iter->first << std::endl;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6]: (error) Iterator 'iter' used after element has been erased.\n"
-                      "[test.cpp:6]: (error) Function 'erase()' must not be called on the end iterator 'iter'.\n",
+                      "[test.cpp:6]: (error) Calling function 'erase()' on the iterator 'iter' which is out of bounds.\n",
                       errout.str());
     }
 

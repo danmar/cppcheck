@@ -3122,7 +3122,7 @@ void CheckStl::eraseIteratorOutOfBoundsError(const Token *ftok, const Token* ite
     const std::string func = ftok ? ftok->str() : std::string("erase");
     const std::string iter = itertok ? itertok->expressionString() : std::string("it");
 
-    const std::string msg = "Function '" + func + "()' must not be called on the iterator '" + iter + "' since it is out of bounds.";
+    const std::string msg = "Calling function '" + func + "()' on the iterator '" + iter + "' which is out of bounds.";
 
     reportError(ftok, Severity::error,
                 "eraseIteratorOutOfBounds",
