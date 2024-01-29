@@ -2185,6 +2185,13 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Calling function 'erase()' on the iterator 'v.begin()-1' which is out of bounds.\n"
                       "[test.cpp:3]: (error) Dereference of an invalid iterator: v.begin()-1\n",
                       errout.str());
+
+        check("void f(std::vector<int>& v, std::vector<int>::iterator it) {\n"
+              "    if (it == v.end()) {}\n"
+              "    v.erase(it);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Either the condition 'it==v.end()' is redundant or function 'erase()' is called on the iterator 'it' which is out of bounds.\n",
+                      errout.str());
     }
 
     // Dereferencing invalid pointer

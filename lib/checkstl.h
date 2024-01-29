@@ -237,7 +237,7 @@ private:
 
     void knownEmptyContainerError(const Token *tok, const std::string& algo);
 
-    void eraseIteratorOutOfBoundsError(const Token* ftok, const Token* itertok);
+    void eraseIteratorOutOfBoundsError(const Token* ftok, const Token* itertok, const ValueFlow::Value* val = nullptr);
 
     void globalLockGuardError(const Token *tok);
     void localMutexError(const Token *tok);

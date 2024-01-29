@@ -3117,16 +3117,30 @@ void CheckStl::knownEmptyContainer()
     }
 }
 
-void CheckStl::eraseIteratorOutOfBoundsError(const Token *ftok, const Token* itertok)
+void CheckStl::eraseIteratorOutOfBoundsError(const Token *ftok, const Token* itertok, const ValueFlow::Value* val)
 {
     const std::string func = ftok ? ftok->str() : std::string("erase");
     const std::string iter = itertok ? itertok->expressionString() : std::string("it");
 
-    const std::string msg = "Calling function '" + func + "()' on the iterator '" + iter + "' which is out of bounds.";
+    const bool isConditional = val && val->isPossible();
+    std::string msg;
+    if (isConditional) {
+       msg = ValueFlow::eitherTheConditionIsRedundant(val->condition) + " or function '" + func + "()' is called on the iterator '" + iter + "' which is out of bounds.";
+    } else {
+        msg = "Calling function '" + func + "()' on the iterator '" + iter + "' which is out of bounds.";
+    }
 
-    reportError(ftok, Severity::error,
+    reportError(ftok, isConditional ? Severity::warning : Severity::error,
                 "eraseIteratorOutOfBounds",
                 msg, CWE398, Certainty::normal);
+}
+
+static const ValueFlow::Value* getIterValue(const Token* tok, ValueFlow::Value::ValueType vt)
+{
+    auto it = std::find_if(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
+        return v.valueType == vt && (v.isPossible() || v.isKnown());
+    });
+    return it != tok->values().end() ? &*it : nullptr;
 }
 
 void CheckStl::eraseIteratorOutOfBounds()
@@ -3149,20 +3163,20 @@ void CheckStl::eraseIteratorOutOfBounds()
             if (args.size() != 1) // empty range is ok
                 continue;
 
-            bool error = false;
-            if (const ValueFlow::Value* endVal = args[0]->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_END)) {
+            const ValueFlow::Value* errVal = nullptr;
+            if (const ValueFlow::Value* endVal = getIterValue(args[0], ValueFlow::Value::ValueType::ITERATOR_END)) {
                 if (endVal->intvalue >= 0)
-                    error = true;
+                    errVal = endVal;
             }
-            else if (const ValueFlow::Value* startVal = args[0]->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_START)) {
+            else if (const ValueFlow::Value* startVal = getIterValue(args[0], ValueFlow::Value::ValueType::ITERATOR_START)) {
                 if (startVal->intvalue < 0)
-                    error = true;
+                    errVal = startVal;
                 else if (const ValueFlow::Value* sizeVal = tok->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
                     if (startVal->intvalue >= sizeVal->intvalue)
-                        error = true;
+                        errVal = startVal;
             }
-            if (error)
-                eraseIteratorOutOfBoundsError(tok->tokAt(2), args[0]);
+            if (errVal)
+                eraseIteratorOutOfBoundsError(tok->tokAt(2), args[0], errVal);
         }
     }
 }
