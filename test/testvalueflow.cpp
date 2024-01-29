@@ -1394,6 +1394,63 @@ private:
         values = tokenValues(code, "=");
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(sizeof(std::int32_t) * 10 * 20, values.back().intvalue);
+
+        code = "struct X { float a; float b; };\n"
+               "void f() {\n"
+               "    x = sizeof(X);\n"
+               "}";
+        values = tokenValues(code, "( X )");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(8, values.back().intvalue);
+
+        code = "struct X { char a; char b; };\n"
+               "void f() {\n"
+               "    x = sizeof(X);\n"
+               "}";
+        values = tokenValues(code, "( X )");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(2, values.back().intvalue);
+
+        code = "struct X { char a; float b; };\n"
+               "void f() {\n"
+               "    x = sizeof(X);\n"
+               "}";
+        values = tokenValues(code, "( X )");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(8, values.back().intvalue);
+
+        code = "struct X { char a; char b; float c; };\n"
+               "void f() {\n"
+               "    x = sizeof(X);\n"
+               "}";
+        values = tokenValues(code, "( X )");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(8, values.back().intvalue);
+
+        code = "struct X { float a; char b; };\n"
+               "void f() {\n"
+               "    x = sizeof(X);\n"
+               "}";
+        values = tokenValues(code, "( X )");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(8, values.back().intvalue);
+
+        code = "struct X { float a; char b; char c; };\n"
+               "void f() {\n"
+               "    x = sizeof(X);\n"
+               "}";
+        values = tokenValues(code, "( X )");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(8, values.back().intvalue);
+
+        code = "struct A { float a; char b; };\n"
+               "struct X { A a; char b; };\n"
+               "void f() {\n"
+               "    x = sizeof(X);\n"
+               "}";
+        values = tokenValues(code, "( X )");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(12, values.back().intvalue);
     }
 
     void valueFlowComma()
