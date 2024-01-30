@@ -7201,6 +7201,8 @@ static const Token* parsedecl(const Token* type,
         if (!type->originalName().empty())
             valuetype->originalTypeName = type->originalName();
         type = type->next();
+        if (type->link() && type->str() == "<")
+            type = type->link()->next();
     }
 
     // Set signedness for integral types..

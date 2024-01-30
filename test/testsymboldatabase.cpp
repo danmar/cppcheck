@@ -225,6 +225,7 @@ private:
         TEST_CASE(VariableValueType4); // smart pointer type
         TEST_CASE(VariableValueType5); // smart pointer type
         TEST_CASE(VariableValueTypeReferences);
+        TEST_CASE(VariableValueTypeTemplate);
 
         TEST_CASE(findVariableType1);
         TEST_CASE(findVariableType2);
@@ -1367,6 +1368,26 @@ private:
             ASSERT(p->valueType()->pointer == 1);
             ASSERT(p->valueType()->constness == 2);
             ASSERT(p->valueType()->reference == Reference::RValue);
+        }
+    }
+
+    void VariableValueTypeTemplate() {
+        {
+            GET_SYMBOL_DB("template <class T>\n" // #12393
+                          "struct S {\n"
+                          "    S& operator=(const S&) { return *this; }\n"
+                          "    struct U {\n"
+                          "        S<T>* p;\n"
+                          "    };\n"
+                          "    U u;\n"
+                          "};\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT_EQUALS(p->name(), "p");
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 1);
+            ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->reference == Reference::None);
+            ASSERT_EQUALS(p->typeScope()->className, "S");
         }
     }
 
