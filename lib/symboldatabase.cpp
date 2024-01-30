@@ -7201,7 +7201,7 @@ static const Token* parsedecl(const Token* type,
         if (!type->originalName().empty())
             valuetype->originalTypeName = type->originalName();
         type = type->next();
-        if (type->link() && type->str() == "<")
+        if (type && type->link() && type->str() == "<")
             type = type->link()->next();
     }
 
