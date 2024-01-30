@@ -7371,6 +7371,16 @@ private:
                "    if (std::is_same_v<T, int> || std::is_same_v<T, int32_t>) {}\n"
                "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkP("#define F(v) (v) != 0\n" // #12392
+               "template<class T>\n"
+               "void f() {\n"
+               "    if (F(0)) {}\n"
+               "}\n"
+               "void g() {\n"
+               "    f<int>();\n"
+               "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpressionCompareWithZero() {
