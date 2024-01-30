@@ -7393,7 +7393,7 @@ void Tokenizer::simplifyStaticConst()
                 list.front()->swapWithNext();
                 tok = list.front();
             } else if (leftTok->next()) {
-                leftTok->next()->insertToken(qualifiers[i], emptyString, true);
+                leftTok->next()->insertTokenBefore(qualifiers[i]);
                 tok = leftTok->next();
             } else {
                 leftTok->insertToken(qualifiers[i]);
@@ -10312,7 +10312,7 @@ void Tokenizer::prepareTernaryOpForAST()
             }
             if (parenthesesNeeded && tok2 && tok2->str() == ":") {
                 tok->insertToken("(");
-                tok2->insertToken(")", emptyString, true);
+                tok2->insertTokenBefore(")");
                 Token::createMutualLinks(tok->next(), tok2->previous());
             }
         }
