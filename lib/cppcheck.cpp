@@ -556,7 +556,7 @@ unsigned int CppCheck::check(const FileWithDetails &file)
     if (!Path::isFile(path)) {
         std::string fixedpath = Path::simplifyPath(path);
         fixedpath = Path::toNativeSeparators(fixedpath);
-        std::string errorMsg(std::string("File ") + fixedpath + ' ' +  std::string("does not exists. Skipping..."));
+        const std::string errorMsg("File " + fixedpath + " does not exists. Skipping file.");
         fileNotFoundError(Path::simplifyPath(path), errorMsg);
         return 0;
     }
@@ -583,7 +583,7 @@ unsigned int CppCheck::check(const FileSettings &fs)
     if (!Path::isFile(fs.filename)) {
         std::string fixedpath = Path::simplifyPath(fs.filename);
         fixedpath = Path::toNativeSeparators(fixedpath);
-        std::string errorMsg(std::string("File ") + fixedpath + ' ' +  std::string("does not exists. Skipping..."));
+        const std::string errorMsg("File " + fixedpath + " does not exists. Skipping file.");
         fileNotFoundError(fs.filename, errorMsg);
         return 0;
     }
@@ -1059,7 +1059,7 @@ static ErrorMessage makeError(const std::string &filename, const std::string &ms
 // TODO: replace with ErrorMessage::fromInternalError()
 void CppCheck::internalError(const std::string &filename, const std::string &msg)
 {
-    mErrorLogger.reportErr(makeError(filename, msg, "internalError"));
+    mErrorLogger.reportErr(makeError(filename, "Bailing out from analysis:" + msg, "internalError"));
 }
 
 void CppCheck::fileNotFoundError(const std::string &filename, const std::string &msg)
