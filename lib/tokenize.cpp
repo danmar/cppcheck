@@ -7389,7 +7389,7 @@ void Tokenizer::simplifyStaticConst()
             // Move the qualifier to the left-most position in the declaration
             tok->deleteNext();
             if (!leftTok) {
-                list.front()->insertToken(qualifiers[i], emptyString, false);
+                list.front()->insertToken(qualifiers[i]);
                 list.front()->swapWithNext();
                 tok = list.front();
             } else if (leftTok->next()) {
