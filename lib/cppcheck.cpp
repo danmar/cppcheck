@@ -625,7 +625,8 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
     if (!Path::isFile(filename)) {
         std::string fixedpath = Path::simplifyPath(filename);
         fixedpath = Path::toNativeSeparators(fixedpath);
-        mErrorLogger.reportOut(std::string("File ") + fixedpath + ' ' +  std::string("does not exists. Skipping..."), Color::FgMagenta);
+        std::string errorMsg(std::string("File ") + fixedpath + ' ' +  std::string("does not exists. Skipping..."));
+        fileNotFoundError(filename, errorMsg);
         return mExitCode;
     }
 
@@ -1031,21 +1032,29 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
     return mExitCode;
 }
 
-// TODO: replace with ErrorMessage::fromInternalError()
-void CppCheck::internalError(const std::string &filename, const std::string &msg)
+static ErrorMessage makeError(const std::string &filename, const std::string &msg, const std::string &id)
 {
     const std::string fullmsg("Bailing out from analysis: " + msg);
 
     ErrorMessage::FileLocation loc1(filename, 0, 0);
 
-    ErrorMessage errmsg({std::move(loc1)},
+    return ErrorMessage(callstack,
                         emptyString,
                         Severity::error,
                         fullmsg,
-                        "internalError",
+                        id,
                         Certainty::normal);
+}
 
-    mErrorLogger.reportErr(errmsg);
+// TODO: replace with ErrorMessage::fromInternalError()
+void CppCheck::internalError(const std::string &filename, const std::string &msg)
+{
+    mErrorLogger.reportErr(makeError(filename, msg, "internalError"));
+}
+
+void CppCheck::fileNotFoundError(const std::string &filename, const std::string &msg)
+{
+    mErrorLogger.reportErr(makeError(filename, msg, "fileNotFound"));
 }
 
 //---------------------------------------------------------------------------

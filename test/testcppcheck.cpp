@@ -54,6 +54,7 @@ private:
     void run() override {
         TEST_CASE(getErrorMessages);
         TEST_CASE(checkWithFile);
+        TEST_CASE(checkWithoutFile);
         TEST_CASE(checkWithFS);
         TEST_CASE(suppress_error_library);
         TEST_CASE(unique_errors);
@@ -110,6 +111,16 @@ private:
         }), errorLogger.ids.end());
         ASSERT_EQUALS(1, errorLogger.ids.size());
         ASSERT_EQUALS("nullPointer", *errorLogger.ids.cbegin());
+    }
+
+    void checkWithoutFile() const
+    {
+        ErrorLogger2 errorLogger;
+        CppCheck cppcheck(errorLogger, false, {});
+        ASSERT_EQUALS(0, cppcheck.check("NotAFile"));
+
+        ASSERT_EQUALS(1, errorLogger.ids.size());
+        ASSERT_EQUALS("fileNotFound", *errorLogger.ids.cbegin());
     }
 
     void checkWithFS() const

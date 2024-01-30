@@ -44,6 +44,7 @@
 const std::set<std::string> ErrorLogger::mCriticalErrorIds{
     "cppcheckError",
     "cppcheckLimit",
+    "fileNotFound",
     "internalAstError",
     "instantiationError",
     "internalError",
