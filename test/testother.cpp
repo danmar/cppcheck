@@ -5619,6 +5619,14 @@ private:
               "    i = b[idx];\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void g(int*);\n" // #12390
+              "void f() {\n"
+              "    int o = s.i;\n"
+              "    g(&s.i);\n"
+              "    s.i = o;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void trac1132() {
