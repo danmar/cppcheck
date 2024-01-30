@@ -553,6 +553,13 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
 
 unsigned int CppCheck::check(const FileWithDetails &file)
 {
+    if (!Path::isFile(path)) {
+        std::string fixedpath = Path::simplifyPath(path);
+        fixedpath = Path::toNativeSeparators(fixedpath);
+        std::string errorMsg(std::string("File ") + fixedpath + ' ' +  std::string("does not exists. Skipping..."));
+        fileNotFoundError(Path::simplifyPath(path), errorMsg);
+        return 0;
+    }
     if (mSettings.clang)
         return checkClang(file);
 
@@ -567,10 +574,20 @@ unsigned int CppCheck::check(const FileWithDetails &file, const std::string &con
 
 unsigned int CppCheck::check(const FileSettings &fs)
 {
+<<<<<<< HEAD
     // TODO: move to constructor when CppCheck no longer owns the settings
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mUnusedFunctionsCheck)
         mUnusedFunctionsCheck.reset(new CheckUnusedFunctions());
 
+=======
+    if (!Path::isFile(fs.filename)) {
+        std::string fixedpath = Path::simplifyPath(fs.filename);
+        fixedpath = Path::toNativeSeparators(fixedpath);
+        std::string errorMsg(std::string("File ") + fixedpath + ' ' +  std::string("does not exists. Skipping..."));
+        fileNotFoundError(fs.filename, errorMsg);
+        return 0;
+    }
+>>>>>>> 8f585fe73 (Fix)
     CppCheck temp(mErrorLogger, mUseGlobalSuppressions, mExecuteCommand);
     temp.mSettings = mSettings;
     if (!temp.mSettings.userDefines.empty())
@@ -621,14 +638,6 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
     // TODO: move to constructor when CppCheck no longer owns the settings
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mUnusedFunctionsCheck)
         mUnusedFunctionsCheck.reset(new CheckUnusedFunctions());
-
-    if (!Path::isFile(filename)) {
-        std::string fixedpath = Path::simplifyPath(filename);
-        fixedpath = Path::toNativeSeparators(fixedpath);
-        std::string errorMsg(std::string("File ") + fixedpath + ' ' +  std::string("does not exists. Skipping..."));
-        fileNotFoundError(filename, errorMsg);
-        return mExitCode;
-    }
 
     FilesDeleter filesDeleter;
 
@@ -1036,7 +1045,8 @@ static ErrorMessage makeError(const std::string &filename, const std::string &ms
 {
     const std::string fullmsg("Bailing out from analysis: " + msg);
 
-    ErrorMessage::FileLocation loc1(filename, 0, 0);
+    const ErrorMessage::FileLocation loc1(filename, 0, 0);
+    std::list<ErrorMessage::FileLocation> callstack(1, loc1);
 
     return ErrorMessage(callstack,
                         emptyString,
