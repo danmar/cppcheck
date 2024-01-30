@@ -6302,7 +6302,7 @@ struct ConditionHandler {
                          const Settings& settings,
                          SourceLocation loc = SourceLocation::current()) const
     {
-        return valueFlowReverse(start, endToken, exprTok, values, tokenlist, errorLogger, settings, loc);
+        valueFlowReverse(start, endToken, exprTok, values, tokenlist, errorLogger, settings, loc);
     }
 
     void traverseCondition(const TokenList& tokenlist,

@@ -85,6 +85,7 @@ void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool lowMem)
                             (int)(firstBracketAddress-symbolString), symbolString);
                 }
             }
+            // NOLINTNEXTLINE(bugprone-multi-level-implicit-pointer-conversion) - code matches the documented usage
             free(symbolStringList);
         } else {
             fputs("Callstack could not be obtained\n", output);

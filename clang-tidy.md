@@ -129,6 +129,8 @@ We run this separately via `clang-include-cleaner` in the `iwyu.yml` workflow as
 `performance-noexcept-swap`<br/>
 `bugprone-switch-missing-default-case`<br/>
 `bugprone-empty-catch`<br/>
+`performance-enum-size`<br/>
+`readability-avoid-nested-conditional-operator`</br>
 
 To be evaluated (need to remove exclusion).
 
@@ -184,10 +186,6 @@ It does not seem to produce any warnings for us (needs to be investigated) and i
 `misc-unused-using-decls`
 
 This is the most expensive check for several files and it is providing much in terms of code quality. Reported upstream as https://github.com/llvm/llvm-project/issues/72300.
-
-`modernize-use-nullptr`
-
-This is already covered by the `-Wzero-as-null-pointer-constant` compiler warning so there is no need for an additional check.
 
 ### Disabled for GUI only
 
