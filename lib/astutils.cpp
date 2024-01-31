@@ -2955,7 +2955,7 @@ static const Token* findExpressionChangedImpl(const Token* expr,
             global = true;
         }
 
-        if (tok->exprId() > 0) {
+        if (tok->exprId() > 0 || global) {
             const Token* modifedTok = find(start, end, [&](const Token* tok2) {
                 int indirect = 0;
                 if (const ValueType* vt = tok->valueType()) {
