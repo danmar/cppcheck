@@ -7863,7 +7863,7 @@ static void setFunctionReturnValue(const Function* f, Token* tok, ValueFlow::Val
 static void valueFlowFunctionReturn(TokenList &tokenlist, ErrorLogger *errorLogger, const Settings& settings)
 {
     for (Token *tok = tokenlist.back(); tok; tok = tok->previous()) {
-        if (tok->str() != "(" || !tok->astOperand1())
+        if (tok->str() != "(" || !tok->astOperand1() || tok->isCast())
             continue;
 
         const Function* function = nullptr;
