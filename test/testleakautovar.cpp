@@ -1701,6 +1701,16 @@ private:
               "    y = fclose(f);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    FILE *fp = fopen(\"abc\", \"r\");\n"
+              "    if (({\n"
+              "        __typeof__(fclose(fp)) r;\n"
+              "        r = (fclose(fp));\n"
+              "        r;\n"
+              "    })) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void exit1() {
