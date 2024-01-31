@@ -3152,7 +3152,7 @@ void CheckStl::eraseIteratorOutOfBounds()
             if (!tok->valueType())
                 continue;
             const Library::Container* container = tok->valueType()->container;
-            if (!container || (!astIsLHS(tok) && !Token::simpleMatch(tok->astParent(), ".")))
+            if (!container || !astIsLHS(tok) || !Token::simpleMatch(tok->astParent(), "."))
                 continue;
             const Token* const ftok = tok->astParent()->astOperand2();
             const Library::Container::Action action = container->getAction(ftok->str());
