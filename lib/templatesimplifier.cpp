@@ -1000,11 +1000,11 @@ void TemplateSimplifier::getTemplateInstantiations()
                             std::string::size_type offset = 0;
                             std::string::size_type pos = 0;
                             while ((pos = nameSpace.find(' ', offset)) != std::string::npos) {
-                                qualificationTok->insertToken(nameSpace.substr(offset, pos - offset), emptyString, true);
+                                qualificationTok->insertTokenBefore(nameSpace.substr(offset, pos - offset));
                                 offset = pos + 1;
                             }
-                            qualificationTok->insertToken(nameSpace.substr(offset), emptyString, true);
-                            qualificationTok->insertToken("::", emptyString, true);
+                            qualificationTok->insertTokenBefore(nameSpace.substr(offset));
+                            qualificationTok->insertTokenBefore("::");
                             addInstantiation(tok, it1->scope());
                             found = true;
                             break;
@@ -1635,9 +1635,9 @@ void TemplateSimplifier::expandTemplate(
 
     // add forward declarations
     if (copy && isClass) {
-        templateDeclaration.token()->insertToken(templateDeclarationToken->strAt(1), emptyString, true);
-        templateDeclaration.token()->insertToken(newName, emptyString, true);
-        templateDeclaration.token()->insertToken(";", emptyString, true);
+        templateDeclaration.token()->insertTokenBefore(templateDeclarationToken->strAt(1));
+        templateDeclaration.token()->insertTokenBefore(newName);
+        templateDeclaration.token()->insertTokenBefore(";");
     } else if ((isFunction && (copy || isSpecialization)) ||
                (isVariable && !isSpecialization) ||
                (isClass && isSpecialization && mTemplateSpecializationMap.find(templateDeclaration.token()) != mTemplateSpecializationMap.end())) {
@@ -1701,7 +1701,7 @@ void TemplateSimplifier::expandTemplate(
         }
 
         if (isStatic) {
-            dst->insertToken("static", emptyString, true);
+            dst->insertTokenBefore("static");
             if (start) {
                 dst->previous()->linenr(start->linenr());
                 dst->previous()->column(start->column());
@@ -1742,7 +1742,7 @@ void TemplateSimplifier::expandTemplate(
                         ++typeindentlevel;
                     else if (typetok->str() == ")")
                         --typeindentlevel;
-                    dst->insertToken(typetok->str(), typetok->originalName(), true);
+                    dst->insertToken(typetok->str(), typetok->originalName(), typetok->getMacroName(), true);
                     dst->previous()->linenr(start->linenr());
                     dst->previous()->column(start->column());
                     Token *previous = dst->previous();
@@ -1770,7 +1770,7 @@ void TemplateSimplifier::expandTemplate(
                     }
                 }
                 if (pointerType && Token::simpleMatch(dst1, "const")) {
-                    dst->insertToken("const", dst1->originalName(), true);
+                    dst->insertToken("const", dst1->originalName(), dst1->getMacroName(), true);
                     dst->previous()->linenr(start->linenr());
                     dst->previous()->column(start->column());
                     dst1->deleteThis();
@@ -1784,13 +1784,13 @@ void TemplateSimplifier::expandTemplate(
                            !(templateDeclaration.isFunction() && templateDeclaration.scope().empty() &&
                              (start->strAt(-1) == "." || Token::simpleMatch(start->tokAt(-2), ". template")))) {
                     if (start->strAt(1) != "<" || Token::Match(start, newName.c_str()) || !inAssignment) {
-                        dst->insertToken(newName, emptyString, true);
+                        dst->insertTokenBefore(newName);
                         dst->previous()->linenr(start->linenr());
                         dst->previous()->column(start->column());
                         if (start->strAt(1) == "<")
                             start = start->next()->findClosingBracket();
                     } else {
-                        dst->insertToken(start->str(), emptyString, true);
+                        dst->insertTokenBefore(start->str());
                         dst->previous()->linenr(start->linenr());
                         dst->previous()->column(start->column());
                         newInstantiations.emplace_back(dst->previous(), templateDeclaration.scope());
@@ -1814,7 +1814,7 @@ void TemplateSimplifier::expandTemplate(
                                 return Token::simpleMatch(inst.token(), name.c_str(), name.size());
                             })) {
                                 // use the instantiated name
-                                dst->insertToken(name, "", true);
+                                dst->insertTokenBefore(name);
                                 dst->previous()->linenr(start->linenr());
                                 dst->previous()->column(start->column());
                                 start = closing;
@@ -1822,7 +1822,7 @@ void TemplateSimplifier::expandTemplate(
                         }
                         // just copy the token if it wasn't instantiated
                         if (start != closing) {
-                            dst->insertToken(start->str(), start->originalName(), true);
+                            dst->insertToken(start->str(), start->originalName(), start->getMacroName(), true);
                             dst->previous()->linenr(start->linenr());
                             dst->previous()->column(start->column());
                             dst->previous()->isSigned(start->isSigned());
@@ -1830,7 +1830,7 @@ void TemplateSimplifier::expandTemplate(
                             dst->previous()->isLong(start->isLong());
                         }
                     } else {
-                        dst->insertToken(start->str(), start->originalName(), true);
+                        dst->insertToken(start->str(), start->originalName(), start->getMacroName(), true);
                         dst->previous()->linenr(start->linenr());
                         dst->previous()->column(start->column());
                         dst->previous()->isSigned(start->isSigned());
@@ -1858,7 +1858,7 @@ void TemplateSimplifier::expandTemplate(
 
             start = start->next();
         }
-        dst->insertToken(";", emptyString, true);
+        dst->insertTokenBefore(";");
         dst->previous()->linenr(dst->tokAt(-2)->linenr());
         dst->previous()->column(dst->tokAt(-2)->column() + 1);
 
