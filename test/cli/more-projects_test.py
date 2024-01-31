@@ -867,6 +867,7 @@ def test_shared_items_project(tmpdir = ""):
 
 
 def test_project_missing_files():
+    filename = os.path.join('invalid-project', 'main.c')
     ret, _, stderr = cppcheck(['--template=cppcheck1', '--project=' + os.path.join('invalid-project', 'invalid-project.vcxproj')])
     assert ret == 0
-    assert stderr == '[invalid-project/main.c:0]: (error) File invalid-project/main.c does not exists. Skipping file.\n'
+    assert stderr == '[{}:0]: (error) File {} does not exists. Skipping file.\n'.format(filename, filename)
