@@ -1023,6 +1023,17 @@ void nullPointer(char *p, int fd, pthread_mutex_t mutex)
     pthread_mutex_unlock(NULL);
 }
 
+void* f_returns_NULL(void*)
+{
+    return NULL;
+}
+
+void nullPointer_pthread_create() // #12396
+{
+    pthread_t thread;
+    pthread_create(&thread, NULL, (void* (*)(void*))f_returns_NULL, NULL);
+}
+
 void memleak_getaddrinfo()
 {
     //TODO: nothing to report yet, see http://sourceforge.net/p/cppcheck/discussion/general/thread/d9737d5d/
