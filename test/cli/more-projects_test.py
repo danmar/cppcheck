@@ -864,3 +864,9 @@ def test_shared_items_project(tmpdir = ""):
     # Assume no errors, and that shared items code files have been checked as well
     assert any('2/2 files checked 100% done' in x for x in lines)
     assert stderr == ''
+
+
+def test_project_missing_files():
+    ret, _, stderr = cppcheck(['--template=cppcheck1', '--project=' + os.path.join('invalid-project', 'invalid-project.vcxproj')])
+    assert ret == 0
+    assert stderr == '[invalid-project/main.c:0]: (error) File invalid-project/main.c does not exists. Skipping file.\n'
