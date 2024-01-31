@@ -468,6 +468,10 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
 
             const Token * closingParenthesis = tok->linkAt(1);
             for (const Token *innerTok = tok->tokAt(2); innerTok && innerTok != closingParenthesis; innerTok = innerTok->next()) {
+                if (isUnevaluated(innerTok)) {
+                    innerTok = innerTok->linkAt(1);
+                    continue;
+                }
                 // TODO: replace with checkTokenInsideExpression()
                 const Token* const openingPar = isFunctionCall(innerTok);
                 if (!openingPar)
