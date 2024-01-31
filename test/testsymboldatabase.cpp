@@ -1375,7 +1375,6 @@ private:
         {
             GET_SYMBOL_DB("template <class T>\n" // #12393
                           "struct S {\n"
-                          "    S& operator=(const S&) { return *this; }\n"
                           "    struct U {\n"
                           "        S<T>* p;\n"
                           "    };\n"
@@ -1387,6 +1386,7 @@ private:
             ASSERT(p->valueType()->pointer == 1);
             ASSERT(p->valueType()->constness == 0);
             ASSERT(p->valueType()->reference == Reference::None);
+            ASSERT_EQUALS(p->scope()->className, "U");
             ASSERT_EQUALS(p->typeScope()->className, "S");
         }
     }
