@@ -937,6 +937,8 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                         bool unknown = false;
 
                         for (const Variable& var: scope.varlist) {
+                            if (var.isStatic())
+                                continue;
                             if (var.isClass() && !var.isReference()) {
                                 if (var.type()) {
                                     // does this type need initialization?
@@ -947,7 +949,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                                             unknown = true;
                                     }
                                 }
-                            } else if (!var.hasDefault() && !var.isStatic()) {
+                            } else if (!var.hasDefault()) {
                                 needInitialization = true;
                                 break;
                             }
