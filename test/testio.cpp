@@ -35,7 +35,7 @@ public:
 
 private:
     const Settings settings = settingsBuilder().library("std.cfg").library("windows.cfg").library("qt.cfg").build();
-    Settings settings1 = settingsBuilder().library("std.cfg").library("windows.cfg").library("qt.cfg").build();
+    /*const*/ Settings settings1 = settingsBuilder().library("std.cfg").library("windows.cfg").library("qt.cfg").build();
 
     void run() override {
         TEST_CASE(coutCerrMisusage);

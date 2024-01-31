@@ -35,12 +35,9 @@ public:
     TestOther() : TestFixture("TestOther") {}
 
 private:
-    Settings _settings;
+    /*const*/ Settings _settings = settingsBuilder().library("std.cfg").build();
 
     void run() override {
-        LOAD_LIB_2(_settings.library, "std.cfg");
-
-
         TEST_CASE(emptyBrackets);
 
         TEST_CASE(zeroDiv1);
@@ -355,8 +352,7 @@ private:
     }
 
     void checkInterlockedDecrement(const char code[]) {
-        Settings settings;
-        settings.platform.type = Platform::Type::Win32A;
+        /*const*/ Settings settings = settingsBuilder().platform(Platform::Type::Win32A).build();
 
         check(code, nullptr, false, true, false, &settings);
     }
@@ -1905,7 +1901,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability, portability).certainty(Certainty::inconclusive, inconclusive).build();
+        /*const*/ Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability, portability).certainty(Certainty::inconclusive, inconclusive).build();
         settings.platform.defaultSign = 's';
 
         Preprocessor preprocessor(settings);
@@ -2204,7 +2200,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 't' should be passed by const reference.\n", errout.str());
 
-        Settings settings0 = settingsBuilder(_settings).platform(Platform::Type::Unix64).build();
+        /*const*/ Settings settings0 = settingsBuilder(_settings).platform(Platform::Type::Unix64).build();
         check("struct S {\n" // #12138
               "    union {\n"
               "        int a = 0;\n"
@@ -2243,7 +2239,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 's' should be passed by const reference.\n",
                       errout.str());
 
-        Settings settings1 = settingsBuilder().platform(Platform::Type::Win64).build();
+        /*const*/ Settings settings1 = settingsBuilder().platform(Platform::Type::Win64).build();
         check("using ui64 = unsigned __int64;\n"
               "ui64 Test(ui64 one, ui64 two) { return one + two; }\n",
               /*filename*/ nullptr, /*inconclusive*/ true, /*runSimpleChecks*/ true, /*verbose*/ false, &settings1);
@@ -2390,11 +2386,11 @@ private:
                                 "};\n"
                                 "void f(X x) {}";
 
-            Settings s32 = settingsBuilder(_settings).platform(Platform::Type::Unix32).build();
+            /*const*/ Settings s32 = settingsBuilder(_settings).platform(Platform::Type::Unix32).build();
             check(code, &s32);
             ASSERT_EQUALS("[test.cpp:5]: (performance) Function parameter 'x' should be passed by const reference.\n", errout.str());
 
-            Settings s64 = settingsBuilder(_settings).platform(Platform::Type::Unix64).build();
+            /*const*/ Settings s64 = settingsBuilder(_settings).platform(Platform::Type::Unix64).build();
             check(code, &s64);
             ASSERT_EQUALS("", errout.str());
         }
@@ -4929,7 +4925,7 @@ private:
                                    "    <arg nr=\"1\"/>\n"
                                    "  </function>\n"
                                    "</def>";
-        Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+        /*const*/ Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         check("void foo() {\n"
               "    exit(0);\n"
@@ -6627,7 +6623,7 @@ private:
                                    "    <arg nr=\"2\"/>\n"
                                    "  </function>\n"
                                    "</def>";
-        Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+        /*const*/ Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         check("void foo() {\n"
               "    if (x() || x()) {}\n"
@@ -7268,7 +7264,7 @@ private:
             const char code[] = "void foo(bool flag) {\n"
                                 "  bar( (flag) ? ~0u : ~0ul);\n"
                                 "}";
-            Settings settings = _settings;
+            /*const*/ Settings settings = _settings;
             settings.platform.sizeof_int = 4;
             settings.platform.int_bit = 32;
 
@@ -8217,10 +8213,9 @@ private:
         }
 
         {
-            Settings s = settingsBuilder().checkUnusedTemplates().build();
             check("template<int n> void foo(unsigned int x) {\n"
                   "if (x <= 0);\n"
-                  "}", &s);
+                  "}");
             ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
         }
 
@@ -8235,7 +8230,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Checking if unsigned expression 'value' is less than zero.\n", errout.str());
 
         // #9040
-        Settings settings1 = settingsBuilder().platform(Platform::Type::Win64).build();
+        /*const*/ Settings settings1 = settingsBuilder().platform(Platform::Type::Win64).build();
         check("using BOOL = unsigned;\n"
               "int i;\n"
               "bool f() {\n"
@@ -11123,13 +11118,11 @@ private:
     }
 
     void forwardAndUsed() {
-        Settings s = settingsBuilder().checkUnusedTemplates().build();
-
         check("template<typename T>\n"
               "void f(T && t) {\n"
               "    g(std::forward<T>(t));\n"
               "    T s = t;\n"
-              "}", &s);
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Access of forwarded variable 't'.\n", errout.str());
     }
 

@@ -296,10 +296,10 @@ private:
             fileSettings.emplace_back(std::move(fs));
         }
 
-        Settings settings;
-        settings.jobs = 2;
-        settings.quiet = true;
-        settings.inlineSuppressions = true;
+        /*const*/ auto settings = dinit(Settings,
+                                        $.jobs = 2,
+                                            $.quiet = true,
+                                            $.inlineSuppressions = true);
         settings.severity.enable(Severity::information);
         if (!suppression.empty()) {
             EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));
@@ -346,10 +346,10 @@ private:
             fileSettings.emplace_back(std::move(fs));
         }
 
-        Settings settings;
-        settings.jobs = 2;
-        settings.quiet = true;
-        settings.inlineSuppressions = true;
+        /*const*/ auto settings = dinit(Settings,
+                                        $.jobs = 2,
+                                            $.quiet = true,
+                                            $.inlineSuppressions = true);
         settings.severity.enable(Severity::information);
         if (!suppression.empty()) {
             EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));

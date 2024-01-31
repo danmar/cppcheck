@@ -8480,12 +8480,12 @@ private:
         // stringification
         ASSERT_EQUALS("", ValueType().str());
 
-        Settings s;
+        /*const*/ Settings s;
         s.platform.int_bit = 16;
         s.platform.long_bit = 32;
         s.platform.long_long_bit = 64;
 
-        Settings sSameSize;
+        /*const*/ Settings sSameSize;
         sSameSize.platform.int_bit = 32;
         sSameSize.platform.long_bit = 64;
         sSameSize.platform.long_long_bit = 64;
@@ -8744,13 +8744,13 @@ private:
         // Library types
         {
             // Char types
-            Settings settings;
-            constexpr Library::PodType char8 = { 1, 'u' };
-            constexpr Library::PodType char16 = { 2, 'u' };
-            constexpr Library::PodType char32 = { 4, 'u' };
-            settings.library.mPodTypes["char8_t"] = char8;
-            settings.library.mPodTypes["char16_t"] = char16;
-            settings.library.mPodTypes["char32_t"] = char32;
+            constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                       "<def>\n"
+                                       "  <podtype name=\"char8_t\" sign=\"u\" size=\"1\"/>\n"
+                                       "  <podtype name=\"char16_t\" sign=\"u\" size=\"2\"/>\n"
+                                       "  <podtype name=\"char32_t\" sign=\"u\" size=\"4\"/>\n"
+                                       "</def>";
+            /*const*/ Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
             settings.platform.sizeof_short = 2;
             settings.platform.sizeof_int = 4;
 
@@ -8763,12 +8763,13 @@ private:
         }
         {
             // PodType
-            Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).build();
-            constexpr Library::PodType u32 = { 4, 'u' };
-            constexpr Library::PodType podtype2 = { 0, 'u', Library::PodType::Type::INT };
-            settingsWin64.library.mPodTypes["u32"] = u32;
-            settingsWin64.library.mPodTypes["xyz::x"] = u32;
-            settingsWin64.library.mPodTypes["podtype2"] = podtype2;
+            constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                       "<def>\n"
+                                       "  <podtype name=\"u32\" sign=\"u\" size=\"4\"/>\n"
+                                       "  <podtype name=\"xyz::x\" sign=\"u\" size=\"4\"/>\n"
+                                       "  <podtype name=\"podtype2\" sign=\"u\" size=\"0\" stdtype=\"int\"/>\n"
+                                       "</def>";
+            const Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).libraryxml(xmldata, sizeof(xmldata)).build();
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("u32", settingsWin64));
             ASSERT_EQUALS(true, vt.fromLibraryType("xyz::x", settingsWin64));
@@ -8784,20 +8785,26 @@ private:
         }
         {
             // PlatformType
-            Settings settingsUnix32 = settingsBuilder().platform(Platform::Type::Unix32).build();
-            Library::PlatformType s32;
-            s32.mType = "int";
-            settingsUnix32.library.mPlatforms[settingsUnix32.platform.toString()].mPlatformTypes["s32"] = s32;
+            constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                       "<def>\n"
+                                       "  <platformtype name=\"s32\" value=\"int\">\n"
+                                       "    <platform type=\"unix32\"/>\n"
+                                       "  </platformtype>\n"
+                                       "</def>";
+            const Settings settingsUnix32 = settingsBuilder().platform(Platform::Type::Unix32).libraryxml(xmldata, sizeof(xmldata)).build();
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("s32", settingsUnix32));
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
         }
         {
             // PlatformType - wchar_t
-            Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).build();
-            Library::PlatformType lpctstr;
-            lpctstr.mType = "wchar_t";
-            settingsWin64.library.mPlatforms[settingsWin64.platform.toString()].mPlatformTypes["LPCTSTR"] = lpctstr;
+            constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                       "<def>\n"
+                                       "  <platformtype name=\"LPCTSTR\" value=\"wchar_t\">\n"
+                                       "    <platform type=\"win64\"/>\n"
+                                       "  </platformtype>\n"
+                                       "</def>";
+            const Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).libraryxml(xmldata, sizeof(xmldata)).build();
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("LPCTSTR", settingsWin64));
             ASSERT_EQUALS(ValueType::Type::WCHAR_T, vt.type);
@@ -8892,10 +8899,11 @@ private:
 
         // std::make_shared
         {
-            Settings set;
-            Library::SmartPointer sharedPtr;
-            sharedPtr.name = "std::shared_ptr";
-            set.library.smartPointers["std::shared_ptr"] = sharedPtr;
+            constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                       "<def>\n"
+                                       "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
+                                       "</def>";
+            const Settings set = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
             ASSERT_EQUALS("smart-pointer(std::shared_ptr)",
                           typeOf("class C {}; x = std::make_shared<C>();", "(", "test.cpp", &set));
         }
@@ -8912,10 +8920,11 @@ private:
         }
         // Smart pointer
         {
-            Settings set;
-            Library::SmartPointer myPtr;
-            myPtr.name = "MyPtr";
-            set.library.smartPointers["MyPtr"] = myPtr;
+            constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                       "<def>\n"
+                                       "  <smart-pointer class-name=\"MyPtr\"/>\n"
+                                       "</def>";
+            const Settings set = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
             ASSERT_EQUALS("smart-pointer(MyPtr)",
                           typeOf("void f() { MyPtr<int> p; return p; }", "p ;", "test.cpp", &set));
             ASSERT_EQUALS("signed int", typeOf("void f() { MyPtr<int> p; return *p; }", "* p ;", "test.cpp", &set));

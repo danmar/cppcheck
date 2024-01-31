@@ -38,7 +38,7 @@ public:
     TestBufferOverrun() : TestFixture("TestBufferOverrun") {}
 
 private:
-    Settings settings0 = settingsBuilder().library("std.cfg").severity(Severity::warning).severity(Severity::style).severity(Severity::portability).build();
+    /*const*/ Settings settings0 = settingsBuilder().library("std.cfg").severity(Severity::warning).severity(Severity::style).severity(Severity::portability).build();
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     void check_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
@@ -4191,7 +4191,7 @@ private:
                                    "    <arg nr=\"3\"/>\n"
                                    "  </function>\n"
                                    "</def>";
-        Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).severity(Severity::warning).build();
+        /*const*/ Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).severity(Severity::warning).build();
         settings.platform.sizeof_wchar_t = 4;
 
         check("void f() {\n"

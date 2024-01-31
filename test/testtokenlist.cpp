@@ -50,7 +50,7 @@ private:
 
     void testaddtoken2() const {
         const std::string code = "0xF0000000";
-        Settings settings1;
+        /*const*/ Settings settings1;
         settings1.platform.int_bit = 32;
         TokenList tokenlist(&settings1);
         tokenlist.addtoken(code, 1, 1, false);

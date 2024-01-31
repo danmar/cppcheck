@@ -39,7 +39,7 @@ protected:
     TestSingleExecutorBase(const char * const name, bool useFS) : TestFixture(name), useFS(useFS) {}
 
 private:
-    Settings settings = settingsBuilder().library("std.cfg").build();
+    /*const*/ Settings settings = settingsBuilder().library("std.cfg").build();
     bool useFS;
 
     std::string fprefix() const
@@ -102,7 +102,7 @@ private:
             }
         }
 
-        Settings s = settings;
+        /*const*/ Settings s = settings;
         s.showtime = opt.showtime;
         s.quiet = opt.quiet;
         if (opt.plistOutput)
