@@ -3034,6 +3034,14 @@ private:
                               "};\n");
             ASSERT_EQUALS("", errout.str());
         }
+        {
+            GET_SYMBOL_DB_DBG("struct S {\n" // #12395
+                              "    static S s;\n"
+                              "};\n");
+            ASSERT_EQUALS("", errout.str());
+            const Variable* const s = db->getVariableFromVarId(1);
+            ASSERT(s->scope()->definedType->needInitialization == Type::NeedInitialization::False);
+        }
     }
 
     void tryCatch1() {
