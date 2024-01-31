@@ -2955,7 +2955,7 @@ private:
 
 #define checkNoMemset(...) checkNoMemset_(__FILE__, __LINE__, __VA_ARGS__)
     void checkNoMemset_(const char* file, int line, const char code[]) {
-        const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).library("std.cfg").build();
+        const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).library("std.cfg").library("posix.cfg").build();
         checkNoMemset_(file, line, code, settings);
     }
 
@@ -3585,6 +3585,17 @@ private:
         checkNoMemset("class C { C() {} };\n"
                       "void foo(D*& p) {\n" // Unknown type
                       "    p = malloc(sizeof(C));\n"
+                      "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNoMemset("class AutoCloseFD {\n"
+                      "    int fd;\n"
+                      "public:\n"
+                      "    AutoCloseFD(int fd);\n"
+                      "    ~AutoCloseFD();\n"
+                      "};\n"
+                      "void f() {\n"
+                      "    AutoCloseFD fd = open(\"abc\", O_RDONLY | O_CLOEXEC);\n"
                       "}");
         ASSERT_EQUALS("", errout.str());
     }
