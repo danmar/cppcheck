@@ -1358,7 +1358,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
             top = top->astParent();
         const ValueType *valuetype = top->argumentType();
         if (valuetype && valuetype->type >= ValueType::Type::BOOL) {
-            typeToken = tempToken = new Token();
+            typeToken = tempToken = new Token(top);
             if (valuetype->pointer && valuetype->constness & 1) {
                 tempToken->str("const");
                 tempToken->insertToken("a");
@@ -1440,9 +1440,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
                             if (function->retType->classScope->enumType)
                                 typeToken = function->retType->classScope->enumType;
                             else {
-                                tempToken = new Token();
-                                tempToken->fileIndex(tok1->fileIndex());
-                                tempToken->linenr(tok1->linenr());
+                                tempToken = new Token(tok1);
                                 tempToken->str("int");
                                 typeToken = tempToken;
                             }
@@ -1461,9 +1459,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
                         if (function->retType->classScope->enumType)
                             typeToken = function->retType->classScope->enumType;
                         else {
-                            tempToken = new Token();
-                            tempToken->fileIndex(tok1->fileIndex());
-                            tempToken->linenr(tok1->linenr());
+                            tempToken = new Token(tok1);
                             tempToken->str("int");
                             typeToken = tempToken;
                         }
@@ -1487,9 +1483,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
             // check for some common well known functions
             else if (isCPP && ((Token::Match(tok1->previous(), "%var% . size|empty|c_str ( ) [,)]") && isStdContainer(tok1->previous())) ||
                                (Token::Match(tok1->previous(), "] . size|empty|c_str ( ) [,)]") && isStdContainer(tok1->previous()->link()->previous())))) {
-                tempToken = new Token();
-                tempToken->fileIndex(tok1->fileIndex());
-                tempToken->linenr(tok1->linenr());
+                tempToken = new Token(tok1);
                 if (tok1->next()->str() == "size") {
                     // size_t is platform dependent
                     if (settings->platform.sizeof_size_t == 8) {
@@ -1548,9 +1542,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
                     if (variableInfo->type() && variableInfo->type()->classScope && variableInfo->type()->classScope->enumType)
                         typeToken = variableInfo->type()->classScope->enumType;
                     else {
-                        tempToken = new Token();
-                        tempToken->fileIndex(tok1->fileIndex());
-                        tempToken->linenr(tok1->linenr());
+                        tempToken = new Token(tok1);
                         tempToken->str("int");
                         typeToken = tempToken;
                     }
@@ -1588,9 +1580,7 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
         return true;
     }
     if (variableInfo->isStlType(stl_string)) {
-        tempToken = new Token();
-        tempToken->fileIndex(variableInfo->typeStartToken()->fileIndex());
-        tempToken->linenr(variableInfo->typeStartToken()->linenr());
+        tempToken = new Token(variableInfo->typeStartToken());
         if (variableInfo->typeStartToken()->strAt(2) == "string")
             tempToken->str("char");
         else
@@ -1608,9 +1598,7 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
                 return true;
             }
             if (Token::Match(nameTok, "std :: string|wstring")) {
-                tempToken = new Token();
-                tempToken->fileIndex(variableInfo->typeStartToken()->fileIndex());
-                tempToken->linenr(variableInfo->typeStartToken()->linenr());
+                tempToken = new Token(variableInfo->typeStartToken());
                 if (nameTok->strAt(2) == "string")
                     tempToken->str("char");
                 else
