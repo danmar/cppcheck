@@ -2192,6 +2192,13 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Either the condition 'it==v.end()' is redundant or function 'erase()' is called on the iterator 'it' which is out of bounds.\n",
                       errout.str());
+
+        check("void f() {\n"
+              "    std::vector<int> v;\n"
+              "    ((v).erase)(v.begin());\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Calling function 'erase()' on the iterator 'v.begin()' which is out of bounds.\n",
+                      errout.str());
     }
 
     // Dereferencing invalid pointer

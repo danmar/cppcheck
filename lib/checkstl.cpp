@@ -3152,14 +3152,13 @@ void CheckStl::eraseIteratorOutOfBounds()
             if (!tok->valueType())
                 continue;
             const Library::Container* container = tok->valueType()->container;
-            if (!container)
+            if (!container || !Token::simpleMatch(tok->astParent(), "."))
                 continue;
-            if (!Token::Match(tok->next(), ". %name% ("))
-                continue;
-            const Library::Container::Action action = container->getAction(tok->strAt(2));
+            const Token* const ftok = tok->astParent()->astOperand2();
+            const Library::Container::Action action = container->getAction(ftok->str());
             if (action != Library::Container::Action::ERASE)
                 continue;
-            const std::vector<const Token*> args = getArguments(tok->tokAt(2));
+            const std::vector<const Token*> args = getArguments(ftok);
             if (args.size() != 1) // empty range is ok
                 continue;
 
@@ -3176,7 +3175,7 @@ void CheckStl::eraseIteratorOutOfBounds()
                         errVal = startVal;
             }
             if (errVal)
-                eraseIteratorOutOfBoundsError(tok->tokAt(2), args[0], errVal);
+                eraseIteratorOutOfBoundsError(ftok, args[0], errVal);
         }
     }
 }
