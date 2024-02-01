@@ -298,9 +298,9 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const char *value = node->Attribute("value");
             if (value == nullptr)
                 return Error(ErrorCode::MISSING_ATTRIBUTE, "value");
-            defines.push_back(std::string(name) +
-                              " " +
-                              value);
+            auto result = defines.insert(std::string(name) + " " + value);
+            if (!result.second)
+                return Error(ErrorCode::DUPLICATE_DEFINE, name);
         }
 
         else if (nodename == "function") {

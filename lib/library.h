@@ -59,7 +59,11 @@ class CPPCHECKLIB Library {
 public:
     Library() = default;
 
-    enum class ErrorCode { OK, FILE_NOT_FOUND, BAD_XML, UNKNOWN_ELEMENT, MISSING_ATTRIBUTE, BAD_ATTRIBUTE_VALUE, UNSUPPORTED_FORMAT, DUPLICATE_PLATFORM_TYPE, PLATFORM_TYPE_REDEFINED };
+    enum class ErrorCode {
+        OK,
+        FILE_NOT_FOUND, BAD_XML, UNKNOWN_ELEMENT, MISSING_ATTRIBUTE, BAD_ATTRIBUTE_VALUE,
+        UNSUPPORTED_FORMAT, DUPLICATE_PLATFORM_TYPE, PLATFORM_TYPE_REDEFINED, DUPLICATE_DEFINE
+    };
 
     class Error {
     public:
@@ -423,7 +427,7 @@ public:
         return func == "main" || mEntrypoints.find(func) != mEntrypoints.end();
     }
 
-    std::vector<std::string> defines; // to provide some library defines
+    std::set<std::string> defines; // to provide some library defines
 
     struct SmartPointer {
         std::string name;
