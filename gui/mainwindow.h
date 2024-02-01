@@ -315,7 +315,7 @@ private:
      *
      * @return Default cppcheck settings
      */
-    QSharedPointer<Settings> getCppcheckSettings();
+    QPair<bool, Settings> getCppcheckSettings();
 
     /** @brief Load program settings */
     void loadSettings();

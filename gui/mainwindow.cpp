@@ -486,10 +486,10 @@ void MainWindow::saveSettings() const
 
 void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, const bool checkConfiguration)
 {
-    QSharedPointer<Settings> checkSettingsPtr = getCppcheckSettings();
-    if (!checkSettingsPtr)
+    QPair<bool,Settings> checkSettingsPair = getCppcheckSettings();
+    if (!checkSettingsPair.first)
         return;
-    Settings& checkSettings = *checkSettingsPtr;
+    Settings& checkSettings = checkSettingsPair.second;
 
     clearResults();
 
@@ -557,10 +557,10 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     if (files.isEmpty())
         return;
 
-    QSharedPointer<Settings> checkSettingsPtr = getCppcheckSettings();
-    if (!checkSettingsPtr)
+    QPair<bool, Settings> checkSettingsPair = getCppcheckSettings();
+    if (!checkSettingsPair.first)
         return;
-    Settings& checkSettings = *checkSettingsPtr;
+    Settings& checkSettings = checkSettingsPair.second;
 
     clearResults();
 
@@ -622,10 +622,10 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
 
 void MainWindow::analyzeCode(const QString& code, const QString& filename)
 {
-    const QSharedPointer<Settings> checkSettingsPtr = getCppcheckSettings();
-    if (!checkSettingsPtr)
+    const QPair<bool, Settings>& checkSettingsPair = getCppcheckSettings();
+    if (!checkSettingsPair.first)
         return;
-    const Settings& checkSettings = *checkSettingsPtr;
+    const Settings& checkSettings = checkSettingsPair.second;
 
     // Initialize dummy ThreadResult as ErrorLogger
     ThreadResult result;
@@ -955,7 +955,7 @@ QString MainWindow::loadAddon(Settings &settings, const QString &filesDir, const
     return "";
 }
 
-QSharedPointer<Settings> MainWindow::getCppcheckSettings()
+QPair<bool,Settings> MainWindow::getCppcheckSettings()
 {
     saveSettings(); // Save settings
 
@@ -967,7 +967,7 @@ QSharedPointer<Settings> MainWindow::getCppcheckSettings()
     const bool std = tryLoadLibrary(&result.library, "std.cfg");
     if (!std) {
         QMessageBox::critical(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=<directory> at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.\n\nAnalysis is aborted.").arg("std.cfg"));
-        return nullptr;
+        return {false, {}};
     }
 
     const QString filesDir(getDataDir());
@@ -977,7 +977,7 @@ QSharedPointer<Settings> MainWindow::getCppcheckSettings()
         const QString cfgErr = QString::fromStdString(result.loadCppcheckCfg());
         if (!cfgErr.isEmpty()) {
             QMessageBox::critical(this, tr("Error"), tr("Failed to load %1 - %2\n\nAnalysis is aborted.").arg("cppcheck.cfg").arg(cfgErr));
-            return nullptr;
+            return {false, {}};
         }
 
         const auto cfgAddons = result.addons;
@@ -987,7 +987,7 @@ QSharedPointer<Settings> MainWindow::getCppcheckSettings()
             const QString addonError = loadAddon(result, filesDir, pythonCmd, QString::fromStdString(addon));
             if (!addonError.isEmpty()) {
                 QMessageBox::critical(this, tr("Error"), tr("%1\n\nAnalysis is aborted.").arg(addonError));
-                return nullptr;
+                return {false, {}};
             }
         }
     }
@@ -1072,7 +1072,7 @@ QSharedPointer<Settings> MainWindow::getCppcheckSettings()
             const QString addonError = loadAddon(result, filesDir, pythonCmd, addon);
             if (!addonError.isEmpty()) {
                 QMessageBox::critical(this, tr("Error"), tr("%1\n\nAnalysis is aborted.").arg(addonError));
-                return nullptr;
+                return {false, {}};
             }
         }
 
@@ -1127,7 +1127,7 @@ QSharedPointer<Settings> MainWindow::getCppcheckSettings()
 
     Settings::terminate(false);
 
-    return QSharedPointer<Settings>(new Settings(result));
+    return {true, std::move(result)};
 }
 
 void MainWindow::analysisDone()
@@ -1251,10 +1251,10 @@ void MainWindow::reAnalyzeSelected(const QStringList& files)
     if (mThread->isChecking())
         return;
 
-    const QSharedPointer<Settings> checkSettingsPtr = getCppcheckSettings();
-    if (!checkSettingsPtr)
+    const QPair<bool, Settings> checkSettingsPair = getCppcheckSettings();
+    if (!checkSettingsPair.first)
         return;
-    const Settings& checkSettings = *checkSettingsPtr;
+    const Settings& checkSettings = checkSettingsPair.second;
 
     // Clear details, statistics and progress
     mUI->mResults->clear(false);
@@ -1286,10 +1286,10 @@ void MainWindow::reAnalyze(bool all)
     if (files.empty())
         return;
 
-    const QSharedPointer<Settings> checkSettingsPtr = getCppcheckSettings();
-    if (!checkSettingsPtr)
+    const QPair<bool, Settings>& checkSettingsPair = getCppcheckSettings();
+    if (!checkSettingsPair.first)
         return;
-    const Settings& checkSettings = *checkSettingsPtr;
+    const Settings& checkSettings = checkSettingsPair.second;
 
     // Clear details, statistics and progress
     mUI->mResults->clear(all);
