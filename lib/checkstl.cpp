@@ -3137,10 +3137,20 @@ void CheckStl::eraseIteratorOutOfBoundsError(const Token *ftok, const Token* ite
                 msg, CWE628, Certainty::normal);
 }
 
-static const ValueFlow::Value* getIterValue(const Token* tok, ValueFlow::Value::ValueType vt)
+static const ValueFlow::Value* getOOBIterValue(const Token* tok, const ValueFlow::Value* sizeVal)
 {
     auto it = std::find_if(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
-        return v.valueType == vt && (v.isPossible() || v.isKnown());
+        if (v.isPossible() || v.isKnown()) {
+            switch (v.valueType) {
+            case ValueFlow::Value::ValueType::ITERATOR_END:
+                return v.intvalue >= 0;
+            case ValueFlow::Value::ValueType::ITERATOR_START:
+                return (v.intvalue < 0) || (sizeVal && v.intvalue >= sizeVal->intvalue);
+            default:
+                break;
+            }
+        }
+        return false;
     });
     return it != tok->values().end() ? &*it : nullptr;
 }
@@ -3161,22 +3171,11 @@ void CheckStl::eraseIteratorOutOfBounds()
             if (action != Library::Container::Action::ERASE)
                 continue;
             const std::vector<const Token*> args = getArguments(ftok);
-            if (args.size() != 1) // empty range is ok
+            if (args.size() != 1) // TODO: check range overload
                 continue;
 
-            const ValueFlow::Value* errVal = nullptr;
-            if (const ValueFlow::Value* endVal = getIterValue(args[0], ValueFlow::Value::ValueType::ITERATOR_END)) {
-                if (endVal->intvalue >= 0)
-                    errVal = endVal;
-            }
-            else if (const ValueFlow::Value* startVal = getIterValue(args[0], ValueFlow::Value::ValueType::ITERATOR_START)) {
-                if (startVal->intvalue < 0)
-                    errVal = startVal;
-                else if (const ValueFlow::Value* sizeVal = tok->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
-                    if (startVal->intvalue >= sizeVal->intvalue)
-                        errVal = startVal;
-            }
-            if (errVal)
+            const ValueFlow::Value* sizeVal = tok->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE);
+            if (const ValueFlow::Value* errVal = getOOBIterValue(args[0], sizeVal))
                 eraseIteratorOutOfBoundsError(ftok, args[0], errVal);
         }
     }
