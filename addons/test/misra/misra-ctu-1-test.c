@@ -46,3 +46,7 @@ extern int misra_8_5;
 int32_t misra_8_6 = 1;
 
 void misra_8_7_external(void) {}
+
+// #12362
+void misra_8_7_compliant( void ){}
+static void misra_8_7_call(void) { misra_8_7_compliant(); }

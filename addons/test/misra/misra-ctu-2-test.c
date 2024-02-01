@@ -56,3 +56,6 @@ static void misra_8_7_caller(void) {
     misra_8_7_external();
 }
 
+// #12362
+typedef void(*misra_8_7_func_ptr)( void );
+static const misra_8_7_func_ptr ptrs[] = { misra_8_7_compliant, NULL };

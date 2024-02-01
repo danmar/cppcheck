@@ -937,6 +937,8 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                         bool unknown = false;
 
                         for (const Variable& var: scope.varlist) {
+                            if (var.isStatic())
+                                continue;
                             if (var.isClass() && !var.isReference()) {
                                 if (var.type()) {
                                     // does this type need initialization?
@@ -947,7 +949,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                                             unknown = true;
                                     }
                                 }
-                            } else if (!var.hasDefault() && !var.isStatic()) {
+                            } else if (!var.hasDefault()) {
                                 needInitialization = true;
                                 break;
                             }
@@ -1196,7 +1198,7 @@ void SymbolDatabase::fixVarId(VarIdMap & varIds, const Token * vartok, Token * m
     if (varId == varIds.end()) {
         MemberIdMap memberId;
         if (membertok->varId() == 0) {
-            memberId[membervar->nameToken()->varId()] = const_cast<Tokenizer &>(mTokenizer).newVarId();
+            memberId[membervar->nameToken()->varId()] = mTokenizer.newVarId();
             mVariableList.push_back(membervar);
         } else
             mVariableList[membertok->varId()] = membervar;
@@ -1206,7 +1208,7 @@ void SymbolDatabase::fixVarId(VarIdMap & varIds, const Token * vartok, Token * m
     MemberIdMap::iterator memberId = varId->second.find(membervar->nameToken()->varId());
     if (memberId == varId->second.end()) {
         if (membertok->varId() == 0) {
-            varId->second.insert(std::make_pair(membervar->nameToken()->varId(), const_cast<Tokenizer &>(mTokenizer).newVarId()));
+            varId->second.insert(std::make_pair(membervar->nameToken()->varId(), mTokenizer.newVarId()));
             mVariableList.push_back(membervar);
             memberId = varId->second.find(membervar->nameToken()->varId());
         } else
@@ -1766,7 +1768,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
 
     // Mark expressions that are unique
     std::vector<std::pair<Token*, int>> uniqueExprId(id);
-    for (Token* tok = const_cast<Token*>(mTokenizer.list.front()); tok; tok = tok->next()) {
+    for (Token* tok = mTokenizer.list.front(); tok; tok = tok->next()) {
         const auto id2 = tok->exprId();
         if (id2 == 0 || id2 <= maximumVarId)
             continue;
@@ -2982,7 +2984,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             if (Token::simpleMatch(second->next(), param.c_str(), param.size())) {
                 // check for redundant qualification before skipping it
                 if (!Token::simpleMatch(first->next(), param.c_str(), param.size())) {
-                    second = second->tokAt(int(arg_path_length));
+                    second = second->tokAt(arg_path_length);
                     arg_path_length = 0;
                 }
             }
@@ -7201,6 +7203,8 @@ static const Token* parsedecl(const Token* type,
         if (!type->originalName().empty())
             valuetype->originalTypeName = type->originalName();
         type = type->next();
+        if (type && type->link() && type->str() == "<")
+            type = type->link()->next();
     }
 
     // Set signedness for integral types..
@@ -7263,7 +7267,7 @@ static const Function* getFunction(const Token* tok) {
 void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *tokens)
 {
     if (!tokens)
-        tokens = const_cast<Tokenizer &>(mTokenizer).list.front();
+        tokens = mTokenizer.list.front();
 
     for (Token *tok = tokens; tok; tok = tok->next())
         tok->setValueType(nullptr);

@@ -461,9 +461,11 @@ TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::platform(Platform::T
 TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::libraryxml(const char xmldata[], std::size_t len)
 {
     tinyxml2::XMLDocument doc;
-    if (tinyxml2::XML_SUCCESS != doc.Parse(xmldata, len))
-        throw std::runtime_error("loading XML data failed");
-    if (settings.library.load(doc).errorcode != Library::ErrorCode::OK)
-        throw std::runtime_error("loading library XML failed");
+    const tinyxml2::XMLError xml_error = doc.Parse(xmldata, len);
+    if (tinyxml2::XML_SUCCESS != xml_error)
+        throw std::runtime_error(std::string("loading XML data failed - ") + tinyxml2::XMLDocument::ErrorIDToName(xml_error));
+    const Library::ErrorCode lib_error = settings.library.load(doc).errorcode;
+    if (lib_error != Library::ErrorCode::OK)
+        throw std::runtime_error("loading library XML failed - " + std::to_string(static_cast<int>(lib_error)));
     return *this;
 }

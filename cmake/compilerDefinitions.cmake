@@ -10,11 +10,17 @@ if (MSVC)
     add_definitions(-D_WIN64)
 endif()
 
-# TODO: this should probably apply to the compiler and not the platform
+# TODO: this should probably apply to the compiler and not the platform - I think it is only "broken" with MinGW
+# TODO: AppleClang only has libc++
+# TODO: what about clang-cl and native Win32 clang?
 if (CPPCHK_GLIBCXX_DEBUG AND UNIX AND CMAKE_BUILD_TYPE STREQUAL "Debug")
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         if (USE_LIBCXX)
-            add_definitions(-D_LIBCPP_ENABLE_ASSERTIONS=1)
+            if (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 18 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 18)
+                add_definitions(-D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG)
+            else()
+                add_definitions(-D_LIBCPP_ENABLE_ASSERTIONS=1)
+            endif()
             # TODO: also add _LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS?
         endif()
     else()

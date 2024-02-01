@@ -1821,7 +1821,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'A::i' is never used.\n",
                       errout.str());
 
-        Settings s = settings;
+        /*const*/ Settings s = settings;
         s.enforcedLang = Standards::Language::C;
         checkStructMemberUsage("struct A {\n" // #10852
                                "    struct B {\n"

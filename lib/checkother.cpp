@@ -2737,7 +2737,7 @@ void CheckOther::checkSignOfUnsignedVariable()
     }
 }
 
-bool CheckOther::comparisonNonZeroExpressionLessThanZero(const Token *tok, const ValueFlow::Value **zeroValue, const Token **nonZeroExpr)
+bool CheckOther::comparisonNonZeroExpressionLessThanZero(const Token *tok, const ValueFlow::Value **zeroValue, const Token **nonZeroExpr, bool suppress)
 {
     if (!tok->isComparisonOp() || !tok->astOperand1() || !tok->astOperand2())
         return false;
@@ -2754,6 +2754,10 @@ bool CheckOther::comparisonNonZeroExpressionLessThanZero(const Token *tok, const
     } else {
         return false;
     }
+
+    if (const Variable* var = (*nonZeroExpr)->variable())
+        if (var->typeStartToken()->isTemplateArg())
+            return suppress;
 
     const ValueType* vt = (*nonZeroExpr)->valueType();
     return vt && (vt->pointer || vt->sign == ValueType::UNSIGNED);

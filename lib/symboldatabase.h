@@ -1003,7 +1003,7 @@ private:
         setFlag(fIsVolatile, state);
     }
     void hasTrailingReturnType(bool state) {
-        return setFlag(fHasTrailingReturnType, state);
+        setFlag(fHasTrailingReturnType, state);
     }
     void isInlineKeyword(bool state) {
         setFlag(fIsInlineKeyword, state);

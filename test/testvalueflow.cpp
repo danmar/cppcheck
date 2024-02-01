@@ -42,7 +42,7 @@ public:
     TestValueFlow() : TestFixture("TestValueFlow") {}
 
 private:
-    Settings settings = settingsBuilder().library("std.cfg").exhaustive().build();
+    /*const*/ Settings settings = settingsBuilder().library("std.cfg").exhaustive().build();
 
     void run() override {
         // strcpy, abort cfg
@@ -633,8 +633,6 @@ private:
         const char *code;
         std::vector<std::string> lifetimes;
 
-        LOAD_LIB_2(settings.library, "std.cfg");
-
         code  = "void f() {\n"
                 "    int a = 1;\n"
                 "    auto x = [&]() { return a + 1; };\n"
@@ -1012,7 +1010,6 @@ private:
 
         // ~
         code  = "x = ~0U;";
-        PLATFORM(settings.platform, Platform::Type::Native); // ensure platform is native
         values = tokenValues(code,"~");
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(~0U, values.back().intvalue);
@@ -3946,7 +3943,7 @@ private:
     void valueFlowRightShift() {
         const char *code;
         /* Set some temporary fixed values to simplify testing */
-        Settings s = settings;
+        /*const*/ Settings s = settings;
         s.platform.int_bit = 32;
         s.platform.long_bit = 64;
         s.platform.long_long_bit = MathLib::bigint_bits * 2;
@@ -6070,8 +6067,6 @@ private:
     void valueFlowContainerSize() {
         const char *code;
 
-        LOAD_LIB_2(settings.library, "std.cfg");
-
         // condition
         code = "void f(const std::list<int> &ints) {\n"
                "  if (!static_cast<bool>(ints.empty()))\n"
@@ -6856,8 +6851,6 @@ private:
     {
         const char* code;
 
-        LOAD_LIB_2(settings.library, "std.cfg");
-
         code = "int f() {\n"
                "    std::vector<int> v = {1, 2, 3, 4};\n"
                "    int x = v[1];\n"
@@ -6883,9 +6876,8 @@ private:
     void valueFlowDynamicBufferSize() {
         const char *code;
 
-        LOAD_LIB_2(settings.library, "std.cfg");
-        LOAD_LIB_2(settings.library, "posix.cfg");
-        LOAD_LIB_2(settings.library, "bsd.cfg");
+        const Settings settingsOld = settings;
+        settings = settingsBuilder(settings).library("posix.cfg").library("bsd.cfg").build();
 
         code = "void* f() {\n"
                "  void* x = malloc(10);\n"
@@ -6919,12 +6911,14 @@ private:
                "  return x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 100,  ValueFlow::Value::ValueType::BUFFER_SIZE));
+
+        settings = settingsOld;
     }
 
     void valueFlowSafeFunctionParameterValues() {
         const char *code;
         std::list<ValueFlow::Value> values;
-        Settings s = settingsBuilder().exhaustive().library("std.cfg").build();
+        /*const*/ Settings s = settingsBuilder().exhaustive().library("std.cfg").build();
         s.safeChecks.classes = s.safeChecks.externalFunctions = s.safeChecks.internalFunctions = true;
 
         code = "short f(short x) {\n"
@@ -6975,7 +6969,7 @@ private:
     void valueFlowUnknownFunctionReturn() {
         const char *code;
         std::list<ValueFlow::Value> values;
-        Settings s = settingsBuilder().exhaustive().library("std.cfg").build();
+        /*const*/ Settings s = settingsBuilder().exhaustive().library("std.cfg").build();
         s.checkUnknownFunctionReturn.insert("rand");
 
         code = "x = rand();";
@@ -8433,7 +8427,7 @@ private:
     }
 
     void performanceIfCount() {
-        Settings s(settings);
+        /*const*/ Settings s(settings);
         s.performanceValueFlowMaxIfCount = 1;
 
         const char *code;

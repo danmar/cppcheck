@@ -403,6 +403,16 @@ private:
               "    long long j = *(p++);\n"
               "}\n", settings);
         ASSERT_EQUALS("", errout.str());
+
+        check("template <class T>\n" // #12393
+              "struct S {\n"
+              "    S& operator=(const S&) { return *this; }\n"
+              "    struct U {\n"
+              "        S<T>* p;\n"
+              "    };\n"
+              "    U u;\n"
+              "};\n", settings);
+        ASSERT_EQUALS("", errout.str()); // don't crash
     }
 
     void longCastReturn() {

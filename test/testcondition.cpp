@@ -36,7 +36,7 @@ public:
 
 private:
     const Settings settings0 = settingsBuilder().library("qt.cfg").library("std.cfg").severity(Severity::style).severity(Severity::warning).build();
-    Settings settings1 = settingsBuilder().severity(Severity::style).severity(Severity::warning).build();
+    /*const*/ Settings settings1 = settingsBuilder().severity(Severity::style).severity(Severity::warning).build();
 
     void run() override {
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
