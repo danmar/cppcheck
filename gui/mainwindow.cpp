@@ -527,9 +527,9 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
     checkLockDownUI(); // lock UI while checking
 
     mUI->mResults->setCheckDirectory(checkPath);
-    checkSettingsPtr->force = false;
-    checkSettingsPtr->checkLibrary = checkLibrary;
-    checkSettingsPtr->checkConfiguration = checkConfiguration;
+    checkSettings.force = false;
+    checkSettings.checkLibrary = checkLibrary;
+    checkSettings.checkConfiguration = checkConfiguration;
 
     if (mProjectFile)
         qDebug() << "Checking project file" << mProjectFile->getFilename();
