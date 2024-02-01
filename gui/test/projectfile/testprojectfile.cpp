@@ -28,6 +28,7 @@
 
 #include <QList>
 #include <QStringList>
+#include <QTemporaryDir>
 #include <QtTest>
 
 // Mock...
@@ -114,6 +115,25 @@ void TestProjectFile::loadSimpleNoroot() const
     QStringList defines = pfile.getDefines();
     QCOMPARE(defines.size(), 1);
     QCOMPARE(defines[0], QString("FOO"));
+}
+
+void TestProjectFile::getAddonFilePath() const
+{
+    QTemporaryDir tempdir;
+    QVERIFY(tempdir.isValid());
+    const QString filepath(tempdir.path() + "/addon.py");
+
+    QFile file(filepath);
+    QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Text));
+    file.close();
+
+    // Relative path to addon
+    QCOMPARE(ProjectFile::getAddonFilePath(tempdir.path(), "addon"), filepath);
+    QCOMPARE(ProjectFile::getAddonFilePath(tempdir.path(), "not exist"), QString());
+
+    // Absolute path to addon
+    QCOMPARE(ProjectFile::getAddonFilePath("/not/exist", filepath), filepath);
+    QCOMPARE(ProjectFile::getAddonFilePath(tempdir.path(), filepath), filepath);
 }
 
 QTEST_MAIN(TestProjectFile)

@@ -486,6 +486,11 @@ void MainWindow::saveSettings() const
 
 void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, const bool checkConfiguration)
 {
+    QPair<bool,Settings> checkSettingsPair = getCppcheckSettings();
+    if (!checkSettingsPair.first)
+        return;
+    Settings& checkSettings = checkSettingsPair.second;
+
     clearResults();
 
     mIsLogfileLoaded = false;
@@ -522,7 +527,6 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
     checkLockDownUI(); // lock UI while checking
 
     mUI->mResults->setCheckDirectory(checkPath);
-    Settings checkSettings = getCppcheckSettings();
     checkSettings.force = false;
     checkSettings.checkLibrary = checkLibrary;
     checkSettings.checkConfiguration = checkConfiguration;
@@ -550,9 +554,14 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
 
 void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrary, const bool checkConfiguration)
 {
-    if (files.isEmpty()) {
+    if (files.isEmpty())
         return;
-    }
+
+    QPair<bool, Settings> checkSettingsPair = getCppcheckSettings();
+    if (!checkSettingsPair.first)
+        return;
+    Settings& checkSettings = checkSettingsPair.second;
+
     clearResults();
 
     mIsLogfileLoaded = false;
@@ -591,7 +600,6 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     checkLockDownUI(); // lock UI while checking
 
     mUI->mResults->setCheckDirectory(checkPath);
-    Settings checkSettings = getCppcheckSettings();
     checkSettings.checkLibrary = checkLibrary;
     checkSettings.checkConfiguration = checkConfiguration;
 
@@ -614,6 +622,11 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
 
 void MainWindow::analyzeCode(const QString& code, const QString& filename)
 {
+    const QPair<bool, Settings>& checkSettingsPair = getCppcheckSettings();
+    if (!checkSettingsPair.first)
+        return;
+    const Settings& checkSettings = checkSettingsPair.second;
+
     // Initialize dummy ThreadResult as ErrorLogger
     ThreadResult result;
     result.setFiles(QStringList(filename));
@@ -628,7 +641,7 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
 
     // Create CppCheck instance
     CppCheck cppcheck(result, true, nullptr);
-    cppcheck.settings() = getCppcheckSettings();
+    cppcheck.settings() = checkSettings;
 
     // Check
     checkLockDownUI();
@@ -905,13 +918,12 @@ bool MainWindow::tryLoadLibrary(Library *library, const QString& filename)
     return true;
 }
 
-void MainWindow::loadAddon(Settings &settings, const QString &filesDir, const QString &pythonCmd, const QString& addon)
+QString MainWindow::loadAddon(Settings &settings, const QString &filesDir, const QString &pythonCmd, const QString& addon)
 {
-    QString addonFilePath = ProjectFile::getAddonFilePath(filesDir, addon);
-    if (addonFilePath.isEmpty())
-        return; // TODO: report an error
+    const QString addonFilePath = fromNativePath(ProjectFile::getAddonFilePath(filesDir, addon));
 
-    addonFilePath.replace(QChar('\\'), QChar('/'));
+    if (addonFilePath.isEmpty())
+        return tr("File not found: '%1'").arg(addon);
 
     picojson::object obj;
     obj["script"] = picojson::value(addonFilePath.toStdString());
@@ -929,42 +941,54 @@ void MainWindow::loadAddon(Settings &settings, const QString &filesDir, const QS
             obj["args"] = picojson::value(arg.toStdString());
         }
     }
-    picojson::value json;
-    json.set(std::move(obj));
-    std::string json_str = json.serialize();
+
+    const std::string& json_str = picojson::value(obj).serialize();
 
     AddonInfo addonInfo;
-    addonInfo.getAddonInfo(json_str, settings.exename); // TODO: handle error
+    const std::string errmsg = addonInfo.getAddonInfo(json_str, settings.exename);
+    if (!errmsg.empty())
+        return tr("Failed to load/setup addon %1: %2").arg(addon, QString::fromStdString(errmsg));
     settings.addonInfos.emplace_back(std::move(addonInfo));
 
-    settings.addons.emplace(std::move(json_str));
+    settings.addons.emplace(json_str);
+
+    return "";
 }
 
-Settings MainWindow::getCppcheckSettings()
+QPair<bool,Settings> MainWindow::getCppcheckSettings()
 {
     saveSettings(); // Save settings
 
+    Settings::terminate(true);
     Settings result;
 
     result.exename = QCoreApplication::applicationFilePath().toStdString();
 
     const bool std = tryLoadLibrary(&result.library, "std.cfg");
-    if (!std)
-        QMessageBox::critical(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=<directory> at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.").arg("std.cfg"));
+    if (!std) {
+        QMessageBox::critical(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=<directory> at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.\n\nAnalysis is aborted.").arg("std.cfg"));
+        return {false, {}};
+    }
 
     const QString filesDir(getDataDir());
     const QString pythonCmd = fromNativePath(mSettings->value(SETTINGS_PYTHON_PATH).toString());
 
     {
         const QString cfgErr = QString::fromStdString(result.loadCppcheckCfg());
-        if (!cfgErr.isEmpty())
-            QMessageBox::critical(this, tr("Error"), tr("Failed to load %1 - %2").arg("cppcheck.cfg").arg(cfgErr));
+        if (!cfgErr.isEmpty()) {
+            QMessageBox::critical(this, tr("Error"), tr("Failed to load %1 - %2\n\nAnalysis is aborted.").arg("cppcheck.cfg").arg(cfgErr));
+            return {false, {}};
+        }
 
         const auto cfgAddons = result.addons;
         result.addons.clear();
         for (const std::string& addon : cfgAddons) {
             // TODO: support addons which are a script and not a file
-            loadAddon(result, filesDir, pythonCmd, QString::fromStdString(addon));
+            const QString addonError = loadAddon(result, filesDir, pythonCmd, QString::fromStdString(addon));
+            if (!addonError.isEmpty()) {
+                QMessageBox::critical(this, tr("Error"), tr("%1\n\nAnalysis is aborted.").arg(addonError));
+                return {false, {}};
+            }
         }
     }
 
@@ -1045,7 +1069,11 @@ Settings MainWindow::getCppcheckSettings()
             result.checkUnknownFunctionReturn.insert(s.toStdString());
 
         for (const QString& addon : mProjectFile->getAddons()) {
-            loadAddon(result, filesDir, pythonCmd, addon);
+            const QString addonError = loadAddon(result, filesDir, pythonCmd, addon);
+            if (!addonError.isEmpty()) {
+                QMessageBox::critical(this, tr("Error"), tr("%1\n\nAnalysis is aborted.").arg(addonError));
+                return {false, {}};
+            }
         }
 
         if (isCppcheckPremium()) {
@@ -1099,7 +1127,7 @@ Settings MainWindow::getCppcheckSettings()
 
     Settings::terminate(false);
 
-    return result;
+    return {true, std::move(result)};
 }
 
 void MainWindow::analysisDone()
@@ -1223,6 +1251,11 @@ void MainWindow::reAnalyzeSelected(const QStringList& files)
     if (mThread->isChecking())
         return;
 
+    const QPair<bool, Settings> checkSettingsPair = getCppcheckSettings();
+    if (!checkSettingsPair.first)
+        return;
+    const Settings& checkSettings = checkSettingsPair.second;
+
     // Clear details, statistics and progress
     mUI->mResults->clear(false);
     for (int i = 0; i < files.size(); ++i)
@@ -1242,7 +1275,6 @@ void MainWindow::reAnalyzeSelected(const QStringList& files)
     // considered in "Modified Files Check"  performed after "Selected Files Check"
     // TODO: Should we store per file CheckStartTime?
     QDateTime saveCheckStartTime = mThread->getCheckStartTime();
-    const Settings& checkSettings = getCppcheckSettings();
     mThread->check(checkSettings);
     mUI->mResults->setCheckSettings(checkSettings);
     mThread->setCheckStartTime(saveCheckStartTime);
@@ -1253,6 +1285,11 @@ void MainWindow::reAnalyze(bool all)
     const QStringList files = mThread->getReCheckFiles(all);
     if (files.empty())
         return;
+
+    const QPair<bool, Settings>& checkSettingsPair = getCppcheckSettings();
+    if (!checkSettingsPair.first)
+        return;
+    const Settings& checkSettings = checkSettingsPair.second;
 
     // Clear details, statistics and progress
     mUI->mResults->clear(all);
@@ -1268,7 +1305,6 @@ void MainWindow::reAnalyze(bool all)
         qDebug() << "Rechecking project file" << mProjectFile->getFilename();
 
     mThread->setCheckFiles(all);
-    const Settings& checkSettings = getCppcheckSettings();
     mThread->check(checkSettings);
     mUI->mResults->setCheckSettings(checkSettings);
 }

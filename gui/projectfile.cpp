@@ -1115,6 +1115,9 @@ void ProjectFile::SafeChecks::saveToXml(QXmlStreamWriter &xmlWriter) const
 
 QString ProjectFile::getAddonFilePath(QString filesDir, const QString &addon)
 {
+    if (QFile(addon).exists())
+        return addon;
+
     if (!filesDir.endsWith("/"))
         filesDir += "/";
 
