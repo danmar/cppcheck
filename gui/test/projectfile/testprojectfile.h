@@ -27,4 +27,6 @@ private slots:
     void loadSimple() const;
     void loadSimpleWithIgnore() const;
     void loadSimpleNoroot() const;
+
+    void getAddonFilePath() const;
 };
