@@ -150,7 +150,7 @@ void Token::update_property_info()
         else if (std::isalpha((unsigned char)mStr[0]) || mStr[0] == '_' || mStr[0] == '$') { // Name
             if (mImpl->mVarId)
                 tokType(eVariable);
-            else if (mTokensFrontBack && mTokensFrontBack->list && mTokensFrontBack->list->isKeyword(mStr))
+            else if (mTokensFrontBack && mTokensFrontBack->list.isKeyword(mStr))
                 tokType(eKeyword);
             else if (baseKeywords.count(mStr) > 0)
                 tokType(eKeyword);
@@ -1820,7 +1820,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
         else {
             if (fileIndex != tok->fileIndex()) {
                 outs += "File ";
-                outs += tok->mTokensFrontBack->list->getFiles()[tok->fileIndex()];
+                outs += tok->mTokensFrontBack->list.getFiles()[tok->fileIndex()];
                 outs += '\n';
                 line = 0;
             }
@@ -2749,8 +2749,8 @@ const Token* findLambdaEndScope(const Token* tok) {
 
 bool Token::isCpp() const
 {
-    if (mTokensFrontBack && mTokensFrontBack->list) {
-        return mTokensFrontBack->list->isCPP();
+    if (mTokensFrontBack) {
+        return mTokensFrontBack->list.isCPP();
     }
     return true; // assume C++ by default
 }
