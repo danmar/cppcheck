@@ -3130,8 +3130,10 @@ void CheckStl::eraseIteratorOutOfBoundsError(const Token *ftok, const Token* ite
         msg = "Calling function '" + func + "()' on the iterator '" + iter + "' which is out of bounds.";
     }
 
-    reportError(ftok, isConditional ? Severity::warning : Severity::error,
-                "eraseIteratorOutOfBounds",
+    const Severity severity = isConditional ? Severity::warning : Severity::error;
+    const std::string id = isConditional ? "eraseIteratorOutOfBoundsCond" : "eraseIteratorOutOfBounds";
+    reportError(ftok, severity,
+                id,
                 msg, CWE628, Certainty::normal);
 }
 

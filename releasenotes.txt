@@ -1,7 +1,7 @@
 Release Notes for Cppcheck 2.14
 
 New checks:
--
+eraseIteratorOutOfBounds: warns when erase() is called on an iterator that is out of bounds
 
 Improved checking:
 -

@@ -276,6 +276,7 @@ private:
         c.uselessCallsEmptyError(nullptr);
         c.uselessCallsRemoveError(nullptr, "remove");
         c.dereferenceInvalidIteratorError(nullptr, "i");
+        c.eraseIteratorOutOfBoundsError(nullptr, nullptr);
         c.useStlAlgorithmError(nullptr, emptyString);
         c.knownEmptyContainerError(nullptr, emptyString);
         c.globalLockGuardError(nullptr);
@@ -301,6 +302,7 @@ private:
                "- common mistakes when using string::c_str()\n"
                "- useless calls of string and STL functions\n"
                "- dereferencing an invalid iterator\n"
+               "- erasing an iterator that is out of bounds\n"
                "- reading from empty STL container\n"
                "- iterating over an empty STL container\n"
                "- consider using an STL algorithm instead of raw loop\n"
