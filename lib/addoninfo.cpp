@@ -162,8 +162,8 @@ std::string AddonInfo::getAddonInfo(const std::string &fileName, const std::stri
         return "Failed to open " + fileName;
     if (name.empty()) {
         name = Path::fromNativeSeparators(fileName);
-        if (name.find("/") != std::string::npos)
-            name = name.substr(name.rfind("/") + 1);
+        if (name.find('/') != std::string::npos)
+            name = name.substr(name.rfind('/') + 1);
     }
     picojson::value json;
     fin >> json;
