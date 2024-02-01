@@ -1139,7 +1139,7 @@ static size_t bitCeil(size_t x)
 
 static size_t getAlignOf(const ValueType& vt, const Settings& settings)
 {
-    if (vt.pointer || vt.isPrimitive()) {
+    if (vt.pointer || vt.reference != Reference::None || vt.isPrimitive()) {
         auto align = ValueFlow::getSizeOf(vt, settings);
         return align == 0 ? 0 : bitCeil(align);
     }
@@ -1161,7 +1161,7 @@ static nonneg int getSizeOfType(const Token *typeTok, const Settings &settings)
 
 size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings)
 {
-    if (vt.pointer)
+    if (vt.pointer || vt.reference != Reference::None)
         return settings.platform.sizeof_pointer;
     if (vt.type == ValueType::Type::BOOL || vt.type == ValueType::Type::CHAR)
         return 1;
