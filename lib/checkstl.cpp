@@ -3124,6 +3124,7 @@ void CheckStl::eraseIteratorOutOfBoundsError(const Token *ftok, const Token* ite
                     "Calling function 'erase()' on the iterator 'iter' which is out of bounds.", CWE628, Certainty::normal);
         reportError(ftok, Severity::warning, "eraseIteratorOutOfBoundsCond",
                     "Either the condition 'x' is redundant or function 'erase()' is called on the iterator 'iter' which is out of bounds.", CWE628, Certainty::normal);
+        return;
     }
     const std::string& func = ftok->str();
     const std::string iter = itertok->expressionString();
