@@ -654,7 +654,7 @@ namespace {
                 } else if (tok->isControlFlowKeyword() && Token::Match(tok, "if|while|for (") &&
                            Token::simpleMatch(tok->next()->link(), ") {")) {
                     if (settings.checkLevel == Settings::CheckLevel::normal && ++branchCount > 4) {
-                        reportError(Severity::information, "normalCheckLevelMaxBranches", "Limit analysis of branches. Use --check-level=exhausive to analyze all branches.");
+                        reportError(Severity::information, "normalCheckLevelMaxBranches", "Limit analysis of branches. Use --check-level=exhaustive to analyze all branches.");
                         return Break(Analyzer::Terminate::Bail);
                     }
                     Token* endCond = tok->next()->link();
