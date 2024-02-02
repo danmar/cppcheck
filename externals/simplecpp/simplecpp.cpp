@@ -393,14 +393,14 @@ private:
 class FileStream : public simplecpp::TokenList::Stream {
 public:
     // cppcheck-suppress uninitDerivedMemberVar - we call Stream::init() to initialize the private members
-    EXPLICIT FileStream(const std::string &filename)
+    EXPLICIT FileStream(const std::string &filename, std::vector<std::string> &files)
         : file(fopen(filename.c_str(), "rb"))
         , lastCh(0)
         , lastStatus(0)
     {
         if (!file) {
-            const std::vector<std::string> location;
-            throw simplecpp::Output(location, simplecpp::Output::FILE_NOT_FOUND, "File is missing: " + filename);
+            files.push_back(filename);
+            throw simplecpp::Output(files, simplecpp::Output::FILE_NOT_FOUND, "File is missing: " + filename);
         }
         init();
     }
@@ -460,7 +460,7 @@ simplecpp::TokenList::TokenList(const std::string &filename, std::vector<std::st
 {
     try
     {
-        FileStream stream(filename);
+        FileStream stream(filename, filenames);
         readfile(stream,filename,outputList);
     }
     catch(const simplecpp::Output & e) // TODO handle extra type of errors
