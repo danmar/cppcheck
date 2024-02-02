@@ -752,6 +752,7 @@ bool Preprocessor::hasErrors(const simplecpp::Output &output)
     case simplecpp::Output::SYNTAX_ERROR:
     case simplecpp::Output::UNHANDLED_CHAR_ERROR:
     case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
+    case simplecpp::Output::FILE_NOT_FOUND:
         return true;
     case simplecpp::Output::WARNING:
     case simplecpp::Output::MISSING_HEADER:
@@ -891,6 +892,7 @@ void Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool sh
             error(out.location.file(), out.location.line, out.msg);
             break;
         case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
+        case simplecpp::Output::FILE_NOT_FOUND:
             error(emptyString, 0, out.msg);
             break;
         }
