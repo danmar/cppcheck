@@ -3119,10 +3119,16 @@ void CheckStl::knownEmptyContainer()
 
 void CheckStl::eraseIteratorOutOfBoundsError(const Token *ftok, const Token* itertok, const ValueFlow::Value* val)
 {
-    const std::string func = ftok ? ftok->str() : std::string("erase");
-    const std::string iter = itertok ? itertok->expressionString() : std::string("it");
+    if (!ftok || !itertok || !val) {
+        reportError(ftok, Severity::error, "eraseIteratorOutOfBounds",
+                    "Calling function 'erase()' on the iterator 'iter' which is out of bounds.", CWE628, Certainty::normal);
+        reportError(ftok, Severity::warning, "eraseIteratorOutOfBoundsCond",
+                    "Either the condition 'x' is redundant or function 'erase()' is called on the iterator 'iter' which is out of bounds.", CWE628, Certainty::normal);
+    }
+    const std::string& func = ftok->str();
+    const std::string iter = itertok->expressionString();
 
-    const bool isConditional = val && val->isPossible();
+    const bool isConditional = val->isPossible();
     std::string msg;
     if (isConditional) {
         msg = ValueFlow::eitherTheConditionIsRedundant(val->condition) + " or function '" + func + "()' is called on the iterator '" + iter + "' which is out of bounds.";
