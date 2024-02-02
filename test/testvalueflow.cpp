@@ -1448,6 +1448,16 @@ private:
         values = tokenValues(code, "( X )");
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(12, values.back().intvalue);
+
+        code = "struct T;\n"
+               "struct S { T& r; };\n"
+               "struct T { S s{ *this }; };\n"
+               "void f() {\n"
+               "    sizeof(T) == sizeof(void*);\n"
+               "}\n";
+        values = tokenValues(code, "==");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(1LL, values.back().intvalue);
     }
 
     void valueFlowComma()
