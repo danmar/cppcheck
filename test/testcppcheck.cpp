@@ -117,10 +117,11 @@ private:
     {
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(errorLogger, false, {});
-        ASSERT_EQUALS(0, cppcheck.check("NotAFile"));
+        ASSERT_EQUALS(1, cppcheck.check("NotAFile"));
 
         ASSERT_EQUALS(1, errorLogger.ids.size());
         ASSERT_EQUALS("fileNotFound", *errorLogger.ids.cbegin());
+        ASSERT_EQUALS("File NotAFile does not exists. Skipping file.", errorLogger.errmsgs.cbegin()->shortMessage());
     }
 
     void checkWithFS() const

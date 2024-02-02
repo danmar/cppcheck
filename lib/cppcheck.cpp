@@ -580,13 +580,9 @@ unsigned int CppCheck::check(const FileWithDetails &file, const std::string &con
 
 unsigned int CppCheck::check(const FileSettings &fs)
 {
-<<<<<<< HEAD
-<<<<<<< HEAD
     // TODO: move to constructor when CppCheck no longer owns the settings
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mUnusedFunctionsCheck)
         mUnusedFunctionsCheck.reset(new CheckUnusedFunctions());
-
-=======
     if (!Path::isFile(fs.filename)) {
         std::string fixedpath = Path::simplifyPath(fs.filename);
         fixedpath = Path::toNativeSeparators(fixedpath);
@@ -594,9 +590,6 @@ unsigned int CppCheck::check(const FileSettings &fs)
         fileNotFoundError(fs.filename, errorMsg);
         return 0;
     }
->>>>>>> 8f585fe73 (Fix)
-=======
->>>>>>> 74a6847dd (Remodel)
     CppCheck temp(mErrorLogger, mUseGlobalSuppressions, mExecuteCommand);
     temp.mSettings = mSettings;
     if (!temp.mSettings.userDefines.empty())
@@ -714,19 +707,16 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             std::string locfile = Path::fromNativeSeparators(output.location.file());
             if (mSettings.relativePaths)
                 locfile = Path::getRelativePath(locfile, mSettings.basePaths);
-
-            ErrorMessage::FileLocation loc1(locfile, output.location.line, output.location.col);
-
-            ErrorMessage errmsg({std::move(loc1)},
-                                "", // TODO: is this correct?
-                                Severity::error,
-                                output.msg,
-                                "syntaxError",
-                                Certainty::normal);
             if(output.type == simplecpp::Output::Type::FILE_NOT_FOUND){
                 const std::string fixedpath = Path::toNativeSeparators(file);
                 const std::string errorMsg("File " + fixedpath + " does not exists. Skipping file.");
-                fileNotFoundError(file, errorMsg);
+
+                reportErr(ErrorMessage(std::list<ErrorMessage::FileLocation> (),
+                        emptyString,
+                        Severity::error,
+                        errorMsg,
+                        "fileNotFound",
+                        Certainty::normal));
             }
             else{
                 reportErr(makeError(file, output.location.line, output.location.col, output.msg, "syntaxError"));
@@ -1057,7 +1047,6 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
     return mExitCode;
 }
 
-<<<<<<< HEAD
 static ErrorMessage makeError(const std::string &filename, const std::string &msg, const std::string &id)
 {
     const std::string fullmsg("Bailing out from analysis: " + msg);
@@ -1073,17 +1062,10 @@ static ErrorMessage makeError(const std::string &filename, const std::string &ms
                         Certainty::normal);
 }
 
-=======
->>>>>>> 74a6847dd (Remodel)
 // TODO: replace with ErrorMessage::fromInternalError()
 void CppCheck::internalError(const std::string &filename, const std::string &msg)
 {
     mErrorLogger.reportErr(makeError(filename, 0, 0U, "Bailing out from analysis:" + msg, "internalError"));
-}
-
-void CppCheck::fileNotFoundError(const std::string &filename, const std::string &msg)
-{
-    mErrorLogger.reportErr(makeError(filename, 0, 0U, msg, "fileNotFound"));
 }
 
 //---------------------------------------------------------------------------
