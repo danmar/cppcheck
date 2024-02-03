@@ -42,6 +42,9 @@ premium-misra-cpp-2008-0-1-12
 # we sometimes don't care about return value from functions
 premium-misra-cpp-2008-0-1-7
 
+# we allow C++11
+premium-misra-cpp-2008-1-0-1
+
 # TODO: can we prevent commented out code?
 premium-misra-cpp-2008-2-7-2
 premium-misra-cpp-2008-2-7-3
@@ -51,6 +54,9 @@ premium-misra-cpp-2008-2-10-1
 
 # objects of a class often has the lowercase name of the class.
 premium-misra-cpp-2008-2-10-4
+
+# we have constants that don't have U suffix
+premium-misra-cpp-2008-2-13-3
 
 # flag |= ..
 premium-misra-cpp-2008-4-5-1
@@ -75,6 +81,9 @@ premium-misra-cpp-2008-5-0-11
 
 # conversion of char-to-int is intentional sometimes
 premium-misra-cpp-2008-5-0-12
+
+# pointer to bool conversion in condition
+premium-misra-cpp-2008-5-0-13
 
 # pointer-to-bool conversion is common
 premium-misra-cpp-2008-5-0-14
@@ -106,8 +115,29 @@ premium-misra-cpp-2008-5-2-12
 # we write !pointer by intention
 premium-misra-cpp-2008-5-3-1
 
+# we have side effects in && || RHS by intention
+premium-misra-cpp-2008-5-14-1
+
+# comma operator: we often declare many variables in the same line
+premium-misra-cpp-2008-5-18-1
+
+# we have quite many assignments in subexpressions. for instance in expression `tok2 = tok2->next()` it's clear a equality is not intended.
+premium-misra-cpp-2008-6-2-1
+
 # for (;;)
 premium-misra-cpp-2008-6-2-3
+
+# we don't enforce {} below for/while
+premium-misra-cpp-2008-6-3-1
+
+# we don't enforce {} below if/else
+premium-misra-cpp-2008-6-4-1
+
+# we do not enforce final "else"
+premium-misra-cpp-2008-6-4-2
+
+# we have switch with return
+premium-misra-cpp-2008-6-4-5
 
 # it's not a bug to not put default at the end of a switch body
 premium-misra-cpp-2008-6-4-6
@@ -131,6 +161,9 @@ premium-misra-cpp-2008-7-3-1
 # intentional: return reference from method to non-const reference parameter
 premium-misra-cpp-2008-7-5-3
 
+# we have recursion by intention
+premium-misra-cpp-2008-7-5-4
+
 # intentional declaration of multiple variables
 premium-misra-cpp-2008-8-0-1
 
@@ -143,14 +176,23 @@ premium-misra-cpp-2008-8-5-3
 # TODO Fix these
 premium-misra-cpp-2008-9-3-1
 
+# methods that return non-const handles to members
+premium-misra-cpp-2008-9-3-2
+
 # we use unions by intention sometimes
 premium-misra-cpp-2008-9-5-1
 
 # overridden methods is safe
 premium-misra-cpp-2008-10-3-1
 
+# in modern c++ it's prefered to use override/final
+premium-misra-cpp-2008-10-3-2
+
 # some classes have public members by intention
 premium-misra-cpp-2008-11-0-1
+
+# clang-tidy warns if there are redundant base class initialization [readability-redundant-member-init]
+premium-misra-cpp-2008-12-1-2
 
 # rule should not apply to deleted copy assignment operator
 premium-misra-cpp-2008-12-8-2
@@ -161,8 +203,13 @@ premium-misra-cpp-2008-14-6-2
 # function specializations: TODO check if we should refactor
 premium-misra-cpp-2008-14-8-2
 
+# we throw/catch token pointer in one case by intention
+premium-misra-cpp-2008-15-0-2
+premium-misra-cpp-2008-15-3-5
+
 # we use preprocessor when it makes sense
 premium-misra-cpp-2008-16-0-1
+premium-misra-cpp-2008-16-0-7
 premium-misra-cpp-2008-16-2-1
 premium-misra-cpp-2008-16-2-2
 premium-misra-cpp-2008-16-3-2
