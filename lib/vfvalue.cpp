@@ -115,12 +115,14 @@ namespace ValueFlow {
         case ValueType::LIFETIME:
             return "lifetime=" + tokvalue->str();
         case ValueType::SYMBOLIC:
+        {
             std::string result = "symbolic=" + tokvalue->expressionString();
             if (intvalue > 0)
                 result += "+" + std::to_string(intvalue);
             else if (intvalue < 0)
                 result += "-" + std::to_string(-intvalue);
             return result;
+        }
         }
         throw InternalError(nullptr, "Invalid ValueFlow Value type");
     }
