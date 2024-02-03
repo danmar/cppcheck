@@ -903,6 +903,9 @@ bool MainWindow::tryLoadLibrary(Library *library, const QString& filename)
         case Library::ErrorCode::PLATFORM_TYPE_REDEFINED:
             errmsg = tr("Platform type redefined");
             break;
+        case Library::ErrorCode::DUPLICATE_DEFINE:
+            errmsg = tr("Duplicate define");
+            break;
         case Library::ErrorCode::UNKNOWN_ELEMENT:
             errmsg = tr("Unknown element");
             break;

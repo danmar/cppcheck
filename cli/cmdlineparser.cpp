@@ -1725,6 +1725,9 @@ bool CmdLineParser::tryLoadLibrary(Library& destination, const std::string& base
         case Library::ErrorCode::PLATFORM_TYPE_REDEFINED:
             msg += "Platform type redefined";
             break;
+        case Library::ErrorCode::DUPLICATE_DEFINE:
+            msg += "Duplicate define";
+            break;
         }
         if (!err.reason.empty())
             msg += " '" + err.reason + "'";
