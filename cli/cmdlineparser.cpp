@@ -894,10 +894,13 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     "autosar",
                     "cert-c-2016",
                     "cert-c++-2016",
+                    "cert-cpp-2016",
                     "misra-c-2012",
                     "misra-c-2023",
                     "misra-c++-2008",
+                    "misra-cpp-2008",
                     "misra-c++-2023",
+                    "misra-cpp-2023",
                     "bughunting",
                     "safety"};
 
