@@ -3119,6 +3119,77 @@ void CheckStl::knownEmptyContainer()
     }
 }
 
+void CheckStl::eraseIteratorOutOfBoundsError(const Token *ftok, const Token* itertok, const ValueFlow::Value* val)
+{
+    if (!ftok || !itertok || !val) {
+        reportError(ftok, Severity::error, "eraseIteratorOutOfBounds",
+                    "Calling function 'erase()' on the iterator 'iter' which is out of bounds.", CWE628, Certainty::normal);
+        reportError(ftok, Severity::warning, "eraseIteratorOutOfBoundsCond",
+                    "Either the condition 'x' is redundant or function 'erase()' is called on the iterator 'iter' which is out of bounds.", CWE628, Certainty::normal);
+        return;
+    }
+    const std::string& func = ftok->str();
+    const std::string iter = itertok->expressionString();
+
+    const bool isConditional = val->isPossible();
+    std::string msg;
+    if (isConditional) {
+        msg = ValueFlow::eitherTheConditionIsRedundant(val->condition) + " or function '" + func + "()' is called on the iterator '" + iter + "' which is out of bounds.";
+    } else {
+        msg = "Calling function '" + func + "()' on the iterator '" + iter + "' which is out of bounds.";
+    }
+
+    const Severity severity = isConditional ? Severity::warning : Severity::error;
+    const std::string id = isConditional ? "eraseIteratorOutOfBoundsCond" : "eraseIteratorOutOfBounds";
+    reportError(ftok, severity,
+                id,
+                msg, CWE628, Certainty::normal);
+}
+
+static const ValueFlow::Value* getOOBIterValue(const Token* tok, const ValueFlow::Value* sizeVal)
+{
+    auto it = std::find_if(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
+        if (v.isPossible() || v.isKnown()) {
+            switch (v.valueType) {
+            case ValueFlow::Value::ValueType::ITERATOR_END:
+                return v.intvalue >= 0;
+            case ValueFlow::Value::ValueType::ITERATOR_START:
+                return (v.intvalue < 0) || (sizeVal && v.intvalue >= sizeVal->intvalue);
+            default:
+                break;
+            }
+        }
+        return false;
+    });
+    return it != tok->values().end() ? &*it : nullptr;
+}
+
+void CheckStl::eraseIteratorOutOfBounds()
+{
+    logChecker("CheckStl::eraseIteratorOutOfBounds");
+    for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
+        for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
+
+            if (!tok->valueType())
+                continue;
+            const Library::Container* container = tok->valueType()->container;
+            if (!container || !astIsLHS(tok) || !Token::simpleMatch(tok->astParent(), "."))
+                continue;
+            const Token* const ftok = tok->astParent()->astOperand2();
+            const Library::Container::Action action = container->getAction(ftok->str());
+            if (action != Library::Container::Action::ERASE)
+                continue;
+            const std::vector<const Token*> args = getArguments(ftok);
+            if (args.size() != 1) // TODO: check range overload
+                continue;
+
+            const ValueFlow::Value* sizeVal = tok->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE);
+            if (const ValueFlow::Value* errVal = getOOBIterValue(args[0], sizeVal))
+                eraseIteratorOutOfBoundsError(ftok, args[0], errVal);
+        }
+    }
+}
+
 static bool isMutex(const Variable* var)
 {
     const Token* tok = Token::typeDecl(var->nameToken()).first;

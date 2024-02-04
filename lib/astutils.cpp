@@ -3027,8 +3027,10 @@ const Token* findExpressionChangedSkipDeadCode(const Token* expr,
 const Token* getArgumentStart(const Token* ftok)
 {
     const Token* tok = ftok;
-    if (Token::Match(tok, "%name% (|{"))
+    if (Token::Match(tok, "%name% (|{|)"))
         tok = ftok->next();
+    while (Token::simpleMatch(tok, ")"))
+        tok = tok->next();
     if (!Token::Match(tok, "(|{|["))
         return nullptr;
     const Token* startTok = tok->astOperand2();

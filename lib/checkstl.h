@@ -78,6 +78,7 @@ private:
         checkStl.mismatchingContainers();
         checkStl.mismatchingContainerIterator();
         checkStl.knownEmptyContainer();
+        checkStl.eraseIteratorOutOfBounds();
 
         checkStl.stlBoundaries();
         checkStl.checkDereferenceInvalidIterator();
@@ -183,6 +184,8 @@ private:
 
     void knownEmptyContainer();
 
+    void eraseIteratorOutOfBounds();
+
     void checkMutexes();
 
     bool isContainerSize(const Token *containerToken, const Token *expr) const;
@@ -234,6 +237,8 @@ private:
 
     void knownEmptyContainerError(const Token *tok, const std::string& algo);
 
+    void eraseIteratorOutOfBoundsError(const Token* ftok, const Token* itertok, const ValueFlow::Value* val = nullptr);
+
     void globalLockGuardError(const Token *tok);
     void localMutexError(const Token *tok);
 
@@ -271,6 +276,7 @@ private:
         c.uselessCallsEmptyError(nullptr);
         c.uselessCallsRemoveError(nullptr, "remove");
         c.dereferenceInvalidIteratorError(nullptr, "i");
+        c.eraseIteratorOutOfBoundsError(nullptr, nullptr);
         c.useStlAlgorithmError(nullptr, emptyString);
         c.knownEmptyContainerError(nullptr, emptyString);
         c.globalLockGuardError(nullptr);
@@ -296,6 +302,7 @@ private:
                "- common mistakes when using string::c_str()\n"
                "- useless calls of string and STL functions\n"
                "- dereferencing an invalid iterator\n"
+               "- erasing an iterator that is out of bounds\n"
                "- reading from empty STL container\n"
                "- iterating over an empty STL container\n"
                "- consider using an STL algorithm instead of raw loop\n"
