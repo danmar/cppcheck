@@ -3070,7 +3070,7 @@ int getArgumentPos(const Variable* var, const Function* f)
     });
     if (arg_it == f->argumentList.end())
         return -1;
-    return std::distance(f->argumentList.cbegin(), std::move(arg_it));
+    return std::distance(f->argumentList.cbegin(), arg_it);
 }
 
 const Token* getIteratorExpression(const Token* tok)
