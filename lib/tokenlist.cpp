@@ -147,7 +147,7 @@ void TokenList::addtoken(const std::string& str, const nonneg int lineno, const 
     if (mTokensFrontBack.back) {
         mTokensFrontBack.back->insertToken(str);
     } else {
-        mTokensFrontBack.front = new Token(&mTokensFrontBack);
+        mTokensFrontBack.front = new Token(mTokensFrontBack);
         mTokensFrontBack.back = mTokensFrontBack.front;
         mTokensFrontBack.back->str(str);
     }
@@ -165,7 +165,7 @@ void TokenList::addtoken(const std::string& str, const Token *locationTok)
     if (mTokensFrontBack.back) {
         mTokensFrontBack.back->insertToken(str);
     } else {
-        mTokensFrontBack.front = new Token(&mTokensFrontBack);
+        mTokensFrontBack.front = new Token(mTokensFrontBack);
         mTokensFrontBack.back = mTokensFrontBack.front;
         mTokensFrontBack.back->str(str);
     }
@@ -183,7 +183,7 @@ void TokenList::addtoken(const Token * tok, const nonneg int lineno, const nonne
     if (mTokensFrontBack.back) {
         mTokensFrontBack.back->insertToken(tok->str(), tok->originalName());
     } else {
-        mTokensFrontBack.front = new Token(&mTokensFrontBack);
+        mTokensFrontBack.front = new Token(mTokensFrontBack);
         mTokensFrontBack.back = mTokensFrontBack.front;
         mTokensFrontBack.back->str(tok->str());
         if (!tok->originalName().empty())
@@ -204,7 +204,7 @@ void TokenList::addtoken(const Token *tok, const Token *locationTok)
     if (mTokensFrontBack.back) {
         mTokensFrontBack.back->insertToken(tok->str(), tok->originalName());
     } else {
-        mTokensFrontBack.front = new Token(&mTokensFrontBack);
+        mTokensFrontBack.front = new Token(mTokensFrontBack);
         mTokensFrontBack.back = mTokensFrontBack.front;
         mTokensFrontBack.back->str(tok->str());
         if (!tok->originalName().empty())
@@ -225,7 +225,7 @@ void TokenList::addtoken(const Token *tok)
     if (mTokensFrontBack.back) {
         mTokensFrontBack.back->insertToken(tok->str(), tok->originalName(), tok->getMacroName());
     } else {
-        mTokensFrontBack.front = new Token(&mTokensFrontBack);
+        mTokensFrontBack.front = new Token(mTokensFrontBack);
         mTokensFrontBack.back = mTokensFrontBack.front;
         mTokensFrontBack.back->str(tok->str());
         mTokensFrontBack.back->originalName(tok->originalName());
@@ -355,7 +355,7 @@ void TokenList::createTokens(simplecpp::TokenList&& tokenList)
         if (mTokensFrontBack.back) {
             mTokensFrontBack.back->insertToken(str);
         } else {
-            mTokensFrontBack.front = new Token(&mTokensFrontBack);
+            mTokensFrontBack.front = new Token(mTokensFrontBack);
             mTokensFrontBack.back = mTokensFrontBack.front;
             mTokensFrontBack.back->str(str);
         }

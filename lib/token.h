@@ -151,10 +151,7 @@ class CPPCHECKLIB Token {
     friend class TestToken;
 
 private:
-    // for usage in TestToken only
-    Token();
-
-    TokensFrontBack* mTokensFrontBack{};
+    TokensFrontBack& mTokensFrontBack;
 
 public:
     Token(const Token &) = delete;
@@ -171,7 +168,7 @@ public:
         eNone
     };
 
-    explicit Token(TokensFrontBack *tokensFrontBack);
+    explicit Token(TokensFrontBack &tokensFrontBack);
     // for usage in CheckIO::ArgumentInfo only
     explicit Token(const Token *tok);
     ~Token();
