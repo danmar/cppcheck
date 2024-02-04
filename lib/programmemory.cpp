@@ -67,7 +67,7 @@ void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
     },
         subvalue);
     if (subexpr)
-        mValues[subexpr] = subvalue;
+        mValues[subexpr] = std::move(subvalue);
 }
 const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossible) const
 {
@@ -183,10 +183,10 @@ bool ProgramMemory::empty() const
     return mValues.empty();
 }
 
-void ProgramMemory::replace(const ProgramMemory &pm)
+void ProgramMemory::replace(ProgramMemory pm)
 {
     for (auto&& p : pm.mValues) {
-        mValues[p.first] = p.second;
+        mValues[p.first] = std::move(p.second);
     }
 }
 
@@ -448,12 +448,12 @@ void ProgramMemoryState::insert(const ProgramMemory &pm, const Token* origin)
     state.insert(pm);
 }
 
-void ProgramMemoryState::replace(const ProgramMemory &pm, const Token* origin)
+void ProgramMemoryState::replace(ProgramMemory pm, const Token* origin)
 {
     if (origin)
-        for (auto&& p : pm)
+        for (const auto& p : pm)
             origins[p.first.getExpressionId()] = origin;
-    state.replace(pm);
+    state.replace(std::move(pm));
 }
 
 static void addVars(ProgramMemory& pm, const ProgramMemory::Map& vars)
@@ -472,7 +472,7 @@ void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& va
     ProgramMemory local = pm;
     fillProgramMemoryFromAssignments(pm, tok, settings, local, vars);
     addVars(pm, vars);
-    replace(pm, tok);
+    replace(std::move(pm), tok);
 }
 
 void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
@@ -495,7 +495,7 @@ void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
 
 void ProgramMemoryState::removeModifiedVars(const Token* tok)
 {
-    ProgramMemory pm = state;
+    const ProgramMemory& pm = state;
     auto eval = [&](const Token* cond) -> std::vector<MathLib::bigint> {
         if (conditionIsTrue(cond, pm, settings))
             return {1};
@@ -1270,9 +1270,10 @@ namespace {
                 ValueFlow::Value r = state.execute(tok);
                 if (r.isUninitValue())
                     continue;
-                result.insert(std::make_pair(tok->exprId(), r));
+                const bool brk = b && isTrueOrFalse(r, *b);
+                result.emplace(tok->exprId(), std::move(r));
                 // Short-circuit evaluation
-                if (b && isTrueOrFalse(r, *b))
+                if (brk)
                     break;
             }
             return result;
@@ -1496,13 +1497,13 @@ namespace {
                 if (expr->isComparisonOp() && (r.isUninitValue() || r.isImpossible())) {
                     if (rhs.isIntValue()) {
                         std::vector<ValueFlow::Value> result =
-                            infer(ValueFlow::makeIntegralInferModel(), expr->str(), expr->astOperand1()->values(), {rhs});
+                            infer(ValueFlow::makeIntegralInferModel(), expr->str(), expr->astOperand1()->values(), {std::move(rhs)});
                         if (!result.empty() && result.front().isKnown())
                             return result.front();
                     }
                     if (lhs.isIntValue()) {
                         std::vector<ValueFlow::Value> result =
-                            infer(ValueFlow::makeIntegralInferModel(), expr->str(), {lhs}, expr->astOperand2()->values());
+                            infer(ValueFlow::makeIntegralInferModel(), expr->str(), {std::move(lhs)}, expr->astOperand2()->values());
                         if (!result.empty() && result.front().isKnown())
                             return result.front();
                     }

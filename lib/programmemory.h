@@ -129,7 +129,7 @@ struct ProgramMemory {
 
     bool empty() const;
 
-    void replace(const ProgramMemory &pm);
+    void replace(ProgramMemory pm);
 
     void insert(const ProgramMemory &pm);
 
@@ -171,7 +171,7 @@ struct ProgramMemoryState {
     explicit ProgramMemoryState(const Settings* s);
 
     void insert(const ProgramMemory &pm, const Token* origin = nullptr);
-    void replace(const ProgramMemory &pm, const Token* origin = nullptr);
+    void replace(ProgramMemory pm, const Token* origin = nullptr);
 
     void addState(const Token* tok, const ProgramMemory::Map& vars);
 
