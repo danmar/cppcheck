@@ -91,13 +91,12 @@ private:
     void errorUselessAssignmentPtrArg(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        ErrorPath errorPath;
         CheckAutoVariables c(nullptr,settings,errorLogger);
         c.errorAutoVariableAssignment(nullptr, false);
-        c.errorReturnReference(nullptr, errorPath, false);
-        c.errorDanglingReference(nullptr, nullptr, errorPath);
-        c.errorReturnTempReference(nullptr, errorPath, false);
-        c.errorDanglingTempReference(nullptr, std::move(errorPath), false);
+        c.errorReturnReference(nullptr, ErrorPath{}, false);
+        c.errorDanglingReference(nullptr, nullptr, ErrorPath{});
+        c.errorReturnTempReference(nullptr, ErrorPath{}, false);
+        c.errorDanglingTempReference(nullptr, ErrorPath{}, false);
         c.errorInvalidDeallocation(nullptr, nullptr);
         c.errorUselessAssignmentArg(nullptr);
         c.errorUselessAssignmentPtrArg(nullptr);

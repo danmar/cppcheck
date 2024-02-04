@@ -117,8 +117,7 @@ private:
     void uninitdataError(const Token *tok, const std::string &varname);
     void uninitvarError(const Token *tok, const std::string &varname, ErrorPath errorPath);
     void uninitvarError(const Token *tok, const std::string &varname) {
-        ErrorPath errorPath;
-        uninitvarError(tok, varname, std::move(errorPath));
+        uninitvarError(tok, varname, ErrorPath{});
     }
     void uninitvarError(const Token *tok, const std::string &varname, Alloc alloc) {
         if (alloc == NO_CTOR_CALL || alloc == CTOR_CALL)
