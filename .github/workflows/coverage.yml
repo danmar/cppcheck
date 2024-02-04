@@ -18,6 +18,7 @@ jobs:
   build:
 
     runs-on: ubuntu-22.04
+    if: ${{ github.repository_owner == 'danmar' }}
 
     steps:
       - uses: actions/checkout@v3
