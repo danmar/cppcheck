@@ -305,7 +305,7 @@ namespace clangimport {
             if (it != mNotFound.end()) {
                 for (Token *reftok: it->second)
                     ref(addr, reftok);
-                mNotFound.erase(std::move(it));
+                mNotFound.erase(it);
             }
         }
 
