@@ -194,7 +194,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     mStdLogger = new StdLogger(settings);
 
     CppCheck cppCheck(*mStdLogger, true, executeCommand);
-    cppCheck.settings() = std::move(settings);
+    cppCheck.settings() = settings; // this is a copy
 
     const int ret = check_wrapper(cppCheck);
 
