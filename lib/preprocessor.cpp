@@ -552,7 +552,7 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
             }
 
             configs_if.push_back((cmdtok->str() == "ifndef") ? std::string() : config);
-            configs_ifndef.push_back((cmdtok->str() == "ifndef") ? config : std::string());
+            configs_ifndef.push_back((cmdtok->str() == "ifndef") ? std::move(config) : std::string());
             ret.insert(cfg(configs_if,userDefines));
         } else if (cmdtok->str() == "elif" || cmdtok->str() == "else") {
             if (getConfigsElseIsFalse(configs_if,userDefines)) {
@@ -831,7 +831,7 @@ simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens
     std::list<simplecpp::IfCond> ifCond;
     simplecpp::TokenList tokens2(files);
     simplecpp::preprocess(tokens2, tokens1, files, mTokenLists, dui, &outputList, &macroUsage, &ifCond);
-    mMacroUsage = macroUsage;
+    mMacroUsage = std::move(macroUsage);
     mIfCond = ifCond;
 
     handleErrors(outputList, throwError);
@@ -910,7 +910,7 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
         ErrorMessage::FileLocation loc(file, linenr, 0);
         locationList.push_back(std::move(loc));
     }
-    mErrorLogger->reportErr(ErrorMessage(locationList,
+    mErrorLogger->reportErr(ErrorMessage(std::move(locationList),
                                          mFile0,
                                          Severity::error,
                                          msg,

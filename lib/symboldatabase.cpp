@@ -549,7 +549,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     // out of line function
                     if (const Token *endTok = Tokenizer::isFunctionHead(end, ";")) {
                         tok = endTok;
-                        scope->addFunction(function);
+                        scope->addFunction(std::move(function));
                     }
 
                     // inline function
@@ -3028,7 +3028,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
                     }
                 }
 
-                param = short_path;
+                param = std::move(short_path);
                 if (Token::simpleMatch(second->next(), param.c_str(), param.size())) {
                     second = second->tokAt(int(short_path_length));
                     arg_path_length = 0;

@@ -337,7 +337,7 @@ void ErrorMessage::deserialize(const std::string &data)
             }
         }
 
-        results[elem++] = temp;
+        results[elem++] = std::move(temp);
     }
 
     if (!iss.good())

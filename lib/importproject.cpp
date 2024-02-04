@@ -337,7 +337,7 @@ void ImportProject::fsParseCommand(FileSettings& fs, const std::string& command)
             // we can only set it globally but in this context it needs to be treated per file
         }
     }
-    fsSetDefines(fs, defs);
+    fsSetDefines(fs, std::move(defs));
 }
 
 bool ImportProject::importCompileCommands(std::istream &istr)
@@ -630,7 +630,7 @@ static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::
             const std::string::size_type pos = path.find("$(IncludePath)");
             if (pos != std::string::npos)
                 path.replace(pos, 14U, includePath);
-            includePath = path;
+            includePath = std::move(path);
         }
     }
 }

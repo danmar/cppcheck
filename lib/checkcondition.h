@@ -186,7 +186,7 @@ private:
         c.oppositeInnerConditionError(nullptr, nullptr, errorPath);
         c.identicalInnerConditionError(nullptr, nullptr, errorPath);
         c.identicalConditionAfterEarlyExitError(nullptr, nullptr, errorPath);
-        c.incorrectLogicOperatorError(nullptr, "foo > 3 && foo < 4", true, false, errorPath);
+        c.incorrectLogicOperatorError(nullptr, "foo > 3 && foo < 4", true, false, std::move(errorPath));
         c.redundantConditionError(nullptr, "If x > 11 the condition x > 10 is always true.", false);
         c.moduloAlwaysTrueFalseError(nullptr, "1");
         c.clarifyConditionError(nullptr, true, false);

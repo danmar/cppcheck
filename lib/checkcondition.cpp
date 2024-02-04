@@ -505,7 +505,7 @@ void CheckCondition::duplicateCondition()
         ErrorPath errorPath;
         if (!findExpressionChanged(cond1, scope.classDef->next(), cond2, mSettings, mTokenizer->isCPP()) &&
             isSameExpression(mTokenizer->isCPP(), true, cond1, cond2, mSettings->library, true, true, &errorPath))
-            duplicateConditionError(cond1, cond2, errorPath);
+            duplicateConditionError(cond1, cond2, std::move(errorPath));
     }
 }
 
@@ -558,7 +558,7 @@ void CheckCondition::multiCondition()
                 else if (isOppositeCond(
                              true, mTokenizer->isCPP(), cond1, tok2->astOperand2(), mSettings->library, true, true, &errorPath) &&
                          !findExpressionChanged(cond1, cond1, tok2->astOperand2(), mSettings, mTokenizer->isCPP()))
-                    oppositeElseIfConditionError(cond1, tok2->astOperand2(), errorPath);
+                    oppositeElseIfConditionError(cond1, tok2->astOperand2(), std::move(errorPath));
             }
         }
     }
@@ -1193,7 +1193,7 @@ void CheckCondition::checkIncorrectLogicOperator()
                     }
 
                     const std::string cond1 = expr1 + " " + tok->str() + " (" + expr2 + " " + tok->astOperand2()->str() + " " + expr3 + ")";
-                    const std::string cond2 = expr1;
+                    const std::string cond2 = std::move(expr1);
 
                     const std::string cond1VerboseMsg = expr1VerboseMsg + " " + tok->str() + " " + expr2VerboseMsg + " " + tok->astOperand2()->str() + " " + expr3VerboseMsg;
                     const std::string& cond2VerboseMsg = expr1VerboseMsg;
@@ -1316,9 +1316,9 @@ void CheckCondition::checkIncorrectLogicOperator()
             const std::string cond2str = conditionString(not2, expr2, op2, value2);
             if (printWarning && (alwaysTrue || alwaysFalse)) {
                 const std::string text = cond1str + " " + tok->str() + " " + cond2str;
-                incorrectLogicOperatorError(tok, text, alwaysTrue, inconclusive, errorPath);
+                incorrectLogicOperatorError(tok, text, alwaysTrue, inconclusive, std::move(errorPath));
             } else if (printStyle && (firstTrue || secondTrue)) {
-                const int which = isfloat ? sufficientCondition(op1, not1, d1, op2, not2, d2, isAnd) : sufficientCondition(op1, not1, i1, op2, not2, i2, isAnd);
+                const int which = isfloat ? sufficientCondition(std::move(op1), not1, d1, std::move(op2), not2, d2, isAnd) : sufficientCondition(std::move(op1), not1, i1, std::move(op2), not2, i2, isAnd);
                 std::string text;
                 if (which != 0) {
                     text = "The condition '" + (which == 1 ? cond2str : cond1str) + "' is redundant since '" + (which == 1 ? cond1str : cond2str) + "' is sufficient.";

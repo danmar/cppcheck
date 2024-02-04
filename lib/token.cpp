@@ -1223,7 +1223,7 @@ Token* Token::insertToken(const std::string& tokenStr, const std::string& origin
                 newScopeInfo->name.append(nextScopeNameAddition);
                 nextScopeNameAddition = "";
 
-                newToken->scopeInfo(newScopeInfo);
+                newToken->scopeInfo(std::move(newScopeInfo));
             } else if (newToken->str() == "}") {
                 Token* matchingTok = newToken->previous();
                 int depth = 0;
@@ -2136,7 +2136,7 @@ static ValueIterator removeAdjacentValues(std::list<ValueFlow::Value>& values, V
     if (it == last)
         it--;
     (*it)->bound = x->bound;
-    std::for_each(start, it, [&](ValueIterator y) {
+    std::for_each(std::move(start), std::move(it), [&](ValueIterator y) {
         values.erase(y);
     });
     return values.erase(x);

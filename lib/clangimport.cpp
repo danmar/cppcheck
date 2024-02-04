@@ -305,7 +305,7 @@ namespace clangimport {
             if (it != mNotFound.end()) {
                 for (Token *reftok: it->second)
                     ref(addr, reftok);
-                mNotFound.erase(it);
+                mNotFound.erase(std::move(it));
             }
         }
 
@@ -947,7 +947,7 @@ Token *clangimport::AstNode::createTokens(TokenList &tokenList)
             --addrIndex;
         const std::string addr = mExtTokens[addrIndex];
         std::string name = unquote(getSpelling());
-        Token *reftok = addtoken(tokenList, name.empty() ? "<NoName>" : name);
+        Token *reftok = addtoken(tokenList, name.empty() ? "<NoName>" : std::move(name));
         mData->ref(addr, reftok);
         return reftok;
     }
@@ -1085,10 +1085,10 @@ Token *clangimport::AstNode::createTokens(TokenList &tokenList)
         Token *par2 = addtoken(tokenList, ")");
         par1->link(par2);
         par2->link(par1);
-        createScope(tokenList, Scope::ScopeType::eIf, thenCode, iftok);
+        createScope(tokenList, Scope::ScopeType::eIf, std::move(thenCode), iftok);
         if (elseCode) {
             elseCode->addtoken(tokenList, "else");
-            createScope(tokenList, Scope::ScopeType::eElse, elseCode, tokenList.back());
+            createScope(tokenList, Scope::ScopeType::eElse, std::move(elseCode), tokenList.back());
         }
         return nullptr;
     }
@@ -1255,7 +1255,7 @@ Token *clangimport::AstNode::createTokens(TokenList &tokenList)
         Token *par2 = addtoken(tokenList, ")");
         par1->link(par2);
         par2->link(par1);
-        createScope(tokenList, Scope::ScopeType::eWhile, body, whiletok);
+        createScope(tokenList, Scope::ScopeType::eWhile, std::move(body), whiletok);
         return nullptr;
     }
     return addtoken(tokenList, "?" + nodeType + "?");

@@ -76,7 +76,7 @@ PathAnalysis::Progress PathAnalysis::forwardRecursive(const Token* tok, Info inf
     info.tok = tok;
     if (f(info) == Progress::Break)
         return Progress::Break;
-    if (tok->astOperand2() && forwardRecursive(tok->astOperand2(), info, f) == Progress::Break)
+    if (tok->astOperand2() && forwardRecursive(tok->astOperand2(), std::move(info), f) == Progress::Break)
         return Progress::Break;
     return Progress::Continue;
 }

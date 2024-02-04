@@ -97,7 +97,7 @@ private:
         c.errorReturnReference(nullptr, errorPath, false);
         c.errorDanglingReference(nullptr, nullptr, errorPath);
         c.errorReturnTempReference(nullptr, errorPath, false);
-        c.errorDanglingTempReference(nullptr, errorPath, false);
+        c.errorDanglingTempReference(nullptr, std::move(errorPath), false);
         c.errorInvalidDeallocation(nullptr, nullptr);
         c.errorUselessAssignmentArg(nullptr);
         c.errorUselessAssignmentPtrArg(nullptr);

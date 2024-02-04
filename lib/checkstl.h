@@ -251,7 +251,7 @@ private:
         c.iteratorsError(nullptr, nullptr, "container0", "container1");
         c.iteratorsError(nullptr, nullptr, "container");
         c.invalidContainerLoopError(nullptr, nullptr, errorPath);
-        c.invalidContainerError(nullptr, nullptr, nullptr, errorPath);
+        c.invalidContainerError(nullptr, nullptr, nullptr, std::move(errorPath));
         c.mismatchingContainerIteratorError(nullptr, nullptr, nullptr);
         c.mismatchingContainersError(nullptr, nullptr);
         c.mismatchingContainerExpressionError(nullptr, nullptr);

@@ -575,7 +575,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             ErrorPath errorPath;
             const Variable *var = ValueFlow::getLifetimeVariable(tok, errorPath);
             if (var && isInScope(var->nameToken(), tok->scope())) {
-                errorDanglingReference(tok, var, errorPath);
+                errorDanglingReference(tok, var, std::move(errorPath));
                 continue;
             }
             // Reference to temporary

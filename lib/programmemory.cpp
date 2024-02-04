@@ -1227,7 +1227,7 @@ static bool evalSameCondition(const ProgramMemory& state,
     programMemoryParseCondition(pm, storedValue, nullptr, settings, true);
     if (pm == state)
         return false;
-    return conditionIsTrue(cond, pm, settings);
+    return conditionIsTrue(cond, std::move(pm), settings);
 }
 
 static void pruneConditions(std::vector<const Token*>& conds,

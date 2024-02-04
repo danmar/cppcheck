@@ -331,7 +331,7 @@ private:
         c.oppositeExpressionError(nullptr, errorPath);
         c.duplicateExpressionError(nullptr, nullptr, nullptr, errorPath);
         c.duplicateValueTernaryError(nullptr);
-        c.duplicateExpressionTernaryError(nullptr, errorPath);
+        c.duplicateExpressionTernaryError(nullptr, std::move(errorPath));
         c.duplicateBreakError(nullptr,  false);
         c.unreachableCodeError(nullptr, nullptr,  false);
         c.unsignedLessThanZeroError(nullptr, nullptr, "varname");

@@ -994,7 +994,7 @@ void TemplateSimplifier::getTemplateInstantiations()
                         std::string fullNameSpace = scopeName + (scopeName.empty()?"":" :: ") +
                                                     nameSpace + (qualification.empty()?"":" :: ") + qualification;
                         std::string newFullName = fullNameSpace + " :: " + tok->str();
-                        const std::list<TokenAndName>::const_iterator it1 = std::find_if(mTemplateDeclarations.cbegin(), mTemplateDeclarations.cend(), FindFullName(newFullName));
+                        const std::list<TokenAndName>::const_iterator it1 = std::find_if(mTemplateDeclarations.cbegin(), mTemplateDeclarations.cend(), FindFullName(std::move(newFullName)));
                         if (it1 != mTemplateDeclarations.end()) {
                             // insert using namespace into token stream
                             std::string::size_type offset = 0;
@@ -2229,7 +2229,7 @@ void TemplateSimplifier::expandTemplate(
                     if (end != std::string::npos) {
                         token_scope.resize(end);
                         if (scope.empty())
-                            scope = token_scope;
+                            scope = std::move(token_scope);
                         else
                             scope = token_scope + " :: " + scope;
                     }
