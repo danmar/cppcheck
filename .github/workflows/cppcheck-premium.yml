@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-22.04 # run on the latest image only
 
     env:
-      PREMIUM_VERSION: 23.12.0
+      PREMIUM_VERSION: 24.2.0
 
     steps:
       - uses: actions/checkout@v3
@@ -27,7 +27,6 @@ jobs:
       - name: Download cppcheckpremium
         run: |
           wget https://files.cppchecksolutions.com/${{ env.PREMIUM_VERSION }}/ubuntu-22.04/cppcheckpremium-${{ env.PREMIUM_VERSION }}-amd64.tar.gz
-          #wget https://files.cppchecksolutions.com/cppcheckpremium-${{ env.PREMIUM_VERSION }}-amd64.tar.gz
           tar xzf cppcheckpremium-${{ env.PREMIUM_VERSION }}-amd64.tar.gz
 
       - name: Generate a license file
