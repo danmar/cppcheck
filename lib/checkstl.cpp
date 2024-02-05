@@ -260,11 +260,11 @@ void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerNa
         ErrorPath errorPath1 = getErrorPath(tok, containerSize, "Access out of bounds");
         ErrorPath errorPath2 = getErrorPath(tok, indexValue, "Access out of bounds");
         if (errorPath1.size() <= 1)
-            errorPath = errorPath2;
+            errorPath = std::move(errorPath2);
         else if (errorPath2.size() <= 1)
             errorPath = errorPath1;
         else {
-            errorPath = errorPath1;
+            errorPath = std::move(errorPath1);
             errorPath.splice(errorPath.end(), errorPath2);
         }
     }
@@ -993,7 +993,7 @@ namespace {
                     ep.emplace_front(ftok,
                                      "After calling '" + ftok->expressionString() +
                                      "', iterators or references to the container's data may be invalid .");
-                    result.emplace_back(Info::Reference{tok, ep, ftok});
+                    result.emplace_back(Info::Reference{tok, std::move(ep), ftok});
                 }
             }
             return result;
@@ -1165,7 +1165,7 @@ void CheckStl::invalidContainer()
                         // Check the iterator is created before the change
                         if (val && val->tokvalue != tok && reaches(val->tokvalue, tok, library, &ep)) {
                             v = val;
-                            errorPath = ep;
+                            errorPath = std::move(ep);
                             return true;
                         }
                         return false;
@@ -1177,7 +1177,7 @@ void CheckStl::invalidContainer()
                     if (v) {
                         invalidContainerError(info.tok, r.tok, v, errorPath);
                     } else {
-                        invalidContainerReferenceError(info.tok, r.tok, errorPath);
+                        invalidContainerReferenceError(info.tok, r.tok, std::move(errorPath));
                     }
                 }
             }

@@ -175,18 +175,16 @@ private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckCondition c(nullptr, settings, errorLogger);
 
-        ErrorPath errorPath;
-
         c.assignIfError(nullptr, nullptr, emptyString, false);
         c.badBitmaskCheckError(nullptr);
         c.comparisonError(nullptr, "&", 6, "==", 1, false);
-        c.duplicateConditionError(nullptr, nullptr, errorPath);
+        c.duplicateConditionError(nullptr, nullptr, ErrorPath{});
         c.overlappingElseIfConditionError(nullptr, 1);
         c.mismatchingBitAndError(nullptr, 0xf0, nullptr, 1);
-        c.oppositeInnerConditionError(nullptr, nullptr, errorPath);
-        c.identicalInnerConditionError(nullptr, nullptr, errorPath);
-        c.identicalConditionAfterEarlyExitError(nullptr, nullptr, errorPath);
-        c.incorrectLogicOperatorError(nullptr, "foo > 3 && foo < 4", true, false, errorPath);
+        c.oppositeInnerConditionError(nullptr, nullptr, ErrorPath{});
+        c.identicalInnerConditionError(nullptr, nullptr, ErrorPath{});
+        c.identicalConditionAfterEarlyExitError(nullptr, nullptr, ErrorPath{});
+        c.incorrectLogicOperatorError(nullptr, "foo > 3 && foo < 4", true, false, ErrorPath{});
         c.redundantConditionError(nullptr, "If x > 11 the condition x > 10 is always true.", false);
         c.moduloAlwaysTrueFalseError(nullptr, "1");
         c.clarifyConditionError(nullptr, true, false);

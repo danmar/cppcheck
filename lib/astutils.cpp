@@ -3255,7 +3255,7 @@ bool isConstVarExpression(const Token *tok, std::function<bool(const Token*)> sk
     if (Token::Match(tok, "%cop%|[|.")) {
         if (tok->astOperand1() && !isConstVarExpression(tok->astOperand1(), skipPredicate))
             return false;
-        if (tok->astOperand2() && !isConstVarExpression(tok->astOperand2(), skipPredicate))
+        if (tok->astOperand2() && !isConstVarExpression(tok->astOperand2(), std::move(skipPredicate)))
             return false;
         return true;
     }

@@ -557,7 +557,7 @@ bool Suppressions::reportUnmatchedSuppressions(const std::list<Suppressions::Sup
         std::list<::ErrorMessage::FileLocation> callStack;
         if (!s.fileName.empty())
             callStack.emplace_back(s.fileName, s.lineNumber, 0);
-        errorLogger.reportErr(::ErrorMessage(callStack, emptyString, Severity::information, "Unmatched suppression: " + s.errorId, "unmatchedSuppression", Certainty::normal));
+        errorLogger.reportErr(::ErrorMessage(std::move(callStack), emptyString, Severity::information, "Unmatched suppression: " + s.errorId, "unmatchedSuppression", Certainty::normal));
         err = true;
     }
     return err;

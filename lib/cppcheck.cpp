@@ -289,7 +289,7 @@ static std::vector<picojson::value> executeAddon(const AddonInfo &addonInfo,
             if (pos != std::string::npos)
                 details.resize(pos + 1);
         }
-        throw InternalError(nullptr, message, details);
+        throw InternalError(nullptr, std::move(message), std::move(details));
     }
 
     std::vector<picojson::value> addonResult;
@@ -666,7 +666,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             const ErrorMessage::FileLocation loc1(file, output.location.line, output.location.col);
             std::list<ErrorMessage::FileLocation> callstack(1, loc1);
 
-            ErrorMessage errmsg(callstack,
+            ErrorMessage errmsg(std::move(callstack),
                                 "",
                                 Severity::error,
                                 output.msg,
@@ -1043,7 +1043,7 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
     const ErrorMessage::FileLocation loc1(filename, 0, 0);
     std::list<ErrorMessage::FileLocation> callstack(1, loc1);
 
-    ErrorMessage errmsg(callstack,
+    ErrorMessage errmsg(std::move(callstack),
                         emptyString,
                         Severity::error,
                         fullmsg,
@@ -1553,7 +1553,7 @@ void CppCheck::tooManyConfigsError(const std::string &file, const int numberOfCo
         msg << " For more details, use --enable=information.";
 
 
-    ErrorMessage errmsg(loclist,
+    ErrorMessage errmsg(std::move(loclist),
                         emptyString,
                         Severity::information,
                         msg.str(),
@@ -1575,7 +1575,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
         loclist.emplace_back(file);
     }
 
-    ErrorMessage errmsg(loclist,
+    ErrorMessage errmsg(std::move(loclist),
                         emptyString,
                         Severity::information,
                         "The configuration '" + configuration + "' was not checked because its code equals another one.",
@@ -1758,7 +1758,7 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
         else
             errmsg.severity = Severity::style;
 
-        errmsg.file0 = fixedpath;
+        errmsg.file0 = std::move(fixedpath);
         errmsg.setmsg(messageString);
         reportErr(errmsg);
     }

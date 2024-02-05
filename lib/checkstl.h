@@ -243,15 +243,14 @@ private:
     void localMutexError(const Token *tok);
 
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override {
-        ErrorPath errorPath;
         CheckStl c(nullptr, settings, errorLogger);
         c.outOfBoundsError(nullptr, "container", nullptr, "x", nullptr);
         c.invalidIteratorError(nullptr, "iterator");
         c.iteratorsError(nullptr, "container1", "container2");
         c.iteratorsError(nullptr, nullptr, "container0", "container1");
         c.iteratorsError(nullptr, nullptr, "container");
-        c.invalidContainerLoopError(nullptr, nullptr, errorPath);
-        c.invalidContainerError(nullptr, nullptr, nullptr, errorPath);
+        c.invalidContainerLoopError(nullptr, nullptr, ErrorPath{});
+        c.invalidContainerError(nullptr, nullptr, nullptr, ErrorPath{});
         c.mismatchingContainerIteratorError(nullptr, nullptr, nullptr);
         c.mismatchingContainersError(nullptr, nullptr);
         c.mismatchingContainerExpressionError(nullptr, nullptr);

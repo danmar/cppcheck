@@ -293,8 +293,6 @@ private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckOther c(nullptr, settings, errorLogger);
 
-        ErrorPath errorPath;
-
         // error
         c.zerodivError(nullptr, nullptr);
         c.misusedScopeObjectError(nullptr, "varname");
@@ -326,12 +324,12 @@ private:
         c.selfAssignmentError(nullptr,  "varname");
         c.clarifyCalculationError(nullptr,  "+");
         c.clarifyStatementError(nullptr);
-        c.duplicateBranchError(nullptr, nullptr, errorPath);
+        c.duplicateBranchError(nullptr, nullptr, ErrorPath{});
         c.duplicateAssignExpressionError(nullptr, nullptr, true);
-        c.oppositeExpressionError(nullptr, errorPath);
-        c.duplicateExpressionError(nullptr, nullptr, nullptr, errorPath);
+        c.oppositeExpressionError(nullptr, ErrorPath{});
+        c.duplicateExpressionError(nullptr, nullptr, nullptr, ErrorPath{});
         c.duplicateValueTernaryError(nullptr);
-        c.duplicateExpressionTernaryError(nullptr, errorPath);
+        c.duplicateExpressionTernaryError(nullptr, ErrorPath{});
         c.duplicateBreakError(nullptr,  false);
         c.unreachableCodeError(nullptr, nullptr,  false);
         c.unsignedLessThanZeroError(nullptr, nullptr, "varname");

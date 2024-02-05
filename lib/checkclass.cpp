@@ -3343,7 +3343,7 @@ void CheckClass::checkThisUseAfterFree()
 
                 const Token * freeToken = nullptr;
                 std::set<const Function *> callstack;
-                checkThisUseAfterFreeRecursive(classScope, &func, &var, callstack, &freeToken);
+                checkThisUseAfterFreeRecursive(classScope, &func, &var, std::move(callstack), &freeToken);
             }
         }
     }
@@ -3517,7 +3517,7 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
             continue;
 
         MyFileInfo::NameLoc nameLoc;
-        nameLoc.className = name;
+        nameLoc.className = std::move(name);
         nameLoc.fileName = tokenizer->list.file(classScope->classDef);
         nameLoc.lineNumber = classScope->classDef->linenr();
         nameLoc.column = classScope->classDef->column();
