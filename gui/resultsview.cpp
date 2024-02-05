@@ -204,7 +204,7 @@ void ResultsView::updateFromOldReport(const QString &filename) const
     mUI->mTree->updateFromOldReport(filename);
 }
 
-void ResultsView::save(const QString &filename, Report::Type type) const
+void ResultsView::save(const QString &filename, Report::Type type, const QString& productName) const
 {
     Report *report = nullptr;
 
@@ -216,7 +216,7 @@ void ResultsView::save(const QString &filename, Report::Type type) const
         report = new TxtReport(filename);
         break;
     case Report::XMLV2:
-        report = new XmlReportV2(filename);
+        report = new XmlReportV2(filename, productName);
         break;
     }
 
@@ -408,7 +408,7 @@ void ResultsView::readErrorsXml(const QString &filename)
         return;
     }
 
-    XmlReportV2 report(filename);
+    XmlReportV2 report(filename, QString());
     QList<ErrorItem> errors;
     if (report.open()) {
         errors = report.read();

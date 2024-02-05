@@ -86,8 +86,9 @@ public:
      *
      * @param filename Filename to save results to
      * @param type Type of the report.
+     * @param productName Custom product name
      */
-    void save(const QString &filename, Report::Type type) const;
+    void save(const QString &filename, Report::Type type, const QString& productName) const;
 
     /**
      * @brief Update results from old report (tag, sinceDate)

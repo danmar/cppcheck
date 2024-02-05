@@ -31,6 +31,7 @@ private:
         TEST_CASE(simpleEnableGroup);
         TEST_CASE(loadCppcheckCfg);
         TEST_CASE(loadCppcheckCfgSafety);
+        TEST_CASE(getNameAndVersion);
     }
 
     void simpleEnableGroup() const {
@@ -236,6 +237,21 @@ private:
             ScopedFile file("cppcheck.cfg", "{\"safety\": true}");
             ASSERT_EQUALS("", s.loadCppcheckCfg());
             ASSERT_EQUALS(true, s.safety);
+        }
+    }
+
+    void getNameAndVersion() const
+    {
+        {
+            const auto nameVersion = Settings::getNameAndVersion("Cppcheck Premium 12.3.4");
+            ASSERT_EQUALS("Cppcheck Premium", nameVersion.first);
+            ASSERT_EQUALS("12.3.4", nameVersion.second);
+        }
+
+        {
+            const auto nameVersion = Settings::getNameAndVersion("Cppcheck Premium 12.3.4s");
+            ASSERT_EQUALS("Cppcheck Premium", nameVersion.first);
+            ASSERT_EQUALS("12.3.4s", nameVersion.second);
         }
     }
 };

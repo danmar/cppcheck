@@ -39,7 +39,7 @@ class QXmlStreamWriter;
  */
 class XmlReportV2 : public XmlReport {
 public:
-    explicit XmlReportV2(const QString &filename);
+    explicit XmlReportV2(const QString &filename, QString productName);
     ~XmlReportV2() override;
 
     /**
@@ -82,6 +82,9 @@ protected:
     ErrorItem readError(const QXmlStreamReader *reader);
 
 private:
+    /** Product name read from cppcheck.cfg */
+    const QString mProductName;
+
     /**
      * @brief XML stream reader for reading the report in XML format.
      */

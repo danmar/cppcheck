@@ -1166,7 +1166,7 @@ void MainWindow::analysisDone()
         if (QDir(buildDir).exists()) {
             mUI->mResults->saveStatistics(buildDir + "/statistics.txt");
             mUI->mResults->updateFromOldReport(buildDir + "/lastResults.xml");
-            mUI->mResults->save(buildDir + "/lastResults.xml", Report::XMLV2);
+            mUI->mResults->save(buildDir + "/lastResults.xml", Report::XMLV2, mCppcheckCfgProductName);
         }
     }
 
@@ -1564,7 +1564,7 @@ void MainWindow::save()
                 type = Report::CSV;
         }
 
-        mUI->mResults->save(selectedFile, type);
+        mUI->mResults->save(selectedFile, type, mCppcheckCfgProductName);
         setPath(SETTINGS_LAST_RESULT_PATH, selectedFile);
     }
 }
@@ -1585,7 +1585,7 @@ void MainWindow::complianceReport()
     tempResults.open();
     tempResults.close();
 
-    mUI->mResults->save(tempResults.fileName(), Report::XMLV2);
+    mUI->mResults->save(tempResults.fileName(), Report::XMLV2, mCppcheckCfgProductName);
 
     ComplianceReportDialog dlg(mProjectFile, tempResults.fileName());
     dlg.exec();

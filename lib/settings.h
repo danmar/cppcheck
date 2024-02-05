@@ -101,6 +101,8 @@ public:
 
     std::string loadCppcheckCfg();
 
+    static std::pair<std::string, std::string> getNameAndVersion(const std::string& productName);
+
     /** @brief addons, either filename of python/json file or json data */
     std::unordered_set<std::string> addons;
 
