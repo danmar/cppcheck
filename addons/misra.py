@@ -2291,7 +2291,7 @@ class MisraChecker:
                 rhs_category = get_category(rhs)
                 if lhs_category and rhs_category and lhs_category != rhs_category and rhs_category not in ('signed','unsigned'):
                     self.reportError(tok, 10, 3)
-                if bitsOfEssentialType(lhs) < bitsOfEssentialType(rhs):
+                if bitsOfEssentialType(lhs) < bitsOfEssentialType(rhs) and (lhs != "bool" or tok.astOperand2.str not in ('0','1')):
                     self.reportError(tok, 10, 3)
 
 
