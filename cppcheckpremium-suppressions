@@ -15,8 +15,6 @@ useStlAlgorithm
 premium-cert-dcl51-cpp
 
 # TODO: Is there unsafe allocations, in case of exceptions) in cppcheck
-premium-cert-err58-cpp
-
 # we have global objects
 premium-cert-err58-cpp
 
