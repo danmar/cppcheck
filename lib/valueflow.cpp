@@ -138,11 +138,11 @@ static void bailoutInternal(const std::string& type, const TokenList &tokenlist,
     errorLogger->reportErr(errmsg);
 }
 
-#define bailout2(type, tokenlist, errorLogger, tok, what) bailoutInternal(type, tokenlist, errorLogger, tok, what, __FILE__, __LINE__, __func__)
+#define bailout2(type, tokenlist, errorLogger, tok, what) bailoutInternal((type), (tokenlist), (errorLogger), (tok), (what), __FILE__, __LINE__, __func__)
 
-#define bailout(tokenlist, errorLogger, tok, what) bailout2("valueFlowBailout", tokenlist, errorLogger, tok, what)
+#define bailout(tokenlist, errorLogger, tok, what) bailout2("valueFlowBailout", (tokenlist), (errorLogger), (tok), (what))
 
-#define bailoutIncompleteVar(tokenlist, errorLogger, tok, what) bailoutInternal("valueFlowBailoutIncompleteVar", tokenlist, errorLogger, tok, what, "", 0, __func__)
+#define bailoutIncompleteVar(tokenlist, errorLogger, tok, what) bailoutInternal("valueFlowBailoutIncompleteVar", (tokenlist), (errorLogger), (tok), (what), "", 0, __func__)
 
 static std::string debugString(const ValueFlow::Value& v)
 {
@@ -9500,7 +9500,7 @@ static ValueFlowPassAdaptor<F> makeValueFlowPassAdaptor(const char* name, bool c
 
 #define VALUEFLOW_ADAPTOR(cpp, ...)                                                                                    \
     makeValueFlowPassAdaptor(#__VA_ARGS__,                                                                             \
-                             cpp,                                                                                      \
+                             (cpp),                                                                                      \
                              [](TokenList& tokenlist,                                                                  \
                                 SymbolDatabase& symboldatabase,                                                        \
                                 ErrorLogger* errorLogger,                                                              \

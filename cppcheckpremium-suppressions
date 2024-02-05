@@ -15,8 +15,6 @@ useStlAlgorithm
 premium-cert-dcl51-cpp
 
 # TODO: Is there unsafe allocations, in case of exceptions) in cppcheck
-premium-cert-err58-cpp
-
 # we have global objects
 premium-cert-err58-cpp
 
@@ -42,6 +40,9 @@ premium-misra-cpp-2008-0-1-12
 # we sometimes don't care about return value from functions
 premium-misra-cpp-2008-0-1-7
 
+# c++11
+premium-misra-cpp-2008-1-0-1
+
 # TODO: can we prevent commented out code?
 premium-misra-cpp-2008-2-7-2
 premium-misra-cpp-2008-2-7-3
@@ -51,6 +52,9 @@ premium-misra-cpp-2008-2-10-1
 
 # objects of a class often has the lowercase name of the class.
 premium-misra-cpp-2008-2-10-4
+
+# no suffix on numeric literals
+premium-misra-cpp-2008-2-13-3
 
 # flag |= ..
 premium-misra-cpp-2008-4-5-1
@@ -75,6 +79,9 @@ premium-misra-cpp-2008-5-0-11
 
 # conversion of char-to-int is intentional sometimes
 premium-misra-cpp-2008-5-0-12
+
+# pointer-to-bool conversion in condition
+premium-misra-cpp-2008-5-0-13
 
 # pointer-to-bool conversion is common
 premium-misra-cpp-2008-5-0-14
@@ -106,8 +113,29 @@ premium-misra-cpp-2008-5-2-12
 # we write !pointer by intention
 premium-misra-cpp-2008-5-3-1
 
+# side effects in conditional code is intentional
+premium-misra-cpp-2008-5-14-1
+
+# intentional use of comma operator in variable declarations
+premium-misra-cpp-2008-5-18-1
+
+# nested assignments are intentional
+premium-misra-cpp-2008-6-2-1
+
 # for (;;)
 premium-misra-cpp-2008-6-2-3
+
+# we don't always use braces for single statement loop/switch bodies
+premium-misra-cpp-2008-6-3-1
+
+# we don't always use braces for single statement if/else
+premium-misra-cpp-2008-6-4-1
+
+# we do not require a final else
+premium-misra-cpp-2008-6-4-2
+
+# return in case
+premium-misra-cpp-2008-6-4-5
 
 # it's not a bug to not put default at the end of a switch body
 premium-misra-cpp-2008-6-4-6
@@ -143,14 +171,23 @@ premium-misra-cpp-2008-8-5-3
 # TODO Fix these
 premium-misra-cpp-2008-9-3-1
 
+# returning non-const pointer/reference from method that is non-const
+premium-misra-cpp-2008-9-3-2
+
 # we use unions by intention sometimes
 premium-misra-cpp-2008-9-5-1
 
 # overridden methods is safe
 premium-misra-cpp-2008-10-3-1
 
+# use override/final
+premium-misra-cpp-2008-10-3-2
+
 # some classes have public members by intention
 premium-misra-cpp-2008-11-0-1
+
+# intentional: clang-tidy warns for redundant base class initializations
+premium-misra-cpp-2008-12-1-2
 
 # rule should not apply to deleted copy assignment operator
 premium-misra-cpp-2008-12-8-2
@@ -161,8 +198,13 @@ premium-misra-cpp-2008-14-6-2
 # function specializations: TODO check if we should refactor
 premium-misra-cpp-2008-14-8-2
 
+# we throw a pointer by intention
+premium-misra-cpp-2008-15-0-2
+premium-misra-cpp-2008-15-3-5
+
 # we use preprocessor when it makes sense
 premium-misra-cpp-2008-16-0-1
+premium-misra-cpp-2008-16-0-7
 premium-misra-cpp-2008-16-2-1
 premium-misra-cpp-2008-16-2-2
 premium-misra-cpp-2008-16-3-2

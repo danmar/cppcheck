@@ -195,6 +195,7 @@ static void createDumpFile(const Settings& settings,
         language = " language=\"cpp\"";
         break;
     case Standards::Language::None:
+    {
         // TODO: error out on unknown language?
         const Standards::Language lang = Path::identify(filename);
         if (lang == Standards::Language::CPP)
@@ -202,6 +203,7 @@ static void createDumpFile(const Settings& settings,
         else if (lang == Standards::Language::C)
             language = " language=\"c\"";
         break;
+    }
     }
 
     fdump << "<?xml version=\"1.0\"?>\n";
