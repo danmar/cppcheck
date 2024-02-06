@@ -441,7 +441,10 @@ static void misra_9_empty_or_zero_initializers(void) {
     int e[2][2] = { { 1 , 2 }, {} };           // 9.2
 
     int f[5]    = { 0 };
-    int f1[5]   = { 0u };                     // no-warning  #11298
+    int f1[5]   = { 0u };                     // 9.3
+    unsigned int f1[ 3 ][ 2 ] = { 0U };       // 9.3 9.2
+    unsigned int f2[ 3 ] = { 0U };            // 9.3
+    float f3[ 3 ][ 2 ]  = { 0.0F };           // 9.3 9.2
     int g[5][2] = { 0 };
     int h[2][2] = { { 0 } };                   // 9.3
     int i[2][2] = { { 0 }, { 0 } };
