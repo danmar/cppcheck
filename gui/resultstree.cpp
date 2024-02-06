@@ -1231,7 +1231,7 @@ static int indexOf(const QList<ErrorItem> &list, const ErrorItem &item)
 void ResultsTree::updateFromOldReport(const QString &filename)
 {
     QList<ErrorItem> oldErrors;
-    XmlReportV2 oldReport(filename);
+    XmlReportV2 oldReport(filename, QString());
     if (oldReport.open()) {
         oldErrors = oldReport.read();
         oldReport.close();

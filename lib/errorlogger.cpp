@@ -425,14 +425,9 @@ void ErrorMessage::deserialize(const std::string &data)
 
 std::string ErrorMessage::getXMLHeader(std::string productName)
 {
-    std::string version = CppCheck::version();
-    if (!productName.empty() && std::isdigit(productName.back())) {
-        const std::string::size_type pos = productName.find_last_not_of(".0123456789");
-        if (pos > 1 && pos != std::string::npos && productName[pos] == ' ') {
-            version = productName.substr(pos+1);
-            productName.erase(pos);
-        }
-    }
+    const auto nameAndVersion = Settings::getNameAndVersion(productName);
+    productName = nameAndVersion.first;
+    const std::string version = nameAndVersion.first.empty() ? CppCheck::version() : nameAndVersion.second;
 
     tinyxml2::XMLPrinter printer;
 

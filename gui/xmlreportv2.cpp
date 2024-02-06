@@ -53,10 +53,12 @@ static const QString IdAttribute = "id";
 static const QString SeverityAttribute = "severity";
 static const QString MsgAttribute = "msg";
 static const QString VersionAttribute = "version";
+static const QString ProductNameAttribute = "product-name";
 static const QString VerboseAttribute = "verbose";
 
-XmlReportV2::XmlReportV2(const QString &filename) :
+XmlReportV2::XmlReportV2(const QString &filename, QString productName) :
     XmlReport(filename),
+    mProductName(std::move(productName)),
     mXmlReader(nullptr),
     mXmlWriter(nullptr)
 {}
@@ -87,12 +89,18 @@ bool XmlReportV2::open()
 
 void XmlReportV2::writeHeader()
 {
+    const auto nameAndVersion = Settings::getNameAndVersion(mProductName.toStdString());
+    const QString name = QString::fromStdString(nameAndVersion.first);
+    const QString version = nameAndVersion.first.empty() ? CppCheck::version() : QString::fromStdString(nameAndVersion.second);
+
     mXmlWriter->setAutoFormatting(true);
     mXmlWriter->writeStartDocument();
     mXmlWriter->writeStartElement(ResultElementName);
     mXmlWriter->writeAttribute(VersionAttribute, QString::number(2));
     mXmlWriter->writeStartElement(CppcheckElementName);
-    mXmlWriter->writeAttribute(VersionAttribute, QString(CppCheck::version()));
+    if (!name.isEmpty())
+        mXmlWriter->writeAttribute(ProductNameAttribute, name);
+    mXmlWriter->writeAttribute(VersionAttribute, version);
     mXmlWriter->writeEndElement();
     mXmlWriter->writeStartElement(ErrorsElementName);
 }

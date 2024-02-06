@@ -132,6 +132,28 @@ std::string Settings::loadCppcheckCfg()
     return "";
 }
 
+std::pair<std::string, std::string> Settings::getNameAndVersion(const std::string& productName) {
+    if (productName.empty())
+        return {};
+    const std::string::size_type pos1 = productName.rfind(' ');
+    if (pos1 == std::string::npos)
+        return {};
+    if (pos1 + 2 >= productName.length())
+        return {};
+    for (auto pos2 = pos1 + 1; pos2 < productName.length(); ++pos2) {
+        const char c = productName[pos2];
+        const char prev = productName[pos2-1];
+        if (std::isdigit(c))
+            continue;
+        if (c == '.' && std::isdigit(prev))
+            continue;
+        if (c == 's' && pos2 + 1 == productName.length() && std::isdigit(prev))
+            continue;
+        return {};
+    }
+    return {productName.substr(0, pos1), productName.substr(pos1+1)};
+}
+
 std::string Settings::parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity>, SimpleEnableGroup<Checks>> &groups)
 {
     // Enable parameters may be comma separated...
