@@ -358,7 +358,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
         if (!endsWith(dirpath, '/'))
             dirpath += '/';
 
-        const std::string directory = dirpath;
+        const std::string directory = std::move(dirpath);
 
         std::string command;
         if (obj.count("arguments")) {

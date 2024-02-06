@@ -3605,7 +3605,7 @@ bool CheckClass::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<C
             locationList.emplace_back(nameLoc.fileName, nameLoc.lineNumber, nameLoc.column);
             locationList.emplace_back(it->second.fileName, it->second.lineNumber, it->second.column);
 
-            const ErrorMessage errmsg(locationList,
+            const ErrorMessage errmsg(std::move(locationList),
                                       emptyString,
                                       Severity::error,
                                       "$symbol:" + nameLoc.className +

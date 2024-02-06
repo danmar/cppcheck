@@ -490,7 +490,7 @@ void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
             origin = origin->link();
         }
     }
-    replace(pm, origin);
+    replace(std::move(pm), origin);
 }
 
 void ProgramMemoryState::removeModifiedVars(const Token* tok)

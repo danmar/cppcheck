@@ -262,7 +262,7 @@ void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerNa
         if (errorPath1.size() <= 1)
             errorPath = std::move(errorPath2);
         else if (errorPath2.size() <= 1)
-            errorPath = errorPath1;
+            errorPath = std::move(errorPath1);
         else {
             errorPath = std::move(errorPath1);
             errorPath.splice(errorPath.end(), errorPath2);
@@ -1155,7 +1155,7 @@ void CheckStl::invalidContainer()
                                 if (var->isArgument() ||
                                     (!var->isReference() && !var->isRValueReference() && !isVariableDecl(tok) &&
                                      reaches(var->nameToken(), tok, library, &ep))) {
-                                    errorPath = ep;
+                                    errorPath = std::move(ep);
                                     return true;
                                 }
                             }
@@ -1175,7 +1175,7 @@ void CheckStl::invalidContainer()
                     errorPath.insert(errorPath.end(), info.errorPath.cbegin(), info.errorPath.cend());
                     errorPath.insert(errorPath.end(), r.errorPath.cbegin(), r.errorPath.cend());
                     if (v) {
-                        invalidContainerError(info.tok, r.tok, v, errorPath);
+                        invalidContainerError(info.tok, r.tok, v, std::move(errorPath));
                     } else {
                         invalidContainerReferenceError(info.tok, r.tok, std::move(errorPath));
                     }

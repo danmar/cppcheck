@@ -150,7 +150,7 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
             if (Token::simpleMatch(endBlock, "} else {")) {
                 if (checkElse) {
                     i.errorPath.back().second = "Assuming condition is false.";
-                    const Progress result = forwardRange(endCond->next(), endBlock, i, f);
+                    const Progress result = forwardRange(endCond->next(), endBlock, std::move(i), f);
                     if (result == Progress::Break)
                         return Progress::Break;
                 }
@@ -179,7 +179,7 @@ void PathAnalysis::forward(const std::function<Progress(const Info&)>& f) const
         return;
     const Token * endToken = endScope->bodyEnd;
     Info info{start, ErrorPath{}, true};
-    forwardRange(start, endToken, info, f);
+    forwardRange(start, endToken, std::move(info), f);
 }
 
 bool reaches(const Token * start, const Token * dest, const Library& library, ErrorPath* errorPath)
