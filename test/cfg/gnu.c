@@ -183,38 +183,6 @@ int uninitvar_getpw(uid_t uid, char *buf)
     return getpw(someUid, buf);
 }
 
-// #9323, #9331
-void syntaxError_timercmp(struct timeval t)
-{
-    (void)timercmp(&t, &t, <);
-    (void)timercmp(&t, &t, <=);
-    (void)timercmp(&t, &t, ==);
-    (void)timercmp(&t, &t, !=);
-    (void)timercmp(&t, &t, >=);
-    (void)timercmp(&t, &t, >);
-}
-
-// False negative: #9346
-void uninitvar_timercmp(struct timeval t)
-{
-    struct timeval uninit;
-    (void)timercmp(&t, &uninit, <);
-    (void)timercmp(&uninit, &t, <=);
-    (void)timercmp(&uninit, &uninit, ==);
-}
-
-void nullPointer_timercmp(struct timeval t)
-{
-    // cppcheck-suppress constVariablePointer
-    struct timeval *p=0;
-    // cppcheck-suppress nullPointer
-    (void)timercmp(&t, p, <);
-    // cppcheck-suppress nullPointer
-    (void)timercmp(p, &t, <=);
-    // cppcheck-suppress nullPointer
-    (void)timercmp(p, p, ==);
-}
-
 // Declaration necessary because there is no specific / portable header.
 extern void *xcalloc(size_t nmemb, size_t size);
 extern void *xmalloc(size_t size);
