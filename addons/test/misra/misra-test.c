@@ -1357,6 +1357,16 @@ static void misra_14_4(bool b) {
   if (z) {} //config
 }
 
+// #12417
+struct bar_12417{ int a; };
+static int foo_12417(void){
+    int ret = 1;
+    if (sizeof(struct bar_12417) == 0U){ // no warning for misra-config
+        ret = 0;
+    }
+    return ret;
+}
+
 static void misra_15_1(void) {
   goto a1; // 15.1
 a1:
