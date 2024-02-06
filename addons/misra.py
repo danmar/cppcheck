@@ -2294,7 +2294,6 @@ class MisraChecker:
                 if bitsOfEssentialType(lhs) < bitsOfEssentialType(rhs) and (lhs != "bool" or tok.astOperand2.str not in ('0','1')):
                     self.reportError(tok, 10, 3)
 
-
     def misra_10_4(self, data):
         op = {'+', '-', '*', '/', '%', '&', '|', '^', '+=', '-=', ':'}
         for token in data.tokenlist:
