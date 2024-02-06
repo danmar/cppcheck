@@ -427,7 +427,7 @@ std::string ErrorMessage::getXMLHeader(std::string productName)
 {
     const auto nameAndVersion = Settings::getNameAndVersion(productName);
     productName = nameAndVersion.first;
-    const std::string version = (!nameAndVersion.first.empty()) ? CppCheck::version() : nameAndVersion.second;
+    const std::string version = nameAndVersion.first.empty() ? CppCheck::version() : nameAndVersion.second;
 
     tinyxml2::XMLPrinter printer;
 
