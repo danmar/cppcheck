@@ -51,8 +51,9 @@ jobs:
           valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-origins=yes --suppressions=valgrind/testrunner.supp --gen-suppressions=all --log-fd=9 --error-exitcode=42 ./testrunner TestGarbage TestOther TestSimplifyTemplate 9>memcheck.log || ec=1
           cat memcheck.log
           exit $ec
-        env:
-          DEBUGINFOD_URLS: https://debuginfod.ubuntu.com
+        # TODO: debuginfod.ubuntu.com is currently not responding to any requests causing it to run into a 40(!) minute timeout
+        #env:
+        #  DEBUGINFOD_URLS: https://debuginfod.ubuntu.com
           
       - uses: actions/upload-artifact@v3
         if: success() || failure()
