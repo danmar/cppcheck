@@ -2581,8 +2581,6 @@ class MisraChecker:
         for token in data.tokenlist:
             if not isCast(token):
                 continue
-            if token.astOperand1.astOperand1:
-                continue
             vt1 = token.valueType
             vt2 = token.astOperand1.valueType
             if not vt1 or not vt2:
