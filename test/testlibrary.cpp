@@ -70,6 +70,7 @@ private:
         TEST_CASE(container);
         TEST_CASE(version);
         TEST_CASE(loadLibErrors);
+        TEST_CASE(loadLibCombinations);
     }
 
     static bool loadxmldata(Library &lib, const char xmldata[], std::size_t len)
@@ -1064,6 +1065,13 @@ private:
 
         // comma followed by dot
         LOADLIB_ERROR_INVALID_RANGE("-10:0,.5:");
+    }
+
+    void loadLibCombinations() const {
+        {
+            const Settings s = settingsBuilder().library("std.cfg").library("gnu.cfg").library("bsd.cfg").build();
+            ASSERT_EQUALS(s.library.defines.empty(), false);
+        }
     }
 };
 
