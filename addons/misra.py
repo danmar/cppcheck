@@ -3335,7 +3335,7 @@ class MisraChecker:
                     continue
                 if not tok.isName:
                     continue
-                if tok.function or tok.variable or tok.varId or tok.valueType:
+                if tok.function or tok.variable or tok.varId or tok.valueType or tok.typeScope:
                     continue
                 if tok.next.str == "(" or tok.str in ["EOF"]:
                     continue
