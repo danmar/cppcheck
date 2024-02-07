@@ -721,7 +721,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             if (const char *unknownReturnValues = functionnode->Attribute("unknownValues")) {
                 if (std::strcmp(unknownReturnValues, "all") == 0) {
                     std::vector<MathLib::bigint> values{LLONG_MIN, LLONG_MAX};
-                    mUnknownReturnValues[name] = values;
+                    mUnknownReturnValues[name] = std::move(values);
                 }
             }
         } else if (functionnodename == "arg") {

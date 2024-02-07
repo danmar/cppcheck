@@ -8033,7 +8033,9 @@ std::string ValueType::str() const
         ret += " &";
     else if (reference == Reference::RValue)
         ret += " &&";
-    return ret.empty() ? ret : ret.substr(1);
+    if (ret.empty())
+        return ret;
+    return ret.substr(1);
 }
 
 void ValueType::setDebugPath(const Token* tok, SourceLocation ctx, SourceLocation local)

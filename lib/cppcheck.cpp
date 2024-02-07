@@ -957,7 +957,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     const ErrorMessage::FileLocation loc1(file, o.location.line, o.location.col);
                     std::list<ErrorMessage::FileLocation> callstack(1, loc1);
 
-                    ErrorMessage errmsg(callstack,
+                    ErrorMessage errmsg(std::move(callstack),
                                         filename,
                                         Severity::error,
                                         o.msg,

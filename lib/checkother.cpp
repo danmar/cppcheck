@@ -2510,7 +2510,7 @@ void CheckOther::checkDuplicateExpression()
                                         continue;
                                     }
                                 }
-                                duplicateExpressionError(tok->astOperand1(), tok->astOperand2(), tok, errorPath);
+                                duplicateExpressionError(tok->astOperand1(), tok->astOperand2(), tok, std::move(errorPath));
                             }
                         }
                     }

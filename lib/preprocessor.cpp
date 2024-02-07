@@ -832,7 +832,7 @@ simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens
     simplecpp::TokenList tokens2(files);
     simplecpp::preprocess(tokens2, tokens1, files, mTokenLists, dui, &outputList, &macroUsage, &ifCond);
     mMacroUsage = std::move(macroUsage);
-    mIfCond = ifCond;
+    mIfCond = std::move(ifCond);
 
     handleErrors(outputList, throwError);
 

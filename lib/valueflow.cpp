@@ -787,7 +787,7 @@ static void setTokenValue(Token* tok,
                     return;
                 const std::list<ValueFlow::Value> &values = op->values();
                 if (std::find(values.cbegin(), values.cend(), value) != values.cend())
-                    setTokenValue(parent, value, settings);
+                    setTokenValue(parent, std::move(value), settings);
             }
         } else if (!value.isImpossible()) {
             // is condition only depending on 1 variable?
@@ -948,7 +948,7 @@ static void setTokenValue(Token* tok,
                     if (Token::simpleMatch(parent, "-") && value2.bound == result.bound &&
                         value2.bound != ValueFlow::Value::Bound::Point)
                         result.invertBound();
-                    setTokenValue(parent, result, settings);
+                    setTokenValue(parent, std::move(result), settings);
                 }
             }
         }
@@ -1634,7 +1634,7 @@ static void valueFlowArrayElement(TokenList& tokenlist, const Settings& settings
                     const ValueFlow::Value& v = arg->values().front();
                     result.intvalue = v.intvalue;
                     result.errorPath.insert(result.errorPath.end(), v.errorPath.cbegin(), v.errorPath.cend());
-                    setTokenValue(tok, result, settings);
+                    setTokenValue(tok, std::move(result), settings);
                 }
             }
         }
@@ -3956,7 +3956,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList &tokenlist, ErrorLog
     if (Token::Match(tok->previous(), "%var% {|(") && isVariableDecl(tok->previous())) {
         std::list<ValueFlow::Value> values = tok->values();
         values.remove_if(&isNotLifetimeValue);
-        valueFlowForward(nextAfterAstRightmostLeaf(tok), ValueFlow::getEndOfExprScope(tok), tok->previous(), values, tokenlist, errorLogger, settings);
+        valueFlowForward(nextAfterAstRightmostLeaf(tok), ValueFlow::getEndOfExprScope(tok), tok->previous(), std::move(values), tokenlist, errorLogger, settings);
         return;
     }
     Token *parent = tok->astParent();
@@ -5059,7 +5059,7 @@ static void valueFlowLifetime(TokenList &tokenlist, ErrorLogger *errorLogger, co
                     if (Token::simpleMatch(parent, "("))
                         setTokenValue(parent, std::move(value), settings);
                     else
-                        setTokenValue(parent->tokAt(2), value, settings);
+                        setTokenValue(parent->tokAt(2), std::move(value), settings);
 
                     if (!rt.token->variable()) {
                         LifetimeStore ls = LifetimeStore{
@@ -5087,7 +5087,7 @@ static void valueFlowLifetime(TokenList &tokenlist, ErrorLogger *errorLogger, co
             value.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
             value.lifetimeKind = ValueFlow::Value::LifetimeKind::SubObject;
             value.tokvalue = tok;
-            value.errorPath = errorPath;
+            value.errorPath = std::move(errorPath);
             setTokenValue(ptok, std::move(value), settings);
             valueFlowForwardLifetime(ptok, tokenlist, errorLogger, settings);
         }
@@ -6527,7 +6527,7 @@ struct ConditionHandler {
                     const std::string& op(parent->str());
                     std::list<ValueFlow::Value> values;
                     if (op == "&&")
-                        values = andValues;
+                        values = std::move(andValues);
                     else if (op == "||")
                         values = std::move(orValues);
                     if (allowKnown && (Token::Match(condTok, "==|!=") || cond.isBool()))
@@ -8467,7 +8467,7 @@ static void valueFlowSmartPointer(TokenList &tokenlist, ErrorLogger * errorLogge
                     if (!inTok)
                         continue;
                     const std::list<ValueFlow::Value>& values = inTok->values();
-                    valueFlowForwardAssign(inTok, tok, vars, values, false, tokenlist, errorLogger, settings);
+                    valueFlowForwardAssign(inTok, tok, std::move(vars), values, false, tokenlist, errorLogger, settings);
                 }
             } else if (Token::simpleMatch(tok->astParent(), ". release ( )")) {
                 const Token* parent = ftok->astParent();
@@ -8749,7 +8749,7 @@ static void valueFlowContainerSetTokValue(TokenList& tokenlist, ErrorLogger* con
     value.setKnown();
     Token* start = initList->link() ? initList->link() : initList->next();
     if (tok->variable() && tok->variable()->isConst()) {
-        valueFlowForwardConst(start, tok->variable()->scope()->bodyEnd, tok->variable(), {value}, settings);
+        valueFlowForwardConst(start, tok->variable()->scope()->bodyEnd, tok->variable(), {std::move(value)}, settings);
     } else {
         valueFlowForward(start, tok, std::move(value), tokenlist, errorLogger, settings);
     }
@@ -8910,7 +8910,7 @@ static void valueFlowContainerSize(TokenList& tokenlist,
                     ValueFlow::Value value(tok->tokAt(2)->astOperand2()->values().front());
                     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                     value.setKnown();
-                    valueFlowForward(tok->linkAt(2), containerTok, value, tokenlist, errorLogger, settings);
+                    valueFlowForward(tok->linkAt(2), containerTok, std::move(value), tokenlist, errorLogger, settings);
                 } else if (action == Library::Container::Action::PUSH && !isIteratorPair(getArguments(tok->tokAt(2)))) {
                     ValueFlow::Value value(0);
                     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
@@ -9240,7 +9240,7 @@ static void valueFlowSafeFunctions(TokenList& tokenlist, const SymbolDatabase& s
                     valueFlowForward(const_cast<Token*>(functionScope->bodyStart->next()),
                                      functionScope->bodyEnd,
                                      arg.nameToken(),
-                                     argValues,
+                                     std::move(argValues),
                                      tokenlist,
                                      errorLogger,
                                      settings);
