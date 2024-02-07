@@ -1072,6 +1072,10 @@ private:
             const Settings s = settingsBuilder().library("std.cfg").library("gnu.cfg").library("bsd.cfg").build();
             ASSERT_EQUALS(s.library.defines.empty(), false);
         }
+        {
+            const Settings s = settingsBuilder().library("std.cfg").library("microsoft_sal.cfg").build();
+            ASSERT_EQUALS(s.library.defines.empty(), false);
+        }
     }
 };
 
