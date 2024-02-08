@@ -720,6 +720,27 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 else if (scope->type == Scope::eCatch)
                     scope->checkVariable(tok->tokAt(2), AccessControl::Throw, mSettings); // check for variable declaration and add it to new scope if found
                 tok = scopeStartTok;
+            } else if (Token::Match(tok, "%name% (")) {
+                const Token *funcStart = nullptr;
+                const Token *argStart = nullptr;
+                const Token *declEnd = nullptr;
+                if (isFunction(tok, scope, &funcStart, &argStart, &declEnd)) {
+                    bool newFunc = true; // Is this function already in the database?
+                    auto range = scope->functionMap.equal_range(tok->str());
+                    for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
+                        if (it->second->argsMatch(scope, it->second->argDef, argStart, emptyString, 0)) {
+                            newFunc = false;
+                            break;
+                        }
+                    }
+                    // save function prototype in database
+                    if (newFunc)
+                        addGlobalFunctionDecl(scope, tok, argStart, funcStart);
+
+                    tok = declEnd;
+                    continue;
+                }
+
             } else if (Token::Match(tok, "%var% {")) {
                 endInitList.emplace(tok->next()->link(), scope);
                 tok = tok->next();
