@@ -1144,17 +1144,6 @@ void GetShortPathName_validCode(const TCHAR* lpszPath)
     delete[] buffer;
 }
 
-class MyClass : public CObject {
-    DECLARE_DYNAMIC(MyClass)
-    DECLARE_DYNCREATE(MyClass)
-    DECLARE_SERIAL(MyClass)
-public:
-    MyClass() {}
-};
-IMPLEMENT_DYNAMIC(MyClass, CObject)
-IMPLEMENT_DYNCREATE(MyClass, CObject)
-IMPLEMENT_SERIAL(MyClass,CObject, 42)
-
 void invalidPrintfArgType_StructMember(double d) { // #9672
     typedef struct { CString st; } my_struct_t;
 
