@@ -57,10 +57,21 @@ namespace {
 
 const std::list<ValueFlow::Value> TokenImpl::mEmptyValueList;
 
+Token::Token()
+    : Token(static_cast<TokensFrontBack*>(nullptr))
+{}
+
 Token::Token(TokensFrontBack *tokensFrontBack) :
     mTokensFrontBack(tokensFrontBack)
 {
     mImpl = new TokenImpl();
+}
+
+Token::Token(const Token* tok)
+    : Token(const_cast<Token*>(tok)->mTokensFrontBack)
+{
+    fileIndex(tok->fileIndex());
+    linenr(tok->linenr());
 }
 
 Token::~Token()

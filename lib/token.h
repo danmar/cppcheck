@@ -151,6 +151,9 @@ class CPPCHECKLIB Token {
     friend class TestToken;
 
 private:
+    // for usage in TestToken only
+    Token();
+
     TokensFrontBack* mTokensFrontBack{};
 
 public:
@@ -168,7 +171,9 @@ public:
         eNone
     };
 
-    explicit Token(TokensFrontBack *tokensFrontBack = nullptr);
+    explicit Token(TokensFrontBack *tokensFrontBack);
+    // for usage in CheckIO::ArgumentInfo only
+    explicit Token(const Token *tok);
     ~Token();
 
     ConstTokenRange until(const Token * t) const;
