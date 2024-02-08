@@ -372,8 +372,11 @@ class InitializerParser:
         while self.token:
             if self.token.astParent.astOperand1 == self.token and self.token.astParent.astOperand2:
                 if self.ed:
-                    self.ed.markAsCurrent()
-                    self.ed = self.ed.getNextValueElement(self.root)
+                    if self.token.astParent.astOperand2.str == "{" and self.ed.isDesignated:
+                        self.popFromStackIfExitElement()
+                    else:
+                        self.ed.markAsCurrent()
+                        self.ed = self.ed.getNextValueElement(self.root)
 
                 self.token = self.token.astParent.astOperand2
                 break
