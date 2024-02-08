@@ -26,7 +26,7 @@ jobs:
     - name: Build with Coverity build tool
       run: |
         export PATH=`pwd`/coverity_tool/bin:$PATH
-        cov-build --dir cov-int make 
+        cov-build --dir cov-int make CPPCHK_GLIBCXX_DEBUG=
     - name: Submit build result to Coverity Scan
       run: |
         tar czvf cov.tar.gz cov-int
