@@ -110,6 +110,12 @@ function windows_fn {
     true
 }
 
+# mfc.cpp
+function mfc_fn {
+    # TODO: Add syntax check
+    true
+}
+
 # wxwidgets.cpp
 function wxwidgets_fn {
     # TODO: get rid of the error enabling/disabling?
@@ -479,6 +485,10 @@ function check_file {
         lua.c)
             lua_fn
             ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
+            ;;
+        mfc.cpp)
+            mfc_fn
+            ${CPPCHECK} ${CPPCHECK_OPT} --platform=win64  --library=$lib ${DIR}$f
             ;;
         opencv2.cpp)
             # TODO: "opencv.pc" is not commonly available in distros
