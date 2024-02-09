@@ -11169,6 +11169,15 @@ private:
               "    h(b ? gA(std::move(s)) : gB(std::move(s)));\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int gA(int, std::string);\n"
+              "int gB(int, std::string);\n"
+              "int h(int);\n"
+              "void f(bool b) {\n"
+              "    std::string s = \"abc\";\n"
+              "    h(b ? h(gA(5, std::move(s))) : h(gB(7, std::move(s))));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void funcArgNamesDifferent() {

@@ -5234,6 +5234,8 @@ static void valueFlowAfterMove(TokenList& tokenlist, const SymbolDatabase& symbo
             if (endOfFunctionCall) {
                 if (endOfFunctionCall->str() == ")") {
                     Token* ternaryColon = endOfFunctionCall->link()->astParent();
+                    while (Token::simpleMatch(ternaryColon, "("))
+                        ternaryColon = ternaryColon->astParent();
                     if (Token::simpleMatch(ternaryColon, ":")) {
                         endOfFunctionCall = ternaryColon->astOperand2();
                         if (Token::simpleMatch(endOfFunctionCall, "("))
