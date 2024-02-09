@@ -736,7 +736,9 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                         }
                         // save function prototype in database
                         if (newFunc) {
-                            addGlobalFunctionDecl(scope, tok, argStart, funcStart);
+                            Function function(tok, scope, funcStart, argStart);
+                            if(function.isExtern())
+                                scope->addFunction(std::move(function));
                         }
                         tok = declEnd;
                         continue;
@@ -5915,6 +5917,8 @@ const Function* SymbolDatabase::findFunction(const Token* const tok) const
     // find the scope this function is in
     const Scope *currScope = tok->scope();
     while (currScope && currScope->isExecutable()) {
+        if (const Function* f = currScope->findFunction(tok))
+            return f;
         if (currScope->functionOf)
             currScope = currScope->functionOf;
         else
