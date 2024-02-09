@@ -1096,6 +1096,7 @@ errno_t nullPointer_mbscat_s(unsigned char *strDestination, size_t numberOfEleme
     return _mbscat_s(strDestination, numberOfElements, strSource);
 }
 
+#if !UNICODE
 // errno_t _strncpy_s_l(char *strDest, size_t numberOfElements, const char *strSource, size_t count, _locale_t locale);
 errno_t uninitvar__strncpy_s_l(char *strDest, size_t numberOfElements, const char *strSource, size_t count, _locale_t locale)
 {
@@ -1117,7 +1118,6 @@ errno_t uninitvar__strncpy_s_l(char *strDest, size_t numberOfElements, const cha
     return _strncpy_s_l(strDest, numberOfElements, strSource, count, locale);
 }
 
- errno_t _strncpy_s_l(char *strDest, size_t numberOfElements, const char *strSource, size_t count, _locale_t locale);
 errno_t nullPointer__strncpy_s_l(char *strDest, size_t numberOfElements, const char *strSource, size_t count, _locale_t locale)
 {
     // cppcheck-suppress nullPointer
@@ -1128,6 +1128,7 @@ errno_t nullPointer__strncpy_s_l(char *strDest, size_t numberOfElements, const c
     // no warning shall be shown for
     return _strncpy_s_l(strDest, numberOfElements, strSource, count, locale);
 }
+#endif
 
 void GetShortPathName_validCode(const TCHAR* lpszPath)
 {
@@ -1146,17 +1147,6 @@ void GetShortPathName_validCode(const TCHAR* lpszPath)
     _tprintf(TEXT("long name = %s short name = %s"), lpszPath, buffer);
     delete[] buffer;
 }
-
-class MyClass : public CObject {
-    DECLARE_DYNAMIC(MyClass)
-    DECLARE_DYNCREATE(MyClass)
-    DECLARE_SERIAL(MyClass)
-public:
-    MyClass() {}
-};
-IMPLEMENT_DYNAMIC(MyClass, CObject)
-IMPLEMENT_DYNCREATE(MyClass, CObject)
-IMPLEMENT_SERIAL(MyClass,CObject, 42)
 
 void invalidPrintfArgType_StructMember(double d) { // #9672
     typedef struct { CString st; } my_struct_t;
