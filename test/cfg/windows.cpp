@@ -15,6 +15,7 @@
 #include <ctime>
 #include <memory.h>
 #include <mbstring.h>
+#include <tchar.h>
 #include <wchar.h>
 #include <atlstr.h>
 #include <string>
@@ -54,8 +55,9 @@ int stringCompare_mbscmp(const unsigned char *string1, const unsigned char *stri
 {
     // cppcheck-suppress stringCompare
     (void) _mbscmp(string1, string1);
+    const unsigned char x[] = "x";
     // cppcheck-suppress staticStringCompare
-    (void) _mbscmp("x", "x");
+    (void) _mbscmp(x, x);
     return _mbscmp(string1, string2);
 }
 
@@ -63,8 +65,9 @@ int stringCompare_mbscmp_l(const unsigned char *string1, const unsigned char *st
 {
     // cppcheck-suppress stringCompare
     (void) _mbscmp_l(string1, string1, locale);
+    const unsigned char x[] = "x";
     // cppcheck-suppress staticStringCompare
-    (void) _mbscmp_l("x", "x", locale);
+    (void) _mbscmp_l(x, x, locale);
     return _mbscmp_l(string1, string2, locale);
 }
 
@@ -99,7 +102,7 @@ void invalidFunctionArg__fseeki64(FILE* stream, __int64 offset, int origin)
     (void)_fseeki64(stream, offset, SEEK_END);
 }
 
-void invalidFunctionArgBool__fseeki64(FILE* stream, __int64 offset, int origin)
+void invalidFunctionArgBool__fseeki64(FILE* stream, __int64 offset)
 {
     // cppcheck-suppress invalidFunctionArgBool
     (void)_fseeki64(stream, offset, true);
@@ -115,7 +118,7 @@ unsigned char * overlappingWriteFunction__mbscat(unsigned char *src, unsigned ch
     return _mbscat(src, src);
 }
 
-unsigned char * overlappingWriteFunction__memccpy(const unsigned char *src, unsigned char *dest, int c, size_t count)
+void* overlappingWriteFunction__memccpy(const unsigned char *src, unsigned char *dest, int c, size_t count)
 {
     // No warning shall be shown:
     (void)_memccpy(dest, src, c, count);
@@ -142,7 +145,7 @@ void overlappingWriteFunction__swab(char *src, char *dest, int n)
     _swab(src, src+3, 4);
 }
 
-SYSTEM_INFO uninitvar_GetSystemInfo(char * envstr)
+SYSTEM_INFO uninitvar_GetSystemInfo()
 {
     // No warning is expected
     SYSTEM_INFO SystemInfo;
@@ -238,13 +241,13 @@ void validCode()
     hSemaphore2 = CreateSemaphoreEx(NULL, 0, 1, NULL, 0, SEMAPHORE_ALL_ACCESS);
     CloseHandle(hSemaphore2);
     HANDLE hSemaphore3;
-    hSemaphore3 = OpenSemaphore(SEMAPHORE_ALL_ACCESS, TRUE, "sem");
+    hSemaphore3 = OpenSemaphore(SEMAPHORE_ALL_ACCESS, TRUE, L"sem");
     CloseHandle(hSemaphore3);
 
     // Valid lstrcat usage, but with warning because it is deprecated
     char buf[30] = "hello world";
     // cppcheck-suppress lstrcatCalled
-    lstrcat(buf, "test");
+    lstrcatA(buf, "test");
 
     // cppcheck-suppress strlwrCalled
     strlwr(buf);
@@ -255,14 +258,14 @@ void validCode()
     HANDLE hMutex1;
     hMutex1 = CreateMutex(NULL, TRUE, NULL);
     if (hMutex1) {
-        ReleaseMutex(hMutex);
+        ReleaseMutex(hMutex1);
     }
     CloseHandle(hMutex1);
     HANDLE hMutex2;
     hMutex2 = CreateMutexEx(NULL, NULL, 0, MUTEX_ALL_ACCESS);
     CloseHandle(hMutex2);
     HANDLE hMutex3;
-    hMutex3 = OpenMutex(MUTEX_ALL_ACCESS, FALSE, "sem");
+    hMutex3 = OpenMutex(MUTEX_ALL_ACCESS, FALSE, _T("sem"));
     CloseHandle(hMutex3);
 
     // Valid Module usage, no leaks, valid arguments
@@ -334,12 +337,12 @@ void validCode()
     _tprintf(TEXT("%s"), bufTC);
     _stprintf(bufTC, TEXT("%d"), 1);
     _tprintf(TEXT("%s"), bufTC);
-    _stprintf(bufTC, _countof(bufTC), TEXT("%d"), 2);
+    _stprintf(bufTC, TEXT("%d"), 2);
     _tprintf(TEXT("%s"), bufTC);
 
     GetUserName(NULL, &dwordInit);
     dwordInit = 10;
-    GetUserName(bufTC, _countof(bufTC));
+    GetUserName(bufTC, &dwordInit);
 
     WSADATA wsaData = {0};
     WSAStartup(2, &wsaData);
@@ -460,7 +463,7 @@ void bufferAccessOutOfBounds()
     // cppcheck-suppress bufferAccessOutOfBounds
     FillMemory(byteBuf, sizeof(byteBuf)+1, 0x01);
 
-    char * pAlloc1 = _malloca(32);
+    char * pAlloc1 = static_cast<char*>(_malloca(32));
     memset(pAlloc1, 0, 32);
     // cppcheck-suppress bufferAccessOutOfBounds
     memset(pAlloc1, 0, 33);
@@ -469,12 +472,12 @@ void bufferAccessOutOfBounds()
 
 void mismatchAllocDealloc()
 {
-    char * pChar = _aligned_malloc(100, 2);
+    char * pChar = static_cast<char*>(_aligned_malloc(100, 2));
     // cppcheck-suppress mismatchAllocDealloc
     free(pChar);
 
     // cppcheck-suppress unusedAllocatedMemory
-    pChar = _malloca(32);
+    pChar = static_cast<char*>(_malloca(32));
     // cppcheck-suppress mismatchAllocDealloc
     _aligned_free(pChar);
 }
@@ -488,8 +491,8 @@ void nullPointer()
 
     // cppcheck-suppress lstrcatCalled
     // cppcheck-suppress nullPointer
-    lstrcat(NULL, "test");
-    char buf[10] = "\0";
+    lstrcat(NULL, _T("test"));
+    TCHAR buf[10] = _T("\0");
     // cppcheck-suppress lstrcatCalled
     // cppcheck-suppress nullPointer
     lstrcat(buf, NULL);
@@ -552,9 +555,9 @@ void nullPointer()
     // cppcheck-suppress nullPointer
     getpeername(socketInit, &sockaddrUninit, pIntNull);
     // cppcheck-suppress nullPointer
-    getsockopt(sockInit, 1, 2, NULL, &intInit);
+    getsockopt(socketInit, 1, 2, NULL, &intInit);
     // cppcheck-suppress nullPointer
-    getsockopt(sockInit, 1, 2, charArray, pIntNull);
+    getsockopt(socketInit, 1, 2, charArray, pIntNull);
 }
 
 void memleak_malloca()
@@ -568,7 +571,7 @@ void memleak_AllocateAndInitializeSid()
 {
     PSID pEveryoneSID = NULL;
     SID_IDENTIFIER_AUTHORITY SIDAuthWorld = SECURITY_WORLD_SID_AUTHORITY;
-    AllocateAndInitializeSid(&SIDAuthWorld, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &pEveryoneSID)
+    AllocateAndInitializeSid(&SIDAuthWorld, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &pEveryoneSID);
     // TODO: enable when #6994 is implemented cppcheck-suppress memleak
 }
 
@@ -599,11 +602,11 @@ void memleak_dupenv_s() // #10646
     char* pValue;
     size_t len;
     errno_t err = _dupenv_s(&pValue, &len, "pathext");
-    if (err) return -1;
+    if (err) return;
     printf("pathext = %s\n", pValue);
     free(pValue);
     err = _dupenv_s(&pValue, &len, "nonexistentvariable");
-    if (err) return -1;
+    if (err) return;
     printf("nonexistentvariable = %s\n", pValue);
     // cppcheck-suppress memleak
 }
@@ -628,7 +631,7 @@ void resourceLeak_OpenSemaphore()
 {
     HANDLE hSemaphore;
     // cppcheck-suppress unreadVariable
-    hSemaphore = OpenSemaphore(SEMAPHORE_ALL_ACCESS, TRUE, "sem");
+    hSemaphore = OpenSemaphore(SEMAPHORE_ALL_ACCESS, TRUE, _T("sem"));
     // cppcheck-suppress resourceLeak
 }
 
@@ -644,7 +647,7 @@ void resourceLeak_CreateMutexEx()
 {
     HANDLE hMutex;
     // cppcheck-suppress unreadVariable
-    hMutex = CreateMutexEx(NULL, "sem", 0, MUTEX_ALL_ACCESS);
+    hMutex = CreateMutexEx(NULL, _T("sem"), 0, MUTEX_ALL_ACCESS);
     // cppcheck-suppress resourceLeak
 }
 
@@ -652,7 +655,7 @@ void resourceLeak_OpenMutex()
 {
     HANDLE hMutex;
     // cppcheck-suppress unreadVariable
-    hMutex = OpenMutex(MUTEX_ALL_ACCESS, TRUE, "sem");
+    hMutex = OpenMutex(MUTEX_ALL_ACCESS, TRUE, _T("sem"));
     // cppcheck-suppress resourceLeak
 }
 
@@ -661,8 +664,8 @@ void resourceLeak_LoadLibrary()
     HINSTANCE hInstLib;
     hInstLib = ::LoadLibrary(L"My.dll");
     typedef BOOL (WINAPI *fpFunc)();
-    // cppcheck-suppress unreadVariable
-    fpFunc pFunc = GetProcAddress(hInstLib, "name");
+    // cppcheck-suppress [unreadVariable, cstyleCast)
+    fpFunc pFunc = (fpFunc)GetProcAddress(hInstLib, "name");
     // cppcheck-suppress resourceLeak
 }
 
@@ -698,7 +701,7 @@ void resourceLeak_socket()
     // cppcheck-suppress resourceLeak
 }
 
-void ignoredReturnValue()
+void ignoredReturnValue(FILE* fp)
 {
     // cppcheck-suppress leakReturnValNotUsed
     CreateSemaphoreW(NULL, 0, 1, NULL);
@@ -745,13 +748,13 @@ void ignoredReturnValue()
     // cppcheck-suppress leakReturnValNotUsed
     HeapAlloc(GetProcessHeap(), 0, 10);
     // cppcheck-suppress leakReturnValNotUsed
-    HeapReAlloc(GetProcessHeap(), 0, 1, 0);
+    HeapReAlloc(GetProcessHeap(), 0, nullptr, 0);
 
     // cppcheck-suppress leakReturnValNotUsed
     socket(1, 2, 3);
 
     // cppcheck-suppress ignoredReturnValue
-    _fileno(stdio);
+    _fileno(fp);
 
     // cppcheck-suppress lstrlenCalled
     // cppcheck-suppress ignoredReturnValue
@@ -765,7 +768,7 @@ void invalidFunctionArg()
     hSemaphore = CreateSemaphore(NULL, 0, 0, NULL);
     CloseHandle(hSemaphore);
     // cppcheck-suppress invalidFunctionArgBool
-    hSemaphore = CreateSemaphore(NULL, 0, 1, true);
+    hSemaphore = CreateSemaphore(NULL, 0, 1, false);
     CloseHandle(hSemaphore);
     // cppcheck-suppress invalidFunctionArg
     hSemaphore = CreateSemaphoreEx(NULL, 0, 0, NULL, 0, SEMAPHORE_ALL_ACCESS);
@@ -779,7 +782,7 @@ void invalidFunctionArg()
     hMutex = CreateMutex(NULL, TRUE, false);
     CloseHandle(hMutex);
     // cppcheck-suppress invalidFunctionArgBool
-    hMutex = CreateMutex(NULL, FALSE, true);
+    hMutex = CreateMutex(NULL, FALSE, false);
     CloseHandle(hMutex);
     // cppcheck-suppress invalidFunctionArg
     hMutex = CreateMutexEx(NULL, NULL, 3, MUTEX_ALL_ACCESS);
@@ -787,7 +790,7 @@ void invalidFunctionArg()
 
     //Incorrect: 2. parameter to LoadLibraryEx() must be NULL
     // cppcheck-suppress invalidFunctionArg
-    HINSTANCE hInstLib = LoadLibraryEx(L"My.dll", 1, 0);
+    HINSTANCE hInstLib = LoadLibraryEx(L"My.dll", HANDLE(1), 0);
     FreeLibrary(hInstLib);
 
     // cppcheck-suppress invalidFunctionArg
@@ -806,13 +809,13 @@ void uninitvar()
     // cppcheck-suppress uninitvar
     CloseHandle(hSemaphore);
 
-    char buf[10];
+    TCHAR buf[10];
     // cppcheck-suppress lstrcatCalled
     // cppcheck-suppress uninitvar
-    lstrcat(buf, "test");
-    buf[0] = '\0';
+    lstrcat(buf, _T("test"));
+    buf[0] = _T('\0');
     // cppcheck-suppress constVariable
-    char buf2[2];
+    TCHAR buf2[2];
     // cppcheck-suppress lstrcatCalled
     // cppcheck-suppress uninitvar
     lstrcat(buf, buf2);
@@ -848,9 +851,9 @@ void uninitvar()
     // cppcheck-suppress uninitvar
     SetLastError(dwordUninit);
 
-    DWORD dwordUninit;
+    DWORD dwordUninit2;
     // cppcheck-suppress uninitvar
-    GetUserName(NULL, &dwordUninit);
+    GetUserName(NULL, &dwordUninit2);
 
     FILE *pFileUninit;
     // cppcheck-suppress uninitvar
@@ -1064,7 +1067,7 @@ unsigned char * nullPointer_mbscat(unsigned char *strDestination, const unsigned
 }
 
 // errno_t _mbscat_s(unsigned char *strDestination, size_t numberOfElements, const unsigned char *strSource );
-error_t uninitvar_mbscat_s(unsigned char *strDestination, size_t numberOfElements, const unsigned char *strSource)
+errno_t uninitvar_mbscat_s(unsigned char *strDestination, size_t numberOfElements, const unsigned char *strSource)
 {
     unsigned char *uninit_strDestination;
     size_t uninit_numberOfElements;
@@ -1082,7 +1085,7 @@ error_t uninitvar_mbscat_s(unsigned char *strDestination, size_t numberOfElement
 }
 
 // errno_t _mbscat_s(unsigned char *strDestination, size_t numberOfElements, const unsigned char *strSource );
-error_t nullPointer_mbscat_s(unsigned char *strDestination, size_t numberOfElements, const unsigned char *strSource)
+errno_t nullPointer_mbscat_s(unsigned char *strDestination, size_t numberOfElements, const unsigned char *strSource)
 {
     // cppcheck-suppress nullPointer
     (void)_mbscat_s(0, numberOfElements, strSource);
@@ -1094,7 +1097,7 @@ error_t nullPointer_mbscat_s(unsigned char *strDestination, size_t numberOfEleme
 }
 
 // errno_t _strncpy_s_l(char *strDest, size_t numberOfElements, const char *strSource, size_t count, _locale_t locale);
-error_t uninitvar__strncpy_s_l(char *strDest, size_t numberOfElements, const char *strSource, size_t count, _locale_t locale)
+errno_t uninitvar__strncpy_s_l(char *strDest, size_t numberOfElements, const char *strSource, size_t count, _locale_t locale)
 {
     size_t uninit_numberOfElements;
     const char *uninit_strSource;
@@ -1114,8 +1117,8 @@ error_t uninitvar__strncpy_s_l(char *strDest, size_t numberOfElements, const cha
     return _strncpy_s_l(strDest, numberOfElements, strSource, count, locale);
 }
 
-// errno_t _strncpy_s_l(char *strDest, size_t numberOfElements, const char *strSource, size_t count, _locale_t locale);
-error_t nullPointer__strncpy_s_l(char *strDest, size_t numberOfElements, const char *strSource, size_t count, _locale_t locale)
+ errno_t _strncpy_s_l(char *strDest, size_t numberOfElements, const char *strSource, size_t count, _locale_t locale);
+errno_t nullPointer__strncpy_s_l(char *strDest, size_t numberOfElements, const char *strSource, size_t count, _locale_t locale)
 {
     // cppcheck-suppress nullPointer
     (void)_strncpy_s_l(0, numberOfElements, strSource, count, locale);
@@ -1160,7 +1163,7 @@ void invalidPrintfArgType_StructMember(double d) { // #9672
 
     my_struct_t my_struct;
     // cppcheck-suppress invalidPrintfArgType_sint
-    my_struct.st.Format("%d", d);
+    my_struct.st.Format(_T("%d"), d);
 }
 
 BOOL MyEnableWindow(HWND hWnd, BOOL bEnable) {
