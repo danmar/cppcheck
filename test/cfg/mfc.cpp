@@ -4,13 +4,23 @@
 #include <afxwin.h>
 
 
-class MyClass : public CObject {
-    DECLARE_DYNAMIC(MyClass)
-    DECLARE_DYNCREATE(MyClass)
-    DECLARE_SERIAL(MyClass)
+class MyClass1 : public CObject {
+    DECLARE_DYNAMIC(MyClass1)
 public:
-    MyClass() {}
+    MyClass1() {}
 };
-IMPLEMENT_DYNAMIC(MyClass, CObject)
-IMPLEMENT_DYNCREATE(MyClass, CObject)
-IMPLEMENT_SERIAL(MyClass,CObject, 42)
+IMPLEMENT_DYNAMIC(MyClass1, CObject)
+
+class MyClass2 : public CObject {
+    DECLARE_DYNCREATE(MyClass2)
+public:
+    MyClass2() {}
+};
+IMPLEMENT_DYNCREATE(MyClass2, CObject)
+
+class MyClass3 : public CObject {
+    DECLARE_SERIAL(MyClass3)
+public:
+    MyClass3() {}
+};
+IMPLEMENT_SERIAL(MyClass3, CObject, 42)
