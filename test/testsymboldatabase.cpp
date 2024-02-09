@@ -1263,6 +1263,17 @@ private:
             ASSERT(p->valueType());
             ASSERT(p->valueType()->pointer == 0);
             ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->volatileness == 0);
+            ASSERT(p->valueType()->reference == Reference::None);
+        }
+
+        {
+            GET_SYMBOL_DB("void foo(volatile int x) {}\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 0);
+            ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->volatileness == 1);
             ASSERT(p->valueType()->reference == Reference::None);
         }
         {
@@ -1271,6 +1282,7 @@ private:
             ASSERT(p->valueType());
             ASSERT(p->valueType()->pointer == 1);
             ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->volatileness == 0);
             ASSERT(p->valueType()->reference == Reference::None);
         }
         {
@@ -1279,6 +1291,7 @@ private:
             ASSERT(p->valueType());
             ASSERT(p->valueType()->pointer == 0);
             ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->volatileness == 0);
             ASSERT(p->valueType()->reference == Reference::LValue);
         }
         {
@@ -1287,6 +1300,7 @@ private:
             ASSERT(p->valueType());
             ASSERT(p->valueType()->pointer == 0);
             ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->volatileness == 0);
             ASSERT(p->valueType()->reference == Reference::RValue);
         }
         {
@@ -1295,6 +1309,7 @@ private:
             ASSERT(p->valueType());
             ASSERT(p->valueType()->pointer == 1);
             ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->volatileness == 0);
             ASSERT(p->valueType()->reference == Reference::LValue);
         }
         {
@@ -1303,6 +1318,7 @@ private:
             ASSERT(p->valueType());
             ASSERT(p->valueType()->pointer == 1);
             ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->volatileness == 0);
             ASSERT(p->valueType()->reference == Reference::RValue);
         }
         {
@@ -1311,6 +1327,7 @@ private:
             ASSERT(p->valueType());
             ASSERT(p->valueType()->pointer == 2);
             ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->volatileness == 0);
             ASSERT(p->valueType()->reference == Reference::LValue);
         }
         {
@@ -1319,6 +1336,7 @@ private:
             ASSERT(p->valueType());
             ASSERT(p->valueType()->pointer == 2);
             ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->volatileness == 0);
             ASSERT(p->valueType()->reference == Reference::RValue);
         }
         {
@@ -1327,6 +1345,7 @@ private:
             ASSERT(p->valueType());
             ASSERT(p->valueType()->pointer == 0);
             ASSERT(p->valueType()->constness == 1);
+            ASSERT(p->valueType()->volatileness == 0);
             ASSERT(p->valueType()->reference == Reference::LValue);
         }
         {
@@ -1335,6 +1354,7 @@ private:
             ASSERT(p->valueType());
             ASSERT(p->valueType()->pointer == 0);
             ASSERT(p->valueType()->constness == 1);
+            ASSERT(p->valueType()->volatileness == 0);
             ASSERT(p->valueType()->reference == Reference::RValue);
         }
         {
@@ -1343,6 +1363,7 @@ private:
             ASSERT(p->valueType());
             ASSERT(p->valueType()->pointer == 1);
             ASSERT(p->valueType()->constness == 1);
+            ASSERT(p->valueType()->volatileness == 0);
             ASSERT(p->valueType()->reference == Reference::LValue);
         }
         {
@@ -1351,6 +1372,7 @@ private:
             ASSERT(p->valueType());
             ASSERT(p->valueType()->pointer == 1);
             ASSERT(p->valueType()->constness == 1);
+            ASSERT(p->valueType()->volatileness == 0);
             ASSERT(p->valueType()->reference == Reference::RValue);
         }
         {
@@ -1359,6 +1381,7 @@ private:
             ASSERT(p->valueType());
             ASSERT(p->valueType()->pointer == 1);
             ASSERT(p->valueType()->constness == 2);
+            ASSERT(p->valueType()->volatileness == 0);
             ASSERT(p->valueType()->reference == Reference::LValue);
         }
         {
@@ -1367,7 +1390,26 @@ private:
             ASSERT(p->valueType());
             ASSERT(p->valueType()->pointer == 1);
             ASSERT(p->valueType()->constness == 2);
+            ASSERT(p->valueType()->volatileness == 0);
             ASSERT(p->valueType()->reference == Reference::RValue);
+        }
+        {
+            GET_SYMBOL_DB("extern const volatile int* test[];\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 1);
+            ASSERT(p->valueType()->constness == 1);
+            ASSERT(p->valueType()->volatileness == 1);
+            ASSERT(p->valueType()->reference == Reference::None);
+        }
+        {
+            GET_SYMBOL_DB("extern const int* volatile test[];\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 1);
+            ASSERT(p->valueType()->constness == 1);
+            ASSERT(p->valueType()->volatileness == 2);
+            ASSERT(p->valueType()->reference == Reference::None);
         }
     }
 

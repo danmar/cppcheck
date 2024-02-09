@@ -1232,6 +1232,7 @@ public:
     nonneg int bits{};                         ///< bitfield bitcount
     nonneg int pointer{};                      ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
     nonneg int constness{};                    ///< bit 0=data, bit 1=*, bit 2=**
+    nonneg int volatileness{};                 ///< bit 0=data, bit 1=*, bit 2=**
     Reference reference = Reference::None;     ///< Is the outermost indirection of this type a reference or rvalue
     ///< reference or not? pointer=2, Reference=LValue would be a T**&
     const Scope* typeScope{};                  ///< if the type definition is seen this point out the type scope
@@ -1257,6 +1258,13 @@ public:
         type(t),
         pointer(p),
         constness(c)
+    {}
+    ValueType(Sign s, Type t, nonneg int p, nonneg int c, nonneg int v)
+        : sign(s),
+        type(t),
+        pointer(p),
+        constness(c),
+        volatileness(v)
     {}
     ValueType(Sign s, Type t, nonneg int p, nonneg int c, std::string otn)
         : sign(s),
@@ -1293,6 +1301,8 @@ public:
     }
 
     bool isConst(nonneg int indirect = 0) const;
+
+    bool isVolatile(nonneg int indirect = 0) const;
 
     MathLib::bigint typeSize(const Platform &platform, bool p=false) const;
 
