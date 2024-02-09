@@ -828,6 +828,8 @@ namespace {
             Token* const tok2 = insertTokens(tok, rangeType);
             Token* const tok3 = insertTokens(tok2, mRangeTypeQualifiers);
 
+            tok2->originalName(tok->str());
+            tok3->originalName(tok->str());
             Token *after = tok3;
             while (Token::Match(after, "%name%|*|&|&&|::"))
                 after = after->next();
