@@ -92,6 +92,8 @@ public:
      */
     static QString clangTidyCmd();
 
+    static int executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output);
+
 signals:
 
     /**

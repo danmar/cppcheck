@@ -191,6 +191,8 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     mFiles = parser.getFiles();
     mFileSettings = parser.getFileSettings();
 
+    settings.setMisraRuleTexts(executeCommand);
+
     mStdLogger = new StdLogger(settings);
 
     CppCheck cppCheck(*mStdLogger, true, executeCommand);

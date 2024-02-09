@@ -261,6 +261,7 @@ public:
     /** @brief Extra arguments for Cppcheck Premium addon */
     std::string premiumArgs;
 
+    /** Is checker id enabled by premiumArgs */
     bool isPremiumEnabled(const char id[]) const;
 
     /** @brief Using -E for debugging purposes */
@@ -452,9 +453,15 @@ public:
     };
     CheckLevel checkLevel = CheckLevel::normal;
 
+    using ExecuteCmdFn = std::function<int (std::string,std::vector<std::string>,std::string,std::string&)>;
+    void setMisraRuleTexts(ExecuteCmdFn executeCommand);
+    void setMisraRuleTexts(const std::string& data);
+    std::string getMisraRuleText(const std::string& id, const std::string& text) const;
+
 private:
     static std::string parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity>, SimpleEnableGroup<Checks>> &groups);
     std::string applyEnabled(const std::string &str, bool enable);
+    std::map<std::string, std::string> mMisraRuleTexts;
 };
 
 /// @}
