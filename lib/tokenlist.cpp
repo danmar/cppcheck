@@ -46,10 +46,10 @@
 static constexpr int AST_MAX_DEPTH = 150;
 
 
-TokenList::TokenList(const Settings* settings) :
-    mSettings(settings)
+TokenList::TokenList(const Settings* settings)
+    : mTokensFrontBack(*this)
+    , mSettings(settings)
 {
-    mTokensFrontBack.list = this;
     if (mSettings && (mSettings->enforcedLang != Standards::Language::None)) {
         mLang = mSettings->enforcedLang;
     }

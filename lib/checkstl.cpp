@@ -686,11 +686,19 @@ void CheckStl::sameIteratorExpressionError(const Token *tok)
     reportError(tok, Severity::style, "sameIteratorExpression", "Same iterators expression are used for algorithm.", CWE664, Certainty::normal);
 }
 
-static const Token* getAddressContainer(const Token* tok)
+static std::vector<const Token*> getAddressContainer(const Token* tok)
 {
     if (Token::simpleMatch(tok, "[") && tok->astOperand1())
-        return tok->astOperand1();
-    return tok;
+        return { tok->astOperand1() };
+    std::vector<ValueFlow::Value> values = ValueFlow::getLifetimeObjValues(tok, /*inconclusive*/ false);
+    std::vector<const Token*> res;
+    for (const auto& v : values) {
+        if (v.tokvalue)
+            res.emplace_back(v.tokvalue);
+    }
+    if (res.empty())
+        res.emplace_back(tok);
+    return res;
 }
 
 static bool isSameIteratorContainerExpression(const Token* tok1,
@@ -701,10 +709,18 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
     if (isSameExpression(true, false, tok1, tok2, library, false, false)) {
         return !astIsContainerOwned(tok1) || !isTemporary(true, tok1, &library);
     }
-    if (kind == ValueFlow::Value::LifetimeKind::Address) {
-        return isSameExpression(true, false, getAddressContainer(tok1), getAddressContainer(tok2), library, false, false);
+    if (astContainerYield(tok2) == Library::Container::Yield::ITEM)
+        return true;
+    if (kind == ValueFlow::Value::LifetimeKind::Address || kind == ValueFlow::Value::LifetimeKind::Iterator) {
+        const auto address1 = getAddressContainer(tok1);
+        const auto address2 = getAddressContainer(tok2);
+        return std::any_of(address1.begin(), address1.end(), [&](const Token* tok1) {
+            return std::any_of(address2.begin(), address2.end(), [&](const Token* tok2) {
+                return isSameExpression(true, false, tok1, tok2, library, false, false);
+            });
+        });
     }
-    return astContainerYield(tok2) == Library::Container::Yield::ITEM;
+    return false;
 }
 
 static ValueFlow::Value getLifetimeIteratorValue(const Token* tok, MathLib::bigint path = 0)
@@ -865,6 +881,8 @@ void CheckStl::mismatchingContainerIterator()
 
             ValueFlow::Value val = getLifetimeIteratorValue(iterTok);
             if (!val.tokvalue)
+                continue;
+            if (!val.isKnown() && Token::simpleMatch(val.tokvalue->astParent(), ":"))
                 continue;
             if (val.lifetimeKind != ValueFlow::Value::LifetimeKind::Iterator)
                 continue;

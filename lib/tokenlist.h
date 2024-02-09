@@ -44,9 +44,10 @@ namespace simplecpp {
  * @brief This struct stores pointers to the front and back tokens of the list this token is in.
  */
 struct TokensFrontBack {
+    explicit TokensFrontBack(const TokenList& list) : list(list) {}
     Token *front{};
     Token* back{};
-    const TokenList* list{};
+    const TokenList& list;
 };
 
 class CPPCHECKLIB TokenList {

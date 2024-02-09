@@ -501,6 +501,7 @@ static void misra_9_array_initializers_with_designators(void) {
     char    c[2][2]     = { [0] = {1, 2, 3} };
     char    d[1][2]     = { [0] = 1 };                                      // 9.2
     char    e[2][2]     = { { 1, 2 }, [1][0] = {3, 4} };                    // 9.2
+    int     e1[2][2]    = { [ 0 ][ 1 ] = 0, { 5, 6 } };                     // no warning #12419
     char    f[2]        = { [0] = 1, 2 };
     char    g[2]        = { [1] = 2, [0] = 1 };
     char    h[2][2]     = { { 1, 2 }, [1] = { 3 } };                        // 9.3

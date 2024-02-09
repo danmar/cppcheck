@@ -482,7 +482,8 @@ private:
     }
 
     void deleteLast() const {
-        TokensFrontBack listEnds;
+        TokenList list(nullptr);
+        TokensFrontBack listEnds(list);
         Token ** const tokensBack = &(listEnds.back);
         Token tok(&listEnds);
         tok.insertToken("aba");
@@ -492,7 +493,8 @@ private:
     }
 
     void deleteFirst() const {
-        TokensFrontBack listEnds;
+        TokenList list(nullptr);
+        TokensFrontBack listEnds(list);
         Token ** const tokensFront = &(listEnds.front);
         Token tok(&listEnds);
 
