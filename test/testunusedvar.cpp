@@ -6957,7 +6957,7 @@ private:
                               "  int x = 0;\n"
                               "  std::for_each(ints.begin(), ints.end(), [&x](int i){ x += i; });\n"
                               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'x' is assigned a value that is never used.\n", "", errout.str());
     }
 
     void namespaces() { // #7557

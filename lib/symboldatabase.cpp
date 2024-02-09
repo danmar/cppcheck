@@ -738,7 +738,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     tok = tok->link();
                 }
             } else if (Token::Match(tok, "%name% (")) {
-                if (tok->next() && Token::Match(tok->next()->link(), ") ;")) {
+                if (tok->next() && Token::simpleMatch(tok->next()->link(), ") ;")) {
                     const Token *funcStart = nullptr;
                     const Token *argStart = nullptr;
                     const Token *declEnd = nullptr;
@@ -755,10 +755,11 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                             // save function prototype in database
                             if (newFunc) {
                                 Function function(tok, scope, funcStart, argStart);
-                                if (function.isExtern())
+                                if (function.isExtern()) {
                                     scope->addFunction(std::move(function));
+                                    tok = declEnd;
+                                }
                             }
-                            tok = declEnd;
                             continue;
                         }
                     }

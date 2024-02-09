@@ -269,6 +269,7 @@ private:
         TEST_CASE(memberFunctionOfUnknownClassMacro2);
         TEST_CASE(memberFunctionOfUnknownClassMacro3);
         TEST_CASE(functionLinkage);
+        TEST_CASE(externalFunctionsInsideAFunction); // #12420
 
         TEST_CASE(classWithFriend);
 
@@ -2296,6 +2297,19 @@ private:
 
         f = Token::findsimplematch(tokenizer.tokens(), "f6");
         ASSERT(f && f->function() && !f->function()->isExtern() && f->function()->retDef->str() == "void");
+    }
+
+    void externalFunctionsInsideAFunction() {
+        GET_SYMBOL_DB("void foo( void )\n"
+                      "{\n"
+                      "    extern void bar( void );\n"
+                      "    bar();\n"
+                      "}\n");
+
+        ASSERT(db && errout.str().empty());
+
+        const Token *f = Token::findsimplematch(tokenizer.tokens(), "bar");
+        ASSERT(f && f->function() && f->function()->isExtern() && f->function()->retDef->str() == "void");
     }
 
     void classWithFriend() {
