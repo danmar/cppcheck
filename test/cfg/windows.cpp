@@ -56,7 +56,7 @@ int stringCompare_mbscmp(const unsigned char *string1, const unsigned char *stri
     // cppcheck-suppress stringCompare
     (void) _mbscmp(string1, string1);
     const unsigned char x[] = "x";
-    // cppcheck-suppress staticStringCompare
+    // cppcheck-suppress stringCompare
     (void) _mbscmp(x, x);
     return _mbscmp(string1, string2);
 }
@@ -66,7 +66,7 @@ int stringCompare_mbscmp_l(const unsigned char *string1, const unsigned char *st
     // cppcheck-suppress stringCompare
     (void) _mbscmp_l(string1, string1, locale);
     const unsigned char x[] = "x";
-    // cppcheck-suppress staticStringCompare
+    // cppcheck-suppress stringCompare
     (void) _mbscmp_l(x, x, locale);
     return _mbscmp_l(string1, string2, locale);
 }
@@ -246,7 +246,7 @@ void validCode()
 
     // Valid lstrcat usage, but with warning because it is deprecated
     char buf[30] = "hello world";
-    // cppcheck-suppress lstrcatCalled
+    // cppcheck-suppress lstrcatACalled
     lstrcatA(buf, "test");
 
     // cppcheck-suppress strlwrCalled
@@ -664,7 +664,7 @@ void resourceLeak_LoadLibrary()
     HINSTANCE hInstLib;
     hInstLib = ::LoadLibrary(L"My.dll");
     typedef BOOL (WINAPI *fpFunc)();
-    // cppcheck-suppress [unreadVariable, cstyleCast)
+    // cppcheck-suppress [unreadVariable, cstyleCast]
     fpFunc pFunc = (fpFunc)GetProcAddress(hInstLib, "name");
     // cppcheck-suppress resourceLeak
 }
@@ -747,7 +747,7 @@ void ignoredReturnValue(FILE* fp)
     GetProcessHeap();
     // cppcheck-suppress leakReturnValNotUsed
     HeapAlloc(GetProcessHeap(), 0, 10);
-    // cppcheck-suppress leakReturnValNotUsed
+    // cppcheck-suppress [leakReturnValNotUsed, nullPointer]
     HeapReAlloc(GetProcessHeap(), 0, nullptr, 0);
 
     // cppcheck-suppress leakReturnValNotUsed
