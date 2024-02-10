@@ -547,7 +547,7 @@ bool Settings::isPremiumEnabled(const char id[]) const
     return false;
 }
 
-void Settings::setMisraRuleTexts(ExecuteCmdFn executeCommand)
+void Settings::setMisraRuleTexts(const ExecuteCmdFn& executeCommand)
 {
     if (premiumArgs.find("--misra-c-20") != std::string::npos) {
         for (const auto& a: addonInfos) {
