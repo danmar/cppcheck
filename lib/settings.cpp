@@ -560,7 +560,7 @@ void Settings::setMisraRuleTexts(const ExecuteCmdFn& executeCommand)
             else
                 arg = "--misra-c-2012-rule-texts";
             std::string output;
-            executeCommand(it->executable, {"--misra-c-2023-rule-texts"}, "2>&1", output);
+            executeCommand(it->executable, {arg}, "2>&1", output);
             setMisraRuleTexts(output);
         }
     }
