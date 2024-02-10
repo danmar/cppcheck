@@ -550,7 +550,9 @@ bool Settings::isPremiumEnabled(const char id[]) const
 void Settings::setMisraRuleTexts(const ExecuteCmdFn& executeCommand)
 {
     if (premiumArgs.find("--misra-c-20") != std::string::npos) {
-        const auto it = std::find_if(addonInfos.cbegin(), addonInfos.cend(), [](const AddonInfo& a) { return a.name == "premiumaddon.json"; });
+        const auto it = std::find_if(addonInfos.cbegin(), addonInfos.cend(), [](const AddonInfo& a) {
+            return a.name == "premiumaddon.json";
+        });
         if (it != addonInfos.cend()) {
             std::string arg;
             if (premiumArgs.find("--misra-c-2023") != std::string::npos)
