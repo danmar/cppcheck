@@ -3801,6 +3801,8 @@ void CheckOther::checkComparePointers()
                 continue;
             if (v1.tokvalue->varId() == v2.tokvalue->varId())
                 continue;
+            if (var1->scope() == var2->scope() && var1->scope()->isClassOrStructOrUnion())
+                continue;
             if (var1->isReference() || var2->isReference())
                 continue;
             if (var1->isRValueReference() || var2->isRValueReference())
