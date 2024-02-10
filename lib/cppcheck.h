@@ -152,6 +152,8 @@ public:
 
     bool isPremiumCodingStandardId(const std::string& id) const;
 
+    std::string getAddonMessage(const std::string& id, const std::string& text) const;
+
 private:
 #ifdef HAVE_RULES
     /** Are there "simple" rules */

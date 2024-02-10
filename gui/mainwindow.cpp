@@ -22,6 +22,7 @@
 #include "applicationlist.h"
 #include "aboutdialog.h"
 #include "analyzerinfo.h"
+#include "checkthread.h"
 #include "common.h"
 #include "cppcheck.h"
 #include "errortypes.h"
@@ -1087,6 +1088,7 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
             if (!premiumArgs.contains("misra") && mProjectFile->getAddons().contains("misra"))
                 premiumArgs += " --misra-c-2012";
             result.premiumArgs = premiumArgs.mid(1).toStdString();
+            result.setMisraRuleTexts(CheckThread::executeCommand);
         }
     }
 

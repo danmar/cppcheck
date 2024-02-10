@@ -31,6 +31,7 @@ private:
         TEST_CASE(simpleEnableGroup);
         TEST_CASE(loadCppcheckCfg);
         TEST_CASE(loadCppcheckCfgSafety);
+        TEST_CASE(ruleTexts);
     }
 
     void simpleEnableGroup() const {
@@ -237,6 +238,14 @@ private:
             ASSERT_EQUALS("", s.loadCppcheckCfg());
             ASSERT_EQUALS(true, s.safety);
         }
+    }
+
+    void ruleTexts() const
+    {
+        Settings s;
+        s.setMisraRuleTexts("1.1 text 1\n1.2 text 2\n");
+        ASSERT_EQUALS("text 1", s.getMisraRuleText("misra-c2012-1.1", "---"));
+        ASSERT_EQUALS("text 2", s.getMisraRuleText("misra-c2012-1.2", "---"));
     }
 };
 
