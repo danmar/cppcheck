@@ -1473,8 +1473,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
             errmsg.id = obj["addon"].get<std::string>() + "-" + obj["errorId"].get<std::string>();
             if (misraC2023 && startsWith(errmsg.id, "misra-c2012-"))
                 errmsg.id = "misra-c2023-" + errmsg.id.substr(12);
-            const std::string text = obj["message"].get<std::string>();
-            errmsg.setmsg(text);
+            errmsg.setmsg(mSettings.getMisraRuleText(errmsg.id, obj["message"].get<std::string>()));
             const std::string severity = obj["severity"].get<std::string>();
             errmsg.severity = severityFromString(severity);
             if (errmsg.severity == Severity::none || errmsg.severity == Severity::internal) {

@@ -22,6 +22,7 @@
 #include "vfvalue.h"
 
 #include <fstream>
+#include <sstream>
 
 #include "json.h"
 
@@ -544,4 +545,47 @@ bool Settings::isPremiumEnabled(const char id[]) const
     if (premiumArgs.find("misra-c++") != std::string::npos && misracpp2008Checkers.count(id))
         return true;
     return false;
+}
+
+void Settings::setMisraRuleTexts(const ExecuteCmdFn& executeCommand)
+{
+    if (premiumArgs.find("--misra-c-20") != std::string::npos) {
+        const auto it = std::find_if(addonInfos.cbegin(), addonInfos.cend(), [](const AddonInfo& a) {
+            return a.name == "premiumaddon.json";
+        });
+        if (it != addonInfos.cend()) {
+            std::string arg;
+            if (premiumArgs.find("--misra-c-2023") != std::string::npos)
+                arg = "--misra-c-2023-rule-texts";
+            else
+                arg = "--misra-c-2012-rule-texts";
+            std::string output;
+            executeCommand(it->executable, {arg}, "2>&1", output);
+            setMisraRuleTexts(output);
+        }
+    }
+}
+
+void Settings::setMisraRuleTexts(const std::string& data)
+{
+    mMisraRuleTexts.clear();
+    std::istringstream istr(data);
+    std::string line;
+    while (std::getline(istr, line)) {
+        std::string::size_type pos = line.find(' ');
+        if (pos == std::string::npos)
+            continue;
+        std::string id = line.substr(0, pos);
+        std::string text = line.substr(pos + 1);
+        if (id.empty() || text.empty())
+            continue;
+        mMisraRuleTexts[id] = text;
+    }
+}
+
+std::string Settings::getMisraRuleText(const std::string& id, const std::string& text) const {
+    if (id.compare(0, 9, "misra-c20") != 0)
+        return text;
+    const auto it = mMisraRuleTexts.find(id.substr(id.rfind('-') + 1));
+    return it != mMisraRuleTexts.end() ? it->second : text;
 }
