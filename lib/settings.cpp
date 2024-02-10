@@ -550,18 +550,16 @@ bool Settings::isPremiumEnabled(const char id[]) const
 void Settings::setMisraRuleTexts(const ExecuteCmdFn& executeCommand)
 {
     if (premiumArgs.find("--misra-c-20") != std::string::npos) {
-        for (const auto& a: addonInfos) {
-            if (a.name == "premiumaddon.json") {
-                std::string arg;
-                if (premiumArgs.find("--misra-c-2023") != std::string::npos)
-                    arg = "--misra-c-2023-rule-texts";
-                else
-                    arg = "--misra-c-2012-rule-texts";
-                std::string output;
-                executeCommand(a.executable, {arg}, "2>&1", output);
-                setMisraRuleTexts(output);
-                return;
-            }
+        const auto it = std::find_if(addonInfos.cbegin(), addonInfos.cend(), [](const AddonInfo& a) { return a.name == "premiumaddon.json"; });
+        if (it != addonInfos.cend()) {
+            std::string arg;
+            if (premiumArgs.find("--misra-c-2023") != std::string::npos)
+                arg = "--misra-c-2023-rule-texts";
+            else
+                arg = "--misra-c-2012-rule-texts";
+            std::string output;
+            executeCommand(it->executable, {"--misra-c-2023-rule-texts"}, "2>&1", output);
+            setMisraRuleTexts(output);
         }
     }
 }
