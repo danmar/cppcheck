@@ -3826,6 +3826,7 @@ void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *
     std::string verb = "Comparing";
     if (Token::simpleMatch(tok, "-"))
         verb = "Subtracting";
+    const char * const id = (verb[0] == 'C') ? "comparePointers" : "subtractPointers";
     if (v1) {
         errorPath.emplace_back(v1->tokvalue->variable()->nameToken(), "Variable declared here.");
         errorPath.insert(errorPath.end(), v1->errorPath.cbegin(), v1->errorPath.cend());
@@ -3836,7 +3837,7 @@ void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *
     }
     errorPath.emplace_back(tok, "");
     reportError(
-        errorPath, Severity::error, "comparePointers", verb + " pointers that point to different objects", CWE570, Certainty::normal);
+        errorPath, Severity::error, id, verb + " pointers that point to different objects", CWE570, Certainty::normal);
 }
 
 void CheckOther::checkModuloOfOne()

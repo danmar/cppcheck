@@ -1127,7 +1127,10 @@ void CheckBufferOverrun::objectIndexError(const Token *tok, const ValueFlow::Val
     ErrorPath errorPath;
     std::string name;
     if (v) {
-        name = v->tokvalue->variable()->name();
+        const Token* expr = v->tokvalue;
+        while (Token::simpleMatch(expr->astParent(), "."))
+            expr = expr->astParent();
+        name = expr->expressionString();
         errorPath = v->errorPath;
     }
     errorPath.emplace_back(tok, "");
@@ -1135,7 +1138,7 @@ void CheckBufferOverrun::objectIndexError(const Token *tok, const ValueFlow::Val
     reportError(errorPath,
                 known ? Severity::error : Severity::warning,
                 "objectIndex",
-                "The address of local variable '" + name + "' " + verb + " accessed at non-zero index.",
+                "The address of variable '" + name + "' " + verb + " accessed at non-zero index.",
                 CWE758,
                 Certainty::normal);
 }

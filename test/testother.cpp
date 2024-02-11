@@ -11572,7 +11572,7 @@ private:
               "    return xp > yp;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:1] -> [test.cpp:5] -> [test.cpp:1] -> [test.cpp:6] -> [test.cpp:7]: (error) Comparing pointers that point to different objects\n"
+            "[test.cpp:3] -> [test.cpp:5] -> [test.cpp:4] -> [test.cpp:6] -> [test.cpp:7]: (error) Comparing pointers that point to different objects\n"
             "[test.cpp:5]: (style) Variable 'xp' can be declared as pointer to const\n"
             "[test.cpp:6]: (style) Variable 'yp' can be declared as pointer to const\n"
             "[test.cpp:5]: (style) Variable 'xp' can be declared as pointer to const\n" // duplicate
@@ -11667,8 +11667,15 @@ private:
               "int f(S s1, S s2) {\n"
               "    return &s1.i - reinterpret_cast<int*>(&s2);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:3]: (error) Subtracting pointers that point to different objects\n",
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:3]: (error) Subtracting pointers that point to different objects\n",
                       errout.str());
+
+        check("struct S { int a; int b; };\n" // #12422
+              "int f() {\n"
+              "    S s;\n"
+              "    return &s.b - &s.a;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void unusedVariableValueTemplate() {
