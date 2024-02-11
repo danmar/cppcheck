@@ -2535,7 +2535,7 @@ void CheckOther::checkDuplicateExpression()
                                                 &errorPath) &&
                            !Token::Match(tok, "=|-|-=|/|/=") &&
                            isWithoutSideEffects(cpp, tok->astOperand1())) {
-                    oppositeExpressionError(tok, errorPath);
+                    oppositeExpressionError(tok, std::move(errorPath));
                 } else if (!Token::Match(tok, "[-/%]")) { // These operators are not associative
                     if (styleEnabled && tok->astOperand2() && tok->str() == tok->astOperand1()->str() &&
                         isSameExpression(cpp,
