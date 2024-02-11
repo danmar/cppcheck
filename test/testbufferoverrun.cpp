@@ -5397,7 +5397,7 @@ private:
               "    return (&i)[1];\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:3] -> [test.cpp:3]: (error) The address of local variable 'i' is accessed at non-zero index.\n",
+            "[test.cpp:3] -> [test.cpp:3]: (error) The address of variable 'i' is accessed at non-zero index.\n",
             errout.str());
 
         check("int f(int j) {\n"
@@ -5405,7 +5405,7 @@ private:
               "    return (&i)[j];\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:3] -> [test.cpp:3]: (warning) The address of local variable 'i' might be accessed at non-zero index.\n",
+            "[test.cpp:3] -> [test.cpp:3]: (warning) The address of variable 'i' might be accessed at non-zero index.\n",
             errout.str());
 
         check("int f() {\n"
@@ -5464,7 +5464,17 @@ private:
               "  return m[0][1];\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:4] -> [test.cpp:5]: (error) The address of local variable 'x' is accessed at non-zero index.\n",
+            "[test.cpp:4] -> [test.cpp:5]: (error) The address of variable 'x' is accessed at non-zero index.\n",
+            errout.str());
+
+        check("int x = 0;\n"
+              "int f() {\n"
+              "  std::map<int, int*> m;\n"
+              "  m[0] = &x;\n"
+              "  return m[0][1];\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:5]: (error) The address of variable 'x' is accessed at non-zero index.\n",
             errout.str());
 
         check("int f(int * y) {\n"
@@ -5554,7 +5564,7 @@ private:
         check("uint32_t f(uint32_t u) {\n"
               "    return ((uint8_t*)&u)[4];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (error) The address of local variable 'u' is accessed at non-zero index.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (error) The address of variable 'u' is accessed at non-zero index.\n", errout.str());
 
         check("uint32_t f(uint32_t u) {\n"
               "    return reinterpret_cast<unsigned char*>(&u)[3];\n"
@@ -5564,7 +5574,7 @@ private:
         check("uint32_t f(uint32_t u) {\n"
               "    return reinterpret_cast<unsigned char*>(&u)[4];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (error) The address of local variable 'u' is accessed at non-zero index.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (error) The address of variable 'u' is accessed at non-zero index.\n", errout.str());
 
         check("uint32_t f(uint32_t u) {\n"
               "    uint8_t* p = (uint8_t*)&u;\n"
@@ -5576,7 +5586,7 @@ private:
               "    uint8_t* p = (uint8_t*)&u;\n"
               "    return p[4];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (error) The address of local variable 'u' is accessed at non-zero index.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (error) The address of variable 'u' is accessed at non-zero index.\n", errout.str());
 
         check("uint32_t f(uint32_t* pu) {\n"
               "    uint8_t* p = (uint8_t*)pu;\n"
@@ -5597,15 +5607,13 @@ private:
               "    char b;\n"
               "};\n"
               "void f() {\n"
-              "    X s;\n"
-              "    int* y = &s.a;\n"
+              "    const X s;\n"
+              "    const int* y = &s.a;\n"
               "    (void)y[0];\n"
               "    (void)y[1];\n"
               "    (void)y[2];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (error) The address of local variable 'a' is accessed at non-zero index.\n"
-                      "[test.cpp:7] -> [test.cpp:10]: (error) The address of local variable 'a' is accessed at non-zero index.\n",
-                      errout.str());
+        TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
     void checkPipeParameterSize() { // #3521

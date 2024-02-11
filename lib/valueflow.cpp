@@ -3638,7 +3638,9 @@ static std::vector<ValueFlow::LifetimeToken> getLifetimeTokens(const Token* tok,
         while (vartok) {
             if (vartok->str() == "[" || vartok->originalName() == "->" || vartok->isUnaryOp("*"))
                 vartok = vartok->astOperand1();
-            else if (vartok->str() == "." || vartok->str() == "::")
+            else if (vartok->str() == ".")
+                vartok = vartok->astOperand1();
+            else if (vartok->str() == "::")
                 vartok = vartok->astOperand2();
             else
                 break;
