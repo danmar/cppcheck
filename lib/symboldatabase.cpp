@@ -740,7 +740,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             } else if (Token::Match(tok, "extern %type%")) {
                 while (Token::Match(tok, "%name%|*|&"))
                     tok = tok->next();
-                if (tok->str() != "(")
+                if (!tok || tok->str() != "(")
                     continue;
                 tok = tok->previous();
                 if (Token::simpleMatch(tok->linkAt(1), ") ;")) {
