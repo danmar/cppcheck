@@ -7563,7 +7563,7 @@ private:
     void checkRequires()
     {
         ASSERT_NO_THROW(tokenizeAndStringify("template<class T, class U>\n"
-                                            "struct X { X(U) requires true {} };\n"));
+                                             "struct X { X(U) requires true {} };\n"));
     }
 
     void noCrash1() {
