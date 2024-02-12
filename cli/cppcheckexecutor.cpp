@@ -85,7 +85,7 @@ public:
     }
 };
 
-class CppCheckExecutor::StdLogger : public ErrorLogger
+class StdLogger : public ErrorLogger
 {
 public:
     explicit StdLogger(const Settings& settings)
@@ -193,12 +193,8 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 
     settings.setMisraRuleTexts(executeCommand);
 
-    mStdLogger = new StdLogger(settings);
-
     const int ret = check_wrapper(settings);
 
-    delete mStdLogger;
-    mStdLogger = nullptr;
     return ret;
 }
 
@@ -245,16 +241,18 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, const Suppre
  * */
 int CppCheckExecutor::check_internal(const Settings& settings) const
 {
-    CppCheck cppcheck(*mStdLogger, true, executeCommand);
+    std::unique_ptr<StdLogger> stdLogger(new StdLogger(settings));
+
+    CppCheck cppcheck(*stdLogger, true, executeCommand);
     cppcheck.settings() = settings; // this is a copy
 
     auto& suppressions = cppcheck.settings().nomsg;
 
     if (settings.reportProgress >= 0)
-        mStdLogger->resetLatestProgressOutputTime();
+        stdLogger->resetLatestProgressOutputTime();
 
     if (settings.xml) {
-        mStdLogger->reportErr(ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName));
+        stdLogger->reportErr(ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName));
     }
 
     if (!settings.buildDir.empty()) {
@@ -270,13 +268,13 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
     unsigned int returnValue;
     if (settings.useSingleJob()) {
         // Single process
-        SingleExecutor executor(cppcheck, mFiles, mFileSettings, settings, suppressions, *mStdLogger);
+        SingleExecutor executor(cppcheck, mFiles, mFileSettings, settings, suppressions, *stdLogger);
         returnValue = executor.check();
     } else {
 #if defined(THREADING_MODEL_THREAD)
-        ThreadExecutor executor(mFiles, mFileSettings, settings, suppressions, *mStdLogger, CppCheckExecutor::executeCommand);
+        ThreadExecutor executor(mFiles, mFileSettings, settings, suppressions, *stdLogger, CppCheckExecutor::executeCommand);
 #elif defined(THREADING_MODEL_FORK)
-        ProcessExecutor executor(mFiles, mFileSettings, settings, suppressions, *mStdLogger, CppCheckExecutor::executeCommand);
+        ProcessExecutor executor(mFiles, mFileSettings, settings, suppressions, *stdLogger, CppCheckExecutor::executeCommand);
 #endif
         returnValue = executor.check();
     }
@@ -284,7 +282,7 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
     cppcheck.analyseWholeProgram(settings.buildDir, mFiles, mFileSettings);
 
     if (settings.severity.isEnabled(Severity::information) || settings.checkConfiguration) {
-        const bool err = reportSuppressions(settings, suppressions, cppcheck.isUnusedFunctionCheckEnabled(), mFiles, mFileSettings, *mStdLogger);
+        const bool err = reportSuppressions(settings, suppressions, cppcheck.isUnusedFunctionCheckEnabled(), mFiles, mFileSettings, *stdLogger);
         if (err && returnValue == 0)
             returnValue = settings.exitCode;
     }
@@ -294,13 +292,13 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
     }
 
     if (settings.safety || settings.severity.isEnabled(Severity::information) || !settings.checkersReportFilename.empty())
-        mStdLogger->writeCheckersReport();
+        stdLogger->writeCheckersReport();
 
     if (settings.xml) {
-        mStdLogger->reportErr(ErrorMessage::getXMLFooter());
+        stdLogger->reportErr(ErrorMessage::getXMLFooter());
     }
 
-    if (settings.safety && mStdLogger->hasCriticalErrors())
+    if (settings.safety && stdLogger->hasCriticalErrors())
         return EXIT_FAILURE;
 
     if (returnValue)
@@ -308,7 +306,7 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
     return EXIT_SUCCESS;
 }
 
-void CppCheckExecutor::StdLogger::writeCheckersReport()
+void StdLogger::writeCheckersReport()
 {
     CheckersReport checkersReport(mSettings, mActiveCheckers);
 
@@ -367,7 +365,7 @@ static inline std::string ansiToOEM(const std::string &msg, bool doConvert)
 #define ansiToOEM(msg, doConvert) (msg)
 #endif
 
-void CppCheckExecutor::StdLogger::reportErr(const std::string &errmsg)
+void StdLogger::reportErr(const std::string &errmsg)
 {
     if (mErrorOutput)
         *mErrorOutput << errmsg << std::endl;
@@ -376,7 +374,7 @@ void CppCheckExecutor::StdLogger::reportErr(const std::string &errmsg)
     }
 }
 
-void CppCheckExecutor::StdLogger::reportOut(const std::string &outmsg, Color c)
+void StdLogger::reportOut(const std::string &outmsg, Color c)
 {
     if (c == Color::Reset)
         std::cout << ansiToOEM(outmsg, true) << std::endl;
@@ -385,7 +383,7 @@ void CppCheckExecutor::StdLogger::reportOut(const std::string &outmsg, Color c)
 }
 
 // TODO: remove filename parameter?
-void CppCheckExecutor::StdLogger::reportProgress(const std::string &filename, const char stage[], const std::size_t value)
+void StdLogger::reportProgress(const std::string &filename, const char stage[], const std::size_t value)
 {
     (void)filename;
 
@@ -409,7 +407,7 @@ void CppCheckExecutor::StdLogger::reportProgress(const std::string &filename, co
     }
 }
 
-void CppCheckExecutor::StdLogger::reportErr(const ErrorMessage &msg)
+void StdLogger::reportErr(const ErrorMessage &msg)
 {
     if (msg.severity == Severity::internal && (msg.id == "logChecker" || endsWith(msg.id, "-logChecker"))) {
         const std::string& checker = msg.shortMessage();

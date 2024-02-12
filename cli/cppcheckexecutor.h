@@ -116,9 +116,6 @@ protected:
      */
     static FILE* mExceptionOutput;
 #endif
-
-    class StdLogger;
-    StdLogger* mStdLogger{};
 };
 
 #endif // CPPCHECKEXECUTOR_H
