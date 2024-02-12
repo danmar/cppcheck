@@ -1411,6 +1411,53 @@ private:
             ASSERT(p->valueType()->volatileness == 2);
             ASSERT(p->valueType()->reference == Reference::None);
         }
+        {
+            GET_SYMBOL_DB_C("typedef unsigned char uint8_t;\n uint8_t ubVar = 0;\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 0);
+            ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->volatileness == 0);
+            ASSERT(p->valueType()->originalTypeName == "uint8_t");
+            ASSERT(p->valueType()->reference == Reference::None);
+        }
+        {
+            GET_SYMBOL_DB_C("typedef enum eEnumDef {CPPCHECK=0}eEnum_t;\n eEnum_t eVar = CPPCHECK;\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 0);
+            ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->volatileness == 0);
+            ASSERT(p->valueType()->originalTypeName == "eEnum_t");
+            ASSERT(p->valueType()->reference == Reference::None);
+        }
+        {
+            GET_SYMBOL_DB_C("typedef unsigned char uint8_t;\n typedef struct stStructDef {uint8_t ubTest;}stStruct_t;\n stStruct_t stVar;\n");
+            const Variable* p = db->getVariableFromVarId(1);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 0);
+            ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->volatileness == 0);
+            ASSERT(p->valueType()->originalTypeName == "uint8_t");
+            ASSERT(p->valueType()->reference == Reference::None);
+            p = db->getVariableFromVarId(2);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 0);
+            ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->volatileness == 0);
+            ASSERT(p->valueType()->originalTypeName == "stStruct_t");
+            ASSERT(p->valueType()->reference == Reference::None);
+        }
+        {
+            GET_SYMBOL_DB_C("typedef int (*ubFunctionPointer_fp)(int);\n void test(ubFunctionPointer_fp functionPointer);\n");
+            const Variable* const p = db->getVariableFromVarId(1);
+            ASSERT(p->valueType());
+            ASSERT(p->valueType()->pointer == 1);
+            ASSERT(p->valueType()->constness == 0);
+            ASSERT(p->valueType()->volatileness == 0);
+            ASSERT(p->valueType()->originalTypeName == "ubFunctionPointer_fp");
+            ASSERT(p->valueType()->reference == Reference::None);
+        }
     }
 
     void VariableValueTypeTemplate() {
