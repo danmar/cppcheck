@@ -2181,7 +2181,7 @@ template<class ValueOrValues>
 static Analyzer::Result valueFlowForward(Token* startToken,
                                          const Token* exprTok,
                                          ValueOrValues v,
-                                         TokenList& tokenlist,
+                                         const TokenList& tokenlist,
                                          ErrorLogger& errorLogger,
                                          const Settings& settings,
                                          SourceLocation loc = SourceLocation::current())
@@ -3907,10 +3907,10 @@ bool ValueFlow::isLifetimeBorrowed(const Token *tok, const Settings &settings)
     return true;
 }
 
-static void valueFlowLifetimeFunction(Token *tok, TokenList &tokenlist, ErrorLogger &errorLogger, const Settings &settings);
+static void valueFlowLifetimeFunction(Token *tok, const TokenList &tokenlist, ErrorLogger &errorLogger, const Settings &settings);
 
 static void valueFlowLifetimeConstructor(Token *tok,
-                                         TokenList &tokenlist,
+                                         const TokenList &tokenlist,
                                          ErrorLogger &errorLogger,
                                          const Settings &settings);
 
@@ -3989,7 +3989,7 @@ const Token* ValueFlow::getEndOfExprScope(const Token* tok, const Scope* default
     return end;
 }
 
-static void valueFlowForwardLifetime(Token * tok, TokenList &tokenlist, ErrorLogger &errorLogger, const Settings &settings)
+static void valueFlowForwardLifetime(Token * tok, const TokenList &tokenlist, ErrorLogger &errorLogger, const Settings &settings)
 {
     // Forward lifetimes to constructed variable
     if (Token::Match(tok->previous(), "%var% {|(") && isVariableDecl(tok->previous())) {
@@ -4100,7 +4100,7 @@ struct LifetimeStore {
     {}
 
     template<class F>
-    static void forEach(TokenList& tokenlist,
+    static void forEach(const TokenList& tokenlist,
                         ErrorLogger& errorLogger,
                         const Settings& settings,
                         const std::vector<const Token*>& argtoks,
@@ -4145,7 +4145,7 @@ struct LifetimeStore {
 
     template<class Predicate>
     bool byRef(Token* tok,
-               TokenList& tokenlist,
+               const TokenList& tokenlist,
                ErrorLogger& errorLogger,
                const Settings& settings,
                Predicate pred,
@@ -4186,7 +4186,7 @@ struct LifetimeStore {
     }
 
     bool byRef(Token* tok,
-               TokenList& tokenlist,
+               const TokenList& tokenlist,
                ErrorLogger& errorLogger,
                const Settings& settings,
                SourceLocation loc = SourceLocation::current())
@@ -4204,7 +4204,7 @@ struct LifetimeStore {
 
     template<class Predicate>
     bool byVal(Token* tok,
-               TokenList& tokenlist,
+               const TokenList& tokenlist,
                ErrorLogger& errorLogger,
                const Settings& settings,
                Predicate pred,
@@ -4281,7 +4281,7 @@ struct LifetimeStore {
     }
 
     bool byVal(Token* tok,
-               TokenList& tokenlist,
+               const TokenList& tokenlist,
                ErrorLogger& errorLogger,
                const Settings& settings,
                SourceLocation loc = SourceLocation::current())
@@ -4299,7 +4299,7 @@ struct LifetimeStore {
 
     template<class Predicate>
     bool byDerefCopy(Token* tok,
-                     TokenList& tokenlist,
+                     const TokenList& tokenlist,
                      ErrorLogger& errorLogger,
                      const Settings& settings,
                      Predicate pred,
@@ -4335,7 +4335,7 @@ struct LifetimeStore {
     }
 
     bool byDerefCopy(Token* tok,
-                     TokenList& tokenlist,
+                     const TokenList& tokenlist,
                      ErrorLogger& errorLogger,
                      const Settings& settings,
                      SourceLocation loc = SourceLocation::current()) const
@@ -4354,7 +4354,7 @@ struct LifetimeStore {
 private:
     // cppcheck-suppress naming-privateMemberVariable
     Token* forwardTok{};
-    void forwardLifetime(Token* tok, TokenList& tokenlist, ErrorLogger& errorLogger, const Settings& settings) {
+    void forwardLifetime(Token* tok, const TokenList& tokenlist, ErrorLogger& errorLogger, const Settings& settings) {
         forwardTok = tok;
         valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
     }
@@ -4393,7 +4393,7 @@ static void valueFlowLifetimeUserConstructor(Token* tok,
                                              const Function* constructor,
                                              const std::string& name,
                                              const std::vector<const Token*>& args,
-                                             TokenList& tokenlist,
+                                             const TokenList& tokenlist,
                                              ErrorLogger& errorLogger,
                                              const Settings& settings)
 {
@@ -4483,7 +4483,7 @@ static void valueFlowLifetimeUserConstructor(Token* tok,
     }
 }
 
-static void valueFlowLifetimeFunction(Token *tok, TokenList &tokenlist, ErrorLogger &errorLogger, const Settings &settings)
+static void valueFlowLifetimeFunction(Token *tok, const TokenList &tokenlist, ErrorLogger &errorLogger, const Settings &settings)
 {
     if (!Token::Match(tok, "%name% ("))
         return;
@@ -4674,7 +4674,7 @@ static const Function* findConstructor(const Scope* scope, const Token* tok, con
 
 static void valueFlowLifetimeClassConstructor(Token* tok,
                                               const Type* t,
-                                              TokenList& tokenlist,
+                                              const TokenList& tokenlist,
                                               ErrorLogger& errorLogger,
                                               const Settings& settings)
 {
@@ -4739,7 +4739,7 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
     }
 }
 
-static void valueFlowLifetimeConstructor(Token* tok, TokenList& tokenlist, ErrorLogger& errorLogger, const Settings& settings)
+static void valueFlowLifetimeConstructor(Token* tok, const TokenList& tokenlist, ErrorLogger& errorLogger, const Settings& settings)
 {
     if (!Token::Match(tok, "(|{"))
         return;
@@ -5227,7 +5227,7 @@ static Token* findEndOfFunctionCallForParameter(Token* parameterToken)
     return nextAfterAstRightmostLeaf(parent);
 }
 
-static void valueFlowAfterMove(TokenList& tokenlist, const SymbolDatabase& symboldatabase, ErrorLogger& errorLogger, const Settings& settings)
+static void valueFlowAfterMove(const TokenList& tokenlist, const SymbolDatabase& symboldatabase, ErrorLogger& errorLogger, const Settings& settings)
 {
     if (!tokenlist.isCPP() || settings.standards.cpp < Standards::CPP11)
         return;
@@ -5873,7 +5873,7 @@ static void valueFlowForwardAssign(Token* const tok,
                                    std::vector<const Variable*> vars,
                                    std::list<ValueFlow::Value> values,
                                    const bool init,
-                                   TokenList& tokenlist,
+                                   const TokenList& tokenlist,
                                    ErrorLogger& errorLogger,
                                    const Settings& settings)
 {
@@ -5983,7 +5983,7 @@ static void valueFlowForwardAssign(Token* const tok,
                                    const std::list<ValueFlow::Value>& values,
                                    const bool /*unused*/,
                                    const bool init,
-                                   TokenList& tokenlist,
+                                   const TokenList& tokenlist,
                                    ErrorLogger& errorLogger,
                                    const Settings& settings)
 {
@@ -6201,7 +6201,7 @@ static std::vector<const Variable*> getVariables(const Token* tok)
     return result;
 }
 
-static void valueFlowAfterSwap(TokenList& tokenlist,
+static void valueFlowAfterSwap(const TokenList& tokenlist,
                                const SymbolDatabase& symboldatabase,
                                ErrorLogger& errorLogger,
                                const Settings& settings)
@@ -8806,7 +8806,7 @@ static std::vector<ValueFlow::Value> getContainerSizeFromConstructor(const Token
     return getContainerSizeFromConstructorArgs(args, valueType->container, known);
 }
 
-static void valueFlowContainerSetTokValue(TokenList& tokenlist, ErrorLogger& errorLogger, const Settings& settings, const Token* tok, Token* initList)
+static void valueFlowContainerSetTokValue(const TokenList& tokenlist, ErrorLogger& errorLogger, const Settings& settings, const Token* tok, Token* initList)
 {
     ValueFlow::Value value;
     value.valueType = ValueFlow::Value::ValueType::TOK;
@@ -8844,7 +8844,7 @@ static MathLib::bigint valueFlowGetStrLength(const Token* tok)
     return 0;
 }
 
-static void valueFlowContainerSize(TokenList& tokenlist,
+static void valueFlowContainerSize(const TokenList& tokenlist,
                                    const SymbolDatabase& symboldatabase,
                                    ErrorLogger& errorLogger,
                                    const Settings& settings,
@@ -9242,7 +9242,7 @@ static bool getMinMaxValues(const std::string &typestr, const Settings &settings
     return getMinMaxValues(&vt, settings.platform, minvalue, maxvalue);
 }
 
-static void valueFlowSafeFunctions(TokenList& tokenlist, const SymbolDatabase& symboldatabase, ErrorLogger& errorLogger, const Settings& settings)
+static void valueFlowSafeFunctions(const TokenList& tokenlist, const SymbolDatabase& symboldatabase, ErrorLogger& errorLogger, const Settings& settings)
 {
     for (const Scope *functionScope : symboldatabase.functionScopes) {
         if (!functionScope->bodyStart)
