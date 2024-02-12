@@ -374,7 +374,7 @@ private:
         fs1.filename = "foo/bar";
         fs2.filename = "qwe/rty";
         TestImporter project;
-        project.fileSettings = {fs1, fs2};
+        project.fileSettings = {std::move(fs1), std::move(fs2)};
 
         project.ignorePaths({"*foo", "bar*"});
         ASSERT_EQUALS(2, project.fileSettings.size());

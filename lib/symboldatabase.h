@@ -1312,7 +1312,7 @@ public:
     std::string str() const;
     std::string dump() const;
 
-    void setDebugPath(const Token* tok, SourceLocation ctx, SourceLocation local = SourceLocation::current());
+    void setDebugPath(const Token* tok, SourceLocation ctx, const SourceLocation &local = SourceLocation::current());
 };
 
 
@@ -1463,9 +1463,9 @@ private:
 
     const Enumerator * findEnumerator(const Token * tok, std::set<std::string>& tokensThatAreNotEnumeratorValues) const;
 
-    void setValueType(Token* tok, const ValueType& valuetype, SourceLocation loc = SourceLocation::current());
-    void setValueType(Token* tok, const Variable& var, SourceLocation loc = SourceLocation::current());
-    void setValueType(Token* tok, const Enumerator& enumerator, SourceLocation loc = SourceLocation::current());
+    void setValueType(Token* tok, const ValueType& valuetype, const SourceLocation &loc = SourceLocation::current());
+    void setValueType(Token* tok, const Variable& var, const SourceLocation &loc = SourceLocation::current());
+    void setValueType(Token* tok, const Enumerator& enumerator, const SourceLocation &loc = SourceLocation::current());
 
     Tokenizer& mTokenizer;
     const Settings &mSettings;

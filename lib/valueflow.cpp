@@ -807,7 +807,7 @@ static void setTokenValue(Token* tok,
             if (ret)
                 return;
 
-            ValueFlow::Value v(value);
+            ValueFlow::Value v(std::move(value));
             v.conditional = true;
             v.changeKnownToPossible();
 
@@ -1053,7 +1053,7 @@ static void setTokenValue(Token* tok,
     }
 
     else if (Token::Match(parent, ":: %name%") && parent->astOperand2() == tok) {
-        setTokenValue(parent, value, settings);
+        setTokenValue(parent, std::move(value), settings);
     }
     // Calling std::size or std::empty on an array
     else if (value.isTokValue() && Token::simpleMatch(value.tokvalue, "{") && tok->variable() &&
@@ -1061,12 +1061,12 @@ static void setTokenValue(Token* tok,
         std::vector<const Token*> args = getArguments(value.tokvalue);
         if (const Library::Function* f = settings.library.getFunction(parent->previous())) {
             if (f->containerYield == Library::Container::Yield::SIZE) {
-                ValueFlow::Value v(value);
+                ValueFlow::Value v(std::move(value));
                 v.valueType = ValueFlow::Value::ValueType::INT;
                 v.intvalue = args.size();
                 setTokenValue(parent, std::move(v), settings);
             } else if (f->containerYield == Library::Container::Yield::EMPTY) {
-                ValueFlow::Value v(value);
+                ValueFlow::Value v(std::move(value));
                 v.intvalue = args.empty();
                 v.valueType = ValueFlow::Value::ValueType::INT;
                 setTokenValue(parent, std::move(v), settings);

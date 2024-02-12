@@ -388,7 +388,7 @@ static std::string arrayIndexMessage(const Token* tok,
     auto add_dim = [](const std::string &s, const Dimension &dim) {
         return s + "[" + std::to_string(dim.num) + "]";
     };
-    const std::string array = std::accumulate(dimensions.cbegin(), dimensions.cend(), tok->astOperand1()->expressionString(), add_dim);
+    const std::string array = std::accumulate(dimensions.cbegin(), dimensions.cend(), tok->astOperand1()->expressionString(), std::move(add_dim));
 
     std::ostringstream errmsg;
     if (condition)

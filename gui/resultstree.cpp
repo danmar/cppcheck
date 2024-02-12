@@ -972,7 +972,7 @@ void ResultsTree::recheckSelectedFiles()
                 selectedItems<<fileNameWithCheckPath;
         }
     }
-    emit checkSelected(selectedItems);
+    emit checkSelected(std::move(selectedItems));
 }
 
 void ResultsTree::hideAllIdResult()

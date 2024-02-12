@@ -93,8 +93,8 @@ static bool addIncludePathsToList(const std::string& fileList, std::list<std::st
         // cppcheck-suppress accessMoved - FP
         while (std::getline(files, pathName)) { // next line
             if (!pathName.empty()) {
-                pathName = Path::removeQuotationMarks(pathName);
-                pathName = Path::fromNativeSeparators(pathName);
+                pathName = Path::removeQuotationMarks(std::move(pathName));
+                pathName = Path::fromNativeSeparators(std::move(pathName));
 
                 // If path doesn't end with / or \, add it
                 if (!endsWith(pathName, '/'))
@@ -433,8 +433,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 else {
                     path = 2 + argv[i];
                 }
-                path = Path::removeQuotationMarks(path);
-                path = Path::fromNativeSeparators(path);
+                path = Path::removeQuotationMarks(std::move(path));
+                path = Path::fromNativeSeparators(std::move(path));
 
                 // If path doesn't end with / or \, add it
                 if (!endsWith(path,'/'))
@@ -676,9 +676,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 }
 
                 if (!path.empty()) {
-                    path = Path::removeQuotationMarks(path);
-                    path = Path::fromNativeSeparators(path);
-                    path = Path::simplifyPath(path);
+                    path = Path::removeQuotationMarks(std::move(path));
+                    path = Path::fromNativeSeparators(std::move(path));
+                    path = Path::simplifyPath(std::move(path));
 
                     if (Path::isDirectory(path)) {
                         // If directory name doesn't end with / or \, add it

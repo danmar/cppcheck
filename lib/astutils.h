@@ -437,7 +437,7 @@ bool isLikelyStreamRead(bool cpp, const Token *op);
 
 bool isCPPCast(const Token* tok);
 
-bool isConstVarExpression(const Token* tok, std::function<bool(const Token*)> skipPredicate = nullptr);
+bool isConstVarExpression(const Token* tok, const std::function<bool(const Token*)>& skipPredicate = nullptr);
 
 bool isLeafDot(const Token* tok);
 

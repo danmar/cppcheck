@@ -485,7 +485,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
         codingStandards << CODING_STANDARD_MISRA_CPP_2008;
     if (mUI->mAutosar->isChecked())
         codingStandards << CODING_STANDARD_AUTOSAR;
-    projectFile->setCodingStandards(codingStandards);
+    projectFile->setCodingStandards(std::move(codingStandards));
     projectFile->setCertIntPrecision(mUI->mEditCertIntPrecision->text().toInt());
     projectFile->setBughunting(mUI->mBughunting->isChecked());
     projectFile->setClangAnalyzer(mUI->mToolClangAnalyzer->isChecked());
