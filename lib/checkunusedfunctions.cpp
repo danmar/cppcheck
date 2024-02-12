@@ -377,7 +377,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
 
 #define logChecker(id) \
     do { \
-        const ErrorMessage errmsg({}, nullptr, Severity::internal, "logChecker", id, CWE(0U), Certainty::normal); \
+        const ErrorMessage errmsg({}, nullptr, Severity::internal, "logChecker", (id), CWE(0U), Certainty::normal); \
         errorLogger.reportErr(errmsg); \
     } while (false)
 
