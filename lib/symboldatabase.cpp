@@ -737,6 +737,33 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 } else {
                     tok = tok->link();
                 }
+            } else if (Token::Match(tok, "%name% (")) {
+                if (Token::simpleMatch(tok->linkAt(1), ") ;")) {
+                    const Token *funcStart = nullptr;
+                    const Token *argStart = nullptr;
+                    const Token *declEnd = nullptr;
+                    if (isFunction(tok, scope, &funcStart, &argStart, &declEnd)) {
+                        if (declEnd && declEnd->str() == ";") {
+                            bool newFunc = true; // Is this function already in the database?
+                            auto range = scope->functionMap.equal_range(tok->str());
+                            for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
+                                if (it->second->argsMatch(scope, it->second->argDef, argStart, emptyString, 0)) {
+                                    newFunc = false;
+                                    break;
+                                }
+                            }
+                            // save function prototype in database
+                            if (newFunc) {
+                                Function function(tok, scope, funcStart, argStart);
+                                if (function.isExtern()) {
+                                    scope->addFunction(std::move(function));
+                                    tok = declEnd;
+                                }
+                            }
+                            continue;
+                        }
+                    }
+                }
             }
             // syntax error?
             if (!scope)
@@ -5902,6 +5929,10 @@ const Function* SymbolDatabase::findFunction(const Token* const tok) const
     // find the scope this function is in
     const Scope *currScope = tok->scope();
     while (currScope && currScope->isExecutable()) {
+        if (const Function* f = currScope->findFunction(tok)) {
+            if (f->isExtern())
+                return f;
+        }
         if (currScope->functionOf)
             currScope = currScope->functionOf;
         else
