@@ -266,6 +266,7 @@ private:
         TEST_CASE(forwardAndUsed);
         TEST_CASE(moveAndReference);
         TEST_CASE(moveForRange);
+        TEST_CASE(moveTernary);
 
         TEST_CASE(funcArgNamesDifferent);
         TEST_CASE(funcArgOrderDifferent);
@@ -11147,6 +11148,35 @@ private:
               "    cif::category mCategory;\n"
               "    cif::condition mWhere;\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void moveTernary()
+    {
+        check("void gA(std::string);\n" // #12174
+              "void gB(std::string);\n"
+              "void f(bool b) {\n"
+              "    std::string s = \"abc\";\n"
+              "    b ? gA(std::move(s)) : gB(std::move(s));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int gA(std::string);\n"
+              "int gB(std::string);\n"
+              "void h(int);\n"
+              "void f(bool b) {\n"
+              "    std::string s = \"abc\";\n"
+              "    h(b ? gA(std::move(s)) : gB(std::move(s)));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int gA(int, std::string);\n"
+              "int gB(int, std::string);\n"
+              "int h(int);\n"
+              "void f(bool b) {\n"
+              "    std::string s = \"abc\";\n"
+              "    h(b ? h(gA(5, std::move(s))) : h(gB(7, std::move(s))));\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

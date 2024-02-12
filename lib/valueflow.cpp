@@ -5234,6 +5234,16 @@ static void valueFlowAfterMove(TokenList& tokenlist, const SymbolDatabase& symbo
             Token* openParentesisOfMove = findOpenParentesisOfMove(varTok);
             Token* endOfFunctionCall = findEndOfFunctionCallForParameter(openParentesisOfMove);
             if (endOfFunctionCall) {
+                if (endOfFunctionCall->str() == ")") {
+                    Token* ternaryColon = endOfFunctionCall->link()->astParent();
+                    while (Token::simpleMatch(ternaryColon, "("))
+                        ternaryColon = ternaryColon->astParent();
+                    if (Token::simpleMatch(ternaryColon, ":")) {
+                        endOfFunctionCall = ternaryColon->astOperand2();
+                        if (Token::simpleMatch(endOfFunctionCall, "("))
+                            endOfFunctionCall = endOfFunctionCall->link();
+                    }
+                }
                 ValueFlow::Value value;
                 value.valueType = ValueFlow::Value::ValueType::MOVED;
                 value.moveKind = moveKind;
