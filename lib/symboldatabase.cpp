@@ -738,7 +738,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     tok = tok->link();
                 }
             } else if (Token::Match(tok, "%name% (")) {
-                if (tok->next() && Token::simpleMatch(tok->next()->link(), ") ;")) {
+                if (Token::simpleMatch(tok->linkAt(1), ") ;")) {
                     const Token *funcStart = nullptr;
                     const Token *argStart = nullptr;
                     const Token *declEnd = nullptr;

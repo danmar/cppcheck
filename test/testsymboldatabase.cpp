@@ -2309,7 +2309,10 @@ private:
         ASSERT(db && errout.str().empty());
 
         const Token *f = Token::findsimplematch(tokenizer.tokens(), "bar");
-        ASSERT(f && f->function() && f->function()->isExtern() && f->function()->retDef->str() == "void");
+        ASSERT(f && f->function() && f->function()->isExtern() && f == f->function()->tokenDef && f->function()->retDef->str() == "void");
+
+        const Token *call = Token::findsimplematch(f->next(), "bar");
+        ASSERT(call && call->function() && call->function()->isExtern() && call->function() == f->function());
     }
 
     void classWithFriend() {
