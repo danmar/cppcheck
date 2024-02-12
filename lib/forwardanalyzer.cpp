@@ -922,6 +922,6 @@ Analyzer::Result valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>&
     if (a->invalid())
         return Analyzer::Result{Analyzer::Action::None, Analyzer::Terminate::Bail};
     ForwardTraversal ft{a, tokenList, errorLogger, settings};
-    ft.updateRecursive(start);
+    (void)ft.updateRecursive(start);
     return Analyzer::Result{ ft.actions, ft.terminate };
 }

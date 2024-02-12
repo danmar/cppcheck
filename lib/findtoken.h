@@ -176,7 +176,7 @@ std::vector<T*> findTokensSkipDeadCode(const Library* library,
                                        const Evaluate& evaluate)
 {
     std::vector<T*> result;
-    findTokensSkipDeadCodeImpl(
+    (void)findTokensSkipDeadCodeImpl(
         library,
         start,
         end,
@@ -199,7 +199,7 @@ template<class T, class Predicate, class Evaluate, REQUIRES("T must be a Token c
 T* findTokenSkipDeadCode(const Library* library, T* start, const Token* end, const Predicate& pred, const Evaluate& evaluate)
 {
     T* result = nullptr;
-    findTokensSkipDeadCodeImpl(
+    (void)findTokensSkipDeadCodeImpl(
         library,
         start,
         end,
