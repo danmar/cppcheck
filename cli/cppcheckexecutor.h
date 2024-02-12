@@ -28,7 +28,6 @@
 #include <utility>
 #include <vector>
 
-class CppCheck;
 class Settings;
 class ErrorLogger;
 class Suppressions;
@@ -88,21 +87,21 @@ protected:
      * Wrapper around check_internal
      *   - installs optional platform dependent signal handling
      *
-     * @param cppcheck cppcheck instance
+     * @param settings the settings
      **/
-    int check_wrapper(CppCheck& cppcheck);
+    int check_wrapper(const Settings& settings);
 
     /**
      * Starts the checking.
      *
-     * @param cppcheck cppcheck instance
+     * @param settings the settings
      * @return EXIT_FAILURE if arguments are invalid or no input files
      *         were found.
      *         If errors are found and --error-exitcode is used,
      *         given value is returned instead of default 0.
      *         If no errors are found, 0 is returned.
      */
-    int check_internal(CppCheck& cppcheck) const;
+    int check_internal(const Settings& settings) const;
 
     /**
      * Filename associated with size of file

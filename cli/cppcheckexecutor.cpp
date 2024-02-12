@@ -195,26 +195,23 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 
     mStdLogger = new StdLogger(settings);
 
-    CppCheck cppCheck(*mStdLogger, true, executeCommand);
-    cppCheck.settings() = settings; // this is a copy
-
-    const int ret = check_wrapper(cppCheck);
+    const int ret = check_wrapper(settings);
 
     delete mStdLogger;
     mStdLogger = nullptr;
     return ret;
 }
 
-int CppCheckExecutor::check_wrapper(CppCheck& cppcheck)
+int CppCheckExecutor::check_wrapper(const Settings& settings)
 {
 #ifdef USE_WINDOWS_SEH
-    if (cppcheck.settings().exceptionHandling)
-        return check_wrapper_seh(*this, &CppCheckExecutor::check_internal, cppcheck);
+    if (settings.exceptionHandling)
+        return check_wrapper_seh(*this, &CppCheckExecutor::check_internal, settings);
 #elif defined(USE_UNIX_SIGNAL_HANDLING)
-    if (cppcheck.settings().exceptionHandling)
-        return check_wrapper_sig(*this, &CppCheckExecutor::check_internal, cppcheck);
+    if (settings.exceptionHandling)
+        return check_wrapper_sig(*this, &CppCheckExecutor::check_internal, settings);
 #endif
-    return check_internal(cppcheck);
+    return check_internal(settings);
 }
 
 bool CppCheckExecutor::reportSuppressions(const Settings &settings, const Suppressions& suppressions, bool unusedFunctionCheckEnabled, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, ErrorLogger& errorLogger) {
@@ -246,9 +243,11 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, const Suppre
 /*
  * That is a method which gets called from check_wrapper
  * */
-int CppCheckExecutor::check_internal(CppCheck& cppcheck) const
+int CppCheckExecutor::check_internal(const Settings& settings) const
 {
-    const auto& settings = cppcheck.settings();
+    CppCheck cppcheck(*mStdLogger, true, executeCommand);
+    cppcheck.settings() = settings; // this is a copy
+
     auto& suppressions = cppcheck.settings().nomsg;
 
     if (settings.reportProgress >= 0)
@@ -285,7 +284,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck) const
     cppcheck.analyseWholeProgram(settings.buildDir, mFiles, mFileSettings);
 
     if (settings.severity.isEnabled(Severity::information) || settings.checkConfiguration) {
-        const bool err = reportSuppressions(settings, settings.nomsg, cppcheck.isUnusedFunctionCheckEnabled(), mFiles, mFileSettings, *mStdLogger);
+        const bool err = reportSuppressions(settings, suppressions, cppcheck.isUnusedFunctionCheckEnabled(), mFiles, mFileSettings, *mStdLogger);
         if (err && returnValue == 0)
             returnValue = settings.exitCode;
     }
