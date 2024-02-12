@@ -738,19 +738,20 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     tok = tok->link();
                 }
             } else if (Token::Match(tok, "extern %type%")) {
-                while (Token::Match(tok, "%name%|*|&"))
-                    tok = tok->next();
-                if (!tok || tok->str() != "(")
+                const Token * ftok = tok->next();
+                while (Token::Match(ftok, "%name%|*|&"))
+                    ftok = ftok->next();
+                if (!ftok || ftok->str() != "(")
                     continue;
-                tok = tok->previous();
-                if (Token::simpleMatch(tok->linkAt(1), ") ;")) {
+                ftok = ftok->previous();
+                if (Token::simpleMatch(ftok->linkAt(1), ") ;")) {
                     const Token *funcStart = nullptr;
                     const Token *argStart = nullptr;
                     const Token *declEnd = nullptr;
-                    if (isFunction(tok, scope, &funcStart, &argStart, &declEnd)) {
+                    if (isFunction(ftok, scope, &funcStart, &argStart, &declEnd)) {
                         if (declEnd && declEnd->str() == ";") {
                             bool newFunc = true; // Is this function already in the database?
-                            auto range = scope->functionMap.equal_range(tok->str());
+                            auto range = scope->functionMap.equal_range(ftok->str());
                             for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
                                 if (it->second->argsMatch(scope, it->second->argDef, argStart, emptyString, 0)) {
                                     newFunc = false;
@@ -759,7 +760,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                             }
                             // save function prototype in database
                             if (newFunc) {
-                                Function function(tok, scope, funcStart, argStart);
+                                Function function(ftok, scope, funcStart, argStart);
                                 if (function.isExtern()) {
                                     scope->addFunction(std::move(function));
                                     tok = declEnd;
