@@ -64,109 +64,111 @@
 #include <windows.h>
 #endif
 
-class CmdLineLoggerStd : public CmdLineLogger
-{
-public:
-    CmdLineLoggerStd() = default;
-
-    void printMessage(const std::string &message) override
+namespace {
+    class CmdLineLoggerStd : public CmdLineLogger
     {
-        printRaw("cppcheck: " + message);
-    }
+    public:
+        CmdLineLoggerStd() = default;
 
-    void printError(const std::string &message) override
-    {
-        printMessage("error: " + message);
-    }
-
-    void printRaw(const std::string &message) override
-    {
-        std::cout << message << std::endl;
-    }
-};
-
-class StdLogger : public ErrorLogger
-{
-public:
-    explicit StdLogger(const Settings& settings)
-        : mSettings(settings)
-    {
-        if (!mSettings.outputFile.empty()) {
-            mErrorOutput = new std::ofstream(settings.outputFile);
+        void printMessage(const std::string &message) override
+        {
+            printRaw("cppcheck: " + message);
         }
-    }
 
-    ~StdLogger() override {
-        delete mErrorOutput;
-    }
+        void printError(const std::string &message) override
+        {
+            printMessage("error: " + message);
+        }
 
-    StdLogger(const StdLogger&) = delete;
-    StdLogger& operator=(const SingleExecutor &) = delete;
+        void printRaw(const std::string &message) override
+        {
+            std::cout << message << std::endl;
+        }
+    };
 
-    void resetLatestProgressOutputTime() {
-        mLatestProgressOutputTime = std::time(nullptr);
-    }
+    class StdLogger : public ErrorLogger
+    {
+    public:
+        explicit StdLogger(const Settings& settings)
+            : mSettings(settings)
+        {
+            if (!mSettings.outputFile.empty()) {
+                mErrorOutput = new std::ofstream(settings.outputFile);
+            }
+        }
 
-    /**
-     * Helper function to print out errors. Appends a line change.
-     * @param errmsg String printed to error stream
-     */
-    void reportErr(const std::string &errmsg);
+        ~StdLogger() override {
+            delete mErrorOutput;
+        }
 
-    /**
-     * @brief Write the checkers report
-     */
-    void writeCheckersReport();
+        StdLogger(const StdLogger&) = delete;
+        StdLogger& operator=(const SingleExecutor &) = delete;
 
-    bool hasCriticalErrors() const {
-        return !mCriticalErrors.empty();
-    }
+        void resetLatestProgressOutputTime() {
+            mLatestProgressOutputTime = std::time(nullptr);
+        }
 
-private:
-    /**
-     * Information about progress is directed here. This should be
-     * called by the CppCheck class only.
-     *
-     * @param outmsg Progress message e.g. "Checking main.cpp..."
-     */
-    void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
+        /**
+         * Helper function to print out errors. Appends a line change.
+         * @param errmsg String printed to error stream
+         */
+        void reportErr(const std::string &errmsg);
 
-    /** xml output of errors */
-    void reportErr(const ErrorMessage &msg) override;
+        /**
+         * @brief Write the checkers report
+         */
+        void writeCheckersReport();
 
-    void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
+        bool hasCriticalErrors() const {
+            return !mCriticalErrors.empty();
+        }
 
-    /**
-     * Pointer to current settings; set while check() is running for reportError().
-     */
-    const Settings& mSettings;
+    private:
+        /**
+         * Information about progress is directed here. This should be
+         * called by the CppCheck class only.
+         *
+         * @param outmsg Progress message e.g. "Checking main.cpp..."
+         */
+        void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
 
-    /**
-     * Used to filter out duplicate error messages.
-     */
-    // TODO: store hashes instead of the full messages
-    std::unordered_set<std::string> mShownErrors;
+        /** xml output of errors */
+        void reportErr(const ErrorMessage &msg) override;
 
-    /**
-     * Report progress time
-     */
-    std::time_t mLatestProgressOutputTime{};
+        void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
 
-    /**
-     * Error output
-     */
-    std::ofstream* mErrorOutput{};
+        /**
+         * Pointer to current settings; set while check() is running for reportError().
+         */
+        const Settings& mSettings;
 
-    /**
-     * Checkers that has been executed
-     */
-    std::set<std::string> mActiveCheckers;
+        /**
+         * Used to filter out duplicate error messages.
+         */
+        // TODO: store hashes instead of the full messages
+        std::unordered_set<std::string> mShownErrors;
 
-    /**
-     * True if there are critical errors
-     */
-    std::string mCriticalErrors;
-};
+        /**
+         * Report progress time
+         */
+        std::time_t mLatestProgressOutputTime{};
+
+        /**
+         * Error output
+         */
+        std::ofstream* mErrorOutput{};
+
+        /**
+         * Checkers that has been executed
+         */
+        std::set<std::string> mActiveCheckers;
+
+        /**
+         * True if there are critical errors
+         */
+        std::string mCriticalErrors;
+    };
+}
 
 // TODO: do not directly write to stdout
 
