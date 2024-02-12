@@ -631,18 +631,20 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         mPlistFile.close();
     }
 
-    CheckUnusedFunctions checkUnusedFunctions;
-
     try {
         if (mSettings.library.markupFile(filename)) {
-            Tokenizer tokenizer(mSettings, this);
-            if (fileStream)
-                tokenizer.list.createTokens(*fileStream, filename);
-            else {
-                std::ifstream in(filename);
-                tokenizer.list.createTokens(in, filename);
+            if (mSettings.checks.isEnabled(Checks::unusedFunction) &&
+                mSettings.useSingleJob() &&
+                mSettings.buildDir.empty()) {
+                Tokenizer tokenizer(mSettings, this);
+                if (fileStream)
+                    tokenizer.list.createTokens(*fileStream, filename);
+                else {
+                    std::ifstream in(filename);
+                    tokenizer.list.createTokens(in, filename);
+                }
+                CheckUnusedFunctions::parseTokens(tokenizer, mSettings);
             }
-            CheckUnusedFunctions::parseTokens(tokenizer, mSettings);
             return EXIT_SUCCESS;
         }
 
@@ -933,10 +935,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 // Check normal tokens
                 checkNormalTokens(tokenizer);
 
-                // Analyze info..
-                if (!mSettings.buildDir.empty())
-                    checkUnusedFunctions.parseTokens(tokenizer, filename.c_str(), mSettings);
-
 #ifdef HAVE_RULES
                 // handling of "simple" rules has been removed.
                 if (hasRule("simple"))
@@ -1017,7 +1015,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     }
 
     if (!mSettings.buildDir.empty()) {
-        mAnalyzerInformation.setFileInfo("CheckUnusedFunctions", checkUnusedFunctions.analyzerInfo());
         mAnalyzerInformation.close();
     }
 
@@ -1072,6 +1069,8 @@ void CppCheck::checkRawTokens(const Tokenizer &tokenizer)
 
 void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 {
+    CheckUnusedFunctions unusedFunctionsChecker;
+
     // TODO: this should actually be the behavior if only "--enable=unusedFunction" is specified - see #10648
     const char* unusedFunctionOnly = std::getenv("UNUSEDFUNCTION_ONLY");
     const bool doUnusedFunctionOnly = unusedFunctionOnly && (std::strcmp(unusedFunctionOnly, "1") == 0);
@@ -1105,11 +1104,19 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
         }
     }
 
+    if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mSettings.buildDir.empty()) {
+        unusedFunctionsChecker.parseTokens(tokenizer, tokenizer.list.getFiles().front().c_str(), mSettings);
+    }
+    if (mSettings.checks.isEnabled(Checks::unusedFunction) &&
+        mSettings.useSingleJob() &&
+        mSettings.buildDir.empty()) {
+        CheckUnusedFunctions::parseTokens(tokenizer, mSettings);
+    }
+
     if (mSettings.clang) {
         // TODO: Use CTU for Clang analysis
         return;
     }
-
 
     if (mSettings.useSingleJob() || !mSettings.buildDir.empty()) {
         // Analyse the tokens..
@@ -1136,8 +1143,10 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
                 }
             }
         }
+    }
 
-        CheckUnusedFunctions::parseTokens(tokenizer, mSettings);
+    if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mSettings.buildDir.empty()) {
+        mAnalyzerInformation.setFileInfo("CheckUnusedFunctions", unusedFunctionsChecker.analyzerInfo());
     }
 
 #ifdef HAVE_RULES
@@ -1784,7 +1793,8 @@ bool CppCheck::analyseWholeProgram()
     for (Check *check : Check::instances())
         errors |= check->analyseWholeProgram(&ctu, mFileInfo, mSettings, *this);  // TODO: ctu
 
-    errors |= CheckUnusedFunctions::check(mSettings, *this);
+    if (mSettings.checks.isEnabled(Checks::unusedFunction))
+        errors |= CheckUnusedFunctions::check(mSettings, *this);
 
     return errors && (mExitCode > 0);
 }
@@ -1850,7 +1860,8 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<
     for (Check *check : Check::instances())
         check->analyseWholeProgram(&ctuFileInfo, fileInfoList, mSettings, *this);
 
-    CheckUnusedFunctions::check(mSettings, *this);
+    if (mSettings.checks.isEnabled(Checks::unusedFunction))
+        CheckUnusedFunctions::check(mSettings, *this);
 
     for (Check::FileInfo *fi : fileInfoList)
         delete fi;

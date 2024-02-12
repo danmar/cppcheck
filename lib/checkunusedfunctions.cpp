@@ -369,10 +369,7 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger& errorLogger,
 
 void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Settings &settings)
 {
-    if (!settings.checks.isEnabled(Checks::unusedFunction))
-        return;
-    if (settings.useSingleJob() && settings.buildDir.empty())
-        instance.parseTokens(tokenizer, tokenizer.list.getFiles().front().c_str(), settings);
+    instance.parseTokens(tokenizer, tokenizer.list.getFiles().front().c_str(), settings);
 }
 
 #define logChecker(id) \
