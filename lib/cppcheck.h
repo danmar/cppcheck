@@ -140,10 +140,6 @@ public:
     /** analyse whole program use .analyzeinfo files */
     void analyseWholeProgram(const std::string &buildDir, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings);
 
-    /** Check if the user wants to check for unused functions
-     * and if it's possible at all */
-    bool isUnusedFunctionCheckEnabled() const;
-
     /** Remove *.ctu-info files */
     void removeCtuInfoFiles(const std::list<std::pair<std::string, std::size_t>>& files, const std::list<FileSettings>& fileSettings); // cppcheck-suppress functionConst // has side effects
 
