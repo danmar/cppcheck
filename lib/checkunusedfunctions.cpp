@@ -74,9 +74,9 @@ void CheckUnusedFunctions::clear()
     instance.mFunctionCalls.clear();
 }
 
-void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings)
+void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings &settings)
 {
-    const bool doMarkup = settings->library.markupFile(FileName);
+    const bool doMarkup = settings.library.markupFile(FileName);
 
     // Function declarations..
     if (!doMarkup) {
@@ -125,8 +125,8 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             lambdaEndToken = findLambdaEndToken(tok);
 
         // parsing of library code to find called functions
-        if (settings->library.isexecutableblock(FileName, tok->str())) {
-            const Token * markupVarToken = tok->tokAt(settings->library.blockstartoffset(FileName));
+        if (settings.library.isexecutableblock(FileName, tok->str())) {
+            const Token * markupVarToken = tok->tokAt(settings.library.blockstartoffset(FileName));
             // not found
             if (!markupVarToken)
                 continue;
@@ -134,12 +134,12 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             bool start = true;
             // find all function calls in library code (starts with '(', not if or while etc)
             while ((scope || start) && markupVarToken) {
-                if (markupVarToken->str() == settings->library.blockstart(FileName)) {
+                if (markupVarToken->str() == settings.library.blockstart(FileName)) {
                     scope++;
                     start = false;
-                } else if (markupVarToken->str() == settings->library.blockend(FileName))
+                } else if (markupVarToken->str() == settings.library.blockend(FileName))
                     scope--;
-                else if (!settings->library.iskeyword(FileName, markupVarToken->str())) {
+                else if (!settings.library.iskeyword(FileName, markupVarToken->str())) {
                     mFunctionCalls.insert(markupVarToken->str());
                     if (mFunctions.find(markupVarToken->str()) != mFunctions.end())
                         mFunctions[markupVarToken->str()].usedOtherFile = true;
@@ -157,10 +157,10 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         }
 
         if (!doMarkup // only check source files
-            && settings->library.isexporter(tok->str()) && tok->next() != nullptr) {
+            && settings.library.isexporter(tok->str()) && tok->next() != nullptr) {
             const Token * propToken = tok->next();
             while (propToken && propToken->str() != ")") {
-                if (settings->library.isexportedprefix(tok->str(), propToken->str())) {
+                if (settings.library.isexportedprefix(tok->str(), propToken->str())) {
                     const Token* nextPropToken = propToken->next();
                     const std::string& value = nextPropToken->str();
                     if (mFunctions.find(value) != mFunctions.end()) {
@@ -168,7 +168,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                     }
                     mFunctionCalls.insert(value);
                 }
-                if (settings->library.isexportedsuffix(tok->str(), propToken->str())) {
+                if (settings.library.isexportedsuffix(tok->str(), propToken->str())) {
                     const Token* prevPropToken = propToken->previous();
                     const std::string& value = prevPropToken->str();
                     if (value != ")" && mFunctions.find(value) != mFunctions.end()) {
@@ -180,7 +180,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             }
         }
 
-        if (doMarkup && settings->library.isimporter(FileName, tok->str()) && tok->next()) {
+        if (doMarkup && settings.library.isimporter(FileName, tok->str()) && tok->next()) {
             const Token * propToken = tok->next();
             if (propToken->next()) {
                 propToken = propToken->next();
@@ -196,8 +196,8 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             }
         }
 
-        if (settings->library.isreflection(tok->str())) {
-            const int argIndex = settings->library.reflectionArgument(tok->str());
+        if (settings.library.isreflection(tok->str())) {
+            const int argIndex = settings.library.reflectionArgument(tok->str());
             if (argIndex >= 0) {
                 const Token * funcToken = tok->next();
                 int index = 0;
@@ -319,7 +319,7 @@ static bool isOperatorFunction(const std::string & funcName)
     return std::find(additionalOperators.cbegin(), additionalOperators.cend(), funcName.substr(operatorPrefix.length())) != additionalOperators.cend();
 }
 
-bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings& settings) const
+bool CheckUnusedFunctions::check(ErrorLogger& errorLogger, const Settings& settings) const
 {
     using ErrorParams = std::tuple<std::string, unsigned int, unsigned int, std::string>;
     std::vector<ErrorParams> errors; // ensure well-defined order
@@ -353,7 +353,7 @@ bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings
     return !errors.empty();
 }
 
-void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
+void CheckUnusedFunctions::unusedFunctionError(ErrorLogger& errorLogger,
                                                const std::string &filename, unsigned int fileIndex, unsigned int lineNumber,
                                                const std::string &funcname)
 {
@@ -364,29 +364,27 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
     }
 
     const ErrorMessage errmsg(std::move(locationList), emptyString, Severity::style, "$symbol:" + funcname + "\nThe function '$symbol' is never used.", "unusedFunction", CWE561, Certainty::normal);
-    if (errorLogger)
-        errorLogger->reportErr(errmsg);
-    else
-        Check::writeToErrorList(errmsg);
+    errorLogger.reportErr(errmsg);
 }
 
-Check::FileInfo *CheckUnusedFunctions::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
+void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Settings &settings)
 {
-    if (!settings->checks.isEnabled(Checks::unusedFunction))
-        return nullptr;
-    if (settings->useSingleJob() && settings->buildDir.empty())
-        instance.parseTokens(*tokenizer, tokenizer->list.getFiles().front().c_str(), settings);
-    return nullptr;
+    if (!settings.checks.isEnabled(Checks::unusedFunction))
+        return;
+    if (settings.useSingleJob() && settings.buildDir.empty())
+        instance.parseTokens(tokenizer, tokenizer.list.getFiles().front().c_str(), settings);
 }
 
-bool CheckUnusedFunctions::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
+#define logChecker(id) \
+    do { \
+        const ErrorMessage errmsg({}, nullptr, Severity::internal, "logChecker", (id), CWE(0U), Certainty::normal); \
+        errorLogger.reportErr(errmsg); \
+    } while (false)
+
+bool CheckUnusedFunctions::check(const Settings& settings, ErrorLogger &errorLogger)
 {
-    (void)ctu;
-    (void)fileInfo;
-    CheckUnusedFunctions dummy(nullptr, &settings, &errorLogger);
-    dummy.
-    logChecker("CheckUnusedFunctions::analyseWholeProgram"); // unusedFunctions
-    return check(&errorLogger, settings);
+    logChecker("CheckUnusedFunctions::check"); // unusedFunction
+    return instance.check(errorLogger, settings);
 }
 
 CheckUnusedFunctions::FunctionDecl::FunctionDecl(const Function *f)
@@ -416,7 +414,7 @@ namespace {
     };
 }
 
-void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLogger * const errorLogger, const std::string &buildDir)
+void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLogger &errorLogger, const std::string &buildDir)
 {
     std::map<std::string, Location> decls;
     std::set<std::string> calls;
