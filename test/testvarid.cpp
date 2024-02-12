@@ -2913,8 +2913,12 @@ private:
                                "}"));
     }
 
-    void varid_arrayinit() { // #7579 - no variable declaration in rhs
+    void varid_arrayinit() {
+        // #7579 - no variable declaration in rhs
         ASSERT_EQUALS("1: void foo ( int * a@1 ) { int b@2 [ 1 ] = { x * a@1 [ 0 ] } ; }\n", tokenize("void foo(int*a) { int b[] = { x*a[0] }; }"));
+
+        // #12402
+        ASSERT_EQUALS("1: void f ( ) { void ( * p@1 [ 1 ] ) ( int ) = { [ ] ( int i@2 ) { } } ; }\n", tokenize("void f() { void (*p[1])(int) = { [](int i) {} }; }"));
     }
 
     void varid_lambda_arg() {
