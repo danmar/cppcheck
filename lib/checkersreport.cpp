@@ -22,6 +22,7 @@
 #include "errortypes.h"
 #include "settings.h"
 
+#include <algorithm>
 #include <map>
 #include <sstream>
 #include <unordered_set>
@@ -154,8 +155,7 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
     int maxCheckerSize = 0;
     for (const auto& checkReq: checkers::allCheckers) {
         const std::string& checker = checkReq.first;
-        if (checker.size() > maxCheckerSize)
-            maxCheckerSize = checker.size();
+        maxCheckerSize = std::max<std::basic_string<char>::size_type>(checker.size(), maxCheckerSize);
     }
     for (const auto& checkReq: checkers::allCheckers) {
         const std::string& checker = checkReq.first;
