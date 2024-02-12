@@ -771,7 +771,7 @@ static void setTokenValue(Token* tok,
     }
 
     else if (parent->str() == ":") {
-        setTokenValue(parent,value,settings);
+        setTokenValue(parent,std::move(value),settings);
     }
 
     else if (parent->str() == "?" && tok->str() == ":" && tok == parent->astOperand2() && parent->astOperand1()) {
@@ -1619,7 +1619,7 @@ static void valueFlowArrayElement(TokenList& tokenlist, const Settings& settings
                     const std::string s = arrayValue.tokvalue->strValue();
                     if (index == s.size()) {
                         result.intvalue = 0;
-                        setTokenValue(tok, result, settings);
+                        setTokenValue(tok, std::move(result), settings);
                     } else if (index >= 0 && index < s.size()) {
                         result.intvalue = s[index];
                         setTokenValue(tok, std::move(result), settings);
@@ -4009,7 +4009,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList &tokenlist, ErrorLog
                 const Token* parentLifetime =
                     getParentLifetime(tokenlist.isCPP(), parent->astOperand1()->astOperand2(), &settings.library);
                 if (parentLifetime && parentLifetime->exprId() > 0) {
-                    valueFlowForward(nextExpression, endOfVarScope, parentLifetime, values, tokenlist, errorLogger, settings);
+                    valueFlowForward(nextExpression, endOfVarScope, parentLifetime, std::move(values), tokenlist, errorLogger, settings);
                 }
             }
         }
@@ -8472,7 +8472,7 @@ static void valueFlowSmartPointer(TokenList &tokenlist, ErrorLogger * errorLogge
                 if (Token::simpleMatch(ftok, "( )")) {
                     ValueFlow::Value v(0);
                     v.setKnown();
-                    valueFlowForwardAssign(ftok, tok, vars, {std::move(v)}, false, tokenlist, errorLogger, settings);
+                    valueFlowForwardAssign(ftok, tok, std::move(vars), {std::move(v)}, false, tokenlist, errorLogger, settings);
                 } else {
                     tok->removeValues(std::mem_fn(&ValueFlow::Value::isIntValue));
                     Token* inTok = ftok->astOperand2();
@@ -8927,7 +8927,7 @@ static void valueFlowContainerSize(TokenList& tokenlist,
                     ValueFlow::Value value(0);
                     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                     value.setImpossible();
-                    valueFlowForward(tok->linkAt(2), containerTok, value, tokenlist, errorLogger, settings);
+                    valueFlowForward(tok->linkAt(2), containerTok, std::move(value), tokenlist, errorLogger, settings);
                 }
             } else if (Token::simpleMatch(tok, "+=") && astIsContainer(tok->astOperand1())) {
                 const Token* containerTok = tok->astOperand1();
