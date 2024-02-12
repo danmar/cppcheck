@@ -245,11 +245,6 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
 {
     std::unique_ptr<StdLogger> stdLogger(new StdLogger(settings));
 
-    CppCheck cppcheck(*stdLogger, true, executeCommand);
-    cppcheck.settings() = settings; // this is a copy
-
-    auto& suppressions = cppcheck.settings().nomsg;
-
     if (settings.reportProgress >= 0)
         stdLogger->resetLatestProgressOutputTime();
 
@@ -266,6 +261,10 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
 
     if (!settings.checkersReportFilename.empty())
         std::remove(settings.checkersReportFilename.c_str());
+
+    CppCheck cppcheck(*stdLogger, true, executeCommand);
+    cppcheck.settings() = settings; // this is a copy
+    auto& suppressions = cppcheck.settings().nomsg;
 
     unsigned int returnValue;
     if (settings.useSingleJob()) {
