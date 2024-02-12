@@ -2402,10 +2402,19 @@ namespace {
 
 void CheckOther::checkDuplicateExpression()
 {
+    {
     const bool styleEnabled = mSettings->severity.isEnabled(Severity::style);
-    const bool warningEnabled = mSettings->severity.isEnabled(Severity::warning);
-    if (!styleEnabled && !warningEnabled)
+    const bool premiumEnabled = mSettings->isPremiumEnabled("oppositeExpression") ||
+                                mSettings->isPremiumEnabled("duplicateExpression") ||
+                                mSettings->isPremiumEnabled("duplicateAssignExpression") ||
+                                mSettings->isPremiumEnabled("duplicateExpressionTernary") ||
+                                mSettings->isPremiumEnabled("duplicateValueTernary") ||
+                                mSettings->isPremiumEnabled("selfAssignment") ||
+                                mSettings->isPremiumEnabled("knownConditionTrueFalse");
+
+    if (!styleEnabled && !premiumEnabled)
         return;
+    }
 
     logChecker("CheckOther::checkDuplicateExpression"); // style,warning
 
@@ -2511,9 +2520,9 @@ void CheckOther::checkDuplicateExpression()
                             !findExpressionChanged(tok, tok, loopTok->link()->next()->link(), mSettings, cpp)) {
                             const bool isEnum = tok->scope()->type == Scope::eEnum;
                             const bool assignment = !isEnum && tok->str() == "=";
-                            if (assignment && warningEnabled)
+                            if (assignment)
                                 selfAssignmentError(tok, tok->astOperand1()->expressionString());
-                            else if (styleEnabled && !isEnum) {
+                            else if (!isEnum) {
                                 if (cpp && mSettings->standards.cpp >= Standards::CPP11 && tok->str() == "==") {
                                     const Token* parent = tok->astParent();
                                     while (parent && parent->astParent()) {
@@ -2535,11 +2544,10 @@ void CheckOther::checkDuplicateExpression()
                                             mSettings->library,
                                             true,
                                             false)) {
-                    if (warningEnabled && isWithoutSideEffects(cpp, tok->astOperand1())) {
+                    if (isWithoutSideEffects(cpp, tok->astOperand1())) {
                         selfAssignmentError(tok, tok->astOperand1()->expressionString());
                     }
-                } else if (styleEnabled &&
-                           isOppositeExpression(cpp,
+                } else if (isOppositeExpression(cpp,
                                                 tok->astOperand1(),
                                                 tok->astOperand2(),
                                                 mSettings->library,
@@ -2550,7 +2558,7 @@ void CheckOther::checkDuplicateExpression()
                            isWithoutSideEffects(cpp, tok->astOperand1())) {
                     oppositeExpressionError(tok, std::move(errorPath));
                 } else if (!Token::Match(tok, "[-/%]")) { // These operators are not associative
-                    if (styleEnabled && tok->astOperand2() && tok->str() == tok->astOperand1()->str() &&
+                    if (tok->astOperand2() && tok->str() == tok->astOperand1()->str() &&
                         isSameExpression(cpp,
                                          true,
                                          tok->astOperand2(),
@@ -2577,7 +2585,7 @@ void CheckOther::checkDuplicateExpression()
                         }
                     }
                 }
-            } else if (styleEnabled && tok->astOperand1() && tok->astOperand2() && tok->str() == ":" && tok->astParent() && tok->astParent()->str() == "?") {
+            } else if (tok->astOperand1() && tok->astOperand2() && tok->str() == ":" && tok->astParent() && tok->astParent()->str() == "?") {
                 if (!tok->astOperand1()->values().empty() && !tok->astOperand2()->values().empty() && isEqualKnownValue(tok->astOperand1(), tok->astOperand2()) &&
                     !isVariableChanged(tok->astParent(), /*indirect*/ 0, mSettings, cpp) &&
                     isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2(), cpp))
@@ -2611,16 +2619,17 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
     const std::string& op = opTok ? opTok->str() : "&&";
     std::string msg = "Same expression " + (hasMultipleExpr ? "\'" + expr1 + "\'" + " found multiple times in chain of \'" + op + "\' operators" : "on both sides of \'" + op + "\'");
     const char *id = "duplicateExpression";
-    if (expr1 != expr2 && (!opTok || !opTok->isArithmeticalOp())) {
+    if (expr1 != expr2 && (!opTok || Token::Match(opTok, "%oror%|%comp%|&&|?|!"))) {
         id = "knownConditionTrueFalse";
         std::string exprMsg = "The comparison \'" + expr1 + " " + op +  " " + expr2 + "\' is always ";
         if (Token::Match(opTok, "==|>=|<="))
             msg = exprMsg + "true";
         else if (Token::Match(opTok, "!=|>|<"))
             msg = exprMsg + "false";
-        if (!Token::Match(tok1, "%num%|NULL|nullptr") && !Token::Match(tok2, "%num%|NULL|nullptr"))
-            msg += " because '" + expr1 + "' and '" + expr2 + "' represent the same value";
     }
+
+    if (expr1 != expr2 && !Token::Match(tok1, "%num%|NULL|nullptr") && !Token::Match(tok2, "%num%|NULL|nullptr"))
+        msg += " because '" + expr1 + "' and '" + expr2 + "' represent the same value";
 
     reportError(errors, Severity::style, id, msg +
                 (std::string(".\nFinding the same expression ") + (hasMultipleExpr ? "more than once in a condition" : "on both sides of an operator")) +
@@ -2659,7 +2668,7 @@ void CheckOther::duplicateValueTernaryError(const Token *tok)
 
 void CheckOther::selfAssignmentError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::warning,
+    reportError(tok, Severity::style,
                 "selfAssignment",
                 "$symbol:" + varname + "\n"
                 "Redundant assignment of '$symbol' to itself.", CWE398, Certainty::normal);
