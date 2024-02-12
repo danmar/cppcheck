@@ -38,7 +38,8 @@ public:
     }
 
 private:
-    /*const*/ TokenList list{nullptr};
+    const Settings settings;
+    /*const*/ TokenList list{&settings};
 
     std::vector<std::string> arithmeticalOps;
     std::vector<std::string> logicalOps;
@@ -141,7 +142,6 @@ private:
 
 #define MatchCheck(...) MatchCheck_(__FILE__, __LINE__, __VA_ARGS__)
     bool MatchCheck_(const char* file, int line, const std::string& code, const std::string& pattern, unsigned int varid = 0) {
-        const Settings settings;
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(";" + code + ";");
         try {
@@ -437,7 +437,6 @@ private:
     void getStrSize() const {
         TokensFrontBack tokensFrontBack(list);
         Token tok(tokensFrontBack);
-        const Settings settings;
 
         tok.str("\"\"");
         ASSERT_EQUALS(sizeof(""), Token::getStrSize(&tok, settings));

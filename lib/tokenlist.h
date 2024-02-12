@@ -52,6 +52,7 @@ struct TokensFrontBack {
 
 class CPPCHECKLIB TokenList {
 public:
+    // TODO: pass settings as reference
     explicit TokenList(const Settings* settings);
     ~TokenList();
 

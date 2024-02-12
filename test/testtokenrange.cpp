@@ -36,6 +36,8 @@ public:
     TestTokenRange() : TestFixture("TestTokenRange") {}
 
 private:
+    const Settings settings;
+
     void run() override {
         TEST_CASE(enumerationToEnd);
         TEST_CASE(untilHelperToEnd);
@@ -70,21 +72,21 @@ private:
 
     void enumerationToEnd() const {
         std::istringstream istr("void a(){} void main(){ if(true){a();} }");
-        TokenList tokenList(nullptr);
+        TokenList tokenList(&settings);
         tokenList.createTokens(istr, "test.cpp");
         ASSERT_EQUALS("", testTokenRange(ConstTokenRange{ tokenList.front(), nullptr }, tokenList.front(), nullptr));
     }
 
     void untilHelperToEnd() const {
         std::istringstream istr("void a(){} void main(){ if(true){a();} }");
-        TokenList tokenList(nullptr);
+        TokenList tokenList(&settings);
         tokenList.createTokens(istr, "test.cpp");
         ASSERT_EQUALS("", testTokenRange(tokenList.front()->until(nullptr), tokenList.front(), nullptr));
     }
 
     void untilHelperPartWay() const {
         std::istringstream istr("void a(){} void main(){ if(true){a();} }");
-        TokenList tokenList(nullptr);
+        TokenList tokenList(&settings);
         tokenList.createTokens(istr, "test.cpp");
         const Token* start = tokenList.front()->tokAt(4);
         const Token* end = start->tokAt(8);
@@ -93,7 +95,7 @@ private:
 
     void partialEnumeration() const {
         std::istringstream istr("void a(){} void main(){ if(true){a();} }");
-        TokenList tokenList(nullptr);
+        TokenList tokenList(&settings);
         tokenList.createTokens(istr, "test.cpp");
         const Token* start = tokenList.front()->tokAt(4);
         const Token* end = tokenList.front()->tokAt(10);
@@ -101,7 +103,6 @@ private:
     }
 
     void scopeExample() const {
-        const Settings settings;
         Tokenizer tokenizer(settings);
         std::istringstream sample("void a(){} void main(){ if(true){a();} }");
         ASSERT(tokenizer.tokenize(sample, "test.cpp"));
@@ -118,7 +119,7 @@ private:
 
     void exampleAlgorithms() const {
         std::istringstream istr("void a(){} void main(){ if(true){a();} }");
-        TokenList tokenList(nullptr);
+        TokenList tokenList(&settings);
         tokenList.createTokens(istr, "test.cpp");
         ConstTokenRange range{ tokenList.front(), nullptr };
         ASSERT_EQUALS(true, std::all_of(range.begin(), range.end(), [](const Token*) {
