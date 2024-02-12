@@ -4167,9 +4167,9 @@ private:
             ASSERT_EQUALS_MSG(false, true, "Validation of Tokenizer failed");
         }
 
-        Token* token;
+        const Token* token;
         // Get the Token which is at the end of all the Typedef's in this case i placed a variable
-        Token* endOfTypeDef = Token::findsimplematch(tokenizer.list.front(), "endOfTypeDef", tokenizer.list.back());
+        const Token* endOfTypeDef = Token::findsimplematch(tokenizer.list.front(), "endOfTypeDef", tokenizer.list.back());
         // Search for the simplified char token and check its original Name
         token = Token::findsimplematch(endOfTypeDef, "char", tokenizer.list.back());
         ASSERT_EQUALS("uint8_t", token->originalName());
