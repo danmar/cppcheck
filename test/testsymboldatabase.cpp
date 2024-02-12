@@ -2312,7 +2312,7 @@ private:
         ASSERT(f && f->function() && f->function()->isExtern() && f == f->function()->tokenDef && f->function()->retDef->str() == "void");
 
         const Token *call = Token::findsimplematch(f->next(), "bar");
-        ASSERT(call && call->function() && call->function()->isExtern() && call->function() == f->function());
+        ASSERT(call && call->function() == f->function());
     }
 
     void classWithFriend() {
