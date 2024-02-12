@@ -1657,8 +1657,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
     // Find highest varId
     nonneg int maximumVarId = 0;
     for (const Token* tok = mTokenizer.list.front(); tok; tok = tok->next()) {
-        if (tok->varId() > maximumVarId)
-            maximumVarId = tok->varId();
+        maximumVarId = std::max(tok->varId(), maximumVarId);
     }
     nonneg int id = maximumVarId + 1;
     // Find incomplete vars that are used in constant context

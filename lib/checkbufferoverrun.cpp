@@ -158,13 +158,11 @@ static int getMinFormatStringOutputLength(const std::vector<const Token*> &param
                 if (formatString[i] == 's') {
                     // For strings, the length after the dot "%.2s" will limit
                     // the length of the string.
-                    if (parameterLength > maxLen)
-                        parameterLength = maxLen;
+                    parameterLength = std::min(parameterLength, maxLen);
                 } else {
                     // For integers, the length after the dot "%.2d" can
                     // increase required length
-                    if (tempDigits < maxLen)
-                        tempDigits = maxLen;
+                    tempDigits = std::max(tempDigits, maxLen);
                 }
             }
 

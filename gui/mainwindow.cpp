@@ -1200,9 +1200,7 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
     result.standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
     result.enforcedLang = (Standards::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
 
-    if (result.jobs <= 1) {
-        result.jobs = 1;
-    }
+    result.jobs = std::max(result.jobs, 1u);
 
     Settings::terminate(false);
 

@@ -23,6 +23,7 @@
 #include "resultsview.h"
 #include "settings.h"
 
+#include <algorithm>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -92,10 +93,7 @@ void ThreadHandler::check(const Settings &settings)
     setThreadCount(settings.jobs);
 
     mRunningThreadCount = mThreads.size();
-
-    if (mResults.getFileCount() < mRunningThreadCount) {
-        mRunningThreadCount = mResults.getFileCount();
-    }
+    mRunningThreadCount = std::min(mResults.getFileCount(), mRunningThreadCount);
 
     QStringList addonsAndTools = mAddonsAndTools;
     for (const std::string& addon: settings.addons) {
