@@ -57,11 +57,7 @@ namespace {
 
 const std::list<ValueFlow::Value> TokenImpl::mEmptyValueList;
 
-Token::Token()
-    : Token(static_cast<TokensFrontBack*>(nullptr))
-{}
-
-Token::Token(TokensFrontBack *tokensFrontBack) :
+Token::Token(TokensFrontBack &tokensFrontBack) :
     mTokensFrontBack(tokensFrontBack)
 {
     mImpl = new TokenImpl();
@@ -150,7 +146,7 @@ void Token::update_property_info()
         else if (std::isalpha((unsigned char)mStr[0]) || mStr[0] == '_' || mStr[0] == '$') { // Name
             if (mImpl->mVarId)
                 tokType(eVariable);
-            else if (mTokensFrontBack && mTokensFrontBack->list.isKeyword(mStr))
+            else if (mTokensFrontBack.list.isKeyword(mStr))
                 tokType(eKeyword);
             else if (baseKeywords.count(mStr) > 0)
                 tokType(eKeyword);
@@ -296,8 +292,8 @@ void Token::deleteNext(nonneg int count)
 
     if (mNext)
         mNext->previous(this);
-    else if (mTokensFrontBack)
-        mTokensFrontBack->back = this;
+    else
+        mTokensFrontBack.back = this;
 }
 
 void Token::deletePrevious(nonneg int count)
@@ -316,8 +312,8 @@ void Token::deletePrevious(nonneg int count)
 
     if (mPrevious)
         mPrevious->next(this);
-    else if (mTokensFrontBack)
-        mTokensFrontBack->front = this;
+    else
+        mTokensFrontBack.front = this;
 }
 
 void Token::swapWithNext()
@@ -400,10 +396,10 @@ void Token::replace(Token *replaceThis, Token *start, Token *end)
     start->previous(replaceThis->previous());
     end->next(replaceThis->next());
 
-    if (end->mTokensFrontBack && end->mTokensFrontBack->back == end) {
+    if (end->mTokensFrontBack.back == end) {
         while (end->next())
             end = end->next();
-        end->mTokensFrontBack->back = end;
+        end->mTokensFrontBack.back = end;
     }
 
     // Update mProgressValue, fileIndex and linenr
@@ -1160,8 +1156,8 @@ Token* Token::insertToken(const std::string& tokenStr, const std::string& origin
             if (this->previous()) {
                 newToken->previous(this->previous());
                 newToken->previous()->next(newToken);
-            } else if (mTokensFrontBack) {
-                mTokensFrontBack->front = newToken;
+            } else {
+                mTokensFrontBack.front = newToken;
             }
             this->previous(newToken);
             newToken->next(this);
@@ -1169,8 +1165,8 @@ Token* Token::insertToken(const std::string& tokenStr, const std::string& origin
             if (this->next()) {
                 newToken->next(this->next());
                 newToken->next()->previous(newToken);
-            } else if (mTokensFrontBack) {
-                mTokensFrontBack->back = newToken;
+            } else {
+                mTokensFrontBack.back = newToken;
             }
             this->next(newToken);
             newToken->previous(this);
@@ -1820,7 +1816,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
         else {
             if (fileIndex != tok->fileIndex()) {
                 outs += "File ";
-                outs += tok->mTokensFrontBack->list.getFiles()[tok->fileIndex()];
+                outs += tok->mTokensFrontBack.list.getFiles()[tok->fileIndex()];
                 outs += '\n';
                 line = 0;
             }
@@ -2749,8 +2745,5 @@ const Token* findLambdaEndScope(const Token* tok) {
 
 bool Token::isCpp() const
 {
-    if (mTokensFrontBack) {
-        return mTokensFrontBack->list.isCPP();
-    }
-    return true; // assume C++ by default
+    return mTokensFrontBack.list.isCPP();
 }
