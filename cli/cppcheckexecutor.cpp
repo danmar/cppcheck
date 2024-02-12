@@ -180,7 +180,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 {
     Settings settings;
     CmdLineLoggerStd logger;
-    CmdLineParser parser(logger, settings, settings.nomsg, settings.nofail);
+    CmdLineParser parser(logger, settings, settings.supprs);
     if (!parser.fillSettingsFromArgs(argc, argv)) {
         return EXIT_FAILURE;
     }
@@ -264,7 +264,7 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
 
     CppCheck cppcheck(stdLogger, true, executeCommand);
     cppcheck.settings() = settings; // this is a copy
-    auto& suppressions = cppcheck.settings().nomsg;
+    auto& suppressions = cppcheck.settings().supprs.nomsg;
 
     unsigned int returnValue;
     if (settings.useSingleJob()) {
@@ -312,7 +312,7 @@ void StdLogger::writeCheckersReport()
     CheckersReport checkersReport(mSettings, mActiveCheckers);
 
     bool suppressed = false;
-    for (const SuppressionList::Suppression& s : mSettings.nomsg.getSuppressions()) {
+    for (const SuppressionList::Suppression& s : mSettings.supprs.nomsg.getSuppressions()) {
         if (s.errorId == "checkersReport")
             suppressed = true;
     }

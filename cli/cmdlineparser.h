@@ -30,7 +30,7 @@
 #include "utils.h"
 
 class Settings;
-class SuppressionList;
+struct Suppressions;
 class Library;
 
 /// @addtogroup CLI
@@ -53,9 +53,8 @@ public:
      * @param settings Settings instance that will be modified according to
      * options user has given.
      * @param suppressions Suppressions instance that keeps the suppressions
-     * @param suppressionsNoFail Suppressions instance that keeps the "do not fail" suppressions
      */
-    CmdLineParser(CmdLineLogger &logger, Settings &settings, SuppressionList &suppressions, SuppressionList &suppressionsNoFail);
+    CmdLineParser(CmdLineLogger &logger, Settings &settings, Suppressions &suppressions);
 
     enum class Result { Success, Exit, Fail };
 
@@ -159,8 +158,7 @@ private:
     std::list<FileSettings> mFileSettings;
     std::vector<std::string> mIgnoredPaths;
     Settings &mSettings;
-    SuppressionList &mSuppressions;
-    SuppressionList &mSuppressionsNoFail;
+    Suppressions &mSuppressions;
     std::string mVSConfig;
 };
 

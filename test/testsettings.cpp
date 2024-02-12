@@ -194,8 +194,8 @@ private:
             ScopedFile file("cppcheck.cfg",
                             R"({"suppressions": ["id"]}\n)");
             ASSERT_EQUALS("", s.loadCppcheckCfg());
-            ASSERT_EQUALS(1, s.nomsg.getSuppressions().size());
-            ASSERT_EQUALS("id", s.nomsg.getSuppressions().cbegin()->errorId);
+            ASSERT_EQUALS(1, s.supprs.nomsg.getSuppressions().size());
+            ASSERT_EQUALS("id", s.supprs.nomsg.getSuppressions().cbegin()->errorId);
         }
         {
             Settings s;

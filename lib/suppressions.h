@@ -258,6 +258,14 @@ private:
     std::list<Suppression> mSuppressions;
 };
 
+struct Suppressions
+{
+    /** @brief suppress message (--suppressions) */
+    SuppressionList nomsg;
+    /** @brief suppress exitcode */
+    SuppressionList nofail;
+};
+
 /// @}
 //---------------------------------------------------------------------------
 #endif // suppressionsH

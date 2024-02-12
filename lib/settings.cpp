@@ -114,7 +114,7 @@ std::string Settings::loadCppcheckCfg()
                 if (!v.is<std::string>())
                     return "'suppressions' array entry is not a string";
                 const std::string &s = v.get<std::string>();
-                const std::string err = nomsg.addSuppressionLine(s);
+                const std::string err = supprs.nomsg.addSuppressionLine(s);
                 if (!err.empty())
                     return "could not parse suppression '" + s + "' - " + err;
             }
