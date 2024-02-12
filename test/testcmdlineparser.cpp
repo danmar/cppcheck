@@ -1474,8 +1474,8 @@ private:
         ASSERT_EQUALS(true, logger->str().find("If you want to pass two files") != std::string::npos);
     }
 
-    static Suppressions::ErrorMessage errorMessage(const std::string &errorId, const std::string &fileName, int lineNumber) {
-        Suppressions::ErrorMessage e;
+    static SuppressionList::ErrorMessage errorMessage(const std::string &errorId, const std::string &fileName, int lineNumber) {
+        SuppressionList::ErrorMessage e;
         e.errorId = errorId;
         e.setFileName(fileName);
         e.lineNumber = lineNumber;

@@ -593,7 +593,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     mThread->setFiles(fileNames);
     if (mProjectFile && !checkConfiguration)
         mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools());
-    mThread->setSuppressions(mProjectFile ? mProjectFile->getSuppressions() : QList<Suppressions::Suppression>());
+    mThread->setSuppressions(mProjectFile ? mProjectFile->getSuppressions() : QList<SuppressionList::Suppression>());
     QDir inf(mCurrentDirectory);
     const QString checkPath = inf.canonicalPath();
     setPath(SETTINGS_LAST_CHECK_PATH, checkPath);
@@ -1021,7 +1021,7 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
             tryLoadLibrary(&result.library, filename);
         }
 
-        for (const Suppressions::Suppression &suppression : mProjectFile->getSuppressions()) {
+        for (const SuppressionList::Suppression &suppression : mProjectFile->getSuppressions()) {
             result.nomsg.addSuppression(suppression);
         }
 
@@ -2066,7 +2066,7 @@ void MainWindow::suppressIds(QStringList ids)
         return;
     ids.removeDuplicates();
 
-    QList<Suppressions::Suppression> suppressions = mProjectFile->getSuppressions();
+    QList<SuppressionList::Suppression> suppressions = mProjectFile->getSuppressions();
     for (const QString& id : ids) {
         // Remove all matching suppressions
         std::string id2 = id.toStdString();
@@ -2077,7 +2077,7 @@ void MainWindow::suppressIds(QStringList ids)
                 ++i;
         }
 
-        Suppressions::Suppression newSuppression;
+        SuppressionList::Suppression newSuppression;
         newSuppression.errorId = id2;
         suppressions << newSuppression;
     }

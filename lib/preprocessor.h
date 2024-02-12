@@ -35,7 +35,7 @@
 
 class ErrorLogger;
 class Settings;
-class Suppressions;
+class SuppressionList;
 
 /**
  * @brief A preprocessor directive
@@ -90,7 +90,7 @@ public:
     explicit Preprocessor(const Settings& settings, ErrorLogger *errorLogger = nullptr);
     virtual ~Preprocessor();
 
-    void inlineSuppressions(const simplecpp::TokenList &tokens, Suppressions &suppressions);
+    void inlineSuppressions(const simplecpp::TokenList &tokens, SuppressionList &suppressions);
 
     void setDirectives(const simplecpp::TokenList &tokens);
     void setDirectives(const std::list<Directive> &directives) {

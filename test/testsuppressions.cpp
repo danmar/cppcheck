@@ -102,7 +102,7 @@ private:
     }
 
     void suppressionsBadId1() const {
-        Suppressions suppressions;
+        SuppressionList suppressions;
         std::istringstream s1("123");
         ASSERT_EQUALS("Failed to add suppression. Invalid id \"123\"", suppressions.parseFile(s1));
 
@@ -110,8 +110,8 @@ private:
         ASSERT_EQUALS("", suppressions.parseFile(s2));
     }
 
-    static Suppressions::ErrorMessage errorMessage(const std::string &errorId) {
-        Suppressions::ErrorMessage ret;
+    static SuppressionList::ErrorMessage errorMessage(const std::string &errorId) {
+        SuppressionList::ErrorMessage ret;
         ret.errorId = errorId;
         ret.hash = 0;
         ret.lineNumber = 0;
@@ -119,8 +119,8 @@ private:
         return ret;
     }
 
-    static Suppressions::ErrorMessage errorMessage(const std::string &errorId, const std::string &file, int line) {
-        Suppressions::ErrorMessage ret;
+    static SuppressionList::ErrorMessage errorMessage(const std::string &errorId, const std::string &file, int line) {
+        SuppressionList::ErrorMessage ret;
         ret.errorId = errorId;
         ret.setFileName(file);
         ret.lineNumber = line;
@@ -128,7 +128,7 @@ private:
     }
 
     void suppressionsDosFormat() const {
-        Suppressions suppressions;
+        SuppressionList suppressions;
         std::istringstream s("abc\r\n"
                              "def\r\n");
         ASSERT_EQUALS("", suppressions.parseFile(s));
@@ -137,7 +137,7 @@ private:
     }
 
     void suppressionsFileNameWithColon() const {
-        Suppressions suppressions;
+        SuppressionList suppressions;
         std::istringstream s("errorid:c:\\foo.cpp\n"
                              "errorid:c:\\bar.cpp:12");
         ASSERT_EQUALS("", suppressions.parseFile(s));
@@ -149,14 +149,14 @@ private:
     void suppressionsGlob() const {
         // Check for syntax errors in glob
         {
-            Suppressions suppressions;
+            SuppressionList suppressions;
             std::istringstream s("errorid:**.cpp\n");
             ASSERT_EQUALS("Failed to add suppression. Invalid glob pattern '**.cpp'.", suppressions.parseFile(s));
         }
 
         // Check that globbing works
         {
-            Suppressions suppressions;
+            SuppressionList suppressions;
             std::istringstream s("errorid:x*.cpp\n"
                                  "errorid:y?.cpp\n"
                                  "errorid:test.c*");
@@ -172,7 +172,7 @@ private:
 
         // Check that both a filename match and a glob match apply
         {
-            Suppressions suppressions;
+            SuppressionList suppressions;
             std::istringstream s("errorid:x*.cpp\n"
                                  "errorid:xyz.cpp:1\n"
                                  "errorid:a*.cpp:1\n"
@@ -186,7 +186,7 @@ private:
     }
 
     void suppressionsGlobId() const {
-        Suppressions suppressions;
+        SuppressionList suppressions;
         std::istringstream s("a*\n");
         ASSERT_EQUALS("", suppressions.parseFile(s));
         ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("abc", "xyz.cpp", 1)));
@@ -195,7 +195,7 @@ private:
 
     void suppressionsFileNameWithExtraPath() const {
         // Ticket #2797
-        Suppressions suppressions;
+        SuppressionList suppressions;
         ASSERT_EQUALS("", suppressions.addSuppressionLine("errorid:./a.c:123"));
         ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "a.c", 123)));
         ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "x/../a.c", 123)));
@@ -939,15 +939,15 @@ private:
     }
 
     void suppressionsPathSeparator() const {
-        const Suppressions::Suppression s1("*", "test/foo/*");
+        const SuppressionList::Suppression s1("*", "test/foo/*");
         ASSERT_EQUALS(true, s1.isSuppressed(errorMessage("someid", "test/foo/bar.cpp", 142)));
 
-        const Suppressions::Suppression s2("abc", "include/1.h");
+        const SuppressionList::Suppression s2("abc", "include/1.h");
         ASSERT_EQUALS(true, s2.isSuppressed(errorMessage("abc", "include/1.h", 142)));
     }
 
     void suppressionsLine0() const {
-        Suppressions suppressions;
+        SuppressionList suppressions;
         ASSERT_EQUALS("", suppressions.addSuppressionLine("syntaxError:*:0"));
         ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("syntaxError", "test.cpp", 0)));
     }
@@ -955,39 +955,39 @@ private:
     void suppressionsFileComment() const {
         std::istringstream file1("# comment\n"
                                  "abc");
-        Suppressions suppressions1;
+        SuppressionList suppressions1;
         ASSERT_EQUALS("", suppressions1.parseFile(file1));
         ASSERT_EQUALS(true, suppressions1.isSuppressed(errorMessage("abc", "test.cpp", 123)));
 
         std::istringstream file2("// comment\n"
                                  "abc");
-        Suppressions suppressions2;
+        SuppressionList suppressions2;
         ASSERT_EQUALS("", suppressions2.parseFile(file2));
         ASSERT_EQUALS(true, suppressions2.isSuppressed(errorMessage("abc", "test.cpp", 123)));
 
         std::istringstream file3("abc // comment");
-        Suppressions suppressions3;
+        SuppressionList suppressions3;
         ASSERT_EQUALS("", suppressions3.parseFile(file3));
         ASSERT_EQUALS(true, suppressions3.isSuppressed(errorMessage("abc", "test.cpp", 123)));
 
         std::istringstream file4("abc\t\t # comment");
-        Suppressions suppressions4;
+        SuppressionList suppressions4;
         ASSERT_EQUALS("", suppressions4.parseFile(file4));
         ASSERT_EQUALS(true, suppressions4.isSuppressed(errorMessage("abc", "test.cpp", 123)));
 
         std::istringstream file5("abc:test.cpp\t\t # comment");
-        Suppressions suppressions5;
+        SuppressionList suppressions5;
         ASSERT_EQUALS("", suppressions5.parseFile(file5));
         ASSERT_EQUALS(true, suppressions5.isSuppressed(errorMessage("abc", "test.cpp", 123)));
 
         std::istringstream file6("abc:test.cpp:123\t\t # comment with . inside");
-        Suppressions suppressions6;
+        SuppressionList suppressions6;
         ASSERT_EQUALS("", suppressions6.parseFile(file6));
         ASSERT_EQUALS(true, suppressions6.isSuppressed(errorMessage("abc", "test.cpp", 123)));
     }
 
     void inlinesuppress() const {
-        Suppressions::Suppression s;
+        SuppressionList::Suppression s;
         std::string msg;
 
         // Suppress without attribute
@@ -1057,7 +1057,7 @@ private:
     }
 
     void inlinesuppress_comment() const {
-        Suppressions::Suppression s;
+        SuppressionList::Suppression s;
         std::string errMsg;
         ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc ; some comment", &errMsg));
         ASSERT_EQUALS("", errMsg);
@@ -1068,74 +1068,74 @@ private:
     }
 
     void multi_inlinesuppress() const {
-        std::vector<Suppressions::Suppression> suppressions;
+        std::vector<SuppressionList::Suppression> suppressions;
         std::string errMsg;
 
         errMsg = "";
-        suppressions=Suppressions::parseMultiSuppressComment("// cppcheck-suppress[errorId]", &errMsg);
+        suppressions=SuppressionList::parseMultiSuppressComment("// cppcheck-suppress[errorId]", &errMsg);
         ASSERT_EQUALS(1, suppressions.size());
         ASSERT_EQUALS("errorId", suppressions[0].errorId);
         ASSERT_EQUALS("", suppressions[0].symbolName);
         ASSERT_EQUALS("", errMsg);
 
         errMsg = "";
-        suppressions=Suppressions::parseMultiSuppressComment("// cppcheck-suppress-begin[errorId]", &errMsg);
+        suppressions=SuppressionList::parseMultiSuppressComment("// cppcheck-suppress-begin[errorId]", &errMsg);
         ASSERT_EQUALS(1, suppressions.size());
         ASSERT_EQUALS("errorId", suppressions[0].errorId);
         ASSERT_EQUALS("", suppressions[0].symbolName);
         ASSERT_EQUALS("", errMsg);
 
         errMsg = "";
-        suppressions=Suppressions::parseMultiSuppressComment("// cppcheck-suppress-begin [errorId]", &errMsg);
+        suppressions=SuppressionList::parseMultiSuppressComment("// cppcheck-suppress-begin [errorId]", &errMsg);
         ASSERT_EQUALS(1, suppressions.size());
         ASSERT_EQUALS("errorId", suppressions[0].errorId);
         ASSERT_EQUALS("", suppressions[0].symbolName);
         ASSERT_EQUALS("", errMsg);
 
         errMsg = "";
-        suppressions=Suppressions::parseMultiSuppressComment("// cppcheck-suppress-end[errorId]", &errMsg);
+        suppressions=SuppressionList::parseMultiSuppressComment("// cppcheck-suppress-end[errorId]", &errMsg);
         ASSERT_EQUALS(1, suppressions.size());
         ASSERT_EQUALS("errorId", suppressions[0].errorId);
         ASSERT_EQUALS("", suppressions[0].symbolName);
         ASSERT_EQUALS("", errMsg);
 
         errMsg = "";
-        suppressions=Suppressions::parseMultiSuppressComment("// cppcheck-suppress-end [errorId]", &errMsg);
+        suppressions=SuppressionList::parseMultiSuppressComment("// cppcheck-suppress-end [errorId]", &errMsg);
         ASSERT_EQUALS(1, suppressions.size());
         ASSERT_EQUALS("errorId", suppressions[0].errorId);
         ASSERT_EQUALS("", suppressions[0].symbolName);
         ASSERT_EQUALS("", errMsg);
 
         errMsg = "";
-        suppressions=Suppressions::parseMultiSuppressComment("// cppcheck-suppress-file[errorId]", &errMsg);
+        suppressions=SuppressionList::parseMultiSuppressComment("// cppcheck-suppress-file[errorId]", &errMsg);
         ASSERT_EQUALS(1, suppressions.size());
         ASSERT_EQUALS("errorId", suppressions[0].errorId);
         ASSERT_EQUALS("", suppressions[0].symbolName);
         ASSERT_EQUALS("", errMsg);
 
         errMsg = "";
-        suppressions=Suppressions::parseMultiSuppressComment("// cppcheck-suppress-file [errorId]", &errMsg);
+        suppressions=SuppressionList::parseMultiSuppressComment("// cppcheck-suppress-file [errorId]", &errMsg);
         ASSERT_EQUALS(1, suppressions.size());
         ASSERT_EQUALS("errorId", suppressions[0].errorId);
         ASSERT_EQUALS("", suppressions[0].symbolName);
         ASSERT_EQUALS("", errMsg);
 
         errMsg = "";
-        suppressions=Suppressions::parseMultiSuppressComment("// cppcheck-suppress[errorId symbolName=arr]", &errMsg);
+        suppressions=SuppressionList::parseMultiSuppressComment("// cppcheck-suppress[errorId symbolName=arr]", &errMsg);
         ASSERT_EQUALS(1, suppressions.size());
         ASSERT_EQUALS("errorId", suppressions[0].errorId);
         ASSERT_EQUALS("arr", suppressions[0].symbolName);
         ASSERT_EQUALS("", errMsg);
 
         errMsg = "";
-        suppressions=Suppressions::parseMultiSuppressComment("// cppcheck-suppress[errorId symbolName=]", &errMsg);
+        suppressions=SuppressionList::parseMultiSuppressComment("// cppcheck-suppress[errorId symbolName=]", &errMsg);
         ASSERT_EQUALS(1, suppressions.size());
         ASSERT_EQUALS("errorId", suppressions[0].errorId);
         ASSERT_EQUALS("", suppressions[0].symbolName);
         ASSERT_EQUALS("", errMsg);
 
         errMsg = "";
-        suppressions=Suppressions::parseMultiSuppressComment("// cppcheck-suppress[errorId1, errorId2 symbolName=arr]", &errMsg);
+        suppressions=SuppressionList::parseMultiSuppressComment("// cppcheck-suppress[errorId1, errorId2 symbolName=arr]", &errMsg);
         ASSERT_EQUALS(2, suppressions.size());
         ASSERT_EQUALS("errorId1", suppressions[0].errorId);
         ASSERT_EQUALS("", suppressions[0].symbolName);
@@ -1144,52 +1144,52 @@ private:
         ASSERT_EQUALS("", errMsg);
 
         errMsg = "";
-        suppressions=Suppressions::parseMultiSuppressComment("// cppcheck-suppress[]", &errMsg);
+        suppressions=SuppressionList::parseMultiSuppressComment("// cppcheck-suppress[]", &errMsg);
         ASSERT_EQUALS(0, suppressions.size());
         ASSERT_EQUALS(true, errMsg.empty());
 
         errMsg = "";
-        suppressions=Suppressions::parseMultiSuppressComment("// cppcheck-suppress[errorId", &errMsg);
+        suppressions=SuppressionList::parseMultiSuppressComment("// cppcheck-suppress[errorId", &errMsg);
         ASSERT_EQUALS(0, suppressions.size());
         ASSERT_EQUALS(false, errMsg.empty());
 
         errMsg = "";
-        suppressions=Suppressions::parseMultiSuppressComment("// cppcheck-suppress errorId", &errMsg);
+        suppressions=SuppressionList::parseMultiSuppressComment("// cppcheck-suppress errorId", &errMsg);
         ASSERT_EQUALS(0, suppressions.size());
         ASSERT_EQUALS(false, errMsg.empty());
 
         errMsg = "";
-        suppressions=Suppressions::parseMultiSuppressComment("// cppcheck-suppress[errorId1 errorId2 symbolName=arr]", &errMsg);
+        suppressions=SuppressionList::parseMultiSuppressComment("// cppcheck-suppress[errorId1 errorId2 symbolName=arr]", &errMsg);
         ASSERT_EQUALS(0, suppressions.size());
         ASSERT_EQUALS(false, errMsg.empty());
 
         errMsg = "";
-        suppressions=Suppressions::parseMultiSuppressComment("// cppcheck-suppress[errorId1, errorId2 symbol=arr]", &errMsg);
+        suppressions=SuppressionList::parseMultiSuppressComment("// cppcheck-suppress[errorId1, errorId2 symbol=arr]", &errMsg);
         ASSERT_EQUALS(0, suppressions.size());
         ASSERT_EQUALS(false, errMsg.empty());
 
         errMsg = "";
-        suppressions=Suppressions::parseMultiSuppressComment("// cppcheck-suppress[errorId1, errorId2 symbolName]", &errMsg);
+        suppressions=SuppressionList::parseMultiSuppressComment("// cppcheck-suppress[errorId1, errorId2 symbolName]", &errMsg);
         ASSERT_EQUALS(0, suppressions.size());
         ASSERT_EQUALS(false, errMsg.empty());
     }
 
     void multi_inlinesuppress_comment() const {
-        std::vector<Suppressions::Suppression> suppressions;
+        std::vector<SuppressionList::Suppression> suppressions;
         std::string errMsg;
 
         errMsg = "";
-        suppressions=Suppressions::parseMultiSuppressComment("//cppcheck-suppress[errorId1, errorId2 symbolName=arr]", &errMsg);
+        suppressions=SuppressionList::parseMultiSuppressComment("//cppcheck-suppress[errorId1, errorId2 symbolName=arr]", &errMsg);
         ASSERT_EQUALS(2, suppressions.size());
         ASSERT_EQUALS(true, errMsg.empty());
 
         errMsg = "";
-        suppressions=Suppressions::parseMultiSuppressComment("//cppcheck-suppress[errorId1, errorId2 symbolName=arr] some text", &errMsg);
+        suppressions=SuppressionList::parseMultiSuppressComment("//cppcheck-suppress[errorId1, errorId2 symbolName=arr] some text", &errMsg);
         ASSERT_EQUALS(2, suppressions.size());
         ASSERT_EQUALS(true, errMsg.empty());
 
         errMsg = "";
-        suppressions=Suppressions::parseMultiSuppressComment("/*cppcheck-suppress[errorId1, errorId2 symbolName=arr]*/", &errMsg);
+        suppressions=SuppressionList::parseMultiSuppressComment("/*cppcheck-suppress[errorId1, errorId2 symbolName=arr]*/", &errMsg);
         ASSERT_EQUALS(2, suppressions.size());
         ASSERT_EQUALS(true, errMsg.empty());
     }
@@ -1209,8 +1209,8 @@ private:
     }
 
     void inlinesuppress_unusedFunction() const { // #4210, #4946 - wrong report of "unmatchedSuppression" for "unusedFunction"
-        Suppressions suppressions;
-        Suppressions::Suppression suppression("unusedFunction", "test.c", 3);
+        SuppressionList suppressions;
+        SuppressionList::Suppression suppression("unusedFunction", "test.c", 3);
         suppression.checked = true; // have to do this because fixes for #5704
         ASSERT_EQUALS("", suppressions.addSuppression(std::move(suppression)));
         ASSERT_EQUALS(true, !suppressions.getUnmatchedLocalSuppressions("test.c", true).empty());
@@ -1220,7 +1220,7 @@ private:
     }
 
     void globalsuppress_unusedFunction() const { // #4946 - wrong report of "unmatchedSuppression" for "unusedFunction"
-        Suppressions suppressions;
+        SuppressionList suppressions;
         ASSERT_EQUALS("", suppressions.addSuppressionLine("unusedFunction:*"));
         ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions("test.c", true).empty());
         ASSERT_EQUALS(true, !suppressions.getUnmatchedGlobalSuppressions(true).empty());
@@ -1316,11 +1316,11 @@ private:
     }
 
     void symbol() const {
-        Suppressions::Suppression s;
+        SuppressionList::Suppression s;
         s.errorId = "foo";
         s.symbolName = "array*";
 
-        Suppressions::ErrorMessage errorMsg;
+        SuppressionList::ErrorMessage errorMsg;
         errorMsg.errorId = "foo";
         errorMsg.setFileName("test.cpp");
         errorMsg.lineNumber = 123;
@@ -1399,7 +1399,7 @@ private:
     }
 
     void suppressLocal() const {
-        Suppressions suppressions;
+        SuppressionList suppressions;
         std::istringstream s("errorid:test.cpp\n"
                              "errorid2");
         ASSERT_EQUALS("", suppressions.parseFile(s));
@@ -1414,36 +1414,36 @@ private:
     }
 
     void suppressUnmatchedSuppressions() {
-        std::list<Suppressions::Suppression> suppressions;
+        std::list<SuppressionList::Suppression> suppressions;
 
         // No unmatched suppression
         errout.str("");
         suppressions.clear();
-        ASSERT_EQUALS(false, Suppressions::reportUnmatchedSuppressions(suppressions, *this));
+        ASSERT_EQUALS(false, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
         ASSERT_EQUALS("", errout.str());
 
         // suppress all unmatchedSuppression
         errout.str("");
         suppressions.clear();
         suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "*", Suppressions::Suppression::NO_LINE);
-        ASSERT_EQUALS(false, Suppressions::reportUnmatchedSuppressions(suppressions, *this));
+        suppressions.emplace_back("unmatchedSuppression", "*", SuppressionList::Suppression::NO_LINE);
+        ASSERT_EQUALS(false, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
         ASSERT_EQUALS("", errout.str());
 
         // suppress all unmatchedSuppression (corresponds to "--suppress=unmatchedSuppression")
         errout.str("");
         suppressions.clear();
         suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "", Suppressions::Suppression::NO_LINE);
-        ASSERT_EQUALS(false, Suppressions::reportUnmatchedSuppressions(suppressions, *this));
+        suppressions.emplace_back("unmatchedSuppression", "", SuppressionList::Suppression::NO_LINE);
+        ASSERT_EQUALS(false, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
         ASSERT_EQUALS("", errout.str());
 
         // suppress all unmatchedSuppression in a.c
         errout.str("");
         suppressions.clear();
         suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "a.c", Suppressions::Suppression::NO_LINE);
-        ASSERT_EQUALS(false, Suppressions::reportUnmatchedSuppressions(suppressions, *this));
+        suppressions.emplace_back("unmatchedSuppression", "a.c", SuppressionList::Suppression::NO_LINE);
+        ASSERT_EQUALS(false, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
         ASSERT_EQUALS("", errout.str());
 
         // suppress unmatchedSuppression in a.c at line 10
@@ -1451,15 +1451,15 @@ private:
         suppressions.clear();
         suppressions.emplace_back("abc", "a.c", 10U);
         suppressions.emplace_back("unmatchedSuppression", "a.c", 10U);
-        ASSERT_EQUALS(false, Suppressions::reportUnmatchedSuppressions(suppressions, *this));
+        ASSERT_EQUALS(false, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
         ASSERT_EQUALS("", errout.str());
 
         // don't suppress unmatchedSuppression when file is mismatching
         errout.str("");
         suppressions.clear();
         suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "b.c", Suppressions::Suppression::NO_LINE);
-        ASSERT_EQUALS(true, Suppressions::reportUnmatchedSuppressions(suppressions, *this));
+        suppressions.emplace_back("unmatchedSuppression", "b.c", SuppressionList::Suppression::NO_LINE);
+        ASSERT_EQUALS(true, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
         ASSERT_EQUALS("[a.c:10]: (information) Unmatched suppression: abc\n", errout.str());
 
         // don't suppress unmatchedSuppression when line is mismatching
@@ -1467,7 +1467,7 @@ private:
         suppressions.clear();
         suppressions.emplace_back("abc", "a.c", 10U);
         suppressions.emplace_back("unmatchedSuppression", "a.c", 1U);
-        ASSERT_EQUALS(true, Suppressions::reportUnmatchedSuppressions(suppressions, *this));
+        ASSERT_EQUALS(true, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
         ASSERT_EQUALS("[a.c:10]: (information) Unmatched suppression: abc\n", errout.str());
     }
 };

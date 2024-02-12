@@ -82,7 +82,7 @@ public:
         mAddonsAndTools = addonsAndTools;
     }
 
-    void setSuppressions(const QList<Suppressions::Suppression> &s) {
+    void setSuppressions(const QList<SuppressionList::Suppression> &s) {
         mSuppressions = s;
     }
 
@@ -259,7 +259,7 @@ protected:
     bool mAnalyseWholeProgram{};
 
     QStringList mAddonsAndTools;
-    QList<Suppressions::Suppression> mSuppressions;
+    QList<SuppressionList::Suppression> mSuppressions;
     QStringList mClangIncludePaths;
 private:
 

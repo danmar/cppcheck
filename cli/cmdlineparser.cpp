@@ -135,7 +135,7 @@ namespace {
     };
 }
 
-CmdLineParser::CmdLineParser(CmdLineLogger &logger, Settings &settings, Suppressions &suppressions, Suppressions &suppressionsNoFail)
+CmdLineParser::CmdLineParser(CmdLineLogger &logger, Settings &settings, SuppressionList &suppressions, SuppressionList &suppressionsNoFail)
     : mLogger(logger)
     , mSettings(settings)
     , mSuppressions(suppressions)

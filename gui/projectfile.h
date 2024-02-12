@@ -183,7 +183,7 @@ public:
      * @brief Get "raw" suppressions.
      * @return list of suppressions.
      */
-    QList<Suppressions::Suppression> getSuppressions() const {
+    QList<SuppressionList::Suppression> getSuppressions() const {
         return mSuppressions;
     }
 
@@ -318,10 +318,10 @@ public:
      * @brief Set list of suppressions.
      * @param suppressions List of suppressions.
      */
-    void setSuppressions(const QList<Suppressions::Suppression> &suppressions);
+    void setSuppressions(const QList<SuppressionList::Suppression> &suppressions);
 
     /** Add suppression */
-    void addSuppression(const Suppressions::Suppression &suppression);
+    void addSuppression(const SuppressionList::Suppression &suppression);
 
     /**
      * @brief Set list of addons.
@@ -589,7 +589,7 @@ private:
     /**
      * @brief List of suppressions.
      */
-    QList<Suppressions::Suppression> mSuppressions;
+    QList<SuppressionList::Suppression> mSuppressions;
 
     /**
      * @brief List of addons.

@@ -39,7 +39,7 @@ class ErrorLogger;
 enum class Certainty;
 
 /** @brief class for handling suppressions */
-class CPPCHECKLIB Suppressions {
+class CPPCHECKLIB SuppressionList {
 public:
 
     enum class Type {
@@ -58,7 +58,7 @@ public:
         std::string symbolNames;
         std::set<std::string> macroNames;
 
-        static Suppressions::ErrorMessage fromErrorMessage(const ::ErrorMessage &msg, const std::set<std::string> &macroNames);
+        static SuppressionList::ErrorMessage fromErrorMessage(const ::ErrorMessage &msg, const std::set<std::string> &macroNames);
     private:
         std::string mFileName;
     };
@@ -251,7 +251,7 @@ public:
      * @param unmatched list of unmatched suppressions (from Settings::Suppressions::getUnmatched(Local|Global)Suppressions)
      * @return true is returned if errors are reported
      */
-    static bool reportUnmatchedSuppressions(const std::list<Suppressions::Suppression> &unmatched, ErrorLogger &errorLogger);
+    static bool reportUnmatchedSuppressions(const std::list<SuppressionList::Suppression> &unmatched, ErrorLogger &errorLogger);
 
 private:
     /** @brief List of error which the user doesn't want to see. */

@@ -1119,7 +1119,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     const std::string &path = mPath;
 
     std::list<std::string> paths;
-    std::list<Suppressions::Suppression> suppressions;
+    std::list<SuppressionList::Suppression> suppressions;
     Settings temp;
 
     guiProject.analyzeAllVsConfigs.clear();
@@ -1163,12 +1163,12 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
                 if (strcmp(child->Name(), CppcheckXml::SuppressionElementName) != 0)
                     continue;
-                Suppressions::Suppression s;
+                SuppressionList::Suppression s;
                 s.errorId = readSafe(child->GetText(), "");
                 s.fileName = readSafe(child->Attribute("fileName"), "");
                 if (!s.fileName.empty())
                     s.fileName = joinRelativePath(path, s.fileName);
-                s.lineNumber = child->IntAttribute("lineNumber", Suppressions::Suppression::NO_LINE);
+                s.lineNumber = child->IntAttribute("lineNumber", SuppressionList::Suppression::NO_LINE);
                 s.symbolName = readSafe(child->Attribute("symbolName"), "");
                 s.hash = strToInt<std::size_t>(readSafe(child->Attribute("hash"), "0"));
                 suppressions.push_back(std::move(s));

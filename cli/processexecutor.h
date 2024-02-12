@@ -29,7 +29,7 @@
 
 class Settings;
 class ErrorLogger;
-class Suppressions;
+class SuppressionList;
 struct FileSettings;
 
 /// @addtogroup CLI
@@ -41,7 +41,7 @@ struct FileSettings;
  */
 class ProcessExecutor : public Executor {
 public:
-    ProcessExecutor(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand);
+    ProcessExecutor(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand);
     ProcessExecutor(const ProcessExecutor &) = delete;
     ProcessExecutor& operator=(const ProcessExecutor &) = delete;
 

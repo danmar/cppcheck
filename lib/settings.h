@@ -236,10 +236,10 @@ public:
     int maxTemplateRecursion = 100;
 
     /** @brief suppress exitcode */
-    Suppressions nofail;
+    SuppressionList nofail;
 
     /** @brief suppress message (--suppressions) */
-    Suppressions nomsg;
+    SuppressionList nomsg;
 
     /** @brief write results (--output-file=&lt;file&gt;) */
     std::string outputFile;

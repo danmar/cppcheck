@@ -612,7 +612,7 @@ void ProjectFile::readSuppressions(QXmlStreamReader &reader)
         case QXmlStreamReader::StartElement:
             // Read library-elements
             if (reader.name().toString() == CppcheckXml::SuppressionElementName) {
-                Suppressions::Suppression suppression;
+                SuppressionList::Suppression suppression;
                 if (reader.attributes().hasAttribute(QString(),"fileName"))
                     suppression.fileName = reader.attributes().value(QString(),"fileName").toString().toStdString();
                 if (reader.attributes().hasAttribute(QString(),"lineNumber"))
@@ -756,12 +756,12 @@ void ProjectFile::setPlatform(const QString &platform)
     mPlatform = platform;
 }
 
-void ProjectFile::setSuppressions(const QList<Suppressions::Suppression> &suppressions)
+void ProjectFile::setSuppressions(const QList<SuppressionList::Suppression> &suppressions)
 {
     mSuppressions = suppressions;
 }
 
-void ProjectFile::addSuppression(const Suppressions::Suppression &suppression)
+void ProjectFile::addSuppression(const SuppressionList::Suppression &suppression)
 {
     mSuppressions.append(suppression);
 }
@@ -924,7 +924,7 @@ bool ProjectFile::write(const QString &filename)
 
     if (!mSuppressions.isEmpty()) {
         xmlWriter.writeStartElement(CppcheckXml::SuppressionsElementName);
-        for (const Suppressions::Suppression &suppression : mSuppressions) {
+        for (const SuppressionList::Suppression &suppression : mSuppressions) {
             xmlWriter.writeStartElement(CppcheckXml::SuppressionElementName);
             if (!suppression.fileName.empty())
                 xmlWriter.writeAttribute("fileName", QString::fromStdString(suppression.fileName));

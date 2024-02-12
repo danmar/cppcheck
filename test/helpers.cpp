@@ -42,7 +42,7 @@
 
 #include <simplecpp.h>
 
-class Suppressions;
+class SuppressionList;
 
 // TODO: better path-only usage
 ScopedFile::ScopedFile(std::string name, const std::string &content, std::string path)
@@ -109,7 +109,7 @@ ScopedFile::~ScopedFile() {
 }
 
 // TODO: we should be using the actual Preprocessor implementation
-std::string PreprocessorHelper::getcode(Preprocessor &preprocessor, const std::string &filedata, const std::string &cfg, const std::string &filename, Suppressions *inlineSuppression)
+std::string PreprocessorHelper::getcode(Preprocessor &preprocessor, const std::string &filedata, const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression)
 {
     simplecpp::OutputList outputList;
     std::vector<std::string> files;

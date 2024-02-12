@@ -212,10 +212,10 @@ int CppCheckExecutor::check_wrapper(const Settings& settings)
     return check_internal(settings);
 }
 
-bool CppCheckExecutor::reportSuppressions(const Settings &settings, const Suppressions& suppressions, bool unusedFunctionCheckEnabled, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, ErrorLogger& errorLogger) {
+bool CppCheckExecutor::reportSuppressions(const Settings &settings, const SuppressionList& suppressions, bool unusedFunctionCheckEnabled, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, ErrorLogger& errorLogger) {
     const auto& suppr = suppressions.getSuppressions();
-    if (std::any_of(suppr.begin(), suppr.end(), [](const Suppressions::Suppression& s) {
-        return s.errorId == "unmatchedSuppression" && s.fileName.empty() && s.lineNumber == Suppressions::Suppression::NO_LINE;
+    if (std::any_of(suppr.begin(), suppr.end(), [](const SuppressionList::Suppression& s) {
+        return s.errorId == "unmatchedSuppression" && s.fileName.empty() && s.lineNumber == SuppressionList::Suppression::NO_LINE;
     }))
         return false;
 
@@ -225,16 +225,16 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, const Suppre
         assert(!(!files.empty() && !fileSettings.empty()));
 
         for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = files.cbegin(); i != files.cend(); ++i) {
-            err |= Suppressions::reportUnmatchedSuppressions(
+            err |= SuppressionList::reportUnmatchedSuppressions(
                 suppressions.getUnmatchedLocalSuppressions(i->first, unusedFunctionCheckEnabled), errorLogger);
         }
 
         for (std::list<FileSettings>::const_iterator i = fileSettings.cbegin(); i != fileSettings.cend(); ++i) {
-            err |= Suppressions::reportUnmatchedSuppressions(
+            err |= SuppressionList::reportUnmatchedSuppressions(
                 suppressions.getUnmatchedLocalSuppressions(i->filename, unusedFunctionCheckEnabled), errorLogger);
         }
     }
-    err |= Suppressions::reportUnmatchedSuppressions(suppressions.getUnmatchedGlobalSuppressions(unusedFunctionCheckEnabled), errorLogger);
+    err |= SuppressionList::reportUnmatchedSuppressions(suppressions.getUnmatchedGlobalSuppressions(unusedFunctionCheckEnabled), errorLogger);
     return err;
 }
 
@@ -312,7 +312,7 @@ void StdLogger::writeCheckersReport()
     CheckersReport checkersReport(mSettings, mActiveCheckers);
 
     bool suppressed = false;
-    for (const Suppressions::Suppression& s : mSettings.nomsg.getSuppressions()) {
+    for (const SuppressionList::Suppression& s : mSettings.nomsg.getSuppressions()) {
         if (s.errorId == "checkersReport")
             suppressed = true;
     }
