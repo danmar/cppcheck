@@ -737,7 +737,12 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 } else {
                     tok = tok->link();
                 }
-            } else if (Token::Match(tok, "%name% (")) {
+            } else if (Token::Match(tok, "extern %type%")) {
+                while (Token::Match(tok, "%name%|*|&"))
+                    tok = tok->next();
+                if (tok->str() != "(")
+                    continue;
+                tok = tok->previous();
                 if (Token::simpleMatch(tok->linkAt(1), ") ;")) {
                     const Token *funcStart = nullptr;
                     const Token *argStart = nullptr;
@@ -760,7 +765,6 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                                     tok = declEnd;
                                 }
                             }
-                            continue;
                         }
                     }
                 }
@@ -5930,8 +5934,7 @@ const Function* SymbolDatabase::findFunction(const Token* const tok) const
     const Scope *currScope = tok->scope();
     while (currScope && currScope->isExecutable()) {
         if (const Function* f = currScope->findFunction(tok)) {
-            if (f->isExtern())
-                return f;
+            return f;
         }
         if (currScope->functionOf)
             currScope = currScope->functionOf;

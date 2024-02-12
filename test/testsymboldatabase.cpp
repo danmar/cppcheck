@@ -270,7 +270,8 @@ private:
         TEST_CASE(memberFunctionOfUnknownClassMacro2);
         TEST_CASE(memberFunctionOfUnknownClassMacro3);
         TEST_CASE(functionLinkage);
-        TEST_CASE(externalFunctionsInsideAFunction); // #12420
+        TEST_CASE(externalFunctionsInsideAFunction);    // #12420
+        TEST_CASE(namespacedFunctionInsideExternBlock); // #12420
 
         TEST_CASE(classWithFriend);
 
@@ -2376,6 +2377,19 @@ private:
 
         const Token *call = Token::findsimplematch(f->next(), "bar");
         ASSERT(call && call->function() == f->function());
+    }
+
+    void namespacedFunctionInsideExternBlock() {
+        GET_SYMBOL_DB("namespace N {\n"
+                      "    void f();\n"
+                      "}\n"
+                      "extern \"C\" {\n"
+                      "    void f() {\n"
+                      "        N::f();\n"
+                      "    }\n"
+                      "}\n");
+
+        ASSERT(db && errout.str().empty());
     }
 
     void classWithFriend() {
