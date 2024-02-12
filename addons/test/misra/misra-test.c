@@ -836,10 +836,17 @@ static void misra_11_5(void *p) {
   p16 = p;     // 11.5
 }
 
+static intptr_t get_intptr_constant(void) { return 456; }
 static void misra_11_6(void) {
   void *p;
+  struct {
+    int i;
+  } s = { .i = 7 };
   p = (void*)123;  // 11.6
   x = (u64)p;      // 11.6
+  p = (void*)(1+1);// 11.6
+  p = (void*)get_intptr_constant(); // 11.6
+  p = (void*)s.i;  // 11.6
   p = ( void * )0; // no-warning
   (void)p;         // no-warning
   // # 12184
