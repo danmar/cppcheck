@@ -4281,6 +4281,10 @@ void SymbolDatabase::printXml(std::ostream &out) const
                         outs += accessControlToString(function->access);
                         outs +="\"";
                     }
+                    if (function->hasOverrideSpecifier())
+                        outs += " hasOverrideSpecifier=\"true\"";
+                    if (function->hasFinalSpecifier())
+                        outs += " hasFinalSpecifier=\"true\"";
                     if (function->isInlineKeyword())
                         outs += " isInlineKeyword=\"true\"";
                     if (function->isStatic())
