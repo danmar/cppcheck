@@ -6857,16 +6857,16 @@ private:
         ASSERT_EQUALS(false, testValueOfXKnown(code, 9U, 1));
 
         code = "int f(std::vector<int>& v) {\n"
-          "    std::vector<int> o = v;\n"
-          "    v.clear();\n"
-          "    for (int i : o) {\n"
-          "        if (i == 1) {\n"
-          "            v.push_back(0);\n"
-          "        }\n"
-          "    }\n"
-          "    auto x = v.empty();\n"
-          "    return x;\n"
-          "}\n";
+               "    std::vector<int> o = v;\n"
+               "    v.clear();\n"
+               "    for (int i : o) {\n"
+               "        if (i == 1) {\n"
+               "            v.push_back(0);\n"
+               "        }\n"
+               "    }\n"
+               "    auto x = v.empty();\n"
+               "    return x;\n"
+               "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 10U, 1));
     }
 
