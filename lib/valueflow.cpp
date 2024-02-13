@@ -2991,6 +2991,8 @@ struct ValueFlowAnalyzer : Analyzer {
             });
             if (value)
                 return {value->intvalue == 0};
+            if (!match(tok))
+                return {};
             ProgramMemory pm = pms.get(tok, ctx, getProgramState());
             MathLib::bigint out = 0;
             if (pm.getContainerEmptyValue(tok->exprId(), out))
