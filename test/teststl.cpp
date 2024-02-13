@@ -588,7 +588,7 @@ private:
                     "}\n");
         TODO_ASSERT_EQUALS("test.cpp:7:style:Consider using std::any_of algorithm instead of a raw loop.\n",
                            "test.cpp:8:error:Out of bounds access in expression 'v[i]' because 'v' is empty.\n"
-                           "test.cpp:7 : style : Consider using std::any_of algorithm instead of a raw loop.\n",
+                           "test.cpp:7:style:Consider using std::any_of algorithm instead of a raw loop.\n",
                            errout.str());
 
         checkNormal("bool g();\n"
