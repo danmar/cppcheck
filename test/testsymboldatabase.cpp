@@ -2380,6 +2380,7 @@ private:
     }
 
     void namespacedFunctionInsideExternBlock() {
+        // Should not crash
         GET_SYMBOL_DB("namespace N {\n"
                       "    void f();\n"
                       "}\n"
