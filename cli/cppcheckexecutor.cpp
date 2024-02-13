@@ -243,13 +243,13 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, const Suppre
  * */
 int CppCheckExecutor::check_internal(const Settings& settings) const
 {
-    std::unique_ptr<StdLogger> stdLogger(new StdLogger(settings));
+    StdLogger stdLogger(settings);
 
     if (settings.reportProgress >= 0)
-        stdLogger->resetLatestProgressOutputTime();
+        stdLogger.resetLatestProgressOutputTime();
 
     if (settings.xml) {
-        stdLogger->reportErr(ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName));
+        stdLogger.reportErr(ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName));
     }
 
     if (!settings.buildDir.empty()) {
@@ -262,20 +262,20 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
     if (!settings.checkersReportFilename.empty())
         std::remove(settings.checkersReportFilename.c_str());
 
-    CppCheck cppcheck(*stdLogger, true, executeCommand);
+    CppCheck cppcheck(stdLogger, true, executeCommand);
     cppcheck.settings() = settings; // this is a copy
     auto& suppressions = cppcheck.settings().nomsg;
 
     unsigned int returnValue;
     if (settings.useSingleJob()) {
         // Single process
-        SingleExecutor executor(cppcheck, mFiles, mFileSettings, settings, suppressions, *stdLogger);
+        SingleExecutor executor(cppcheck, mFiles, mFileSettings, settings, suppressions, stdLogger);
         returnValue = executor.check();
     } else {
 #if defined(THREADING_MODEL_THREAD)
-        ThreadExecutor executor(mFiles, mFileSettings, settings, suppressions, *stdLogger, CppCheckExecutor::executeCommand);
+        ThreadExecutor executor(mFiles, mFileSettings, settings, suppressions, stdLogger, CppCheckExecutor::executeCommand);
 #elif defined(THREADING_MODEL_FORK)
-        ProcessExecutor executor(mFiles, mFileSettings, settings, suppressions, *stdLogger, CppCheckExecutor::executeCommand);
+        ProcessExecutor executor(mFiles, mFileSettings, settings, suppressions, stdLogger, CppCheckExecutor::executeCommand);
 #endif
         returnValue = executor.check();
     }
@@ -283,7 +283,7 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
     cppcheck.analyseWholeProgram(settings.buildDir, mFiles, mFileSettings);
 
     if (settings.severity.isEnabled(Severity::information) || settings.checkConfiguration) {
-        const bool err = reportSuppressions(settings, suppressions, settings.isUnusedFunctionCheckEnabled(), mFiles, mFileSettings, *stdLogger);
+        const bool err = reportSuppressions(settings, suppressions, settings.isUnusedFunctionCheckEnabled(), mFiles, mFileSettings, stdLogger);
         if (err && returnValue == 0)
             returnValue = settings.exitCode;
     }
@@ -293,13 +293,13 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
     }
 
     if (settings.safety || settings.severity.isEnabled(Severity::information) || !settings.checkersReportFilename.empty())
-        stdLogger->writeCheckersReport();
+        stdLogger.writeCheckersReport();
 
     if (settings.xml) {
-        stdLogger->reportErr(ErrorMessage::getXMLFooter());
+        stdLogger.reportErr(ErrorMessage::getXMLFooter());
     }
 
-    if (settings.safety && stdLogger->hasCriticalErrors())
+    if (settings.safety && stdLogger.hasCriticalErrors())
         return EXIT_FAILURE;
 
     if (returnValue)
