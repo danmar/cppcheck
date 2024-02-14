@@ -21,7 +21,10 @@
 #include "cppcheck.h"
 #include "erroritem.h"
 #include "report.h"
+#include "settings.h"
 #include "xmlreport.h"
+
+#include <utility>
 
 #include <QDebug>
 #include <QDir>

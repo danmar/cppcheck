@@ -23,6 +23,7 @@
 #include "common.h"
 #include "config.h"
 #include "erroritem.h"
+#include "errorlogger.h"
 #include "errortypes.h"
 #include "path.h"
 #include "projectfile.h"
@@ -31,6 +32,8 @@
 #include "suppressions.h"
 #include "threadhandler.h"
 #include "xmlreportv2.h"
+
+#include <utility>
 
 #include <QAction>
 #include <QApplication>

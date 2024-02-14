@@ -23,6 +23,8 @@
 
 #if defined(USE_UNIX_SIGNAL_HANDLING)
 
+#include <cstdio>
+
 /**
  * @param f Output file
  */

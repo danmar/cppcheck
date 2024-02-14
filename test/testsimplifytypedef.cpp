@@ -22,6 +22,7 @@
 #include "platform.h"
 #include "settings.h"
 #include "fixture.h"
+#include "standards.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"

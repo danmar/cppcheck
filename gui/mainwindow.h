@@ -20,12 +20,12 @@
 #define MAINWINDOW_H
 
 #include "library.h"
-#include "settings.h"
 #include "platforms.h"
 
 #include <QFileDialog>
 #include <QMainWindow>
 #include <QObject>
+#include <QPair>
 #include <QString>
 #include <QStringList>
 
@@ -43,6 +43,7 @@ class ImportProject;
 class QCloseEvent;
 class QNetworkAccessManager;
 class QNetworkReply;
+class Settings;
 namespace Ui {
     class MainWindow;
 }

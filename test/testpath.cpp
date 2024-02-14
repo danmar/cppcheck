@@ -19,7 +19,9 @@
 #include "path.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "standards.h"
 
+#include <set>
 #include <string>
 #include <vector>
 

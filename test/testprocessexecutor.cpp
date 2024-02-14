@@ -16,16 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "checkunusedfunctions.h"
 #include "processexecutor.h"
 #include "redirect.h"
 #include "settings.h"
 #include "filesettings.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "suppressions.h"
 #include "timer.h"
 
-#include <algorithm>
 #include <cstdlib>
 #include <list>
 #include <memory>

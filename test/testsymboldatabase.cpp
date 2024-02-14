@@ -19,7 +19,6 @@
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
-#include "library.h"
 #include "platform.h"
 #include "settings.h"
 #include "sourcelocation.h"
@@ -34,12 +33,10 @@
 #include <iterator>
 #include <limits>
 #include <list>
-#include <map>
 #include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 class TestSymbolDatabase;

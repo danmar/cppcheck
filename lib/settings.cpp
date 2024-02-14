@@ -21,8 +21,9 @@
 #include "summaries.h"
 #include "vfvalue.h"
 
-#include <fstream>
-#include <sstream>
+#include <cctype>
+#include <fstream> // IWYU pragma: keep
+#include <sstream> // IWYU pragma: keep
 
 #include "json.h"
 

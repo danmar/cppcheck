@@ -22,6 +22,7 @@
 #include "preprocessor.h"
 #include "settings.h"
 #include "fixture.h"
+#include "standards.h"
 #include "tokenize.h"
 
 #include <list>

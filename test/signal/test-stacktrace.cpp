@@ -21,6 +21,8 @@
 #ifdef USE_UNIX_BACKTRACE_SUPPORT
 #include "stacktrace.h"
 
+#include <cstdio>
+
 // static functions are omitted from trace
 
 /*static*/ void my_func_2()

@@ -27,7 +27,6 @@
 #include <numeric>
 
 #include <QFile>
-#include <QMutexLocker>
 
 void ThreadResult::reportOut(const std::string &outmsg, Color /*c*/)
 {

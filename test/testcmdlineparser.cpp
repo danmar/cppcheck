@@ -33,7 +33,6 @@
 #include "timer.h"
 #include "utils.h"
 
-#include <cstdint>
 #include <cstdio>
 #include <list>
 #include <memory>
