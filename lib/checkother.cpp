@@ -1938,7 +1938,7 @@ void CheckOther::checkIncompleteStatement()
             continue;
         if (isVoidStmt(tok))
             continue;
-        if (mTokenizer->isCPP() && tok->str() == "&" && !(tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->isIntegral()))
+        if (mTokenizer->isCPP() && tok->str() == "&" && !(tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->isIntegral()))
             // Possible archive
             continue;
         const bool inconclusive = tok->isConstOp();
