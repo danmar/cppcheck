@@ -7,7 +7,12 @@
 #
 # check every isPremiumEnabled call:
 # - every id should be in --errorlist
+#   git grep 'isPremiumEnabled[(]"' | sed 's/.*isPremiumEnabled[(]"//' | sed 's/".*//' | sort | uniq > ids1.txt
+#   ./cppcheck --errorlist | grep ' id="' | sed 's/.* id="//' | sed 's/".*//' | sort | uniq > ids2.txt
+#   diff -y ids1.txt ids2.txt
 # - premiumaddon: check coverage.py
+#   python3 coverage.py --id ; sort ids-*.txt | uniq > ~/cppcheck/ids3.txt
+#   diff -y ids2.txt ids3.txt
 #
 # Windows installer:
 # - ensure latest build was successful
