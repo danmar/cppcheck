@@ -2204,6 +2204,16 @@ private:
               "    a.erase(*it);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("namespace N {\n" // #12443
+              "    std::vector<int> v;\n"
+              "}\n"
+              "using namespace N;\n"
+              "void f() {\n"
+              "    auto it = std::find(v.begin(), v.end(), 0);\n"
+              "    if (it != N::v.end()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void eraseIteratorOutOfBounds() {
