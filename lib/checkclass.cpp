@@ -3013,6 +3013,8 @@ static std::vector<DuplMemberFuncInfo> getDuplInheritedMemberFunctionsRecursive(
         for (const Function& classFuncIt : typeCurrent->classScope->functionList) {
             if (classFuncIt.isImplicitlyVirtual())
                 continue;
+            if (classFuncIt.hasFinalSpecifier())
+                continue;
             for (const Function& parentClassFuncIt : parentClassIt.type->classScope->functionList) {
                 if (classFuncIt.name() == parentClassFuncIt.name() &&
                     (parentClassFuncIt.access != AccessControl::Private || !skipPrivate) &&

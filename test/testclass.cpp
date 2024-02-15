@@ -726,6 +726,19 @@ private:
                                   "    void Two() = delete;\n"
                                   "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkDuplInheritedMembers("namespace N {\n" // #12374
+                                  "    template<typename T>\n"
+                                  "    struct B {\n"
+                                  "        std::unique_ptr<B<T>> clone() const = 0;\n"
+                                  "    };\n"
+                                  "    struct D : public B<int> {\n"
+                                  "        std::unique_ptr<B<int>> clone() const final {\n"
+                                  "            return std::make_unique<D>(*this);\n"
+                                  "        }\n"
+                                  "    };\n"
+                                  "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkCopyConstructor(code) checkCopyConstructor_(code, __FILE__, __LINE__)
