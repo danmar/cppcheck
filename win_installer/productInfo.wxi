@@ -2,7 +2,7 @@
 <Include>
   <?define ProductName = "Cppcheck $(var.Platform) 2.13.3" ?>
   <?define ProductNameShort = "Cppcheck" ?>
-  <?define ProductVersion = "2.13.3" ?>
+  <?define ProductVersion = "2.13.4" ?>
 
   <?define ProductManufacturer = "The Cppcheck team" ?>
   <?define ProductDescription = "Cppcheck is a tool for static analysis of C/C++ code" ?>
