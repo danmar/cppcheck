@@ -1,8 +1,4 @@
-Release Notes for Cppcheck 2.13.1
+Release Notes for Cppcheck 2.13.4
 
 Usability:
- * #12342: Show premium autosar/misra/cert style issues even if --enable is not used
- * #12344: Better validation of --premium options
-
-Safety critical:
- * #12341: If --premium=safety is used then go to "safety mode". Do not override this in cppcheck.cfg
+ * #12427: Speedup premium misra checking
