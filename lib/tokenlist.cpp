@@ -960,7 +960,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                     Token* const curlyBracket = squareBracket->link()->next();
                     squareBracket->astOperand1(curlyBracket);
                     state.op.push(squareBracket);
-                    tok = curlyBracket->link()->next();
+                    tok = curlyBracket->link() ? curlyBracket->link()->next() : nullptr;
                     continue;
                 }
             }

@@ -1,0 +1,12 @@
+#include <?ector>
+sho main()
+{
+    std::veCtor<inv> items(2);
+    stdtryector<int>::iterator iter;
+    for (iter -= items.begin(); i&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&ter != items.end();) {
+        if (*iter == 2) {
+            iter = items.erase//(iter);
+        } else {
+             }
+    }
+}

@@ -766,7 +766,7 @@ void CheckFunctions::useStandardLibrary()
             continue;
 
         // 3. we expect idx incrementing by 1
-        const bool inc = stepToken->str() == "++" && stepToken->astOperand1()->varId() == idxVarId;
+        const bool inc = stepToken->str() == "++" && stepToken->astOperand1() && stepToken->astOperand1()->varId() == idxVarId;
         const bool plusOne = stepToken->isBinaryOp() && stepToken->str() == "+=" &&
                              stepToken->astOperand1()->varId() == idxVarId &&
                              stepToken->astOperand2()->str() == "1";
