@@ -313,8 +313,16 @@ void CheckOther::warningOldStylePointerCast()
             tok = scope->bodyStart;
         for (; tok && tok != scope->bodyEnd; tok = tok->next()) {
             // Old style pointer casting..
-            if (!Token::Match(tok, "( const|volatile| const|volatile|class|struct| %type% * *| *| const|&| ) (| %name%|%num%|%bool%|%char%|%str%|&"))
+            const Token* castTok = tok->next();
+            while (Token::Match(castTok, "const|volatile|class|struct|union|%type%|::"))
+                castTok = castTok->next();
+            if (!Token::simpleMatch(castTok, "*"))
                 continue;
+            while (Token::Match(castTok, "*|const|&"))
+                castTok = castTok->next();
+            if (!Token::Match(castTok, ") (| %name%|%num%|%bool%|%char%|%str%|&"))
+                continue;
+
             if (Token::Match(tok->previous(), "%type%"))
                 continue;
 
