@@ -316,8 +316,11 @@ void CheckOther::warningOldStylePointerCast()
             if (tok->str() != "(")
                 continue;
             const Token* castTok = tok->next();
-            while (Token::Match(castTok, "const|volatile|class|struct|union|%type%|::"))
+            while (Token::Match(castTok, "const|volatile|class|struct|union|%type%|::")) {
                 castTok = castTok->next();
+                if (Token::simpleMatch(castTok, "<") && castTok->link())
+                    castTok = castTok->link()->next();
+            }
             if (castTok == tok->next() || !Token::simpleMatch(castTok, "*"))
                 continue;
             while (Token::Match(castTok, "*|const|&"))
