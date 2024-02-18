@@ -3327,6 +3327,9 @@ class MisraChecker:
             end_token = tok.link
             while tok != end_token:
                 tok = tok.next
+                if tok.str == 'sizeof' and tok.next.str == '(':
+                    tok = tok.next.link
+                    continue
                 if tok.str == "(" and tok.isCast:
                     tok = tok.link
                     continue
@@ -4254,6 +4257,7 @@ class MisraChecker:
                 self.addSuppressedRule(ruleNum)
 
     def report_config_error(self, location, errmsg):
+        errmsg = 'Because of missing configuration, misra checking is incomplete. There can be false negatives! ' + errmsg
         cppcheck_severity = 'error'
         error_id = 'config'
         if self.settings.verify:

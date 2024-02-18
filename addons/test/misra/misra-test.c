@@ -2035,3 +2035,13 @@ static void misra_22_10(void)
   f = strtod(inStr, NULL_PTR);
   if(errno != 0) {}
 }
+
+// #12448
+static void check_misra_config(void)
+{
+    if (sizeof(struct bar) == 0U) {} //no warning
+    if (sizeof(int abc) == 0U) {} //no warning
+    if (sizeof(xyz) == 0U) {} //no warning
+    if (sizeof(const pqr) == 0U) {} //no warning
+    if (sizeof(const int* const pqrs) == 0U) {} //no-warning
+}
