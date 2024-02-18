@@ -53,6 +53,20 @@
 #include <span>
 #endif
 
+// https://en.cppreference.com/w/cpp/io/manip/quoted
+void uninitvar_std_quoted(std::stringstream &ss, const std::string &input, const char delim, const char escape)
+{
+    ss << std::quoted(input);
+    ss << std::quoted(input, delim);
+    ss << std::quoted(input, delim, escape);
+    char delimChar;
+    // cppcheck-suppress uninitvar
+    ss << std::quoted(input, delimChar);
+    char escapeChar;
+    // cppcheck-suppress uninitvar
+    ss << std::quoted(input, delim, escapeChar);
+}
+
 int zerodiv_ldexp()
 {
     int i = std::ldexp(0.0, 42.0);
