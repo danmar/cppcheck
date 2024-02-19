@@ -2891,7 +2891,7 @@ private:
               "    x.dostuff();\n"
               "    const U& y = (const U&)(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) C-style reference casting\n",
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style reference casting\n"
                       "[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n",
                       errout.str());
         check("struct T : public U { void dostuff() const {}};\n"
@@ -2900,20 +2900,22 @@ private:
               "    U& y = (U&)(x);\n"
               "    y.mutate();\n" // to avoid warnings that y can be const
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style reference casting\n", errout.str());
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
               "    const U& y = (typename const U&)(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style reference casting\n"
+                      "[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n",
+                      errout.str());
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
               "    U& y = (typename U&)(x);\n"
               "    y.mutate();\n" // to avoid warnings that y can be const
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style reference casting\n", errout.str());
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
