@@ -611,3 +611,10 @@ void dontCrashEstimateSize(const SEstimateSize& s) {
     QString q = s.get();
     if (!q.isNull()) {}
 }
+
+bool knownConditionTrueFalse_QString_count(const QString& s) // #11036
+{
+    if (!s.isEmpty() && s.count("abc") == 0)
+        return false;
+    return true;
+}
