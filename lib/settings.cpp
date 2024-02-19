@@ -41,8 +41,9 @@ Settings::Settings()
     setCheckLevelNormal();
 }
 
-std::string Settings::loadCppcheckCfg()
+std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppressions)
 {
+    // TODO: this always needs to be run *after* the Settings has been filled
     static const std::string cfgFilename = "cppcheck.cfg";
     std::string fileName;
 #ifdef FILESDIR
@@ -51,7 +52,8 @@ std::string Settings::loadCppcheckCfg()
 #endif
     // cppcheck-suppress knownConditionTrueFalse
     if (fileName.empty()) {
-        fileName = Path::getPathFromFilename(exename) + cfgFilename;
+        // TODO: make sure that exename is set
+        fileName = Path::getPathFromFilename(settings.exename) + cfgFilename;
         if (!Path::isFile(fileName))
             return "";
     }
@@ -73,7 +75,7 @@ std::string Settings::loadCppcheckCfg()
             const auto& v = it->second;
             if (!v.is<std::string>())
                 return "'productName' is not a string";
-            cppcheckCfgProductName = v.get<std::string>();
+            settings.cppcheckCfgProductName = v.get<std::string>();
         }
     }
     {
@@ -82,7 +84,7 @@ std::string Settings::loadCppcheckCfg()
             const auto& v = it->second;
             if (!v.is<std::string>())
                 return "'about' is not a string";
-            cppcheckCfgAbout = v.get<std::string>();
+            settings.cppcheckCfgAbout = v.get<std::string>();
         }
     }
     {
@@ -97,9 +99,9 @@ std::string Settings::loadCppcheckCfg()
                     return "'addons' array entry is not a string";
                 const std::string &s = v.get<std::string>();
                 if (!Path::isAbsolute(s))
-                    addons.emplace(Path::join(Path::getPathFromFilename(fileName), s));
+                    settings.addons.emplace(Path::join(Path::getPathFromFilename(fileName), s));
                 else
-                    addons.emplace(s);
+                    settings.addons.emplace(s);
             }
         }
     }
@@ -114,7 +116,7 @@ std::string Settings::loadCppcheckCfg()
                 if (!v.is<std::string>())
                     return "'suppressions' array entry is not a string";
                 const std::string &s = v.get<std::string>();
-                const std::string err = supprs.nomsg.addSuppressionLine(s);
+                const std::string err = suppressions.nomsg.addSuppressionLine(s);
                 if (!err.empty())
                     return "could not parse suppression '" + s + "' - " + err;
             }
@@ -126,7 +128,7 @@ std::string Settings::loadCppcheckCfg()
             const auto& v = it->second;
             if (!v.is<bool>())
                 return "'safety' is not a bool";
-            safety = safety || v.get<bool>();
+            settings.safety = settings.safety || v.get<bool>();
         }
     }
 
