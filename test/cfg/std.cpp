@@ -25,6 +25,7 @@
 #define __STDC_WANT_LIB_EXT1__ 1
 #include <ctime>
 #include <cwchar>
+#include <deque>
 #include <exception>
 #include <fstream>
 #include <functional>
@@ -4949,4 +4950,10 @@ std::string global_scope_std() // #12355
 void unique_lock_const_ref(std::mutex& m)
 {
     std::unique_lock lock(m);
+}
+
+void eraseIteratorOutOfBounds_std_deque(std::deque<int>& x) // #8690
+{
+    // cppcheck-suppress eraseIteratorOutOfBounds
+    x.erase(x.end());
 }
