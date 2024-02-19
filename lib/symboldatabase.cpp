@@ -4707,11 +4707,11 @@ const Function * Function::getOverriddenFunctionRecursive(const ::Type* baseType
         }
 
         if (isDestructor()) {
-          auto it = std::find_if(parent->functionList.begin(), parent->functionList.end(), [](const Function& f) {
-              return f.isDestructor() && f.isImplicitlyVirtual();
-          });
-          if (it != parent->functionList.end())
-              return &*it;
+            auto it = std::find_if(parent->functionList.begin(), parent->functionList.end(), [](const Function& f) {
+                return f.isDestructor() && f.isImplicitlyVirtual();
+            });
+            if (it != parent->functionList.end())
+                return &*it;
         }
 
         if (!derivedFromType->derivedFrom.empty() && !derivedFromType->hasCircularDependencies() && !isDerivedFromItself(baseType->classScope->className, i.name)) {
