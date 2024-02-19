@@ -409,6 +409,7 @@ private:
         TEST_CASE(checkRefQualifiers);
         TEST_CASE(checkConditionBlock);
         TEST_CASE(checkUnknownCircularVar);
+        TEST_CASE(checkRequires);
 
         // #9052
         TEST_CASE(noCrash1);
@@ -7557,6 +7558,12 @@ private:
                                              "    const auto &bias = GEMM_CTX_ARG_STORAGE(bias);\n"
                                              "    auto &c = GEMM_CTX_ARG_STORAGE(c);\n"
                                              "}\n"));
+    }
+
+    void checkRequires()
+    {
+        ASSERT_NO_THROW(tokenizeAndStringify("template<class T, class U>\n"
+                                             "struct X { X(U) requires true {} };\n"));
     }
 
     void noCrash1() {

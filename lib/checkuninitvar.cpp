@@ -1287,7 +1287,7 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, const Library&
     if (Token::Match((derefValue ? derefValue : vartok)->astParent(), "(|=") && astIsRhs(derefValue ? derefValue : vartok)) {
         const Token *rhstok = derefValue ? derefValue : vartok;
         const Token *lhstok = rhstok->astParent()->astOperand1();
-        const Variable *lhsvar = lhstok->variable();
+        const Variable *lhsvar = lhstok ? lhstok->variable() : nullptr;
         if (lhsvar && lhsvar->isReference() && lhsvar->nameToken() == lhstok)
             return nullptr;
     }

@@ -828,6 +828,8 @@ namespace {
             Token* const tok2 = insertTokens(tok, rangeType);
             Token* const tok3 = insertTokens(tok2, mRangeTypeQualifiers);
 
+            tok2->originalName(tok->str());
+            tok3->originalName(tok->str());
             Token *after = tok3;
             while (Token::Match(after, "%name%|*|&|&&|::"))
                 after = after->next();
@@ -6342,7 +6344,8 @@ void Tokenizer::removeMacrosInGlobalScope()
             while (Token::Match(tok2, "%type% (") && tok2->isUpperCaseName())
                 tok2 = tok2->linkAt(1)->next();
 
-            if (Token::Match(tok, "%name% (") && Token::Match(tok2, "%name% *|&|::|<| %name%") && !Token::Match(tok2, "namespace|class|struct|union|private:|protected:|public:"))
+            if (Token::Match(tok, "%name% (") && Token::Match(tok2, "%name% *|&|::|<| %name%") &&
+                !Token::Match(tok2, "requires|namespace|class|struct|union|private:|protected:|public:"))
                 unknownMacroError(tok);
 
             if (Token::Match(tok, "%type% (") && Token::Match(tok2, "%type% (") && !Token::Match(tok2, "noexcept|throw") && isFunctionHead(tok2->next(), ":;{"))

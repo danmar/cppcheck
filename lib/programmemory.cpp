@@ -320,7 +320,7 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
             else
                 pm.setIntValue(tok, 0, then);
         }
-    } else if (tok->exprId() > 0) {
+    } else if (tok && tok->exprId() > 0) {
         if (endTok && findExpressionChanged(tok, tok->next(), endTok, settings, true))
             return;
         pm.setIntValue(tok, 0, then);

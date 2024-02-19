@@ -230,6 +230,8 @@ private:
         TEST_CASE(simplifyTypedefShadow);  // #4445 - shadow variable
 
         TEST_CASE(simplifyTypedefMacro);
+
+        TEST_CASE(simplifyTypedefOriginalName);
     }
 
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
@@ -4130,6 +4132,62 @@ private:
                             "}";
         ASSERT_EQUALS("void foo ( uint32_t prev_segment ) { if ( prev_segment == ( ( uint32_t ) 12 ) ) { } }",
                       simplifyTypedefP(code));
+    }
+
+    void simplifyTypedefOriginalName() {
+        const char code[] = "typedef unsigned char uint8_t;"
+                            "typedef float (*rFunctionPointer_fp)(uint8_t, uint8_t);"
+                            "typedef enum eEnumDef {"
+                            "  ABC = 0,"
+                            "}eEnum_t;"
+                            "typedef enum {"
+                            "  ABC = 0,"
+                            "}eEnum2_t;"
+                            "typedef short int16_t;"
+                            "typedef struct stStructDef {"
+                            "  int16_t swA;"
+                            "}stStruct_t;"
+                            "double endOfTypeDef;"
+                            "eEnum2_t enum2Type;"
+                            "stStruct_t structType;"
+                            "eEnum_t enumType;"
+                            "uint8_t t;"
+                            "void test(rFunctionPointer_fp functionPointer);";
+
+        Tokenizer tokenizer(settings1, this);
+        std::istringstream istr(code);
+        tokenizer.list.createTokens(istr, "file.c");
+        tokenizer.createLinks();
+        tokenizer.simplifyTypedef();
+
+        try {
+            tokenizer.validate();
+        }
+        catch (const InternalError&) {
+            ASSERT_EQUALS_MSG(false, true, "Validation of Tokenizer failed");
+        }
+
+        const Token* token;
+        // Get the Token which is at the end of all the Typedef's in this case i placed a variable
+        const Token* endOfTypeDef = Token::findsimplematch(tokenizer.list.front(), "endOfTypeDef", tokenizer.list.back());
+        // Search for the simplified char token and check its original Name
+        token = Token::findsimplematch(endOfTypeDef, "char", tokenizer.list.back());
+        ASSERT_EQUALS("uint8_t", token->originalName());
+        // Search for the simplified eEnumDef token and check its original Name
+        token = Token::findsimplematch(endOfTypeDef, "eEnumDef", tokenizer.list.back());
+        ASSERT_EQUALS("eEnum_t", token->originalName());
+        // Search for the eEnum2_t token as it does not have a name it should be the direct type name
+        token = Token::findsimplematch(endOfTypeDef, "eEnum2_t", tokenizer.list.back());
+        ASSERT_EQUALS("eEnum2_t", token->str());
+        // Search for the simplified stStructDef token and check its original Name
+        token = Token::findsimplematch(endOfTypeDef, "stStructDef", tokenizer.list.back());
+        ASSERT_EQUALS("stStruct_t", token->originalName());
+        // Search for the simplified short token and check its original Name, start from front to get the variable in the struct
+        token = Token::findsimplematch(tokenizer.list.front(), "short", tokenizer.list.back());
+        ASSERT_EQUALS("int16_t", token->originalName());
+        // Search for the simplified * token -> function pointer gets "(*" tokens infront of it
+        token = Token::findsimplematch(endOfTypeDef, "*", tokenizer.list.back());
+        ASSERT_EQUALS("rFunctionPointer_fp", token->originalName());
     }
 };
 
