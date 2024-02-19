@@ -1895,6 +1895,22 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) C-style pointer casting\n"
                       "[test.cpp:3]: (style) C-style pointer casting\n",
                       errout.str());
+
+        // #12446
+        checkOldStylePointerCast("namespace N { struct S {}; }\n"
+                                 "union U {\n"
+                                 "    int i;\n"
+                                 "    char c[4];\n"
+                                 "};\n"
+                                 "void f(void* p) {\n"
+                                 "    auto ps = (N::S*)p;\n"
+                                 "    auto pu = (union U*)p;\n"
+                                 "    auto pv = (std::vector<int>*)(p);\n"
+                                 "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (style) C-style pointer casting\n"
+                      "[test.cpp:8]: (style) C-style pointer casting\n"
+                      "[test.cpp:9]: (style) C-style pointer casting\n",
+                      errout.str());
     }
 
 #define checkInvalidPointerCast(...) checkInvalidPointerCast_(__FILE__, __LINE__, __VA_ARGS__)
