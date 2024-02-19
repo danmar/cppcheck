@@ -8549,6 +8549,15 @@ private:
                       "    }\n"
                       "};\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) The function 'Calculate' overrides a function in a base class but is not marked with a 'override' specifier.\n", errout.str());
+
+        checkOverride("struct S {\n" // #12439
+                      "    virtual ~S() = default;\n"
+                      "};\n"
+                      "struct D : S {\n"
+                      "    ~D() {}\n"
+                      "};\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) The destructor '~D' overrides a destructor in a base class but is not marked with a 'override' specifier.\n",
+                      errout.str());
     }
 
     void overrideCVRefQualifiers() {
