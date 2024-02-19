@@ -2891,7 +2891,9 @@ private:
               "    x.dostuff();\n"
               "    const U& y = (const U&)(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style reference casting\n",
+                      "[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n",
+                      errout.str());
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
