@@ -4281,6 +4281,10 @@ void SymbolDatabase::printXml(std::ostream &out) const
                         outs += accessControlToString(function->access);
                         outs +="\"";
                     }
+                    if (function->isOperator())
+                        outs += " isOperator=\"true\"";
+                    if (function->isExplicit())
+                        outs += " isExplicit=\"true\"";
                     if (function->hasOverrideSpecifier())
                         outs += " hasOverrideSpecifier=\"true\"";
                     if (function->hasFinalSpecifier())
