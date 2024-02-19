@@ -239,7 +239,7 @@ private:
     void checkCastIntToCharAndBackError(const Token *tok, const std::string &strFunctionName);
     void clarifyCalculationError(const Token *tok, const std::string &op);
     void clarifyStatementError(const Token* tok);
-    void cstyleCastError(const Token *tok);
+    void cstyleCastError(const Token *tok, bool isPtr = true);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive, bool toIsInt);
     void passedByValueError(const Variable* var, bool inconclusive, bool isRangeBasedFor = false);
     void constVariableError(const Variable *var, const Function *function);

@@ -1911,6 +1911,13 @@ private:
                       "[test.cpp:8]: (style) C-style pointer casting\n"
                       "[test.cpp:9]: (style) C-style pointer casting\n",
                       errout.str());
+
+        // #12447
+        checkOldStylePointerCast("void f(const int& i) {\n"
+                                 "  int& r = (int&)i;\n"
+                                 "  r = 0;\n"
+                                 "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) C-style reference casting\n", errout.str());
     }
 
 #define checkInvalidPointerCast(...) checkInvalidPointerCast_(__FILE__, __LINE__, __VA_ARGS__)
