@@ -32,31 +32,43 @@ def _call_process(arg):
 
 def test_assert():
     exitcode, stdout, stderr = _call_process('assert')
-    assert stderr.endswith("test-signalhandler.cpp:32: void my_assert(): Assertion `false' failed.\n"), stderr
+    if sys.platform == "darwin":
+        assert stderr.startswith("Assertion failed: (false), function my_assert, file test-signalhandler.cpp, line "), stderr
+    else:
+        assert stderr.endswith("test-signalhandler.cpp:32: void my_assert(): Assertion `false' failed.\n"), stderr
     lines = stdout.splitlines()
     assert lines[0] == 'Internal error: cppcheck received signal SIGABRT - abort or assertion'
-    assert lines[1] == 'Callstack:'
-    assert lines[2].endswith('my_abort()'), lines[2]  # TODO: wrong function
-    assert lines[len(lines)-1] == 'Please report this to the cppcheck developers!'
+    # no stacktrace of MacOs
+    if sys.platform != "darwin":
+        assert lines[1] == 'Callstack:'
+        assert lines[2].endswith('my_abort()'), lines[2]  # TODO: wrong function
+        assert lines[len(lines)-1] == 'Please report this to the cppcheck developers!'
 
 
 def test_abort():
     exitcode, stdout, stderr = _call_process('abort')
     lines = stdout.splitlines()
     assert lines[0] == 'Internal error: cppcheck received signal SIGABRT - abort or assertion'
-    assert lines[1] == 'Callstack:'
-    assert lines[2].endswith('my_segv()'), lines[2]  # TODO: wrong function
-    assert lines[len(lines)-1] == 'Please report this to the cppcheck developers!'
+    # no stacktrace on MaCos
+    if sys.platform != "darwin":
+        assert lines[1] == 'Callstack:'
+        assert lines[2].endswith('my_segv()'), lines[2]  # TODO: wrong function
+        assert lines[len(lines)-1] == 'Please report this to the cppcheck developers!'
 
 
 def test_segv():
     exitcode, stdout, stderr = _call_process('segv')
     assert stderr == ''
     lines = stdout.splitlines()
-    assert lines[0] == 'Internal error: cppcheck received signal SIGSEGV - SEGV_MAPERR (reading at 0x0).'
-    assert lines[1] == 'Callstack:'
-    assert lines[2].endswith('my_segv()'), lines[2]  # TODO: wrong function
-    assert lines[len(lines)-1] == 'Please report this to the cppcheck developers!'
+    if sys.platform == "darwin":
+        assert lines[0] == 'Internal error: cppcheck received signal SIGSEGV - SEGV_MAPERR (at 0x0).'
+    else:
+        assert lines[0] == 'Internal error: cppcheck received signal SIGSEGV - SEGV_MAPERR (reading at 0x0).'
+    # no stacktrace on MacOS
+    if sys.platform != "darwin":
+        assert lines[1] == 'Callstack:'
+        assert lines[2].endswith('my_segv()'), lines[2]  # TODO: wrong function
+        assert lines[len(lines)-1] == 'Please report this to the cppcheck developers!'
 
 
 # TODO: make this work
