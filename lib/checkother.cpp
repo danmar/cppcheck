@@ -2403,17 +2403,17 @@ namespace {
 void CheckOther::checkDuplicateExpression()
 {
     {
-    const bool styleEnabled = mSettings->severity.isEnabled(Severity::style);
-    const bool premiumEnabled = mSettings->isPremiumEnabled("oppositeExpression") ||
-                                mSettings->isPremiumEnabled("duplicateExpression") ||
-                                mSettings->isPremiumEnabled("duplicateAssignExpression") ||
-                                mSettings->isPremiumEnabled("duplicateExpressionTernary") ||
-                                mSettings->isPremiumEnabled("duplicateValueTernary") ||
-                                mSettings->isPremiumEnabled("selfAssignment") ||
-                                mSettings->isPremiumEnabled("knownConditionTrueFalse");
+        const bool styleEnabled = mSettings->severity.isEnabled(Severity::style);
+        const bool premiumEnabled = mSettings->isPremiumEnabled("oppositeExpression") ||
+                                    mSettings->isPremiumEnabled("duplicateExpression") ||
+                                    mSettings->isPremiumEnabled("duplicateAssignExpression") ||
+                                    mSettings->isPremiumEnabled("duplicateExpressionTernary") ||
+                                    mSettings->isPremiumEnabled("duplicateValueTernary") ||
+                                    mSettings->isPremiumEnabled("selfAssignment") ||
+                                    mSettings->isPremiumEnabled("knownConditionTrueFalse");
 
-    if (!styleEnabled && !premiumEnabled)
-        return;
+        if (!styleEnabled && !premiumEnabled)
+            return;
     }
 
     logChecker("CheckOther::checkDuplicateExpression"); // style,warning
