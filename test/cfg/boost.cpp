@@ -13,6 +13,8 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/smart_ptr/scoped_array.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/lock_guard.hpp>
 
 BOOST_FORCEINLINE void boost_forceinline_test()
 {}
@@ -94,4 +96,10 @@ void containerOutOfBounds_scoped_array(std::size_t n) // #12356
     boost::scoped_array<int> d(new int[n] {});
     for (std::size_t i = 0; i < n; i++)
         if (d[i]) {}
+}
+
+void lock_guard_finiteLifetime(boost::mutex& m)
+{
+    // cppcheck-suppress unusedScopedObject
+    boost::lock_guard<boost::mutex>(m);
 }
