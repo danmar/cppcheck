@@ -101,5 +101,5 @@ void containerOutOfBounds_scoped_array(std::size_t n) // #12356
 void lock_guard_finiteLifetime(boost::mutex& m)
 {
     // cppcheck-suppress unusedScopedObject
-    boost::lock_guard<boost::mutex>(m);
+    boost::lock_guard<boost::mutex>{ m };
 }
