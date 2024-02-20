@@ -8027,7 +8027,7 @@ private:
         errout.str("");
 
         // Check..
-        const Settings settings = settingsBuilder().severity(Severity::warning).certainty(Certainty::inconclusive, inconclusive).build();
+        const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::style).certainty(Certainty::inconclusive, inconclusive).build();
 
         Preprocessor preprocessor(settings);
 

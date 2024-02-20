@@ -2891,6 +2891,9 @@ void CheckClass::virtualFunctionCallInConstructorError(
     const std::list<const Token *> & tokStack,
     const std::string &funcname)
 {
+    if (scopeFunction && !mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("virtualCallInConstructor"))
+        return;
+
     const char * scopeFunctionTypeName = scopeFunction ? getFunctionTypeName(scopeFunction->type) : "constructor";
 
     ErrorPath errorPath;
