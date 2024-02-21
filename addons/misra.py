@@ -430,11 +430,11 @@ def is_composite_expr(expr, composite_operator=False):
         return False
 
     if not composite_operator:
-        if (expr.str in ('+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":", '~')):
-            return is_composite_expr(expr.astOperand1,True) or is_composite_expr(expr.astOperand2, True)
         if expr.str == '?' and simpleMatch(expr.astOperand2, ':'):
             colon = expr.astOperand2
             return is_composite_expr(colon.astOperand1,True) or is_composite_expr(colon.astOperand2, True)
+        if (expr.str in ('+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":", '~')):
+            return is_composite_expr(expr.astOperand1,True) or is_composite_expr(expr.astOperand2, True)
         return False
 
     # non constant expression?
