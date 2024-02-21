@@ -1911,6 +1911,13 @@ private:
                       "[test.cpp:8]: (style) C-style pointer casting\n"
                       "[test.cpp:9]: (style) C-style pointer casting\n",
                       errout.str());
+
+        // #12447
+        checkOldStylePointerCast("void f(const int& i) {\n"
+                                 "  int& r = (int&)i;\n"
+                                 "  r = 0;\n"
+                                 "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) C-style reference casting\n", errout.str());
     }
 
 #define checkInvalidPointerCast(...) checkInvalidPointerCast_(__FILE__, __LINE__, __VA_ARGS__)
@@ -2884,27 +2891,31 @@ private:
               "    x.dostuff();\n"
               "    const U& y = (const U&)(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style reference casting\n"
+                      "[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n",
+                      errout.str());
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
               "    U& y = (U&)(x);\n"
               "    y.mutate();\n" // to avoid warnings that y can be const
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style reference casting\n", errout.str());
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
               "    const U& y = (typename const U&)(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style reference casting\n"
+                      "[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n",
+                      errout.str());
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
               "    U& y = (typename U&)(x);\n"
               "    y.mutate();\n" // to avoid warnings that y can be const
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style reference casting\n", errout.str());
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"

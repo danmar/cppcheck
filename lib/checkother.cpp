@@ -321,11 +321,17 @@ void CheckOther::warningOldStylePointerCast()
                 if (Token::simpleMatch(castTok, "<") && castTok->link())
                     castTok = castTok->link()->next();
             }
-            if (castTok == tok->next() || !Token::simpleMatch(castTok, "*"))
+            if (castTok == tok->next())
                 continue;
-            while (Token::Match(castTok, "*|const|&"))
+            bool isPtr = false, isRef = false;
+            while (Token::Match(castTok, "*|const|&")) {
+                if (castTok->str() == "*")
+                    isPtr = true;
+                else if (castTok->str() == "&")
+                    isRef = true;
                 castTok = castTok->next();
-            if (!Token::Match(castTok, ") (| %name%|%num%|%bool%|%char%|%str%|&"))
+            }
+            if ((!isPtr && !isRef) || !Token::Match(castTok, ") (| %name%|%num%|%bool%|%char%|%str%|&"))
                 continue;
 
             if (Token::Match(tok->previous(), "%type%"))
@@ -344,16 +350,17 @@ void CheckOther::warningOldStylePointerCast()
                 continue;
 
             if (typeTok->tokType() == Token::eType || typeTok->tokType() == Token::eName)
-                cstyleCastError(tok);
+                cstyleCastError(tok, isPtr);
         }
     }
 }
 
-void CheckOther::cstyleCastError(const Token *tok)
+void CheckOther::cstyleCastError(const Token *tok, bool isPtr)
 {
+    const std::string type = isPtr ? "pointer" : "reference";
     reportError(tok, Severity::style, "cstyleCast",
-                "C-style pointer casting\n"
-                "C-style pointer casting detected. C++ offers four different kinds of casts as replacements: "
+                "C-style " + type + " casting\n"
+                "C-style " + type + " casting detected. C++ offers four different kinds of casts as replacements: "
                 "static_cast, const_cast, dynamic_cast and reinterpret_cast. A C-style cast could evaluate to "
                 "any of those automatically, thus it is considered safer if the programmer explicitly states "
                 "which kind of cast is expected.", CWE398, Certainty::normal);
