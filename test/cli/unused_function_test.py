@@ -14,23 +14,17 @@ __project_dir_sep = __project_dir + os.path.sep
 # TODO: make this a generic helper function
 def __create_compdb(tmpdir, projpath):
     compile_commands = os.path.join(tmpdir, 'compile_commands.json')
-    j = [
-        {
+    files = []
+    for f in os.listdir(projpath):
+        files.append(f)
+    files.sort()
+    j = []
+    for f in files:
+        j.append({
             'directory': projpath,
-            'file': os.path.join(projpath, '1.c'),
-            'command': 'gcc -c 1.c'
-        },
-        {
-            'directory': projpath,
-            'file': os.path.join(projpath, '2.c'),
-            'command': 'gcc -c 2.c'
-        },
-        {
-            'directory': projpath,
-            'file': os.path.join(projpath, '3.c'),
-            'command': 'gcc -c 3.c'
-        }
-        ]
+            'file': os.path.join(projpath, f),
+            'command': 'gcc -c {}'.format(f)
+        })
     with open(compile_commands, 'wt') as f:
         f.write(json.dumps(j, indent=4))
     return compile_commands
@@ -132,7 +126,8 @@ def test_unused_functions_builddir_j(tmpdir):
     assert stderr.splitlines() == [
         "{}1.c:4:0: style: The function 'f1' is never used. [unusedFunction]".format(__project_dir_sep),
         "{}2.c:4:0: style: The function 'f2' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
+        "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep),
+        "{}4.c:4:0: style: The function 'f4_1' is never used. [unusedFunction]".format(__project_dir_sep)
     ]
     assert ret == 0, stdout
 
@@ -168,7 +163,8 @@ def test_unused_functions_builddir_project_j(tmpdir):
     assert stderr.splitlines() == [
         "{}1.c:4:0: style: The function 'f1' is never used. [unusedFunction]".format(__project_dir_sep),
         "{}2.c:4:0: style: The function 'f2' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
+        "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep),
+        "{}4.c:4:0: style: The function 'f4_1' is never used. [unusedFunction]".format(__project_dir_sep)
     ]
     assert ret == 0, stdout
 
@@ -208,6 +204,7 @@ def test_unused_functions_builddir_compdb_j(tmpdir):
     assert stderr.splitlines() == [
         "{}1.c:4:0: style: The function 'f1' is never used. [unusedFunction]".format(__project_dir_sep),
         "{}2.c:4:0: style: The function 'f2' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
+        "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep),
+        "{}4.c:4:0: style: The function 'f4_1' is never used. [unusedFunction]".format(__project_dir_sep)
     ]
     assert ret == 0, stdout

@@ -96,9 +96,9 @@ private:
 
         // Check for unused functions..
         CheckUnusedFunctions checkUnusedFunctions;
-        checkUnusedFunctions.parseTokens(tokenizer, "someFile.c", settings1);
+        checkUnusedFunctions.parseTokens(tokenizer, settings1);
         // check() returns error if and only if errout is not empty.
-        if ((checkUnusedFunctions.check)(*this, settings1)) {
+        if ((checkUnusedFunctions.check)(settings1, *this)) {
             ASSERT(!errout.str().empty());
         } else {
             ASSERT_EQUALS("", errout.str());
@@ -556,11 +556,11 @@ private:
             std::istringstream istr(code);
             ASSERT(tokenizer2.tokenize(istr, fname.str().c_str()));
 
-            c.parseTokens(tokenizer2, "someFile.c", settings);
+            c.parseTokens(tokenizer2, settings);
         }
 
         // Check for unused functions..
-        (c.check)(*this, settings);
+        (c.check)(settings, *this);
 
         ASSERT_EQUALS("[test1.cpp:1]: (style) The function 'f' is never used.\n", errout.str());
     }
