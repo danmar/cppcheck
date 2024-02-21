@@ -6406,6 +6406,14 @@ private:
                         "    f(&b);\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct S { int x; };\n" // #12394
+                        "int f() {\n"
+                        "    struct S s[1];\n"
+                        "    s->x = 0;\n"
+                        "    return s[0].x;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
