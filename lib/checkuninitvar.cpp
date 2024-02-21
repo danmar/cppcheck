@@ -183,7 +183,7 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
         if (!tok)
             continue;
 
-        if (tok->astParent() && Token::simpleMatch(tok->astParent()->previous(), "for (") &&
+        if (tok->astParent() && Token::simpleMatch(tok->astParent()->previous(), "for (") && Token::simpleMatch(tok->astParent()->link()->next(), "{") &&
             checkLoopBody(tok->astParent()->link()->next(), var, var.isArray() ? ARRAY : NO_ALLOC, emptyString, true))
             continue;
 
