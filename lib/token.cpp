@@ -1578,6 +1578,10 @@ std::pair<const Token *, const Token *> Token::findExpressionStartEndTokens() co
     end = goToRightParenthesis(start, end);
     if (Token::simpleMatch(end, "{"))
         end = end->link();
+
+    if (succeeds(top, end))
+        throw InternalError(end, "Cannot find end of expression");
+
     return std::pair<const Token *, const Token *>(start,end);
 }
 
