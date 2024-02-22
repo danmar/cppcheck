@@ -454,8 +454,11 @@ static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(co
                 return ret;
         }
         if (Token::Match(tok2, "%oror%|&&|?")) {
-            tok2 = tok2->findExpressionStartEndTokens().second;
-            continue;
+            const Token* end = tok2->findExpressionStartEndTokens().second;
+            if (succeeds(end, tok2)) {
+                tok2 = end;
+                continue;
+            }
         }
         if (tok2->variable() != argvar)
             continue;
