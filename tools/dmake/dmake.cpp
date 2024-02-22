@@ -476,8 +476,10 @@ int main(int argc, char **argv)
          << "        matchcompiler_S := $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py)\n"
          << "    endif\n"
          << "    libcppdir:=build\n"
-         << "else\n"
+         << "else ifeq ($(MATCHCOMPILER),)\n"
          << "    libcppdir:=lib\n"
+         << "else\n"
+         << "    $(error invalid MATCHCOMPILER value '$(MATCHCOMPILER)')\n"
          << "endif\n\n";
 
     // avoid undefined variable

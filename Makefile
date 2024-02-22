@@ -29,8 +29,10 @@ ifeq ($(MATCHCOMPILER),yes)
         matchcompiler_S := $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py)
     endif
     libcppdir:=build
-else
+else ifeq ($(MATCHCOMPILER),)
     libcppdir:=lib
+else
+    $(error invalid MATCHCOMPILER value '$(MATCHCOMPILER)')
 endif
 
 ifndef CPPFLAGS
