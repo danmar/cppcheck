@@ -22,7 +22,11 @@ option(WARNINGS_ARE_ERRORS  "Treat warnings as errors"                          
 option(EXTERNALS_AS_SYSTEM  "Treat externals as system includes"                            OFF)
 
 set(USE_MATCHCOMPILER "Auto" CACHE STRING "Usage of match compiler")
-set_property(CACHE USE_MATCHCOMPILER PROPERTY STRINGS Auto Off On Verify) 
+set(_MATCHCOMPILER_STRINGS Auto Off On Verify)
+set_property(CACHE USE_MATCHCOMPILER PROPERTY STRINGS ${_MATCHCOMPILER_STRINGS})
+if (NOT ${USE_MATCHCOMPILER} IN_LIST _MATCHCOMPILER_STRINGS)
+    message(FATAL_ERROR "Invalid USE_MATCHCOMPILER value '${USE_MATCHCOMPILER}'")
+endif()
 if (USE_MATCHCOMPILER STREQUAL "Auto")
     if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(USE_MATCHCOMPILER_OPT "On")
