@@ -1,5 +1,6 @@
 import logging
 import os
+import signal
 import subprocess
 
 # Create Cppcheck project file
@@ -78,7 +79,30 @@ def cppcheck(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_exe
 
     logging.info(exe + ' ' + ' '.join(args))
     p = subprocess.Popen([exe] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, cwd=cwd)
-    comm = p.communicate(timeout=timeout)
+    try:
+        comm = p.communicate(timeout=timeout)
+        return_code = p.returncode
+        p = None
+    except subprocess.TimeoutExpired:
+        import psutil
+        # terminate all the child processes
+        child_procs = psutil.Process(p.pid).children(recursive=True)
+        if len(child_procs) > 0:
+            for child in child_procs:
+                child.terminate()
+            try:
+                # call with timeout since it might be stuck
+                p.communicate(timeout=5)
+                p = None
+            except subprocess.TimeoutExpired:
+                pass
+        raise
+    finally:
+        if p:
+            # sending the signal to the process groups causes the parent Python process to terminate as well
+            #os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
+            p.terminate()
+            comm = p.communicate()
     stdout = comm[0].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
     stderr = comm[1].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
     if remove_checkers_report:
@@ -95,7 +119,7 @@ def cppcheck(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_exe
                 stderr = ''
             elif stderr[pos - 1] == '\n':
                 stderr = stderr[:pos]
-    return p.returncode, stdout, stderr
+    return return_code, stdout, stderr
 
 
 def assert_cppcheck(args, ec_exp=None, out_exp=None, err_exp=None, env=None):
