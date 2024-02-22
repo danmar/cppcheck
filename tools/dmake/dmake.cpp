@@ -451,9 +451,6 @@ int main(int argc, char **argv)
     fout << "# To compile with rules, use 'make HAVE_RULES=yes'\n";
     makeConditionalVariable(fout, "HAVE_RULES", "no");
 
-    fout << "ifdef SRCDIR\n"
-         << "    $(error Usage of SRCDIR to activate match compiler has been removed. Use MATCHCOMPILER=yes instead.)\n"
-         << "endif\n";
     // avoid undefined variable
     fout << "ifndef MATCHCOMPILER\n"
          << "    MATCHCOMPILER=\n"

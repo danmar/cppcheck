@@ -8,9 +8,6 @@ ifndef HAVE_RULES
     HAVE_RULES=no
 endif
 
-ifdef SRCDIR
-    $(error Usage of SRCDIR to activate match compiler has been removed. Use MATCHCOMPILER=yes instead.)
-endif
 ifndef MATCHCOMPILER
     MATCHCOMPILER=
 endif
