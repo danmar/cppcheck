@@ -27,6 +27,7 @@
 #include <cwchar>
 #include <deque>
 #include <exception>
+#include <filesystem>
 #include <fstream>
 #include <functional>
 #ifndef __STDC_NO_THREADS__
@@ -53,6 +54,16 @@
 #ifdef __cpp_lib_span
 #include <span>
 #endif
+
+bool ignoredReturnValue_std_filesystem_exists(const std::filesystem::path &path, std::error_code& ec)
+{
+    // cppcheck-suppress ignoredReturnValue
+    std::filesystem::exists(path);
+    // cppcheck-suppress ignoredReturnValue
+    std::filesystem::exists(path, ec);
+    const bool b {std::filesystem::exists(path)};
+    return b && std::filesystem::exists(path, ec);
+}
 
 // https://en.cppreference.com/w/cpp/io/manip/quoted
 void uninitvar_std_quoted(std::stringstream &ss, const std::string &input, const char delim, const char escape)
