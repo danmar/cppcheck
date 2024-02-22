@@ -1911,6 +1911,13 @@ private:
                       "[test.cpp:8]: (style) C-style pointer casting\n"
                       "[test.cpp:9]: (style) C-style pointer casting\n",
                       errout.str());
+
+        // #12447
+        checkOldStylePointerCast("void f(const int& i) {\n"
+                                 "  int& r = (int&)i;\n"
+                                 "  r = 0;\n"
+                                 "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) C-style reference casting\n", errout.str());
     }
 
 #define checkInvalidPointerCast(...) checkInvalidPointerCast_(__FILE__, __LINE__, __VA_ARGS__)
@@ -2884,27 +2891,31 @@ private:
               "    x.dostuff();\n"
               "    const U& y = (const U&)(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style reference casting\n"
+                      "[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n",
+                      errout.str());
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
               "    U& y = (U&)(x);\n"
               "    y.mutate();\n" // to avoid warnings that y can be const
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style reference casting\n", errout.str());
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
               "    const U& y = (typename const U&)(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style reference casting\n"
+                      "[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n",
+                      errout.str());
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
               "    U& y = (typename U&)(x);\n"
               "    y.mutate();\n" // to avoid warnings that y can be const
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style reference casting\n", errout.str());
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
@@ -5467,26 +5478,26 @@ private:
               "    x = x;\n"
               "    return 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Redundant assignment of 'x' to itself.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Redundant assignment of 'x' to itself.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    int x = x;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of 'x' to itself.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant assignment of 'x' to itself.\n", errout.str());
 
         check("struct A { int b; };\n"
               "void foo(A* a1, A* a2) {\n"
               "    a1->b = a1->b;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of 'a1->b' to itself.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant assignment of 'a1->b' to itself.\n", errout.str());
 
         check("int x;\n"
               "void f()\n"
               "{\n"
               "    x = x = 3;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Redundant assignment of 'x' to itself.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Redundant assignment of 'x' to itself.\n", errout.str());
 
         // #4073 (segmentation fault)
         check("void Foo::myFunc( int a )\n"
@@ -5514,7 +5525,7 @@ private:
               "    BAR *x = getx();\n"
               "    x = x;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of 'x' to itself.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant assignment of 'x' to itself.\n", errout.str());
 
         // #2502 - non-primitive type -> there might be some side effects
         check("void foo()\n"
@@ -5546,7 +5557,7 @@ private:
               "void f() {\n"
               "    i = i;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of 'i' to itself.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant assignment of 'i' to itself.\n", errout.str());
 
         // #4291 - id for variables accessed through 'this'
         check("class Foo {\n"
@@ -5556,7 +5567,7 @@ private:
               "void Foo::func() {\n"
               "    this->var = var;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Redundant assignment of 'this->var' to itself.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style) Redundant assignment of 'this->var' to itself.\n", errout.str());
 
         check("class Foo {\n"
               "    int var;\n"
@@ -5575,7 +5586,7 @@ private:
               "void f() {\n"
               "    struct callbacks ops = { .s = ops.s };\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:6]: (warning) Redundant assignment of 'something' to itself.\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (style) Redundant assignment of 'something' to itself.\n", "", errout.str());
 
         check("class V\n"
               "{\n"
@@ -5590,9 +5601,9 @@ private:
               "    }\n"
               "    double x, y, z;\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:10]: (warning) Redundant assignment of 'x' to itself.\n"
-                      "[test.cpp:10]: (warning) Redundant assignment of 'y' to itself.\n"
-                      "[test.cpp:10]: (warning) Redundant assignment of 'z' to itself.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (style) Redundant assignment of 'x' to itself.\n"
+                      "[test.cpp:10]: (style) Redundant assignment of 'y' to itself.\n"
+                      "[test.cpp:10]: (style) Redundant assignment of 'z' to itself.\n", errout.str());
 
         check("void f(int i) { i = !!i; }");
         ASSERT_EQUALS("", errout.str());
@@ -5602,7 +5613,7 @@ private:
               "    int &ref = x;\n"
               "    ref = x;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Redundant assignment of 'ref' to itself.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Redundant assignment of 'ref' to itself.\n", errout.str());
 
         check("class Foo {\n" // #9850
               "    int i{};\n"
@@ -7057,7 +7068,7 @@ private:
               "        int var = buffer[index - 1];\n"
               "        return buffer[index - 1] - var;\n"  // <<
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Same expression on both sides of '-'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Same expression on both sides of '-' because 'buffer[index-1]' and 'var' represent the same value.\n", errout.str());
     }
 
     void duplicateExpression13() { //#7899
@@ -10750,8 +10761,8 @@ private:
               "  int x = x = y + 1;\n"
               "}", "test.c");
         ASSERT_EQUALS(
-            "[test.c:2]: (warning) Redundant assignment of 'x' to itself.\n"
-            "[test.c:2]: (warning) Redundant assignment of 'x' to itself.\n",   // duplicate
+            "[test.c:2]: (style) Redundant assignment of 'x' to itself.\n"
+            "[test.c:2]: (style) Redundant assignment of 'x' to itself.\n",   // duplicate
             errout.str());
     }
 

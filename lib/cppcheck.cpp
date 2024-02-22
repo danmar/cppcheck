@@ -633,9 +633,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
     try {
         if (mSettings.library.markupFile(filename)) {
-            if (mSettings.checks.isEnabled(Checks::unusedFunction) &&
-                mSettings.useSingleJob() &&
-                mSettings.buildDir.empty()) {
+            if (mSettings.isUnusedFunctionCheckEnabled() && mSettings.buildDir.empty()) {
                 Tokenizer tokenizer(mSettings, this);
                 if (fileStream)
                     tokenizer.list.createTokens(*fileStream, filename);
@@ -1021,7 +1019,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     // In jointSuppressionReport mode, unmatched suppressions are
     // collected after all files are processed
     if (!mSettings.useSingleJob() && (mSettings.severity.isEnabled(Severity::information) || mSettings.checkConfiguration)) {
-        Suppressions::reportUnmatchedSuppressions(mSettings.nomsg.getUnmatchedLocalSuppressions(filename, isUnusedFunctionCheckEnabled()), *this);
+        Suppressions::reportUnmatchedSuppressions(mSettings.nomsg.getUnmatchedLocalSuppressions(filename, mSettings.isUnusedFunctionCheckEnabled()), *this);
     }
 
     mErrorList.clear();
@@ -1107,9 +1105,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mSettings.buildDir.empty()) {
         unusedFunctionsChecker.parseTokens(tokenizer, tokenizer.list.getFiles().front().c_str(), mSettings);
     }
-    if (mSettings.checks.isEnabled(Checks::unusedFunction) &&
-        mSettings.useSingleJob() &&
-        mSettings.buildDir.empty()) {
+    if (mSettings.isUnusedFunctionCheckEnabled() && mSettings.buildDir.empty()) {
         CheckUnusedFunctions::parseTokens(tokenizer, mSettings);
     }
 
@@ -1865,11 +1861,6 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<
 
     for (Check::FileInfo *fi : fileInfoList)
         delete fi;
-}
-
-bool CppCheck::isUnusedFunctionCheckEnabled() const
-{
-    return (mSettings.useSingleJob() && mSettings.checks.isEnabled(Checks::unusedFunction));
 }
 
 void CppCheck::removeCtuInfoFiles(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings)

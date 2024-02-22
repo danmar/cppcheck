@@ -3598,6 +3598,15 @@ private:
                       "    AutoCloseFD fd = open(\"abc\", O_RDONLY | O_CLOEXEC);\n"
                       "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkNoMemset("struct C {\n" // #12313
+                      "    char* p;\n"
+                      "    C(char* ptr) : p(ptr) {}\n"
+                      "};\n"
+                      "void f() {\n"
+                      "    C c = strdup(\"abc\");\n"
+                      "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkThisSubtraction(code) checkThisSubtraction_(code, __FILE__, __LINE__)
@@ -8027,7 +8036,7 @@ private:
         errout.str("");
 
         // Check..
-        const Settings settings = settingsBuilder().severity(Severity::warning).certainty(Certainty::inconclusive, inconclusive).build();
+        const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::style).certainty(Certainty::inconclusive, inconclusive).build();
 
         Preprocessor preprocessor(settings);
 

@@ -1623,7 +1623,10 @@ namespace {
             return;
         const Token* op2 = tok->astParent()->astOperand2();
         if (op2 && op2->exprId() == 0 &&
-            !(isLambdaCaptureList(op2) || (op2->str() == "(" && isLambdaCaptureList(op2->astOperand1())) || Token::simpleMatch(op2, "{ }")))
+            !((tok->astParent()->astParent() && tok->astParent()->isAssignmentOp() && tok->astParent()->astParent()->isAssignmentOp()) ||
+              isLambdaCaptureList(op2) ||
+              (op2->str() == "(" && isLambdaCaptureList(op2->astOperand1())) ||
+              Token::simpleMatch(op2, "{ }")))
             return;
 
         if (tok->astParent()->isExpandedMacro() || Token::Match(tok->astParent(), "++|--")) {
@@ -5030,7 +5033,7 @@ static const Token* skipPointers(const Token* tok)
 {
     while (Token::Match(tok, "*|&|&&") || (Token::Match(tok, "( [*&]") && Token::Match(tok->link()->next(), "(|["))) {
         tok = tok->next();
-        if (tok->strAt(-1) == "(" && Token::Match(tok, "%type% ::"))
+        if (tok && tok->strAt(-1) == "(" && Token::Match(tok, "%type% ::"))
             tok = tok->tokAt(2);
     }
 

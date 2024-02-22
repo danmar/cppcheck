@@ -274,6 +274,8 @@ static bool isBasicForLoop(const Token* tok)
 void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Token* endTok, const Settings* settings, bool then)
 {
     auto eval = [&](const Token* t) -> std::vector<MathLib::bigint> {
+        if (!t)
+            return std::vector<MathLib::bigint>{};
         if (t->hasKnownIntValue())
             return {t->values().front().intvalue};
         MathLib::bigint result = 0;

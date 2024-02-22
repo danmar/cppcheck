@@ -1429,7 +1429,7 @@ void CheckClass::checkMemset()
                     const std::set<const Scope *> parsedTypes;
                     checkMemsetType(scope, tok, type, false, parsedTypes);
                 }
-            } else if (tok->variable() && tok->variable()->typeScope() && Token::Match(tok, "%var% = %name% (")) {
+            } else if (tok->variable() && tok->variable()->isPointer() && tok->variable()->typeScope() && Token::Match(tok, "%var% = %name% (")) {
                 const Library::AllocFunc* alloc = mSettings->library.getAllocFuncInfo(tok->tokAt(2));
                 if (!alloc)
                     alloc = mSettings->library.getReallocFuncInfo(tok->tokAt(2));
@@ -2891,6 +2891,9 @@ void CheckClass::virtualFunctionCallInConstructorError(
     const std::list<const Token *> & tokStack,
     const std::string &funcname)
 {
+    if (scopeFunction && !mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("virtualCallInConstructor"))
+        return;
+
     const char * scopeFunctionTypeName = scopeFunction ? getFunctionTypeName(scopeFunction->type) : "constructor";
 
     ErrorPath errorPath;
