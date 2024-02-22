@@ -6487,7 +6487,6 @@ static const Token* parsedecl(const Token* type,
                               ValueType* const valuetype,
                               ValueType::Sign defaultSignedness,
                               const Settings& settings,
-                              bool isCpp,
                               SourceLocation loc = SourceLocation::current());
 
 void SymbolDatabase::setValueType(Token* tok, const Variable& var, const SourceLocation &loc)
@@ -6509,7 +6508,7 @@ void SymbolDatabase::setValueType(Token* tok, const Variable& var, const SourceL
         valuetype.containerTypeToken = var.valueType()->containerTypeToken;
     }
     valuetype.smartPointerType = var.smartPointerType();
-    if (parsedecl(var.typeStartToken(), &valuetype, mDefaultSignedness, mSettings, mIsCpp)) {
+    if (parsedecl(var.typeStartToken(), &valuetype, mDefaultSignedness, mSettings)) {
         if (tok->str() == "." && tok->astOperand1()) {
             const ValueType * const vt = tok->astOperand1()->valueType();
             if (vt && (vt->constness & 1) != 0)
@@ -6608,7 +6607,7 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, const 
     if (vt1 && vt1->container && vt1->containerTypeToken && Token::Match(parent, ". %name% (") &&
         isContainerYieldElement(vt1->container->getYield(parent->next()->str()))) {
         ValueType item;
-        if (parsedecl(vt1->containerTypeToken, &item, mDefaultSignedness, mSettings, mIsCpp)) {
+        if (parsedecl(vt1->containerTypeToken, &item, mDefaultSignedness, mSettings)) {
             if (item.constness == 0)
                 item.constness = vt1->constness;
             if (item.volatileness == 0)
@@ -6726,7 +6725,7 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, const 
     if (parent->str() == "*" && !parent->astOperand2() && valuetype.type == ValueType::Type::ITERATOR &&
         valuetype.containerTypeToken) {
         ValueType vt;
-        if (parsedecl(valuetype.containerTypeToken, &vt, mDefaultSignedness, mSettings, mIsCpp)) {
+        if (parsedecl(valuetype.containerTypeToken, &vt, mDefaultSignedness, mSettings)) {
             if (vt.constness == 0)
                 vt.constness = valuetype.constness;
             if (vt.volatileness == 0)
@@ -6740,7 +6739,7 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, const 
     if (parent->str() == "*" && !parent->astOperand2() && valuetype.type == ValueType::Type::SMART_POINTER &&
         valuetype.smartPointerTypeToken) {
         ValueType vt;
-        if (parsedecl(valuetype.smartPointerTypeToken, &vt, mDefaultSignedness, mSettings, mIsCpp)) {
+        if (parsedecl(valuetype.smartPointerTypeToken, &vt, mDefaultSignedness, mSettings)) {
             if (vt.constness == 0)
                 vt.constness = valuetype.constness;
             if (vt.volatileness == 0)
@@ -6873,7 +6872,7 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, const 
                             autovt.type = ValueType::Type::NONSTD;
                         }
                     }
-                } else if (parsedecl(vt2->containerTypeToken, &autovt, mDefaultSignedness, mSettings, mIsCpp)) {
+                } else if (parsedecl(vt2->containerTypeToken, &autovt, mDefaultSignedness, mSettings)) {
                     setType = true;
                     templateArgType = vt2->containerTypeToken->type();
                     if (Token::simpleMatch(autoToken->next(), "&"))
@@ -6921,7 +6920,7 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, const 
 
     if (vt1 && vt1->containerTypeToken && parent->str() == "[") {
         ValueType vtParent;
-        if (parsedecl(vt1->containerTypeToken, &vtParent, mDefaultSignedness, mSettings, mIsCpp)) {
+        if (parsedecl(vt1->containerTypeToken, &vtParent, mDefaultSignedness, mSettings)) {
             setValueType(parent, vtParent);
             return;
         }
@@ -7100,7 +7099,6 @@ static const Token* parsedecl(const Token* type,
                               ValueType* const valuetype,
                               ValueType::Sign defaultSignedness,
                               const Settings& settings,
-                              bool isCpp,
                               SourceLocation loc)
 {
     if (settings.debugnormal || settings.debugwarnings)
@@ -7162,7 +7160,7 @@ static const Token* parsedecl(const Token* type,
         if (valuetype->type == ValueType::Type::UNKNOWN_TYPE &&
             type->type() && type->type()->isTypeAlias() && type->type()->typeStart &&
             type->type()->typeStart->str() != type->str() && type->type()->typeStart != previousType)
-            parsedecl(type->type()->typeStart, valuetype, defaultSignedness, settings, isCpp);
+            parsedecl(type->type()->typeStart, valuetype, defaultSignedness, settings);
         else if (Token::Match(type, "const|constexpr"))
             valuetype->constness |= (1 << (valuetype->pointer - pointer0));
         else if (Token::simpleMatch(type, "volatile"))
@@ -7194,7 +7192,7 @@ static const Token* parsedecl(const Token* type,
                 if (valuetype->typeScope)
                     valuetype->type = (scope->type == Scope::ScopeType::eClass) ? ValueType::Type::RECORD : ValueType::Type::NONSTD;
             }
-        } else if (const Library::Container* container = (isCpp ? settings.library.detectContainerOrIterator(type, &isIterator) : nullptr)) {
+        } else if (const Library::Container* container = (type->isCpp() ? settings.library.detectContainerOrIterator(type, &isIterator) : nullptr)) {
             if (isIterator)
                 valuetype->type = ValueType::Type::ITERATOR;
             else
@@ -7216,7 +7214,7 @@ static const Token* parsedecl(const Token* type,
                 // we are past the end of the type
                 type = type->previous();
             continue;
-        } else if (const Library::SmartPointer* smartPointer = (isCpp ? settings.library.detectSmartPointer(type) : nullptr)) {
+        } else if (const Library::SmartPointer* smartPointer = (type->isCpp() ? settings.library.detectSmartPointer(type) : nullptr)) {
             const Token* argTok = Token::findsimplematch(type, "<");
             if (!argTok)
                 break;
@@ -7427,7 +7425,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 const Function *function = getOperatorFunction(tok);
                 if (function) {
                     ValueType vt;
-                    parsedecl(function->retDef, &vt, mDefaultSignedness, mSettings, mIsCpp);
+                    parsedecl(function->retDef, &vt, mDefaultSignedness, mSettings);
                     setValueType(tok, vt);
                     continue;
                 }
@@ -7463,21 +7461,21 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
             // cast
             if (tok->isCast() && !tok->astOperand2() && Token::Match(tok, "( %name%")) {
                 ValueType valuetype;
-                if (Token::simpleMatch(parsedecl(tok->next(), &valuetype, mDefaultSignedness, mSettings, mIsCpp), ")"))
+                if (Token::simpleMatch(parsedecl(tok->next(), &valuetype, mDefaultSignedness, mSettings), ")"))
                     setValueType(tok, valuetype);
             }
 
             // C++ cast
             else if (tok->astOperand2() && Token::Match(tok->astOperand1(), "static_cast|const_cast|dynamic_cast|reinterpret_cast < %name%") && tok->astOperand1()->linkAt(1)) {
                 ValueType valuetype;
-                if (Token::simpleMatch(parsedecl(tok->astOperand1()->tokAt(2), &valuetype, mDefaultSignedness, mSettings, mIsCpp), ">"))
+                if (Token::simpleMatch(parsedecl(tok->astOperand1()->tokAt(2), &valuetype, mDefaultSignedness, mSettings), ">"))
                     setValueType(tok, valuetype);
             }
 
             // Construct smart pointer
             else if (mIsCpp && mSettings.library.isSmartPointer(start)) {
                 ValueType valuetype;
-                if (parsedecl(start, &valuetype, mDefaultSignedness, mSettings, mIsCpp)) {
+                if (parsedecl(start, &valuetype, mDefaultSignedness, mSettings)) {
                     setValueType(tok, valuetype);
                     setValueType(tok->astOperand1(), valuetype);
                 }
@@ -7487,7 +7485,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
             // function or lambda
             else if (const Function* f = getFunction(tok->previous())) {
                 ValueType valuetype;
-                if (parsedecl(f->retDef, &valuetype, mDefaultSignedness, mSettings, mIsCpp))
+                if (parsedecl(f->retDef, &valuetype, mDefaultSignedness, mSettings))
                     setValueType(tok, valuetype);
             }
 
@@ -7501,7 +7499,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
 
                 if (Token::Match(tok, "( %type% %type%| *| *| )")) {
                     ValueType vt;
-                    if (parsedecl(tok->next(), &vt, mDefaultSignedness, mSettings, mIsCpp)) {
+                    if (parsedecl(tok->next(), &vt, mDefaultSignedness, mSettings)) {
                         setValueType(tok->next(), vt);
                     }
                 }
@@ -7543,7 +7541,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 // Aggregate constructor
                 if (Token::Match(tok->previous(), "%name%")) {
                     ValueType valuetype;
-                    if (parsedecl(tok->previous(), &valuetype, mDefaultSignedness, mSettings, mIsCpp)) {
+                    if (parsedecl(tok->previous(), &valuetype, mDefaultSignedness, mSettings)) {
                         if (valuetype.typeScope) {
                             setValueType(tok, valuetype);
                             continue;
@@ -7557,7 +7555,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                     if (mSettings.library.detectContainerOrIterator(typeStartToken) ||
                         mSettings.library.detectSmartPointer(typeStartToken)) {
                         ValueType vt;
-                        if (parsedecl(typeStartToken, &vt, mDefaultSignedness, mSettings, mIsCpp)) {
+                        if (parsedecl(typeStartToken, &vt, mDefaultSignedness, mSettings)) {
                             setValueType(tok, vt);
                             continue;
                         }
@@ -7567,7 +7565,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
 
                     if ((e == "std::make_shared" || e == "std::make_unique") && Token::Match(tok->astOperand1(), ":: %name% < %name%")) {
                         ValueType vt;
-                        parsedecl(tok->astOperand1()->tokAt(3), &vt, mDefaultSignedness, mSettings, mIsCpp);
+                        parsedecl(tok->astOperand1()->tokAt(3), &vt, mDefaultSignedness, mSettings);
                         if (vt.typeScope) {
                             vt.smartPointerType = vt.typeScope->definedType;
                             vt.typeScope = nullptr;
@@ -7596,7 +7594,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                     std::istringstream istr(typestr+";");
                     tokenList.createTokens(istr, tok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
                     tokenList.simplifyStdType();
-                    if (parsedecl(tokenList.front(), &valuetype, mDefaultSignedness, mSettings, mIsCpp)) {
+                    if (parsedecl(tokenList.front(), &valuetype, mDefaultSignedness, mSettings)) {
                         valuetype.originalTypeName = typestr;
                         setValueType(tok, valuetype);
                     }
@@ -7688,7 +7686,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                     ValueType vt;
                     tokenList.simplifyPlatformTypes();
                     tokenList.simplifyStdType();
-                    if (parsedecl(tokenList.front(), &vt, mDefaultSignedness, mSettings, mIsCpp)) {
+                    if (parsedecl(tokenList.front(), &vt, mDefaultSignedness, mSettings)) {
                         vt.originalTypeName = typestr;
                         setValueType(tok, vt);
                     }
@@ -7761,7 +7759,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 fscope = fscope->nestedIn;
             if (fscope && fscope->function && fscope->function->retDef) {
                 ValueType vt;
-                parsedecl(fscope->function->retDef, &vt, mDefaultSignedness, mSettings, mIsCpp);
+                parsedecl(fscope->function->retDef, &vt, mDefaultSignedness, mSettings);
                 setValueType(tok, vt);
             }
         } else if (tok->isKeyword() && tok->str() == "this" && tok->scope()->isExecutable()) {
@@ -7803,7 +7801,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
 ValueType ValueType::parseDecl(const Token *type, const Settings &settings)
 {
     ValueType vt;
-    parsedecl(type, &vt, settings.platform.defaultSign == 'u' ? Sign::UNSIGNED : Sign::SIGNED, settings, type->isCpp());
+    parsedecl(type, &vt, settings.platform.defaultSign == 'u' ? Sign::UNSIGNED : Sign::SIGNED, settings);
     return vt;
 }
 
