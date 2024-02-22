@@ -10537,6 +10537,8 @@ void Tokenizer::simplifyNamespaceAliases()
 
             int endScope = scope;
             Token * tokLast = tokNameEnd->next();
+            if (!tokLast)
+                return;
             Token * tokNext = tokLast->next();
             Token * tok2 = tokNext;
 
