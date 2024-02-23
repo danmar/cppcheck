@@ -282,6 +282,14 @@ void Settings::setCheckLevelNormal()
     performanceValueFlowMaxIfCount = 100;
 }
 
+void Settings::setCheckLevelFast()
+{
+    // Checking should finish in reasonable time.
+    checkLevel = CheckLevel::fast;
+    performanceValueFlowMaxSubFunctionArgs = 8;
+    performanceValueFlowMaxIfCount = 100;
+}
+
 // TODO: auto generate these tables
 
 static const std::set<std::string> autosarCheckers{

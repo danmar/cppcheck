@@ -108,6 +108,7 @@
     <ClCompile Include="testutils.cpp" />
     <ClCompile Include="testvaarg.cpp" />
     <ClCompile Include="testvalueflow.cpp" />
+    <ClCompile Include="testvalueflowfast.cpp" />
     <ClCompile Include="testvarid.cpp" />
   </ItemGroup>
   <ItemGroup Label="HeaderFiles">

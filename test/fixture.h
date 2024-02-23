@@ -171,6 +171,8 @@ protected:
             return *this;
         }
 
+        SettingsBuilder& checkLevelFast();
+
         SettingsBuilder& checkLibrary() {
             if (REDUNDANT_CHECK && settings.checkLibrary)
                 throw std::runtime_error("redundant setting: checkLibrary");

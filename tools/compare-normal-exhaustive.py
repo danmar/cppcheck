@@ -36,6 +36,8 @@ if __name__ == "__main__":
     parser.add_argument('--work-path', '--work-path=', default=__work_path, type=str, help='Working directory for reference repo')
     args = parser.parse_args()
 
+    check_levels = ('normal', 'exhaustive')
+
     print(args)
 
     if not lib.check_requirements():
@@ -50,8 +52,8 @@ if __name__ == "__main__":
     result_file = os.path.join(work_path, args.o)
     (f, ext) = os.path.splitext(result_file)
     timing_file = f + '_timing' + ext
-    normal_results = f + '_normal' + ext
-    exhaustive_results = f + '_exhaustive' + ext
+    normal_results = f + '_' + check_levels[0] + ext
+    exhaustive_results = f + '_' + check_levels[1] + ext
 
     if os.path.exists(result_file):
         os.remove(result_file)
@@ -131,31 +133,31 @@ if __name__ == "__main__":
         debug_warnings = False
 
         libraries = lib.library_includes.get_libraries(source_path)
-        c, errout, info, time_normal, cppcheck_options, timing_info = lib.scan_package(cppcheck_path, source_path, libraries, enable=enable, debug_warnings=debug_warnings, check_level='normal')
+        c, errout, info, time_normal, cppcheck_options, timing_info = lib.scan_package(cppcheck_path, source_path, libraries, enable=enable, debug_warnings=debug_warnings, check_level=check_levels[0])
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)
                 print('Error: 101')
             elif c == lib.RETURN_CODE_TIMEOUT:
-                print('Normal check level timed out!')
+                print(check_levels[0] + ' check level timed out!')
                 normal_timeout = True
                 continue # we don't want to compare timeouts
             else:
-                print('Normal check level crashed!')
+                print(check_levels[0] + ' check level crashed!')
                 normal_crashed = True
         results_to_diff.append(errout)
 
-        c, errout, info, time_exhaustive, cppcheck_options, timing_info = lib.scan_package(cppcheck_path, source_path, libraries, enable=enable, debug_warnings=debug_warnings, check_level='exhaustive')
+        c, errout, info, time_exhaustive, cppcheck_options, timing_info = lib.scan_package(cppcheck_path, source_path, libraries, enable=enable, debug_warnings=debug_warnings, check_level=check_levels[1])
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)
                 print('Error: 101')
             elif c == lib.RETURN_CODE_TIMEOUT:
-                print('Exhaustive check level timed out!')
+                print(check_levels[1] + ' check level timed out!')
                 exhaustive_timeout = True
                 continue # we don't want to compare timeouts
             else:
-                print('Exhaustive check level crashed!')
+                print(check_levels[1] + ' check level crashed!')
                 exhaustive_crashed = True
         results_to_diff.append(errout)
 
@@ -164,9 +166,9 @@ if __name__ == "__main__":
             if normal_crashed and exhaustive_crashed:
                 who = 'Both'
             elif normal_crashed:
-                who = 'Normal'
+                who = check_levels[0]
             else:
-                who = 'Exhaustive'
+                who = check_levels[1]
             crashes.append(package + ' ' + who)
 
         if normal_timeout or exhaustive_timeout:
@@ -174,14 +176,14 @@ if __name__ == "__main__":
             if normal_timeout and exhaustive_timeout:
                 who = 'Both'
             elif normal_timeout:
-                who = 'Normal'
+                who = check_levels[0]
             else:
-                who = 'Exhaustive'
+                who = check_levels[1]
             timeouts.append(package + ' ' + who)
 
         with open(result_file, 'a') as myfile:
             myfile.write(package + '\n')
-            diff = lib.diff_results('normal', results_to_diff[0], 'exhaustive', results_to_diff[1])
+            diff = lib.diff_results(check_levels[0], results_to_diff[0], check_levels[1], results_to_diff[1])
             if not normal_crashed and not exhaustive_crashed and diff != '':
                 myfile.write('libraries:' + ','.join(libraries) +'\n')
                 myfile.write('diff:\n' + diff + '\n')

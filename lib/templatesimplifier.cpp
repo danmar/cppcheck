@@ -672,7 +672,7 @@ bool TemplateSimplifier::getTemplateDeclarations()
                 break;
             tok1 = closing->next();
         }
-        if (!Token::Match(tok, "%any% %any%"))
+        if (!Token::Match(tok1, "%any% %any%"))
             syntaxError(tok);
         if (tok->strAt(2)=="typename" &&
             !Token::Match(tok->tokAt(3), "%name%|...|,|=|>"))

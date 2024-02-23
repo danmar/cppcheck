@@ -453,10 +453,12 @@ public:
 
     void setCheckLevelExhaustive();
     void setCheckLevelNormal();
+    void setCheckLevelFast();
 
     enum class CheckLevel {
         exhaustive,
-        normal
+        normal,
+        fast
     };
     CheckLevel checkLevel = CheckLevel::normal;
 

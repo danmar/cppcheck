@@ -448,6 +448,11 @@ void TestFixture::setTemplateFormat(const std::string &templateFormat)
     }
 }
 
+TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::checkLevelFast() {
+    settings.setCheckLevelFast();
+    return *this;
+}
+
 TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::exhaustive() {
     settings.setCheckLevelExhaustive();
     return *this;

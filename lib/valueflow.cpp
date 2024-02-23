@@ -102,6 +102,7 @@
 #include "token.h"
 #include "tokenlist.h"
 #include "utils.h"
+#include "valueflowfast.h"
 #include "valueptr.h"
 #include "vfvalue.h"
 
@@ -9540,6 +9541,11 @@ void ValueFlow::setValues(TokenList& tokenlist,
                           const Settings& settings,
                           TimerResultsIntf* timerResults)
 {
+    if (settings.checkLevel == Settings::CheckLevel::fast) {
+        ValueFlowFast::setValues(tokenlist, symboldatabase, errorLogger, settings);
+        return;
+    }
+
     for (Token* tok = tokenlist.front(); tok; tok = tok->next())
         tok->clearValueFlow();
 
