@@ -4709,6 +4709,14 @@ const Function * Function::getOverriddenFunctionRecursive(const ::Type* baseType
             }
         }
 
+        if (isDestructor()) {
+            auto it = std::find_if(parent->functionList.begin(), parent->functionList.end(), [](const Function& f) {
+                return f.isDestructor() && f.isImplicitlyVirtual();
+            });
+            if (it != parent->functionList.end())
+                return &*it;
+        }
+
         if (!derivedFromType->derivedFrom.empty() && !derivedFromType->hasCircularDependencies() && !isDerivedFromItself(baseType->classScope->className, i.name)) {
             // avoid endless recursion, see #5289 Crash: Stack overflow in isImplicitlyVirtual_rec when checking SVN and
             // #5590 with a loop within the class hierarchy.
