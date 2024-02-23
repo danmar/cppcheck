@@ -475,7 +475,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             else if (std::strncmp(argv[i], "--check-level=", 14) == 0) {
                 Settings::CheckLevel level = Settings::CheckLevel::normal;
                 const std::string level_s(argv[i] + 14);
-                if (level_s == "normal")
+                if (level_s == "fast")
+                    level = Settings::CheckLevel::fast;
+                else if (level_s == "normal")
                     level = Settings::CheckLevel::normal;
                 else if (level_s == "exhaustive")
                     level = Settings::CheckLevel::exhaustive;

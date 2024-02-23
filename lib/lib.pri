@@ -60,6 +60,7 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/precompiled.h \
            $${PWD}/preprocessor.h \
            $${PWD}/programmemory.h \
+           $${PWD}/programmemoryfast.h \
            $${PWD}/reverseanalyzer.h \
            $${PWD}/settings.h \
            $${PWD}/smallvector.h \
@@ -75,6 +76,7 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/tokenrange.h \
            $${PWD}/utils.h \
            $${PWD}/valueflow.h \
+           $${PWD}/valueflowfast.h \
            $${PWD}/valueptr.h \
            $${PWD}/version.h \
            $${PWD}/vfvalue.h \
@@ -133,6 +135,7 @@ SOURCES += $${PWD}/valueflow.cpp \
            $${PWD}/platform.cpp \
            $${PWD}/preprocessor.cpp \
            $${PWD}/programmemory.cpp \
+           $${PWD}/programmemoryfast.cpp \
            $${PWD}/reverseanalyzer.cpp \
            $${PWD}/settings.cpp \
            $${PWD}/summaries.cpp \
@@ -142,4 +145,5 @@ SOURCES += $${PWD}/valueflow.cpp \
            $${PWD}/token.cpp \
            $${PWD}/tokenlist.cpp \
            $${PWD}/utils.cpp \
+           $${PWD}/valueflowfast.cpp \
            $${PWD}/vfvalue.cpp

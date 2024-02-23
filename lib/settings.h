@@ -456,8 +456,9 @@ public:
     }
 
     enum class CheckLevel {
+        exhaustive,
         normal,
-        exhaustive
+        fast
     };
     CheckLevel checkLevel = CheckLevel::exhaustive;
 
