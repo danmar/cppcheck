@@ -109,7 +109,7 @@ private:
      * @brief Return suppressions from the dialog control.
      * @return List of suppressions.
      */
-    QList<Suppressions::Suppression> getSuppressions() const {
+    QList<SuppressionList::Suppression> getSuppressions() const {
         return mSuppressions;
     }
 
@@ -164,13 +164,13 @@ private:
      * @brief Add a single suppression to dialog control.
      * @param suppression A suppressions to add to dialog control.
      */
-    void addSingleSuppression(const Suppressions::Suppression &suppression);
+    void addSingleSuppression(const SuppressionList::Suppression &suppression);
 
     /**
      * @brief Set suppressions to dialog control.
      * @param suppressions List of suppressions to set to dialog control.
      */
-    void setSuppressions(const QList<Suppressions::Suppression> &suppressions);
+    void setSuppressions(const QList<SuppressionList::Suppression> &suppressions);
 
 protected slots:
 
@@ -331,7 +331,7 @@ private:
 
     QString getExistingDirectory(const QString &caption, bool trailingSlash);
 
-    QList<Suppressions::Suppression> mSuppressions;
+    QList<SuppressionList::Suppression> mSuppressions;
 };
 
 /// @}

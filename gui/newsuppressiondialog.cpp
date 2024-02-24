@@ -62,9 +62,9 @@ NewSuppressionDialog::~NewSuppressionDialog()
     delete mUI;
 }
 
-Suppressions::Suppression NewSuppressionDialog::getSuppression() const
+SuppressionList::Suppression NewSuppressionDialog::getSuppression() const
 {
-    Suppressions::Suppression ret;
+    SuppressionList::Suppression ret;
     ret.errorId = mUI->mComboErrorId->currentText().toStdString();
     if (ret.errorId.empty())
         ret.errorId = "*";
@@ -75,7 +75,7 @@ Suppressions::Suppression NewSuppressionDialog::getSuppression() const
     return ret;
 }
 
-void NewSuppressionDialog::setSuppression(const Suppressions::Suppression &suppression)
+void NewSuppressionDialog::setSuppression(const SuppressionList::Suppression &suppression)
 {
     setWindowTitle(tr("Edit suppression"));
     mUI->mComboErrorId->setCurrentText(QString::fromStdString(suppression.errorId));
