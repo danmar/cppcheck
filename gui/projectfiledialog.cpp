@@ -762,18 +762,18 @@ void ProjectFileDialog::setLibraries(const QStringList &libraries)
     }
 }
 
-void ProjectFileDialog::addSingleSuppression(const Suppressions::Suppression &suppression)
+void ProjectFileDialog::addSingleSuppression(const SuppressionList::Suppression &suppression)
 {
     mSuppressions += suppression;
     mUI->mListSuppressions->addItem(QString::fromStdString(suppression.getText()));
 }
 
-void ProjectFileDialog::setSuppressions(const QList<Suppressions::Suppression> &suppressions)
+void ProjectFileDialog::setSuppressions(const QList<SuppressionList::Suppression> &suppressions)
 {
     mUI->mListSuppressions->clear();
-    QList<Suppressions::Suppression> new_suppressions = suppressions;
+    QList<SuppressionList::Suppression> new_suppressions = suppressions;
     mSuppressions.clear();
-    for (const Suppressions::Suppression &suppression : new_suppressions) {
+    for (const SuppressionList::Suppression &suppression : new_suppressions) {
         addSingleSuppression(suppression);
     }
     mUI->mListSuppressions->sortItems();

@@ -1967,7 +1967,7 @@ private:
                                "#include \"missing.h\"\n"
                                "// cppcheck-suppress missingIncludeSystem\n"
                                "#include <missing2.h>\n");
-        Suppressions inlineSuppr;
+        SuppressionList inlineSuppr;
         PreprocessorHelper::getcode(preprocessor, code, "", "test.c", &inlineSuppr);
 
         auto suppressions = inlineSuppr.getSuppressions();

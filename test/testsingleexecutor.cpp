@@ -130,7 +130,7 @@ private:
         if (useFS)
             filelist.clear();
 
-        SingleExecutor executor(cppcheck, filelist, fileSettings, s, s.nomsg, *this);
+        SingleExecutor executor(cppcheck, filelist, fileSettings, s, s.supprs.nomsg, *this);
         ASSERT_EQUALS(result, executor.check());
         ASSERT_EQUALS(opt.executeCommandCalled, executeCommandCalled);
         ASSERT_EQUALS(opt.exe, exe);

@@ -68,7 +68,7 @@ public:
         mClangIncludePaths = s;
     }
 
-    void setSuppressions(const QList<Suppressions::Suppression> &s) {
+    void setSuppressions(const QList<SuppressionList::Suppression> &s) {
         mSuppressions = s;
     }
 
@@ -136,13 +136,13 @@ private:
 
     void parseClangErrors(const QString &tool, const QString &file0, QString err);
 
-    bool isSuppressed(const Suppressions::ErrorMessage &errorMessage) const;
+    bool isSuppressed(const SuppressionList::ErrorMessage &errorMessage) const;
 
     QStringList mFiles;
     bool mAnalyseWholeProgram{};
     QStringList mAddonsAndTools;
     QStringList mClangIncludePaths;
-    QList<Suppressions::Suppression> mSuppressions;
+    QList<SuppressionList::Suppression> mSuppressions;
 };
 /// @}
 #endif // CHECKTHREAD_H

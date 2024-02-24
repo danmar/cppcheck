@@ -389,7 +389,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
     for (const ErrorItem &e : errorItems) {
         if (e.errorPath.isEmpty())
             continue;
-        Suppressions::ErrorMessage errorMessage;
+        SuppressionList::ErrorMessage errorMessage;
         errorMessage.setFileName(e.errorPath.back().file.toStdString());
         errorMessage.lineNumber = e.errorPath.back().line;
         errorMessage.errorId = e.errorId.toStdString();
@@ -410,9 +410,9 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
     }
 }
 
-bool CheckThread::isSuppressed(const Suppressions::ErrorMessage &errorMessage) const
+bool CheckThread::isSuppressed(const SuppressionList::ErrorMessage &errorMessage) const
 {
-    return std::any_of(mSuppressions.cbegin(), mSuppressions.cend(), [&](const Suppressions::Suppression& s) {
+    return std::any_of(mSuppressions.cbegin(), mSuppressions.cend(), [&](const SuppressionList::Suppression& s) {
         return s.isSuppressed(errorMessage);
     });
 }

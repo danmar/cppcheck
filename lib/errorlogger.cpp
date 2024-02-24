@@ -753,7 +753,7 @@ std::string ErrorMessage::FileLocation::stringify() const
     std::string str;
     str += '[';
     str += Path::toNativeSeparators(mFileName);
-    if (line != Suppressions::Suppression::NO_LINE) {
+    if (line != SuppressionList::Suppression::NO_LINE) {
         str += ':';
         str += std::to_string(line);
     }
