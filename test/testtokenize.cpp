@@ -6586,6 +6586,7 @@ private:
         ASSERT_EQUALS("abc;(", testAst("a(b;c)"));
         ASSERT_EQUALS("x{( forbc;;(", testAst("x({ for(a;b;c){} });"));
         ASSERT_EQUALS("PT.(", testAst("P->~T();"));  // <- The "T" token::function() will be a destructor
+        ASSERT_EQUALS("double&(4[", testAst("void f(double(&)[4]) {}"));
     }
 
     void asttemplate() { // uninstantiated templates will have <,>,etc..

@@ -646,7 +646,7 @@ static void compileUnaryOp(Token *&tok, AST_state& state, void (*f)(Token *&tok,
         state.depth--;
     }
 
-    if (!state.op.empty()) {
+    if (!state.op.empty() && !(unaryop->str() == "&" && precedes(state.op.top(), unaryop))) {
         unaryop->astOperand1(state.op.top());
         state.op.pop();
     }
@@ -998,7 +998,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 || (tok->strAt(-1) == ">" && tok->linkAt(-1))
                 || (tok->strAt(-1) == ")" && !iscast(tok->linkAt(-1), state.cpp)) // Don't treat brackets to clarify precedence as function calls
                 || (tok->strAt(-1) == "}" && opPrevTopSquare)) {
-                const bool operandInside = oldOpSize < state.op.size() || (state.cpp && Token::simpleMatch(tok, "( & )"));
+                const bool operandInside = oldOpSize < state.op.size();
                 if (operandInside)
                     compileBinOp(tok, state, nullptr);
                 else
