@@ -10025,12 +10025,19 @@ void Tokenizer::simplifyOperatorName()
             }
         }
 
+        const bool returnsRef = Token::simpleMatch(par, "( & (") && tok->next()->isName();
         if (par && !op.empty()) {
-            tok->str("operator" + op);
-            Token::eraseTokens(tok, par);
+            if (returnsRef) {
+                par->next()->insertToken("operator" + op)->isOperatorKeyword(true);
+                tok->deleteThis();
+            }
+            else {
+                tok->str("operator" + op);
+                Token::eraseTokens(tok, par);
+            }
         }
 
-        if (!op.empty())
+        if (!op.empty() && !returnsRef)
             tok->isOperatorKeyword(true);
     }
 

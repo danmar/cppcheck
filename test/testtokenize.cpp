@@ -5101,7 +5101,7 @@ private:
                             "    operator A& () { return x_; }\n"
                             "    A x_;\n"
                             "};";
-        ASSERT_EQUALS("template < typename T >\nstruct B {\n\noperatorT ( & ( ) ) [ 3 ] { return x_ ; }\nT x_ [ 3 ] ;\n} ;", tokenizeAndStringify(code));
+        ASSERT_EQUALS("template < typename T >\nstruct B {\n\nT ( & operatorT ( ) ) [ 3 ] { return x_ ; }\nT x_ [ 3 ] ;\n} ;", tokenizeAndStringify(code));
         ASSERT_EQUALS("", errout.str());
     }
 
