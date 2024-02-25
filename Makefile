@@ -8,9 +8,6 @@ ifndef HAVE_RULES
     HAVE_RULES=no
 endif
 
-ifdef SRCDIR
-    $(error Usage of SRCDIR to activate match compiler has been removed. Use MATCHCOMPILER=yes instead.)
-endif
 ifndef MATCHCOMPILER
     MATCHCOMPILER=
 endif
@@ -32,8 +29,10 @@ ifeq ($(MATCHCOMPILER),yes)
         matchcompiler_S := $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py)
     endif
     libcppdir:=build
-else
+else ifeq ($(MATCHCOMPILER),)
     libcppdir:=lib
+else
+    $(error invalid MATCHCOMPILER value '$(MATCHCOMPILER)')
 endif
 
 ifndef CPPFLAGS

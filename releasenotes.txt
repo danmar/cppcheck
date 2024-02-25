@@ -22,3 +22,4 @@ Other:
 - Using Visual Studio with CMake now checks if the CMake version is at least 3.13. This was always required but was not checked explicitly.
 - Added '--template=simple'. It is expands to '{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]' without any additional location details.
 - Removed deprecated platform type 'Unspecified'. Please use 'unspecified' instead.
+- Removed deprecated 'Makefile' option 'SRCDIR'.
