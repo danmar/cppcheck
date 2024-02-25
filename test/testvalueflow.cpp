@@ -1205,10 +1205,10 @@ private:
 
         // string/char literals
         CHECK("\"asdf\"", 5);
-        CHECK("L\"asdf\"", 5 * settings.platform.sizeof_wchar_t);
+        CHECK("L\"asdf\"", 5LL * settings.platform.sizeof_wchar_t);
         CHECK("u8\"asdf\"", 5); // char8_t
-        CHECK("u\"asdf\"", 5 * 2); // char16_t
-        CHECK("U\"asdf\"", 5 * 4); // char32_t
+        CHECK("u\"asdf\"", 5LL * 2); // char16_t
+        CHECK("U\"asdf\"", 5LL * 4); // char32_t
         CHECK("'a'", 1U);
         CHECK("'ab'", settings.platform.sizeof_int);
         CHECK("L'a'", settings.platform.sizeof_wchar_t);
@@ -1320,7 +1320,7 @@ private:
                "}";                                   \
         values = tokenValues(code,"( arrE )");        \
         ASSERT_EQUALS(1U, values.size());             \
-        ASSERT_EQUALS(B * 2U, values.back().intvalue); \
+        ASSERT_EQUALS(B * 2ULL, values.back().intvalue); \
     } while (false)
 
         // enum array
@@ -1355,7 +1355,7 @@ private:
                "}";                                   \
         values = tokenValues(code,"( arrE )");        \
         ASSERT_EQUALS(1U, values.size());             \
-        ASSERT_EQUALS(B * 2U, values.back().intvalue); \
+        ASSERT_EQUALS(B * 2ULL, values.back().intvalue); \
     } while (false)
 
         // enum array
