@@ -646,12 +646,12 @@ private:
         ASSERT(a && b);
         if (a && b) {
             ASSERT_EQUALS("Message", a->message);
-            ASSERT_EQUALS(static_cast<int>(Severity::style), static_cast<int>(a->severity));
+            ASSERT_EQUALS_ENUM(Severity::style, a->severity);
             ASSERT_EQUALS(Standards::C99, a->standards.c);
             ASSERT_EQUALS(Standards::CPP03, a->standards.cpp);
 
             ASSERT_EQUALS("Obsolescent function 'b' called. It is recommended to use 'c', 'd' or 'e' instead.", b->message);
-            ASSERT_EQUALS(static_cast<int>(Severity::performance), static_cast<int>(b->severity));
+            ASSERT_EQUALS_ENUM(Severity::performance, b->severity);
             ASSERT_EQUALS(Standards::C89, b->standards.c);
             ASSERT_EQUALS(Standards::CPP11, b->standards.cpp);
         }
@@ -827,8 +827,8 @@ private:
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
-        Library::Container& A = library.containers["A"];
-        Library::Container& B = library.containers["B"];
+        const Library::Container& A = library.containers["A"];
+        const Library::Container& B = library.containers["B"];
         const Library::Container& C = library.containers["C"];
 
         ASSERT_EQUALS(A.type_templateArgNo, 1);
