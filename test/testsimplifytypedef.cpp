@@ -2906,11 +2906,11 @@ private:
             const char code[] = "class c {\n"
                                 "  typedef char foo[4];\n"
                                 "  foo _a;\n"
-                                "  constexpr operator foo &() const noexcept { return _a; }\n"
+                                "  constexpr operator foo &() noexcept { return _a; }\n"
                                 "};";
 
-            const char actual[] = "class c { char _a [ 4 ] ; constexpr operatorchar ( & ( ) const noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
-            const char exp[] = "class c { char _a [ 4 ] ; const operator char ( & ( ) const noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
+            const char actual[] = "class c { char _a [ 4 ] ; constexpr char ( & operatorchar ( ) noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
+            const char exp[] = "class c { char _a [ 4 ] ; char ( & operatorchar ( ) noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
             TODO_ASSERT_EQUALS(exp, actual, tok(code, false));
         }
 
@@ -2921,8 +2921,8 @@ private:
                                 "  constexpr operator const foo &() const noexcept { return _a; }\n"
                                 "};";
 
-            const char actual[] = "class c { char _a [ 4 ] ; constexpr operatorconstchar ( & ( ) const noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
-            const char exp[] = "class c { char _a [ 4 ] ; const operator const char ( & ( ) const noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
+            const char actual[] = "class c { char _a [ 4 ] ; constexpr const char ( & operatorconstchar ( ) const noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
+            const char exp[] = "class c { char _a [ 4 ] ; const char ( & operatorconstchar ( ) const noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
             TODO_ASSERT_EQUALS(exp, actual, tok(code, false));
         }
     }
