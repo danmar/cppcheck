@@ -1959,7 +1959,6 @@ private:
 
         /*const*/ Settings settings;
         settings.inlineSuppressions = true;
-        settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
         Preprocessor preprocessor(settings, this);
 
@@ -2406,7 +2405,6 @@ private:
     void testMissingInclude() {
         /*const*/ Settings settings;
         settings.clearIncludeCache = true;
-        settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
@@ -2425,7 +2423,6 @@ private:
     void testMissingInclude2() {
         /*const*/ Settings settings;
         settings.clearIncludeCache = true;
-        settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
@@ -2442,7 +2439,6 @@ private:
     void testMissingInclude3() {
         /*const*/ Settings settings;
         settings.clearIncludeCache = true;
-        settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
@@ -2461,7 +2457,6 @@ private:
     void testMissingInclude4() {
         /*const*/ Settings settings;
         settings.clearIncludeCache = true;
-        settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
         settings.includePaths.emplace_back("inc");
         settings.templateFormat = "simple"; // has no effect
@@ -2481,7 +2476,6 @@ private:
     void testMissingInclude5() {
         /*const*/ Settings settings;
         settings.clearIncludeCache = true;
-        settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
         settings.includePaths.emplace_back("inc");
         settings.templateFormat = "simple"; // has no effect
@@ -2501,7 +2495,6 @@ private:
     void testMissingInclude6() {
         /*const*/ Settings settings;
         settings.clearIncludeCache = true;
-        settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
@@ -2520,7 +2513,6 @@ private:
     void testMissingSystemInclude() {
         /*const*/ Settings settings;
         settings.clearIncludeCache = true;
-        settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
@@ -2539,7 +2531,6 @@ private:
     void testMissingSystemInclude2() {
         /*const*/ Settings settings;
         settings.clearIncludeCache = true;
-        settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
@@ -2556,7 +2547,6 @@ private:
     void testMissingSystemInclude3() {
         /*const*/ Settings settings;
         settings.clearIncludeCache = true;
-        settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
@@ -2577,7 +2567,6 @@ private:
     void testMissingSystemInclude4() {
         /*const*/ Settings settings;
         settings.clearIncludeCache = true;
-        settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
         settings.includePaths.emplace_back("inc");
         settings.templateFormat = "simple"; // has no effect
@@ -2597,7 +2586,6 @@ private:
     void testMissingSystemInclude5() {
         /*const*/ Settings settings;
         settings.clearIncludeCache = true;
-        settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
@@ -2616,7 +2604,6 @@ private:
     void testMissingIncludeMixed() {
         /*const*/ Settings settings;
         settings.clearIncludeCache = true;
-        settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
@@ -2640,7 +2627,6 @@ private:
     void testMissingIncludeCheckConfig() {
         /*const*/ Settings settings;
         settings.clearIncludeCache = true;
-        settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
         settings.includePaths.emplace_back("system");
         settings.templateFormat = "simple"; // has no effect
