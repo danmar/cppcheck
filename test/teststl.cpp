@@ -3946,17 +3946,17 @@ private:
     void size4() { // #2652 - don't warn about vector/deque
         check("void f(std::vector<int> &v) {\n"
               "    if (v.size() > 0U) {}\n"
-              "}");
+              "}", false, Standards::CPP03);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(std::deque<int> &v) {\n"
               "    if (v.size() > 0U) {}\n"
-              "}");
+              "}", false, Standards::CPP03);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(std::array<int,3> &a) {\n"
               "    if (a.size() > 0U) {}\n"
-              "}");
+              "}", false, Standards::CPP03);
         ASSERT_EQUALS("", errout.str());
     }
 

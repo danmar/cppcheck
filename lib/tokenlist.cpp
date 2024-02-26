@@ -646,7 +646,7 @@ static void compileUnaryOp(Token *&tok, AST_state& state, void (*f)(Token *&tok,
         state.depth--;
     }
 
-    if (!state.op.empty() && !(unaryop->str() == "&" && precedes(state.op.top(), unaryop))) {
+    if (!state.op.empty() && (!precedes(state.op.top(), unaryop) || unaryop->isIncDecOp() || Token::Match(unaryop, "[({[]"))) { // nullary functions, empty lists/arrays
         unaryop->astOperand1(state.op.top());
         state.op.pop();
     }
