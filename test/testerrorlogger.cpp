@@ -280,9 +280,9 @@ private:
         ASSERT(doc.Parse(xmldata, sizeof(xmldata)) == tinyxml2::XML_SUCCESS);
         ErrorMessage msg(doc.FirstChildElement());
         ASSERT_EQUALS("errorId", msg.id);
-        ASSERT_EQUALS(static_cast<int>(Severity::error), static_cast<int>(msg.severity));
+        ASSERT_EQUALS_ENUM(Severity::error, msg.severity);
         ASSERT_EQUALS(123u, msg.cwe.id);
-        ASSERT_EQUALS(static_cast<int>(Certainty::inconclusive), static_cast<int>(msg.certainty));
+        ASSERT_EQUALS_ENUM(Certainty::inconclusive, msg.certainty);
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
         ASSERT_EQUALS(456u, msg.hash);
@@ -329,9 +329,9 @@ private:
         ErrorMessage msg2;
         ASSERT_NO_THROW(msg2.deserialize(msg_str));
         ASSERT_EQUALS("errorId", msg2.id);
-        ASSERT_EQUALS(static_cast<int>(Severity::error), static_cast<int>(msg2.severity));
+        ASSERT_EQUALS_ENUM(Severity::error, msg2.severity);
         ASSERT_EQUALS("test.cpp", msg2.file0);
-        ASSERT_EQUALS(static_cast<int>(Certainty::inconclusive), static_cast<int>(msg2.certainty));
+        ASSERT_EQUALS_ENUM(Certainty::inconclusive, msg2.certainty);
         ASSERT_EQUALS("Programming error", msg2.shortMessage());
         ASSERT_EQUALS("Programming error", msg2.verboseMessage());
     }
@@ -417,7 +417,7 @@ private:
         ErrorMessage msg2;
         ASSERT_NO_THROW(msg2.deserialize(msg_str));
         ASSERT_EQUALS("errorId", msg2.id);
-        ASSERT_EQUALS(static_cast<int>(Severity::error), static_cast<int>(msg2.severity));
+        ASSERT_EQUALS_ENUM(Severity::error, msg2.severity);
         ASSERT_EQUALS("1.c", msg2.file0);
         ASSERT_EQUALS("Illegal character in \"foo\\001bar\"", msg2.shortMessage());
         ASSERT_EQUALS("Illegal character in \"foo\\001bar\"", msg2.verboseMessage());

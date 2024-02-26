@@ -68,8 +68,8 @@ protected:
 
     bool assert_(const char * const filename, const unsigned int linenr, const bool condition) const;
 
-    template<typename T, typename U>
-    bool assertEquals(const char* const filename, const unsigned int linenr, const T& expected, const U& actual, const std::string& msg = emptyString) const {
+    template<typename T>
+    bool assertEquals(const char* const filename, const unsigned int linenr, const T& expected, const T& actual, const std::string& msg = emptyString) const {
         if (expected != actual) {
             std::ostringstream expectedStr;
             expectedStr << expected;
@@ -79,6 +79,13 @@ protected:
             assertEqualsFailed(filename, linenr, expectedStr.str(), actualStr.str(), msg);
         }
         return expected == actual;
+    }
+
+    template<typename T>
+    bool assertEqualsEnum(const char* const filename, const unsigned int linenr, const T& expected, const T& actual, const std::string& msg = emptyString) const {
+        if (std::is_unsigned<T>())
+            return assertEquals(filename, linenr, static_cast<std::uint64_t>(expected), static_cast<std::uint64_t>(actual), msg);
+        return assertEquals(filename, linenr, static_cast<std::int64_t>(expected), static_cast<std::int64_t>(actual), msg);
     }
 
     //Helper function to be called when an assertEquals assertion fails.
@@ -271,6 +278,7 @@ public:
 #define ASSERT_EQUALS_WITHOUT_LINENUMBERS( EXPECTED, ACTUAL )  assertEqualsWithoutLineNumbers(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define ASSERT_EQUALS_DOUBLE( EXPECTED, ACTUAL, TOLERANCE )  assertEqualsDouble(__FILE__, __LINE__, EXPECTED, ACTUAL, TOLERANCE)
 #define ASSERT_EQUALS_MSG( EXPECTED, ACTUAL, MSG )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL, MSG)
+#define ASSERT_EQUALS_ENUM( EXPECTED, ACTUAL )  if (!assertEqualsEnum(__FILE__, __LINE__, (EXPECTED), (ACTUAL))) return
 #define ASSERT_THROW( CMD, EXCEPTION ) do { try { CMD; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&) {} catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
 #define ASSERT_THROW_EQUALS( CMD, EXCEPTION, EXPECTED ) do { try { CMD; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&e) { assertEquals(__FILE__, __LINE__, EXPECTED, e.errorMessage); } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
 #define ASSERT_THROW_EQUALS_2( CMD, EXCEPTION, EXPECTED ) do { try { CMD; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&e) { assertEquals(__FILE__, __LINE__, EXPECTED, e.what()); } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)

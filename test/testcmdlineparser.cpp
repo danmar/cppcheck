@@ -105,18 +105,6 @@ private:
         logger->destroy();
     }
 
-    // add overload so the enums can be compared without a cast
-    template<typename T, typename U>
-    bool assertEquals(const char* const filename, const unsigned int linenr, const T& expected, const U& actual) const
-    {
-        return TestFixture::assertEquals(filename, linenr, expected, actual);
-    }
-
-    bool assertEquals(const char* const filename, const unsigned int linenr, const CmdLineParser::Result& expected, const CmdLineParser::Result& actual) const
-    {
-        return TestFixture::assertEquals(filename, linenr, static_cast<int>(expected), static_cast<int>(actual));
-    }
-
     void run() override {
         TEST_CASE(nooptions);
         TEST_CASE(helpshort);
@@ -378,42 +366,42 @@ private:
     void nooptions() {
         REDIRECT;
         const char * const argv[] = {"cppcheck"};
-        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(1, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parser->parseFromArgs(1, argv));
         ASSERT(startsWith(logger->str(), "Cppcheck - A tool for static C/C++ code analysis"));
     }
 
     void helpshort() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-h"};
-        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
         ASSERT(startsWith(logger->str(), "Cppcheck - A tool for static C/C++ code analysis"));
     }
 
     void helpshortExclusive() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--library=missing", "-h"};
-        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
         ASSERT(startsWith(logger->str(), "Cppcheck - A tool for static C/C++ code analysis"));
     }
 
     void helplong() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--help"};
-        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
         ASSERT(startsWith(logger->str(), "Cppcheck - A tool for static C/C++ code analysis"));
     }
 
     void helplongExclusive() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--library=missing", "--help"};
-        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
         ASSERT(startsWith(logger->str(), "Cppcheck - A tool for static C/C++ code analysis"));
     }
 
     void version() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--version"};
-        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
         ASSERT(logger->str().compare(0, 11, "Cppcheck 2.") == 0);
     }
 
@@ -424,7 +412,7 @@ private:
                         "\"productName\": \"The Product\""
                         "}\n");
         const char * const argv[] = {"cppcheck", "--version"};
-        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
         // TODO: somehow the config is not loaded on some systems
         (void)logger->str(); //ASSERT_EQUALS("The Product\n", logger->str()); // TODO: include version?
     }
@@ -434,7 +422,7 @@ private:
     void versionExclusive() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--library=missing", "--version"};
-        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
         ASSERT(logger->str().compare(0, 11, "Cppcheck 2.") == 0);
     }
 
@@ -443,14 +431,14 @@ private:
         ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
                         "{\n");
         const char * const argv[] = {"cppcheck", "--version"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 2 near: \n", logger->str());
     }
 
     void onefile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS(1, (int)parser->getPathNames().size());
         ASSERT_EQUALS("file.cpp", parser->getPathNames().at(0));
     }
@@ -458,7 +446,7 @@ private:
     void onepath() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "src"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS(1, (int)parser->getPathNames().size());
         ASSERT_EQUALS("src", parser->getPathNames().at(0));
     }
@@ -466,7 +454,7 @@ private:
     void optionwithoutfile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-v"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS(0, (int)parser->getPathNames().size());
         ASSERT_EQUALS("cppcheck: error: no C or C++ source files found.\n", logger->str());
     }
@@ -475,7 +463,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-v", "file.cpp"};
         settings->verbose = false;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->verbose);
     }
 
@@ -483,7 +471,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--verbose", "file.cpp"};
         settings->verbose = false;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->verbose);
     }
 
@@ -491,7 +479,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--debug-simplified", "file.cpp"};
         settings->debugSimplified = false;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->debugSimplified);
     }
 
@@ -499,7 +487,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--debug-warnings", "file.cpp"};
         settings->debugwarnings = false;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->debugwarnings);
     }
 
@@ -507,7 +495,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-f", "file.cpp"};
         settings->force = false;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->force);
     }
 
@@ -515,7 +503,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--force", "file.cpp"};
         settings->force = false;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->force);
     }
 
@@ -523,7 +511,7 @@ private:
         REDIRECT;
         settings->relativePaths = false;
         const char * const argv[] = {"cppcheck", "-rp", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->relativePaths);
     }
 
@@ -531,7 +519,7 @@ private:
         REDIRECT;
         settings->relativePaths = false;
         const char * const argv[] = {"cppcheck", "--relative-paths", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->relativePaths);
     }
 
@@ -540,7 +528,7 @@ private:
         settings->relativePaths = false;
         settings->basePaths.clear();
         const char * const argv[] = {"cppcheck", "-rp=C:/foo;C:\\bar", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->relativePaths);
         ASSERT_EQUALS(2, settings->basePaths.size());
         ASSERT_EQUALS("C:/foo", settings->basePaths[0]);
@@ -553,7 +541,7 @@ private:
         settings->basePaths.clear();
 
         const char * const argv[] = {"cppcheck", "--relative-paths=C:/foo;C:\\bar", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->relativePaths);
         ASSERT_EQUALS(2, settings->basePaths.size());
         ASSERT_EQUALS("C:/foo", settings->basePaths[0]);
@@ -564,7 +552,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-q", "file.cpp"};
         settings->quiet = false;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->quiet);
     }
 
@@ -572,7 +560,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--quiet", "file.cpp"};
         settings->quiet = false;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->quiet);
     }
 
@@ -580,7 +568,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-D"};
         // Fails since -D has no param
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '-D' is missing.\n", logger->str());
     }
 
@@ -588,7 +576,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-D", "-v", "file.cpp"};
         // Fails since -D has no param
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '-D' is missing.\n", logger->str());
     }
 
@@ -596,7 +584,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-D", "--quiet", "file.cpp"};
         // Fails since -D has no param
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '-D' is missing.\n", logger->str());
     }
 
@@ -604,7 +592,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-D_WIN32", "file.cpp"};
         settings->userDefines.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("_WIN32=1", settings->userDefines);
     }
 
@@ -612,7 +600,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-D_WIN32", "-DNODEBUG", "file.cpp"};
         settings->userDefines.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("_WIN32=1;NODEBUG=1", settings->userDefines);
     }
 
@@ -620,7 +608,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-D", "DEBUG", "file.cpp"};
         settings->userDefines.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("DEBUG=1", settings->userDefines);
     }
 
@@ -628,7 +616,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-DDEBUG=", "file.cpp"}; // #5137 - defining empty macro
         settings->userDefines.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("DEBUG=", settings->userDefines);
     }
 
@@ -636,7 +624,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "file.cpp"};
         settings->enforcedLang = Standards::Language::None;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS(Standards::Language::None, settings->enforcedLang);
     }
 
@@ -644,21 +632,21 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-x", "c++", "file.cpp"};
         settings->enforcedLang = Standards::Language::None;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS(Standards::Language::CPP, settings->enforcedLang);
     }
 
     void enforceLanguage3() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-x"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: no language given to '-x' option.\n", logger->str());
     }
 
     void enforceLanguage4() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-x", "--inconclusive", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("cppcheck: error: no language given to '-x' option.\n", logger->str());
     }
 
@@ -666,7 +654,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--language=c++", "file.cpp"};
         settings->enforcedLang = Standards::Language::None;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Standards::Language::CPP, settings->enforcedLang);
     }
 
@@ -674,14 +662,14 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--language=c", "file.cpp"};
         settings->enforcedLang = Standards::Language::None;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Standards::Language::C, settings->enforcedLang);
     }
 
     void enforceLanguage7() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--language=unknownLanguage", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unknown language 'unknownLanguage' enforced.\n", logger->str());
     }
 
@@ -689,7 +677,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-I"};
         // Fails since -I has no param
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '-I' is missing.\n", logger->str());
     }
 
@@ -697,7 +685,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-I", "include", "file.cpp"};
         settings->includePaths.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("include/", settings->includePaths.front());
     }
 
@@ -705,7 +693,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-I", "include/", "file.cpp"};
         settings->includePaths.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("include/", settings->includePaths.front());
     }
 
@@ -713,7 +701,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-I", "include\\", "file.cpp"};
         settings->includePaths.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("include/", settings->includePaths.front());
     }
 
@@ -721,7 +709,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-Iinclude", "file.cpp"};
         settings->includePaths.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("include/", settings->includePaths.front());
     }
 
@@ -729,7 +717,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-I", "include/", "-I", "framework/", "file.cpp"};
         settings->includePaths.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(6, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(6, argv));
         ASSERT_EQUALS("include/", settings->includePaths.front());
         settings->includePaths.pop_front();
         ASSERT_EQUALS("framework/", settings->includePaths.front());
@@ -741,7 +729,7 @@ private:
                         "path/sub\n"
                         "path2/sub1\n");
         const char * const argv[] = {"cppcheck", "--includes-file=includes.txt", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(2, settings->includePaths.size());
         auto it = settings->includePaths.cbegin();
         ASSERT_EQUALS("path/sub/", *it++);
@@ -751,7 +739,7 @@ private:
     void includesFileNoFile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--includes-file=fileThatDoesNotExist.txt", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unable to open includes file at 'fileThatDoesNotExist.txt'\n", logger->str());
     }
 
@@ -762,7 +750,7 @@ private:
                         "path2/sub1\n");
         const char * const argv[] = {"cppcheck", "--config-excludes-file=excludes.txt", "file.cpp"};
         settings->configExcludePaths.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(2, settings->configExcludePaths.size());
         auto it = settings->configExcludePaths.cbegin();
         ASSERT_EQUALS("path/sub/", *it++);
@@ -772,7 +760,7 @@ private:
     void configExcludesFileNoFile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--config-excludes-file=fileThatDoesNotExist.txt", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unable to open config excludes file at 'fileThatDoesNotExist.txt'\n", logger->str());
     }
 
@@ -780,7 +768,7 @@ private:
         REDIRECT;
         settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=all", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->severity.isEnabled(Severity::style));
         ASSERT(settings->severity.isEnabled(Severity::warning));
         ASSERT(settings->checks.isEnabled(Checks::unusedFunction));
@@ -792,7 +780,7 @@ private:
         REDIRECT;
         settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=style", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->severity.isEnabled(Severity::style));
         ASSERT(settings->severity.isEnabled(Severity::warning));
         ASSERT(settings->severity.isEnabled(Severity::performance));
@@ -805,7 +793,7 @@ private:
         REDIRECT;
         settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=performance", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(!settings->severity.isEnabled(Severity::style));
         ASSERT(!settings->severity.isEnabled(Severity::warning));
         ASSERT(settings->severity.isEnabled(Severity::performance));
@@ -818,7 +806,7 @@ private:
         REDIRECT;
         settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=portability", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(!settings->severity.isEnabled(Severity::style));
         ASSERT(!settings->severity.isEnabled(Severity::warning));
         ASSERT(!settings->severity.isEnabled(Severity::performance));
@@ -831,7 +819,7 @@ private:
         REDIRECT;
         settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=information", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->severity.isEnabled(Severity::information));
         ASSERT(settings->checks.isEnabled(Checks::missingInclude));
         ASSERT_EQUALS("cppcheck: '--enable=information' will no longer implicitly enable 'missingInclude' starting with 2.16. Please enable it explicitly if you require it.\n", logger->str());
@@ -841,7 +829,7 @@ private:
         REDIRECT;
         settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=unusedFunction", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->checks.isEnabled(Checks::unusedFunction));
     }
 
@@ -849,7 +837,7 @@ private:
         REDIRECT;
         settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=missingInclude", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->checks.isEnabled(Checks::missingInclude));
     }
 
@@ -857,7 +845,7 @@ private:
         REDIRECT;
         settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--disable=missingInclude", "--enable=information", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT(settings->severity.isEnabled(Severity::information));
         ASSERT(!settings->checks.isEnabled(Checks::missingInclude));
         ASSERT_EQUALS("", logger->str());
@@ -867,7 +855,7 @@ private:
         REDIRECT;
         settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=information", "--enable=missingInclude", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT(settings->severity.isEnabled(Severity::information));
         ASSERT(settings->checks.isEnabled(Checks::missingInclude));
         ASSERT_EQUALS("", logger->str());
@@ -877,7 +865,7 @@ private:
         REDIRECT;
         settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=missingInclude", "--enable=information", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT(settings->severity.isEnabled(Severity::information));
         ASSERT(settings->checks.isEnabled(Checks::missingInclude));
         ASSERT_EQUALS("", logger->str());
@@ -888,7 +876,7 @@ private:
         REDIRECT;
         settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=internal", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->checks.isEnabled(Checks::internalCheck));
     }
 #endif
@@ -897,7 +885,7 @@ private:
         REDIRECT;
         settings->severity.clear();
         const char * const argv[] = {"cppcheck", "--enable=missingInclude,portability,warning", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(!settings->severity.isEnabled(Severity::style));
         ASSERT(settings->severity.isEnabled(Severity::warning));
         ASSERT(!settings->severity.isEnabled(Severity::performance));
@@ -909,21 +897,21 @@ private:
     void enabledInvalid() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--enable=warning,missingIncludeSystem,style", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: --enable parameter with the unknown name 'missingIncludeSystem'\n", logger->str());
     }
 
     void enabledError() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--enable=error", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: --enable parameter with the unknown name 'error'\n", logger->str());
     }
 
     void enabledEmpty() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--enable=", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: --enable parameter is empty\n", logger->str());
     }
 
@@ -933,7 +921,7 @@ private:
         const char * const argv[] = {"cppcheck", "--enable=all", "--disable=all", "file.cpp"};
         settings->severity.clear();
         settings->checks.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::error));
         ASSERT_EQUALS(false, settings->severity.isEnabled(Severity::warning));
         ASSERT_EQUALS(false, settings->severity.isEnabled(Severity::style));
@@ -950,7 +938,7 @@ private:
         const char * const argv[] = {"cppcheck", "--enable=all", "--disable=style", "--disable=unusedFunction", "file.cpp"};
         settings->severity.clear();
         settings->checks.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(5, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(5, argv));
         ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::error));
         ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::warning));
         ASSERT_EQUALS(false, settings->severity.isEnabled(Severity::style));
@@ -968,7 +956,7 @@ private:
         const char * const argv[] = {"cppcheck", "--enable=style", "--disable=performance", "--enable=unusedFunction", "file.cpp"};
         settings->severity.clear();
         settings->checks.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(5, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(5, argv));
         ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::error));
         ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::warning));
         ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::style));
@@ -983,7 +971,7 @@ private:
     void disableInformationPartial() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--enable=information", "--disable=missingInclude", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT(settings->severity.isEnabled(Severity::information));
         ASSERT(!settings->checks.isEnabled(Checks::missingInclude));
         ASSERT_EQUALS("", logger->str());
@@ -992,7 +980,7 @@ private:
     void disableInformationPartial2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--enable=missingInclude", "--disable=information", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT(!settings->severity.isEnabled(Severity::information));
         ASSERT(settings->checks.isEnabled(Checks::missingInclude));
     }
@@ -1000,21 +988,21 @@ private:
     void disableInvalid() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--disable=leaks", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: --disable parameter with the unknown name 'leaks'\n", logger->str());
     }
 
     void disableError() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--disable=error", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: --disable parameter with the unknown name 'error'\n", logger->str());
     }
 
     void disableEmpty() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--disable=", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: --disable parameter is empty\n", logger->str());
     }
 
@@ -1022,7 +1010,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--inconclusive", "file.cpp"};
         settings->certainty.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->certainty.isEnabled(Certainty::inconclusive));
     }
 
@@ -1030,7 +1018,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--error-exitcode=5", "file.cpp"};
         settings->exitCode = 0;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(5, settings->exitCode);
     }
 
@@ -1038,7 +1026,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--error-exitcode=", "file.cpp"};
         // Fails since exit code not given
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--error-exitcode=' is not valid - not an integer.\n", logger->str());
     }
 
@@ -1046,14 +1034,14 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--error-exitcode=foo", "file.cpp"};
         // Fails since invalid exit code
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--error-exitcode=' is not valid - not an integer.\n", logger->str());
     }
 
     void exitcodeSuppressionsOld() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--exitcode-suppressions", "suppr.txt", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--exitcode-suppressions\".\n", logger->str());
     }
 
@@ -1063,7 +1051,7 @@ private:
                         "uninitvar\n"
                         "unusedFunction\n");
         const char * const argv[] = {"cppcheck", "--exitcode-suppressions=suppr.txt", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(2, settings->supprs.nofail.getSuppressions().size());
         auto it = settings->supprs.nofail.getSuppressions().cbegin();
         ASSERT_EQUALS("uninitvar", (it++)->errorId);
@@ -1073,7 +1061,7 @@ private:
     void exitcodeSuppressionsNoFile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--exitcode-suppressions", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--exitcode-suppressions\".\n", logger->str());
     }
 
@@ -1083,7 +1071,7 @@ private:
                         "file1.c\n"
                         "file2.cpp\n");
         const char * const argv[] = {"cppcheck", "--file-list=files.txt", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(3, parser->getPathNames().size());
         auto it = parser->getPathNames().cbegin();
         ASSERT_EQUALS("file1.c", *it++);
@@ -1094,7 +1082,7 @@ private:
     void fileListNoFile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--file-list=files.txt", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: couldn't open the file: \"files.txt\".\n", logger->str());
     }
 
@@ -1109,7 +1097,7 @@ private:
     void fileListInvalid() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--file-list", "files.txt", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--file-list\".\n", logger->str());
     }
 
@@ -1117,7 +1105,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--inline-suppr", "file.cpp"};
         settings->inlineSuppressions = false;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->inlineSuppressions);
     }
 
@@ -1125,7 +1113,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-j", "3", "file.cpp"};
         settings->jobs = 0;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS(3, settings->jobs);
     }
 
@@ -1133,7 +1121,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-j3", "file.cpp"};
         settings->jobs = 0;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(3, settings->jobs);
     }
 
@@ -1141,7 +1129,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-j", "file.cpp"};
         // Fails since -j is missing thread count
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '-j' is not valid - not an integer.\n", logger->str());
     }
 
@@ -1149,21 +1137,21 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-j", "e", "file.cpp"};
         // Fails since invalid count given for -j
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '-j' is not valid - not an integer.\n", logger->str());
     }
 
     void jobsNoJobs() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-j0", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument for '-j' must be greater than 0.\n", logger->str());
     }
 
     void jobsTooBig() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-j1025", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument for '-j' is allowed to be 1024 at max.\n", logger->str());
     }
 
@@ -1172,7 +1160,7 @@ private:
         const char * const argv[] = {"cppcheck", "-f", "--max-configs=12", "file.cpp"};
         settings->force = false;
         settings->maxConfigs = 0;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS(12, settings->maxConfigs);
         ASSERT_EQUALS(false, settings->force);
     }
@@ -1181,7 +1169,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--max-configs=", "file.cpp"};
         // Fails since --max-configs= is missing limit
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--max-configs=' is not valid - not an integer.\n", logger->str());
     }
 
@@ -1189,7 +1177,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--max-configs=e", "file.cpp"};
         // Fails since invalid count given for --max-configs=
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--max-configs=' is not valid - not an integer.\n", logger->str());
     }
 
@@ -1197,7 +1185,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--max-configs=0", "file.cpp"};
         // Fails since limit must be greater than 0
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--max-configs=' must be greater than 0.\n", logger->str());
     }
 
@@ -1207,42 +1195,42 @@ private:
         {
             settings->severity.clear();
             const char * const argv[] = {"cppcheck", "--premium=autosar", "file.c"};
-            ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+            ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
             ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::warning));
         }
         {
             settings->severity.clear();
             const char * const argv[] = {"cppcheck", "--premium=misra-c-2012", "file.c"};
-            ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+            ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
             ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::warning));
         }
         {
             settings->severity.clear();
             const char * const argv[] = {"cppcheck", "--premium=misra-c++-2023", "file.c"};
-            ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+            ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
             ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::warning));
         }
         {
             settings->severity.clear();
             const char * const argv[] = {"cppcheck", "--premium=cert-c++-2016", "file.c"};
-            ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+            ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
             ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::warning));
         }
         {
             settings->severity.clear();
             const char * const argv[] = {"cppcheck", "--premium=safety", "file.c"};
-            ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+            ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
             ASSERT_EQUALS(false, settings->severity.isEnabled(Severity::warning));
         }
         // invalid options
         {
             const char * const argv[] = {"cppcheck", "--premium=misra", "file.c"};
-            ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+            ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
             ASSERT_EQUALS("cppcheck: error: invalid --premium option 'misra'.\n", logger->str());
         }
         {
             const char * const argv[] = {"cppcheck", "--premium=cert", "file.c"};
-            ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+            ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
             ASSERT_EQUALS("cppcheck: error: invalid --premium option 'cert'.\n", logger->str());
         }
         settings->cppcheckCfgProductName.clear();
@@ -1254,7 +1242,7 @@ private:
         const char * const argv[] = {"cppcheck", "--premium=safety", "file.cpp"};
         settings->safety = false;
         settings->cppcheckCfgProductName = "Cppcheck Premium 0.0.0";
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->safety);
         settings->safety = false;
         settings->cppcheckCfgProductName.clear();
@@ -1264,7 +1252,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--report-progress", "file.cpp"};
         settings->reportProgress = -1;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(10, settings->reportProgress);
     }
 
@@ -1272,7 +1260,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--report-progress=", "file.cpp"};
         settings->reportProgress = -1;
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--report-progress=' is not valid - not an integer.\n", logger->str());
     }
 
@@ -1280,7 +1268,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--report-progress=-1", "file.cpp"};
         settings->reportProgress = -1;
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--report-progress=' needs to be a positive integer.\n", logger->str());
     }
 
@@ -1288,7 +1276,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--report-progress=0", "file.cpp"};
         settings->reportProgress = -1;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(0, settings->reportProgress);
     }
 
@@ -1296,7 +1284,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--report-progress=1", "file.cpp"};
         settings->reportProgress = -1;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, settings->reportProgress);
     }
 
@@ -1304,7 +1292,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--std=c99", "file.cpp"};
         settings->standards.c = Standards::C89;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->standards.c == Standards::C99);
     }
 
@@ -1312,14 +1300,14 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--std=c++11", "file.cpp"};
         settings->standards.cpp = Standards::CPP03;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->standards.cpp == Standards::CPP11);
     }
 
     void stdunknown1() {
         REDIRECT;
         const char *const argv[] = {"cppcheck", "--std=d++11", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unknown --std value 'd++11'\n", logger->str());
     }
 
@@ -1334,7 +1322,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=win64", "file.cpp"};
         ASSERT(settings->platform.set(Platform::Type::Unspecified));
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Platform::Type::Win64, settings->platform.type);
     }
 
@@ -1342,7 +1330,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=win32A", "file.cpp"};
         ASSERT(settings->platform.set(Platform::Type::Unspecified));
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Platform::Type::Win32A, settings->platform.type);
     }
 
@@ -1350,7 +1338,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=win32W", "file.cpp"};
         ASSERT(settings->platform.set(Platform::Type::Unspecified));
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Platform::Type::Win32W, settings->platform.type);
     }
 
@@ -1358,7 +1346,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=unix32", "file.cpp"};
         ASSERT(settings->platform.set(Platform::Type::Unspecified));
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Platform::Type::Unix32, settings->platform.type);
     }
 
@@ -1366,7 +1354,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=unix32-unsigned", "file.cpp"};
         ASSERT(settings->platform.set(Platform::Type::Unspecified));
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Platform::Type::Unix32, settings->platform.type);
     }
 
@@ -1374,7 +1362,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=unix64", "file.cpp"};
         ASSERT(settings->platform.set(Platform::Type::Unspecified));
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Platform::Type::Unix64, settings->platform.type);
     }
 
@@ -1382,7 +1370,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=unix64-unsigned", "file.cpp"};
         ASSERT(settings->platform.set(Platform::Type::Unspecified));
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Platform::Type::Unix64, settings->platform.type);
     }
 
@@ -1390,7 +1378,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=native", "file.cpp"};
         ASSERT(settings->platform.set(Platform::Type::Unspecified));
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Platform::Type::Native, settings->platform.type);
     }
 
@@ -1398,7 +1386,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=unspecified", "file.cpp"};
         ASSERT(settings->platform.set(Platform::Type::Native));
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Platform::Type::Unspecified, settings->platform.type);
     }
 
@@ -1406,14 +1394,14 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=avr8", "file.cpp"};
         ASSERT(settings->platform.set(Platform::Type::Unspecified));
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Platform::Type::File, settings->platform.type);
     }
 
     void platformUnknown() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=win128", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized platform: 'win128'.\n", logger->str());
     }
 
@@ -1421,7 +1409,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--plist-output=", "file.cpp"};
         settings->plistOutput = "";
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->plistOutput == "./");
     }
 
@@ -1429,14 +1417,14 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--plist-output=./cppcheck_reports", "file.cpp"};
         // Fails since folder pointed by --plist-output= does not exist
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: plist folder does not exist: 'cppcheck_reports'.\n", logger->str());
     }
 
     void suppressionsOld() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--suppressions", "suppr.txt", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--suppressions\".\n", logger->str());
     }
 
@@ -1446,7 +1434,7 @@ private:
                         "uninitvar\n"
                         "unusedFunction\n");
         const char * const argv[] = {"cppcheck", "--suppressions-list=suppr.txt", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(2, settings->supprs.nomsg.getSuppressions().size());
         auto it = settings->supprs.nomsg.getSuppressions().cbegin();
         ASSERT_EQUALS("uninitvar", (it++)->errorId);
@@ -1456,21 +1444,21 @@ private:
     void suppressionsNoFile1() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--suppressions-list=", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(false, logger->str().find("If you want to pass two files") != std::string::npos);
     }
 
     void suppressionsNoFile2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--suppressions-list=a.suppr,b.suppr", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, logger->str().find("If you want to pass two files") != std::string::npos);
     }
 
     void suppressionsNoFile3() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--suppressions-list=a.suppr b.suppr", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, logger->str().find("If you want to pass two files") != std::string::npos);
     }
 
@@ -1485,14 +1473,14 @@ private:
     void suppressionSingle() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--suppress=uninitvar", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->supprs.nomsg.isSuppressed(errorMessage("uninitvar", "file.cpp", 1)));
     }
 
     void suppressionSingleFile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--suppress=uninitvar:file.cpp", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->supprs.nomsg.isSuppressed(errorMessage("uninitvar", "file.cpp", 1U)));
     }
 
@@ -1508,7 +1496,7 @@ private:
     void suppressionTwoSeparate() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--suppress=uninitvar", "--suppress=noConstructor", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS(true, settings->supprs.nomsg.isSuppressed(errorMessage("uninitvar", "file.cpp", 1U)));
         ASSERT_EQUALS(true, settings->supprs.nomsg.isSuppressed(errorMessage("noConstructor", "file.cpp", 1U)));
     }
@@ -1518,7 +1506,7 @@ private:
         const char * const argv[] = {"cppcheck", "--template={file}:{line},{severity},{id},{message}", "--template-location={file}:{line}:{column} {info}", "file.cpp"};
         settings->templateFormat.clear();
         settings->templateLocation.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("{file}:{line},{severity},{id},{message}", settings->templateFormat);
         ASSERT_EQUALS("{file}:{line}:{column} {info}", settings->templateLocation);
     }
@@ -1528,7 +1516,7 @@ private:
         const char * const argv[] = {"cppcheck", "--template=gcc", "file.cpp"};
         settings->templateFormat.clear();
         settings->templateLocation.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("{file}:{line}:{column}: warning: {message} [{id}]\n{code}", settings->templateFormat);
         ASSERT_EQUALS("{file}:{line}:{column}: note: {info}\n{code}", settings->templateLocation);
     }
@@ -1538,7 +1526,7 @@ private:
         const char * const argv[] = {"cppcheck", "--template=vs", "file.cpp"};
         settings->templateFormat.clear();
         settings->templateLocation.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("{file}({line}): {severity}: {message}", settings->templateFormat);
         ASSERT_EQUALS("", settings->templateLocation);
     }
@@ -1548,7 +1536,7 @@ private:
         const char * const argv[] = {"cppcheck", "--template=edit", "file.cpp"};
         settings->templateFormat.clear();
         settings->templateLocation.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("{file} +{line}: {severity}: {message}", settings->templateFormat);
         ASSERT_EQUALS("", settings->templateLocation);
     }
@@ -1558,7 +1546,7 @@ private:
         const char * const argv[] = {"cppcheck", "--template=cppcheck1", "file.cpp"};
         settings->templateFormat.clear();
         settings->templateLocation.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("{callstack}: ({severity}{inconclusive:, inconclusive}) {message}", settings->templateFormat);
         ASSERT_EQUALS("", settings->templateLocation);
     }
@@ -1568,7 +1556,7 @@ private:
         const char * const argv[] = {"cppcheck", "--template=daca2", "file.cpp"};
         settings->templateFormat.clear();
         settings->templateLocation.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]", settings->templateFormat);
         ASSERT_EQUALS("{file}:{line}:{column}: note: {info}", settings->templateLocation);
         ASSERT_EQUALS(true, settings->daca);
@@ -1579,7 +1567,7 @@ private:
         const char * const argv[] = {"cppcheck", "--template=selfcheck", "file.cpp"};
         settings->templateFormat.clear();
         settings->templateLocation.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]\n{code}", settings->templateFormat);
         ASSERT_EQUALS("{file}:{line}:{column}: note: {info}\n{code}", settings->templateLocation);
     }
@@ -1589,7 +1577,7 @@ private:
         const char * const argv[] = {"cppcheck", "--template=simple", "file.cpp"};
         settings->templateFormat.clear();
         settings->templateLocation.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]", settings->templateFormat);
         ASSERT_EQUALS("", settings->templateLocation);
     }
@@ -1610,7 +1598,7 @@ private:
         settings->templateFormat.clear();
         settings->templateLocation.clear();
         const char* const argv[] = { "cppcheck", "--template", "file.cpp" };
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--template\".\n", logger->str());
     }
 
@@ -1621,7 +1609,7 @@ private:
         settings->templateFormat.clear();
         settings->templateLocation.clear();
         const char* const argv[] = { "cppcheck", "--template=", "file.cpp" };
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("{file}:{line}:{column}: {inconclusive:}{severity}:{inconclusive: inconclusive:} {message} [{id}]\n{code}", settings->templateFormat);
         ASSERT_EQUALS("{file}:{line}:{column}: note: {info}\n{code}", settings->templateLocation);
     }
@@ -1629,7 +1617,7 @@ private:
     void templateLocationInvalid() {
         REDIRECT;
         const char* const argv[] = { "cppcheck", "--template-location", "--template={file}", "file.cpp" };
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--template-location\".\n", logger->str());
     }
 
@@ -1640,7 +1628,7 @@ private:
         settings->templateFormat.clear();
         settings->templateLocation.clear();
         const char* const argv[] = { "cppcheck", "--template-location=", "file.cpp" };
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("{file}:{line}:{column}: {inconclusive:}{severity}:{inconclusive: inconclusive:} {message} [{id}]\n{code}", settings->templateFormat);
         ASSERT_EQUALS("{file}:{line}:{column}: note: {info}\n{code}", settings->templateLocation);
     }
@@ -1650,7 +1638,7 @@ private:
         const char * const argv[] = {"cppcheck", "--xml", "file.cpp"};
         settings->xml_version = 1;
         settings->xml = false;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->xml);
         ASSERT_EQUALS(1, settings->xml_version);
     }
@@ -1660,7 +1648,7 @@ private:
         const char * const argv[] = {"cppcheck", "--xml-version=2", "file.cpp"};
         settings->xml_version = 1;
         settings->xml = false;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->xml);
         ASSERT_EQUALS(2, settings->xml_version);
     }
@@ -1670,7 +1658,7 @@ private:
         const char * const argv[] = {"cppcheck", "--xml", "--xml-version=2", "file.cpp"};
         settings->xml_version = 1;
         settings->xml = false;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT(settings->xml);
         ASSERT_EQUALS(2, settings->xml_version);
     }
@@ -1680,7 +1668,7 @@ private:
         const char * const argv[] = {"cppcheck", "--xml-version=2", "--xml", "file.cpp"};
         settings->xml_version = 1;
         settings->xml = false;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT(settings->xml);
         ASSERT_EQUALS(2, settings->xml_version);
     }
@@ -1689,7 +1677,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--xml", "--xml-version=3", "file.cpp"};
         // FAils since unknown XML format version
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("cppcheck: error: '--xml-version' can only be 2.\n", logger->str());
     }
 
@@ -1697,21 +1685,21 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--xml", "--xml-version=a", "file.cpp"};
         // FAils since unknown XML format version
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--xml-version=' is not valid - not an integer.\n", logger->str());
     }
 
     void doc() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--doc"};
-        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
         ASSERT(startsWith(logger->str(), "## "));
     }
 
     void docExclusive() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--library=missing", "--doc"};
-        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
         ASSERT(startsWith(logger->str(), "## "));
     }
 
@@ -1719,7 +1707,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=summary", "file.cpp"};
         settings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_SUMMARY);
     }
 
@@ -1727,7 +1715,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=file", "file.cpp"};
         settings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_FILE);
     }
 
@@ -1735,7 +1723,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=file-total", "file.cpp"};
         settings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL);
     }
 
@@ -1743,7 +1731,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=top5", "file.cpp"};
         settings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_TOP5_FILE);
         ASSERT_EQUALS("cppcheck: --showtime=top5 is deprecated and will be removed in Cppcheck 2.14. Please use --showtime=top5_file or --showtime=top5_summary instead.\n", logger->str());
     }
@@ -1752,7 +1740,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=top5_file", "file.cpp"};
         settings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_TOP5_FILE);
     }
 
@@ -1760,7 +1748,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=top5_summary", "file.cpp"};
         settings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_TOP5_SUMMARY);
     }
 
@@ -1768,28 +1756,28 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=none", "file.cpp"};
         settings->showtime = SHOWTIME_MODES::SHOWTIME_FILE;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_NONE);
     }
 
     void showtimeEmpty() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: no mode provided for --showtime\n", logger->str());
     }
 
     void showtimeInvalid() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=top10", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized --showtime mode: 'top10'. Supported modes: file, file-total, summary, top5, top5_file, top5_summary.\n", logger->str());
     }
 
     void errorlist() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--errorlist"};
-        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
         const std::string errout_s = GET_REDIRECT_OUTPUT;
         ASSERT(startsWith(errout_s, ErrorMessage::getXMLHeader("")));
@@ -1801,7 +1789,7 @@ private:
         ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
                         R"({"productName": "The Product"}\n)");
         const char * const argv[] = {"cppcheck", "--errorlist"};
-        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
         ASSERT(startsWith(GET_REDIRECT_OUTPUT, ErrorMessage::getXMLHeader("The Product")));
     }
@@ -1809,7 +1797,7 @@ private:
     void errorlistExclusive() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--library=missing", "--errorlist"};
-        ASSERT_EQUALS(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
         const std::string errout_s = GET_REDIRECT_OUTPUT;
         ASSERT(startsWith(errout_s, ErrorMessage::getXMLHeader("")));
@@ -1821,7 +1809,7 @@ private:
         ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
                         "{\n");
         const char * const argv[] = {"cppcheck", "--errorlist"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 2 near: \n", logger->str());
     }
 
@@ -1829,7 +1817,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-i"};
         // Fails since no ignored path given
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '-i' is missing.\n", logger->str());
     }
 
@@ -1839,7 +1827,7 @@ private:
         const char * const argv[] = {"cppcheck", "--exception-handling", "file.cpp"};
         settings->exceptionHandling = false;
         CppCheckExecutor::setExceptionOutput(stderr);
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->exceptionHandling);
         ASSERT_EQUALS(stderr, CppCheckExecutor::getExceptionOutput());
     }
@@ -1849,7 +1837,7 @@ private:
         const char * const argv[] = {"cppcheck", "--exception-handling=stderr", "file.cpp"};
         settings->exceptionHandling = false;
         CppCheckExecutor::setExceptionOutput(stdout);
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->exceptionHandling);
         ASSERT_EQUALS(stderr, CppCheckExecutor::getExceptionOutput());
     }
@@ -1859,7 +1847,7 @@ private:
         const char * const argv[] = {"cppcheck", "--exception-handling=stdout", "file.cpp"};
         settings->exceptionHandling = false;
         CppCheckExecutor::setExceptionOutput(stderr);
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->exceptionHandling);
         ASSERT_EQUALS(stdout, CppCheckExecutor::getExceptionOutput());
     }
@@ -1867,28 +1855,28 @@ private:
     void exceptionhandlingInvalid() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--exception-handling=exfile"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: invalid '--exception-handling' argument\n", logger->str());
     }
 
     void exceptionhandlingInvalid2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--exception-handling-foo"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--exception-handling-foo\".\n", logger->str());
     }
 #else
     void exceptionhandlingNotSupported() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--exception-handling", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: Option --exception-handling is not supported since Cppcheck has not been built with any exception handling enabled.\n", logger->str());
     }
 
     void exceptionhandlingNotSupported2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--exception-handling=stderr", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: Option --exception-handling is not supported since Cppcheck has not been built with any exception handling enabled.\n", logger->str());
     }
 #endif
@@ -1898,7 +1886,7 @@ private:
         const char * const argv[] = {"cppcheck", "--clang", "file.cpp"};
         settings->clang = false;
         settings->clangExecutable = "exe";
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->clang);
         ASSERT_EQUALS("exe", settings->clangExecutable);
     }
@@ -1908,7 +1896,7 @@ private:
         const char * const argv[] = {"cppcheck", "--clang=clang-14", "file.cpp"};
         settings->clang = false;
         settings->clangExecutable = "";
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->clang);
         ASSERT_EQUALS("clang-14", settings->clangExecutable);
     }
@@ -1916,7 +1904,7 @@ private:
     void clangInvalid() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--clang-foo"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--clang-foo\".\n", logger->str());
     }
 
@@ -1924,7 +1912,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--valueflow-max-iterations=0", "file.cpp"};
         settings->valueFlowMaxIterations = SIZE_MAX;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(0, settings->valueFlowMaxIterations);
     }
 
@@ -1932,28 +1920,28 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--valueflow-max-iterations=11", "file.cpp"};
         settings->valueFlowMaxIterations = SIZE_MAX;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(11, settings->valueFlowMaxIterations);
     }
 
     void valueFlowMaxIterationsInvalid() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--valueflow-max-iterations"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--valueflow-max-iterations\".\n", logger->str());
     }
 
     void valueFlowMaxIterationsInvalid2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--valueflow-max-iterations=seven"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--valueflow-max-iterations=' is not valid - not an integer.\n", logger->str());
     }
 
     void valueFlowMaxIterationsInvalid3() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--valueflow-max-iterations=-1"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--valueflow-max-iterations=' is not valid - needs to be positive.\n", logger->str());
     }
 
@@ -1961,21 +1949,21 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--checks-max-time=12", "file.cpp"};
         settings->checksMaxTime = 0;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(12, settings->checksMaxTime);
     }
 
     void checksMaxTime2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--checks-max-time=-1", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--checks-max-time=' needs to be a positive integer.\n", logger->str());
     }
 
     void checksMaxTimeInvalid() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--checks-max-time=one", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--checks-max-time=' is not valid - not an integer.\n", logger->str());
     }
 
@@ -1984,7 +1972,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-l", "12", "file.cpp"};
         settings->loadAverage = 0;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS(12, settings->loadAverage);
     }
 
@@ -1992,21 +1980,21 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-l12", "file.cpp"};
         settings->loadAverage = 0;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(12, settings->loadAverage);
     }
 
     void loadAverageInvalid() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-l", "one", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '-l' is not valid - not an integer.\n", logger->str());
     }
 #else
     void loadAverageNotSupported() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-l", "12", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("cppcheck: error: Option -l cannot be used as Cppcheck has not been built with fork threading model.\n", logger->str());
     }
 #endif
@@ -2015,14 +2003,14 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--max-ctu-depth=12", "file.cpp"};
         settings->maxCtuDepth = 0;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(12, settings->maxCtuDepth);
     }
 
     void maxCtuDepthInvalid() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--max-ctu-depth=one", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--max-ctu-depth=' is not valid - not an integer.\n", logger->str());
     }
 
@@ -2030,14 +2018,14 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--performance-valueflow-max-time=12", "file.cpp"};
         settings->performanceValueFlowMaxTime = 0;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(12, settings->performanceValueFlowMaxTime);
     }
 
     void performanceValueflowMaxTimeInvalid() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--performance-valueflow-max-time=one", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--performance-valueflow-max-time=' is not valid - not an integer.\n", logger->str());
     }
 
@@ -2045,14 +2033,14 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--performance-valueflow-max-if-count=12", "file.cpp"};
         settings->performanceValueFlowMaxIfCount = 0;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(12, settings->performanceValueFlowMaxIfCount);
     }
 
     void performanceValueFlowMaxIfCountInvalid() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--performance-valueflow-max-if-count=one", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--performance-valueflow-max-if-count=' is not valid - not an integer.\n", logger->str());
     }
 
@@ -2060,21 +2048,21 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--template-max-time=12", "file.cpp"};
         settings->templateMaxTime = 0;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(12, settings->templateMaxTime);
     }
 
     void templateMaxTimeInvalid() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--template-max-time=one", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--template-max-time=' is not valid - not an integer.\n", logger->str());
     }
 
     void templateMaxTimeInvalid2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--template-max-time=-1", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--template-max-time=' is not valid - needs to be positive.\n", logger->str());
     }
 
@@ -2082,21 +2070,21 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--typedef-max-time=12", "file.cpp"};
         settings->typedefMaxTime = 0;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(12, settings->typedefMaxTime);
     }
 
     void typedefMaxTimeInvalid() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--typedef-max-time=one", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--typedef-max-time=' is not valid - not an integer.\n", logger->str());
     }
 
     void typedefMaxTimeInvalid2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--typedef-max-time=-1", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--typedef-max-time=' is not valid - needs to be positive.\n", logger->str());
     }
 
@@ -2109,7 +2097,7 @@ private:
                         "</paths>\n"
                         "</project>");
         const char * const argv[] = {"cppcheck", "--project=project.cppcheck"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS(1, parser->getPathNames().size());
         auto it = parser->getPathNames().cbegin();
         ASSERT_EQUALS("dir", *it);
@@ -2119,7 +2107,7 @@ private:
         REDIRECT;
         ScopedFile file("project.cppcheck", "<project></project>");
         const char * const argv[] = {"cppcheck", "--project=project.cppcheck", "--project=project.cppcheck", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("cppcheck: error: multiple --project options are not supported.\n", logger->str());
     }
 
@@ -2127,28 +2115,28 @@ private:
         REDIRECT;
         ScopedFile file("project.cppcheck", "<project></project>");
         const char * const argv[] = {"cppcheck", "--project=project.cppcheck", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: --project cannot be used in conjunction with source files.\n", logger->str());
     }
 
     void projectEmpty() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--project=", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: failed to open project ''. The file does not exist.\n", logger->str());
     }
 
     void projectMissing() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--project=project.cppcheck", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: failed to open project 'project.cppcheck'. The file does not exist.\n", logger->str());
     }
 
     void projectNoPaths() {
         ScopedFile file("project.cppcheck", "<project></project>");
         const char * const argv[] = {"cppcheck", "--project=project.cppcheck"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: no C or C++ source files found.\n", logger->str());
     }
 
@@ -2156,7 +2144,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--addon=misra", "file.cpp"};
         settings->addons.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, settings->addons.size());
         ASSERT_EQUALS("misra", *settings->addons.cbegin());
     }
@@ -2175,7 +2163,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--fsigned-char", "file.cpp"};
         settings->platform.defaultSign = '\0';
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS('s', settings->platform.defaultSign);
     }
 
@@ -2183,7 +2171,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=avr8", "--fsigned-char", "file.cpp"};
         settings->platform.defaultSign = '\0';
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS('s', settings->platform.defaultSign);
     }
 
@@ -2191,7 +2179,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--funsigned-char", "file.cpp"};
         settings->platform.defaultSign = '\0';
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS('u', settings->platform.defaultSign);
     }
 
@@ -2199,7 +2187,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=mips32", "--funsigned-char", "file.cpp"};
         settings->platform.defaultSign = '\0';
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS('u', settings->platform.defaultSign);
     }
 
@@ -2207,7 +2195,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--fsigned-char", "--funsigned-char", "file.cpp"};
         settings->platform.defaultSign = '\0';
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS('u', settings->platform.defaultSign);
     }
 
@@ -2215,7 +2203,7 @@ private:
     void rule() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--rule=.+", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, settings->rules.size());
         auto it = settings->rules.cbegin();
         ASSERT_EQUALS(".+", it->pattern);
@@ -2224,7 +2212,7 @@ private:
     void ruleNotSupported() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--rule=.+", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: Option --rule cannot be used as Cppcheck has not been built with rules support.\n", logger->str());
     }
 #endif
@@ -2239,7 +2227,7 @@ private:
                         "</rule>\n"
                         "</rules>");
         const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, settings->rules.size());
         auto it = settings->rules.cbegin();
         ASSERT_EQUALS(".+", it->pattern);
@@ -2248,14 +2236,14 @@ private:
     void ruleFileEmpty() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--rule-file=", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unable to load rule-file '' (XML_ERROR_FILE_NOT_FOUND).\n", logger->str());
     }
 
     void ruleFileMissing() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unable to load rule-file 'rule.xml' (XML_ERROR_FILE_NOT_FOUND).\n", logger->str());
     }
 
@@ -2263,14 +2251,14 @@ private:
         REDIRECT;
         ScopedFile file("rule.xml", "");
         const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unable to load rule-file 'rule.xml' (XML_ERROR_EMPTY_DOCUMENT).\n", logger->str());
     }
 #else
     void ruleFileNotSupported() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: Option --rule-file cannot be used as Cppcheck has not been built with rules support.\n", logger->str());
     }
 #endif
@@ -2279,7 +2267,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--library=posix", "file.cpp"};
         settings->libraries.clear();
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, settings->libraries.size());
         ASSERT_EQUALS("posix", *settings->libraries.cbegin());
     }
@@ -2297,7 +2285,7 @@ private:
     void ignorepaths1() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-isrc", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
         ASSERT_EQUALS("src", parser->getIgnoredPaths()[0]);
     }
@@ -2305,7 +2293,7 @@ private:
     void ignorepaths2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-i", "src", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
         ASSERT_EQUALS("src", parser->getIgnoredPaths()[0]);
     }
@@ -2313,7 +2301,7 @@ private:
     void ignorepaths3() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-isrc", "-imodule", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS(2, parser->getIgnoredPaths().size());
         ASSERT_EQUALS("src", parser->getIgnoredPaths()[0]);
         ASSERT_EQUALS("module", parser->getIgnoredPaths()[1]);
@@ -2322,7 +2310,7 @@ private:
     void ignorepaths4() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-i", "src", "-i", "module", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(6, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(6, argv));
         ASSERT_EQUALS(2, parser->getIgnoredPaths().size());
         ASSERT_EQUALS("src", parser->getIgnoredPaths()[0]);
         ASSERT_EQUALS("module", parser->getIgnoredPaths()[1]);
@@ -2331,7 +2319,7 @@ private:
     void ignorefilepaths1() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-ifoo.cpp", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
         ASSERT_EQUALS("foo.cpp", parser->getIgnoredPaths()[0]);
     }
@@ -2339,7 +2327,7 @@ private:
     void ignorefilepaths2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-isrc/foo.cpp", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
         ASSERT_EQUALS("src/foo.cpp", parser->getIgnoredPaths()[0]);
     }
@@ -2347,7 +2335,7 @@ private:
     void ignorefilepaths3() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-i", "foo.cpp", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
         ASSERT_EQUALS("foo.cpp", parser->getIgnoredPaths()[0]);
     }
@@ -2356,21 +2344,21 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--check-config", "file.cpp"};
         settings->checkConfiguration = false;
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->checkConfiguration);
     }
 
     void unknownParam() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--foo", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--foo\".\n", logger->str());
     }
 
     void undefs() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-U_WIN32", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, settings->userUndefs.size());
         ASSERT(settings->userUndefs.find("_WIN32") != settings->userUndefs.end());
     }
@@ -2378,7 +2366,7 @@ private:
     void undefs2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-U_WIN32", "-UNODEBUG", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS(2, settings->userUndefs.size());
         ASSERT(settings->userUndefs.find("_WIN32") != settings->userUndefs.end());
         ASSERT(settings->userUndefs.find("NODEBUG") != settings->userUndefs.end());
@@ -2388,7 +2376,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-U"};
         // Fails since -U has no param
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '-U' is missing.\n", logger->str());
     }
 
@@ -2396,7 +2384,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-U", "-v", "file.cpp"};
         // Fails since -U has no param
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '-U' is missing.\n", logger->str());
     }
 
@@ -2404,27 +2392,27 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-U", "--quiet", "file.cpp"};
         // Fails since -U has no param
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '-U' is missing.\n", logger->str());
     }
 
     void cppcheckBuildDirExistent() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--cppcheck-build-dir=.", "file.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
     }
 
     void cppcheckBuildDirNonExistent() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--cppcheck-build-dir=non-existent-path"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: Directory 'non-existent-path' specified by --cppcheck-build-dir argument has to be existent.\n", logger->str());
     }
 
     void cppcheckBuildDirEmpty() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--cppcheck-build-dir="};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: Directory '' specified by --cppcheck-build-dir argument has to be existent.\n", logger->str());
     }
 
@@ -2433,7 +2421,7 @@ private:
         ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
                         "{\n");
         const char * const argv[] = {"cppcheck", "test.cpp"};
-        ASSERT_EQUALS(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 2 near: \n", logger->str());
     }
 };
