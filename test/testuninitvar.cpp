@@ -7377,6 +7377,16 @@ private:
                       "[test.cpp:8]: (error) Uninitialized variable: i\n"
                       "[test.cpp:12]: (error) Uninitialized variable: i\n",
                       errout.str());
+
+        valueFlowUninit("struct S {\n"
+                        "    S(char**);\n"
+                        "    int i;\n"
+                        "};\n"
+                        "void f() {\n"
+                        "    char* p;\n"
+                        "    S s(&p);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_memberfunction() {
