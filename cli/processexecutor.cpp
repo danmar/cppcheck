@@ -61,7 +61,7 @@ enum class Color;
 using std::memset;
 
 
-ProcessExecutor::ProcessExecutor(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand)
+ProcessExecutor::ProcessExecutor(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand)
     : Executor(files, fileSettings, settings, suppressions, errorLogger)
     , mExecuteCommand(std::move(executeCommand))
 {

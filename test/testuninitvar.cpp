@@ -6414,6 +6414,13 @@ private:
                         "    return s[0].x;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct S { int* p; };\n" // #12473
+                        "void f() {\n"
+                        "    struct S s;\n"
+                        "    s.p[0] = 0;\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s.p\n", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value

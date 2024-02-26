@@ -83,7 +83,7 @@ namespace {
     };
 }
 
-static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std::list<Suppressions::Suppression> &inlineSuppressions, std::list<BadInlineSuppression> &bad)
+static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std::list<SuppressionList::Suppression> &inlineSuppressions, std::list<BadInlineSuppression> &bad)
 {
     const std::string cppchecksuppress("cppcheck-suppress");
 
@@ -106,7 +106,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
     if (pos2 == std::string::npos)
         return false;
 
-    Suppressions::Type errorType = Suppressions::Type::unique;
+    SuppressionList::Type errorType = SuppressionList::Type::unique;
 
     // determine prefix if specified
     if (posEndComment >= (pos1 + cppchecksuppress.size() + 1)) {
@@ -120,13 +120,13 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
             comment.substr(pos1 + cppchecksuppress.size() + 1, argumentLength);
 
         if ("file" == suppressTypeString)
-            errorType = Suppressions::Type::file;
+            errorType = SuppressionList::Type::file;
         else if ("begin" == suppressTypeString)
-            errorType = Suppressions::Type::blockBegin;
+            errorType = SuppressionList::Type::blockBegin;
         else if ("end" == suppressTypeString)
-            errorType = Suppressions::Type::blockEnd;
+            errorType = SuppressionList::Type::blockEnd;
         else if ("macro" == suppressTypeString)
-            errorType = Suppressions::Type::macro;
+            errorType = SuppressionList::Type::macro;
         else
             return false;
     }
@@ -134,9 +134,9 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
     if (comment[pos2] == '[') {
         // multi suppress format
         std::string errmsg;
-        std::vector<Suppressions::Suppression> suppressions = Suppressions::parseMultiSuppressComment(comment, &errmsg);
+        std::vector<SuppressionList::Suppression> suppressions = SuppressionList::parseMultiSuppressComment(comment, &errmsg);
 
-        for (Suppressions::Suppression &s : suppressions) {
+        for (SuppressionList::Suppression &s : suppressions) {
             s.type = errorType;
             s.lineNumber = tok->location.line;
         }
@@ -144,13 +144,13 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         if (!errmsg.empty())
             bad.emplace_back(tok->location.file(), tok->location.line, std::move(errmsg));
 
-        std::copy_if(suppressions.cbegin(), suppressions.cend(), std::back_inserter(inlineSuppressions), [](const Suppressions::Suppression& s) {
+        std::copy_if(suppressions.cbegin(), suppressions.cend(), std::back_inserter(inlineSuppressions), [](const SuppressionList::Suppression& s) {
             return !s.errorId.empty();
         });
     } else {
         //single suppress format
         std::string errmsg;
-        Suppressions::Suppression s;
+        SuppressionList::Suppression s;
         if (!s.parseComment(comment, &errmsg))
             return false;
 
@@ -167,9 +167,9 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
     return true;
 }
 
-static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Settings &settings, Suppressions &suppressions, std::list<BadInlineSuppression> &bad)
+static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Settings &settings, SuppressionList &suppressions, std::list<BadInlineSuppression> &bad)
 {
-    std::list<Suppressions::Suppression> inlineSuppressionsBlockBegin;
+    std::list<SuppressionList::Suppression> inlineSuppressionsBlockBegin;
 
     bool onlyComments = true;
 
@@ -179,7 +179,7 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
             continue;
         }
 
-        std::list<Suppressions::Suppression> inlineSuppressions;
+        std::list<SuppressionList::Suppression> inlineSuppressions;
         if (!parseInlineSuppressionCommentToken(tok, inlineSuppressions, bad))
             continue;
 
@@ -228,17 +228,17 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
         }
 
         // Add the suppressions.
-        for (Suppressions::Suppression &suppr : inlineSuppressions) {
+        for (SuppressionList::Suppression &suppr : inlineSuppressions) {
             suppr.fileName = relativeFilename;
 
-            if (Suppressions::Type::blockBegin == suppr.type)
+            if (SuppressionList::Type::blockBegin == suppr.type)
             {
                 inlineSuppressionsBlockBegin.push_back(std::move(suppr));
-            } else if (Suppressions::Type::blockEnd == suppr.type) {
+            } else if (SuppressionList::Type::blockEnd == suppr.type) {
                 bool throwError = true;
 
                 if (!inlineSuppressionsBlockBegin.empty()) {
-                    const Suppressions::Suppression lastBeginSuppression = inlineSuppressionsBlockBegin.back();
+                    const SuppressionList::Suppression lastBeginSuppression = inlineSuppressionsBlockBegin.back();
 
                     auto supprBegin = inlineSuppressionsBlockBegin.begin();
                     while (supprBegin != inlineSuppressionsBlockBegin.end())
@@ -252,7 +252,7 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
                             suppr.lineBegin = supprBegin->lineNumber;
                             suppr.lineEnd = suppr.lineNumber;
                             suppr.lineNumber = supprBegin->lineNumber;
-                            suppr.type = Suppressions::Type::block;
+                            suppr.type = SuppressionList::Type::block;
                             inlineSuppressionsBlockBegin.erase(supprBegin);
                             suppressions.addSuppression(std::move(suppr));
                             throwError = false;
@@ -266,7 +266,7 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
                     // NOLINTNEXTLINE(bugprone-use-after-move) - moved only when thrownError is false
                     bad.emplace_back(suppr.fileName, suppr.lineNumber, "Suppress End: No matching begin");
                 }
-            } else if (Suppressions::Type::unique == suppr.type || suppr.type == Suppressions::Type::macro) {
+            } else if (SuppressionList::Type::unique == suppr.type || suppr.type == SuppressionList::Type::macro) {
                 // special handling when suppressing { warnings for backwards compatibility
                 const bool thisAndNextLine = tok->previous &&
                                              tok->previous->previous &&
@@ -280,7 +280,7 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
                 suppr.lineNumber = tok->location.line;
                 suppr.macroName = macroName;
                 suppressions.addSuppression(std::move(suppr));
-            } else if (Suppressions::Type::file == suppr.type) {
+            } else if (SuppressionList::Type::file == suppr.type) {
                 if (onlyComments)
                     suppressions.addSuppression(std::move(suppr));
                 else
@@ -289,12 +289,12 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
         }
     }
 
-    for (const Suppressions::Suppression & suppr: inlineSuppressionsBlockBegin)
+    for (const SuppressionList::Suppression & suppr: inlineSuppressionsBlockBegin)
         // cppcheck-suppress useStlAlgorithm
         bad.emplace_back(suppr.fileName, suppr.lineNumber, "Suppress Begin: No matching end");
 }
 
-void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens, Suppressions &suppressions)
+void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens, SuppressionList &suppressions)
 {
     if (!mSettings.inlineSuppressions)
         return;

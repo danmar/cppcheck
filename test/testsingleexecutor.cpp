@@ -130,7 +130,7 @@ private:
         if (useFS)
             filelist.clear();
 
-        SingleExecutor executor(cppcheck, filelist, fileSettings, s, s.nomsg, *this);
+        SingleExecutor executor(cppcheck, filelist, fileSettings, s, s.supprs.nomsg, *this);
         ASSERT_EQUALS(result, executor.check());
         ASSERT_EQUALS(opt.executeCommandCalled, executeCommandCalled);
         ASSERT_EQUALS(opt.exe, exe);
@@ -276,7 +276,7 @@ private:
                     $.showtime = SHOWTIME_MODES::SHOWTIME_TOP5_FILE));
         const std::string output_s = GET_REDIRECT_OUTPUT;
         // for each file: top5 results + overall + empty line
-        ASSERT_EQUALS((5 + 1 + 1) * 2, cppcheck::count_all_of(output_s, '\n'));
+        ASSERT_EQUALS((5 + 1 + 1) * 2LL, cppcheck::count_all_of(output_s, '\n'));
     }
 
     void showtime_top5_summary() {

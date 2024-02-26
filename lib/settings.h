@@ -235,12 +235,6 @@ public:
     /** @brief max template recursion */
     int maxTemplateRecursion = 100;
 
-    /** @brief suppress exitcode */
-    Suppressions nofail;
-
-    /** @brief suppress message (--suppressions) */
-    Suppressions nomsg;
-
     /** @brief write results (--output-file=&lt;file&gt;) */
     std::string outputFile;
 
@@ -353,6 +347,9 @@ public:
 
     /** Struct contains standards settings */
     Standards standards;
+
+    /** @brief suppressions */
+    Suppressions supprs;
 
     /** @brief The output format in which the errors are printed in text mode,
         e.g. "{severity} {file}:{line} {message} {id}" */

@@ -124,7 +124,7 @@ private:
         if (useFS)
             filelist.clear();
 
-        ProcessExecutor executor(filelist, fileSettings, s, s.nomsg, *this, executeFn);
+        ProcessExecutor executor(filelist, fileSettings, s, s.supprs.nomsg, *this, executeFn);
         ASSERT_EQUALS(result, executor.check());
         ASSERT_EQUALS(opt.executeCommandCalled, executeCommandCalled);
         ASSERT_EQUALS(opt.exe, exe);

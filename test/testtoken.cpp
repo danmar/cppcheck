@@ -173,42 +173,42 @@ private:
             ASSERT_EQUALS(0, Token::multiCompare(&notfound, "one|two|", 0));
 
             // Test for not found
-            ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&notfound, "one|two", 0)));
+            ASSERT_EQUALS(-1, Token::multiCompare(&notfound, "one|two", 0));
         }
 
         {
             TokensFrontBack tokensFrontBack(list);
             Token s(tokensFrontBack);
             s.str("s");
-            ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&s, "verybig|two", 0)));
+            ASSERT_EQUALS(-1, Token::multiCompare(&s, "verybig|two", 0));
         }
 
         {
             TokensFrontBack tokensFrontBack(list);
             Token ne(tokensFrontBack);
             ne.str("ne");
-            ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&ne, "one|two", 0)));
+            ASSERT_EQUALS(-1, Token::multiCompare(&ne, "one|two", 0));
         }
 
         {
             TokensFrontBack tokensFrontBack(list);
             Token a(tokensFrontBack);
             a.str("a");
-            ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&a, "abc|def", 0)));
+            ASSERT_EQUALS(-1, Token::multiCompare(&a, "abc|def", 0));
         }
 
         {
             TokensFrontBack tokensFrontBack(list);
             Token abcd(tokensFrontBack);
             abcd.str("abcd");
-            ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&abcd, "abc|def", 0)));
+            ASSERT_EQUALS(-1, Token::multiCompare(&abcd, "abc|def", 0));
         }
 
         {
             TokensFrontBack tokensFrontBack(list);
             Token def(tokensFrontBack);
             def.str("default");
-            ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&def, "abc|def", 0)));
+            ASSERT_EQUALS(-1, Token::multiCompare(&def, "abc|def", 0));
         }
 
         // %op%

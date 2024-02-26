@@ -135,11 +135,10 @@ namespace {
     };
 }
 
-CmdLineParser::CmdLineParser(CmdLineLogger &logger, Settings &settings, Suppressions &suppressions, Suppressions &suppressionsNoFail)
+CmdLineParser::CmdLineParser(CmdLineLogger &logger, Settings &settings, Suppressions &suppressions)
     : mLogger(logger)
     , mSettings(settings)
     , mSuppressions(suppressions)
-    , mSuppressionsNoFail(suppressionsNoFail)
 {}
 
 bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
@@ -625,7 +624,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     mLogger.printError("couldn't open the file: \"" + filename + "\".");
                     return Result::Fail;
                 }
-                const std::string errmsg(mSuppressionsNoFail.parseFile(f));
+                const std::string errmsg(mSuppressions.nofail.parseFile(f));
                 if (!errmsg.empty()) {
                     mLogger.printError(errmsg);
                     return Result::Fail;
@@ -1139,7 +1138,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             else if (std::strncmp(argv[i], "--suppress=", 11) == 0) {
                 const std::string suppression = argv[i]+11;
-                const std::string errmsg(mSuppressions.addSuppressionLine(suppression));
+                const std::string errmsg(mSuppressions.nomsg.addSuppressionLine(suppression));
                 if (!errmsg.empty()) {
                     mLogger.printError(errmsg);
                     return Result::Fail;
@@ -1166,7 +1165,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     mLogger.printError(message);
                     return Result::Fail;
                 }
-                const std::string errmsg(mSuppressions.parseFile(f));
+                const std::string errmsg(mSuppressions.nomsg.parseFile(f));
                 if (!errmsg.empty()) {
                     mLogger.printError(errmsg);
                     return Result::Fail;
@@ -1175,7 +1174,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             else if (std::strncmp(argv[i], "--suppress-xml=", 15) == 0) {
                 const char * filename = argv[i] + 15;
-                const std::string errmsg(mSuppressions.parseXmlFile(filename));
+                const std::string errmsg(mSuppressions.nomsg.parseXmlFile(filename));
                 if (!errmsg.empty()) {
                     mLogger.printError(errmsg);
                     return Result::Fail;

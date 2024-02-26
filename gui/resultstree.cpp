@@ -1080,7 +1080,7 @@ void ResultsTree::suppressHash()
         QStandardItem *fileItem = item->parent();
         const QVariantMap data = item->data().toMap();
         if (projectFile && data.contains(HASH)) {
-            Suppressions::Suppression suppression;
+            SuppressionList::Suppression suppression;
             suppression.hash = data[HASH].toULongLong();
             suppression.errorId = data[ERRORID].toString().toStdString();
             suppression.fileName = data[FILENAME].toString().toStdString();
