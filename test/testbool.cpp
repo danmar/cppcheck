@@ -954,6 +954,16 @@ private:
               "    return b;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { bool b{}; };\n" // #12455
+              "void f(const std::unordered_map<int, S> m) {\n"
+              "    for (const auto& e : m) {\n"
+              "        S s;\n"
+              "        s.b |= e.second.b;\n"
+              "        (void)s.b;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void incrementBoolean() {

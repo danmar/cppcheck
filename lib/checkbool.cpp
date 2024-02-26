@@ -113,6 +113,8 @@ void CheckBool::checkBitwiseOnBoolean()
                     continue;
                 const bool isBoolOp1 = astIsBool(tok->astOperand1());
                 const bool isBoolOp2 = astIsBool(tok->astOperand2());
+                if (!tok->astOperand1()->valueType() || !tok->astOperand2()->valueType())
+                    continue;
                 if (!(isBoolOp1 || isBoolOp2))
                     continue;
                 if (isCompound && (!isBoolOp1 || isBoolOp2))
