@@ -49,11 +49,6 @@ namespace CTU {
 
 //---------------------------------------------------------------------------
 
-// Register this check class
-namespace {
-    CheckUnusedFunctions instance;
-}
-
 static const CWE CWE561(561U);   // Dead Code
 
 static std::string stripTemplateParameters(const std::string& funcName) {
@@ -68,14 +63,10 @@ static std::string stripTemplateParameters(const std::string& funcName) {
 // FUNCTION USAGE - Check for unused functions etc
 //---------------------------------------------------------------------------
 
-void CheckUnusedFunctions::clear()
+void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Settings &settings)
 {
-    instance.mFunctions.clear();
-    instance.mFunctionCalls.clear();
-}
+    const char * const FileName = tokenizer.list.getFiles().front().c_str();
 
-void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings &settings)
-{
     const bool doMarkup = settings.library.markupFile(FileName);
 
     // Function declarations..
@@ -100,6 +91,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             if (!usage.lineNumber)
                 usage.lineNumber = func->token->linenr();
 
+            // TODO: why always overwrite this but not the filename and line?
             usage.fileIndex = func->token->fileIndex();
             const std::string& fileName = tokenizer.list.file(func->token);
 
@@ -319,8 +311,16 @@ static bool isOperatorFunction(const std::string & funcName)
     return std::find(additionalOperators.cbegin(), additionalOperators.cend(), funcName.substr(operatorPrefix.length())) != additionalOperators.cend();
 }
 
-bool CheckUnusedFunctions::check(ErrorLogger& errorLogger, const Settings& settings) const
+#define logChecker(id) \
+    do { \
+        const ErrorMessage errmsg({}, nullptr, Severity::internal, "logChecker", (id), CWE(0U), Certainty::normal); \
+        errorLogger.reportErr(errmsg); \
+    } while (false)
+
+bool CheckUnusedFunctions::check(const Settings& settings, ErrorLogger& errorLogger) const
 {
+    logChecker("CheckUnusedFunctions::check"); // unusedFunction
+
     using ErrorParams = std::tuple<std::string, unsigned int, unsigned int, std::string>;
     std::vector<ErrorParams> errors; // ensure well-defined order
 
@@ -365,23 +365,6 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger& errorLogger,
 
     const ErrorMessage errmsg(std::move(locationList), emptyString, Severity::style, "$symbol:" + funcname + "\nThe function '$symbol' is never used.", "unusedFunction", CWE561, Certainty::normal);
     errorLogger.reportErr(errmsg);
-}
-
-void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Settings &settings)
-{
-    instance.parseTokens(tokenizer, tokenizer.list.getFiles().front().c_str(), settings);
-}
-
-#define logChecker(id) \
-    do { \
-        const ErrorMessage errmsg({}, nullptr, Severity::internal, "logChecker", (id), CWE(0U), Certainty::normal); \
-        errorLogger.reportErr(errmsg); \
-    } while (false)
-
-bool CheckUnusedFunctions::check(const Settings& settings, ErrorLogger &errorLogger)
-{
-    logChecker("CheckUnusedFunctions::check"); // unusedFunction
-    return instance.check(errorLogger, settings);
 }
 
 CheckUnusedFunctions::FunctionDecl::FunctionDecl(const Function *f)
@@ -474,4 +457,24 @@ void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLo
             unusedFunctionError(errorLogger, loc.fileName, /*fileIndex*/ 0, loc.lineNumber, functionName);
         }
     }
+}
+
+void CheckUnusedFunctions::updateFunctionData(const CheckUnusedFunctions& check)
+{
+    for (const auto& entry : check.mFunctions)
+    {
+        FunctionUsage &usage = mFunctions[entry.first];
+        if (!usage.lineNumber)
+            usage.lineNumber = entry.second.lineNumber;
+        // TODO: why always overwrite this but not the filename and line?
+        usage.fileIndex = entry.second.fileIndex;
+        if (usage.filename.empty())
+            usage.filename = entry.second.filename;
+        // cppcheck-suppress bitwiseOnBoolean - TODO: FP
+        usage.usedOtherFile |= entry.second.usedOtherFile;
+        // cppcheck-suppress bitwiseOnBoolean - TODO: FP
+        usage.usedSameFile |= entry.second.usedSameFile;
+    }
+    mFunctionDecl.insert(mFunctionDecl.cend(), check.mFunctionDecl.cbegin(), check.mFunctionDecl.cend());
+    mFunctionCalls.insert(check.mFunctionCalls.cbegin(), check.mFunctionCalls.cend());
 }

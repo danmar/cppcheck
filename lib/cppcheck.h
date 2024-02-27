@@ -42,6 +42,7 @@
 class Tokenizer;
 enum class SHOWTIME_MODES;
 struct FileSettings;
+class CheckUnusedFunctions;
 
 /// @addtogroup Core
 /// @{
@@ -248,6 +249,8 @@ private:
     ExecuteCmdFn mExecuteCommand;
 
     std::ofstream mPlistFile;
+
+    std::unique_ptr<CheckUnusedFunctions> mUnusedFunctionsCheck;
 };
 
 /// @}

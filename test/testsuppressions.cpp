@@ -230,8 +230,6 @@ private:
         // Clear the error log
         errout.str("");
 
-        CheckUnusedFunctions::clear();
-
         std::list<FileSettings> fileSettings;
 
         std::list<std::pair<std::string, std::size_t>> filelist;
@@ -284,8 +282,6 @@ private:
     unsigned int _checkSuppressionThreads(const char code[], bool useFS, const std::string &suppression = emptyString) {
         errout.str("");
 
-        CheckUnusedFunctions::clear();
-
         std::list<FileSettings> fileSettings;
 
         std::list<std::pair<std::string, std::size_t>> filelist;
@@ -333,8 +329,6 @@ private:
 
     unsigned int _checkSuppressionProcesses(const char code[], bool useFS, const std::string &suppression = emptyString) {
         errout.str("");
-
-        CheckUnusedFunctions::clear();
 
         std::list<FileSettings> fileSettings;
 
