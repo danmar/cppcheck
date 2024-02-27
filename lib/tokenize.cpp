@@ -2840,6 +2840,21 @@ bool Tokenizer::simplifyUsing()
     if (!isCPP() || mSettings.standards.cpp < Standards::CPP11)
         return false;
 
+    // simplify using N::x; to using x = N::x;
+    for (Token* tok = list.front(); tok; tok = tok->next()) {
+        if (!Token::Match(tok, "using ::| %name% ::"))
+            continue;
+        Token* const start = tok->next();
+        Token* end = start;
+        while (end && end->str() != ";")
+            end = end->next();
+        if (!end)
+            continue;
+        if (end->tokAt(-1)->isKeyword() || end->tokAt(-2)->isKeyword() || end->strAt(-1) == "...") // e.g. operator=
+            continue;
+        tok->insertToken(end->strAt(-1))->insertToken("=");
+    }
+
     const unsigned int maxReplacementTokens = 1000; // limit the number of tokens we replace
 
     bool substitute = false;

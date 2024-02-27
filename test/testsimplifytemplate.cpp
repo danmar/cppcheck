@@ -2880,7 +2880,7 @@ private:
                            "struct f<b::B<0>> ; "
                            "} "
                            "} "
-                           "b :: f<b::B<0>> g1 ; struct b :: B<0> { using B<0> :: d ; } ; "
+                           "b :: f<b::B<0>> g1 ; struct b :: B<0> { } ; "
                            "struct b :: f<b::B<0>> { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
@@ -3573,7 +3573,7 @@ private:
                             "};";
         const char exp[] = "template < typename ... > struct a ; "
                            "template < typename b , typename c , typename ... d > struct a < b c :: * , d ... > { "
-                           "using b :: e ; "
+                           "using e = b :: e ; "
                            "static_assert ( e :: f ? sizeof... ( d ) : sizeof... ( d ) , \"\" ) ; "
                            "} ;";
         ASSERT_EQUALS(exp, tok(code));
