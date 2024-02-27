@@ -4147,8 +4147,7 @@ private:
     }
 
     void functioncalllibrary() {
-        const Settings settings1;
-        Tokenizer tokenizer(settings1,this);
+        Tokenizer tokenizer(settingsDefault,this);
         std::istringstream code("void f() { int a,b,c; x(a,b,c); }");
         ASSERT_EQUALS(true, tokenizer.tokenize(code, "test.c"));
         const Token *xtok = Token::findsimplematch(tokenizer.tokens(), "x");

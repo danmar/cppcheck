@@ -256,6 +256,8 @@ protected:
 
     std::ostringstream errout;
 
+    const Settings settingsDefault;
+
 private:
     std::ostringstream mOutput;
 

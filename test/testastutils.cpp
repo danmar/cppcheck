@@ -92,8 +92,7 @@ private:
 
 #define findLambdaStartToken(code) findLambdaStartToken_(code, __FILE__, __LINE__)
     bool findLambdaStartToken_(const char code[], const char* file, int line) {
-        const Settings settings;
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settingsDefault, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token * const tokStart = (::findLambdaStartToken)(tokenizer.list.back());
@@ -125,8 +124,7 @@ private:
 
 #define isNullOperand(code) isNullOperand_(code, __FILE__, __LINE__)
     bool isNullOperand_(const char code[], const char* file, int line) {
-        const Settings settings;
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settingsDefault, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         return (::isNullOperand)(tokenizer.tokens());
@@ -147,8 +145,7 @@ private:
 
 #define isReturnScope(code, offset) isReturnScope_(code, offset, __FILE__, __LINE__)
     bool isReturnScope_(const char code[], int offset, const char* file, int line) {
-        const Settings settings;
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settingsDefault, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token * const tok = (offset < 0)
@@ -178,9 +175,8 @@ private:
 
 #define isSameExpression(...) isSameExpression_(__FILE__, __LINE__, __VA_ARGS__)
     bool isSameExpression_(const char* file, int line, const char code[], const char tokStr1[], const char tokStr2[], bool cpp) {
-        const Settings settings;
         Library library;
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settingsDefault, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, cpp ? "test.cpp" : "test.c"), file, line);
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), tokStr1, strlen(tokStr1));
@@ -228,13 +224,12 @@ private:
 
 #define isVariableChanged(code, startPattern, endPattern) isVariableChanged_(code, startPattern, endPattern, __FILE__, __LINE__)
     bool isVariableChanged_(const char code[], const char startPattern[], const char endPattern[], const char* file, int line) {
-        const Settings settings;
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settingsDefault, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), startPattern, strlen(startPattern));
         const Token * const tok2 = Token::findsimplematch(tokenizer.tokens(), endPattern, strlen(endPattern));
-        return (isVariableChanged)(tok1, tok2, 1, false, &settings, /*cpp*/ true);
+        return (isVariableChanged)(tok1, tok2, 1, false, &settingsDefault, /*cpp*/ true);
     }
 
     void isVariableChangedTest() {
@@ -263,14 +258,13 @@ private:
 
 #define isVariableChangedByFunctionCall(code, pattern, inconclusive) isVariableChangedByFunctionCall_(code, pattern, inconclusive, __FILE__, __LINE__)
     bool isVariableChangedByFunctionCall_(const char code[], const char pattern[], bool *inconclusive, const char* file, int line) {
-        const Settings settings;
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settingsDefault, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token * const argtok = Token::findmatch(tokenizer.tokens(), pattern);
         ASSERT_LOC(argtok, file, line);
         int indirect = (argtok->variable() && argtok->variable()->isArray());
-        return (isVariableChangedByFunctionCall)(argtok, indirect, &settings, inconclusive);
+        return (isVariableChangedByFunctionCall)(argtok, indirect, &settingsDefault, inconclusive);
     }
 
     void isVariableChangedByFunctionCallTest() {
@@ -438,8 +432,7 @@ private:
 
 #define nextAfterAstRightmostLeaf(code, parentPattern, rightPattern) nextAfterAstRightmostLeaf_(code, parentPattern, rightPattern, __FILE__, __LINE__)
     bool nextAfterAstRightmostLeaf_(const char code[], const char parentPattern[], const char rightPattern[], const char* file, int line) {
-        const Settings settings;
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settingsDefault, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token * tok = Token::findsimplematch(tokenizer.tokens(), parentPattern, strlen(parentPattern));
@@ -463,8 +456,7 @@ private:
     enum class Result {False, True, Fail};
 
     Result isUsedAsBool(const char code[], const char pattern[]) {
-        const Settings settings;
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settingsDefault, this);
         std::istringstream istr(code);
         if (!tokenizer.tokenize(istr, "test.cpp"))
             return Result::Fail;

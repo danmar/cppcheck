@@ -39,8 +39,7 @@ public:
     }
 
 private:
-    const Settings settings;
-    /*const*/ TokenList list{&settings};
+    /*const*/ TokenList list{&settingsDefault};
 
     std::vector<std::string> arithmeticalOps;
     std::vector<std::string> logicalOps;
@@ -143,7 +142,7 @@ private:
 
 #define MatchCheck(...) MatchCheck_(__FILE__, __LINE__, __VA_ARGS__)
     bool MatchCheck_(const char* file, int line, const std::string& code, const std::string& pattern, unsigned int varid = 0) {
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settingsDefault, this);
         std::istringstream istr(";" + code + ";");
         try {
             ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -440,16 +439,16 @@ private:
         Token tok(tokensFrontBack);
 
         tok.str("\"\"");
-        ASSERT_EQUALS(sizeof(""), Token::getStrSize(&tok, settings));
+        ASSERT_EQUALS(sizeof(""), Token::getStrSize(&tok, settingsDefault));
 
         tok.str("\"abc\"");
-        ASSERT_EQUALS(sizeof("abc"), Token::getStrSize(&tok, settings));
+        ASSERT_EQUALS(sizeof("abc"), Token::getStrSize(&tok, settingsDefault));
 
         tok.str("\"\\0abc\"");
-        ASSERT_EQUALS(sizeof("\0abc"), Token::getStrSize(&tok, settings));
+        ASSERT_EQUALS(sizeof("\0abc"), Token::getStrSize(&tok, settingsDefault));
 
         tok.str("\"\\\\\"");
-        ASSERT_EQUALS(sizeof("\\"), Token::getStrSize(&tok, settings));
+        ASSERT_EQUALS(sizeof("\\"), Token::getStrSize(&tok, settingsDefault));
     }
 
     void strValue() const {

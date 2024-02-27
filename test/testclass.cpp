@@ -8945,21 +8945,20 @@ private:
 
 
     void ctu(const std::vector<std::string> &code) {
-        const Settings settings;
         Check &check = getCheck<CheckClass>();
 
         // getFileInfo
         std::list<Check::FileInfo*> fileInfo;
         for (const std::string& c: code) {
-            Tokenizer tokenizer(settings, this);
+            Tokenizer tokenizer(settingsDefault, this);
             std::istringstream istr(c);
             ASSERT(tokenizer.tokenize(istr, (std::to_string(fileInfo.size()) + ".cpp").c_str()));
-            fileInfo.push_back(check.getFileInfo(&tokenizer, &settings));
+            fileInfo.push_back(check.getFileInfo(&tokenizer, &settingsDefault));
         }
 
         // Check code..
         errout.str("");
-        check.analyseWholeProgram(nullptr, fileInfo, settings, *this);
+        check.analyseWholeProgram(nullptr, fileInfo, settingsDefault, *this);
 
         while (!fileInfo.empty()) {
             delete fileInfo.back();
