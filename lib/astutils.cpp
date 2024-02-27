@@ -1520,7 +1520,7 @@ bool compareTokenFlags(const Token* tok1, const Token* tok2, bool macro) {
     if (tok1->isSigned() != tok2->isSigned())
         return false;
     return true;
-};
+}
 
 static bool astIsBoolLike(const Token* tok)
 {
