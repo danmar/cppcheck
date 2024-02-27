@@ -2844,8 +2844,7 @@ bool Tokenizer::simplifyUsing()
     for (Token* tok = list.front(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "using ::| %name% ::"))
             continue;
-        Token* const start = tok->next();
-        Token* end = start;
+        Token* end = tok->next();
         while (end && end->str() != ";")
             end = end->next();
         if (!end)
