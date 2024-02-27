@@ -455,6 +455,11 @@ void SuppressionList::dump(std::ostream & out) const
             out << " symbolName=\"" << ErrorLogger::toxml(suppression.symbolName) << '\"';
         if (suppression.hash > 0)
             out << " hash=\"" << suppression.hash << '\"';
+        if (suppression.lineBegin != Suppression::NO_LINE)
+            out << " lineBegin=\"" << suppression.lineBegin << '"';
+        if (suppression.lineEnd != Suppression::NO_LINE)
+            out << " lineEnd=\"" << suppression.lineEnd << '"';
+        out << " type=\"" << (int) suppression.type << '"';
         out << " />" << std::endl;
     }
     out << "  </suppressions>" << std::endl;
