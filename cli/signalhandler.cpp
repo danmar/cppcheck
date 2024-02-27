@@ -16,11 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "cppcheckexecutorsig.h"
+#include "signalhandler.h"
 
 #if defined(USE_UNIX_SIGNAL_HANDLING)
-
-#include "cppcheckexecutor.h"
 
 #ifdef USE_UNIX_BACKTRACE_SUPPORT
 #include "stacktrace.h"
@@ -57,6 +55,12 @@ static constexpr size_t MYSTACKSIZE = 16*1024+SIGSTKSZ; // wild guess about a re
 #endif
 static char mytstack[MYSTACKSIZE]= {0}; // alternative stack for signal handler
 static bool bStackBelowHeap=false; // lame attempt to locate heap vs. stack address space. See CppCheckExecutor::check_wrapper()
+static FILE* signalOutput = stdout;
+
+void set_signal_handler_output(FILE* f)
+{
+    signalOutput = f;
+}
 
 /**
  * \param[in] ptr address to be examined.
@@ -121,27 +125,21 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
 
     const Signalmap_t::const_iterator it=listofsignals.find(signo);
     const char * const signame = (it==listofsignals.end()) ? "unknown" : it->second.c_str();
-#ifdef USE_UNIX_BACKTRACE_SUPPORT
-    bool lowMem=false; // was low-memory condition detected? Be careful then! Avoid allocating much more memory then.
-#endif
     bool unexpectedSignal=true; // unexpected indicates program failure
     bool terminate=true; // exit process/thread
     const bool isAddressOnStack = IsAddressOnStack(info->si_addr);
-    FILE* output = CppCheckExecutor::getExceptionOutput();
+    FILE * const output = signalOutput;
     switch (signo) {
     case SIGABRT:
         fputs("Internal error: cppcheck received signal ", output);
         fputs(signame, output);
         fputs(
 #ifdef NDEBUG
-            " - out of memory?\n",
+            " - abort\n",
 #else
-            " - out of memory or assertion?\n",
+            " - abort or assertion\n",
 #endif
             output);
-#ifdef USE_UNIX_BACKTRACE_SUPPORT
-        lowMem=true;     // educated guess
-#endif
         break;
     case SIGBUS:
         fputs("Internal error: cppcheck received signal ", output);
@@ -281,7 +279,9 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
         break;
     }
 #ifdef USE_UNIX_BACKTRACE_SUPPORT
-    print_stacktrace(output, true, -1, lowMem);
+    // flush otherwise the trace might be printed earlier
+    fflush(output);
+    print_stacktrace(output, 1, true, -1, true);
 #endif
     if (unexpectedSignal) {
         fputs("\nPlease report this to the cppcheck developers!\n", output);
@@ -298,8 +298,10 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
     }
 }
 
-int check_wrapper_sig(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(const Settings&) const, const Settings& settings)
+void register_signal_handler()
 {
+    FILE * const output = signalOutput;
+
     // determine stack vs. heap
     char stackVariable;
     char *heapVariable=static_cast<char*>(malloc(1));
@@ -311,7 +313,11 @@ int check_wrapper_sig(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(con
     segv_stack.ss_sp = mytstack;
     segv_stack.ss_flags = 0;
     segv_stack.ss_size = MYSTACKSIZE;
-    sigaltstack(&segv_stack, nullptr);
+    if (sigaltstack(&segv_stack, nullptr) != 0) {
+        // TODO: log errno
+        fputs("could not set alternate signal stack context.\n", output);
+        std::exit(EXIT_FAILURE);
+    }
 
     // install signal handler
     struct sigaction act;
@@ -321,7 +327,6 @@ int check_wrapper_sig(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(con
     for (std::map<int, std::string>::const_iterator sig=listofsignals.cbegin(); sig!=listofsignals.cend(); ++sig) {
         sigaction(sig->first, &act, nullptr);
     }
-    return (executor.*f)(settings);
 }
 
 #endif

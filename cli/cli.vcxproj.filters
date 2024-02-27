@@ -26,7 +26,7 @@
     <ClInclude Include="cppcheckexecutorseh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cppcheckexecutorsig.h">
+    <ClInclude Include="signalhandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="executor.h">
@@ -58,7 +58,7 @@
     <ClCompile Include="cppcheckexecutorseh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cppcheckexecutorsig.cpp">
+    <ClCompile Include="signalhandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="executor.cpp">
