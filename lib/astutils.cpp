@@ -2942,8 +2942,9 @@ static const Token* findExpressionChangedImpl(const Token* expr,
     const Token* result = nullptr;
     findAstNode(expr, [&](const Token* tok) {
         if (exprDependsOnThis(tok)) {
-            result = findThisChanged(start, end, false, settings, cpp);
-            return true;
+            result = findThisChanged(start, end, /*indirect*/ 0, settings, cpp);
+            if (result)
+                return true;
         }
         bool global = false;
         if (tok->variable()) {

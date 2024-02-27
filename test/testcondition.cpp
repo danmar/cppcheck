@@ -70,6 +70,7 @@ private:
         TEST_CASE(incorrectLogicOperator14);
         TEST_CASE(incorrectLogicOperator15);
         TEST_CASE(incorrectLogicOperator16); // #10070
+        TEST_CASE(incorrectLogicOperator17);
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
         TEST_CASE(testBug5895);
@@ -1718,6 +1719,24 @@ private:
     void incorrectLogicOperator16() { // #10070
         check("void foo(void* p) {\n"
               "    if (!p || p == -1) { }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void incorrectLogicOperator17() { // #12471
+        check("struct R {\n"
+              "    void set() { i = 1; }\n"
+              "    int get() const { return i; }\n"
+              "    int i;\n"
+              "};\n"
+              "struct P {\n"
+              "    void f();\n"
+              "    R* r;\n"
+              "};\n"
+              "void P::f() {\n"
+              "    int a = r->get();\n"
+              "    r->set();\n"
+              "    if (a == 0 && r->get()) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
