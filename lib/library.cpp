@@ -53,10 +53,10 @@ static std::vector<std::string> getnames(const char *names)
     return ret;
 }
 
-static void gettokenlistfromvalid(const std::string& valid, TokenList& tokenList)
+static void gettokenlistfromvalid(const std::string& valid, bool cpp, TokenList& tokenList)
 {
     std::istringstream istr(valid + ',');
-    tokenList.createTokens(istr);
+    tokenList.createTokens(istr, cpp ? Standards::Language::CPP : Standards::Language::C);
     for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
         if (Token::Match(tok,"- %num%")) {
             tok->str("-" + tok->strAt(1));
@@ -929,7 +929,7 @@ bool Library::isIntArgValid(const Token *ftok, int argnr, const MathLib::bigint 
     if (ac->valid.find('.') != std::string::npos)
         return isFloatArgValid(ftok, argnr, argvalue);
     TokenList tokenList(nullptr);
-    gettokenlistfromvalid(ac->valid, tokenList);
+    gettokenlistfromvalid(ac->valid, ftok->isCpp(), tokenList);
     for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
         if (tok->isNumber() && argvalue == MathLib::toBigNumber(tok->str()))
             return true;
@@ -949,7 +949,7 @@ bool Library::isFloatArgValid(const Token *ftok, int argnr, double argvalue) con
     if (!ac || ac->valid.empty())
         return true;
     TokenList tokenList(nullptr);
-    gettokenlistfromvalid(ac->valid, tokenList);
+    gettokenlistfromvalid(ac->valid, ftok->isCpp(), tokenList);
     for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%num% : %num%") && argvalue >= MathLib::toDoubleNumber(tok->str()) && argvalue <= MathLib::toDoubleNumber(tok->strAt(2)))
             return true;
@@ -1738,13 +1738,14 @@ bool Library::hasAnyTypeCheck(const std::string& typeName) const
 
 std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
                                                  const Settings* settings,
+                                                 bool cpp,
                                                  std::unordered_map<nonneg int, const Token*>* lookupVarId)
 {
     std::shared_ptr<TokenList> tokenList = std::make_shared<TokenList>(settings);
     {
         const std::string code = "return " + returnValue + ";";
         std::istringstream istr(code);
-        if (!tokenList->createTokens(istr))
+        if (!tokenList->createTokens(istr, cpp ? Standards::Language::CPP : Standards::Language::C))
             return nullptr;
     }
 

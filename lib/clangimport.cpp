@@ -330,8 +330,12 @@ namespace clangimport {
         void dumpAst(int num = 0, int indent = 0) const;
         void createTokens1(TokenList &tokenList) {
             //dumpAst();
-            if (!tokenList.back())
+            if (!tokenList.back()) {
                 setLocations(tokenList, 0, 1, 1);
+                // FIXME: treat as C++ if no filename (i.e. no lang) is specified for now
+                if (tokenList.getSourceFilePath().empty())
+                    tokenList.setLang(Standards::Language::CPP);
+            }
             else
                 setLocations(tokenList, tokenList.back()->fileIndex(), tokenList.back()->linenr(), 1);
             createTokens(tokenList);
@@ -626,6 +630,7 @@ void clangimport::AstNode::setValueType(Token *tok)
             continue;
 
         TokenList decl(nullptr);
+        decl.setLang(tok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
         addTypeTokens(decl, type, tok->scope());
         if (!decl.front())
             break;
