@@ -3876,7 +3876,7 @@ class MisraChecker:
                     continue
                 if arg.valueType.pointer > 1:
                     continue
-                if arg.valueType.sign in ('unsigned', 'signed'):
+                if getEssentialTypeCategory(arg) in ('unsigned', 'signed', 'bool'):
                     continue
                 if arg.valueType.isEnum():
                     continue
