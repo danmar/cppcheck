@@ -64,6 +64,10 @@
 #include <windows.h>
 #endif
 
+#if !defined(WIN32) && !defined(__MINGW32__)
+#include <sys/wait.h> // WIFEXITED and friends
+#endif
+
 namespace {
     class CmdLineLoggerStd : public CmdLineLogger
     {
