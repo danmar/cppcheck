@@ -68,6 +68,7 @@ private:
         TEST_CASE(simplifyUsing27);
         TEST_CASE(simplifyUsing28);
         TEST_CASE(simplifyUsing29);
+        TEST_CASE(simplifyUsing30);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -678,6 +679,16 @@ private:
         const char code[] = "using T = int*;\n"
                             "void f(T = T()) {}\n";
         const char expected[] = "void f ( int * = ( int * ) 0 ) { }";
+        ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyUsing30() { // #8454
+        const char code[] = "using std::to_string;\n"
+                            "void f() {\n"
+                            "    std::string str = to_string(1);\n"
+                            "}\n";
+        const char expected[] = "void f ( ) { std :: string str ; str = std :: to_string ( 1 ) ; }";
         ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
         ASSERT_EQUALS("", errout.str());
     }
