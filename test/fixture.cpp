@@ -106,7 +106,7 @@ bool TestFixture::prepareTest(const char testname[])
         } else {
             std::cout << classname << "::" << mTestname << std::endl;
         }
-        return true;
+        return !dry_run;
     }
     return false;
 }
@@ -341,7 +341,8 @@ void TestFixture::printHelp()
         "Options:\n"
         "    -q                   Do not print the test cases that have run.\n"
         "    -h, --help           Print this help.\n"
-        "    -n                   Print no summaries.\n";
+        "    -n                   Print no summaries.\n"
+        "    -d                   Do not execute the tests.\n";
 }
 
 void TestFixture::run(const std::string &str)
@@ -373,6 +374,7 @@ void TestFixture::run(const std::string &str)
 void TestFixture::processOptions(const options& args)
 {
     quiet_tests = args.quiet();
+    dry_run = args.dry_run();
     exename = args.exe();
 }
 
@@ -396,7 +398,7 @@ std::size_t TestFixture::runTests(const options& args)
         }
     }
 
-    if (args.summary()) {
+    if (args.summary() && !args.dry_run()) {
         std::cout << "\n\nTesting Complete\nNumber of tests: " << countTests << std::endl;
         std::cout << "Number of todos: " << todos_counter;
         if (succeeded_todos_counter > 0)
@@ -406,7 +408,7 @@ std::size_t TestFixture::runTests(const options& args)
     // calling flush here, to do all output before the error messages (in case the output is buffered)
     std::cout.flush();
 
-    if (args.summary()) {
+    if (args.summary() && !args.dry_run()) {
         std::cerr << "Tests failed: " << fails_counter << std::endl << std::endl;
     }
     std::cerr << errmsg.str();

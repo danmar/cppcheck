@@ -44,6 +44,7 @@ private:
         TEST_CASE(multiple_testcases_ignore_duplicates);
         TEST_CASE(invalid_switches);
         TEST_CASE(summary);
+        TEST_CASE(dry_run);
     }
 
 
@@ -127,6 +128,12 @@ private:
         const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-n"};
         options args(sizeof argv / sizeof argv[0], argv);
         ASSERT_EQUALS(false, args.summary());
+    }
+
+    void dry_run() const {
+        const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-d"};
+        options args(sizeof argv / sizeof argv[0], argv);
+        ASSERT_EQUALS(true, args.dry_run());
     }
 };
 

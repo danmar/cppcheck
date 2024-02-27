@@ -59,6 +59,7 @@ protected:
     std::string exename;
     std::string testToRun;
     bool quiet_tests{};
+    bool dry_run{};
 
     virtual void run() = 0;
 
