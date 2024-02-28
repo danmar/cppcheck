@@ -24,7 +24,6 @@
 #include "config.h"
 #include "tokenlist.h"
 
-#include <cassert>
 #include <iosfwd>
 #include <list>
 #include <map>
@@ -367,12 +366,9 @@ public:
      */
     static const Token * isFunctionHead(const Token *tok, const std::string &endsWith);
 
-    const Preprocessor *getPreprocessor() const {
-        assert(mPreprocessor);
-        return mPreprocessor;
-    }
-
     bool hasIfdef(const Token *start, const Token *end) const;
+
+    bool isPacked(const Token * bodyStart) const;
 
 private:
 

@@ -24,7 +24,6 @@
 #include "errortypes.h"
 #include "fwdanalysis.h"
 #include "library.h"
-#include "preprocessor.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
@@ -1460,14 +1459,8 @@ void CheckUnusedVar::checkStructMemberUsage()
         // Packed struct => possibly used by lowlevel code. Struct members might be required by hardware.
         if (scope.bodyEnd->isAttributePacked())
             continue;
-        if (const Preprocessor *preprocessor = mTokenizer->getPreprocessor()) {
-            const auto& directives = preprocessor->getDirectives();
-            const bool isPacked = std::any_of(directives.cbegin(), directives.cend(), [&](const Directive& d) {
-                return d.linenr < scope.bodyStart->linenr() && d.str == "#pragma pack(1)" && d.file == mTokenizer->list.getFiles().front();
-            });
-            if (isPacked)
-                continue;
-        }
+        if (mTokenizer->isPacked(scope.bodyStart))
+            continue;
 
         // Bail out for template struct, members might be used in non-matching instantiations
         if (scope.className.find('<') != std::string::npos)
