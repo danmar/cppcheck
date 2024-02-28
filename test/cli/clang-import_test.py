@@ -140,3 +140,14 @@ def test_log(tmpdir):
     ]
 
     assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
+
+
+def test_warning(tmpdir):  # #12424
+    test_file = os.path.join(tmpdir, 'test_2')
+    with open(test_file, 'wt') as f:
+        f.write('''void f() {}''')
+
+    exitcode, stdout, stderr = cppcheck(['-q', '--enable=warning', '--clang', test_file])
+    assert exitcode == 0, stderr # do not assert
+    assert stdout == ''
+    assert stderr == ''
