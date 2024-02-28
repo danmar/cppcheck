@@ -3451,9 +3451,7 @@ private:
                       "test.cpp:2:note:Assign p, buffer with size 10\n"
                       "test.cpp:3:note:Buffer overrun\n", errout.str());
 
-        // TODO: need to reset this but it breaks other tests
-        (void)settingsOld;
-        //settings0 = settingsOld;
+        settings0 = settingsOld;
     }
 
     void buffer_overrun_bailoutIfSwitch() {
@@ -3805,7 +3803,7 @@ private:
               "    std::string hi = \"hi\" + val;\n"
               "    std::cout << hi << std::endl;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (portability) Undefined behaviour, pointer arithmetic '\"hi\"+val' is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour, pointer arithmetic '\"hi\"+val' is out of bounds.\n", errout.str());
 
         check("void f(const char* s, int len) {\n" // #11026
               "    const char* end = s + len;\n"
@@ -4053,14 +4051,14 @@ private:
               "  for (int i = 0; i < 3; i++)\n"
               "    a[i] = NULL;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Array 'a[2]' accessed at index 2, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2]' accessed at index 2, which is out of bounds.\n", errout.str());
 
         check("void f() {\n"
               "  int **a = new int*[2];\n"
               "  for (int i = 0; i < 3; i++)\n"
               "    a[i] = NULL;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Array 'a[2]' accessed at index 2, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2]' accessed at index 2, which is out of bounds.\n", errout.str());
     }
 
     // statically allocated buffer
@@ -5136,7 +5134,7 @@ private:
               "    int* p = new int[d];\n"
               "    return p;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:5]: (warning, inconclusive) Memory allocation size is negative.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning, inconclusive) Memory allocation size is negative.\n", errout.str());
     }
 
     void negativeArraySize() {
