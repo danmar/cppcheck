@@ -279,7 +279,9 @@ public:
 #define ASSERT( CONDITION )  if (!assert_(__FILE__, __LINE__, (CONDITION))) return
 #define ASSERT_LOC( CONDITION, FILE_, LINE_ )  assert_(FILE_, LINE_, (CONDITION))
 #define CHECK_EQUALS( EXPECTED, ACTUAL )  assertEquals(__FILE__, __LINE__, (EXPECTED), (ACTUAL))
+// *INDENT-OFF*
 #define ASSERT_EQUALS( EXPECTED, ACTUAL ) do { try { if (!assertEquals(__FILE__, __LINE__, (EXPECTED), (ACTUAL))) return; } catch (...) { assertNoThrowFail(__FILE__, __LINE__); } } while (false)
+// *INDENT-ON*
 #define ASSERT_EQUALS_WITHOUT_LINENUMBERS( EXPECTED, ACTUAL )  assertEqualsWithoutLineNumbers(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define ASSERT_EQUALS_DOUBLE( EXPECTED, ACTUAL, TOLERANCE )  assertEqualsDouble(__FILE__, __LINE__, EXPECTED, ACTUAL, TOLERANCE)
 #define ASSERT_EQUALS_MSG( EXPECTED, ACTUAL, MSG )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL, MSG)
