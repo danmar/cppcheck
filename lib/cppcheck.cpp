@@ -499,9 +499,10 @@ unsigned int CppCheck::checkClang(const std::string &path)
     }
 
     try {
-        std::istringstream ast(output2);
-        Tokenizer tokenizer(mSettings, this);
+        Preprocessor preprocessor(mSettings, this);
+        Tokenizer tokenizer(mSettings, this, &preprocessor);
         tokenizer.list.appendFileIfNew(path);
+        std::istringstream ast(output2);
         clangimport::parseClangAstDump(tokenizer, ast);
         ValueFlow::setValues(tokenizer.list,
                              const_cast<SymbolDatabase&>(*tokenizer.getSymbolDatabase()),
