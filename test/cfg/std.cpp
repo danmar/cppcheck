@@ -44,6 +44,7 @@
 #include <numeric>
 #include <queue>
 #include <set>
+#include <streambuf>
 #include <string_view>
 #include <tuple>
 #include <unordered_map>
@@ -531,6 +532,27 @@ void bufferAccessOutOfBounds_std_ofstream_write(std::ofstream &os, const char* s
     (void)os.write(buf,43);
     (void)os.write(buf,n);
     (void)os.write(s,n);
+}
+
+void arrayIndexOutOfBounds_std_ifstream_get(std::ifstream& in, std::streambuf& sb)
+{
+    char cBuf[10];
+    // cppcheck-suppress arrayIndexOutOfBounds
+    in.getline(cBuf, 100);
+    // cppcheck-suppress arrayIndexOutOfBounds
+    in.read(cBuf, 100);
+    // cppcheck-suppress arrayIndexOutOfBounds
+    in.readsome(cBuf, 100);
+    // cppcheck-suppress arrayIndexOutOfBounds
+    in.get(cBuf, 100);
+    // cppcheck-suppress arrayIndexOutOfBounds
+    in.get(cBuf, 100, 'a');
+    // cppcheck-suppress arrayIndexOutOfBounds
+    in.getline(cBuf, 100, 'a');
+
+    in.get(sb, 'a');
+    
+    in.close();
 }
 
 void invalidFunctionArg_fesetexceptflag(const fexcept_t* flagp, int excepts)
