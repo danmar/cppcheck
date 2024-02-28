@@ -12,7 +12,7 @@ __project_dir_sep = __project_dir + os.path.sep
 
 
 def test_unused_functions():
-    ret, stdout, stderr = cppcheck(['-q', '--template=simple', '--library=qt', '--enable=unusedFunction', __project_dir])
+    ret, stdout, stderr = cppcheck(['-q', '--template=simple', '--library=qt', '--enable=unusedFunction', '-j1', __project_dir])
     # there are unused functions. But fillSampleData is not unused because that is referenced from main.qml
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [

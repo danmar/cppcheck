@@ -420,7 +420,7 @@ def test_project_file_order(tmpdir):
     </paths>
 </project>""".format(test_file_c, test_file_d, test_file_b, test_file_a))
 
-    args = ['--project={}'.format(project_file)]
+    args = ['--project={}'.format(project_file), '-j1']
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -494,7 +494,7 @@ def test_project_file_duplicate_2(tmpdir):
     </paths>
 </project>""".format(test_file_c, test_file_a, test_file_b, tmpdir, test_file_b, test_file_c, test_file_a, tmpdir))
 
-    args = ['--project={}'.format(project_file)]
+    args = ['--project={}'.format(project_file), '-j1']
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0

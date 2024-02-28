@@ -26,37 +26,25 @@ def __create_unused_function_compile_commands(tmpdir):
     return compile_commands
 
 
-def __test1(use_j):
+def test1():
     args = [
         '-q',
         '--template=simple',
         '--inline-suppr',
         'proj-inline-suppress'
     ]
-    if use_j:
-        args.append('-j2')
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     assert stderr == ''
     assert stdout == ''
     assert ret == 0, stdout
 
 
-def test1():
-    __test1(False)
-
-
-def test1_j():
-    __test1(True)
-
-
-def __test2(use_j):
+def test2():
     args = [
         '-q',
         '--template=simple',
         'proj-inline-suppress'
     ]
-    if use_j:
-        args.append('-j2')
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
     assert lines == [
@@ -66,44 +54,7 @@ def __test2(use_j):
     assert ret == 0, stdout
 
 
-def test2():
-    __test2(False)
-
-
-def test2_j():
-    __test2(True)
-
-
-def __test_unmatched_suppression(use_j):
-    args = [
-        '-q',
-        '--template=simple',
-        '--inline-suppr',
-        '--enable=information',
-        '--disable=missingInclude',
-        '--error-exitcode=1',
-        '{}2.c'.format(__proj_inline_suppres_path)
-    ]
-    if use_j:
-        args.append('-j2')
-    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
-    lines = stderr.splitlines()
-    assert lines == [
-        '{}2.c:2:0: information: Unmatched suppression: some_warning_id [unmatchedSuppression]'.format(__proj_inline_suppres_path)
-    ]
-    assert stdout == ''
-    assert ret == 1, stdout
-
-
 def test_unmatched_suppression():
-    __test_unmatched_suppression(False)
-
-
-def test_unmatched_suppression_j():
-    __test_unmatched_suppression(True)
-
-
-def __test_unmatched_suppression_path_with_extra_stuff(use_j):
     args = [
         '-q',
         '--template=simple',
@@ -113,8 +64,6 @@ def __test_unmatched_suppression_path_with_extra_stuff(use_j):
         '--error-exitcode=1',
         '{}2.c'.format(__proj_inline_suppres_path)
     ]
-    if use_j:
-        args.append('-j2')
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
     assert lines == [
@@ -125,21 +74,30 @@ def __test_unmatched_suppression_path_with_extra_stuff(use_j):
 
 
 def test_unmatched_suppression_path_with_extra_stuff():
-    __test_unmatched_suppression_path_with_extra_stuff(False)
+    args = [
+        '-q',
+        '--template=simple',
+        '--inline-suppr',
+        '--enable=information',
+        '--disable=missingInclude',
+        '--error-exitcode=1',
+        '{}2.c'.format(__proj_inline_suppres_path)
+    ]
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    lines = stderr.splitlines()
+    assert lines == [
+        '{}2.c:2:0: information: Unmatched suppression: some_warning_id [unmatchedSuppression]'.format(__proj_inline_suppres_path)
+    ]
+    assert stdout == ''
+    assert ret == 1, stdout
 
 
-def test_unmatched_suppression_path_with_extra_stuff_j():
-    __test_unmatched_suppression_path_with_extra_stuff(True)
-
-
-def __test_backwards_compatibility(use_j):
+def test_backwards_compatibility():
     args = [
         '-q',
         '--template=simple',
         '{}3.cpp'.format(__proj_inline_suppres_path)
     ]
-    if use_j:
-        args.append('-j2')
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
     assert lines == [
@@ -154,21 +112,11 @@ def __test_backwards_compatibility(use_j):
         '--inline-suppr',
         '{}3.cpp'.format(__proj_inline_suppres_path)
     ]
-    if use_j:
-        args.append('-j2')
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
     assert lines == []
     assert stdout == ''
     assert ret == 0, stdout
-
-
-def test_backwards_compatibility():
-    __test_backwards_compatibility(False)
-
-
-def test_backwards_compatibility_j():
-    __test_backwards_compatibility(True)
 
 
 def __test_compile_commands_unused_function(tmpdir, use_j):
@@ -182,6 +130,8 @@ def __test_compile_commands_unused_function(tmpdir, use_j):
     ]
     if use_j:
         args.append('-j2')
+    else:
+        args.append('-j1')
     ret, stdout, stderr = cppcheck(args)
     proj_path_sep = os.path.join(__script_dir, 'proj-inline-suppress-unusedFunction') + os.path.sep
     lines = stderr.splitlines()
@@ -213,6 +163,8 @@ def __test_compile_commands_unused_function_suppression(tmpdir, use_j):
     ]
     if use_j:
         args.append('-j2')
+    else:
+        args.append('-j1')
     ret, stdout, stderr = cppcheck(args)
     lines = stderr.splitlines()
     assert lines == []
@@ -229,7 +181,7 @@ def test_compile_commands_unused_function_suppression_j(tmpdir):
     __test_compile_commands_unused_function_suppression(tmpdir, True)
 
 
-def __test_unmatched_suppression_ifdef(use_j):
+def test_unmatched_suppression_ifdef():
     args = [
         '-q',
         '--template=simple',
@@ -239,34 +191,6 @@ def __test_unmatched_suppression_ifdef(use_j):
         '-DNO_ZERO_DIV',
         'trac5704/trac5704a.c'
     ]
-    if use_j:
-        args.append('-j2')
-    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
-    lines = stderr.splitlines()
-    assert lines == []
-    assert stdout == ''
-    assert ret == 0, stdout
-
-
-def test_unmatched_suppression_ifdef():
-    __test_unmatched_suppression_ifdef(False)
-
-
-def test_unmatched_suppression_ifdef_j():
-    __test_unmatched_suppression_ifdef(True)
-
-
-def __test_unmatched_suppression_ifdef_0(use_j):
-    args = [
-        '-q',
-        '--template=simple',
-        '--enable=information',
-        '--disable=missingInclude',
-        '--inline-suppr',
-        'trac5704/trac5704b.c'
-    ]
-    if use_j:
-        args.append('-j2')
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
     assert lines == []
@@ -275,31 +199,14 @@ def __test_unmatched_suppression_ifdef_0(use_j):
 
 
 def test_unmatched_suppression_ifdef_0():
-    __test_unmatched_suppression_ifdef_0(False)
-
-
-def test_unmatched_suppression_ifdef_0_j():
-    __test_unmatched_suppression_ifdef_0(True)
-
-
-def __test_build_dir(tmpdir, use_j):
     args = [
         '-q',
         '--template=simple',
-        '--cppcheck-build-dir={}'.format(tmpdir),
-        '--enable=all',
+        '--enable=information',
+        '--disable=missingInclude',
         '--inline-suppr',
-        '{}4.c'.format(__proj_inline_suppres_path)
+        'trac5704/trac5704b.c'
     ]
-    if use_j:
-        args.append('-j2')
-
-    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
-    lines = stderr.splitlines()
-    assert lines == []
-    assert stdout == ''
-    assert ret == 0, stdout
-
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
     assert lines == []
@@ -308,11 +215,26 @@ def __test_build_dir(tmpdir, use_j):
 
 
 def test_build_dir(tmpdir):
-    __test_build_dir(tmpdir, False)
+    args = [
+        '-q',
+        '--template=simple',
+        '--cppcheck-build-dir={}'.format(tmpdir),
+        '--enable=all',
+        '--inline-suppr',
+        '{}4.c'.format(__proj_inline_suppres_path)
+    ]
 
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    lines = stderr.splitlines()
+    assert lines == []
+    assert stdout == ''
+    assert ret == 0, stdout
 
-def test_build_dir_j(tmpdir):
-    __test_build_dir(tmpdir, True)
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    lines = stderr.splitlines()
+    assert lines == []
+    assert stdout == ''
+    assert ret == 0, stdout
 
 
 def __test_build_dir_unused_template(tmpdir, use_j):
@@ -326,6 +248,8 @@ def __test_build_dir_unused_template(tmpdir, use_j):
     ]
     if use_j:
         args.append('-j2')
+    else:
+        args.append('-j1')
 
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
@@ -343,7 +267,7 @@ def test_build_dir_unused_template_j(tmpdir):
     __test_build_dir_unused_template(tmpdir, True)
 
 
-def __test_suppress_unmatched_inline_suppression(use_j):  # 11172
+def test_suppress_unmatched_inline_suppression():  # 11172
     args = [
         '-q',
         '--template=simple',
@@ -353,18 +277,8 @@ def __test_suppress_unmatched_inline_suppression(use_j):  # 11172
         '--inline-suppr',
         '{}2.c'.format(__proj_inline_suppres_path)
     ]
-    if use_j:
-        args.append('-j2')
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
     assert lines == []
     assert stdout == ''
     assert ret == 0, stdout
-
-
-def test_suppress_unmatched_inline_suppression():
-    __test_suppress_unmatched_inline_suppression(False)
-
-
-def test_suppress_unmatched_inline_suppression_j():
-    __test_suppress_unmatched_inline_suppression(True)

@@ -160,15 +160,27 @@ jobs:
         if: matrix.config == 'release'
         run: .\bin\testrunner.exe || exit /b !errorlevel!
 
-      - name: Run test/cli
+      - name: Prepare test/cli
         if: matrix.config == 'release'
         run: |
           :: since FILESDIR is not set copy the binary to the root so the addons are found
           :: copy .\build\bin\Release\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
           copy .\bin\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
           copy .\bin\cppcheck-core.dll .\cppcheck-core.dll || exit /b !errorlevel!
+
+      - name: Run test/cli
+        if: matrix.config == 'release'
+        run: |
           cd test/cli || exit /b !errorlevel!
           python -m pytest -Werror --strict-markers -vv || exit /b !errorlevel!
+
+      - name: Run test/cli (-j2)
+        if: matrix.config == 'release'
+        run: |
+          cd test/cli || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv || exit /b !errorlevel!
+        env:
+          TEST_CPPCHECK_INJECT_J: 2
 
       - name: Test addons
         if: matrix.config == 'release'

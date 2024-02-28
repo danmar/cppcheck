@@ -223,16 +223,8 @@ def test_checkers_report():
             assert 'Yes  CheckAutoVariables::assignFunctionArg' in data
 
 
-def __test_missing_include_system(use_j):
+def test_missing_include_system():  # #11283
     args = ['--enable=missingInclude', '--suppress=zerodiv', '--template=simple', 'helloworld']
-    if use_j:
-        args.insert(0, '-j2')
 
     _, _, stderr = cppcheck(args)
     assert stderr.replace('\\', '/') == 'helloworld/main.c:1:0: information: Include file: <stdio.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n'
-
-def test_missing_include_system():
-    __test_missing_include_system(False)
-
-def test_missing_include_system_j(): #11283
-    __test_missing_include_system(True)
