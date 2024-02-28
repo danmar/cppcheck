@@ -2844,14 +2844,15 @@ bool Tokenizer::simplifyUsing()
     for (Token* tok = list.front(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "using ::| %name% ::"))
             continue;
-        Token* end = tok->next();
+        Token* end = tok->tokAt(3);
         while (end && end->str() != ";")
             end = end->next();
         if (!end)
             continue;
-        if (end->tokAt(-1)->isKeyword() || end->tokAt(-2)->isKeyword() || end->strAt(-1) == "...") // e.g. operator=
+        if (!end->tokAt(-1)->isNameOnly()) // e.g. operator=
             continue;
         tok->insertToken(end->strAt(-1))->insertToken("=");
+        tok = end;
     }
 
     const unsigned int maxReplacementTokens = 1000; // limit the number of tokens we replace
