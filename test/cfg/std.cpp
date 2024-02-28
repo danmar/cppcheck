@@ -534,22 +534,23 @@ void bufferAccessOutOfBounds_std_ofstream_write(std::ofstream &os, const char* s
     (void)os.write(s,n);
 }
 
-void arrayIndexOutOfBounds_std_ifstream_get(std::ifstream& in, std::streambuf& sb)
+void bufferAccessOutOfBounds_std_ifstream_get(std::ifstream& in, std::streambuf& sb)
 {
     char cBuf[10];
-    // cppcheck-suppress arrayIndexOutOfBounds
+    // cppcheck-suppress bufferAccessOutOfBounds
     in.getline(cBuf, 100);
-    // cppcheck-suppress arrayIndexOutOfBounds
+    // cppcheck-suppress bufferAccessOutOfBounds
     in.read(cBuf, 100);
-    // cppcheck-suppress arrayIndexOutOfBounds
+    // cppcheck-suppress bufferAccessOutOfBounds
     in.readsome(cBuf, 100);
-    // cppcheck-suppress arrayIndexOutOfBounds
+    // cppcheck-suppress bufferAccessOutOfBounds
     in.get(cBuf, 100);
-    // cppcheck-suppress arrayIndexOutOfBounds
+    // cppcheck-suppress bufferAccessOutOfBounds
     in.get(cBuf, 100, 'a');
-    // cppcheck-suppress arrayIndexOutOfBounds
+    // cppcheck-suppress bufferAccessOutOfBounds
     in.getline(cBuf, 100, 'a');
 
+    // cppcheck-suppress constParameterReference // TODO: FP
     in.get(sb, 'a');
     
     in.close();
