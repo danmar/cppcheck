@@ -52,6 +52,7 @@ struct TokensFrontBack {
 
 class CPPCHECKLIB TokenList {
 public:
+    // TODO: pass settings as reference
     explicit TokenList(const Settings* settings);
     ~TokenList();
 
@@ -61,15 +62,13 @@ public:
     /** @return the source file path. e.g. "file.cpp" */
     const std::string& getSourceFilePath() const;
 
-    /** Is the code C. Used for bailouts */
-    bool isC() const {
-        return mLang == Standards::Language::C;
-    }
+    /** @return true if the code is C */
+    bool isC() const;
 
-    /** Is the code CPP. Used for bailouts */
-    bool isCPP() const {
-        return mLang == Standards::Language::CPP;
-    }
+    /** @return true if the code is C++ */
+    bool isCPP() const;
+
+    void setLang(Standards::Language lang);
 
     /**
      * Delete all tokens in given token list
@@ -105,7 +104,8 @@ public:
      * @param code input stream for code
      * @param file0 source file name
      */
-    bool createTokens(std::istream &code, const std::string& file0 = emptyString);
+    bool createTokens(std::istream &code, const std::string& file0);
+    bool createTokens(std::istream &code, Standards::Language lang);
 
     void createTokens(simplecpp::TokenList&& tokenList);
 
@@ -202,6 +202,8 @@ public:
 
 private:
     void determineCppC();
+
+    bool createTokensInternal(std::istream &code, const std::string& file0);
 
     /** Token list */
     TokensFrontBack mTokensFrontBack;

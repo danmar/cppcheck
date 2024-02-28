@@ -117,9 +117,9 @@ private:
                                    "  </function>\n"
                                    "</def>";
 
-        TokenList tokenList(nullptr);
+        TokenList tokenList(&settings);
         std::istringstream istr("foo();");
-        tokenList.createTokens(istr);
+        tokenList.createTokens(istr, Standards::Language::CPP);
         tokenList.front()->next()->astOperand1(tokenList.front());
 
         Library library;
@@ -140,16 +140,16 @@ private:
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
         {
-            TokenList tokenList(nullptr);
+            TokenList tokenList(&settings);
             std::istringstream istr("fred.foo(123);"); // <- wrong scope, not library function
-            tokenList.createTokens(istr);
+            tokenList.createTokens(istr, Standards::Language::CPP);
 
             ASSERT(library.isNotLibraryFunction(tokenList.front()->tokAt(2)));
         }
         {
-            TokenList tokenList(nullptr);
+            TokenList tokenList(&settings);
             std::istringstream istr("Fred::foo(123);"); // <- wrong scope, not library function
-            tokenList.createTokens(istr);
+            tokenList.createTokens(istr, Standards::Language::CPP);
 
             ASSERT(library.isNotLibraryFunction(tokenList.front()->tokAt(2)));
         }
@@ -163,9 +163,9 @@ private:
                                    "  </function>\n"
                                    "</def>";
 
-        TokenList tokenList(nullptr);
+        TokenList tokenList(&settings);
         std::istringstream istr("foo();"); // <- too few arguments, not library function
-        tokenList.createTokens(istr);
+        tokenList.createTokens(istr, Standards::Language::CPP);
         Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
         tokenList.createAst();
 
@@ -187,36 +187,36 @@ private:
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
         {
-            TokenList tokenList(nullptr);
+            TokenList tokenList(&settings);
             std::istringstream istr("foo();"); // <- too few arguments, not library function
-            tokenList.createTokens(istr);
+            tokenList.createTokens(istr, Standards::Language::CPP);
             Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
             tokenList.createAst();
 
             ASSERT(library.isNotLibraryFunction(tokenList.front()));
         }
         {
-            TokenList tokenList(nullptr);
+            TokenList tokenList(&settings);
             std::istringstream istr("foo(a);"); // <- library function
-            tokenList.createTokens(istr);
+            tokenList.createTokens(istr, Standards::Language::CPP);
             Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
             tokenList.createAst();
 
             ASSERT(!library.isNotLibraryFunction(tokenList.front()));
         }
         {
-            TokenList tokenList(nullptr);
+            TokenList tokenList(&settings);
             std::istringstream istr("foo(a, b);"); // <- library function
-            tokenList.createTokens(istr);
+            tokenList.createTokens(istr, Standards::Language::CPP);
             Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
             tokenList.createAst();
 
             ASSERT(!library.isNotLibraryFunction(tokenList.front()));
         }
         {
-            TokenList tokenList(nullptr);
+            TokenList tokenList(&settings);
             std::istringstream istr("foo(a, b, c);"); // <- too much arguments, not library function
-            tokenList.createTokens(istr);
+            tokenList.createTokens(istr, Standards::Language::CPP);
             Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
             tokenList.createAst();
 
@@ -232,9 +232,9 @@ private:
                                    "  </function>\n"
                                    "</def>";
 
-        TokenList tokenList(nullptr);
+        TokenList tokenList(&settings);
         std::istringstream istr("Fred foo(123);"); // <- Variable declaration, not library function
-        tokenList.createTokens(istr);
+        tokenList.createTokens(istr, Standards::Language::CPP);
         tokenList.front()->next()->astOperand1(tokenList.front());
         tokenList.front()->next()->varId(1);
 
@@ -292,9 +292,9 @@ private:
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
         ASSERT_EQUALS(0, library.functions["foo"].argumentChecks[-1].notuninit);
 
-        TokenList tokenList(nullptr);
+        TokenList tokenList(&settings);
         std::istringstream istr("foo(a,b,c,d,e);");
-        tokenList.createTokens(istr);
+        tokenList.createTokens(istr, Standards::Language::CPP);
         tokenList.front()->next()->astOperand1(tokenList.front());
 
         ASSERT_EQUALS(false, library.isuninitargbad(tokenList.front(), 1));
@@ -317,9 +317,9 @@ private:
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
-        TokenList tokenList(nullptr);
+        TokenList tokenList(&settings);
         std::istringstream istr("foo(a,b,c,d);");
-        tokenList.createTokens(istr);
+        tokenList.createTokens(istr, Standards::Language::CPP);
         tokenList.front()->next()->astOperand1(tokenList.front());
 
         ASSERT(Library::ArgumentChecks::Direction::DIR_IN == library.getArgDirection(tokenList.front(), 1));
@@ -349,9 +349,9 @@ private:
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
-        TokenList tokenList(nullptr);
+        TokenList tokenList(&settings);
         std::istringstream istr("foo(a,b,c,d,e,f,g,h,i,j,k);");
-        tokenList.createTokens(istr);
+        tokenList.createTokens(istr, Standards::Language::CPP);
         tokenList.front()->next()->astOperand1(tokenList.front());
 
         // 1-
@@ -491,9 +491,9 @@ private:
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
-        TokenList tokenList(nullptr);
+        TokenList tokenList(&settings);
         std::istringstream istr("foo(a,b,c,d,e);");
-        tokenList.createTokens(istr);
+        tokenList.createTokens(istr, Standards::Language::CPP);
         tokenList.front()->next()->astOperand1(tokenList.front());
 
         // arg1: type=strlen arg2
@@ -554,16 +554,16 @@ private:
         ASSERT(library.functions.at("bar").argumentChecks.empty());
 
         {
-            TokenList tokenList(nullptr);
+            TokenList tokenList(&settings);
             std::istringstream istr("Foo::foo();");
-            tokenList.createTokens(istr);
+            tokenList.createTokens(istr, Standards::Language::CPP);
             ASSERT(library.isnotnoreturn(tokenList.front()->tokAt(2)));
         }
 
         {
-            TokenList tokenList(nullptr);
+            TokenList tokenList(&settings);
             std::istringstream istr("bar();");
-            tokenList.createTokens(istr);
+            tokenList.createTokens(istr, Standards::Language::CPP);
             ASSERT(library.isnotnoreturn(tokenList.front()));
         }
     }
@@ -635,9 +635,9 @@ private:
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
-        TokenList tokenList(nullptr);
+        TokenList tokenList(&settings);
         std::istringstream istr("a(); b();");
-        tokenList.createTokens(istr);
+        tokenList.createTokens(istr, Standards::Language::CPP);
 
         const Library::WarnInfo* a = library.getWarnInfo(tokenList.front());
         const Library::WarnInfo* b = library.getWarnInfo(tokenList.front()->tokAt(4));

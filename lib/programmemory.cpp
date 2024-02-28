@@ -1598,7 +1598,7 @@ namespace {
                                     arg_map[argn] = v;
                                 argn++;
                             }
-                            return evaluateLibraryFunction(arg_map, returnValue, settings);
+                            return evaluateLibraryFunction(arg_map, returnValue, settings, ftok->isCpp());
                         }
                     }
                 }
@@ -1754,7 +1754,8 @@ std::vector<ValueFlow::Value> execute(const Scope* scope, ProgramMemory& pm, con
 
 ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, ValueFlow::Value>& args,
                                          const std::string& returnValue,
-                                         const Settings* settings)
+                                         const Settings* settings,
+                                         bool cpp)
 {
     thread_local static std::unordered_map<std::string,
                                            std::function<ValueFlow::Value(const std::unordered_map<nonneg int, ValueFlow::Value>& arg)>>
@@ -1762,7 +1763,7 @@ ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, Va
     if (functions.count(returnValue) == 0) {
 
         std::unordered_map<nonneg int, const Token*> lookupVarId;
-        std::shared_ptr<Token> expr = createTokenFromExpression(returnValue, settings, &lookupVarId);
+        std::shared_ptr<Token> expr = createTokenFromExpression(returnValue, settings, cpp, &lookupVarId);
 
         functions[returnValue] =
             [lookupVarId, expr, settings](const std::unordered_map<nonneg int, ValueFlow::Value>& xargs) {

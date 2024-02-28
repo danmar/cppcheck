@@ -17,6 +17,7 @@
  */
 
 //---------------------------------------------------------------------------
+
 #include "tokenlist.h"
 
 #include "astutils.h"
@@ -39,6 +40,15 @@
 #include <unordered_set>
 
 #include <simplecpp.h>
+
+//#define N_ASSERT_LANG
+
+#ifndef N_ASSERT_LANG
+#include <cassert>
+#define ASSERT_LANG(x) assert(x)
+#else
+#define ASSERT_LANG(x)
+#endif
 
 // How many compileExpression recursions are allowed?
 // For practical code this could be endless. But in some special torture test
@@ -83,9 +93,16 @@ void TokenList::deallocateTokens()
 
 void TokenList::determineCppC()
 {
-    // only try to determine it if it wasn't enforced
+    // only try to determine if it wasn't enforced
     if (mLang == Standards::Language::None) {
         mLang = Path::identify(getSourceFilePath());
+        // TODO: cannot enable assert as this might occur for unknown extensions
+        //ASSERT_LANG(mLang != Standards::Language::None);
+        if (mLang == Standards::Language::None) {
+            // TODO: should default to C instead like we do for headers
+            // default to C++
+            mLang = Standards::Language::CPP;
+        }
     }
 }
 
@@ -317,8 +334,31 @@ void TokenList::insertTokens(Token *dest, const Token *src, nonneg int n)
 
 bool TokenList::createTokens(std::istream &code, const std::string& file0)
 {
+    ASSERT_LANG(!file0.empty());
+
     appendFileIfNew(file0);
 
+    return createTokensInternal(code, file0);
+}
+
+//---------------------------------------------------------------------------
+
+bool TokenList::createTokens(std::istream &code, Standards::Language lang)
+{
+    ASSERT_LANG(lang != Standards::Language::None);
+    if (mLang == Standards::Language::None) {
+        mLang = lang;
+    } else {
+        ASSERT_LANG(lang == mLang);
+    }
+
+    return createTokensInternal(code, "");
+}
+
+//---------------------------------------------------------------------------
+
+bool TokenList::createTokensInternal(std::istream &code, const std::string& file0)
+{
     simplecpp::OutputList outputList;
     simplecpp::TokenList tokens(code, mFiles, file0, &outputList);
 
@@ -2095,4 +2135,34 @@ bool TokenList::isKeyword(const std::string &str) const
 
     static const auto& latest_c_keywords = Keywords::getAll(Standards::cstd_t::CLatest);
     return latest_c_keywords.find(str) != latest_c_keywords.end();
+}
+
+bool TokenList::isC() const
+{
+    ASSERT_LANG(mLang != Standards::Language::None);
+
+    // TODO: remove the fallback
+    if (mLang == Standards::Language::None)
+        return false; // treat as C++ by default
+
+    return mLang == Standards::Language::C;
+}
+
+bool TokenList::isCPP() const
+{
+    ASSERT_LANG(mLang != Standards::Language::None);
+
+    // TODO: remove the fallback
+    if (mLang == Standards::Language::None)
+        return true; // treat as C++ by default
+
+    return mLang == Standards::Language::CPP;
+}
+
+void TokenList::setLang(Standards::Language lang)
+{
+    ASSERT_LANG(lang != Standards::Language::None);
+    ASSERT_LANG(mLang == Standards::Language::None);
+
+    mLang = lang;
 }

@@ -358,7 +358,7 @@ static int misra_8_2_g ( /* comment */ ); // 8.2
 static int misra_8_2_h ( /* comment 1 */ /* comment 2 */ ); // 8.2
 static int misra_8_2_i ( /* comment */ void);
 static int misra_8_2_j ( /* comment */ void /* comment */);
-static int misra_8_2_k ( // 
+static int misra_8_2_k ( //
  void);
 static int misra_8_2_l ( // 8.2
 );
@@ -731,7 +731,7 @@ static void misra_10_4(u32 x, s32 y) {
   z = x + y; //10.4
   z = (a == misra_10_4_A3) ? x : y; //10.4
   z = (a == misra_10_4_A3) ? y : y; // no-warning
-  
+
   // #10499
   const char buf[10] = {0};
   if ('0' == buf[x]) // no-warning
@@ -769,6 +769,7 @@ struct misra_10_6_s {
 static void misra_10_6(u8 x, char c1, char c2) {
   u16 y1 = x+x; // 10.6
   u16 y2 = (0x100u - 0x80u); // rhs is not a composite expression because it's a constant expression
+  int b = (y2 == y2) ? 0 : 1; // no-warning
   u16 z = ~u8 x ;//10.6
   s32 i = c1 - c2; // 10.3
   struct misra_10_6_s s;
@@ -1976,6 +1977,24 @@ static void misra_21_16_f1(struct misra_21_16_S *s1, struct misra_21_16_S *s2) {
 }
 static void misra_21_16_f2(char *x, char *y) {
     (void)memcmp(x, y, 10); // 21.16
+}
+typedef enum { R21_16_A, R21_16_B} r21_16_enum;
+static void misra_21_16_f3(void) {
+    int const a[2] = {0};
+    int const b[2] = {0};
+    (void)memcmp(a, b, 2); // no-warning
+    uint8_t const c[2] = {0};
+    uint8_t const d[2] = {0};
+    (void)memcmp(c, d, 2); // no-warning
+    bool const e[2] = {0};
+    bool const f[2] = {0};
+    (void)memcmp(e, f, 2); // no-warning
+    r21_16_enum const g[2] = {0};
+    r21_16_enum const h[2] = {0};
+    (void)memcmp(g, h, 2); // no-warning
+    char const i[2] = {0};
+    char const j[2] = {0};
+    (void)memcmp(i, j, 2); // 21.16
 }
 
 static void misra_21_19(void) {

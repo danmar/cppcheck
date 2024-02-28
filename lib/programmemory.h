@@ -211,7 +211,8 @@ ProgramMemory getProgramMemory(const Token* tok, const Token* expr, const ValueF
 
 ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, ValueFlow::Value>& args,
                                          const std::string& returnValue,
-                                         const Settings* settings);
+                                         const Settings* settings,
+                                         bool cpp);
 
 #endif
 

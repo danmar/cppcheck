@@ -122,7 +122,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     {
         Settings tempSettings;
         tempSettings.exename = QCoreApplication::applicationFilePath().toStdString();
-        tempSettings.loadCppcheckCfg(); // TODO: how to handle error?
+        Settings::loadCppcheckCfg(tempSettings, tempSettings.supprs); // TODO: how to handle error?
         mCppcheckCfgProductName = QString::fromStdString(tempSettings.cppcheckCfgProductName);
         mCppcheckCfgAbout = QString::fromStdString(tempSettings.cppcheckCfgAbout);
     }
@@ -978,7 +978,7 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
     const QString pythonCmd = fromNativePath(mSettings->value(SETTINGS_PYTHON_PATH).toString());
 
     {
-        const QString cfgErr = QString::fromStdString(result.loadCppcheckCfg());
+        const QString cfgErr = QString::fromStdString(Settings::loadCppcheckCfg(result, result.supprs));
         if (!cfgErr.isEmpty()) {
             QMessageBox::critical(this, tr("Error"), tr("Failed to load %1 - %2\n\nAnalysis is aborted.").arg("cppcheck.cfg").arg(cfgErr));
             return {false, {}};

@@ -2942,8 +2942,9 @@ static const Token* findExpressionChangedImpl(const Token* expr,
     const Token* result = nullptr;
     findAstNode(expr, [&](const Token* tok) {
         if (exprDependsOnThis(tok)) {
-            result = findThisChanged(start, end, false, settings, cpp);
-            return true;
+            result = findThisChanged(start, end, /*indirect*/ 0, settings, cpp);
+            if (result)
+                return true;
         }
         bool global = false;
         if (tok->variable()) {
@@ -3293,7 +3294,7 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
     } else if (ftok->str() == "{") {
         return indirect == 0 ? ExprUsage::Used : ExprUsage::Inconclusive;
     } else if (ftok->variable() && ftok == ftok->variable()->nameToken()) { // variable init/constructor call
-        if (ftok->variable()->type() && ftok->variable()->type()->needInitialization == Type::NeedInitialization::True)
+        if (ftok->variable()->type() && ftok->variable()->type()->classScope && ftok->variable()->type()->classScope->numConstructors == 0)
             return ExprUsage::Used;
         if (ftok->variable()->isStlType() || (ftok->variable()->valueType() && ftok->variable()->valueType()->container)) // STL types or containers don't initialize external variables
             return ExprUsage::Used;

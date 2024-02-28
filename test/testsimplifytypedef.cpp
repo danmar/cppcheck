@@ -254,7 +254,7 @@ private:
         Tokenizer tokenizer(settings1, this);
 
         std::istringstream istr(code);
-        tokenizer.list.createTokens(istr);
+        tokenizer.list.createTokens(istr, Standards::Language::CPP);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 

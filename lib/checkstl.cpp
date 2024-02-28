@@ -690,6 +690,8 @@ static std::vector<const Token*> getAddressContainer(const Token* tok)
 {
     if (Token::simpleMatch(tok, "[") && tok->astOperand1())
         return { tok->astOperand1() };
+    while (Token::simpleMatch(tok, "::") && tok->astOperand2())
+        tok = tok->astOperand2();
     std::vector<ValueFlow::Value> values = ValueFlow::getLifetimeObjValues(tok, /*inconclusive*/ false);
     std::vector<const Token*> res;
     for (const auto& v : values) {

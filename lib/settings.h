@@ -99,7 +99,7 @@ private:
 public:
     Settings();
 
-    std::string loadCppcheckCfg();
+    static std::string loadCppcheckCfg(Settings& settings, Suppressions& suppressions);
 
     static std::pair<std::string, std::string> getNameAndVersion(const std::string& productName);
 

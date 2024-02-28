@@ -74,8 +74,6 @@ private:
     void check(int files, int result, const std::string &data, const CheckOptions& opt = make_default_obj{}) {
         errout.str("");
 
-        CheckUnusedFunctions::clear();
-
         std::list<FileSettings> fileSettings;
 
         std::list<std::pair<std::string, std::size_t>> filelist;
