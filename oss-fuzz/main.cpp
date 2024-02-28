@@ -19,6 +19,12 @@
 #include "cppcheck.h"
 #include "type2.h"
 
+#ifdef NO_FUZZ
+#include <cstdlib>
+#include <fstream>
+#include <sstream>
+#endif
+
 enum class Color;
 
 class DummyErrorLogger : public ErrorLogger {
@@ -30,20 +36,48 @@ public:
                         const std::size_t /*value*/) override {} // FN
 };
 
+static DummyErrorLogger s_errorLogger;
+
+static void doCheck(const std::string& code)
+{
+    CppCheck cppcheck(s_errorLogger, false, nullptr);
+    cppcheck.settings().addEnabled("all");
+    cppcheck.settings().certainty.setEnabled(Certainty::inconclusive, true);
+    cppcheck.check("test.cpp", code);
+}
+
+#ifndef NO_FUZZ
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataSize);
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataSize)
 {
     if (dataSize < 10000) {
         const std::string code = generateCode2(data, dataSize);
-
-        DummyErrorLogger errorLogger;
-        CppCheck cppcheck(errorLogger, false, nullptr);
-        cppcheck.settings().addEnabled("all");
-        cppcheck.settings().certainty.setEnabled(Certainty::inconclusive, true);
-        cppcheck.check("test.cpp", code);
+        doCheck(code);
     }
     return 0;
 }
+#else
+int main(int argc, char * argv[])
+{
+    if (argc != 2)
+        return EXIT_FAILURE;
+
+    std::ifstream f(argv[1]);
+    if (!f.is_open())
+        return EXIT_FAILURE;
+
+    std::ostringstream oss;
+    oss << f.rdbuf();
+
+    if (!f.good())
+        return EXIT_FAILURE;
+
+    const std::string code = oss.str();
+    doCheck(code);
+
+    return EXIT_SUCCESS;
+}
+#endif
 
 
