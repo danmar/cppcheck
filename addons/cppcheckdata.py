@@ -983,7 +983,7 @@ class Suppression:
                 and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
                 and fnmatch(errorId, self.errorId)):
             return True
-        # Global Suppression
+        # File Suppression
         if ((self.fileName is None or fnmatch(file, self.fileName))
                 and (self.suppressionType != None and self.suppressionType == "file") # Verify use of file (global) suppression type
                 and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
@@ -994,6 +994,12 @@ class Suppression:
                 and (self.suppressionType != None and self.suppressionType == "block") # Type for Block suppression
                 and (self.lineBegin != None and int(line) > int(self.lineBegin)) # Code Match is between the Block suppression
                 and (self.lineEnd != None and int(line) < int(self.lineEnd)) # Code Match is between the Block suppression
+                and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
+                and fnmatch(errorId, self.errorId)):
+            return True
+        # Other Suppression (Globaly set via suppression file or cli command)
+        if ((self.fileName is None or fnmatch(file, self.fileName))
+                and (self.suppressionType is None) 
                 and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
                 and fnmatch(errorId, self.errorId)):
             return True
