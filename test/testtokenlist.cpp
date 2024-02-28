@@ -113,7 +113,7 @@ private:
 
         {
             const char code2[] = "_Generic"; // C11 keyword
-            TokenList tokenlist(nullptr); // no settings use latest standard
+            TokenList tokenlist(&settings); // default settings use latest standard
             std::istringstream istr(code2);
             tokenlist.createTokens(istr, "a.cpp");
             ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
@@ -121,7 +121,7 @@ private:
 
         {
             const char code2[] = "_Generic"; // C11 keyword
-            TokenList tokenlist(nullptr); // no settings use latest standard
+            TokenList tokenlist(&settings); // default settings use latest standard
             std::istringstream istr(code2);
             tokenlist.createTokens(istr, "a.c");
             ASSERT_EQUALS(true, tokenlist.front()->isKeyword());
@@ -138,7 +138,7 @@ private:
 
         {
             const char code2[] = "co_return"; // C++20 keyword
-            TokenList tokenlist(nullptr); // no settings use latest standard
+            TokenList tokenlist(&settings); // default settings use latest standard
             std::istringstream istr(code2);
             tokenlist.createTokens(istr, "a.cpp");
             ASSERT_EQUALS(true, tokenlist.front()->isKeyword());
@@ -146,7 +146,7 @@ private:
 
         {
             const char code2[] = "co_return"; // C++20 keyword
-            TokenList tokenlist(nullptr); // no settings use latest standard
+            TokenList tokenlist(&settings); // default settings use latest standard
             std::istringstream istr(code2);
             tokenlist.createTokens(istr, "a.c");
             ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
