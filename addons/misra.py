@@ -2072,7 +2072,10 @@ class MisraChecker:
                     rawTokensFollowingPtr[2].str == ')'):
                 self.reportError(var.nameToken, 8, 2)
 
-
+    def insert_in_dict(self, dict_name,key, value):
+        if key not in dict_name:
+            dict_name[key] = []
+        dict_name[key].append(value)
     def misra_8_4(self, cfg):
         for func in cfg.functions:
             if func.isStatic:
@@ -2086,10 +2089,8 @@ class MisraChecker:
             if func.tokenDef.str == 'main':
                 continue
             self.reportError(func.tokenDef, 8, 4)
-
-        extern_vars = []
-        var_defs = []
-
+        extern_var_with_def = {}
+        extern_var_without_def = {}
         for var in cfg.variables:
             if not var.isGlobal:
                 continue
@@ -2097,13 +2098,30 @@ class MisraChecker:
                 continue
             if var.nameToken is None:
                 continue
-            if var.isExtern:
-                extern_vars.append(var.nameToken.str)
+            tok = var.nameToken
+            if tok.next.str == ";":
+                if tok.next.isSplittedVarDeclEq or (tok.valueType and tok.valueType.type == "record"):
+                    self.insert_in_dict(extern_var_with_def, tok.str, tok)
+                else:
+                    self.insert_in_dict(extern_var_without_def, tok.str, tok)
             else:
-                var_defs.append(var.nameToken)
-        for vartok in var_defs:
-            if vartok.str not in extern_vars:
-                self.reportError(vartok, 8, 4)
+                 self.insert_in_dict(extern_var_without_def, var.nameToken.str, var.nameToken)
+
+        for var in extern_var_with_def:
+            if var not in extern_var_without_def:
+                for t in extern_var_with_def[var]:
+                    self.reportError(t, 8, 4)
+
+        for var_str, var_tok in extern_var_without_def.items():
+            warn = True
+            if var_str not in extern_var_with_def:
+                for t in var_tok:
+                    if t.variable.isExtern:
+                        warn = False
+                        break
+                if warn:
+                    for t in var_tok:
+                        self.reportError(t, 8, 4)
 
     def misra_8_5(self, dumpfile, cfg):
         self._save_ctu_summary_identifiers(dumpfile, cfg)
