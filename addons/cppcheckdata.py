@@ -948,7 +948,7 @@ class Suppression:
       symbolName  The name of the symbol to match warnings for, can include wildcards
       lineBegin   The first line to suppress warnings from
       lineEnd     The last line to suppress warnings from
-      suppressionType   The type of suppression which is applied (unique = 0, file = 1, block = 2, blockBegin = 3, blockEnd = 4, macro = 5)
+      suppressionType   The type of suppression which is applied (unique = None (default), file, block, blockBegin, blockEnd, macro)
     """
 
     errorId = None
@@ -969,24 +969,31 @@ class Suppression:
         self.suppressionType = element.get('type')
 
     def __repr__(self):
-        attrs = ['errorId' , "fileName", "lineNumber", "symbolName"]
+        attrs = ["errorId", "fileName", "lineNumber", "symbolName", "lineBegin", "lineEnd","suppressionType"]
         return "{}({})".format(
             "Suppression",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
         )
 
     def isMatch(self, file, line, message, errorId):
-        # Global and Line Suppression
+        # Line Suppression
         if ((self.fileName is None or fnmatch(file, self.fileName))
-                and (self.lineNumber is None or int(self.suppressionType) == 1 or int(line) == int(self.lineNumber))
+                and (self.suppressionType == None) # Verify use of default suppression type (None = unique)
+                and (self.lineNumber != None and int(line) == int(self.lineNumber))
+                and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
+                and fnmatch(errorId, self.errorId)):
+            return True
+        # Global Suppression
+        if ((self.fileName is None or fnmatch(file, self.fileName))
+                and (self.suppressionType != None and self.suppressionType == "file") # Verify use of file (global) suppression type
                 and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
                 and fnmatch(errorId, self.errorId)):
             return True
         # Block Suppression Mode
         if ((self.fileName is None or fnmatch(file, self.fileName))
-                and (int(self.suppressionType) == 2) # Type for Block suppression
-                and (int(line) > int(self.lineBegin)) # Code Match is between the Block suppression
-                and (int(line) < int(self.lineEnd)) # Code Match is between the Block suppression
+                and (self.suppressionType != None and self.suppressionType == "block") # Type for Block suppression
+                and (self.lineBegin != None and int(line) > int(self.lineBegin)) # Code Match is between the Block suppression
+                and (self.lineEnd != None and int(line) < int(self.lineEnd)) # Code Match is between the Block suppression
                 and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
                 and fnmatch(errorId, self.errorId)):
             return True

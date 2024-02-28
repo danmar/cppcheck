@@ -459,7 +459,16 @@ void SuppressionList::dump(std::ostream & out) const
             out << " lineBegin=\"" << suppression.lineBegin << '"';
         if (suppression.lineEnd != Suppression::NO_LINE)
             out << " lineEnd=\"" << suppression.lineEnd << '"';
-        out << " type=\"" << (int) suppression.type << '"';
+        if (suppression.type == SuppressionList::Type::file)
+            out << " type=\"file\"";
+        else if (suppression.type == SuppressionList::Type::block)
+            out << " type=\"block\"";
+        else if (suppression.type == SuppressionList::Type::blockBegin)
+            out << " type=\"blockBegin\"";
+        else if (suppression.type == SuppressionList::Type::blockEnd)
+            out << " type=\"blockEnd\"";
+        else if (suppression.type == SuppressionList::Type::macro)
+            out << " type=\"macro\"";
         out << " />" << std::endl;
     }
     out << "  </suppressions>" << std::endl;
