@@ -2739,36 +2739,55 @@ class MisraChecker:
                         break
                     prev = prev.previous
 
+    def misra_12_4_check_expr(self, expr):
+        if not expr.astOperand2 or not expr.astOperand1:
+            return
+        if expr.valueType is None:
+            return
+        if expr.valueType.sign is None or expr.valueType.sign != 'unsigned':
+            return
+        if expr.valueType.pointer > 0:
+            return
+        if not expr.valueType.isIntegral():
+            return
+        op1 = expr.astOperand1.getKnownIntValue()
+        if op1 is None:
+            return
+        op2 = expr.astOperand2.getKnownIntValue()
+        if op2 is None:
+            return
+        bits = bitsOfEssentialType('unsigned ' + expr.valueType.type)
+        if bits <= 0 or bits >= 64:
+            return
+        max_value = (1 << bits) - 1
+        if not is_constant_integer_expression(expr):
+            return
+        if expr.str == '+' and op1 + op2 > max_value:
+            self.reportError(expr, 12, 4)
+        elif expr.str == '-' and op1 - op2 < 0:
+            self.reportError(expr, 12, 4)
+        elif expr.str == '*' and op1 * op2 > max_value:
+            self.reportError(expr, 12, 4)
     def misra_12_4(self, cfg):
-        for expr in cfg.tokenlist:
-            if not expr.astOperand2 or not expr.astOperand1:
-                continue
-            if expr.valueType is None:
-                continue
-            if expr.valueType.sign is None or expr.valueType.sign != 'unsigned':
-                continue
-            if expr.valueType.pointer > 0:
-                continue
-            if not expr.valueType.isIntegral():
-                continue
-            op1 = expr.astOperand1.getKnownIntValue()
-            if op1 is None:
-                continue
-            op2 = expr.astOperand2.getKnownIntValue()
-            if op2 is None:
-                continue
-            bits = bitsOfEssentialType('unsigned ' + expr.valueType.type)
-            if bits <= 0 or bits >= 64:
-                continue
-            max_value = (1 << bits) - 1
-            if not is_constant_integer_expression(expr):
-                continue
-            if expr.str == '+' and op1 + op2 > max_value:
-                self.reportError(expr, 12, 4)
-            elif expr.str == '-' and op1 - op2 < 0:
-                self.reportError(expr, 12, 4)
-            elif expr.str == '*' and op1 * op2 > max_value:
-                self.reportError(expr, 12, 4)
+        if not cfg.tokenlist:
+            return
+        expr = cfg.tokenlist[0]
+        while expr.next:
+            expr = expr.next
+            if expr.str == "?" and expr.astOperand2.str == ":":
+                known_value = expr.astOperand1.getKnownIntValue()
+                if known_value == 1:
+                    tok = expr
+                    while tok != expr.astOperand2:
+                        self.misra_12_4_check_expr(tok)
+                        tok = tok.next
+                    expr = tok
+                    while expr.str not in (";", "{", "}"):
+                        expr = expr.next
+                    continue
+                elif known_value == 0:
+                    expr = expr.astOperand2
+            self.misra_12_4_check_expr(expr)
 
 
     def misra_13_1(self, data):
