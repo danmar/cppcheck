@@ -2046,6 +2046,12 @@ private:
               "    return ::std::string(c);\n"
               "}\n", "test.cpp", &s);
         ASSERT_EQUALS("", errout.str());
+
+        check("template <typename T>\n"
+              "struct S : public std::vector<T> {\n"
+              "    void resize(size_t n) { std::vector<T>::resize(n); }\n"
+              "};\n", "test.cpp", &s);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkUseStandardLibrary1() {

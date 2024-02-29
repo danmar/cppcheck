@@ -972,6 +972,8 @@ std::string Library::getFunctionName(const Token *ftok, bool &error) const
         return "";
     }
     if (ftok->isName()) {
+        if (Token::simpleMatch(ftok->astParent(), "::"))
+            return ftok->str();
         for (const Scope *scope = ftok->scope(); scope; scope = scope->nestedIn) {
             if (!scope->isClassOrStruct())
                 continue;
