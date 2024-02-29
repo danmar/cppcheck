@@ -4977,6 +4977,15 @@ private:
                           "}", true, Platform::Type::Native, "test.c"));
         // #10013
         ASSERT_EQUALS("void f ( ) { x = ! 123 ; }", tokenizeAndStringify("void f() { x = not 123; }", true, Platform::Type::Native, "test.cpp"));
+
+        { // #12476
+            const char code[] = "struct S { int a, b; };"
+                                "void f(struct S* compl) {"
+                                "    compl->a = compl->b;"
+                                "}";
+            const char exp[] = "struct S { int a ; int b ; } ; void f ( struct S * compl ) { compl . a = compl . b ; }";
+            ASSERT_EQUALS(exp, tokenizeAndStringify(code, true, Platform::Type::Native, "test.c"));
+        }
     }
 
     void simplifyRoundCurlyParentheses() {
