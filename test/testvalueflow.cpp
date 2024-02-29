@@ -1465,7 +1465,7 @@ private:
                "}\n";
         values = tokenValues(code, "=");
         ASSERT_EQUALS(1U, values.size());
-        ASSERT_EQUALS(4 * 2 * 10LL, values.back().intvalue);
+        ASSERT_EQUALS(4LL * 2 * 10, values.back().intvalue);
     }
 
     void valueFlowComma()
