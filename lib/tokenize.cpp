@@ -10589,3 +10589,14 @@ bool Tokenizer::hasIfdef(const Token *start, const Token *end) const
         d.file == list.getFiles()[start->fileIndex()];
     });
 }
+
+bool Tokenizer::isPacked(const Token * bodyStart) const
+{
+    assert(mPreprocessor);
+
+    const auto& directives = mPreprocessor->getDirectives();
+    // TODO: should this return true if the #pragma exists in any line before the start token?
+    return std::any_of(directives.cbegin(), directives.cend(), [&](const Directive& d) {
+        return d.linenr < bodyStart->linenr() && d.str == "#pragma pack(1)" && d.file == list.getFiles().front();
+    });
+}
