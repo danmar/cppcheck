@@ -559,7 +559,7 @@ unsigned int CppCheck::checkClang(const std::string &path)
 unsigned int CppCheck::check(const std::string &path)
 {
     if (mSettings.clang)
-        return checkClang(path);
+        return checkClang(Path::simplifyPath(path));
 
     return checkFile(Path::simplifyPath(path), emptyString);
 }
