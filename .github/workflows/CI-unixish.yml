@@ -405,6 +405,15 @@ jobs:
         env:
           TEST_CPPCHECK_INJECT_J: 2
 
+      # do not use pushd in this step since we go below the working directory
+      - name: Run test/cli (--clang)
+        if: false
+        run: |
+          cd test/cli
+          python3 -m pytest -Werror --strict-markers -vv
+        env:
+          TEST_CPPCHECK_INJECT_CLANG: clang
+
       - name: Run cfg tests
         if: matrix.os != 'ubuntu-22.04'
         run: |
