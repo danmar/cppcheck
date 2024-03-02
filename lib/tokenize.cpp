@@ -7518,7 +7518,7 @@ bool Tokenizer::simplifyCAlternativeTokens()
         } else if (Token::Match(tok, "not|compl")) {
             alt.push_back(tok);
 
-            if (Token::Match(tok->previous(), "%assign%") || Token::Match(tok->next(), "%num%")) {
+            if ((Token::Match(tok->previous(), "%assign%") || Token::Match(tok->next(), "%num%")) && !Token::Match(tok->next(), ".|->")) {
                 replaceAll = true;
                 continue;
             }
