@@ -4853,7 +4853,7 @@ static bool isContainerOfPointers(const Token* tok, const Settings& settings)
     return vt.pointer > 0;
 }
 
-static void valueFlowLifetime(TokenList &tokenlist, ErrorLogger *errorLogger, const Settings &settings)
+void ValueFlow::valueFlowLifetime(TokenList &tokenlist, ErrorLogger *errorLogger, const Settings &settings)
 {
     for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
         if (!tok->scope())
