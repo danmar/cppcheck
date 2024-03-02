@@ -2669,6 +2669,8 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
         ftok = ftok->astParent();
 
     if (ftok && Token::Match(ftok->link(), ")|} !!{")) {
+        if (ftok->str() == "(" && Token::simpleMatch(ftok->astOperand1(), "[")) // operator() on array element, bail out
+            return true;
         const Token * ptok = tok2;
         while (Token::Match(ptok->astParent(), ".|::|["))
             ptok = ptok->astParent();

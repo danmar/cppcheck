@@ -3544,6 +3544,14 @@ private:
               "    const S& s(str);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n" // #10052
+              "    int& operator()(int);\n"
+              "};\n"
+              "void f(std::vector<C>& c) {\n"
+              "    c[0](5) = 12;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constParameterCallback() {
