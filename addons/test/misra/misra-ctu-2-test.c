@@ -43,10 +43,8 @@ extern int misra_8_5;
 // cppcheck-suppress misra-c2012-8.4
 // cppcheck-suppress misra-c2012-8.6
 int32_t misra_8_6 = 2;
-// cppcheck-suppress misra-c2012-8.4
 int32_t misra_8_6_1;
 // cppcheck-suppress misra-c2012-8.7
-// cppcheck-suppress misra-c2012-8.4
 int32_t misra_8_6_1 = 2;
 // cppcheck-suppress misra-c2012-8.4
 // cppcheck-suppress misra-c2012-8.7

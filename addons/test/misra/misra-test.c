@@ -395,6 +395,11 @@ uint8_t misra_8_4_buf2[24]; // 8.4
 typedef struct { uint16_t a; uint16_t b; } misra_8_4_struct;
 extern misra_8_4_struct bar[42];
 misra_8_4_struct bar[42]; // compliant
+extern uint16_t misra_8_4_speed = 6000u; //8.4
+uint8_t misra_8_4_pressure = 101u; //8.4
+int32_t misra_8_4_ext_val2;
+int32_t misra_8_4_ext_val2 = 3; // compliant
+int32_t misra_8_4_ext_val4; //8.4
 
 static int32_t misra_8_8 = 123;
 extern int32_t misra_8_8; // 8.8
