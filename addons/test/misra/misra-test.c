@@ -997,6 +997,9 @@ static void misra_12_4(uint8_t t) {
   x = MISRA12_4a + MISRA12_4b; // 12.4
   x = 0u - 1u; // 12.4
   x = t ? 0u : (0u-1u); // 12.4
+  x = (0u==0u) ? 0u : (0u-1u);
+  x = (0u!=0u) ? 0u : (0u-1u); // 12.4
+  x = (0u==0u) ? 0u : (2*(0u-1u)); // 10.4
 }
 
 struct misra_13_1_t { int a; int b; };
