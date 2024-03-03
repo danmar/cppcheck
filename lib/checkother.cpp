@@ -1771,7 +1771,7 @@ void CheckOther::constVariableError(const Variable *var, const Function *functio
     }
 
     const std::string vartype(var->isArgument() ? "Parameter" : "Variable");
-    const std::string varname(var->name());
+    const std::string& varname(var->name());
     const std::string ptrRefArray = var->isArray() ? "const array" : (var->isPointer() ? "pointer to const" : "reference to const");
 
     ErrorPath errorPath;
