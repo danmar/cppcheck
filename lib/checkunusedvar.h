@@ -73,7 +73,7 @@ private:
     void checkStructMemberUsage();
 
     bool isRecordTypeWithoutSideEffects(const Type* type);
-    bool isVariableWithoutSideEffects(const Variable& var);
+    bool isVariableWithoutSideEffects(const Variable& var, const Type* type = nullptr);
     bool isEmptyType(const Type* type);
     bool isFunctionWithoutSideEffects(const Function& func, const Token* functionUsageToken,
                                       std::list<const Function*> checkedFuncs);
