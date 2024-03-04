@@ -683,14 +683,23 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyUsing30() { // #8454
-        const char code[] = "using std::to_string;\n"
-                            "void f() {\n"
-                            "    std::string str = to_string(1);\n"
-                            "}\n";
-        const char expected[] = "void f ( ) { std :: string str ; str = std :: to_string ( 1 ) ; }";
-        ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
-        ASSERT_EQUALS("", errout.str());
+    void simplifyUsing30() {
+        {
+            const char code[] = "using std::to_string;\n" // #8454
+                                "void f() {\n"
+                                "    std::string str = to_string(1);\n"
+                                "}\n";
+            const char expected[] = "void f ( ) { std :: string str ; str = std :: to_string ( 1 ) ; }";
+            ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            const char code[] = "using std::cout, std::endl, std::cerr, std::ostringstream;\n"
+                                "cerr << \"abc\";\n";
+            const char expected[] = "std :: cerr << \"abc\" ;";
+            ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void simplifyUsing8970() {

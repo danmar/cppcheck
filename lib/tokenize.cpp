@@ -2845,13 +2845,21 @@ bool Tokenizer::simplifyUsing()
         if (!Token::Match(tok, "using ::| %name% ::"))
             continue;
         Token* end = tok->tokAt(3);
-        while (end && end->str() != ";")
-            end = end->next();
+        while (end && !Token::Match(end, "[;,]")) {
+            if (end->str() == "<" && end->link()) // skip template args
+                end =end->link()->next();
+            else
+                end = end->next();
+        }
         if (!end)
             continue;
         if (!end->tokAt(-1)->isNameOnly()) // e.g. operator=
             continue;
         tok->insertToken(end->strAt(-1))->insertToken("=");
+        if (end->str() == ",") { // comma-separated list
+            end->str(";");
+            end->insertToken("using");
+        }
         tok = end;
     }
 
