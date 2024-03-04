@@ -69,6 +69,7 @@ private:
         TEST_CASE(structmember22); // #11016
         TEST_CASE(structmember23);
         TEST_CASE(structmember24); // #10847
+        TEST_CASE(structmember25);
         TEST_CASE(structmember_macro);
         TEST_CASE(classmember);
 
@@ -1955,6 +1956,22 @@ private:
                                "        std::cout << r->b;\n"
                                "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void structmember25() {
+        checkStructMemberUsage("struct S {\n" // #12485
+                               "    S* p;\n"
+                               "    int i;\n"
+                               "};\n"
+                               "struct T {\n"
+                               "    S s;\n"
+                               "    int j;\n"
+                               "};\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) struct member 'S::p' is never used.\n"
+                      "[test.cpp:3]: (style) struct member 'S::i' is never used.\n"
+                      "[test.cpp:6]: (style) struct member 'T::s' is never used.\n"
+                      "[test.cpp:7]: (style) struct member 'T::j' is never used.\n",
+                      errout.str());
     }
 
     void structmember_macro() {

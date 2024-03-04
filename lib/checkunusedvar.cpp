@@ -1613,7 +1613,7 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
 
     // Is there a member variable with possible side effects
     for (const Variable& var : type->classScope->varlist) {
-        withoutSideEffects = isVariableWithoutSideEffects(var);
+        withoutSideEffects = isVariableWithoutSideEffects(var, type);
         if (!withoutSideEffects) {
             return withoutSideEffects;
         }
@@ -1623,10 +1623,10 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
     return (withoutSideEffects = true);
 }
 
-bool CheckUnusedVar::isVariableWithoutSideEffects(const Variable& var)
+bool CheckUnusedVar::isVariableWithoutSideEffects(const Variable& var, const Type* type)
 {
     const Type* variableType = var.type();
-    if (variableType) {
+    if (variableType && variableType != type) {
         if (!isRecordTypeWithoutSideEffects(variableType))
             return false;
     } else {
