@@ -871,7 +871,7 @@ private:
         ASSERT_EQUALS(C.arrayLike_indexOp, true);
 
         {
-            givenACodeSampleToTokenize var("std::A<int> a;");
+            SimpleTokenizer var("std::A<int> a;");
             ASSERT_EQUALS(&A, library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             bool isIterator;
@@ -880,14 +880,14 @@ private:
         }
 
         {
-            givenACodeSampleToTokenize var("std::A<int>::size_type a_s;");
+            SimpleTokenizer var("std::A<int>::size_type a_s;");
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             ASSERT(!library.detectContainerOrIterator(var.tokens()));
         }
 
         {
-            givenACodeSampleToTokenize var("std::A<int>::iterator a_it;");
+            SimpleTokenizer var("std::A<int>::iterator a_it;");
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT_EQUALS(&A, library.detectIterator(var.tokens()));
             bool isIterator;
@@ -896,7 +896,7 @@ private:
         }
 
         {
-            givenACodeSampleToTokenize var("std::B<int> b;");
+            SimpleTokenizer var("std::B<int> b;");
             ASSERT_EQUALS(&B, library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             bool isIterator;
@@ -905,14 +905,14 @@ private:
         }
 
         {
-            givenACodeSampleToTokenize var("std::B<int>::size_type b_s;");
+            SimpleTokenizer var("std::B<int>::size_type b_s;");
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             ASSERT(!library.detectContainerOrIterator(var.tokens()));
         }
 
         {
-            givenACodeSampleToTokenize var("std::B<int>::iterator b_it;");
+            SimpleTokenizer var("std::B<int>::iterator b_it;");
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT_EQUALS(&B, library.detectIterator(var.tokens()));
             bool isIterator;
@@ -921,14 +921,14 @@ private:
         }
 
         {
-            givenACodeSampleToTokenize var("C c;");
+            SimpleTokenizer var("C c;");
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             ASSERT(!library.detectContainerOrIterator(var.tokens()));
         }
 
         {
-            givenACodeSampleToTokenize var("D d;");
+            SimpleTokenizer var("D d;");
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             ASSERT(!library.detectContainerOrIterator(var.tokens()));
