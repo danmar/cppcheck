@@ -32,6 +32,8 @@
 #include "threadhandler.h"
 #include "xmlreportv2.h"
 
+#include <algorithm>
+
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
@@ -616,8 +618,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
         if (mContextItem && mApplications->getApplicationCount() > 0 && mContextItem->parent()) {
             //Create an action for the application
             int defaultApplicationIndex = mApplications->getDefaultApplication();
-            if (defaultApplicationIndex < 0)
-                defaultApplicationIndex = 0;
+            defaultApplicationIndex = std::max(defaultApplicationIndex, 0);
             const Application& app = mApplications->getApplication(defaultApplicationIndex);
             auto *start = new QAction(app.getName(), &menu);
             if (multipleSelection)
