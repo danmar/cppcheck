@@ -131,6 +131,7 @@ We run this separately via `clang-include-cleaner` in the `iwyu.yml` workflow as
 `bugprone-empty-catch`<br/>
 `performance-enum-size`<br/>
 `readability-avoid-nested-conditional-operator`</br>
+`modernize-use-designated-initializers`</br>
 
 To be evaluated (need to remove exclusion).
 
