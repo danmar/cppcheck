@@ -5713,8 +5713,12 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Return value 's[0]=='2'' is always false\n", errout.str());
 
-        check("void f(int i) {	if (i == 1 || 2) {} }\n"); // #12487
+        check("void f(int i) { if (i == 1 || 2) {} }\n"); // #12487
         ASSERT_EQUALS("[test.cpp:1]: (style) Condition 'i==1||2' is always true\n", errout.str());
+
+        check("enum E { E1 = 1, E2 = 2 };\n"
+              "void f(int i) { if (i == E1 || E2) {} }\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'i==E1||E2' is always true\n", errout.str());
     }
 
     void pointerAdditionResultNotNull() {
