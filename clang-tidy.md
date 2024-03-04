@@ -126,6 +126,7 @@ We run this separately via `clang-include-cleaner` in the `iwyu.yml` workflow as
 `bugprone-switch-missing-default-case`<br/>
 `bugprone-empty-catch`<br/>
 `readability-avoid-nested-conditional-operator`</br>
+`modernize-use-designated-initializers`</br>
 
 To be evaluated (need to remove exclusion).
 
