@@ -1116,11 +1116,12 @@ static size_t accumulateStructMembers(const Scope* scope, F f)
         if (const ValueType* vt = var.valueType()) {
             if (vt->type == ValueType::Type::RECORD && vt->typeScope == scope)
                 return 0;
-            total = f(total, *vt);
+            size_t varSize = f(total, *vt) - total;
             const MathLib::bigint dim = std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), 1LL, [](MathLib::bigint i1, const Dimension& dim) {
                 return i1 * dim.num;
             });
-            total *= dim;
+            varSize *= dim;
+            total += varSize;
         }
         if (total == 0)
             return 0;
