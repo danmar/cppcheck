@@ -1544,7 +1544,7 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (Token::Match(tok, "%oror%|&&")) {
                 bool bail = false;
-                for (auto op : { tok->astOperand1(), tok->astOperand2() }) {
+                for (const Token* op : { tok->astOperand1(), tok->astOperand2() }) {
                     if (op->hasKnownIntValue() && (!op->isLiteral() || op->isBoolean())) {
                         bail = true;
                         break;
