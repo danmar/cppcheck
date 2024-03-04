@@ -43,10 +43,6 @@
 
 #include "xml.h"
 
-namespace CTU {
-    class FileInfo;
-}
-
 //---------------------------------------------------------------------------
 
 static const CWE CWE561(561U);   // Dead Code

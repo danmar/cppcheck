@@ -21,6 +21,9 @@
 #include "settings.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "suppressions.h"
+
+
 
 class TestSettings : public TestFixture {
 public:

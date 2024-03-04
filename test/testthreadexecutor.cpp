@@ -16,12 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "checkunusedfunctions.h"
 #include "redirect.h"
 #include "settings.h"
 #include "filesettings.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "suppressions.h"
 #include "threadexecutor.h"
 #include "timer.h"
 

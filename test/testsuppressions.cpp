@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "checkunusedfunctions.h"
 #include "config.h"
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
@@ -30,7 +29,6 @@
 #include "threadexecutor.h"
 #include "singleexecutor.h"
 
-#include <algorithm>
 #include <cstddef>
 #include <cstring>
 #include <list>

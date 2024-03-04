@@ -24,6 +24,7 @@
 
 #include <list>
 #include <string>
+#include <utility>
 
 #include "xml.h"
 

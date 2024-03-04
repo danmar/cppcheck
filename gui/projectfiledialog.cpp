@@ -32,6 +32,7 @@
 
 #include <list>
 #include <string>
+#include <utility>
 
 #include <QByteArray>
 #include <QCheckBox>

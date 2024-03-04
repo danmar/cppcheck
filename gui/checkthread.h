@@ -24,6 +24,8 @@
 #include "suppressions.h"
 
 #include <atomic>
+#include <string>
+#include <vector>
 
 #include <QList>
 #include <QObject>

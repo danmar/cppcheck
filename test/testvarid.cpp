@@ -27,6 +27,7 @@
 
 #include <sstream> // IWYU pragma: keep
 #include <string>
+#include <vector>
 
 class TestVarID : public TestFixture {
 public:

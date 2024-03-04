@@ -39,6 +39,7 @@
 #include "report.h"
 #include "resultsview.h"
 #include "scratchpad.h"
+#include "settings.h"
 #include "showtypes.h"
 #include "statsdialog.h"
 #include "settingsdialog.h"

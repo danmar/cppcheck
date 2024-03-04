@@ -23,6 +23,7 @@
 
 #include <cassert>
 #include <cfenv>
+#include <cstdlib>
 #include <cstring>
 
 // static functions are omitted from trace

@@ -26,6 +26,8 @@
 
 #include <string>
 
+#include <QFile>
+#include <QIODevice>
 #include <QList>
 #include <QStringList>
 #include <QTemporaryDir>
