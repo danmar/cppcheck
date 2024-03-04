@@ -1478,6 +1478,17 @@ private:
         values = tokenValues(code, "=");
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(4LL * (10 + 20 + 30), values.back().intvalue);
+
+        code = "struct S {\n"
+               "    char c;\n"
+               "    int a[4];\n"
+               "};\n"
+               "void f() {\n"
+               "    x = sizeof(S);\n"
+               "}\n";
+        values = tokenValues(code, "=");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(4LL * 5, values.back().intvalue);
     }
 
     void valueFlowComma()
