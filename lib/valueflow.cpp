@@ -1116,7 +1116,10 @@ static size_t accumulateStructMembers(const Scope* scope, F f)
         if (const ValueType* vt = var.valueType()) {
             if (vt->type == ValueType::Type::RECORD && vt->typeScope == scope)
                 return 0;
-            total = f(total, *vt, var);
+            const MathLib::bigint dim = std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), 1LL, [](MathLib::bigint i1, const Dimension& dim) {
+                return i1 * dim.num;
+            });
+            total = f(total, *vt, dim);
         }
         if (total == 0)
             return 0;
@@ -1145,7 +1148,7 @@ static size_t getAlignOf(const ValueType& vt, const Settings& settings)
         return align == 0 ? 0 : bitCeil(align);
     }
     if (vt.type == ValueType::Type::RECORD && vt.typeScope) {
-        return accumulateStructMembers(vt.typeScope, [&](size_t max, const ValueType& vt2, const Variable& /*var*/) {
+        return accumulateStructMembers(vt.typeScope, [&](size_t max, const ValueType& vt2, size_t /*dim*/) {
             size_t a = getAlignOf(vt2, settings);
             return std::max(max, a);
         });
@@ -1183,14 +1186,11 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings)
     if (vt.type == ValueType::Type::LONGDOUBLE)
         return settings.platform.sizeof_long_double;
     if (vt.type == ValueType::Type::RECORD && vt.typeScope) {
-        size_t total = accumulateStructMembers(vt.typeScope, [&](size_t total, const ValueType& vt2, const Variable& var) -> size_t {
+        size_t total = accumulateStructMembers(vt.typeScope, [&](size_t total, const ValueType& vt2, size_t dim) -> size_t {
             size_t n = ValueFlow::getSizeOf(vt2, settings);
             size_t a = getAlignOf(vt2, settings);
             if (n == 0 || a == 0)
                 return 0;
-            const MathLib::bigint dim = std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), 1LL, [](MathLib::bigint i1, const Dimension& dim) {
-                return i1 * dim.num;
-            });
             n *= dim;
             size_t padding = (a - (total % a)) % a;
             return total + padding + n;
