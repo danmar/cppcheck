@@ -5712,6 +5712,9 @@ private:
               "        return s.size()>2U && s[0]=='4' && s[0]=='2';\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Return value 's[0]=='2'' is always false\n", errout.str());
+
+        check("void f(int i) {	if (i == 1 || 2) {} }\n"); // #12487
+        ASSERT_EQUALS("[test.cpp:1]: (style) Condition 'i==1||2' is always true\n", errout.str());
     }
 
     void pointerAdditionResultNotNull() {

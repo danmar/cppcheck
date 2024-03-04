@@ -1542,9 +1542,17 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (Token::Match(tok, "! %num%|%bool%|%char%"))
                 continue;
-            if (Token::Match(tok, "%oror%|&&") &&
-                (tok->astOperand1()->hasKnownIntValue() || tok->astOperand2()->hasKnownIntValue()))
-                continue;
+            if (Token::Match(tok, "%oror%|&&")) {
+                bool bail = false;
+                for (auto op : { tok->astOperand1(), tok->astOperand2() }) {
+                    if (op->hasKnownIntValue() && (!op->isLiteral() || op->isBoolean())) {
+                        bail = true;
+                        break;
+                    }
+                }
+                if (bail)
+                    continue;
+            }
             if (Token::simpleMatch(tok, ":"))
                 continue;
             if (Token::Match(tok->astOperand1(), "%name% (") && Token::simpleMatch(tok->astParent(), "return"))
