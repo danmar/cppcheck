@@ -2853,7 +2853,7 @@ bool Tokenizer::simplifyUsing()
         }
         if (!end)
             continue;
-        if (!end->tokAt(-1)->isNameOnly()) // e.g. operator=
+        if (!end->tokAt(-1)->isNameOnly() || end->tokAt(-2)->isLiteral()) // e.g. operator=, operator""sv
             continue;
         tok->insertToken(end->strAt(-1))->insertToken("=");
         if (end->str() == ",") { // comma-separated list
