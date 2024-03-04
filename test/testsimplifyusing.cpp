@@ -706,6 +706,24 @@ private:
             ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
             ASSERT_EQUALS("", errout.str());
         }
+        {
+            const char code[] = "template <typename T>\n"
+                                "class vector : public ::std::vector<T> {\n"
+                                "public:\n"
+                                "    using ::std::vector<T>::vector;\n"
+                                "    vector() {}\n"
+                                "};\n"
+                                "vector <int> v;\n";
+            const char expected[] = "class vector<int> ; "
+                                    "vector<int> v ; "
+                                    "class vector<int> : public :: std :: vector<int> { "
+                                    "public: "
+                                    "using vector<int> = :: std :: vector<int> :: vector<int> ; "
+                                    "vector<int> ( ) { } "
+                                    "} ;";
+            ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void simplifyUsing8970() {
