@@ -352,11 +352,10 @@ void deprecatedFunctions_wxDataViewCustomRenderer(wxDataViewCustomRenderer &data
     dataViewCustomRenderer.LeftClick(cursor, cell, model, item, col);
 }
 
-// cppcheck-suppress constParameterReference
 void deprecatedFunctions(wxApp &a,
                          const wxString &s,
                          wxArtProvider *artProvider,
-                         wxCalendarCtrl &calenderCtrl,
+                         const wxCalendarCtrl &calenderCtrl,
                          wxComboCtrl &comboCtrl,
                          wxChar * path)
 {
