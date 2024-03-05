@@ -5759,10 +5759,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Remove redundant parentheses
     simplifyRedundantParentheses();
 
-    if (isCPP())
+    if (isCPP()) {
         simplifyTypeIntrinsics();
 
-    if (!isC()) {
         // Handle templates..
         if (mTimerResults) {
             Timer t("Tokenizer::simplifyTokens1::simplifyTokenList1::simplifyTemplates", mSettings.showtime, mTimerResults);
