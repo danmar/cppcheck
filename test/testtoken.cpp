@@ -561,22 +561,22 @@ private:
     }
 
     void eraseTokens() const {
-        SimpleTokenList code("begin ; { this code will be removed } end", true);
+        SimpleTokenList code("begin ; { this code will be removed } end", Standards::Language::C);
         Token::eraseTokens(code.front()->next(), code.front()->tokAt(9));
         ASSERT_EQUALS("begin ; end", code.front()->stringifyList(nullptr, false));
     }
 
 
     void matchAny() const {
-        const SimpleTokenList varBitOrVar("abc|def", true);
+        const SimpleTokenList varBitOrVar("abc|def");
         ASSERT_EQUALS(true, Token::Match(varBitOrVar.front(), "%name% %or% %name%"));
 
-        const SimpleTokenList varLogOrVar("abc||def", true);
+        const SimpleTokenList varLogOrVar("abc||def");
         ASSERT_EQUALS(true, Token::Match(varLogOrVar.front(), "%name% %oror% %name%"));
     }
 
     void matchSingleChar() const {
-        const SimpleTokenList singleChar("a", true);
+        const SimpleTokenList singleChar("a");
         ASSERT_EQUALS(true, Token::Match(singleChar.front(), "[a|bc]"));
         ASSERT_EQUALS(false, Token::Match(singleChar.front(), "[d|ef]"));
 
@@ -594,7 +594,7 @@ private:
         const SimpleTokenList ifSemicolon("if ;");
         ASSERT_EQUALS(true, Token::Match(ifSemicolon.front(), "if ; !!else"));
 
-        const SimpleTokenList ifSemicolonSomething("if ; something", true);
+        const SimpleTokenList ifSemicolonSomething("if ; something");
         ASSERT_EQUALS(true, Token::Match(ifSemicolonSomething.front(), "if ; !!else"));
 
         const SimpleTokenList justElse("else");
@@ -616,7 +616,7 @@ private:
         const SimpleTokenList noType1_cpp("delete");
         ASSERT_EQUALS(false, Token::Match(noType1_cpp.front(), "%type%"));
 
-        const SimpleTokenList noType1_c("delete", false);
+        const SimpleTokenList noType1_c("delete", Standards::Language::C);
         ASSERT_EQUALS(true, Token::Match(noType1_c.front(), "%type%"));
 
         const SimpleTokenList noType2("void delete");

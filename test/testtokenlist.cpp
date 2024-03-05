@@ -72,7 +72,7 @@ private:
         const char code[] = "for a int delete true";
 
         {
-            const SimpleTokenList tokenlist(code, false);
+            const SimpleTokenList tokenlist(code, Standards::Language::C);
 
             ASSERT_EQUALS(true, tokenlist.front()->isKeyword());
             ASSERT_EQUALS(true, tokenlist.front()->isControlFlowKeyword());
@@ -112,7 +112,7 @@ private:
 
         {
             const char code2[] = "_Generic"; // C11 keyword
-            const SimpleTokenList tokenlist(code2, false); // default settings use latest standard
+            const SimpleTokenList tokenlist(code2, Standards::Language::C); // default settings use latest standard
             ASSERT_EQUALS(true, tokenlist.front()->isKeyword());
         }
 
@@ -133,7 +133,7 @@ private:
 
         {
             const char code2[] = "co_return"; // C++20 keyword
-            const SimpleTokenList tokenlist(code2, false); // default settings use latest standard
+            const SimpleTokenList tokenlist(code2, Standards::Language::C); // default settings use latest standard
             ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
         }
 

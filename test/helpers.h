@@ -20,6 +20,7 @@
 #define helpersH
 
 #include "settings.h"
+#include "standards.h"
 #include "tokenize.h"
 #include "tokenlist.h"
 
@@ -64,10 +65,10 @@ class SimpleTokenList
 {
 public:
 
-    explicit SimpleTokenList(const char code[], bool cpp = true)
+    explicit SimpleTokenList(const char code[], Standards::Language lang = Standards::Language::CPP)
     {
         std::istringstream iss(code);
-        if (!list.createTokens(iss, cpp ? "test.cpp" : "test.c"))
+        if (!list.createTokens(iss, lang))
             throw std::runtime_error("creating tokens failed");
     }
 
