@@ -140,13 +140,13 @@ private:
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
         {
             const char code[] = "fred.foo(123);"; // <- wrong scope, not library function
-            SimpleTokenList tokenList(code);
+            const SimpleTokenList tokenList(code);
 
             ASSERT(library.isNotLibraryFunction(tokenList.front()->tokAt(2)));
         }
         {
             const char code[] = "Fred::foo(123);"; // <- wrong scope, not library function
-            SimpleTokenList tokenList(code);
+            const SimpleTokenList tokenList(code);
 
             ASSERT(library.isNotLibraryFunction(tokenList.front()->tokAt(2)));
         }
@@ -547,13 +547,13 @@ private:
 
         {
             const char code[] = "Foo::foo();";
-            SimpleTokenList tokenList(code);
+            const SimpleTokenList tokenList(code);
             ASSERT(library.isnotnoreturn(tokenList.front()->tokAt(2)));
         }
 
         {
             const char code[] = "bar();";
-            SimpleTokenList tokenList(code);
+            const SimpleTokenList tokenList(code);
             ASSERT(library.isnotnoreturn(tokenList.front()));
         }
     }
@@ -626,7 +626,7 @@ private:
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
         const char code[] = "a(); b();";
-        SimpleTokenList tokenList(code);
+        const SimpleTokenList tokenList(code);
 
         const Library::WarnInfo* a = library.getWarnInfo(tokenList.front());
         const Library::WarnInfo* b = library.getWarnInfo(tokenList.front()->tokAt(4));
@@ -860,7 +860,7 @@ private:
         ASSERT_EQUALS(C.arrayLike_indexOp, true);
 
         {
-            SimpleTokenizer var(*this, "std::A<int> a;");
+            const SimpleTokenizer var(*this, "std::A<int> a;");
             ASSERT_EQUALS(&A, library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             bool isIterator;
@@ -869,14 +869,14 @@ private:
         }
 
         {
-            SimpleTokenizer var(*this, "std::A<int>::size_type a_s;");
+            const SimpleTokenizer var(*this, "std::A<int>::size_type a_s;");
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             ASSERT(!library.detectContainerOrIterator(var.tokens()));
         }
 
         {
-            SimpleTokenizer var(*this, "std::A<int>::iterator a_it;");
+            const SimpleTokenizer var(*this, "std::A<int>::iterator a_it;");
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT_EQUALS(&A, library.detectIterator(var.tokens()));
             bool isIterator;
@@ -885,7 +885,7 @@ private:
         }
 
         {
-            SimpleTokenizer var(*this, "std::B<int> b;");
+            const SimpleTokenizer var(*this, "std::B<int> b;");
             ASSERT_EQUALS(&B, library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             bool isIterator;
@@ -894,14 +894,14 @@ private:
         }
 
         {
-            SimpleTokenizer var(*this, "std::B<int>::size_type b_s;");
+            const SimpleTokenizer var(*this, "std::B<int>::size_type b_s;");
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             ASSERT(!library.detectContainerOrIterator(var.tokens()));
         }
 
         {
-            SimpleTokenizer var(*this, "std::B<int>::iterator b_it;");
+            const SimpleTokenizer var(*this, "std::B<int>::iterator b_it;");
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT_EQUALS(&B, library.detectIterator(var.tokens()));
             bool isIterator;
@@ -910,14 +910,14 @@ private:
         }
 
         {
-            SimpleTokenizer var(*this, "C c;");
+            const SimpleTokenizer var(*this, "C c;");
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             ASSERT(!library.detectContainerOrIterator(var.tokens()));
         }
 
         {
-            SimpleTokenizer var(*this, "D d;");
+            const SimpleTokenizer var(*this, "D d;");
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             ASSERT(!library.detectContainerOrIterator(var.tokens()));

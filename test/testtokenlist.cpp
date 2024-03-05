@@ -63,7 +63,7 @@ private:
 
         errout.str("");
 
-        SimpleTokenList tokenlist(code);
+        const SimpleTokenList tokenlist(code);
         ASSERT(Token::simpleMatch(tokenlist.front(), "a + + 1 ; 1 + + b ;"));
     }
 
@@ -72,7 +72,7 @@ private:
         const char code[] = "for a int delete true";
 
         {
-            SimpleTokenList tokenlist(code, false);
+            const SimpleTokenList tokenlist(code, false);
 
             ASSERT_EQUALS(true, tokenlist.front()->isKeyword());
             ASSERT_EQUALS(true, tokenlist.front()->isControlFlowKeyword());
@@ -88,7 +88,7 @@ private:
             ASSERT_EQUALS(false, tokenlist.front()->tokAt(4)->isControlFlowKeyword());
         }
         {
-            SimpleTokenList tokenlist(code);
+            const SimpleTokenList tokenlist(code);
 
             ASSERT_EQUALS(true, tokenlist.front()->isKeyword());
             ASSERT_EQUALS(true, tokenlist.front()->isControlFlowKeyword());
@@ -106,13 +106,13 @@ private:
 
         {
             const char code2[] = "_Generic"; // C11 keyword
-            SimpleTokenList tokenlist(code2); // default settings use latest standard
+            const SimpleTokenList tokenlist(code2); // default settings use latest standard
             ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
         }
 
         {
             const char code2[] = "_Generic"; // C11 keyword
-            SimpleTokenList tokenlist(code2, false); // default settings use latest standard
+            const SimpleTokenList tokenlist(code2, false); // default settings use latest standard
             ASSERT_EQUALS(true, tokenlist.front()->isKeyword());
         }
 
@@ -127,13 +127,13 @@ private:
 
         {
             const char code2[] = "co_return"; // C++20 keyword
-            SimpleTokenList tokenlist(code2); // default settings use latest standard
+            const SimpleTokenList tokenlist(code2); // default settings use latest standard
             ASSERT_EQUALS(true, tokenlist.front()->isKeyword());
         }
 
         {
             const char code2[] = "co_return"; // C++20 keyword
-            SimpleTokenList tokenlist(code2, false); // default settings use latest standard
+            const SimpleTokenList tokenlist(code2, false); // default settings use latest standard
             ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
         }
 
