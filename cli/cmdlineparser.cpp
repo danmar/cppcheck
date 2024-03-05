@@ -1040,11 +1040,13 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             // Rule file
             else if (std::strncmp(argv[i], "--rule-file=", 12) == 0) {
 #ifdef HAVE_RULES
+                // TODO: improved error handling - unknown elements, wrong root node, etc.
                 const std::string ruleFile = argv[i] + 12;
                 tinyxml2::XMLDocument doc;
                 const tinyxml2::XMLError err = doc.LoadFile(ruleFile.c_str());
                 if (err == tinyxml2::XML_SUCCESS) {
-                    tinyxml2::XMLElement *node = doc.FirstChildElement();
+                    const tinyxml2::XMLElement *node = doc.FirstChildElement();
+                    // TODO: this looks like legacy handling - deprecate it
                     if (node && strcmp(node->Value(), "rules") == 0)
                         node = node->FirstChildElement("rule");
                     for (; node && strcmp(node->Value(), "rule") == 0; node = node->NextSiblingElement()) {
@@ -1059,7 +1061,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                             rule.pattern = pattern->GetText();
                         }
 
-                        tinyxml2::XMLElement *message = node->FirstChildElement("message");
+                        const tinyxml2::XMLElement *message = node->FirstChildElement("message");
                         if (message) {
                             const tinyxml2::XMLElement *severity = message->FirstChildElement("severity");
                             if (severity)

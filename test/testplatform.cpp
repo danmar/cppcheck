@@ -46,6 +46,8 @@ private:
         TEST_CASE(default_platform);
         TEST_CASE(limitsDefines);
         TEST_CASE(charMinMax);
+        TEST_CASE(no_root_node);
+        TEST_CASE(wrong_root_node);
     }
 
     static bool readPlatform(Platform& platform, const char* xmldata) {
@@ -416,6 +418,19 @@ private:
         ASSERT_EQUALS(255, platform.unsignedCharMax());
         ASSERT_EQUALS(127, platform.signedCharMax());
         ASSERT_EQUALS(-128, platform.signedCharMin());
+    }
+
+    void no_root_node() const {
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>";
+        Platform platform;
+        ASSERT(!readPlatform(platform, xmldata));
+    }
+
+    void wrong_root_node() const {
+        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<platforms/>";
+        Platform platform;
+        ASSERT(!readPlatform(platform, xmldata));
     }
 };
 
