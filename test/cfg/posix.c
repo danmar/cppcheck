@@ -1023,6 +1023,7 @@ void nullPointer(char *p, int fd, pthread_mutex_t mutex)
     pthread_mutex_unlock(NULL);
 }
 
+// cppcheck-suppress constParameterCallback
 void* f_returns_NULL(void* arg)
 {
     return NULL;
