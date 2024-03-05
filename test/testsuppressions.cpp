@@ -1465,7 +1465,7 @@ private:
         ASSERT_EQUALS("[a.c:10]: (information) Unmatched suppression: abc\n", errout.str());
     }
 
-    void suppressionsParseXmlFile() {
+    void suppressionsParseXmlFile() const {
         {
             ScopedFile file("suppressparsexml.xml",
                             "<suppressions>\n"
