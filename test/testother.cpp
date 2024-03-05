@@ -3545,7 +3545,7 @@ private:
               "    c[0](5) = 12;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-        
+
         check("int f(int& t) {\n" // #11713
               "    return 0;\n"
               "}\n");
