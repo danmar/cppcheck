@@ -32,13 +32,15 @@
 class Token;
 class Preprocessor;
 class SuppressionList;
+class ErrorLogger;
 namespace simplecpp {
     struct DUI;
 }
 
 class SimpleTokenizer {
 public:
-    explicit SimpleTokenizer(const char sample[], bool cpp = true)
+    SimpleTokenizer(ErrorLogger& errorlogger, const char sample[], bool cpp = true)
+        : tokenizer{settings, &errorlogger}
     {
         std::istringstream iss(sample);
         if (!tokenizer.tokenize(iss, cpp ? "test.cpp" : "test.c"))
@@ -55,7 +57,7 @@ public:
 
 private:
     const Settings settings;
-    Tokenizer tokenizer{settings, nullptr};
+    Tokenizer tokenizer;
 };
 
 class SimpleTokenList
