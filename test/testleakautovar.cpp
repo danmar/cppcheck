@@ -113,6 +113,7 @@ private:
         TEST_CASE(deallocuse12);
         TEST_CASE(deallocuse13);
         TEST_CASE(deallocuse14);
+        TEST_CASE(deallocuse15);
 
         TEST_CASE(doublefree1);
         TEST_CASE(doublefree2);
@@ -1033,6 +1034,15 @@ private:
               "    }, 1);\n"
               "    return 0;\n"
               "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void deallocuse15() {
+        check("bool FileExists(const char* filename) {\n" // #12490
+              "    FILE* f = fopen(filename, \"rb\");\n"
+              "    if (f) fclose(f);\n"
+              "    return f;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
