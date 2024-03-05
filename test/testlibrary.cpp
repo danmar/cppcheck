@@ -117,9 +117,8 @@ private:
                                    "  </function>\n"
                                    "</def>";
 
-        TokenList tokenList(&settings);
-        std::istringstream istr("foo();");
-        tokenList.createTokens(istr, Standards::Language::CPP);
+        const char code[] = "foo();";
+        SimpleTokenList tokenList(code);
         tokenList.front()->next()->astOperand1(tokenList.front());
 
         Library library;
@@ -140,16 +139,14 @@ private:
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
         {
-            TokenList tokenList(&settings);
-            std::istringstream istr("fred.foo(123);"); // <- wrong scope, not library function
-            tokenList.createTokens(istr, Standards::Language::CPP);
+            const char code[] = "fred.foo(123);"; // <- wrong scope, not library function
+            SimpleTokenList tokenList(code);
 
             ASSERT(library.isNotLibraryFunction(tokenList.front()->tokAt(2)));
         }
         {
-            TokenList tokenList(&settings);
-            std::istringstream istr("Fred::foo(123);"); // <- wrong scope, not library function
-            tokenList.createTokens(istr, Standards::Language::CPP);
+            const char code[] = "Fred::foo(123);"; // <- wrong scope, not library function
+            SimpleTokenList tokenList(code);
 
             ASSERT(library.isNotLibraryFunction(tokenList.front()->tokAt(2)));
         }
@@ -232,9 +229,8 @@ private:
                                    "  </function>\n"
                                    "</def>";
 
-        TokenList tokenList(&settings);
-        std::istringstream istr("Fred foo(123);"); // <- Variable declaration, not library function
-        tokenList.createTokens(istr, Standards::Language::CPP);
+        const char code[] = "Fred foo(123);"; // <- Variable declaration, not library function
+        SimpleTokenList tokenList(code);
         tokenList.front()->next()->astOperand1(tokenList.front());
         tokenList.front()->next()->varId(1);
 
@@ -292,9 +288,8 @@ private:
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
         ASSERT_EQUALS(0, library.functions["foo"].argumentChecks[-1].notuninit);
 
-        TokenList tokenList(&settings);
-        std::istringstream istr("foo(a,b,c,d,e);");
-        tokenList.createTokens(istr, Standards::Language::CPP);
+        const char code[] = "foo(a,b,c,d,e);";
+        SimpleTokenList tokenList(code);
         tokenList.front()->next()->astOperand1(tokenList.front());
 
         ASSERT_EQUALS(false, library.isuninitargbad(tokenList.front(), 1));
@@ -317,9 +312,8 @@ private:
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
-        TokenList tokenList(&settings);
-        std::istringstream istr("foo(a,b,c,d);");
-        tokenList.createTokens(istr, Standards::Language::CPP);
+        const char code[] = "foo(a,b,c,d);";
+        SimpleTokenList tokenList(code);
         tokenList.front()->next()->astOperand1(tokenList.front());
 
         ASSERT(Library::ArgumentChecks::Direction::DIR_IN == library.getArgDirection(tokenList.front(), 1));
@@ -349,9 +343,8 @@ private:
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
-        TokenList tokenList(&settings);
-        std::istringstream istr("foo(a,b,c,d,e,f,g,h,i,j,k);");
-        tokenList.createTokens(istr, Standards::Language::CPP);
+        const char code[] = "foo(a,b,c,d,e,f,g,h,i,j,k);";
+        SimpleTokenList tokenList(code);
         tokenList.front()->next()->astOperand1(tokenList.front());
 
         // 1-
@@ -491,9 +484,8 @@ private:
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
-        TokenList tokenList(&settings);
-        std::istringstream istr("foo(a,b,c,d,e);");
-        tokenList.createTokens(istr, Standards::Language::CPP);
+        const char code[] = "foo(a,b,c,d,e);";
+        SimpleTokenList tokenList(code);
         tokenList.front()->next()->astOperand1(tokenList.front());
 
         // arg1: type=strlen arg2
@@ -554,16 +546,14 @@ private:
         ASSERT(library.functions.at("bar").argumentChecks.empty());
 
         {
-            TokenList tokenList(&settings);
-            std::istringstream istr("Foo::foo();");
-            tokenList.createTokens(istr, Standards::Language::CPP);
+            const char code[] = "Foo::foo();";
+            SimpleTokenList tokenList(code);
             ASSERT(library.isnotnoreturn(tokenList.front()->tokAt(2)));
         }
 
         {
-            TokenList tokenList(&settings);
-            std::istringstream istr("bar();");
-            tokenList.createTokens(istr, Standards::Language::CPP);
+            const char code[] = "bar();";
+            SimpleTokenList tokenList(code);
             ASSERT(library.isnotnoreturn(tokenList.front()));
         }
     }
@@ -635,9 +625,8 @@ private:
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
-        TokenList tokenList(&settings);
-        std::istringstream istr("a(); b();");
-        tokenList.createTokens(istr, Standards::Language::CPP);
+        const char code[] = "a(); b();";
+        SimpleTokenList tokenList(code);
 
         const Library::WarnInfo* a = library.getWarnInfo(tokenList.front());
         const Library::WarnInfo* b = library.getWarnInfo(tokenList.front()->tokAt(4));

@@ -63,6 +63,7 @@ private:
 class SimpleTokenList
 {
 public:
+
     explicit SimpleTokenList(const char code[], bool cpp = true)
     {
         std::istringstream iss(code);
