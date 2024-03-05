@@ -1401,6 +1401,8 @@ void CheckOther::checkConstVariable()
             continue;
         if (var->isVolatile())
             continue;
+        if (var->isMaybeUnused())
+            continue;
         if (var->nameToken()->isExpandedMacro())
             continue;
         if (isStructuredBindingVariable(var)) // TODO: check all bound variables
@@ -1632,6 +1634,8 @@ void CheckOther::checkConstPointer()
     for (const Variable *p: pointers) {
         if (p->isArgument()) {
             if (!p->scope() || !p->scope()->function || p->scope()->function->isImplicitlyVirtual(true) || p->scope()->function->hasVirtualSpecifier())
+                continue;
+            if (p->isMaybeUnused())
                 continue;
         }
         if (std::find(nonConstPointers.cbegin(), nonConstPointers.cend(), p) == nonConstPointers.cend()) {
