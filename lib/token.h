@@ -1480,6 +1480,8 @@ public:
     }
 
     bool isCpp() const;
+
+    bool isC() const;
 };
 
 Token* findTypeEnd(Token* tok);

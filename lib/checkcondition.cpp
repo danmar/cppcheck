@@ -1419,8 +1419,6 @@ void CheckCondition::clarifyCondition()
     if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("clarifyCondition"))
         return;
 
-    const bool isC = mTokenizer->isC();
-
     logChecker("CheckCondition::clarifyCondition"); // style
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1432,7 +1430,7 @@ void CheckCondition::clarifyCondition()
                         tok2 = tok2->link();
                     else if (tok2->isComparisonOp()) {
                         // This might be a template
-                        if (!isC && tok2->link())
+                        if (!tok2->isC() && tok2->link())
                             break;
                         if (Token::simpleMatch(tok2->astParent(), "?"))
                             break;

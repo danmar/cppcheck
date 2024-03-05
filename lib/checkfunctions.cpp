@@ -56,7 +56,7 @@ static const CWE CWE688(688U);  // Function Call With Incorrect Variable or Refe
 
 void CheckFunctions::checkProhibitedFunctions()
 {
-    const bool checkAlloca = mSettings->severity.isEnabled(Severity::warning) && ((mSettings->standards.c >= Standards::C99 && mTokenizer->isC()) || mSettings->standards.cpp >= Standards::CPP11);
+    const bool checkAlloca = mSettings->severity.isEnabled(Severity::warning) && ((mTokenizer->isC() && mSettings->standards.c >= Standards::C99) || mSettings->standards.cpp >= Standards::CPP11);
 
     logChecker("CheckFunctions::checkProhibitedFunctions");
 
@@ -67,7 +67,7 @@ void CheckFunctions::checkProhibitedFunctions()
                 continue;
             // alloca() is special as it depends on the code being C or C++, so it is not in Library
             if (checkAlloca && Token::simpleMatch(tok, "alloca (") && (!tok->function() || tok->function()->nestedIn->type == Scope::eGlobal)) {
-                if (mTokenizer->isC()) {
+                if (tok->isC()) {
                     if (mSettings->standards.c > Standards::C89)
                         reportError(tok, Severity::warning, "allocaCalled",
                                     "$symbol:alloca\n"
@@ -315,7 +315,7 @@ void CheckFunctions::checkMissingReturn()
         const Function *function = scope->function;
         if (!function || !function->hasBody())
             continue;
-        if (function->name() == "main" && !(mSettings->standards.c < Standards::C99 && mTokenizer->isC()))
+        if (function->name() == "main" && !(mTokenizer->isC() && mSettings->standards.c < Standards::C99))
             continue;
         if (function->type != Function::Type::eFunction && function->type != Function::Type::eOperatorEqual)
             continue;

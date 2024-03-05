@@ -167,7 +167,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                !Token::Match(tok->previous(), "new|friend|const|enum|typedef|mutable|volatile|using|)|(|<")) ||
               (Token::Match(tok, "enum class| %name% {") ||
                Token::Match(tok, "enum class| %name% : %name% {"))))
-            || (mTokenizer.isC() && tok->isKeyword() && Token::Match(tok, "struct|union|enum %name% {"))) {
+            || (tok->isC() && tok->isKeyword() && Token::Match(tok, "struct|union|enum %name% {"))) {
             const Token *tok2 = tok->tokAt(2);
 
             if (tok->strAt(1) == "::")
@@ -2116,7 +2116,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
     else if (Token::Match(tok, "%name% (") && !isReservedName(tok->str()) &&
              Token::simpleMatch(tok->linkAt(1), ") {") &&
              (!tok->previous() || Token::Match(tok->previous(), ";|}"))) {
-        if (mTokenizer.isC()) {
+        if (tok->isC()) {
             returnImplicitIntError(tok);
             *funcStart = tok;
             *argStart = tok->next();
@@ -6253,7 +6253,7 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
     if (startTok->str() == startScope->className && startScope->isClassOrStruct() && startTok->strAt(1) != "::")
         return startScope->definedType;
 
-    if (mTokenizer.isC()) {
+    if (startTok->isC()) {
         const Scope* scope = startScope;
         while (scope) {
             if (startTok->str() == scope->className && scope->isClassOrStruct())

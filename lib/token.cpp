@@ -2753,3 +2753,8 @@ bool Token::isCpp() const
 {
     return mTokensFrontBack.list.isCPP();
 }
+
+bool Token::isC() const
+{
+    return mTokensFrontBack.list.isC();
+}
