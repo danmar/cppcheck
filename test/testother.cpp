@@ -2576,11 +2576,15 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        // Perhaps unused variable should be checked as well.
         check("void f(int& x, int& y) {\n"
               "    y++;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
+
+        check("int f(int& t) {\n" // #11713
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 't' can be declared as reference to const\n", errout.str());
 
         check("struct A {\n"
               "    explicit A(int& y) : x(&y) {}\n"

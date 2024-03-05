@@ -1333,20 +1333,6 @@ void CheckOther::passedByValueError(const Variable* var, bool inconclusive, bool
     reportError(errorPath, Severity::performance, id.c_str(), msg, CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
-static bool isUnusedVariable(const Variable *var)
-{
-    if (!var)
-        return false;
-    if (!var->scope())
-        return false;
-    const Token *start = var->declEndToken();
-    if (!start)
-        return false;
-    if (Token::Match(start, "; %varid% =", var->declarationId()))
-        start = start->tokAt(2);
-    return !Token::findmatch(start->next(), "%varid%", var->scope()->bodyEnd, var->declarationId());
-}
-
 static bool isVariableMutableInInitializer(const Token* start, const Token * end, nonneg int varid)
 {
     if (!start)
@@ -1401,8 +1387,6 @@ void CheckOther::checkConstVariable()
             continue;
         if (function && var->isArgument()) {
             if (function->isImplicitlyVirtual() || function->templateDef)
-                continue;
-            if (isUnusedVariable(var))
                 continue;
             if (function->isConstructor() && isVariableMutableInInitializer(function->constructorMemberInitialization(), scope->bodyStart, var->declarationId()))
                 continue;
