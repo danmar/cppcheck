@@ -6451,7 +6451,7 @@ Function * SymbolDatabase::findFunctionInScope(const Token *func, const Scope *n
 
 //---------------------------------------------------------------------------
 
-bool SymbolDatabase::isReservedName(const Token* tok) const
+bool SymbolDatabase::isReservedName(const Token* tok)
 {
     const std::string& iName = tok->str();
     if (tok->isCpp()) {

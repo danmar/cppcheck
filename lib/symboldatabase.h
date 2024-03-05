@@ -1457,7 +1457,7 @@ private:
     void fixVarId(VarIdMap & varIds, const Token * vartok, Token * membertok, const Variable * membervar);
 
     /** Whether the token is a keyword as defined in http://en.cppreference.com/w/c/keyword and http://en.cppreference.com/w/cpp/keyword*/
-    bool isReservedName(const Token* tok) const;
+    static bool isReservedName(const Token* tok);
 
     const Enumerator * findEnumerator(const Token * tok, std::set<std::string>& tokensThatAreNotEnumeratorValues) const;
 
