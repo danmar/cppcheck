@@ -2581,11 +2581,6 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
 
-        check("int f(int& t) {\n" // #11713
-              "    return 0;\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 't' can be declared as reference to const\n", errout.str());
-
         check("struct A {\n"
               "    explicit A(int& y) : x(&y) {}\n"
               "    int * x = nullptr;\n"
@@ -3550,6 +3545,18 @@ private:
               "    c[0](5) = 12;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+        
+        check("int f(int& t) {\n" // #11713
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 't' can be declared as reference to const\n", errout.str());
+
+        check("void f(std::list<std::string>& v) {\n" // #12202
+              "    v.remove_if([](std::string& s) {\n"
+              "        return true;\n"
+              "    });\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 's' can be declared as reference to const\n", errout.str());
     }
 
     void constParameterCallback() {
