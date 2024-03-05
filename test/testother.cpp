@@ -3139,11 +3139,8 @@ private:
               "void an();\n"
               "void h();");
         ASSERT_EQUALS("[test.cpp:131]: (style) Variable 'tm' can be declared as pointer to const\n"
-                      "[test.cpp:131]: (style) Variable 'tm' can be declared as pointer to const\n" // duplicate
                       "[test.cpp:136]: (style) Variable 'af' can be declared as pointer to const\n"
-                      "[test.cpp:137]: (style) Variable 'ag' can be declared as pointer to const\n"
-                      "[test.cpp:136]: (style) Variable 'af' can be declared as pointer to const\n" // duplicate
-                      "[test.cpp:137]: (style) Variable 'ag' can be declared as pointer to const\n", // duplicate
+                      "[test.cpp:137]: (style) Variable 'ag' can be declared as pointer to const\n",
                       errout.str());
 
         check("class C\n"
@@ -3359,9 +3356,7 @@ private:
               "        d->f();\n"
               "}\n");
         ASSERT_EQUALS(
-            "[test.cpp:4]: (style) Variable 'd' can be declared as pointer to const\n"
-            "[test.cpp:4]: (style) Variable 'd' can be declared as pointer to const\n"   // duplicate
-            "[test.cpp:4]: (style) Variable 'd' can be declared as pointer to const\n",   // duplicate
+            "[test.cpp:4]: (style) Variable 'd' can be declared as pointer to const\n",
             errout.str());
 
         check("void g(const int*);\n"
@@ -3370,8 +3365,7 @@ private:
               "        g(i);\n"
               "}\n");
         ASSERT_EQUALS(
-            "[test.cpp:3]: (style) Variable 'i' can be declared as pointer to const\n"
-            "[test.cpp:3]: (style) Variable 'i' can be declared as pointer to const\n",   // duplicate
+            "[test.cpp:3]: (style) Variable 'i' can be declared as pointer to const\n",
             errout.str());
 
         check("struct A {\n" // #11225
@@ -3748,8 +3742,7 @@ private:
               "        if (h) {}\n"
               "}\n");
         ASSERT_EQUALS(
-            "[test.cpp:5]: (style) Variable 'h' can be declared as pointer to const\n"
-            "[test.cpp:5]: (style) Variable 'h' can be declared as pointer to const\n",   // duplicate
+            "[test.cpp:5]: (style) Variable 'h' can be declared as pointer to const\n",
             errout.str());
 
         check("void f(const std::vector<int*>& v) {\n"
@@ -3759,8 +3752,7 @@ private:
               "        if (p == nullptr) {}\n"
               "}\n");
         ASSERT_EQUALS(
-            "[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n"
-            "[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n",   // duplicate
+            "[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n",
             errout.str());
 
         check("void f(std::vector<int*>& v) {\n"
@@ -3774,8 +3766,7 @@ private:
               "        if (p == nullptr) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared as reference to const\n"
-                      "[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n"
-                      "[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n", // duplicate
+                      "[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n",
                       errout.str());
 
         check("void f(std::vector<const int*>& v) {\n"
@@ -3866,9 +3857,7 @@ private:
               "    v.clear();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n"
-                      "[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n" // duplicate
-                      "[test.cpp:5]: (style) Variable 'p' can be declared as pointer to const\n"
-                      "[test.cpp:5]: (style) Variable 'p' can be declared as pointer to const\n", // duplicate
+                      "[test.cpp:5]: (style) Variable 'p' can be declared as pointer to const\n",
                       errout.str());
 
         check("void f() {\n"
@@ -3931,8 +3920,7 @@ private:
               "    g(1, p);\n"
               "    h(p);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Parameter 'p' can be declared as pointer to const\n"
-                      "[test.cpp:3]: (style) Parameter 'p' can be declared as pointer to const\n", // duplicate
+        ASSERT_EQUALS("[test.cpp:3]: (style) Parameter 'p' can be declared as pointer to const\n",
                       errout.str());
 
         check("void f(int, const int*);\n"
@@ -4079,8 +4067,7 @@ private:
               "    void* p = &i;\n"
               "    std::cout << p << '\\n';\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n"
-                      "[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n", // duplicate
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n",
                       errout.str());
 
         check("struct S { const T* t; };\n" // #12206
@@ -4096,9 +4083,13 @@ private:
               "    delete[] b;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'a1' can be declared as pointer to const\n"
-                      "[test.cpp:1]: (style) Parameter 'a2' can be declared as pointer to const\n"
-                      "[test.cpp:1]: (style) Parameter 'a1' can be declared as pointer to const\n"
                       "[test.cpp:1]: (style) Parameter 'a2' can be declared as pointer to const\n",
+                      errout.str());
+
+        check("int f(int* p) {\n" // #11713
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n",
                       errout.str());
     }
 
@@ -7789,8 +7780,7 @@ private:
               "    int end   = x->first;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'start' and 'end'.\n"
-                      "[test.cpp:2]: (style) Parameter 'x' can be declared as pointer to const\n"
-                      "[test.cpp:2]: (style) Parameter 'x' can be declared as pointer to const\n", // duplicate
+                      "[test.cpp:2]: (style) Parameter 'x' can be declared as pointer to const\n",
                       errout.str());
 
         check("struct SW { int first; };\n"
@@ -7799,8 +7789,7 @@ private:
               "    int end   = x->first;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'start' and 'end'.\n"
-                      "[test.cpp:2]: (style) Parameter 'x' can be declared as pointer to const\n"
-                      "[test.cpp:2]: (style) Parameter 'x' can be declared as pointer to const\n", // duplicate
+                      "[test.cpp:2]: (style) Parameter 'x' can be declared as pointer to const\n",
                       errout.str());
 
         check("struct Foo { int f() const; };\n"
@@ -8004,9 +7993,7 @@ private:
               "  if ((*p > 0)) {}\n"
               "}\n");
         ASSERT_EQUALS(
-            "[test.cpp:3]: (style) Variable 'p' can be declared as pointer to const\n"
-            "[test.cpp:3]: (style) Variable 'p' can be declared as pointer to const\n"   // duplicate
-            "[test.cpp:3]: (style) Variable 'p' can be declared as pointer to const\n",   // duplicate
+            "[test.cpp:3]: (style) Variable 'p' can be declared as pointer to const\n",
             errout.str());
 
         check("void f() {\n"
@@ -8017,9 +8004,7 @@ private:
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The comparison '*p < 0' is always false.\n"
                            "[test.cpp:2] -> [test.cpp:4]: (style) The comparison '*p > 0' is always false.\n",
-                           "[test.cpp:3]: (style) Variable 'p' can be declared as pointer to const\n"
-                           "[test.cpp:3]: (style) Variable 'p' can be declared as pointer to const\n" // duplicate
-                           "[test.cpp:3]: (style) Variable 'p' can be declared as pointer to const\n", // duplicate
+                           "[test.cpp:3]: (style) Variable 'p' can be declared as pointer to const\n",
                            errout.str());
 
         check("void f() {\n"
@@ -8641,13 +8626,17 @@ private:
               "  char *a; a = new char[1024];\n"
               "  delete[] (a + 10);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching address is deleted. The address you get from new must be deleted without offset.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n"
+                      "[test.cpp:3]: (error) Mismatching address is deleted. The address you get from new must be deleted without offset.\n",
+                      errout.str());
 
         check("void foo(char *p) {\n"
               "  char *a; a = new char;\n"
               "  delete a + 10;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching address is deleted. The address you get from new must be deleted without offset.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n"
+                      "[test.cpp:3]: (error) Mismatching address is deleted. The address you get from new must be deleted without offset.\n",
+                      errout.str());
 
         check("void foo(char *p) {\n"
               "  char *a; a = new char;\n"
@@ -8679,7 +8668,9 @@ private:
               "  bar()\n"
               "  delete a + 10;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Mismatching address is deleted. The address you get from new must be deleted without offset.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n"
+                      "[test.cpp:4]: (error) Mismatching address is deleted. The address you get from new must be deleted without offset.\n",
+                      errout.str());
 
         check("void foo(size_t xx) {\n"
               "  char *ptr; ptr = malloc(42);\n"
@@ -8695,9 +8686,7 @@ private:
               "  free(otherPtr - xx - 1);\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:2]: (style) Variable 'ptr' can be declared as pointer to const\n"
-            "[test.cpp:2]: (style) Variable 'ptr' can be declared as pointer to const\n"   // duplicate
-            "[test.cpp:2]: (style) Variable 'ptr' can be declared as pointer to const\n",   // duplicate
+            "[test.cpp:2]: (style) Variable 'ptr' can be declared as pointer to const\n",
             errout.str());
     }
 
@@ -9276,8 +9265,7 @@ private:
               "  x = dostuff();\n"
               "}");
         ASSERT_EQUALS(
-            "test.cpp:2:style:Variable 'x' can be declared as pointer to const\n"
-            "test.cpp:2:style:Variable 'x' can be declared as pointer to const\n",   // duplicate
+            "test.cpp:2:style:Variable 'x' can be declared as pointer to const\n",
             errout.str());
 
         check("void f() {\n"
@@ -9286,8 +9274,7 @@ private:
               "  x = dostuff();\n"
               "}");
         ASSERT_EQUALS(
-            "test.cpp:2:style:Variable 'x' can be declared as pointer to const\n"
-            "test.cpp:2:style:Variable 'x' can be declared as pointer to const\n",   // duplicate
+            "test.cpp:2:style:Variable 'x' can be declared as pointer to const\n",
             errout.str());
 
         check("int foo() {\n" // #4420
@@ -9422,9 +9409,7 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("test.cpp:2:style:The scope of the variable 'p' can be reduced.\n"
-                      "test.cpp:2:style:Variable 'p' can be declared as pointer to const\n"
-                      "test.cpp:2:style:Variable 'p' can be declared as pointer to const\n" // duplicate
-                      "test.cpp:2:style:Variable 'p' can be declared as pointer to const\n", // duplicate
+                      "test.cpp:2:style:Variable 'p' can be declared as pointer to const\n",
                       errout.str());
 
         check("void foo() {\n"
@@ -9517,8 +9502,7 @@ private:
               "   a = p;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:2]: (style) Variable 'a' can be declared as pointer to const\n"
-            "[test.cpp:2]: (style) Variable 'a' can be declared as pointer to const\n",   // duplicate
+            "[test.cpp:2]: (style) Variable 'a' can be declared as pointer to const\n",
             errout.str());
 
         check("void f() {\n"
@@ -9527,8 +9511,7 @@ private:
               "   a = p;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:2]: (style) Variable 'a' can be declared as pointer to const\n"
-            "[test.cpp:2]: (style) Variable 'a' can be declared as pointer to const\n",   // duplicate
+            "[test.cpp:2]: (style) Variable 'a' can be declared as pointer to const\n",
             errout.str());
     }
 
@@ -9787,8 +9770,7 @@ private:
               "    p = dostuff();\n"
               "}");
         ASSERT_EQUALS(
-            "test.cpp:2:style:Variable 'p' can be declared as pointer to const\n"
-            "test.cpp:2:style:Variable 'p' can be declared as pointer to const\n",   // duplicate
+            "test.cpp:2:style:Variable 'p' can be declared as pointer to const\n",
             errout.str());
 
         // "trivial" initialization => do not warn
@@ -11618,9 +11600,7 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:2] -> [test.cpp:4] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:6]: (error) Comparing pointers that point to different objects\n"
             "[test.cpp:4]: (style) Variable 'xp' can be declared as pointer to const\n"
-            "[test.cpp:5]: (style) Variable 'yp' can be declared as pointer to const\n"
-            "[test.cpp:4]: (style) Variable 'xp' can be declared as pointer to const\n" // duplicate
-            "[test.cpp:5]: (style) Variable 'yp' can be declared as pointer to const\n", // duplicate
+            "[test.cpp:5]: (style) Variable 'yp' can be declared as pointer to const\n",
             errout.str());
 
         check("bool f() {\n"
@@ -11643,9 +11623,7 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:3] -> [test.cpp:5] -> [test.cpp:4] -> [test.cpp:6] -> [test.cpp:7]: (error) Comparing pointers that point to different objects\n"
             "[test.cpp:5]: (style) Variable 'xp' can be declared as pointer to const\n"
-            "[test.cpp:6]: (style) Variable 'yp' can be declared as pointer to const\n"
-            "[test.cpp:5]: (style) Variable 'xp' can be declared as pointer to const\n" // duplicate
-            "[test.cpp:6]: (style) Variable 'yp' can be declared as pointer to const\n", // duplicate
+            "[test.cpp:6]: (style) Variable 'yp' can be declared as pointer to const\n",
             errout.str());
 
         check("struct A {int data;};\n"
@@ -11659,9 +11637,7 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:2] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:2] -> [test.cpp:4] -> [test.cpp:6] -> [test.cpp:7]: (error) Comparing pointers that point to different objects\n"
             "[test.cpp:5]: (style) Variable 'xp' can be declared as pointer to const\n"
-            "[test.cpp:6]: (style) Variable 'yp' can be declared as pointer to const\n"
-            "[test.cpp:5]: (style) Variable 'xp' can be declared as pointer to const\n" // duplicate
-            "[test.cpp:6]: (style) Variable 'yp' can be declared as pointer to const\n", // duplicate
+            "[test.cpp:6]: (style) Variable 'yp' can be declared as pointer to const\n",
             errout.str());
 
         check("bool f(int * xp, int* yp) {\n"
@@ -11687,9 +11663,7 @@ private:
               "    return xp > yp;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'xp' can be declared as pointer to const\n"
-                      "[test.cpp:4]: (style) Variable 'yp' can be declared as pointer to const\n"
-                      "[test.cpp:3]: (style) Variable 'xp' can be declared as pointer to const\n" // duplicate
-                      "[test.cpp:4]: (style) Variable 'yp' can be declared as pointer to const\n", // duplicate
+                      "[test.cpp:4]: (style) Variable 'yp' can be declared as pointer to const\n",
                       errout.str());
 
         check("bool f(const int * xp, const int* yp) {\n"
@@ -11721,9 +11695,7 @@ private:
               "    return xp > yp;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'xp' can be declared as pointer to const\n"
-                      "[test.cpp:6]: (style) Variable 'yp' can be declared as pointer to const\n"
-                      "[test.cpp:5]: (style) Variable 'xp' can be declared as pointer to const\n" // duplicate
-                      "[test.cpp:6]: (style) Variable 'yp' can be declared as pointer to const\n", // duplicate
+                      "[test.cpp:6]: (style) Variable 'yp' can be declared as pointer to const\n",
                       errout.str());
 
         check("struct S { int i; };\n" // #11576
