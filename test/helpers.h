@@ -70,11 +70,11 @@ public:
             throw std::runtime_error("creating tokens failed");
     }
 
-    Token* tokens() {
+    Token* front() {
         return list.front();
     }
 
-    const Token* tokens() const {
+    const Token* front() const {
         return list.front();
     }
 
