@@ -683,14 +683,47 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyUsing30() { // #8454
-        const char code[] = "using std::to_string;\n"
-                            "void f() {\n"
-                            "    std::string str = to_string(1);\n"
-                            "}\n";
-        const char expected[] = "void f ( ) { std :: string str ; str = std :: to_string ( 1 ) ; }";
-        ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
-        ASSERT_EQUALS("", errout.str());
+    void simplifyUsing30() {
+        {
+            const char code[] = "using std::to_string;\n" // #8454
+                                "void f() {\n"
+                                "    std::string str = to_string(1);\n"
+                                "}\n";
+            const char expected[] = "void f ( ) { std :: string str ; str = std :: to_string ( 1 ) ; }";
+            ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            const char code[] = "using std::cout, std::endl, std::cerr, std::ostringstream;\n"
+                                "cerr << \"abc\";\n";
+            const char expected[] = "std :: cerr << \"abc\" ;";
+            ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            const char code[] = "using std::string_view_literals::operator\"\"sv;\n";
+            const char expected[] = "using std :: string_view_literals :: operator\"\"sv ;";
+            ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            const char code[] = "template <typename T>\n"
+                                "class vector : public ::std::vector<T> {\n"
+                                "public:\n"
+                                "    using ::std::vector<T>::vector;\n"
+                                "    vector() {}\n"
+                                "};\n"
+                                "vector <int> v;\n";
+            const char expected[] = "class vector<int> ; "
+                                    "vector<int> v ; "
+                                    "class vector<int> : public :: std :: vector<int> { "
+                                    "public: "
+                                    "using vector<int> = :: std :: vector<int> :: vector<int> ; "
+                                    "vector<int> ( ) { } "
+                                    "} ;";
+            ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void simplifyUsing8970() {

@@ -2880,7 +2880,7 @@ private:
                            "struct f<b::B<0>> ; "
                            "} "
                            "} "
-                           "b :: f<b::B<0>> g1 ; struct b :: B<0> { } ; "
+                           "b :: f<b::B<0>> g1 ; struct b :: B<0> { using d = B<0> :: d ; } ; "
                            "struct b :: f<b::B<0>> { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }

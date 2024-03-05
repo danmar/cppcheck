@@ -2845,13 +2845,21 @@ bool Tokenizer::simplifyUsing()
         if (!Token::Match(tok, "using ::| %name% ::"))
             continue;
         Token* end = tok->tokAt(3);
-        while (end && end->str() != ";")
-            end = end->next();
+        while (end && !Token::Match(end, "[;,]")) {
+            if (end->str() == "<" && end->link()) // skip template args
+                end = end->link()->next();
+            else
+                end = end->next();
+        }
         if (!end)
             continue;
-        if (!end->tokAt(-1)->isNameOnly()) // e.g. operator=
+        if (!end->tokAt(-1)->isNameOnly() || end->tokAt(-2)->isLiteral()) // e.g. operator=, operator""sv
             continue;
-        tok->insertToken(end->strAt(-1))->insertToken("=");
+        tok->insertToken(end->strAt(-1))->insertToken("=")->isSimplifiedTypedef(true);
+        if (end->str() == ",") { // comma-separated list
+            end->str(";");
+            end->insertToken("using");
+        }
         tok = end;
     }
 
@@ -2922,8 +2930,11 @@ bool Tokenizer::simplifyUsing()
         std::string scope = currentScope->fullName;
         Token *usingStart = tok;
         Token *start;
-        if (tok->strAt(2) == "=")
+        if (tok->strAt(2) == "=") {
+            if (currentScope->type == ScopeInfo3::Record && tok->tokAt(2)->isSimplifiedTypedef())  // don't simplify within class definition
+                continue;
             start = tok->tokAt(3);
+        }
         else
             start = tok->linkAt(2)->tokAt(3);
         Token *usingEnd = findSemicolon(start);
