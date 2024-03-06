@@ -672,6 +672,17 @@ private:
               "        if (d) {}\n"
               "}", /*cpp*/ true);
         ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: d\n", errout.str());
+
+        check("struct S {\n" // #12354
+              "    int i{};\n"
+              "    void f();\n"
+              "};\n"
+              "void f(S* p, bool b) {\n"
+              "    if (b)\n"
+              "        p = new S();\n"
+              "    p->f();\n"
+              "}", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:9]: (error) Memory leak: p\n", errout.str());
     }
 
     void realloc1() {
