@@ -1253,9 +1253,8 @@ void Tokenizer::simplifyTypedefCpp()
         Token *namespaceEnd = nullptr;
 
         // check for invalid input
-        if (!tokOffset)
+        if (!tokOffset || tokOffset->isControlFlowKeyword())
             syntaxError(tok);
-
 
         if (tokOffset->str() == "::") {
             typeStart = tokOffset;
