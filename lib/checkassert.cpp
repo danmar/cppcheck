@@ -129,6 +129,9 @@ void CheckAssert::checkVariableAssignment(const Token* assignTok, const Scope *a
     if (!assignTok->isAssignmentOp() && assignTok->tokType() != Token::eIncDecOp)
         return;
 
+    if (!assignTok->astOperand1())
+        return;
+
     const Variable* var = assignTok->astOperand1()->variable();
     if (!var)
         return;
