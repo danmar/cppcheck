@@ -8084,7 +8084,8 @@ static void valueFlowUninit(TokenList& tokenlist, ErrorLogger* const errorLogger
                 if (memVar.isArray())
                     continue;
                 if (!needsInitialization(&memVar, tokenlist.isCPP())) {
-                    partial = true;
+                    if (!var->isPointer())
+                        partial = true;
                     continue;
                 }
                 MemberExpressionAnalyzer analyzer(memVar.nameToken()->str(), tok, uninitValue, tokenlist, settings);
