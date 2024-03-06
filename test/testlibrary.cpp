@@ -984,6 +984,9 @@ private:
 
     void loadLibErrors() const {
 
+        LOADLIBERROR("<?xml version=\"1.0\"?>",
+                     Library::ErrorCode::BAD_XML);
+
         LOADLIBERROR("<?xml version=\"1.0\"?>\n"
                      "<def>\n"
                      "   <X name=\"uint8_t,std::uint8_t\" size=\"1\"/>\n"

@@ -338,6 +338,7 @@ private:
         TEST_CASE(ruleFileEmpty);
         TEST_CASE(ruleFileMissing);
         TEST_CASE(ruleFileInvalid);
+        TEST_CASE(ruleFileNoRoot);
 #else
         TEST_CASE(ruleFileNotSupported);
 #endif
@@ -348,6 +349,11 @@ private:
         TEST_CASE(signedCharUnsignedChar);
         TEST_CASE(library);
         TEST_CASE(libraryMissing);
+        TEST_CASE(suppressXml);
+        TEST_CASE(suppressXmlEmpty);
+        TEST_CASE(suppressXmlMissing);
+        TEST_CASE(suppressXmlInvalid);
+        TEST_CASE(suppressXmlNoRoot);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -2162,6 +2168,13 @@ private:
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unable to load rule-file 'rule.xml' (XML_ERROR_EMPTY_DOCUMENT).\n", logger->str());
     }
+
+    void ruleFileNoRoot() {
+        REDIRECT;
+        ScopedFile file("rule.xml", "<?xml version=\"1.0\"?>");
+        const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+    }
 #else
     void ruleFileNotSupported() {
         REDIRECT;
@@ -2186,6 +2199,52 @@ private:
         ASSERT_EQUALS(1, settings->libraries.size());
         ASSERT_EQUALS("posix2", *settings->libraries.cbegin());
         ASSERT_EQUALS("cppcheck: Failed to load library configuration file 'posix2'. File not found\n", logger->str());
+    }
+
+    void suppressXml() {
+        REDIRECT;
+        ScopedFile file("suppress.xml",
+                        "<suppressions>\n"
+                        "<suppress>\n"
+                        "<id>uninitvar</id>\n"
+                        "</suppress>\n"
+                        "</suppressions>");
+        const char * const argv[] = {"cppcheck", "--suppress-xml=suppress.xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        const auto& supprs = settings->supprs.nomsg.getSuppressions();
+        ASSERT_EQUALS(1, supprs.size());
+        const auto it = supprs.cbegin();
+        ASSERT_EQUALS("uninitvar", it->errorId);
+    }
+
+    void suppressXmlEmpty() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--suppress-xml=", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: failed to load suppressions XML '' (XML_ERROR_FILE_NOT_FOUND).\n", logger->str());
+    }
+
+    void suppressXmlMissing() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--suppress-xml=suppress.xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: failed to load suppressions XML 'suppress.xml' (XML_ERROR_FILE_NOT_FOUND).\n", logger->str());
+    }
+
+    void suppressXmlInvalid() {
+        REDIRECT;
+        ScopedFile file("suppress.xml", "");
+        const char * const argv[] = {"cppcheck", "--suppress-xml=suppress.xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: failed to load suppressions XML 'suppress.xml' (XML_ERROR_EMPTY_DOCUMENT).\n", logger->str());
+    }
+
+    void suppressXmlNoRoot() {
+        REDIRECT;
+        ScopedFile file("suppress.xml", "<?xml version=\"1.0\"?>");
+        const char * const argv[] = {"cppcheck", "--suppress-xml=suppress.xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: failed to load suppressions XML 'suppress.xml' (no root node found).\n", logger->str());
     }
 
     void ignorepaths1() {

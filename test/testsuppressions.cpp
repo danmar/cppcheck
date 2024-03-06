@@ -97,6 +97,8 @@ private:
         TEST_CASE(suppressLocal);
 
         TEST_CASE(suppressUnmatchedSuppressions);
+
+        TEST_CASE(suppressionsParseXmlFile);
     }
 
     void suppressionsBadId1() const {
@@ -1461,6 +1463,82 @@ private:
         suppressions.emplace_back("unmatchedSuppression", "a.c", 1U);
         ASSERT_EQUALS(true, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
         ASSERT_EQUALS("[a.c:10]: (information) Unmatched suppression: abc\n", errout.str());
+    }
+
+    void suppressionsParseXmlFile() const {
+        {
+            ScopedFile file("suppressparsexml.xml",
+                            "<suppressions>\n"
+                            "<suppress>\n"
+                            "<id>uninitvar</id>\n"
+                            "<fileName>file.c</fileName>\n"
+                            "<lineNumber>10</lineNumber>\n"
+                            "<symbolName>sym</symbolName>\n"
+                            "</suppress>\n"
+                            "</suppressions>");
+
+            SuppressionList supprList;
+            ASSERT_EQUALS("", supprList.parseXmlFile(file.path().c_str()));
+            const auto& supprs = supprList.getSuppressions();
+            ASSERT_EQUALS(1, supprs.size());
+            const auto& suppr = *supprs.cbegin();
+            ASSERT_EQUALS("uninitvar", suppr.errorId);
+            ASSERT_EQUALS("file.c", suppr.fileName);
+            ASSERT_EQUALS(10, suppr.lineNumber);
+            ASSERT_EQUALS("sym", suppr.symbolName);
+        }
+
+        // no file specified
+        {
+            SuppressionList supprList;
+            ASSERT_EQUALS("failed to load suppressions XML '' (XML_ERROR_FILE_NOT_FOUND).", supprList.parseXmlFile(""));
+        }
+
+        // missing file
+        {
+            SuppressionList supprList;
+            ASSERT_EQUALS("failed to load suppressions XML 'suppressparsexml.xml' (XML_ERROR_FILE_NOT_FOUND).", supprList.parseXmlFile("suppressparsexml.xml"));
+        }
+
+        // empty file
+        {
+            ScopedFile file("suppressparsexml.xml",
+                            "");
+
+            SuppressionList supprList;
+            ASSERT_EQUALS("failed to load suppressions XML 'suppressparsexml.xml' (XML_ERROR_EMPTY_DOCUMENT).", supprList.parseXmlFile(file.path().c_str()));
+        }
+
+        // wrong root node
+        {
+            ScopedFile file("suppressparsexml.xml",
+                            "<suppress/>\n");
+
+            SuppressionList supprList;
+            ASSERT_EQUALS("", supprList.parseXmlFile(file.path().c_str()));
+        }
+
+        // no root node
+        {
+            ScopedFile file("suppressparsexml.xml",
+                            "<?xml version=\"1.0\"?>\n");
+
+            SuppressionList supprList;
+            ASSERT_EQUALS("failed to load suppressions XML 'suppressparsexml.xml' (no root node found).", supprList.parseXmlFile(file.path().c_str()));
+        }
+
+        // unknown element
+        {
+            ScopedFile file("suppressparsexml.xml",
+                            "<suppressions>\n"
+                            "<suppress>\n"
+                            "<eid>uninitvar</eid>\n"
+                            "</suppress>\n"
+                            "</suppressions>");
+
+            SuppressionList supprList;
+            ASSERT_EQUALS("unknown element 'eid' in suppressions XML 'suppressparsexml.xml', expected id/fileName/lineNumber/symbolName/hash.", supprList.parseXmlFile(file.path().c_str()));
+        }
     }
 };
 
