@@ -3190,6 +3190,19 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void memleak_std_string() {      
+        check("struct S {\n"
+              "    std::string s;\n"
+              "    void f();\n"
+              "};\n"
+              "void f(S* p, bool b) {\n"
+              "    if (b)\n"
+              "        p = new S();\n"
+              "    p->f();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Memory leak: p\n", errout.str());
+    }
 };
 
 REGISTER_TEST(TestLeakAutoVarStrcpy)

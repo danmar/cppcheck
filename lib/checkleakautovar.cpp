@@ -68,7 +68,7 @@ static bool isAutoDeallocType(const Type* type) {
         return true;
     const std::list<Variable>& varlist = type->classScope->varlist;
     if (std::any_of(varlist.begin(), varlist.end(), [](const Variable& v) {
-        return !v.valueType() || !v.valueType()->isPrimitive();
+        return !v.valueType() || (!v.valueType()->isPrimitive() && !v.valueType()->container);
     }))
         return true;
     if (std::none_of(type->derivedFrom.cbegin(), type->derivedFrom.cend(), [](const Type::BaseInfo& bi) {
