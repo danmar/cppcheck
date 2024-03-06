@@ -390,7 +390,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         }
 
         // using type alias
-        else if (mTokenizer.isCPP() && tok->isKeyword() && Token::Match(tok, "using %name% =")) {
+        else if (mTokenizer.isCPP() && tok->isKeyword() && Token::Match(tok, "using %name% =") && !tok->tokAt(2)->isSimplifiedTypedef()) {
             if (tok->strAt(-1) != ">" && !findType(tok->next(), scope)) {
                 // fill typeList..
                 typeList.emplace_back(tok, nullptr, scope);
