@@ -1139,12 +1139,7 @@ private:
             "    for (int k=0; k<VectorSize; k++)"
             "        LOG_OUT(ID_Vector[k])"
             "}";
-        const char expected[] =
-            "void f ( ) { "
-            "for ( int k = 0 ; k < VectorSize ; k ++ ) "
-            "LOG_OUT ( ID_Vector [ k ] ) "
-            "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        ASSERT_THROW(tokenizeAndStringify(code), InternalError);
     }
 
     void ifAddBraces11() {
