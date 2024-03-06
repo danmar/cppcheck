@@ -27,11 +27,6 @@
 #include <list>
 #include <sstream> // IWYU pragma: keep
 
-class TestMemleakInClass;
-class TestMemleakNoVar;
-class TestMemleakStructMember;
-
-
 class TestMemleak : private TestFixture {
 public:
     TestMemleak() : TestFixture("TestMemleak") {}

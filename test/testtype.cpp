@@ -86,7 +86,6 @@ private:
     }
 
     void checkTooBigShift_Unix32() {
-        const Settings settings0;
         const Settings settings = settingsBuilder().platform(Platform::Type::Unix32).build();
 
         // unsigned types getting promoted to int sizeof(int) = 4 bytes
@@ -186,7 +185,7 @@ private:
         // #7266: C++, shift in macro
         check("void f(unsigned int x) {\n"
               "    UINFO(x << 1234);\n"
-              "}", settings0);
+              "}", settingsDefault);
         ASSERT_EQUALS("", errout.str());
 
         // #8640
@@ -196,7 +195,7 @@ private:
               "    constexpr const int shift[1] = {32};\n"
               "    constexpr const int ret = a << shift[0];\n" // shift too many bits
               "    return ret;\n"
-              "}", settings0);
+              "}", settingsDefault);
         ASSERT_EQUALS("[test.cpp:5]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n"
                       "[test.cpp:5]: (error) Signed integer overflow for expression 'a<<shift[0]'.\n", errout.str());
 
@@ -207,7 +206,7 @@ private:
               "  if (k > 32)\n"
               "    return 0;\n"
               "  return rm>> k;\n"
-              "}", settings0);
+              "}", settingsDefault);
         ASSERT_EQUALS(
             "[test.cpp:4] -> [test.cpp:6]: (warning) Shifting signed 32-bit value by 31 bits is undefined behaviour. See condition at line 4.\n",
             errout.str());
@@ -219,7 +218,7 @@ private:
               "    return 0;\n"
               "  else\n"
               "    return rm>> k;\n"
-              "}", settings0);
+              "}", settingsDefault);
         ASSERT_EQUALS(
             "[test.cpp:4] -> [test.cpp:7]: (warning) Shifting signed 32-bit value by 31 bits is undefined behaviour. See condition at line 4.\n",
             errout.str());
@@ -231,20 +230,20 @@ private:
               "    return 0;\n"
               "  else\n"
               "    return rm>> k;\n"
-              "}", settings0);
+              "}", settingsDefault);
         ASSERT_EQUALS("", errout.str());
 
         check("static long long f(int x, long long y) {\n"
               "    if (x >= 64)\n"
               "        return 0;\n"
               "    return -(y << (x-1));\n"
-              "}", settings0);
+              "}", settingsDefault);
         ASSERT_EQUALS("", errout.str());
 
         check("bool f() {\n"
               "    std::ofstream outfile;\n"
               "    outfile << vec_points[0](0) << static_cast<int>(d) << ' ';\n"
-              "}", settings0);
+              "}", settingsDefault);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(unsigned b, int len, unsigned char rem) {\n" // #10773
@@ -255,7 +254,7 @@ private:
               "        if (bits == 512)\n"
               "            len -= 8;\n"
               "    }\n"
-              "}\n", settings0);
+              "}\n", settingsDefault);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -305,12 +304,11 @@ private:
     }
 
     void signConversion() {
-        const Settings settings0;
         const Settings settings = settingsBuilder().platform(Platform::Type::Unix64).build();
-        check("x = -4 * (unsigned)y;", settings0);
+        check("x = -4 * (unsigned)y;", settingsDefault);
         ASSERT_EQUALS("[test.cpp:1]: (warning) Expression '-4' has a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout.str());
 
-        check("x = (unsigned)y * -4;", settings0);
+        check("x = (unsigned)y * -4;", settingsDefault);
         ASSERT_EQUALS("[test.cpp:1]: (warning) Expression '-4' has a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout.str());
 
         check("unsigned int dostuff(int x) {\n" // x is signed
@@ -322,7 +320,7 @@ private:
         check("unsigned int f1(signed int x, unsigned int y) {" // x is signed
               "  return x * y;\n"
               "}\n"
-              "void f2() { f1(-4,4); }", settings0);
+              "void f2() { f1(-4,4); }", settingsDefault);
         ASSERT_EQUALS(
             "[test.cpp:1]: (warning) Expression 'x' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n",
             errout.str());
@@ -330,7 +328,7 @@ private:
         check("unsigned int f1(int x) {"
               "  return x * 5U;\n"
               "}\n"
-              "void f2() { f1(-4); }", settings0);
+              "void f2() { f1(-4); }", settingsDefault);
         ASSERT_EQUALS(
             "[test.cpp:1]: (warning) Expression 'x' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n",
             errout.str());
@@ -338,19 +336,19 @@ private:
         check("unsigned int f1(int x) {" // #6168: FP for inner calculation
               "  return 5U * (1234 - x);\n" // <- signed subtraction, x is not sign converted
               "}\n"
-              "void f2() { f1(-4); }", settings0);
+              "void f2() { f1(-4); }", settingsDefault);
         ASSERT_EQUALS("", errout.str());
 
         // Don't warn for + and -
         check("void f1(int x) {"
               "  a = x + 5U;\n"
               "}\n"
-              "void f2() { f1(-4); }", settings0);
+              "void f2() { f1(-4); }", settingsDefault);
         ASSERT_EQUALS("", errout.str());
 
         check("size_t foo(size_t x) {\n"
               " return -2 * x;\n"
-              "}", settings0);
+              "}", settingsDefault);
         ASSERT_EQUALS("[test.cpp:2]: (warning) Expression '-2' has a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout.str());
     }
 
@@ -453,48 +451,46 @@ private:
     }
 
     void checkFloatToIntegerOverflow() {
-        const Settings settings;
-        check("x = (int)1E100;", settings);
+        check("x = (int)1E100;", settingsDefault);
         ASSERT_EQUALS("[test.cpp:1]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
 
         check("void f(void) {\n"
               "  return (int)1E100;\n"
-              "}", settings);
+              "}", settingsDefault);
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
 
         check("void f(void) {\n"
               "  return (int)-1E100;\n"
-              "}", settings);
+              "}", settingsDefault);
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
 
         check("void f(void) {\n"
               "  return (short)1E6;\n"
-              "}", settings);
+              "}", settingsDefault);
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
 
         check("void f(void) {\n"
               "  return (unsigned char)256.0;\n"
-              "}", settings);
+              "}", settingsDefault);
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
 
         check("void f(void) {\n"
               "  return (unsigned char)255.5;\n"
-              "}", settings);
+              "}", settingsDefault);
         ASSERT_EQUALS("", removeFloat(errout.str()));
 
         check("void f(void) {\n"
               "  char c = 1234.5;\n"
-              "}", settings);
+              "}", settingsDefault);
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
 
         check("char f(void) {\n"
               "  return 1234.5;\n"
-              "}", settings);
+              "}", settingsDefault);
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
     }
 
     void integerOverflow() { // #11794
-        const Settings settings;
         // TODO: needs to use preprocessing production code
         simplecpp::DUI dui;
         dui.std = "c++11";
@@ -511,14 +507,14 @@ private:
                "int f()\n"
                "{\n"
                "    fun(INT_MIN);\n"
-               "}", settings, "test.cpp", dui);
+               "}", settingsDefault, "test.cpp", dui);
         ASSERT_EQUALS("[test.cpp:3]: (error) Signed integer overflow for expression '-x'.\n", errout.str());
 
         checkP("void f() {\n" // #8399
                "    int32_t i = INT32_MAX;\n"
                "    i << 1;\n"
                "    i << 2;\n"
-               "}", settings, "test.cpp", dui);
+               "}", settingsDefault, "test.cpp", dui);
         ASSERT_EQUALS("[test.cpp:4]: (error) Signed integer overflow for expression 'i<<2'.\n", errout.str());
     }
 };

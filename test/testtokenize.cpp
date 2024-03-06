@@ -944,14 +944,13 @@ private:
         }
 
         {
-            const Settings s;
             ASSERT_EQUALS("; template < typename T , u_int uBAR = 0 >\n"
                           "class Foo {\n"
                           "public:\n"
                           "void FooBar ( ) {\n"
                           "new ( uBAR ? uBAR : sizeof ( T ) ) T ;\n"
                           "}\n"
-                          "} ;", tokenizeAndStringify(code, s));
+                          "} ;", tokenizeAndStringify(code, settingsDefault));
         }
     }
 
@@ -991,33 +990,25 @@ private:
 
     // #4725 - ^{}
     void simplifyAsm2() {
-        ASSERT_THROW(ASSERT_EQUALS("void f ( ) { asm ( \"^{}\" ) ; }", tokenizeAndStringify("void f() { ^{} }")), InternalError);
-        ASSERT_THROW(ASSERT_EQUALS("void f ( ) { x ( asm ( \"^{}\" ) ) ; }", tokenizeAndStringify("void f() { x(^{}); }")), InternalError);
-        ASSERT_THROW(ASSERT_EQUALS("void f ( ) { foo ( A ( ) , asm ( \"^{bar();}\" ) ) ; }", tokenizeAndStringify("void f() { foo(A(), ^{ bar(); }); }")), InternalError);
-        ASSERT_THROW(ASSERT_EQUALS("int f0 ( Args args ) { asm ( \"asm(\"return^{returnsizeof...(Args);}()\")+^{returnsizeof...(args);}()\" )\n"
-                                   "2:\n"
-                                   "|\n"
-                                   "5:\n"
-                                   "6: ;\n"
-                                   "} ;", tokenizeAndStringify("int f0(Args args) {\n"
-                                                               "    return ^{\n"
-                                                               "        return sizeof...(Args);\n"
-                                                               "    }() + ^ {\n"
-                                                               "        return sizeof...(args);\n"
-                                                               "    }();\n"
-                                                               "};")), InternalError);
-        ASSERT_THROW(ASSERT_EQUALS("int ( ^ block ) ( void ) = asm ( \"^{staticinttest=0;returntest;}\" )\n\n\n;",
-                                   tokenizeAndStringify("int(^block)(void) = ^{\n"
-                                                        "    static int test = 0;\n"
-                                                        "    return test;\n"
-                                                        "};")), InternalError);
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { ^{} }"), InternalError, "syntax error");
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { x(^{}); }"), InternalError, "syntax error");
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { foo(A(), ^{ bar(); }); }"), InternalError, "syntax error");
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("int f0(Args args) {\n"
+                                                 "    return ^{\n"
+                                                 "        return sizeof...(Args);\n"
+                                                 "    }() + ^ {\n"
+                                                 "        return sizeof...(args);\n"
+                                                 "    }();\n"
+                                                 "};"), InternalError, "syntax error");
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("int(^block)(void) = ^{\n"
+                                                 "    static int test = 0;\n"
+                                                 "    return test;\n"
+                                                 "};"), InternalError, "syntax error");
 
-        ASSERT_THROW(ASSERT_EQUALS("; return f ( a [ b = c ] , asm ( \"^{}\" ) ) ;",
-                                   tokenizeAndStringify("; return f(a[b=c],^{});")), InternalError); // #7185
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("; return f(a[b=c],^{});"), InternalError, "syntax error: keyword 'return' is not allowed in global scope"); // #7185
         ASSERT_EQUALS("{ return f ( asm ( \"^(void){somecode}\" ) ) ; }",
                       tokenizeAndStringify("{ return f(^(void){somecode}); }"));
-        ASSERT_THROW(ASSERT_EQUALS("; asm ( \"a?(b?(c,asm(\"^{}\")):0):^{}\" ) ;",
-                                   tokenizeAndStringify(";a?(b?(c,^{}):0):^{};")), InternalError);
+        ASSERT_THROW_EQUALS(tokenizeAndStringify(";a?(b?(c,^{}):0):^{};"), InternalError, "syntax error");
         ASSERT_EQUALS("template < typename T > "
                       "CImg < T > operator| ( const char * const expression , const CImg < T > & img ) { "
                       "return img | expression ; "
@@ -7679,8 +7670,7 @@ private:
                             "a = reinterpret_cast<int>(x);\n"
                             "a = static_cast<int>(x);\n";
 
-        const Settings settings;
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settingsDefault, this);
         std::istringstream istr(code);
         ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
@@ -7818,8 +7808,7 @@ private:
     void cpp11init() {
         #define testIsCpp11init(...) testIsCpp11init_(__FILE__, __LINE__, __VA_ARGS__)
         auto testIsCpp11init_ = [this](const char* file, int line, const char* code, const char* find, TokenImpl::Cpp11init expected) {
-            const Settings settings;
-            Tokenizer tokenizer(settings, this);
+            Tokenizer tokenizer(settingsDefault, this);
             std::istringstream istr(code);
             ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 

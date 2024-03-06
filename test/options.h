@@ -33,6 +33,10 @@ public:
     bool quiet() const;
     /** Print help. */
     bool help() const;
+    /** Print summary. */
+    bool summary() const;
+    /** Perform dry run. */
+    bool dry_run() const;
     /** Which test should be run. Empty string means 'all tests' */
     const std::set<std::string>& which_test() const;
 
@@ -46,6 +50,8 @@ private:
     std::set<std::string> mWhichTests;
     const bool mQuiet;
     const bool mHelp;
+    const bool mSummary;
+    const bool mDryRun;
     std::string mExe;
 };
 

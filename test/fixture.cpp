@@ -106,7 +106,7 @@ bool TestFixture::prepareTest(const char testname[])
         } else {
             std::cout << classname << "::" << mTestname << std::endl;
         }
-        return true;
+        return !dry_run;
     }
     return false;
 }
@@ -301,8 +301,25 @@ void TestFixture::assertThrowFail(const char * const filename, const unsigned in
 void TestFixture::assertNoThrowFail(const char * const filename, const unsigned int linenr) const
 {
     ++fails_counter;
+
+    std::string ex_msg;
+
+    try {
+        // cppcheck-suppress rethrowNoCurrentException
+        throw;
+    }
+    catch (const InternalError& e) {
+        ex_msg = e.errorMessage;
+    }
+    catch (const std::exception& e) {
+        ex_msg = e.what();
+    }
+    catch (...) {
+        ex_msg = "unknown exception";
+    }
+
     errmsg << getLocationStr(filename, linenr) << ": Assertion failed. "
-           << "Unexpected exception was thrown"  << std::endl << "_____" << std::endl;
+           << "Unexpected exception was thrown: " << ex_msg << std::endl << "_____" << std::endl;
 
 }
 
@@ -323,7 +340,9 @@ void TestFixture::printHelp()
         "\n"
         "Options:\n"
         "    -q                   Do not print the test cases that have run.\n"
-        "    -h, --help           Print this help.\n";
+        "    -h, --help           Print this help.\n"
+        "    -n                   Print no summaries.\n"
+        "    -d                   Do not execute the tests.\n";
 }
 
 void TestFixture::run(const std::string &str)
@@ -355,6 +374,7 @@ void TestFixture::run(const std::string &str)
 void TestFixture::processOptions(const options& args)
 {
     quiet_tests = args.quiet();
+    dry_run = args.dry_run();
     exename = args.exe();
 }
 
@@ -378,15 +398,19 @@ std::size_t TestFixture::runTests(const options& args)
         }
     }
 
-    std::cout << "\n\nTesting Complete\nNumber of tests: " << countTests << std::endl;
-    std::cout << "Number of todos: " << todos_counter;
-    if (succeeded_todos_counter > 0)
-        std::cout << " (" << succeeded_todos_counter << " succeeded)";
-    std::cout << std::endl;
+    if (args.summary() && !args.dry_run()) {
+        std::cout << "\n\nTesting Complete\nNumber of tests: " << countTests << std::endl;
+        std::cout << "Number of todos: " << todos_counter;
+        if (succeeded_todos_counter > 0)
+            std::cout << " (" << succeeded_todos_counter << " succeeded)";
+        std::cout << std::endl;
+    }
     // calling flush here, to do all output before the error messages (in case the output is buffered)
     std::cout.flush();
 
-    std::cerr << "Tests failed: " << fails_counter << std::endl << std::endl;
+    if (args.summary() && !args.dry_run()) {
+        std::cerr << "Tests failed: " << fails_counter << std::endl << std::endl;
+    }
     std::cerr << errmsg.str();
 
     std::cerr.flush();
