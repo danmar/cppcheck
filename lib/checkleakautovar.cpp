@@ -70,7 +70,7 @@ static bool isAutoDeallocType(const Type* type) {
     if (std::any_of(varlist.begin(), varlist.end(), [](const Variable& v) {
         return !v.valueType() || !v.valueType()->isPrimitive();
     }))
-      return true;
+        return true;
     if (std::none_of(type->derivedFrom.cbegin(), type->derivedFrom.cend(), [](const Type::BaseInfo& bi) {
         return isAutoDeallocType(bi.type);
     }))
