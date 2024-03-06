@@ -5555,14 +5555,14 @@ private:
     void symboldatabase105() {
         {
             GET_SYMBOL_DB_DBG("template <class T>\n"
-                               "struct S : public std::deque<T> {\n"
-                               "    using std::deque<T>::clear;\n"
-                               "    void f();\n"
-                               "};\n"
-                               "template <class T>\n"
-                               "void S<T>::f() {\n"
-                               "    clear();\n"
-                               "}\n");
+                              "struct S : public std::deque<T> {\n"
+                              "    using std::deque<T>::clear;\n"
+                              "    void f();\n"
+                              "};\n"
+                              "template <class T>\n"
+                              "void S<T>::f() {\n"
+                              "    clear();\n"
+                              "}\n");
             ASSERT(db != nullptr);
             ASSERT_EQUALS("", errout.str());
             const Token* const c = Token::findsimplematch(tokenizer.tokens(), "clear (");
