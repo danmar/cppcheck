@@ -1362,15 +1362,11 @@ private:
 
         {
             const char code[] = "{ UNKNOWN_MACRO ( do ) ; while ( a -- ) ; }";
-            const char result[] = "{ UNKNOWN_MACRO ( do ) ; while ( a -- ) { ; } }";
-
             ASSERT_THROW(tokenizeAndStringify(code), InternalError);
         }
 
         {
             const char code[] = "{ UNKNOWN_MACRO ( do , foo ) ; while ( a -- ) ; }";
-            const char result[] = "{ UNKNOWN_MACRO ( do , foo ) ; while ( a -- ) { ; } }";
-
             ASSERT_THROW(tokenizeAndStringify(code), InternalError);
         }
 
