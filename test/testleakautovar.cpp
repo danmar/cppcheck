@@ -3136,6 +3136,7 @@ private:
         TEST_CASE(fclose_false_positive); // #9575
         TEST_CASE(strcpy_false_negative);
         TEST_CASE(doubleFree);
+        TEST_CASE(memleak_std_string);
     }
 
     void returnedValue() { // #9298
@@ -3191,8 +3192,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void memleak_std_string() {      
-        check("struct S {\n"
+    void memleak_std_string() {
+        check("struct S {\n" // #12354
               "    std::string s;\n"
               "    void f();\n"
               "};\n"
