@@ -1371,7 +1371,7 @@ private:
             const char code[] = "{ UNKNOWN_MACRO ( do , foo ) ; while ( a -- ) ; }";
             const char result[] = "{ UNKNOWN_MACRO ( do , foo ) ; while ( a -- ) { ; } }";
 
-            ASSERT_EQUALS(result, tokenizeAndStringify(code));
+            ASSERT_THROW(tokenizeAndStringify(code), InternalError);
         }
 
         {
