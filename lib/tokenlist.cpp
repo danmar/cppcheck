@@ -1582,7 +1582,7 @@ static Token * createAstAtToken(Token *tok)
             AST_state state1(cpp);
             compileExpression(tok2, state1);
             if (Token::Match(init1, "( !!{")) {
-                for (Token *tok3 = init1; tok3 != tok3->link(); tok3 = tok3->next()) {
+                for (Token *tok3 = init1; tok3 && tok3 != tok3->link(); tok3 = tok3->next()) {
                     if (tok3->astParent()) {
                         while (tok3->astParent())
                             tok3 = tok3->astParent();
