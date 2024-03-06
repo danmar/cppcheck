@@ -949,13 +949,14 @@ bool CheckBufferOverrun::isCtuUnsafePointerArith(const Settings *settings, const
 /** @brief Parse current TU and extract file info */
 Check::FileInfo *CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
-    auto *fileInfo = new MyFileInfo;
-    fileInfo->unsafeArrayIndex = CTU::getUnsafeUsage(tokenizer, settings, isCtuUnsafeArrayIndex);
-    fileInfo->unsafePointerArith = CTU::getUnsafeUsage(tokenizer, settings, isCtuUnsafePointerArith);
-    if (fileInfo->unsafeArrayIndex.empty() && fileInfo->unsafePointerArith.empty()) {
-        delete fileInfo;
+    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeArrayIndex = CTU::getUnsafeUsage(tokenizer, settings, isCtuUnsafeArrayIndex);
+    const std::list<CTU::FileInfo::UnsafeUsage> &unsafePointerArith = CTU::getUnsafeUsage(tokenizer, settings, isCtuUnsafePointerArith);
+    if (unsafeArrayIndex.empty() && unsafePointerArith.empty()) {
         return nullptr;
     }
+    auto *fileInfo = new MyFileInfo;
+    fileInfo->unsafeArrayIndex = unsafeArrayIndex;
+    fileInfo->unsafePointerArith = unsafePointerArith;
     return fileInfo;
 }
 
