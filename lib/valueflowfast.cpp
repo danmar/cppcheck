@@ -213,86 +213,6 @@ static void changePossibleToKnown(std::list<ValueFlow::Value>& values, int indir
     }
 }
 
-static void setValueUpperBound(ValueFlow::Value& value, bool upper)
-{
-    if (upper)
-        value.bound = ValueFlow::Value::Bound::Upper;
-    else
-        value.bound = ValueFlow::Value::Bound::Lower;
-}
-
-static void setValueBound(ValueFlow::Value& value, const Token* tok, bool invert)
-{
-    if (Token::Match(tok, "<|<=")) {
-        setValueUpperBound(value, !invert);
-    } else if (Token::Match(tok, ">|>=")) {
-        setValueUpperBound(value, invert);
-    }
-}
-
-static void setConditionalValues(const Token *tok,
-                                 bool invert,
-                                 MathLib::bigint value,
-                                 ValueFlow::Value &true_value,
-                                 ValueFlow::Value &false_value)
-{
-    if (Token::Match(tok, "==|!=|>=|<=")) {
-        true_value = ValueFlow::Value{tok, value};
-        const char* greaterThan = ">=";
-        const char* lessThan = "<=";
-        if (invert)
-            std::swap(greaterThan, lessThan);
-        if (Token::Match(tok, greaterThan)) {
-            false_value = ValueFlow::Value{tok, value - 1};
-        } else if (Token::Match(tok, lessThan)) {
-            false_value = ValueFlow::Value{tok, value + 1};
-        } else {
-            false_value = ValueFlow::Value{tok, value};
-        }
-    } else {
-        const char* greaterThan = ">";
-        const char* lessThan = "<";
-        if (invert)
-            std::swap(greaterThan, lessThan);
-        if (Token::Match(tok, greaterThan)) {
-            true_value = ValueFlow::Value{tok, value + 1};
-            false_value = ValueFlow::Value{tok, value};
-        } else if (Token::Match(tok, lessThan)) {
-            true_value = ValueFlow::Value{tok, value - 1};
-            false_value = ValueFlow::Value{tok, value};
-        }
-    }
-    setValueBound(true_value, tok, invert);
-    setValueBound(false_value, tok, !invert);
-}
-
-static bool isSaturated(MathLib::bigint value)
-{
-    return value == std::numeric_limits<MathLib::bigint>::max() || value == std::numeric_limits<MathLib::bigint>::min();
-}
-
-static const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value)
-{
-    if (!tok->astOperand1() || !tok->astOperand2())
-        return nullptr;
-    if (Token::Match(tok, "%comp%")) {
-        if (tok->astOperand1()->hasKnownIntValue()) {
-            MathLib::bigint value = tok->astOperand1()->values().front().intvalue;
-            if (isSaturated(value))
-                return nullptr;
-            setConditionalValues(tok, true, value, true_value, false_value);
-            return tok->astOperand2();
-        } else if (tok->astOperand2()->hasKnownIntValue()) {
-            MathLib::bigint value = tok->astOperand2()->values().front().intvalue;
-            if (isSaturated(value))
-                return nullptr;
-            setConditionalValues(tok, false, value, true_value, false_value);
-            return tok->astOperand1();
-        }
-    }
-    return nullptr;
-}
-
 /**
  * Should value be skipped because it's hidden inside && || or ?: expression.
  * Example: ((x!=NULL) && (*x == 123))
@@ -1115,6 +1035,7 @@ static bool getMinMaxValues(const ValueType *vt, const Platform &platform, MathL
     return true;
 }
 
+/*
 static bool getMinMaxValues(const std::string &typestr, const Settings &settings, MathLib::bigint &minvalue, MathLib::bigint &maxvalue)
 {
     TokenList typeTokens(&settings);
@@ -1126,6 +1047,7 @@ static bool getMinMaxValues(const std::string &typestr, const Settings &settings
     const ValueType &vt = ValueType::parseDecl(typeTokens.front(), settings);
     return getMinMaxValues(&vt, settings.platform, minvalue, maxvalue);
 }
+*/
 
 static void valueFlowEnumValue(SymbolDatabase & symboldatabase, const Settings & settings)
 {
@@ -4614,13 +4536,13 @@ static void valueFlowFunctionDefaultParameter(TokenList& tokenlist, const Symbol
     }
 }
 
+// FIXME: execute
+/*
 static bool isKnown(const Token * tok)
 {
     return tok && tok->hasKnownIntValue();
 }
 
-// FIXME: execute
-/*
 static void valueFlowFunctionReturn(TokenList& tokenlist, ErrorLogger *errorLogger, const Settings& settings)
 {
     for (Token *tok = tokenlist.back(); tok; tok = tok->previous()) {
