@@ -478,7 +478,7 @@ private:
 
     void simplifyUsing18() {
         const char code[] = "{ { { using a = a; using a; } } }";
-        tok(code); // don't crash
+        (void)tok(code); // don't crash
     }
 
     void simplifyUsing19() {
@@ -490,7 +490,7 @@ private:
                             "   using b = float;\n"
                             "}\n"
                             "}";
-        tok(code); // don't hang
+        (void)tok(code); // don't hang
         ignore_errout(); // we are not interested in the output
     }
 
@@ -535,14 +535,14 @@ private:
                             "   return nullptr;\n"
                             "}\n"
                             "}}}}}}}";
-        tok(code); // don't hang
+        (void)tok(code); // don't hang
         ignore_errout(); // we do not care about the output
     }
 
     void simplifyUsing21() {
         const char code[] = "using a = b;\n"
                             "enum {}";
-        tok(code); // don't crash
+        (void)tok(code); // don't crash
     }
 
     void simplifyUsing22() {
@@ -1327,7 +1327,7 @@ private:
                                 "   auto ret = foo::ResultCodes_e::NO_ERROR;\n"
                                 "   return ret;\n"
                                 "}";
-            tok(code); // don't crash
+            (void)tok(code); // don't crash
             ignore_errout(); // we do not care about the output
         }
     }
@@ -1485,14 +1485,14 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
-    void simplifyUsing10720() {
+    void simplifyUsing10720() { // hang/segmentation fault
         const char code[] = "template <typename... Ts>\n"
                             "struct S {};\n"
                             "#define STAMP(thiz, prev) using thiz = S<prev, prev, prev, prev, prev, prev, prev, prev, prev, prev>;\n"
                             "STAMP(A, int);\n"
                             "STAMP(B, A);\n"
                             "STAMP(C, B);\n";
-        tok(code, Platform::Type::Native, /*debugwarnings*/ true, /*preprocess*/ true);
+        (void)tok(code, Platform::Type::Native, /*debugwarnings*/ true, /*preprocess*/ true);
         ASSERT(startsWith(errout_str(), "[test.cpp:6]: (debug) Failed to parse 'using C = S < S < S < int"));
     }
 
@@ -1503,7 +1503,7 @@ private:
                             "\n"
                             "namespace spdlog { class logger; }\n"
                             "using LoggerPtr = std::shared_ptr<spdlog::logger>;";
-        tok(code);
+        (void)tok(code);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1515,7 +1515,7 @@ private:
                             "\n"
                             "static void getInitialProgramState(const A::Map& vars = A::Map {})\n"
                             "{}\n";
-        tok(code);
+        (void)tok(code);
         ASSERT_EQUALS("", errout_str());
     }
 };

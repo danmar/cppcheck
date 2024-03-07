@@ -33,7 +33,7 @@ private:
     /*const*/ Settings settings;
 
     void run() override {
-        settings.addEnabled("internal");
+        ASSERT_EQUALS("", settings.addEnabled("internal"));
 
         TEST_CASE(simplePatternInTokenMatch);
         TEST_CASE(complexPatternInTokenSimpleMatch);

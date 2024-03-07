@@ -581,7 +581,7 @@ private:
         }
 
         // Check for unused functions..
-        (c.check)(settings, *this);
+        (c.check)(settings, *this); // TODO: check result
 
         ASSERT_EQUALS("[test1.cpp:1]: (style) The function 'f' is never used.\n", errout_str());
     }

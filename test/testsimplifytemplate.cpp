@@ -975,7 +975,7 @@ private:
                             "template <typename T> struct X { void f(X<T> &x) {} };\n"
                             "}\n"
                             "template <> int X<int>::Y(0);";
-        tok(code);
+        (void)tok(code);
     }
 
     void template35() { // #4074 - "A<'x'> a;" is not recognized as template instantiation
@@ -1068,7 +1068,7 @@ private:
                             "  vector<vector<int>> v;"
                             "  const vector<int> vi = static_cast<vector<int>>(v);"
                             "}";
-        tok(code);
+        (void)tok(code);
     }
 
     void template40() { // #5055 - false negatives when there is template specialization outside struct
@@ -1208,32 +1208,32 @@ private:
     }
 
     void template46() { // #5816
-        tok("template<class T, class U> struct A { static const int value = 0; }; "
-            "template <class T> struct B { "
-            "  enum { value = A<typename T::type, int>::value }; "
-            "};");
+        ASSERT_NO_THROW(tok("template<class T, class U> struct A { static const int value = 0; }; "
+                            "template <class T> struct B { "
+                            "  enum { value = A<typename T::type, int>::value }; "
+                            "};"));
         ASSERT_EQUALS("", errout_str());
-        tok("template <class T, class U> struct A {}; "
-            "enum { e = sizeof(A<int, int>) }; "
-            "template <class T, class U> struct B {};");
+        ASSERT_NO_THROW(tok("template <class T, class U> struct A {}; "
+                            "enum { e = sizeof(A<int, int>) }; "
+                            "template <class T, class U> struct B {};"));
         ASSERT_EQUALS("", errout_str());
-        tok("template<class T, class U> struct A { static const int value = 0; }; "
-            "template<class T> struct B { typedef int type; }; "
-            "template <class T> struct C { "
-            "  enum { value = A<typename B<T>::type, int>::value }; "
-            "};");
+        ASSERT_NO_THROW(tok("template<class T, class U> struct A { static const int value = 0; }; "
+                            "template<class T> struct B { typedef int type; }; "
+                            "template <class T> struct C { "
+                            "  enum { value = A<typename B<T>::type, int>::value }; "
+                            "};"));
         ASSERT_EQUALS("", errout_str());
     }
 
     void template47() { // #6023
-        tok("template <typename T1, typename T2 = T3<T1> > class C1 {}; "
-            "class C2 : public C1<C2> {};");
+        ASSERT_NO_THROW(tok("template <typename T1, typename T2 = T3<T1> > class C1 {}; "
+                            "class C2 : public C1<C2> {};"));
         ASSERT_EQUALS("", errout_str());
     }
 
-    void template48() { // #6134
-        tok("template <int> int f( {  } ); "
-            "int foo = f<1>(0);");
+    void template48() { // #6134 (hang)
+        (void)tok("template <int> int f( {  } ); "
+                  "int foo = f<1>(0);");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1335,13 +1335,13 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
-    void template54() { // #6587
-        tok("template<typename _Tp> _Tp* fn(); "
-            "template <class T> struct A { "
-            "  template <class U, class S = decltype(fn<T>())> "
-            "  struct B { }; "
-            "}; "
-            "A<int> a;");
+    void template54() { // #6587 (use-after-free)
+        (void)tok("template<typename _Tp> _Tp* fn(); "
+                  "template <class T> struct A { "
+                  "  template <class U, class S = decltype(fn<T>())> "
+                  "  struct B { }; "
+                  "}; "
+                  "A<int> a;");
     }
 
     void template55() { // #6604
@@ -1974,7 +1974,7 @@ private:
                             "template<typename U, typename std::enable_if<(!std::is_fundamental<U>::value)>::type>\n"
                             "void C<T>::foo() {}";
         // @todo the output is very wrong but we are only worried about the crash for now
-        tok(code);
+        (void)tok(code);
     }
 
     void template86() { // crash
@@ -1989,7 +1989,7 @@ private:
                             "S<T> U<T>::u;\n"
                             "template S<int> U<int>::u;\n"
                             "S<int> &i = U<int>::u;";
-        tok(code);
+        (void)tok(code);
     }
 
     void template87() {
@@ -3806,7 +3806,7 @@ private:
                             "template <typename j> using l = h<k<j>::d, e<1 < (j)0>, f>;\n"
                             "template <typename> void m(int, int, int) { l<int> d; }\n"
                             "void n() { m<int>(0, 4, 5); }";
-        tok(code); // don't crash
+        (void)tok(code); // don't crash
     }
 
     void template157() { // #9854
@@ -4048,7 +4048,7 @@ private:
                             "b<a99<int>> d99;\n"
                             "b<a100<int>> d100;";
         // don't bother checking the output because this is not instantiated properly
-        tok(code); // don't crash
+        (void)tok(code); // don't crash
 
         const char code2[] = "template<typename T> void f();\n" // #11489
                              "template<typename T> void f(int);\n"
@@ -4885,7 +4885,7 @@ private:
                             "{\n"
                             "};\n";
 
-        tok(code);
+        (void)tok(code);
 
         //ASSERT_EQUALS("[file1.cpp:15]: (error) Internal error: failed to instantiate template. The checking continues anyway.\n", errout_str());
         ASSERT_EQUALS("", errout_str());
@@ -4929,25 +4929,25 @@ private:
 
     void syntax_error_templates_1() {
         // ok code.. using ">" for a comparison
-        tok("x<y>z> xyz;");
+        ASSERT_NO_THROW(tok("x<y>z> xyz;"));
         ASSERT_EQUALS("", errout_str());
 
         // ok code
-        tok("template<class T> operator<(T a, T b) { }");
+        ASSERT_NO_THROW(tok("template<class T> operator<(T a, T b) { }"));
         ASSERT_EQUALS("", errout_str());
 
         // ok code (ticket #1984)
-        tok("void f(a) int a;\n"
-            "{ ;x<y; }");
+        ASSERT_NO_THROW(tok("void f(a) int a;\n"
+                            "{ ;x<y; }"));
         ASSERT_EQUALS("", errout_str());
 
         // ok code (ticket #1985)
-        tok("void f()\n"
-            "{ try { ;x<y; } }");
+        ASSERT_NO_THROW(tok("void f()\n"
+                            "{ try { ;x<y; } }"));
         ASSERT_EQUALS("", errout_str());
 
         // ok code (ticket #3183)
-        tok("MACRO(({ i < x }))");
+        ASSERT_NO_THROW(tok("MACRO(({ i < x }))"));
         ASSERT_EQUALS("", errout_str());
 
         // bad code.. missing ">"
@@ -4962,15 +4962,15 @@ private:
                                   "    >::type ConcreteVisitableOrDummy;\n"), SYNTAX);
 
         // code is ok, don't show syntax error
-        tok("struct A {int a;int b};\n"
-            "class Fred {"
-            "public:\n"
-            "    Fred() : a({1,2}) {\n"
-            "        for (int i=0;i<6;i++);\n" // <- no syntax error
-            "    }\n"
-            "private:\n"
-            "    A a;\n"
-            "};");
+        ASSERT_NO_THROW(tok("struct A {int a;int b};\n"
+                            "class Fred {"
+                            "public:\n"
+                            "    Fred() : a({1,2}) {\n"
+                            "        for (int i=0;i<6;i++);\n" // <- no syntax error
+                            "    }\n"
+                            "private:\n"
+                            "    A a;\n"
+                            "};"));
         ASSERT_EQUALS("", errout_str());
 
         //both of these should work but in cppcheck 2.1 only the first option will work (ticket #9843)
@@ -4987,31 +4987,31 @@ private:
         }
     }
 
-    void template_member_ptr() { // Ticket #5786
-        tok("struct A {}; "
-            "struct B { "
-            "template <void (A::*)() const> struct BB {}; "
-            "template <bool BT> static bool foo(int) { return true; } "
-            "void bar() { bool b = foo<true>(0); }"
-            "};");
-        tok("struct A {}; "
-            "struct B { "
-            "template <void (A::*)() volatile> struct BB {}; "
-            "template <bool BT> static bool foo(int) { return true; } "
-            "void bar() { bool b = foo<true>(0); }"
-            "};");
-        tok("struct A {}; "
-            "struct B { "
-            "template <void (A::*)() const volatile> struct BB {}; "
-            "template <bool BT> static bool foo(int) { return true; } "
-            "void bar() { bool b = foo<true>(0); }"
-            "};");
-        tok("struct A {}; "
-            "struct B { "
-            "template <void (A::*)() volatile const> struct BB {}; "
-            "template <bool BT> static bool foo(int) { return true; } "
-            "void bar() { bool b = foo<true>(0); }"
-            "};");
+    void template_member_ptr() { // Ticket #5786 (segmentation fault)
+        (void)tok("struct A {}; "
+                  "struct B { "
+                  "template <void (A::*)() const> struct BB {}; "
+                  "template <bool BT> static bool foo(int) { return true; } "
+                  "void bar() { bool b = foo<true>(0); }"
+                  "};");
+        (void)tok("struct A {}; "
+                  "struct B { "
+                  "template <void (A::*)() volatile> struct BB {}; "
+                  "template <bool BT> static bool foo(int) { return true; } "
+                  "void bar() { bool b = foo<true>(0); }"
+                  "};");
+        (void)tok("struct A {}; "
+                  "struct B { "
+                  "template <void (A::*)() const volatile> struct BB {}; "
+                  "template <bool BT> static bool foo(int) { return true; } "
+                  "void bar() { bool b = foo<true>(0); }"
+                  "};");
+        (void)tok("struct A {}; "
+                  "struct B { "
+                  "template <void (A::*)() volatile const> struct BB {}; "
+                  "template <bool BT> static bool foo(int) { return true; } "
+                  "void bar() { bool b = foo<true>(0); }"
+                  "};");
     }
 
     void template_namespace_1() {

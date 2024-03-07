@@ -1139,7 +1139,7 @@ private:
                 "auto operator<=>(const X & a, const X & b) -> decltype(1 <=> 2) {\n"
                 "    return std::strong_ordering::less;\n"
                 "}\n";
-        tokenValues(code, "<=>"); // don't throw
+        ASSERT_NO_THROW(tokenValues(code, "<=>"));
 
         // Comparison of string
         values = removeImpossible(tokenValues("f(\"xyz\" == \"xyz\");", "==")); // implementation defined
@@ -3789,7 +3789,7 @@ private:
                "  if (p) return;\n"
                "  x = *p ? : 1;\n" // <- no explicit expr0
                "}";
-        testValueOfX(code, 1U, 0); // do not crash
+        (void)testValueOfX(code, 1U, 0); // do not crash
 
         code = "void f(int a) {\n" // #8784
                "    int x = 13;\n"
@@ -4442,7 +4442,7 @@ private:
                "  for(int i = 0; i < 20; i++)\n"
                "    n = (int)(i < 10 || abs(negWander) < abs(negTravel));\n"
                "}";
-        testValueOfX(code,0,0); // <- don't hang
+        (void)testValueOfX(code,0,0); // <- don't hang
 
         // crash (daca@home)
         code = "void foo(char *z, int n) {\n"
@@ -4455,7 +4455,7 @@ private:
                "        }\n"
                "    }\n"
                "}";
-        testValueOfX(code,0,0); // <- don't crash
+        (void)testValueOfX(code,0,0); // <- don't crash
 
         // conditional code in loop
         code = "void f(int mask) {\n" // #6000
@@ -4524,7 +4524,7 @@ private:
                "    for (*&t.s.a[0] = 1;;)\n"
                "        if (0) {}\n"
                "}\n";
-        testValueOfX(code, 0, 0); // <- don't throw
+        ASSERT_NO_THROW(testValueOfX(code, 0, 0));
 
         code = "void f() {\n"
                "    int p[2];\n"
@@ -4532,7 +4532,7 @@ private:
                "        for (p[1] = 0; p[1] <= 2 - p[0]; p[1]++) {}\n"
                "    }\n"
                "}\n";
-        testValueOfX(code, 0, 0); // <- don't throw
+        ASSERT_NO_THROW(testValueOfX(code, 0, 0));
 
         code = "struct C {\n" // #10828
                "    int& v() { return i; }\n"
@@ -4545,7 +4545,7 @@ private:
                "        for (c.v() = 0; c.v() < 24; c.v()++) {}\n"
                "    }\n"
                "}\n";
-        testValueOfX(code, 0, 0); // <- don't throw
+        ASSERT_NO_THROW(testValueOfX(code, 0, 0));
 
         // #11072
         code = "struct a {\n"
@@ -4883,7 +4883,7 @@ private:
         code = "class continuous_src_time {\n"
                "    continuous_src_time(std::complex<double> f, double st = 0.0, double et = infinity) {}\n"
                "};";
-        testValueOfX(code, 2U, 2); // Don't crash (#6494)
+        (void)testValueOfX(code, 2U, 2); // Don't crash (#6494)
     }
 
     bool isNotKnownValues(const char code[], const char str[]) {
@@ -5296,7 +5296,7 @@ private:
 
     void valueFlowSizeofForwardDeclaredEnum() {
         const char *code = "enum E; sz=sizeof(E);";
-        valueOfTok(code, "="); // Don't crash (#7775)
+        (void)valueOfTok(code, "="); // Don't crash (#7775)
     }
 
     void valueFlowGlobalVar() {
@@ -7139,7 +7139,7 @@ private:
                "    if (x >= -1)\n"
                "        state = x;\n"
                "}\n";
-        valueOfTok(code, "=");
+        (void)valueOfTok(code, "=");
 
         code = "void a() {\n"
                "  auto b = [b = 0] {\n"
@@ -7147,7 +7147,7 @@ private:
                "    }\n"
                "  };\n"
                "}\n";
-        valueOfTok(code, "0");
+        (void)valueOfTok(code, "0");
 
         code = "namespace juce {\n"
                "PopupMenu::Item& PopupMenu::Item::operator= (Item&&) = default;\n"
@@ -7157,7 +7157,7 @@ private:
                "    o.isWatchingForDeletion = true;\n"
                "    return o;\n"
                "}}\n";
-        valueOfTok(code, "return");
+        (void)valueOfTok(code, "return");
 
         code = "class dummy_resource : public instrument_resource {\n"
                "public:\n"
@@ -7167,7 +7167,7 @@ private:
                "void dummy_reader_reset() {\n"
                "    dummy_resource::log.clear();\n"
                "}\n";
-        valueOfTok(code, "log");
+        (void)valueOfTok(code, "log");
 
         code = "struct D : B<int> {\n"
                "    D(int i, const std::string& s) : B<int>(i, s) {}\n"
@@ -7175,7 +7175,7 @@ private:
                "template<> struct B<int>::S {\n"
                "    int j;\n"
                "};\n";
-        valueOfTok(code, "B");
+        (void)valueOfTok(code, "B");
     }
 
     void valueFlowCrash() {
@@ -7184,7 +7184,7 @@ private:
         code = "void f(int x) {\n"
                "    if (0 * (x > 2)) {}\n"
                "}\n";
-        valueOfTok(code, "x");
+        (void)valueOfTok(code, "x");
 
         code = "struct a {\n"
                "  void b();\n"
@@ -7195,7 +7195,7 @@ private:
                "    e = &child;\n"
                "  (*e).b();\n"
                "}\n";
-        valueOfTok(code, "e");
+        (void)valueOfTok(code, "e");
 
         code = "const int& f(int, const int& y = 0);\n"
                "const int& f(int, const int& y) {\n"
@@ -7205,7 +7205,7 @@ private:
                "    const int& r = f(x);\n"
                "    return r;\n"
                "}\n";
-        valueOfTok(code, "0");
+        (void)valueOfTok(code, "0");
 
         code = "void fa(int &colors) {\n"
                "  for (int i = 0; i != 6; ++i) {}\n"
@@ -7213,7 +7213,7 @@ private:
                "void fb(not_null<int*> parent, int &&colors2) {\n"
                "  dostuff(1);\n"
                "}\n";
-        valueOfTok(code, "x");
+        (void)valueOfTok(code, "x");
 
         code = "void a() {\n"
                "  static int x = 0;\n"
@@ -7221,7 +7221,7 @@ private:
                "    c(c &&) { ++x; }\n"
                "  };\n"
                "}\n";
-        valueOfTok(code, "x");
+        (void)valueOfTok(code, "x");
 
         code = "void f(){\n"
                "      struct dwarf_data **pp;\n"
@@ -7230,7 +7230,7 @@ private:
                "       pp = &(*pp)->next)\n"
                "    ;\n"
                "}\n";
-        valueOfTok(code, "x");
+        (void)valueOfTok(code, "x");
 
         code = "void *foo(void *x);\n"
                "void *foo(void *x)\n"
@@ -7240,7 +7240,7 @@ private:
                "        return &&yes;\n"
                "    return x;\n"
                "}\n";
-        valueOfTok(code, "x");
+        (void)valueOfTok(code, "x");
 
         code = "void f() {\n"
                "    std::string a = b[c->d()];\n"
@@ -7249,7 +7249,7 @@ private:
                "        INFO(std::string{\"b\"} + a);\n"
                "    }\n"
                "}\n";
-        valueOfTok(code, "a");
+        (void)valueOfTok(code, "a");
 
         code = "class A{\n"
                "  void f() {\n"
@@ -7259,7 +7259,7 @@ private:
                "    return \"\";\n"
                "  }\n"
                "};\n";
-        valueOfTok(code, "c");
+        (void)valueOfTok(code, "c");
 
         code = "void f() {\n"
                "   char* p = 0;\n"
@@ -7273,7 +7273,7 @@ private:
                "   int *i2 = 0;\n"
                "   if (i2) { }\n"
                "}\n";
-        valueOfTok(code, "p");
+        (void)valueOfTok(code, "p");
 
         code = "struct a;\n"
                "namespace e {\n"
@@ -7292,7 +7292,7 @@ private:
                "    if (c.h)\n"
                "      a *const d = arguments[c.arg];\n"
                "}\n";
-        valueOfTok(code, "c");
+        (void)valueOfTok(code, "c");
 
         code = "void h(char* p, int s) {\n"
                "  char *q = p+s;\n"
@@ -7302,14 +7302,14 @@ private:
                "  if (p < q && buf < b)\n"
                "    diff = (buf-b);\n"
                "}\n";
-        valueOfTok(code, "diff");
+        (void)valueOfTok(code, "diff");
 
         code = "void foo() {\n" // #10462
                "  std::tuple<float, float, float, float> t4(5.2f, 3.1f, 2.4f, 9.1f), t5(4, 6, 9, 27);\n"
                "  t4 = t5;\n"
                "  ASSERT(!(t4 < t5) && t4 <= t5);\n"
                "}";
-        valueOfTok(code, "<=");
+        (void)valueOfTok(code, "<=");
 
         code = "void f() {\n"
                "    unsigned short Xoff = 10;\n"
@@ -7321,7 +7321,7 @@ private:
                "            Nx = last - Xoff;\n"
                "    } while (last > 0);\n"
                "}\n";
-        valueOfTok(code, "last");
+        (void)valueOfTok(code, "last");
 
         code = "struct a {\n"
                "  void clear();\n"
@@ -7333,7 +7333,7 @@ private:
                "  a e;\n"
                "};\n"
                "void d::c(int) { e.clear(); }\n";
-        valueOfTok(code, "e");
+        (void)valueOfTok(code, "e");
 
         code = "struct a {\n"
                "  int b;\n"
@@ -7347,7 +7347,7 @@ private:
                "  if (g && f.c)\n"
                "    e.d.b = g - f.c;\n"
                "}\n";
-        valueOfTok(code, "e");
+        (void)valueOfTok(code, "e");
 
         code = "struct a {\n"
                "  std::vector<a> b;\n"
@@ -7360,7 +7360,7 @@ private:
                "    }\n"
                "  }\n"
                "};\n";
-        valueOfTok(code, "e");
+        (void)valueOfTok(code, "e");
 
         code = "struct a {\n"
                "  struct b {\n"
@@ -7375,7 +7375,7 @@ private:
                "      h->c.get();\n"
                "  }\n"
                "};\n";
-        valueOfTok(code, "f.c");
+        (void)valueOfTok(code, "f.c");
 
         code = "void d(fmpz_t a, fmpz_t b) {\n"
                "  if (fmpz_sgn(0)) {}\n"
@@ -7385,7 +7385,7 @@ private:
                "  f->b;\n"
                "  d(&f->a, c);\n"
                "}\n";
-        valueOfTok(code, "f");
+        (void)valueOfTok(code, "f");
 
         code = "struct bo {\n"
                "  int b, c, a, d;\n"
@@ -7402,29 +7402,29 @@ private:
                "    return;\n"
                "  s;\n"
                "}\n";
-        valueOfTok(code, "s");
+        (void)valueOfTok(code, "s");
 
         code = "int f(int value) { return 0; }\n"
                "std::shared_ptr<Manager> g() {\n"
                "    static const std::shared_ptr<Manager> x{ new M{} };\n"
                "    return x;\n"
                "}\n";
-        valueOfTok(code, "x");
+        (void)valueOfTok(code, "x");
 
         code = "int* g();\n"
                "void f() {\n"
                "    std::cout << (void*)(std::shared_ptr<int>{ g() }.get());\n"
                "}\n";
-        valueOfTok(code, ".");
+        (void)valueOfTok(code, ".");
 
         code = "class T;\n"
                "struct S {\n"
                "    void f(std::array<T*, 2>& a);\n"
                "};\n";
-        valueOfTok(code, "a");
+        (void)valueOfTok(code, "a");
 
         code = "void f(const char * const x) { !!system(x); }\n";
-        valueOfTok(code, "x");
+        (void)valueOfTok(code, "x");
 
         code = "struct struct1 {\n"
                "    int i1;\n"
@@ -7438,7 +7438,7 @@ private:
                "void f() {\n"
                "    struct2 a = { 1, 2, 3, {4,5,6,7} }; \n"
                "}\n";
-        valueOfTok(code, "a");
+        (void)valueOfTok(code, "a");
 
         code = "void setDeltas(int life, int age, int multiplier) {\n"
                "    int dx = 0;\n"
@@ -7452,7 +7452,7 @@ private:
                "        else dy = 0;\n"
                "    }\n"
                "}\n";
-        valueOfTok(code, "age");
+        (void)valueOfTok(code, "age");
 
         code = "void a() {\n"
                "  struct b {\n"
@@ -7460,7 +7460,7 @@ private:
                "  };\n"
                "  for (b c : {b{}, {}}) {}\n"
                "}\n";
-        valueOfTok(code, "c");
+        (void)valueOfTok(code, "c");
 
         code = "class T {\n"
                "private:\n"
@@ -7469,13 +7469,13 @@ private:
                "private:\n"
                "    std::shared_ptr<B> m;\n"
                "};\n";
-        valueOfTok(code, "r");
+        (void)valueOfTok(code, "r");
 
         code = "void g(int);\n"
                "void f(int x, int y) {\n"
                "    g(x < y ? : 1);\n"
                "};\n";
-        valueOfTok(code, "?");
+        (void)valueOfTok(code, "?");
 
         code = "struct C {\n"
                "    explicit C(bool);\n"
@@ -7484,23 +7484,23 @@ private:
                "void f(bool b) {\n"
                "    const C& c = C(b) ? : C(false);\n"
                "};\n";
-        valueOfTok(code, "?");
+        (void)valueOfTok(code, "?");
 
         code = "struct S {\n"
                "    void g(std::vector<int> (*f) () = nullptr);\n"
                "};\n";
-        valueOfTok(code, "=");
+        (void)valueOfTok(code, "=");
 
         code = "void f(bool b) {\n" // #11627
                "    (*printf)(\"%s %i\", strerror(errno), b ? 0 : 1);\n"
                "};\n";
-        valueOfTok(code, "?");
+        (void)valueOfTok(code, "?");
 
         code = "void f(int i) {\n" // #11914
                "    int& r = i;\n"
                "    int& q = (&r)[0];\n"
                "}\n";
-        valueOfTok(code, "&");
+        (void)valueOfTok(code, "&");
 
         code = "bool a(int *);\n"
                "void fn2(int b) {\n"
@@ -7512,13 +7512,13 @@ private:
                "    }\n"
                "  }\n"
                "}\n";
-        valueOfTok(code, "e");
+        (void)valueOfTok(code, "e");
 
         code = "void f(int a, int b, int c) {\n"
                "  if (c && (a || a && b))\n"
                "    if (a && b) {}\n"
                "}\n";
-        valueOfTok(code, "a");
+        (void)valueOfTok(code, "a");
 
         code = "void g(const char* fmt, ...);\n" // #12255
                "void f(const char* fmt, const char* msg) {\n"
@@ -7529,10 +7529,10 @@ private:
                "    const char* q = fmt;\n"
                "    if (*q > 0 && *q < 100) {}\n"
                "}\n";
-        valueOfTok(code, "&&");
+        (void)valueOfTok(code, "&&");
 
         code = "void f() { int& a = *&a; }\n"; // #12511
-        valueOfTok(code, "=");
+        (void)valueOfTok(code, "=");
 
         code = "void g(int*);\n" // #12716
                "void f(int a) {\n"
@@ -7542,7 +7542,7 @@ private:
                "        g((int[256]) { 0 });\n"
                "    } while (true);\n"
                "}\n";
-        valueOfTok(code, "0");
+        (void)valueOfTok(code, "0");
     }
 
     void valueFlowHang() {
@@ -7585,7 +7585,7 @@ private:
                "       arr2[3][3] == 0.0\n"
                "       ) {}\n"
                "}\n";
-        valueOfTok(code, "x");
+        (void)valueOfTok(code, "x");
 
         code = "namespace {\n"
                "struct a {\n"
@@ -7599,7 +7599,7 @@ private:
                "     {{&b, &b, &b, &b, &b, &b, &b, &b, &b, &b, &b, &b, &b, &b},\n"
                "      {&b, &b, &b, &b, &b, &b, &b, &b, &b, &b, &b}}}};\n"
                "}\n";
-        valueOfTok(code, "x");
+        (void)valueOfTok(code, "x");
 
         code = "namespace {\n"
                "struct a {\n"
@@ -7615,7 +7615,7 @@ private:
                "      {&b, &b, &b, &b, &b, &b, &b, &b, &b, &b, &b, &b, &b, &b, &b, &b, &b, &b,\n"
                "       &b}}}};\n"
                "}\n";
-        valueOfTok(code, "x");
+        (void)valueOfTok(code, "x");
 
         code = "int &a(int &);\n"
                "int &b(int &);\n"
@@ -7656,7 +7656,7 @@ private:
                "    return d(e);\n"
                "  return e;\n"
                "}\n";
-        valueOfTok(code, "x");
+        (void)valueOfTok(code, "x");
 
         code = "void a() {\n"
                "  int b = 0;\n"
@@ -7665,7 +7665,7 @@ private:
                "      break;\n"
                "  } while (b < 1);\n"
                "}\n";
-        valueOfTok(code, "b");
+        (void)valueOfTok(code, "b");
 
         code = "void ParseEvent(tinyxml2::XMLDocument& doc, std::set<Item*>& retItems) {\n"
                "    auto ParseAddItem = [&](Item* item) {\n"
@@ -7688,7 +7688,7 @@ private:
                "    for (auto *el = root->FirstChildElement(\"Result\"); el && !ParseAddItem(GetItem(el)); el = el->NextSiblingElement(\"Result\")) ;\n"
                "    for (auto *el = root->FirstChildElement(\"Result\"); el && !ParseAddItem(GetItem(el)); el = el->NextSiblingElement(\"Result\")) ;\n"
                "}\n";
-        valueOfTok(code, "root");
+        (void)valueOfTok(code, "root");
 
         code = "bool isCharPotentialOperator(char ch)  {\n"
                "    return (ispunct((unsigned char) ch)\n"
@@ -7699,7 +7699,7 @@ private:
                "            && ch != '#' && ch != '\\\\'\n"
                "            && ch != '\\\'' && ch != '\\\"');\n"
                "}\n";
-        valueOfTok(code, "return");
+        (void)valueOfTok(code, "return");
 
         code = "void heapSort() {\n"
                "    int n = m_size;\n"
@@ -7707,12 +7707,12 @@ private:
                "        swap(0, n - 1);\n"
                "    }\n"
                "}\n";
-        valueOfTok(code, "swap");
+        (void)valueOfTok(code, "swap");
 
         code = "double a;\n"
                "int b, c, d, e, f, g;\n"
                "void h() { double i, j = i = g = f = e = d = c = b = a; }\n";
-        valueOfTok(code, "a");
+        (void)valueOfTok(code, "a");
 
         code = "double a, c;\n"
                "double *b;\n"
@@ -7722,7 +7722,7 @@ private:
                "  b[1] = a;\n"
                "  a;\n"
                "}\n";
-        valueOfTok(code, "a");
+        (void)valueOfTok(code, "a");
 
         code = "void f(int i, int j, int n) {\n"
                "    if ((j == 0) != (i == 0)) {}\n"
@@ -7733,7 +7733,7 @@ private:
                "            n = j;\n"
                "    }\n"
                "}\n";
-        valueOfTok(code, "i");
+        (void)valueOfTok(code, "i");
 
         code = "void f() {\n" // #11701
                "    std::vector<int> v(500);\n"
@@ -7750,12 +7750,12 @@ private:
                "            v[i] = 0;\n"
                "    }\n"
                "}\n";
-        valueOfTok(code, "i");
+        (void)valueOfTok(code, "i");
 
         code = "void f() {\n"
                "    if (llabs(0x80000000ffffffffL) == 0x7fffffff00000001L) {}\n"
                "}\n";
-        valueOfTok(code, "f");
+        (void)valueOfTok(code, "f");
 
         code = "struct T {\n"
                "    T();\n"
@@ -7766,7 +7766,7 @@ private:
                "    static T e[64];\n"
                "    static T f[64];\n"
                "};\n";
-        valueOfTok(code, "(");
+        (void)valueOfTok(code, "(");
     }
 
     void valueFlowCrashConstructorInitialization() { // #9577
@@ -7781,7 +7781,7 @@ private:
                "    {\n"
                "    }\n"
                "}";
-        valueOfTok(code, "path");
+        (void)valueOfTok(code, "path");
 
         code = "void Error()\n"
                "{\n"
@@ -7793,7 +7793,7 @@ private:
                "    {\n"
                "    }\n"
                "}";
-        valueOfTok(code, "path");
+        (void)valueOfTok(code, "path");
 
         code = "struct S {\n"
                "    std::string to_string() const {\n"
@@ -7805,7 +7805,7 @@ private:
                "void f(S s, std::string& str) {\n"
                "    str += s.to_string();\n"
                "}\n";
-        valueOfTok(code, "s");
+        (void)valueOfTok(code, "s");
 
         code = "void a(int e, int d, int c, int h) {\n"
                "  std::vector<int> b;\n"
@@ -7814,7 +7814,7 @@ private:
                "    return;\n"
                "  if (b == f && b == f && c && e < d) {}\n"
                "}\n";
-        valueOfTok(code, "b");
+        (void)valueOfTok(code, "b");
     }
 
     void valueFlowUnknownMixedOperators() {

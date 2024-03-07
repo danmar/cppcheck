@@ -347,7 +347,7 @@ private:
     void error3() {
         const auto settings = dinit(Settings, $.userDefines = "__cplusplus");
         const std::string code("#error hello world!\n");
-        PreprocessorHelper::getcode(settings, *this, code, "X", "test.c");
+        (void)PreprocessorHelper::getcode(settings, *this, code, "X", "test.c");
         ASSERT_EQUALS("[test.c:1]: (error) #error hello world!\n", errout_str());
     }
 
@@ -357,7 +357,7 @@ private:
         {
             const auto settings = dinit(Settings, $.userDefines = "TEST");
             const std::string code("#file \"ab.h\"\n#error hello world!\n#endfile");
-            PreprocessorHelper::getcode(settings, *this, code, "TEST", "test.c");
+            (void)PreprocessorHelper::getcode(settings, *this, code, "TEST", "test.c");
             ASSERT_EQUALS("[ab.h:1]: (error) #error hello world!\n", errout_str());
         }
 
@@ -365,7 +365,7 @@ private:
         {
             const auto settings = dinit(Settings, $.userDefines = "TEST");
             const std::string code("#file \"ab.h\"\n\n#endfile\n#error aaa");
-            PreprocessorHelper::getcode(settings, *this, code, "TEST", "test.c");
+            (void)PreprocessorHelper::getcode(settings, *this, code, "TEST", "test.c");
             ASSERT_EQUALS("[test.c:2]: (error) #error aaa\n", errout_str());
         }
     }
@@ -376,7 +376,7 @@ private:
                                     $.userDefines = "TEST",
                                         $.force = true);
         const std::string code("#error hello world!\n");
-        PreprocessorHelper::getcode(settings, *this, code, "X", "test.c");
+        (void)PreprocessorHelper::getcode(settings, *this, code, "X", "test.c");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1506,7 +1506,7 @@ private:
                                     "}\n";
 
             // expand macros..
-            OurPreprocessor::expandMacros(filedata, this);
+            (void)OurPreprocessor::expandMacros(filedata, this);
 
             ASSERT_EQUALS("[file.cpp:7]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout_str());
         }
@@ -1896,7 +1896,7 @@ private:
                                "// cppcheck-suppress missingIncludeSystem\n"
                                "#include <missing2.h>\n");
         SuppressionList inlineSuppr;
-        PreprocessorHelper::getcode(settings, *this, code, "", "test.c", &inlineSuppr);
+        (void)PreprocessorHelper::getcode(settings, *this, code, "", "test.c", &inlineSuppr);
 
         auto suppressions = inlineSuppr.getSuppressions();
         ASSERT_EQUALS(2, suppressions.size());
@@ -2271,7 +2271,7 @@ private:
     void wrongPathOnErrorDirective() {
         const auto settings = dinit(Settings, $.userDefines = "foo");
         const std::string code("#error hello world!\n");
-        PreprocessorHelper::getcode(settings, *this, code, "X", "./././test.c");
+        (void)PreprocessorHelper::getcode(settings, *this, code, "X", "./././test.c");
         ASSERT_EQUALS("[test.c:1]: (error) #error hello world!\n", errout_str());
     }
 
@@ -2286,7 +2286,7 @@ private:
         ScopedFile header("header.h", "");
 
         std::string code("#include \"header.h\"");
-        PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
+        (void)PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
 
         ASSERT_EQUALS("", errout_str());
     }
@@ -2300,7 +2300,7 @@ private:
         setTemplateFormat("simple");
 
         std::string code("#include \"header.h\"");
-        PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
+        (void)PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
 
         ASSERT_EQUALS("test.c:1:0: information: Include file: \"header.h\" not found. [missingInclude]\n", errout_str());
     }
@@ -2316,7 +2316,7 @@ private:
         ScopedFile header("header.h", "", "inc");
 
         std::string code("#include \"header.h\"");
-        PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
+        (void)PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
 
         ASSERT_EQUALS("test.c:1:0: information: Include file: \"header.h\" not found. [missingInclude]\n", errout_str());
     }
@@ -2333,7 +2333,7 @@ private:
         ScopedFile header("header.h", "", "inc");
 
         std::string code("#include \"inc/header.h\"");
-        PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
+        (void)PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
 
         ASSERT_EQUALS("", errout_str());
     }
@@ -2350,7 +2350,7 @@ private:
         ScopedFile header("header.h", "", Path::getCurrentPath());
 
         std::string code("#include \"" + header.path() + "\"");
-        PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
+        (void)PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
 
         ASSERT_EQUALS("", errout_str());
     }
@@ -2366,7 +2366,7 @@ private:
         const std::string header = Path::join(Path::getCurrentPath(), "header.h");
 
         std::string code("#include \"" + header + "\"");
-        PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
+        (void)PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
 
         ASSERT_EQUALS("test.c:1:0: information: Include file: \"" + header + "\" not found. [missingInclude]\n", errout_str());
     }
@@ -2382,7 +2382,7 @@ private:
         ScopedFile header("header.h", "");
 
         std::string code("#include <header.h>");
-        PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
+        (void)PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
 
         ASSERT_EQUALS("test.c:1:0: information: Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout_str());
     }
@@ -2396,7 +2396,7 @@ private:
         setTemplateFormat("simple");
 
         std::string code("#include <header.h>");
-        PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
+        (void)PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
 
         ASSERT_EQUALS("test.c:1:0: information: Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout_str());
     }
@@ -2413,7 +2413,7 @@ private:
         ScopedFile header("header.h", "", "system");
 
         std::string code("#include <header.h>");
-        PreprocessorHelper::getcode(settings0, *this, code, "", "test.c");
+        (void)PreprocessorHelper::getcode(settings0, *this, code, "", "test.c");
 
         ASSERT_EQUALS("", errout_str());
     }
@@ -2430,7 +2430,7 @@ private:
         ScopedFile header("header.h", "", Path::getCurrentPath());
 
         std::string code("#include <" + header.path() + ">");
-        PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
+        (void)PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
 
         ASSERT_EQUALS("", errout_str());
     }
@@ -2446,7 +2446,7 @@ private:
         const std::string header = Path::join(Path::getCurrentPath(), "header.h");
 
         std::string code("#include <" + header + ">");
-        PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
+        (void)PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
 
         ASSERT_EQUALS("test.c:1:0: information: Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout_str());
     }
@@ -2466,7 +2466,7 @@ private:
                          "#include <header.h>\n"
                          "#include <missing2.h>\n"
                          "#include \"header2.h\"");
-        PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
+        (void)PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
 
         ASSERT_EQUALS("test.c:1:0: information: Include file: \"missing.h\" not found. [missingInclude]\n"
                       "test.c:2:0: information: Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n"
@@ -2502,7 +2502,7 @@ private:
                          "#include \"" + missing3 + "\"\n"
                          "#include <" + header6.path() + ">\n"
                          "#include <" + missing4 + ">\n");
-        PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
+        (void)PreprocessorHelper::getcode(settings, *this, code, "", "test.c");
 
         ASSERT_EQUALS("test.c:1:0: information: Include file: \"missing.h\" not found. [missingInclude]\n"
                       "test.c:2:0: information: Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n"
