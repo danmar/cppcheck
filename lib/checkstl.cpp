@@ -2577,7 +2577,7 @@ static const Token *singleStatement(const Token *start)
     return endStatement;
 }
 
-static const Token *singleAssignInScope(const Token *start, nonneg int varid, bool &input, const Settings* settings)
+static const Token *singleAssignInScope(const Token *start, nonneg int varid, bool &input, bool &hasBreak, const Settings* settings)
 {
     const Token *endStatement = singleStatement(start);
     if (!endStatement)
@@ -2590,6 +2590,7 @@ static const Token *singleAssignInScope(const Token *start, nonneg int varid, bo
     if (isVariableChanged(assignTok->next(), endStatement, varid, /*globalvar*/ false, settings, /*cpp*/ true))
         return nullptr;
     input = Token::findmatch(assignTok->next(), "%varid%", endStatement, varid) || !Token::Match(start->next(), "%var% =");
+    hasBreak = Token::simpleMatch(endStatement->previous(), "break");
     return assignTok;
 }
 
@@ -2925,8 +2926,8 @@ void CheckStl::useStlAlgorithm()
             }
 
             // Check for single assignment
-            bool useLoopVarInAssign;
-            const Token *assignTok = singleAssignInScope(bodyTok, loopVar->varId(), useLoopVarInAssign, mSettings);
+            bool useLoopVarInAssign{}, hasBreak{};
+            const Token *assignTok = singleAssignInScope(bodyTok, loopVar->varId(), useLoopVarInAssign, hasBreak, mSettings);
             if (assignTok) {
                 if (!checkAssignee(assignTok->astOperand1()))
                     continue;
@@ -2992,7 +2993,7 @@ void CheckStl::useStlAlgorithm()
             const Token *condBodyTok = singleConditionalInScope(bodyTok, loopVar->varId(), mSettings);
             if (condBodyTok) {
                 // Check for single assign
-                assignTok = singleAssignInScope(condBodyTok, loopVar->varId(), useLoopVarInAssign, mSettings);
+                assignTok = singleAssignInScope(condBodyTok, loopVar->varId(), useLoopVarInAssign, hasBreak, mSettings);
                 if (assignTok) {
                     if (!checkAssignee(assignTok->astOperand1()))
                         continue;
@@ -3010,7 +3011,7 @@ void CheckStl::useStlAlgorithm()
                             algo = "std::any_of, std::all_of, std::none_of, or std::accumulate";
                         else if (assignTok->str() != "=")
                             algo = "std::accumulate";
-                        else if (isConditionWithoutSideEffects(condBodyTok))
+                        else if (hasBreak && isConditionWithoutSideEffects(condBodyTok))
                             algo = "std::any_of, std::all_of, std::none_of";
                         else
                             continue;

@@ -5618,7 +5618,20 @@ private:
               "            ret = 1;\n"
               "    return ret;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::any_of, std::all_of, std::none_of algorithm instead of a raw loop.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::any_of, std::all_of, std::none_of algorithm instead of a raw loop.\n",
+                           "",
+                           errout.str());
+
+        check("int f(const std::vector<int>& v) {\n"
+              "    int ret = 0;\n"
+              "    for (const auto i : v)\n"
+              "        if (i < 5) {\n"
+              "            ret = 1;\n"
+              "            break;\n"
+              "        }\n"
+              "    return ret;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
 
         check("struct T {\n"
               "    std::vector<int> v0, v1;\n"
@@ -5695,6 +5708,18 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout.str());
+
+        check("void f(const std::vector<int>& v) {\n"
+              "    int maxY = 0;\n"
+              "    for (int y : v) {\n"
+              "        if (y > maxY)\n"
+              "            maxY = y;\n"
+              "    }\n"
+              "}\n",
+              true);
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::max_element algorithm instead of a raw loop.\n",
+                           "",
+                           errout.str());
     }
 
     void loopAlgoMultipleReturn()
