@@ -40,13 +40,13 @@ class Variable;
 
 namespace ValueFlowFast {
     struct increment {
-        template <class T>
+        template<class T>
         void operator()(T& x) const {
             x++;
         }
     };
     struct decrement {
-        template <class T>
+        template<class T>
         void operator()(T& x) const {
             x--;
         }
