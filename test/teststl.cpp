@@ -5712,8 +5712,8 @@ private:
         check("void f(const std::vector<int>& v) {\n"
               "    int maxY = 0;\n"
               "    for (int y : v) {\n"
-              "      if (y > maxY)\n"
-              "        maxY = y;\n"
+              "        if (y > maxY)\n"
+              "            maxY = y;\n"
               "    }\n"
               "}\n",
               true);
