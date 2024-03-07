@@ -3492,16 +3492,9 @@ static bool isBreakScope(const Token* const endToken)
     return Token::findmatch(endToken->link(), "break|goto", endToken);
 }
 
-static ValueFlow::Value asImpossible(ValueFlow::Value v)
-{
-    v.invertRange();
-    v.setImpossible();
-    return v;
-}
-
 static void insertImpossible(std::list<ValueFlow::Value>& values, const std::list<ValueFlow::Value>& input)
 {
-    std::transform(input.begin(), input.end(), std::back_inserter(values), &asImpossible);
+    std::transform(input.begin(), input.end(), std::back_inserter(values), &ValueFlow::asImpossible);
 }
 
 static std::vector<const Variable*> getExprVariables(const Token* expr,
