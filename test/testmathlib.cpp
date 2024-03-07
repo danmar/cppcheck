@@ -145,9 +145,9 @@ private:
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::divide("123", "0"), INTERNAL, "Internal Error: Division by zero");  // decimal zero: throw
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::divide("123", "00"), INTERNAL, "Internal Error: Division by zero"); // octal zero: throw
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::divide("123", "0x0"), INTERNAL, "Internal Error: Division by zero"); // hex zero: throw
-        MathLib::divide("123", "0.0f"); // float zero: don't throw
-        MathLib::divide("123", "0.0"); // double zero: don't throw
-        MathLib::divide("123", "0.0L"); // long double zero: don't throw
+        ASSERT_NO_THROW(MathLib::divide("123", "0.0f")); // float zero
+        ASSERT_NO_THROW(MathLib::divide("123", "0.0")); // double zero
+        ASSERT_NO_THROW(MathLib::divide("123", "0.0L")); // long double zero
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::divide("-9223372036854775808", "-1"), INTERNAL, "Internal Error: Division overflow"); // #4520 - out of range => throw
         ASSERT_EQUALS("4611686018427387904",  MathLib::divide("-9223372036854775808", "-2")); // #6679
 
@@ -177,7 +177,7 @@ private:
         ASSERT_EQUALS("12.0", MathLib::calculate("12.0", "13.0", '%'));
         ASSERT_EQUALS("1.3",  MathLib::calculate("5.3",  "2.0",  '%'));
         ASSERT_EQUALS("1.7",  MathLib::calculate("18.5", "4.2",  '%'));
-        MathLib::calculate("123", "0.0", '%'); // don't throw
+        ASSERT_NO_THROW(MathLib::calculate("123", "0.0", '%'));
 #endif
 
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::calculate("123", "0", '%'), INTERNAL, "Internal Error: Division by zero"); // throw

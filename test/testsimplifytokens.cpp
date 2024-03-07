@@ -1400,7 +1400,7 @@ private:
                                 "  fact2<3> ();\n"
                                 "  fact2<2> ();\n"
                                 "}";
-            tok(code);
+            (void)tok(code);
         }
     }
 
@@ -2307,15 +2307,15 @@ private:
     }
 
     void simplifyKnownVariables61() { // #7805
-        tokenizeAndStringify("static const int XX = 0;\n"
-                             "enum E { XX };\n"
-                             "struct s {\n"
-                             "  enum Bar {\n"
-                             "    XX,\n"
-                             "    Other\n"
-                             "  };\n"
-                             "  enum { XX };\n"
-                             "};", /*expand=*/ true);
+        ASSERT_NO_THROW(tokenizeAndStringify("static const int XX = 0;\n"
+                                             "enum E { XX };\n"
+                                             "struct s {\n"
+                                             "  enum Bar {\n"
+                                             "    XX,\n"
+                                             "    Other\n"
+                                             "  };\n"
+                                             "  enum { XX };\n"
+                                             "};", /*expand=*/ true));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2331,9 +2331,9 @@ private:
     }
 
     void simplifyKnownVariables63() { // #10798
-        tokenizeAndStringify("typedef void (*a)();\n"
-                             "enum class E { a };\n");
-        ASSERT_EQUALS("", errout_str()); // don't throw
+        ASSERT_NO_THROW(tokenizeAndStringify("typedef void (*a)();\n"
+                                             "enum class E { a };\n"));
+        ASSERT_EQUALS("", errout_str());
     }
 
     void simplifyKnownVariablesBailOutAssign1() {
@@ -2422,7 +2422,7 @@ private:
                             "    }\n"
                             "    return a;\n"
                             "}\n";
-        tokenizeAndStringify(code,true);
+        (void)tokenizeAndStringify(code,true);
         ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n", filter_valueflow(errout_str()));     // no debug warnings
     }
 

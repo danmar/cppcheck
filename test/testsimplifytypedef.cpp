@@ -434,7 +434,7 @@ private:
     void cfunction3() {
         const char code[] = "typedef int f(int);\n"
                             "typedef const f cf;\n";
-        simplifyTypedefC(code);
+        (void)simplifyTypedefC(code);
         ASSERT_EQUALS("[file.c:2]: (portability) It is unspecified behavior to const qualify a function type.\n", errout_str());
     }
 
@@ -800,13 +800,13 @@ private:
     }
 
     void simplifyTypedef13() {
-        // ticket # 1167
+        // ticket # 1167 (InternalError)
         const char code[] = "typedef std::pair<int(*)(void*), void*> Func;"
                             "typedef std::vector<Func> CallQueue;"
                             "int main() {}";
 
         // Tokenize and check output..
-        tok(code);
+        ASSERT_NO_THROW(tok(code));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -850,7 +850,7 @@ private:
     }
 
     void simplifyTypedef16() {
-        // ticket # 1252
+        // ticket # 1252 (InternalError)
         const char code[] = "typedef char MOT8;\n"
                             "typedef  MOT8 CHFOO[4096];\n"
                             "typedef struct {\n"
@@ -858,7 +858,7 @@ private:
                             "} STRFOO;";
 
         // Tokenize and check output..
-        tok(code);
+        ASSERT_NO_THROW(tok(code));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1996,7 +1996,7 @@ private:
     void simplifyTypedef66() { // ticket #2341
         const char code[] = "typedef long* GEN;\n"
                             "extern GEN (*foo)(long);";
-        tok(code);
+        (void)tok(code);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2480,19 +2480,19 @@ private:
     void simplifyTypedef97() { // ticket #2983 (segmentation fault)
         const char code[] = "typedef x y\n"
                             "(A); y";
-        tok(code);
+        (void)tok(code);
         ASSERT_EQUALS("", errout_str());
     }
 
     void simplifyTypedef99() { // ticket #2999
         const char code[] = "typedef struct Fred Fred;\n"
                             "struct Fred { };";
-        tok(code);
+        (void)tok(code);
         ASSERT_EQUALS("", errout_str());
 
         const char code1[] = "struct Fred { };\n"
                              "typedef struct Fred Fred;";
-        tok(code1);
+        (void)tok(code1);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2503,7 +2503,7 @@ private:
                             "    fred = se_alloc(sizeof(struct Fred));\n"
                             "    return fred;\n"
                             "}";
-        tok(code);
+        (void)tok(code);
         ASSERT_EQUALS_WITHOUT_LINENUMBERS("", errout_str());
     }
 
@@ -2519,7 +2519,7 @@ private:
                             "{\n"
                             "    Fred * Fred;\n"
                             "}";
-        tok(code);
+        (void)tok(code);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2529,7 +2529,7 @@ private:
                             "{\n"
                             "    Fred Fred;\n"
                             "}";
-        tok(code);
+        (void)tok(code);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2830,7 +2830,7 @@ private:
 
     void simplifyTypedef122() { // segmentation fault
         const char code[] = "int result = [] { return git_run_cmd(\"update-index\",\"update-index -q --refresh\"); }();";
-        tok(code);
+        (void)tok(code);
         ASSERT_EQUALS("", errout_str());
     }
 
