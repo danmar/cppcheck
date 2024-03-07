@@ -311,23 +311,6 @@ static ValueFlow::Value castValue(ValueFlow::Value value, const ValueType::Sign 
     return value;
 }
 
-static void combineValueProperties(const ValueFlow::Value &value1, const ValueFlow::Value &value2, ValueFlow::Value *result)
-{
-    if (value1.isKnown() && value2.isKnown())
-        result->setKnown();
-    else if (value1.isImpossible() || value2.isImpossible())
-        result->setImpossible();
-    else if (value1.isInconclusive() || value2.isInconclusive())
-        result->setInconclusive();
-    else
-        result->setPossible();
-    result->condition = value1.condition ? value1.condition : value2.condition;
-    result->varId = (value1.varId != 0U) ? value1.varId : value2.varId;
-    result->varvalue = (result->varId == value1.varId) ? value1.varvalue : value2.varvalue;
-    result->errorPath = (value1.errorPath.empty() ? value2 : value1).errorPath;
-    result->safe = value1.safe || value2.safe;
-}
-
 static const Token *getCastTypeStartToken(const Token *parent, const Settings& settings)
 {
     // TODO: This might be a generic utility function?
@@ -4369,7 +4352,7 @@ static bool evaluate(const Token *expr, const std::vector<std::list<ValueFlow::V
                     result->emplace_back(ValueFlow::Value(val1.intvalue >> val2.intvalue));
                 else
                     return false;
-                combineValueProperties(val1, val2, &result->back());
+                ValueFlow::combineValueProperties(val1, val2, result->back());
             }
         }
         return !result->empty();
