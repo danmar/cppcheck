@@ -352,10 +352,10 @@ void deprecatedFunctions_wxDataViewCustomRenderer(wxDataViewCustomRenderer &data
     dataViewCustomRenderer.LeftClick(cursor, cell, model, item, col);
 }
 
-void deprecatedFunctions(wxApp &a,
+void deprecatedFunctions([[maybe_unused]] wxApp &a,
                          const wxString &s,
-                         wxArtProvider *artProvider,
-                         wxCalendarCtrl &calenderCtrl,
+                         [[maybe_unused]] wxArtProvider *artProvider,
+                         [[maybe_unused]] wxCalendarCtrl &calenderCtrl,
                          wxComboCtrl &comboCtrl,
                          wxChar * path)
 {

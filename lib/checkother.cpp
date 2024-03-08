@@ -1333,20 +1333,6 @@ void CheckOther::passedByValueError(const Variable* var, bool inconclusive, bool
     reportError(errorPath, Severity::performance, id.c_str(), msg, CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
-static bool isUnusedVariable(const Variable *var)
-{
-    if (!var)
-        return false;
-    if (!var->scope())
-        return false;
-    const Token *start = var->declEndToken();
-    if (!start)
-        return false;
-    if (Token::Match(start, "; %varid% =", var->declarationId()))
-        start = start->tokAt(2);
-    return !Token::findmatch(start->next(), "%varid%", var->scope()->bodyEnd, var->declarationId());
-}
-
 static bool isVariableMutableInInitializer(const Token* start, const Token * end, nonneg int varid)
 {
     if (!start)
@@ -1402,8 +1388,6 @@ void CheckOther::checkConstVariable()
         if (function && var->isArgument()) {
             if (function->isImplicitlyVirtual() || function->templateDef)
                 continue;
-            if (isUnusedVariable(var))
-                continue;
             if (function->isConstructor() && isVariableMutableInInitializer(function->constructorMemberInitialization(), scope->bodyStart, var->declarationId()))
                 continue;
         }
@@ -1416,6 +1400,8 @@ void CheckOther::checkConstVariable()
         if (var->isEnumType())
             continue;
         if (var->isVolatile())
+            continue;
+        if (var->isMaybeUnused())
             continue;
         if (var->nameToken()->isExpandedMacro())
             continue;
@@ -1505,6 +1491,24 @@ static const Token* getVariableChangedStart(const Variable* p)
     return start;
 }
 
+namespace {
+    struct CompareVariables {
+        bool operator()(const Variable* a, const Variable* b) const {
+            const int fileA = a->nameToken()->fileIndex();
+            const int fileB = b->nameToken()->fileIndex();
+            if (fileA != fileB)
+                return fileA < fileB;
+            const int lineA = a->nameToken()->linenr();
+            const int lineB = b->nameToken()->linenr();
+            if (lineA != lineB)
+                return lineA < lineB;
+            const int columnA = a->nameToken()->column();
+            const int columnB = b->nameToken()->column();
+            return columnA < columnB;
+        }
+    };
+}
+
 void CheckOther::checkConstPointer()
 {
     if (!mSettings->severity.isEnabled(Severity::style) &&
@@ -1514,7 +1518,7 @@ void CheckOther::checkConstPointer()
 
     logChecker("CheckOther::checkConstPointer"); // style
 
-    std::vector<const Variable*> pointers, nonConstPointers;
+    std::set<const Variable*, CompareVariables> pointers, nonConstPointers;
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         const Variable* const var = tok->variable();
         if (!var)
@@ -1522,10 +1526,12 @@ void CheckOther::checkConstPointer()
         if (!var->isLocal() && !var->isArgument())
             continue;
         const Token* const nameTok = var->nameToken();
-        // declarations of (static) pointers are (not) split up, array declarations are never split up
-        if (tok == nameTok && (!var->isStatic() || Token::simpleMatch(nameTok->next(), "[")) &&
-            !astIsRangeBasedForDecl(nameTok))
-            continue;
+        if (tok == nameTok) {
+            // declarations of (static) pointers are (not) split up, array declarations are never split up
+            if (var->isLocal() && (!var->isStatic() || Token::simpleMatch(nameTok->next(), "[")) &&
+                !astIsRangeBasedForDecl(nameTok))
+                continue;
+        }
         const ValueType* const vt = tok->valueType();
         if (!vt)
             continue;
@@ -1535,7 +1541,7 @@ void CheckOther::checkConstPointer()
             continue;
         if (std::find(nonConstPointers.cbegin(), nonConstPointers.cend(), var) != nonConstPointers.cend())
             continue;
-        pointers.emplace_back(var);
+        pointers.emplace(var);
         const Token* parent = tok->astParent();
         enum Deref { NONE, DEREF, MEMBER } deref = NONE;
         bool hasIncDec = false;
@@ -1620,11 +1626,14 @@ void CheckOther::checkConstPointer()
                     continue;
             }
         }
-        nonConstPointers.emplace_back(var);
+        if (tok != nameTok)
+            nonConstPointers.emplace(var);
     }
     for (const Variable *p: pointers) {
         if (p->isArgument()) {
             if (!p->scope() || !p->scope()->function || p->scope()->function->isImplicitlyVirtual(true) || p->scope()->function->hasVirtualSpecifier())
+                continue;
+            if (p->isMaybeUnused())
                 continue;
         }
         if (std::find(nonConstPointers.cbegin(), nonConstPointers.cend(), p) == nonConstPointers.cend()) {

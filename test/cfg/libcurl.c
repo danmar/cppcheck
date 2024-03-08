@@ -34,6 +34,7 @@ void validCode()
     }
 }
 
+// cppcheck-suppress constParameterPointer
 void ignoredReturnValue(CURL * handle)
 {
     // cppcheck-suppress ignoredReturnValue
