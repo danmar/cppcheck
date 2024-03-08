@@ -28,9 +28,6 @@
 #include <string>
 #include <vector>
 
-class TestLeakAutoVarStrcpy;
-class TestLeakAutoVarWindows;
-
 class TestLeakAutoVar : public TestFixture {
 public:
     TestLeakAutoVar() : TestFixture("TestLeakAutoVar") {}
@@ -3291,3 +3288,39 @@ private:
 };
 
 REGISTER_TEST(TestLeakAutoVarWindows)
+
+class TestLeakAutoVarPosix : public TestFixture {
+public:
+    TestLeakAutoVarPosix() : TestFixture("TestLeakAutoVarPosix") {}
+
+private:
+    const Settings settings = settingsBuilder().library("std.cfg").library("posix.cfg").build();
+
+    void check_(const char* file, int line, const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Tokenize..
+        Tokenizer tokenizer(settings, this);
+        std::istringstream istr(code);
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+
+        // Check for leaks..
+        runChecks<CheckLeakAutoVar>(tokenizer, this);
+    }
+
+    void run() override {
+        TEST_CASE(memleak_getline);
+    }
+
+    void memleak_getline() {
+        check("void f(std::ifstream &is) {\n" // #12297
+              "    std::string str;\n"
+              "    if (getline(is, str, 'x').good()) {};\n"
+              "    if (!getline(is, str, 'x').good()) {};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+};
+
+REGISTER_TEST(TestLeakAutoVarPosix)

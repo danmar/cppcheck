@@ -987,10 +987,11 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
 
         if (Token::Match(arg, "%var% [-,)] !!.") || Token::Match(arg, "& %var% !!.")) {
             // goto variable
-            if (arg->str() == "&")
+            const bool isAddressOf = arg->str() == "&";
+            if (isAddressOf)
                 arg = arg->next();
 
-            const bool isnull = arg->hasKnownIntValue() && arg->values().front().intvalue == 0;
+            const bool isnull = !isAddressOf && (arg->hasKnownIntValue() && arg->values().front().intvalue == 0);
 
             // Is variable allocated?
             if (!isnull && (!af || af->arg == argNr)) {
@@ -1000,7 +1001,9 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
                     if (mSettings->library.getDeallocFuncInfo(tokName)) {
                         changeAllocStatus(varInfo, dealloc.type == 0 ? allocation : dealloc, tokName, arg);
                     }
-                    if (allocFunc->arg == argNr && !(arg->variable() && arg->variable()->isArgument() && arg->valueType() && arg->valueType()->pointer > 1)) {
+                    if (allocFunc->arg == argNr &&
+                        !(arg->variable() && arg->variable()->isArgument() && arg->valueType() && arg->valueType()->pointer > 1) &&
+                        (isAddressOf || (arg->valueType() && arg->valueType()->pointer == 2))) {
                         leakIfAllocated(arg, varInfo);
                         VarInfo::AllocInfo& varAlloc = varInfo.alloctype[arg->varId()];
                         varAlloc.type = allocFunc->groupId;
