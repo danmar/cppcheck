@@ -2792,13 +2792,12 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition 'x>100', second condition is always false\n", errout.str());
 
-        check("void f(int x) {\n"  // #8217 - crash for incomplete code
-              "  if (x > 100) { return; }\n"
-              "  X(do);\n"
-              "  if (x > 100) {}\n"
-              "}");
-        // TODO: we should probably throw unknownMacro InternalError. Complain that the macro X must be defined. We can't check the code well without the definition.
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'x>100' is always false\n", errout.str());
+        ASSERT_THROW(check("void f(int x) {\n"  // #8217 - crash for incomplete code
+                           "  if (x > 100) { return; }\n"
+                           "  X(do);\n"
+                           "  if (x > 100) {}\n"
+                           "}"),
+                     InternalError);
 
         check("void f(const int *i) {\n"
               "  if (!i) return;\n"

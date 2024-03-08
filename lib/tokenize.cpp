@@ -6658,7 +6658,10 @@ Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
             }
             if (!tokEnd || tokEnd->str() != ";") {
                 // No trailing ;
-                return tok;
+                if (tokStatement->isUpperCaseName())
+                    unknownMacroError(tokStatement);
+                else
+                    syntaxError(tokStatement);
             }
         }
 
