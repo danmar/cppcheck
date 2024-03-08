@@ -3203,6 +3203,14 @@ private:
               "    p->f();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:9]: (error) Memory leak: p\n", errout.str());
+
+        check("class B { std::string s; };\n" // #12062
+              "class D : public B {};\n"
+              "void g() {\n"
+              "    auto d = new D();\n"
+              "    if (d) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: d\n", errout.str());
     }
 };
 
