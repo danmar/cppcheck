@@ -421,6 +421,7 @@ private:
         TEST_CASE(symboldatabase102);
         TEST_CASE(symboldatabase103);
         TEST_CASE(symboldatabase104);
+        TEST_CASE(symboldatabase105);
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -5548,6 +5549,24 @@ private:
                               "void S::f(const bool b) {}\n");
             ASSERT(db != nullptr);
             ASSERT_EQUALS("", errout.str());
+        }
+    }
+
+    void symboldatabase105() {
+        {
+            GET_SYMBOL_DB_DBG("template <class T>\n"
+                              "struct S : public std::deque<T> {\n"
+                              "    using std::deque<T>::clear;\n"
+                              "    void f();\n"
+                              "};\n"
+                              "template <class T>\n"
+                              "void S<T>::f() {\n"
+                              "    clear();\n"
+                              "}\n");
+            ASSERT(db != nullptr);
+            ASSERT_EQUALS("", errout.str());
+            const Token* const c = Token::findsimplematch(tokenizer.tokens(), "clear (");
+            ASSERT(!c->type());
         }
     }
 
