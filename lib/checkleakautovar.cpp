@@ -62,11 +62,16 @@ static const std::array<std::pair<std::string, std::string>, 4> alloc_failed_con
 static const std::array<std::pair<std::string, std::string>, 4> alloc_success_conds {{{"!=", "0"}, {">", "0"}, {"!=", "-1"}, {">=", "0"}}};
 
 static bool isAutoDeallocType(const Type* type) {
-    if (!type)
+    if (!type || !type->classScope)
         return true;
-    if (type->classScope && type->classScope->numConstructors == 0 &&
-        (type->classScope->varlist.empty() || type->needInitialization == Type::NeedInitialization::True) &&
-        std::none_of(type->derivedFrom.cbegin(), type->derivedFrom.cend(), [](const Type::BaseInfo& bi) {
+    if (type->classScope->numConstructors > 0)
+        return true;
+    const std::list<Variable>& varlist = type->classScope->varlist;
+    if (std::any_of(varlist.begin(), varlist.end(), [](const Variable& v) {
+        return !v.valueType() || (!v.valueType()->isPrimitive() && !v.valueType()->container);
+    }))
+        return true;
+    if (std::none_of(type->derivedFrom.cbegin(), type->derivedFrom.cend(), [](const Type::BaseInfo& bi) {
         return isAutoDeallocType(bi.type);
     }))
         return false;

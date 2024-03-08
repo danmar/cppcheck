@@ -7394,6 +7394,18 @@ private:
                         "    S s(&p);\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct S {\n" // #12354
+                        "    int i{};\n"
+                        "    void f();\n"
+                        "};\n"
+                        "void f(bool b) {\n"
+                        "    S* p;\n"
+                        "    if (b)\n"
+                        "        p = new S();\n"
+                        "    p->f();\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (warning) Uninitialized variable: p\n", errout.str());
     }
 
     void uninitvar_memberfunction() {

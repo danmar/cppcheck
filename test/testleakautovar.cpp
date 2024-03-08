@@ -672,6 +672,17 @@ private:
               "        if (d) {}\n"
               "}", /*cpp*/ true);
         ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: d\n", errout.str());
+
+        check("struct S {\n" // #12354
+              "    int i{};\n"
+              "    void f();\n"
+              "};\n"
+              "void f(S* p, bool b) {\n"
+              "    if (b)\n"
+              "        p = new S();\n"
+              "    p->f();\n"
+              "}", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:9]: (error) Memory leak: p\n", errout.str());
     }
 
     void realloc1() {
@@ -3125,6 +3136,7 @@ private:
         TEST_CASE(fclose_false_positive); // #9575
         TEST_CASE(strcpy_false_negative);
         TEST_CASE(doubleFree);
+        TEST_CASE(memleak_std_string);
     }
 
     void returnedValue() { // #9298
@@ -3178,6 +3190,19 @@ private:
               "    free(p);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void memleak_std_string() {
+        check("struct S {\n" // #12354
+              "    std::string s;\n"
+              "    void f();\n"
+              "};\n"
+              "void f(S* p, bool b) {\n"
+              "    if (b)\n"
+              "        p = new S();\n"
+              "    p->f();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Memory leak: p\n", errout.str());
     }
 };
 
