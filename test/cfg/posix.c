@@ -1058,6 +1058,17 @@ void * memleak_mmap2() // #8327
     return NULL;
 }
 
+void memleak_getline() { // #11043
+    char *line = NULL;
+    size_t size = 0;
+    getline(&line, &size, stdin);
+    // cppcheck-suppress memleak
+    line = NULL;
+    getline(&line, &size, stdin);
+    // cppcheck-suppress memleak
+    line = NULL;
+}
+
 void * identicalCondition_mmap(int fd, size_t size) // #9940
 {
     void* buffer = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);

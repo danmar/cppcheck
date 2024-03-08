@@ -987,10 +987,11 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
 
         if (Token::Match(arg, "%var% [-,)] !!.") || Token::Match(arg, "& %var% !!.")) {
             // goto variable
-            if (arg->str() == "&")
+            const bool isAddressOf = arg->str() == "&";
+            if (isAddressOf)
                 arg = arg->next();
 
-            const bool isnull = arg->hasKnownIntValue() && arg->values().front().intvalue == 0;
+            const bool isnull = !isAddressOf && (arg->hasKnownIntValue() && arg->values().front().intvalue == 0);
 
             // Is variable allocated?
             if (!isnull && (!af || af->arg == argNr)) {
