@@ -2844,6 +2844,9 @@ bool Tokenizer::simplifyUsing()
     for (Token* tok = list.front(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "using ::| %name% ::"))
             continue;
+        const Token* ns = tok->tokAt(tok->strAt(1) == "::" ? 2 : 1);
+        if (ns->isKeyword())
+            continue;
         Token* end = tok->tokAt(3);
         while (end && !Token::Match(end, "[;,]")) {
             if (end->str() == "<" && end->link()) // skip template args
