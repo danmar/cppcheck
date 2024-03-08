@@ -107,6 +107,15 @@ jobs:
         env:
           TEST_CPPCHECK_INJECT_J: 2
 
+      - name: Run test/cli (--clang)
+        if: false
+        run: |
+          pwd=$(pwd)
+          cd test/cli
+          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv
+        env:
+          TEST_CPPCHECK_INJECT_CLANG: clang
+
       - name: Generate dependencies
         if: false
         run: |

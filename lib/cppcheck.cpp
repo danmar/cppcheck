@@ -470,9 +470,17 @@ unsigned int CppCheck::checkClang(const std::string &path)
     }
 
     std::string output2;
-    if (mExecuteCommand(exe,split(args2),redirect2,output2) != EXIT_SUCCESS || output2.find("TranslationUnitDecl") == std::string::npos) {
-        std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "'" << std::endl;
-        return 0;
+    const int exitcode = mExecuteCommand(exe,split(args2),redirect2,output2);
+    if (exitcode != EXIT_SUCCESS) {
+        // TODO: report as proper error
+        std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "' - (exitcode: " << exitcode << " / output: " << output2 << ")" << std::endl;
+        return 0; // TODO: report as failure?
+    }
+
+    if (output2.find("TranslationUnitDecl") == std::string::npos) {
+        // TODO: report as proper error
+        std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "' - (no TranslationUnitDecl in output)" << std::endl;
+        return 0; // TODO: report as failure?
     }
 
     // Ensure there are not syntax errors...
@@ -551,7 +559,7 @@ unsigned int CppCheck::checkClang(const std::string &path)
 unsigned int CppCheck::check(const std::string &path)
 {
     if (mSettings.clang)
-        return checkClang(path);
+        return checkClang(Path::simplifyPath(path));
 
     return checkFile(Path::simplifyPath(path), emptyString);
 }

@@ -87,6 +87,16 @@ def cppcheck(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_exe
             arg_j = '-j' + str(os.environ['TEST_CPPCHECK_INJECT_J'])
             args.append(arg_j)
 
+    if 'TEST_CPPCHECK_INJECT_CLANG' in os.environ:
+        found_clang = False
+        for arg in args:
+            if arg.startswith('--clang'):
+                found_clang = True
+                break
+        if not found_clang:
+            arg_clang = '--clang=' + str(os.environ['TEST_CPPCHECK_INJECT_CLANG'])
+            args.append(arg_clang)
+
     logging.info(exe + ' ' + ' '.join(args))
     p = subprocess.Popen([exe] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, cwd=cwd)
     try:
