@@ -77,6 +77,16 @@ def cppcheck(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_exe
     exe = cppcheck_exe if cppcheck_exe else __lookup_cppcheck_exe()
     assert exe is not None, 'no cppcheck binary found'
 
+    if 'TEST_CPPCHECK_INJECT_J' in os.environ:
+        found_j = False
+        for arg in args:
+            if arg.startswith('-j'):
+                found_j = True
+                break
+        if not found_j:
+            arg_j = '-j' + str(os.environ['TEST_CPPCHECK_INJECT_J'])
+            args.append(arg_j)
+
     logging.info(exe + ' ' + ' '.join(args))
     p = subprocess.Popen([exe] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, cwd=cwd)
     try:

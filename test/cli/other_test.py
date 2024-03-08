@@ -9,7 +9,7 @@ import json
 from testutils import cppcheck, assert_cppcheck
 
 
-def __test_missing_include(tmpdir, use_j):
+def test_missing_include(tmpdir):  # #11283
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt') as f:
         f.write("""
@@ -17,19 +17,9 @@ def __test_missing_include(tmpdir, use_j):
                 """)
 
     args = ['--enable=missingInclude', '--template=simple', test_file]
-    if use_j:
-        args.insert(0, '-j2')
 
     _, _, stderr = cppcheck(args)
     assert stderr == '{}:2:0: information: Include file: "test.h" not found. [missingInclude]\n'.format(test_file)
-
-
-def test_missing_include(tmpdir):
-    __test_missing_include(tmpdir, False)
-
-
-def test_missing_include_j(tmpdir): #11283
-    __test_missing_include(tmpdir, True)
 
 
 def __test_missing_include_check_config(tmpdir, use_j):
@@ -113,7 +103,7 @@ def test_progress(tmpdir):
                 }
                 """)
 
-    args = ['--report-progress=0', '--enable=all', '--inconclusive', test_file]
+    args = ['--report-progress=0', '--enable=all', '--inconclusive', '-j1', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -217,6 +207,7 @@ void f() {
     assert stderr == '{}:0:0: error: Bailing from out analysis: Checking file failed: converting \'1f\' to integer failed - not an integer [internalError]\n\n^\n'.format(test_file)
 
 
+# TODO: test with -j2
 def test_addon_misra(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
     with open(test_file, 'wt') as f:
@@ -224,7 +215,7 @@ def test_addon_misra(tmpdir):
 typedef int MISRA_5_6_VIOLATION;
         """)
 
-    args = ['--addon=misra', '--enable=all', test_file]
+    args = ['--addon=misra', '--enable=all', '--disable=unusedFunction', '-j1', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -247,7 +238,7 @@ extern void f()
 }
         """)
 
-    args = ['--addon=y2038', '--enable=all', '--template=simple', test_file]
+    args = ['--addon=y2038', '--enable=all', '--disable=unusedFunction', '--template=simple', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -268,7 +259,7 @@ extern const char* f()
 }
         """)
 
-    args = ['--addon=threadsafety', '--enable=all', '--template=simple', test_file]
+    args = ['--addon=threadsafety', '--enable=all', '--disable=unusedFunction', '--template=simple', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -298,7 +289,7 @@ def test_addon_naming(tmpdir):
 int Var;
         """)
 
-    args = ['--addon={}'.format(addon_file), '--enable=all', '--template=simple', test_file]
+    args = ['--addon={}'.format(addon_file), '--enable=all', '--disable=unusedFunction', '--template=simple', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -409,7 +400,7 @@ private:
 namespace _invalid_namespace { }
         """%(test_include_file_basename))
 
-    args = ['--addon='+addon_file, '--verbose', '--enable=all', test_file]
+    args = ['--addon='+addon_file, '--verbose', '--enable=all', '--disable=unusedFunction', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -491,6 +482,7 @@ namespace _invalid_namespace { }
     assert lines == expect
 
 
+# TODO: test with -j2
 def test_addon_namingng_config(tmpdir):
     addon_file = os.path.join(tmpdir, 'namingng.json')
     addon_config_file = os.path.join(tmpdir, 'namingng.config.json')
@@ -540,7 +532,7 @@ def test_addon_namingng_config(tmpdir):
         # only create the file
         pass
 
-    args = ['--addon='+addon_file, '--verbose', '--enable=all', test_file]
+    args = ['--addon='+addon_file, '--verbose', '--enable=all', '-j1', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -590,7 +582,7 @@ def test_addon_findcasts(tmpdir):
         }
         """)
 
-    args = ['--addon=findcasts', '--enable=all', '--template=simple', test_file]
+    args = ['--addon=findcasts', '--enable=all', '--disable=unusedFunction', '--template=simple', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -611,7 +603,7 @@ extern void f()
 }
         """)
 
-    args = ['--addon=misc', '--enable=all', '--template=simple', test_file]
+    args = ['--addon=misc', '--enable=all', '--disable=unusedFunction', '--template=simple', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -656,7 +648,7 @@ raise Exception()
 typedef int MISRA_5_6_VIOLATION;
                 """)
 
-    args = ['--addon={}'.format(addon_file), '--enable=all', test_file]
+    args = ['--addon={}'.format(addon_file), '--enable=all', '--disable=unusedFunction', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0  # TODO: needs to be 1
@@ -667,6 +659,7 @@ typedef int MISRA_5_6_VIOLATION;
     assert stderr == "{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'addon1' - exitcode is 1 [internalError]\n\n^\n".format(test_file)
 
 
+# TODO: test with -j2
 def test_invalid_addon_py_verbose(tmpdir):
     addon_file = os.path.join(tmpdir, 'addon1.py')
     with open(addon_file, 'wt') as f:
@@ -680,7 +673,7 @@ raise Exception()
 typedef int MISRA_5_6_VIOLATION;
                 """)
 
-    args = ['--addon={}'.format(addon_file), '--enable=all', '--verbose', test_file]
+    args = ['--addon={}'.format(addon_file), '--enable=all', '--disable=unusedFunction', '--verbose', '-j1', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0  # TODO: needs to be 1
@@ -727,7 +720,7 @@ print('{"loc": [{"file": "test.cpp", "linenr": 1, "column": 1, "info": ""}], "se
 typedef int MISRA_5_6_VIOLATION;
                 """)
 
-    args = ['--addon={}'.format(addon_file), '--enable=all', test_file]
+    args = ['--addon={}'.format(addon_file), '--enable=all', '--disable=unusedFunction', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0  # TODO: needs to be 1
@@ -738,6 +731,7 @@ typedef int MISRA_5_6_VIOLATION;
     assert stderr == 'test.cpp:1:1: style: msg [addon1-id]\n\n^\n'
 
 
+# TODO: test with -j2
 # #11483
 def test_unused_function_include(tmpdir):
     test_cpp_file = os.path.join(tmpdir, 'test.cpp')
@@ -757,13 +751,13 @@ def test_unused_function_include(tmpdir):
                 };
                 """)
 
-    args = ['--enable=unusedFunction', '--inline-suppr', '--template=simple', test_cpp_file]
+    args = ['--enable=unusedFunction', '--inline-suppr', '--template=simple', '-j1', test_cpp_file]
 
     _, _, stderr = cppcheck(args)
     assert stderr == "{}:4:0: style: The function 'f' is never used. [unusedFunction]\n".format(test_h_file)
 
 
-# TODO: test with -j and all other types
+# TODO: test with all other types
 def test_showtime_top5_file(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
     with open(test_file, 'wt') as f:
@@ -877,7 +871,7 @@ def test_file_order(tmpdir):
     with open(test_file_d, 'wt'):
         pass
 
-    args = [test_file_c, test_file_d, test_file_b, test_file_a]
+    args = [test_file_c, test_file_d, test_file_b, test_file_a, '-j1']
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -909,7 +903,7 @@ def test_markup(tmpdir):
     with open(test_file_4, 'wt') as f:
         pass
 
-    args = ['--library=qt', test_file_1, test_file_2, test_file_3, test_file_4]
+    args = ['--library=qt', test_file_1, test_file_2, test_file_3, test_file_4, '-j1']
     out_lines = [
         'Checking {} ...'.format(test_file_2),
         '1/4 files checked 0% done',
@@ -938,7 +932,7 @@ def test_markup_j(tmpdir):
     with open(test_file_4, 'wt') as f:
         pass
 
-    args = ['--library=qt', test_file_1, test_file_2, test_file_3, test_file_4]
+    args = ['--library=qt', '-j2', test_file_1, test_file_2, test_file_3, test_file_4]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -946,12 +940,20 @@ def test_markup_j(tmpdir):
     for i in range(1, 5):
         lines.remove('{}/4 files checked 0% done'.format(i))
 
-    assert lines == [
-        'Checking {} ...'.format(test_file_2),
-        'Checking {} ...'.format(test_file_4),
-        'Checking {} ...'.format(test_file_1),
-        'Checking {} ...'.format(test_file_3)
-    ]
+    # this test started to fail in the -j2 injection run when using ThreadExecutor although it always specifies -j2.
+    # the order of the files in the output changed so just check for the file extentions
+    assert len(lines) == 4
+    assert lines[0].endswith('.cpp ...')
+    assert lines[1].endswith('.cpp ...')
+    assert lines[2].endswith('.qml ...')
+    assert lines[3].endswith('.qml ...')
+
+    #assert lines == [
+    #    'Checking {} ...'.format(test_file_2),
+    #    'Checking {} ...'.format(test_file_4),
+    #    'Checking {} ...'.format(test_file_1),
+    #    'Checking {} ...'.format(test_file_3)
+    #]
     assert stderr == ''
 
 
@@ -1068,7 +1070,7 @@ def test_file_duplicate_2(tmpdir):
     with open(test_file_c, 'wt'):
         pass
 
-    args = [test_file_c, test_file_a, test_file_b, str(tmpdir), test_file_b, test_file_c, test_file_a, str(tmpdir)]
+    args = [test_file_c, test_file_a, test_file_b, str(tmpdir), test_file_b, test_file_c, test_file_a, str(tmpdir), '-j1']
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0

@@ -31,7 +31,7 @@ def __create_compdb(tmpdir, projpath):
 
 
 def test_unused_functions():
-    ret, stdout, stderr = cppcheck(['-q', '--template=simple', '--enable=unusedFunction', '--inline-suppr', __project_dir])
+    ret, stdout, stderr = cppcheck(['-q', '--template=simple', '--enable=unusedFunction', '--inline-suppr', '-j1', __project_dir])
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [
         "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
@@ -53,7 +53,8 @@ def test_unused_functions_project():
                                     '--template=simple',
                                     '--enable=unusedFunction',
                                     '--inline-suppr',
-                                    '--project={}'.format(os.path.join(__project_dir, 'unusedFunction.cppcheck'))])
+                                    '--project={}'.format(os.path.join(__project_dir, 'unusedFunction.cppcheck')),
+                                    '-j1'])
     assert stdout.splitlines() == []
     assert [
         "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
@@ -81,7 +82,8 @@ def test_unused_functions_compdb(tmpdir):
                                     '--template=simple',
                                     '--enable=unusedFunction',
                                     '--inline-suppr',
-                                    '--project={}'.format(compdb_file)
+                                    '--project={}'.format(compdb_file),
+                                    '-j1'
                                     ])
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [
@@ -109,7 +111,7 @@ def test_unused_functions_compdb_j(tmpdir):
 def test_unused_functions_builddir(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
-    ret, stdout, stderr = cppcheck(['-q', '--template=simple', '--enable=unusedFunction', '--inline-suppr', '--cppcheck-build-dir={}'.format(build_dir), __project_dir])
+    ret, stdout, stderr = cppcheck(['-q', '--template=simple', '--enable=unusedFunction', '--inline-suppr', '-j1', '--cppcheck-build-dir={}'.format(build_dir), __project_dir])
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [
         "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
@@ -140,7 +142,8 @@ def test_unused_functions_builddir_project(tmpdir):
                                     '--enable=unusedFunction',
                                     '--inline-suppr',
                                     '--project={}'.format(os.path.join(__project_dir, 'unusedFunction.cppcheck')),
-                                    '--cppcheck-build-dir={}'.format(build_dir)])
+                                    '--cppcheck-build-dir={}'.format(build_dir),
+                                    '-j1'])
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [
         "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
@@ -178,7 +181,8 @@ def test_unused_functions_builddir_compdb(tmpdir):
                                     '--enable=unusedFunction',
                                     '--inline-suppr',
                                     '--project={}'.format(compdb_file),
-                                    '--cppcheck-build-dir={}'.format(build_dir)
+                                    '--cppcheck-build-dir={}'.format(build_dir),
+                                    '-j1'
                                     ])
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [
