@@ -456,6 +456,20 @@ void SuppressionList::dump(std::ostream & out) const
             out << " symbolName=\"" << ErrorLogger::toxml(suppression.symbolName) << '\"';
         if (suppression.hash > 0)
             out << " hash=\"" << suppression.hash << '\"';
+        if (suppression.lineBegin != Suppression::NO_LINE)
+            out << " lineBegin=\"" << suppression.lineBegin << '"';
+        if (suppression.lineEnd != Suppression::NO_LINE)
+            out << " lineEnd=\"" << suppression.lineEnd << '"';
+        if (suppression.type == SuppressionList::Type::file)
+            out << " type=\"file\"";
+        else if (suppression.type == SuppressionList::Type::block)
+            out << " type=\"block\"";
+        else if (suppression.type == SuppressionList::Type::blockBegin)
+            out << " type=\"blockBegin\"";
+        else if (suppression.type == SuppressionList::Type::blockEnd)
+            out << " type=\"blockEnd\"";
+        else if (suppression.type == SuppressionList::Type::macro)
+            out << " type=\"macro\"";
         out << " />" << std::endl;
     }
     out << "  </suppressions>" << std::endl;
