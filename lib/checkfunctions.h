@@ -31,7 +31,6 @@
 
 #include <map>
 #include <string>
-#include <utility>
 
 class Token;
 class ErrorLogger;

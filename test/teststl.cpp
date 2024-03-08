@@ -25,7 +25,7 @@
 #include "utils.h"
 
 #include <cstddef>
-#include <sstream> // IWYU pragma: keep
+#include <sstream>
 #include <string>
 
 

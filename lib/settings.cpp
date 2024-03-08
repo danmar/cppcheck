@@ -22,8 +22,9 @@
 #include "vfvalue.h"
 
 #include <cctype>
-#include <fstream> // IWYU pragma: keep
-#include <sstream> // IWYU pragma: keep
+#include <fstream>
+#include <sstream>
+#include <utility>
 
 #include "json.h"
 

@@ -40,7 +40,7 @@
 #include <iterator>
 #include <map>
 #include <set>
-#include <sstream> // IWYU pragma: keep
+#include <sstream>
 #include <stack>
 #include <type_traits>
 #include <unordered_set>

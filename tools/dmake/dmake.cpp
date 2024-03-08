@@ -21,14 +21,13 @@
 #include <algorithm>
 #include <array>
 #include <cstdlib>
-#include <fstream> // IWYU pragma: keep
+#include <fstream>
 #include <functional>
 #include <iostream>
 #include <list>
 #include <map>
 #include <set>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "config.h"

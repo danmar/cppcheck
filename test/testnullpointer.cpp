@@ -29,7 +29,7 @@
 
 #include <list>
 #include <map>
-#include <sstream> // IWYU pragma: keep
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <vector>

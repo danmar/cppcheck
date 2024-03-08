@@ -27,7 +27,7 @@
 #include "vfvalue.h"
 
 #include <algorithm>
-#include <sstream> // IWYU pragma: keep
+#include <sstream>
 #include <string>
 #include <vector>
 

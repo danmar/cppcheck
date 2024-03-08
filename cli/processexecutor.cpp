@@ -39,8 +39,9 @@
 #include <iostream>
 #include <list>
 #include <map>
-#include <sstream> // IWYU pragma: keep
+#include <sstream>
 #include <sys/select.h>
+#include <sys/time.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <utility>

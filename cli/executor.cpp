@@ -25,7 +25,7 @@
 #include "suppressions.h"
 
 #include <cassert>
-#include <sstream> // IWYU pragma: keep
+#include <sstream>
 #include <utility>
 
 struct FileSettings;

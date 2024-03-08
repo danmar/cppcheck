@@ -34,7 +34,7 @@
 #include <list>
 #include <map>
 #include <memory>
-#include <sstream> // IWYU pragma: keep
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>

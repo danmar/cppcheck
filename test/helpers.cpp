@@ -26,7 +26,7 @@
 #include <cerrno>
 #include <cstdio>
 #include <iostream>
-#include <fstream> // IWYU pragma: keep
+#include <fstream>
 #include <list>
 #include <map>
 #include <stdexcept>

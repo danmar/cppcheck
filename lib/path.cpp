@@ -32,6 +32,7 @@
 #include <simplecpp.h>
 
 #ifndef _WIN32
+#include <sys/types.h>
 #include <unistd.h>
 #else
 #include <direct.h>

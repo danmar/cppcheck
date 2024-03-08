@@ -43,7 +43,7 @@
 #include <iomanip>
 #include <iostream>
 #include <iterator>
-#include <sstream> // IWYU pragma: keep
+#include <sstream>
 #include <stack>
 #include <string>
 #include <tuple>
