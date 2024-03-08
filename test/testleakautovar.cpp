@@ -3283,7 +3283,7 @@ REGISTER_TEST(TestLeakAutoVarWindows)
 
 class TestLeakAutoVarPosix : public TestFixture {
 public:
-  TestLeakAutoVarPosix() : TestFixture("TestLeakAutoVarPosix") {}
+    TestLeakAutoVarPosix() : TestFixture("TestLeakAutoVarPosix") {}
 
 private:
     const Settings settings = settingsBuilder().library("std.cfg").library("posix.cfg").build();
