@@ -1035,12 +1035,13 @@ void nullPointer_pthread_create() // #12396
     pthread_create(&thread, NULL, (void* (*)(void*))f_returns_NULL, NULL);
 }
 
-void memleak_getaddrinfo()
+void memleak_getaddrinfo() // #6994
 {
-    //TODO: nothing to report yet, see http://sourceforge.net/p/cppcheck/discussion/general/thread/d9737d5d/
     struct addrinfo * res=NULL;
     getaddrinfo("node", NULL, NULL, &res);
     freeaddrinfo(res);
+    getaddrinfo("node", NULL, NULL, &res);
+    // cppcheck-suppress memleak
 }
 
 void memleak_mmap(int fd)
