@@ -18,6 +18,7 @@ jobs:
         image: ["opensuse/tumbleweed:latest"] # "fedora:latest" / "debian:unstable" / "archlinux:latest"
 
     runs-on: ubuntu-22.04
+    if: ${{ github.repository_owner == 'danmar' }}
 
     container:
       image: ${{ matrix.image }}
@@ -118,6 +119,7 @@ jobs:
   clang-include-cleaner:
 
     runs-on: ubuntu-22.04
+    if: ${{ github.repository_owner == 'danmar' }}
 
     env:
       QT_VERSION: 5.15.2

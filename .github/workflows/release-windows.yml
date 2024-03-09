@@ -24,6 +24,7 @@ jobs:
   build:
 
     runs-on: windows-2022
+    if: ${{ github.repository_owner == 'danmar' }}
 
     env:
       # see https://www.pcre.org/original/changelog.txt
