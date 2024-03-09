@@ -40,11 +40,9 @@
 
 // Register this check class (by creating a static instance of it)
 namespace {
-    CheckUnusedVar instance;
+    CheckUnusedVar instanceUnusedVar;
 }
 
-static const CWE CWE563(563U);   // Assignment to Variable without Use ('Unused Variable')
-static const CWE CWE665(665U);   // Improper Initialization
 
 /** Is scope a raii class scope */
 static bool isRaiiClassScope(const Scope *classScope)

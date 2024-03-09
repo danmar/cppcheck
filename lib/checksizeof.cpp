@@ -36,12 +36,9 @@
 
 // Register this check class (by creating a static instance of it)
 namespace {
-    CheckSizeof instance;
+    CheckSizeof instanceSizeof;
 }
 
-// CWE IDs used:
-static const CWE CWE467(467U);   // Use of sizeof() on a Pointer Type
-static const CWE CWE682(682U);   // Incorrect Calculation
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 void CheckSizeof::checkSizeofForNumericParameter()

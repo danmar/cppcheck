@@ -43,7 +43,7 @@
 
 // Register this check class (by creating a static instance of it)
 namespace {
-    CheckType instance;
+    CheckType instanceType;
 }
 
 //---------------------------------------------------------------------------
@@ -51,11 +51,6 @@ namespace {
 //---------------------------------------------------------------------------
 //
 
-// CWE ids used:
-static const CWE CWE195(195U);   // Signed to Unsigned Conversion Error
-static const CWE CWE197(197U);   // Numeric Truncation Error
-static const CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
-static const CWE CWE190(190U);   // Integer Overflow or Wraparound
 
 
 void CheckType::checkTooBigBitwiseShift()

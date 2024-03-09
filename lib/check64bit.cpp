@@ -32,12 +32,10 @@
 
 //---------------------------------------------------------------------------
 
-// CWE ids used
-static const CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 
 // Register this check class (by creating a static instance of it)
 namespace {
-    Check64BitPortability instance;
+    Check64BitPortability instance64BitPortability;
 }
 
 void Check64BitPortability::pointerassignment()

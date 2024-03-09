@@ -40,13 +40,10 @@
 
 //---------------------------------------------------------------------------
 
-// CWE ids used:
-static const CWE CWE_NULL_POINTER_DEREFERENCE(476U);
-static const CWE CWE_INCORRECT_CALCULATION(682U);
 
 // Register this check class (by creating a static instance of it)
 namespace {
-    CheckNullPointer instance;
+    CheckNullPointer instanceNullPointer;
 }
 
 //---------------------------------------------------------------------------
@@ -558,7 +555,7 @@ static bool isUnsafeUsage(const Settings *settings, const Token *vartok, MathLib
     return CheckNullPointer::isPointerDeRef(vartok, unknown, settings);
 }
 
-// a Clang-built executable will crash when using the anonymous MyFileInfo later on - so put it in a unique namespace for now
+// a Clang-built executable will crash when using the anonymous MyFileInfoNullPointer later on - so put it in a unique namespace for now
 // see https://trac.cppcheck.net/ticket/12108 for more details
 #ifdef __clang__
 inline namespace CheckNullPointer_internal
@@ -567,7 +564,7 @@ namespace
 #endif
 {
     /* data for multifile checking */
-    class MyFileInfo : public Check::FileInfo {
+    class MyFileInfoNullPointer : public Check::FileInfo {
     public:
         /** function arguments that are dereferenced without checking if they are null */
         std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
@@ -586,7 +583,7 @@ Check::FileInfo *CheckNullPointer::getFileInfo(const Tokenizer *tokenizer, const
     if (unsafeUsage.empty())
         return nullptr;
 
-    auto *fileInfo = new MyFileInfo;
+    auto *fileInfo = new MyFileInfoNullPointer;
     fileInfo->unsafeUsage = unsafeUsage;
     return fileInfo;
 }
@@ -597,7 +594,7 @@ Check::FileInfo * CheckNullPointer::loadFileInfoFromXml(const tinyxml2::XMLEleme
     if (unsafeUsage.empty())
         return nullptr;
 
-    auto *fileInfo = new MyFileInfo;
+    auto *fileInfo = new MyFileInfoNullPointer;
     fileInfo->unsafeUsage = unsafeUsage;
     return fileInfo;
 }
@@ -616,7 +613,7 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
     const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu->getCallsMap();
 
     for (const Check::FileInfo* fi1 : fileInfo) {
-        const MyFileInfo *fi = dynamic_cast<const MyFileInfo*>(fi1);
+        const MyFileInfoNullPointer *fi = dynamic_cast<const MyFileInfoNullPointer*>(fi1);
         if (!fi)
             continue;
         for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafeUsage) {

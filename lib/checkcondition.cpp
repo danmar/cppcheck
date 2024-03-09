@@ -42,17 +42,12 @@
 #include <utility>
 #include <vector>
 
-// CWE ids used
-static const CWE uncheckedErrorConditionCWE(391U);
-static const CWE CWE398(398U);   // Indicator of Poor Code Quality
-static const CWE CWE570(570U);   // Expression is Always False
-static const CWE CWE571(571U);   // Expression is Always True
 
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
 namespace {
-    CheckCondition instance;
+    CheckCondition instanceCondition;
 }
 
 bool CheckCondition::diag(const Token* tok, bool insert)

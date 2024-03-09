@@ -43,7 +43,7 @@
 #include <utility>
 #include <vector>
 
-namespace {
+namespace forwardAnalyzer{
     struct ForwardTraversal {
         enum class Progress { Continue, Break, Skip };
         enum class Terminate { None, Bail, Inconclusive };
@@ -908,7 +908,7 @@ Analyzer::Result valueFlowGenericForward(Token* start, const Token* end, const V
 {
     if (a->invalid())
         return Analyzer::Result{Analyzer::Action::None, Analyzer::Terminate::Bail};
-    ForwardTraversal ft{a, tokenList, errorLogger, settings};
+    forwardAnalyzer::ForwardTraversal ft{a, tokenList, errorLogger, settings};
     if (start)
         ft.analyzer->updateState(start);
     ft.updateRange(start, end);
@@ -921,7 +921,7 @@ Analyzer::Result valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>&
         throw TerminateException();
     if (a->invalid())
         return Analyzer::Result{Analyzer::Action::None, Analyzer::Terminate::Bail};
-    ForwardTraversal ft{a, tokenList, errorLogger, settings};
+    forwardAnalyzer::ForwardTraversal ft{a, tokenList, errorLogger, settings};
     ft.updateRecursive(start);
     return Analyzer::Result{ ft.actions, ft.terminate };
 }

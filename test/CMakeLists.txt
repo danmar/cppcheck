@@ -12,6 +12,8 @@ if (BUILD_TESTS)
     endif()
 
     add_executable(testrunner ${testrunner_SOURCES})
+    # disable unity build for tests because some macros conflict with macros
+    set_target_properties(testrunner PROPERTIES UNITY_BUILD OFF)
     target_include_directories(testrunner PRIVATE ${PROJECT_SOURCE_DIR}/lib/ ${PROJECT_SOURCE_DIR}/cli/)
     if(USE_BUNDLED_TINYXML2)
         target_externals_include_directories(testrunner PRIVATE ${PROJECT_SOURCE_DIR}/externals/tinyxml2)

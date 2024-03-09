@@ -44,11 +44,6 @@ namespace {
     CheckMemoryLeakNoVar instance4;
 }
 
-// CWE ID used:
-static const CWE CWE398(398U);  // Indicator of Poor Code Quality
-static const CWE CWE401(401U);  // Improper Release of Memory Before Removing Last Reference ('Memory Leak')
-static const CWE CWE771(771U);  // Missing Reference to Active Allocated Resource
-static const CWE CWE772(772U);  // Missing Release of Resource after Effective Lifetime
 
 //---------------------------------------------------------------------------
 

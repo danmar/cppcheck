@@ -34,7 +34,7 @@
 
 // Register this check class (by creating a static instance of it)
 namespace {
-    CheckVaarg instance;
+    CheckVaarg instanceVaarg;
 }
 
 
@@ -42,10 +42,6 @@ namespace {
 // Ensure that correct parameter is passed to va_start()
 //---------------------------------------------------------------------------
 
-// CWE ids used:
-static const CWE CWE664(664U);   // Improper Control of a Resource Through its Lifetime
-static const CWE CWE688(688U);   // Function Call With Incorrect Variable or Reference as Argument
-static const CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 
 void CheckVaarg::va_start_argument()
 {

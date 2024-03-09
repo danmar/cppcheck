@@ -206,7 +206,7 @@ class MatchCompiler:
                 arg2 = ', const int varid'
 
             ret = '// pattern: ' + pattern + '\n'
-            ret += 'static inline bool match' + \
+            ret += 'static inline bool match' + str(abs(hash(pattern))) + \
                 str(nr) + '(' + tokenType + '* tok' + arg2 + ') {\n'
             returnStatement = 'return false;\n'
 
@@ -290,7 +290,7 @@ class MatchCompiler:
             more_args += ', int varid'
 
         ret = '// pattern: ' + pattern + '\n'
-        ret += 'template<class T> static inline T * findmatch' + \
+        ret += 'template<class T> static inline T * findmatch'+ str(abs(hash(pattern))) + \
             str(findmatchnr) + '(T * start_tok' + more_args + ') {\n'
         ret += '    for (; start_tok' + endCondition + \
             '; start_tok = start_tok->next()) {\n'
@@ -432,7 +432,7 @@ class MatchCompiler:
             self._rawMatchFunctions.append(
                 self._compilePattern(pattern, patternNumber, varId))
 
-        functionName = "match"
+        functionName = "match"+ str(abs(hash(pattern)))
         if self._verifyMode:
             verifyNumber = len(self._rawMatchFunctions) + 1
             self._rawMatchFunctions.append(
@@ -572,7 +572,7 @@ class MatchCompiler:
                     endToken,
                     varId))
 
-        functionName = "findmatch"
+        functionName = "findmatch"+ str(abs(hash(pattern)))
         if self._verifyMode:
             verifyNumber = len(self._rawMatchFunctions) + 1
             self._rawMatchFunctions.append(

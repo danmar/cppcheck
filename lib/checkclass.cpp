@@ -48,16 +48,9 @@ namespace CTU {
 
 // Register CheckClass..
 namespace {
-    CheckClass instance;
+    CheckClass instanceClass;
 }
 
-static const CWE CWE398(398U);  // Indicator of Poor Code Quality
-static const CWE CWE404(404U);  // Improper Resource Shutdown or Release
-static const CWE CWE665(665U);  // Improper Initialization
-static const CWE CWE758(758U);  // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
-static const CWE CWE762(762U);  // Mismatched Memory Management Routines
-
-static const CWE CWE_ONE_DEFINITION_RULE(758U);
 
 static const char * getFunctionTypeName(Function::Type type)
 {
@@ -2632,7 +2625,7 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
 // ClassCheck: Check that initializer list is in declared order.
 //---------------------------------------------------------------------------
 
-namespace { // avoid one-definition-rule violation
+namespace internal { // avoid one-definition-rule violation
     struct VarInfo {
         VarInfo(const Variable *_var, const Token *_tok)
             : var(_var), tok(_tok) {}
@@ -2666,7 +2659,7 @@ void CheckClass::initializerListOrder()
                 const Token *tok = func->arg->link()->next();
 
                 if (tok->str() == ":") {
-                    std::vector<VarInfo> vars;
+                    std::vector<internal::VarInfo> vars;
                     tok = tok->next();
 
                     // find all variable initializations in list
@@ -3436,7 +3429,7 @@ void CheckClass::unsafeClassRefMemberError(const Token *tok, const std::string &
                 CWE(0), Certainty::normal);
 }
 
-// a Clang-built executable will crash when using the anonymous MyFileInfo later on - so put it in a unique namespace for now
+// a Clang-built executable will crash when using the anonymous MyFileInfoClass later on - so put it in a unique namespace for now
 // see https://trac.cppcheck.net/ticket/12108 for more details
 #ifdef __clang__
 inline namespace CheckClass_internal
@@ -3445,7 +3438,7 @@ namespace
 #endif
 {
     /* multifile checking; one definition rule violations */
-    class MyFileInfo : public Check::FileInfo {
+    class MyFileInfoClass : public Check::FileInfo {
     public:
         struct NameLoc {
             std::string className;
@@ -3485,7 +3478,7 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
         return nullptr;
     (void)settings;
     // One definition rule
-    std::vector<MyFileInfo::NameLoc> classDefinitions;
+    std::vector<MyFileInfoClass::NameLoc> classDefinitions;
     for (const Scope * classScope : tokenizer->getSymbolDatabase()->classAndStructScopes) {
         if (classScope->isAnonymous())
             continue;
@@ -3519,7 +3512,7 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
         if (scope->type != Scope::ScopeType::eGlobal)
             continue;
 
-        MyFileInfo::NameLoc nameLoc;
+        MyFileInfoClass::NameLoc nameLoc;
         nameLoc.className = std::move(name);
         nameLoc.fileName = tokenizer->list.file(classScope->classDef);
         nameLoc.lineNumber = classScope->classDef->linenr();
@@ -3543,14 +3536,14 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
     if (classDefinitions.empty())
         return nullptr;
 
-    auto *fileInfo = new MyFileInfo;
+    auto *fileInfo = new MyFileInfoClass;
     fileInfo->classDefinitions.swap(classDefinitions);
     return fileInfo;
 }
 
 Check::FileInfo * CheckClass::loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const
 {
-    auto *fileInfo = new MyFileInfo;
+    auto *fileInfo = new MyFileInfoClass;
     for (const tinyxml2::XMLElement *e = xmlElement->FirstChildElement(); e; e = e->NextSiblingElement()) {
         if (std::strcmp(e->Name(), "class") != 0)
             continue;
@@ -3560,7 +3553,7 @@ Check::FileInfo * CheckClass::loadFileInfoFromXml(const tinyxml2::XMLElement *xm
         const char *col = e->Attribute("col");
         const char *hash = e->Attribute("hash");
         if (name && file && line && col && hash) {
-            MyFileInfo::NameLoc nameLoc;
+            MyFileInfoClass::NameLoc nameLoc;
             nameLoc.className = name;
             nameLoc.fileName = file;
             nameLoc.lineNumber = strToInt<int>(line);
@@ -3582,17 +3575,17 @@ bool CheckClass::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<C
     (void)ctu; // This argument is unused
     (void)settings; // This argument is unused
 
-    std::unordered_map<std::string, MyFileInfo::NameLoc> all;
+    std::unordered_map<std::string, MyFileInfoClass::NameLoc> all;
 
     CheckClass dummy(nullptr, &settings, &errorLogger);
     dummy.
     logChecker("CheckClass::analyseWholeProgram");
 
     for (const Check::FileInfo* fi1 : fileInfo) {
-        const MyFileInfo *fi = dynamic_cast<const MyFileInfo*>(fi1);
+        const MyFileInfoClass *fi = dynamic_cast<const MyFileInfoClass*>(fi1);
         if (!fi)
             continue;
-        for (const MyFileInfo::NameLoc &nameLoc : fi->classDefinitions) {
+        for (const MyFileInfoClass::NameLoc &nameLoc : fi->classDefinitions) {
             auto it = all.find(nameLoc.className);
             if (it == all.end()) {
                 all[nameLoc.className] = nameLoc;

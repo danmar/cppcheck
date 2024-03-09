@@ -26,10 +26,9 @@
 
 // Register this check class (by creating a static instance of it)
 namespace {
-    CheckBoost instance;
+    CheckBoost instanceBoost;
 }
 
-static const CWE CWE664(664);
 
 void CheckBoost::checkBoostForeachModification()
 {

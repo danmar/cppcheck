@@ -29,8 +29,8 @@
 #include <QStringRef>
 #endif
 
-static constexpr char ResultElementName[] = "results";
-static constexpr char VersionAttribute[] = "version";
+static constexpr char ResultElementName2[] = "results";
+static constexpr char VersionAttribute2[] = "version";
 
 XmlReport::XmlReport(const QString &filename) :
     Report(filename)
@@ -70,10 +70,10 @@ int XmlReport::determineVersion(const QString &filename)
     while (!reader.atEnd()) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement:
-            if (reader.name() == QString(ResultElementName)) {
+            if (reader.name() == QString(ResultElementName2)) {
                 QXmlStreamAttributes attribs = reader.attributes();
-                if (attribs.hasAttribute(QString(VersionAttribute))) {
-                    const int ver = attribs.value(QString(), VersionAttribute).toString().toInt();
+                if (attribs.hasAttribute(QString(VersionAttribute2))) {
+                    const int ver = attribs.value(QString(), VersionAttribute2).toString().toInt();
                     return ver;
                 }
                 return 1;

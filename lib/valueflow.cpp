@@ -2242,7 +2242,7 @@ static const std::string& invertAssign(const std::string& assign)
     return it->second;
 }
 
-static std::string removeAssign(const std::string& assign) {
+static std::string removeAssign2(const std::string& assign) {
     return std::string{assign.cbegin(), assign.cend() - 1};
 }
 
@@ -2256,7 +2256,7 @@ static T calculateAssign(const std::string& assign, const T& x, const U& y, bool
     }
     if (assign == "=")
         return y;
-    return calculate<T, T>(removeAssign(assign), x, y, error);
+    return calculate<T, T>(removeAssign2(assign), x, y, error);
 }
 
 template<class T, class U>

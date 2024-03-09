@@ -48,20 +48,11 @@
 
 // Register this check class (by creating a static instance of it)
 namespace {
-    CheckBufferOverrun instance;
+    CheckBufferOverrun instanceBufferOverrun;
 }
 
 //---------------------------------------------------------------------------
 
-// CWE ids used:
-static const CWE CWE131(131U);  // Incorrect Calculation of Buffer Size
-static const CWE CWE170(170U);  // Improper Null Termination
-static const CWE CWE_ARGUMENT_SIZE(398U);  // Indicator of Poor Code Quality
-static const CWE CWE_ARRAY_INDEX_THEN_CHECK(398U);  // Indicator of Poor Code Quality
-static const CWE CWE758(758U);  // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
-static const CWE CWE_POINTER_ARITHMETIC_OVERFLOW(758U); // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
-static const CWE CWE_BUFFER_UNDERRUN(786U);  // Access of Memory Location Before Start of Buffer
-static const CWE CWE_BUFFER_OVERRUN(788U);   // Access of Memory Location After End of Buffer
 
 //---------------------------------------------------------------------------
 
@@ -885,7 +876,7 @@ void CheckBufferOverrun::argumentSizeError(const Token *tok, const std::string &
 // CTU..
 //---------------------------------------------------------------------------
 
-// a Clang-built executable will crash when using the anonymous MyFileInfo later on - so put it in a unique namespace for now
+// a Clang-built executable will crash when using the anonymous MyFileInfoBufferOverrun later on - so put it in a unique namespace for now
 // see https://trac.cppcheck.net/ticket/12108 for more details
 #ifdef __clang__
 inline namespace CheckBufferOverrun_internal
@@ -894,7 +885,7 @@ namespace
 #endif
 {
     /** data for multifile checking */
-    class MyFileInfo : public Check::FileInfo {
+    class MyFileInfoBufferOverrun : public Check::FileInfo {
     public:
         /** unsafe array index usage */
         std::list<CTU::FileInfo::UnsafeUsage> unsafeArrayIndex;
@@ -954,7 +945,7 @@ Check::FileInfo *CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, con
     if (unsafeArrayIndex.empty() && unsafePointerArith.empty()) {
         return nullptr;
     }
-    auto *fileInfo = new MyFileInfo;
+    auto *fileInfo = new MyFileInfoBufferOverrun;
     fileInfo->unsafeArrayIndex = unsafeArrayIndex;
     fileInfo->unsafePointerArith = unsafePointerArith;
     return fileInfo;
@@ -966,7 +957,7 @@ Check::FileInfo * CheckBufferOverrun::loadFileInfoFromXml(const tinyxml2::XMLEle
     const std::string arrayIndex("array-index");
     const std::string pointerArith("pointer-arith");
 
-    auto *fileInfo = new MyFileInfo;
+    auto *fileInfo = new MyFileInfoBufferOverrun;
     for (const tinyxml2::XMLElement *e = xmlElement->FirstChildElement(); e; e = e->NextSiblingElement()) {
         if (e->Name() == arrayIndex)
             fileInfo->unsafeArrayIndex = CTU::loadUnsafeUsageListFromXml(e);
@@ -997,7 +988,7 @@ bool CheckBufferOverrun::analyseWholeProgram(const CTU::FileInfo *ctu, const std
     const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu->getCallsMap();
 
     for (const Check::FileInfo* fi1 : fileInfo) {
-        const MyFileInfo *fi = dynamic_cast<const MyFileInfo*>(fi1);
+        const MyFileInfoBufferOverrun *fi = dynamic_cast<const MyFileInfoBufferOverrun*>(fi1);
         if (!fi)
             continue;
         for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafeArrayIndex)

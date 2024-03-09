@@ -48,12 +48,10 @@ namespace tinyxml2 {
 
 //---------------------------------------------------------------------------
 
-// CWE ids used:
-static const CWE CWE_USE_OF_UNINITIALIZED_VARIABLE(457U);
 
 // Register this check class (by creating a static instance of it)
 namespace {
-    CheckUninitVar instance;
+    CheckUninitVar instanceUninitVar;
 }
 
 //---------------------------------------------------------------------------
@@ -1679,7 +1677,7 @@ static bool isVariableUsage(const Settings *settings, const Token *vartok, MathL
     return CheckUninitVar::isVariableUsage(vartok, settings->library, true, CheckUninitVar::Alloc::ARRAY);
 }
 
-// a Clang-built executable will crash when using the anonymous MyFileInfo later on - so put it in a unique namespace for now
+// a Clang-built executable will crash when using the anonymous MyFileInfoUninitVar later on - so put it in a unique namespace for now
 // see https://trac.cppcheck.net/ticket/12108 for more details
 #ifdef __clang__
 inline namespace CheckUninitVar_internal
@@ -1688,7 +1686,7 @@ namespace
 #endif
 {
     /* data for multifile checking */
-    class MyFileInfo : public Check::FileInfo {
+    class MyFileInfoUninitVar : public Check::FileInfo {
     public:
         /** function arguments that data are unconditionally read */
         std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
@@ -1707,7 +1705,7 @@ Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const S
     if (unsafeUsage.empty())
         return nullptr;
 
-    auto *fileInfo = new MyFileInfo;
+    auto *fileInfo = new MyFileInfoUninitVar;
     fileInfo->unsafeUsage = unsafeUsage;
     return fileInfo;
 }
@@ -1718,7 +1716,7 @@ Check::FileInfo * CheckUninitVar::loadFileInfoFromXml(const tinyxml2::XMLElement
     if (unsafeUsage.empty())
         return nullptr;
 
-    auto *fileInfo = new MyFileInfo;
+    auto *fileInfo = new MyFileInfoUninitVar;
     fileInfo->unsafeUsage = unsafeUsage;
     return fileInfo;
 }
@@ -1733,7 +1731,7 @@ bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo *ctu, const std::li
     const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu->getCallsMap();
 
     for (const Check::FileInfo* fi1 : fileInfo) {
-        const MyFileInfo *fi = dynamic_cast<const MyFileInfo*>(fi1);
+        const MyFileInfoUninitVar *fi = dynamic_cast<const MyFileInfoUninitVar*>(fi1);
         if (!fi)
             continue;
         for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafeUsage) {

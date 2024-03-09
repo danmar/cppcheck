@@ -45,7 +45,6 @@
 
 //---------------------------------------------------------------------------
 
-static const CWE CWE561(561U);   // Dead Code
 
 static std::string stripTemplateParameters(const std::string& funcName) {
     std::string name = funcName;
@@ -307,7 +306,7 @@ static bool isOperatorFunction(const std::string & funcName)
     return std::find(additionalOperators.cbegin(), additionalOperators.cend(), funcName.substr(operatorPrefix.length())) != additionalOperators.cend();
 }
 
-#define logChecker(id) \
+#define logChecker_macro(id) \
     do { \
         const ErrorMessage errmsg({}, nullptr, Severity::internal, "logChecker", (id), CWE(0U), Certainty::normal); \
         errorLogger.reportErr(errmsg); \
@@ -315,7 +314,7 @@ static bool isOperatorFunction(const std::string & funcName)
 
 bool CheckUnusedFunctions::check(const Settings& settings, ErrorLogger& errorLogger) const
 {
-    logChecker("CheckUnusedFunctions::check"); // unusedFunction
+    logChecker_macro("CheckUnusedFunctions::check"); // unusedFunction
 
     using ErrorParams = std::tuple<std::string, unsigned int, unsigned int, std::string>;
     std::vector<ErrorParams> errors; // ensure well-defined order

@@ -108,7 +108,7 @@ void FileList::addExcludeList(const QStringList &paths)
     mExcludedPaths = paths;
 }
 
-static std::vector<std::string> toStdStringList(const QStringList &stringList)
+static std::vector<std::string> toStdStringList2(const QStringList &stringList)
 {
     std::vector<std::string> ret;
     std::transform(stringList.cbegin(), stringList.cend(), std::back_inserter(ret), [](const QString& s) {
@@ -120,9 +120,9 @@ static std::vector<std::string> toStdStringList(const QStringList &stringList)
 QStringList FileList::applyExcludeList() const
 {
 #ifdef _WIN32
-    const PathMatch pathMatch(toStdStringList(mExcludedPaths), true);
+    const PathMatch pathMatch(toStdStringList2(mExcludedPaths), true);
 #else
-    const PathMatch pathMatch(toStdStringList(mExcludedPaths), false);
+    const PathMatch pathMatch(toStdStringList2(mExcludedPaths), false);
 #endif
 
     QStringList paths;

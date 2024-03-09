@@ -38,16 +38,9 @@
 
 // Register this check class (by creating a static instance of it)
 namespace {
-    CheckString instance;
+    CheckString instanceString;
 }
 
-// CWE ids used:
-static const CWE CWE570(570U);   // Expression is Always False
-static const CWE CWE571(571U);   // Expression is Always True
-static const CWE CWE595(595U);   // Comparison of Object References Instead of Object Contents
-static const CWE CWE628(628U);   // Function Call with Incorrectly Specified Arguments
-static const CWE CWE665(665U);   // Improper Initialization
-static const CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 
 //---------------------------------------------------------------------------
 // Writing string literal is UB

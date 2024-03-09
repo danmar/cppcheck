@@ -88,8 +88,6 @@ static constexpr char FILELIST[] = "cppcheck-addon-ctu-file-list";
 
 static TimerResults s_timerResults;
 
-// CWE ids used
-static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 
 // File deleter
 namespace {

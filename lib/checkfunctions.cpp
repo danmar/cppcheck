@@ -43,16 +43,9 @@
 
 // Register this check class (by creating a static instance of it)
 namespace {
-    CheckFunctions instance;
+    CheckFunctions instanceFunctions;
 }
 
-static const CWE CWE252(252U);  // Unchecked Return Value
-static const CWE CWE477(477U);  // Use of Obsolete Functions
-static const CWE CWE758(758U);  // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
-static const CWE CWE628(628U);  // Function Call with Incorrectly Specified Arguments
-static const CWE CWE686(686U);  // Function Call With Incorrect Argument Type
-static const CWE CWE687(687U);  // Function Call With Incorrectly Specified Argument Value
-static const CWE CWE688(688U);  // Function Call With Incorrect Variable or Reference as Argument
 
 void CheckFunctions::checkProhibitedFunctions()
 {
