@@ -34,6 +34,7 @@ jobs:
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
+    if: false # the hard-coded cygwin repository has changed so the setup step fails - TODO: re-enable
 
     steps:
       - uses: actions/checkout@v3
