@@ -1424,7 +1424,7 @@ const Token* findLambdaEndTokenWithoutAST(const Token* tok) {
     return tok->link()->next();
 }
 
-static Token * createAstAtToken(Token *tok, bool cpp);
+static Token * createAstAtToken(Token *tok);
 
 // Compile inner expressions inside inner ({..}) and lambda bodies
 static void createAstAtTokenInner(Token * const tok1, const Token *endToken, bool cpp)
@@ -1445,7 +1445,7 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
             }
             if (!hasAst) {
                 for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
-                    tok = createAstAtToken(tok, cpp);
+                    tok = createAstAtToken(tok);
             }
         } else if (cpp && tok->str() == "[") {
             if (isLambdaCaptureList(tok)) {
@@ -1455,7 +1455,7 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
                 const Token * const endToken2 = tok->link();
                 tok = tok->next();
                 for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
-                    tok = createAstAtToken(tok, cpp);
+                    tok = createAstAtToken(tok);
             }
         }
         else if (Token::simpleMatch(tok, "( * ) [")) {
@@ -1497,8 +1497,9 @@ static Token * findAstTop(Token *tok1, const Token *tok2)
     return nullptr;
 }
 
-static Token * createAstAtToken(Token *tok, bool cpp)
+static Token * createAstAtToken(Token *tok)
 {
+    const bool cpp = tok->isCpp();
     // skip function pointer declaration
     if (Token::Match(tok, "%type% %type%") && !Token::Match(tok, "return|throw|new|delete")) {
         Token* tok2 = tok->tokAt(2);
@@ -1754,7 +1755,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
 void TokenList::createAst() const
 {
     for (Token *tok = mTokensFrontBack.front; tok; tok = tok ? tok->next() : nullptr) {
-        tok = createAstAtToken(tok, isCPP());
+        tok = createAstAtToken(tok);
     }
 }
 
