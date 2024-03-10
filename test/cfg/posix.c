@@ -1070,6 +1070,15 @@ void memleak_getline() { // #11043
     line = NULL;
 }
 
+void memleak_getline_array(FILE* stream) { // #12498
+    char* a[2] = { 0 };
+    size_t n;
+    getline(&a[0], &n, stream);
+    getline(&a[1], &n, stream);
+    free(a[0]);
+    free(a[1]);
+}
+
 void * identicalCondition_mmap(int fd, size_t size) // #9940
 {
     void* buffer = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
