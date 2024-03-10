@@ -613,14 +613,14 @@ private:
         ASSERT_EQUALS(true, Token::Match(isVar.tokens(), "%type% %name%"));
         ASSERT_EQUALS(false, Token::Match(isVar.tokens(), "%type% %type%"));
 
-        givenACodeSampleToTokenize noType1_cpp("delete", true, true);
-        ASSERT_EQUALS(false, Token::Match(noType1_cpp.tokens(), "%type%"));
+        givenACodeSampleToTokenize noType1_cpp("delete", true, /*cpp*/ true);
+        ASSERT_EQUALS(true, Token::Match(noType1_cpp.tokens(), "%type%"));
 
-        givenACodeSampleToTokenize noType1_c("delete", true, false);
+        givenACodeSampleToTokenize noType1_c("delete", true, /*cpp*/ false);
         ASSERT_EQUALS(true, Token::Match(noType1_c.tokens(), "%type%"));
 
         givenACodeSampleToTokenize noType2("void delete", true);
-        ASSERT_EQUALS(false, Token::Match(noType2.tokens(), "!!foo %type%"));
+        ASSERT_EQUALS(true, Token::Match(noType2.tokens(), "!!foo %type%"));
     }
 
     void matchChar() const {
