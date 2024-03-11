@@ -7091,7 +7091,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
             continue;
         if (isCPP11 && type0->str() == "using")
             continue;
-        if (type0->isCPP() && Token::Match(type0, "namespace|delete"))
+        if (type0->isCpp() && Token::Match(type0, "namespace|delete"))
             continue;
 
         bool isconst = false;
