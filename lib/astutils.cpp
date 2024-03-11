@@ -3271,7 +3271,7 @@ bool isConstVarExpression(const Token *tok, const std::function<bool(const Token
     return false;
 }
 
-static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings* settings)
+static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings* settings, bool cpp)
 {
     const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
 
@@ -3284,10 +3284,19 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
         for (const Variable* arg : args) {
             if (!arg)
                 continue;
-            if (arg->isReference())
-                return ExprUsage::PassedByReference;
-            if (arg->isPointer() && indirect == 1)
-                return ExprUsage::PassedByReference;
+            if (arg->isReference() || (arg->isPointer() && indirect == 1)) {
+                if (!ftok->function()->hasBody())
+                    return ExprUsage::PassedByReference;
+                for (const Token* bodytok = ftok->function()->functionScope->bodyStart; bodytok != ftok->function()->functionScope->bodyEnd; bodytok = bodytok->next()) {
+                    if (bodytok->variable() == arg) {
+                        if (arg->isReference())
+                            return ExprUsage::PassedByReference;
+                        if (Token::Match(bodytok->astParent(), "%comp%|!"))
+                            return ExprUsage::NotUsed;
+                        return ExprUsage::PassedByReference;
+                    }
+                }
+            }
         }
         if (!args.empty() && indirect == 0 && !addressOf)
             return ExprUsage::Used;
@@ -3369,7 +3378,7 @@ ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings,
             (astIsLHS(tok) || Token::simpleMatch(parent, "( )")))
             return ExprUsage::Used;
     }
-    return getFunctionUsage(tok, indirect, settings);
+    return getFunctionUsage(tok, indirect, settings, cpp);
 }
 
 static void getLHSVariablesRecursive(std::vector<const Variable*>& vars, const Token* tok)
