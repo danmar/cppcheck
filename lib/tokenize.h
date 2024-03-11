@@ -54,7 +54,7 @@ class CPPCHECKLIB Tokenizer {
     friend class TemplateSimplifier;
 
 public:
-    explicit Tokenizer(const Settings & settings, ErrorLogger *errorLogger = nullptr, const Preprocessor *preprocessor = nullptr);
+    explicit Tokenizer(const Settings & settings, ErrorLogger *errorLogger, const Preprocessor *preprocessor = nullptr);
     ~Tokenizer();
 
     void setTimerResults(TimerResults *tr) {
