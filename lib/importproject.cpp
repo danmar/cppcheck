@@ -562,7 +562,7 @@ namespace {
 
             // TODO: evaluate without using the Tokenizer
             const Settings s;
-            Tokenizer tokenizer(s);
+            Tokenizer tokenizer(s, nullptr);
             std::istringstream istr(c);
             tokenizer.tokenize(istr,"vcxproj.c");
             for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
