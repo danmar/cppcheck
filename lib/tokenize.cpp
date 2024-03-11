@@ -1940,7 +1940,7 @@ void Tokenizer::simplifyTypedefCpp()
 
                     // start substituting at the typedef name by replacing it with the type
                     Token* replStart = tok2; // track first replaced token
-                    for (Token* tok3 = typeStart; tok3->str() != ";"; tok3 = tok3->next())
+                    for (Token* tok3 = typeStart; tok3 && (tok3->str() != ";"); tok3 = tok3->next())
                         tok3->isSimplifiedTypedef(true);
                     if (isPointerTypeCall) {
                         tok2->deleteThis();
@@ -10537,6 +10537,8 @@ void Tokenizer::simplifyNamespaceAliases()
 
             int endScope = scope;
             Token * tokLast = tokNameEnd->next();
+            if (!tokLast)
+                return;
             Token * tokNext = tokLast->next();
             Token * tok2 = tokNext;
 
