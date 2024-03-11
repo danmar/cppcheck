@@ -4320,6 +4320,7 @@ struct LifetimeStore {
     }
 
 private:
+    // cppcheck-suppress naming-privateMemberVariable
     mutable Token* forwardTok{};
     void forwardLifetime(Token* tok, TokenList& tokenlist, ErrorLogger& errorLogger, const Settings& settings) const {
         forwardTok = tok;
