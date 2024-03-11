@@ -3441,6 +3441,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     return true;
 }
 
+// cppcheck-suppress unusedFunction - used in tests only
 bool Tokenizer::tokenize(std::istream &code,
                          const char FileName[],
                          const std::string &configuration)
