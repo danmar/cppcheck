@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
 #include "settings.h"
 #include "path.h"
 #include "summaries.h"
@@ -41,6 +42,7 @@ Settings::Settings()
     severity.setEnabled(Severity::error, true);
     certainty.setEnabled(Certainty::normal, true);
     setCheckLevelNormal();
+    executor = defaultExecutor();
 }
 
 std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppressions)
@@ -592,4 +594,15 @@ std::string Settings::getMisraRuleText(const std::string& id, const std::string&
         return text;
     const auto it = mMisraRuleTexts.find(id.substr(id.rfind('-') + 1));
     return it != mMisraRuleTexts.end() ? it->second : text;
+}
+
+Settings::ExecutorType Settings::defaultExecutor()
+{
+    static constexpr ExecutorType defaultExecutor =
+#if defined(HAS_THREADING_MODEL_FORK)
+        ExecutorType::Process;
+#elif defined(HAS_THREADING_MODEL_THREAD)
+        ExecutorType::Thread;
+#endif
+    return defaultExecutor;
 }

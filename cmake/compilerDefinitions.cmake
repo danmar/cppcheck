@@ -41,8 +41,8 @@ if (ENABLE_CHECK_INTERNAL)
     add_definitions(-DCHECK_INTERNAL)
 endif()
 
-if (USE_THREADS)
-    add_definitions(-DUSE_THREADS)
+if (DISALLOW_THREAD_EXECUTOR)
+    add_definitions(-DDISALLOW_THREAD_EXECUTOR)
 endif()
 
 if (MSVC AND DISABLE_CRTDBG_MAP_ALLOC)

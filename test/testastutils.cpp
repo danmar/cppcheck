@@ -181,7 +181,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, cpp ? "test.cpp" : "test.c"), file, line);
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), tokStr1, strlen(tokStr1));
         const Token * const tok2 = Token::findsimplematch(tok1->next(), tokStr2, strlen(tokStr2));
-        return (isSameExpression)(cpp, false, tok1, tok2, library, false, true, nullptr);
+        return (isSameExpression)(false, tok1, tok2, library, false, true, nullptr);
     }
 
     void isSameExpressionTestInternal(bool cpp) {
@@ -229,7 +229,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), startPattern, strlen(startPattern));
         const Token * const tok2 = Token::findsimplematch(tokenizer.tokens(), endPattern, strlen(endPattern));
-        return (isVariableChanged)(tok1, tok2, 1, false, &settingsDefault, /*cpp*/ true);
+        return (isVariableChanged)(tok1, tok2, 1, false, &settingsDefault);
     }
 
     void isVariableChangedTest() {
@@ -407,7 +407,7 @@ private:
         const Token* const start = Token::findsimplematch(tokenizer.tokens(), startPattern, strlen(startPattern));
         const Token* const end = Token::findsimplematch(start, endPattern, strlen(endPattern));
         const Token* const expr = Token::findsimplematch(tokenizer.tokens(), var, strlen(var));
-        return (findExpressionChanged)(expr, start, end, &settings, /*cpp*/ true);
+        return (findExpressionChanged)(expr, start, end, &settings);
     }
 
     void isExpressionChangedTest()

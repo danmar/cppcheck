@@ -254,7 +254,7 @@ static bool isPointerReleased(const Token *startToken, const Token *endToken, no
     return false;
 }
 
-static bool isLocalVarNoAutoDealloc(const Token *varTok, const bool isCpp)
+static bool isLocalVarNoAutoDealloc(const Token *varTok)
 {
     // not a local variable nor argument?
     const Variable *var = varTok->variable();
@@ -268,7 +268,7 @@ static bool isLocalVarNoAutoDealloc(const Token *varTok, const bool isCpp)
         return false;
 
     // non-pod variable
-    if (isCpp) {
+    if (varTok->isCpp()) {
         // Possibly automatically deallocated memory
         if (isAutoDealloc(var) && Token::Match(varTok, "%var% [=({] new"))
             return false;
@@ -432,7 +432,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 leakIfAllocated(varTok, varInfo);
             varInfo.erase(varTok->varId());
 
-            if (!isLocalVarNoAutoDealloc(varTok, mTokenizer->isCPP()))
+            if (!isLocalVarNoAutoDealloc(varTok))
                 continue;
 
             // allocation?
@@ -447,7 +447,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 }
 
                 changeAllocStatusIfRealloc(alloctype, fTok, varTok);
-            } else if (mTokenizer->isCPP() && Token::Match(varTok->tokAt(2), "new !!(")) {
+            } else if (varTok->isCpp() && Token::Match(varTok->tokAt(2), "new !!(")) {
                 const Token* tok2 = varTok->tokAt(2)->astOperand1();
                 const bool arrayNew = (tok2 && (tok2->str() == "[" || (Token::Match(tok2, "(|{") && tok2->astOperand1() && tok2->astOperand1()->str() == "[")));
                 VarInfo::AllocInfo& varAlloc = alloctype[varTok->varId()];
@@ -481,7 +481,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 if (!openingPar)
                     checkTokenInsideExpression(innerTok, varInfo);
 
-                if (!isLocalVarNoAutoDealloc(innerTok, mTokenizer->isCPP()))
+                if (!isLocalVarNoAutoDealloc(innerTok))
                     continue;
 
                 // Check assignments in the if-statement. Skip multiple assignments since we don't track those
@@ -505,7 +505,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                             alloctype.erase(innerTok->varId());
                         }
                         changeAllocStatusIfRealloc(alloctype, fTok, varTok);
-                    } else if (mTokenizer->isCPP() && Token::Match(innerTok->tokAt(2), "new !!(")) {
+                    } else if (innerTok->isCpp() && Token::Match(innerTok->tokAt(2), "new !!(")) {
                         const Token* tok2 = innerTok->tokAt(2)->astOperand1();
                         const bool arrayNew = (tok2 && (tok2->str() == "[" || (tok2->str() == "(" && tok2->astOperand1() && tok2->astOperand1()->str() == "[")));
                         VarInfo::AllocInfo& varAlloc = alloctype[innerTok->varId()];
@@ -656,7 +656,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
         }
 
         // throw
-        else if (mTokenizer->isCPP() && tok->str() == "throw") {
+        else if (tok->isCpp() && tok->str() == "throw") {
             bool tryFound = false;
             const Scope* scope = tok->scope();
             while (scope && scope->isExecutable()) {
@@ -671,7 +671,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
         }
 
         // delete
-        else if (mTokenizer->isCPP() && tok->str() == "delete") {
+        else if (tok->isCpp() && tok->str() == "delete") {
             const Token * delTok = tok;
             if (Token::simpleMatch(delTok->astOperand1(), "."))
                 continue;
@@ -962,7 +962,7 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
     int argNr = 1;
     for (const Token *funcArg = tokFirstArg; funcArg; funcArg = funcArg->nextArgument()) {
         const Token* arg = funcArg;
-        if (mTokenizer->isCPP()) {
+        if (arg->isCpp()) {
             int tokAdvance = 0;
             if (arg->str() == "new")
                 tokAdvance = 1;
@@ -985,7 +985,8 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
         while (Token::Match(arg, "%name% .|:: %name%"))
             arg = arg->tokAt(2);
 
-        if (Token::Match(arg, "%var% [-,)] !!.") || Token::Match(arg, "& %var% !!.")) {
+        if ((Token::Match(arg, "%var% [-,)] !!.") && !(arg->variable() && arg->variable()->isArray())) ||
+            (Token::Match(arg, "& %var% !!.") && !(arg->next()->variable() && arg->next()->variable()->isArray()))) {
             // goto variable
             const bool isAddressOf = arg->str() == "&";
             if (isAddressOf)

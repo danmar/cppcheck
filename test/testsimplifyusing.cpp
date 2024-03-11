@@ -724,6 +724,18 @@ private:
             ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
             ASSERT_EQUALS("", errout.str());
         }
+        {
+            const char code[] = "using namespace ::std;\n"
+                                "void f(const char* c) {\n"
+                                "    cout << std::string(c) << \"abc\";\n"
+                                "}\n";
+            const char expected[] = "using namespace :: std ; " // TODO: simplify cout?
+                                    "void f ( const char * c ) { "
+                                    "cout << std :: string ( c ) << \"abc\" ; "
+                                    "}";
+            ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void simplifyUsing8970() {
