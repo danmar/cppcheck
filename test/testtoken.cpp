@@ -613,7 +613,7 @@ private:
         ASSERT_EQUALS(true, Token::Match(isVar.tokens(), "%type% %name%"));
         ASSERT_EQUALS(false, Token::Match(isVar.tokens(), "%type% %type%"));
 
-        // TODO: %type% matches keywords, although it probably shouldn't
+        // TODO: %type% should not match keywords other than fundamental types
         const SimpleTokenList noType1_cpp("delete");
         ASSERT_EQUALS(true, Token::Match(noType1_cpp.front(), "%type%"));
 
