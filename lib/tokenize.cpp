@@ -5759,10 +5759,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Remove redundant parentheses
     simplifyRedundantParentheses();
 
-    if (isCPP())
+    if (isCPP()) {
         simplifyTypeIntrinsics();
 
-    if (!isC()) {
         // Handle templates..
         if (mTimerResults) {
             Timer t("Tokenizer::simplifyTokens1::simplifyTokenList1::simplifyTemplates", mSettings.showtime, mTimerResults);
@@ -7003,7 +7002,7 @@ void Tokenizer::simplifyVarDecl(const bool only_k_r_fpar)
 
 void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, const bool only_k_r_fpar)
 {
-    const bool isCPP11  = mSettings.standards.cpp >= Standards::CPP11;
+    const bool isCPP11 = isCPP() && (mSettings.standards.cpp >= Standards::CPP11);
 
     // Split up variable declarations..
     // "int a=4;" => "int a; a=4;"
@@ -8445,7 +8444,7 @@ void Tokenizer::findGarbageCode() const
             if (!Token::Match(tok->next(), "( !!)"))
                 syntaxError(tok);
             if (tok->str() != "for") {
-                if (isGarbageExpr(tok->next(), tok->linkAt(1), mSettings.standards.cpp>=Standards::cppstd_t::CPP17))
+                if (isGarbageExpr(tok->next(), tok->linkAt(1), isCPP() && (mSettings.standards.cpp>=Standards::cppstd_t::CPP17)))
                     syntaxError(tok);
             }
         }
@@ -9134,7 +9133,7 @@ void Tokenizer::simplifyCppcheckAttribute()
 
 void Tokenizer::simplifyCPPAttribute()
 {
-    if (mSettings.standards.cpp < Standards::CPP11 || isC())
+    if (!isCPP() || mSettings.standards.cpp < Standards::CPP11)
         return;
 
     for (Token *tok = list.front(); tok;) {

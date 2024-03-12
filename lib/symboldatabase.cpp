@@ -1536,7 +1536,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
         // TODO: handle all C/C++ standards
         if (cppkeywords.count(tok->str()) > 0)
             continue;
-        if (mSettings.standards.cpp >= Standards::CPP20 && cpp20keywords.count(tok->str()) > 0)
+        if (tok->isCpp() && (mSettings.standards.cpp >= Standards::CPP20) && cpp20keywords.count(tok->str()) > 0)
             continue;
         std::string fstr = tok->str();
         const Token* ftok = tok->previous();
@@ -3645,7 +3645,7 @@ void SymbolDatabase::debugMessage(const Token *tok, const std::string &type, con
 
 void SymbolDatabase::returnImplicitIntError(const Token *tok) const
 {
-    if (tok && mSettings.severity.isEnabled(Severity::portability) && mSettings.standards.c != Standards::C89 && mErrorLogger) {
+    if (tok && mSettings.severity.isEnabled(Severity::portability) && (tok->isC() && mSettings.standards.c != Standards::C89) && mErrorLogger) {
         const std::list<const Token*> locationList(1, tok);
         const ErrorMessage errmsg(locationList, &mTokenizer.list,
                                   Severity::portability,
@@ -4968,7 +4968,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
     const Token *typestart = tok;
 
     // C++17 structured bindings
-    if (settings.standards.cpp >= Standards::CPP17 && Token::Match(tok, "auto &|&&| [")) {
+    if (tok && tok->isCpp() && (settings.standards.cpp >= Standards::CPP17) && Token::Match(tok, "auto &|&&| [")) {
         const Token *typeend = Token::findsimplematch(typestart, "[")->previous();
         for (tok = typeend->tokAt(2); Token::Match(tok, "%name%|,"); tok = tok->next()) {
             if (tok->varId())
