@@ -51,10 +51,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataSize);
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataSize)
 {
-    if (dataSize < 10000) {
-        const std::string code = generateCode2(data, dataSize);
-        doCheck(code);
-    }
+    const std::string code = std::string(reinterpret_cast<const char*>(data), dataSize);
+    doCheck(code);
+    // TODO: maybe try to detect syntaxError and internalError and return -1 so it is not being added to the corpus.
+    // that way we might not catch all the possible crashes but would fuzz with more syntically correct code
     return 0;
 }
 #else
