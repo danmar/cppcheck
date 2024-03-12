@@ -74,7 +74,7 @@ private:
         typetok = nullptr;
     }
 
-    const SymbolDatabase* getSymbolDB_inner(Tokenizer& tokenizer, const char* code, const char* filename) {
+    static const SymbolDatabase* getSymbolDB_inner(Tokenizer& tokenizer, const char* code, const char* filename) {
         std::istringstream istr(code);
         return tokenizer.tokenize(istr, filename) ? tokenizer.getSymbolDatabase() : nullptr;
     }
