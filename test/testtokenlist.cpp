@@ -58,7 +58,7 @@ private:
         ASSERT_EQUALS("0xF0000000", tokenlist.front()->str());
     }
 
-    void inc() {
+    void inc() const {
         const char code[] = "a++1;1++b;";
 
         const SimpleTokenList tokenlist(code);
