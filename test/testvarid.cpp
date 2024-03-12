@@ -1497,6 +1497,22 @@ private:
             const char expected[] = "1: bool f ( X x@1 , int = 3 ) ;\n";
             ASSERT_EQUALS(expected, actual);
         }
+
+        {
+            const std::string actual = tokenize("int main() {\n"
+                                                "    int a[2];\n"
+                                                "    extern void f(int a[2]);\n"
+                                                "    f(a);\n"
+                                                "    a[0] = 0;\n"
+                                                "}\n", "test.cpp");
+            const char expected[] = "1: int main ( ) {\n"
+                                    "2: int a@1 [ 2 ] ;\n"
+                                    "3: extern void f ( int a [ 2 ] ) ;\n"
+                                    "4: f ( a@1 ) ;\n"
+                                    "5: a@1 [ 0 ] = 0 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, actual);
+        }
     }
 
     void varid_sizeof() {
