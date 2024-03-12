@@ -8401,6 +8401,9 @@ void Tokenizer::findGarbageCode() const
         else if (Token::Match(tok, "%assign% [") && Token::simpleMatch(tok->linkAt(1), "] ;"))
             syntaxError(tok, tok->str() + "[...];");
 
+        else if (Token::Match(tok, "[({<] %assign%"))
+            syntaxError(tok);
+
         // UNKNOWN_MACRO(return)
         if (tok->isKeyword() && Token::Match(tok, "throw|return )") && Token::Match(tok->linkAt(1)->previous(), "%name% ("))
             unknownMacroError(tok->linkAt(1)->previous());
