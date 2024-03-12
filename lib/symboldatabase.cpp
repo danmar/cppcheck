@@ -2148,19 +2148,8 @@ void SymbolDatabase::validateExecutableScopes() const
 }
 
 namespace {
-    const Function* getFunctionForArgumentvariable(const Variable * const var, const std::vector<const Scope *>& functionScopes)
+    const Function* getFunctionForArgumentvariable(const Variable * const var)
     {
-        const std::size_t functions = functionScopes.size();
-        for (std::size_t i = 0; i < functions; ++i) {
-            const Scope* const scope = functionScopes[i];
-            const Function* const function = scope->function;
-            if (function) {
-                for (std::size_t arg=0; arg < function->argCount(); ++arg) {
-                    if (var==function->getArgumentVar(arg))
-                        return function;
-                }
-            }
-        }
         if (const Scope* scope = var->nameToken()->scope()) {
             auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [&](const Function& function) {
                 for (std::size_t arg = 0; arg < function.argCount(); ++arg) {
@@ -2182,8 +2171,8 @@ void SymbolDatabase::validateVariables() const
         const Variable * const var = *iter;
         if (var) {
             if (!var->scope()) {
-                const Function* function = getFunctionForArgumentvariable(var, functionScopes);
-                if (!var->isArgument() || (!function || function->hasBody())) {
+                const Function* function = getFunctionForArgumentvariable(var);
+                if (!var->isArgument() || (!function || function->hasBody())) { // exception for variables which only appear in a function declaration
                     throw InternalError(var->nameToken(), "Analysis failed (variable without scope). If the code is valid then please report this failure.", InternalError::INTERNAL);
                 }
             }
