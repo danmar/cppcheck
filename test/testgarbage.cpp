@@ -1625,22 +1625,23 @@ private:
     }
 
     void garbageCode205() {
-        checkCode("class CodeSnippetsEvent : public wxCommandEvent {\n"
-                  "public :\n"
-                  "    CodeSnippetsEvent ( wxEventType commandType =  wxEventType , int id = 0 ) ;\n"
-                  "    CodeSnippetsEvent ( const CodeSnippetsEvent & event ) ;\n"
-                  "virtual wxEvent * Clone ( ) const { return new CodeSnippetsEvent ( * this ) ; }\n"
-                  "private :\n"
-                  "    int m_SnippetID ;\n"
-                  "} ;\n"
-                  "const  wxEventType wxEVT_CODESNIPPETS_GETFILELINKS  =  wxNewEventType  (  )\n"
-                  "CodeSnippetsEvent :: CodeSnippetsEvent ( wxEventType commandType , int id )\n"
-                  ": wxCommandEvent ( commandType , id ) {\n"
-                  "}\n"
-                  "CodeSnippetsEvent :: CodeSnippetsEvent ( const CodeSnippetsEvent & Event )\n"
-                  ": wxCommandEvent ( Event )\n"
-                  ", m_SnippetID ( 0 ) {\n"
-                  "}"); // don't crash
+        ASSERT_THROW(checkCode("class CodeSnippetsEvent : public wxCommandEvent {\n"
+                               "public :\n"
+                               "    CodeSnippetsEvent ( wxEventType commandType =  wxEventType , int id = 0 ) ;\n"
+                               "    CodeSnippetsEvent ( const CodeSnippetsEvent & event ) ;\n"
+                               "virtual wxEvent * Clone ( ) const { return new CodeSnippetsEvent ( * this ) ; }\n"
+                               "private :\n"
+                               "    int m_SnippetID ;\n"
+                               "} ;\n"
+                               "const  wxEventType wxEVT_CODESNIPPETS_GETFILELINKS  =  wxNewEventType  (  )\n"
+                               "CodeSnippetsEvent :: CodeSnippetsEvent ( wxEventType commandType , int id )\n"
+                               ": wxCommandEvent ( commandType , id ) {\n"
+                               "}\n"
+                               "CodeSnippetsEvent :: CodeSnippetsEvent ( const CodeSnippetsEvent & Event )\n"
+                               ": wxCommandEvent ( Event )\n"
+                               ", m_SnippetID ( 0 ) {\n"
+                               "}"),
+                     InternalError);
     }
 
     void garbageCode206() {

@@ -2161,6 +2161,17 @@ namespace {
                 }
             }
         }
+        if (const Scope* scope = var->nameToken()->scope()) {
+            auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [&](const Function& function) {
+                for (std::size_t arg = 0; arg < function.argCount(); ++arg) {
+                    if (var == function.getArgumentVar(arg))
+                        return true;
+                }
+                return false;
+            });
+            if (it != scope->functionList.end())
+                return &*it;
+        }
         return nullptr;
     }
 }
@@ -2172,9 +2183,8 @@ void SymbolDatabase::validateVariables() const
         if (var) {
             if (!var->scope()) {
                 const Function* function = getFunctionForArgumentvariable(var, functionScopes);
-                if (!var->isArgument() || (function && function->hasBody())) {
+                if (!var->isArgument() || (!function || function->hasBody())) {
                     throw InternalError(var->nameToken(), "Analysis failed (variable without scope). If the code is valid then please report this failure.", InternalError::INTERNAL);
-                    //std::cout << "!!!Variable found without scope: " << var->nameToken()->str() << std::endl;
                 }
             }
         }
@@ -2186,8 +2196,7 @@ void SymbolDatabase::validate() const
     if (mSettings.debugwarnings) {
         validateExecutableScopes();
     }
-    // TODO
-    //validateVariables();
+    validateVariables();
 }
 
 void SymbolDatabase::clangSetVariables(const std::vector<const Variable *> &variableList)

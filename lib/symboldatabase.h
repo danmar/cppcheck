@@ -1394,12 +1394,6 @@ public:
      */
     void validate() const;
 
-    void validateExecutableScopes() const;
-    /**
-     * @brief Check variable list, e.g. variables w/o scope
-     */
-    void validateVariables() const;
-
     /** Set valuetype in provided tokenlist */
     void setValueTypeInTokenList(bool reportDebugWarnings, Token *tokens=nullptr);
 
@@ -1466,6 +1460,12 @@ private:
     void setValueType(Token* tok, const ValueType& valuetype, const SourceLocation &loc = SourceLocation::current());
     void setValueType(Token* tok, const Variable& var, const SourceLocation &loc = SourceLocation::current());
     void setValueType(Token* tok, const Enumerator& enumerator, const SourceLocation &loc = SourceLocation::current());
+
+    void validateExecutableScopes() const;
+    /**
+     * @brief Check variable list, e.g. variables w/o scope
+     */
+    void validateVariables() const;
 
     Tokenizer& mTokenizer;
     const Settings &mSettings;
