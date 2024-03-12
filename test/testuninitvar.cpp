@@ -64,6 +64,7 @@ private:
         TEST_CASE(uninitvar2_value);    // value flow
         TEST_CASE(valueFlowUninit2_value);
         TEST_CASE(valueFlowUninit_uninitvar2);
+        TEST_CASE(valueFlowUninit_functioncall);
         TEST_CASE(uninitStructMember);  // struct members
         TEST_CASE(uninitvar2_while);
         TEST_CASE(uninitvar2_4494);      // #4494
@@ -4316,6 +4317,36 @@ private:
                         "    int a = ({ long b = (long)(123); 2 + b; });\n"
                         "}",
                         "test.c");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void valueFlowUninit_functioncall() {
+
+        // #12462 - pointer data is not read
+        valueFlowUninit("struct myst { int a; };\n"
+                        "void bar(const void* p) {}\n"
+                        "void foo() {\n"
+                        "  struct myst item;\n"
+                        "  bar(&item);\n"
+                        "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct myst { int a; };\n"
+                        "void bar(const void* p) { a = (p != 0); }\n"
+                        "void foo() {\n"
+                        "  struct myst item;\n"
+                        "  bar(&item);\n"
+                        "  a = item.a;\n" // <- item.a is not initialized
+                        "}", "test.c");
+        ASSERT_EQUALS("[test.c:6]: (error) Uninitialized variable: item.a\n", errout.str());
+
+        valueFlowUninit("struct myst { int a; };\n"
+                        "void bar(struct myst* p) { p->a = 0; }\n"
+                        "void foo() {\n"
+                        "  struct myst item;\n"
+                        "  bar(&item);\n"
+                        "  a = item.a;\n"
+                        "}", "test.c");
         ASSERT_EQUALS("", errout.str());
     }
 

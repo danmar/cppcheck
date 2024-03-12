@@ -3282,10 +3282,19 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
         for (const Variable* arg : args) {
             if (!arg)
                 continue;
-            if (arg->isReference())
-                return ExprUsage::PassedByReference;
-            if (arg->isPointer() && indirect == 1)
-                return ExprUsage::PassedByReference;
+            if (arg->isReference() || (arg->isPointer() && indirect == 1)) {
+                if (!ftok->function()->hasBody())
+                    return ExprUsage::PassedByReference;
+                for (const Token* bodytok = ftok->function()->functionScope->bodyStart; bodytok != ftok->function()->functionScope->bodyEnd; bodytok = bodytok->next()) {
+                    if (bodytok->variable() == arg) {
+                        if (arg->isReference())
+                            return ExprUsage::PassedByReference;
+                        if (Token::Match(bodytok->astParent(), "%comp%|!"))
+                            return ExprUsage::NotUsed;
+                        return ExprUsage::PassedByReference;
+                    }
+                }
+            }
         }
         if (!args.empty() && indirect == 0 && !addressOf)
             return ExprUsage::Used;
