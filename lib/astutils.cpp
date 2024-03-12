@@ -3271,7 +3271,7 @@ bool isConstVarExpression(const Token *tok, const std::function<bool(const Token
     return false;
 }
 
-static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings* settings, bool cpp)
+static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings* settings)
 {
     const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
 
@@ -3378,7 +3378,7 @@ ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings,
             (astIsLHS(tok) || Token::simpleMatch(parent, "( )")))
             return ExprUsage::Used;
     }
-    return getFunctionUsage(tok, indirect, settings, cpp);
+    return getFunctionUsage(tok, indirect, settings);
 }
 
 static void getLHSVariablesRecursive(std::vector<const Variable*>& vars, const Token* tok)
