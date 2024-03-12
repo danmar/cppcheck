@@ -254,7 +254,7 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
                             suppr.lineNumber = supprBegin->lineNumber;
                             suppr.type = SuppressionList::Type::block;
                             inlineSuppressionsBlockBegin.erase(supprBegin);
-                            suppressions.addSuppression(std::move(suppr));
+                            suppressions.addSuppression(std::move(suppr)); // TODO: check result
                             throwError = false;
                             break;
                         }
@@ -279,10 +279,10 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
                 suppr.thisAndNextLine = thisAndNextLine;
                 suppr.lineNumber = tok->location.line;
                 suppr.macroName = macroName;
-                suppressions.addSuppression(std::move(suppr));
+                suppressions.addSuppression(std::move(suppr)); // TODO: check result
             } else if (SuppressionList::Type::file == suppr.type) {
                 if (onlyComments)
-                    suppressions.addSuppression(std::move(suppr));
+                    suppressions.addSuppression(std::move(suppr)); // TODO: check result
                 else
                     bad.emplace_back(suppr.fileName, suppr.lineNumber, "File suppression should be at the top of the file");
             }

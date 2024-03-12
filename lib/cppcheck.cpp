@@ -601,7 +601,11 @@ unsigned int CppCheck::check(const FileSettings &fs)
         return returnValue;
     }
     const unsigned int returnValue = temp.checkFile(Path::simplifyPath(fs.filename), fs.cfg);
-    mSettings.supprs.nomsg.addSuppressions(temp.mSettings.supprs.nomsg.getSuppressions());
+    for (const auto& suppr : temp.mSettings.supprs.nomsg.getSuppressions())
+    {
+        const bool res = mSettings.supprs.nomsg.updateSuppressionState(suppr);
+        assert(res);
+    }
     if (mUnusedFunctionsCheck)
         mUnusedFunctionsCheck->updateFunctionData(*temp.mUnusedFunctionsCheck);
     return returnValue;

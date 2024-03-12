@@ -1022,9 +1022,7 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
             tryLoadLibrary(&result.library, filename);
         }
 
-        for (const SuppressionList::Suppression &suppression : mProjectFile->getSuppressions()) {
-            result.supprs.nomsg.addSuppression(suppression);
-        }
+        result.supprs.nomsg.addSuppressions(mProjectFile->getSuppressions().toStdList()); // TODO: check result
 
         // Only check the given -D configuration
         if (!defines.isEmpty())

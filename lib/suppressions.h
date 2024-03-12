@@ -195,6 +195,13 @@ public:
     std::string addSuppressions(std::list<Suppression> suppressions);
 
     /**
+     * @brief Updates the state of the given suppression.
+     * @param suppression the suppression to update
+     * @return true if suppression to update was found
+     */
+    bool updateSuppressionState(const Suppression& suppression);
+
+    /**
      * @brief Returns true if this message should not be shown to the user.
      * @param errmsg error message
      * @param global use global suppressions

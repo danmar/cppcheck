@@ -250,10 +250,7 @@ std::string SuppressionList::addSuppression(SuppressionList::Suppression suppres
     auto foundSuppression = std::find_if(mSuppressions.begin(), mSuppressions.end(),
                                          std::bind(&Suppression::isSameParameters, &suppression, std::placeholders::_1));
     if (foundSuppression != mSuppressions.end()) {
-        // Update matched state of existing global suppression
-        if (!suppression.isLocal() && suppression.matched)
-            foundSuppression->matched = suppression.matched;
-        return "";
+        return "suppression already exists";
     }
 
     // Check that errorId is valid..
@@ -287,6 +284,22 @@ std::string SuppressionList::addSuppressions(std::list<Suppression> suppressions
             return errmsg;
     }
     return "";
+}
+
+bool SuppressionList::updateSuppressionState(const Suppression& suppression)
+{
+    // Check if suppression is already in list
+    auto foundSuppression = std::find_if(mSuppressions.begin(), mSuppressions.end(),
+                                         std::bind(&Suppression::isSameParameters, &suppression, std::placeholders::_1));
+    if (foundSuppression != mSuppressions.end()) {
+        if (suppression.checked)
+            foundSuppression->checked = suppression.checked;
+        if (suppression.matched)
+            foundSuppression->matched = suppression.matched;
+        return true;
+    }
+
+    return false;
 }
 
 void SuppressionList::ErrorMessage::setFileName(std::string s)
