@@ -2172,7 +2172,7 @@ void SymbolDatabase::validateVariables() const
         if (var) {
             if (!var->scope()) {
                 const Function* function = getFunctionForArgumentvariable(var);
-                if (!var->isArgument() || (!function || function->hasBody())) { // exception for variables which only appear in a function declaration
+                if (!var->isArgument() || (!function || function->hasBody())) { // variables which only appear in a function declaration do not have a scope
                     throw InternalError(var->nameToken(), "Analysis failed (variable without scope). If the code is valid then please report this failure.", InternalError::INTERNAL);
                 }
             }
