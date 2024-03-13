@@ -1160,7 +1160,7 @@ private:
     }
 
     void garbageCode142() { // #7050
-        checkCode("{ } (  ) { void mapGraphs ( ) { node_t * n ; for (!oid n ) { } } } { }");
+        ASSERT_THROW(checkCode("{ } (  ) { void mapGraphs ( ) { node_t * n ; for (!oid n ) { } } } { }"), InternalError);
     }
 
     void garbageCode143() { // #6922
