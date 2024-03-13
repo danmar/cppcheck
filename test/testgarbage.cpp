@@ -1174,8 +1174,7 @@ private:
     }
 
     void garbageCode142() { // #7050
-        checkCode("{ } (  ) { void mapGraphs ( ) { node_t * n ; for (!oid n ) { } } } { }");
-        (void)errout_str(); // we are not interested in the output
+        ASSERT_THROW(checkCode("{ } (  ) { void mapGraphs ( ) { node_t * n ; for (!oid n ) { } } } { }"), InternalError);
     }
 
     void garbageCode143() { // #6922
@@ -1312,8 +1311,7 @@ private:
         ASSERT_THROW(checkCode(code), InternalError);
 
         code = "void f1() { for (int n = 0 n < 10 n++); }";
-        checkCode(code);
-        (void)errout_str(); // we are not interested in the output
+        ASSERT_THROW(checkCode(code), InternalError);
     }
 
     void garbageSymbolDatabase() {
