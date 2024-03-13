@@ -2910,9 +2910,7 @@ private:
                               "    for (int i = 0; i < 10; )\n"
                               "        a[i++] = 0;\n"
                               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n",
-                           "",
-                           errout_str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a[i++]' is assigned a value that is never used.\n", errout_str());
     }
 
     void localvar10() {
