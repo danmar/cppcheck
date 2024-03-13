@@ -115,14 +115,11 @@ void TestFixture::teardownTest()
 {
     teardownTestInternal();
 
-    // TODO: enable
-    /*
-        {
-        const std::string s = errout.str();
+    {
+        const std::string s = errout_str();
         if (!s.empty())
             throw std::runtime_error("unconsumed ErrorLogger err: " + s);
-        }
-     */
+    }
     {
         const std::string s = output_str();
         if (!s.empty())
@@ -429,7 +426,7 @@ void TestFixture::reportErr(const ErrorMessage &msg)
     if (msg.severity == Severity::information && msg.id == "normalCheckLevelMaxBranches")
         return;
     const std::string errormessage(msg.toString(mVerbose, mTemplateFormat, mTemplateLocation));
-    errout << errormessage << std::endl;
+    mErrout << errormessage << std::endl;
 }
 
 void TestFixture::setTemplateFormat(const std::string &templateFormat)

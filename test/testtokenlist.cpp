@@ -58,10 +58,8 @@ private:
         ASSERT_EQUALS("0xF0000000", tokenlist.front()->str());
     }
 
-    void inc() {
+    void inc() const {
         const char code[] = "a++1;1++b;";
-
-        errout.str("");
 
         const SimpleTokenList tokenlist(code);
         ASSERT(Token::simpleMatch(tokenlist.front(), "a + + 1 ; 1 + + b ;"));

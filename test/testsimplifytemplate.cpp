@@ -309,8 +309,6 @@ private:
 
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
     std::string tok_(const char* file, int line, const char code[], bool debugwarnings = false, Platform::Type type = Platform::Type::Native) {
-        errout.str("");
-
         const Settings settings1 = settingsBuilder(settings).library("std.cfg").debugwarnings(debugwarnings).platform(type).build();
         Tokenizer tokenizer(settings1, this);
 
@@ -1206,7 +1204,7 @@ private:
                                 "static const int mult = sizeof ( int ) * Constants :: fourtytwo ; "
                                 "} ;";
         ASSERT_EQUALS(expected, tok(code, true));
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void template46() { // #5816
@@ -1214,29 +1212,29 @@ private:
             "template <class T> struct B { "
             "  enum { value = A<typename T::type, int>::value }; "
             "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
         tok("template <class T, class U> struct A {}; "
             "enum { e = sizeof(A<int, int>) }; "
             "template <class T, class U> struct B {};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
         tok("template<class T, class U> struct A { static const int value = 0; }; "
             "template<class T> struct B { typedef int type; }; "
             "template <class T> struct C { "
             "  enum { value = A<typename B<T>::type, int>::value }; "
             "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void template47() { // #6023
         tok("template <typename T1, typename T2 = T3<T1> > class C1 {}; "
             "class C2 : public C1<C2> {};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void template48() { // #6134
         tok("template <int> int f( {  } ); "
             "int foo = f<1>(0);");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void template49() { // #6237
@@ -1334,7 +1332,7 @@ private:
                                 "enum Anonymous0 { value = 1 * Factorial<0> :: value } ; "
                                 "} ;";
         ASSERT_EQUALS(expected, tok(code, true));
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void template54() { // #6587
@@ -1394,7 +1392,7 @@ private:
                                 "std :: array < int , 1 > mfoo ; "
                                 "} ;";
         ASSERT_EQUALS(expected, tok(code, true));
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void template57() { // #7891
@@ -2496,7 +2494,7 @@ private:
                            "} ;";
 
         ASSERT_EQUALS(exp, tok(code));
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void template102() { // #9005
@@ -4871,8 +4869,8 @@ private:
 
         tok(code);
 
-        //ASSERT_EQUALS("[file1.cpp:15]: (error) Internal error: failed to instantiate template. The checking continues anyway.\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        //ASSERT_EQUALS("[file1.cpp:15]: (error) Internal error: failed to instantiate template. The checking continues anyway.\n", errout_str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void template_typename() {
@@ -4914,25 +4912,25 @@ private:
     void syntax_error_templates_1() {
         // ok code.. using ">" for a comparison
         tok("x<y>z> xyz;");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // ok code
         tok("template<class T> operator<(T a, T b) { }");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // ok code (ticket #1984)
         tok("void f(a) int a;\n"
             "{ ;x<y; }");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // ok code (ticket #1985)
         tok("void f()\n"
             "{ try { ;x<y; } }");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // ok code (ticket #3183)
         tok("MACRO(({ i < x }))");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // bad code.. missing ">"
         ASSERT_THROW(tok("x<y<int> xyz;\n"), InternalError);
@@ -4955,7 +4953,7 @@ private:
             "private:\n"
             "    A a;\n"
             "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         //both of these should work but in cppcheck 2.1 only the first option will work (ticket #9843)
         {
@@ -4963,11 +4961,11 @@ private:
             ASSERT_EQUALS(expected,
                           tok("template <long Num>\n"
                               "constexpr bool foo<bar<Num> > = true;\n"));
-            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("", errout_str());
             ASSERT_EQUALS(expected,
                           tok("template <long Num>\n"
                               "constexpr bool foo<bar<Num>> = true;\n"));
-            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("", errout_str());
         }
     }
 
@@ -5873,7 +5871,7 @@ private:
                                 "void f<bool> ( bool n ) { ( void ) n ; }";
 
         ASSERT_EQUALS(expected, tok(code));
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void templateTypeDeduction2() {

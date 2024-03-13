@@ -164,8 +164,6 @@ private:
 
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
     std::string tok_(const char* file, int line, const char code[], bool simplify = true, Platform::Type type = Platform::Type::Native) {
-        errout.str("");
-
         const Settings settings = settingsBuilder(settings0).platform(type).build();
         Tokenizer tokenizer(settings, this);
 
@@ -176,8 +174,6 @@ private:
     }
 
     std::string tok_(const char* file, int line, const char code[], const char filename[], bool simplify = true) {
-        errout.str("");
-
         Tokenizer tokenizer(settings0, this);
 
         std::istringstream istr(code);
@@ -190,8 +186,6 @@ private:
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
     std::string tokenizeAndStringify_(const char* file, int linenr, const char code[], bool simplify = false, bool expand = true, Platform::Type platform = Platform::Type::Native, const char* filename = "test.cpp", bool cpp11 = true) {
-        errout.str("");
-
         const Settings settings = settingsBuilder(settings1).debugwarnings().platform(platform).cpp(cpp11 ? Standards::CPP11 : Standards::CPP03).build();
 
         // tokenize..
@@ -203,13 +197,12 @@ private:
 
         // TODO: should be handled in a better way
         // filter out ValueFlow messages..
-        const std::string debugwarnings = errout.str();
-        errout.str("");
+        const std::string debugwarnings = errout_str();
         std::istringstream istr2(debugwarnings);
         std::string line;
         while (std::getline(istr2,line)) {
             if (line.find("bailout") == std::string::npos)
-                errout << line << "\n";
+            {} // TODO    mErrout << line << "\n";
         }
 
         if (tokenizer.tokens())
@@ -219,8 +212,6 @@ private:
 
 #define tokenizeDebugListing(...) tokenizeDebugListing_(__FILE__, __LINE__, __VA_ARGS__)
     std::string tokenizeDebugListing_(const char* file, int line, const char code[], bool simplify = false, const char filename[] = "test.cpp") {
-        errout.str("");
-
         Tokenizer tokenizer(settings0, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
@@ -1490,8 +1481,6 @@ private:
 
 #define simplifyKnownVariables(code) simplifyKnownVariables_(code, __FILE__, __LINE__)
     std::string simplifyKnownVariables_(const char code[], const char* file, int line) {
-        errout.str("");
-
         Tokenizer tokenizer(settings0, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -2283,7 +2272,7 @@ private:
                              "  };\n"
                              "  enum { XX };\n"
                              "};", /*simplify=*/ true);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void simplifyKnownVariables62() { // #5666
@@ -2300,7 +2289,7 @@ private:
     void simplifyKnownVariables63() { // #10798
         tokenizeAndStringify("typedef void (*a)();\n"
                              "enum class E { a };\n");
-        ASSERT_EQUALS("", errout.str()); // don't throw
+        ASSERT_EQUALS("", errout_str()); // don't throw
     }
 
     void simplifyKnownVariablesBailOutAssign1() {
@@ -2338,7 +2327,7 @@ private:
                                 "for ( int i = 0 ; i < 10 ; ++ i ) { }\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-        ASSERT_EQUALS("", errout.str());    // debug warnings
+        ASSERT_EQUALS("", errout_str());    // debug warnings
     }
 
     void simplifyKnownVariablesBailOutFor2() {
@@ -2351,7 +2340,7 @@ private:
                                 "while ( i < 10 ) { ++ i ; }\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-        ASSERT_EQUALS("", errout.str());    // debug warnings
+        ASSERT_EQUALS("", errout_str());    // debug warnings
     }
 
     void simplifyKnownVariablesBailOutFor3() {
@@ -2364,7 +2353,7 @@ private:
                                 "{ }\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-        ASSERT_EQUALS("", errout.str());    // debug warnings
+        ASSERT_EQUALS("", errout_str());    // debug warnings
     }
 
     void simplifyKnownVariablesBailOutMemberFunction() {
@@ -2388,7 +2377,7 @@ private:
                             "    return a;\n"
                             "}\n";
         tokenizeAndStringify(code,true);
-        ASSERT_EQUALS("", errout.str());     // no debug warnings
+        ASSERT_EQUALS("", errout_str());     // no debug warnings
     }
 
     void simplifyKnownVariablesBailOutSwitchBreak() {

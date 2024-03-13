@@ -71,8 +71,6 @@ private:
     };
 
     void check(int files, int result, const std::string &data, const CheckOptions& opt = make_default_obj{}) {
-        errout.str("");
-
         std::list<FileSettings> fileSettings;
 
         std::list<std::pair<std::string, std::size_t>> filelist;
@@ -158,19 +156,29 @@ private:
     }
 
     void many_files() {
-        check(100, 100,
+        const int num_files = 100;
+        check(num_files, num_files,
               "int main()\n"
               "{\n"
               "  int i = *((int*)0);\n"
               "  return 0;\n"
               "}", dinit(CheckOptions,
                          $.quiet = false));
-        std::string expected;
-        for (int i = 1; i <= 100; ++i) {
-            expected += "Checking " + fprefix() + "_" + zpad3(i) + ".cpp ...\n";
-            expected += std::to_string(i) + "/100 files checked " + std::to_string(i) + "% done\n";
+        {
+            std::string expected;
+            for (int i = 1; i <= num_files; ++i) {
+                expected += "Checking " + fprefix() + "_" + zpad3(i) + ".cpp ...\n";
+                expected += std::to_string(i) + "/100 files checked " + std::to_string(i) + "% done\n";
+            }
+            ASSERT_EQUALS(expected, output_str());
         }
-        ASSERT_EQUALS(expected, output_str());
+        {
+            std::string expected;
+            for (int i = 1; i <= num_files; ++i) {
+                expected += "[" + fprefix() + "_" + zpad3(i) + ".cpp:3]: (error) Null pointer dereference: (int*)0\n";
+            }
+            ASSERT_EQUALS(expected, errout_str());
+        }
     }
 
     void many_files_showtime() {
@@ -181,6 +189,8 @@ private:
               "  int i = *((int*)0);\n"
               "  return 0;\n"
               "}", dinit(CheckOptions, $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
+        // we are not interested in the results - so just consume them
+        (void)errout_str();
     }
 
     void many_files_plist() {
@@ -193,6 +203,8 @@ private:
               "  int i = *((int*)0);\n"
               "  return 0;\n"
               "}", dinit(CheckOptions, $.plistOutput = plistOutput.c_str()));
+        // we are not interested in the results - so just consume them
+        (void)errout_str();
     }
 
     void no_errors_more_files() {
@@ -226,15 +238,24 @@ private:
               "  {int i = *((int*)0);}\n"
               "  return 0;\n"
               "}");
+        ASSERT_EQUALS("[" + fprefix() + "_" + zpad3(1) + ".cpp:3]: (error) Null pointer dereference: (int*)0\n", errout_str());
     }
 
     void one_error_several_files() {
-        check(20, 20,
+        const int num_files = 20;
+        check(num_files, num_files,
               "int main()\n"
               "{\n"
               "  {int i = *((int*)0);}\n"
               "  return 0;\n"
               "}");
+        {
+            std::string expected;
+            for (int i = 1; i <= num_files; ++i) {
+                expected += "[" + fprefix() + "_" + zpad3(i) + ".cpp:3]: (error) Null pointer dereference: (int*)0\n";
+            }
+            ASSERT_EQUALS(expected, errout_str());
+        }
     }
 
     void clangTidy() {
@@ -334,7 +355,7 @@ private:
               "  int i = *((int*)0);\n"
               "  return 0;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
         settings = settingsOld;
     }
 
@@ -351,7 +372,7 @@ private:
         ASSERT_EQUALS(
             "[" + inc_h.name() + ":3]: (error) Null pointer dereference: (int*)0\n"
             "[" + inc_h.name() + ":3]: (error) Null pointer dereference: (int*)0\n",
-            errout.str());
+            errout_str());
     }
 
     // TODO: test whole program analysis
