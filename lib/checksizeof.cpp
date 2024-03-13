@@ -236,7 +236,8 @@ void CheckSizeof::checkSizeofForPointerSize()
                 continue;
 
             // Now check for the sizeof usage: Does the level of pointer indirection match?
-            if (tokSize->linkAt(1)->strAt(-1) == "*") {
+            const Token * const tokLink = tokSize->linkAt(1);
+            if (tokLink && tokLink->strAt(-1) == "*") {
                 if (variable && variable->valueType() && variable->valueType()->pointer == 1 && variable->valueType()->type != ValueType::VOID)
                     sizeofForPointerError(variable, variable->str());
                 else if (variable2 && variable2->valueType() && variable2->valueType()->pointer == 1 && variable2->valueType()->type != ValueType::VOID)

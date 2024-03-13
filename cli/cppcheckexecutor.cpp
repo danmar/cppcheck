@@ -33,9 +33,10 @@
 #include "suppressions.h"
 #include "utils.h"
 
-#if defined(THREADING_MODEL_THREAD)
+#if defined(HAS_THREADING_MODEL_THREAD)
 #include "threadexecutor.h"
-#elif defined(THREADING_MODEL_FORK)
+#endif
+#if defined(HAS_THREADING_MODEL_FORK)
 #include "processexecutor.h"
 #endif
 
@@ -271,18 +272,24 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
     cppcheck.settings() = settings; // this is a copy
     auto& suppressions = cppcheck.settings().supprs.nomsg;
 
-    unsigned int returnValue;
+    unsigned int returnValue = 0;
     if (settings.useSingleJob()) {
         // Single process
         SingleExecutor executor(cppcheck, mFiles, mFileSettings, settings, suppressions, stdLogger);
         returnValue = executor.check();
     } else {
-#if defined(THREADING_MODEL_THREAD)
-        ThreadExecutor executor(mFiles, mFileSettings, settings, suppressions, stdLogger, CppCheckExecutor::executeCommand);
-#elif defined(THREADING_MODEL_FORK)
-        ProcessExecutor executor(mFiles, mFileSettings, settings, suppressions, stdLogger, CppCheckExecutor::executeCommand);
+#if defined(HAS_THREADING_MODEL_THREAD)
+        if (settings.executor == Settings::ExecutorType::Thread) {
+            ThreadExecutor executor(mFiles, mFileSettings, settings, suppressions, stdLogger, CppCheckExecutor::executeCommand);
+            returnValue = executor.check();
+        }
 #endif
-        returnValue = executor.check();
+#if defined(HAS_THREADING_MODEL_FORK)
+        if (settings.executor == Settings::ExecutorType::Process) {
+            ProcessExecutor executor(mFiles, mFileSettings, settings, suppressions, stdLogger, CppCheckExecutor::executeCommand);
+            returnValue = executor.check();
+        }
+#endif
     }
 
     cppcheck.analyseWholeProgram(settings.buildDir, mFiles, mFileSettings);

@@ -436,7 +436,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
     return fileInfo;
 }
 
-static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(const Tokenizer *tokenizer, const Settings *settings, const Scope *scope, int argnr, bool (*isUnsafeUsage)(const Settings *settings, const Token *argtok, MathLib::bigint *value))
+static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(const Settings *settings, const Scope *scope, int argnr, bool (*isUnsafeUsage)(const Settings *settings, const Token *argtok, MathLib::bigint *value))
 {
     std::list<std::pair<const Token *, MathLib::bigint>> ret;
     const Variable * const argvar = scope->function->getArgumentVar(argnr);
@@ -450,7 +450,7 @@ static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(co
             int indirect = 0;
             if (argvar->valueType())
                 indirect = argvar->valueType()->pointer;
-            if (isVariableChanged(tok2->link(), tok2, indirect, argvar->declarationId(), false, settings, tokenizer->isCPP()))
+            if (isVariableChanged(tok2->link(), tok2, indirect, argvar->declarationId(), false, settings))
                 return ret;
         }
         if (Token::Match(tok2, "%oror%|&&|?")) {
@@ -482,7 +482,7 @@ std::list<CTU::FileInfo::UnsafeUsage> CTU::getUnsafeUsage(const Tokenizer *token
 
         // "Unsafe" functions unconditionally reads data before it is written..
         for (int argnr = 0; argnr < function->argCount(); ++argnr) {
-            for (const std::pair<const Token *, MathLib::bigint> &v : getUnsafeFunction(tokenizer, settings, &scope, argnr, isUnsafeUsage)) {
+            for (const std::pair<const Token *, MathLib::bigint> &v : getUnsafeFunction(settings, &scope, argnr, isUnsafeUsage)) {
                 const Token *tok = v.first;
                 const MathLib::bigint val = v.second;
                 unsafeUsage.emplace_back(CTU::getFunctionId(tokenizer, function), argnr+1, tok->str(), CTU::FileInfo::Location(tokenizer,tok), val);

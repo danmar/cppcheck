@@ -40,9 +40,6 @@ private:
 
 #define createSummaries(...) createSummaries_(__FILE__, __LINE__, __VA_ARGS__)
     std::string createSummaries_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
-        // Clear the error buffer..
-        errout.str("");
-
         // tokenize..
         Tokenizer tokenizer(settingsDefault, this);
         std::istringstream istr(code);

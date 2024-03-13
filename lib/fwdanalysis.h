@@ -37,7 +37,7 @@ class Library;
  */
 class FwdAnalysis {
 public:
-    FwdAnalysis(bool cpp, const Library &library) : mCpp(cpp), mLibrary(library) {}
+    explicit FwdAnalysis(const Library &library) : mLibrary(library) {}
 
     bool hasOperand(const Token *tok, const Token *lhs) const;
 
@@ -82,10 +82,6 @@ private:
     Result check(const Token *expr, const Token *startToken, const Token *endToken);
     Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<nonneg int> &exprVarIds, bool local, bool inInnerClass, int depth=0);
 
-    // Is expression a l-value global data?
-    bool isGlobalData(const Token *expr) const;
-
-    const bool mCpp;
     const Library &mLibrary;
     enum class What { Reassign, UnusedValue, ValueFlow } mWhat = What::Reassign;
     std::vector<KnownAndToken> mValueFlow;

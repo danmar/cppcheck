@@ -376,7 +376,7 @@ parsing the code.
 The purpose of this behaviour is that Cppcheck is meant to work without necessarily seeing the entire code. 
 Actually, it is recommended to not give all include paths. 
 While it is useful for Cppcheck to see the declaration of a class when checking the implementation of its members, 
-passing standard library headers is discouraged, because the analysis will not wor fully and lead to a longer checking 
+passing standard library headers is discouraged, because the analysis will not work fully and lead to a longer checking 
 time. For such cases, .cfg files are the preferred way to provide information about the implementation of functions and 
 types to Cppcheck, see below for more information.
 
