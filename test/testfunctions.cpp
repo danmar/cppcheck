@@ -104,7 +104,7 @@ private:
         TEST_CASE(checkUseStandardLibrary14);
     }
 
-    static std::string filter_valueflow(std::string s) {
+    static std::string filter_valueflow(const std::string& s) {
         std::istringstream istr(s);
         std::ostringstream ostr;
         std::string errline;
