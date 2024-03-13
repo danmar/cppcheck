@@ -3519,12 +3519,18 @@ private:
                "    std::vector<int> const& h(int);\n"
                "};\n"
                "typedef std::vector<int> const& (S::* func_t)(int);\n"
-               "void g(func_t, int);\n";
+               "void g(func_t, int);\n"
+               "void f() {\n"
+               "    g(func_t(&S::h), 5);\n"
+               "}\n";
         exp = "struct S { "
               "const std :: vector < int > & h ( int ) ; "
               "} ; "
-              "void g ( const std :: vector < int > & ( S :: * ) ( int ) , int ) ;";
-        ASSERT_EQUALS(exp, tok(code)); // TODO: don't create invalid code
+              "void g ( const std :: vector < int > & ( S :: * ) ( int ) , int ) ; "
+              "void f ( ) { "
+              "g ( const std :: vector < int > & ( S :: * ( & S :: h ) ) ( int ) , 5 ) ; " // TODO: don't generate invalid code
+              "}";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void simplifyTypedefFunction1() {
