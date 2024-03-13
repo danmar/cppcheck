@@ -119,7 +119,8 @@ private:
         TEST_CASE(versionWithCfg);
         TEST_CASE(versionExclusive);
         TEST_CASE(versionWithInvalidCfg);
-        TEST_CASE(checkVersion);
+        TEST_CASE(checkVersionCorrect);
+        TEST_CASE(checkVersionIncorrect);
         TEST_CASE(onefile);
         TEST_CASE(onepath);
         TEST_CASE(optionwithoutfile);
@@ -472,20 +473,18 @@ private:
         ASSERT_EQUALS("cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 2 near: \n", logger->str());
     }
 
-    void checkVersion() {
+    void checkVersionCorrect() {
         REDIRECT;
-        // get version
-        const char * const argv1[] = {"cppcheck", "--version"};
-        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parser->parseFromArgs(2, argv1));
-        std::string version = logger->str();
-        version.erase(version.find('\n'));
-        const std::string checkCorrectVersion = "--check-version=" + version;
-        // check version: correct version
-        const char * const argv2[] = {"cppcheck", checkCorrectVersion.c_str(), "file.cpp"};
-        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv2));
-        // check version: incorrect version
-        const char * const argv3[] = {"cppcheck", "--check-version=Cppcheck 2.0", "file.cpp"};
-        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv3));
+        const std::string version = parser->getVersion();
+        const std::string checkVersion = "--check-version=" + version;
+        const char * const argv[] = {"cppcheck", checkVersion.c_str(), "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+    }
+
+    void checkVersionIncorrect() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--check-version=Cppcheck 2.0", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: --check-version check failed. Aborting.\n", logger->str());
     }
 

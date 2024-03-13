@@ -102,6 +102,11 @@ public:
         return mIgnoredPaths;
     }
 
+    /**
+     * Get Cppcheck version
+     */
+    std::string getVersion() const;
+
 protected:
 
     /**
