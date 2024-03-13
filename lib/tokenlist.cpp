@@ -492,6 +492,9 @@ static bool iscast(const Token *tok, bool cpp)
     if (Token::simpleMatch(tok->link(), ") ( )"))
         return false;
 
+    if (Token::Match(tok->link(), ") %assign%"))
+        return false;
+
     if (tok->previous() && tok->previous()->isName() && tok->previous()->str() != "return" &&
         (!cpp || !Token::Match(tok->previous(), "delete|throw")))
         return false;
