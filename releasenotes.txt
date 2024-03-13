@@ -23,3 +23,5 @@ Other:
 - Added '--template=simple'. It is expands to '{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]' without any additional location details.
 - Removed deprecated platform type 'Unspecified'. Please use 'unspecified' instead.
 - Removed deprecated 'Makefile' option 'SRCDIR'.
+- Added CMake option 'DISALLOW_THREAD_EXECUTOR' to control the inclusion of the executor which performs the analysis within a thread of the main process.
+- Removed CMake option 'USE_THREADS' in favor of 'DISALLOW_THREAD_EXECUTOR'.

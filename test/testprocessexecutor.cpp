@@ -66,8 +66,6 @@ private:
      * identical data, given within data.
      */
     void check(unsigned int jobs, int files, int result, const std::string &data, const CheckOptions& opt = make_default_obj{}) {
-        errout.str("");
-
         std::list<FileSettings> fileSettings;
 
         std::list<std::pair<std::string, std::size_t>> filelist;
@@ -157,22 +155,26 @@ private:
         std::ostringstream oss;
         oss << "int main()\n"
             << "{\n";
-        for (int i = 0; i < 500; i++)
+        const int num_err = 1;
+        for (int i = 0; i < num_err; i++) {
             oss << "  {int i = *((int*)0);}\n";
-
+        }
         oss << "  return 0;\n"
             << "}\n";
-        check(2, 3, 3, oss.str());
+        const int num_files = 3;
+        check(2, num_files, num_files, oss.str());
+        ASSERT_EQUALS(1LL * num_err * num_files, cppcheck::count_all_of(errout_str(), "(error) Null pointer dereference: (int*)0"));
     }
 
-    // TODO: check the output
     void many_threads() {
-        check(16, 100, 100,
+        const int num_files = 100;
+        check(16, num_files, num_files,
               "int main()\n"
               "{\n"
               "  int i = *((int*)0);\n"
               "  return 0;\n"
               "}");
+        ASSERT_EQUALS(num_files, cppcheck::count_all_of(errout_str(), "(error) Null pointer dereference: (int*)0"));
     }
 
     // #11249 - reports TSAN errors
@@ -184,6 +186,8 @@ private:
               "  int i = *((int*)0);\n"
               "  return 0;\n"
               "}", dinit(CheckOptions, $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
+        // we are not interested in the results - so just consume them
+        (void)errout_str();
     }
 
     void many_threads_plist() {
@@ -196,6 +200,8 @@ private:
               "  int i = *((int*)0);\n"
               "  return 0;\n"
               "}", dinit(CheckOptions, $.plistOutput = plistOutput.c_str()));
+        // we are not interested in the results - so just consume them
+        (void)errout_str();
     }
 
     void no_errors_more_files() {
@@ -229,15 +235,18 @@ private:
               "  {int i = *((int*)0);}\n"
               "  return 0;\n"
               "}");
+        ASSERT_EQUALS("[" + fprefix() + "_1.cpp:3]: (error) Null pointer dereference: (int*)0\n", errout_str());
     }
 
     void one_error_several_files() {
-        check(2, 20, 20,
+        const int num_files = 20;
+        check(2, num_files, num_files,
               "int main()\n"
               "{\n"
               "  {int i = *((int*)0);}\n"
               "  return 0;\n"
               "}");
+        ASSERT_EQUALS(num_files, cppcheck::count_all_of(errout_str(), "(error) Null pointer dereference: (int*)0"));
     }
 
     void clangTidy() {
@@ -341,7 +350,7 @@ private:
               "  int i = *((int*)0);\n"
               "  return 0;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
         settings = settingsOld;
     }
 
@@ -355,7 +364,7 @@ private:
         check(2, 2, 2,
               "#include \"" + inc_h.name() +"\"");
         // this is made unique by the executor
-        ASSERT_EQUALS("[" + inc_h.name() + ":3]: (error) Null pointer dereference: (int*)0\n", errout.str());
+        ASSERT_EQUALS("[" + inc_h.name() + ":3]: (error) Null pointer dereference: (int*)0\n", errout_str());
     }
 
     // TODO: test whole program analysis

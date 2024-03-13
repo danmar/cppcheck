@@ -151,13 +151,13 @@ static const std::string emptyString;
 #endif
 
 #if defined(_WIN32)
-#define THREADING_MODEL_THREAD
+#define HAS_THREADING_MODEL_THREAD
 #define STDCALL __stdcall
-#elif defined(USE_THREADS)
-#define THREADING_MODEL_THREAD
-#define STDCALL
 #elif ((defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)) || defined(__CPPCHECK__)
-#define THREADING_MODEL_FORK
+#define HAS_THREADING_MODEL_FORK
+#if !defined(DISALLOW_THREAD_EXECUTOR)
+#define HAS_THREADING_MODEL_THREAD
+#endif
 #define STDCALL
 #else
 #error "No threading model defined"

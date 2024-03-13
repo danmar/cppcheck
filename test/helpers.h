@@ -20,10 +20,12 @@
 #define helpersH
 
 #include "settings.h"
+#include "standards.h"
 #include "tokenize.h"
 #include "tokenlist.h"
 
 #include <cstddef>
+#include <stdexcept>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -31,23 +33,19 @@
 class Token;
 class Preprocessor;
 class SuppressionList;
+class ErrorLogger;
 namespace simplecpp {
     struct DUI;
 }
 
-class givenACodeSampleToTokenize {
-private:
-    const Settings settings;
-    Tokenizer tokenizer;
-
+class SimpleTokenizer {
 public:
-    explicit givenACodeSampleToTokenize(const char sample[], bool createOnly = false, bool cpp = true)
-        : tokenizer(settings, nullptr) {
+    SimpleTokenizer(ErrorLogger& errorlogger, const char sample[], bool cpp = true)
+        : tokenizer{settings, &errorlogger}
+    {
         std::istringstream iss(sample);
-        if (createOnly)
-            tokenizer.list.createTokens(iss, cpp ? "test.cpp" : "test.c");
-        else
-            tokenizer.tokenize(iss, cpp ? "test.cpp" : "test.c");
+        if (!tokenizer.tokenize(iss, cpp ? "test.cpp" : "test.c"))
+            throw std::runtime_error("creating tokens failed");
     }
 
     Token* tokens() {
@@ -57,6 +55,34 @@ public:
     const Token* tokens() const {
         return tokenizer.tokens();
     }
+
+private:
+    const Settings settings;
+    Tokenizer tokenizer;
+};
+
+class SimpleTokenList
+{
+public:
+
+    explicit SimpleTokenList(const char code[], Standards::Language lang = Standards::Language::CPP)
+    {
+        std::istringstream iss(code);
+        if (!list.createTokens(iss, lang))
+            throw std::runtime_error("creating tokens failed");
+    }
+
+    Token* front() {
+        return list.front();
+    }
+
+    const Token* front() const {
+        return list.front();
+    }
+
+private:
+    const Settings settings;
+    TokenList list{&settings};
 };
 
 

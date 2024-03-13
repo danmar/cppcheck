@@ -76,7 +76,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         if (reallocType != No)
             return reallocType;
 
-        if (mTokenizer_->isCPP() && tok2->str() == "new") {
+        if (tok2->isCpp() && tok2->str() == "new") {
             if (tok2->strAt(1) == "(" && !Token::Match(tok2->next(),"( std| ::| nothrow )"))
                 return No;
             if (tok2->astOperand1() && (tok2->astOperand1()->str() == "[" || (tok2->astOperand1()->astOperand1() && tok2->astOperand1()->astOperand1()->str() == "[")))
@@ -187,7 +187,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok
 
 CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok, nonneg int varid) const
 {
-    if (mTokenizer_->isCPP() && tok->str() == "delete" && tok->astOperand1()) {
+    if (tok->isCpp() && tok->str() == "delete" && tok->astOperand1()) {
         const Token* vartok = tok->astOperand1();
         if (Token::Match(vartok, ".|::"))
             vartok = vartok->astOperand2();
@@ -973,7 +973,7 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
             continue;
 
         const std::string& functionName = tok->str();
-        if ((mTokenizer->isCPP() && functionName == "delete") ||
+        if ((tok->isCpp() && functionName == "delete") ||
             functionName == "return")
             continue;
 
@@ -989,7 +989,7 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
             if (arg->isOp() && !(tok->isKeyword() && arg->str() == "*")) // e.g. switch (*new int)
                 continue;
             while (arg->astOperand1()) {
-                if (mTokenizer->isCPP() && Token::simpleMatch(arg, "new"))
+                if (arg->isCpp() && Token::simpleMatch(arg, "new"))
                     break;
                 arg = arg->astOperand1();
             }
@@ -1031,7 +1031,7 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
 void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
 {
     for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-        const bool isNew = mTokenizer->isCPP() && tok->str() == "new";
+        const bool isNew = tok->isCpp() && tok->str() == "new";
         if (!isNew && !Token::Match(tok, "%name% ("))
             continue;
 

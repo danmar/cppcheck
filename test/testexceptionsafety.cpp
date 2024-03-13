@@ -60,9 +60,6 @@ private:
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     void check_(const char* file, int line, const char code[], bool inconclusive = false, const Settings *s = nullptr) {
-        // Clear the error buffer..
-        errout.str("");
-
         const Settings settings1 = settingsBuilder(s ? *s : settings).certainty(Certainty::inconclusive, inconclusive).build();
 
         // Tokenize..
@@ -80,7 +77,7 @@ private:
               "        throw e;\n"
               "    }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Class x is not safe, destructor throws exception\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Class x is not safe, destructor throws exception\n", errout_str());
 
         check("class x {\n"
               "    ~x();\n"
@@ -88,7 +85,7 @@ private:
               "x::~x() {\n"
               "    throw e;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Class x is not safe, destructor throws exception\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Class x is not safe, destructor throws exception\n", errout_str());
 
         // #3858 - throwing exception in try block in destructor.
         check("class x {\n"
@@ -99,7 +96,7 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("class x {\n"
               "    ~x() {\n"
@@ -108,7 +105,7 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void deallocThrow1() {
@@ -119,7 +116,7 @@ private:
               "        throw 123;\n"
               "    p = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Exception thrown in invalid state, 'p' points at deallocated memory.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Exception thrown in invalid state, 'p' points at deallocated memory.\n", errout_str());
 
         check("void f() {\n"
               "    static int* p = foo;\n"
@@ -128,7 +125,7 @@ private:
               "        throw 1;\n"
               "    p = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Exception thrown in invalid state, 'p' points at deallocated memory.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Exception thrown in invalid state, 'p' points at deallocated memory.\n", errout_str());
     }
 
     void deallocThrow2() {
@@ -139,7 +136,7 @@ private:
               "        throw 1;\n"
               "    p = new int;\n"
               "}", true);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    static int* p = 0;\n"
@@ -147,7 +144,7 @@ private:
               "    reset(p);\n"
               "    throw 1;\n"
               "}", true);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void deallocThrow3() {
@@ -156,14 +153,14 @@ private:
               "    delete p;\n"
               "    throw 1;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    static int* p = 0;\n"
               "    delete p;\n"
               "    throw 1;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Exception thrown in invalid state, 'p' points at deallocated memory.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Exception thrown in invalid state, 'p' points at deallocated memory.\n", errout_str());
     }
 
     void rethrowCopy1() {
@@ -177,7 +174,7 @@ private:
               "        throw err;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.\n", errout_str());
     }
 
     void rethrowCopy2() {
@@ -191,7 +188,7 @@ private:
               "        throw err;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.\n", errout_str());
     }
 
     void rethrowCopy3() {
@@ -203,7 +200,7 @@ private:
               "        throw err;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.\n", errout_str());
     }
 
     void rethrowCopy4() {
@@ -218,7 +215,7 @@ private:
               "        throw err2;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void rethrowCopy5() {
@@ -235,7 +232,7 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:10]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.\n", errout_str());
 
         check("void f() {\n"
               "    try {\n"
@@ -250,7 +247,7 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void catchExceptionByValue() {
@@ -262,7 +259,7 @@ private:
               "        foo(err);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Exception should be caught by reference.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Exception should be caught by reference.\n", errout_str());
 
         check("void f() {\n"
               "    try {\n"
@@ -272,7 +269,7 @@ private:
               "        foo(err);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Exception should be caught by reference.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Exception should be caught by reference.\n", errout_str());
 
         check("void f() {\n"
               "    try {\n"
@@ -282,7 +279,7 @@ private:
               "        foo(err);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    try {\n"
@@ -292,7 +289,7 @@ private:
               "        foo(err);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    try {\n"
@@ -302,7 +299,7 @@ private:
               "        foo(err);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    try {\n"
@@ -312,7 +309,7 @@ private:
               "        foo(err);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    try {\n"
@@ -322,7 +319,7 @@ private:
               "        foo(err);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void noexceptThrow() {
@@ -334,12 +331,12 @@ private:
               "void func6() noexcept(false) { func1(); }");
         ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in function declared not to throw exceptions.\n"
                       "[test.cpp:3]: (error) Exception thrown in function declared not to throw exceptions.\n"
-                      "[test.cpp:5]: (error) Exception thrown in function declared not to throw exceptions.\n", errout.str());
+                      "[test.cpp:5]: (error) Exception thrown in function declared not to throw exceptions.\n", errout_str());
 
         // avoid false positives
         check("const char *func() noexcept { return 0; }\n"
               "const char *func1() noexcept { try { throw 1; } catch(...) {} return 0; }");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void nothrowThrow() {
@@ -349,11 +346,11 @@ private:
               "void func4() throw() { func1(); }\n"
               "void func5() throw(int) { func1(); }");
         ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in function declared not to throw exceptions.\n"
-                      "[test.cpp:4]: (error) Exception thrown in function declared not to throw exceptions.\n", errout.str());
+                      "[test.cpp:4]: (error) Exception thrown in function declared not to throw exceptions.\n", errout_str());
 
         // avoid false positives
         check("const char *func() throw() { return 0; }");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void unhandledExceptionSpecification1() { // #4800
@@ -368,7 +365,7 @@ private:
               "    myThrowingFoo();\n"
               "  } catch(MyException &) {}\n"
               "}\n", true);
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function myThrowingFoo().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function myThrowingFoo().\n", errout_str());
     }
 
     void unhandledExceptionSpecification2() {
@@ -377,7 +374,7 @@ private:
               "{\n"
               "    f();\n"
               "}\n", true);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void unhandledExceptionSpecification3() {
@@ -395,11 +392,11 @@ private:
 
         check(code, true);
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function f().\n"
-                      "[test.cpp:6] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function f().\n", errout.str());
+                      "[test.cpp:6] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function f().\n", errout_str());
 
         const Settings s = settingsBuilder().library("gnu.cfg").build();
         check(code, true, &s);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void nothrowAttributeThrow() {
@@ -407,11 +404,11 @@ private:
               "void func2() __attribute((nothrow)); void func2() { throw 1; }\n"
               "void func3() __attribute((nothrow)); void func3() { func1(); }");
         ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in function declared not to throw exceptions.\n"
-                      "[test.cpp:3]: (error) Exception thrown in function declared not to throw exceptions.\n", errout.str());
+                      "[test.cpp:3]: (error) Exception thrown in function declared not to throw exceptions.\n", errout_str());
 
         // avoid false positives
         check("const char *func() __attribute((nothrow)); void func1() { return 0; }");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void nothrowAttributeThrow2() {
@@ -420,7 +417,7 @@ private:
               "      copyMemberValues();\n"
               "   }\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void nothrowDeclspecThrow() {
@@ -428,30 +425,30 @@ private:
               "void __declspec(nothrow) func2() { throw 1; }\n"
               "void __declspec(nothrow) func3() { func1(); }");
         ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in function declared not to throw exceptions.\n"
-                      "[test.cpp:3]: (error) Exception thrown in function declared not to throw exceptions.\n", errout.str());
+                      "[test.cpp:3]: (error) Exception thrown in function declared not to throw exceptions.\n", errout_str());
 
         // avoid false positives
         check("const char *func() __attribute((nothrow)); void func1() { return 0; }");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void rethrowNoCurrentException1() {
         check("void func1(const bool flag) { try{ if(!flag) throw; } catch (int&) { ; } }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Rethrowing current exception with 'throw;', it seems there is no current exception to rethrow."
-                      " If there is no current exception this calls std::terminate(). More: https://isocpp.org/wiki/faq/exceptions#throw-without-an-object\n", errout.str());
+                      " If there is no current exception this calls std::terminate(). More: https://isocpp.org/wiki/faq/exceptions#throw-without-an-object\n", errout_str());
     }
 
     void rethrowNoCurrentException2() {
         check("void func1() { try{ ; } catch (...) { ; } throw; }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Rethrowing current exception with 'throw;', it seems there is no current exception to rethrow."
-                      " If there is no current exception this calls std::terminate(). More: https://isocpp.org/wiki/faq/exceptions#throw-without-an-object\n", errout.str());
+                      " If there is no current exception this calls std::terminate(). More: https://isocpp.org/wiki/faq/exceptions#throw-without-an-object\n", errout_str());
     }
 
     void rethrowNoCurrentException3() {
         check("void on_error() { try { throw; } catch (const int &) { ; } catch (...) { ; } }\n"      // exception dispatcher idiom
               "void func2() { try{ ; } catch (const int&) { throw; } ; }\n"
               "void func3() { throw 0; }");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 };
 

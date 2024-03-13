@@ -1176,7 +1176,7 @@ public:
      */
     const Variable *getVariable(const std::string &varname) const;
 
-    const Token * addEnum(const Token * tok, bool isCpp);
+    const Token * addEnum(const Token * tok);
 
     const Scope *findRecordInBase(const std::string &name) const;
 
@@ -1387,8 +1387,6 @@ public:
     void printVariable(const Variable *var, const char *indent) const;
     void printXml(std::ostream &out) const;
 
-    bool isCPP() const;
-
     /*
      * @brief Do a sanity check
      */
@@ -1452,8 +1450,8 @@ private:
 
     void fixVarId(VarIdMap & varIds, const Token * vartok, Token * membertok, const Variable * membervar);
 
-    /** Whether iName is a keyword as defined in http://en.cppreference.com/w/c/keyword and http://en.cppreference.com/w/cpp/keyword*/
-    bool isReservedName(const std::string& iName) const;
+    /** Whether the token is a keyword as defined in http://en.cppreference.com/w/c/keyword and http://en.cppreference.com/w/cpp/keyword*/
+    static bool isReservedName(const Token* tok);
 
     const Enumerator * findEnumerator(const Token * tok, std::set<std::string>& tokensThatAreNotEnumeratorValues) const;
 
@@ -1477,7 +1475,6 @@ private:
     /** list for missing types */
     std::list<Type> mBlankTypes;
 
-    bool mIsCpp;
     ValueType::Sign mDefaultSignedness;
 };
 

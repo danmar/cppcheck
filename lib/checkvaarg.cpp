@@ -150,7 +150,7 @@ void CheckVaarg::va_list_usage()
                 tok = findNextTokenFromBreak(tok);
                 if (!tok)
                     return;
-            } else if (tok->str() == "goto" || (mTokenizer->isCPP() && tok->str() == "try")) {
+            } else if (tok->str() == "goto" || (tok->isCpp() && tok->str() == "try")) {
                 open = false;
                 break;
             } else if (!open && tok->varId() == var->declarationId())

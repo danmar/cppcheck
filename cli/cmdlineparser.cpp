@@ -374,6 +374,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
     ImportProject project;
 
+    bool executorAuto = true;
     int8_t logMissingInclude{0};
 
     for (int i = 1; i < argc; i++) {
@@ -614,6 +615,36 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 #endif
             }
 
+            else if (std::strncmp(argv[i], "--executor=", 11) == 0) {
+                const std::string type = 11 + argv[i];
+                if (type == "auto") {
+                    executorAuto = true;
+                    mSettings.executor = Settings::defaultExecutor();
+                }
+                else if (type == "thread") {
+#if defined(HAS_THREADING_MODEL_THREAD)
+                    executorAuto = false;
+                    mSettings.executor = Settings::ExecutorType::Thread;
+#else
+                    mLogger.printError("executor type 'thread' cannot be used as Cppcheck has not been built with a respective threading model.");
+                    return Result::Fail;
+#endif
+                }
+                else if (type == "process") {
+#if defined(HAS_THREADING_MODEL_FORK)
+                    executorAuto = false;
+                    mSettings.executor = Settings::ExecutorType::Process;
+#else
+                    mLogger.printError("executor type 'process' cannot be used as Cppcheck has not been built with a respective threading model.");
+                    return Result::Fail;
+#endif
+                }
+                else {
+                    mLogger.printError("unknown executor: '" + type + "'.");
+                    return Result::Fail;
+                }
+            }
+
             // Filter errors
             else if (std::strncmp(argv[i], "--exitcode-suppressions=", 24) == 0) {
                 // exitcode-suppressions=filename.txt
@@ -751,7 +782,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             }
 
             else if (std::strncmp(argv[i], "-l", 2) == 0) {
-#ifdef THREADING_MODEL_FORK
+#ifdef HAS_THREADING_MODEL_FORK
                 std::string numberString;
 
                 // "-l 3"
@@ -1275,6 +1306,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
     if (!loadCppcheckCfg())
         return Result::Fail;
+
+    // TODO: bail out?
+    if (!executorAuto && mSettings.useSingleJob())
+        mLogger.printMessage("'--executor' has no effect as only a single job will be used.");
 
     // Default template format..
     if (mSettings.templateFormat.empty()) {

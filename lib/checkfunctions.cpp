@@ -88,7 +88,7 @@ void CheckFunctions::checkProhibitedFunctions()
 
                 const Library::WarnInfo* wi = mSettings->library.getWarnInfo(tok);
                 if (wi) {
-                    if (mSettings->severity.isEnabled(wi->severity) && mSettings->standards.c >= wi->standards.c && mSettings->standards.cpp >= wi->standards.cpp) {
+                    if (mSettings->severity.isEnabled(wi->severity) && ((tok->isC() && mSettings->standards.c >= wi->standards.c) || (tok->isCpp() && mSettings->standards.cpp >= wi->standards.cpp))) {
                         const std::string daca = mSettings->daca ? "prohibited" : "";
                         reportError(tok, wi->severity, daca + tok->str() + "Called", wi->message, CWE477, Certainty::normal);
                     }
@@ -148,7 +148,7 @@ void CheckFunctions::invalidFunctionUsage()
                     // Is non-null terminated local variable of type char (e.g. char buf[] = {'x'};) ?
                     if (variable && variable->isLocal()
                         && valueType && (valueType->type == ValueType::Type::CHAR || valueType->type == ValueType::Type::WCHAR_T)
-                        && !isVariablesChanged(variable->declEndToken(), functionToken, 0 /*indirect*/, { variable }, mSettings, mTokenizer->isCPP())) {
+                        && !isVariablesChanged(variable->declEndToken(), functionToken, 0 /*indirect*/, { variable }, mSettings)) {
                         const Token* varTok = variable->declEndToken();
                         auto count = -1; // Find out explicitly set count, e.g.: char buf[3] = {...}. Variable 'count' is set to 3 then.
                         if (varTok && Token::simpleMatch(varTok->astOperand1(), "["))
@@ -423,7 +423,7 @@ void CheckFunctions::missingReturnError(const Token* tok)
 //---------------------------------------------------------------------------
 void CheckFunctions::checkMathFunctions()
 {
-    const bool styleC99 = mSettings->severity.isEnabled(Severity::style) && mSettings->standards.c != Standards::C89 && mSettings->standards.cpp != Standards::CPP03;
+    const bool styleC99 = mSettings->severity.isEnabled(Severity::style) && ((mTokenizer->isC() && mSettings->standards.c != Standards::C89) || (mTokenizer->isCPP() && mSettings->standards.cpp != Standards::CPP03));
     const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
 
     if (!styleC99 && !printWarnings && !mSettings->isPremiumEnabled("wrongmathcall"))
@@ -756,10 +756,10 @@ void CheckFunctions::useStandardLibrary()
 
         const auto& secondOp = condToken->str();
         const bool isLess = "<" == secondOp &&
-                            isConstExpression(condToken->astOperand2(), mSettings->library, mTokenizer->isCPP()) &&
+                            isConstExpression(condToken->astOperand2(), mSettings->library) &&
                             condToken->astOperand1()->varId() == idxVarId;
         const bool isMore = ">" == secondOp &&
-                            isConstExpression(condToken->astOperand1(), mSettings->library, mTokenizer->isCPP()) &&
+                            isConstExpression(condToken->astOperand1(), mSettings->library) &&
                             condToken->astOperand2()->varId() == idxVarId;
 
         if (!(isLess || isMore))
@@ -776,7 +776,7 @@ void CheckFunctions::useStandardLibrary()
         // technically using void* here is not correct but some compilers could allow it
 
         const Token *tok = scope.bodyStart;
-        const std::string memcpyName = mTokenizer->isCPP() ? "std::memcpy" : "memcpy";
+        const std::string memcpyName = tok->isCpp() ? "std::memcpy" : "memcpy";
         // (reinterpret_cast<uint8_t*>(dest))[i] = (reinterpret_cast<const uint8_t*>(src))[i];
         if (Token::Match(tok, "{ (| reinterpret_cast < uint8_t|int8_t|char|void * > ( %var% ) )| [ %varid% ] = "
                          "(| reinterpret_cast < const| uint8_t|int8_t|char|void * > ( %var% ) )| [ %varid% ] ; }", idxVarId)) {
@@ -792,7 +792,7 @@ void CheckFunctions::useStandardLibrary()
         }
 
 
-        const static std::string memsetName = mTokenizer->isCPP() ? "std::memset" : "memset";
+        const static std::string memsetName = tok->isCpp() ? "std::memset" : "memset";
         // ((char*)dst)[i] = 0;
         if (Token::Match(tok, "{ ( ( uint8_t|int8_t|char|void * ) (| %var% ) )| [ %varid% ] = %char%|%num% ; }", idxVarId)) {
             useStandardLibraryError(tok->next(), memsetName);

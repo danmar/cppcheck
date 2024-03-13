@@ -1,7 +1,5 @@
-# Some convenient links:
-# - https://github.com/actions/virtual-environments/blob/master/images/win/Windows2019-Readme.md
-#
-
+# Syntax reference https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
 name: release-windows
 
 on:
@@ -24,6 +22,7 @@ jobs:
   build:
 
     runs-on: windows-2022
+    if: ${{ github.repository_owner == 'danmar' }}
 
     env:
       # see https://www.pcre.org/original/changelog.txt
