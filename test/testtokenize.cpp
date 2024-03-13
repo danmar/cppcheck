@@ -7126,6 +7126,8 @@ private:
         ASSERT_THROW_EQUALS(tokenizeAndStringify("int (*f) MACRO((void *));\n"), // #12010
                             InternalError,
                             "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
+
+        ASSERT_THROW(tokenizeAndStringify("{ for (()()) }"), InternalError); // #11643
     }
 
 

@@ -8532,13 +8532,15 @@ void Tokenizer::findGarbageCode() const
         if (!Token::simpleMatch(tok, "for (")) // find for loops
             continue;
         // count number of semicolons
-        int semicolons = 0;
+        int semicolons = 0, colons = 0;
         const Token* const startTok = tok;
         tok = tok->next()->link()->previous(); // find ")" of the for-loop
         // walk backwards until we find the beginning (startTok) of the for() again
         for (; tok != startTok; tok = tok->previous()) {
             if (tok->str() == ";") { // do the counting
                 semicolons++;
+            } else if (tok->str() == ":") {
+                colons++;
             } else if (tok->str() == ")") { // skip pairs of ( )
                 tok = tok->link();
             }
@@ -8547,6 +8549,8 @@ void Tokenizer::findGarbageCode() const
         if (semicolons > 2)
             syntaxError(tok);
         if (semicolons == 1 && !(isCPP() && mSettings.standards.cpp >= Standards::CPP20))
+            syntaxError(tok);
+        if (semicolons == 0 && colons == 0)
             syntaxError(tok);
     }
 
