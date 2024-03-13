@@ -837,7 +837,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         }
         // Freeing memory (not considered "using" the pointer if it was also allocated in this function)
         if ((Token::Match(tok, "%name% ( %var% )") && mSettings->library.getDeallocFuncInfo(tok)) ||
-            (mTokenizer->isCPP() && (Token::Match(tok, "delete %var% ;") || Token::Match(tok, "delete [ ] %var% ;")))) {
+            (tok->isCpp() && (Token::Match(tok, "delete %var% ;") || Token::Match(tok, "delete [ ] %var% ;")))) {
             nonneg int varid = 0;
             if (tok->str() != "delete") {
                 const Token *varTok = tok->tokAt(2);
@@ -953,8 +953,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                         const Token *type = allocFuncCallToken->next();
 
                         // skip nothrow
-                        if (mTokenizer->isCPP() && (Token::simpleMatch(type, "( nothrow )") ||
-                                                    Token::simpleMatch(type, "( std :: nothrow )")))
+                        if (type->isCpp() && (Token::simpleMatch(type, "( nothrow )") ||
+                                              Token::simpleMatch(type, "( std :: nothrow )")))
                             type = type->link()->next();
 
                         // is it a user defined type?
@@ -1026,7 +1026,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             if (var) {
                 // Consider allocating memory separately because allocating/freeing alone does not constitute using the variable
                 if (var->mType == Variables::pointer &&
-                    ((mTokenizer->isCPP() && Token::simpleMatch(skipBrackets(tok->next()), "= new")) ||
+                    ((tok->isCpp() && Token::simpleMatch(skipBrackets(tok->next()), "= new")) ||
                      (Token::Match(skipBrackets(tok->next()), "= %name% (") && mSettings->library.getAllocFuncInfo(tok->tokAt(2))))) {
                     variables.allocateMemory(varid, tok);
                 } else if (var->mType == Variables::pointer || var->mType == Variables::reference) {
@@ -1039,7 +1039,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             }
         }
 
-        else if (mTokenizer->isCPP() && Token::Match(tok, "[;{}] %var% <<")) {
+        else if (tok->isCpp() && Token::Match(tok, "[;{}] %var% <<")) {
             variables.erase(tok->next()->varId());
         }
 
@@ -1049,13 +1049,13 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             } else // addressof
                 variables.use(tok->next()->varId(), tok); // use = read + write
         } else if (Token::Match(tok, ">>|>>= %name%")) {
-            if (isLikelyStreamRead(mTokenizer->isCPP(), tok))
+            if (isLikelyStreamRead(tok))
                 variables.use(tok->next()->varId(), tok); // use = read + write
             else
                 variables.read(tok->next()->varId(), tok);
         } else if (Token::Match(tok, "%var% >>|&") && Token::Match(tok->previous(), "[{};:]")) {
             variables.read(tok->varId(), tok);
-        } else if (isLikelyStreamRead(mTokenizer->isCPP(),tok->previous())) {
+        } else if (isLikelyStreamRead(tok->previous())) {
             variables.use(tok->varId(), tok);
         }
 
@@ -1205,13 +1205,13 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (isIncrementOrDecrement && tok->astParent() && precedes(tok, tok->astOperand1()))
                 continue;
 
-            if (tok->str() == "=" && !(tok->valueType() && tok->valueType()->pointer) && isRaiiClass(tok->valueType(), mTokenizer->isCPP(), false))
+            if (tok->str() == "=" && !(tok->valueType() && tok->valueType()->pointer) && isRaiiClass(tok->valueType(), tok->isCpp(), false))
                 continue;
 
             const bool isPointer = tok->valueType() && (tok->valueType()->pointer || tok->valueType()->type == ValueType::SMART_POINTER);
 
             if (tok->isName()) {
-                if (isRaiiClass(tok->valueType(), mTokenizer->isCPP(), false))
+                if (isRaiiClass(tok->valueType(), tok->isCpp(), false))
                     continue;
                 tok = tok->next();
             }
@@ -1298,7 +1298,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (tok->previous() && tok->previous()->variable() && tok->previous()->variable()->nameToken()->scope()->type == Scope::eUnion)
                 continue;
 
-            FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
+            FwdAnalysis fwdAnalysis(mSettings->library);
             const Token* scopeEnd = ValueFlow::getEndOfExprScope(expr, scope, /*smallest*/ false);
             if (fwdAnalysis.unusedValue(expr, start, scopeEnd)) {
                 if (!bailoutTypeName.empty()) {
@@ -1688,7 +1688,7 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
             // check if global variable is changed
             if (bodyVariable->isGlobal() || (pointersToGlobals.find(bodyVariable) != pointersToGlobals.end())) {
                 const int indirect = bodyVariable->isArray() ? bodyVariable->dimensions().size() : bodyVariable->isPointer();
-                if (isVariableChanged(bodyToken, indirect, mSettings, mTokenizer->isCPP())) {
+                if (isVariableChanged(bodyToken, indirect, mSettings)) {
                     return false;
                 }
                 // check if pointer to global variable assigned to another variable (another_var = &global_var)

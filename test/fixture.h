@@ -254,12 +254,17 @@ protected:
         return s;
     }
 
-    std::ostringstream errout;
+    std::string errout_str() {
+        std::string s = mErrout.str();
+        mErrout.str("");
+        return s;
+    }
 
     const Settings settingsDefault;
 
 private:
     std::ostringstream mOutput;
+    std::ostringstream mErrout;
 
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
     void reportErr(const ErrorMessage &msg) override;

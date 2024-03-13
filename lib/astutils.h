@@ -194,7 +194,7 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
 bool isVariableDecl(const Token* tok);
 bool isStlStringType(const Token* tok);
 
-bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknown = false);
+bool isTemporary(const Token* tok, const Library* library, bool unknown = false);
 
 const Token* previousBeforeAstLeftmostLeaf(const Token* tok);
 Token* previousBeforeAstLeftmostLeaf(Token* tok);
@@ -208,7 +208,7 @@ const Token* astParentSkipParens(const Token* tok);
 const Token* getParentMember(const Token * tok);
 
 const Token* getParentLifetime(const Token* tok);
-const Token* getParentLifetime(bool cpp, const Token* tok, const Library* library);
+const Token* getParentLifetime(const Token* tok, const Library* library);
 
 std::vector<ValueType> getParentValueTypes(const Token* tok,
                                            const Settings* settings = nullptr,
@@ -261,7 +261,7 @@ SmallVector<ReferenceToken> followAllReferences(const Token* tok,
                                                 int depth = 20);
 const Token* followReferences(const Token* tok, ErrorPath* errors = nullptr);
 
-CPPCHECKLIB bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
+CPPCHECKLIB bool isSameExpression(bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
 
 bool isEqualKnownValue(const Token * const tok1, const Token * const tok2);
 
@@ -282,21 +282,20 @@ bool compareTokenFlags(const Token* tok1, const Token* tok2, bool macro);
 /**
  * Are two conditions opposite
  * @param isNot  do you want to know if cond1 is !cond2 or if cond1 and cond2 are non-overlapping. true: cond1==!cond2  false: cond1==true => cond2==false
- * @param cpp    c++ file
  * @param cond1  condition1
  * @param cond2  condition2
  * @param library files data
  * @param pure boolean
  */
-bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
+bool isOppositeCond(bool isNot, const Token * const cond1, const Token * const cond2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
 
-bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * const tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
+bool isOppositeExpression(const Token * const tok1, const Token * const tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
 
 bool isConstFunctionCall(const Token* ftok, const Library& library);
 
-bool isConstExpression(const Token *tok, const Library& library, bool cpp);
+bool isConstExpression(const Token *tok, const Library& library);
 
-bool isWithoutSideEffects(bool cpp, const Token* tok, bool checkArrayAccess = false, bool checkReference = true);
+bool isWithoutSideEffects(const Token* tok, bool checkArrayAccess = false, bool checkReference = true);
 
 bool isUniqueExpression(const Token* tok);
 
@@ -341,38 +340,35 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, nonneg int 
 CPPCHECKLIB bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Settings *settings, bool *inconclusive);
 
 /** Is variable changed in block of code? */
-CPPCHECKLIB bool isVariableChanged(const Token *start, const Token *end, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
-bool isVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
+CPPCHECKLIB bool isVariableChanged(const Token *start, const Token *end, const nonneg int exprid, bool globalvar, const Settings *settings, int depth = 20);
+bool isVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, int depth = 20);
 
-bool isVariableChanged(const Token *tok, int indirect, const Settings *settings, bool cpp, int depth = 20);
+bool isVariableChanged(const Token *tok, int indirect, const Settings *settings, int depth = 20);
 
-bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp, int depth = 20);
+bool isVariableChanged(const Variable * var, const Settings *settings, int depth = 20);
 
 bool isVariablesChanged(const Token* start,
                         const Token* end,
                         int indirect,
                         const std::vector<const Variable*> &vars,
-                        const Settings* settings,
-                        bool cpp);
+                        const Settings* settings);
 
-bool isThisChanged(const Token* tok, int indirect, const Settings* settings, bool cpp);
-const Token* findThisChanged(const Token* start, const Token* end, int indirect, const Settings* settings, bool cpp);
+bool isThisChanged(const Token* tok, int indirect, const Settings* settings);
+const Token* findThisChanged(const Token* start, const Token* end, int indirect, const Settings* settings);
 
-const Token* findVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
-Token* findVariableChanged(Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
+const Token* findVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, int depth = 20);
+Token* findVariableChanged(Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, int depth = 20);
 
 CPPCHECKLIB const Token* findExpressionChanged(const Token* expr,
                                                const Token* start,
                                                const Token* end,
                                                const Settings* settings,
-                                               bool cpp,
                                                int depth = 20);
 
 const Token* findExpressionChangedSkipDeadCode(const Token* expr,
                                                const Token* start,
                                                const Token* end,
                                                const Settings* settings,
-                                               bool cpp,
                                                const std::function<std::vector<MathLib::bigint>(const Token* tok)>& evaluate,
                                                int depth = 20);
 
@@ -381,7 +377,6 @@ bool isExpressionChangedAt(const Token* expr,
                            int indirect,
                            bool globalvar,
                            const Settings* settings,
-                           bool cpp,
                            int depth = 20);
 
 /// If token is an alias if another variable
@@ -426,14 +421,14 @@ CPPCHECKLIB const Token *findLambdaStartToken(const Token *last);
 CPPCHECKLIB const Token *findLambdaEndToken(const Token *first);
 CPPCHECKLIB Token* findLambdaEndToken(Token* first);
 
-bool isLikelyStream(bool cpp, const Token *stream);
+bool isLikelyStream(const Token *stream);
 
 /**
  * do we see a likely write of rhs through overloaded operator
  *   s >> x;
  *   a & x;
  */
-bool isLikelyStreamRead(bool cpp, const Token *op);
+bool isLikelyStreamRead(const Token *op);
 
 bool isCPPCast(const Token* tok);
 
@@ -443,7 +438,7 @@ bool isLeafDot(const Token* tok);
 
 enum class ExprUsage { None, NotUsed, PassedByReference, Used, Inconclusive };
 
-ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings, bool cpp);
+ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings);
 
 const Variable *getLHSVariable(const Token *tok);
 
@@ -458,7 +453,7 @@ bool isScopeBracket(const Token* tok);
 
 CPPCHECKLIB bool isNullOperand(const Token *expr);
 
-bool isGlobalData(const Token *expr, bool cpp);
+bool isGlobalData(const Token *expr);
 
 bool isUnevaluated(const Token *tok);
 

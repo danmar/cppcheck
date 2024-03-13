@@ -283,7 +283,7 @@ bool CheckStl::isContainerSize(const Token *containerToken, const Token *expr) c
         return false;
     if (!Token::Match(expr->astOperand1(), ". %name% ("))
         return false;
-    if (!isSameExpression(mTokenizer->isCPP(), false, containerToken, expr->astOperand1()->astOperand1(), mSettings->library, false, false))
+    if (!isSameExpression(false, containerToken, expr->astOperand1()->astOperand1(), mSettings->library, false, false))
         return false;
     return containerToken->valueType()->container->getYield(expr->previous()->str()) == Library::Container::Yield::SIZE;
 }
@@ -708,8 +708,8 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
                                               const Library& library,
                                               ValueFlow::Value::LifetimeKind kind = ValueFlow::Value::LifetimeKind::Iterator)
 {
-    if (isSameExpression(true, false, tok1, tok2, library, false, false)) {
-        return !astIsContainerOwned(tok1) || !isTemporary(true, tok1, &library);
+    if (isSameExpression(false, tok1, tok2, library, false, false)) {
+        return !astIsContainerOwned(tok1) || !isTemporary(tok1, &library);
     }
     if (astContainerYield(tok2) == Library::Container::Yield::ITEM)
         return true;
@@ -718,7 +718,7 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
         const auto address2 = getAddressContainer(tok2);
         return std::any_of(address1.begin(), address1.end(), [&](const Token* tok1) {
             return std::any_of(address2.begin(), address2.end(), [&](const Token* tok2) {
-                return isSameExpression(true, false, tok1, tok2, library, false, false);
+                return isSameExpression(false, tok1, tok2, library, false, false);
             });
         });
     }
@@ -826,7 +826,7 @@ void CheckStl::mismatchingContainers()
                             if (iter1.tok == iter2.tok)
                                 continue;
                             if (iter1.info->first && iter2.info->last &&
-                                isSameExpression(true, false, iter1.tok, iter2.tok, mSettings->library, false, false))
+                                isSameExpression(false, iter1.tok, iter2.tok, mSettings->library, false, false))
                                 sameIteratorExpressionError(iter1.tok);
                             if (checkIteratorPair(iter1.tok, iter2.tok))
                                 return;
@@ -1662,8 +1662,8 @@ static const Token *findInsertValue(const Token *tok, const Token *containerTok,
     }
     if (!ikeyTok || !icontainerTok)
         return nullptr;
-    if (isSameExpression(true, true, containerTok, icontainerTok, library, true, false) &&
-        isSameExpression(true, true, keyTok, ikeyTok, library, true, true)) {
+    if (isSameExpression(true, containerTok, icontainerTok, library, true, false) &&
+        isSameExpression(true, keyTok, ikeyTok, library, true, true)) {
         if (ivalueTok)
             return ivalueTok;
         return ikeyTok;
@@ -1707,7 +1707,7 @@ void CheckStl::checkFindInsert()
                     findInsertValue(thenTok->link()->tokAt(2), containerTok, keyTok, mSettings->library);
                 if (!valueTok2)
                     continue;
-                if (isSameExpression(true, true, valueTok, valueTok2, mSettings->library, true, true)) {
+                if (isSameExpression(true, valueTok, valueTok2, mSettings->library, true, true)) {
                     checkFindInsertError(valueTok);
                 }
             } else {
@@ -2585,9 +2585,9 @@ static const Token *singleAssignInScope(const Token *start, nonneg int varid, bo
     if (!Token::Match(start->next(), "%var% %assign%"))
         return nullptr;
     const Token *assignTok = start->tokAt(2);
-    if (isVariableChanged(assignTok->next(), endStatement, assignTok->astOperand1()->varId(), /*globalvar*/ false, settings, /*cpp*/ true))
+    if (isVariableChanged(assignTok->next(), endStatement, assignTok->astOperand1()->varId(), /*globalvar*/ false, settings))
         return nullptr;
-    if (isVariableChanged(assignTok->next(), endStatement, varid, /*globalvar*/ false, settings, /*cpp*/ true))
+    if (isVariableChanged(assignTok->next(), endStatement, varid, /*globalvar*/ false, settings))
         return nullptr;
     input = Token::findmatch(assignTok->next(), "%varid%", endStatement, varid) || !Token::Match(start->next(), "%var% =");
     hasBreak = Token::simpleMatch(endStatement->previous(), "break");
@@ -2611,7 +2611,7 @@ static const Token *singleMemberCallInScope(const Token *start, nonneg int varid
     if (!Token::findmatch(dotTok->tokAt(2), "%varid%", endStatement, varid))
         return nullptr;
     input = Token::Match(start->next(), "%var% . %name% ( %varid% )", varid);
-    if (isVariableChanged(dotTok->next(), endStatement, dotTok->astOperand1()->varId(), /*globalvar*/ false, settings, /*cpp*/ true))
+    if (isVariableChanged(dotTok->next(), endStatement, dotTok->astOperand1()->varId(), /*globalvar*/ false, settings))
         return nullptr;
     return dotTok;
 }
@@ -2648,7 +2648,7 @@ static const Token *singleConditionalInScope(const Token *start, nonneg int vari
         return nullptr;
     if (!Token::findmatch(start, "%varid%", bodyTok, varid))
         return nullptr;
-    if (isVariableChanged(start, bodyTok, varid, /*globalvar*/ false, settings, /*cpp*/ true))
+    if (isVariableChanged(start, bodyTok, varid, /*globalvar*/ false, settings))
         return nullptr;
     return bodyTok;
 }
@@ -2763,7 +2763,7 @@ namespace {
                     return true;
                 if (inconclusive)
                     return true;
-                if (isVariableChanged(tok, i, settings, true))
+                if (isVariableChanged(tok, i, settings))
                     return true;
             }
             return false;
@@ -2881,7 +2881,7 @@ void CheckStl::useStlAlgorithm()
     auto isConditionWithoutSideEffects = [this](const Token* tok) -> bool {
         if (!Token::simpleMatch(tok, "{") || !Token::simpleMatch(tok->previous(), ")"))
             return false;
-        return isConstExpression(tok->previous()->link()->astOperand2(), mSettings->library, true);
+        return isConstExpression(tok->previous()->link()->astOperand2(), mSettings->library);
     };
 
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {

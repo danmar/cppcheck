@@ -295,7 +295,7 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
             return;
         if (!truevalue.isIntValue())
             return;
-        if (endTok && findExpressionChanged(vartok, tok->next(), endTok, settings, true))
+        if (endTok && findExpressionChanged(vartok, tok->next(), endTok, settings))
             return;
         const bool impossible = (tok->str() == "==" && !then) || (tok->str() == "!=" && then);
         const ValueFlow::Value& v = then ? truevalue : falsevalue;
@@ -323,7 +323,7 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
                 pm.setIntValue(tok, 0, then);
         }
     } else if (tok && tok->exprId() > 0) {
-        if (endTok && findExpressionChanged(tok, tok->next(), endTok, settings, true))
+        if (endTok && findExpressionChanged(tok, tok->next(), endTok, settings))
             return;
         pm.setIntValue(tok, 0, then);
         assert(settings);
@@ -381,7 +381,7 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
                 }
             }
         } else if (tok2->exprId() > 0 && Token::Match(tok2, ".|(|[|*|%var%") && !pm.hasValue(tok2->exprId()) &&
-                   isVariableChanged(tok2, 0, settings, true)) {
+                   isVariableChanged(tok2, 0, settings)) {
             pm.setUnknown(tok2);
         }
 
@@ -421,7 +421,7 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
 static void removeModifiedVars(ProgramMemory& pm, const Token* tok, const Token* origin)
 {
     pm.erase_if([&](const ExprIdToken& e) {
-        return isVariableChanged(origin, tok, e.getExpressionId(), false, nullptr, true);
+        return isVariableChanged(origin, tok, e.getExpressionId(), false, nullptr);
     });
 }
 
@@ -508,7 +508,7 @@ void ProgramMemoryState::removeModifiedVars(const Token* tok)
     state.erase_if([&](const ExprIdToken& e) {
         const Token* start = origins[e.getExpressionId()];
         const Token* expr = e.tok;
-        if (!expr || findExpressionChangedSkipDeadCode(expr, start, tok, settings, true, eval)) {
+        if (!expr || findExpressionChangedSkipDeadCode(expr, start, tok, settings, eval)) {
             origins.erase(e.getExpressionId());
             return true;
         }
@@ -1610,7 +1610,7 @@ namespace {
                             if (ValueFlow::isContainerSizeChanged(child, v.indirect, *settings))
                                 v = unknown();
                         } else if (v.valueType != ValueFlow::Value::ValueType::UNINIT) {
-                            if (isVariableChanged(child, v.indirect, settings, true))
+                            if (isVariableChanged(child, v.indirect, settings))
                                 v = unknown();
                         }
                     }

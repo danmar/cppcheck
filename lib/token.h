@@ -265,18 +265,18 @@ public:
      * - "%char%" Any token enclosed in &apos;-character.
      * - "%comp%" Any token such that isComparisonOp() returns true.
      * - "%cop%" Any token such that isConstOp() returns true.
-     * - "%name%" any token which is a name, variable or type e.g. "hello" or "int"
+     * - "%name%" any token which is a name, variable or type e.g. "hello" or "int". Also matches keywords.
      * - "%num%" Any numeric token, e.g. "23"
      * - "%op%" Any token such that isOp() returns true.
      * - "%or%" A bitwise-or operator '|'
      * - "%oror%" A logical-or operator '||'
-     * - "%type%" Anything that can be a variable type, e.g. "int", but not "delete".
+     * - "%type%" Anything that can be a variable type, e.g. "int". Also matches keywords.
      * - "%str%" Any token starting with &quot;-character (C-string).
      * - "%var%" Match with token with varId > 0
      * - "%varid%" Match with parameter varid
      * - "[abc]" Any of the characters 'a' or 'b' or 'c'
      * - "int|void|char" Any of the strings, int, void or char
-     * - "int|void|char|" Any of the strings, int, void or char or empty string
+     * - "int|void|char|" Any of the strings, int, void or char or no token
      * - "!!else" No tokens or any token that is not "else".
      * - "someRandomText" If token contains "someRandomText".
      *

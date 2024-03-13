@@ -572,7 +572,7 @@ void memleak_AllocateAndInitializeSid()
     PSID pEveryoneSID = NULL;
     SID_IDENTIFIER_AUTHORITY SIDAuthWorld = SECURITY_WORLD_SID_AUTHORITY;
     AllocateAndInitializeSid(&SIDAuthWorld, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &pEveryoneSID);
-    // TODO: enable when #6994 is implemented cppcheck-suppress memleak
+    // cppcheck-suppress memleak
 }
 
 void memleak_HeapAlloc()
