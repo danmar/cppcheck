@@ -1529,7 +1529,7 @@ static bool astIsBoolLike(const Token* tok)
 
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors)
 {
-    if (tok1 == nullptr && tok2 == nullptr)
+    if (tok1 == tok2)
         return true;
     if (tok1 == nullptr || tok2 == nullptr)
         return false;

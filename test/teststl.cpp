@@ -2214,6 +2214,12 @@ private:
               "    if (it != N::v.end()) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(void* p) {\n" // #12445
+              "    std::vector<int>&v = *(std::vector<int>*)(p);\n"
+              "    v.erase(v.begin(), v.end());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void eraseIteratorOutOfBounds() {
