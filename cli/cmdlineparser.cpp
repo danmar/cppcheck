@@ -117,6 +117,15 @@ static bool addPathsToSet(const std::string& fileName, std::set<std::string>& se
     return true;
 }
 
+static std::string getVersion(const Settings& settings) {
+    if (!settings.cppcheckCfgProductName.empty())
+        return settings.cppcheckCfgProductName;
+    const char * const extraVersion = CppCheck::extraVersion();
+    if (*extraVersion != '\0')
+        return std::string("Cppcheck ") + CppCheck::version() + " ("+ extraVersion + ')';
+    return std::string("Cppcheck ") + CppCheck::version();
+}
+
 namespace {
     class XMLErrorMessagesLogger : public ErrorLogger
     {
@@ -356,15 +365,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         if (std::strcmp(argv[i], "--version") == 0) {
             if (!loadCppcheckCfg())
                 return Result::Fail;
-            if (!mSettings.cppcheckCfgProductName.empty()) {
-                mLogger.printRaw(mSettings.cppcheckCfgProductName);
-            } else {
-                const char * const extraVersion = CppCheck::extraVersion();
-                if (*extraVersion != '\0')
-                    mLogger.printRaw(std::string("Cppcheck ") + CppCheck::version() + " ("+ extraVersion + ')');
-                else
-                    mLogger.printRaw(std::string("Cppcheck ") + CppCheck::version());
-            }
+            const std::string version = getVersion(mSettings);
+            mLogger.printRaw(version);
             return Result::Exit;
         }
     }
@@ -486,6 +488,17 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             // Check library definitions
             else if (std::strcmp(argv[i], "--check-library") == 0) {
                 mSettings.checkLibrary = true;
+            }
+
+            else if (std::strncmp(argv[i], "--check-version=", 16) == 0) {
+                if (!loadCppcheckCfg())
+                    return Result::Fail;
+                const std::string actualVersion = getVersion(mSettings);
+                const std::string wantedVersion = argv[i] + 16;
+                if (actualVersion != wantedVersion) {
+                    mLogger.printError("--check-version check failed. Aborting.");
+                    return Result::Fail;
+                }
             }
 
             else if (std::strncmp(argv[i], "--checkers-report=", 18) == 0)

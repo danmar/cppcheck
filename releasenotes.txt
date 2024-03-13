@@ -25,3 +25,4 @@ Other:
 - Removed deprecated 'Makefile' option 'SRCDIR'.
 - Added CMake option 'DISALLOW_THREAD_EXECUTOR' to control the inclusion of the executor which performs the analysis within a thread of the main process.
 - Removed CMake option 'USE_THREADS' in favor of 'DISALLOW_THREAD_EXECUTOR'.
+- Add option '--check-version', you can use it to pin the cppcheck version in a script.
