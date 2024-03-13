@@ -163,7 +163,7 @@ private:
             << "}\n";
         const int num_files = 3;
         check(2, num_files, num_files, oss.str());
-        ASSERT_EQUALS(num_err * num_files, cppcheck::count_all_of(errout_str(), "(error) Null pointer dereference: (int*)0"));
+        ASSERT_EQUALS(1LL * num_err * num_files, cppcheck::count_all_of(errout_str(), "(error) Null pointer dereference: (int*)0"));
     }
 
     void many_threads() {
