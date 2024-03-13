@@ -760,7 +760,7 @@ def main():
 
     # Check if we are invoked from the right place
     if not os.path.exists(lib_dir):
-        print('Directory "' + lib_dir + '"not found.')
+        print('Directory "' + lib_dir + '" not found.')
         sys.exit(-1)
 
     # Create build directory if needed

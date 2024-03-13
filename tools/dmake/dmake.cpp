@@ -40,12 +40,19 @@ static std::string builddir(std::string filename)
 {
     if (startsWith(filename,"lib/"))
         filename = "$(libcppdir)" + filename.substr(3);
+    else if (startsWith(filename, "../lib/")) // oss-fuzz
+        filename = "$(libcppdir)" + filename.substr(6);
+
     return filename;
 }
 
 static std::string objfile(std::string cppfile)
 {
     cppfile.erase(cppfile.rfind('.'));
+    if (startsWith(cppfile, "../externals/simplecpp/")) // oss-fuzz
+        cppfile = cppfile.substr(23);
+    else if (startsWith(cppfile, "../externals/tinyxml2/")) // oss-fuzz
+        cppfile = cppfile.substr(22);
     return builddir(cppfile + ".o");
 }
 
@@ -62,13 +69,18 @@ static std::string objfiles(const std::vector<std::string> &files)
     return allObjfiles;
 }
 
-static void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
+static void getDeps(std::string filename, std::vector<std::string> &depfiles)
 {
     static const std::array<std::string, 3> externalfolders{"externals/picojson", "externals/simplecpp", "externals/tinyxml2"};
+    static const std::array<std::string, 3> externalfolders_rel{"../externals/picojson", "../externals/simplecpp", "../externals/tinyxml2"};
 
     // Is the dependency already included?
     if (std::find(depfiles.cbegin(), depfiles.cend(), filename) != depfiles.cend())
         return;
+
+    const bool relative = startsWith(filename, "../"); // oss-fuzz
+    if (relative)
+        filename = filename.substr(3);
 
     std::ifstream f(filename.c_str());
     if (!f.is_open()) {
@@ -84,13 +96,19 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
         else if (startsWith(filename, "tools"))
             getDeps("cli" + filename.substr(filename.find('/')), depfiles);
         else if (startsWith(filename, "lib/")) {
-            for (const std::string & external : externalfolders)
+            const auto& extfolders = relative ? externalfolders_rel : externalfolders;
+            for (const std::string & external : extfolders)
                 getDeps(external + filename.substr(filename.find('/')), depfiles);
         }
         return;
     }
     if (filename.find(".c") == std::string::npos)
-        depfiles.push_back(filename);
+    {
+        if (relative)
+            depfiles.push_back("../" + filename);
+        else
+            depfiles.push_back(filename);
+    }
 
     std::string path(filename);
     if (path.find('/') != std::string::npos)
@@ -119,6 +137,8 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
         // no need to look up extension-less headers
         if (!endsWith(hfile, ".h"))
             continue;
+        if (relative)
+            hfile = "../" + hfile;
         getDeps(hfile, depfiles);
     }
 }
@@ -126,7 +146,7 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
 static void compilefiles(std::ostream &fout, const std::vector<std::string> &files, const std::string &args)
 {
     for (const std::string &file : files) {
-        const bool external(startsWith(file,"externals/"));
+        const bool external(startsWith(file,"externals/") || startsWith(file,"../externals/"));
         fout << objfile(file) << ": " << file;
         std::vector<std::string> depfiles;
         getDeps(file, depfiles);
@@ -268,6 +288,92 @@ static std::vector<std::string> prioritizelib(const std::vector<std::string>& li
         return (p1 != priorities.end() ? p1->second : 0) > (p2 != priorities.end() ? p2->second : 0);
     });
     return libfiles_prio;
+}
+
+static void makeMatchcompiler(std::ostream& fout, const std::string& toolsPrefix, std::string args)
+{
+    if (!args.empty())
+        args = " " + args;
+
+    // avoid undefined variable
+    fout << "ifndef MATCHCOMPILER\n"
+         << "    MATCHCOMPILER=\n"
+         << "endif\n";
+    // TODO: bail out when matchcompiler.py fails (i.e. invalid PYTHON_INTERPRETER specified)
+    // TODO: handle "PYTHON_INTERPRETER="
+    // use match compiler..
+    fout << "# use match compiler\n";
+    fout << "ifeq ($(MATCHCOMPILER),yes)\n"
+         << "    # Find available Python interpreter\n"
+         << "    ifeq ($(PYTHON_INTERPRETER),)\n"
+         << "        PYTHON_INTERPRETER := $(shell which python3)\n"
+         << "    endif\n"
+         << "    ifeq ($(PYTHON_INTERPRETER),)\n"
+         << "        PYTHON_INTERPRETER := $(shell which python)\n"
+         << "    endif\n"
+         << "    ifeq ($(PYTHON_INTERPRETER),)\n"
+         << "        $(error Did not find a Python interpreter)\n"
+         << "    endif\n"
+         << "    ifdef VERIFY\n"
+         << "        matchcompiler_S := $(shell $(PYTHON_INTERPRETER) " << toolsPrefix << "tools/matchcompiler.py" << args << " --verify)\n"
+         << "    else\n"
+         << "        matchcompiler_S := $(shell $(PYTHON_INTERPRETER) " << toolsPrefix << "tools/matchcompiler.py" << args << ")\n"
+         << "    endif\n"
+         << "    libcppdir:=build\n"
+         << "else ifeq ($(MATCHCOMPILER),)\n"
+         << "    libcppdir:=lib\n"
+         << "else\n"
+         << "    $(error invalid MATCHCOMPILER value '$(MATCHCOMPILER)')\n"
+         << "endif\n\n";
+}
+
+static void write_ossfuzz_makefile(std::vector<std::string> libfiles_prio, std::vector<std::string> extfiles)
+{
+    for (auto& l : libfiles_prio)
+    {
+        l = "../" + l;
+    }
+
+    for (auto& e : extfiles)
+    {
+        e = "../" + e;
+    }
+
+    std::ofstream fout("oss-fuzz/Makefile");
+
+    fout << "# This file is generated by dmake, do not edit.\n";
+    fout << '\n';
+    fout << "# CXX=clang++ MATCHCOMPILER=yes CXXFLAGS=\"-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=address -fsanitize-address-use-after-scope -DHAVE_BOOST\" LIB_FUZZING_ENGINE=\"-fsanitize=fuzzer\" oss-fuzz-client\n";
+    fout << '\n';
+    fout << "MATCHCOMPILER=yes\n"; // always need to enable the matchcompiler so the library files are being copied
+    makeMatchcompiler(fout, "../", "--read-dir ../lib");
+
+    fout << "INCS=-I../lib -isystem../externals/simplecpp -isystem../externals/tinyxml2 -isystem../externals/picojson\n";
+    fout << "CPPFLAGS=-std=c++11 -g -w $(INCS)\n";
+    fout << '\n';
+    fout << "LIBOBJ =      " << objfiles(libfiles_prio) << "\n";
+    fout << '\n';
+    fout << "EXTOBJ =      " << objfiles(extfiles) << "\n";
+    fout << '\n';
+    fout << "oss-fuzz-client: $(EXTOBJ) $(LIBOBJ) main.o type2.o\n";
+    fout << "\t${CXX} $(CPPFLAGS) ${CXXFLAGS} -o $@ $^ ${LIB_FUZZING_ENGINE}\n";
+    fout << '\n';
+    fout << "no-fuzz: $(EXTOBJ) $(LIBOBJ) main.o\n";
+    fout << "\t${CXX} $(CPPFLAGS) ${CXXFLAGS} -DNO_FUZZ -o $@ $^\n";
+    fout << '\n';
+    fout << "clean:\n";
+    fout << "\trm -f *.o build/*.o oss-fuzz-client no-fuzz\n";
+    fout << '\n';
+
+    compilefiles(fout, extfiles, "${LIB_FUZZING_ENGINE}");
+    compilefiles(fout, libfiles_prio, "${LIB_FUZZING_ENGINE}");
+
+    fout << '\n';
+    fout << "type2.o: type2.h\n";
+    fout << "\t$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ type2.cpp\n";
+    fout << '\n';
+    fout << "main.o: type2.h\n";
+    fout << "\t$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ main.cpp\n";
 }
 
 int main(int argc, char **argv)
@@ -450,36 +556,7 @@ int main(int argc, char **argv)
     fout << "# To compile with rules, use 'make HAVE_RULES=yes'\n";
     makeConditionalVariable(fout, "HAVE_RULES", "no");
 
-    // avoid undefined variable
-    fout << "ifndef MATCHCOMPILER\n"
-         << "    MATCHCOMPILER=\n"
-         << "endif\n";
-    // TODO: bail out when matchcompiler.py fails (i.e. invalid PYTHON_INTERPRETER specified)
-    // TODO: handle "PYTHON_INTERPRETER="
-    // use match compiler..
-    fout << "# use match compiler\n";
-    fout << "ifeq ($(MATCHCOMPILER),yes)\n"
-         << "    # Find available Python interpreter\n"
-         << "    ifeq ($(PYTHON_INTERPRETER),)\n"
-         << "        PYTHON_INTERPRETER := $(shell which python3)\n"
-         << "    endif\n"
-         << "    ifeq ($(PYTHON_INTERPRETER),)\n"
-         << "        PYTHON_INTERPRETER := $(shell which python)\n"
-         << "    endif\n"
-         << "    ifeq ($(PYTHON_INTERPRETER),)\n"
-         << "        $(error Did not find a Python interpreter)\n"
-         << "    endif\n"
-         << "    ifdef VERIFY\n"
-         << "        matchcompiler_S := $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py --verify)\n"
-         << "    else\n"
-         << "        matchcompiler_S := $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py)\n"
-         << "    endif\n"
-         << "    libcppdir:=build\n"
-         << "else ifeq ($(MATCHCOMPILER),)\n"
-         << "    libcppdir:=lib\n"
-         << "else\n"
-         << "    $(error invalid MATCHCOMPILER value '$(MATCHCOMPILER)')\n"
-         << "endif\n\n";
+    makeMatchcompiler(fout, emptyString, emptyString);
 
     // avoid undefined variable
     fout << "ifndef CPPFLAGS\n"
@@ -762,6 +839,8 @@ int main(int argc, char **argv)
     compilefiles(fout, testfiles, "${INCLUDE_FOR_TEST}");
     compilefiles(fout, extfiles, emptyString);
     compilefiles(fout, toolsfiles, "${INCLUDE_FOR_LIB}");
+
+    write_ossfuzz_makefile(libfiles_prio, extfiles);
 
     return 0;
 }
