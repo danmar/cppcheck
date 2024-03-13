@@ -1296,7 +1296,7 @@ private:
         ASSERT_THROW(checkCode(code), InternalError);
 
         code = "void f1() { for (int n = 0 n < 10 n++); }";
-        checkCode(code);
+        ASSERT_THROW(checkCode(code), InternalError);
     }
 
     void garbageSymbolDatabase() {
