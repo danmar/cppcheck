@@ -913,8 +913,8 @@ typedef struct {
 } S_memalign;
 
 S_memalign* posix_memalign_memleak(size_t n) { // #12248
-    S_memalign* s = malloc(sizeof(*s));   
-    s->N = n;   
+    S_memalign* s = malloc(sizeof(*s));
+    s->N = n;
     if (0 != posix_memalign((void**)&s->data, 16, n * sizeof(int))) {
         free(s);
         return NULL;
@@ -1075,6 +1075,26 @@ void memleak_getline_array(FILE* stream) { // #12498
     size_t n;
     getline(&a[0], &n, stream);
     getline(&a[1], &n, stream);
+    free(a[0]);
+    free(a[1]);
+}
+
+void memleak_getdelim(int delim) {
+    char *line = NULL;
+    size_t size = 0;
+    getdelim(&line, &size, delim, stdin);
+    // cppcheck-suppress memleak
+    line = NULL;
+    getdelim(&line, &size, delim, stdin);
+    // cppcheck-suppress memleak
+    line = NULL;
+}
+
+void memleak_getdelim_array(FILE* stream, int delim) {
+    char* a[2] = { 0 };
+    size_t n;
+    getdelim(&a[0], &n, delim, stream);
+    getdelim(&a[1], &n, delim, stream);
     free(a[0]);
     free(a[1]);
 }
