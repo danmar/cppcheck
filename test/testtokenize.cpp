@@ -6603,7 +6603,7 @@ private:
 
         ASSERT_EQUALS("xfts(=", testAst("; auto x = f(ts...);"));
 
-        ASSERT_EQUALS("da((new= ifd(", testAst("template <typename a, typename... b>\n" // #10199
+        ASSERT_EQUALS("dae(new= ifd(", testAst("template <typename a, typename... b>\n" // #10199
                                                "void c(b... e) {\n"
                                                "    a d = new a((e)...);\n"
                                                "    if (d) {}\n"
