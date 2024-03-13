@@ -3522,7 +3522,8 @@ private:
                "void g(func_t, int);\n";
         exp = "struct S { "
               "const std :: vector < int > & h ( int ) ; "
-              "} ; ""void g ( const std :: vector < int > & ( S :: * ) ( int ) , int ) ;";
+              "} ; "
+              "void g ( const std :: vector < int > & ( S :: * ) ( int ) , int ) ;";
         ASSERT_EQUALS(exp, tok(code)); // TODO: don't create invalid code
     }
 
