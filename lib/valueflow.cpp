@@ -5367,11 +5367,11 @@ static void valueFlowConditionExpressions(const TokenList &tokenlist, const Symb
                     if (is1) {
                         const bool isBool = astIsBool(condTok2) || Token::Match(condTok2, "%comp%|%oror%|&&");
                         SameExpressionAnalyzer a1(condTok2, makeConditionValue(1, condTok2, /*assume*/ true, !isBool), tokenlist, settings); // don't set '1' for non-boolean expressions
-                        valueFlowGenericForward(startTok, startTok->link(), a1, tokenlist, errorLogger, settings);
+                        valueFlowGenericForward(startTok, startTok->link(), std::move(a1), tokenlist, errorLogger, settings);
                     }
 
                     OppositeExpressionAnalyzer a2(true, condTok2, makeConditionValue(0, condTok2, true), tokenlist, settings);
-                    valueFlowGenericForward(startTok, startTok->link(), a2, tokenlist, errorLogger, settings);
+                    valueFlowGenericForward(startTok, startTok->link(), std::move(a2), tokenlist, errorLogger, settings);
                 }
             }
 
@@ -5382,11 +5382,11 @@ static void valueFlowConditionExpressions(const TokenList &tokenlist, const Symb
                 startTok = startTok->link()->tokAt(2);
                 for (const Token* condTok2:conds) {
                     SameExpressionAnalyzer a1(condTok2, makeConditionValue(0, condTok2, false), tokenlist, settings);
-                    valueFlowGenericForward(startTok, startTok->link(), a1, tokenlist, errorLogger, settings);
+                    valueFlowGenericForward(startTok, startTok->link(), <std::move(a1), tokenlist, errorLogger, settings);
 
                     if (is1) {
                         OppositeExpressionAnalyzer a2(true, condTok2, makeConditionValue(1, condTok2, false), tokenlist, settings);
-                        valueFlowGenericForward(startTok, startTok->link(), a2, tokenlist, errorLogger, settings);
+                        valueFlowGenericForward(startTok, startTok->link(), std::move(a2), tokenlist, errorLogger, settings);
                     }
                 }
             }
@@ -5402,11 +5402,11 @@ static void valueFlowConditionExpressions(const TokenList &tokenlist, const Symb
                 }
                 for (const Token* condTok2:conds) {
                     SameExpressionAnalyzer a1(condTok2, makeConditionValue(0, condTok2, false), tokenlist, settings);
-                    valueFlowGenericForward(startTok->link()->next(), scope2->bodyEnd, a1, tokenlist, errorLogger, settings);
+                    valueFlowGenericForward(startTok->link()->next(), scope2->bodyEnd, std::move(a1), tokenlist, errorLogger, settings);
 
                     if (is1) {
                         OppositeExpressionAnalyzer a2(true, condTok2, makeConditionValue(1, condTok2, false), tokenlist, settings);
-                        valueFlowGenericForward(startTok->link()->next(), scope2->bodyEnd, a2, tokenlist, errorLogger, settings);
+                        valueFlowGenericForward(startTok->link()->next(), scope2->bodyEnd, std::move(a2), tokenlist, errorLogger, settings);
                     }
                 }
             }
@@ -7552,7 +7552,7 @@ static void valueFlowInjectParameter(TokenList& tokenlist,
 {
     const bool r = productParams(settings, vars, [&](const std::unordered_map<const Variable*, ValueFlow::Value>& arg) {
         MultiValueFlowAnalyzer a(arg, tokenlist, settings);
-        valueFlowGenericForward(const_cast<Token*>(functionScope->bodyStart), functionScope->bodyEnd, a, tokenlist, errorLogger, settings);
+        valueFlowGenericForward(const_cast<Token*>(functionScope->bodyStart), functionScope->bodyEnd, std::move(a), tokenlist, errorLogger, settings);
     });
     if (!r) {
         std::string fname = "<unknown>";
@@ -8087,7 +8087,7 @@ static void valueFlowUninit(TokenList& tokenlist, ErrorLogger* const errorLogger
                     continue;
                 }
                 MemberExpressionAnalyzer analyzer(memVar.nameToken()->str(), tok, uninitValue, tokenlist, settings);
-                valueFlowGenericForward(start, tok->scope()->bodyEnd, analyzer, tokenlist, errorLogger, settings);
+                valueFlowGenericForward(start, tok->scope()->bodyEnd, std::move(analyzer), tokenlist, errorLogger, settings);
 
                 for (auto&& p : *analyzer.partialReads) {
                     Token* tok2 = p.first;
