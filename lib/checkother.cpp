@@ -1591,7 +1591,7 @@ void CheckOther::checkConstPointer()
                     continue;
             } else if (Token::simpleMatch(gparent, "[") && gparent->astOperand2() == parent)
                 continue;
-            else if (gparent->isCast() && gparent->valueType() &&
+            else if (gparent && gparent->isCast() && gparent->valueType() &&
                      ((gparent->valueType()->pointer == 0 && gparent->valueType()->reference == Reference::None) ||
                       (var->valueType() && parent->valueType()->isConst(var->valueType()->pointer))))
                 continue;
