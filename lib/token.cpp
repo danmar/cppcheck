@@ -1581,8 +1581,8 @@ std::pair<const Token *, const Token *> Token::findExpressionStartEndTokens() co
 
     if (precedes(top, start))
         throw InternalError(start, "Cannot find start of expression");
-    //if (succeeds(top, end))
-    //    throw InternalError(end, "Cannot find end of expression");
+    if (succeeds(top, end))
+        throw InternalError(end, "Cannot find end of expression");
 
     return std::pair<const Token *, const Token *>(start,end);
 }
