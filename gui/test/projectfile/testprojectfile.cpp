@@ -20,7 +20,9 @@
 
 #include "addoninfo.h"
 #include "importproject.h"
+// cppcheck-suppress-begin uninitMemberVar
 #include "platform.h"
+// cppcheck-suppress-end uninitMemberVar
 #include "projectfile.h"
 #include "settings.h"
 
@@ -39,7 +41,7 @@ const char Settings::SafeChecks::XmlClasses[] = "class-public";
 const char Settings::SafeChecks::XmlExternalFunctions[] = "external-functions";
 const char Settings::SafeChecks::XmlInternalFunctions[] = "internal-functions";
 const char Settings::SafeChecks::XmlExternalVariables[] = "external-variables";
-Settings::Settings() : maxCtuDepth(10) {}
+Settings::Settings() : performanceValueFlowMaxIfCount(), performanceValueFlowMaxSubFunctionArgs() {}
 Platform::Platform() = default;
 bool ImportProject::sourceFileExists(const std::string & /*file*/) {
     return true;
