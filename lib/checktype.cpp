@@ -299,7 +299,7 @@ void CheckType::signConversionError(const Token *tok, const ValueFlow::Value *ne
 //---------------------------------------------------------------------------
 // Checking for long cast of int result   const long x = var1 * var2;
 //---------------------------------------------------------------------------
-static bool checkTypeCombination(const ValueType& src, const ValueType& tgt, const Settings& settings)
+static bool checkTypeCombination(ValueType src, ValueType tgt, const Settings& settings)
 {
     static const std::pair<ValueType::Type, ValueType::Type> typeCombinations[] = {
         { ValueType::Type::INT, ValueType::Type::LONG },
@@ -309,6 +309,9 @@ static bool checkTypeCombination(const ValueType& src, const ValueType& tgt, con
         { ValueType::Type::FLOAT, ValueType::Type::LONGDOUBLE },
         { ValueType::Type::DOUBLE, ValueType::Type::LONGDOUBLE },
     };
+
+    src.reference = Reference::None;
+    tgt.reference = Reference::None;
 
     const std::size_t sizeSrc = ValueFlow::getSizeOf(src, settings);
     const std::size_t sizeTgt = ValueFlow::getSizeOf(tgt, settings);
