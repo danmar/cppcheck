@@ -408,7 +408,7 @@ private:
 
         check("void f(long& r, long i) {\n"
               "    r = 1 << i;\n"
-              "}\n", settings);
+              "}\n", settingsWin);
         ASSERT_EQUALS("", errout_str());
     }
 
