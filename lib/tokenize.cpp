@@ -2849,8 +2849,8 @@ bool Tokenizer::simplifyUsing()
             continue;
         Token* end = tok->tokAt(3);
         while (end && !Token::Match(end, "[;,]")) {
-            if (end->str() == "<" && end->link()) // skip template args
-                end = end->link()->next();
+            if (end->str() == "<") // skip template args
+                end = end->findClosingBracket();
             else
                 end = end->next();
         }

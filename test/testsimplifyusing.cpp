@@ -737,6 +737,16 @@ private:
             ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
             ASSERT_EQUALS("", errout_str());
         }
+        {
+            const char code[] = "class T : private std::vector<std::pair<std::string, const int*>> {\n" // #12521
+                                "    using std::vector<std::pair<std::string, const int*>>::empty;\n"
+                                "};\n";
+            const char expected[] = "class T : private std :: vector < std :: pair < std :: string , const int * > > { "
+                                    "using empty = std :: vector < std :: pair < std :: string , const int * > > :: empty ; "
+                                    "} ;";
+            ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+            ASSERT_EQUALS("", errout_str());
+        }
     }
 
     void simplifyUsing8970() {
