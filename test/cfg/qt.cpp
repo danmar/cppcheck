@@ -21,10 +21,52 @@
 #include <QLoggingCategory>
 #include <QTest>
 #include <QRectF>
+#include <QSizeF>
+#include <QPointF>
 
-void unreadVariable_QRectF() {
+void unreadVariable_QPointF(const QPointF &s)
+{
     // cppcheck-suppress unreadVariable
-    QRectF rect(0.0, 0.0, 100.0, 50.0);
+    QPointF a;
+    // cppcheck-suppress unreadVariable
+    QPointF b{};
+    // cppcheck-suppress unreadVariable
+    QPointF c{4.2, 4.2};
+    // cppcheck-suppress unreadVariable
+    QPointF d(4.2, 4.2);
+    // cppcheck-suppress unreadVariable
+    QPointF e(s);
+}
+
+void unreadVariable_QSizeF(const QSize &s)
+{
+    // cppcheck-suppress unreadVariable
+    QSizeF a;
+    // cppcheck-suppress unreadVariable
+    QSizeF b{};
+    // cppcheck-suppress unreadVariable
+    QSizeF c{4.2, 4.2};
+    // cppcheck-suppress unreadVariable
+    QSizeF d(4.2, 4.2);
+    // cppcheck-suppress unreadVariable
+    QSizeF e(s);
+}
+
+void unreadVariable_QRectF(const QPointF &topLeft, const QSizeF &size, const QPointF &bottomRight, const QRectF &rect, const qreal x) {
+    // cppcheck-suppress unreadVariable
+    QRectF a;
+    // cppcheck-suppress unreadVariable
+    QRectF b{};
+    // cppcheck-suppress unreadVariable
+    QRectF c(0.0, 0.0, 100.0, 50.0);
+    // cppcheck-suppress unreadVariable
+    QRectF d(x, x, x, x);
+    // cppcheck-suppress unreadVariable
+    QRectF e(topLeft, size);
+    // cppcheck-suppress unreadVariable
+    QRectF f(topLeft, bottomRight);
+    // cppcheck-suppress unreadVariable
+    QRectF g(rect);
 }
 
 void QString1(QString s)
