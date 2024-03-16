@@ -20,7 +20,12 @@
 #include <QCoreApplication>
 #include <QLoggingCategory>
 #include <QTest>
+#include <QRectF>
 
+void unreadVariable_QRectF() {
+    // cppcheck-suppress unreadVariable
+    QRectF rect(0.0, 0.0, 100.0, 50.0);
+}
 
 void QString1(QString s)
 {
