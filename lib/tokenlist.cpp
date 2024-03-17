@@ -746,7 +746,7 @@ static void compileTerm(Token *&tok, AST_state& state)
             tok = tok->next();
         } while (Token::Match(tok, "%name%|%str%"));
     } else if (tok->isName()) {
-        if (Token::Match(tok, "return|case") || (state.cpp && tok->str() == "throw")) {
+        if (Token::Match(tok, "return|case") || (state.cpp && (tok->str() == "throw" || Token::simpleMatch(tok->tokAt(-1), ":: new")))) {
             if (tok->str() == "case")
                 state.inCase = true;
             const bool tokIsReturn = tok->str() == "return";

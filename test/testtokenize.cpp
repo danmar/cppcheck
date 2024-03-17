@@ -6220,6 +6220,7 @@ private:
         ASSERT_EQUALS("pint0{new=", testAst("p = new int*{ 0 };"));
         ASSERT_EQUALS("pint5[{new=", testAst("p = new int* [5]{};"));
         ASSERT_EQUALS("pint5[0{new=", testAst("p = new int* [5]{ 0 };"));
+        ASSERT_EQUALS("sSint(new::(new=", testAst("s = new S(::new int());")); // #12502
 
         // placement new
         ASSERT_EQUALS("X12,3,(new ab,c,", testAst("new (a,b,c) X(1,2,3);"));
