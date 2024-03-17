@@ -29,6 +29,25 @@
 #include <wx/textctrl.h>
 #include <wx/gdicmn.h>
 #include <wx/propgrid/property.h>
+#include <wx/versioninfo.h>
+
+void unreadVariable_wxVersionInfo(const wxString &name, const int major, const int minor, const int micro, const wxString &description, const wxString &copyright)
+{
+    // cppcheck-suppress unreadVariable
+    wxVersionInfo a;
+    // cppcheck-suppress unreadVariable
+    wxVersionInfo b(name);
+    // cppcheck-suppress unreadVariable
+    wxVersionInfo c(name, major);
+    // cppcheck-suppress unreadVariable
+    wxVersionInfo d(name, major, minor);
+    // cppcheck-suppress unreadVariable
+    wxVersionInfo e(name, major, minor, micro);
+    // cppcheck-suppress unreadVariable
+    wxVersionInfo f(name, major, minor, micro, description);
+    // cppcheck-suppress unreadVariable
+    wxVersionInfo g(name, major, minor, micro, description, copyright);
+}
 
 void unreadVariable_wxSize(const wxSize &s)
 {
