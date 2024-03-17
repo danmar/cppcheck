@@ -4097,6 +4097,14 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'src' can be declared as pointer to const\n",
                       errout_str());
+
+        check("struct S {};\n"
+              "void f(T* t) {\n"
+              "    S* s = (S*)t->p;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) C-style pointer casting\n"
+                      "[test.cpp:3]: (style) Variable 's' can be declared as pointer to const\n",
+                      errout_str()); // don't crash
     }
 
     void switchRedundantAssignmentTest() {
