@@ -4086,6 +4086,17 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n",
                       errout_str());
+
+        check("void f(int *src, int* dst) {\n" // #12518
+              "    *dst++ = (int)*src++;\n"
+              "    *dst++ = static_cast<int>(*src++);\n"
+              "    *dst = (int)*src;\n"
+              "}\n"
+              "void g(int* dst) {\n"
+              "    (int&)*dst = 5;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'src' can be declared as pointer to const\n",
+                      errout_str());
     }
 
     void switchRedundantAssignmentTest() {

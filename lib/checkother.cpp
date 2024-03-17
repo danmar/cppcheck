@@ -1591,6 +1591,10 @@ void CheckOther::checkConstPointer()
                     continue;
             } else if (Token::simpleMatch(gparent, "[") && gparent->astOperand2() == parent)
                 continue;
+            else if (gparent && gparent->isCast() && gparent->valueType() &&
+                     ((gparent->valueType()->pointer == 0 && gparent->valueType()->reference == Reference::None) ||
+                      (var->valueType() && parent->valueType()->isConst(var->valueType()->pointer))))
+                continue;
             else if (const Token* ftok = getTokenArgumentFunction(parent, argn)) {
                 bool inconclusive{};
                 if (!isVariableChangedByFunctionCall(ftok->next(), vt->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
