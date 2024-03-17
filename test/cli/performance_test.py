@@ -185,3 +185,38 @@ def test_slow_initlist_varchanged(tmpdir):
                     }
                 }""")
     cppcheck([filename]) # should not take more than ~1 second
+    
+
+@pytest.mark.timeout(10)
+def test_slow_many_scopes(tmpdir):
+    # #12038
+    filename = os.path.join(tmpdir, 'hang.cpp')
+    with open(filename, 'wt') as f:
+        f.write(r"""
+                #define BLOCK {\
+                    char buf[sizeof("x") + 5 * 3 + 16];\
+                    int rc;\
+                    memset(buf, cmp[0], sizeof buf);\
+                    rc = sprintf(buf + 5, "x");\
+                    assert(rc == sizeof("x") - 1);\
+                    assert(memcmp(buf, cmp, 5) == 0);\
+                    if ((rc) >= 0) {\
+                        assert(memcmp(buf + 5, ("x"), (rc)) == 0);\
+                        assert(buf[5 + (rc)] == '\0');\
+                    }\
+                    assert(memcmp(buf + 5 + (rc) + 1, cmp, 5) == 0);\
+                }
+                #define BLOCK2 BLOCK BLOCK
+                #define BLOCK4 BLOCK2 BLOCK2
+                #define BLOCK8 BLOCK4 BLOCK4
+                #define BLOCK16 BLOCK8 BLOCK8
+                #define BLOCK32 BLOCK16 BLOCK16
+                #define BLOCK64 BLOCK32 BLOCK32
+                #define BLOCK128 BLOCK64 BLOCK64
+                int main() {
+                    char cmp[5];
+                    memset(cmp, '\376', sizeof cmp);
+                    BLOCK128
+                    return EXIT_SUCCESS;
+                }""")
+    cppcheck([filename]) # should not take more than ~1 second
