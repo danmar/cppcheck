@@ -23,6 +23,7 @@
 #include <wx/frame.h>
 #include <wx/menu.h>
 #include <wx/regex.h>
+#include <wx/region.h>
 #include <wx/stattext.h>
 #include <wx/sizer.h>
 #include <wx/string.h>
@@ -30,6 +31,24 @@
 #include <wx/gdicmn.h>
 #include <wx/propgrid/property.h>
 #include <wx/versioninfo.h>
+
+void unreadVariable(const wxCoord x, const wxPoint &pt, const wxRect &rect, const wxRegion &region, const wxBitmap &bmp)
+{
+    // cppcheck-suppress unreadVariable
+    wxRegion a;
+    // cppcheck-suppress unreadVariable
+    wxRegion b{};
+    // cppcheck-suppress unreadVariable
+    wxRegion c{x,x,x,x};
+    // cppcheck-suppress unreadVariable
+    wxRegion d{pt,pt};
+    // cppcheck-suppress unreadVariable
+    wxRegion e{rect};
+    // cppcheck-suppress unreadVariable
+    wxRegion f{region};
+    // cppcheck-suppress unreadVariable
+    wxRegion g{bmp};
+}
 
 void unreadVariable_wxVersionInfo(const wxString &name, const int major, const int minor, const int micro, const wxString &description, const wxString &copyright)
 {
