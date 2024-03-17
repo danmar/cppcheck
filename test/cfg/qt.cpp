@@ -23,6 +23,23 @@
 #include <QRectF>
 #include <QSizeF>
 #include <QPointF>
+#include <QRect>
+#include <QSize>
+#include <QPoint>
+
+void unreadVariable_QPoint(const QPoint &s)
+{
+    // cppcheck-suppress unreadVariable
+    QPoint a;
+    // cppcheck-suppress unreadVariable
+    QPoint b{};
+    // cppcheck-suppress unreadVariable
+    QPoint c{4, 2};
+    // cppcheck-suppress unreadVariable
+    QPoint d(4, 2);
+    // cppcheck-suppress unreadVariable
+    QPoint e(s);
+}
 
 void unreadVariable_QPointF(const QPointF &s)
 {
@@ -50,6 +67,35 @@ void unreadVariable_QSizeF(const QSize &s)
     QSizeF d(4.2, 4.2);
     // cppcheck-suppress unreadVariable
     QSizeF e(s);
+}
+
+void unreadVariable_QSize(const QSize &s)
+{
+    // cppcheck-suppress unreadVariable
+    QSize a;
+    // cppcheck-suppress unreadVariable
+    QSize b{};
+    // cppcheck-suppress unreadVariable
+    QSize c{4, 2};
+    // cppcheck-suppress unreadVariable
+    QSize d(4, 2);
+    // cppcheck-suppress unreadVariable
+    QSize e(s);
+}
+
+void unreadVariable_QRect(const QPoint &topLeft, const QSize &size, const QPoint &bottomRight, const int x) {
+    // cppcheck-suppress unreadVariable
+    QRect a;
+    // cppcheck-suppress unreadVariable
+    QRect b{};
+    // cppcheck-suppress unreadVariable
+    QRect c(0, 0, 100, 50);
+    // cppcheck-suppress unreadVariable
+    QRect d(x, x, x, x);
+    // cppcheck-suppress unreadVariable
+    QRect e(topLeft, size);
+    // cppcheck-suppress unreadVariable
+    QRect f(topLeft, bottomRight);
 }
 
 void unreadVariable_QRectF(const QPointF &topLeft, const QSizeF &size, const QPointF &bottomRight, const QRectF &rect, const qreal x) {
@@ -647,7 +693,9 @@ namespace {
 }
 
 struct SEstimateSize {
-    inline const QString& get() const { return m; }
+    inline const QString& get() const {
+        return m;
+    }
     QString m;
 };
 
