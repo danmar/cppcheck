@@ -1593,7 +1593,7 @@ void CheckOther::checkConstPointer()
                 continue;
             else if (gparent && gparent->isCast() && gparent->valueType() &&
                      ((gparent->valueType()->pointer == 0 && gparent->valueType()->reference == Reference::None) ||
-                      (var->valueType() && parent->valueType()->isConst(var->valueType()->pointer))))
+                      (var->valueType() && gparent->valueType()->isConst(var->valueType()->pointer))))
                 continue;
             else if (const Token* ftok = getTokenArgumentFunction(parent, argn)) {
                 bool inconclusive{};
