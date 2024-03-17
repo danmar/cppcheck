@@ -27,7 +27,78 @@
 #include <wx/sizer.h>
 #include <wx/string.h>
 #include <wx/textctrl.h>
+#include <wx/gdicmn.h>
 #include <wx/propgrid/property.h>
+
+void unreadVariable_wxSize(const wxSize &s)
+{
+    // cppcheck-suppress unreadVariable
+    wxSize a;
+    // cppcheck-suppress unreadVariable
+    wxSize b{};
+    // cppcheck-suppress unreadVariable
+    wxSize c{4, 2};
+    // cppcheck-suppress unreadVariable
+    wxSize d(4, 2);
+    // cppcheck-suppress unreadVariable
+    wxSize e(s);
+}
+
+void unreadVariable_wxPoint(const wxRealPoint &rp, const int x, const int y)
+{
+    // cppcheck-suppress unreadVariable
+    wxPoint a;
+    // cppcheck-suppress unreadVariable
+    wxPoint b{};
+    // cppcheck-suppress unreadVariable
+    wxPoint c{4, 2};
+    // cppcheck-suppress unreadVariable
+    wxPoint d(4, 2);
+    // cppcheck-suppress unreadVariable
+    wxPoint e{x, 2};
+    // cppcheck-suppress unreadVariable
+    wxPoint f(4, y);
+    // cppcheck-suppress unreadVariable
+    wxPoint g(rp);
+}
+
+void unreadVariable_wxRealPoint(const wxPoint &pt, const double x, const double y)
+{
+    // cppcheck-suppress unreadVariable
+    wxRealPoint a;
+    // cppcheck-suppress unreadVariable
+    wxRealPoint b{};
+    // cppcheck-suppress unreadVariable
+    wxRealPoint c{4.0, 2.0};
+    // cppcheck-suppress unreadVariable
+    wxRealPoint d(4.0, 2.0);
+    // cppcheck-suppress unreadVariable
+    wxRealPoint e{x, 2.0};
+    // cppcheck-suppress unreadVariable
+    wxRealPoint f(4.0, y);
+    // cppcheck-suppress unreadVariable
+    wxRealPoint g(pt);
+}
+
+void unreadVariable_wxRect(const int x, const wxPoint &pt, const wxSize &sz)
+{
+    // cppcheck-suppress unreadVariable
+    wxRect a;
+    // cppcheck-suppress unreadVariable
+    wxRect b{};
+    // cppcheck-suppress unreadVariable
+    wxRect c{x,x,x,x};
+    // cppcheck-suppress unreadVariable
+    wxRect d{pt,sz};
+    // cppcheck-suppress unreadVariable
+    wxRect e{sz};
+    // cppcheck-suppress unreadVariable
+    wxRect f(x,x,x,x);
+    // cppcheck-suppress unreadVariable
+    wxRect g(pt,sz);
+    // cppcheck-suppress unreadVariable
+    wxRect h(sz);
+}
 
 void uninitvar_wxRegEx_GetMatch(const wxRegEx &obj, size_t *start, size_t *len, size_t index)
 {
