@@ -724,4 +724,6 @@ void unusedVariable_qtContainers() // #10689
   QMultiMap<int, int> qmm;
   // cppcheck-suppress unusedVariable
   QQueue<int> qq;
+  // cppcheck-suppress unusedVariable
+  QLatin1String ql1s;
 }
