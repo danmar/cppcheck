@@ -1115,8 +1115,12 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                             }
                         }
 
-                        if (!rule.pattern.empty())
-                            mSettings.rules.emplace_back(std::move(rule));
+                        if (rule.pattern.empty()) {
+                            mLogger.printError("unable to load rule-file '" + ruleFile + "' - a rule is lacking a pattern.");
+                            return Result::Fail;
+                        }
+
+                        mSettings.rules.emplace_back(std::move(rule));
                     }
                 } else {
                     mLogger.printError("unable to load rule-file '" + ruleFile + "' (" + tinyxml2::XMLDocument::ErrorIDToName(err) + ").");

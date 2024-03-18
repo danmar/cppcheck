@@ -2255,8 +2255,8 @@ private:
                         "</rule>"
                         );
         const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
-        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS(0, settings->rules.size());
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv)); // do not crash
+        ASSERT_EQUALS("cppcheck: error: unable to load rule-file 'rule.xml' - a rule is lacking a pattern.\n", logger->str());
     }
 
     void ruleFileEmptyElements2() {
@@ -2271,8 +2271,8 @@ private:
                         "</rule>"
                         );
         const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
-        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS(0, settings->rules.size());
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv)); // do not crash
+        ASSERT_EQUALS("cppcheck: error: unable to load rule-file 'rule.xml' - a rule is lacking a pattern.\n", logger->str());
     }
 
     void ruleFileUnknownElement1() {
