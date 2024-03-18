@@ -93,6 +93,16 @@ To bisect these kinds of regressions you currently need to adjust the `bisect.sh
 `1` - find the commit which started the hang<br/>
 `2` - find the commit which resolved the hang<br/>
 
+# Bisecting crashes
+
+To bisect when a crash was introduced just do the same as you would for a regular error.
+
+But if you want to find the commit which fixes a crash you need to add `-j2` to the options so the crash will generate an error instead of terminating the process and check for the expected string `crashed`.
+
+```
+./bisect.sh <hash-good> <hash-bad> "<cppcheck-options> -j2" "crashed"
+```
+
 ### General notes
 
 As we are currently using the process exitcode to pass the elapsed time to the script it will not work properly with vey long runtime (>= 255 seconds) as it will overflow.
