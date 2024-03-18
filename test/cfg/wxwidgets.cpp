@@ -8,6 +8,7 @@
 //
 
 #include <wx/wx.h>
+#include <wx/accel.h>
 #include <wx/app.h>
 #include <wx/dc.h>
 #include <wx/log.h>
@@ -19,9 +20,11 @@
 #include <wx/icon.h>
 #include <wx/bitmap.h>
 #include <wx/dataview.h>
+#include <wx/datetime.h>
 #include <wx/memory.h>
 #include <wx/frame.h>
 #include <wx/menu.h>
+#include <wx/mimetype.h>
 #include <wx/regex.h>
 #include <wx/region.h>
 #include <wx/stattext.h>
@@ -30,9 +33,72 @@
 #include <wx/textctrl.h>
 #include <wx/gdicmn.h>
 #include <wx/propgrid/property.h>
+#include <wx/position.h>
 #include <wx/versioninfo.h>
 
-void unreadVariable(const wxCoord x, const wxPoint &pt, const wxRect &rect, const wxRegion &region, const wxBitmap &bmp)
+void unreadVariable_wxAcceleratorEntry()
+{
+    // cppcheck-suppress unreadVariable
+    wxAcceleratorEntry a;
+}
+
+void unreadVariable_wxDateSpan(const int x)
+{
+    // cppcheck-suppress unreadVariable
+    wxDateSpan a;
+    // cppcheck-suppress unreadVariable
+    wxDateSpan b{x};
+    // cppcheck-suppress unreadVariable
+    wxDateSpan c{x, x};
+    // cppcheck-suppress unreadVariable
+    wxDateSpan d{x, x, x};
+    // cppcheck-suppress unreadVariable
+    wxDateSpan e{x, x, x, x};
+}
+
+void unreadVariable_wxTimeSpan(const long x, const wxLongLong y)
+{
+    // cppcheck-suppress unreadVariable
+    wxTimeSpan a;
+    // cppcheck-suppress unreadVariable
+    wxTimeSpan b{};
+    // cppcheck-suppress unreadVariable
+    wxTimeSpan c{x};
+    // cppcheck-suppress unreadVariable
+    wxTimeSpan d{x, x};
+    // cppcheck-suppress unreadVariable
+    wxTimeSpan e{x, x, y};
+    // cppcheck-suppress unreadVariable
+    wxTimeSpan f{x, x, y, y};
+}
+
+void unreadVariable_wxFileType(const wxFileTypeInfo &info)
+{
+    // cppcheck-suppress unreadVariable
+    wxFileType a(info);
+}
+
+void unreadVariable_wxPosition(const int x)
+{
+    // cppcheck-suppress unreadVariable
+    wxPosition a;
+    // cppcheck-suppress unreadVariable
+    wxPosition b{};
+    // cppcheck-suppress unreadVariable
+    wxPosition c{x,x};
+}
+
+void unreadVariable_wxRegEx(const wxString &expr, const int flags)
+{
+    // cppcheck-suppress unreadVariable
+    wxRegEx a;
+    // cppcheck-suppress unreadVariable
+    wxRegEx b{expr};
+    // cppcheck-suppress unreadVariable
+    wxRegEx c{expr, flags};
+}
+
+void unreadVariable_wxRegion(const wxCoord x, const wxPoint &pt, const wxRect &rect, const wxRegion &region, const wxBitmap &bmp)
 {
     // cppcheck-suppress unreadVariable
     wxRegion a;
