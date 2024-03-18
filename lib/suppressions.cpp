@@ -123,7 +123,7 @@ std::string SuppressionList::parseXmlFile(const char *filename)
 
         Suppression s;
         for (const tinyxml2::XMLElement * e2 = e->FirstChildElement(); e2; e2 = e2->NextSiblingElement()) {
-            const char *text = e2->GetText() ? e2->GetText() : "";
+            const char *text = empty_if_null(e2->GetText());
             if (std::strcmp(e2->Name(), "id") == 0)
                 s.errorId = text;
             else if (std::strcmp(e2->Name(), "fileName") == 0)

@@ -484,12 +484,13 @@ namespace {
             if (a)
                 name = a;
             for (const tinyxml2::XMLElement *e = cfg->FirstChildElement(); e; e = e->NextSiblingElement()) {
-                if (!e->GetText())
+                const char * const text = e->GetText();
+                if (!text)
                     continue;
                 if (std::strcmp(e->Name(),"Configuration")==0)
-                    configuration = e->GetText();
+                    configuration = text;
                 else if (std::strcmp(e->Name(),"Platform")==0) {
-                    platformStr = e->GetText();
+                    platformStr = text;
                     if (platformStr == "Win32")
                         platform = Win32;
                     else if (platformStr == "x64")
@@ -514,34 +515,36 @@ namespace {
                 if (std::strcmp(e1->Name(), "ClCompile") == 0) {
                     enhancedInstructionSet = "StreamingSIMDExtensions2";
                     for (const tinyxml2::XMLElement *e = e1->FirstChildElement(); e; e = e->NextSiblingElement()) {
-                        if (e->GetText()) {
-                            if (std::strcmp(e->Name(), "PreprocessorDefinitions") == 0)
-                                preprocessorDefinitions = e->GetText();
-                            else if (std::strcmp(e->Name(), "AdditionalIncludeDirectories") == 0) {
-                                if (!additionalIncludePaths.empty())
-                                    additionalIncludePaths += ';';
-                                additionalIncludePaths += e->GetText();
-                            } else if (std::strcmp(e->Name(), "LanguageStandard") == 0) {
-                                if (std::strcmp(e->GetText(), "stdcpp14") == 0)
-                                    cppstd = Standards::CPP14;
-                                else if (std::strcmp(e->GetText(), "stdcpp17") == 0)
-                                    cppstd = Standards::CPP17;
-                                else if (std::strcmp(e->GetText(), "stdcpp20") == 0)
-                                    cppstd = Standards::CPP20;
-                                else if (std::strcmp(e->GetText(), "stdcpplatest") == 0)
-                                    cppstd = Standards::CPPLatest;
-                            } else if (std::strcmp(e->Name(), "EnableEnhancedInstructionSet") == 0) {
-                                enhancedInstructionSet = e->GetText();
-                            }
+                        const char * const text = e->GetText();
+                        if (!text)
+                            continue;
+                        if (std::strcmp(e->Name(), "PreprocessorDefinitions") == 0)
+                            preprocessorDefinitions = text;
+                        else if (std::strcmp(e->Name(), "AdditionalIncludeDirectories") == 0) {
+                            if (!additionalIncludePaths.empty())
+                                additionalIncludePaths += ';';
+                            additionalIncludePaths += text;
+                        } else if (std::strcmp(e->Name(), "LanguageStandard") == 0) {
+                            if (std::strcmp(text, "stdcpp14") == 0)
+                                cppstd = Standards::CPP14;
+                            else if (std::strcmp(text, "stdcpp17") == 0)
+                                cppstd = Standards::CPP17;
+                            else if (std::strcmp(text, "stdcpp20") == 0)
+                                cppstd = Standards::CPP20;
+                            else if (std::strcmp(text, "stdcpplatest") == 0)
+                                cppstd = Standards::CPPLatest;
+                        } else if (std::strcmp(e->Name(), "EnableEnhancedInstructionSet") == 0) {
+                            enhancedInstructionSet = text;
                         }
                     }
                 }
                 else if (std::strcmp(e1->Name(), "Link") == 0) {
                     for (const tinyxml2::XMLElement *e = e1->FirstChildElement(); e; e = e->NextSiblingElement()) {
-                        if (!e->GetText())
+                        const char * const text = e->GetText();
+                        if (!text)
                             continue;
                         if (std::strcmp(e->Name(), "EntryPointSymbol") == 0) {
-                            entryPointSymbol = e->GetText();
+                            entryPointSymbol = text;
                         }
                     }
                 }
@@ -1362,8 +1365,11 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             temp.premiumArgs += std::string(" --cert-c-int-precision=") + readSafe(node->GetText(), "0");
         else if (strcmp(node->Name(), CppcheckXml::CodingStandardsElementName) == 0) {
             for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
-                if (strcmp(child->Name(), CppcheckXml::CodingStandardElementName) == 0 && child->GetText())
-                    temp.premiumArgs += std::string(" --") + child->GetText();
+                if (strcmp(child->Name(), CppcheckXml::CodingStandardElementName) == 0) {
+                    const char* text = child->GetText();
+                    if (text)
+                        temp.premiumArgs += std::string(" --") + text;
+                }
             }
         }
         else if (strcmp(node->Name(), CppcheckXml::ProjectNameElementName) == 0)
