@@ -713,3 +713,15 @@ bool knownConditionTrueFalse_QString_count(const QString& s) // #11036
         return false;
     return true;
 }
+
+void unusedVariable_qtContainers() // #10689
+{
+  // cppcheck-suppress unusedVariable
+  QMap<int, int> qm;
+  // cppcheck-suppress unusedVariable
+  QSet<int> qs;
+  // cppcheck-suppress unusedVariable
+  QMultiMap<int, int> qmm;
+  // cppcheck-suppress unusedVariable
+  QQueue<int> qq;
+}
