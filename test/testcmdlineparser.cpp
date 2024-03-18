@@ -2155,27 +2155,62 @@ private:
         ScopedFile file("rule.xml",
                         "<rules>\n"
                         "<rule>\n"
+                        "<tokenlist>toklist1</tokenlist>\n"
                         "<pattern>.+</pattern>\n"
+                        "<message>\n"
+                        "<severity>error</severity>\n"
+                        "<id>ruleId1</id>\n"
+                        "<summary>ruleSummary1</summary>\n"
+                        "</message>\n"
+                        "</rule>\n"
+                        "<rule>\n"
+                        "<tokenlist>toklist2</tokenlist>\n"
+                        "<pattern>.*</pattern>\n"
+                        "<message>\n"
+                        "<severity>warning</severity>\n"
+                        "<id>ruleId2</id>\n"
+                        "<summary>ruleSummary2</summary>\n"
+                        "</message>\n"
                         "</rule>\n"
                         "</rules>");
         const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS(1, settings->rules.size());
+        ASSERT_EQUALS(2, settings->rules.size());
         auto it = settings->rules.cbegin();
+        ASSERT_EQUALS("toklist1", it->tokenlist);
         ASSERT_EQUALS(".+", it->pattern);
+        ASSERT_EQUALS_ENUM(Severity::error, it->severity);
+        ASSERT_EQUALS("ruleId1", it->id);
+        ASSERT_EQUALS("ruleSummary1", it->summary);
+        ++it;
+        ASSERT_EQUALS("toklist2", it->tokenlist);
+        ASSERT_EQUALS(".*", it->pattern);
+        ASSERT_EQUALS_ENUM(Severity::warning, it->severity);
+        ASSERT_EQUALS("ruleId2", it->id);
+        ASSERT_EQUALS("ruleSummary2", it->summary);
     }
 
     void ruleFileSingle() {
         REDIRECT;
         ScopedFile file("rule.xml",
                         "<rule>\n"
+                        "<tokenlist>toklist</tokenlist>\n"
                         "<pattern>.+</pattern>\n"
+                        "<message>\n"
+                        "<severity>error</severity>\n"
+                        "<id>ruleId</id>\n"
+                        "<summary>ruleSummary</summary>\n"
+                        "</message>\n"
                         "</rule>\n");
         const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, settings->rules.size());
         auto it = settings->rules.cbegin();
+        ASSERT_EQUALS("toklist", it->tokenlist);
         ASSERT_EQUALS(".+", it->pattern);
+        ASSERT_EQUALS_ENUM(Severity::error, it->severity);
+        ASSERT_EQUALS("ruleId", it->id);
+        ASSERT_EQUALS("ruleSummary", it->summary);
     }
 
     void ruleFileEmpty() {
