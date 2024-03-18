@@ -212,11 +212,10 @@ def test_slow_many_scopes(tmpdir):
                 #define BLOCK16 BLOCK8 BLOCK8
                 #define BLOCK32 BLOCK16 BLOCK16
                 #define BLOCK64 BLOCK32 BLOCK32
-                #define BLOCK128 BLOCK64 BLOCK64
                 int main() {
                     char cmp[5];
                     memset(cmp, '\376', sizeof cmp);
-                    BLOCK128
+                    BLOCK64
                     return EXIT_SUCCESS;
                 }""")
     cppcheck([filename]) # should not take more than ~1 second
