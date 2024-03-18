@@ -1072,6 +1072,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             else if (std::strncmp(argv[i], "--rule-file=", 12) == 0) {
 #ifdef HAVE_RULES
                 // TODO: improved error handling - wrong root node, etc.
+                // TODO: consume unused "version" attribute
                 const std::string ruleFile = argv[i] + 12;
                 tinyxml2::XMLDocument doc;
                 const tinyxml2::XMLError err = doc.LoadFile(ruleFile.c_str());
