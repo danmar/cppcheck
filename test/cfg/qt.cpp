@@ -14,9 +14,12 @@
 #include <QByteArray>
 #include <QList>
 #include <QLinkedList>
+#include <QMap>
+#include <QMultiMap>
+#include <QQueue>
+#include <QSet>
 #include <QtPlugin>
 #include <QFile>
-#include <cstdio>
 #include <QCoreApplication>
 #include <QLoggingCategory>
 #include <QTest>
@@ -26,6 +29,8 @@
 #include <QRect>
 #include <QSize>
 #include <QPoint>
+
+#include <cstdio>
 
 void unreadVariable_QPoint(const QPoint &s)
 {
