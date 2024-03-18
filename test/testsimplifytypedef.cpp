@@ -214,6 +214,7 @@ private:
         TEST_CASE(simplifyTypedef147);
         TEST_CASE(simplifyTypedef148);
         TEST_CASE(simplifyTypedef149);
+        TEST_CASE(simplifyTypedef150);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -3511,6 +3512,26 @@ private:
                "    g(sizeof(enum N::E));\n"
                "}\n";
         ASSERT_EQUALS("namespace N { enum E { } ; } void g ( int ) ; void f ( ) { g ( sizeof ( enum N :: E ) ) ; }", tok(code));
+    }
+
+    void simplifyTypedef150() { // #12475
+        const char* code{}, *exp{};
+        code = "struct S {\n"
+               "    std::vector<int> const& h(int);\n"
+               "};\n"
+               "typedef std::vector<int> const& (S::* func_t)(int);\n"
+               "void g(func_t, int);\n"
+               "void f() {\n"
+               "    g(func_t(&S::h), 5);\n"
+               "}\n";
+        exp = "struct S { "
+              "const std :: vector < int > & h ( int ) ; "
+              "} ; "
+              "void g ( const std :: vector < int > & ( S :: * ) ( int ) , int ) ; "
+              "void f ( ) { "
+              "g ( const std :: vector < int > & ( S :: * ( & S :: h ) ) ( int ) , 5 ) ; " // TODO: don't generate invalid code
+              "}";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void simplifyTypedefFunction1() {

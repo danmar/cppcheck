@@ -492,6 +492,9 @@ static bool iscast(const Token *tok, bool cpp)
     if (Token::simpleMatch(tok->link(), ") ( )"))
         return false;
 
+    if (Token::Match(tok->link(), ") %assign%|,|..."))
+        return false;
+
     if (tok->previous() && tok->previous()->isName() && tok->previous()->str() != "return" &&
         (!cpp || !Token::Match(tok->previous(), "delete|throw")))
         return false;
@@ -1817,9 +1820,13 @@ void TokenList::validateAst(bool print) const
             tok = tok->link();
             continue;
         }
-        if (tok->isCast() && tok->astOperand1() && tok->link()) { // skip casts (not part of the AST)
-            tok = tok->link();
-            continue;
+        if (tok->isCast()) {
+            if (!tok->astOperand2() && precedes(tok->astOperand1(), tok))
+                throw InternalError(tok, "AST broken: '" + tok->str() + "' has improper operand.", InternalError::AST);
+            if (tok->astOperand1() && tok->link()) { // skip casts (not part of the AST)
+                tok = tok->link();
+                continue;
+            }
         }
 
         if (findLambdaEndToken(tok)) { // skip lambda captures

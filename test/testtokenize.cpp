@@ -6532,7 +6532,7 @@ private:
         ASSERT_EQUALS("constdelete=", testAst("int f() const = delete;"));
         ASSERT_EQUALS("", testAst("extern unsigned f(const char *);"));
         ASSERT_EQUALS("charformat*...,", testAst("extern void f(const char *format, ...);"));
-        ASSERT_EQUALS("int((void,", testAst("extern int for_each_commit_graft(int (*)(int*), void *);"));
+        ASSERT_EQUALS("int(int(void,", testAst("extern int for_each_commit_graft(int (*)(int*), void *);"));
         ASSERT_EQUALS("for;;(", testAst("for (;;) {}"));
         ASSERT_EQUALS("xsizeofvoid(=", testAst("x=sizeof(void*)"));
         ASSERT_EQUALS("abc{d{,{(=", testAst("a = b({ c{}, d{} });"));
@@ -6540,6 +6540,7 @@ private:
         ASSERT_EQUALS("x{( forbc;;(", testAst("x({ for(a;b;c){} });"));
         ASSERT_EQUALS("PT.(", testAst("P->~T();"));  // <- The "T" token::function() will be a destructor
         ASSERT_EQUALS("double&(4[", testAst("void f(double(&)[4]) {}"));
+        ASSERT_EQUALS("voidu*", testAst("int* g ( void* (f) (void*), void* u);")); // #12475
     }
 
     void asttemplate() { // uninstantiated templates will have <,>,etc..
@@ -6556,7 +6557,7 @@ private:
 
         ASSERT_EQUALS("xfts(=", testAst("; auto x = f(ts...);"));
 
-        ASSERT_EQUALS("da((new= ifd(", testAst("template <typename a, typename... b>\n" // #10199
+        ASSERT_EQUALS("dae(new= ifd(", testAst("template <typename a, typename... b>\n" // #10199
                                                "void c(b... e) {\n"
                                                "    a d = new a((e)...);\n"
                                                "    if (d) {}\n"
