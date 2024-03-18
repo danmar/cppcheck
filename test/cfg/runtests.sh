@@ -65,9 +65,9 @@ function gnu_fn {
 # qt.cpp
 function qt_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
-        QTCONFIG=$(get_pkg_config_cflags Qt5Core Qt5Test)
+        QTCONFIG=$(get_pkg_config_cflags Qt5Core Qt5Test Qt5Gui)
         if [ -n "$QTCONFIG" ]; then
-            QTBUILDCONFIG=$(pkg-config --variable=qt_config Qt5Core Qt5Test)
+            QTBUILDCONFIG=$(pkg-config --variable=qt_config Qt5Core Qt5Test Qt5Gui)
             [[ $QTBUILDCONFIG =~ (^|[[:space:]])reduce_relocations($|[[:space:]]) ]] && QTCONFIG="${QTCONFIG} -fPIC"
             # TODO: get rid of the error enabling/disabling?
             set +e

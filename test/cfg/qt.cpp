@@ -24,6 +24,7 @@
 #include <QLoggingCategory>
 #include <QTest>
 #include <QRectF>
+#include <QRegion>
 #include <QSizeF>
 #include <QPointF>
 #include <QRect>
@@ -31,6 +32,24 @@
 #include <QPoint>
 
 #include <cstdio>
+
+void unreadVariable_QRegion(const int x, const QRegion::RegionType type, const QPolygon &polygon, const QBitmap &bm, const QRegion &region, const Qt::FillRule fillRule)
+{
+    // cppcheck-suppress unreadVariable
+    QRegion a;
+    // cppcheck-suppress unreadVariable
+    QRegion b{};
+    // cppcheck-suppress unreadVariable
+    QRegion c{x,x,x,x};
+    // cppcheck-suppress unreadVariable
+    QRegion d{x,x,x,x, type};
+    // cppcheck-suppress unreadVariable
+    QRegion e{polygon, fillRule};
+    // cppcheck-suppress unreadVariable
+    QRegion f{bm};
+    // cppcheck-suppress unreadVariable
+    QRegion g{region};
+}
 
 void unreadVariable_QPoint(const QPoint &s)
 {
@@ -721,14 +740,15 @@ bool knownConditionTrueFalse_QString_count(const QString& s) // #11036
 
 void unusedVariable_qtContainers() // #10689
 {
-  // cppcheck-suppress unusedVariable
-  QMap<int, int> qm;
-  // cppcheck-suppress unusedVariable
-  QSet<int> qs;
-  // cppcheck-suppress unusedVariable
-  QMultiMap<int, int> qmm;
-  // cppcheck-suppress unusedVariable
-  QQueue<int> qq;
-  // cppcheck-suppress unusedVariable
-  QLatin1String ql1s;
+    // cppcheck-suppress unusedVariable
+    QMap<int, int> qm;
+    // cppcheck-suppress unusedVariable
+    QSet<int> qs;
+    // cppcheck-suppress unusedVariable
+    QMultiMap<int, int> qmm;
+    // cppcheck-suppress unusedVariable
+    QQueue<int> qq;
+    // cppcheck-suppress unusedVariable
+    QLatin1String ql1s;
 }
+
