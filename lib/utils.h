@@ -361,4 +361,6 @@ namespace cppcheck
     }
 }
 
+#define empty_if_null(p) p ? p : ""
+
 #endif
