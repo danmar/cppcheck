@@ -339,6 +339,8 @@ private:
         TEST_CASE(ruleFileMissing);
         TEST_CASE(ruleFileInvalid);
         TEST_CASE(ruleFileNoRoot);
+        TEST_CASE(ruleFileEmptyElements1);
+        TEST_CASE(ruleFileEmptyElements2);
 #else
         TEST_CASE(ruleFileNotSupported);
 #endif
@@ -2189,6 +2191,36 @@ private:
         ScopedFile file("rule.xml", "<?xml version=\"1.0\"?>");
         const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+    }
+
+    void ruleFileEmptyElements1() {
+        REDIRECT;
+        ScopedFile file("rule.xml",
+                        "<rule>"
+                        "<tokenlist/>"
+                        "<pattern/>"
+                        "<message/>"
+                        "</rule>"
+                        );
+        const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(0, settings->rules.size());
+    }
+
+    void ruleFileEmptyElements2() {
+        REDIRECT;
+        ScopedFile file("rule.xml",
+                        "<rule>"
+                        "<message>"
+                        "<severity/>"
+                        "<id/>"
+                        "<summary/>"
+                        "</message>"
+                        "</rule>"
+                        );
+        const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(0, settings->rules.size());
     }
 #else
     void ruleFileNotSupported() {

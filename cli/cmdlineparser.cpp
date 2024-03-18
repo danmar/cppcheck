@@ -1083,28 +1083,32 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     for (; node && strcmp(node->Value(), "rule") == 0; node = node->NextSiblingElement()) {
                         Settings::Rule rule;
 
-                        const tinyxml2::XMLElement *tokenlist = node->FirstChildElement("tokenlist");
-                        if (tokenlist)
-                            rule.tokenlist = tokenlist->GetText();
-
-                        const tinyxml2::XMLElement *pattern = node->FirstChildElement("pattern");
-                        if (pattern) {
-                            rule.pattern = pattern->GetText();
-                        }
-
-                        const tinyxml2::XMLElement *message = node->FirstChildElement("message");
-                        if (message) {
-                            const tinyxml2::XMLElement *severity = message->FirstChildElement("severity");
-                            if (severity)
-                                rule.severity = severityFromString(severity->GetText());
-
-                            const tinyxml2::XMLElement *id = message->FirstChildElement("id");
-                            if (id)
-                                rule.id = id->GetText();
-
-                            const tinyxml2::XMLElement *summary = message->FirstChildElement("summary");
-                            if (summary)
-                                rule.summary = summary->GetText() ? summary->GetText() : "";
+                        for (const tinyxml2::XMLElement *subnode = node->FirstChildElement(); subnode; subnode = subnode->NextSiblingElement()) {
+                            const char * const subtext = subnode->GetText();
+                            if (!subtext)
+                                continue;
+                            if (std::strcmp(subnode->Name(), "tokenlist") == 0) {
+                                rule.tokenlist = subtext;
+                            }
+                            else if (std::strcmp(subnode->Name(), "pattern") == 0) {
+                                rule.pattern = subtext;
+                            }
+                            else if (std::strcmp(subnode->Name(), "message") == 0) {
+                                for (const tinyxml2::XMLElement *msgnode = subnode->FirstChildElement(); msgnode; msgnode = msgnode->NextSiblingElement()) {
+                                    const char * const msgtext = msgnode->GetText();
+                                    if (!msgtext)
+                                        continue;
+                                    if (std::strcmp(msgnode->Name(), "severity") == 0) {
+                                        rule.severity = severityFromString(msgtext);
+                                    }
+                                    else if (std::strcmp(msgnode->Name(), "id") == 0) {
+                                        rule.id = msgtext;
+                                    }
+                                    else if (std::strcmp(msgnode->Name(), "summary") == 0) {
+                                        rule.summary = msgtext;
+                                    }
+                                }
+                            }
                         }
 
                         if (!rule.pattern.empty())
