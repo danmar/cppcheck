@@ -2191,6 +2191,7 @@ private:
         ScopedFile file("rule.xml", "<?xml version=\"1.0\"?>");
         const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(0, settings->rules.size());
     }
 
     void ruleFileEmptyElements1() {
