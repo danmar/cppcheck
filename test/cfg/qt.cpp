@@ -33,7 +33,7 @@
 
 #include <cstdio>
 
-void unreadVariable_QRegion(const int x, const QRegion::RegionType t type, const QPolygon &polygon, const QBitmap &bm, const QRegion &region, const Qt::FillRule fillRule)
+void unreadVariable_QRegion(const int x, const QRegion::RegionType type, const QPolygon &polygon, const QBitmap &bm, const QRegion &region, const Qt::FillRule fillRule)
 {
     // cppcheck-suppress unreadVariable
     QRegion a;
