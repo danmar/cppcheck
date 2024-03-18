@@ -18,8 +18,8 @@ if (BUILD_CORE_DLL)
     target_compile_definitions(cli_objs PRIVATE CPPCHECKLIB_IMPORT TINYXML2_IMPORT)
 endif()
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 14)
-    # false positive warning in up to Clang 13 - caused by FD_ZERO macro
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 13)
+    # false positive warning in Clang 13 - caused by FD_ZERO macro
     set_source_files_properties(processexecutor.cpp PROPERTIES COMPILE_FLAGS -Wno-reserved-identifier)
 endif()
 
