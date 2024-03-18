@@ -89,6 +89,17 @@ except:
     # this is the commit hash for the 2.9 release tag. it does not exist in the main branch so the version for it cannot be determined
     if versions.count('aca3f6fef'):
         versions.remove('aca3f6fef')
+    # 2.8 tags
+    if versions.count('61f846073'):
+        versions.remove('61f846073')
+    if versions.count('f998703a5'):
+        versions.remove('f998703a5')
+    # ???
+    if versions.count('d4505827b'):
+        versions.remove('d4505827b')
+    # 2.6 tag
+    if versions.count('d873b8e77'):
+        versions.remove('d873b8e77')
     len_in = len(versions)
     versions = sort_commit_hashes(versions)
     if len(versions) != len_in:
@@ -123,6 +134,9 @@ for entry in versions:
         version = subprocess.Popen(version_cmd.split(), stdout=subprocess.PIPE, universal_newlines=True).stdout.read().strip()
         # sanitize version
         version = version.replace('Cppcheck ', '').replace(' dev', '')
+
+    if version == 'CPPCHECK_MAJOR.CPPCHECK_DEVMINOR':
+        continue
 
     cmd = [exe]
     if do_compare and not args.no_quiet:
