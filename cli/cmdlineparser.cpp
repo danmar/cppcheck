@@ -1071,7 +1071,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             // Rule file
             else if (std::strncmp(argv[i], "--rule-file=", 12) == 0) {
 #ifdef HAVE_RULES
-                // TODO: improved error handling - unknown elements, wrong root node, etc.
+                // TODO: improved error handling - wrong root node, etc.
                 const std::string ruleFile = argv[i] + 12;
                 tinyxml2::XMLDocument doc;
                 const tinyxml2::XMLError err = doc.LoadFile(ruleFile.c_str());
@@ -1103,7 +1103,15 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                                     else if (std::strcmp(msgnode->Name(), "summary") == 0) {
                                         rule.summary = empty_if_null(msgtext);
                                     }
+                                    else {
+                                        mLogger.printError("unable to load rule-file '" + ruleFile + "' - unknown element '" + msgnode->Name() + "' encountered in 'message'.");
+                                        return Result::Fail;
+                                    }
                                 }
+                            }
+                            else {
+                                mLogger.printError("unable to load rule-file '" + ruleFile + "' - unknown element '" + subnode->Name() + "' encountered in 'rule'.");
+                                return Result::Fail;
                             }
                         }
 
