@@ -1077,7 +1077,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 const tinyxml2::XMLError err = doc.LoadFile(ruleFile.c_str());
                 if (err == tinyxml2::XML_SUCCESS) {
                     const tinyxml2::XMLElement *node = doc.FirstChildElement();
-                    // TODO: this looks like legacy handling - deprecate it
+                    // check if it is a single or multi rule configuration
                     if (node && strcmp(node->Value(), "rules") == 0)
                         node = node->FirstChildElement("rule");
                     for (; node && strcmp(node->Value(), "rule") == 0; node = node->NextSiblingElement()) {

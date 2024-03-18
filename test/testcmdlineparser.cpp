@@ -334,7 +334,8 @@ private:
         TEST_CASE(ruleNotSupported);
 #endif
 #ifdef HAVE_RULES
-        TEST_CASE(ruleFile);
+        TEST_CASE(ruleFileMulti);
+        TEST_CASE(ruleFileSingle);
         TEST_CASE(ruleFileEmpty);
         TEST_CASE(ruleFileMissing);
         TEST_CASE(ruleFileInvalid);
@@ -2149,7 +2150,7 @@ private:
 #endif
 
 #ifdef HAVE_RULES
-    void ruleFile() {
+    void ruleFileMulti() {
         REDIRECT;
         ScopedFile file("rule.xml",
                         "<rules>\n"
@@ -2157,6 +2158,19 @@ private:
                         "<pattern>.+</pattern>\n"
                         "</rule>\n"
                         "</rules>");
+        const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(1, settings->rules.size());
+        auto it = settings->rules.cbegin();
+        ASSERT_EQUALS(".+", it->pattern);
+    }
+
+    void ruleFileSingle() {
+        REDIRECT;
+        ScopedFile file("rule.xml",
+                        "<rule>\n"
+                        "<pattern>.+</pattern>\n"
+                        "</rule>\n");
         const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, settings->rules.size());
