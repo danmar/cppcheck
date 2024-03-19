@@ -666,6 +666,11 @@ private:
               "}\n", /*inconclusive*/ true);
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*', result is not used.\n", errout_str());
 
+        check("void f(int x, int y) {\n" // #12525
+              "    x * y;\n"
+              "}\n", /*inconclusive*/ true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*', result is not used.\n", errout_str());
+
         check("void f() {\n" // #5475
               "    std::string(\"a\") + \"a\";\n"
               "}\n"

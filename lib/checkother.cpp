@@ -1784,6 +1784,8 @@ static bool isType(const Token * tok, bool unknown)
 {
     if (tok && (tok->isStandardType() || (!tok->isKeyword() && Token::Match(tok, "%type%")) || tok->str() == "auto"))
         return true;
+    if (tok && tok->varId())
+        return false;
     if (Token::simpleMatch(tok, "::"))
         return isType(tok->astOperand2(), unknown);
     if (Token::simpleMatch(tok, "<") && tok->link())
