@@ -23,19 +23,19 @@
 #include <QCoreApplication>
 #include <QLoggingCategory>
 #include <QTest>
-#include <QRectF>
-#include <QRegion>
-#include <QSizeF>
-#include <QPointF>
 #include <QRect>
+#include <QRectF>
 #include <QSize>
+#include <QSizeF>
 #include <QPoint>
+#include <QPointF>
+#include <QRegion>
 
 #include <cstdio>
 
 void unreadVariable_QRegion(const int x, const QRegion::RegionType type, const QPolygon &polygon, const QBitmap &bm, const QRegion &region, const Qt::FillRule fillRule)
 {
-    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress unusedVariable
     QRegion a;
     // cppcheck-suppress unreadVariable
     QRegion b{};
@@ -53,7 +53,7 @@ void unreadVariable_QRegion(const int x, const QRegion::RegionType type, const Q
 
 void unreadVariable_QPoint(const QPoint &s)
 {
-    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress unusedVariable
     QPoint a;
     // cppcheck-suppress unreadVariable
     QPoint b{};
@@ -67,7 +67,7 @@ void unreadVariable_QPoint(const QPoint &s)
 
 void unreadVariable_QPointF(const QPointF &s)
 {
-    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress unusedVariable
     QPointF a;
     // cppcheck-suppress unreadVariable
     QPointF b{};
@@ -81,7 +81,7 @@ void unreadVariable_QPointF(const QPointF &s)
 
 void unreadVariable_QSizeF(const QSize &s)
 {
-    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress unusedVariable
     QSizeF a;
     // cppcheck-suppress unreadVariable
     QSizeF b{};
@@ -95,7 +95,7 @@ void unreadVariable_QSizeF(const QSize &s)
 
 void unreadVariable_QSize(const QSize &s)
 {
-    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress unusedVariable
     QSize a;
     // cppcheck-suppress unreadVariable
     QSize b{};
@@ -108,7 +108,7 @@ void unreadVariable_QSize(const QSize &s)
 }
 
 void unreadVariable_QRect(const QPoint &topLeft, const QSize &size, const QPoint &bottomRight, const int x) {
-    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress unusedVariable
     QRect a;
     // cppcheck-suppress unreadVariable
     QRect b{};
@@ -123,7 +123,7 @@ void unreadVariable_QRect(const QPoint &topLeft, const QSize &size, const QPoint
 }
 
 void unreadVariable_QRectF(const QPointF &topLeft, const QSizeF &size, const QPointF &bottomRight, const QRectF &rect, const qreal x) {
-    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress unusedVariable
     QRectF a;
     // cppcheck-suppress unreadVariable
     QRectF b{};
