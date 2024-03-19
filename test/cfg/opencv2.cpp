@@ -42,8 +42,9 @@ void ignoredReturnValue()
 
 void memleak()
 {
-    // cppcheck-suppress [cstyleCast, unusedAllocatedMemory]
+    // cppcheck-suppress cstyleCast
     const char * pBuf = (char *)cv::fastMalloc(1000);
+    // cppcheck-suppress uninitdata
     std::cout << pBuf;
     // cppcheck-suppress memleak
 }
