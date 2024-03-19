@@ -110,7 +110,7 @@ namespace {
 
 static std::string cmdFileName(std::string f)
 {
-    f = Path::toNativeSeparators(f);
+    f = Path::toNativeSeparators(std::move(f));
     if (f.find(' ') != std::string::npos)
         return "\"" + f + "\"";
     return f;
@@ -623,8 +623,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
     mExitCode = 0;
 
-    FilesDeleter filesDeleter;
-
     if (Settings::terminated())
         return mExitCode;
 
@@ -632,7 +630,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
     if (!mSettings.quiet) {
         std::string fixedpath = Path::simplifyPath(filename);
-        fixedpath = Path::toNativeSeparators(fixedpath);
+        fixedpath = Path::toNativeSeparators(std::move(fixedpath));
         mErrorLogger.reportOut(std::string("Checking ") + fixedpath + ' ' + cfgname + std::string("..."), Color::FgGreen);
 
         if (mSettings.verbose) {
@@ -675,9 +673,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             return EXIT_SUCCESS;
         }
 
-        Preprocessor preprocessor(mSettings, this);
-        std::set<std::string> configurations;
-
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
         simplecpp::TokenList tokens1 = createTokenList(filename, files, &outputList, fileStream);
@@ -704,6 +699,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             reportErr(errmsg);
             return mExitCode;
         }
+
+        Preprocessor preprocessor(mSettings, this);
 
         if (!preprocessor.loadFiles(tokens1, files))
             return mExitCode;
@@ -788,6 +785,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             }
         }
 
+        FilesDeleter filesDeleter;
+
         // write dump file xml prolog
         std::ofstream fdump;
         std::string dumpFile;
@@ -805,6 +804,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         preprocessor.setPlatformInfo(&tokens1);
 
         // Get configurations..
+        std::set<std::string> configurations;
         if ((mSettings.checkAllConfigurations && mSettings.userDefines.empty()) || mSettings.force) {
             Timer t("Preprocessor::getConfigs", mSettings.showtime, &s_timerResults);
             configurations = preprocessor.getConfigs(tokens1);
@@ -915,7 +915,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 // If only errors are printed, print filename after the check
                 if (!mSettings.quiet && (!mCurrentConfig.empty() || checkCount > 1)) {
                     std::string fixedpath = Path::simplifyPath(filename);
-                    fixedpath = Path::toNativeSeparators(fixedpath);
+                    fixedpath = Path::toNativeSeparators(std::move(fixedpath));
                     mErrorLogger.reportOut("Checking " + fixedpath + ": " + mCurrentConfig + "...", Color::FgGreen);
                 }
 
@@ -1778,7 +1778,7 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
         std::string fixedpath = Path::simplifyPath(line.substr(0, endNamePos));
         const int64_t lineNumber = strToInt<int64_t>(lineNumString);
         const int64_t column = strToInt<int64_t>(columnNumString);
-        fixedpath = Path::toNativeSeparators(fixedpath);
+        fixedpath = Path::toNativeSeparators(std::move(fixedpath));
 
         ErrorMessage errmsg;
         errmsg.callStack.emplace_back(fixedpath, lineNumber, column);
