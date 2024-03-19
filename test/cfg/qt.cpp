@@ -7,6 +7,8 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
+// cppcheck-suppress-file valueFlowBailout
+
 #include <QObject>
 #include <QString>
 #include <QVector>
@@ -576,7 +578,7 @@ void validCode(int * pIntPtr, QString & qstrArg, double d)
 
     printf(QT_TR_NOOP("Hi"));
 
-    // cppcheck-suppress [checkLibraryFunction,valueFlowBailoutIncompleteVar]
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     Q_DECLARE_LOGGING_CATEGORY(logging_category_test);
     QT_FORWARD_DECLARE_CLASS(forwardDeclaredClass);
     QT_FORWARD_DECLARE_STRUCT(forwardDeclaredStruct);

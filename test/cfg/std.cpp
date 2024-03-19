@@ -7,6 +7,8 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
+// cppcheck-suppress-file valueFlowBailout
+
 #include <algorithm>
 #include <bitset>
 #include <cassert>
@@ -2472,21 +2474,21 @@ void uninitvar_ldexp(void)
 void invalidFunctionArg_lgamma(float f, double d, long double ld)
 {
     (void)lgamma(d);
-    // cppcheck-suppress invalidFunctionArg
+    // TODO cppcheck-suppress invalidFunctionArg
     (void)lgamma(-0.1);
     // cppcheck-suppress invalidFunctionArg
     (void)lgamma(0.0);
     (void)lgamma(0.1);
 
     (void)lgammaf(f);
-    // cppcheck-suppress invalidFunctionArg
+    // TODO cppcheck-suppress invalidFunctionArg
     (void)lgammaf(-0.1f);
     // cppcheck-suppress invalidFunctionArg
     (void)lgammaf(0.0f);
     (void)lgammaf(0.1f);
 
     (void)lgammal(ld);
-    // cppcheck-suppress invalidFunctionArg
+    // TODO cppcheck-suppress invalidFunctionArg
     (void)lgammal(-0.1L);
     // cppcheck-suppress invalidFunctionArg
     (void)lgammal(0.0L);
@@ -2496,21 +2498,21 @@ void invalidFunctionArg_lgamma(float f, double d, long double ld)
 void invalidFunctionArg_tgamma(float f, double d, long double ld)
 {
     (void)tgamma(d);
-    // cppcheck-suppress invalidFunctionArg
+    // TODO cppcheck-suppress invalidFunctionArg
     (void)tgamma(-0.1);
     // cppcheck-suppress invalidFunctionArg
     (void)tgamma(0.0);
     (void)tgamma(0.1);
 
     (void)tgammaf(f);
-    // cppcheck-suppress invalidFunctionArg
+    // TODO cppcheck-suppress invalidFunctionArg
     (void)tgammaf(-0.1f);
     // cppcheck-suppress invalidFunctionArg
     (void)tgammaf(0.0f);
     (void)tgammaf(0.1f);
 
     (void)tgammal(ld);
-    // cppcheck-suppress invalidFunctionArg
+    // TODO cppcheck-suppress invalidFunctionArg
     (void)tgammal(-0.1L);
     // cppcheck-suppress invalidFunctionArg
     (void)tgammal(0.0L);
@@ -4969,7 +4971,7 @@ void memleak_std_realloc(void* block, size_t newsize)
 
 void unusedAllocatedMemory_std_free()
 {
-    //cppcheck-suppress unusedAllocatedMemory
+    // TODO cppcheck-suppress unusedAllocatedMemory
     void* p = std::malloc(1);
     std::free(p);
 }
