@@ -361,7 +361,7 @@ static void write_ossfuzz_makefile(std::vector<std::string> libfiles_prio, std::
     fout << "no-fuzz: $(EXTOBJ) $(LIBOBJ) main_nofuzz.o type2.o\n";
     fout << "\t${CXX} $(CPPFLAGS) ${CXXFLAGS} -o $@ $^\n";
     fout << '\n';
-    fout << "translate: translate.cpp type2.o\n";
+    fout << "translate: translate.o type2.o\n";
     fout << "\t${CXX} -std=c++11 -g ${CXXFLAGS} -o $@ type2.cpp translate.cpp\n";
     fout << '\n';
     fout << "clean:\n";
@@ -372,16 +372,16 @@ static void write_ossfuzz_makefile(std::vector<std::string> libfiles_prio, std::
     compilefiles(fout, libfiles_prio, "${LIB_FUZZING_ENGINE}");
 
     fout << '\n';
-    fout << "type2.o: type2.h\n";
+    fout << "type2.o: type2.cpp type2.h\n";
     fout << "\t$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ type2.cpp\n";
     fout << '\n';
-    fout << "translate.o: type2.h\n";
+    fout << "translate.o: translate.cpp type2.h\n";
     fout << "\t$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ translate.cpp\n";
     fout << '\n';
-    fout << "main.o: type2.h\n";
+    fout << "main.o: main.cpp type2.h\n";
     fout << "\t$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ main.cpp\n";
     fout << '\n';
-    fout << "main_nofuzz.o: type2.h\n";
+    fout << "main_nofuzz.o: main.cpp type2.h\n";
     fout << "\t$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -DNO_FUZZ -c -o $@ main.cpp\n";
 }
 

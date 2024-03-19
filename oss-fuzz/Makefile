@@ -106,7 +106,7 @@ oss-fuzz-client: $(EXTOBJ) $(LIBOBJ) main.o type2.o
 no-fuzz: $(EXTOBJ) $(LIBOBJ) main_nofuzz.o type2.o
 	${CXX} $(CPPFLAGS) ${CXXFLAGS} -o $@ $^
 
-translate: translate.cpp type2.o
+translate: translate.o type2.o
 	${CXX} -std=c++11 -g ${CXXFLAGS} -o $@ type2.cpp translate.cpp
 
 clean:
@@ -308,14 +308,14 @@ $(libcppdir)/vfvalue.o: ../lib/vfvalue.cpp ../lib/config.h ../lib/errortypes.h .
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/vfvalue.cpp
 
 
-type2.o: type2.h
+type2.o: type2.cpp type2.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ type2.cpp
 
-translate.o: type2.h
+translate.o: translate.cpp type2.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ translate.cpp
 
-main.o: type2.h
+main.o: main.cpp type2.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ main.cpp
 
-main_nofuzz.o: type2.h
+main_nofuzz.o: main.cpp type2.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -DNO_FUZZ -c -o $@ main.cpp
