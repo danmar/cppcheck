@@ -132,6 +132,7 @@ if (BUILD_TESTS)
                         --suppress=valueFlowBailout
                         --suppress=purgedConfiguration
                         --suppress=unmatchedSuppression
+                        --suppress=checkersReport
                         ${CMAKE_CURRENT_SOURCE_DIR}/cfg/${CFG_TEST}
                 )
             endif()
