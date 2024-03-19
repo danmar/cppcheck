@@ -123,6 +123,7 @@ private:
         TEST_CASE(compareOutOfTypeRange);
         TEST_CASE(knownConditionCast); // #9976
         TEST_CASE(knownConditionIncrementLoop); // #9808
+        TEST_CASE(knownConditionAfterBailout); // #12526
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -5956,6 +5957,37 @@ private:
               "    std::cout << a;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void knownConditionAfterBailout() { // #12526
+        check(
+            "#include <list>\n"
+            "int func()\n"
+            "{\n"
+            "  return VALUE_1;"
+            "}\n"
+            "\n"
+            "struct S1 {\n"
+            "  bool b{};\n"
+            "};\n"
+            "\n"
+            "struct S {\n"
+            "  void f(const std::list<int>& l) const\n"
+            "  {\n"
+            "    if (mS.b)\n"
+            "      return;\n"
+            "    for (int i : l)\n"
+            "    {\n"
+            "      (void)i;\n"
+            "      if (mS.b)\n"
+            "        continue;\n"
+            "    }\n"
+            "  }\n"
+            "\n"
+            "  S1 mS;\n"
+            "};"
+            );
+        ASSERT_EQUALS("[test.cpp:13] -> [test.cpp:18]: (style) Condition 'mS.b' is always false\n", errout_str());
     }
 };
 
