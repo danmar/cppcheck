@@ -387,6 +387,7 @@ void memleak_xmalloc()
 
 void memleak_mmap()
 {
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     const void * p_mmap = mmap(NULL, 1, PROT_NONE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
     printf("%p", p_mmap);
     // cppcheck-suppress memleak
@@ -466,6 +467,7 @@ int nullPointer_epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)
     //          Remove (deregister) the target file descriptor fd from the
     //          epoll instance referred to by epfd.  The event is ignored and
     //          can be NULL.
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     return epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL);
 }
 #endif

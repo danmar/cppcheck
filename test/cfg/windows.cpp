@@ -485,7 +485,7 @@ void mismatchAllocDealloc()
 void nullPointer()
 {
     HANDLE hSemaphore;
-    // cppcheck-suppress nullPointer
+    // cppcheck-suppress [nullPointer,valueFlowBailoutIncompleteVar]
     hSemaphore = OpenSemaphore(SEMAPHORE_ALL_ACCESS, FALSE, NULL);
     CloseHandle(hSemaphore);
 
@@ -588,7 +588,7 @@ void memleak_HeapAlloc()
 void memleak_LocalAlloc()
 {
     LPTSTR pszBuf;
-    // cppcheck-suppress [LocalAllocCalled, cstyleCast]
+    // cppcheck-suppress [LocalAllocCalled, cstyleCast, valueFlowBailoutIncompleteVar]
     pszBuf = (LPTSTR)LocalAlloc(LPTR, MAX_PATH*sizeof(TCHAR));
     (void)LocalSize(pszBuf);
     (void)LocalFlags(pszBuf);
@@ -622,7 +622,7 @@ void resourceLeak_CreateSemaphoreA()
 void resourceLeak_CreateSemaphoreEx()
 {
     HANDLE hSemaphore;
-    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress [unreadVariable,valueFlowBailoutIncompleteVar]
     hSemaphore = CreateSemaphoreEx(NULL, 0, 1, NULL, 0, SEMAPHORE_ALL_ACCESS);
     // cppcheck-suppress resourceLeak
 }
@@ -630,7 +630,7 @@ void resourceLeak_CreateSemaphoreEx()
 void resourceLeak_OpenSemaphore()
 {
     HANDLE hSemaphore;
-    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress [unreadVariable,valueFlowBailoutIncompleteVar]
     hSemaphore = OpenSemaphore(SEMAPHORE_ALL_ACCESS, TRUE, _T("sem"));
     // cppcheck-suppress resourceLeak
 }
@@ -646,7 +646,7 @@ void resourceLeak_CreateMutexA()
 void resourceLeak_CreateMutexEx()
 {
     HANDLE hMutex;
-    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress [unreadVariable,valueFlowBailoutIncompleteVar]
     hMutex = CreateMutexEx(NULL, _T("sem"), 0, MUTEX_ALL_ACCESS);
     // cppcheck-suppress resourceLeak
 }
@@ -688,7 +688,7 @@ void resourceLeak_CreateEventExA()
 void resourceLeak_OpenEventW()
 {
     HANDLE hEvent;
-    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress [unreadVariable,valueFlowBailoutIncompleteVar]
     hEvent = OpenEventW(EVENT_ALL_ACCESS, TRUE, L"testevent");
     // cppcheck-suppress resourceLeak
 }
@@ -705,7 +705,7 @@ void ignoredReturnValue(FILE* fp)
 {
     // cppcheck-suppress leakReturnValNotUsed
     CreateSemaphoreW(NULL, 0, 1, NULL);
-    // cppcheck-suppress leakReturnValNotUsed
+    // cppcheck-suppress [leakReturnValNotUsed,valueFlowBailoutIncompleteVar]
     CreateSemaphoreExA(NULL, 0, 1, NULL, 0, SEMAPHORE_ALL_ACCESS);
     // cppcheck-suppress leakReturnValNotUsed
     OpenSemaphoreA(SEMAPHORE_ALL_ACCESS, TRUE, "sem");
@@ -770,7 +770,7 @@ void invalidFunctionArg()
     // cppcheck-suppress invalidFunctionArgBool
     hSemaphore = CreateSemaphore(NULL, 0, 1, false);
     CloseHandle(hSemaphore);
-    // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress [invalidFunctionArg,valueFlowBailoutIncompleteVar]
     hSemaphore = CreateSemaphoreEx(NULL, 0, 0, NULL, 0, SEMAPHORE_ALL_ACCESS);
     CloseHandle(hSemaphore);
     // cppcheck-suppress invalidFunctionArg

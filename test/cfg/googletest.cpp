@@ -50,6 +50,7 @@ TEST(test_cppcheck, cppcheck)
 // #9964 - avoid compareBoolExpressionWithInt false positive
 TEST(Test, assert_false_fp)
 {
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     ASSERT_FALSE(errno < 0);
 }
 
@@ -73,6 +74,7 @@ TEST(Test, warning_in_assert_macros)
     // cppcheck-suppress duplicateExpression
     ASSERT_GE(i, i);
 
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     unsigned int u = errno;
     // cppcheck-suppress [unsignedPositive]
     ASSERT_GE(u, 0);
