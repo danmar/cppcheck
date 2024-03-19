@@ -3933,7 +3933,9 @@ private:
               "            continue;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 's' can be declared as reference to const\n", errout_str()); // don't crash
+        ASSERT_EQUALS("[test.cpp:7]: (style) 'continue' is redundant since it is the last statement in a loop.\n"
+                      "[test.cpp:5]: (style) Variable 's' can be declared as reference to const\n",
+                      errout_str()); // don't crash
 
         check("void f(int& i) {\n"
               "    new (&i) int();\n"
