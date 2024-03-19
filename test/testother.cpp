@@ -5322,6 +5322,15 @@ private:
               "    } while (i < 10);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) 'continue' is redundant since it is the last statement in a loop.\n", errout_str());
+
+        check("void f(bool b, const std::list<int>& l) {\n" // #12527
+              "    for (int i : l) {\n"
+              "        (void)i;\n"
+              "        if (b)\n"
+              "            continue;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) 'continue' is redundant since it is the last statement in a loop.\n", errout_str());
     }
 
 

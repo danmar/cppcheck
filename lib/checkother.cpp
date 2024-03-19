@@ -762,6 +762,18 @@ void CheckOther::suspiciousCaseInSwitchError(const Token* tok, const std::string
                 "Using an operator like '" + operatorString + "' in a case label is suspicious. Did you intend to use a bitwise operator, multiple case labels or if/else instead?", CWE398, Certainty::inconclusive);
 }
 
+static bool isLastStmtContinue(const Token* secondBreak, const Token* tok)
+{
+    if (tok->str() != "continue")
+        return false;
+    while (Token::simpleMatch(secondBreak, "}")) {
+        if (secondBreak->scope() && secondBreak->scope()->isLoopScope())
+            return true;
+        secondBreak = secondBreak->next();
+    }
+    return false;
+}
+
 //---------------------------------------------------------------------------
 //    Find consecutive return, break, continue, goto or throw statements. e.g.:
 //        break; break;
@@ -863,7 +875,7 @@ void CheckOther::checkUnreachableCode()
                     if (!labelInFollowingLoop && !silencedCompilerWarningOnly)
                         unreachableCodeError(secondBreak, tok, inconclusive);
                     tok = Token::findmatch(secondBreak, "[}:]");
-                } else if (secondBreak->scope() && secondBreak->scope()->isLoopScope() && secondBreak->str() == "}" && tok->str() == "continue") {
+                } else if (isLastStmtContinue(secondBreak, tok)) {
                     redundantContinueError(tok);
                     tok = secondBreak;
                 } else
