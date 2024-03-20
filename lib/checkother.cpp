@@ -1879,7 +1879,7 @@ static bool isConstStatement(const Token *tok, bool isNestedBracket = false)
         if (Token::simpleMatch(tok->astParent(), "[")) {
             if (isChained)
                 return isConstStatement(tok->astOperand2()) && isConstStatement(tok->astParent());
-            return !isNestedBracket && isConstStatement(tok->astOperand2());
+            return isNestedBracket && isConstStatement(tok->astOperand2());
         }
         return isConstStatement(tok->astOperand2(), /*isNestedBracket*/ !isChained);
     }
