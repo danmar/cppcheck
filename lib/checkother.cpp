@@ -1824,7 +1824,7 @@ static bool isConstant(const Token* tok) {
     return tok && (tok->isEnumerator() || Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL"));
 }
 
-static bool isConstStatement(const Token *tok, bool checkParent = true)
+static bool isConstStatement(const Token *tok, bool isNestedBracket = false)
 {
     if (!tok)
         return false;
@@ -1879,9 +1879,9 @@ static bool isConstStatement(const Token *tok, bool checkParent = true)
         if (Token::simpleMatch(tok->astParent(), "[")) {
             if (isChained)
                 return isConstStatement(tok->astOperand2()) && isConstStatement(tok->astParent());
-            return checkParent && isConstStatement(tok->astOperand2());
+            return !isNestedBracket && isConstStatement(tok->astOperand2());
         }
-        return isConstStatement(tok->astOperand2(), /*checkParent*/ isChained);
+        return isConstStatement(tok->astOperand2(), /*isNestedBracket*/ !isChained);
     }
     return false;
 }

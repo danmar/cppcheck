@@ -715,6 +715,7 @@ private:
 
         check("void f(int* a) {\n" // #12534
               "    a[a[3]];\n"
+              "    a[a[g()]];\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Redundant code: Found unused array access.\n",
                       errout_str());
