@@ -2545,7 +2545,7 @@ namespace {
                             return;
                         tok1 = tok1->linkAt(-1);
                     } else {
-                        while (Token::Match(tok1->tokAt(-2), ":|, %name%")) {
+                        while (tok1 && Token::Match(tok1->tokAt(-2), ":|, %name%")) {
                             tok1 = tok1->tokAt(-2);
                             if (tok1->strAt(-1) != ")" && tok1->strAt(-1) != "}")
                                 return;
