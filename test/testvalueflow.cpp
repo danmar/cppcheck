@@ -7432,6 +7432,9 @@ private:
                "    if (*q > 0 && *q < 100) {}\n"
                "}\n";
         valueOfTok(code, "&&");
+
+        code = "void f() { int& a = *&a; }\n"; // #12511
+        valueOfTok(code, "=");
     }
 
     void valueFlowHang() {
