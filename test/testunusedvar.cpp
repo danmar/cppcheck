@@ -244,6 +244,7 @@ private:
 
         TEST_CASE(crash1);
         TEST_CASE(crash2);
+        TEST_CASE(crash3);
         TEST_CASE(usingNamespace);     // #4585
 
         TEST_CASE(lambdaFunction); // #5078
@@ -6914,6 +6915,14 @@ private:
                               "void f() {\n"
                               "    Y y;\n"
                               "}"); // #4695
+    }
+
+    void crash3() {
+        functionVariableUsage("void f(int a, int b, const int* p) {\n" // #12531
+                              "    const int* s[] = { p, p + 1, p + 2 };\n"
+                              "    a = *(s[a] + b);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used.\n", errout_str());
     }
 
     void usingNamespace() {
