@@ -712,6 +712,12 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant code: Found a statement that begins with enumerator constant.\n",
                       errout_str());
+
+        check("void f(int* a) {\n" // #12534
+              "    a[a[3]];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Redundant code: Found unused array access.\n",
+                      errout_str());
     }
 
     void vardecl() {
