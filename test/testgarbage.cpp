@@ -253,6 +253,7 @@ private:
         TEST_CASE(garbageCode222); // #10763
         TEST_CASE(garbageCode223); // #11639
         TEST_CASE(garbageCode224);
+        TEST_CASE(garbageCode225);
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1745,6 +1746,9 @@ private:
     void garbageCode224() {
         checkCode("void f(){ auto* b = dynamic_cast<const }");  // don't crash
         (void)errout_str(); // we are not interested in the output
+    }
+    void garbageCode225() {
+        ASSERT_THROW(checkCode("int n() { c * s0, 0 s0 = c(sizeof = ) }"), InternalError);
     }
 
     void syntaxErrorFirstToken() {

@@ -8583,8 +8583,11 @@ void Tokenizer::findGarbageCode() const
             bool match1 = Token::Match(tok, "%or%|%oror%|==|!=|+|-|/|!|>=|<=|~|^|++|--|::|sizeof");
             bool match2 = Token::Match(tok->next(), "{|if|else|while|do|for|return|switch|break");
             if (isCPP()) {
-                match1 = match1 || Token::Match(tok, "::|throw|decltype|typeof");
+                match1 = match1 || Token::Match(tok, "throw|decltype|typeof");
                 match2 = match2 || Token::Match(tok->next(), "try|catch|namespace");
+            }
+            if (match1 && !tok->isIncDecOp()) {
+                match2 = match2 || Token::simpleMatch(tok->next(), "=");
             }
             if (match1 && match2)
                 syntaxError(tok);
