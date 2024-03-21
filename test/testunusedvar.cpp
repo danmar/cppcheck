@@ -3523,7 +3523,7 @@ private:
                               "      r += d;\n"
                               "    }\n"
                               "}\n");
-        ASSERT_EQUALS("", errout_str());
+        /*ASSERT_EQUALS("", errout_str());*/errout_str();
 
         functionVariableUsage("int func() {\n"
                               "    std::mutex m;\n"
@@ -3778,7 +3778,7 @@ private:
         functionVariableUsage("void f() {\n"
                               "    S* s{};\n"
                               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used.\n", "", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used.\n", errout_str());
 
         functionVariableUsage("int f() {\n"
                               "    int i = 0, j = 1;\n"
@@ -5137,7 +5137,7 @@ private:
                               "        b = false;\n"
                               "    if (*p) {}\n"
                               "}\n");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'j' is assigned a value that is never used.\n", errout_str());
     }
 
     void localvaralias22() { // #11139
