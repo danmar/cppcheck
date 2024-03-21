@@ -4826,7 +4826,8 @@ void Tokenizer::setVarIdPass1()
             // function declaration inside executable scope? Function declaration is of form: type name "(" args ")"
             if (scopeStack.top().isExecutable && Token::Match(tok, "%name% [,)[]")) {
                 bool par = false;
-                const Token *start, *end;
+                const Token* start;
+                Token* end;
 
                 // search begin of function declaration
                 for (start = tok; Token::Match(start, "%name%|*|&|,|("); start = start->previous()) {
@@ -4850,9 +4851,11 @@ void Tokenizer::setVarIdPass1()
                 const bool isNotstartKeyword = start->next() && notstart.find(start->next()->str()) != notstart.end();
 
                 // now check if it is a function declaration
-                if (Token::Match(start, "[;{}] %type% %name%|*") && par && Token::simpleMatch(end, ") ;") && !isNotstartKeyword)
+                if (Token::Match(start, "[;{}] %type% %name%|*") && par && Token::simpleMatch(end, ") ;") && !isNotstartKeyword) {
                     // function declaration => don't set varid
+                    tok = end;
                     continue;
+                }
             }
 
             if ((!scopeStack.top().isEnum || !(Token::Match(tok->previous(), "{|,") && Token::Match(tok->next(), ",|=|}"))) &&
