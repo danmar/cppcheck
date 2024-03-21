@@ -944,6 +944,9 @@ void CheckOther::checkVariableScope()
         if (!var || !var->isLocal() || var->isConst())
             continue;
 
+        if (var->nameToken()->isExpandedMacro())
+            continue;
+
         const bool isPtrOrRef = var->isPointer() || var->isReference();
         const bool isSimpleType = var->typeStartToken()->isStandardType() || var->typeStartToken()->isEnumType() || (var->typeStartToken()->isC() && var->type() && var->type()->isStructType());
         if (!isPtrOrRef && !isSimpleType && !astIsContainer(var->nameToken()))
