@@ -361,6 +361,10 @@ namespace cppcheck
     }
 }
 
-#define empty_if_null(p) p ? p : ""
+template<typename T>
+static inline T* empty_if_null(T* p)
+{
+    return p ? p : "";
+}
 
 #endif
