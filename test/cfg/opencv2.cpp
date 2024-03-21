@@ -30,7 +30,6 @@ void validCode(const char* argStr)
 
     // cppcheck-suppress [cstyleCast, unusedAllocatedMemory]
     char * pBuf = (char *)cv::fastMalloc(20);
-    // cppcheck-suppress uninitdata
     cv::fastFree(pBuf);
 }
 
