@@ -1201,8 +1201,9 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (!isAssignment && !isInitialization && !isIncrementOrDecrement)
                 continue;
 
+            bool isTrivialInit = false;
             if (isInitialization && Token::Match(tok, "%var% { }")) // don't warn for trivial initialization
-                continue;
+                isTrivialInit = true;
 
             if (isIncrementOrDecrement && tok->astParent() && precedes(tok, tok->astOperand1()))
                 continue;
@@ -1308,6 +1309,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                         reportLibraryCfgError(tok, bailoutTypeName);
                     continue;
                 }
+                if (isTrivialInit && findExpressionChanged(expr, start, scopeEnd, mSettings))
+                    continue;
 
                 // warn
                 if (!expr->variable() || !expr->variable()->isMaybeUnused())

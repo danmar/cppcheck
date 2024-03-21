@@ -87,7 +87,7 @@ void unreadVariable_wxTimeSpan(const long x, const wxLongLong y)
 {
     // cppcheck-suppress unusedVariable
     wxTimeSpan a;
-    // TODO cppcheck-suppress unreadVariable
+    // cppcheck-suppress unreadVariable
     wxTimeSpan b{};
     // cppcheck-suppress unreadVariable
     wxTimeSpan c{x};
@@ -109,7 +109,7 @@ void unreadVariable_wxPosition(const int x)
 {
     // cppcheck-suppress unusedVariable
     wxPosition a;
-    // TODO cppcheck-suppress unreadVariable
+    // cppcheck-suppress unreadVariable
     wxPosition b{};
     // cppcheck-suppress unreadVariable
     wxPosition c{x,x};
@@ -129,7 +129,7 @@ void unreadVariable_wxRegion(const wxCoord x, const wxPoint &pt, const wxRect &r
 {
     // cppcheck-suppress unusedVariable
     wxRegion a;
-    // TODO cppcheck-suppress unreadVariable
+    // cppcheck-suppress unreadVariable
     wxRegion b{};
     // cppcheck-suppress unreadVariable
     wxRegion c{x,x,x,x};
@@ -165,7 +165,7 @@ void unreadVariable_wxSize(const wxSize &s)
 {
     // cppcheck-suppress unusedVariable
     wxSize a;
-    // TODO cppcheck-suppress unreadVariable
+    // cppcheck-suppress unreadVariable
     wxSize b{};
     // cppcheck-suppress unreadVariable
     wxSize c{4, 2};
@@ -179,7 +179,7 @@ void unreadVariable_wxPoint(const wxRealPoint &rp, const int x, const int y)
 {
     // cppcheck-suppress unusedVariable
     wxPoint a;
-    // TODO cppcheck-suppress unreadVariable
+    // cppcheck-suppress unreadVariable
     wxPoint b{};
     // cppcheck-suppress unreadVariable
     wxPoint c{4, 2};
@@ -197,7 +197,7 @@ void unreadVariable_wxRealPoint(const wxPoint &pt, const double x, const double 
 {
     // cppcheck-suppress unusedVariable
     wxRealPoint a;
-    // TODO cppcheck-suppress unreadVariable
+    // cppcheck-suppress unreadVariable
     wxRealPoint b{};
     // cppcheck-suppress unreadVariable
     wxRealPoint c{4.0, 2.0};
@@ -215,7 +215,7 @@ void unreadVariable_wxRect(const int x, const wxPoint &pt, const wxSize &sz)
 {
     // cppcheck-suppress unusedVariable
     wxRect a;
-    // TODO cppcheck-suppress unreadVariable
+    // cppcheck-suppress unreadVariable
     wxRect b{};
     // cppcheck-suppress unreadVariable
     wxRect c{x,x,x,x};
