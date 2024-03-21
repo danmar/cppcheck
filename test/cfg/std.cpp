@@ -662,8 +662,10 @@ void memleak_localtime_s(const std::time_t *restrict time, struct tm *restrict r
 {
     const time_t t = time(0);
     const struct tm* const now = new tm();
-    if (localtime_s(now, &t) == 0)
+    if (localtime_s(now, &t) == 0) {
+        // cppcheck-suppress valueFlowBailoutIncompleteVar
         std::cout << now->tm_mday << std::endl;
+    }
     // cppcheck-suppress memleak
 }
 #endif // __STDC_LIB_EXT1__
@@ -706,6 +708,7 @@ void invalidFunctionArg_std_wstring_substr(const std::wstring &str, std::size_t 
     (void)str.substr(pos,-1);
     // no warning is expected for
     (void)str.substr(pos,len);
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     (void)str.substr(pos, std::wstring::npos);
 }
 
@@ -4256,7 +4259,7 @@ void nullPointer_system(const char *c)
 void uninitvar_setw(void)
 {
     int i;
-    // cppcheck-suppress uninitvar
+    // cppcheck-suppress [uninitvar,valueFlowBailoutIncompleteVar]
     std::cout << std::setw(i);
 }
 
@@ -4264,6 +4267,7 @@ void uninitvar_setiosflags(void)
 {
     std::ios_base::fmtflags mask;
     // TODO cppcheck-suppress uninitvar
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     std::cout << std::setiosflags(mask); // #6987 - false negative
 }
 
@@ -4271,13 +4275,14 @@ void uninitvar_resetiosflags(void)
 {
     std::ios_base::fmtflags mask;
     // TODO cppcheck-suppress uninitvar
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     std::cout << std::resetiosflags(mask); // #6987 - false negative
 }
 
 void uninitvar_setfill(void)
 {
     char c;
-    // cppcheck-suppress uninitvar
+    // cppcheck-suppress [uninitvar,valueFlowBailoutIncompleteVar]
     std::cout << std::setfill(c);
 
     wchar_t wc;
@@ -4288,14 +4293,14 @@ void uninitvar_setfill(void)
 void uninitvar_setprecision(void)
 {
     int p;
-    // cppcheck-suppress uninitvar
+    // cppcheck-suppress [uninitvar,valueFlowBailoutIncompleteVar]
     std::cout << std::setprecision(p);
 }
 
 void uninitvar_setbase(void)
 {
     int p;
-    // cppcheck-suppress uninitvar
+    // cppcheck-suppress [uninitvar,valueFlowBailoutIncompleteVar]
     std::cout << std::setbase(p);
 }
 
@@ -4732,6 +4737,7 @@ void stdbind_helper(int a)
 
 void stdbind()
 {
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     using namespace std::placeholders;
 
     // TODO cppcheck-suppress ignoredReturnValue #9369

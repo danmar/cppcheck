@@ -302,6 +302,7 @@ void g_new0_test()
         int b;
     };
     // valid
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     struct a * pNew1 = g_new0(struct a, 5);
     printf("%p", pNew1);
     g_free(pNew1);
@@ -320,6 +321,7 @@ void g_try_new_test()
         int b;
     };
     // valid
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     struct a * pNew1 = g_try_new(struct a, 5);
     printf("%p", pNew1);
     g_free(pNew1);
@@ -337,6 +339,7 @@ void g_try_new0_test()
         int b;
     };
     // valid
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     struct a * pNew1 = g_try_new0(struct a, 5);
     printf("%p", pNew1);
     g_free(pNew1);
@@ -354,7 +357,7 @@ void g_renew_test()
     struct a {
         int b;
     };
-    // cppcheck-suppress leakReturnValNotUsed
+    // cppcheck-suppress [leakReturnValNotUsed,valueFlowBailoutIncompleteVar]
     g_renew(struct a, NULL, 1);
 
     struct a * pNew = g_new(struct a, 1);
@@ -369,7 +372,7 @@ void g_try_renew_test()
     struct a {
         int b;
     };
-    // cppcheck-suppress leakReturnValNotUsed
+    // cppcheck-suppress [leakReturnValNotUsed,valueFlowBailoutIncompleteVar]
     g_try_renew(struct a, NULL, 1);
 
     struct a * pNew = g_try_new(struct a, 1);

@@ -4251,7 +4251,7 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
             bracket = true;
         } else if (tok2->str() == "::") {
             singleNameCount = 0;
-        } else if (tok2->str() != "*" && tok2->str() != "::" && tok2->str() != "...") {
+        } else if (tok2->str() != "*" && tok2->str() != "...") {
             break;
         }
         tok2 = tok2->next();
