@@ -4971,7 +4971,9 @@ static void valueFlowLifetime(TokenList &tokenlist, ErrorLogger *errorLogger, co
                 valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         }
         // address of
-        else if (tok->isUnaryOp("&") && !Token::simpleMatch(tok->astParent(), "*")) {
+        else if (tok->isUnaryOp("&")) {
+            if (Token::simpleMatch(tok->astParent(), "*"))
+                continue;
             for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(tok->astOperand1())) {
                 if (!settings.certainty.isEnabled(Certainty::inconclusive) && lt.inconclusive)
                     continue;
