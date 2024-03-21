@@ -1749,6 +1749,7 @@ private:
     }
     void garbageCode225() {
         ASSERT_THROW(checkCode("int n() { c * s0, 0 s0 = c(sizeof = ) }"), InternalError);
+        ASSERT_THROW(checkCode("int n() { c * s0, 0 s0 = c(sizeof |= ) }"), InternalError);
     }
 
     void syntaxErrorFirstToken() {

@@ -8587,7 +8587,7 @@ void Tokenizer::findGarbageCode() const
                 match2 = match2 || Token::Match(tok->next(), "try|catch|namespace");
             }
             if (match1 && !tok->isIncDecOp()) {
-                match2 = match2 || Token::simpleMatch(tok->next(), "=");
+                match2 = match2 || Token::Match(tok->next(), "%assign%");
             }
             if (match1 && match2)
                 syntaxError(tok);
