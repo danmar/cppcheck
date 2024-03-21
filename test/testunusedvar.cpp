@@ -3523,7 +3523,7 @@ private:
                               "      r += d;\n"
                               "    }\n"
                               "}\n");
-        /*ASSERT_EQUALS("", errout_str());*/errout_str();
+        ASSERT_EQUALS("", errout_str());
 
         functionVariableUsage("int func() {\n"
                               "    std::mutex m;\n"
