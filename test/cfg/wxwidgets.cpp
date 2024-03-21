@@ -13,6 +13,7 @@
 #include <wx/dc.h>
 #include <wx/log.h>
 #include <wx/filefn.h>
+#include <wx/geometry.h>
 #include <wx/spinctrl.h>
 #include <wx/artprov.h>
 #include <wx/calctrl.h>
@@ -35,6 +36,32 @@
 #include <wx/propgrid/property.h>
 #include <wx/position.h>
 #include <wx/versioninfo.h>
+
+void unreadVariable_wxPoint2DInt(const wxInt32 x, const wxPoint2DInt& pti, const wxPoint &pt)
+{
+    // cppcheck-suppress unreadVariable
+    wxPoint2DInt a;
+    // cppcheck-suppress unreadVariable
+    wxPoint2DInt b(x, x);
+    // cppcheck-suppress unreadVariable
+    wxPoint2DInt c(pti);
+    // cppcheck-suppress unreadVariable
+    wxPoint2DInt d(pt);
+}
+
+void unreadVariable_wxPoint2DDouble(const wxDouble x, const wxPoint2DDouble& ptd, const wxPoint2DInt& pti, const wxPoint &pt)
+{
+    // cppcheck-suppress unreadVariable
+    wxPoint2DDouble a;
+    // cppcheck-suppress unreadVariable
+    wxPoint2DDouble b(x, x);
+    // cppcheck-suppress unreadVariable
+    wxPoint2DDouble c(ptd);
+    // cppcheck-suppress unreadVariable
+    wxPoint2DDouble d(pti);
+    // cppcheck-suppress unreadVariable
+    wxPoint2DDouble e(pt);
+}
 
 void unreadVariable_wxAcceleratorEntry()
 {
