@@ -713,17 +713,12 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 type = Variables::pointer;
             else if (mTokenizer->isC() ||
                      i->typeEndToken()->isStandardType() ||
-                     i->isStlType())
+                     i->isStlType() ||
+                     isRecordTypeWithoutSideEffects(i->type()) ||
+                     mSettings->library.detectContainer(i->typeStartToken()) ||
+                     mSettings->library.getTypeCheck("unusedvar", i->typeStartToken()->str()) == Library::TypeCheck::check)
                 type = Variables::standard;
-            else {
-                if (isRecordTypeWithoutSideEffects(i->type()) || mSettings->library.detectContainer(i->typeStartToken()))
-                    type = Variables::standard;
-                else {
-                    Library::TypeCheck typeCheck = mSettings->library.getTypeCheck("unusedvar", i->typeStartToken()->str());
-                    if (typeCheck == Library::TypeCheck::check)
-                        type = Variables::standard;
-                }
-            }
+
             if (type == Variables::none || isPartOfClassStructUnion(i->typeStartToken()))
                 continue;
             const Token* defValTok = i->nameToken()->next();
