@@ -4563,7 +4563,7 @@ private:
                             "S<C<int>> s;";
         const char exp[]  = "template < typename T > struct C { } ; template < typename T > struct S { a } ; struct S<C<int>> ; S<C<int>> s ; struct S<C<int>> { b } ;";
         ASSERT_EQUALS(exp, tok(code));
-    }    
+    }
 
     void template_specialization_3() {
         const char code[] = "namespace N {\n" // #12312
