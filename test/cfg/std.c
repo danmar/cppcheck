@@ -7,6 +7,8 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
+// cppcheck-suppress-file valueFlowBailout
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -401,6 +403,7 @@ void nullpointer(int value)
     fp = 0;
     // No FP
     fflush(0); // If stream is a null pointer, all streams are flushed.
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     fp = freopen(0,"abc",stdin);
     fclose(fp);
     fp = NULL;
@@ -732,6 +735,7 @@ void uninitvar_fgets(void)
     char *str;
     int n;
 
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     fgets(buf,10,stdin);
 
     // cppcheck-suppress uninitvar
@@ -749,6 +753,7 @@ void uninitvar_fputc(void)
     int i;
     FILE *fp;
 
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     fputc('a', stdout);
 
     // cppcheck-suppress uninitvar
@@ -763,6 +768,7 @@ void uninitvar_fputs(void)
     const char *s;
     FILE *fp;
 
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     fputs("a", stdout);
 
     // cppcheck-suppress uninitvar
@@ -3456,6 +3462,7 @@ void invalidFunctionArg_log10(float f, double d, const long double ld)
     (void)log10f(0.0f);
     (void)log10f(1.4013e-45f); // note: calculated by nextafterf(0.0f, 1.0f);
     (void)log10f(f);
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     (void)log10f(FLT_MAX);
 
     // cppcheck-suppress invalidFunctionArg
@@ -3480,6 +3487,7 @@ void invalidFunctionArg_log(float f, double d, const long double ld)
     (void)logf(0.0f);
     (void)logf(1.4013e-45f); // note: calculated by nextafterf(0.0f, 1.0f);
     (void)logf(f);
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     (void)logf(FLT_MAX);
 
     // cppcheck-suppress invalidFunctionArg
@@ -3504,6 +3512,7 @@ void invalidFunctionArg_log2(float f, double d, const long double ld)
     (void)log2f(0.0f);
     (void)log2f(1.4013e-45f); // note: calculated by nextafterf(0.0f, 1.0f);
     (void)log2f(f);
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     (void)log2f(FLT_MAX);
 
     // cppcheck-suppress invalidFunctionArg
@@ -4973,6 +4982,7 @@ void invalidPrintfArgType_printf(void)
     // #7016
     uint8_t n = 7;
     // TODO cppcheck-suppress invalidPrintfArgType_uint
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     printf("%" PRIi16 "\n", n);
 }
 

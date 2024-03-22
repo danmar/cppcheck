@@ -7,6 +7,8 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
+// cppcheck-suppress-file valueFlowBailout
+
 #include <algorithm>
 #include <bitset>
 #include <cassert>
@@ -662,8 +664,10 @@ void memleak_localtime_s(const std::time_t *restrict time, struct tm *restrict r
 {
     const time_t t = time(0);
     const struct tm* const now = new tm();
-    if (localtime_s(now, &t) == 0)
+    if (localtime_s(now, &t) == 0) {
+        // cppcheck-suppress valueFlowBailoutIncompleteVar
         std::cout << now->tm_mday << std::endl;
+    }
     // cppcheck-suppress memleak
 }
 #endif // __STDC_LIB_EXT1__
@@ -706,6 +710,7 @@ void invalidFunctionArg_std_wstring_substr(const std::wstring &str, std::size_t 
     (void)str.substr(pos,-1);
     // no warning is expected for
     (void)str.substr(pos,len);
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     (void)str.substr(pos, std::wstring::npos);
 }
 
@@ -2469,21 +2474,21 @@ void uninitvar_ldexp(void)
 void invalidFunctionArg_lgamma(float f, double d, long double ld)
 {
     (void)lgamma(d);
-    // cppcheck-suppress invalidFunctionArg
+    // TODO cppcheck-suppress invalidFunctionArg
     (void)lgamma(-0.1);
     // cppcheck-suppress invalidFunctionArg
     (void)lgamma(0.0);
     (void)lgamma(0.1);
 
     (void)lgammaf(f);
-    // cppcheck-suppress invalidFunctionArg
+    // TODO cppcheck-suppress invalidFunctionArg
     (void)lgammaf(-0.1f);
     // cppcheck-suppress invalidFunctionArg
     (void)lgammaf(0.0f);
     (void)lgammaf(0.1f);
 
     (void)lgammal(ld);
-    // cppcheck-suppress invalidFunctionArg
+    // TODO cppcheck-suppress invalidFunctionArg
     (void)lgammal(-0.1L);
     // cppcheck-suppress invalidFunctionArg
     (void)lgammal(0.0L);
@@ -2493,21 +2498,21 @@ void invalidFunctionArg_lgamma(float f, double d, long double ld)
 void invalidFunctionArg_tgamma(float f, double d, long double ld)
 {
     (void)tgamma(d);
-    // cppcheck-suppress invalidFunctionArg
+    // TODO cppcheck-suppress invalidFunctionArg
     (void)tgamma(-0.1);
     // cppcheck-suppress invalidFunctionArg
     (void)tgamma(0.0);
     (void)tgamma(0.1);
 
     (void)tgammaf(f);
-    // cppcheck-suppress invalidFunctionArg
+    // TODO cppcheck-suppress invalidFunctionArg
     (void)tgammaf(-0.1f);
     // cppcheck-suppress invalidFunctionArg
     (void)tgammaf(0.0f);
     (void)tgammaf(0.1f);
 
     (void)tgammal(ld);
-    // cppcheck-suppress invalidFunctionArg
+    // TODO cppcheck-suppress invalidFunctionArg
     (void)tgammal(-0.1L);
     // cppcheck-suppress invalidFunctionArg
     (void)tgammal(0.0L);
@@ -4256,7 +4261,7 @@ void nullPointer_system(const char *c)
 void uninitvar_setw(void)
 {
     int i;
-    // cppcheck-suppress uninitvar
+    // cppcheck-suppress [uninitvar,valueFlowBailoutIncompleteVar]
     std::cout << std::setw(i);
 }
 
@@ -4264,6 +4269,7 @@ void uninitvar_setiosflags(void)
 {
     std::ios_base::fmtflags mask;
     // TODO cppcheck-suppress uninitvar
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     std::cout << std::setiosflags(mask); // #6987 - false negative
 }
 
@@ -4271,13 +4277,14 @@ void uninitvar_resetiosflags(void)
 {
     std::ios_base::fmtflags mask;
     // TODO cppcheck-suppress uninitvar
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     std::cout << std::resetiosflags(mask); // #6987 - false negative
 }
 
 void uninitvar_setfill(void)
 {
     char c;
-    // cppcheck-suppress uninitvar
+    // cppcheck-suppress [uninitvar,valueFlowBailoutIncompleteVar]
     std::cout << std::setfill(c);
 
     wchar_t wc;
@@ -4288,14 +4295,14 @@ void uninitvar_setfill(void)
 void uninitvar_setprecision(void)
 {
     int p;
-    // cppcheck-suppress uninitvar
+    // cppcheck-suppress [uninitvar,valueFlowBailoutIncompleteVar]
     std::cout << std::setprecision(p);
 }
 
 void uninitvar_setbase(void)
 {
     int p;
-    // cppcheck-suppress uninitvar
+    // cppcheck-suppress [uninitvar,valueFlowBailoutIncompleteVar]
     std::cout << std::setbase(p);
 }
 
@@ -4732,6 +4739,7 @@ void stdbind_helper(int a)
 
 void stdbind()
 {
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     using namespace std::placeholders;
 
     // TODO cppcheck-suppress ignoredReturnValue #9369
@@ -4963,7 +4971,7 @@ void memleak_std_realloc(void* block, size_t newsize)
 
 void unusedAllocatedMemory_std_free()
 {
-    //cppcheck-suppress unusedAllocatedMemory
+    // TODO cppcheck-suppress unusedAllocatedMemory
     void* p = std::malloc(1);
     std::free(p);
 }

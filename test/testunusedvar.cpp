@@ -244,6 +244,7 @@ private:
 
         TEST_CASE(crash1);
         TEST_CASE(crash2);
+        TEST_CASE(crash3);
         TEST_CASE(usingNamespace);     // #4585
 
         TEST_CASE(lambdaFunction); // #5078
@@ -3777,7 +3778,7 @@ private:
         functionVariableUsage("void f() {\n"
                               "    S* s{};\n"
                               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used.\n", "", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used.\n", errout_str());
 
         functionVariableUsage("int f() {\n"
                               "    int i = 0, j = 1;\n"
@@ -5136,7 +5137,7 @@ private:
                               "        b = false;\n"
                               "    if (*p) {}\n"
                               "}\n");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'j' is assigned a value that is never used.\n", errout_str());
     }
 
     void localvaralias22() { // #11139
@@ -6793,7 +6794,7 @@ private:
                               "  int a = 0;\n"
                               "  do {\n"
                               "    dostuff(a);\n"
-                              "  } while((a + = x) < 30);\n"
+                              "  } while((a += x) < 30);\n"
                               "}");
         ASSERT_EQUALS("", errout_str());
 
@@ -6914,6 +6915,14 @@ private:
                               "void f() {\n"
                               "    Y y;\n"
                               "}"); // #4695
+    }
+
+    void crash3() {
+        functionVariableUsage("void f(int a, int b, const int* p) {\n" // #12531
+                              "    const int* s[] = { p, p + 1, p + 2 };\n"
+                              "    a = *(s[a] + b);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used.\n", errout_str());
     }
 
     void usingNamespace() {

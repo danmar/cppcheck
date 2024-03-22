@@ -334,11 +334,16 @@ private:
         TEST_CASE(ruleNotSupported);
 #endif
 #ifdef HAVE_RULES
-        TEST_CASE(ruleFile);
+        TEST_CASE(ruleFileMulti);
+        TEST_CASE(ruleFileSingle);
         TEST_CASE(ruleFileEmpty);
         TEST_CASE(ruleFileMissing);
         TEST_CASE(ruleFileInvalid);
         TEST_CASE(ruleFileNoRoot);
+        TEST_CASE(ruleFileEmptyElements1);
+        TEST_CASE(ruleFileEmptyElements2);
+        TEST_CASE(ruleFileUnknownElement1);
+        TEST_CASE(ruleFileUnknownElement2);
 #else
         TEST_CASE(ruleFileNotSupported);
 #endif
@@ -2147,19 +2152,67 @@ private:
 #endif
 
 #ifdef HAVE_RULES
-    void ruleFile() {
+    void ruleFileMulti() {
         REDIRECT;
         ScopedFile file("rule.xml",
                         "<rules>\n"
                         "<rule>\n"
+                        "<tokenlist>toklist1</tokenlist>\n"
                         "<pattern>.+</pattern>\n"
+                        "<message>\n"
+                        "<severity>error</severity>\n"
+                        "<id>ruleId1</id>\n"
+                        "<summary>ruleSummary1</summary>\n"
+                        "</message>\n"
+                        "</rule>\n"
+                        "<rule>\n"
+                        "<tokenlist>toklist2</tokenlist>\n"
+                        "<pattern>.*</pattern>\n"
+                        "<message>\n"
+                        "<severity>warning</severity>\n"
+                        "<id>ruleId2</id>\n"
+                        "<summary>ruleSummary2</summary>\n"
+                        "</message>\n"
                         "</rule>\n"
                         "</rules>");
         const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(2, settings->rules.size());
+        auto it = settings->rules.cbegin();
+        ASSERT_EQUALS("toklist1", it->tokenlist);
+        ASSERT_EQUALS(".+", it->pattern);
+        ASSERT_EQUALS_ENUM(Severity::error, it->severity);
+        ASSERT_EQUALS("ruleId1", it->id);
+        ASSERT_EQUALS("ruleSummary1", it->summary);
+        ++it;
+        ASSERT_EQUALS("toklist2", it->tokenlist);
+        ASSERT_EQUALS(".*", it->pattern);
+        ASSERT_EQUALS_ENUM(Severity::warning, it->severity);
+        ASSERT_EQUALS("ruleId2", it->id);
+        ASSERT_EQUALS("ruleSummary2", it->summary);
+    }
+
+    void ruleFileSingle() {
+        REDIRECT;
+        ScopedFile file("rule.xml",
+                        "<rule>\n"
+                        "<tokenlist>toklist</tokenlist>\n"
+                        "<pattern>.+</pattern>\n"
+                        "<message>\n"
+                        "<severity>error</severity>\n"
+                        "<id>ruleId</id>\n"
+                        "<summary>ruleSummary</summary>\n"
+                        "</message>\n"
+                        "</rule>\n");
+        const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, settings->rules.size());
         auto it = settings->rules.cbegin();
+        ASSERT_EQUALS("toklist", it->tokenlist);
         ASSERT_EQUALS(".+", it->pattern);
+        ASSERT_EQUALS_ENUM(Severity::error, it->severity);
+        ASSERT_EQUALS("ruleId", it->id);
+        ASSERT_EQUALS("ruleSummary", it->summary);
     }
 
     void ruleFileEmpty() {
@@ -2189,6 +2242,63 @@ private:
         ScopedFile file("rule.xml", "<?xml version=\"1.0\"?>");
         const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(0, settings->rules.size());
+    }
+
+    void ruleFileEmptyElements1() {
+        REDIRECT;
+        ScopedFile file("rule.xml",
+                        "<rule>"
+                        "<tokenlist/>"
+                        "<pattern/>"
+                        "<message/>"
+                        "</rule>"
+                        );
+        const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv)); // do not crash
+        ASSERT_EQUALS("cppcheck: error: unable to load rule-file 'rule.xml' - a rule is lacking a pattern.\n", logger->str());
+    }
+
+    void ruleFileEmptyElements2() {
+        REDIRECT;
+        ScopedFile file("rule.xml",
+                        "<rule>"
+                        "<message>"
+                        "<severity/>"
+                        "<id/>"
+                        "<summary/>"
+                        "</message>"
+                        "</rule>"
+                        );
+        const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv)); // do not crash
+        ASSERT_EQUALS("cppcheck: error: unable to load rule-file 'rule.xml' - a rule is lacking a pattern.\n", logger->str());
+    }
+
+    void ruleFileUnknownElement1() {
+        REDIRECT;
+        ScopedFile file("rule.xml",
+                        "<rule>"
+                        "<messages/>"
+                        "</rule>"
+                        );
+        const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: unable to load rule-file 'rule.xml' - unknown element 'messages' encountered in 'rule'.\n", logger->str());
+    }
+
+    void ruleFileUnknownElement2() {
+        REDIRECT;
+        ScopedFile file("rule.xml",
+                        "<rule>"
+                        "<message>"
+                        "<pattern/>"
+                        "</message>"
+                        "</rule>"
+                        );
+        const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: unable to load rule-file 'rule.xml' - unknown element 'pattern' encountered in 'message'.\n", logger->str());
     }
 #else
     void ruleFileNotSupported() {

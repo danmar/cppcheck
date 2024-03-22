@@ -115,7 +115,6 @@ if (BUILD_TESTS)
             else()
                 # TODO: remove missingInclude disabling when it no longer is implied by --enable=information
                 # TODO: add syntax check
-                # need to suppress unmatchedSuppression in case valueFlowBailout is not reported
                 add_test(NAME cfg-${TEST_NAME}
                         COMMAND $<TARGET_FILE:cppcheck>
                         --library=${LIBRARY}
@@ -129,9 +128,7 @@ if (BUILD_TESTS)
                         --disable=missingInclude
                         --inline-suppr
                         --debug-warnings
-                        --suppress=valueFlowBailout
-                        --suppress=purgedConfiguration
-                        --suppress=unmatchedSuppression
+                        --suppress=checkersReport
                         ${CMAKE_CURRENT_SOURCE_DIR}/cfg/${CFG_TEST}
                 )
             endif()

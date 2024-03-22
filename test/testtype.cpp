@@ -405,6 +405,11 @@ private:
               "    U u;\n"
               "};\n", settings);
         ASSERT_EQUALS("", errout_str()); // don't crash
+
+        check("void f(long& r, long i) {\n"
+              "    r = 1 << i;\n"
+              "}\n", settingsWin);
+        ASSERT_EQUALS("", errout_str());
     }
 
     void longCastReturn() {

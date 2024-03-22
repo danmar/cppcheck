@@ -713,10 +713,12 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 type = Variables::pointer;
             else if (mTokenizer->isC() ||
                      i->typeEndToken()->isStandardType() ||
+                     i->isStlType() ||
                      isRecordTypeWithoutSideEffects(i->type()) ||
                      mSettings->library.detectContainer(i->typeStartToken()) ||
-                     i->isStlType())
+                     mSettings->library.getTypeCheck("unusedvar", i->typeStartToken()->str()) == Library::TypeCheck::check)
                 type = Variables::standard;
+
             if (type == Variables::none || isPartOfClassStructUnion(i->typeStartToken()))
                 continue;
             const Token* defValTok = i->nameToken()->next();
@@ -1007,7 +1009,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
         // assignment
         else if ((Token::Match(tok, "%name% [") && Token::simpleMatch(skipBracketsAndMembers(tok->next()), "=")) ||
-                 (tok->isUnaryOp("*") && Token::simpleMatch(tok->astParent(), "=") && Token::simpleMatch(tok->astOperand1(), "+"))) {
+                 (tok->isUnaryOp("*") && astIsLHS(tok) && Token::simpleMatch(tok->astParent(), "=") && Token::simpleMatch(tok->astOperand1(), "+"))) {
             const Token *eq = tok;
             while (eq && !eq->isAssignmentOp())
                 eq = eq->astParent();
@@ -1199,8 +1201,9 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (!isAssignment && !isInitialization && !isIncrementOrDecrement)
                 continue;
 
+            bool isTrivialInit = false;
             if (isInitialization && Token::Match(tok, "%var% { }")) // don't warn for trivial initialization
-                continue;
+                isTrivialInit = true;
 
             if (isIncrementOrDecrement && tok->astParent() && precedes(tok, tok->astOperand1()))
                 continue;
@@ -1306,6 +1309,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                         reportLibraryCfgError(tok, bailoutTypeName);
                     continue;
                 }
+                if (isTrivialInit && findExpressionChanged(expr, start, scopeEnd, mSettings))
+                    continue;
 
                 // warn
                 if (!expr->variable() || !expr->variable()->isMaybeUnused())

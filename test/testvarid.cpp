@@ -1507,6 +1507,20 @@ private:
                                     "6: }\n";
             ASSERT_EQUALS(expected, actual);
         }
+
+        {
+            const std::string actual = tokenize("void f(int n) {\n" // #12537
+                                                "    int n1;\n"
+                                                "    void g(int is, int n1);\n"
+                                                "    n1 = n - 1;\n"
+                                                "}\n", "test.cpp");
+            const char expected[] = "1: void f ( int n@1 ) {\n"
+                                    "2: int n1@2 ;\n"
+                                    "3: void g ( int is , int n1 ) ;\n"
+                                    "4: n1@2 = n@1 - 1 ;\n"
+                                    "5: }\n";
+            ASSERT_EQUALS(expected, actual);
+        }
     }
 
     void varid_sizeof() {

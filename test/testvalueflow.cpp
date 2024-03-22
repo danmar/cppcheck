@@ -160,6 +160,8 @@ private:
         TEST_CASE(valueFlowImpossibleUnknownConstant);
         TEST_CASE(valueFlowContainerEqual);
 
+        TEST_CASE(valueFlowBailoutIncompleteVar);
+
         TEST_CASE(performanceIfCount);
     }
 
@@ -7432,6 +7434,9 @@ private:
                "    if (*q > 0 && *q < 100) {}\n"
                "}\n";
         valueOfTok(code, "&&");
+
+        code = "void f() { int& a = *&a; }\n"; // #12511
+        valueOfTok(code, "=");
     }
 
     void valueFlowHang() {
@@ -8466,6 +8471,22 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 1));
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
+    }
+
+    void valueFlowBailoutIncompleteVar() { // #12526
+        bailout(
+            "int f1() {\n"
+            "    return VALUE_1;\n"
+            "}\n"
+            "\n"
+            "int f2() {\n"
+            "    return VALUE_2;\n"
+            "}\n"
+            );
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS(
+            "[test.cpp:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable VALUE_1\n"
+            "[test.cpp:6]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable VALUE_2\n",
+            errout_str());
     }
 
     void performanceIfCount() {

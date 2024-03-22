@@ -100,6 +100,7 @@ private:
         TEST_CASE(varScope35);
         TEST_CASE(varScope36);      // #12158
         TEST_CASE(varScope37);      // #12158
+        TEST_CASE(varScope38);
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1686,6 +1687,16 @@ private:
               "    }\n"
               "}\n", nullptr, false);
         ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 'i' can be reduced.\n", errout_str());
+    }
+
+    void varScope38() {
+        checkP("bool dostuff();\n" // #12519
+               "#define DOSTUFF(c) if (c < 5) { if (c) b = dostuff(); }\n"
+               "#define DOSTUFFEX(c) { bool b = false; DOSTUFF(c); }\n"
+               "void f(int a) {\n"
+               "    DOSTUFFEX(a);\n"
+               "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
 

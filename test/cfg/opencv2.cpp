@@ -7,6 +7,8 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
+// cppcheck-suppress-file valueFlowBailout
+
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
@@ -43,7 +45,7 @@ void memleak()
 {
     // cppcheck-suppress cstyleCast
     const char * pBuf = (char *)cv::fastMalloc(1000);
-    // cppcheck-suppress uninitdata
+    // cppcheck-suppress [uninitdata, valueFlowBailoutIncompleteVar]
     std::cout << pBuf;
     // cppcheck-suppress memleak
 }

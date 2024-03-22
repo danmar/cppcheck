@@ -4251,7 +4251,7 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
             bracket = true;
         } else if (tok2->str() == "::") {
             singleNameCount = 0;
-        } else if (tok2->str() != "*" && tok2->str() != "::" && tok2->str() != "...") {
+        } else if (tok2->str() != "*" && tok2->str() != "...") {
             break;
         }
         tok2 = tok2->next();
@@ -4826,7 +4826,8 @@ void Tokenizer::setVarIdPass1()
             // function declaration inside executable scope? Function declaration is of form: type name "(" args ")"
             if (scopeStack.top().isExecutable && Token::Match(tok, "%name% [,)[]")) {
                 bool par = false;
-                const Token *start, *end;
+                const Token* start;
+                Token* end;
 
                 // search begin of function declaration
                 for (start = tok; Token::Match(start, "%name%|*|&|,|("); start = start->previous()) {
@@ -4850,9 +4851,11 @@ void Tokenizer::setVarIdPass1()
                 const bool isNotstartKeyword = start->next() && notstart.find(start->next()->str()) != notstart.end();
 
                 // now check if it is a function declaration
-                if (Token::Match(start, "[;{}] %type% %name%|*") && par && Token::simpleMatch(end, ") ;") && !isNotstartKeyword)
+                if (Token::Match(start, "[;{}] %type% %name%|*") && par && Token::simpleMatch(end, ") ;") && !isNotstartKeyword) {
                     // function declaration => don't set varid
+                    tok = end;
                     continue;
+                }
             }
 
             if ((!scopeStack.top().isEnum || !(Token::Match(tok->previous(), "{|,") && Token::Match(tok->next(), ",|=|}"))) &&
@@ -8583,8 +8586,11 @@ void Tokenizer::findGarbageCode() const
             bool match1 = Token::Match(tok, "%or%|%oror%|==|!=|+|-|/|!|>=|<=|~|^|++|--|::|sizeof");
             bool match2 = Token::Match(tok->next(), "{|if|else|while|do|for|return|switch|break");
             if (isCPP()) {
-                match1 = match1 || Token::Match(tok, "::|throw|decltype|typeof");
+                match1 = match1 || Token::Match(tok, "throw|decltype|typeof");
                 match2 = match2 || Token::Match(tok->next(), "try|catch|namespace");
+            }
+            if (match1 && !tok->isIncDecOp()) {
+                match2 = match2 || Token::Match(tok->next(), "%assign%");
             }
             if (match1 && match2)
                 syntaxError(tok);
@@ -8635,6 +8641,8 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "==|!=|<=|>= %comp%") && tok->strAt(-1) != "operator")
             syntaxError(tok, tok->str() + " " + tok->strAt(1));
+        if (Token::simpleMatch(tok, ":: ::"))
+            syntaxError(tok);
     }
 
     // ternary operator without :

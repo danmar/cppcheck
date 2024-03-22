@@ -1758,7 +1758,10 @@ static Token * createAstAtToken(Token *tok)
 void TokenList::createAst() const
 {
     for (Token *tok = mTokensFrontBack.front; tok; tok = tok ? tok->next() : nullptr) {
-        tok = createAstAtToken(tok);
+        Token* const nextTok = createAstAtToken(tok);
+        if (precedes(nextTok, tok))
+            throw InternalError(tok, "Syntax Error: Infinite loop when creating AST.", InternalError::AST);
+        tok = nextTok;
     }
 }
 

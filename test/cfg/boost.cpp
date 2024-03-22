@@ -7,6 +7,8 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
+// cppcheck-suppress-file valueFlowBailout
+
 #include <boost/config.hpp>
 #include <boost/math/special_functions/round.hpp>
 #include <boost/endian/conversion.hpp>
