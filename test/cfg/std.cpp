@@ -4971,7 +4971,7 @@ void memleak_std_realloc(void* block, size_t newsize)
 
 void unusedAllocatedMemory_std_free()
 {
-    // TODO cppcheck-suppress unusedAllocatedMemory
+    // cppcheck-suppress unusedAllocatedMemory
     void* p = std::malloc(1);
     std::free(p);
 }
