@@ -389,6 +389,27 @@ private:
     }
 
     // TODO: test fsParseCommand()
+
+    // TODO: test vcxproj conditions
+    /*
+        <?xml version="1.0" encoding="utf-8"?>
+        <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+        <ItemGroup Label="ProjectConfigurations">
+        <ProjectConfiguration Include="Debug|x64">
+        <Configuration>Debug</Configuration>
+        <Platform>x64</Platform>
+        </ProjectConfiguration>
+        </ItemGroup>
+        <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+        <ClCompile>
+        <PreprocessorDefinitions>CPPCHECKLIB_IMPORT</PreprocessorDefinitions>
+        </ClCompile>
+        </ItemDefinitionGroup>
+        <ItemGroup>
+        <ClCompile Include="main.c" />
+        </ItemGroup>
+        </Project>
+     */
 };
 
 REGISTER_TEST(TestImportProject)
