@@ -6,6 +6,8 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
+// cppcheck-suppress-file valueFlowBailout
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>

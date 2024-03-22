@@ -7,6 +7,8 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
+// cppcheck-suppress-file [valueFlowBailout,purgedConfiguration]
+
 #include <Windows.h>
 #include <WinCon.h>
 #include <cstdio>
@@ -355,7 +357,7 @@ void validCode()
     WSACleanup();
 
     wordInit = MAKEWORD(1, 2);
-    // cppcheck-suppress redundantAssignment
+    // TODO cppcheck-suppress redundantAssignment
     dwordInit = MAKELONG(1, 2);
     // cppcheck-suppress redundantAssignment
     wordInit = LOWORD(dwordInit);
@@ -789,7 +791,7 @@ void invalidFunctionArg()
     CloseHandle(hMutex);
 
     //Incorrect: 2. parameter to LoadLibraryEx() must be NULL
-    // cppcheck-suppress invalidFunctionArg
+    // TODO cppcheck-suppress invalidFunctionArg
     HINSTANCE hInstLib = LoadLibraryEx(L"My.dll", HANDLE(1), 0);
     FreeLibrary(hInstLib);
 
@@ -814,7 +816,7 @@ void uninitvar()
     // cppcheck-suppress uninitvar
     lstrcat(buf, _T("test"));
     buf[0] = _T('\0');
-    // cppcheck-suppress constVariable
+    // TODO cppcheck-suppress constVariable
     TCHAR buf2[2];
     // cppcheck-suppress lstrcatCalled
     // cppcheck-suppress uninitvar

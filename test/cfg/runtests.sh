@@ -27,7 +27,7 @@ CFG="$DIR"../../cfg/
 # TODO: remove missingInclude disabling when it no longer is implied by --enable=information
 # Cppcheck options
 # need to suppress unmatchedSuppression in case valueFlowBailout is not reported
-CPPCHECK_OPT='--check-library --platform=unix64 --enable=style,information --inconclusive --force --check-level=exhaustive --error-exitcode=-1 --disable=missingInclude --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}" --debug-warnings --suppress=valueFlowBailout --suppress=purgedConfiguration --suppress=unmatchedSuppression --suppress=checkersReport'
+CPPCHECK_OPT='--check-library --platform=unix64 --enable=style,information --inconclusive --force --check-level=exhaustive --error-exitcode=-1 --disable=missingInclude --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}" --debug-warnings --suppress=checkersReport'
 
 # Compiler settings
 CXX=g++
