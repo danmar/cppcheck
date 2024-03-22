@@ -1075,6 +1075,8 @@ bool Library::isuninitargbad(const Token *ftok, int argnr, int indirect, bool *h
 /** get allocation info for function */
 const Library::AllocFunc* Library::getAllocFuncInfo(const Token *tok) const
 {
+    while (Token::simpleMatch(tok, "::"))
+        tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
     const std::string funcname = getFunctionName(tok);
     return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(mAlloc, funcname);
 }
@@ -1082,6 +1084,8 @@ const Library::AllocFunc* Library::getAllocFuncInfo(const Token *tok) const
 /** get deallocation info for function */
 const Library::AllocFunc* Library::getDeallocFuncInfo(const Token *tok) const
 {
+    while (Token::simpleMatch(tok, "::"))
+        tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
     const std::string funcname = getFunctionName(tok);
     return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(mDealloc, funcname);
 }
@@ -1089,6 +1093,8 @@ const Library::AllocFunc* Library::getDeallocFuncInfo(const Token *tok) const
 /** get reallocation info for function */
 const Library::AllocFunc* Library::getReallocFuncInfo(const Token *tok) const
 {
+    while (Token::simpleMatch(tok, "::"))
+        tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
     const std::string funcname = getFunctionName(tok);
     return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(mRealloc, funcname);
 }
