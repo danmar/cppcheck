@@ -12,6 +12,7 @@
 #include <wx/wx.h>
 #include <wx/accel.h>
 #include <wx/app.h>
+#include <wx/colour.h>
 #include <wx/dc.h>
 #include <wx/log.h>
 #include <wx/filefn.h>
@@ -38,6 +39,22 @@
 #include <wx/propgrid/property.h>
 #include <wx/position.h>
 #include <wx/versioninfo.h>
+
+void unreadVariable_wxColour(const unsigned char uc, const wxString &name, const unsigned long colRGB, const wxColour &colour)
+{
+    // cppcheck-suppress unusedVariable
+    wxColour a;
+    // cppcheck-suppress unreadVariable
+    wxColour b(uc, uc, uc);
+    // cppcheck-suppress unreadVariable
+    wxColour c(uc, uc, uc, uc);
+    // cppcheck-suppress unreadVariable
+    wxColour d(name);
+    // cppcheck-suppress unreadVariable
+    wxColour e(colRGB);
+    // cppcheck-suppress unreadVariable
+    wxColour f(colour);
+}
 
 void unreadVariable_wxPoint2DInt(const wxInt32 x, const wxPoint2DInt& pti, const wxPoint &pt)
 {
