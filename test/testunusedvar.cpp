@@ -6794,7 +6794,7 @@ private:
                               "  int a = 0;\n"
                               "  do {\n"
                               "    dostuff(a);\n"
-                              "  } while((a + = x) < 30);\n"
+                              "  } while((a += x) < 30);\n"
                               "}");
         ASSERT_EQUALS("", errout_str());
 
