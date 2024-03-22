@@ -14,6 +14,7 @@
 #include <wx/app.h>
 #include <wx/colour.h>
 #include <wx/dc.h>
+#include <wx/dynarray.h>
 #include <wx/log.h>
 #include <wx/filefn.h>
 #include <wx/geometry.h>
@@ -38,7 +39,44 @@
 #include <wx/gdicmn.h>
 #include <wx/propgrid/property.h>
 #include <wx/position.h>
+#include <wx/vector.h>
 #include <wx/versioninfo.h>
+
+void unusedVariable_wxVector()
+{
+    // cppcheck-suppress unusedVariable
+    wxVector<int> a;
+}
+
+void unusedVariable_wxArrayInt()
+{
+    // cppcheck-suppress unusedVariable
+    wxArrayInt a;
+}
+
+void unusedVariable_wxArrayDouble()
+{
+    // cppcheck-suppress unusedVariable
+    wxArrayDouble a;
+}
+
+void unusedVariable_wxArrayShort()
+{
+    // cppcheck-suppress unusedVariable
+    wxArrayShort a;
+}
+
+void unusedVariable_wxArrayString()
+{
+    // cppcheck-suppress unusedVariable
+    wxArrayString a;
+}
+
+void unusedVariable_wxArrayPtrVoid()
+{
+    // cppcheck-suppress unusedVariable
+    wxArrayPtrVoid a;
+}
 
 void unreadVariable_wxColour(const unsigned char uc, const wxString &name, const unsigned long colRGB, const wxColour &colour)
 {
