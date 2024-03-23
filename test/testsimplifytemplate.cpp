@@ -219,6 +219,7 @@ private:
         TEST_CASE(template178);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
+        TEST_CASE(template_specialization_3);
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
@@ -4561,6 +4562,24 @@ private:
                             "template <typename T> struct S<C<T>> {b};\n"
                             "S<C<int>> s;";
         const char exp[]  = "template < typename T > struct C { } ; template < typename T > struct S { a } ; struct S<C<int>> ; S<C<int>> s ; struct S<C<int>> { b } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template_specialization_3() {
+        const char code[] = "namespace N {\n" // #12312
+                            "    template <typename T>\n"
+                            "    bool equal(const T&);\n"
+                            "    template <>\n"
+                            "    bool equal<int>(const int&) { return false; }\n"
+                            "}\n"
+                            "void f(bool equal, int i) { if (equal) {} }\n";
+        const char exp[] = "namespace N { "
+                           "bool equal<int> ( const int & ) ; "
+                           "template < typename T > "
+                           "bool equal ( const T & ) ; "
+                           "bool equal<int> ( const int & ) { return false ; } "
+                           "} "
+                           "void f ( bool equal , int i ) { if ( equal ) { } }";
         ASSERT_EQUALS(exp, tok(code));
     }
 
