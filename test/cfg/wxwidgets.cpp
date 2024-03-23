@@ -12,9 +12,12 @@
 #include <wx/wx.h>
 #include <wx/accel.h>
 #include <wx/app.h>
+#include <wx/brush.h>
+#include <wx/pen.h>
 #include <wx/colour.h>
 #include <wx/dc.h>
 #include <wx/dynarray.h>
+#include <wx/font.h>
 #include <wx/log.h>
 #include <wx/filefn.h>
 #include <wx/geometry.h>
@@ -41,6 +44,78 @@
 #include <wx/position.h>
 #include <wx/vector.h>
 #include <wx/versioninfo.h>
+
+void unusedVariable_wxPenList()
+{
+    // cppcheck-suppress unusedVariable
+    wxPenList a;
+}
+
+void unusedVariable_wxPen(const wxColour &colour, int width, const wxPenStyle style, const wxPen &pen)
+{
+    // cppcheck-suppress unusedVariable
+    wxPen a;
+    // cppcheck-suppress unreadVariable
+    wxPen b(colour, width);
+    // cppcheck-suppress unreadVariable
+    wxPen c(colour, width, style);
+    // cppcheck-suppress unreadVariable
+    wxPen d(pen);
+}
+
+void unusedVariable_wxBrush(const wxColour &color, const wxBrushStyle style, const wxBitmap &bmp, const wxBrush &brush)
+{
+    // cppcheck-suppress unusedVariable
+    wxBrush a;
+    // cppcheck-suppress unreadVariable
+    wxBrush b(color, style);
+    // cppcheck-suppress unreadVariable
+    wxBrush c(bmp);
+    // cppcheck-suppress unreadVariable
+    wxBrush d(brush);
+}
+
+void unusedVariable_wxFontList()
+{
+    // cppcheck-suppress unusedVariable
+    wxFontList a;
+}
+
+void unusedVariable_wxFontInfo(const double pointSize, const wxSize &sz)
+{
+    // cppcheck-suppress unusedVariable
+    wxFontInfo a;
+    // cppcheck-suppress unreadVariable
+    wxFontInfo b(pointSize);
+    // cppcheck-suppress unreadVariable
+    wxFontInfo c(sz);
+}
+
+void unusedVariable_wxFont(const wxFont &font,
+                           const wxFontInfo &fontInfo,
+                           const int pointSize,
+                           const wxFontFamily family,
+                           const wxFontStyle style,
+                           const wxFontWeight weight,
+                           const bool underline,
+                           const wxString &faceName,
+                           const wxFontEncoding encoding)
+{
+    // cppcheck-suppress unusedVariable
+    wxFont a;
+    // cppcheck-suppress unreadVariable
+    wxFont b(font);
+    // cppcheck-suppress unreadVariable
+    wxFont c(fontInfo);
+    // cppcheck-suppress unreadVariable
+    wxFont d(pointSize, family, style, weight);
+    // cppcheck-suppress unreadVariable
+    wxFont e(pointSize, family, style, weight, underline);
+    // cppcheck-suppress unreadVariable
+    wxFont f(pointSize, family, style, weight, underline, faceName);
+    // cppcheck-suppress unreadVariable
+    wxFont g(pointSize, family, style, weight, underline, faceName, encoding);
+}
 
 void unusedVariable_wxVector()
 {
