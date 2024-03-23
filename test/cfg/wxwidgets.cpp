@@ -51,18 +51,16 @@ void unusedVariable_wxPenList()
     wxPenList a;
 }
 
-void unusedVariable_wxPen(const wxPenInfo &penInfo, const wxColour &colour, int width, const wxPenStyle style, const wxPen &pen)
+void unusedVariable_wxPen(const wxColour &colour, int width, const wxPenStyle style, const wxPen &pen)
 {
     // cppcheck-suppress unusedVariable
     wxPen a;
     // cppcheck-suppress unreadVariable
-    wxPen b(penInfo);
+    wxPen b(colour, width);
     // cppcheck-suppress unreadVariable
-    wxPen c(colour, width);
+    wxPen c(colour, width, style);
     // cppcheck-suppress unreadVariable
-    wxPen d(colour, width, style);
-    // cppcheck-suppress unreadVariable
-    wxPen f(pen);
+    wxPen d(pen);
 }
 
 void unusedVariable_wxBrush(const wxColour &color, const wxBrushStyle style, const wxBitmap &bmp, const wxBrush &brush)
