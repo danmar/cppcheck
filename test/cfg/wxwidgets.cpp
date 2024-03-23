@@ -12,38 +12,52 @@
 #include <wx/wx.h>
 #include <wx/accel.h>
 #include <wx/app.h>
-#include <wx/brush.h>
-#include <wx/pen.h>
-#include <wx/colour.h>
-#include <wx/dc.h>
-#include <wx/dynarray.h>
-#include <wx/font.h>
-#include <wx/log.h>
-#include <wx/filefn.h>
-#include <wx/geometry.h>
-#include <wx/spinctrl.h>
 #include <wx/artprov.h>
-#include <wx/calctrl.h>
-#include <wx/combo.h>
-#include <wx/icon.h>
 #include <wx/bitmap.h>
+#include <wx/brush.h>
+#include <wx/calctrl.h>
+#include <wx/colour.h>
+#include <wx/combo.h>
+#include <wx/dc.h>
 #include <wx/dataview.h>
 #include <wx/datetime.h>
-#include <wx/memory.h>
+#include <wx/dc.h>
+#include <wx/dynarray.h>
+#include <wx/filefn.h>
+#include <wx/font.h>
 #include <wx/frame.h>
+#include <wx/gdicmn.h>
+#include <wx/geometry.h>
+#include <wx/icon.h>
+#include <wx/log.h>
 #include <wx/menu.h>
+#include <wx/memory.h>
 #include <wx/mimetype.h>
+#include <wx/pen.h>
+#include <wx/position.h>
+#include <wx/propgrid/property.h>
 #include <wx/regex.h>
 #include <wx/region.h>
-#include <wx/stattext.h>
+#include <wx/settings.h>
+#include <wx/spinctrl.h>
 #include <wx/sizer.h>
 #include <wx/string.h>
+#include <wx/sysopt.h>
 #include <wx/textctrl.h>
-#include <wx/gdicmn.h>
-#include <wx/propgrid/property.h>
-#include <wx/position.h>
 #include <wx/vector.h>
 #include <wx/versioninfo.h>
+
+void unusedVariable_wxSystemOptions()
+{
+    // cppcheck-suppress unusedVariable
+    wxSystemOptions a;
+}
+
+void unusedVariable_wxSystemSettings()
+{
+    // cppcheck-suppress unusedVariable
+    wxSystemSettings a;
+}
 
 void unusedVariable_wxPenList()
 {
