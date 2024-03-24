@@ -411,9 +411,9 @@ void ErrorMessage::deserialize(const std::string &data)
 
         // (*loc).line << '\t' << (*loc).column << '\t' << (*loc).getfile(false) << '\t' << loc->getinfo();
 
-        ErrorMessage::FileLocation loc(substrings[2], strToInt<int>(substrings[0]), strToInt<unsigned int>(substrings[1]));
+        ErrorMessage::FileLocation loc(std::move(substrings[2]), strToInt<int>(substrings[0]), strToInt<unsigned int>(substrings[1]));
         if (substrings.size() == 4)
-            loc.setinfo(substrings[3]);
+            loc.setinfo(std::move(substrings[3]));
 
         callStack.push_back(std::move(loc));
 

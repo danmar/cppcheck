@@ -1150,7 +1150,7 @@ void Tokenizer::simplifyTypedefCpp()
 
         if (maxTime > 0 && std::time(nullptr) > maxTime) {
             if (mSettings.debugwarnings) {
-                ErrorMessage::FileLocation loc(list.getFiles()[0]);
+                ErrorMessage::FileLocation loc(list.getFiles()[0], 0, 0);
                 ErrorMessage errmsg({std::move(loc)},
                                     emptyString,
                                     Severity::debug,

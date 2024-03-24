@@ -54,17 +54,14 @@ public:
      */
     class CPPCHECKLIB WARN_UNUSED FileLocation {
     public:
-        FileLocation()
-            : fileIndex(0), line(0), column(0) {}
-
-        explicit FileLocation(const std::string &file, int line = 0, unsigned int column = 0)
+        FileLocation(std::string file, int line, unsigned int column)
             : fileIndex(0), line(line), column(column) {
-            setfile(file);
+            setfile(std::move(file));
         }
 
-        FileLocation(const std::string &file, std::string info, int line, unsigned int column)
+        FileLocation(std::string file, std::string info, int line, unsigned int column)
             : fileIndex(0), line(line), column(column), mInfo(std::move(info)) {
-            setfile(file);
+            setfile(std::move(file));
         }
 
         FileLocation(const Token* tok, const TokenList* tokenList);
@@ -89,8 +86,8 @@ public:
         std::string getinfo() const {
             return mInfo;
         }
-        void setinfo(const std::string &i) {
-            mInfo = i;
+        void setinfo(std::string i) {
+            mInfo = std::move(i);
         }
 
     private:

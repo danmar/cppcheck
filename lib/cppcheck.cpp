@@ -403,10 +403,10 @@ static bool reportClangErrors(std::istream &is, const std::function<void(const E
         const std::string colnr = line.substr(pos2+1, pos3-pos2-1);
         const std::string msg = line.substr(line.find(':', pos3+1) + 2);
 
-        const std::string locFile = Path::toNativeSeparators(filename);
-        ErrorMessage::FileLocation loc(locFile);
-        loc.line = strToInt<int>(linenr);
-        loc.column = strToInt<unsigned int>(colnr);
+        std::string locFile = Path::toNativeSeparators(filename);
+        const int line_i = strToInt<int>(linenr);
+        const int column = strToInt<unsigned int>(colnr);
+        ErrorMessage::FileLocation loc(std::move(locFile), line_i, column);
         ErrorMessage errmsg({std::move(loc)},
                             locFile,
                             Severity::error,
@@ -686,10 +686,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             if (mSettings.relativePaths)
                 file = Path::getRelativePath(file, mSettings.basePaths);
 
-            const ErrorMessage::FileLocation loc1(file, output.location.line, output.location.col);
-            std::list<ErrorMessage::FileLocation> callstack(1, loc1);
+            ErrorMessage::FileLocation loc1(std::move(file), output.location.line, output.location.col);
 
-            ErrorMessage errmsg(std::move(callstack),
+            ErrorMessage errmsg({std::move(loc1)},
                                 "",
                                 Severity::error,
                                 output.msg,
@@ -978,10 +977,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     if (mSettings.relativePaths)
                         file = Path::getRelativePath(file, mSettings.basePaths);
 
-                    const ErrorMessage::FileLocation loc1(file, o.location.line, o.location.col);
-                    std::list<ErrorMessage::FileLocation> callstack(1, loc1);
+                    ErrorMessage::FileLocation loc1(std::move(file), o.location.line, o.location.col);
 
-                    ErrorMessage errmsg(std::move(callstack),
+                    ErrorMessage errmsg({std::move(loc1)},
                                         filename,
                                         Severity::error,
                                         o.msg,
@@ -1008,8 +1006,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             for (const std::string &s : configurationError)
                 msg += '\n' + s;
 
-            const std::string locFile = Path::toNativeSeparators(filename);
-            ErrorMessage::FileLocation loc(locFile);
+            std::string locFile = Path::toNativeSeparators(filename);
+            ErrorMessage::FileLocation loc(std::move(locFile), 0, 0);
             ErrorMessage errmsg({std::move(loc)},
                                 locFile,
                                 Severity::information,
@@ -1062,10 +1060,9 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
 {
     const std::string fullmsg("Bailing out from analysis: " + msg);
 
-    const ErrorMessage::FileLocation loc1(filename, 0, 0);
-    std::list<ErrorMessage::FileLocation> callstack(1, loc1);
+    ErrorMessage::FileLocation loc1(filename, 0, 0);
 
-    ErrorMessage errmsg(std::move(callstack),
+    ErrorMessage errmsg({std::move(loc1)},
                         emptyString,
                         Severity::error,
                         fullmsg,
@@ -1111,7 +1108,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 
             if (maxTime > 0 && std::time(nullptr) > maxTime) {
                 if (mSettings.debugwarnings) {
-                    ErrorMessage::FileLocation loc(tokenizer.list.getFiles()[0]);
+                    ErrorMessage::FileLocation loc(tokenizer.list.getFiles()[0], 0, 0);
                     ErrorMessage errmsg({std::move(loc)},
                                         emptyString,
                                         Severity::debug,
@@ -1416,7 +1413,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
                 }
             }
 
-            ErrorMessage::FileLocation loc(file, line);
+            ErrorMessage::FileLocation loc(std::move(file), line, 0);
 
             // Create error message
             std::string summary;
@@ -1496,8 +1493,8 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
                     std::string fileName = loc["file"].get<std::string>();
                     const int64_t lineNumber = loc["linenr"].get<int64_t>();
                     const int64_t column = loc["column"].get<int64_t>();
-                    const std::string info = loc["info"].get<std::string>();
-                    errmsg.callStack.emplace_back(std::move(fileName), info, lineNumber, column);
+                     std::string info = loc["info"].get<std::string>();
+                    errmsg.callStack.emplace_back(std::move(fileName), std::move(info), lineNumber, column);
                 }
             }
 
@@ -1566,7 +1563,7 @@ void CppCheck::tooManyConfigsError(const std::string &file, const int numberOfCo
 
     std::list<ErrorMessage::FileLocation> loclist;
     if (!file.empty()) {
-        loclist.emplace_back(file);
+        loclist.emplace_back(file, 0, 0);
     }
 
     std::ostringstream msg;
@@ -1602,7 +1599,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
     std::list<ErrorMessage::FileLocation> loclist;
     if (!file.empty()) {
-        loclist.emplace_back(file);
+        loclist.emplace_back(file, 0, 0);
     }
 
     ErrorMessage errmsg(std::move(loclist),
