@@ -407,7 +407,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout_str());
 
         check("void f() {\n"
-              "void *a = std::nullptr;\n"
+              "void *a = nullptr;\n"
               "a = malloc(10);\n"
               "a = realloc(a, 20);\n"
               "}");
