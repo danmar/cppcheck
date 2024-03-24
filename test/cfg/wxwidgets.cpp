@@ -8,9 +8,11 @@
 //
 
 // cppcheck-suppress-file valueFlowBailout
+// cppcheck-suppress-file purgedConfiguration
 
 #include <wx/wx.h>
 #include <wx/accel.h>
+#include <wx/any.h>
 #include <wx/app.h>
 #include <wx/artprov.h>
 #include <wx/bitmap.h>
@@ -33,6 +35,10 @@
 #include <wx/menu.h>
 #include <wx/memory.h>
 #include <wx/mimetype.h>
+#if defined(__WXMSW__)
+#include <wx/msw/ole/automtn.h>
+#include <wx/msw/ole/oleutils.h>
+#endif
 #include <wx/pen.h>
 #include <wx/position.h>
 #include <wx/propgrid/property.h>
@@ -44,8 +50,107 @@
 #include <wx/string.h>
 #include <wx/sysopt.h>
 #include <wx/textctrl.h>
+#include <wx/unichar.h>
+#include <wx/ustring.h>
+#include <wx/variant.h>
 #include <wx/vector.h>
 #include <wx/versioninfo.h>
+
+void unreadVariable_wxUString(const wxUString &str, const wxChar32 *strPtr)
+{
+    // cppcheck-suppress unusedVariable
+    wxUString a;
+    // cppcheck-suppress unreadVariable
+    wxUString b(str);
+    // cppcheck-suppress unreadVariable
+    wxUString c(strPtr);
+}
+
+void unreadVariable_wxAny(const wxVariant &variant, const wxAny &any)
+{
+    // cppcheck-suppress unusedVariable
+    wxAny a;
+    // cppcheck-suppress unreadVariable
+    wxAny b(42);
+    // cppcheck-suppress unreadVariable
+    wxAny c(variant);
+    // cppcheck-suppress unreadVariable
+    wxAny d(any);
+}
+
+void unreadVariable_wxVariant(wxVariantData *data,
+                              const wxString &name,
+                              const wxVariant &variant,
+                              const wxAny &any,
+                              const wxChar *valuePtr,
+                              const wxString &valueStr,
+                              const wxChar charValue,
+                              long lValue,
+                              bool bvalue)
+{
+    // cppcheck-suppress unusedVariable
+    wxVariant a;
+    // cppcheck-suppress unreadVariable
+    wxVariant b(data);
+    // cppcheck-suppress unreadVariable
+    wxVariant c(data, name);
+    // cppcheck-suppress unreadVariable
+    wxVariant d(variant);
+    // cppcheck-suppress unreadVariable
+    wxVariant e(any);
+    // cppcheck-suppress unreadVariable
+    wxVariant f(valuePtr);
+    // cppcheck-suppress unreadVariable
+    wxVariant g(valuePtr, name);
+    // cppcheck-suppress unreadVariable
+    wxVariant h(valueStr);
+    // cppcheck-suppress unreadVariable
+    wxVariant i(valueStr, name);
+    // cppcheck-suppress unreadVariable
+    wxVariant j(charValue);
+    // cppcheck-suppress unreadVariable
+    wxVariant k(charValue, name);
+    // cppcheck-suppress unreadVariable
+    wxVariant l(lValue);
+    // cppcheck-suppress unreadVariable
+    wxVariant m(lValue, name);
+    // cppcheck-suppress unreadVariable
+    wxVariant n(bvalue);
+    // cppcheck-suppress unreadVariable
+    wxVariant o(bvalue, name);
+}
+
+#if defined(__WXMSW__)
+void unusedVariable_wxVariantDataErrorCode()
+{
+    // cppcheck-suppress unusedVariable
+    wxVariantDataErrorCode a;
+}
+void unusedVariable_wxVariantDataCurrency()
+{
+    // cppcheck-suppress unusedVariable
+    wxVariantDataCurrency a;
+}
+void unusedVariable_wxVariantDataSafeArray()
+{
+    // cppcheck-suppress unusedVariable
+    wxVariantDataSafeArray a;
+}
+#endif
+
+void unusedVariable_wxChar()
+{
+    // cppcheck-suppress unusedVariable
+    wxChar a;
+}
+
+void unusedVariable_wxUniChar(const int c)
+{
+    // cppcheck-suppress unusedVariable
+    wxUniChar a;
+    // cppcheck-suppress unreadVariable
+    wxUniChar b(c);
+}
 
 void unusedVariable_wxSystemOptions()
 {
