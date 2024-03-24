@@ -104,7 +104,6 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options_safe(-Wno-date-time)
     add_compile_options(-Wno-disabled-macro-expansion)
     add_compile_options_safe(-Wno-bitwise-instead-of-logical)
-    add_compile_options_safe(-Wno-switch-default)
 
     # these cannot be fixed properly without adopting later C++ standards
     add_compile_options_safe(-Wno-unsafe-buffer-usage)
@@ -120,6 +119,9 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
     # only needs to be addressed to work around issues in older compilers
     add_compile_options_safe(-Wno-return-std-move-in-c++11)
+
+    # this is reported even when it is unnecessary i.e. -Wswitch-enum warnings have been mitigated
+    add_compile_options_safe(-Wno-switch-default)
 
     # warnings we are currently not interested in
     add_compile_options(-Wno-four-char-constants)
