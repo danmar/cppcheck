@@ -926,7 +926,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
 
     std::list<ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
-        locationList.emplace_back(filename, linenr);
+        locationList.emplace_back(filename, linenr, 0);
     }
     ErrorMessage errmsg(std::move(locationList), mFile0, Severity::information,
                         (headerType==SystemHeader) ?

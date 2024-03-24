@@ -9404,7 +9404,7 @@ struct ValueFlowPassRunner {
         }
         if (state.settings.debugwarnings) {
             if (n == 0 && values != getTotalValues()) {
-                ErrorMessage::FileLocation loc(state.tokenlist.getFiles()[0]);
+                ErrorMessage::FileLocation loc(state.tokenlist.getFiles()[0], 0, 0);
                 ErrorMessage errmsg({std::move(loc)},
                                     emptyString,
                                     Severity::debug,
