@@ -2200,15 +2200,11 @@ static void valueFlowReverse(const TokenList& tokenlist,
                              Token* tok,
                              const Token* const varToken,
                              ValueFlow::Value val,
-                             const ValueFlow::Value& val2,
                              ErrorLogger* errorLogger,
                              const Settings& settings,
                              SourceLocation loc = SourceLocation::current())
 {
-    std::list<ValueFlow::Value> values = {std::move(val)};
-    if (val2.varId != 0)
-        values.push_back(val2);
-    valueFlowReverse(tok, nullptr, varToken, std::move(values), tokenlist, errorLogger, settings, loc);
+    valueFlowReverse(tok, nullptr, varToken, {std::move(val)}, tokenlist, errorLogger, settings, loc);
 }
 
 static bool isConditionKnown(const Token* tok, bool then)
@@ -7639,7 +7635,6 @@ static void valueFlowSwitchVariable(const TokenList &tokenlist, const SymbolData
                                      const_cast<Token*>(scope.classDef),
                                      vartok,
                                      *val,
-                                     ValueFlow::Value(),
                                      errorLogger,
                                      settings);
                 }
