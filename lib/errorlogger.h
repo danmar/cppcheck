@@ -52,16 +52,17 @@ public:
      * Internally paths are stored with / separator. When getting the filename
      * it is by default converted to native separators.
      */
-    class CPPCHECKLIB FileLocation {
+    class CPPCHECKLIB WARN_UNUSED FileLocation {
     public:
-        FileLocation()
-            : fileIndex(0), line(0), column(0) {}
+        FileLocation(std::string file, int line, unsigned int column)
+            : fileIndex(0), line(line), column(column) {
+            setfile(std::move(file));
+        }
 
-        explicit FileLocation(const std::string &file, int line = 0, unsigned int column = 0)
-            : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file) {}
-
-        FileLocation(const std::string &file, std::string info, int line, unsigned int column)
-            : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file), mInfo(std::move(info)) {}
+        FileLocation(std::string file, std::string info, int line, unsigned int column)
+            : fileIndex(0), line(line), column(column), mInfo(std::move(info)) {
+            setfile(std::move(file));
+        }
 
         FileLocation(const Token* tok, const TokenList* tokenList);
         FileLocation(const Token* tok, std::string info, const TokenList* tokenList);
@@ -72,19 +73,6 @@ public:
          * @return filename.
          */
         std::string getfile(bool convert = true) const;
-
-        /**
-         * Filename with the whole path (no --rp)
-         * @param convert If true convert path to native separators.
-         * @return filename.
-         */
-        std::string getOrigFile(bool convert = true) const;
-
-        /**
-         * Set the filename.
-         * @param file Filename to set.
-         */
-        void setfile(std::string file);
 
         /**
          * @return the location as a string. Format: [file:line]
@@ -98,12 +86,17 @@ public:
         std::string getinfo() const {
             return mInfo;
         }
-        void setinfo(const std::string &i) {
-            mInfo = i;
+        void setinfo(std::string i) {
+            mInfo = std::move(i);
         }
 
     private:
-        std::string mOrigFileName;
+        /**
+         * Set the filename.
+         * @param file Filename to set.
+         */
+        void setfile(std::string file);
+
         std::string mFileName;
         std::string mInfo;
     };

@@ -38,8 +38,8 @@ private:
 
     void run() override {
         TEST_CASE(PatternSearchReplace);
-        TEST_CASE(FileLocationDefaults);
-        TEST_CASE(FileLocationSetFile);
+        TEST_CASE(FileLocationConstruct);
+        TEST_CASE(FileLocationConstructNormalize);
         TEST_CASE(ErrorMessageConstruct);
         TEST_CASE(ErrorMessageConstructLocations);
         TEST_CASE(ErrorMessageVerbose);
@@ -101,17 +101,18 @@ private:
         TestPatternSearchReplace(idPlaceholder, longIdValue);
     }
 
-    void FileLocationDefaults() const {
-        ErrorMessage::FileLocation loc;
-        ASSERT_EQUALS("", loc.getfile());
-        ASSERT_EQUALS(0, loc.line);
+    void FileLocationConstruct() const {
+        const ErrorMessage::FileLocation loc("foo.cpp", 1, 2);
+        ASSERT_EQUALS("foo.cpp", loc.getfile());
+        ASSERT_EQUALS(1, loc.line);
+        ASSERT_EQUALS(2, loc.column);
     }
 
-    void FileLocationSetFile() const {
-        ErrorMessage::FileLocation loc;
-        loc.setfile("foo.cpp");
-        ASSERT_EQUALS("foo.cpp", loc.getfile());
+    void FileLocationConstructNormalize() const {
+        const ErrorMessage::FileLocation loc(".\\test\\test1\\..\\foo.cpp", 0, 0);
+        ASSERT_EQUALS("test/foo.cpp", loc.getfile());
         ASSERT_EQUALS(0, loc.line);
+        ASSERT_EQUALS(0, loc.column);
     }
 
     void ErrorMessageConstruct() const {
@@ -427,13 +428,9 @@ private:
     }
 
     void SerializeFileLocation() const {
-        ErrorMessage::FileLocation loc1(":/,;", 654, 33);
-        loc1.setfile("[]:;,()");
-        loc1.setinfo("abcd:/,");
+        ErrorMessage::FileLocation loc1("[]:;,()", "abcd:/,", 654, 33);
 
-        std::list<ErrorMessage::FileLocation> locs{std::move(loc1)};
-
-        ErrorMessage msg(std::move(locs), emptyString, Severity::error, "Programming error", "errorId", Certainty::inconclusive);
+        ErrorMessage msg({std::move(loc1)}, emptyString, Severity::error, "Programming error", "errorId", Certainty::inconclusive);
 
         const std::string msg_str = msg.serialize();
         ASSERT_EQUALS("7 errorId"
@@ -445,12 +442,11 @@ private:
                       "17 Programming error"
                       "17 Programming error"
                       "1 "
-                      "27 654\t33\t[]:;,()\t:/,;\tabcd:/,", msg_str);
+                      "22 654\t33\t[]:;,()\tabcd:/,", msg_str);
 
         ErrorMessage msg2;
         ASSERT_NO_THROW(msg2.deserialize(msg_str));
         ASSERT_EQUALS("[]:;,()", msg2.callStack.front().getfile(false));
-        ASSERT_EQUALS(":/,;", msg2.callStack.front().getOrigFile(false));
         ASSERT_EQUALS(654, msg2.callStack.front().line);
         ASSERT_EQUALS(33, msg2.callStack.front().column);
         ASSERT_EQUALS("abcd:/,", msg2.callStack.front().getinfo());

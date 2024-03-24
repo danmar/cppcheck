@@ -209,11 +209,11 @@ bool CTU::FileInfo::FunctionCall::loadFromXml(const tinyxml2::XMLElement *xmlEle
     for (const tinyxml2::XMLElement *e2 = xmlElement->FirstChildElement(); !error && e2; e2 = e2->NextSiblingElement()) {
         if (std::strcmp(e2->Name(), "path") != 0)
             continue;
-        ErrorMessage::FileLocation loc;
-        loc.setfile(readAttrString(e2, ATTR_LOC_FILENAME, &error));
-        loc.line = readAttrInt(e2, ATTR_LOC_LINENR, &error);
-        loc.column = readAttrInt(e2, ATTR_LOC_COLUMN, &error);
+        const int line = readAttrInt(e2, ATTR_LOC_LINENR, &error);
+        const int column = readAttrInt(e2, ATTR_LOC_COLUMN, &error);
+        ErrorMessage::FileLocation loc(readAttrString(e2, ATTR_LOC_FILENAME, &error), line, column);
         loc.setinfo(readAttrString(e2, ATTR_INFO, &error));
+        // TODO: loc is never used
     }
     return !error;
 }
@@ -345,12 +345,10 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                     functionCall.callArgValue = value.intvalue;
                     functionCall.warning = !value.errorSeverity();
                     for (const ErrorPathItem &i : value.errorPath) {
-                        ErrorMessage::FileLocation loc;
-                        loc.setfile(tokenizer->list.file(i.first));
-                        loc.line = i.first->linenr();
-                        loc.column = i.first->column();
-                        loc.setinfo(i.second);
-                        functionCall.callValuePath.push_back(std::move(loc));
+                        std::string file = tokenizer->list.file(i.first);
+                        int line = i.first->linenr();
+                        int column = i.first->column();
+                        functionCall.callValuePath.emplace_back(std::move(file), i.second, line, column);
                     }
                     fileInfo->functionCalls.push_back(std::move(functionCall));
                 }

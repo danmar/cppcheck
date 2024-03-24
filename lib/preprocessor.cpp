@@ -907,7 +907,7 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
         if (mSettings.relativePaths)
             file = Path::getRelativePath(file, mSettings.basePaths);
 
-        ErrorMessage::FileLocation loc(file, linenr, 0);
+        ErrorMessage::FileLocation loc(std::move(file), linenr, 0);
         locationList.push_back(std::move(loc));
     }
     mErrorLogger->reportErr(ErrorMessage(std::move(locationList),
@@ -926,7 +926,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
 
     std::list<ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
-        locationList.emplace_back(filename, linenr);
+        locationList.emplace_back(filename, linenr, 0);
     }
     ErrorMessage errmsg(std::move(locationList), mFile0, Severity::information,
                         (headerType==SystemHeader) ?
