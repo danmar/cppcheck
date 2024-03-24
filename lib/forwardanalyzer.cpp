@@ -840,9 +840,8 @@ namespace {
 
         void reportError(Severity severity, const std::string& id, const std::string& msg) {
             if (errorLogger) {
-                const ErrorMessage::FileLocation loc(tokenList.getSourceFilePath(), 0, 0);
-                const std::list<ErrorMessage::FileLocation> callstack{loc};
-                const ErrorMessage errmsg(callstack, tokenList.getSourceFilePath(), severity, msg, id, Certainty::normal);
+                ErrorMessage::FileLocation loc(tokenList.getSourceFilePath(), 0, 0);
+                const ErrorMessage errmsg({std::move(loc)}, tokenList.getSourceFilePath(), severity, msg, id, Certainty::normal);
                 errorLogger->reportErr(errmsg);
             }
         }
