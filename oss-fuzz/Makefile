@@ -112,19 +112,23 @@ translate: translate.o type2.o
 clean:
 	rm -f *.o build/*.o oss-fuzz-client no-fuzz translate
 
-# TODO: add *.c/*.cpp from ../samples
-do-fuzz: oss-fuzz-client
-	mkdir -p corpus
-	./oss-fuzz-client -only_ascii=1 -timeout=3 -detect_leaks=0 corpus ../test/cli/fuzz-crash ../test/cli/fuzz-timeout
+preprare-samples:
+	rm -rf samples
+	mkdir -p samples
+	cp -R ../samples .
+	find ./samples -type f -name '*.txt' -exec rm -vf {} \;
 
-# TODO: add *.c/*.cpp from ../samples
-dedup-corpus: oss-fuzz-client
+do-fuzz: oss-fuzz-client preprare-samples
+	mkdir -p corpus
+	./oss-fuzz-client -only_ascii=1 -timeout=3 -detect_leaks=0 corpus samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout
+
+dedup-corpus: oss-fuzz-client preprare-samples
 	mv corpus corpus_
 	mkdir -p corpus
-	./oss-fuzz-client -only_ascii=1 -timeout=3 -detect_leaks=0 corpus corpus_ ../test/cli/fuzz-crash ../test/cli/fuzz-timeout -merge=1
+	./oss-fuzz-client -only_ascii=1 -timeout=3 -detect_leaks=0 corpus corpus_ samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout -merge=1
 
 # jobs:
-# ./oss-fuzz-client -only_ascii=1 -timeout=3 -detect_leaks=0 corpus ../test/cli/fuzz-crash ../test/cli/fuzz-timeout -workers=12 -jobs=9
+# ./oss-fuzz-client -only_ascii=1 -timeout=3 -detect_leaks=0 corpus samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout -workers=12 -jobs=9
 
 # minimize:
 # ./oss-fuzz-client -only_ascii=1 -timeout=3 -detect_leaks=0 -minimize_crash=1 crash-0123456789abcdef
