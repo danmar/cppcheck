@@ -144,8 +144,6 @@ public:
         return mFiles;
     }
 
-    std::string getOrigFile(const Token *tok) const;
-
     /**
      * get filename for given token
      * @param tok The given token
@@ -198,8 +196,6 @@ public:
      */
     void simplifyStdType();
 
-    void clangSetOrigFiles();
-
     bool isKeyword(const std::string &str) const;
 
     /**
@@ -222,9 +218,6 @@ private:
 
     /** filenames for the tokenized source code (source + included) */
     std::vector<std::string> mFiles;
-
-    /** Original filenames for the tokenized source code (source + included) */
-    std::vector<std::string> mOrigFiles;
 
     /** settings */
     const Settings& mSettings;

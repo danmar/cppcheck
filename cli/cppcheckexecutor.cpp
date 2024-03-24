@@ -715,7 +715,7 @@ void StdLogger::reportErr(const ErrorMessage &msg)
     const std::string msgStr = msgCopy.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation);
 
     // Alert only about unique errors
-    if (!mSettings.emitDuplicates && !mShownErrors.insert(msgStr).second)
+    if (!mSettings.emitDuplicates && !mShownErrors.insert(msgStr, mSettings.relativePaths, mSettings.basePaths).second)
         return;
 
     if (mSettings.outputFormat == Settings::OutputFormat::sarif)

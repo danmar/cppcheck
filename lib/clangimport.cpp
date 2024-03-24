@@ -1672,7 +1672,6 @@ void clangimport::parseClangAstDump(Tokenizer &tokenizer, std::istream &f)
         tokenList.front()->assignIndexes();
     symbolDatabase->clangSetVariables(data.getVariableList());
     symbolDatabase->createSymbolDatabaseExprIds();
-    tokenList.clangSetOrigFiles();
     setTypes(tokenList);
     setValues(tokenizer, symbolDatabase);
 }

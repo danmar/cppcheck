@@ -304,8 +304,6 @@ std::string ErrorMessage::serialize() const
         frame += '\t';
         frame += loc->getfile(false);
         frame += '\t';
-        frame += loc->getOrigFile(false);
-        frame += '\t';
         frame += loc->getinfo();
         serializeString(oss, frame);
     }
@@ -401,9 +399,9 @@ void ErrorMessage::deserialize(const std::string &data)
         }
 
         std::vector<std::string> substrings;
-        substrings.reserve(5);
-        for (std::string::size_type pos = 0; pos < temp.size() && substrings.size() < 5; ++pos) {
-            if (substrings.size() == 4) {
+        substrings.reserve(4);
+        for (std::string::size_type pos = 0; pos < temp.size() && substrings.size() < 4; ++pos) {
+            if (substrings.size() == 3) {
                 substrings.push_back(temp.substr(pos));
                 break;
             }
@@ -415,16 +413,15 @@ void ErrorMessage::deserialize(const std::string &data)
             }
             substrings.push_back(temp.substr(start, pos - start));
         }
-        if (substrings.size() < 4)
+        if (substrings.size() < 3)
             throw InternalError(nullptr, "Internal Error: Deserializing of error message failed");
 
-        // (*loc).line << '\t' << (*loc).column << '\t' << (*loc).getfile(false) << '\t' << loc->getOrigFile(false) << '\t' << loc->getinfo();
+        // (*loc).line << '\t' << (*loc).column << '\t' << (*loc).getfile(false) << '\t' << loc->getinfo();
 
         std::string info;
-        if (substrings.size() == 5)
-            info = std::move(substrings[4]);
-        ErrorMessage::FileLocation loc(substrings[3], std::move(info), strToInt<int>(substrings[0]), strToInt<unsigned int>(substrings[1]));
-        loc.setfile(std::move(substrings[2]));
+        if (substrings.size() == 4)
+            info = std::move(substrings[3]);
+        ErrorMessage::FileLocation loc(substrings[2], std::move(info), strToInt<int>(substrings[0]), strToInt<unsigned int>(substrings[1]));
 
         callStack.push_back(std::move(loc));
 
@@ -632,7 +629,7 @@ static void replaceColors(std::string& source, bool erase) {
         replace(source, substitutionMapErase);
 }
 
-std::string ErrorMessage::toString(bool verbose, const std::string &templateFormat, const std::string &templateLocation) const
+std::string ErrorMessage::toString(bool verbose, bool relativePath, const std::vector<std::string>& basePaths, const std::string &templateFormat, const std::string &templateLocation) const
 {
     assert(!templateFormat.empty());
 
@@ -673,7 +670,12 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
                 endl = "\r\n";
             else
                 endl = "\r";
-            findAndReplace(result, "{code}", readCode(callStack.back().getOrigFile(), callStack.back().line, callStack.back().column, endl));
+            const std::string& file = callStack.back().getfile();
+            findAndReplace(
+                result,
+                "{code}",
+                readCode(relativePath ? Path::getRelativePath(file, basePaths) : file, callStack.back().line, callStack.back().column, endl)
+                );
         }
     } else {
         static const std::unordered_map<std::string, std::string> callStackSubstitutionMap =
@@ -704,7 +706,12 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
                     endl = "\r\n";
                 else
                     endl = "\r";
-                findAndReplace(text, "{code}", readCode(fileLocation.getOrigFile(), fileLocation.line, fileLocation.column, endl));
+                const std::string& file = fileLocation.getfile();
+                findAndReplace(
+                    text,
+                    "{code}",
+                    readCode(relativePath ? Path::getRelativePath(file, basePaths) : file, fileLocation.line, fileLocation.column, endl)
+                    );
             }
             result += '\n' + text;
         }
@@ -732,11 +739,11 @@ ErrorMessage::FileLocation::FileLocation(const std::string &file, std::string in
 {}
 
 ErrorMessage::FileLocation::FileLocation(const Token* tok, const TokenList* tokenList)
-    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(Path::simplifyPath(tokenList->file(tok)))
+    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mFileName(Path::simplifyPath(tokenList->file(tok)))
 {}
 
 ErrorMessage::FileLocation::FileLocation(const Token* tok, std::string info, const TokenList* tokenList)
-    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(Path::simplifyPath(tokenList->file(tok))), mInfo(std::move(info))
+    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mFileName(Path::simplifyPath(tokenList->file(tok))), mInfo(std::move(info))
 {}
 
 std::string ErrorMessage::FileLocation::getfile(bool convert) const
@@ -744,13 +751,6 @@ std::string ErrorMessage::FileLocation::getfile(bool convert) const
     if (convert)
         return Path::toNativeSeparators(mFileName);
     return mFileName;
-}
-
-std::string ErrorMessage::FileLocation::getOrigFile(bool convert) const
-{
-    if (convert)
-        return Path::toNativeSeparators(mOrigFileName);
-    return mOrigFileName;
 }
 
 void ErrorMessage::FileLocation::setfile(std::string file)

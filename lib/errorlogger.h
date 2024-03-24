@@ -69,19 +69,6 @@ public:
         std::string getfile(bool convert = true) const;
 
         /**
-         * Filename with the whole path (no --rp)
-         * @param convert If true convert path to native separators.
-         * @return filename.
-         */
-        std::string getOrigFile(bool convert = true) const;
-
-        /**
-         * Set the filename.
-         * @param file Filename to set.
-         */
-        void setfile(std::string file);
-
-        /**
          * @return the location as a string. Format: [file:line]
          */
         std::string stringify(bool addcolumn = false) const;
@@ -95,7 +82,6 @@ public:
         }
 
     private:
-        std::string mOrigFileName;
         std::string mFileName;
         std::string mInfo;
     };
@@ -152,7 +138,8 @@ public:
      * or template to be used. E.g. "{file}:{line},{info}"
      * @return formatted string
      */
-    std::string toString(bool verbose,
+    std::string toString(bool verbose, bool relativePath,
+                         const std::vector<std::string>& basePaths,
                          const std::string &templateFormat,
                          const std::string &templateLocation) const;
 
