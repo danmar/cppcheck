@@ -6268,6 +6268,8 @@ void Tokenizer::removeExtraTemplateKeywords()
                     templateName->isTemplate(true);
                     templateName = templateName->next();
                 }
+                if (!templateName)
+                    syntaxError(tok);
                 if (Token::Match(templateName->previous(), "operator %op%|(")) {
                     templateName->isTemplate(true);
                     if (templateName->str() == "(" && templateName->link())
