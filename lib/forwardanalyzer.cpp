@@ -654,7 +654,8 @@ namespace {
                 } else if (tok->isControlFlowKeyword() && Token::Match(tok, "if|while|for (") &&
                            Token::simpleMatch(tok->next()->link(), ") {")) {
                     if (settings.checkLevel == Settings::CheckLevel::normal && ++branchCount > 4) {
-                        reportError(Severity::information, "normalCheckLevelMaxBranches", "Limit analysis of branches. Use --check-level=exhaustive to analyze all branches.");
+                        // TODO: should be logged on function-level instead of file-level
+                        reportError(Severity::information, "normalCheckLevelMaxBranches", "Limiting analysis of branches. Use --check-level=exhaustive to analyze all branches.");
                         return Break(Analyzer::Terminate::Bail);
                     }
                     Token* endCond = tok->next()->link();
@@ -839,7 +840,7 @@ namespace {
 
         void reportError(Severity severity, const std::string& id, const std::string& msg) {
             if (errorLogger) {
-                const ErrorMessage::FileLocation loc(tokenList.getSourceFilePath(), 1, 1);
+                const ErrorMessage::FileLocation loc(tokenList.getSourceFilePath(), 0, 0);
                 const std::list<ErrorMessage::FileLocation> callstack{loc};
                 const ErrorMessage errmsg(callstack, tokenList.getSourceFilePath(), severity, msg, id, Certainty::normal);
                 errorLogger->reportErr(errmsg);
