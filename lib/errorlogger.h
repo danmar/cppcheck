@@ -54,9 +54,6 @@ public:
      */
     class CPPCHECKLIB FileLocation {
     public:
-        FileLocation()
-            : fileIndex(0), line(0), column(0) {}
-
         explicit FileLocation(const std::string &file, int line = 0, unsigned int column = 0)
             : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file) {}
 

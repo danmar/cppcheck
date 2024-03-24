@@ -38,7 +38,7 @@ private:
 
     void run() override {
         TEST_CASE(PatternSearchReplace);
-        TEST_CASE(FileLocationDefaults);
+        TEST_CASE(FileLocationConstruct);
         TEST_CASE(FileLocationSetFile);
         TEST_CASE(ErrorMessageConstruct);
         TEST_CASE(ErrorMessageConstructLocations);
@@ -101,17 +101,21 @@ private:
         TestPatternSearchReplace(idPlaceholder, longIdValue);
     }
 
-    void FileLocationDefaults() const {
-        ErrorMessage::FileLocation loc;
-        ASSERT_EQUALS("", loc.getfile());
-        ASSERT_EQUALS(0, loc.line);
+    void FileLocationConstruct() const {
+        ErrorMessage::FileLocation loc("foo.cpp", 1, 2);
+        ASSERT_EQUALS("foo.cpp", loc.getOrigFile());
+        ASSERT_EQUALS("foo.cpp", loc.getfile());
+        ASSERT_EQUALS(1, loc.line);
+        ASSERT_EQUALS(2, loc.column);
     }
 
     void FileLocationSetFile() const {
-        ErrorMessage::FileLocation loc;
+        ErrorMessage::FileLocation loc("foo1.cpp");
         loc.setfile("foo.cpp");
+        ASSERT_EQUALS("foo1.cpp", loc.getOrigFile());
         ASSERT_EQUALS("foo.cpp", loc.getfile());
         ASSERT_EQUALS(0, loc.line);
+        ASSERT_EQUALS(0, loc.column);
     }
 
     void ErrorMessageConstruct() const {
