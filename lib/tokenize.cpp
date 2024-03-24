@@ -6268,6 +6268,8 @@ void Tokenizer::removeExtraTemplateKeywords()
                     templateName->isTemplate(true);
                     templateName = templateName->next();
                 }
+                if (!templateName)
+                    syntaxError(tok);
                 if (Token::Match(templateName->previous(), "operator %op%|(")) {
                     templateName->isTemplate(true);
                     if (templateName->str() == "(" && templateName->link())
@@ -8641,7 +8643,7 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "==|!=|<=|>= %comp%") && tok->strAt(-1) != "operator")
             syntaxError(tok, tok->str() + " " + tok->strAt(1));
-        if (Token::simpleMatch(tok, ":: ::"))
+        if (Token::simpleMatch(tok, "::") && (!Token::Match(tok->next(), "%name%|*|~") || (tok->next()->isKeyword() && tok->strAt(1) != "operator")))
             syntaxError(tok);
     }
 
