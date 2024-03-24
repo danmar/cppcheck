@@ -123,11 +123,6 @@ int TokenList::appendFileIfNew(std::string fileName)
     return mFiles.size() - 1;
 }
 
-void TokenList::clangSetOrigFiles()
-{
-    mOrigFiles = mFiles;
-}
-
 void TokenList::deleteTokens(Token *tok)
 {
     while (tok) {
@@ -376,7 +371,7 @@ void TokenList::createTokens(simplecpp::TokenList&& tokenList)
         // this is a copy
         // TODO: the same as TokenList.files - move that instead
         // TODO: this points to mFiles when called from createTokens(std::istream &, const std::string&)
-        mOrigFiles = mFiles = tokenList.cfront()->location.files;
+        mFiles = tokenList.cfront()->location.files;
     }
     else
         mFiles.clear();
@@ -1881,11 +1876,6 @@ void TokenList::validateAst(bool print) const
             }
         }
     }
-}
-
-std::string TokenList::getOrigFile(const Token *tok) const
-{
-    return mOrigFiles.at(tok->fileIndex());
 }
 
 const std::string& TokenList::file(const Token *tok) const

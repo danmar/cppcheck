@@ -3163,8 +3163,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
 
         if (maxtime > 0 && std::time(nullptr) > maxtime) {
             if (mSettings.debugwarnings) {
-                ErrorMessage::FileLocation loc;
-                loc.setfile(mTokenList.getFiles()[0]);
+                ErrorMessage::FileLocation loc(mTokenList.getFiles()[0]);
                 ErrorMessage errmsg({std::move(loc)},
                                     emptyString,
                                     Severity::debug,
@@ -3234,8 +3233,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
 
         if (maxtime > 0 && std::time(nullptr) > maxtime) {
             if (mSettings.debugwarnings) {
-                ErrorMessage::FileLocation loc;
-                loc.setfile(mTokenList.getFiles()[0]);
+                ErrorMessage::FileLocation loc(mTokenList.getFiles()[0]);
                 ErrorMessage errmsg({std::move(loc)},
                                     emptyString,
                                     Severity::debug,
