@@ -1493,8 +1493,8 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
                     std::string fileName = loc["file"].get<std::string>();
                     const int64_t lineNumber = loc["linenr"].get<int64_t>();
                     const int64_t column = loc["column"].get<int64_t>();
-                    const std::string info = loc["info"].get<std::string>();
-                    errmsg.callStack.emplace_back(std::move(fileName), info, lineNumber, column);
+                    std::string info = loc["info"].get<std::string>();
+                    errmsg.callStack.emplace_back(std::move(fileName), std::move(info), lineNumber, column);
                 }
             }
 

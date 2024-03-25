@@ -138,15 +138,19 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
         if (!tok)
             continue;
 
-        std::string info = e.second;
+        const std::string& path_info = e.second;
 
-        if (startsWith(info,"$symbol:") && info.find('\n') < info.size()) {
-            const std::string::size_type pos = info.find('\n');
-            const std::string &symbolName = info.substr(8, pos - 8);
-            info = replaceStr(info.substr(pos+1), "$symbol", symbolName);
+        std::string info;
+        if (startsWith(path_info,"$symbol:") && path_info.find('\n') < path_info.size()) {
+            const std::string::size_type pos = path_info.find('\n');
+            const std::string symbolName = path_info.substr(8, pos - 8);
+            info = replaceStr(path_info.substr(pos+1), "$symbol", symbolName);
+        }
+        else {
+            info = path_info;
         }
 
-        callStack.emplace_back(tok, info, tokenList);
+        callStack.emplace_back(tok, std::move(info), tokenList);
     }
 
     if (tokenList && !tokenList->getFiles().empty())
@@ -413,7 +417,7 @@ void ErrorMessage::deserialize(const std::string &data)
         std::string info;
         if (substrings.size() == 5)
             info = std::move(substrings[4]);
-        ErrorMessage::FileLocation loc(substrings[3], info, strToInt<int>(substrings[0]), strToInt<unsigned int>(substrings[1]));
+        ErrorMessage::FileLocation loc(substrings[3], std::move(info), strToInt<int>(substrings[0]), strToInt<unsigned int>(substrings[1]));
         loc.setfile(std::move(substrings[2]));
 
         callStack.push_back(std::move(loc));

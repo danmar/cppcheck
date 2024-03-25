@@ -213,8 +213,8 @@ bool CTU::FileInfo::FunctionCall::loadFromXml(const tinyxml2::XMLElement *xmlEle
         std::string info = readAttrString(e2, ATTR_INFO, &error);
         const int line = readAttrInt(e2, ATTR_LOC_LINENR, &error);
         const int column = readAttrInt(e2, ATTR_LOC_COLUMN, &error);
-        ErrorMessage::FileLocation loc(file, info, line, column);
-        // TODO: loc is unused
+        ErrorMessage::FileLocation loc(file, std::move(info), line, column);
+        (void)loc; // TODO: loc is unused
     }
     return !error;
 }
@@ -580,12 +580,12 @@ std::list<ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(InvalidValueTy
         }
 
         std::string info_s = "Calling function " + path[index]->callFunctionName + ", " + std::to_string(path[index]->callArgNr) + getOrdinalText(path[index]->callArgNr) + " argument is " + value1;
-        ErrorMessage::FileLocation fileLoc(path[index]->location.fileName, info_s, path[index]->location.lineNumber, path[index]->location.column);
+        ErrorMessage::FileLocation fileLoc(path[index]->location.fileName, std::move(info_s), path[index]->location.lineNumber, path[index]->location.column);
         locationList.push_back(std::move(fileLoc));
     }
 
     std::string info_s = replaceStr(info, "ARG", unsafeUsage.myArgumentName);
-    ErrorMessage::FileLocation fileLoc2(unsafeUsage.location.fileName, info_s, unsafeUsage.location.lineNumber, unsafeUsage.location.column);
+    ErrorMessage::FileLocation fileLoc2(unsafeUsage.location.fileName, std::move(info_s), unsafeUsage.location.lineNumber, unsafeUsage.location.column);
     locationList.push_back(std::move(fileLoc2));
 
     return locationList;
