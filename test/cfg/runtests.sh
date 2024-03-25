@@ -535,7 +535,7 @@ function check_file {
             ;;
         wxwidgets.cpp)
             wxwidgets_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} -D__WXMSW__ --library=$lib ${DIR}$f
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         *)
           echo "Unhandled file $f"

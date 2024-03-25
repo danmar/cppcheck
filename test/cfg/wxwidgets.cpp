@@ -31,6 +31,8 @@
 #include <wx/gdicmn.h>
 #include <wx/geometry.h>
 #include <wx/icon.h>
+#include <wx/iconloc.h>
+#include <wx/image.h>
 #include <wx/log.h>
 #include <wx/menu.h>
 #include <wx/memory.h>
@@ -55,6 +57,36 @@
 #include <wx/variant.h>
 #include <wx/vector.h>
 #include <wx/versioninfo.h>
+
+void unusedVariable_wxIconLocation(const wxIcon &icon)
+{
+    // cppcheck-suppress unusedVariable
+    wxIconLocation a;
+}
+
+void unreadVariable_wxIcon(const wxIcon &icon, const wxIconLocation &loc, const char *const *ptr)
+{
+    // cppcheck-suppress unusedVariable
+    wxIcon a;
+    // cppcheck-suppress unreadVariable
+    wxIcon b(icon);
+    // cppcheck-suppress unreadVariable
+    wxIcon c(loc);
+    // cppcheck-suppress unreadVariable
+    wxIcon d(ptr);
+}
+
+void unreadVariable_wxImage(const wxImage &image, const int x)
+{
+    // cppcheck-suppress unusedVariable
+    wxImage a;
+    // cppcheck-suppress unreadVariable
+    wxImage b(image);
+    // cppcheck-suppress unreadVariable
+    wxImage c(x, x);
+    // cppcheck-suppress unreadVariable
+    wxImage d(x, x, true);
+}
 
 void unreadVariable_wxUString(const wxUString &str, const wxChar32 *strPtr)
 {
