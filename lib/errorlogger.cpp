@@ -410,10 +410,11 @@ void ErrorMessage::deserialize(const std::string &data)
 
         // (*loc).line << '\t' << (*loc).column << '\t' << (*loc).getfile(false) << '\t' << loc->getOrigFile(false) << '\t' << loc->getinfo();
 
-        ErrorMessage::FileLocation loc(substrings[3], strToInt<int>(substrings[0]), strToInt<unsigned int>(substrings[1]));
-        loc.setfile(std::move(substrings[2]));
+        std::string info;
         if (substrings.size() == 5)
-            loc.setinfo(substrings[4]);
+            info = std::move(substrings[4]);
+        ErrorMessage::FileLocation loc(substrings[3], info, strToInt<int>(substrings[0]), strToInt<unsigned int>(substrings[1]));
+        loc.setfile(std::move(substrings[2]));
 
         callStack.push_back(std::move(loc));
 

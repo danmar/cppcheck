@@ -210,10 +210,10 @@ bool CTU::FileInfo::FunctionCall::loadFromXml(const tinyxml2::XMLElement *xmlEle
         if (std::strcmp(e2->Name(), "path") != 0)
             continue;
         std::string file = readAttrString(e2, ATTR_LOC_FILENAME, &error);
+        std::string info = readAttrString(e2, ATTR_INFO, &error);
         const int line = readAttrInt(e2, ATTR_LOC_LINENR, &error);
         const int column = readAttrInt(e2, ATTR_LOC_COLUMN, &error);
-        ErrorMessage::FileLocation loc(file, line, column);
-        loc.setinfo(readAttrString(e2, ATTR_INFO, &error));
+        ErrorMessage::FileLocation loc(file, info, line, column);
         // TODO: loc is unused
     }
     return !error;
@@ -347,10 +347,10 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                     functionCall.warning = !value.errorSeverity();
                     for (const ErrorPathItem &i : value.errorPath) {
                         const std::string& file = tokenizer->list.file(i.first);
+                        const std::string& info = i.second;
                         const int line = i.first->linenr();
                         const int column = i.first->column();
-                        ErrorMessage::FileLocation loc(file, line, column);
-                        loc.setinfo(i.second);
+                        ErrorMessage::FileLocation loc(file, info, line, column);
                         functionCall.callValuePath.push_back(std::move(loc));
                     }
                     fileInfo->functionCalls.push_back(std::move(functionCall));
@@ -579,13 +579,13 @@ std::list<ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(InvalidValueTy
             std::copy(functionCall->callValuePath.cbegin(), functionCall->callValuePath.cend(), std::back_inserter(locationList));
         }
 
-        ErrorMessage::FileLocation fileLoc(path[index]->location.fileName, path[index]->location.lineNumber, path[index]->location.column);
-        fileLoc.setinfo("Calling function " + path[index]->callFunctionName + ", " + std::to_string(path[index]->callArgNr) + getOrdinalText(path[index]->callArgNr) + " argument is " + value1);
+        std::string info_s = "Calling function " + path[index]->callFunctionName + ", " + std::to_string(path[index]->callArgNr) + getOrdinalText(path[index]->callArgNr) + " argument is " + value1;
+        ErrorMessage::FileLocation fileLoc(path[index]->location.fileName, info_s, path[index]->location.lineNumber, path[index]->location.column);
         locationList.push_back(std::move(fileLoc));
     }
 
-    ErrorMessage::FileLocation fileLoc2(unsafeUsage.location.fileName, unsafeUsage.location.lineNumber, unsafeUsage.location.column);
-    fileLoc2.setinfo(replaceStr(info, "ARG", unsafeUsage.myArgumentName));
+    std::string info_s = replaceStr(info, "ARG", unsafeUsage.myArgumentName);
+    ErrorMessage::FileLocation fileLoc2(unsafeUsage.location.fileName, info_s, unsafeUsage.location.lineNumber, unsafeUsage.location.column);
     locationList.push_back(std::move(fileLoc2));
 
     return locationList;

@@ -95,9 +95,6 @@ public:
         std::string getinfo() const {
             return mInfo;
         }
-        void setinfo(const std::string &i) {
-            mInfo = i;
-        }
 
     private:
         std::string mOrigFileName;
