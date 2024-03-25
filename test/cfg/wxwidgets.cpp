@@ -138,6 +138,26 @@ void unusedVariable_wxVariantDataSafeArray()
 }
 #endif
 
+void unreadVariable_wxBitmap(const wxBitmap &bmp, const char bits[], const int x, const wxSize &sz)
+{
+    // cppcheck-suppress unusedVariable
+    wxBitmap a;
+    // cppcheck-suppress unreadVariable
+    wxBitmap b(bmp);
+    // cppcheck-suppress unreadVariable
+    wxBitmap c(bits, x, x);
+    // cppcheck-suppress unreadVariable
+    wxBitmap d(bits, x, x, x);
+    // cppcheck-suppress unreadVariable
+    wxBitmap e(x, x);
+    // cppcheck-suppress unreadVariable
+    wxBitmap f(x, x, x);
+    // cppcheck-suppress unreadVariable
+    wxBitmap g(sz);
+    // cppcheck-suppress unreadVariable
+    wxBitmap h(sz, x);
+}
+
 void unusedVariable_wxChar()
 {
     // cppcheck-suppress unusedVariable
