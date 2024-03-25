@@ -92,7 +92,7 @@ public:
         int line; // negative value means "no line"
         unsigned int column;
 
-        std::string getinfo() const {
+        const std::string& getinfo() const {
             return mInfo;
         }
 
