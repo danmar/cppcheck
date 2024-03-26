@@ -2928,7 +2928,7 @@ void uninitvar_longjmp(void)
 void uninitvar_malloc(void)
 {
     size_t size;
-    // cppcheck-suppress [uninitvar, cstyleCast]
+    // cppcheck-suppress [uninitvar, cstyleCast, unusedAllocatedMemory]
     int *p = (int*)std::malloc(size);
     free(p);
 }
@@ -4957,7 +4957,7 @@ void std_vector_data_arithmetic()
 
 void memleak_std_malloc() // #12332
 {
-    //cppcheck-suppress [unreadVariable, constVariablePointer]
+    //cppcheck-suppress [unreadVariable, constVariablePointer, unusedAllocatedMemory]
     void* p = std::malloc(1);
     //cppcheck-suppress memleak
 }
@@ -4971,7 +4971,7 @@ void memleak_std_realloc(void* block, size_t newsize)
 
 void unusedAllocatedMemory_std_free()
 {
-    // TODO cppcheck-suppress unusedAllocatedMemory
+    // cppcheck-suppress unusedAllocatedMemory
     void* p = std::malloc(1);
     std::free(p);
 }

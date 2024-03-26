@@ -404,10 +404,9 @@ static bool reportClangErrors(std::istream &is, const std::function<void(const E
         const std::string msg = line.substr(line.find(':', pos3+1) + 2);
 
         const std::string locFile = Path::toNativeSeparators(filename);
-        ErrorMessage::FileLocation loc;
-        loc.setfile(locFile);
-        loc.line = strToInt<int>(linenr);
-        loc.column = strToInt<unsigned int>(colnr);
+        const int line_i = strToInt<int>(linenr);
+        const int column = strToInt<unsigned int>(colnr);
+        ErrorMessage::FileLocation loc(locFile, line_i, column);
         ErrorMessage errmsg({std::move(loc)},
                             locFile,
                             Severity::error,
@@ -1010,8 +1009,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 msg += '\n' + s;
 
             const std::string locFile = Path::toNativeSeparators(filename);
-            ErrorMessage::FileLocation loc;
-            loc.setfile(locFile);
+            ErrorMessage::FileLocation loc(locFile, 0, 0);
             ErrorMessage errmsg({std::move(loc)},
                                 locFile,
                                 Severity::information,
@@ -1113,8 +1111,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 
             if (maxTime > 0 && std::time(nullptr) > maxTime) {
                 if (mSettings.debugwarnings) {
-                    ErrorMessage::FileLocation loc;
-                    loc.setfile(tokenizer.list.getFiles()[0]);
+                    ErrorMessage::FileLocation loc(tokenizer.list.getFiles()[0], 0, 0);
                     ErrorMessage errmsg({std::move(loc)},
                                         emptyString,
                                         Severity::debug,
@@ -1406,19 +1403,20 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
             pos = (int)pos2;
 
             // determine location..
-            ErrorMessage::FileLocation loc;
-            loc.setfile(tokenizer.list.getSourceFilePath());
-            loc.line = 0;
+            std::string file = tokenizer.list.getSourceFilePath();
+            int line = 0;
 
             std::size_t len = 0;
             for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
                 len = len + 1U + tok->str().size();
                 if (len > pos1) {
-                    loc.setfile(tokenizer.list.getFiles().at(tok->fileIndex()));
-                    loc.line = tok->linenr();
+                    file = tokenizer.list.getFiles().at(tok->fileIndex());
+                    line = tok->linenr();
                     break;
                 }
             }
+
+            ErrorMessage::FileLocation loc(file, line, 0);
 
             const std::list<ErrorMessage::FileLocation> callStack(1, loc);
 
@@ -1570,7 +1568,7 @@ void CppCheck::tooManyConfigsError(const std::string &file, const int numberOfCo
 
     std::list<ErrorMessage::FileLocation> loclist;
     if (!file.empty()) {
-        loclist.emplace_back(file);
+        loclist.emplace_back(file, 0, 0);
     }
 
     std::ostringstream msg;
@@ -1606,7 +1604,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
     std::list<ErrorMessage::FileLocation> loclist;
     if (!file.empty()) {
-        loclist.emplace_back(file);
+        loclist.emplace_back(file, 0, 0);
     }
 
     ErrorMessage errmsg(std::move(loclist),

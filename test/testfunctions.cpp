@@ -411,7 +411,7 @@ private:
               "{\n"
               "    ::getpwent();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Return value of function getpwent() is not used.\n"
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Return value of function ::getpwent() is not used.\n"
                       "[test.cpp:3]: (portability) Non reentrant function 'getpwent' called. For threadsafe applications it is recommended to use the reentrant replacement function 'getpwent_r'.\n", errout_str());
 
         // Be quiet on function definitions

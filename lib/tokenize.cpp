@@ -1150,8 +1150,7 @@ void Tokenizer::simplifyTypedefCpp()
 
         if (maxTime > 0 && std::time(nullptr) > maxTime) {
             if (mSettings.debugwarnings) {
-                ErrorMessage::FileLocation loc;
-                loc.setfile(list.getFiles()[0]);
+                ErrorMessage::FileLocation loc(list.getFiles()[0], 0, 0);
                 ErrorMessage errmsg({std::move(loc)},
                                     emptyString,
                                     Severity::debug,
@@ -6268,6 +6267,8 @@ void Tokenizer::removeExtraTemplateKeywords()
                     templateName->isTemplate(true);
                     templateName = templateName->next();
                 }
+                if (!templateName)
+                    syntaxError(tok);
                 if (Token::Match(templateName->previous(), "operator %op%|(")) {
                     templateName->isTemplate(true);
                     if (templateName->str() == "(" && templateName->link())
@@ -8641,9 +8642,9 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "==|!=|<=|>= %comp%") && tok->strAt(-1) != "operator")
             syntaxError(tok, tok->str() + " " + tok->strAt(1));
-        if (Token::Match(tok, "& %op%|%cop%"))
+        if (Token::simpleMatch(tok, "::") && (!Token::Match(tok->next(), "%name%|*|~") || (tok->next()->isKeyword() && tok->strAt(1) != "operator")))
             syntaxError(tok);
-        if (Token::simpleMatch(tok, ":: ::"))
+        if (Token::Match(tok, "& %op%|%cop%"))
             syntaxError(tok);
     }
 

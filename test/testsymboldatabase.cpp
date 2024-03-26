@@ -2239,6 +2239,12 @@ private:
             ASSERT(db && ctor && ctor->type == Function::eMoveConstructor);
             ASSERT(ctor && ctor->retDef == nullptr);
         }
+        {
+            GET_SYMBOL_DB("void f() { extern void f(); }");
+            ASSERT(db && db->scopeList.size() == 2);
+            const Function* f = findFunctionByName("f", &db->scopeList.back());
+            ASSERT(f && f->type == Function::eFunction);
+        }
     }
 
     void functionDeclarationTemplate() {

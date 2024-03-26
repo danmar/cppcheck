@@ -52,12 +52,9 @@ public:
      * Internally paths are stored with / separator. When getting the filename
      * it is by default converted to native separators.
      */
-    class CPPCHECKLIB FileLocation {
+    class CPPCHECKLIB WARN_UNUSED FileLocation {
     public:
-        FileLocation()
-            : fileIndex(0), line(0), column(0) {}
-
-        explicit FileLocation(const std::string &file, int line = 0, unsigned int column = 0)
+        FileLocation(const std::string &file, int line, unsigned int column)
             : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file) {}
 
         FileLocation(const std::string &file, std::string info, int line, unsigned int column)
