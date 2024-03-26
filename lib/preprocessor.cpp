@@ -907,8 +907,7 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
         if (mSettings.relativePaths)
             file = Path::getRelativePath(file, mSettings.basePaths);
 
-        ErrorMessage::FileLocation loc(file, linenr, 0);
-        locationList.push_back(std::move(loc));
+        locationList.emplace_back(file, linenr, 0);
     }
     mErrorLogger->reportErr(ErrorMessage(std::move(locationList),
                                          mFile0,

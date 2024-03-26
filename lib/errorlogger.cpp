@@ -244,14 +244,11 @@ ErrorMessage ErrorMessage::fromInternalError(const InternalError &internalError,
 
     std::list<ErrorMessage::FileLocation> locationList;
     if (tokenList && internalError.token) {
-        ErrorMessage::FileLocation loc(internalError.token, tokenList);
-        locationList.push_back(std::move(loc));
+        locationList.emplace_back(internalError.token, tokenList);
     } else {
-        ErrorMessage::FileLocation loc2(filename, 0, 0);
-        locationList.push_back(std::move(loc2));
+        locationList.emplace_back(filename, 0, 0);
         if (tokenList && (filename != tokenList->getSourceFilePath())) {
-            ErrorMessage::FileLocation loc(tokenList->getSourceFilePath(), 0, 0);
-            locationList.push_back(std::move(loc));
+            locationList.emplace_back(tokenList->getSourceFilePath(), 0, 0);
         }
     }
     ErrorMessage errmsg(std::move(locationList),

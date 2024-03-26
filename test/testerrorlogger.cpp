@@ -102,7 +102,7 @@ private:
     }
 
     void FileLocationConstruct() const {
-        ErrorMessage::FileLocation loc("foo.cpp", 1, 2);
+        const ErrorMessage::FileLocation loc("foo.cpp", 1, 2);
         ASSERT_EQUALS("foo.cpp", loc.getOrigFile());
         ASSERT_EQUALS("foo.cpp", loc.getfile());
         ASSERT_EQUALS(1, loc.line);
@@ -435,9 +435,7 @@ private:
         loc1.setfile("[]:;,()");
         loc1.setinfo("abcd:/,");
 
-        std::list<ErrorMessage::FileLocation> locs{std::move(loc1)};
-
-        ErrorMessage msg(std::move(locs), emptyString, Severity::error, "Programming error", "errorId", Certainty::inconclusive);
+        ErrorMessage msg({std::move(loc1)}, emptyString, Severity::error, "Programming error", "errorId", Certainty::inconclusive);
 
         const std::string msg_str = msg.serialize();
         ASSERT_EQUALS("7 errorId"
