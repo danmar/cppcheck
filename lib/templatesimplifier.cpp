@@ -1508,7 +1508,8 @@ bool TemplateSimplifier::getTemplateNamePositionTemplateClass(const Token *tok, 
 
 int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
 {
-    assert(tok && tok->str() == ">");
+    if (!tok || tok->str() != ">")
+        syntaxError(tok);
 
     auto it = mTemplateNamePos.find(tok);
     if (!mSettings.debugtemplate && it != mTemplateNamePos.end()) {
