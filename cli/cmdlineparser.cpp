@@ -483,6 +483,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             else if (std::strcmp(argv[i], "--check-level=normal") == 0)
                 mSettings.setCheckLevelNormal();
 
+            // Check code with fast analysis
+            else if (std::strcmp(argv[i], "--check-level=fast") == 0)
+                mSettings.setCheckLevelFast();
+
             // Check library definitions
             else if (std::strcmp(argv[i], "--check-library") == 0) {
                 mSettings.checkLibrary = true;

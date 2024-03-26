@@ -78,6 +78,7 @@
     <ClCompile Include="platform.cpp" />
     <ClCompile Include="preprocessor.cpp" />
     <ClCompile Include="programmemory.cpp" />
+    <ClCompile Include="programmemoryfast.cpp" />
     <ClCompile Include="reverseanalyzer.cpp" />
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="summaries.cpp" />
@@ -87,6 +88,7 @@
     <ClCompile Include="token.cpp" />
     <ClCompile Include="tokenlist.cpp" />
     <ClCompile Include="utils.cpp" />
+    <ClCompile Include="valueflowfast.cpp" />
     <ClCompile Include="vfvalue.cpp" />
   </ItemGroup>
   <ItemGroup Label="HeaderFiles">
@@ -149,6 +151,7 @@
     <ClInclude Include="precompiled.h" />
     <ClInclude Include="preprocessor.h" />
     <ClInclude Include="programmemory.h" />
+    <ClInclude Include="programmemoryfast.h" />
     <ClInclude Include="reverseanalyzer.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="smallvector.h" />
@@ -164,6 +167,7 @@
     <ClInclude Include="tokenrange.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="valueflow.h" />
+    <ClInclude Include="valueflowfast.h" />
     <ClInclude Include="valueptr.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="vfvalue.h" />
