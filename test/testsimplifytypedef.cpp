@@ -2510,7 +2510,7 @@ private:
     }
 
     void simplifyTypedef105() { // ticket #3616 (segmentation fault)
-        const char code[] = "( int typedef char x; ){}";        
+        const char code[] = "( int typedef char x; ){}";
         ASSERT_THROW(tok(code), InternalError);
     }
 
