@@ -2530,7 +2530,7 @@ private:
                       "static const std::string j;\n"
                       "const std::string* k;\n"
                       "const char m[];\n"
-                      "void f(const char* const l;) {}");
+                      "void f(const char* const l) {}");
 
         ASSERT(db && db->variableList().size() == 6 && db->getVariableFromVarId(1) && db->getVariableFromVarId(2) && db->getVariableFromVarId(3) && db->getVariableFromVarId(4) && db->getVariableFromVarId(5));
 
