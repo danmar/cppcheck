@@ -7084,7 +7084,7 @@ private:
 
         ASSERT_THROW(tokenizeAndStringify("{ for (()()) }"), InternalError); // #11643
         
-        ASSERT_NO_THROW(tokenizeAndStringify("S* g = ::new(ptr) S();"), InternalError); // #12552
+        ASSERT_NO_THROW(tokenizeAndStringify("S* g = ::new(ptr) S();")); // #12552
     }
 
 
