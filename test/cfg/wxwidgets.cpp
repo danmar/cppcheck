@@ -16,6 +16,9 @@
 #include <wx/app.h>
 #include <wx/artprov.h>
 #include <wx/bitmap.h>
+#if wxCHECK_VERSION(3, 1, 6)  // wxWidets-3.1.6 or higher
+#include <wx/bmpbndl.h>
+#endif
 #include <wx/brush.h>
 #include <wx/calctrl.h>
 #include <wx/colour.h>
@@ -58,7 +61,25 @@
 #include <wx/vector.h>
 #include <wx/versioninfo.h>
 
-void unusedVariable_wxIconLocation(const wxIcon &icon)
+#if wxCHECK_VERSION(3, 1, 6)  // wxWidets-3.1.6 or higher
+void unreadVariable_wxBitmapBundle(const wxBitmap &bmp, const wxIcon &icon, const wxImage &image, const char *const * xpm, const wxBitmapBundle &bundle)
+{
+    // cppcheck-suppress unusedVariable
+    wxBitmapBundle a;
+    // cppcheck-suppress unreadVariable
+    wxBitmapBundle b(bmp);
+    // cppcheck-suppress unreadVariable
+    wxBitmapBundle c(icon);
+    // cppcheck-suppress unreadVariable
+    wxBitmapBundle d(image);
+    // cppcheck-suppress unreadVariable
+    wxBitmapBundle e(xpm);
+    // cppcheck-suppress unreadVariable
+    wxBitmapBundle f(bundle);
+}
+#endif
+
+void unusedVariable_wxIconLocation()
 {
     // cppcheck-suppress unusedVariable
     wxIconLocation a;
