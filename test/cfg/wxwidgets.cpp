@@ -23,6 +23,7 @@
 #include <wx/calctrl.h>
 #include <wx/colour.h>
 #include <wx/combo.h>
+#include <wx/cursor.h>
 #include <wx/dc.h>
 #include <wx/dataview.h>
 #include <wx/datetime.h>
@@ -80,10 +81,28 @@ void unreadVariable_wxBitmapBundle(const wxBitmap &bmp, const wxIcon &icon, cons
 }
 #endif
 
+void unusedVariable_wxCursor()
+{
+    // cppcheck-suppress unusedVariable
+    wxCursor a;
+}
+
 void unusedVariable_wxBitmapHandler()
 {
     // cppcheck-suppress unusedVariable
     wxBitmapHandler a;
+}
+
+void unreadVariable_wxMask(const wxBitmap &bmp, int x, const wxColour & colour)
+{
+    // cppcheck-suppress unusedVariable
+    wxMask a;
+    // cppcheck-suppress unreadVariable
+    wxMask b(bmp);
+    // cppcheck-suppress unreadVariable
+    wxMask c(bmp, x);
+    // cppcheck-suppress unreadVariable
+    wxMask d(bmp, colour);
 }
 
 void unreadVariable_wxGraphicsGradientStops()
