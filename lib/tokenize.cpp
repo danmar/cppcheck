@@ -8653,8 +8653,8 @@ void Tokenizer::findGarbageCode() const
                 if (inner->str() == "{")
                     inner = inner->link();
                 else if (inner->str() == ";") {
-					if (tok->tokAt(-1) && tok->tokAt(-1)->isUpperCaseName())
-                        unknownMacroError(tok->tokAt(-1))
+                    if (tok->tokAt(-1) && tok->tokAt(-1)->isUpperCaseName())
+                        unknownMacroError(tok->tokAt(-1));
                     else
                         syntaxError(inner);
                 }
