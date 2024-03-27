@@ -7083,7 +7083,7 @@ private:
                             "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
 
         ASSERT_THROW(tokenizeAndStringify("{ for (()()) }"), InternalError); // #11643
-        
+
         ASSERT_NO_THROW(tokenizeAndStringify("S* g = ::new(ptr) S();")); // #12552
     }
 
