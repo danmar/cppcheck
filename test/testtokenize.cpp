@@ -7074,8 +7074,9 @@ private:
                             InternalError,
                             "There is an unknown macro here somewhere. Configuration is required. If U_ICU_ENTRY_POINT_RENAME is a macro then please configure it.");
 
-        ASSERT_THROW(tokenizeAndStringify("void f() { MACRO(x(), y(), \"abc\", z(); ok = true); }\n"), // #12006
-                     InternalError);
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { MACRO(x(), y(), \"abc\", z(); ok = true); }\n"), // #12006
+                            InternalError,
+                            "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
 
         ASSERT_THROW_EQUALS(tokenizeAndStringify("int (*f) MACRO((void *));\n"), // #12010
                             InternalError,
@@ -7588,7 +7589,9 @@ private:
     }
 
     void checkConfiguration() {
-        ASSERT_THROW(checkConfig("void f() { DEBUG(x();y()); }"), InternalError);
+        ASSERT_THROW_EQUALS(checkConfig("void f() { DEBUG(x();y()); }"),
+                            InternalError,
+                            "There is an unknown macro here somewhere. Configuration is required. If DEBUG is a macro then please configure it.");
     }
 
     void unknownType() { // #8952
