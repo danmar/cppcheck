@@ -33,6 +33,7 @@
 #include <wx/frame.h>
 #include <wx/gdicmn.h>
 #include <wx/geometry.h>
+#include <wx/graphics.h>
 #include <wx/icon.h>
 #include <wx/iconloc.h>
 #include <wx/image.h>
@@ -78,6 +79,38 @@ void unreadVariable_wxBitmapBundle(const wxBitmap &bmp, const wxIcon &icon, cons
     wxBitmapBundle f(bundle);
 }
 #endif
+
+void unusedVariable_wxBitmapHandler()
+{
+    // cppcheck-suppress unusedVariable
+    wxBitmapHandler a;
+}
+
+void unreadVariable_wxGraphicsGradientStops()
+{
+    // cppcheck-suppress unusedVariable
+    wxGraphicsGradientStops a;
+    // cppcheck-suppress unreadVariable
+    wxGraphicsGradientStops b(wxTransparentColour);
+    // cppcheck-suppress unreadVariable
+    wxGraphicsGradientStops c(wxTransparentColour, wxTransparentColour);
+}
+
+void unreadVariable_wxGraphicsGradientStop()
+{
+    // cppcheck-suppress unusedVariable
+    wxGraphicsGradientStop a;
+    // cppcheck-suppress unreadVariable
+    wxGraphicsGradientStop b(wxTransparentColour);
+    // cppcheck-suppress unreadVariable
+    wxGraphicsGradientStop c(wxTransparentColour, 0.42);
+}
+
+void unusedVariable_wxFontMetrics()
+{
+    // cppcheck-suppress unusedVariable
+    wxFontMetrics a;
+}
 
 void unusedVariable_wxIconLocation()
 {
