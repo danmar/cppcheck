@@ -8644,6 +8644,8 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok, tok->str() + " " + tok->strAt(1));
         if (Token::simpleMatch(tok, "::") && (!Token::Match(tok->next(), "%name%|*|~") || (tok->next()->isKeyword() && tok->strAt(1) != "operator")))
             syntaxError(tok);
+        if (Token::Match(tok, "& %comp%|&&|%oror%|&|%or%") && tok->strAt(1) != ">")
+            syntaxError(tok);
     }
 
     // ternary operator without :
