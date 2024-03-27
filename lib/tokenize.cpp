@@ -2536,7 +2536,7 @@ namespace {
                     tok1 = tok1->previous();
                 if (tok1->previous() && (tok1->strAt(-1) == ")" || tok->strAt(-1) == "}")) {
                     tok1 = tok1->linkAt(-1);
-                    if (Token::Match(tok1->previous(), "throw|noexcept (")) {
+                    if (tok1 && Token::Match(tok1->previous(), "throw|noexcept (")) {
                         tok1 = tok1->previous();
                         while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
                             tok1 = tok1->previous();
@@ -2544,14 +2544,14 @@ namespace {
                             return;
                         tok1 = tok1->linkAt(-1);
                     } else {
-                        while (Token::Match(tok1->tokAt(-2), ":|, %name%")) {
+                        while (tok1 && Token::Match(tok1->tokAt(-2), ":|, %name%")) {
                             tok1 = tok1->tokAt(-2);
                             if (tok1->strAt(-1) != ")" && tok1->strAt(-1) != "}")
                                 return;
                             tok1 = tok1->linkAt(-1);
                         }
                     }
-                    if (tok1->strAt(-1) == ">")
+                    if (tok1 && tok1->strAt(-1) == ">")
                         tok1 = tok1->previous()->findOpeningBracket();
                     if (tok1 && (Token::Match(tok1->tokAt(-3), "%name% :: %name%") ||
                                  Token::Match(tok1->tokAt(-4), "%name% :: ~ %name%"))) {
