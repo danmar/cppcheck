@@ -8646,6 +8646,16 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "& %comp%|&&|%oror%|&|%or%") && tok->strAt(1) != ">")
             syntaxError(tok);
+
+        if (tok->link() && Token::Match(tok, "[([]")) {
+            const Token* const end = tok->link();
+            for (const Token* inner = tok->next(); inner != end; inner = inner->next()) {
+                if (inner->str() == "{")
+                    inner = inner->link();
+                else if (inner->str() == ";")
+                    syntaxError(inner);
+            }
+        }
     }
 
     // ternary operator without :
