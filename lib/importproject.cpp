@@ -187,6 +187,8 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
     mPath = Path::getPathFromFilename(Path::fromNativeSeparators(filename));
     if (!mPath.empty() && !endsWith(mPath,'/'))
         mPath += '/';
+    if (mPath.empty())
+        mPath = std::string("./");
 
     const std::vector<std::string> fileFilters =
         settings ? settings->fileFilters : std::vector<std::string>();
