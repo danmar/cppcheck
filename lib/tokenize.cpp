@@ -8647,7 +8647,7 @@ void Tokenizer::findGarbageCode() const
         if (Token::Match(tok, "& %comp%|&&|%oror%|&|%or%") && tok->strAt(1) != ">")
             syntaxError(tok);
 
-        if (tok->link() && Token::Match(tok, "[([]")) {
+        if (tok->link() && Token::Match(tok, "[([]") && (!tok->tokAt(-1) || !tok->tokAt(-1)->isControlFlowKeyword())) {
             const Token* const end = tok->link();
             for (const Token* inner = tok->next(); inner != end; inner = inner->next()) {
                 if (inner->str() == "{")
