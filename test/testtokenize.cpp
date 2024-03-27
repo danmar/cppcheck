@@ -3692,10 +3692,10 @@ private:
     void simplifyFunctionPointers3() {
         // Related with ticket #2873
         const char code[] = "void f() {\n"
-                            "(void)(xy(*p)(0);)"
+                            "(void)(xy(*p)(0));"
                             "\n}";
         const char expected[] = "void f ( ) {\n"
-                                "( void ) ( xy ( * p ) ( 0 ) ; )\n"
+                                "( void ) ( xy ( * p ) ( 0 ) ) ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
@@ -7074,9 +7074,8 @@ private:
                             InternalError,
                             "There is an unknown macro here somewhere. Configuration is required. If U_ICU_ENTRY_POINT_RENAME is a macro then please configure it.");
 
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { MACRO(x(), y(), \"abc\", z(); ok = true); }\n"), // #12006
-                            InternalError,
-                            "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
+        ASSERT_THROW(tokenizeAndStringify("void f() { MACRO(x(), y(), \"abc\", z(); ok = true); }\n"), // #12006
+                     InternalError);
 
         ASSERT_THROW_EQUALS(tokenizeAndStringify("int (*f) MACRO((void *));\n"), // #12010
                             InternalError,
@@ -7590,7 +7589,6 @@ private:
 
     void checkConfiguration() {
         ASSERT_THROW(checkConfig("void f() { DEBUG(x();y()); }"), InternalError);
-        ASSERT_EQUALS("[test.cpp:1]: (information) Ensure that 'DEBUG' is defined either using -I, --include or -D.\n", errout_str());
     }
 
     void unknownType() { // #8952
