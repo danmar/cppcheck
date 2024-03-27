@@ -40,12 +40,12 @@ public:
 static DummyErrorLogger s_errorLogger;
 static const FileWithDetails s_file("test.cpp");
 
-static void doCheck(const std::string& code)
+static void doCheck(const uint8_t *data, size_t dataSize)
 {
     CppCheck cppcheck(s_errorLogger, false, nullptr);
     cppcheck.settings().addEnabled("all");
     cppcheck.settings().certainty.setEnabled(Certainty::inconclusive, true);
-    cppcheck.check(s_file, code);
+    cppcheck.check(s_file, data, dataSize);
 }
 
 #ifndef NO_FUZZ
@@ -55,7 +55,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataSize)
 {
     if (dataSize < 10000) {
         const std::string code = generateCode2(data, dataSize);
-        doCheck(code);
+        doCheck(reinterpret_cast<const unsigned char*>(code.data()), code.size());
     }
     return 0;
 }
@@ -79,7 +79,7 @@ int main(int argc, char * argv[])
 
     const std::string code = oss.str();
     for (int i = 0; i < cnt; ++i)
-        doCheck(code);
+        doCheck(reinterpret_cast<const unsigned char*>(code.data()), code.size());
 
     return EXIT_SUCCESS;
 }
