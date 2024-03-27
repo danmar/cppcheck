@@ -1752,7 +1752,7 @@ static Token * createAstAtToken(Token *tok)
         return endToken->previous();
     }
 
-    if (cpp && ((!tok->previous() && tok->str() == "::") || Token::Match(tok->previous(), "[;{}] ::"))) {
+    if (cpp && ((!tok->previous() && Token::Match(tok, ":: !!new")) || Token::Match(tok->previous(), "[;{}] :: !!new"))) {
         AST_state state(cpp);
         compileExpression(tok, state);
     }
