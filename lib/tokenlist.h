@@ -101,6 +101,14 @@ public:
      * @param code input stream for code
      */
     bool createTokens(std::istream &code);
+    bool createTokens(const uint8_t* data, size_t size);
+    bool createTokens(const char* data, size_t size) {
+        return createTokens(reinterpret_cast<const uint8_t*>(data), size);
+    }
+    template<size_t size>
+    bool createTokens(const char (&data)[size]) {
+        return createTokens(reinterpret_cast<const uint8_t*>(data), size-1);
+    }
 
     void createTokens(simplecpp::TokenList&& tokenList);
 
@@ -209,6 +217,7 @@ public:
 
 private:
     bool createTokensInternal(std::istream &code, const std::string& file0);
+    bool createTokensInternal(const uint8_t* data, std::size_t size, const std::string& file0);
 
     /** Token list */
     std::shared_ptr<TokensFrontBack> mTokensFrontBack;

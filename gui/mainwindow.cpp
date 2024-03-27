@@ -729,8 +729,11 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     checkLockDownUI();
     clearResults();
     mUI->mResults->checkingStarted(1);
-    // TODO: apply enforcedLanguage?
-    cppcheck.check(FileWithDetails(filename.toStdString(), Path::identify(filename.toStdString(), false), 0), code.toStdString());
+    {
+        const std::string code_s = code.toStdString();
+        // TODO: apply enforcedLanguage?
+        cppcheck.check(FileWithDetails(filename.toStdString(), Path::identify(filename.toStdString(), false), 0), reinterpret_cast<const std::uint8_t*>(code_s.data()), code_s.size());
+    }
     analysisDone();
 
     // Expand results
