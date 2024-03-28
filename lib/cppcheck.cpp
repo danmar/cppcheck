@@ -686,10 +686,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             if (mSettings.relativePaths)
                 file = Path::getRelativePath(file, mSettings.basePaths);
 
-            const ErrorMessage::FileLocation loc1(file, output.location.line, output.location.col);
-            std::list<ErrorMessage::FileLocation> callstack(1, loc1);
+            ErrorMessage::FileLocation loc1(file, output.location.line, output.location.col);
 
-            ErrorMessage errmsg(std::move(callstack),
+            ErrorMessage errmsg({std::move(loc1)},
                                 "",
                                 Severity::error,
                                 output.msg,
@@ -978,10 +977,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     if (mSettings.relativePaths)
                         file = Path::getRelativePath(file, mSettings.basePaths);
 
-                    const ErrorMessage::FileLocation loc1(file, o.location.line, o.location.col);
-                    std::list<ErrorMessage::FileLocation> callstack(1, loc1);
+                    ErrorMessage::FileLocation loc1(file, o.location.line, o.location.col);
 
-                    ErrorMessage errmsg(std::move(callstack),
+                    ErrorMessage errmsg({std::move(loc1)},
                                         filename,
                                         Severity::error,
                                         o.msg,
@@ -1062,10 +1060,9 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
 {
     const std::string fullmsg("Bailing out from analysis: " + msg);
 
-    const ErrorMessage::FileLocation loc1(filename, 0, 0);
-    std::list<ErrorMessage::FileLocation> callstack(1, loc1);
+    ErrorMessage::FileLocation loc1(filename, 0, 0);
 
-    ErrorMessage errmsg(std::move(callstack),
+    ErrorMessage errmsg({std::move(loc1)},
                         emptyString,
                         Severity::error,
                         fullmsg,
@@ -1418,15 +1415,13 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
 
             ErrorMessage::FileLocation loc(file, line, 0);
 
-            const std::list<ErrorMessage::FileLocation> callStack(1, loc);
-
             // Create error message
             std::string summary;
             if (rule.summary.empty())
                 summary = "found '" + str.substr(pos1, pos2 - pos1) + "'";
             else
                 summary = rule.summary;
-            const ErrorMessage errmsg(callStack, tokenizer.list.getSourceFilePath(), rule.severity, summary, rule.id, Certainty::normal);
+            const ErrorMessage errmsg({std::move(loc)}, tokenizer.list.getSourceFilePath(), rule.severity, summary, rule.id, Certainty::normal);
 
             // Report error
             reportErr(errmsg);
