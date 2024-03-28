@@ -35,6 +35,7 @@ public:
 private:
     const ErrorMessage::FileLocation fooCpp5{"foo.cpp", 5, 1};
     const ErrorMessage::FileLocation barCpp8{"bar.cpp", 8, 1};
+    const ErrorMessage::FileLocation barCpp8_i{"bar.cpp", "ä", 8, 1};
 
     void run() override {
         TEST_CASE(PatternSearchReplace);
@@ -235,8 +236,7 @@ private:
     }
 
     void ToXmlV2Locations() const {
-        std::list<ErrorMessage::FileLocation> locs = { fooCpp5, barCpp8 };
-        locs.back().setinfo("ä");
+        std::list<ErrorMessage::FileLocation> locs = { fooCpp5, barCpp8_i };
         ErrorMessage msg(std::move(locs), emptyString, Severity::error, "Programming error.\nVerbose error", "errorId", Certainty::normal);
         std::string header("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results version=\"2\">\n");
         header += "    <cppcheck version=\"";
@@ -431,9 +431,8 @@ private:
     }
 
     void SerializeFileLocation() const {
-        ErrorMessage::FileLocation loc1(":/,;", 654, 33);
+        ErrorMessage::FileLocation loc1(":/,;", "abcd:/,", 654, 33);
         loc1.setfile("[]:;,()");
-        loc1.setinfo("abcd:/,");
 
         ErrorMessage msg({std::move(loc1)}, emptyString, Severity::error, "Programming error", "errorId", Certainty::inconclusive);
 
