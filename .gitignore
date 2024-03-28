@@ -129,3 +129,8 @@ compile_commands.json
 
 #vs code
 /.vscode
+
+# fuzzing output
+/oss-fuzz/corpus
+/oss-fuzz/corpus_
+/oss-fuzz/samples
