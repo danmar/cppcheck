@@ -273,6 +273,7 @@ struct struct_with_bitfields
   unsigned int g:1; // Compliant
   signed int   h:1; // 6.2 - signed int with size 1 is not compliant
   uint16_t     i:1; // Compliant
+  bool         j:1; // 6.1 - bool not legal until c99
 };
 
 static void misra6_1_fn(void) {

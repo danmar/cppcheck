@@ -465,6 +465,9 @@ jobs:
           # rules 5.4 and 5.5 which have standard-dependent options.
           ../../cppcheck --dump -DDUMMY --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 --platform=unix64 
           python3 ../misra.py -verify misra/misra-test.c.dump
+          # Test slight MISRA differences in C11 standard
+          ../../cppcheck --dump -DDUMMY --suppress=uninitvar --inline-suppr misra/misra-test-c11.c --std=c11 --platform=unix64
+          python3 ../misra.py -verify misra/misra-test-c11.c.dump
           # TODO: do we need to verify something here?
           ../../cppcheck --dump -DDUMMY --suppress=uninitvar --suppress=uninitStructMember --std=c89 misra/misra-test.h
           ../../cppcheck --dump misra/misra-test.cpp 

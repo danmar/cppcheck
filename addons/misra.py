@@ -1853,7 +1853,7 @@ class MisraChecker:
             if data.standards.c == 'c89':
                 if token.valueType.type != 'int' and  not isUnsignedType(token.variable.typeStartToken.str):
                     self.reportError(token, 6, 1)
-            elif data.standards.c == 'c99':
+            elif data.standards.c in ('c99', 'c11', 'c17', 'c18'):
                 if token.valueType.type == 'bool':
                     continue
 
