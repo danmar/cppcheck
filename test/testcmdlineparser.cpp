@@ -475,8 +475,8 @@ private:
 
     void checkVersionCorrect() {
         REDIRECT;
-        const std::string version = parser->getVersion();
-        const std::string checkVersion = "--check-version=" + version;
+        const std::string currentVersion = parser->getVersion();
+        const std::string checkVersion = "--check-version=" + currentVersion;
         const char * const argv[] = {"cppcheck", checkVersion.c_str(), "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
     }
