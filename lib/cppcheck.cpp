@@ -1265,7 +1265,8 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
         if (mSettings.inlineSuppressions)
         {
             // TODO: check result?
-            SuppressionList::reportUnmatchedSuppressions(mSuppressions.nomsg.getUnmatchedInlineSuppressions(false), mErrorLogger);
+            // defer reporting of unusedFunction to later
+            SuppressionList::reportUnmatchedSuppressions(mSuppressions.nomsg.getUnmatchedInlineSuppressions(SuppressionList::UnusedFunction::Exclude), mErrorLogger);
         }
 
         // In jointSuppressionReport mode, unmatched suppressions are

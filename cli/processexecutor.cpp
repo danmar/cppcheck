@@ -297,6 +297,9 @@ unsigned int ProcessExecutor::check()
                     // TODO: call analyseClangTidy()?
                 }
 
+                // TODO: need to transfer inline unusedFunction suppressions
+                // TODO: need to update suppressions states
+
                 pipewriter.writeEnd(std::to_string(resultOfCheck));
                 std::exit(EXIT_SUCCESS);
             }

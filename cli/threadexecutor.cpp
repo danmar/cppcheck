@@ -125,6 +125,19 @@ public:
             result = fileChecker.check(*file);
             // TODO: call analyseClangTidy()?
         }
+        for (const auto& suppr : fileChecker.settings().supprs.nomsg.getSuppressions()) {
+            // need to transfer unusedFunction suppressions because these are handled later on
+            if (suppr.isInline && suppr.errorId == "unusedFunction") {
+                mSuppressions.addSuppression(suppr); // TODO: check result
+                continue;
+            }
+
+            // propagate state of global suppressions
+            if (!suppr.isLocal()) {
+                mSuppressions.updateSuppressionState(suppr); // TODO: check result
+                continue;
+            }
+        }
         return result;
     }
 

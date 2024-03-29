@@ -240,19 +240,24 @@ public:
      * @brief Returns list of unmatched local (per-file) suppressions.
      * @return list of unmatched suppressions
      */
-    std::list<Suppression> getUnmatchedLocalSuppressions(const FileWithDetails &file, bool unusedFunctionChecking) const;
+    std::list<Suppression> getUnmatchedLocalSuppressions(const FileWithDetails &file, bool includeUnusedFunction) const;
 
     /**
      * @brief Returns list of unmatched global (glob pattern) suppressions.
      * @return list of unmatched suppressions
      */
-    std::list<Suppression> getUnmatchedGlobalSuppressions(bool unusedFunctionChecking) const;
+    std::list<Suppression> getUnmatchedGlobalSuppressions(bool includeUnusedFunction) const;
+
+    enum UnusedFunction : std::uint8_t {
+        Exclude,
+        Only
+    };
 
     /**
      * @brief Returns list of unmatched inline suppressions.
      * @return list of unmatched suppressions
      */
-    std::list<Suppression> getUnmatchedInlineSuppressions(const bool unusedFunctionChecking) const;
+    std::list<Suppression> getUnmatchedInlineSuppressions(const UnusedFunction unusedFunction) const;
 
     /**
      * @brief Returns list of all suppressions.
