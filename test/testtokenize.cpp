@@ -3692,10 +3692,10 @@ private:
     void simplifyFunctionPointers3() {
         // Related with ticket #2873
         const char code[] = "void f() {\n"
-                            "(void)(xy(*p)(0);)"
+                            "(void)(xy(*p)(0));"
                             "\n}";
         const char expected[] = "void f ( ) {\n"
-                                "( void ) ( xy ( * p ) ( 0 ) ; )\n"
+                                "( void ) ( xy ( * p ) ( 0 ) ) ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
@@ -7589,8 +7589,9 @@ private:
     }
 
     void checkConfiguration() {
-        ASSERT_THROW(checkConfig("void f() { DEBUG(x();y()); }"), InternalError);
-        ASSERT_EQUALS("[test.cpp:1]: (information) Ensure that 'DEBUG' is defined either using -I, --include or -D.\n", errout_str());
+        ASSERT_THROW_EQUALS(checkConfig("void f() { DEBUG(x();y()); }"),
+                            InternalError,
+                            "There is an unknown macro here somewhere. Configuration is required. If DEBUG is a macro then please configure it.");
     }
 
     void unknownType() { // #8952

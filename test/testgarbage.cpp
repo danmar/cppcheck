@@ -460,7 +460,7 @@ private:
     }
 
     void garbageCode5() { // #5168
-        checkCode("( asm : ; void : );");
+        ASSERT_THROW(checkCode("( asm : ; void : );"), InternalError);
     }
 
     void garbageCode6() { // #5214
