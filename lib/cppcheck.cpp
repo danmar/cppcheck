@@ -1088,8 +1088,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
                     code += "#line " + std::to_string(dir.linenr) + " \"" + dir.file + "\"\n" + dir.str + '\n';
             }
             TokenList tokenlist(mSettings, file.lang());
-            std::istringstream istr2(code);
-            tokenlist.createTokens(istr2); // TODO: check result?
+            tokenlist.createTokens(code.data(), code.size()); // TODO: check result?
             executeRules("define", tokenlist);
         }
 #endif

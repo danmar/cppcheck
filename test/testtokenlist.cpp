@@ -26,7 +26,6 @@
 #include "token.h"
 #include "tokenlist.h"
 
-#include <sstream>
 #include <stack>
 #include <string>
 #include <utility>
@@ -125,9 +124,8 @@ private:
             const char code2[] = "_Generic"; // C11 keyword
             const Settings s = settingsBuilder().c(Standards::C89).build();
             TokenList tokenlist(s, Standards::Language::C);
-            std::istringstream istr(code2);
             tokenlist.appendFileIfNew("a.c");
-            ASSERT(tokenlist.createTokens(istr));
+            ASSERT(tokenlist.createTokens(code2));
             ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
         }
 
@@ -147,9 +145,8 @@ private:
             const char code2[] = "noexcept"; // C++11 keyword
             const Settings s = settingsBuilder().cpp(Standards::CPP03).build();
             TokenList tokenlist(s, Standards::Language::CPP);
-            std::istringstream istr(code2);
             tokenlist.appendFileIfNew("a.cpp");
-            ASSERT(tokenlist.createTokens(istr));
+            ASSERT(tokenlist.createTokens(code2));
             ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
         }
     }

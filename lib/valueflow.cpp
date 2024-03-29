@@ -124,7 +124,6 @@
 #include <memory>
 #include <numeric>
 #include <set>
-#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -1992,8 +1991,7 @@ static bool isNotEqual(std::pair<const Token*, const Token*> x, std::pair<const 
 static bool isNotEqual(std::pair<const Token*, const Token*> x, const std::string& y, bool cpp, const Settings& settings)
 {
     TokenList tokenList(settings, cpp ? Standards::Language::CPP : Standards::Language::C);
-    std::istringstream istr(y);
-    tokenList.createTokens(istr); // TODO: check result?
+    tokenList.createTokens(y.data(), y.size()); // TODO: check result?
     return isNotEqual(x, std::make_pair(tokenList.front(), tokenList.back()));
 }
 static bool isNotEqual(std::pair<const Token*, const Token*> x, const ValueType* y, bool cpp, const Settings& settings)
@@ -7108,8 +7106,8 @@ static bool getMinMaxValues(const std::string& typestr,
                             MathLib::bigint& maxvalue)
 {
     TokenList typeTokens(settings, cpp ? Standards::Language::CPP : Standards::Language::C);
-    std::istringstream istr(typestr + ";");
-    if (!typeTokens.createTokens(istr))
+    const std::string str(typestr + ";");
+    if (!typeTokens.createTokens(str.data(), str.size()))
         return false;
     typeTokens.simplifyPlatformTypes();
     typeTokens.simplifyStdType();
