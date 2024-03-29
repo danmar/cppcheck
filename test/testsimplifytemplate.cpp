@@ -5302,11 +5302,11 @@ private:
                           "C<B<int>> y;"));
     }
 
-    unsigned int templateParameters(const char code[]) {
+    template<size_t size>
+    unsigned int templateParameters(const char (&data)[size]) {
         Tokenizer tokenizer(settings, *this);
 
-        std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "test.cpp"))
+        if (!tokenizer.list.createTokens(data, size-1, "test.cpp"))
             return false;
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
@@ -5370,11 +5370,11 @@ private:
     }
 
     // Helper function to unit test TemplateSimplifier::getTemplateNamePosition
-    int templateNamePositionHelper(const char code[], unsigned offset = 0) {
+    template<size_t size>
+    int templateNamePositionHelper(const char (&data)[size], unsigned offset = 0) {
         Tokenizer tokenizer(settings, *this);
 
-        std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "test.cpp"))
+        if (!tokenizer.list.createTokens(data, size-1, "test.cpp"))
             return false;
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
@@ -5441,11 +5441,11 @@ private:
     }
 
     // Helper function to unit test TemplateSimplifier::findTemplateDeclarationEnd
-    bool findTemplateDeclarationEndHelper(const char code[], const char pattern[], unsigned offset = 0) {
+    template<size_t size>
+    bool findTemplateDeclarationEndHelper(const char (&data)[size], const char pattern[], unsigned offset = 0) {
         Tokenizer tokenizer(settings, *this);
 
-        std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "test.cpp"))
+        if (!tokenizer.list.createTokens(data, size-1, "test.cpp"))
             return false;
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
@@ -5471,11 +5471,11 @@ private:
     }
 
     // Helper function to unit test TemplateSimplifier::getTemplateParametersInDeclaration
-    bool getTemplateParametersInDeclarationHelper(const char code[], const std::vector<std::string> & params) {
+    template<size_t size>
+    bool getTemplateParametersInDeclarationHelper(const char (&data)[size], const std::vector<std::string> & params) {
         Tokenizer tokenizer(settings, *this);
 
-        std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "test.cpp"))
+        if (!tokenizer.list.createTokens(data, size-1, "test.cpp"))
             return false;
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);

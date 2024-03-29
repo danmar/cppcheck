@@ -253,11 +253,11 @@ private:
         return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
 
-    std::string simplifyTypedef(const char code[]) {
+    template<size_t size>
+    std::string simplifyTypedef(const char (&data)[size]) {
         Tokenizer tokenizer(settings1, *this);
 
-        std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, Standards::Language::CPP))
+        if (!tokenizer.list.createTokens(data, size-1, Standards::Language::CPP))
             return "";
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
@@ -289,11 +289,11 @@ private:
     }
 
 
-    std::string simplifyTypedefC(const char code[]) {
+    template<size_t size>
+    std::string simplifyTypedefC(const char (&data)[size]) {
         Tokenizer tokenizer(settings1, *this);
 
-        std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "file.c"))
+        if (!tokenizer.list.createTokens(data, size-1, "file.c"))
             return "";
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
@@ -476,17 +476,16 @@ private:
     }
 
     void carray3() {
-        const char* code{};
-        code = "typedef int a[256];\n" // #11689
-               "typedef a b[256];\n"
-               "b* p;\n";
+        const char code[] = "typedef int a[256];\n" // #11689
+                            "typedef a b[256];\n"
+                            "b* p;\n";
         ASSERT_EQUALS("int ( * p ) [ 256 ] [ 256 ] ;", simplifyTypedef(code));
 
-        code = "typedef int a[1];\n"
-               "typedef a b[2];\n"
-               "typedef b c[3];\n"
-               "c* p;\n";
-        ASSERT_EQUALS("int ( * p ) [ 3 ] [ 2 ] [ 1 ] ;", simplifyTypedef(code));
+        const char code1[] = "typedef int a[1];\n"
+                             "typedef a b[2];\n"
+                             "typedef b c[3];\n"
+                             "c* p;\n";
+        ASSERT_EQUALS("int ( * p ) [ 3 ] [ 2 ] [ 1 ] ;", simplifyTypedef(code1));
     }
 
     void carray4() {
@@ -4268,8 +4267,7 @@ private:
                             "void test(rFunctionPointer_fp functionPointer);";
 
         Tokenizer tokenizer(settings1, *this);
-        std::istringstream istr(code);
-        ASSERT(tokenizer.list.createTokens(istr, "file.c"));
+        ASSERT(tokenizer.list.createTokens(code, "file.c"));
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 

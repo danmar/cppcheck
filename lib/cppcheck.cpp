@@ -804,9 +804,8 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
                     code += "#line " + std::to_string(dir.linenr) + " \"" + dir.file + "\"\n" + dir.str + '\n';
             }
             TokenList tokenlist(&mSettings);
-            std::istringstream istr2(code);
             // TODO: asserts when file has unknown extension
-            tokenlist.createTokens(istr2, Path::identify(*files.begin(), false)); // TODO: check result?
+            tokenlist.createTokens(code.data(), code.size(), Path::identify(*files.begin(), false)); // TODO: check result?
             executeRules("define", tokenlist);
         }
 #endif
