@@ -110,9 +110,8 @@ public:
     explicit SimpleTokenList(const char (&code)[size], const std::string& file0, Standards::Language lang = Standards::Language::CPP)
         : list{settings, lang}
     {
-        std::istringstream iss(code);
         list.appendFileIfNew(file0);
-        if (!list.createTokens(iss))
+        if (!list.createTokens(code, size-1))
             throw std::runtime_error("creating tokens failed");
     }
 
@@ -269,12 +268,18 @@ private:
 
 struct TokenListHelper
 {
-    static bool createTokens(TokenList& tokenlist, std::istream& istr, const std::string& file)
+    template<size_t size>
+    static bool createTokens(TokenList& tokenlist, const char (&code)[size], const std::string& file)
+    {
+        return createTokens(tokenlist, code, size-1, file);
+    }
+
+    static bool createTokens(TokenList& tokenlist, const char* data, size_t size, const std::string& file)
     {
         if (tokenlist.front())
             throw std::runtime_error("token list is not empty");
         tokenlist.appendFileIfNew(file);
-        return tokenlist.createTokens(istr);
+        return tokenlist.createTokens(data, size);
     }
 };
 

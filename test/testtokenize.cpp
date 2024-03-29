@@ -6204,12 +6204,12 @@ private:
         Z3
     };
 
-    std::string testAst(const char code[], AstStyle style = AstStyle::Simple) {
+    template<size_t size>
+    std::string testAst(const char (&data)[size], AstStyle style = AstStyle::Simple) {
         // tokenize given code..
         TokenList tokenlist{settings0, Standards::Language::CPP};
-        std::istringstream istr(code);
         tokenlist.appendFileIfNew("test.cpp");
-        if (!tokenlist.createTokens(istr))
+        if (!tokenlist.createTokens(data, size-1))
             return "ERROR";
 
         Tokenizer tokenizer(std::move(tokenlist), *this);
