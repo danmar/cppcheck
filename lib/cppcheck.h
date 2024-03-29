@@ -39,7 +39,7 @@
 #include <unordered_set>
 #include <vector>
 
-class Tokenizer;
+class TokenList;
 enum class SHOWTIME_MODES;
 struct FileSettings;
 class CheckUnusedFunctions;
@@ -171,9 +171,9 @@ private:
 
     /**
      * @brief Check raw tokens
-     * @param tokenizer tokenizer instance
+     * @param tokenlist token list
      */
-    void checkRawTokens(const Tokenizer &tokenizer);
+    void checkRawTokens(const TokenList &tokenlist);
 
     /**
      * @brief Check normal tokens
@@ -195,10 +195,10 @@ private:
 #ifdef HAVE_RULES
     /**
      * @brief Execute rules, if any
-     * @param tokenlist token list to use (normal / simple)
-     * @param tokenizer tokenizer
+     * @param tokenlist token list to use (define / normal / raw)
+     * @param list token list
      */
-    void executeRules(const std::string &tokenlist, const Tokenizer &tokenizer);
+    void executeRules(const std::string &tokenlist, const TokenList &list);
 #endif
 
     unsigned int checkClang(const std::string &path);
