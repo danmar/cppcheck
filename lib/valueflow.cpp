@@ -3815,7 +3815,7 @@ static bool isNotEqual(std::pair<const Token*, const Token*> x, const std::strin
 {
     TokenList tokenList(nullptr);
     std::istringstream istr(y);
-    tokenList.createTokens(istr, cpp ? Standards::Language::CPP : Standards::Language::C);
+    tokenList.createTokens(istr, cpp ? Standards::Language::CPP : Standards::Language::C); // TODO: check result?
     return isNotEqual(x, std::make_pair(tokenList.front(), tokenList.back()));
 }
 static bool isNotEqual(std::pair<const Token*, const Token*> x, const ValueType* y, bool cpp)

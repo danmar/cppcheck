@@ -831,7 +831,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             }
             TokenList tokenlist(&mSettings);
             std::istringstream istr2(code);
-            tokenlist.createTokens(istr2, Path::identify(*files.begin()));
+            tokenlist.createTokens(istr2, Path::identify(*files.begin())); // TODO: check result?
             executeRules("define", tokenlist);
         }
 #endif
