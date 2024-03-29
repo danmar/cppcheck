@@ -496,7 +496,7 @@ void SuppressionList::dump(std::ostream & out) const
     out << "  </suppressions>" << std::endl;
 }
 
-std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppressions(const FileWithDetails &file, const bool unusedFunctionChecking) const
+std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppressions(const FileWithDetails &file, const bool includeUnusedFunction) const
 {
     std::list<Suppression> result;
     for (const Suppression &s : mSuppressions) {
@@ -510,7 +510,7 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppre
             continue;
         if (s.errorId == ID_CHECKERSREPORT)
             continue;
-        if (!unusedFunctionChecking && s.errorId == ID_UNUSEDFUNCTION)
+        if (!includeUnusedFunction && s.errorId == ID_UNUSEDFUNCTION)
             continue;
         if (!s.isLocal() || s.fileName != file.spath())
             continue;
@@ -519,7 +519,7 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppre
     return result;
 }
 
-std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedGlobalSuppressions(const bool unusedFunctionChecking) const
+std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedGlobalSuppressions(const bool includeUnusedFunction) const
 {
     std::list<Suppression> result;
     for (const Suppression &s : mSuppressions) {
@@ -529,7 +529,7 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedGlobalSuppr
             continue;
         if (s.hash > 0)
             continue;
-        if (!unusedFunctionChecking && s.errorId == ID_UNUSEDFUNCTION)
+        if (!includeUnusedFunction && s.errorId == ID_UNUSEDFUNCTION)
             continue;
         if (s.errorId == ID_CHECKERSREPORT)
             continue;
@@ -540,7 +540,7 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedGlobalSuppr
     return result;
 }
 
-std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedInlineSuppressions(const bool unusedFunctionChecking) const
+std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedInlineSuppressions(const UnusedFunction unusedFunction) const
 {
     std::list<SuppressionList::Suppression> result;
     for (const SuppressionList::Suppression &s : SuppressionList::mSuppressions) {
@@ -552,7 +552,9 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedInlineSuppr
             continue;
         if (s.hash > 0)
             continue;
-        if (!unusedFunctionChecking && s.errorId == ID_UNUSEDFUNCTION)
+        if (unusedFunction == UnusedFunction::Only && s.errorId != ID_UNUSEDFUNCTION)
+            continue;
+        if (unusedFunction == UnusedFunction::Exclude && s.errorId == ID_UNUSEDFUNCTION)
             continue;
         result.push_back(s);
     }
