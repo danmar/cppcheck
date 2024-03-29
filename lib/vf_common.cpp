@@ -35,7 +35,6 @@
 #include <cstddef>
 #include <exception>
 #include <limits>
-#include <sstream>
 #include <utility>
 #include <vector>
 
@@ -99,8 +98,8 @@ namespace ValueFlow
     bool getMinMaxValues(const std::string &typestr, const Settings &settings, bool cpp, MathLib::bigint &minvalue, MathLib::bigint &maxvalue)
     {
         TokenList typeTokens(&settings);
-        std::istringstream istr(typestr+";");
-        if (!typeTokens.createTokens(istr, cpp ? Standards::Language::CPP : Standards::Language::C))
+        const std::string str(typestr+";");
+        if (!typeTokens.createTokens(str.data(), str.size(), cpp ? Standards::Language::CPP : Standards::Language::C))
             return false;
         typeTokens.simplifyPlatformTypes();
         typeTokens.simplifyStdType();

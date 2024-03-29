@@ -35,7 +35,6 @@
 #include <iostream>
 #include <list>
 #include <memory>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
@@ -172,8 +171,8 @@ static std::vector<std::string> getnames(const char *names)
 
 static void gettokenlistfromvalid(const std::string& valid, bool cpp, TokenList& tokenList)
 {
-    std::istringstream istr(valid + ',');
-    tokenList.createTokens(istr, cpp ? Standards::Language::CPP : Standards::Language::C); // TODO: check result?
+    const std::string str(valid + ',');
+    tokenList.createTokens(str.data(), str.size(), cpp ? Standards::Language::CPP : Standards::Language::C); // TODO: check result?
     for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
         if (Token::Match(tok,"- %num%")) {
             tok->str("-" + tok->strAt(1));
