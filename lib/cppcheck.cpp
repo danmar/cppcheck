@@ -924,8 +924,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 if (mSettings.checkConfiguration)
                     continue;
 
-                // Check raw tokens
-                checkRawTokens(tokenizer.list);
+#ifdef HAVE_RULES
+                // Execute rules for "raw" code
+                executeRules("raw", tokenizer.list);
+#endif
 
                 // Simplify tokens into normal form, skip rest of iteration if failed
                 if (!tokenizer.simplifyTokens1(mCurrentConfig))
@@ -1063,19 +1065,6 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
                         Certainty::normal);
 
     mErrorLogger.reportErr(errmsg);
-}
-
-//---------------------------------------------------------------------------
-// CppCheck - A function that checks a raw token list
-//---------------------------------------------------------------------------
-void CppCheck::checkRawTokens(const TokenList &tokenlist)
-{
-#ifdef HAVE_RULES
-    // Execute rules for "raw" code
-    executeRules("raw", tokenlist);
-#else
-    (void)tokenlist;
-#endif
 }
 
 //---------------------------------------------------------------------------

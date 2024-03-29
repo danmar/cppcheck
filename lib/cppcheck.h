@@ -170,12 +170,6 @@ private:
     unsigned int checkFile(const std::string& filename, const std::string &cfgname, std::istream* fileStream = nullptr);
 
     /**
-     * @brief Check raw tokens
-     * @param tokenlist token list
-     */
-    void checkRawTokens(const TokenList &tokenlist);
-
-    /**
      * @brief Check normal tokens
      * @param tokenizer tokenizer instance
      */
