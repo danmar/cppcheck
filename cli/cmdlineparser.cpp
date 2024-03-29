@@ -1121,6 +1121,16 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                             return Result::Fail;
                         }
 
+                        if (rule.tokenlist.empty()) {
+                            mLogger.printError("unable to load rule-file '" + ruleFile + "' - a rule is lacking a tokenlist.");
+                            return Result::Fail;
+                        }
+
+                        if (rule.tokenlist != "normal" && rule.tokenlist != "define" && rule.tokenlist != "raw") {
+                            mLogger.printError("unable to load rule-file '" + ruleFile + "' - a rule is using the unsupported tokenlist '" + rule.tokenlist + "'.");
+                            return Result::Fail;
+                        }
+
                         mSettings.rules.emplace_back(std::move(rule));
                     }
                 } else {

@@ -959,13 +959,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
                 // Check normal tokens
                 checkNormalTokens(tokenizer);
-
-#ifdef HAVE_RULES
-                // handling of "simple" rules has been removed.
-                if (hasRule("simple"))
-                    throw InternalError(nullptr, "Handling of \"simple\" rules has been removed in Cppcheck. Use --addon instead.");
-#endif
-
             } catch (const simplecpp::Output &o) {
                 // #error etc during preprocessing
                 configurationError.push_back((mCurrentConfig.empty() ? "\'\'" : mCurrentConfig) + " : [" + o.location.file() + ':' + std::to_string(o.location.line) + "] " + o.msg);

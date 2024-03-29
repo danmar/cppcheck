@@ -344,6 +344,8 @@ private:
         TEST_CASE(ruleFileEmptyElements2);
         TEST_CASE(ruleFileUnknownElement1);
         TEST_CASE(ruleFileUnknownElement2);
+        TEST_CASE(ruleFileMissingTokenList);
+        TEST_CASE(ruleFileUnknownTokenList);
 #else
         TEST_CASE(ruleFileNotSupported);
 #endif
@@ -2157,7 +2159,7 @@ private:
         ScopedFile file("rule.xml",
                         "<rules>\n"
                         "<rule>\n"
-                        "<tokenlist>toklist1</tokenlist>\n"
+                        "<tokenlist>raw</tokenlist>\n"
                         "<pattern>.+</pattern>\n"
                         "<message>\n"
                         "<severity>error</severity>\n"
@@ -2166,7 +2168,7 @@ private:
                         "</message>\n"
                         "</rule>\n"
                         "<rule>\n"
-                        "<tokenlist>toklist2</tokenlist>\n"
+                        "<tokenlist>define</tokenlist>\n"
                         "<pattern>.*</pattern>\n"
                         "<message>\n"
                         "<severity>warning</severity>\n"
@@ -2179,13 +2181,13 @@ private:
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(2, settings->rules.size());
         auto it = settings->rules.cbegin();
-        ASSERT_EQUALS("toklist1", it->tokenlist);
+        ASSERT_EQUALS("raw", it->tokenlist);
         ASSERT_EQUALS(".+", it->pattern);
         ASSERT_EQUALS_ENUM(Severity::error, it->severity);
         ASSERT_EQUALS("ruleId1", it->id);
         ASSERT_EQUALS("ruleSummary1", it->summary);
         ++it;
-        ASSERT_EQUALS("toklist2", it->tokenlist);
+        ASSERT_EQUALS("define", it->tokenlist);
         ASSERT_EQUALS(".*", it->pattern);
         ASSERT_EQUALS_ENUM(Severity::warning, it->severity);
         ASSERT_EQUALS("ruleId2", it->id);
@@ -2196,7 +2198,7 @@ private:
         REDIRECT;
         ScopedFile file("rule.xml",
                         "<rule>\n"
-                        "<tokenlist>toklist</tokenlist>\n"
+                        "<tokenlist>define</tokenlist>\n"
                         "<pattern>.+</pattern>\n"
                         "<message>\n"
                         "<severity>error</severity>\n"
@@ -2208,7 +2210,7 @@ private:
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(1, settings->rules.size());
         auto it = settings->rules.cbegin();
-        ASSERT_EQUALS("toklist", it->tokenlist);
+        ASSERT_EQUALS("define", it->tokenlist);
         ASSERT_EQUALS(".+", it->pattern);
         ASSERT_EQUALS_ENUM(Severity::error, it->severity);
         ASSERT_EQUALS("ruleId", it->id);
@@ -2299,6 +2301,30 @@ private:
         const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unable to load rule-file 'rule.xml' - unknown element 'pattern' encountered in 'message'.\n", logger->str());
+    }
+
+    void ruleFileMissingTokenList() {
+        REDIRECT;
+        ScopedFile file("rule.xml",
+                        "<rule>\n"
+                        "<tokenlist/>\n"
+                        "<pattern>.+</pattern>\n"
+                        "</rule>\n");
+        const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: unable to load rule-file 'rule.xml' - a rule is lacking a tokenlist.\n", logger->str());
+    }
+
+    void ruleFileUnknownTokenList() {
+        REDIRECT;
+        ScopedFile file("rule.xml",
+                        "<rule>\n"
+                        "<tokenlist>simple</tokenlist>\n"
+                        "<pattern>.+</pattern>\n"
+                        "</rule>\n");
+        const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: unable to load rule-file 'rule.xml' - a rule is using the unsupported tokenlist 'simple'.\n", logger->str());
     }
 #else
     void ruleFileNotSupported() {
