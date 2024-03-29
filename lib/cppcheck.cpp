@@ -819,18 +819,15 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
 #ifdef HAVE_RULES
         // Run define rules on raw code
-        const auto rules_it = std::find_if(mSettings.rules.cbegin(), mSettings.rules.cend(), [](const Settings::Rule& rule) {
-            return rule.tokenlist == "define";
-        });
-        if (rules_it != mSettings.rules.cend()) {
+        if (hasRule("define")) {
             std::string code;
-            const std::list<Directive> &directives = preprocessor.getDirectives();
-            for (const Directive &dir : directives) {
+            for (const Directive &dir : preprocessor.getDirectives()) {
                 if (startsWith(dir.str,"#define ") || startsWith(dir.str,"#include "))
                     code += "#line " + std::to_string(dir.linenr) + " \"" + dir.file + "\"\n" + dir.str + '\n';
             }
             TokenList tokenlist(&mSettings);
             std::istringstream istr2(code);
+            // TODO: asserts when file has unknown extension
             tokenlist.createTokens(istr2, Path::identify(*files.begin())); // TODO: check result?
             executeRules("define", tokenlist);
         }
