@@ -80,8 +80,8 @@ private:
 class ThreadData
 {
 public:
-    ThreadData(ThreadExecutor &threadExecutor, ErrorLogger &errorLogger, const Settings &settings, const std::list<FileWithDetails> &files, const std::list<FileSettings> &fileSettings, CppCheck::ExecuteCmdFn executeCommand)
-        : mFiles(files), mFileSettings(fileSettings), mSettings(settings), mExecuteCommand(std::move(executeCommand)), logForwarder(threadExecutor, errorLogger)
+    ThreadData(ThreadExecutor &threadExecutor, ErrorLogger &errorLogger, const Settings &settings, SuppressionList& supprs, const std::list<FileWithDetails> &files, const std::list<FileSettings> &fileSettings, CppCheck::ExecuteCmdFn executeCommand)
+        : mFiles(files), mFileSettings(fileSettings), mSettings(settings), mSuppressions(supprs), mExecuteCommand(std::move(executeCommand)), logForwarder(threadExecutor, errorLogger)
     {
         mItNextFile = mFiles.begin();
         mItNextFileSettings = mFileSettings.begin();
@@ -127,6 +127,19 @@ public:
             result = fileChecker.check(*file);
             // TODO: call analyseClangTidy()?
         }
+        for (const auto& suppr : fileChecker.settings().supprs.nomsg.getSuppressions()) {
+            // need to transfer unusedFunction suppressions because these are handled later on
+            if (suppr.isInline && suppr.errorId == "unusedFunction") {
+                mSuppressions.addSuppression(suppr); // TODO: check result
+                continue;
+            }
+
+            // propagate state of global suppressions
+            if (!suppr.isLocal()) {
+                mSuppressions.updateSuppressionState(suppr); // TODO: check result
+                continue;
+            }
+        }
         return result;
     }
 
@@ -151,6 +164,7 @@ private:
 
     std::mutex mFileSync;
     const Settings &mSettings;
+    SuppressionList &mSuppressions;
     CppCheck::ExecuteCmdFn mExecuteCommand;
 
 public:
@@ -179,7 +193,7 @@ unsigned int ThreadExecutor::check()
     std::vector<std::future<unsigned int>> threadFutures;
     threadFutures.reserve(mSettings.jobs);
 
-    ThreadData data(*this, mErrorLogger, mSettings, mFiles, mFileSettings, mExecuteCommand);
+    ThreadData data(*this, mErrorLogger, mSettings, mSuppressions, mFiles, mFileSettings, mExecuteCommand);
 
     for (unsigned int i = 0; i < mSettings.jobs; ++i) {
         try {
