@@ -1180,3 +1180,51 @@ void f() { }
     assert exitcode == 0, stderr
     assert stdout == ''
     assert stderr == ''
+
+
+def test_multiple_define_rules(tmpdir):
+    rule_file = os.path.join(tmpdir, 'rule_file.xml')
+    with open(rule_file, 'wt') as f:
+        f.write("""
+<rules>
+    <rule>
+        <tokenlist>define</tokenlist>
+        <pattern>DEF_1</pattern>
+        <message>
+            <severity>error</severity>
+            <id>ruleId1</id>
+        </message>
+    </rule>
+    <rule>
+        <tokenlist>define</tokenlist>
+        <pattern>DEF_2</pattern>
+        <message>
+            <severity>error</severity>
+            <id>ruleId2</id>
+        </message>
+    </rule>
+</rules>""")
+
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write('''
+#define DEF_1
+#define DEF_2
+void f() { }
+''')
+
+    exitcode, stdout, stderr = cppcheck(['--template=simple', '--rule-file={}'.format(rule_file), test_file])
+    assert exitcode == 0, stderr
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file),
+        'Processing rule: DEF_1',
+        'Processing rule: DEF_2'
+    ]
+    lines = stderr.splitlines()
+    assert lines == [
+        "{}:2:0: error: found 'DEF_1' [ruleId1]".format(test_file),
+        "{}:3:0: error: found 'DEF_2' [ruleId2]".format(test_file)
+    ]
+
+# TODO: test "raw" and "normal" rules
