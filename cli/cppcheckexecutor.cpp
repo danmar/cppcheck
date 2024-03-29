@@ -295,7 +295,7 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
     cppcheck.analyseWholeProgram(settings.buildDir, mFiles, mFileSettings);
 
     if (settings.severity.isEnabled(Severity::information) || settings.checkConfiguration) {
-        const bool err = reportSuppressions(settings, suppressions, settings.isUnusedFunctionCheckEnabled(), mFiles, mFileSettings, stdLogger);
+        const bool err = reportSuppressions(settings, suppressions, settings.checks.isEnabled(Checks::unusedFunction), mFiles, mFileSettings, stdLogger);
         if (err && returnValue == 0)
             returnValue = settings.exitCode;
     }
