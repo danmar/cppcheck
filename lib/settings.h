@@ -46,6 +46,10 @@
 #include <cstdio>
 #endif
 
+#ifdef HAVE_RULES
+#include "regex.h"
+#endif
+
 struct Suppressions;
 enum class SHOWTIME_MODES : std::uint8_t;
 namespace ValueFlow {
@@ -324,6 +328,7 @@ public:
         std::string id = "rule"; // default id
         std::string summary;
         Severity severity = Severity::style; // default severity
+        Regex regex;
     };
 
     /**
