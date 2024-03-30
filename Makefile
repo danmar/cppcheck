@@ -5,7 +5,7 @@ ifndef VERBOSE
 endif
 # To compile with rules, use 'make HAVE_RULES=yes'
 ifndef HAVE_RULES
-    HAVE_RULES=no
+    HAVE_RULES=
 endif
 
 ifndef MATCHCOMPILER
@@ -160,6 +160,8 @@ ifeq ($(HAVE_RULES),yes)
     else
         LIBS=$(shell $(PCRE_CONFIG) --libs)
     endif
+else ifneq ($(HAVE_RULES),)
+    $(error invalid HAVE_RULES value '$(HAVE_RULES)')
 endif
 
 ifndef PREFIX

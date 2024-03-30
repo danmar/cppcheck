@@ -584,7 +584,7 @@ int main(int argc, char **argv)
          << "endif\n";
 
     fout << "# To compile with rules, use 'make HAVE_RULES=yes'\n";
-    makeConditionalVariable(fout, "HAVE_RULES", "no");
+    makeConditionalVariable(fout, "HAVE_RULES", "");
 
     makeMatchcompiler(fout, emptyString, emptyString);
 
@@ -743,6 +743,8 @@ int main(int argc, char **argv)
          << "    else\n"
          << "        LIBS=$(shell $(PCRE_CONFIG) --libs)\n"
          << "    endif\n"
+         << "else ifneq ($(HAVE_RULES),)\n"
+         << "    $(error invalid HAVE_RULES value '$(HAVE_RULES)')\n"
          << "endif\n\n";
 
     makeConditionalVariable(fout, "PREFIX", "/usr");
