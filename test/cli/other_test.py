@@ -1182,7 +1182,7 @@ void f() { }
     assert stderr == ''
 
 
-def test_multiple_define_rules(tmpdir):
+def test_rule_file_define_multiple(tmpdir):
     rule_file = os.path.join(tmpdir, 'rule_file.xml')
     with open(rule_file, 'wt') as f:
         f.write("""
@@ -1201,6 +1201,7 @@ def test_multiple_define_rules(tmpdir):
         <message>
             <severity>error</severity>
             <id>ruleId2</id>
+            <summary>define2</summary>
         </message>
     </rule>
 </rules>""")
@@ -1213,18 +1214,136 @@ def test_multiple_define_rules(tmpdir):
 void f() { }
 ''')
 
-    exitcode, stdout, stderr = cppcheck(['--template=simple', '--rule-file={}'.format(rule_file), test_file])
+    exitcode, stdout, stderr = cppcheck(['--template=simple', '--rule-file={}'.format(rule_file), '-DDEF_3', test_file])
     assert exitcode == 0, stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file),
         'Processing rule: DEF_1',
-        'Processing rule: DEF_2'
+        'Processing rule: DEF_2',
+        'Checking {}: DEF_3=1...'.format(test_file)
     ]
     lines = stderr.splitlines()
     assert lines == [
         "{}:2:0: error: found 'DEF_1' [ruleId1]".format(test_file),
-        "{}:3:0: error: found 'DEF_2' [ruleId2]".format(test_file)
+        "{}:3:0: error: define2 [ruleId2]".format(test_file)
     ]
 
-# TODO: test "raw" and "normal" rules
+
+def test_rule_file_define(tmpdir):
+    rule_file = os.path.join(tmpdir, 'rule_file.xml')
+    with open(rule_file, 'wt') as f:
+        f.write("""
+<rule>
+    <tokenlist>define</tokenlist>
+    <pattern>DEF_.</pattern>
+</rule>
+""")
+
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write('''
+#define DEF_1
+#define DEF_2
+void f() { }
+''')
+
+    exitcode, stdout, stderr = cppcheck(['--template=simple', '--rule-file={}'.format(rule_file), '-DDEF_3', test_file])
+    assert exitcode == 0, stdout
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file),
+        'Processing rule: DEF_.',
+        'Checking {}: DEF_3=1...'.format(test_file)
+    ]
+    lines = stderr.splitlines()
+    assert lines == [
+        "{}:2:0: style: found 'DEF_1' [rule]".format(test_file),
+        "{}:3:0: style: found 'DEF_2' [rule]".format(test_file)
+    ]
+
+
+def test_rule_file_normal(tmpdir):
+    rule_file = os.path.join(tmpdir, 'rule_file.xml')
+    with open(rule_file, 'wt') as f:
+        f.write("""
+<rule>
+    <pattern>int</pattern>
+</rule>
+""")
+
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write('''
+#define DEF_1
+#define DEF_2
+typedef int i32;
+void f(i32) { }
+''')
+
+    exitcode, stdout, stderr = cppcheck(['--template=simple', '--rule-file={}'.format(rule_file), test_file])
+    assert exitcode == 0, stdout
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file),
+        'Processing rule: int',
+    ]
+    lines = stderr.splitlines()
+    assert lines == [
+        "{}:5:0: style: found 'int' [rule]".format(test_file)
+    ]
+
+
+def test_rule_file_raw(tmpdir):
+    rule_file = os.path.join(tmpdir, 'rule_file.xml')
+    with open(rule_file, 'wt') as f:
+        f.write("""
+<rule>
+    <tokenlist>raw</tokenlist>
+    <pattern>i32</pattern>
+</rule>
+""")
+
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write('''
+#define DEF_1
+#define DEF_2
+typedef int i32;
+void f(i32) { }
+''')
+
+    exitcode, stdout, stderr = cppcheck(['--template=simple', '--rule-file={}'.format(rule_file), test_file])
+    assert exitcode == 0, stdout
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file),
+        'Processing rule: i32',
+    ]
+    lines = stderr.splitlines()
+    assert lines == [
+        "{}:4:0: style: found 'i32' [rule]".format(test_file),
+        "{}:5:0: style: found 'i32' [rule]".format(test_file)
+    ]
+
+
+def test_rule(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write('''
+#define DEF_1
+#define DEF_2
+void f() { }
+''')
+
+    exitcode, stdout, stderr = cppcheck(['--template=simple', '--rule=f', test_file])
+    assert exitcode == 0, stdout
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file),
+        'Processing rule: f',
+    ]
+    lines = stderr.splitlines()
+    assert lines == [
+        "{}:4:0: style: found 'f' [rule]".format(test_file)
+    ]
