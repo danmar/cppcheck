@@ -332,6 +332,7 @@ private:
         TEST_CASE(addonMissing);
 #ifdef HAVE_RULES
         TEST_CASE(rule);
+        TEST_CASE(ruleMissingPattern);
 #else
         TEST_CASE(ruleNotSupported);
 #endif
@@ -2160,6 +2161,13 @@ private:
         ASSERT_EQUALS(1, settings->rules.size());
         auto it = settings->rules.cbegin();
         ASSERT_EQUALS(".+", it->pattern);
+    }
+
+    void ruleMissingPattern() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--rule=", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: no rule pattern provided.\n", logger->str());
     }
 #else
     void ruleNotSupported() {
