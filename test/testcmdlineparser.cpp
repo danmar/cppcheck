@@ -349,6 +349,7 @@ private:
         TEST_CASE(ruleFileUnknownElement2);
         TEST_CASE(ruleFileMissingTokenList);
         TEST_CASE(ruleFileUnknownTokenList);
+        TEST_CASE(ruleFileMissingId);
 #else
         TEST_CASE(ruleFileNotSupported);
 #endif
@@ -2350,6 +2351,20 @@ private:
         const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unable to load rule-file 'rule.xml' - a rule is using the unsupported tokenlist 'simple'.\n", logger->str());
+    }
+
+    void ruleFileMissingId() {
+        REDIRECT;
+        ScopedFile file("rule.xml",
+                        "<rule>\n"
+                        "<pattern>.+</pattern>\n"
+                        "<message>\n"
+                        "<id/>"
+                        "</message>\n"
+                        "</rule>\n");
+        const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: unable to load rule-file 'rule.xml' - a rule is lacking an id.\n", logger->str());
     }
 #else
     void ruleFileNotSupported() {

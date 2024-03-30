@@ -1131,6 +1131,11 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                             return Result::Fail;
                         }
 
+                        if (rule.id.empty()) {
+                            mLogger.printError("unable to load rule-file '" + ruleFile + "' - a rule is lacking an id.");
+                            return Result::Fail;
+                        }
+
                         if (rule.tokenlist.empty()) {
                             mLogger.printError("unable to load rule-file '" + ruleFile + "' - a rule is lacking a tokenlist.");
                             return Result::Fail;

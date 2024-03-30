@@ -1305,7 +1305,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const TokenList &list)
     }
 
     for (const Settings::Rule &rule : mSettings.rules) {
-        if (rule.id.empty() || rule.severity == Severity::none || rule.tokenlist != tokenlist)
+        if (rule.severity == Severity::none || rule.tokenlist != tokenlist)
             continue;
 
         if (!mSettings.quiet) {
