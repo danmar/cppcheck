@@ -31,6 +31,8 @@
 #include <wx/dynarray.h>
 #include <wx/filefn.h>
 #include <wx/font.h>
+#include <wx/fontenum.h>
+#include <wx/fontutil.h>
 #include <wx/frame.h>
 #include <wx/gdicmn.h>
 #include <wx/geometry.h>
@@ -81,6 +83,62 @@ void unreadVariable_wxBitmapBundle(const wxBitmap &bmp, const wxIcon &icon, cons
 }
 #endif
 
+#if wxCHECK_VERSION(3, 1, 3)  // wxWidets-3.1.3 or higher
+void unreadVariable_wxDCTextBgModeChanger(wxDC &dc)
+{
+    // cppcheck-suppress unreadVariable
+    wxDCTextBgModeChanger a(dc);
+}
+#endif
+
+void unreadVariable_wxDCTextBgColourChanger(wxDC &dc, const wxColour &colour)
+{
+    // cppcheck-suppress unreadVariable
+    wxDCTextBgColourChanger a(dc);
+    // cppcheck-suppress unreadVariable
+    wxDCTextBgColourChanger b(dc, colour);
+}
+
+void unreadVariable_wxDCTextColourChanger(wxDC &dc, const wxColour &colour)
+{
+    // cppcheck-suppress unreadVariable
+    wxDCTextColourChanger a(dc);
+    // cppcheck-suppress unreadVariable
+    wxDCTextColourChanger b(dc, colour);
+}
+
+void unreadVariable_wxDCPenChanger(wxDC &dc, const wxPen &pen)
+{
+    // cppcheck-suppress unreadVariable
+    wxDCPenChanger a(dc, pen);
+}
+
+void unreadVariable_wxDCFontChanger(wxDC &dc, const wxFont &font)
+{
+    // cppcheck-suppress unreadVariable
+    wxDCFontChanger a(dc);
+    // cppcheck-suppress unreadVariable
+    wxDCFontChanger b(dc, font);
+}
+
+void unreadVariable_wxDCBrushChanger(wxDC &dc, const wxBrush &brush)
+{
+    // cppcheck-suppress unreadVariable
+    wxDCBrushChanger a(dc, brush);
+}
+
+void unusedVariable_wxColourDatabase()
+{
+    // cppcheck-suppress unusedVariable
+    wxColourDatabase a;
+}
+
+void unusedVariable_wxFontEnumerator()
+{
+    // cppcheck-suppress unusedVariable
+    wxFontEnumerator a;
+}
+
 void unusedVariable_wxCursor()
 {
     // cppcheck-suppress unusedVariable
@@ -91,6 +149,18 @@ void unusedVariable_wxBitmapHandler()
 {
     // cppcheck-suppress unusedVariable
     wxBitmapHandler a;
+}
+
+void unusedVariable_wxNativeFontInfo()
+{
+    // cppcheck-suppress unusedVariable
+    wxNativeFontInfo a;
+}
+
+void unreadVariable_wxDCClipper(wxDC &dc, const wxRegion &region)
+{
+    // cppcheck-suppress unreadVariable
+    wxDCClipper a(dc, region);
 }
 
 void unreadVariable_wxMask(const wxBitmap &bmp, int x, const wxColour & colour)
