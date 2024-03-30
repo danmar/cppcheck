@@ -1146,6 +1146,11 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                             return Result::Fail;
                         }
 
+                        if (rule.severity == Severity::none) {
+                            mLogger.printError("unable to load rule-file '" + ruleFile + "' - a rule has an invalid severity.");
+                            return Result::Fail;
+                        }
+
                         mSettings.rules.emplace_back(std::move(rule));
                     }
                 } else {

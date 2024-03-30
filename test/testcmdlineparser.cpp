@@ -350,6 +350,8 @@ private:
         TEST_CASE(ruleFileMissingTokenList);
         TEST_CASE(ruleFileUnknownTokenList);
         TEST_CASE(ruleFileMissingId);
+        TEST_CASE(ruleFileInvalidSeverity1);
+        TEST_CASE(ruleFileInvalidSeverity2);
 #else
         TEST_CASE(ruleFileNotSupported);
 #endif
@@ -2365,6 +2367,34 @@ private:
         const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unable to load rule-file 'rule.xml' - a rule is lacking an id.\n", logger->str());
+    }
+
+    void ruleFileInvalidSeverity1() {
+        REDIRECT;
+        ScopedFile file("rule.xml",
+                        "<rule>\n"
+                        "<pattern>.+</pattern>\n"
+                        "<message>\n"
+                        "<severity/>"
+                        "</message>\n"
+                        "</rule>\n");
+        const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: unable to load rule-file 'rule.xml' - a rule has an invalid severity.\n", logger->str());
+    }
+
+    void ruleFileInvalidSeverity2() {
+        REDIRECT;
+        ScopedFile file("rule.xml",
+                        "<rule>\n"
+                        "<pattern>.+</pattern>\n"
+                        "<message>\n"
+                        "<severity>none</severity>"
+                        "</message>\n"
+                        "</rule>\n");
+        const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: unable to load rule-file 'rule.xml' - a rule has an invalid severity.\n", logger->str());
     }
 #else
     void ruleFileNotSupported() {
