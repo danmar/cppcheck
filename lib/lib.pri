@@ -60,6 +60,7 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/precompiled.h \
            $${PWD}/preprocessor.h \
            $${PWD}/programmemory.h \
+           $${PWD}/regex.h \
            $${PWD}/reverseanalyzer.h \
            $${PWD}/settings.h \
            $${PWD}/smallvector.h \
@@ -138,6 +139,7 @@ SOURCES += $${PWD}/valueflow.cpp \
            $${PWD}/platform.cpp \
            $${PWD}/preprocessor.cpp \
            $${PWD}/programmemory.cpp \
+           $${PWD}/regex.cpp \
            $${PWD}/reverseanalyzer.cpp \
            $${PWD}/settings.cpp \
            $${PWD}/summaries.cpp \
