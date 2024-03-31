@@ -31,7 +31,10 @@
 #include <wx/dynarray.h>
 #include <wx/filefn.h>
 #include <wx/font.h>
+#include <wx/fontenum.h>
+#include <wx/fontutil.h>
 #include <wx/frame.h>
+#include <wx/gbsizer.h>
 #include <wx/gdicmn.h>
 #include <wx/geometry.h>
 #include <wx/graphics.h>
@@ -62,6 +65,7 @@
 #include <wx/variant.h>
 #include <wx/vector.h>
 #include <wx/versioninfo.h>
+#include <wx/wrapsizer.h>
 
 #if wxCHECK_VERSION(3, 1, 6)  // wxWidets-3.1.6 or higher
 void unreadVariable_wxBitmapBundle(const wxBitmap &bmp, const wxIcon &icon, const wxImage &image, const char *const * xpm, const wxBitmapBundle &bundle)
@@ -81,6 +85,114 @@ void unreadVariable_wxBitmapBundle(const wxBitmap &bmp, const wxIcon &icon, cons
 }
 #endif
 
+#if wxCHECK_VERSION(3, 1, 3)  // wxWidets-3.1.3 or higher
+void unreadVariable_wxDCTextBgModeChanger(wxDC &dc)
+{
+    // cppcheck-suppress unreadVariable
+    wxDCTextBgModeChanger a(dc);
+}
+
+void unreadVariable_wxDCTextBgColourChanger(wxDC &dc, const wxColour &colour)
+{
+    // cppcheck-suppress unreadVariable
+    wxDCTextBgColourChanger a(dc);
+    // cppcheck-suppress unreadVariable
+    wxDCTextBgColourChanger b(dc, colour);
+}
+#endif
+
+void unreadVariable_wxDCTextColourChanger(wxDC &dc, const wxColour &colour)
+{
+    // cppcheck-suppress unreadVariable
+    wxDCTextColourChanger a(dc);
+    // cppcheck-suppress unreadVariable
+    wxDCTextColourChanger b(dc, colour);
+}
+
+void unreadVariable_wxDCPenChanger(wxDC &dc, const wxPen &pen)
+{
+    // cppcheck-suppress unreadVariable
+    wxDCPenChanger a(dc, pen);
+}
+
+void unreadVariable_wxDCFontChanger(wxDC &dc, const wxFont &font)
+{
+    // cppcheck-suppress unreadVariable
+    wxDCFontChanger a(dc);
+    // cppcheck-suppress unreadVariable
+    wxDCFontChanger b(dc, font);
+}
+
+void unreadVariable_wxDCBrushChanger(wxDC &dc, const wxBrush &brush)
+{
+    // cppcheck-suppress unreadVariable
+    wxDCBrushChanger a(dc, brush);
+}
+
+void unreadVariable_wxWrapSizer(const int x)
+{
+    // cppcheck-suppress unreadVariable
+    wxWrapSizer a(x, x);
+}
+
+void unreadVariable_wxGridBagSizer(const int x)
+{
+    // cppcheck-suppress unreadVariable
+    wxGridBagSizer a(x, x);
+}
+
+void unreadVariable_wxSizerItem(const int x)
+{
+    // cppcheck-suppress unreadVariable
+    wxSizerItem a(x, x);
+}
+
+void unreadVariable_wxFlexGridSizer(const int x)
+{
+    // cppcheck-suppress unreadVariable
+    wxFlexGridSizer a(x, x, x);
+}
+
+void unreadVariable_wxBoxSizer(const int orient)
+{
+    // cppcheck-suppress unreadVariable
+    wxBoxSizer a(orient);
+}
+
+void unreadVariable_wxGridSizer(int x)
+{
+    // cppcheck-suppress unreadVariable
+    wxGridSizer a(x, x, x);
+}
+
+void unreadVariable_wxStaticBoxSizer(wxStaticBox *box, const int orient, wxWindow *parent, const wxString &label)
+{
+    // cppcheck-suppress unreadVariable
+    wxStaticBoxSizer a(box, orient);
+    // cppcheck-suppress unreadVariable
+    wxStaticBoxSizer b(orient, parent);
+    // cppcheck-suppress unreadVariable
+    wxStaticBoxSizer c(orient, parent, label);
+}
+
+void unusedVariable_wxStdDialogButtonSizer()
+{
+    // cppcheck-suppress unusedVariable
+    wxStdDialogButtonSizer a;
+}
+
+void unusedVariable_wxColourDatabase()
+{
+    // cppcheck-suppress unusedVariable
+    wxColourDatabase a;
+}
+
+void unusedVariable_wxFontEnumerator()
+{
+    // cppcheck-suppress unusedVariable
+    wxFontEnumerator a;
+}
+
 void unusedVariable_wxCursor()
 {
     // cppcheck-suppress unusedVariable
@@ -91,6 +203,18 @@ void unusedVariable_wxBitmapHandler()
 {
     // cppcheck-suppress unusedVariable
     wxBitmapHandler a;
+}
+
+void unusedVariable_wxNativeFontInfo()
+{
+    // cppcheck-suppress unusedVariable
+    wxNativeFontInfo a;
+}
+
+void unreadVariable_wxDCClipper(wxDC &dc, const wxRegion &region)
+{
+    // cppcheck-suppress unreadVariable
+    wxDCClipper a(dc, region);
 }
 
 void unreadVariable_wxMask(const wxBitmap &bmp, int x, const wxColour & colour)
