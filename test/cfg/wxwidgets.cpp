@@ -34,6 +34,7 @@
 #include <wx/fontenum.h>
 #include <wx/fontutil.h>
 #include <wx/frame.h>
+#include <wx/gbsizer.h>
 #include <wx/gdicmn.h>
 #include <wx/geometry.h>
 #include <wx/graphics.h>
@@ -64,6 +65,7 @@
 #include <wx/variant.h>
 #include <wx/vector.h>
 #include <wx/versioninfo.h>
+#include <wx/wrapsizer.h>
 
 #if wxCHECK_VERSION(3, 1, 6)  // wxWidets-3.1.6 or higher
 void unreadVariable_wxBitmapBundle(const wxBitmap &bmp, const wxIcon &icon, const wxImage &image, const char *const * xpm, const wxBitmapBundle &bundle)
@@ -89,7 +91,6 @@ void unreadVariable_wxDCTextBgModeChanger(wxDC &dc)
     // cppcheck-suppress unreadVariable
     wxDCTextBgModeChanger a(dc);
 }
-#endif
 
 void unreadVariable_wxDCTextBgColourChanger(wxDC &dc, const wxColour &colour)
 {
@@ -98,6 +99,7 @@ void unreadVariable_wxDCTextBgColourChanger(wxDC &dc, const wxColour &colour)
     // cppcheck-suppress unreadVariable
     wxDCTextBgColourChanger b(dc, colour);
 }
+#endif
 
 void unreadVariable_wxDCTextColourChanger(wxDC &dc, const wxColour &colour)
 {
@@ -125,6 +127,52 @@ void unreadVariable_wxDCBrushChanger(wxDC &dc, const wxBrush &brush)
 {
     // cppcheck-suppress unreadVariable
     wxDCBrushChanger a(dc, brush);
+}
+
+void unreadVariable_wxWrapSizer(const int x)
+{
+    // cppcheck-suppress unreadVariable
+    wxWrapSizer a(x, x);
+}
+
+void unreadVariable_wxGridBagSizer(const int x)
+{
+    // cppcheck-suppress unreadVariable
+    	wxGridBagSizer a(x, x);
+}
+
+void unreadVariable_wxFlexGridSizer(const int x)
+{
+    // cppcheck-suppress unreadVariable
+    wxFlexGridSizer a(x, x, x);
+}
+
+void unreadVariable_wxBoxSizer(const int orient)
+{
+    // cppcheck-suppress unreadVariable
+    wxBoxSizer a(orient);
+}
+
+void unreadVariable_wxGridSizer(int x)
+{
+    // cppcheck-suppress unreadVariable
+    wxGridSizer a(x, x, x);
+}
+
+void unreadVariable_wxStaticBoxSizer(wxStaticBox *box, const int orient, wxWindow *parent, const wxString &label)
+{
+    // cppcheck-suppress unreadVariable
+    wxStaticBoxSizer a(box, orient);
+    // cppcheck-suppress unreadVariable
+    wxStaticBoxSizer b(orient, parent);
+    // cppcheck-suppress unreadVariable
+    wxStaticBoxSizer c(orient, parent, label);
+}
+
+void unusedVariable_wxStdDialogButtonSizer()
+{
+    // cppcheck-suppress unusedVariable
+    wxStdDialogButtonSizer a;
 }
 
 void unusedVariable_wxColourDatabase()
