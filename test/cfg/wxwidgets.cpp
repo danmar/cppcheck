@@ -138,7 +138,13 @@ void unreadVariable_wxWrapSizer(const int x)
 void unreadVariable_wxGridBagSizer(const int x)
 {
     // cppcheck-suppress unreadVariable
-    	wxGridBagSizer a(x, x);
+    wxGridBagSizer a(x, x);
+}
+
+void unreadVariable_wxSizerItem(const int x)
+{
+    // cppcheck-suppress unreadVariable
+    wxSizerItem a(x, x);
 }
 
 void unreadVariable_wxFlexGridSizer(const int x)
