@@ -1681,6 +1681,8 @@ namespace {
                 v2.intvalue += value.intvalue;
                 return v2;
             }
+            if (v.isImpossible() && v.isIntValue())
+                return v;
             if (const ValueFlow::Value* value = getImpossibleValue(expr))
                 return *value;
             return v;

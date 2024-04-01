@@ -6447,6 +6447,19 @@ private:
                         "    s.p[0] = 0;\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s.p\n", errout_str());
+
+        // #12460
+        valueFlowUninit("typedef struct {\n"
+                        "  int a;\n"
+                        "} st;\n"
+                        "void foo(int* p, bool success) {\n"
+                        "  st myst;\n"
+                        "  if (success == 1) {\n"
+                        "    myst.a = 5;\n"
+                        "  }\n"
+                        "  if ((success == 1) && (myst.a != 0)) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
