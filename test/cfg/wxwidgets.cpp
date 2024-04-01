@@ -129,6 +129,22 @@ void unreadVariable_wxDCBrushChanger(wxDC &dc, const wxBrush &brush)
     wxDCBrushChanger a(dc, brush);
 }
 
+void unreadVariable_wxGBSpan(const int x)
+{
+    // cppcheck-suppress unusedVariable
+    wxGBSpan a;
+    // cppcheck-suppress unreadVariable
+    wxGBSpan b(x, x);
+}
+
+void unreadVariable_wxGBPosition(const int x)
+{
+    // cppcheck-suppress unusedVariable
+    wxGBPosition a;
+    // cppcheck-suppress unreadVariable
+    wxGBPosition b(x, x);
+}
+
 void unreadVariable_wxWrapSizer(const int x)
 {
     // cppcheck-suppress unreadVariable
@@ -139,6 +155,12 @@ void unreadVariable_wxGridBagSizer(const int x)
 {
     // cppcheck-suppress unreadVariable
     wxGridBagSizer a(x, x);
+}
+
+void unreadVariable_wxGBSizerItem(const int x, const wxGBPosition &pos)
+{
+    // cppcheck-suppress unreadVariable
+    wxGBSizerItem a(x, x, pos);
 }
 
 void unreadVariable_wxSizerItem(const int x)
