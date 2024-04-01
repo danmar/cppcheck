@@ -39,8 +39,13 @@
 #include <wx/geometry.h>
 #include <wx/graphics.h>
 #include <wx/icon.h>
+#include <wx/iconbndl.h>
 #include <wx/iconloc.h>
 #include <wx/image.h>
+#include <wx/imaggif.h>
+#include <wx/imagiff.h>
+#include <wx/imagjpeg.h>
+#include <wx/imagpcx.h>
 #include <wx/log.h>
 #include <wx/menu.h>
 #include <wx/memory.h>
@@ -195,6 +200,54 @@ void unreadVariable_wxStaticBoxSizer(wxStaticBox *box, const int orient, wxWindo
     wxStaticBoxSizer b(orient, parent);
     // cppcheck-suppress unreadVariable
     wxStaticBoxSizer c(orient, parent, label);
+}
+
+void unusedVariable_wxJPEGHandler()
+{
+    // cppcheck-suppress unusedVariable
+    wxJPEGHandler a;
+}
+
+void unusedVariable_wxGIFHandler()
+{
+    // cppcheck-suppress unusedVariable
+    wxGIFHandler a;
+}
+
+void unusedVariable_wxPCXHandler()
+{
+    // cppcheck-suppress unusedVariable
+    wxPCXHandler a;
+}
+
+void unusedVariable_wxIFFHandler()
+{
+    // cppcheck-suppress unusedVariable
+    wxIFFHandler a;
+}
+
+void unusedVariable_wxGraphicsBrush()
+{
+    // cppcheck-suppress unusedVariable
+    wxGraphicsBrush a;
+}
+
+void unusedVariable_wxGraphicsMatrix()
+{
+    // cppcheck-suppress unusedVariable
+    wxGraphicsMatrix a;
+}
+
+void unusedVariable_wxGraphicsFont()
+{
+    // cppcheck-suppress unusedVariable
+    wxGraphicsFont a;
+}
+
+void unusedVariable_wxIconBundle()
+{
+    // cppcheck-suppress unusedVariable
+    wxIconBundle a;
 }
 
 void unusedVariable_wxStdDialogButtonSizer()
