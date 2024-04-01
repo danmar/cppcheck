@@ -129,6 +129,14 @@ void unreadVariable_wxDCBrushChanger(wxDC &dc, const wxBrush &brush)
     wxDCBrushChanger a(dc, brush);
 }
 
+void unreadVariable_wxGBPosition(const int x)
+{
+    // cppcheck-suppress unusedVariable
+    wxGBPosition a;
+    // cppcheck-suppress unreadVariable
+    wxGBPosition b(x, x);
+}
+
 void unreadVariable_wxWrapSizer(const int x)
 {
     // cppcheck-suppress unreadVariable
