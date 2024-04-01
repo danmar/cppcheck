@@ -157,7 +157,7 @@ void unreadVariable_wxGridBagSizer(const int x)
     wxGridBagSizer a(x, x);
 }
 
-void unreadVariable_wxGBSizerItem(const int x, const wxGPPosition &pos)
+void unreadVariable_wxGBSizerItem(const int x, const wxGBPosition &pos)
 {
     // cppcheck-suppress unreadVariable
     wxGBSizerItem a(x, x, pos);
