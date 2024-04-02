@@ -4113,7 +4113,7 @@ struct LifetimeStore {
                ErrorLogger& errorLogger,
                const Settings& settings,
                Predicate pred,
-               SourceLocation loc = SourceLocation::current()) const
+               SourceLocation loc = SourceLocation::current())
     {
         if (!argtok)
             return false;
@@ -4153,7 +4153,7 @@ struct LifetimeStore {
                TokenList& tokenlist,
                ErrorLogger& errorLogger,
                const Settings& settings,
-               SourceLocation loc = SourceLocation::current()) const
+               SourceLocation loc = SourceLocation::current())
     {
         return byRef(
             tok,
@@ -4172,7 +4172,7 @@ struct LifetimeStore {
                ErrorLogger& errorLogger,
                const Settings& settings,
                Predicate pred,
-               SourceLocation loc = SourceLocation::current()) const
+               SourceLocation loc = SourceLocation::current())
     {
         if (!argtok)
             return false;
@@ -4248,7 +4248,7 @@ struct LifetimeStore {
                TokenList& tokenlist,
                ErrorLogger& errorLogger,
                const Settings& settings,
-               SourceLocation loc = SourceLocation::current()) const
+               SourceLocation loc = SourceLocation::current())
     {
         return byVal(
             tok,
@@ -4317,8 +4317,8 @@ struct LifetimeStore {
 
 private:
     // cppcheck-suppress naming-privateMemberVariable
-    mutable Token* forwardTok{};
-    void forwardLifetime(Token* tok, TokenList& tokenlist, ErrorLogger& errorLogger, const Settings& settings) const {
+    Token* forwardTok{};
+    void forwardLifetime(Token* tok, TokenList& tokenlist, ErrorLogger& errorLogger, const Settings& settings) {
         forwardTok = tok;
         valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
     }
@@ -4419,7 +4419,7 @@ static void valueFlowLifetimeUserConstructor(Token* tok,
                                args,
                                "Passed to constructor of '" + name + "'.",
                                ValueFlow::Value::LifetimeKind::SubObject,
-                               [&](const LifetimeStore& ls) {
+                               [&](LifetimeStore& ls) {
             const Variable* paramVar = argToParam.at(ls.argtok);
             if (paramCapture.count(paramVar) == 0)
                 return;
@@ -4681,7 +4681,7 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
                 args,
                 "Passed to constructor of '" + t->name() + "'.",
                 ValueFlow::Value::LifetimeKind::SubObject,
-                [&](const LifetimeStore& ls) {
+                [&](LifetimeStore& ls) {
                 // Skip static variable
                 it = std::find_if(it, scope->varlist.cend(), [](const Variable& var) {
                     return !var.isStatic();
@@ -4728,7 +4728,7 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList& tokenlist, Error
                                    args,
                                    "Passed to initializer list.",
                                    ValueFlow::Value::LifetimeKind::SubObject,
-                                   [&](const LifetimeStore& ls) {
+                                   [&](LifetimeStore& ls) {
                 ls.byVal(tok, tokenlist, errorLogger, settings);
             });
         } else if (vt.container && vt.type == ValueType::CONTAINER) {
@@ -4754,7 +4754,7 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList& tokenlist, Error
                                        args,
                                        "Passed to initializer list.",
                                        ValueFlow::Value::LifetimeKind::SubObject,
-                                       [&](const LifetimeStore& ls) {
+                                       [&](LifetimeStore& ls) {
                     ls.byVal(tok, tokenlist, errorLogger, settings);
                 });
             }
