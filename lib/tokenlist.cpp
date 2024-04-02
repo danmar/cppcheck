@@ -749,7 +749,7 @@ static void compileTerm(Token *&tok, AST_state& state)
             tok = tok->next();
         } while (Token::Match(tok, "%name%|%str%"));
     } else if (tok->isName()) {
-        if (Token::Match(tok, "return|case") || (state.cpp && (tok->str() == "throw" || Token::simpleMatch(tok->tokAt(-1), ":: new")))) {
+        if (Token::Match(tok, "return|case") || (state.cpp && (tok->str() == "throw"))) {
             if (tok->str() == "case")
                 state.inCase = true;
             const bool tokIsReturn = tok->str() == "return";
@@ -1160,6 +1160,10 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
                 compilePrecedence2(tok, state);
             }
             compileUnaryOp(newtok, state, nullptr);
+            if (Token::simpleMatch(newtok->previous(), ":: new")) {
+                newtok->previous()->astOperand1(newtok);
+                state.op.pop();
+            }
             if (innertype && Token::simpleMatch(tok, ") ,"))
                 tok = tok->next();
         } else if (state.cpp && Token::Match(tok, "delete %name%|*|&|::|(|[")) {
