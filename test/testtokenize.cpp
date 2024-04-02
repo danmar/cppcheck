@@ -6252,6 +6252,7 @@ private:
         ASSERT_EQUALS("pint5[0{new=", testAst("p = new int* [5]{ 0 };"));
         ASSERT_EQUALS("sSint(new::(new=", testAst("s = new S(::new int());")); // #12502
         ASSERT_EQUALS("sS(new::=", testAst("s = ::new (ptr) S();")); // #12552
+        ASSERT_EQUALS("pdelete::return", testAst("return ::delete p;"));
 
         // placement new
         ASSERT_EQUALS("X12,3,(new ab,c,", testAst("new (a,b,c) X(1,2,3);"));
@@ -7084,6 +7085,9 @@ private:
                             "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
 
         ASSERT_THROW(tokenizeAndStringify("{ for (()()) }"), InternalError); // #11643
+
+        ASSERT_NO_THROW(tokenizeAndStringify("S* g = ::new(ptr) S();")); // #12552
+        ASSERT_NO_THROW(tokenizeAndStringify("void f(int* p) { return ::delete p; }"));
     }
 
 

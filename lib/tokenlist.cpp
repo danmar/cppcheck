@@ -1173,6 +1173,10 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
                 tok = tok->link()->next();
             compilePrecedence3(tok, state);
             compileUnaryOp(tok2, state, nullptr);
+            if (Token::simpleMatch(tok2->previous(), ":: delete")) {
+                tok2->previous()->astOperand1(tok2);
+                state.op.pop();
+            }
         }
         // TODO: Handle sizeof
         else break;
