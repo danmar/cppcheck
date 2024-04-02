@@ -5209,6 +5209,21 @@ const Token * Scope::addEnum(const Token * tok)
     return tok2;
 }
 
+static const Scope* findEnumScopeInBase(const Scope* scope, const std::string& tokStr)
+{
+     if (scope->definedType) {
+         const std::vector<Type::BaseInfo>& derivedFrom = scope->definedType->derivedFrom;
+         for (const Type::BaseInfo& i : derivedFrom) {
+             const Type *derivedFromType = i.type;
+             if (derivedFromType && derivedFromType->classScope) {
+                 if (const Scope* enumScope = derivedFromType->classScope->findRecordInNestedList(tokStr))
+                     return enumScope;
+             }
+         }
+     }
+     return nullptr;
+}
+
 const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<std::string>& tokensThatAreNotEnumeratorValues) const
 {
     if (tok->isKeyword())
@@ -5242,6 +5257,8 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
                     temp = scope->nestedIn->findRecordInNestedList(tok1->str());
                 if (!temp && scope->functionOf)
                     temp = scope->functionOf->findRecordInNestedList(tok1->str());
+                if (!temp)
+                    temp = findEnumScopeInBase(scope, tok1->str());
                 if (temp) {
                     scope = temp;
                     break;
