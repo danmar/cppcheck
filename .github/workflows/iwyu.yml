@@ -15,13 +15,16 @@ jobs:
 
     strategy:
       matrix:
-        image: ["opensuse/tumbleweed:latest"] # "opensuse/tumbleweed:latest" / "fedora:latest" / "debian:unstable" / "archlinux:latest"
+        image: ["archlinux:latest"] # "opensuse/tumbleweed:latest" / "fedora:latest" / "debian:unstable" / "archlinux:latest"
 
     runs-on: ubuntu-22.04
     if: ${{ github.repository_owner == 'danmar' }}
 
     container:
       image: ${{ matrix.image }}
+
+    env:
+      QT_VERSION: 6.7.0
 
     steps:
       - uses: actions/checkout@v3
@@ -31,19 +34,16 @@ jobs:
         run: |
           apt-get update
           apt-get install -y cmake clang make libpcre3-dev
-          apt-get install -y qt6-base-dev qt6-tools-dev qt6-charts-dev
-          apt-get install -y wget iwyu
-          ln -s x86_64-linux-gnu/qt6 /usr/include/qt
+          apt-get install -y libgl-dev  # fixes missing dependency for Qt in CMake
+          apt-get install -y iwyu
 
-      # TODO: fails with /usr/lib/qt6/bin/lupdate: symbol lookup error: /usr/lib/libproxy/libpxbackend-1.0.so: undefined symbol: g_once_init_leave_pointer
       - name: Install missing software on archlinux
         if: contains(matrix.image, 'archlinux')
         run: |
           set -x
           pacman -Sy
           pacman -S cmake make clang pcre --noconfirm
-          pacman -S qt6-base qt6-tools qt6-charts --noconfirm
-          pacman -S wget --noconfirm
+          pacman -S libglvnd --noconfirm  # fixes missing dependency for Qt in CMake
           pacman-key --init
           pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com
           pacman-key --lsign-key 3056513887B78AEB 
@@ -53,25 +53,36 @@ jobs:
           pacman -Sy
           pacman -S include-what-you-use --noconfirm
           ln -s iwyu-tool /usr/sbin/iwyu_tool
-          ln -s qt6 /usr/include/qt
 
       - name: Install missing software on Fedora
         if: contains(matrix.image, 'fedora')
         run: |
           dnf install -y cmake clang pcre-devel
-          dnf install -y qt6-qtbase-devel qt6-qttools-devel qt6-qtcharts-devel
-          dnf install -y wget iwyu
+          dnf install -y libglvnd-devel  # fixes missing dependency for Qt in CMake
+          dnf install -y iwyu
           ln -s iwyu_tool.py /usr/bin/iwyu_tool
-          ln -s qt6 /usr/include/qt
 
       - name: Install missing software on OpenSUSE
         if: contains(matrix.image, 'opensuse')
         run: |
           zypper install -y cmake clang pcre-devel
-          zypper install -y qt6-base-common-devel qt6-core-devel qt6-gui-devel qt6-widgets-devel qt6-printsupport-devel qt6-linguist-devel qt6-help-devel qt6-charts-devel qt6-test-devel
-          zypper install -y wget include-what-you-use-tools
+          zypper install -y include-what-you-use-tools
+          # fixes error during Qt installation
+          # /__w/cppcheck/Qt/6.7.0/gcc_64/bin/qmake: error while loading shared libraries: libgthread-2.0.so.0: cannot open shared object file: No such file or directory
+          zypper install -y libgthread-2_0-0
           ln -s iwyu_tool.py /usr/bin/iwyu_tool
-          ln -s qt6 /usr/include/qt          
+
+      # Fails on OpenSUSE:
+      # Warning: Failed to restore: Tar failed with error: Unable to locate executable file: tar. Please verify either the file path exists or the file can be found within a directory specified by the PATH environment variable. Also check the file mode to verify the file is executable.
+      # Also the shell is broken afterwards:
+      # OCI runtime exec failed: exec failed: unable to start container process: exec: "sh": executable file not found in $PATH: unknown
+      - name: Install Qt ${{ env.QT_VERSION }}
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: ${{ env.QT_VERSION }}
+          modules: 'qtcharts'
+          install-deps: false
+          cache: true
 
       - name: Prepare CMake
         run: |
@@ -80,6 +91,8 @@ jobs:
           CC: clang
           CXX: clang++
 
+      # Fails on Debian:
+      # /__w/cppcheck/Qt/6.7.0/gcc_64/libexec/rcc: error while loading shared libraries: libglib-2.0.so.0: cannot open shared object file: No such file or directory
       - name: Prepare CMake dependencies
         run: |
           # make sure the precompiled headers exist
@@ -93,28 +106,17 @@ jobs:
           make -C cmake.output gui-build-deps
           make -C cmake.output triage-build-ui-deps
 
-      - name: Build Qt mappings
-        run: |
-          wget https://raw.githubusercontent.com/include-what-you-use/include-what-you-use/master/mapgen/iwyu-mapgen-qt.py
-          python3 iwyu-mapgen-qt.py /usr/include/qt/ > qt.imp
-
       - name: iwyu_tool
         run: |
           PWD=$(pwd)
           # -isystem/usr/lib/clang/17/include
-          iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --max_line_length=1024 -Xiwyu --comment_style=long -Xiwyu --quoted_includes_first -Xiwyu --update_comments -Xiwyu --mapping_file=$PWD/qt.imp > iwyu.log
+          iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --max_line_length=1024 -Xiwyu --comment_style=long -Xiwyu --quoted_includes_first -Xiwyu --update_comments > iwyu.log
 
       - uses: actions/upload-artifact@v3
         if: success() || failure()
         with:
           name: Compilation Database
           path: ./cmake.output/compile_commands.json
-
-      - uses: actions/upload-artifact@v3
-        if: success() || failure()
-        with:
-          name: Qt Mappings
-          path: ./qt.imp
 
       - uses: actions/upload-artifact@v3
         if: success() || failure()
@@ -136,9 +138,8 @@ jobs:
       - name: Install missing software
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake make
-          sudo apt-get install -y libpcre3-dev
-          sudo apt-get install -y libffi7 # work around missing dependency for Qt install step
+          sudo apt-get install -y cmake make libpcre3-dev
+          sudo apt-get install -y libgl-dev  # missing dependency for using Qt in CMake
 
       - name: Install clang
         run: |
@@ -153,6 +154,7 @@ jobs:
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
+          install-deps: false
           cache: true
 
       - name: Prepare CMake
