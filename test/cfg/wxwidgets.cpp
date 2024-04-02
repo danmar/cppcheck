@@ -52,13 +52,16 @@
 #include <wx/mimetype.h>
 #if defined(__WXMSW__)
 #include <wx/msw/ole/automtn.h>
+#include <wx/metafile.h>
 #include <wx/msw/ole/oleutils.h>
 #endif
+#include <wx/palette.h>
 #include <wx/pen.h>
 #include <wx/position.h>
 #include <wx/propgrid/property.h>
 #include <wx/regex.h>
 #include <wx/region.h>
+#include <wx/renderer.h>
 #include <wx/settings.h>
 #include <wx/spinctrl.h>
 #include <wx/sizer.h>
@@ -200,6 +203,30 @@ void unreadVariable_wxStaticBoxSizer(wxStaticBox *box, const int orient, wxWindo
     wxStaticBoxSizer b(orient, parent);
     // cppcheck-suppress unreadVariable
     wxStaticBoxSizer c(orient, parent, label);
+}
+
+void unusedVariable_wxDelegateRendererNative()
+{
+    // cppcheck-suppress unusedVariable
+    wxDelegateRendererNative a;
+}
+
+void unusedVariable_wxHeaderButtonParams()
+{
+    // cppcheck-suppress unusedVariable
+    wxHeaderButtonParams a;
+}
+
+void unusedVariable_wxRegionIterator()
+{
+    // cppcheck-suppress unusedVariable
+    wxRegionIterator a;
+}
+
+void unusedVariable_wxPalette()
+{
+    // cppcheck-suppress unusedVariable
+    wxPalette a;
 }
 
 void unusedVariable_wxJPEGHandler()
@@ -425,6 +452,13 @@ void unreadVariable_wxVariant(wxVariantData *data,
 }
 
 #if defined(__WXMSW__)
+
+void unusedVariable_wxMetafile()
+{
+    // cppcheck-suppress unusedVariable
+    wxMetafile a;
+}
+
 void unusedVariable_wxVariantDataErrorCode()
 {
     // cppcheck-suppress unusedVariable
