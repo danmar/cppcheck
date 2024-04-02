@@ -3069,7 +3069,7 @@ struct ValueFlowAnalyzer : Analyzer {
         if (d == Direction::Forward && a.isRead())
             setTokenValue(tok, *value, getSettings());
         if (a.isInconclusive())
-            lowerToInconclusive();
+            (void)lowerToInconclusive();
         if (a.isWrite() && tok->astParent()) {
             writeValue(value, tok, d);
         }
