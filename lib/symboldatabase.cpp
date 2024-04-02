@@ -5211,17 +5211,17 @@ const Token * Scope::addEnum(const Token * tok)
 
 static const Scope* findEnumScopeInBase(const Scope* scope, const std::string& tokStr)
 {
-     if (scope->definedType) {
-         const std::vector<Type::BaseInfo>& derivedFrom = scope->definedType->derivedFrom;
-         for (const Type::BaseInfo& i : derivedFrom) {
-             const Type *derivedFromType = i.type;
-             if (derivedFromType && derivedFromType->classScope) {
-                 if (const Scope* enumScope = derivedFromType->classScope->findRecordInNestedList(tokStr))
-                     return enumScope;
-             }
-         }
-     }
-     return nullptr;
+    if (scope->definedType) {
+        const std::vector<Type::BaseInfo>& derivedFrom = scope->definedType->derivedFrom;
+        for (const Type::BaseInfo& i : derivedFrom) {
+            const Type *derivedFromType = i.type;
+            if (derivedFromType && derivedFromType->classScope) {
+                if (const Scope* enumScope = derivedFromType->classScope->findRecordInNestedList(tokStr))
+                    return enumScope;
+            }
+        }
+    }
+    return nullptr;
 }
 
 const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<std::string>& tokensThatAreNotEnumeratorValues) const
