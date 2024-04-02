@@ -883,8 +883,10 @@ bool ImportProject::importVcxproj(const std::string& filename, std::map<std::str
                 for (const tinyxml2::XMLElement* e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
                     if (std::strcmp(e->Name(), "ClCompile") == 0) {
                         const char* include = e->Attribute("Include");
-                        if (include && Path::acceptFile(include))
-                            compileList.emplace_back(include);
+                        if (include && Path::acceptFile(include)) {
+                            std::string toInclude = Path::simplifyPath(Path::isAbsolute(include) ? include : Path::getPathFromFilename(filename) + include);
+                            compileList.emplace_back(toInclude);
+                        }
                     }
                 }
             }
@@ -912,7 +914,14 @@ bool ImportProject::importVcxproj(const std::string& filename, std::map<std::str
                         const char* projectAttribute = e->Attribute("Project");
                         if (projectAttribute)
                         {
-                            std::string pathToSharedItemsFile(projectAttribute);
+                            // Path to shared items project is relative to current project directory,
+                            // unless the string starts with $(SolutionDir)
+                            std::string pathToSharedItemsFile;
+                            if (std::string(projectAttribute).rfind("$(SolutionDir)", 0) == 0) {
+                                pathToSharedItemsFile = std::string(projectAttribute);
+                            } else {
+                                pathToSharedItemsFile = variables["ProjectDir"] + std::string(projectAttribute);
+                            }
                             if (!simplifyPathWithVariables(pathToSharedItemsFile, variables)) {
                                 printError("Could not simplify path to referenced shared items project");
                                 exit(-1);
@@ -925,9 +934,21 @@ bool ImportProject::importVcxproj(const std::string& filename, std::map<std::str
         }
     }
 
+    // Include shared items project files
+    std::vector<std::string> sharedItemsIncludePaths{};
+    for (const auto& sharedProject : sharedItemsProjects) {
+        for (const auto& file : sharedProject.sourceFiles) {
+            std::string pathToFile = Path::simplifyPath(Path::getPathFromFilename(sharedProject.pathToProjectFile) + file);
+            compileList.emplace_back(std::move(pathToFile));
+        }
+        for (const auto& p : sharedProject.includePaths) {
+            std::string path = Path::simplifyPath(Path::getPathFromFilename(sharedProject.pathToProjectFile) + p);
+            sharedItemsIncludePaths.emplace_back(std::move(path));
+        }
+    }
+
     // Project files
-    for (const std::string& c : compileList) {
-        const std::string cfilename = Path::simplifyPath(Path::isAbsolute(c) ? c : Path::getPathFromFilename(filename) + c);
+    for (const std::string& cfilename : compileList) {
         if (!fileFilters.empty() && !matchglobs(fileFilters, cfilename))
             continue;
 
@@ -973,63 +994,10 @@ bool ImportProject::importVcxproj(const std::string& filename, std::map<std::str
             }
             fs.setDefines(fs.defines);
             fs.setIncludePaths(Path::getPathFromFilename(filename), toStringList(includePath + ';' + additionalIncludePaths), variables);
-            fileSettings.push_back(std::move(fs));
-        }
-    }
-
-    // Shared items files
-    for (const auto& sharedProject : sharedItemsProjects) {
-        for (const auto& c : sharedProject.sourceFiles) {
-            const std::string cfilename = Path::simplifyPath(c);
-            if (!fileFilters.empty() && !matchglobs(fileFilters, cfilename))
-                continue;
-
-            for (const ProjectConfiguration& p : projectConfigurationList) {
-                if (!guiProject.checkVsConfigs.empty()) {
-                    const bool doChecking = std::any_of(guiProject.checkVsConfigs.cbegin(), guiProject.checkVsConfigs.cend(), [&](const std::string& c) {
-                        return c == p.configuration;
-                        });
-                    if (!doChecking)
-                        continue;
-                }
-
-                FileSettings fs;
-                fs.filename = cfilename;
-                fs.cfg = p.name;
-                fs.msc = true;
-                fs.useMfc = useOfMfc;
-                fs.defines = "_WIN32=1";
-                if (p.platform == ProjectConfiguration::Win32)
-                    fs.platformType = cppcheck::Platform::Type::Win32W;
-                else if (p.platform == ProjectConfiguration::x64) {
-                    fs.platformType = cppcheck::Platform::Type::Win64;
-                    fs.defines += ";_WIN64=1";
-                }
-                std::string additionalIncludePaths;
-                for (const ItemDefinitionGroup& i : itemDefinitionGroupList) {
-                    if (!i.conditionIsTrue(p))
-                        continue;
-                    fs.standard = Standards::getCPP(i.cppstd);
-                    fs.defines += ';' + i.preprocessorDefinitions;
-                    if (i.enhancedInstructionSet == "StreamingSIMDExtensions")
-                        fs.defines += ";__SSE__";
-                    else if (i.enhancedInstructionSet == "StreamingSIMDExtensions2")
-                        fs.defines += ";__SSE2__";
-                    else if (i.enhancedInstructionSet == "AdvancedVectorExtensions")
-                        fs.defines += ";__AVX__";
-                    else if (i.enhancedInstructionSet == "AdvancedVectorExtensions2")
-                        fs.defines += ";__AVX2__";
-                    else if (i.enhancedInstructionSet == "AdvancedVectorExtensions512")
-                        fs.defines += ";__AVX512__";
-                    additionalIncludePaths += ';' + i.additionalIncludePaths;
-                }
-                fs.setDefines(fs.defines);
-                fs.setIncludePaths(Path::getPathFromFilename(filename), toStringList(includePath + ';' + additionalIncludePaths), variables);
-                for (const auto& toAddIncludePath : sharedProject.includePaths) {
-                    fs.includePaths.emplace_back(Path::simplifyPath(toAddIncludePath));
-                }
-                fileSettings.push_back(std::move(fs));
+            for (const auto& path : sharedItemsIncludePaths) {
+                fs.includePaths.emplace_back(path);
             }
+            fileSettings.push_back(std::move(fs));
         }
     }
 
@@ -1057,12 +1025,6 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
         }
     }
 
-    std::string projectDir = Path::simplifyPath(Path::getPathFromFilename(filename));
-    if (projectDir.empty())
-    {
-        projectDir = std::string("./");
-    }
-
     SharedItemsProject result{};
     result.pathToProjectFile = filename;
 
@@ -1079,18 +1041,17 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
     }
     for (const tinyxml2::XMLElement* node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         if (std::strcmp(node->Name(), "ItemGroup") == 0) {
-            const char* labelAttribute = node->Attribute("Label");
             for (const tinyxml2::XMLElement* e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
                 if (std::strcmp(e->Name(), "ClCompile") == 0) {
                     const char* include = e->Attribute("Include");
                     if (include && Path::acceptFile(include)) {
-                        std::string filename = stringReplace(include, "$(MSBuildThisFileDirectory)", projectDir);
+                        std::string file = stringReplace(include, "$(MSBuildThisFileDirectory)", "./");
 
                         // Don't include file if it matches the filter
-                        if (!fileFilters.empty() && !matchglobs(fileFilters, filename))
+                        if (!fileFilters.empty() && !matchglobs(fileFilters, file))
                             continue;
 
-                        result.sourceFiles.emplace_back(filename);
+                        result.sourceFiles.emplace_back(file);
                     } else {
                         printError("Could not find shared items source file");
                         exit(-1);
@@ -1104,7 +1065,7 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
                 if (includePath == std::string("%(AdditionalIncludeDirectories)"))
                     continue;
 
-                result.includePaths.emplace_back(stringReplace(includePath, "$(MSBuildThisFileDirectory)", projectDir));
+                result.includePaths.emplace_back(stringReplace(includePath, "$(MSBuildThisFileDirectory)", "./"));
             }
         }
     }
