@@ -743,7 +743,7 @@ private:
         ASSERT_EQUALS(true, Token::Match(negative.front(), "%bool%"));
     }
 
-    void matchOr() {
+    void matchOr() const {
         const SimpleTokenList bitwiseOr(";|;");
         // cppcheck-suppress simplePatternError - this is intentional
         ASSERT_EQUALS(true,  Token::Match(bitwiseOr.front(), "; %or%"));
