@@ -5246,8 +5246,6 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
         if (tok1->strAt(-1) == "::")
             scope = &scopeList.front();
         else {
-            // FIXME search base class here
-
             const Scope* temp = nullptr;
             if (scope)
                 temp = scope->findRecordInNestedList(tok1->str());
@@ -5255,8 +5253,11 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
             while (scope && scope->nestedIn) {
                 if (!temp)
                     temp = scope->nestedIn->findRecordInNestedList(tok1->str());
-                if (!temp && scope->functionOf)
+                if (!temp && scope->functionOf) {
                     temp = scope->functionOf->findRecordInNestedList(tok1->str());
+                    if (!temp && scope->functionOf->nestedIn)
+                        temp = scope->functionOf->nestedIn->findRecordInNestedList(tok1->str());
+                }
                 if (!temp)
                     temp = findEnumScopeInBase(scope, tok1->str());
                 if (temp) {
