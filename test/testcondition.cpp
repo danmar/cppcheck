@@ -140,7 +140,7 @@ private:
     }
 
     void check_(const char* file, int line, const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
-        const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive, inconclusive).exhaustive().build();
+        const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive, inconclusive).build();
         check_(file, line, code, settings, filename);
     }
 

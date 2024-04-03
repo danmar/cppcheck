@@ -1125,6 +1125,9 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     std::list<SuppressionList::Suppression> suppressions;
     Settings temp;
 
+    // default to --check-level=normal for import for now
+    temp.setCheckLevelNormal();
+
     guiProject.analyzeAllVsConfigs.clear();
 
     bool checkLevelExhaustive = false;

@@ -311,6 +311,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 {
     mSettings.exename = Path::getCurrentExecutablePath(argv[0]);
 
+    // default to --check-level=normal from CLI for now
+    mSettings.setCheckLevelNormal();
+
     if (argc <= 1) {
         printHelp();
         return Result::Exit;

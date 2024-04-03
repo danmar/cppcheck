@@ -383,6 +383,9 @@ private:
 #else
         TEST_CASE(executorProcessNotSupported);
 #endif
+        TEST_CASE(checkLevelDefault);
+        TEST_CASE(checkLevelNormal);
+        TEST_CASE(checkLevelExhaustive);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -2564,6 +2567,33 @@ private:
         ASSERT_EQUALS("cppcheck: error: executor type 'process' cannot be used as Cppcheck has not been built with a respective threading model.\n", logger->str());
     }
 #endif
+
+    void checkLevelDefault() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(Settings::CheckLevel::normal, settings->checkLevel);
+        ASSERT_EQUALS(100, settings->performanceValueFlowMaxIfCount);
+        ASSERT_EQUALS(8, settings->performanceValueFlowMaxSubFunctionArgs);
+    }
+
+    void checkLevelNormal() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--check-level=normal", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(Settings::CheckLevel::normal, settings->checkLevel);
+        ASSERT_EQUALS(100, settings->performanceValueFlowMaxIfCount);
+        ASSERT_EQUALS(8, settings->performanceValueFlowMaxSubFunctionArgs);
+    }
+
+    void checkLevelExhaustive() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--check-level=exhaustive", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(Settings::CheckLevel::exhaustive, settings->checkLevel);
+        ASSERT_EQUALS(-1, settings->performanceValueFlowMaxIfCount);
+        ASSERT_EQUALS(256, settings->performanceValueFlowMaxSubFunctionArgs);
+    }
 
     void ignorepaths1() {
         REDIRECT;

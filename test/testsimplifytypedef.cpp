@@ -238,7 +238,7 @@ private:
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
     std::string tok_(const char* file, int line, const char code[], bool simplify = true, Platform::Type type = Platform::Type::Native, bool debugwarnings = true) {
         // show warnings about unhandled typedef
-        const Settings settings = settingsBuilder(settings0).exhaustive().certainty(Certainty::inconclusive).debugwarnings(debugwarnings).platform(type).build();
+        const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings(debugwarnings).platform(type).build();
         SimpleTokenizer tokenizer(settings, *this);
 
         ASSERT_LOC(tokenizer.tokenize(code), file, line);

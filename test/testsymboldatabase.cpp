@@ -2580,7 +2580,7 @@ private:
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     void check_(const char* file, int line, const char code[], bool debug = true, bool cpp = true, const Settings* pSettings = nullptr) {
         // Check..
-        const Settings settings = settingsBuilder(pSettings ? *pSettings : settings1).debugwarnings(debug).exhaustive().build();
+        const Settings settings = settingsBuilder(pSettings ? *pSettings : settings1).debugwarnings(debug).build();
 
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this);

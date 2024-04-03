@@ -737,7 +737,7 @@ private:
                                     "cout << std :: string ( c ) << \"abc\" ; "
                                     "}";
             ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
-            ASSERT_EQUALS("", errout_str());
+            ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cout\n", errout_str());
         }
         {
             const char code[] = "class T : private std::vector<std::pair<std::string, const int*>> {\n" // #12521
@@ -853,6 +853,9 @@ private:
                            "}";
 
         ASSERT_EQUALS(exp, tok(code));
+        ASSERT_EQUALS("[test.cpp:7]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable NS1\n"
+                      "[test.cpp:11]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable NS2\n",
+                      errout_str());
     }
 
     void simplifyUsing9381() {

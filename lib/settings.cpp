@@ -41,7 +41,7 @@ Settings::Settings()
 {
     severity.setEnabled(Severity::error, true);
     certainty.setEnabled(Certainty::normal, true);
-    setCheckLevelNormal();
+    setCheckLevelExhaustive();
     executor = defaultExecutor();
 }
 
