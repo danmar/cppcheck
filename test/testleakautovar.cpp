@@ -2480,6 +2480,14 @@ private:
               "  std::shared_ptr<C> a{c, [](C* x) { delete x; }};\n"
               "}", true);
         ASSERT_EQUALS("", errout_str());
+
+        check("struct DirDeleter {\n" // #12544
+              "    void operator()(DIR* d) { ::closedir(d); }\n"
+              "};\n"
+              "void openDir(DIR* dir) {\n"
+              "    std::shared_ptr<DIR> dp(dir, DirDeleter());\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:2]: (information) --check-library: Function closedir() should have <noreturn> configuration\n", errout_str()); // don't crash
     }
     void smartPointerRelease() {
         check("void f() {\n"
