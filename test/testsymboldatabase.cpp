@@ -447,6 +447,7 @@ private:
         TEST_CASE(enum13);
         TEST_CASE(enum14);
         TEST_CASE(enum15);
+        TEST_CASE(enum16);
 
         TEST_CASE(sizeOfType);
 
@@ -6220,7 +6221,6 @@ private:
             std::advance(it, 2);
             const Enumerator* E0 = it->findEnumerator("E0");
             ASSERT(E0 && E0->value_known && E0->value == 0);
-            std::advance(it, 1);
             const Token* const e = Token::findsimplematch(tokenizer.tokens(), "E0 ;");
             ASSERT(e && e->enumerator());
             ASSERT_EQUALS(E0, e->enumerator());
@@ -6286,6 +6286,29 @@ private:
             const Token* tok = Token::findsimplematch(tokenizer.tokens(), "D ;");
             ASSERT(tok && tok->enumerator());
             ASSERT_EQUALS(D, tok->enumerator());
+        }
+    }
+
+    void enum16() {
+        {
+            GET_SYMBOL_DB("struct B {\n" // #12538
+                          "    struct S {\n"
+                          "        enum E { E0 = 0 };\n"
+                          "    };\n"
+                          "};\n"
+                          "struct D : B {\n"
+                          "    S::E f() const {\n"
+                          "        return S::E0;\n"
+                          "    }\n"
+                          "};\n");
+            ASSERT(db != nullptr);
+            auto it = db->scopeList.begin();
+            std::advance(it, 3);
+            const Enumerator* E0 = it->findEnumerator("E0");
+            ASSERT(E0 && E0->value_known && E0->value == 0);
+            const Token* const e = Token::findsimplematch(tokenizer.tokens(), "E0 ;");
+            ASSERT(e && e->enumerator());
+            ASSERT_EQUALS(E0, e->enumerator());
         }
     }
 
