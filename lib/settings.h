@@ -460,8 +460,8 @@ public:
     void setCheckLevelNormal();
 
     enum class CheckLevel {
-        exhaustive,
-        normal
+        normal,
+        exhaustive
     };
     CheckLevel checkLevel = CheckLevel::normal;
 
