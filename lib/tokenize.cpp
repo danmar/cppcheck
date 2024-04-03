@@ -8610,11 +8610,11 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "%assign% typename|class %assign%"))
             syntaxError(tok);
-        if (Token::Match(tok, "%assign% [;)}]"))
+        if (Token::Match(tok, "%assign% [;)}]") && (!isCPP() || !Token::Match(tok->previous(), "operator %assign% ;")))
             syntaxError(tok);
         if (Token::Match(tok, "%cop%|=|,|[ %or%|%oror%|/|%"))
             syntaxError(tok);
-        if (Token::Match(tok, "[;([{] %comp%|&&|%oror%|%or%|%|/|^"))
+        if (Token::Match(tok, "[;([{] %comp%|&&|%oror%|%or%|%|/"))
             syntaxError(tok);
         if (Token::Match(tok, "%cop%|= ]") && !(isCPP() && Token::Match(tok->previous(), "%type%|[|,|%num% &|=|> ]")))
             syntaxError(tok);
