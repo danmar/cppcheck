@@ -386,6 +386,7 @@ private:
         TEST_CASE(checkLevelDefault);
         TEST_CASE(checkLevelNormal);
         TEST_CASE(checkLevelExhaustive);
+        TEST_CASE(checkLevelUnknown);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -2593,6 +2594,13 @@ private:
         ASSERT_EQUALS_ENUM(Settings::CheckLevel::exhaustive, settings->checkLevel);
         ASSERT_EQUALS(-1, settings->performanceValueFlowMaxIfCount);
         ASSERT_EQUALS(256, settings->performanceValueFlowMaxSubFunctionArgs);
+    }
+
+    void checkLevelUnknown() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--check-level=default", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: unknown '--check-level' value 'default'.\n", logger->str());
     }
 
     void ignorepaths1() {
