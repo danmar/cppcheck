@@ -445,13 +445,8 @@ void TestFixture::setTemplateFormat(const std::string &templateFormat)
     }
 }
 
-TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::normal() {
-    settings.setCheckLevelNormal();
-    return *this;
-}
-
-TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::exhaustive() {
-    settings.setCheckLevelExhaustive();
+TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::checkLevel(Settings::CheckLevel level) {
+    settings.setCheckLevel(level);
     return *this;
 }
 

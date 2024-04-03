@@ -208,9 +208,7 @@ protected:
             return *this;
         }
 
-        SettingsBuilder& exhaustive();
-
-        SettingsBuilder& normal();
+        SettingsBuilder& checkLevel(Settings::CheckLevel level);
 
         SettingsBuilder& library(const char lib[]);
 

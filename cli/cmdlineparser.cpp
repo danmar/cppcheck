@@ -312,7 +312,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     mSettings.exename = Path::getCurrentExecutablePath(argv[0]);
 
     // default to --check-level=normal from CLI for now
-    mSettings.setCheckLevelNormal();
+    mSettings.setCheckLevel(Settings::CheckLevel::normal);
 
     if (argc <= 1) {
         printHelp();
@@ -473,11 +473,11 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             // Check code exhaustively
             else if (std::strcmp(argv[i], "--check-level=exhaustive") == 0)
-                mSettings.setCheckLevelExhaustive();
+                mSettings.setCheckLevel(Settings::CheckLevel::exhaustive);
 
             // Check code with normal analysis
             else if (std::strcmp(argv[i], "--check-level=normal") == 0)
-                mSettings.setCheckLevelNormal();
+                mSettings.setCheckLevel(Settings::CheckLevel::normal);
 
             // Check library definitions
             else if (std::strcmp(argv[i], "--check-library") == 0) {

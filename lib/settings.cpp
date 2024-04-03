@@ -41,7 +41,7 @@ Settings::Settings()
 {
     severity.setEnabled(Severity::error, true);
     certainty.setEnabled(Certainty::normal, true);
-    setCheckLevelExhaustive();
+    setCheckLevel(Settings::CheckLevel::exhaustive);
     executor = defaultExecutor();
 }
 
@@ -268,21 +268,20 @@ void Settings::loadSummaries()
     Summaries::loadReturn(buildDir, summaryReturn);
 }
 
-
-void Settings::setCheckLevelExhaustive()
+void Settings::setCheckLevel(CheckLevel level)
 {
-    // Checking can take a little while. ~ 10 times slower than normal analysis is OK.
-    checkLevel = CheckLevel::exhaustive;
-    performanceValueFlowMaxIfCount = -1;
-    performanceValueFlowMaxSubFunctionArgs = 256;
-}
-
-void Settings::setCheckLevelNormal()
-{
-    // Checking should finish in reasonable time.
-    checkLevel = CheckLevel::normal;
-    performanceValueFlowMaxSubFunctionArgs = 8;
-    performanceValueFlowMaxIfCount = 100;
+    if (level == CheckLevel::normal) {
+        // Checking should finish in reasonable time.
+        checkLevel = level;
+        performanceValueFlowMaxSubFunctionArgs = 8;
+        performanceValueFlowMaxIfCount = 100;
+    }
+    else if (level == CheckLevel::exhaustive) {
+        // Checking can take a little while. ~ 10 times slower than normal analysis is OK.
+        checkLevel = CheckLevel::exhaustive;
+        performanceValueFlowMaxIfCount = -1;
+        performanceValueFlowMaxSubFunctionArgs = 256;
+    }
 }
 
 // TODO: auto generate these tables

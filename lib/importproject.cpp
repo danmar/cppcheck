@@ -1126,7 +1126,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     Settings temp;
 
     // default to --check-level=normal for import for now
-    temp.setCheckLevelNormal();
+    temp.setCheckLevel(Settings::CheckLevel::normal);
 
     guiProject.analyzeAllVsConfigs.clear();
 
@@ -1271,9 +1271,9 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->safeChecks = temp.safeChecks;
 
     if (checkLevelExhaustive)
-        settings->setCheckLevelExhaustive();
+        settings->setCheckLevel(Settings::CheckLevel::exhaustive);
     else
-        settings->setCheckLevelNormal();
+        settings->setCheckLevel(Settings::CheckLevel::normal);
 
     return true;
 }

@@ -970,7 +970,7 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
     result.exename = QCoreApplication::applicationFilePath().toStdString();
 
     // default to --check-level=normal for GUI for now
-    result.setCheckLevelNormal();
+    result.setCheckLevel(Settings::CheckLevel::normal);
 
     const bool std = tryLoadLibrary(&result.library, "std.cfg");
     if (!std) {
@@ -1064,9 +1064,9 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
         result.maxCtuDepth = mProjectFile->getMaxCtuDepth();
         result.maxTemplateRecursion = mProjectFile->getMaxTemplateRecursion();
         if (mProjectFile->isCheckLevelExhaustive())
-            result.setCheckLevelExhaustive();
+            result.setCheckLevel(Settings::CheckLevel::exhaustive);
         else
-            result.setCheckLevelNormal();
+            result.setCheckLevel(Settings::CheckLevel::normal);
         result.checkHeaders = mProjectFile->getCheckHeaders();
         result.checkUnusedTemplates = mProjectFile->getCheckUnusedTemplates();
         result.safeChecks.classes = mProjectFile->safeChecks.classes;

@@ -456,14 +456,13 @@ public:
         return jobs == 1;
     }
 
-    void setCheckLevelExhaustive();
-    void setCheckLevelNormal();
-
     enum class CheckLevel {
         normal,
         exhaustive
     };
     CheckLevel checkLevel = CheckLevel::exhaustive;
+
+    void setCheckLevel(CheckLevel level);
 
     using ExecuteCmdFn = std::function<int (std::string,std::vector<std::string>,std::string,std::string&)>;
     void setMisraRuleTexts(const ExecuteCmdFn& executeCommand);
