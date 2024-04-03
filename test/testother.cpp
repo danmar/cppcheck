@@ -2262,6 +2262,15 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 's' should be passed by const reference.\n",
                       errout_str());
 
+        check("struct S {\n"
+              "    enum class E : std::uint8_t { E0 };\n"
+              "    static void f(S::E e) {\n"
+              "        if (e == S::E::E0) {}\n"
+              "    }\n"
+              "    char a[20];\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str());
+
         /*const*/ Settings settings1 = settingsBuilder().platform(Platform::Type::Win64).build();
         check("using ui64 = unsigned __int64;\n"
               "ui64 Test(ui64 one, ui64 two) { return one + two; }\n",

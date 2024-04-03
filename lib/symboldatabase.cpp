@@ -6370,7 +6370,7 @@ const Type* SymbolDatabase::findTypeInNested(const Token *startTok, const Scope 
         startTok = startTok->next();
 
     // type same as scope
-    if (startTok->str() == startScope->className && startScope->isClassOrStruct())
+    if (startScope->isClassOrStruct() && startTok->str() == startScope->className && !Token::simpleMatch(startTok->next(), "::"))
         return startScope->definedType;
 
     bool hasPath = false;
