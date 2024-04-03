@@ -6310,6 +6310,52 @@ private:
             ASSERT(e && e->enumerator());
             ASSERT_EQUALS(E0, e->enumerator());
         }
+        {
+            GET_SYMBOL_DB("namespace ns {\n" // #12567
+                          "    struct S1 {\n"
+                          "        enum E { E1 } e;\n"
+                          "    };\n"
+                          "    struct S2 {\n"
+                          "        static void f();\n"
+                          "    };\n"
+                          "}\n"
+                          "void ns::S2::f() {\n"
+                          "    S1 s;\n"
+                          "    s.e = S1::E1;\n"
+                          "}\n");
+            ASSERT(db != nullptr);
+            auto it = db->scopeList.begin();
+            std::advance(it, 3);
+            const Enumerator* E1 = it->findEnumerator("E1");
+            ASSERT(E1 && E1->value_known && E1->value == 0);
+            const Token* const e = Token::findsimplematch(tokenizer.tokens(), "E1 ;");
+            ASSERT(e && e->enumerator());
+            ASSERT_EQUALS(E1, e->enumerator());
+        }
+        {
+            GET_SYMBOL_DB("namespace N {\n"
+                          "    struct S1 {\n"
+                          "        enum E { E1 } e;\n"
+                          "    };\n"
+                          "    namespace O {\n"
+                          "        struct S2 {\n"
+                          "            static void f();\n"
+                          "        };\n"
+                          "    }\n"
+                          "}\n"
+                          "void N::O::S2::f() {\n"
+                          "    S1 s;\n"
+                          "    s.e = S1::E1;\n"
+                          "}\n");
+            ASSERT(db != nullptr);
+            auto it = db->scopeList.begin();
+            std::advance(it, 3);
+            const Enumerator* E1 = it->findEnumerator("E1");
+            ASSERT(E1 && E1->value_known && E1->value == 0);
+            const Token* const e = Token::findsimplematch(tokenizer.tokens(), "E1 ;");
+            ASSERT(e && e->enumerator());
+            ASSERT_EQUALS(E1, e->enumerator());
+        }
     }
 
     void sizeOfType() {
