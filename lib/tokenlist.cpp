@@ -1762,7 +1762,7 @@ static Token * createAstAtToken(Token *tok)
 
     if (cpp && ((!tok->previous() && tok->str() == "::") || Token::Match(tok->previous(), "[;{}] ::"))) {
         AST_state state(cpp);
-        compileExpression(tok, state);
+        compileUnaryOp(tok, state, nullptr);
     }
 
     return tok;
