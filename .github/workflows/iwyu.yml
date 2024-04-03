@@ -171,7 +171,7 @@ jobs:
       - name: clang-include-cleaner
         run: |
           # TODO: run multi-threaded
-          find $PWD/cli $PWD/lib $PWD/test -maxdepth 1 -name "*.cpp" | xargs -t -n 1 clang-include-cleaner-18 --print=changes --extra-arg=-w -p cmake.output > clang-include-cleaner.log 2>&1
+          find $PWD/cli $PWD/lib $PWD/test $PWD/gui -maxdepth 1 -name "*.cpp" | xargs -t -n 1 clang-include-cleaner-18 --print=changes --extra-arg=-w -p cmake.output > clang-include-cleaner.log 2>&1
 
       - uses: actions/upload-artifact@v3
         with:
