@@ -164,7 +164,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
              ((Token::Match(tok, "class|struct|union|namespace ::| %name% final| {|:|::|<") &&
                !Token::Match(tok->previous(), "new|friend|const|enum|typedef|mutable|volatile|using|)|(|<")) ||
               (Token::Match(tok, "enum class| %name% {") ||
-               Token::Match(tok, "enum class| %name% : %name% {"))))
+               Token::Match(tok, "enum class| %name% : %name% ::|{"))))
             || (tok->isC() && tok->isKeyword() && Token::Match(tok, "struct|union|enum %name% {"))) {
             const Token *tok2 = tok->tokAt(2);
 
@@ -301,8 +301,11 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                         mTokenizer.syntaxError(tok);
                     }
                 } else if (new_scope->type == Scope::eEnum) {
-                    if (tok2->str() == ":")
+                    if (tok2->str() == ":") {
                         tok2 = tok2->tokAt(2);
+                        while (Token::Match(tok2, "%name%|::"))
+                            tok2 = tok2->next();
+                    }
                 }
 
                 new_scope->setBodyStartEnd(tok2);
@@ -5149,7 +5152,8 @@ const Token * Scope::addEnum(const Token * tok)
         tok2 = tok2->next();
 
         enumType = tok2;
-        tok2 = tok2->next();
+        while (Token::Match(tok2, "%name%|::"))
+            tok2 = tok2->next();
     }
 
     // add enumerators
