@@ -5255,8 +5255,11 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
                     temp = scope->nestedIn->findRecordInNestedList(tok1->str());
                 if (!temp && scope->functionOf) {
                     temp = scope->functionOf->findRecordInNestedList(tok1->str());
-                    if (!temp && scope->functionOf->nestedIn)
-                        temp = scope->functionOf->nestedIn->findRecordInNestedList(tok1->str());
+                    const Scope* nested = scope->functionOf->nestedIn;
+                    while (!temp && nested) {
+                        temp = nested->findRecordInNestedList(tok1->str());
+                        nested = nested->nestedIn;
+                    }
                 }
                 if (!temp)
                     temp = findEnumScopeInBase(scope, tok1->str());
