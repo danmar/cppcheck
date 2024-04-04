@@ -223,6 +223,12 @@ void unusedVariable_wxRegionIterator()
     wxRegionIterator a;
 }
 
+void unusedVariable_wxRegionContain()
+{
+    // cppcheck-suppress unusedVariable
+    wxRegionContain a;
+}
+
 void unusedVariable_wxPalette()
 {
     // cppcheck-suppress unusedVariable
