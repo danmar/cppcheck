@@ -10605,6 +10605,8 @@ void Tokenizer::simplifyNamespaceAliases()
                     }
 
                     if (tok2->strAt(1) == "::" && !alreadyHasNamespace(tokNameStart, tokNameEnd, tok2)) {
+                        if (Token::simpleMatch(tok2->tokAt(-1), "::") && tokNameStart->str() == "::")
+                            tok2->deletePrevious();
                         tok2->str(tokNameStart->str());
                         Token * tok3 = tokNameStart;
                         while (tok3 != tokNameEnd) {
