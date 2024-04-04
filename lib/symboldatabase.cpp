@@ -1557,6 +1557,9 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
                 parent = parent->astParent();
             if (Token::simpleMatch(parent, "new"))
                 continue;
+            // trailing return type
+            if (Token::simpleMatch(ftok, ".") && ftok->originalName() == "->" && Token::Match(ftok->tokAt(-1), "[])]"))
+                continue;
         }
         tok->isIncompleteVar(true);
     }
@@ -5250,8 +5253,6 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
         if (tok1->strAt(-1) == "::")
             scope = &scopeList.front();
         else {
-            // FIXME search base class here
-
             const Scope* temp = nullptr;
             if (scope)
                 temp = scope->findRecordInNestedList(tok1->str());
@@ -5259,8 +5260,14 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
             while (scope && scope->nestedIn) {
                 if (!temp)
                     temp = scope->nestedIn->findRecordInNestedList(tok1->str());
-                if (!temp && scope->functionOf)
+                if (!temp && scope->functionOf) {
                     temp = scope->functionOf->findRecordInNestedList(tok1->str());
+                    const Scope* nested = scope->functionOf->nestedIn;
+                    while (!temp && nested) {
+                        temp = nested->findRecordInNestedList(tok1->str());
+                        nested = nested->nestedIn;
+                    }
+                }
                 if (!temp)
                     temp = findEnumScopeInBase(scope, tok1->str());
                 if (temp) {
