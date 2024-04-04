@@ -5845,6 +5845,16 @@ private:
             const Token* r = Token::findsimplematch(q, "r");
             ASSERT(r && !r->isIncompleteVar());
         }
+        {
+            GET_SYMBOL_DB("void f() {\n" // #12571
+                          "    auto g = []() -> std::string* {\n"
+                          "        return nullptr;\n"
+                          "    };\n"
+                          "}\n");
+            ASSERT(db && errout_str().empty());
+            const Token* s = Token::findsimplematch(tokenizer.tokens(), "string");
+            ASSERT(s && !s->isIncompleteVar());
+        }
     }
 
     void enum1() {
