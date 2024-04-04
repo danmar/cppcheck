@@ -119,6 +119,8 @@ private:
         TEST_CASE(versionWithCfg);
         TEST_CASE(versionExclusive);
         TEST_CASE(versionWithInvalidCfg);
+        TEST_CASE(checkVersionCorrect);
+        TEST_CASE(checkVersionIncorrect);
         TEST_CASE(onefile);
         TEST_CASE(onepath);
         TEST_CASE(optionwithoutfile);
@@ -471,6 +473,21 @@ private:
         const char * const argv[] = {"cppcheck", "--version"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 2 near: \n", logger->str());
+    }
+
+    void checkVersionCorrect() {
+        REDIRECT;
+        const std::string currentVersion = parser->getVersion();
+        const std::string checkVersion = "--check-version=" + currentVersion;
+        const char * const argv[] = {"cppcheck", checkVersion.c_str(), "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+    }
+
+    void checkVersionIncorrect() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--check-version=Cppcheck 2.0", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: --check-version check failed. Aborting.\n", logger->str());
     }
 
     void onefile() {
