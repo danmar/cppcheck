@@ -6367,6 +6367,23 @@ private:
             ASSERT(e && e->enumerator());
             ASSERT_EQUALS(E1, e->enumerator());
         }
+        {
+            GET_SYMBOL_DB("enum class E { inc };\n" // #12585
+                          "struct C {\n"
+                          "    void f1();\n"
+                          "    bool f2(bool inc);\n"
+                          "};\n"
+                          "void C::f1() { const E e = E::inc; }\n"
+                          "void C::f2(bool inc) { return false; }\n");
+            ASSERT(db != nullptr);
+            auto it = db->scopeList.begin();
+            std::advance(it, 1);
+            const Enumerator* inc = it->findEnumerator("inc");
+            ASSERT(inc && inc->value_known && inc->value == 0);
+            const Token* const i = Token::findsimplematch(tokenizer.tokens(), "inc ;");
+            ASSERT(i && i->enumerator());
+            ASSERT_EQUALS(inc, i->enumerator());
+        }
     }
 
     void enum17() {
