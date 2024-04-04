@@ -123,6 +123,20 @@ static bool isExecutableScope(const Token* tok)
     return false;
 }
 
+static bool isEnumDefinition(const Token* tok)
+{
+    if (!Token::Match(tok, "enum class| %name% {|:"))
+        return false;
+    while (!Token::Match(tok, "[{:]"))
+        tok = tok->next();
+    if (tok->str() == "{")
+        return true;
+    tok = tok->next(); // skip ':'
+    while (Token::Match(tok, "%name%|::"))
+        tok = tok->next();
+    return Token::simpleMatch(tok, "{");
+}
+
 void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 {
     // create global scope
@@ -163,8 +177,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         if ((tok->isCpp() && tok->isKeyword() &&
              ((Token::Match(tok, "class|struct|union|namespace ::| %name% final| {|:|::|<") &&
                !Token::Match(tok->previous(), "new|friend|const|enum|typedef|mutable|volatile|using|)|(|<")) ||
-              (Token::Match(tok, "enum class| %name% {") ||
-               Token::Match(tok, "enum class| %name% : %name% ::|{"))))
+              isEnumDefinition(tok)))
             || (tok->isC() && tok->isKeyword() && Token::Match(tok, "struct|union|enum %name% {"))) {
             const Token *tok2 = tok->tokAt(2);
 

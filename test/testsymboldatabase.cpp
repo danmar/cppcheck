@@ -6372,6 +6372,7 @@ private:
     void enum17() {
         {
             GET_SYMBOL_DB("struct S {\n" // #12564
+                          "    enum class E : std::uint8_t;\n"
                           "    enum class E : std::uint8_t { E0 };\n"
                           "    static void f(S::E e) {\n"
                           "        if (e == S::E::E0) {}\n"
