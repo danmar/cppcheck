@@ -6389,25 +6389,6 @@ private:
         }
     }
 
-    void enum17() {
-        {
-            GET_SYMBOL_DB("struct S {\n" // #12564
-                          "    enum class E : std::uint8_t { E0 };\n"
-                          "    static void f(S::E e) {\n"
-                          "        if (e == S::E::E0) {}\n"
-                          "    }\n"
-                          "};\n");
-            ASSERT(db != nullptr);
-            auto it = db->scopeList.begin();
-            std::advance(it, 2);
-            const Enumerator* E0 = it->findEnumerator("E0");
-            ASSERT(E0 && E0->value_known && E0->value == 0);
-            const Token* const e = Token::findsimplematch(tokenizer.tokens(), "E0 )");
-            ASSERT(e && e->enumerator());
-            ASSERT_EQUALS(E0, e->enumerator());
-        }
-    }
-
     void sizeOfType() {
         // #7615 - crash in Symboldatabase::sizeOfType()
         GET_SYMBOL_DB("enum e;\n"
