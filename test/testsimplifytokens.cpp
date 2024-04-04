@@ -89,6 +89,7 @@ private:
         TEST_CASE(simplifyStructDecl6); // ticket #3732
         TEST_CASE(simplifyStructDecl7); // ticket #476 (static anonymous struct array)
         TEST_CASE(simplifyStructDecl8); // ticket #7698
+        TEST_CASE(simplifyStructDecl9);
 
         // register int var; => int var;
         // inline int foo() {} => int foo() {}
@@ -1247,6 +1248,28 @@ private:
         ASSERT_EQUALS("enum H : short { x , y , z } ; enum H h ; h = x ;", tok("enum H : short { x, y, z } h{x};"));
         ASSERT_EQUALS("enum class I : short { x , y , z } ; enum I i ; i = x ;", tok("enum class I : short { x, y, z } i(x);"));
         ASSERT_EQUALS("enum class J : short { x , y , z } ; enum J j ; j = x ;", tok("enum class J : short { x, y, z } j{x};"));
+    }
+
+    void simplifyStructDecl9() {
+        const char* code = "enum E : int;\n" // #12588
+                           "void f() {}\n"
+                           "namespace {\n"
+                           "    struct S {\n"
+                           "        explicit S(int i) : m(i) {}\n"
+                           "        int m;\n"
+                           "    };\n"
+                           "}\n"
+                           "void g() { S s(0); }\n";
+        const char* exp = "enum E : int ; "
+                          "void f ( ) { } "
+                          "namespace { "
+                          "struct S { "
+                          "explicit S ( int i ) : m ( i ) { } "
+                          "int m ; "
+                          "} ; "
+                          "} "
+                          "void g ( ) { S s ( 0 ) ; }";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void removeUnwantedKeywords() {
