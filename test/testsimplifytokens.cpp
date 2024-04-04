@@ -112,6 +112,7 @@ private:
         TEST_CASE(simplifyNestedNamespace);
         TEST_CASE(simplifyNamespaceAliases1);
         TEST_CASE(simplifyNamespaceAliases2); // ticket #10281
+        TEST_CASE(simplifyNamespaceAliases3);
 
         TEST_CASE(simplifyKnownVariables2);
         TEST_CASE(simplifyKnownVariables3);
@@ -1477,6 +1478,18 @@ private:
                           "{"
                           "  int maxResults = ::a::b::c::d::ef::MAX;"
                           "}"));
+    }
+
+    void simplifyNamespaceAliases3() {
+        ASSERT_EQUALS("namespace N { namespace O { int g ( ) ; } } " // #12586
+                      "void f ( ) { "
+                      "int s ; s = 3 * :: N :: O :: g ( ) ; "
+                      "}",
+                      tok("namespace N { namespace O { int g(); } }\n"
+                          "namespace _n = ::N::O;\n"
+                          "void f() {\n"
+                          "    int s = 3 * ::_n::g();\n"
+                          "}\n"));
     }
 
 #define simplifyKnownVariables(code) simplifyKnownVariables_(code, __FILE__, __LINE__)
