@@ -558,7 +558,7 @@ private:
         }
     }
 
-    void function_method() const {
+    void function_method() {
         constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                    "<def>\n"
                                    "  <function name=\"CString::Format\">\n"
@@ -571,21 +571,21 @@ private:
         ASSERT_EQUALS(library.functions.size(), 1U);
 
         {
-            Tokenizer tokenizer(settings, nullptr);
+            Tokenizer tokenizer(settings, this);
             std::istringstream istr("CString str; str.Format();");
             ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             ASSERT(library.isnotnoreturn(Token::findsimplematch(tokenizer.tokens(), "Format")));
         }
 
         {
-            Tokenizer tokenizer(settings, nullptr);
+            Tokenizer tokenizer(settings, this);
             std::istringstream istr("HardDrive hd; hd.Format();");
             ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             ASSERT(!library.isnotnoreturn(Token::findsimplematch(tokenizer.tokens(), "Format")));
         }
     }
 
-    void function_baseClassMethod() const {
+    void function_baseClassMethod() {
         constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                    "<def>\n"
                                    "  <function name=\"Base::f\">\n"
@@ -597,14 +597,14 @@ private:
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
         {
-            Tokenizer tokenizer(settings, nullptr);
+            Tokenizer tokenizer(settings, this);
             std::istringstream istr("struct X : public Base { void dostuff() { f(0); } };");
             ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             ASSERT(library.isnullargbad(Token::findsimplematch(tokenizer.tokens(), "f"),1));
         }
 
         {
-            Tokenizer tokenizer(settings, nullptr);
+            Tokenizer tokenizer(settings, this);
             std::istringstream istr("struct X : public Base { void dostuff() { f(1,2); } };");
             ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             ASSERT(!library.isnullargbad(Token::findsimplematch(tokenizer.tokens(), "f"),1));

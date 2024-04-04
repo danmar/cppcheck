@@ -513,7 +513,7 @@ unsigned int CppCheck::checkClang(const std::string &path)
         clangimport::parseClangAstDump(tokenizer, ast);
         ValueFlow::setValues(tokenizer.list,
                              const_cast<SymbolDatabase&>(*tokenizer.getSymbolDatabase()),
-                             this,
+                             *this,
                              mSettings,
                              &s_timerResults);
         if (mSettings.debugnormal)

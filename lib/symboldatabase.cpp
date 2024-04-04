@@ -2152,7 +2152,7 @@ void SymbolDatabase::validateExecutableScopes() const
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope* const scope = functionScopes[i];
         const Function* const function = scope->function;
-        if (scope->isExecutable() && !function) {
+        if (mErrorLogger && scope->isExecutable() && !function) {
             const std::list<const Token*> callstack(1, scope->classDef);
             const std::string msg = std::string("Executable scope '") + scope->classDef->str() + "' with unknown function.";
             const ErrorMessage errmsg(callstack, &mTokenizer.list, Severity::debug,
@@ -2217,7 +2217,7 @@ void SymbolDatabase::debugSymbolDatabase() const
     for (const Token* tok = mTokenizer.list.front(); tok != mTokenizer.list.back(); tok = tok->next()) {
         if (tok->astParent() && tok->astParent()->getTokenDebug() == tok->getTokenDebug())
             continue;
-        if (tok->getTokenDebug() == TokenDebug::ValueType) {
+        if (mErrorLogger && tok->getTokenDebug() == TokenDebug::ValueType) {
 
             std::string msg = "Value type is ";
             ErrorPath errorPath;

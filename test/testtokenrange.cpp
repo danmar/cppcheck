@@ -97,8 +97,8 @@ private:
         ASSERT_EQUALS("", testTokenRange(ConstTokenRange{ start, end }, start, end));
     }
 
-    void scopeExample() const {
-        Tokenizer tokenizer(settingsDefault);
+    void scopeExample() {
+        Tokenizer tokenizer(settingsDefault, this);
         std::istringstream sample("void a(){} void main(){ if(true){a();} }");
         ASSERT(tokenizer.tokenize(sample, "test.cpp"));
 
