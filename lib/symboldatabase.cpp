@@ -5250,10 +5250,6 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
         return nullptr;
 
     const std::string& tokStr = tok->str();
-
-    if (tokensThatAreNotEnumeratorValues.find(tokStr) != tokensThatAreNotEnumeratorValues.end())
-        return nullptr;
-
     const Scope* scope = tok->scope();
 
     // check for qualified name
@@ -5313,6 +5309,9 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
             }
         }
     } else { // unqualified name
+
+        if (tokensThatAreNotEnumeratorValues.find(tokStr) != tokensThatAreNotEnumeratorValues.end())
+            return nullptr;
 
         if (tok->scope()->type == Scope::eGlobal) {
             const Token* astTop = tok->astTop();
