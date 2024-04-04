@@ -8873,9 +8873,9 @@ void Tokenizer::simplifyStructDecl()
             const Token * const type = tok->next();
             Token *next = tok->tokAt(2);
 
-            while (next && next->str() != "{")
+            while (next && !Token::Match(next, "[{;]"))
                 next = next->next();
-            if (!next)
+            if (!next || next->str() == ";")
                 continue;
             Token* after = next->link();
             if (!after)
