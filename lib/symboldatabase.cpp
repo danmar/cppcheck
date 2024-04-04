@@ -1554,6 +1554,9 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
                 parent = parent->astParent();
             if (Token::simpleMatch(parent, "new"))
                 continue;
+            // trailing return type
+            if (Token::simpleMatch(ftok, ".") && ftok->originalName() == "->" && Token::Match(ftok->tokAt(-1), "[])]"))
+                continue;
         }
         tok->isIncompleteVar(true);
     }
