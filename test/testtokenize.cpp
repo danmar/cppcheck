@@ -6218,6 +6218,13 @@ private:
                "        (kInput & (uint64_t(1) << 63)) ? 63 : 64;\n"
                "};\n";
         ASSERT_NO_THROW(tokenizeAndStringify(code));
+
+        code = "void f(const std::vector<int>& v) {\n" // #12569
+               "    ::std::for_each(v.begin(), v.end(), [](int i) {\n"
+               "        int j(i ? i : 5);\n"
+               "    });\n"
+               "}\n";
+        ASSERT_NO_THROW(tokenizeAndStringify(code));
     }
 
     void astnewdelete() const {

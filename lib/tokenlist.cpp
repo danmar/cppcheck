@@ -1738,6 +1738,8 @@ static Token * createAstAtToken(Token *tok)
         AST_state state(cpp);
         if (Token::Match(tok, "%name% ("))
             state.functionCallEndPar = tok->linkAt(1);
+        if (Token::simpleMatch(tok->tokAt(-1), "::") && (!tok->tokAt(-2) || !tok->tokAt(-2)->isName()))
+            tok = tok->tokAt(-1);
         compileExpression(tok, state);
         Token * const endToken = tok;
         if (endToken == tok1 || !endToken)
@@ -1758,11 +1760,6 @@ static Token * createAstAtToken(Token *tok)
 
         createAstAtTokenInner(tok1->next(), endToken, cpp);
         return endToken->previous();
-    }
-
-    if (cpp && ((!tok->previous() && tok->str() == "::") || Token::Match(tok->previous(), "[;{}] ::"))) {
-        AST_state state(cpp);
-        compileExpression(tok, state);
     }
 
     return tok;
