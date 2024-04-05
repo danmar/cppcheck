@@ -2815,6 +2815,16 @@ private:
               "    return ss;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void f() {\n" // #12568
+              "    std::string str;\n"
+              "    {\n"
+              "        std::unique_ptr<char[]> b(new char[1]{});\n"
+              "        str.assign(b.get());\n"
+              "    }\n"
+              "    std::cerr << str;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void danglingLifetimeContainerView()
