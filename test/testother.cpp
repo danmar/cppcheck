@@ -11384,7 +11384,7 @@ private:
               "    return 0;\n"
               "}\n", "test.c");
         ASSERT_EQUALS("[test.c:1] -> [test.c:4]: (style) Local variable 'a' shadows outer variable\n", errout_str());
-        
+
         check("int f() {\n" // #12591
               "    int g = 0;\n"
               "    return g;\n"
