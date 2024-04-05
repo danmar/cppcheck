@@ -18,6 +18,7 @@
 
 #include "checkfunctions.h"
 #include "errortypes.h"
+#include "helpers.h"
 #include "settings.h"
 #include "standards.h"
 #include "fixture.h"
@@ -102,18 +103,6 @@ private:
         TEST_CASE(checkUseStandardLibrary12);
         TEST_CASE(checkUseStandardLibrary13);
         TEST_CASE(checkUseStandardLibrary14);
-    }
-
-    static std::string filter_valueflow(const std::string& s) {
-        std::istringstream istr(s);
-        std::ostringstream ostr;
-        std::string errline;
-        while (std::getline(istr, errline)) {
-            if (errline.find("valueflow.cpp") == std::string::npos) {
-                ostr << errline << '\n';
-            }
-        }
-        return ostr.str();
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)

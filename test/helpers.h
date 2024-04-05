@@ -170,4 +170,16 @@ struct make_default_obj
     }
 };
 
+inline std::string filter_valueflow(const std::string& s) {
+    std::istringstream istr(s);
+    std::ostringstream ostr;
+    std::string errline;
+    while (std::getline(istr, errline)) {
+        if (errline.find("valueflow.cpp") == std::string::npos) {
+            ostr << errline << '\n'; // TODO: last line might not contain a newline
+        }
+    }
+    return ostr.str();
+}
+
 #endif // helpersH
