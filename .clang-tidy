@@ -50,7 +50,6 @@ Checks: >
         -modernize-use-auto,
         -modernize-use-nodiscard,
         -modernize-use-trailing-return-type,
-        -performance-avoid-endl,
         -performance-enum-size,
         -performance-inefficient-string-concatenation,
         -performance-no-automatic-move,

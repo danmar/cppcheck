@@ -104,19 +104,19 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
 {
     std::ostringstream fout;
 
-    fout << "Critical errors" << std::endl;
-    fout << "---------------" << std::endl;
+    fout << "Critical errors" << '\n';
+    fout << "---------------" << '\n';
     if (!criticalErrors.empty()) {
-        fout << "There was critical errors (" << criticalErrors << ")" << std::endl;
-        fout << "All checking is skipped for a file with such error" << std::endl;
+        fout << "There was critical errors (" << criticalErrors << ")" << '\n';
+        fout << "All checking is skipped for a file with such error" << '\n';
     } else {
-        fout << "No critical errors, all files were checked." << std::endl;
-        fout << "Important: Analysis is still not guaranteed to be 'complete' it is possible there are false negatives." << std::endl;
+        fout << "No critical errors, all files were checked." << '\n';
+        fout << "Important: Analysis is still not guaranteed to be 'complete' it is possible there are false negatives." << '\n';
     }
 
-    fout << std::endl << std::endl;
-    fout << "Open source checkers" << std::endl;
-    fout << "--------------------" << std::endl;
+    fout << '\n' << '\n';
+    fout << "Open source checkers" << '\n';
+    fout << "--------------------" << '\n';
 
     int maxCheckerSize = 0;
     for (const auto& checkReq: checkers::allCheckers) {
@@ -131,7 +131,7 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
         fout << (active ? "Yes  " : "No   ") << checker;
         if (!active && !req.empty())
             fout << std::string(maxCheckerSize + 4 - checker.size(), ' ') << "require:" + req;
-        fout << std::endl;
+        fout << '\n';
     }
 
     const bool cppcheckPremium = isCppcheckPremium(mSettings);
@@ -142,11 +142,11 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
                              const std::set<std::string>& activeCheckers,
                              const std::map<std::string, std::string>& premiumCheckers,
                              const std::string& substring) {
-        fout << std::endl << std::endl;
-        fout << title << std::endl;
-        fout << std::string(title.size(), '-') << std::endl;
+        fout << '\n' << '\n';
+        fout << title << '\n';
+        fout << std::string(title.size(), '-') << '\n';
         if (!cppcheckPremium) {
-            fout << "Not available, Cppcheck Premium is not used" << std::endl;
+            fout << "Not available, Cppcheck Premium is not used" << '\n';
             return;
         }
         int maxCheckerSize = 0;
@@ -174,7 +174,7 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
                 req = "premium";
             if (!active)
                 fout << std::string(maxCheckerSize + 4 - checker.size(), ' ') << "require:" + req;
-            fout << std::endl;
+            fout << '\n';
         }
     };
 
@@ -192,14 +192,14 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
         misra = 2012;
 
     if (misra == 0) {
-        fout << std::endl << std::endl;
-        fout << "Misra C" << std::endl;
-        fout << "-------" << std::endl;
-        fout << "Misra is not enabled" << std::endl;
+        fout << '\n' << '\n';
+        fout << "Misra C" << '\n';
+        fout << "-------" << '\n';
+        fout << "Misra is not enabled" << '\n';
     } else {
-        fout << std::endl << std::endl;
-        fout << "Misra C " << misra << std::endl;
-        fout << "------------" << std::endl;
+        fout << '\n' << '\n';
+        fout << "Misra C " << misra << '\n';
+        fout << "------------" << '\n';
         for (const checkers::MisraInfo& info: checkers::misraC2012Rules) {
             const std::string rule = std::to_string(info.a) + "." + std::to_string(info.b);
             const std::string severity = getMisraRuleSeverity(rule);

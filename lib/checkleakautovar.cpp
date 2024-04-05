@@ -106,7 +106,7 @@ static bool isVarTokComparison(const Token * tok, const Token ** vartok,
 
 void VarInfo::print()
 {
-    std::cout << "size=" << alloctype.size() << std::endl;
+    std::cout << "size=" << alloctype.size() << '\n';
     for (std::map<int, AllocInfo>::const_iterator it = alloctype.cbegin(); it != alloctype.cend(); ++it) {
         std::string strusage;
         const auto use = possibleUsage.find(it->first);
@@ -141,7 +141,7 @@ void VarInfo::print()
                   << "conditionalAlloc=" << (conditionalAlloc.find(it->first) != conditionalAlloc.end() ? "yes" : "no") << " "
                   << "referenced=" << (referenced.find(it->first) != referenced.end() ? "yes" : "no") << " "
                   << "reallocedFrom=" << it->second.reallocedFromType
-                  << std::endl;
+                  << '\n';
     }
 }
 

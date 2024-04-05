@@ -444,7 +444,7 @@ bool SuppressionList::isSuppressed(const ::ErrorMessage &errmsg, const std::set<
 
 void SuppressionList::dump(std::ostream & out) const
 {
-    out << "  <suppressions>" << std::endl;
+    out << "  <suppressions>" << '\n';
     for (const Suppression &suppression : mSuppressions) {
         out << "    <suppression";
         out << " errorId=\"" << ErrorLogger::toxml(suppression.errorId) << '"';
@@ -470,9 +470,9 @@ void SuppressionList::dump(std::ostream & out) const
             out << " type=\"blockEnd\"";
         else if (suppression.type == SuppressionList::Type::macro)
             out << " type=\"macro\"";
-        out << " />" << std::endl;
+        out << " />" << '\n';
     }
-    out << "  </suppressions>" << std::endl;
+    out << "  </suppressions>" << '\n';
 }
 
 std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppressions(const std::string &file, const bool unusedFunctionChecking) const

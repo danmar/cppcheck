@@ -1292,14 +1292,14 @@ void Token::printOut(const char *title) const
 {
     if (title && title[0])
         std::cout << "\n### " << title << " ###\n";
-    std::cout << stringifyList(stringifyOptions::forPrintOut(), nullptr, nullptr) << std::endl;
+    std::cout << stringifyList(stringifyOptions::forPrintOut(), nullptr, nullptr) << '\n';
 }
 
 void Token::printOut(const char *title, const std::vector<std::string> &fileNames) const
 {
     if (title && title[0])
         std::cout << "\n### " << title << " ###\n";
-    std::cout << stringifyList(stringifyOptions::forPrintOut(), &fileNames, nullptr) << std::endl;
+    std::cout << stringifyList(stringifyOptions::forPrintOut(), &fileNames, nullptr) << '\n';
 }
 
 // cppcheck-suppress unusedFunction - used for debugging
@@ -1308,7 +1308,7 @@ void Token::printLines(int lines) const
     const Token *end = this;
     while (end && end->linenr() < lines + linenr())
         end = end->next();
-    std::cout << stringifyList(stringifyOptions::forDebugExprId(), nullptr, end) << std::endl;
+    std::cout << stringifyList(stringifyOptions::forDebugExprId(), nullptr, end) << '\n';
 }
 
 std::string Token::stringify(const stringifyOptions& options) const
@@ -1699,23 +1699,23 @@ static void astStringXml(const Token *tok, nonneg int indent, std::ostream &out)
         out << " values=\"" << &tok->values() << '\"';
 
     if (!tok->astOperand1() && !tok->astOperand2()) {
-        out << "/>" << std::endl;
+        out << "/>" << '\n';
     }
 
     else {
-        out << '>' << std::endl;
+        out << '>' << '\n';
         if (tok->astOperand1())
             astStringXml(tok->astOperand1(), indent+2U, out);
         if (tok->astOperand2())
             astStringXml(tok->astOperand2(), indent+2U, out);
-        out << strindent << "</token>" << std::endl;
+        out << strindent << "</token>" << '\n';
     }
 }
 
 void Token::printAst(bool verbose, bool xml, const std::vector<std::string> &fileNames, std::ostream &out) const
 {
     if (!xml)
-        out << "\n\n##AST" << std::endl;
+        out << "\n\n##AST" << '\n';
 
     std::set<const Token *> printed;
     for (const Token *tok = this; tok; tok = tok->next()) {
@@ -1726,13 +1726,13 @@ void Token::printAst(bool verbose, bool xml, const std::vector<std::string> &fil
 
             if (xml) {
                 out << "<ast scope=\"" << tok->scope() << "\" fileIndex=\"" << tok->fileIndex() << "\" linenr=\"" << tok->linenr()
-                    << "\" column=\"" << tok->column() << "\">" << std::endl;
+                    << "\" column=\"" << tok->column() << "\">" << '\n';
                 astStringXml(tok, 2U, out);
-                out << "</ast>" << std::endl;
+                out << "</ast>" << '\n';
             } else if (verbose)
-                out << "[" << fileNames[tok->fileIndex()] << ":" << tok->linenr() << "]" << std::endl << tok->astStringVerbose() << std::endl;
+                out << "[" << fileNames[tok->fileIndex()] << ":" << tok->linenr() << "]" << '\n' << tok->astStringVerbose() << '\n';
             else
-                out << tok->astString(" ") << std::endl;
+                out << tok->astString(" ") << '\n';
             if (tok->str() == "(")
                 tok = tok->link();
         }
