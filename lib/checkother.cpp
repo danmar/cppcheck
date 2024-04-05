@@ -3577,27 +3577,27 @@ void CheckOther::funcArgOrderDifferent(const std::string & functionName,
     reportError(tokens, Severity::warning, "funcArgOrderDifferent", msg, CWE683, Certainty::normal);
 }
 
-static const Token *findShadowed(const Scope *scope, const std::string &varname, int linenr)
+static const Token *findShadowed(const Scope *scope, const Variable& var, int linenr)
 {
     if (!scope)
         return nullptr;
-    for (const Variable &var : scope->varlist) {
-        if (scope->isExecutable() && var.nameToken()->linenr() > linenr)
+    for (const Variable &v : scope->varlist) {
+        if (scope->isExecutable() && v.nameToken()->linenr() > linenr)
             continue;
-        if (var.name() == varname)
-            return var.nameToken();
+        if (v.name() == var.name())
+            return v.nameToken();
     }
     auto it = std::find_if(scope->functionList.cbegin(), scope->functionList.cend(), [&](const Function& f) {
-        return f.type == Function::Type::eFunction && f.name() == varname;
+        return f.type == Function::Type::eFunction && f.name() == var.name() && precedes(f.tokenDef, var.nameToken());
     });
     if (it != scope->functionList.end())
         return it->tokenDef;
 
     if (scope->type == Scope::eLambda)
         return nullptr;
-    const Token* shadowed = findShadowed(scope->nestedIn, varname, linenr);
+    const Token* shadowed = findShadowed(scope->nestedIn, var, linenr);
     if (!shadowed)
-        shadowed = findShadowed(scope->functionOf, varname, linenr);
+        shadowed = findShadowed(scope->functionOf, var, linenr);
     return shadowed;
 }
 
@@ -3628,9 +3628,9 @@ void CheckOther::checkShadowVariables()
                 }
             }
 
-            const Token *shadowed = findShadowed(scope.nestedIn, var.name(), var.nameToken()->linenr());
+            const Token *shadowed = findShadowed(scope.nestedIn, var, var.nameToken()->linenr());
             if (!shadowed)
-                shadowed = findShadowed(scope.functionOf, var.name(), var.nameToken()->linenr());
+                shadowed = findShadowed(scope.functionOf, var, var.nameToken()->linenr());
             if (!shadowed)
                 continue;
             if (scope.type == Scope::eFunction && scope.className == var.name())
