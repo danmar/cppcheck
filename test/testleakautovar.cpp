@@ -1046,6 +1046,14 @@ private:
               "    return f;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("bool f() {\n" // #12590
+              "    FILE* fd = fopen(\"/foo/bar\", \"w\");\n"
+              "    if (fd == nullptr)\n"
+              "        return false;\n"
+              "    return fclose(fd) == 0;\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("", errout_str());
     }
 
     void doublefree1() {  // #3895
