@@ -5924,7 +5924,7 @@ void Tokenizer::printDebugOutput(int simplification, std::ostream &out) const
         list.front()->printOut(out, nullptr, list.getFiles());
 
         if (mSettings.xml)
-            out << "<debug>" << std::endl;
+            out << "<debug>" << '\n';
 
         if (mSymbolDatabase) {
             if (mSettings.xml)
@@ -5940,7 +5940,7 @@ void Tokenizer::printDebugOutput(int simplification, std::ostream &out) const
         list.front()->printValueFlow(mSettings.xml, out);
 
         if (mSettings.xml)
-            out << "</debug>" << std::endl;
+            out << "</debug>" << '\n';
     }
 
     if (mSymbolDatabase && simplification == 2U && mSettings.debugwarnings) {
