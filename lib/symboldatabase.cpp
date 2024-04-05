@@ -1451,67 +1451,6 @@ void SymbolDatabase::createSymbolDatabaseEnums()
 
 void SymbolDatabase::createSymbolDatabaseIncompleteVars()
 {
-    // TODO: replace with Keywords::getX()
-    static const std::unordered_set<std::string> cpp20keywords = {
-        "alignas",
-        "alignof",
-        "axiom",
-        "co_await",
-        "co_return",
-        "co_yield",
-        "concept",
-        "synchronized",
-        "consteval",
-        "reflexpr",
-        "requires",
-    };
-    static const std::unordered_set<std::string> cppkeywords = {
-        "asm",
-        "auto",
-        "catch",
-        "char",
-        "class",
-        "const",
-        "constexpr",
-        "decltype",
-        "default",
-        "do",
-        "enum",
-        "explicit",
-        "export",
-        "extern",
-        "final",
-        "friend",
-        "inline",
-        "mutable",
-        "namespace",
-        "new",
-        "noexcept",
-        "nullptr",
-        "override",
-        "private",
-        "protected",
-        "public",
-        "register",
-        "sizeof",
-        "static",
-        "static_assert",
-        "struct",
-        "template",
-        "this",
-        "thread_local",
-        "throw",
-        "try",
-        "typedef",
-        "typeid",
-        "typename",
-        "union",
-        "using",
-        "virtual",
-        "void",
-        "volatile",
-        "NULL",
-    };
     for (Token* tok = mTokenizer.list.front(); tok != mTokenizer.list.back(); tok = tok->next()) {
         const Scope * scope = tok->scope();
         if (!scope)
@@ -1528,7 +1467,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             tok = tok->linkAt(1);
             continue;
         }
-        if (!(tok->isNameOnly() || tok->isKeyword()))
+        if (tok->isKeyword() || !tok->isNameOnly())
             continue;
         if (tok->type())
             continue;
@@ -1544,15 +1483,8 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             tok = tok->linkAt(1);
             continue;
         }
-        if (tok->isKeyword())
-            continue;
         // Skip goto labels
         if (Token::simpleMatch(tok->previous(), "goto"))
-            continue;
-        // TODO: handle all C/C++ standards
-        if (cppkeywords.count(tok->str()) > 0)
-            continue;
-        if (tok->isCpp() && (mSettings.standards.cpp >= Standards::CPP20) && cpp20keywords.count(tok->str()) > 0)
             continue;
         std::string fstr = tok->str();
         const Token* ftok = tok->previous();
