@@ -171,15 +171,22 @@ struct make_default_obj
 };
 
 inline std::string filter_valueflow(const std::string& s) {
+    bool filtered = false;
     std::istringstream istr(s);
-    std::ostringstream ostr;
+    std::string ostr;
     std::string errline;
     while (std::getline(istr, errline)) {
-        if (errline.find("valueflow.cpp") == std::string::npos) {
-            ostr << errline << '\n'; // TODO: last line might not contain a newline
+        if (errline.find("valueflow.cpp") != std::string::npos)
+        {
+            filtered = true;
+            continue;
         }
+        ostr += errline;
+        ostr += '\n'; // TODO: last line might not contain a newline
     }
-    return ostr.str();
+    if (!filtered)
+        throw std::runtime_error("no valueflow.cpp messages were filtered");
+    return ostr;
 }
 
 #endif // helpersH
