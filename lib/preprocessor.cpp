@@ -1084,7 +1084,7 @@ void Preprocessor::dump(std::ostream &out) const
     // Create a xml dump.
 
     if (!mMacroUsage.empty()) {
-        out << "  <macro-usage>" << std::endl;
+        out << "  <macro-usage>" << '\n';
         for (const simplecpp::MacroUsage &macroUsage: mMacroUsage) {
             out << "    <macro"
                 << " name=\"" << macroUsage.macroName << "\""
@@ -1095,13 +1095,13 @@ void Preprocessor::dump(std::ostream &out) const
                 << " useline=\"" << macroUsage.useLocation.line << "\""
                 << " usecolumn=\"" << macroUsage.useLocation.col << "\""
                 << " is-known-value=\"" << bool_to_string(macroUsage.macroValueKnown) << "\""
-                << "/>" << std::endl;
+                << "/>" << '\n';
         }
-        out << "  </macro-usage>" << std::endl;
+        out << "  </macro-usage>" << '\n';
     }
 
     if (!mIfCond.empty()) {
-        out << "  <simplecpp-if-cond>" << std::endl;
+        out << "  <simplecpp-if-cond>" << '\n';
         for (const simplecpp::IfCond &ifCond: mIfCond) {
             out << "    <if-cond"
                 << " file=\"" << ErrorLogger::toxml(mTokens.file(ifCond.location)) << "\""
@@ -1109,9 +1109,9 @@ void Preprocessor::dump(std::ostream &out) const
                 << " column=\"" << ifCond.location.col << "\""
                 << " E=\"" << ErrorLogger::toxml(ifCond.E) << "\""
                 << " result=\"" << ifCond.result << "\""
-                << "/>" << std::endl;
+                << "/>" << '\n';
         }
-        out << "  </simplecpp-if-cond>" << std::endl;
+        out << "  </simplecpp-if-cond>" << '\n';
     }
 }
 
