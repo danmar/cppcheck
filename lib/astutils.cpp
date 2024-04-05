@@ -245,7 +245,7 @@ bool astIsContainer(const Token* tok) {
     return getLibraryContainer(tok) != nullptr && !astIsIterator(tok);
 }
 
-bool astIsUniversalContainer(const Token* tok)
+bool astIsNonStringContainer(const Token* tok)
 {
     const Library::Container* container = getLibraryContainer(tok);
     return container && !container->stdStringLike && !astIsIterator(tok);

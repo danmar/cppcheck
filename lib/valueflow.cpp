@@ -4489,7 +4489,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList &tokenlist, ErrorLog
                 tok->next(), tokenlist, errorLogger, settings);
         }
     } else if (memtok && Token::Match(tok->astParent(), ". push_back|push_front|insert|push|assign") &&
-               astIsUniversalContainer(memtok)) {
+               astIsNonStringContainer(memtok)) {
         std::vector<const Token *> args = getArguments(tok);
         const std::size_t n = args.size();
         if (n > 1 && Token::typeStr(args[n - 2]) == Token::typeStr(args[n - 1]) &&

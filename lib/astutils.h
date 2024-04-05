@@ -164,7 +164,7 @@ bool astIsUniqueSmartPointer(const Token* tok);
 bool astIsIterator(const Token *tok);
 
 bool astIsContainer(const Token *tok);
-bool astIsUniversalContainer(const Token *tok);
+bool astIsNonStringContainer(const Token *tok);
 
 bool astIsContainerView(const Token* tok);
 bool astIsContainerOwned(const Token* tok);
