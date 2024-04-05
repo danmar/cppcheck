@@ -174,7 +174,7 @@ bool Platform::set(const std::string& platformstr, std::string& errstr, const st
         bool found = false;
         for (const std::string& path : paths) {
             if (debug)
-                std::cout << "looking for platform '" + platformstr + "' in '" + path + "'" << std::endl;
+                std::cout << "looking for platform '" + platformstr + "' in '" + path + "'" << '\n';
             if (loadFromFile(path.c_str(), platformstr, debug)) {
                 found = true;
                 break;
@@ -220,12 +220,12 @@ bool Platform::loadFromFile(const char exename[], const std::string &filename, b
             std::cout << "try to load platform file '" << f << "' ... ";
         if (doc.LoadFile(f.c_str()) == tinyxml2::XML_SUCCESS) {
             if (debug)
-                std::cout << "Success" << std::endl;
+                std::cout << "Success" << '\n';
             success = true;
             break;
         }
         if (debug)
-            std::cout << doc.ErrorStr() << std::endl;
+            std::cout << doc.ErrorStr() << '\n';
     }
     if (!success)
         return false;

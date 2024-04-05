@@ -155,23 +155,23 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
 {
     std::ostringstream fout;
 
-    fout << "Critical errors" << std::endl;
-    fout << "---------------" << std::endl;
+    fout << "Critical errors" << '\n';
+    fout << "---------------" << '\n';
     if (!criticalErrors.empty()) {
-        fout << "There were critical errors (" << criticalErrors << ")." << std::endl;
-        fout << "These cause the analysis of the file to end prematurely." << std::endl;
+        fout << "There were critical errors (" << criticalErrors << ")." << '\n';
+        fout << "These cause the analysis of the file to end prematurely." << '\n';
     } else {
-        fout << "No critical errors encountered." << std::endl;
+        fout << "No critical errors encountered." << '\n';
         // TODO: mention "information" and "debug" as source for indications of bailouts
         // TODO: still rephrase this - this message does not provides confidence in the results
         // TODO: document what a bailout is and why it is done - mention it in the upcoming security/tuning guide
         // TODO: make bailouts a seperate group - need to differentiate between user bailouts (missing data like configuration/includes) and internal bailouts (e.g. limitations of ValueFlow)
-        fout << "Note: There might still have been non-critical bailouts which might lead to false negatives." << std::endl;
+        fout << "Note: There might still have been non-critical bailouts which might lead to false negatives." << '\n';
     }
 
-    fout << std::endl << std::endl;
-    fout << "Open source checkers" << std::endl;
-    fout << "--------------------" << std::endl;
+    fout << '\n' << '\n';
+    fout << "Open source checkers" << '\n';
+    fout << "--------------------" << '\n';
 
     std::size_t maxCheckerSize = 0;
     for (const auto& checkReq: checkers::allCheckers) {
@@ -185,7 +185,7 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
         fout << (active ? "Yes  " : "No   ") << checker;
         if (!active && !req.empty())
             fout << std::string(maxCheckerSize + 4 - checker.size(), ' ') << "require:" + req;
-        fout << std::endl;
+        fout << '\n';
     }
 
     const bool cppcheckPremium = isCppcheckPremium(mSettings);
@@ -196,11 +196,11 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
                              const std::set<std::string>& activeCheckers,
                              const std::map<std::string, std::string>& premiumCheckers,
                              const std::string& substring) {
-        fout << std::endl << std::endl;
-        fout << title << std::endl;
-        fout << std::string(title.size(), '-') << std::endl;
+        fout << '\n' << '\n';
+        fout << title << '\n';
+        fout << std::string(title.size(), '-') << '\n';
         if (!cppcheckPremium) {
-            fout << "Not available, Cppcheck Premium is not used" << std::endl;
+            fout << "Not available, Cppcheck Premium is not used" << '\n';
             return;
         }
         int maxCheckerSize = 0;
@@ -236,7 +236,7 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
                 req = "require:" + req;
             if (!active)
                 fout << std::string(maxCheckerSize + 4 - checker.size(), ' ') << req;
-            fout << std::endl;
+            fout << '\n';
         }
     };
 
@@ -248,10 +248,10 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
     const int misraCVersion = getMisraCVersion(mSettings);
 
     if (misraCVersion == 0) {
-        fout << std::endl << std::endl;
-        fout << "Misra C" << std::endl;
-        fout << "-------" << std::endl;
-        fout << "Misra is not enabled" << std::endl;
+        fout << '\n' << '\n';
+        fout << "Misra C" << '\n';
+        fout << "-------" << '\n';
+        fout << "Misra is not enabled" << '\n';
     } else {
         fout << std::endl << std::endl;
         fout << "Misra C " << misraCVersion << std::endl;
