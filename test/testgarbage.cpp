@@ -1745,6 +1745,7 @@ private:
     }
     void garbageCode224() {
         ASSERT_THROW(checkCode("void f(){ auto* b = dynamic_cast<const }"), InternalError);  // don't crash
+        ASSERT_THROW(checkCode("void f(){ auto* b = dynamic_cast x; }"), InternalError);
     }
     void garbageCode225() {
         ASSERT_THROW(checkCode("int n() { c * s0, 0 s0 = c(sizeof = ) }"), InternalError);
