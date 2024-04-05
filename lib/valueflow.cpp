@@ -4455,7 +4455,6 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList &tokenlist, ErrorLog
     if (Token::Match(tok->astParent(), ". %name% (") && astIsRHS(tok))
         memtok = tok->astParent()->astOperand1();
     const int returnContainer = settings.library.returnValueContainer(tok);
-    const Library::Container* container{};
     if (returnContainer >= 0) {
         std::vector<const Token *> args = getArguments(tok);
         for (int argnr = 1; argnr <= args.size(); ++argnr) {
@@ -4490,7 +4489,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList &tokenlist, ErrorLog
                 tok->next(), tokenlist, errorLogger, settings);
         }
     } else if (memtok && Token::Match(tok->astParent(), ". push_back|push_front|insert|push|assign") &&
-               (container = astIsContainer(memtok)) && !container->stdStringLike) {
+               astIsUniversalContainer(memtok)) {
         std::vector<const Token *> args = getArguments(tok);
         const std::size_t n = args.size();
         if (n > 1 && Token::typeStr(args[n - 2]) == Token::typeStr(args[n - 1]) &&
