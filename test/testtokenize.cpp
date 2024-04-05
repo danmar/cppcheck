@@ -7539,7 +7539,7 @@ private:
     void noCrash1() {
         ASSERT_NO_THROW(tokenizeAndStringify(
                             "struct A {\n"
-                            "  A( const std::string &name = " " );\n"
+                            "  A( const std::string &name = \" \" );\n"
                             "};\n"
                             "A::A( const std::string &name ) { return; }\n"));
     }

@@ -743,7 +743,7 @@ private:
         ASSERT_EQUALS(true, Token::Match(negative.front(), "%bool%"));
     }
 
-    void matchOr() {
+    void matchOr() const {
         const SimpleTokenList bitwiseOr(";|;");
         // cppcheck-suppress simplePatternError - this is intentional
         ASSERT_EQUALS(true,  Token::Match(bitwiseOr.front(), "; %or%"));
@@ -751,12 +751,12 @@ private:
         // cppcheck-suppress simplePatternError - this is intentional
         ASSERT_EQUALS(false, Token::Match(bitwiseOr.front(), "; %oror%"));
 
-        const SimpleTokenizer bitwiseOrAssignment(*this, ";|=;");
+        const SimpleTokenList bitwiseOrAssignment(";|=;");
         // cppcheck-suppress simplePatternError - this is intentional
-        ASSERT_EQUALS(false,  Token::Match(bitwiseOrAssignment.tokens(), "; %or%"));
-        ASSERT_EQUALS(true,  Token::Match(bitwiseOrAssignment.tokens(), "; %op%"));
+        ASSERT_EQUALS(false,  Token::Match(bitwiseOrAssignment.front(), "; %or%"));
+        ASSERT_EQUALS(true,  Token::Match(bitwiseOrAssignment.front(), "; %op%"));
         // cppcheck-suppress simplePatternError - this is intentional
-        ASSERT_EQUALS(false, Token::Match(bitwiseOrAssignment.tokens(), "; %oror%"));
+        ASSERT_EQUALS(false, Token::Match(bitwiseOrAssignment.front(), "; %oror%"));
 
         const SimpleTokenList logicalOr(";||;");
         // cppcheck-suppress simplePatternError - this is intentional

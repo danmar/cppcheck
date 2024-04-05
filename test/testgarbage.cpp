@@ -1636,7 +1636,7 @@ private:
     }
 
     void garbageCode203() { // #8972
-        checkCode("{ > () {} }");
+        ASSERT_THROW(checkCode("{ > () {} }"), InternalError);
         checkCode("template <> a > ::b();");
     }
 
