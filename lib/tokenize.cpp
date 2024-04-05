@@ -8807,6 +8807,20 @@ void Tokenizer::simplifyFunctionTryCatch()
     }
 }
 
+static bool isAnonymousEnum(const Token* tok)
+{
+    if (!Token::Match(tok, "enum {|:"))
+        return false;
+    if (tok->index() > 2 && Token::Match(tok->tokAt(-3), "using %name% ="))
+        return false;
+    const Token* end = tok->next();
+    if (end->str() == ":") {
+        end = end->next();
+        while (Token::Match(end, "%name%|::"))
+            end = end->next();
+    }
+    return end && Token::Match(end->link(), "} (| %type%| )| [,;[({=]");
+}
 
 void Tokenizer::simplifyStructDecl()
 {
@@ -8833,10 +8847,7 @@ void Tokenizer::simplifyStructDecl()
             }
         }
         // check for anonymous enum
-        else if ((Token::simpleMatch(tok, "enum {") &&
-                  !Token::Match(tok->tokAt(-3), "using %name% =") &&
-                  Token::Match(tok->next()->link(), "} (| %type%| )| [,;[({=]")) ||
-                 (Token::Match(tok, "enum : %type% {") && Token::Match(tok->linkAt(3), "} (| %type%| )| [,;[({=]"))) {
+        else if (isAnonymousEnum(tok)) {
             Token *start = tok->strAt(1) == ":" ? tok->linkAt(3) : tok->linkAt(1);
             if (start && Token::Match(start->next(), "( %type% )")) {
                 start->next()->link()->deleteThis();

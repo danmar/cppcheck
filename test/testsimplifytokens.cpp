@@ -1286,6 +1286,20 @@ private:
               "e = E1 ; "
               "} ;";
         ASSERT_EQUALS(exp, tok(code));
+
+        code = "struct S {\n"
+               "    explicit S() {\n"
+               "        e = E1;\n"
+               "    }\n"
+               "    enum : std::uint8_t { E1 } e = E1;\n"
+               "};\n";
+        exp = "struct S { "
+              "explicit S ( ) { e = E1 ; } "
+              "enum Anonymous0 : std :: uint8_t { E1 } ; "
+              "enum Anonymous0 e ; "
+              "e = E1 ; "
+              "} ;";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void removeUnwantedKeywords() {
