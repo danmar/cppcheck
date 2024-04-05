@@ -18,16 +18,15 @@
 
 #include "checkstl.h"
 #include "errortypes.h"
+#include "fixture.h"
+#include "helpers.h"
 #include "settings.h"
 #include "standards.h"
-#include "fixture.h"
 #include "tokenize.h"
 #include "utils.h"
 
 #include <cstddef>
-#include <sstream>
 #include <string>
-
 
 class TestStl : public TestFixture {
 public:
@@ -182,10 +181,9 @@ private:
         const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).cpp(cppstandard).build();
 
         // Tokenize..
-        Tokenizer tokenizer(settings1, this);
-        std::istringstream istr(code);
+        SimpleTokenizer tokenizer(settings1, *this);
 
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         runChecks<CheckStl>(tokenizer, this);
     }
@@ -197,9 +195,8 @@ private:
 #define checkNormal(code) checkNormal_(code, __FILE__, __LINE__)
     void checkNormal_(const char code[], const char* file, int line) {
         // Tokenize..
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         runChecks<CheckStl>(tokenizer, this);

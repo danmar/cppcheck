@@ -16,16 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "checkclass.h"
 #include "errortypes.h"
+#include "fixture.h"
+#include "helpers.h"
 #include "standards.h"
 #include "settings.h"
-#include "fixture.h"
-#include "tokenize.h"
-
-#include <sstream>
-
 
 class TestConstructors : public TestFixture {
 public:
@@ -39,9 +35,8 @@ private:
         const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).build();
 
         // Tokenize..
-        Tokenizer tokenizer(settings1, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings1, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check class constructors..
         CheckClass checkClass(&tokenizer, &settings1, this);
@@ -50,9 +45,8 @@ private:
 
     void check_(const char* file, int line, const char code[], const Settings &s) {
         // Tokenize..
-        Tokenizer tokenizer(s, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(s, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check class constructors..
         CheckClass checkClass(&tokenizer, &s, this);

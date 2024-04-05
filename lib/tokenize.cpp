@@ -3439,16 +3439,6 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     return true;
 }
 
-// cppcheck-suppress unusedFunction - used in tests only
-bool Tokenizer::tokenize(std::istream &code,
-                         const char FileName[],
-                         const std::string &configuration)
-{
-    if (!list.createTokens(code, FileName))
-        return false;
-
-    return simplifyTokens1(configuration);
-}
 //---------------------------------------------------------------------------
 
 void Tokenizer::findComplicatedSyntaxErrorsInTemplates()
@@ -10659,6 +10649,7 @@ void Tokenizer::simplifyNamespaceAliases()
     }
 }
 
+// TODO: how to move the Preprocessor dependency out of here?
 bool Tokenizer::hasIfdef(const Token *start, const Token *end) const
 {
     assert(mPreprocessor);

@@ -19,6 +19,7 @@
 #ifndef helpersH
 #define helpersH
 
+#include "preprocessor.h"
 #include "settings.h"
 #include "standards.h"
 #include "tokenize.h"
@@ -31,34 +32,60 @@
 #include <vector>
 
 class Token;
-class Preprocessor;
 class SuppressionList;
 class ErrorLogger;
 namespace simplecpp {
     struct DUI;
 }
 
-class SimpleTokenizer {
+// TODO: make Tokenizer private
+class SimpleTokenizer : public Tokenizer {
 public:
-    SimpleTokenizer(ErrorLogger& errorlogger, const char sample[], bool cpp = true)
-        : tokenizer{settings, &errorlogger}
+    SimpleTokenizer(ErrorLogger& errorlogger, const char code[], bool cpp = true)
+        : Tokenizer{s_settings, &errorlogger, &s_preprocessor}
     {
-        std::istringstream iss(sample);
-        if (!tokenizer.tokenize(iss, cpp ? "test.cpp" : "test.c"))
+        if (!tokenize(code, cpp))
             throw std::runtime_error("creating tokens failed");
     }
 
+    SimpleTokenizer(const Settings& settings, ErrorLogger& errorlogger)
+        : Tokenizer{settings, &errorlogger, &s_preprocessor}
+    {}
+
+    SimpleTokenizer(const Settings& settings, ErrorLogger& errorlogger, const Preprocessor* preprocessor)
+        : Tokenizer{settings, &errorlogger, preprocessor}
+    {}
+
     Token* tokens() {
-        return tokenizer.tokens();
+        return Tokenizer::tokens();
     }
 
     const Token* tokens() const {
-        return tokenizer.tokens();
+        return Tokenizer::tokens();
+    }
+
+    /**
+     * Tokenize code
+     * @param code The code
+     * @param cpp Indicates if the code is C++
+     * @param configuration E.g. "A" for code where "#ifdef A" is true
+     * @return false if source code contains syntax errors
+     */
+    bool tokenize(const char code[],
+                  bool cpp = true,
+                  const std::string &configuration = emptyString)
+    {
+        std::istringstream istr(code);
+        if (!list.createTokens(istr, cpp ? "test.cpp" : "test.c"))
+            return false;
+
+        return simplifyTokens1(configuration);
     }
 
 private:
-    const Settings settings;
-    Tokenizer tokenizer;
+    // TODO. find a better solution
+    static const Settings s_settings;
+    static const Preprocessor s_preprocessor;
 };
 
 class SimpleTokenList

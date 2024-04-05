@@ -19,12 +19,9 @@
 
 #include "checkassert.h"
 #include "errortypes.h"
-#include "settings.h"
 #include "fixture.h"
-#include "tokenize.h"
-
-#include <sstream>
-
+#include "helpers.h"
+#include "settings.h"
 
 class TestAssert : public TestFixture {
 public:
@@ -34,11 +31,10 @@ private:
     const Settings settings = settingsBuilder().severity(Severity::warning).build();
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], const char *filename = "test.cpp") {
+    void check_(const char* file, int line, const char code[]) {
         // Tokenize..
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         runChecks<CheckAssert>(tokenizer, this);

@@ -16,12 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "errortypes.h"
+#include "fixture.h"
 #include "helpers.h"
 #include "platform.h"
 #include "settings.h"
-#include "fixture.h"
 #include "token.h"
 #include "tokenize.h"
 #include "utils.h"
@@ -98,15 +97,18 @@ private:
     std::string tok_(const char* file, int line, const char code[], Platform::Type type = Platform::Type::Native, bool debugwarnings = true, bool preprocess = false) {
         const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings(debugwarnings).platform(type).build();
 
-        Tokenizer tokenizer(settings, this);
-
         if (preprocess) {
+            Tokenizer tokenizer(settings, this);
             std::vector<std::string> files(1, "test.cpp");
             PreprocessorHelper::preprocess(code, files, tokenizer);
+            std::istringstream istr(code);
+            ASSERT_LOC(tokenizer.list.createTokens(istr, "test.cpp"), file, line); // TODO: this creates the tokens a second time
+            ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
+            return tokenizer.tokens()->stringifyList(nullptr);
         }
 
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         return tokenizer.tokens()->stringifyList(nullptr);
     }

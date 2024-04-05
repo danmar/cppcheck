@@ -16,14 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "checkboost.h"
 #include "errortypes.h"
-#include "settings.h"
 #include "fixture.h"
-#include "tokenize.h"
-
-#include <sstream>
+#include "helpers.h"
+#include "settings.h"
 
 class TestBoost : public TestFixture {
 public:
@@ -39,9 +36,8 @@ private:
 #define check(code) check_(code, __FILE__, __LINE__)
     void check_(const char code[], const char* file, int line) {
         // Tokenize..
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         runChecks<CheckBoost>(tokenizer, this);

@@ -18,16 +18,15 @@
 
 #include "check.h"
 #include "errortypes.h"
+#include "fixture.h"
+#include "helpers.h"
 #include "preprocessor.h"
 #include "settings.h"
-#include "fixture.h"
 #include "token.h"
-#include "tokenize.h"
 
 #include <list>
 #include <sstream>
 #include <string>
-
 
 class TestGarbage : public TestFixture {
 public:
@@ -272,26 +271,23 @@ private:
     }
 
 #define checkCodeInternal(code, filename) checkCodeInternal_(code, filename, __FILE__, __LINE__)
-    std::string checkCode(const std::string &code, bool cpp = true) {
+    std::string checkCode(const char code[], bool cpp = true) {
         // double the tests - run each example as C as well as C++
-        const char* const filename = cpp ? "test.cpp" : "test.c";
-        const char* const alternatefilename = cpp ? "test.c" : "test.cpp";
 
         // run alternate check first. It should only ensure stability - so we catch exceptions here.
         try {
-            checkCodeInternal(code, alternatefilename);
+            checkCodeInternal(code, !cpp);
         } catch (const InternalError&) {}
 
-        return checkCodeInternal(code, filename);
+        return checkCodeInternal(code, cpp);
     }
 
-    std::string checkCodeInternal_(const std::string &code, const char* filename, const char* file, int line) {
+    std::string checkCodeInternal_(const char code[], bool cpp, const char* file, int line) {
         Preprocessor preprocessor(settings);
 
         // tokenize..
-        Tokenizer tokenizer(settings, this, &preprocessor);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
+        SimpleTokenizer tokenizer(settings, *this, &preprocessor);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
 
         // call all "runChecks" in all registered Check classes
         for (std::list<Check *>::const_iterator it = Check::instances().cbegin(); it != Check::instances().cend(); ++it) {
@@ -303,10 +299,9 @@ private:
 
 #define getSyntaxError(code) getSyntaxError_(code, __FILE__, __LINE__)
     std::string getSyntaxError_(const char code[], const char* file, int line) {
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
+        SimpleTokenizer tokenizer(settings, *this);
         try {
-            ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+            ASSERT_LOC(tokenizer.tokenize(code), file, line);
         } catch (InternalError& e) {
             if (e.id != "syntaxError")
                 return "";
@@ -319,12 +314,9 @@ private:
     void final_class_x() {
 
         const char code[] = "class __declspec(dllexport) x final { };";
-        {
-            Tokenizer tokenizer(settings, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
-            ASSERT_EQUALS("", errout_str());
-        }
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT(tokenizer.tokenize(code));
+        ASSERT_EQUALS("", errout_str());
     }
 
     void wrong_syntax1() {
@@ -368,10 +360,9 @@ private:
                             " )\n"
                             "}";
 
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
+        SimpleTokenizer tokenizer(settings, *this);
         try {
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            ASSERT(tokenizer.tokenize(code));
             assertThrowFail(__FILE__, __LINE__);
         } catch (InternalError& e) {
             ASSERT_EQUALS("syntax error", e.errorMessage);
@@ -402,15 +393,13 @@ private:
         const char code[] = "class x y { };";
 
         {
-            Tokenizer tokenizer(settings, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.c"));
+            SimpleTokenizer tokenizer(settings, *this);
+            ASSERT(tokenizer.tokenize(code, false));
             ASSERT_EQUALS("", errout_str());
         }
         {
-            Tokenizer tokenizer(settings, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings, *this);
+            ASSERT(tokenizer.tokenize(code));
             ASSERT_EQUALS("[test.cpp:1]: (information) The code 'class x y {' is not handled. You can use -I or --include to add handling of this code.\n", errout_str());
         }
     }
@@ -1536,7 +1525,7 @@ private:
     }
 
     void garbageCode187() { // # 8152 - segfault in handling
-        const std::string inp("0|\0|0>;\n", 8);
+        const char inp[] = "0|\0|0>;\n";
         ASSERT_THROW_INTERNAL(checkCode(inp), SYNTAX);
 
         checkCode("template<class T> struct S : A< B<T> || C<T> > {};"); // No syntax error: #8390

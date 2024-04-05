@@ -16,14 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "checkbool.h"
 #include "errortypes.h"
-#include "settings.h"
 #include "fixture.h"
-#include "tokenize.h"
-
-#include <sstream>
+#include "helpers.h"
+#include "settings.h"
 
 class TestBool : public TestFixture {
 public:
@@ -77,11 +74,10 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
+    void check_(const char* file, int line, const char code[], bool cpp = true) {
         // Tokenize..
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
 
         // Check...
         runChecks<CheckBool>(tokenizer, this);
@@ -147,7 +143,7 @@ private:
               "  const int *rmat = n < 4 ? " /* OK */
               "                       ctx->q_intra_matrix :"
               "                       ctx->q_chroma_intra_matrix;\n"
-              "}", "test.c");
+              "}", false);
         ASSERT_EQUALS("[test.c:3]: (error) Boolean value assigned to pointer.\n", errout_str());
 
         // ticket #6588 (c++ mode)
@@ -166,7 +162,7 @@ private:
               "  char* m1 = compare(a, b) < 0\n"
               "      ? (compare(b, c) < 0 ? b : (compare(a, c) < 0 ? c : a))\n"
               "      : (compare(a, c) < 0 ? a : (compare(b, c) < 0 ? c : b));\n"
-              "}", "test.c");
+              "}", false);
         ASSERT_EQUALS("", errout_str());
 
         // #7381

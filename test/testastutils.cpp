@@ -16,18 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "astutils.h"
+#include "fixture.h"
+#include "helpers.h"
 #include "library.h"
 #include "settings.h"
-#include "fixture.h"
 #include "symboldatabase.h"
 #include "token.h"
-#include "tokenize.h"
 #include "tokenlist.h"
 
 #include <cstring>
-#include <sstream>
 
 class TestAstUtils : public TestFixture {
 public:
@@ -54,9 +52,8 @@ private:
 #define findLambdaEndToken(...) findLambdaEndToken_(__FILE__, __LINE__, __VA_ARGS__)
     bool findLambdaEndToken_(const char* file, int line, const char code[], const char pattern[] = nullptr, bool checkNext = true) {
         const Settings settings;
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
         const Token* const tokStart = pattern ? Token::findsimplematch(tokenizer.tokens(), pattern, strlen(pattern)) : tokenizer.tokens();
         const Token * const tokEnd = (::findLambdaEndToken)(tokStart);
         return tokEnd && (!checkNext || tokEnd->next() == nullptr);
@@ -92,9 +89,8 @@ private:
 
 #define findLambdaStartToken(code) findLambdaStartToken_(code, __FILE__, __LINE__)
     bool findLambdaStartToken_(const char code[], const char* file, int line) {
-        Tokenizer tokenizer(settingsDefault, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settingsDefault, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
         const Token * const tokStart = (::findLambdaStartToken)(tokenizer.list.back());
         return tokStart && tokStart == tokenizer.list.front();
     }
@@ -124,9 +120,8 @@ private:
 
 #define isNullOperand(code) isNullOperand_(code, __FILE__, __LINE__)
     bool isNullOperand_(const char code[], const char* file, int line) {
-        Tokenizer tokenizer(settingsDefault, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settingsDefault, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
         return (::isNullOperand)(tokenizer.tokens());
     }
 
@@ -145,9 +140,8 @@ private:
 
 #define isReturnScope(code, offset) isReturnScope_(code, offset, __FILE__, __LINE__)
     bool isReturnScope_(const char code[], int offset, const char* file, int line) {
-        Tokenizer tokenizer(settingsDefault, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settingsDefault, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
         const Token * const tok = (offset < 0)
                                   ? tokenizer.list.back()->tokAt(1+offset)
                                   : tokenizer.tokens()->tokAt(offset);
@@ -176,9 +170,8 @@ private:
 #define isSameExpression(...) isSameExpression_(__FILE__, __LINE__, __VA_ARGS__)
     bool isSameExpression_(const char* file, int line, const char code[], const char tokStr1[], const char tokStr2[], bool cpp) {
         Library library;
-        Tokenizer tokenizer(settingsDefault, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, cpp ? "test.cpp" : "test.c"), file, line);
+        SimpleTokenizer tokenizer(settingsDefault, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), tokStr1, strlen(tokStr1));
         const Token * const tok2 = Token::findsimplematch(tok1->next(), tokStr2, strlen(tokStr2));
         return (isSameExpression)(false, tok1, tok2, library, false, true, nullptr);
@@ -224,9 +217,8 @@ private:
 
 #define isVariableChanged(code, startPattern, endPattern) isVariableChanged_(code, startPattern, endPattern, __FILE__, __LINE__)
     bool isVariableChanged_(const char code[], const char startPattern[], const char endPattern[], const char* file, int line) {
-        Tokenizer tokenizer(settingsDefault, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settingsDefault, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), startPattern, strlen(startPattern));
         const Token * const tok2 = Token::findsimplematch(tokenizer.tokens(), endPattern, strlen(endPattern));
         return (isVariableChanged)(tok1, tok2, 1, false, &settingsDefault);
@@ -258,9 +250,8 @@ private:
 
 #define isVariableChangedByFunctionCall(code, pattern, inconclusive) isVariableChangedByFunctionCall_(code, pattern, inconclusive, __FILE__, __LINE__)
     bool isVariableChangedByFunctionCall_(const char code[], const char pattern[], bool *inconclusive, const char* file, int line) {
-        Tokenizer tokenizer(settingsDefault, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settingsDefault, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
         const Token * const argtok = Token::findmatch(tokenizer.tokens(), pattern);
         ASSERT_LOC(argtok, file, line);
         int indirect = (argtok->variable() && argtok->variable()->isArray());
@@ -401,9 +392,8 @@ private:
                               int line)
     {
         const Settings settings = settingsBuilder().library("std.cfg").build();
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
         const Token* const start = Token::findsimplematch(tokenizer.tokens(), startPattern, strlen(startPattern));
         const Token* const end = Token::findsimplematch(start, endPattern, strlen(endPattern));
         const Token* const expr = Token::findsimplematch(tokenizer.tokens(), var, strlen(var));
@@ -432,9 +422,8 @@ private:
 
 #define nextAfterAstRightmostLeaf(code, parentPattern, rightPattern) nextAfterAstRightmostLeaf_(code, parentPattern, rightPattern, __FILE__, __LINE__)
     bool nextAfterAstRightmostLeaf_(const char code[], const char parentPattern[], const char rightPattern[], const char* file, int line) {
-        Tokenizer tokenizer(settingsDefault, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settingsDefault, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
         const Token * tok = Token::findsimplematch(tokenizer.tokens(), parentPattern, strlen(parentPattern));
         return Token::simpleMatch((::nextAfterAstRightmostLeaf)(tok), rightPattern, strlen(rightPattern));
     }
@@ -456,9 +445,8 @@ private:
     enum class Result {False, True, Fail};
 
     Result isUsedAsBool(const char code[], const char pattern[]) {
-        Tokenizer tokenizer(settingsDefault, this);
-        std::istringstream istr(code);
-        if (!tokenizer.tokenize(istr, "test.cpp"))
+        SimpleTokenizer tokenizer(settingsDefault, *this);
+        if (!tokenizer.tokenize(code))
             return Result::Fail;
         const Token * const argtok = Token::findmatch(tokenizer.tokens(), pattern);
         if (!argtok)

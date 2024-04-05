@@ -79,30 +79,6 @@ public:
     bool isScopeNoReturn(const Token *endScopeToken, bool *unknown = nullptr) const;
 
     bool simplifyTokens1(const std::string &configuration);
-    /**
-     * Tokenize code
-     * @param code input stream for code, e.g.
-     * \code
-     * #file "p.h"
-     * class Foo
-     * {
-     * private:
-     * void Bar();
-     * };
-     *
-     * #endfile
-     * void Foo::Bar()
-     * {
-     * }
-     * \endcode
-     *
-     * @param FileName The filename
-     * @param configuration E.g. "A" for code where "#ifdef A" is true
-     * @return false if source code contains syntax errors
-     */
-    bool tokenize(std::istream &code,
-                  const char FileName[],
-                  const std::string &configuration = emptyString);
 
 private:
     /** Set variable id */

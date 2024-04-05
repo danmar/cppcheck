@@ -18,14 +18,13 @@
 
 #include "checkmemoryleak.h"
 #include "errortypes.h"
+#include "fixture.h"
+#include "helpers.h"
 #include "settings.h"
 #include "symboldatabase.h"
-#include "fixture.h"
 #include "token.h"
-#include "tokenize.h"
 
 #include <list>
-#include <sstream>
 
 class TestMemleak : private TestFixture {
 public:
@@ -42,9 +41,8 @@ private:
 #define functionReturnType(code) functionReturnType_(code, __FILE__, __LINE__)
     CheckMemoryLeak::AllocType functionReturnType_(const char code[], const char* file, int line) {
         // Tokenize..
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         const CheckMemoryLeak c(&tokenizer, this, &settings);
 
@@ -91,9 +89,8 @@ private:
                             "  }\n"
                             "};\n";
 
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT(tokenizer.tokenize(code));
 
         // there is no allocation
         const Token *tok = Token::findsimplematch(tokenizer.tokens(), "ret =");
@@ -118,9 +115,8 @@ private:
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     void check_(const char* file, int line, const char code[]) {
         // Tokenize..
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for memory leaks..
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, this);
@@ -444,9 +440,8 @@ private:
      */
     void check_(const char* file, int line, const char code[]) {
         // Tokenize..
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for memory leaks..
         CheckMemoryLeakInClass checkMemoryLeak(&tokenizer, &settings, this);
@@ -1646,11 +1641,10 @@ public:
 private:
     const Settings settings = settingsBuilder().library("std.cfg").library("posix.cfg").build();
 
-    void check_(const char* file, int line, const char code[], bool isCPP = true) {
+    void check_(const char* file, int line, const char code[], bool cpp = true) {
         // Tokenize..
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, isCPP ? "test.cpp" : "test.c"), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
 
         // Check for memory leaks..
         CheckMemoryLeakStructMember checkMemoryLeakStructMember(&tokenizer, &settings, this);
@@ -2258,9 +2252,8 @@ private:
 
     void check_(const char* file, int line, const char code[]) {
         // Tokenize..
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for memory leaks..
         CheckMemoryLeakNoVar checkMemoryLeakNoVar(&tokenizer, &settings, this);
