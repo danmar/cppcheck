@@ -8835,8 +8835,8 @@ void Tokenizer::simplifyStructDecl()
         // check for anonymous enum
         else if ((Token::simpleMatch(tok, "enum {") &&
                   !Token::Match(tok->tokAt(-3), "using %name% =") &&
-                  Token::Match(tok->next()->link(), "} (| %type%| )| ,|;|[|(|{")) ||
-                 (Token::Match(tok, "enum : %type% {") && Token::Match(tok->linkAt(3), "} (| %type%| )| ,|;|[|(|{"))) {
+                  Token::Match(tok->next()->link(), "} (| %type%| )| [,;[({=]")) ||
+                 (Token::Match(tok, "enum : %type% {") && Token::Match(tok->linkAt(3), "} (| %type%| )| [,;[({=]"))) {
             Token *start = tok->strAt(1) == ":" ? tok->linkAt(3) : tok->linkAt(1);
             if (start && Token::Match(start->next(), "( %type% )")) {
                 start->next()->link()->deleteThis();
