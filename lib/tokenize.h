@@ -387,6 +387,11 @@ private:
      */
     void createLinks2();
 
+    /**
+     * Set isCast() for C++ casts
+     */
+    void markCppCasts();
+
 public:
 
     /** Syntax error */
