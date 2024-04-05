@@ -32,8 +32,15 @@
 #include <QPoint>
 #include <QPointF>
 #include <QRegion>
+#include <QTransform>
 
 #include <cstdio>
+
+void unusedVariable_QTransform()
+{
+    // cppcheck-suppress unusedVariable
+    QTransform a;
+}
 
 void unreadVariable_QRegion(const int x, const QRegion::RegionType type, const QPolygon &polygon, const QBitmap &bm, const QRegion &region, const Qt::FillRule fillRule)
 {
