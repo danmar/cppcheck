@@ -1463,10 +1463,13 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             tok = tok->link();
             continue;
         }
-        if (Token::Match(tok, "catch|typeid (")) {
+        if (tok->isCpp() && (Token::Match(tok, "catch|typeid (") ||
+                             Token::Match(tok, "static_cast|dynamic_cast|const_cast|reinterpret_cast"))) {
             tok = tok->linkAt(1);
             continue;
         }
+        if (tok->str() == "NULL")
+            continue;
         if (tok->isKeyword() || !tok->isNameOnly())
             continue;
         if (tok->type())
