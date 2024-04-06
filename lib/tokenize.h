@@ -105,6 +105,7 @@ public:
                   const char FileName[],
                   const std::string &configuration = emptyString);
 
+private:
     /** Set variable id */
     void setVarId();
     void setVarIdPass1();
@@ -139,7 +140,7 @@ public:
      */
     void splitTemplateRightAngleBrackets(bool check);
 
-
+public:
     /**
      * Calculates sizeof value for given type.
      * @param type Token which will contain e.g. "int", "*", or string.
@@ -148,6 +149,7 @@ public:
     nonneg int sizeOfType(const Token* type) const;
     nonneg int sizeOfType(const std::string& type) const;
 
+private:
     void simplifyDebug();
 
     /** Simplify assignment where rhs is a block : "x=({123;});" => "{x=123;}" */
@@ -351,6 +353,7 @@ public:
      */
     static std::string simplifyString(const std::string &source);
 
+public:
     /**
      * is token pointing at function head?
      * @param tok         A '(' or ')' token in a possible function head
