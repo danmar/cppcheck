@@ -1977,7 +1977,7 @@ private:
         ASSERT_EQUALS(false, suppr.checked);
         ASSERT_EQUALS(false, suppr.matched);
 
-        (void)errout_str(); // we are not interested in the output
+        ignore_errout(); // we are not interested in the output
     }
 
     void predefine1() {

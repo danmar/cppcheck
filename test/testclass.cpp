@@ -6688,7 +6688,7 @@ private:
                    "struct D : S<150> {};\n");
         // don't hang
         // we are not interested in the output - just consume it
-        (void)errout_str();
+        ignore_errout();
     }
 
     void const93() { // #12162
