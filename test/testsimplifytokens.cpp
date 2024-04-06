@@ -1252,24 +1252,53 @@ private:
     }
 
     void simplifyStructDecl9() {
-        const char* code = "enum E : int;\n" // #12588
-                           "void f() {}\n"
-                           "namespace {\n"
-                           "    struct S {\n"
-                           "        explicit S(int i) : m(i) {}\n"
-                           "        int m;\n"
-                           "    };\n"
-                           "}\n"
-                           "void g() { S s(0); }\n";
-        const char* exp = "enum E : int ; "
-                          "void f ( ) { } "
-                          "namespace { "
-                          "struct S { "
-                          "explicit S ( int i ) : m ( i ) { } "
-                          "int m ; "
-                          "} ; "
-                          "} "
-                          "void g ( ) { S s ( 0 ) ; }";
+        const char *code{}, *exp{};
+        code = "enum E : int;\n" // #12588
+               "void f() {}\n"
+               "namespace {\n"
+               "    struct S {\n"
+               "        explicit S(int i) : m(i) {}\n"
+               "        int m;\n"
+               "    };\n"
+               "}\n"
+               "void g() { S s(0); }\n";
+        exp = "enum E : int ; "
+              "void f ( ) { } "
+              "namespace { "
+              "struct S { "
+              "explicit S ( int i ) : m ( i ) { } "
+              "int m ; "
+              "} ; "
+              "} "
+              "void g ( ) { S s ( 0 ) ; }";
+        ASSERT_EQUALS(exp, tok(code));
+
+        code = "struct S {\n" // 12595
+               "    explicit S() {\n"
+               "        e = E1;\n"
+               "    }\n"
+               "    enum { E1 } e = E1;\n"
+               "};\n";
+        exp = "struct S { "
+              "explicit S ( ) { e = E1 ; } "
+              "enum Anonymous0 { E1 } ; "
+              "enum Anonymous0 e ; "
+              "e = E1 ; "
+              "} ;";
+        ASSERT_EQUALS(exp, tok(code));
+
+        code = "struct S {\n"
+               "    explicit S() {\n"
+               "        e = E1;\n"
+               "    }\n"
+               "    enum : std::uint8_t { E1 } e = E1;\n"
+               "};\n";
+        exp = "struct S { "
+              "explicit S ( ) { e = E1 ; } "
+              "enum Anonymous0 : std :: uint8_t { E1 } ; "
+              "enum Anonymous0 e ; "
+              "e = E1 ; "
+              "} ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
