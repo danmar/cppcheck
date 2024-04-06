@@ -46,8 +46,7 @@ class SuppressionList;
  *
  */
 
-class CPPCHECKLIB Directive {
-public:
+struct CPPCHECKLIB Directive {
     /** name of (possibly included) file where directive is defined */
     std::string file;
 
@@ -125,13 +124,6 @@ public:
 
     void simplifyPragmaAsm(simplecpp::TokenList *tokenList) const;
 
-private:
-
-    static void simplifyPragmaAsmPrivate(simplecpp::TokenList *tokenList);
-
-public:
-
-
     static void getErrorMessages(ErrorLogger *errorLogger, const Settings &settings);
 
     /**
@@ -144,6 +136,8 @@ public:
     static bool hasErrors(const simplecpp::Output &output);
 
 private:
+    static void simplifyPragmaAsmPrivate(simplecpp::TokenList *tokenList);
+
     void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType);
     void error(const std::string &filename, unsigned int linenr, const std::string &msg);
 
