@@ -111,19 +111,6 @@ public:
     void setPlatformInfo(simplecpp::TokenList *tokens) const;
 
     /**
-     * Extract the code for each configuration
-     * @param istr The (file/string) stream to read from.
-     * @param result The map that will get the results
-     * @param filename The name of the file to check e.g. "src/main.cpp"
-     * @param includePaths List of paths where include files should be searched from,
-     * single path can be e.g. in format "include/".
-     * There must be a path separator at the end. Default parameter is empty list.
-     * Note that if path from given filename is also extracted and that is used as
-     * a last include path if include file was not found from earlier paths.
-     */
-    void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename, const std::list<std::string> &includePaths = std::list<std::string>());
-
-    /**
      * Extract the code for each configuration. Use this with getcode() to get the
      * file data for each individual configuration.
      *

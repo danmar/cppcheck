@@ -653,24 +653,6 @@ std::set<std::string> Preprocessor::getConfigs(const simplecpp::TokenList &token
     return ret;
 }
 
-
-void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename, const std::list<std::string> &includePaths)
-{
-    (void)includePaths;
-
-    simplecpp::OutputList outputList;
-    std::vector<std::string> files;
-    const simplecpp::TokenList tokens1(istr, files, filename, &outputList);
-
-    const std::set<std::string> configs = getConfigs(tokens1);
-
-    for (const std::string &c : configs) {
-        if (mSettings.userUndefs.find(c) == mSettings.userUndefs.end()) {
-            result[c] = getcode(tokens1, c, files, false);
-        }
-    }
-}
-
 void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths)
 {
     (void)includePaths;
