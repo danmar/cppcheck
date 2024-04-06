@@ -634,11 +634,13 @@ const Token* getParentLifetime(const Token* tok, const Library* library)
     std::vector<const Token*> members = getParentMembers(tok);
     if (members.size() < 2)
         return tok;
-    // Find the first local variable or temporary
+    // Find the first local variable, temporary, or array
     auto it = std::find_if(members.crbegin(), members.crend(), [&](const Token* tok2) {
         const Variable* var = tok2->variable();
         if (var)
             return var->isLocal() || var->isArgument();
+        if (Token::simpleMatch(tok2, "["))
+            return true;
         return isTemporary(tok2, library);
     });
     if (it == members.rend())
@@ -668,7 +670,10 @@ const Token* getParentLifetime(const Token* tok, const Library* library)
         return var && var->isReference();
     }))
         return nullptr;
-    return *it;
+    const Token* result = *it;
+    if (Token::simpleMatch(result, "[") && result->astOperand1())
+        return getParentLifetime(result->astOperand1());
+    return result;
 }
 
 static bool isInConstructorList(const Token* tok)
