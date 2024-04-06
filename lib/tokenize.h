@@ -45,13 +45,12 @@ enum class Severity;
 /** @brief The main purpose is to tokenize the source code. It also has functions that simplify the token list */
 class CPPCHECKLIB Tokenizer {
 
-    friend class TestSimplifyTokens;
-    friend class TestSimplifyTypedef;
-    friend class TestSimplifyUsing;
-    friend class TestTokenizer;
     friend class SymbolDatabase;
-    friend class TestSimplifyTemplate;
     friend class TemplateSimplifier;
+
+    friend class TestSimplifyTemplate;
+    friend class TestSimplifyTypedef;
+    friend class TestTokenizer;
 
 public:
     explicit Tokenizer(const Settings & settings, ErrorLogger *errorLogger, const Preprocessor *preprocessor = nullptr);
