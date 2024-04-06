@@ -6830,10 +6830,11 @@ private:
 
         // Preprocess file..
         Preprocessor preprocessor(settings0);
-        std::list<std::string> configurations;
-        std::string filedata;
         std::istringstream fin(raw_code);
-        preprocessor.preprocess(fin, filedata, configurations, emptyString, settings0.includePaths);
+        simplecpp::OutputList outputList;
+        std::vector<std::string> files;
+        const simplecpp::TokenList tokens1(fin, files, emptyString, &outputList);
+        const std::string filedata = tokens1.stringify();
         const std::string code = PreprocessorHelper::getcode(preprocessor, filedata, emptyString, emptyString);
 
         ASSERT_THROW(tokenizeAndStringify(code.c_str()), InternalError);
