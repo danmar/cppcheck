@@ -7445,6 +7445,31 @@ private:
                         "    p->f();\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (warning) Uninitialized variable: p\n", errout_str());
+
+        // #12461
+        valueFlowUninit("struct stry_type {\n"
+                        "  void *out;\n"
+                        "};\n"
+                        "void bar(str_type *items);\n"
+                        "void foo() {\n"
+                        "  str_type st_arr[1];\n"
+                        "  char arr[5];\n"
+                        "  st_arr[0].out = &arr;\n"
+                        "  bar(st_arr);\n"
+                        "  int len = strlen(arr);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        valueFlowUninit("struct stry_type {\n"
+                        "  void *out;\n"
+                        "};\n"
+                        "void foo() {\n"
+                        "  str_type st_arr[1];\n"
+                        "  char arr[5];\n"
+                        "  st_arr[0].out = &arr;\n"
+                        "  int len = strlen(arr);\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: arr\n", errout_str());
     }
 
     void uninitvar_memberfunction() {
