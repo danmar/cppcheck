@@ -46,8 +46,7 @@ class SuppressionList;
  *
  */
 
-class CPPCHECKLIB Directive {
-public:
+struct CPPCHECKLIB Directive {
     /** name of (possibly included) file where directive is defined */
     std::string file;
 
@@ -110,38 +109,6 @@ public:
 
     void setPlatformInfo(simplecpp::TokenList *tokens) const;
 
-    /**
-     * Extract the code for each configuration
-     * @param istr The (file/string) stream to read from.
-     * @param result The map that will get the results
-     * @param filename The name of the file to check e.g. "src/main.cpp"
-     * @param includePaths List of paths where include files should be searched from,
-     * single path can be e.g. in format "include/".
-     * There must be a path separator at the end. Default parameter is empty list.
-     * Note that if path from given filename is also extracted and that is used as
-     * a last include path if include file was not found from earlier paths.
-     */
-    void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename, const std::list<std::string> &includePaths = std::list<std::string>());
-
-    /**
-     * Extract the code for each configuration. Use this with getcode() to get the
-     * file data for each individual configuration.
-     *
-     * @param srcCodeStream The (file/string) stream to read from.
-     * @param processedFile Give reference to empty string as a parameter,
-     * function will fill processed file here. Use this also as a filedata parameter
-     * to getcode() if you received more than once configurations.
-     * @param resultConfigurations List of configurations. Pass these one by one
-     * to getcode() with processedFile.
-     * @param filename The name of the file to check e.g. "src/main.cpp"
-     * @param includePaths List of paths where include files should be searched from,
-     * single path can be e.g. in format "include/".
-     * There must be a path separator at the end. Default parameter is empty list.
-     * Note that if path from given filename is also extracted and that is used as
-     * a last include path if include file was not found from earlier paths.
-     */
-    void preprocess(std::istream &srcCodeStream, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths);
-
     simplecpp::TokenList preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool throwError = false);
 
     std::string getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, const bool writeLocations);
@@ -157,13 +124,6 @@ public:
 
     void simplifyPragmaAsm(simplecpp::TokenList *tokenList) const;
 
-private:
-
-    static void simplifyPragmaAsmPrivate(simplecpp::TokenList *tokenList);
-
-public:
-
-
     static void getErrorMessages(ErrorLogger *errorLogger, const Settings &settings);
 
     /**
@@ -176,6 +136,8 @@ public:
     static bool hasErrors(const simplecpp::Output &output);
 
 private:
+    static void simplifyPragmaAsmPrivate(simplecpp::TokenList *tokenList);
+
     void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType);
     void error(const std::string &filename, unsigned int linenr, const std::string &msg);
 
