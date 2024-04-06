@@ -639,7 +639,7 @@ const Token* getParentLifetime(const Token* tok, const Library* library)
         const Variable* var = tok2->variable();
         if (var)
             return var->isLocal() || var->isArgument();
-        if(Token::simpleMatch(tok2, "["))
+        if (Token::simpleMatch(tok2, "["))
             return true;
         return isTemporary(tok2, library);
     });
@@ -671,7 +671,7 @@ const Token* getParentLifetime(const Token* tok, const Library* library)
     }))
         return nullptr;
     const Token* result = *it;
-    if(Token::simpleMatch(result, "[") && result->astOperand1())
+    if (Token::simpleMatch(result, "[") && result->astOperand1())
         return getParentLifetime(result->astOperand1());
     return result;
 }
