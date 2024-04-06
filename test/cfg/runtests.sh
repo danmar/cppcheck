@@ -27,7 +27,19 @@ CFG="$DIR"../../cfg/
 # TODO: remove missingInclude disabling when it no longer is implied by --enable=information
 # Cppcheck options
 # need to suppress unmatchedSuppression in case valueFlowBailout is not reported
-CPPCHECK_OPT='--check-library --platform=unix64 --enable=style,information --inconclusive --force --check-level=exhaustive --error-exitcode=-1 --disable=missingInclude --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}" --debug-warnings --suppress=checkersReport'
+CPPCHECK_OPT=(
+    "--check-library"
+    "--platform=unix64"
+    "--enable=style,information"
+    "--inconclusive"
+    "--force"
+    "--check-level=exhaustive"
+    "--error-exitcode=-1"
+    "--disable=missingInclude"
+    "--inline-suppr"
+    "--template=\"{file}:{line}:{severity}:{id}:{message}\""
+    "--debug-warnings"
+    "--suppress=checkersReport")
 
 # Compiler settings
 CXX=g++
@@ -441,101 +453,101 @@ function check_file {
     case $f in
         boost.cpp)
             boost_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
+            ${CPPCHECK} "${CPPCHECK_OPT[@]}" --library=$lib ${DIR}$f
             ;;
         bsd.c)
             bsd_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
+            ${CPPCHECK} "${CPPCHECK_OPT[@]}" --library=$lib ${DIR}$f
             ;;
         cairo.c)
             cairo_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
+            ${CPPCHECK} "${CPPCHECK_OPT[@]}" --library=$lib ${DIR}$f
             ;;
         cppunit.cpp)
             cppunit_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
+            ${CPPCHECK} "${CPPCHECK_OPT[@]}" --library=$lib ${DIR}$f
             ;;
         gnu.c)
             gnu_fn
             # TODO: posix needs to specified first or it has a different mmap() config
             # TODO: get rid of posix dependency
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=posix,$lib ${DIR}gnu.c
+            ${CPPCHECK} "${CPPCHECK_OPT[@]}" --library=posix,$lib ${DIR}gnu.c
             ;;
         googletest.cpp)
             googletest_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
+            ${CPPCHECK} "${CPPCHECK_OPT[@]}" --library=$lib ${DIR}$f
             ;;
         gtk.c)
             gtk_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
+            ${CPPCHECK} "${CPPCHECK_OPT[@]}" --library=$lib ${DIR}$f
             ;;
         kde.cpp)
             # TODO: "kde-4config" is no longer commonly available in recent distros
             #kde_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
+            ${CPPCHECK} "${CPPCHECK_OPT[@]}" --library=$lib ${DIR}$f
             ;;
         libcurl.c)
             libcurl_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
+            ${CPPCHECK} "${CPPCHECK_OPT[@]}" --library=$lib ${DIR}$f
             ;;
         libsigc++.cpp)
             libsigcpp_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
+            ${CPPCHECK} "${CPPCHECK_OPT[@]}" --library=$lib ${DIR}$f
             ;;
         lua.c)
             lua_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
+            ${CPPCHECK} "${CPPCHECK_OPT[@]}" --library=$lib ${DIR}$f
             ;;
         mfc.cpp)
             mfc_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --platform=win64  --library=$lib ${DIR}$f
+            ${CPPCHECK} "${CPPCHECK_OPT[@]}" --platform=win64  --library=$lib ${DIR}$f
             ;;
         opencv2.cpp)
             # TODO: "opencv.pc" is not commonly available in distros
             #opencv2_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
+            ${CPPCHECK} "${CPPCHECK_OPT[@]}" --library=$lib ${DIR}$f
             ;;
         openmp.c)
             openmp_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
+            ${CPPCHECK} "${CPPCHECK_OPT[@]}" --library=$lib ${DIR}$f
             ;;
         openssl.c)
             openssl_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
+            ${CPPCHECK} "${CPPCHECK_OPT[@]}" --library=$lib ${DIR}$f
             ;;
         posix.c)
             posix_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
+            ${CPPCHECK} "${CPPCHECK_OPT[@]}" --library=$lib ${DIR}$f
             ;;
         python.c)
             python_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
+            ${CPPCHECK} "${CPPCHECK_OPT[@]}" --library=$lib ${DIR}$f
             ;;
         qt.cpp)
             qt_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
+            ${CPPCHECK} "${CPPCHECK_OPT[@]}" --library=$lib ${DIR}$f
             ;;
         sqlite3.c)
             sqlite3_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
+            ${CPPCHECK} "${CPPCHECK_OPT[@]}" --library=$lib ${DIR}$f
             ;;
         std.c)
             std_c_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} ${DIR}$f
+            ${CPPCHECK} "${CPPCHECK_OPT[@]}" ${DIR}$f
             ;;
         std.cpp)
             std_cpp_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} ${DIR}$f
+            ${CPPCHECK} "${CPPCHECK_OPT[@]}" ${DIR}$f
             ;;
         windows.cpp)
             windows_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --platform=win32A --library=$lib ${DIR}$f
-            ${CPPCHECK} ${CPPCHECK_OPT} --platform=win32W --library=$lib ${DIR}$f
-            ${CPPCHECK} ${CPPCHECK_OPT} --platform=win64  --library=$lib ${DIR}$f
+            "${CPPCHECK}" "${CPPCHECK_OPT[@]}" --platform=win32A --library="$lib" "${DIR}""$f"
+            "${CPPCHECK}" "${CPPCHECK_OPT[@]}" --platform=win32W --library="$lib" "${DIR}""$f"
+            "${CPPCHECK}" "${CPPCHECK_OPT[@]}" --platform=win64  --library="$lib" "${DIR}""$f"
             ;;
         wxwidgets.cpp)
             wxwidgets_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
+            "${CPPCHECK}" "${CPPCHECK_OPT[@]}" --library="$lib" "${DIR}""$f"
             ;;
         *)
           echo "Unhandled file $f"
@@ -547,7 +559,7 @@ function check_files
 {
 for f in "$@"
 do
-    check_file $f
+    check_file "$f"
 done
 }
 
@@ -558,12 +570,12 @@ function check_defines_syntax
         echo "xmlstarlet needed to extract defines, skipping defines check."
         exit_if_strict
     else
-        for configfile in ${CFG}*.cfg; do
+        for configfile in "${CFG}"*.cfg; do
             echo "Checking defines in $configfile"
             # Disable debugging output temporarily since there could be many defines
             set +x
             # XMLStarlet returns 1 if no elements were found which is no problem here
-            EXTRACTED_DEFINES=$(xmlstarlet sel -t -m '//define' -c . -n <$configfile || true)
+            EXTRACTED_DEFINES=$(xmlstarlet sel -t -m '//define' -c . -n <"$configfile" || true)
             EXTRACTED_DEFINES=$(echo "$EXTRACTED_DEFINES" | sed 's/<define name="/#define /g' | sed 's/" value="/ /g' | sed 's/"\/>//g')
             echo "$EXTRACTED_DEFINES" | gcc -fsyntax-only -xc -Werror -
         done
