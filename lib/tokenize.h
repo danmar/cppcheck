@@ -45,13 +45,12 @@ enum class Severity;
 /** @brief The main purpose is to tokenize the source code. It also has functions that simplify the token list */
 class CPPCHECKLIB Tokenizer {
 
-    friend class TestSimplifyTokens;
-    friend class TestSimplifyTypedef;
-    friend class TestSimplifyUsing;
-    friend class TestTokenizer;
     friend class SymbolDatabase;
-    friend class TestSimplifyTemplate;
     friend class TemplateSimplifier;
+
+    friend class TestSimplifyTemplate;
+    friend class TestSimplifyTypedef;
+    friend class TestTokenizer;
 
 public:
     explicit Tokenizer(const Settings & settings, ErrorLogger *errorLogger, const Preprocessor *preprocessor = nullptr);
@@ -105,6 +104,7 @@ public:
                   const char FileName[],
                   const std::string &configuration = emptyString);
 
+private:
     /** Set variable id */
     void setVarId();
     void setVarIdPass1();
@@ -139,7 +139,7 @@ public:
      */
     void splitTemplateRightAngleBrackets(bool check);
 
-
+public:
     /**
      * Calculates sizeof value for given type.
      * @param type Token which will contain e.g. "int", "*", or string.
@@ -148,6 +148,7 @@ public:
     nonneg int sizeOfType(const Token* type) const;
     nonneg int sizeOfType(const std::string& type) const;
 
+private:
     void simplifyDebug();
 
     /** Simplify assignment where rhs is a block : "x=({123;});" => "{x=123;}" */
@@ -351,6 +352,7 @@ public:
      */
     static std::string simplifyString(const std::string &source);
 
+public:
     /**
      * is token pointing at function head?
      * @param tok         A '(' or ')' token in a possible function head
