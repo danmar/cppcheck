@@ -5414,6 +5414,21 @@ void Tokenizer::createLinks2()
     }
 }
 
+void Tokenizer::markCppCasts()
+{
+    if (isC())
+        return;
+    for (Token* tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "const_cast|dynamic_cast|reinterpret_cast|static_cast")) {
+            if (!Token::simpleMatch(tok->next(), "<") || !Token::simpleMatch(tok->linkAt(1), "> ("))
+                syntaxError(tok);
+            tok = tok->linkAt(1)->next();
+            tok->isCast(true);
+        }
+    }
+
+}
+
 void Tokenizer::sizeofAddParentheses()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -5807,12 +5822,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     createLinks2();
 
     // Mark C++ casts
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "const_cast|dynamic_cast|reinterpret_cast|static_cast <") && Token::simpleMatch(tok->linkAt(1), "> (")) {
-            tok = tok->linkAt(1)->next();
-            tok->isCast(true);
-        }
-    }
+    markCppCasts();
 
     // specify array size
     arraySize();
