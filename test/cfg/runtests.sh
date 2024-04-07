@@ -107,12 +107,12 @@ function bsd_fn {
 
 # std.c
 function std_c_fn {
-    ${CC} "${CC_OPT[@]}" ${DIR}std.c
+    ${CC} "${CC_OPT[@]}" "${DIR}"std.c
 }
 
 # std.cpp
 function std_cpp_fn {
-    ${CXX} "${CXX_OPT[@]}" ${DIR}std.cpp
+    ${CXX} "${CXX_OPT[@]}" "${DIR}"std.cpp
 }
 
 # windows.cpp
@@ -149,7 +149,7 @@ function wxwidgets_fn {
             exit_if_strict
         else
             echo "wxWidgets found, checking syntax with ${CXX} now."
-            ${CXX} "${CXX_OPT[@]}" ${WXCONFIG} -Wno-deprecated-declarations ${DIR}wxwidgets.cpp
+            ${CXX} "${CXX_OPT[@]}" ${WXCONFIG} -Wno-deprecated-declarations "${DIR}"wxwidgets.cpp
         fi
     fi
 }
@@ -172,7 +172,7 @@ function gtk_fn {
                 exit_if_strict
             else
                 echo "GTK+ found and working, checking syntax with ${CXX} now."
-                ${CC} "${CC_OPT[@]}" ${GTKCONFIG} ${DIR}gtk.c
+                ${CC} "${CC_OPT[@]}" ${GTKCONFIG} "${DIR}"gtk.c
             fi
         else
             echo "GTK+ not present, skipping syntax check with ${CXX}."
@@ -193,7 +193,7 @@ function boost_fn {
         exit_if_strict
     else
         echo "Boost found and working, checking syntax with ${CXX} now."
-        ${CXX} "${CXX_OPT[@]}" ${DIR}boost.cpp
+        ${CXX} "${CXX_OPT[@]}" "${DIR}"boost.cpp
     fi
 }
 
@@ -212,7 +212,7 @@ function sqlite3_fn {
                 exit_if_strict
             else
                 echo "SQLite3 found and working, checking syntax with ${CC} now."
-                ${CC} "${CC_OPT[@]}" ${SQLITE3CONFIG} ${DIR}sqlite3.c
+                ${CC} "${CC_OPT[@]}" ${SQLITE3CONFIG} "${DIR}"sqlite3.c
             fi
         else
             echo "SQLite3 not present, skipping syntax check with ${CC}."
@@ -244,7 +244,7 @@ function python_fn {
                 exit_if_strict
             else
                 echo "Python 3 found and working, checking syntax with ${CC} now."
-                ${CC} "${CC_OPT[@]}" ${PYTHON3CONFIG} ${DIR}python.c
+                ${CC} "${CC_OPT[@]}" ${PYTHON3CONFIG} "${DIR}"python.c
             fi
         else
             echo "Python 3 not present, skipping syntax check with ${CC}."
@@ -268,7 +268,7 @@ function lua_fn {
                 exit_if_strict
             else
                 echo "Lua found and working, checking syntax with ${CC} now."
-                ${CC} "${CC_OPT[@]}" ${LUACONFIG} ${DIR}lua.c
+                ${CC} "${CC_OPT[@]}" ${LUACONFIG} "${DIR}"lua.c
             fi
         else
             echo "Lua not present, skipping syntax check with ${CC}."
@@ -292,7 +292,7 @@ function libcurl_fn {
                 exit_if_strict
             else
                 echo "libcurl found and working, checking syntax with ${CC} now."
-                ${CC} "${CC_OPT[@]}" ${LIBCURLCONFIG} ${DIR}libcurl.c
+                ${CC} "${CC_OPT[@]}" ${LIBCURLCONFIG} "${DIR}"libcurl.c
             fi
         else
             echo "libcurl not present, skipping syntax check with ${CC}."
@@ -316,7 +316,7 @@ function cairo_fn {
                 exit_if_strict
             else
                 echo "cairo found and working, checking syntax with ${CC} now."
-                ${CC} "${CC_OPT[@]}" ${CAIROCONFIG} ${DIR}cairo.c
+                ${CC} "${CC_OPT[@]}" ${CAIROCONFIG} "${DIR}"cairo.c
             fi
         else
             echo "cairo not present, skipping syntax check with ${CC}."
@@ -356,7 +356,7 @@ function kde_fn {
                 exit_if_strict
             else
                 echo "KDE found, checking syntax with ${CXX} now."
-                ${CXX} "${CXX_OPT[@]}"  -I${KDECONFIG} ${KDEQTCONFIG} ${DIR}kde.cpp
+                ${CXX} "${CXX_OPT[@]}" -I${KDECONFIG} ${KDEQTCONFIG} "${DIR}"kde.cpp
             fi
         fi
     fi
@@ -377,7 +377,7 @@ function libsigcpp_fn {
                 exit_if_strict
             else
                 echo "libsigc++ found and working, checking syntax with ${CXX} now."
-                ${CXX} "${CXX_OPT[@]}"  ${LIBSIGCPPCONFIG} ${DIR}libsigc++.cpp
+                ${CXX} "${CXX_OPT[@]}" ${LIBSIGCPPCONFIG} "${DIR}"libsigc++.cpp
             fi
         else
             echo "libsigc++ not present, skipping syntax check with ${CXX}."
@@ -401,7 +401,7 @@ function openssl_fn {
                 exit_if_strict
             else
                 echo "OpenSSL found and working, checking syntax with ${CC} now."
-                ${CC} "${CC_OPT[@]}" ${OPENSSLCONFIG} ${DIR}openssl.c
+                ${CC} "${CC_OPT[@]}" ${OPENSSLCONFIG} "${DIR}"openssl.c
             fi
         else
             echo "OpenSSL not present, skipping syntax check with ${CC}."
@@ -425,7 +425,7 @@ function opencv2_fn {
                 exit_if_strict
             else
                 echo "OpenCV found and working, checking syntax with ${CXX} now."
-                ${CXX} "${CXX_OPT[@]}" ${OPENCVCONFIG} ${DIR}opencv2.cpp
+                ${CXX} "${CXX_OPT[@]}" ${OPENCVCONFIG} "${DIR}"opencv2.cpp
             fi
         else
             echo "OpenCV not present, skipping syntax check with ${CXX}."
@@ -442,7 +442,7 @@ function cppunit_fn {
             exit_if_strict
         else
             echo "cppunit found, checking syntax with ${CXX} now."
-            ${CXX} "${CXX_OPT[@]}" -Wno-deprecated-declarations ${DIR}cppunit.cpp
+            ${CXX} "${CXX_OPT[@]}" -Wno-deprecated-declarations "${DIR}"cppunit.cpp
         fi
     fi
 }
