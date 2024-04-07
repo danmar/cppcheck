@@ -456,13 +456,6 @@ public:
         return jobs == 1;
     }
 
-    /** Check if the user wants to check for unused functions
-     * and if it's possible at all */
-    bool isUnusedFunctionCheckEnabled() const
-    {
-        return useSingleJob() && checks.isEnabled(Checks::unusedFunction);
-    }
-
     void setCheckLevelExhaustive();
     void setCheckLevelNormal();
 
