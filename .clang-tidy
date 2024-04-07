@@ -30,6 +30,7 @@ Checks: >
         -bugprone-signed-char-misuse,
         -bugprone-switch-missing-default-case,
         -bugprone-unchecked-optional-access,
+        -bugprone-unused-return-value,
         -clang-analyzer-*,
         -concurrency-mt-unsafe,
         -misc-const-correctness,
