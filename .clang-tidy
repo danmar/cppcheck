@@ -62,6 +62,7 @@ Checks: >
         -readability-avoid-nested-conditional-operator,
         -readability-braces-around-statements,
         -readability-container-data-pointer,
+        -readability-enum-initial-value,
         -readability-function-cognitive-complexity,
         -readability-function-size,
         -readability-identifier-length,
