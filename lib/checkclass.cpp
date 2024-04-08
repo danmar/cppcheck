@@ -3305,6 +3305,8 @@ void CheckClass::checkUselessOverride()
 }
 
 static const Variable* getSingleReturnVar(const Scope* scope) {
+    if (!scope)
+        return nullptr;
     const Token* const start = scope->bodyStart->next();
     const Token* const end = Token::findsimplematch(start, ";", 1, scope->bodyEnd);
     if (!end || end->next() != scope->bodyEnd)
@@ -3323,8 +3325,6 @@ void CheckClass::checkReturnByReference()
 
     for (const Scope* classScope : mSymbolDatabase->classAndStructScopes) {
         for (const Function& func : classScope->functionList) {
-            if (!func.functionScope)
-                continue;
             if (Function::returnsPointer(&func) || Function::returnsReference(&func) || Function::returnsStandardType(&func))
                 continue;
             if (const Variable* var = getSingleReturnVar(func.functionScope)) {
@@ -3349,7 +3349,7 @@ void CheckClass::returnByReferenceError(const Function* func, const Variable* va
 {
     const Token* tok = func ? func->tokenDef : nullptr;
     const std::string message = "Function '" + (func ? func->name() : "") + "()' should return member '" + (var ? var->name() : "") + "' by const reference.";
-    reportError(tok, Severity::style, "returnByReference", message);
+    reportError(tok, Severity::performance, "returnByReference", message);
 }
 
 void CheckClass::checkThisUseAfterFree()
