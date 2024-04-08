@@ -135,7 +135,7 @@ public:
      * @brief Get list of paths to check.
      * @return list of paths.
      */
-    const QStringList& getCheckPaths() const {
+    QStringList getCheckPaths() const {
         return ProjectFile::fromNativeSeparators(mPaths);
     }
 
@@ -143,7 +143,7 @@ public:
      * @brief Get list of paths to exclude from the check.
      * @return list of paths.
      */
-    const QStringList& getExcludedPaths() const {
+    QStringList getExcludedPaths() const {
         return ProjectFile::fromNativeSeparators(mExcludedPaths);
     }
 
