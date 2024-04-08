@@ -3314,12 +3314,12 @@ static const Variable* getSingleReturnVar(const Scope* scope) {
     return start->astOperand1()->variable();
 }
 
-void CheckClass::checkReturnReference()
+void CheckClass::checkReturnByReference()
 {
-    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("returnReference"))
+    if (!mSettings->severity.isEnabled(Severity::performance) && !mSettings->isPremiumEnabled("returnByReference"))
         return;
 
-    logChecker("CheckClass::checkReturnReference"); // style
+    logChecker("CheckClass::checkReturnByReference"); // performance
 
     for (const Scope* classScope : mSymbolDatabase->classAndStructScopes) {
         for (const Function& func : classScope->functionList) {
