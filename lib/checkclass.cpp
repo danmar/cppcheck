@@ -3338,17 +3338,17 @@ void CheckClass::checkReturnReference()
                         warn = true;
                 }
                 if (warn)
-                    returnReferenceError(&func, var);
+                    returnByReferenceError(&func, var);
             }
         }
     }
 }
 
-void CheckClass::returnReferenceError(const Function* func, const Variable* var)
+void CheckClass::returnByReferenceError(const Function* func, const Variable* var)
 {
     const Token* tok = func ? func->tokenDef : nullptr;
     const std::string message = "Function '" + (func ? func->name() : "") + "()' should return member '" + (var ? var->name() : "") + "' by const reference.";
-    reportError(tok, Severity::style, "returnReference", message);
+    reportError(tok, Severity::style, "returnByReference", message);
 }
 
 void CheckClass::checkThisUseAfterFree()
