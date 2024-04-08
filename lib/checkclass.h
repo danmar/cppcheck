@@ -91,6 +91,7 @@ private:
         checkClass.checkCopyCtorAndEqOperator();
         checkClass.checkOverride();
         checkClass.checkUselessOverride();
+        checkClass.checkReturnReference();
         checkClass.checkThisUseAfterFree();
         checkClass.checkUnsafeClassRefMember();
     }
@@ -157,6 +158,9 @@ private:
     /** @brief Check that the overriden function is not identical to the base function */
     void checkUselessOverride();
 
+    /** @brief Check that large members are returned by reference from getter function */
+    void checkReturnReference();
+
     /** @brief When "self pointer" is destroyed, 'this' might become invalid. */
     void checkThisUseAfterFree();
 
@@ -208,6 +212,7 @@ private:
     void copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor);
     void overrideError(const Function *funcInBase, const Function *funcInDerived);
     void uselessOverrideError(const Function *funcInBase, const Function *funcInDerived, bool isSameCode = false);
+    void returnReferenceError(const Function *func, const Variable* var);
     void thisUseAfterFree(const Token *self, const Token *free, const Token *use);
     void unsafeClassRefMemberError(const Token *tok, const std::string &varname);
     void checkDuplInheritedMembersRecursive(const Type* typeCurrent, const Type* typeBase);
@@ -246,6 +251,9 @@ private:
         c.selfInitializationError(nullptr, "var");
         c.duplInheritedMembersError(nullptr, nullptr, "class", "class", "variable", false, false);
         c.copyCtorAndEqOperatorError(nullptr, "class", false, false);
+        c.overrideError(nullptr, nullptr);
+        c.uselessOverrideError(nullptr, nullptr);
+        c.returnReferenceError(nullptr, nullptr);
         c.pureVirtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
         c.virtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
         c.overrideError(nullptr, nullptr);
