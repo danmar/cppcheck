@@ -26,6 +26,7 @@
 
 #include <string>
 
+#include <QDir>
 #include <QFile>
 #include <QIODevice>
 #include <QList>
@@ -138,4 +139,15 @@ void TestProjectFile::getAddonFilePath() const
     QCOMPARE(ProjectFile::getAddonFilePath(tempdir.path(), filepath), filepath);
 }
 
+void TestProjectFile::getCheckingSuppressions() const
+{
+    const SuppressionList::Suppression suppression("*", "externals/*");
+    const QList<SuppressionList::Suppression> suppressions{suppression};
+    ProjectFile projectFile;
+    projectFile.setFilename("/some/path/123.cppcheck");
+    projectFile.setSuppressions(suppressions);
+    QCOMPARE(projectFile.getCheckingSuppressions()[0].fileName, "/some/path/externals/*");
+}
+
 QTEST_MAIN(TestProjectFile)
+

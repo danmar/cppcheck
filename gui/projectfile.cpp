@@ -30,6 +30,7 @@
 #include <QDir>
 #include <QIODevice>
 #include <QLatin1String>
+#include <QRegularExpression>
 #include <QXmlStreamAttributes>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
@@ -754,6 +755,19 @@ void ProjectFile::setLibraries(const QStringList &libraries)
 void ProjectFile::setPlatform(const QString &platform)
 {
     mPlatform = platform;
+}
+
+QList<SuppressionList::Suppression> ProjectFile::getCheckingSuppressions() const
+{
+    QRegularExpression re("^[^:]+/.*");
+    QList<SuppressionList::Suppression> result;
+    for (SuppressionList::Suppression suppression : mSuppressions) {
+        if (re.match(suppression.fileName.c_str()).hasMatch()) {
+            suppression.fileName = QFileInfo(mFilename).absolutePath().toStdString() + "/" + suppression.fileName;
+        }
+        result << suppression;
+    }
+    return result;
 }
 
 void ProjectFile::setSuppressions(const QList<SuppressionList::Suppression> &suppressions)
