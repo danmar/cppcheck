@@ -3311,7 +3311,7 @@ static const Variable* getSingleReturnVar(const Scope* scope) {
     const Token* const end = Token::findsimplematch(start, ";", 1, scope->bodyEnd);
     if (!end || end->next() != scope->bodyEnd)
         return nullptr;
-    if (start->str() != "return")
+    if (!start->astOperand1() || start->str() != "return")
         return nullptr;
     return start->astOperand1()->variable();
 }

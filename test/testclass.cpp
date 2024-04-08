@@ -8985,6 +8985,7 @@ private:
                                "    T getT() const { return t; }"
                                "    int getI() const { return i; }"
                                "    std::string getS() const { return s; }"
+                               "    unknown_t f() { return; }"
                                "};");
         ASSERT_EQUALS("[test.cpp:1]: (performance) Function 'getT()' should return member 't' by const reference.\n"
                       "[test.cpp:1]: (performance) Function 'getS()' should return member 's' by const reference.\n",
