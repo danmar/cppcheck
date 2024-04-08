@@ -645,7 +645,7 @@ const Token* getParentLifetime(const Token* tok, const Library* library)
         const Variable* var = tok2->variable();
         if (var)
             return var->isLocal() || var->isArgument();
-        if (Token::simpleMatch(tok2, "["))
+        if (Token::simpleMatch(tok2, "[") && !Token::simpleMatch(tok2->astParent(), "."))
             return true;
         return isTemporary(tok2, library);
     });
