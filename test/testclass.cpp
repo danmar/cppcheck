@@ -8986,8 +8986,8 @@ private:
                                "    int getI() const { return i; }"
                                "    std::string getS() const { return s; }"
                                "};");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Function 'getT()' should return member 't' by const reference.\n"
-                      "[test.cpp:1]: (style) Function 'getS()' should return member 's' by const reference.\n",
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function 'getT()' should return member 't' by const reference.\n"
+                      "[test.cpp:1]: (performance) Function 'getS()' should return member 's' by const reference.\n",
                       errout_str());
     }
 
