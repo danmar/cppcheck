@@ -17,6 +17,7 @@
  */
 
 #include "errortypes.h"
+#include "helpers.h"
 #include "platform.h"
 #include "settings.h"
 #include "standards.h"
@@ -165,29 +166,27 @@ private:
     }
 
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tok_(const char* file, int line, const char code[], bool simplify = true, Platform::Type type = Platform::Type::Native) {
+    std::string tok_(const char* file, int line, const char code[], Platform::Type type = Platform::Type::Native) {
         const Settings settings = settingsBuilder(settings0).platform(type).build();
         Tokenizer tokenizer(settings, this);
 
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        return tokenizer.tokens()->stringifyList(nullptr, !simplify);
+        return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
-    std::string tok_(const char* file, int line, const char code[], const char filename[], bool simplify = true) {
+    std::string tok_(const char* file, int line, const char code[], const char filename[]) {
         Tokenizer tokenizer(settings0, this);
 
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
-        (void)simplify;
-
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tokenizeAndStringify_(const char* file, int linenr, const char code[], bool simplify = false, bool expand = true, Platform::Type platform = Platform::Type::Native, const char* filename = "test.cpp", bool cpp11 = true) {
+    std::string tokenizeAndStringify_(const char* file, int linenr, const char code[], bool expand = true, Platform::Type platform = Platform::Type::Native, const char* filename = "test.cpp", bool cpp11 = true) {
         const Settings settings = settingsBuilder(settings1).debugwarnings().platform(platform).cpp(cpp11 ? Standards::CPP11 : Standards::CPP03).build();
 
         // tokenize..
@@ -195,30 +194,16 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, linenr);
 
-        (void)simplify;
-
-        // TODO: should be handled in a better way
-        // filter out ValueFlow messages..
-        const std::string debugwarnings = errout_str();
-        std::istringstream istr2(debugwarnings);
-        std::string line;
-        while (std::getline(istr2,line)) {
-            if (line.find("bailout") == std::string::npos)
-            {} // TODO    mErrout << line << "\n";
-        }
-
         if (tokenizer.tokens())
             return tokenizer.tokens()->stringifyList(false, expand, false, true, false, nullptr, nullptr);
         return "";
     }
 
 #define tokenizeDebugListing(...) tokenizeDebugListing_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tokenizeDebugListing_(const char* file, int line, const char code[], bool simplify = false, const char filename[] = "test.cpp") {
+    std::string tokenizeDebugListing_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         Tokenizer tokenizer(settings0, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
-
-        (void)simplify;
 
         // result..
         return tokenizer.tokens()->stringifyList(true);
@@ -246,10 +231,10 @@ private:
         ASSERT_EQUALS(tok(code2), tok(code1));
 
         const char code3[] = "x = L\"1\" TEXT(\"2\") L\"3\";";
-        ASSERT_EQUALS("x = L\"123\" ;", tok(code3, false, Platform::Type::Win64));
+        ASSERT_EQUALS("x = L\"123\" ;", tok(code3, Platform::Type::Win64));
 
         const char code4[] = "x = TEXT(\"1\") L\"2\";";
-        ASSERT_EQUALS("x = L\"1\" L\"2\" ;", tok(code4, false, Platform::Type::Win64));
+        ASSERT_EQUALS("x = L\"1\" L\"2\" ;", tok(code4, Platform::Type::Win64));
     }
 
     void combine_wstrings() {
@@ -1345,12 +1330,12 @@ private:
         ASSERT_EQUALS("int f ( ) ;", tok("int __far __syscall f();"));
         ASSERT_EQUALS("int f ( ) ;", tok("int __far __pascal f();"));
         ASSERT_EQUALS("int f ( ) ;", tok("int __far __fortran f();"));
-        ASSERT_EQUALS("int f ( ) ;", tok("int WINAPI f();", true, Platform::Type::Win32A));
-        ASSERT_EQUALS("int f ( ) ;", tok("int APIENTRY f();", true, Platform::Type::Win32A));
-        ASSERT_EQUALS("int f ( ) ;", tok("int CALLBACK f();", true, Platform::Type::Win32A));
+        ASSERT_EQUALS("int f ( ) ;", tok("int WINAPI f();", Platform::Type::Win32A));
+        ASSERT_EQUALS("int f ( ) ;", tok("int APIENTRY f();", Platform::Type::Win32A));
+        ASSERT_EQUALS("int f ( ) ;", tok("int CALLBACK f();", Platform::Type::Win32A));
 
         // don't simplify Microsoft defines in unix code (#7554)
-        ASSERT_EQUALS("enum E { CALLBACK } ;", tok("enum E { CALLBACK } ;", true, Platform::Type::Unix32));
+        ASSERT_EQUALS("enum E { CALLBACK } ;", tok("enum E { CALLBACK } ;", Platform::Type::Unix32));
     }
 
     void simplifyAttribute() {
@@ -1728,7 +1713,7 @@ private:
                                     "4:\n"
                                     "5: return u@1 + v@2 ;\n"
                                     "6: }\n";
-            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
         }
 
         {
@@ -1746,7 +1731,7 @@ private:
                                     "4:\n"
                                     "5: return u@1 - v@2 ;\n"
                                     "6: }\n";
-            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
         }
 
         {
@@ -1764,7 +1749,7 @@ private:
                                     "4:\n"
                                     "5: return u@1 * v@2 ;\n"
                                     "6: }\n";
-            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
         }
 
         {
@@ -1782,7 +1767,7 @@ private:
                                     "4:\n"
                                     "5: return u@1 / v@2 ;\n"
                                     "6: }\n";
-            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
         }
 
         {
@@ -1800,7 +1785,7 @@ private:
                                     "4:\n"
                                     "5: return u@1 & v@2 ;\n"
                                     "6: }\n";
-            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
         }
 
         {
@@ -1818,7 +1803,7 @@ private:
                                     "4:\n"
                                     "5: return u@1 | v@2 ;\n"
                                     "6: }\n";
-            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
         }
 
         {
@@ -1836,7 +1821,7 @@ private:
                                     "4:\n"
                                     "5: return u@1 ^ v@2 ;\n"
                                     "6: }\n";
-            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
         }
 
         {
@@ -1854,7 +1839,7 @@ private:
                                     "4:\n"
                                     "5: return u@1 % v@2 ;\n"
                                     "6: }\n";
-            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
         }
 
         {
@@ -1872,7 +1857,7 @@ private:
                                     "4:\n"
                                     "5: return u@1 >> v@2 ;\n"
                                     "6: }\n";
-            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
         }
 
         {
@@ -1890,7 +1875,7 @@ private:
                                     "4:\n"
                                     "5: return u@1 << v@2 ;\n"
                                     "6: }\n";
-            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
         }
 
         {
@@ -1908,7 +1893,7 @@ private:
                                     "4:\n"
                                     "5: return u@1 == v@2 ;\n"
                                     "6: }\n";
-            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
         }
 
         {
@@ -1926,7 +1911,7 @@ private:
                                     "4:\n"
                                     "5: return u@1 != v@2 ;\n"
                                     "6: }\n";
-            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
         }
 
         {
@@ -1944,7 +1929,7 @@ private:
                                     "4:\n"
                                     "5: return u@1 > v@2 ;\n"
                                     "6: }\n";
-            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
         }
 
         {
@@ -1962,7 +1947,7 @@ private:
                                     "4:\n"
                                     "5: return u@1 >= v@2 ;\n"
                                     "6: }\n";
-            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
         }
 
         {
@@ -1980,7 +1965,7 @@ private:
                                     "4:\n"
                                     "5: return u@1 < v@2 ;\n"
                                     "6: }\n";
-            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
         }
 
         {
@@ -1998,7 +1983,7 @@ private:
                                     "4:\n"
                                     "5: return u@1 <= v@2 ;\n"
                                     "6: }\n";
-            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
         }
 
         {
@@ -2016,7 +2001,7 @@ private:
                                     "4:\n"
                                     "5: return u@1 && v@2 ;\n"
                                     "6: }\n";
-            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
         }
 
         {
@@ -2034,7 +2019,7 @@ private:
                                     "4:\n"
                                     "5: return u@1 || v@2 ;\n"
                                     "6: }\n";
-            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code));
         }
     }
 
@@ -2089,7 +2074,7 @@ private:
                                     "strcpy ( a , \"hello\" ) ;\n"
                                     "strcat ( a , \"!\" ) ;\n"
                                     "}";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Platform::Type::Native, "test.c"));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, "test.c"));
         }
 
         {
@@ -2131,6 +2116,7 @@ private:
                                     "if ( s [ 6 ] == ' ' ) { ; }\n"
                                     "}";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
+            ASSERT_EQUALS("", filter_valueflow(errout_str()));
         }
     }
 
@@ -2185,7 +2171,7 @@ private:
                                     "cin >> x ;\n"
                                     "return x ;\n"
                                     "}";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Platform::Type::Native, "test.cpp"));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, "test.cpp"));
         }
     }
 
@@ -2199,7 +2185,7 @@ private:
                                 "int x ; x = 0 ;\n"
                                 "cin >> std :: hex >> x ;\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Platform::Type::Native, "test.cpp"));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, "test.cpp"));
     }
 
     void simplifyKnownVariables48() {
@@ -2212,7 +2198,7 @@ private:
                                 "int i ;\n"
                                 "for ( i = 0 ; ( i < sz ) && ( sz > 3 ) ; ++ i ) { }\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Platform::Type::Native, "test.c"));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, "test.c"));
     }
 
     void simplifyKnownVariables49() { // #3691
@@ -2228,7 +2214,7 @@ private:
                                 "case 2 : ; x = sz ; break ;\n"
                                 "}\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Platform::Type::Native, "test.c"));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, "test.c"));
     }
 
     void simplifyKnownVariables50() { // #4066
@@ -2336,7 +2322,7 @@ private:
                              "    Other\n"
                              "  };\n"
                              "  enum { XX };\n"
-                             "};", /*simplify=*/ true);
+                             "};", /*expand=*/ true);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2348,7 +2334,7 @@ private:
                       tokenizeAndStringify("void foo(std::string str) {\n"
                                            "  char *p = &str[0];\n"
                                            "  *p = 0;\n"
-                                           "}", /*simplify=*/ true));
+                                           "}", /*expand=*/ true));
     }
 
     void simplifyKnownVariables63() { // #10798
@@ -2369,6 +2355,7 @@ private:
                                 "return i ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        ASSERT_EQUALS("", filter_valueflow(errout_str()));
     }
 
     void simplifyKnownVariablesBailOutAssign2() {
@@ -2442,7 +2429,7 @@ private:
                             "    return a;\n"
                             "}\n";
         tokenizeAndStringify(code,true);
-        ASSERT_EQUALS("", errout_str());     // no debug warnings
+        ASSERT_EQUALS("", filter_valueflow(errout_str()));     // no debug warnings
     }
 
     void simplifyKnownVariablesBailOutSwitchBreak() {
@@ -2504,6 +2491,7 @@ private:
                             "    while (!x) { dostuff(); }"
                             "}";
         ASSERT_EQUALS("static int x ; void f ( ) { x = 123 ; while ( ! x ) { dostuff ( ) ; } }", tokenizeAndStringify(code,true));
+        ASSERT_EQUALS("", filter_valueflow(errout_str()));
     }
 
     void simplifyKnownVariablesNamespace() {

@@ -2522,7 +2522,7 @@ private:
     void simplifyTypedef107() { // ticket #3963 (bad code => segmentation fault)
         const char code[] = "typedef int x[]; int main() { return x }";
         ASSERT_EQUALS("int main ( ) { return x }", tok(code));
-        (void)errout_str(); // we do not care about the output
+        ignore_errout(); // we do not care about the output
     }
 
     void simplifyTypedef108() { // ticket #4777
@@ -3403,14 +3403,14 @@ private:
                "    sizeof(t);\n"
                "}\n";
         ASSERT_EQUALS("void g ( ) { sizeof ( t ) ; }", tok(code)); // TODO: handle implicit int
-        (void)errout_str(); // we do not care about the output
+        ignore_errout(); // we do not care about the output
 
         code = "typedef t[3];\n"
                "void g() {\n"
                "    sizeof(t);\n"
                "}\n";
         ASSERT_EQUALS("void g ( ) { sizeof ( t ) ; }", tok(code)); // TODO: handle implicit int
-        (void)errout_str(); // we do not care about the output
+        ignore_errout(); // we do not care about the output
     }
 
     void simplifyTypedef146() {

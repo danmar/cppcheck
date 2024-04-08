@@ -4979,7 +4979,7 @@ private:
         const Check& c = getCheck<CheckBufferOverrun>();
         c.getErrorMessages(this, nullptr);
         // we are not interested in the output - just consume it
-        (void)errout_str();
+        ignore_errout();
     }
 
     void arrayIndexThenCheck() {

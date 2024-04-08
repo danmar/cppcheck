@@ -260,6 +260,11 @@ protected:
         return s;
     }
 
+    void ignore_errout() {
+        if (errout_str().empty())
+            throw std::runtime_error("no errout to ignore");
+    }
+
     const Settings settingsDefault;
 
 private:

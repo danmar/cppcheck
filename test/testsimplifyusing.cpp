@@ -485,7 +485,7 @@ private:
                             "}\n"
                             "}";
         tok(code); // don't hang
-        (void)errout_str(); // we are not interested in the output
+        ignore_errout(); // we are not interested in the output
     }
 
     void simplifyUsing20() {
@@ -530,7 +530,7 @@ private:
                             "}\n"
                             "}}}}}}}";
         tok(code); // don't hang
-        (void)errout_str(); // we do not care about the output
+        ignore_errout(); // we do not care about the output
     }
 
     void simplifyUsing21() {
@@ -562,7 +562,7 @@ private:
                                 "} "
                                 "} } } } }";
         ASSERT_EQUALS(expected, tok(code)); // don't hang
-        (void)errout_str(); // we do not care about the output
+        ignore_errout(); // we do not care about the output
     }
 
     void simplifyUsing23() {
@@ -1294,7 +1294,7 @@ private:
                                 "   return ret;\n"
                                 "}";
             tok(code); // don't crash
-            (void)errout_str(); // we do not care about the output
+            ignore_errout(); // we do not care about the output
         }
     }
 
@@ -1440,7 +1440,7 @@ private:
                                 "} "
                                 "}";
             ASSERT_EQUALS(exp, tok(code));
-            (void)errout_str(); // we do not care about the output
+            ignore_errout(); // we do not care about the output
         }
     }
 

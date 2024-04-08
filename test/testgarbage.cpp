@@ -355,7 +355,7 @@ private:
 
         // don't segfault..
         ASSERT_THROW(checkCode(code), InternalError);
-        (void)errout_str(); // we are not interested in the output
+        ignore_errout(); // we are not interested in the output
     }
 
 
@@ -495,7 +495,7 @@ private:
 
     void garbageCode12() { // do not crash
         checkCode("{ g; S (void) { struct } { } int &g; }");
-        (void)errout_str(); // we do not care about the output
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode13() {
@@ -563,7 +563,7 @@ private:
                                "  cptr = (char *)buffer;\n"
                                "  cptr += (-(long int) buffer & (16 * sizeof (float) - 1));\n"
                                "}\n"), InternalError);
-        (void)errout_str(); // we do not care about the output
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode25() {
@@ -598,7 +598,7 @@ private:
                   "  int a;\n"
                   "  R1 () : a { }\n"
                   "};");
-        (void)errout_str(); // we do not care about the output
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode30() {
@@ -606,7 +606,7 @@ private:
         checkCode("void f(int x) {\n"
                   " x = 42\n"
                   "}");
-        (void)errout_str(); // we do not care about the output
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode31() {
@@ -676,7 +676,7 @@ private:
 
     void garbageCode46() { // #6705
         checkCode(" { bar(char *x); void foo (int ...) { struct } va_list ap; va_start(ap, size); va_arg(ap, (d)); }");
-        (void)errout_str(); // we do not care about the output
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode47() { // #6706
@@ -685,7 +685,7 @@ private:
 
     void garbageCode48() { // #6712
         checkCode(" { d\" ) d ...\" } int main ( ) { ( ) catch ( A a ) { { } catch ( ) \"\" } }");
-        (void)errout_str(); // we do not care about the output
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode49() { // #6715
@@ -776,7 +776,7 @@ private:
 
     void garbageCode74() { // #6751
         ASSERT_THROW(checkCode("_lenraw(const char* digits) { } typedef decltype(sizeof(0)) { } operator"), InternalError);
-        (void)errout_str(); // we do not care about the output
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode76() { // #6754
@@ -789,7 +789,7 @@ private:
 
     void garbageCode78() { // #6756
         ASSERT_THROW(checkCode("( ) { [ ] } ( ) { } const_array_of_int ( ) { } typedef int A [ ] [ ] ; A a = { { } { } }"), InternalError);
-        (void)errout_str(); // we do not care about the output
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode79() { // #6757
@@ -887,7 +887,7 @@ private:
 
     void garbageCode102() { // #6846
         checkCode("struct Object { ( ) ; Object & operator= ( Object ) { ( ) { } if ( this != & b ) } }");
-        (void)errout_str(); // we do not care about the output
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode103() { // #6824
@@ -916,7 +916,7 @@ private:
 
     void garbageCode109() { //  #6900 "segmentation fault (invalid code) in CheckStl::runSimplifiedChecks"
         checkCode("( *const<> (( ) ) { } ( *const ( ) ( ) ) { } ( * const<> ( size_t )) ) { } ( * const ( ) ( ) ) { }");
-        (void)errout_str(); // we do not care about the output
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode110() { //  #6902 "segmentation fault (invalid code) in CheckStl::string_c_str"
@@ -963,7 +963,7 @@ private:
 
     void garbageCode119() { // #5598
         checkCode("{ { void foo() { struct }; template <typename> struct S { Used x; void bar() } auto f = [this] { }; } };");
-        (void)errout_str(); // we do not care about the output
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode120() { // #4927
@@ -984,7 +984,7 @@ private:
                   "char *a = malloc(10);\n"
                   "a[0]\n"
                   "}");
-        (void)errout_str(); // we do not care about the output
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode123() {
@@ -993,7 +993,7 @@ private:
                   "        C tpl_mem(T *) { return }\n"
                   "    };\n"
                   "}");
-        (void)errout_str(); // we do not care about the output
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode125() {
@@ -1017,7 +1017,7 @@ private:
                   "};\n"
                   " const A& foo(const A& arg) { return arg; }\n"
                   " foo(A(12)).Var");
-        (void)errout_str(); // we do not care about the output
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode128() {
@@ -1106,7 +1106,7 @@ private:
                   "template<int S::*p, typename U> struct X {}; "
                   "X<&S::i, int> x = X<&S::i, int>(); "
                   "X<&S::j, int> y = X<&S::j, int>();");
-        (void)errout_str(); // we are not interested in the output
+        ignore_errout(); // we are not interested in the output
         checkCode("template <typename T> struct A {}; "
                   "template <> struct A<void> {}; "
                   "void foo(const void* f = 0) {}");
@@ -1124,7 +1124,7 @@ private:
                   "  static int i; "
                   "}; "
                   "void f() { A<int>::i = 0; }");
-        (void)errout_str(); // we are not interested in the output
+        ignore_errout(); // we are not interested in the output
     }
 
     void garbageCode135() { // #4994
@@ -1133,7 +1133,7 @@ private:
                   "}\n"
                   "long a = 1 ;\n"
                   "long b = 2 ;");
-        (void)errout_str(); // we are not interested in the output
+        ignore_errout(); // we are not interested in the output
     }
 
     void garbageCode136() { // #7033
@@ -1155,7 +1155,7 @@ private:
                   "    } halo;\n"
                   "}\n"
                   "CS_PLUGIN_NAMESPACE_END(csparser)");
-        (void)errout_str(); // we are not interested in the output
+        ignore_errout(); // we are not interested in the output
     }
 
     void garbageCode139() { // #6659 heap user after free: kernel: sm750_accel.c
@@ -1255,7 +1255,7 @@ private:
                            "static std::string foo(char *Bla) {\n"
                            "    while (Bla[1] && Bla[1] != ',') }\n";
         checkCode(code);
-        (void)errout_str(); // we are not interested in the output
+        ignore_errout(); // we are not interested in the output
     }
 
     void garbageCode153() {
@@ -1327,7 +1327,7 @@ private:
                   "    case YY_STATE_EOF(block):\n"
                   "        yyterminate();\n"
                   "} }"); // #5663
-        (void)errout_str(); // we are not interested in the output
+        ignore_errout(); // we are not interested in the output
     }
 
     void garbageAST() {
@@ -1398,7 +1398,7 @@ private:
             "typedef something_like_tuple<char, int, float> something_like_tuple_t;\n"
             "SA ((is_last<float, something_like_tuple_t>::value == false));\n"
             "SA ((is_last<int, something_like_tuple_t>::value == false));");
-        (void)errout_str(); // we are not interested in the output
+        ignore_errout(); // we are not interested in the output
 
         checkCode( // #6225
             "template <typename...>\n"
@@ -1494,7 +1494,7 @@ private:
 
     void garbageCode176() { // #7527
         checkCode("class t { { struct } enum class f : unsigned { q } b ; operator= ( T ) { switch ( b ) { case f::q: } } { assert ( b ) ; } } { ; & ( t ) ( f::t ) ; } ;");
-        (void)errout_str(); // we are not interested in the output
+        ignore_errout(); // we are not interested in the output
     }
 
     void garbageCode181() {
@@ -1527,7 +1527,7 @@ private:
             "               return bStatus;\n"
             "       };\n"
             "}");
-        (void)errout_str(); // we are not interested in the output
+        ignore_errout(); // we are not interested in the output
     }
 
     // #8151 - segfault due to incorrect template syntax
@@ -1721,7 +1721,7 @@ private:
 
     void garbageCode218() { // #8763
         checkCode("d f(){t n0000 const[]n0000+0!=n0000,(0)}"); // don't crash
-        (void)errout_str(); // we are not interested in the output
+        ignore_errout(); // we are not interested in the output
     }
     void garbageCode219() { // #10101
         checkCode("typedef void (*func) (addr) ;\n"
@@ -1729,7 +1729,7 @@ private:
                   "    func f;\n"
                   "    f & = (func)42;\n"
                   "}\n"); // don't crash
-        (void)errout_str(); // we are not interested in the output
+        ignore_errout(); // we are not interested in the output
     }
     void garbageCode220() { // #6832
         ASSERT_THROW(checkCode("(){(){{()}}return;{switch()0 case(){}break;l:()}}\n"), InternalError);  // don't crash
@@ -1817,7 +1817,7 @@ private:
         ASSERT_THROW(checkCode("void f(){x=0,return return''[]()}"), InternalError);
         ASSERT_THROW(checkCode("void f(){x='0'++'0'(return)[];}"), InternalError); // #9063
         checkCode("void f(){*(int *)42=0;}"); // no syntax error
-        (void)errout_str(); // we are not interested in the output
+        ignore_errout(); // we are not interested in the output
         ASSERT_THROW(checkCode("void f() { x= 'x' > typedef name5 | ( , ;){ } (); }"), InternalError); // #9067
         ASSERT_THROW(checkCode("void f() { x= {}( ) ( 'x')[ ] (); }"), InternalError); // #9068
         ASSERT_THROW(checkCode("void f() { x= y{ } name5 y[ ] + y ^ name5 ^ name5 for ( ( y y y && y y y && name5 ++ int )); }"), InternalError); // #9069
@@ -1832,7 +1832,7 @@ private:
                             "bool bReturn(false);\n"
                             "}\n"
                             "};"));
-        (void)errout_str(); // we are not interested in the output
+        ignore_errout(); // we are not interested in the output
     }
 
     void enumTrailingComma() {
@@ -1850,7 +1850,7 @@ private:
                   "template< class Predicate > int\n"
                   "List<T>::DeleteIf( const Predicate &pred )\n"
                   "{}");
-        (void)errout_str(); // we are not interested in the output
+        ignore_errout(); // we are not interested in the output
 
         // #8749
         checkCode(

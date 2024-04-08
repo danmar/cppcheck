@@ -856,14 +856,14 @@ private:
                                      "  int a; return a;\n"
                                      "}\n",
                                      ""));
-        (void)errout_str();
+        ASSERT_EQUALS("[test.cpp:2]: (error) Uninitialized variable: a\n", errout_str());
 
         ASSERT_EQUALS(0U,
                       (this->*check)("int f() {\n"
                                      "  int a; return a;\n"
                                      "}\n",
                                      "uninitvar"));
-        (void)errout_str();
+        ASSERT_EQUALS("", errout_str());
 
         // cppcheck-suppress-macro
         (this->*check)("// cppcheck-suppress-macro zerodiv\n"

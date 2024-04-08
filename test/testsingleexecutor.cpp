@@ -190,7 +190,7 @@ private:
               "  return 0;\n"
               "}", dinit(CheckOptions, $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
         // we are not interested in the results - so just consume them
-        (void)errout_str();
+        ignore_errout();
     }
 
     void many_files_plist() {
@@ -204,7 +204,7 @@ private:
               "  return 0;\n"
               "}", dinit(CheckOptions, $.plistOutput = plistOutput.c_str()));
         // we are not interested in the results - so just consume them
-        (void)errout_str();
+        ignore_errout();
     }
 
     void no_errors_more_files() {
