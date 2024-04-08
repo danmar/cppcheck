@@ -91,7 +91,7 @@ private:
         checkClass.checkCopyCtorAndEqOperator();
         checkClass.checkOverride();
         checkClass.checkUselessOverride();
-        checkClass.checkReturnReference();
+        checkClass.checkReturnByReference();
         checkClass.checkThisUseAfterFree();
         checkClass.checkUnsafeClassRefMember();
     }
@@ -159,7 +159,7 @@ private:
     void checkUselessOverride();
 
     /** @brief Check that large members are returned by reference from getter function */
-    void checkReturnReference();
+    void checkReturnByReference();
 
     /** @brief When "self pointer" is destroyed, 'this' might become invalid. */
     void checkThisUseAfterFree();

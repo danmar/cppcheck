@@ -243,6 +243,8 @@ private:
         TEST_CASE(ctuOneDefinitionRule);
 
         TEST_CASE(testGetFileInfo);
+
+        TEST_CASE(returnByReference);
     }
 
 #define checkCopyCtorAndEqOperator(code) checkCopyCtorAndEqOperator_(code, __FILE__, __LINE__)
@@ -8957,6 +8959,36 @@ private:
     void testGetFileInfo() {
         getFileInfo("void foo() { union { struct { }; }; }"); // don't crash
         getFileInfo("struct sometype { sometype(); }; sometype::sometype() = delete;"); // don't crash
+    }
+
+#define checkReturnByReference(...) checkReturnByReference_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkReturnByReference_(const char* file, int line, const char code[]) {
+        const Settings settings = settingsBuilder().severity(Severity::performance).library("std.cfg").build();
+
+        std::vector<std::string> files(1, "test.cpp");
+        Tokenizer tokenizer(settings, this);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
+
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
+
+        // Check..
+        CheckClass checkClass(&tokenizer, &settings, this);
+        (checkClass.checkReturnByReference)();
+    }
+
+    void returnByReference() {
+        checkReturnByReference("struct T { int a[10]; };" // #12546
+                               "struct S {"
+                               "    T t;"
+                               "    int i;"
+                               "    std::string s;"
+                               "    T getT() const { return t; }"
+                               "    int getI() const { return i; }"
+                               "    std::string getS() const { return s; }"
+                               "};");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Function 'getT()' should return member 't' by const reference.\n"
+                      "[test.cpp:1]: (style) Function 'getS()' should return member 's' by const reference.\n",
+                      errout_str());
     }
 
 };
