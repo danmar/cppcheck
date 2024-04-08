@@ -117,7 +117,7 @@ private:
 
 class RedirectInput {
 public:
-    RedirectInput(const std::string &input) : _in(input) {
+    explicit RedirectInput(const std::string &input) : _in(input) {
         _oldCin = std::cin.rdbuf(); // back up cin's streambuf
         std::cin.rdbuf(_in.rdbuf()); // assign streambuf to cin
     }
