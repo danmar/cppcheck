@@ -188,6 +188,12 @@ public:
     }
 
     /**
+     * @brief Get "checking" suppressions. Relative paths are converted to absolute paths.
+     * @return list of suppressions.
+     */
+    QList<SuppressionList::Suppression> getCheckingSuppressions() const;
+
+    /**
      * @brief Get list addons.
      * @return list of addons.
      */

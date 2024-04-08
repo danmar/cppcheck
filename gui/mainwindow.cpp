@@ -594,7 +594,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     mThread->setFiles(fileNames);
     if (mProjectFile && !checkConfiguration)
         mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools());
-    mThread->setSuppressions(mProjectFile ? mProjectFile->getSuppressions() : QList<SuppressionList::Suppression>());
+    mThread->setSuppressions(mProjectFile ? mProjectFile->getCheckingSuppressions() : QList<SuppressionList::Suppression>());
     QDir inf(mCurrentDirectory);
     const QString checkPath = inf.canonicalPath();
     setPath(SETTINGS_LAST_CHECK_PATH, checkPath);
@@ -1022,7 +1022,7 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
             tryLoadLibrary(&result.library, filename);
         }
 
-        for (const SuppressionList::Suppression &suppression : mProjectFile->getSuppressions()) {
+        for (const SuppressionList::Suppression &suppression : mProjectFile->getCheckingSuppressions()) {
             result.supprs.nomsg.addSuppression(suppression);
         }
 

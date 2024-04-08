@@ -26,6 +26,7 @@
 
 #include <string>
 
+#include <QDir>
 #include <QFile>
 #include <QIODevice>
 #include <QList>
@@ -138,4 +139,35 @@ void TestProjectFile::getAddonFilePath() const
     QCOMPARE(ProjectFile::getAddonFilePath(tempdir.path(), filepath), filepath);
 }
 
+void TestProjectFile::getCheckingSuppressionsRelative() const
+{
+    const SuppressionList::Suppression suppression("*", "externals/*");
+    const QList<SuppressionList::Suppression> suppressions{suppression};
+    ProjectFile projectFile;
+    projectFile.setFilename("/some/path/123.cppcheck");
+    projectFile.setSuppressions(suppressions);
+    QCOMPARE(projectFile.getCheckingSuppressions()[0].fileName, "/some/path/externals/*");
+}
+
+void TestProjectFile::getCheckingSuppressionsAbsolute() const
+{
+    const SuppressionList::Suppression suppression("*", "/some/path/1.h");
+    const QList<SuppressionList::Suppression> suppressions{suppression};
+    ProjectFile projectFile;
+    projectFile.setFilename("/other/123.cppcheck");
+    projectFile.setSuppressions(suppressions);
+    QCOMPARE(projectFile.getCheckingSuppressions()[0].fileName, "/some/path/1.h");
+}
+
+void TestProjectFile::getCheckingSuppressionsStar() const
+{
+    const SuppressionList::Suppression suppression("*", "*.cpp");
+    const QList<SuppressionList::Suppression> suppressions{suppression};
+    ProjectFile projectFile;
+    projectFile.setFilename("/some/path/123.cppcheck");
+    projectFile.setSuppressions(suppressions);
+    QCOMPARE(projectFile.getCheckingSuppressions()[0].fileName, "*.cpp");
+}
+
 QTEST_MAIN(TestProjectFile)
+

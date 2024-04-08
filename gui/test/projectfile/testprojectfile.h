@@ -29,4 +29,8 @@ private slots:
     void loadSimpleNoroot() const;
 
     void getAddonFilePath() const;
+
+    void getCheckingSuppressionsRelative() const;
+    void getCheckingSuppressionsAbsolute() const;
+    void getCheckingSuppressionsStar() const;
 };
