@@ -52,7 +52,7 @@ void PrintableReport::writeError(const ErrorItem &error)
     mFormattedReport += "\n";
 }
 
-QString PrintableReport::getFormattedReportText() const
+const QString& PrintableReport::getFormattedReportText() const
 {
     return mFormattedReport;
 }
