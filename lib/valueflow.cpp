@@ -1161,11 +1161,11 @@ static size_t getAlignOf(const ValueType& vt, const Settings& settings)
         };
         size_t total = 0;
         if (const Type* dt = vt.typeScope->definedType) {
-              total = std::accumulate(dt->derivedFrom.begin(), dt->derivedFrom.end(), total, [&](size_t v, const Type::BaseInfo& bi) {
-                  if (bi.type && bi.type->classScope)
-                      v += accumulateStructMembers(bi.type->classScope, accHelper);
-                  return v;
-              });
+            total = std::accumulate(dt->derivedFrom.begin(), dt->derivedFrom.end(), total, [&](size_t v, const Type::BaseInfo& bi) {
+                if (bi.type && bi.type->classScope)
+                    v += accumulateStructMembers(bi.type->classScope, accHelper);
+                return v;
+            });
         }
         return total + accumulateStructMembers(vt.typeScope, accHelper);
     }
@@ -1217,11 +1217,11 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings)
         };
         size_t total = accumulateStructMembers(vt.typeScope, accHelper);
         if (const Type* dt = vt.typeScope->definedType) {
-              total = std::accumulate(dt->derivedFrom.begin(), dt->derivedFrom.end(), total, [&](size_t v, const Type::BaseInfo& bi) {
-                  if (bi.type && bi.type->classScope)
-                      v += accumulateStructMembers(bi.type->classScope, accHelper);
-                  return v;
-              });
+            total = std::accumulate(dt->derivedFrom.begin(), dt->derivedFrom.end(), total, [&](size_t v, const Type::BaseInfo& bi) {
+                if (bi.type && bi.type->classScope)
+                    v += accumulateStructMembers(bi.type->classScope, accHelper);
+                return v;
+            });
         }
         if (total == 0)
             return 0;
