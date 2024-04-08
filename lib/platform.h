@@ -88,17 +88,17 @@ public:
     nonneg int long_long_bit;  /// bits in long long
 
     /** size of standard types */
-    nonneg int sizeof_bool;
-    nonneg int sizeof_short;
-    nonneg int sizeof_int;
-    nonneg int sizeof_long;
-    nonneg int sizeof_long_long;
-    nonneg int sizeof_float;
-    nonneg int sizeof_double;
-    nonneg int sizeof_long_double;
-    nonneg int sizeof_wchar_t;
-    nonneg int sizeof_size_t;
-    nonneg int sizeof_pointer;
+    std::size_t sizeof_bool;
+    std::size_t sizeof_short;
+    std::size_t sizeof_int;
+    std::size_t sizeof_long;
+    std::size_t sizeof_long_long;
+    std::size_t sizeof_float;
+    std::size_t sizeof_double;
+    std::size_t sizeof_long_double;
+    std::size_t sizeof_wchar_t;
+    std::size_t sizeof_size_t;
+    std::size_t sizeof_pointer;
 
     char defaultSign;  // unsigned:'u', signed:'s', unknown:'\0'
 
