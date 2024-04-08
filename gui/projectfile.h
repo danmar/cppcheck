@@ -111,7 +111,7 @@ public:
      * @brief Get list of include directories.
      * @return list of directories.
      */
-    const QStringList& getIncludeDirs() const {
+    QStringList getIncludeDirs() const {
         return ProjectFile::fromNativeSeparators(mIncludeDirs);
     }
 
