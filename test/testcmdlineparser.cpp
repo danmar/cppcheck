@@ -192,9 +192,10 @@ private:
         TEST_CASE(exitcodeSuppressionsOld);
         TEST_CASE(exitcodeSuppressions);
         TEST_CASE(exitcodeSuppressionsNoFile);
+        TEST_CASE(fileFilterStdin);
         TEST_CASE(fileList);
         TEST_CASE(fileListNoFile);
-        // TEST_CASE(fileListStdin);  // Disabled since hangs the test run
+        TEST_CASE(fileListStdin);
         TEST_CASE(fileListInvalid);
         TEST_CASE(inlineSuppr);
         TEST_CASE(jobs);
@@ -1083,6 +1084,17 @@ private:
         ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--exitcode-suppressions\".\n", logger->str());
     }
 
+    void fileFilterStdin() {
+        REDIRECT;
+        RedirectInput input("file1.c\nfile2.cpp\n");
+        const char * const argv[] = {"cppcheck", "--file-filter=-"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS("cppcheck: error: no C or C++ source files found.\n", logger->str());
+        ASSERT_EQUALS(2U, settings->fileFilters.size());
+        ASSERT_EQUALS("file1.c", settings->fileFilters[0]);
+        ASSERT_EQUALS("file2.cpp", settings->fileFilters[1]);
+    }
+
     void fileList() {
         REDIRECT;
         ScopedFile file("files.txt",
@@ -1104,13 +1116,17 @@ private:
         ASSERT_EQUALS("cppcheck: error: couldn't open the file: \"files.txt\".\n", logger->str());
     }
 
-    /*    void fileListStdin() {
-            // TODO: Give it some stdin to read from, fails because the list of
-            // files in stdin (_pathnames) is empty
-            REDIRECT;
-            const char * const argv[] = {"cppcheck", "--file-list=-", "file.cpp"};
-            TODO_ASSERT_EQUALS(true, false, parser->parseFromArgs(3, argv));
-        } */
+    void fileListStdin() {
+        REDIRECT;
+        RedirectInput input("file1.c\nfile2.cpp\n");
+        const char * const argv[] = {"cppcheck", "--file-list=-", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(3, parser->getPathNames().size());
+        auto it = parser->getPathNames().cbegin();
+        ASSERT_EQUALS("file1.c", *it++);
+        ASSERT_EQUALS("file2.cpp", *it++);
+        ASSERT_EQUALS("file.cpp", *it);
+    }
 
     void fileListInvalid() {
         REDIRECT;

@@ -114,4 +114,19 @@ private:
 
 #define SUPPRESS SuppressOutput supprout
 
+
+class RedirectInput {
+public:
+    RedirectInput(const std::string &input) : _in(input) {
+        _oldCin = std::cin.rdbuf(); // back up cin's streambuf
+        std::cin.rdbuf(_in.rdbuf()); // assign streambuf to cin
+    }
+    ~RedirectInput() noexcept {
+        std::cin.rdbuf(_oldCin); // restore cin's original streambuf
+    }
+private:
+    std::istringstream _in;
+    std::streambuf* _oldCin;
+};
+
 #endif

@@ -667,8 +667,17 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             }
 
             // use a file filter
-            else if (std::strncmp(argv[i], "--file-filter=", 14) == 0)
-                mSettings.fileFilters.emplace_back(argv[i] + 14);
+            else if (std::strncmp(argv[i], "--file-filter=", 14) == 0) {
+                const char *filter = argv[i] + 14;
+                if (std::strcmp(filter, "-") == 0) {
+                    if (!addFilesToList(filter, mSettings.fileFilters)) {
+                        mLogger.printError("Failed: --file-filter=-");
+                        return Result::Fail;
+                    }
+                } else {
+                    mSettings.fileFilters.emplace_back(filter);
+                }
+            }
 
             // file list specified
             else if (std::strncmp(argv[i], "--file-list=", 12) == 0) {
