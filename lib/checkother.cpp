@@ -1206,55 +1206,6 @@ void CheckOther::commaSeparatedReturnError(const Token *tok)
                 "macro is then used in a return statement, it is less likely such code is misunderstood.", CWE398, Certainty::normal);
 }
 
-//---------------------------------------------------------------------------
-// Check for function parameters that should be passed by const reference
-//---------------------------------------------------------------------------
-static int estimateSize(const Type* type, const Settings* settings, const SymbolDatabase* symbolDatabase, int recursionDepth = 0)
-{
-    if (recursionDepth > 20)
-        return 0;
-
-    int cumulatedSize = 0;
-    const bool isUnion = type->classScope->type == Scope::ScopeType::eUnion;
-    const auto accumulateSize = [](int& cumulatedSize, int size, bool isUnion) -> void {
-        if (isUnion)
-            cumulatedSize = std::max(cumulatedSize, size);
-        else
-            cumulatedSize += size;
-    };
-    std::set<const Scope*> anonScopes;
-    for (const Variable& var : type->classScope->varlist) {
-        int size = 0;
-        if (var.isStatic())
-            continue;
-        if (var.isPointer() || var.isReference())
-            size = settings->platform.sizeof_pointer;
-        else if (var.type() && var.type()->classScope)
-            size = estimateSize(var.type(), settings, symbolDatabase, recursionDepth + 1);
-        else if (var.valueType() && var.valueType()->type == ValueType::Type::CONTAINER)
-            size = 3 * settings->platform.sizeof_pointer; // Just guess
-        else if (var.nameToken()->scope() != type->classScope && var.nameToken()->scope()->definedType) { // anonymous union
-            const auto ret = anonScopes.insert(var.nameToken()->scope());
-            if (ret.second)
-                size = estimateSize(var.nameToken()->scope()->definedType, settings, symbolDatabase, recursionDepth + 1);
-        }
-        else
-            size = symbolDatabase->sizeOfType(var.typeStartToken());
-
-        if (var.isArray())
-            size *= std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), 1, [](int v, const Dimension& d) {
-                return v *= d.num;
-            });
-
-        accumulateSize(cumulatedSize, size, isUnion);
-    }
-    return std::accumulate(type->derivedFrom.cbegin(), type->derivedFrom.cend(), cumulatedSize, [&](int v, const Type::BaseInfo& baseInfo) {
-        if (baseInfo.type && baseInfo.type->classScope)
-            v += estimateSize(baseInfo.type, settings, symbolDatabase, recursionDepth + 1);
-        return v;
-    });
-}
-
 void CheckOther::checkPassByReference()
 {
     if (!mSettings->severity.isEnabled(Severity::performance) || mTokenizer->isC())
@@ -1288,7 +1239,7 @@ void CheckOther::checkPassByReference()
                 // Ensure that it is a large object.
                 if (!var->type()->classScope)
                     inconclusive = true;
-                else if (estimateSize(var->type(), mSettings, symbolDatabase) <= 2 * mSettings->platform.sizeof_pointer)
+                else if (!var->valueType() || ValueFlow::getSizeOf(*var->valueType(), *mSettings) <= 2 * mSettings->platform.sizeof_pointer)
                     continue;
             }
             else
@@ -2928,7 +2879,7 @@ void CheckOther::checkRedundantCopy()
                 const Token* varTok = fScope->bodyEnd->tokAt(-2);
                 if (varTok->variable() && !varTok->variable()->isGlobal() &&
                     (!varTok->variable()->type() || !varTok->variable()->type()->classScope ||
-                     estimateSize(varTok->variable()->type(), mSettings, symbolDatabase) > 2 * mSettings->platform.sizeof_pointer))
+                     (varTok->variable()->valueType() && ValueFlow::getSizeOf(*varTok->variable()->valueType(), *mSettings) > 2 * mSettings->platform.sizeof_pointer)))
                     redundantCopyError(startTok, startTok->str());
             }
         }
@@ -3041,8 +2992,8 @@ void CheckOther::checkIncompleteArrayFill()
                     int size = mTokenizer->sizeOfType(var->typeStartToken());
                     if (size == 0 && var->valueType()->pointer)
                         size = mSettings->platform.sizeof_pointer;
-                    else if (size == 0 && var->type())
-                        size = estimateSize(var->type(), mSettings, symbolDatabase);
+                    else if (size == 0 && var->valueType())
+                        size = ValueFlow::getSizeOf(*var->valueType(), *mSettings);
                     const Token* tok3 = tok->next()->astOperand2()->astOperand1()->astOperand1();
                     if ((size != 1 && size != 100 && size != 0) || var->isPointer()) {
                         if (printWarning)
