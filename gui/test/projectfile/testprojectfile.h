@@ -30,5 +30,7 @@ private slots:
 
     void getAddonFilePath() const;
 
-    void getCheckingSuppressions() const;
+    void getCheckingSuppressionsRelative() const;
+    void getCheckingSuppressionsAbsolute() const;
+    void getCheckingSuppressionsStar() const;
 };

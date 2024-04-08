@@ -759,12 +759,12 @@ void ProjectFile::setPlatform(const QString &platform)
 
 QList<SuppressionList::Suppression> ProjectFile::getCheckingSuppressions() const
 {
-    QRegularExpression re("^[^:]+/.*");
+    const QRegularExpression re1("^[a-zA-Z0-9_\\-]+/.*");
+    const QRegularExpression re2("^[^/]+$");
     QList<SuppressionList::Suppression> result;
     for (SuppressionList::Suppression suppression : mSuppressions) {
-        if (re.match(suppression.fileName.c_str()).hasMatch()) {
+        if (re1.match(suppression.fileName.c_str()).hasMatch() || re2.match(suppression.fileName.c_str()).hasMatch())
             suppression.fileName = QFileInfo(mFilename).absolutePath().toStdString() + "/" + suppression.fileName;
-        }
         result << suppression;
     }
     return result;
