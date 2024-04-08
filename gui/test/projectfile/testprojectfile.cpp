@@ -166,7 +166,7 @@ void TestProjectFile::getCheckingSuppressionsStar() const
     ProjectFile projectFile;
     projectFile.setFilename("/some/path/123.cppcheck");
     projectFile.setSuppressions(suppressions);
-    QCOMPARE(projectFile.getCheckingSuppressions()[0].fileName, "/some/path/*.cpp");
+    QCOMPARE(projectFile.getCheckingSuppressions()[0].fileName, "*.cpp");
 }
 
 QTEST_MAIN(TestProjectFile)
