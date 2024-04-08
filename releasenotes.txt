@@ -2,6 +2,7 @@ Release Notes for Cppcheck 2.14
 
 New checks:
 eraseIteratorOutOfBounds: warns when erase() is called on an iterator that is out of bounds
+returnByReference: warns when a large class member is returned by value from a getter function
 
 Improved checking:
 -
