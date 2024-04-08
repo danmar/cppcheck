@@ -1120,8 +1120,12 @@ static size_t accumulateStructMembers(const Scope* scope, F f)
             const MathLib::bigint dim = std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), 1LL, [](MathLib::bigint i1, const Dimension& dim) {
                 return i1 * dim.num;
             });
-            const auto ret = anonScopes.insert(var.nameToken()->scope());
-            if (ret.second)
+            if (var.nameToken()->scope() != scope && var.nameToken()->scope()->definedType) { // anonymous union
+                const auto ret = anonScopes.insert(var.nameToken()->scope());
+                if (ret.second)
+                    total = f(total, *vt, dim);
+            }
+            else
                 total = f(total, *vt, dim);
         }
         if (total == 0)
