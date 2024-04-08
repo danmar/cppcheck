@@ -3303,6 +3303,54 @@ void CheckClass::checkUselessOverride()
     }
 }
 
+static const Variable* getSingleReturnVar(const Scope* scope) {
+    const Token* const start = scope->bodyStart->next();
+    const Token* const end = Token::findsimplematch(start, ";", 1, scope->bodyEnd);
+    if (!end || end->next() != scope->bodyEnd)
+        return nullptr;
+    if (start->str() != "return")
+        return nullptr;
+    return start->astOperand1()->variable();
+}
+
+void CheckClass::checkReturnReference()
+{
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("returnReference"))
+        return;
+
+    logChecker("CheckClass::checkReturnReference"); // style
+
+    for (const Scope* classScope : mSymbolDatabase->classAndStructScopes) {
+        for (const Function& func : classScope->functionList) {
+            if (!func.functionScope)
+                continue;
+            if (Function::returnsPointer(&func) || Function::returnsReference(&func) || Function::returnsStandardType(&func))
+                continue;
+            if (const Variable* var = getSingleReturnVar(func.functionScope)) {
+                if (!var->valueType())
+                    continue;
+                const bool isContainer = var->valueType()->type == ValueType::Type::CONTAINER && var->valueType()->container;
+                const bool isView = isContainer && var->valueType()->container->view;
+                bool warn = isContainer && !isView;
+                if (!warn && !isView) {
+                    const std::size_t size = ValueFlow::getSizeOf(*var->valueType(), *mSettings);
+                    if (size > 2 * mSettings->platform.sizeof_pointer)
+                        warn = true;
+                }
+                if (warn)
+                    returnReferenceError(&func, var);
+            }
+        }
+    }
+}
+
+void CheckClass::returnReferenceError(const Function* func, const Variable* var)
+{
+    const Token* tok = func ? func->tokenDef : nullptr;
+    const std::string message = "Function '" + (func ? func->name() : "") + "()' should return member '" + (var ? var->name() : "") + "' by const reference.";
+    reportError(tok, Severity::style, "returnReference", message);
+}
+
 void CheckClass::checkThisUseAfterFree()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
