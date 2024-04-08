@@ -68,7 +68,7 @@ public:
      */
     unsigned getCount(const QString &tool, ShowTypes::ShowType type) const;
 
-    std::set<std::string> getActiveCheckers() const {
+    const std::set<std::string>& getActiveCheckers() const {
         return mActiveCheckers;
     }
 
@@ -82,7 +82,7 @@ public:
     void setCheckersReport(QString report) {
         mCheckersReport = std::move(report);
     }
-    QString getCheckersReport() const {
+    const QString& getCheckersReport() const {
         return mCheckersReport;
     }
 

@@ -109,7 +109,7 @@ private:
      * @brief Return suppressions from the dialog control.
      * @return List of suppressions.
      */
-    QList<SuppressionList::Suppression> getSuppressions() const {
+    const QList<SuppressionList::Suppression>& getSuppressions() const {
         return mSuppressions;
     }
 
