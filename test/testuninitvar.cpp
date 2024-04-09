@@ -4345,6 +4345,13 @@ private:
                         "  a = item.a;\n"
                         "}", "test.c");
         ASSERT_EQUALS("", errout_str());
+
+        valueFlowUninit("void f(int& r) {}\n" // #12536
+                        "void g() {\n"
+                        "    int i;\n"
+                        "    f(i);\n"
+                        "}");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void uninitStructMember() { // struct members
