@@ -3065,7 +3065,7 @@ private:
             errout_str());
 
         check("struct S { std::unique_ptr<int> p; };\n" // #12600
-              "    int* f(const S* s) {\n"
+              "int* f(const S* s) {\n"
               "    return s[0].p.get();\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
