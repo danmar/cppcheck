@@ -653,16 +653,23 @@ const Token* getParentLifetime(const Token* tok, const Library* library)
         return tok;
     // If any of the submembers are borrowed types then stop
     if (std::any_of(it.base() - 1, members.cend() - 1, [&](const Token* tok2) {
-        if (astIsPointer(tok2) || astIsContainerView(tok2) || astIsIterator(tok2))
+        const Token* obj = tok2;
+        if(Token::simpleMatch(obj, "["))
+            obj = tok2->astOperand1();
+        const Variable* var = obj->variable();
+        // Check for arrays first since astIsPointer will return true, but an array is not a borrowed type
+        if(var && var->isArray())
+            return false;
+        if (astIsPointer(obj) || astIsContainerView(obj) || astIsIterator(obj))
             return true;
-        if (!astIsUniqueSmartPointer(tok2)) {
-            if (astIsSmartPointer(tok2))
+        if (!astIsUniqueSmartPointer(obj)) {
+            if (astIsSmartPointer(obj))
                 return true;
-            const Token* dotTok = tok2->next();
+            const Token* dotTok = obj->next();
             if (!Token::simpleMatch(dotTok, ".")) {
-                const Token* endTok = nextAfterAstRightmostLeaf(tok2);
+                const Token* endTok = nextAfterAstRightmostLeaf(obj);
                 if (!endTok)
-                    dotTok = tok2->next();
+                    dotTok = obj->next();
                 else if (Token::simpleMatch(endTok, "."))
                     dotTok = endTok;
                 else if (Token::simpleMatch(endTok->next(), "."))
@@ -672,7 +679,6 @@ const Token* getParentLifetime(const Token* tok, const Library* library)
             if (Token::simpleMatch(dotTok, ".") && dotTok->originalName() == "->")
                 return true;
         }
-        const Variable* var = tok2->variable();
         return var && var->isReference();
     }))
         return nullptr;
