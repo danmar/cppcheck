@@ -654,11 +654,11 @@ const Token* getParentLifetime(const Token* tok, const Library* library)
     // If any of the submembers are borrowed types then stop
     if (std::any_of(it.base() - 1, members.cend() - 1, [&](const Token* tok2) {
         const Token* obj = tok2;
-        if(Token::simpleMatch(obj, "["))
+        if (Token::simpleMatch(obj, "["))
             obj = tok2->astOperand1();
         const Variable* var = obj->variable();
         // Check for arrays first since astIsPointer will return true, but an array is not a borrowed type
-        if(var && var->isArray())
+        if (var && var->isArray())
             return false;
         if (astIsPointer(obj) || astIsContainerView(obj) || astIsIterator(obj))
             return true;
