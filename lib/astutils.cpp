@@ -3305,6 +3305,7 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
                         return ExprUsage::PassedByReference;
                     }
                 }
+                return ExprUsage::NotUsed;
             }
         }
         if (!args.empty() && indirect == 0 && !addressOf)
