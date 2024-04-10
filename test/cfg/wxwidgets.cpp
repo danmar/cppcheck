@@ -112,12 +112,6 @@ void unreadVariable_wxDCTextBgColourChanger(wxDC &dc, const wxColour &colour)
 }
 #endif
 
-void unreadVariable_wxArchiveIterator()
-{
-    // cppcheck-suppress unreadVariable
-    wxArchiveIterator a;
-}
-
 void unreadVariable_wxZipEntry(const wxZipEntry &entry)
 {
     // cppcheck-suppress unreadVariable
