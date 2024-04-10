@@ -6143,7 +6143,7 @@ private:
                         "    increment(n);\n"
                         "    return n;\n"
                         "}\n");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (warning) Uninitialized variable: i\n", errout_str());
 
         // #11412
         valueFlowUninit("void f(int n) {\n"
@@ -6467,6 +6467,14 @@ private:
                         "  if ((success == 1) && (myst.a != 0)) {}\n"
                         "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        // #12606
+        valueFlowUninit("void f(int& r) { if (r) {} }\n"
+                        "void g() {\n"
+                        "    int i;\n"
+                        "    f(i);\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (warning) Uninitialized variable: r\n", errout_str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
