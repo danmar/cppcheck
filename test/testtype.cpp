@@ -66,7 +66,7 @@ private:
 
         std::vector<std::string> files(1, filename);
         Tokenizer tokenizer(settings1, this);
-        PreprocessorHelper::preprocess(code, files, tokenizer, dui);
+        PreprocessorHelper::preprocess(code, files, tokenizer, *this, dui);
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

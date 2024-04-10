@@ -87,7 +87,7 @@ public:
     /** character that is inserted in expanded macros */
     static char macroChar;
 
-    explicit Preprocessor(const Settings& settings, ErrorLogger *errorLogger);
+    explicit Preprocessor(const Settings& settings, ErrorLogger &errorLogger);
     virtual ~Preprocessor();
 
     void inlineSuppressions(const simplecpp::TokenList &tokens, SuppressionList &suppressions);
@@ -119,7 +119,7 @@ public:
 
     void simplifyPragmaAsm(simplecpp::TokenList *tokenList) const;
 
-    static void getErrorMessages(ErrorLogger *errorLogger, const Settings &settings);
+    static void getErrorMessages(ErrorLogger &errorLogger, const Settings &settings);
 
     /**
      * dump all directives present in source file
@@ -139,7 +139,7 @@ private:
     static bool hasErrors(const simplecpp::OutputList &outputList);
 
     const Settings& mSettings;
-    ErrorLogger *mErrorLogger;
+    ErrorLogger &mErrorLogger;
 
     /** list of all directives met while preprocessing file */
 

@@ -59,7 +59,7 @@ public:
 
             if (errorLogger) {
                 const Settings settings;
-                Preprocessor p(settings, errorLogger);
+                Preprocessor p(settings, *errorLogger);
                 p.reportOutput(outputList, true);
             }
 
@@ -69,7 +69,7 @@ public:
 
 private:
     const Settings settings0 = settingsBuilder().severity(Severity::information).build();
-    Preprocessor preprocessor0{settings0, this};
+    Preprocessor preprocessor0{settings0, *this};
 
     void run() override {
 
@@ -298,7 +298,7 @@ private:
             settings.userDefines = arg + 2;
         if (arg && std::strncmp(arg,"-U",2)==0)
             settings.userUndefs.insert(arg+2);
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, *this);
         std::vector<std::string> files;
         std::istringstream istr(filedata);
         simplecpp::TokenList tokens(istr,files);
@@ -362,7 +362,7 @@ private:
 
     void error3() {
         const auto settings = dinit(Settings, $.userDefines = "__cplusplus");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, *this);
         const std::string code("#error hello world!\n");
         PreprocessorHelper::getcode(preprocessor, code, "X", "test.c");
         ASSERT_EQUALS("[test.c:1]: (error) #error hello world!\n", errout_str());
@@ -373,7 +373,7 @@ private:
         // In included file
         {
             const auto settings = dinit(Settings, $.userDefines = "TEST");
-            Preprocessor preprocessor(settings, this);
+            Preprocessor preprocessor(settings, *this);
             const std::string code("#file \"ab.h\"\n#error hello world!\n#endfile");
             PreprocessorHelper::getcode(preprocessor, code, "TEST", "test.c");
             ASSERT_EQUALS("[ab.h:1]: (error) #error hello world!\n", errout_str());
@@ -382,7 +382,7 @@ private:
         // After including a file
         {
             const auto settings = dinit(Settings, $.userDefines = "TEST");
-            Preprocessor preprocessor(settings, this);
+            Preprocessor preprocessor(settings, *this);
             const std::string code("#file \"ab.h\"\n\n#endfile\n#error aaa");
             PreprocessorHelper::getcode(preprocessor, code, "TEST", "test.c");
             ASSERT_EQUALS("[test.c:2]: (error) #error aaa\n", errout_str());
@@ -394,7 +394,7 @@ private:
         const auto settings = dinit(Settings,
                                     $.userDefines = "TEST",
                                         $.force = true);
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, *this);
         const std::string code("#error hello world!\n");
         PreprocessorHelper::getcode(preprocessor, code, "X", "test.c");
         ASSERT_EQUALS("", errout_str());
@@ -471,7 +471,7 @@ private:
         // preprocess code with unix32 platform..
         {
             const Settings settings = settingsBuilder().platform(Platform::Type::Unix32).build();
-            Preprocessor preprocessor(settings, this);
+            Preprocessor preprocessor(settings, *this);
             preprocessor.setPlatformInfo(&tokens);
             ASSERT_EQUALS("\n1", preprocessor.getcode(tokens, "", files, false));
         }
@@ -479,7 +479,7 @@ private:
         // preprocess code with unix64 platform..
         {
             const Settings settings = settingsBuilder().platform(Platform::Type::Unix64).build();
-            Preprocessor preprocessor(settings, this);
+            Preprocessor preprocessor(settings, *this);
             preprocessor.setPlatformInfo(&tokens);
             ASSERT_EQUALS("\n\n\n2", preprocessor.getcode(tokens, "", files, false));
         }
@@ -1944,7 +1944,7 @@ private:
         /*const*/ Settings settings;
         settings.inlineSuppressions = true;
         settings.checks.enable(Checks::missingInclude);
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, *this);
 
         const std::string code("// cppcheck-suppress missingInclude\n"
                                "#include \"missing.h\"\n"
@@ -2302,7 +2302,7 @@ private:
 
     void wrongPathOnErrorDirective() {
         const auto settings = dinit(Settings, $.userDefines = "foo");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, *this);
         const std::string code("#error hello world!\n");
         PreprocessorHelper::getcode(preprocessor, code, "X", "./././test.c");
         ASSERT_EQUALS("[test.c:1]: (error) #error hello world!\n", errout_str());
@@ -2315,7 +2315,7 @@ private:
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, *this);
 
         ScopedFile header("header.h", "");
 
@@ -2332,7 +2332,7 @@ private:
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, *this);
 
         std::string code("#include \"header.h\"");
         PreprocessorHelper::getcode(preprocessor, code, "", "test.c");
@@ -2347,7 +2347,7 @@ private:
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, *this);
 
         ScopedFile header("header.h", "", "inc");
 
@@ -2365,7 +2365,7 @@ private:
         settings.includePaths.emplace_back("inc");
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, *this);
 
         ScopedFile header("header.h", "", "inc");
 
@@ -2383,7 +2383,7 @@ private:
         settings.includePaths.emplace_back("inc");
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, *this);
 
         ScopedFile header("header.h", "", Path::getCurrentPath());
 
@@ -2400,7 +2400,7 @@ private:
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, *this);
 
         const std::string header = Path::join(Path::getCurrentPath(), "header.h");
 
@@ -2417,7 +2417,7 @@ private:
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, *this);
 
         ScopedFile header("header.h", "");
 
@@ -2434,7 +2434,7 @@ private:
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, *this);
 
         std::string code("#include <header.h>");
         PreprocessorHelper::getcode(preprocessor, code, "", "test.c");
@@ -2451,7 +2451,7 @@ private:
         setTemplateFormat("simple");
         settings.includePaths.emplace_back("system");
 
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, *this);
 
         ScopedFile header("header.h", "", "system");
 
@@ -2469,7 +2469,7 @@ private:
         settings.includePaths.emplace_back("inc");
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, *this);
 
         ScopedFile header("header.h", "", Path::getCurrentPath());
 
@@ -2486,7 +2486,7 @@ private:
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, *this);
 
         const std::string header = Path::join(Path::getCurrentPath(), "header.h");
 
@@ -2503,7 +2503,7 @@ private:
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, *this);
 
         ScopedFile header("header.h", "");
         ScopedFile header2("header2.h", "");
@@ -2527,7 +2527,7 @@ private:
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
 
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, *this);
 
         ScopedFile header("header.h", "");
         ScopedFile header2("header2.h", "");

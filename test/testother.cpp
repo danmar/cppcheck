@@ -332,7 +332,7 @@ private:
 
         std::vector<std::string> files(1, filename);
         Tokenizer tokenizer(*settings, this);
-        PreprocessorHelper::preprocess(code, files, tokenizer);
+        PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

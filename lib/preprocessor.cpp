@@ -64,7 +64,7 @@ Directive::Directive(std::string _file, const int _linenr, const std::string &_s
 
 char Preprocessor::macroChar = char(1);
 
-Preprocessor::Preprocessor(const Settings& settings, ErrorLogger *errorLogger) : mSettings(settings), mErrorLogger(errorLogger)
+Preprocessor::Preprocessor(const Settings& settings, ErrorLogger &errorLogger) : mSettings(settings), mErrorLogger(errorLogger)
 {}
 
 Preprocessor::~Preprocessor()
@@ -875,18 +875,18 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
 
         locationList.emplace_back(file, linenr, 0);
     }
-    mErrorLogger->reportErr(ErrorMessage(std::move(locationList),
-                                         mFile0,
-                                         Severity::error,
-                                         msg,
-                                         "preprocessorErrorDirective",
-                                         Certainty::normal));
+    mErrorLogger.reportErr(ErrorMessage(std::move(locationList),
+                                        mFile0,
+                                        Severity::error,
+                                        msg,
+                                        "preprocessorErrorDirective",
+                                        Certainty::normal));
 }
 
 // Report that include is missing
 void Preprocessor::missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType)
 {
-    if (!mSettings.checks.isEnabled(Checks::missingInclude) || !mErrorLogger)
+    if (!mSettings.checks.isEnabled(Checks::missingInclude))
         return;
 
     std::list<ErrorMessage::FileLocation> locationList;
@@ -899,10 +899,10 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
                         "Include file: \"" + header + "\" not found.",
                         (headerType==SystemHeader) ? "missingIncludeSystem" : "missingInclude",
                         Certainty::normal);
-    mErrorLogger->reportErr(errmsg);
+    mErrorLogger.reportErr(errmsg);
 }
 
-void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings &settings)
+void Preprocessor::getErrorMessages(ErrorLogger &errorLogger, const Settings &settings)
 {
     Preprocessor preprocessor(settings, errorLogger);
     preprocessor.missingInclude(emptyString, 1, emptyString, UserHeader);
