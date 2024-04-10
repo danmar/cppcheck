@@ -19,14 +19,13 @@
 #include "check.h"
 #include "checkclass.h"
 #include "errortypes.h"
+#include "fixture.h"
 #include "helpers.h"
 #include "preprocessor.h"
 #include "settings.h"
-#include "fixture.h"
 #include "tokenize.h"
 
 #include <list>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -252,9 +251,8 @@ private:
         Preprocessor preprocessor(settings);
 
         // Tokenize..
-        Tokenizer tokenizer(settings, this, &preprocessor);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings, *this, &preprocessor);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
@@ -355,9 +353,8 @@ private:
         Preprocessor preprocessor(settings0);
 
         // Tokenize..
-        Tokenizer tokenizer(settings0, this, &preprocessor);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings0, *this, &preprocessor);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings0, this);
@@ -506,9 +503,8 @@ private:
         Preprocessor preprocessor(settings1);
 
         // Tokenize..
-        Tokenizer tokenizer(settings1, this, &preprocessor);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings1, *this, &preprocessor);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings1, this);
@@ -725,9 +721,8 @@ private:
         Preprocessor preprocessor(settings3);
 
         // Tokenize..
-        Tokenizer tokenizer(settings3, this, &preprocessor);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings3, *this, &preprocessor);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings3, this);
@@ -1171,9 +1166,8 @@ private:
         Preprocessor preprocessor(settings0);
 
         // Tokenize..
-        Tokenizer tokenizer(settings0, this, &preprocessor);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings0, *this, &preprocessor);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings0, this);
@@ -1644,9 +1638,8 @@ private:
         Preprocessor preprocessor(settings1);
 
         // Tokenize..
-        Tokenizer tokenizer(settings1, this, &preprocessor);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings1, *this, &preprocessor);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings1, this);
@@ -2604,9 +2597,8 @@ private:
         Preprocessor preprocessor(s);
 
         // Tokenize..
-        Tokenizer tokenizer(s, this, &preprocessor);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(s, *this, &preprocessor);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &s, this);
@@ -2943,9 +2935,8 @@ private:
         Preprocessor preprocessor(settings);
 
         // Tokenize..
-        Tokenizer tokenizer(settings, this, &preprocessor);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings, *this, &preprocessor);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
@@ -3591,9 +3582,8 @@ private:
         Preprocessor preprocessor(settings1);
 
         // Tokenize..
-        Tokenizer tokenizer(settings1, this, &preprocessor);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings1, *this, &preprocessor);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings1, this);
@@ -3625,9 +3615,8 @@ private:
         Preprocessor preprocessor(settings);
 
         // Tokenize..
-        Tokenizer tokenizer(settings, this, &preprocessor);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings, *this, &preprocessor);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         CheckClass checkClass(&tokenizer, &settings, this);
         (checkClass.checkConst)();
@@ -7547,9 +7536,8 @@ private:
         Preprocessor preprocessor(settings2);
 
         // Tokenize..
-        Tokenizer tokenizer(settings2, this, &preprocessor);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings2, *this, &preprocessor);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         CheckClass checkClass(&tokenizer, &settings2, this);
         checkClass.initializerListOrder();
@@ -7678,9 +7666,8 @@ private:
         Preprocessor preprocessor(settings);
 
         // Tokenize..
-        Tokenizer tokenizer(settings, this, &preprocessor);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings, *this, &preprocessor);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.initializationListUsage();
@@ -7889,9 +7876,8 @@ private:
         Preprocessor preprocessor(settings0);
 
         // Tokenize..
-        Tokenizer tokenizer(settings0, this, &preprocessor);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings0, *this, &preprocessor);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         CheckClass checkClass(&tokenizer, &settings0, this);
         (checkClass.checkSelfInitialization)();
@@ -8002,9 +7988,8 @@ private:
         Preprocessor preprocessor(settings);
 
         // Tokenize..
-        Tokenizer tokenizer(settings, this, &preprocessor);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings, *this, &preprocessor);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.checkVirtualFunctionCallInConstructor();
@@ -8348,9 +8333,8 @@ private:
         Preprocessor preprocessor(settings);
 
         // Tokenize..
-        Tokenizer tokenizer(settings, this, &preprocessor);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings, *this, &preprocessor);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
@@ -8723,9 +8707,8 @@ private:
         Preprocessor preprocessor(settings);
 
         // Tokenize..
-        Tokenizer tokenizer(settings, this, &preprocessor);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings, *this, &preprocessor);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
@@ -8743,9 +8726,8 @@ private:
         Preprocessor preprocessor(settings1);
 
         // Tokenize..
-        Tokenizer tokenizer(settings1, this, &preprocessor);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings1, *this, &preprocessor);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings1, this);
@@ -8901,7 +8883,9 @@ private:
         for (const std::string& c: code) {
             Tokenizer tokenizer(settingsDefault, this);
             std::istringstream istr(c);
-            ASSERT(tokenizer.tokenize(istr, (std::to_string(fileInfo.size()) + ".cpp").c_str()));
+            const std::string filename = std::to_string(fileInfo.size()) + ".cpp";
+            ASSERT(tokenizer.list.createTokens(istr, filename));
+            ASSERT(tokenizer.simplifyTokens1(""));
             fileInfo.push_back(check.getFileInfo(&tokenizer, &settingsDefault));
         }
 
@@ -8943,9 +8927,8 @@ private:
         Preprocessor preprocessor(settings1);
 
         // Tokenize..
-        Tokenizer tokenizer(settings1, this, &preprocessor);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings1, *this, &preprocessor);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         const Check& c = getCheck<CheckClass>();

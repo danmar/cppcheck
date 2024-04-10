@@ -166,33 +166,22 @@ private:
     }
 
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tok_(const char* file, int line, const char code[], Platform::Type type = Platform::Type::Native) {
+    std::string tok_(const char* file, int line, const char code[], bool cpp = true, Platform::Type type = Platform::Type::Native) {
         const Settings settings = settingsBuilder(settings0).platform(type).build();
-        Tokenizer tokenizer(settings, this);
+        SimpleTokenizer tokenizer(settings, *this);
 
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
-
-        return tokenizer.tokens()->stringifyList(nullptr, false);
-    }
-
-    std::string tok_(const char* file, int line, const char code[], const char filename[]) {
-        Tokenizer tokenizer(settings0, this);
-
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
 
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tokenizeAndStringify_(const char* file, int linenr, const char code[], bool expand = true, Platform::Type platform = Platform::Type::Native, const char* filename = "test.cpp", bool cpp11 = true) {
+    std::string tokenizeAndStringify_(const char* file, int linenr, const char code[], bool expand = true, Platform::Type platform = Platform::Type::Native, bool cpp = true, bool cpp11 = true) {
         const Settings settings = settingsBuilder(settings1).debugwarnings().platform(platform).cpp(cpp11 ? Standards::CPP11 : Standards::CPP03).build();
 
         // tokenize..
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, linenr);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, linenr);
 
         if (tokenizer.tokens())
             return tokenizer.tokens()->stringifyList(false, expand, false, true, false, nullptr, nullptr);
@@ -200,10 +189,9 @@ private:
     }
 
 #define tokenizeDebugListing(...) tokenizeDebugListing_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tokenizeDebugListing_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
-        Tokenizer tokenizer(settings0, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
+    std::string tokenizeDebugListing_(const char* file, int line, const char code[], bool cpp = true) {
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
 
         // result..
         return tokenizer.tokens()->stringifyList(true);
@@ -231,10 +219,10 @@ private:
         ASSERT_EQUALS(tok(code2), tok(code1));
 
         const char code3[] = "x = L\"1\" TEXT(\"2\") L\"3\";";
-        ASSERT_EQUALS("x = L\"123\" ;", tok(code3, Platform::Type::Win64));
+        ASSERT_EQUALS("x = L\"123\" ;", tok(code3, true, Platform::Type::Win64));
 
         const char code4[] = "x = TEXT(\"1\") L\"2\";";
-        ASSERT_EQUALS("x = L\"1\" L\"2\" ;", tok(code4, Platform::Type::Win64));
+        ASSERT_EQUALS("x = L\"1\" L\"2\" ;", tok(code4, true, Platform::Type::Win64));
     }
 
     void combine_wstrings() {
@@ -242,9 +230,8 @@ private:
 
         const char expected[] =  "a = L\"hello world\" ;";
 
-        Tokenizer tokenizer(settings0, this);
-        std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
     }
@@ -254,9 +241,8 @@ private:
 
         const char expected[] =  "abcd = u\"abcd\" ;";
 
-        Tokenizer tokenizer(settings0, this);
-        std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
     }
@@ -266,9 +252,8 @@ private:
 
         const char expected[] =  "abcd = U\"abcd\" ;";
 
-        Tokenizer tokenizer(settings0, this);
-        std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
     }
@@ -278,9 +263,8 @@ private:
 
         const char expected[] =  "abcd = u8\"abcd\" ;";
 
-        Tokenizer tokenizer(settings0, this);
-        std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
     }
@@ -290,9 +274,8 @@ private:
 
         const char expected[] =  "abcdef = L\"abcdef\" ;";
 
-        Tokenizer tokenizer(settings0, this);
-        std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
     }
@@ -609,71 +592,71 @@ private:
     }
 
     void not1() {
-        ASSERT_EQUALS("void f ( ) { if ( ! p ) { ; } }", tok("void f() { if (not p); }", "test.c"));
-        ASSERT_EQUALS("void f ( ) { if ( p && ! q ) { ; } }", tok("void f() { if (p && not q); }", "test.c"));
-        ASSERT_EQUALS("void f ( ) { a = ! ( p && q ) ; }", tok("void f() { a = not(p && q); }", "test.c"));
+        ASSERT_EQUALS("void f ( ) { if ( ! p ) { ; } }", tok("void f() { if (not p); }", false));
+        ASSERT_EQUALS("void f ( ) { if ( p && ! q ) { ; } }", tok("void f() { if (p && not q); }", false));
+        ASSERT_EQUALS("void f ( ) { a = ! ( p && q ) ; }", tok("void f() { a = not(p && q); }", false));
         // Don't simplify 'not' or 'compl' if they are defined as a type;
         // in variable declaration and in function declaration/definition
-        ASSERT_EQUALS("struct not { int x ; } ;", tok("struct not { int x; };", "test.c"));
-        ASSERT_EQUALS("void f ( ) { not p ; compl c ; }", tok(" void f() { not p; compl c; }", "test.c"));
-        ASSERT_EQUALS("void foo ( not i ) ;", tok("void foo(not i);", "test.c"));
-        ASSERT_EQUALS("int foo ( not i ) { return g ( i ) ; }", tok("int foo(not i) { return g(i); }", "test.c"));
+        ASSERT_EQUALS("struct not { int x ; } ;", tok("struct not { int x; };", false));
+        ASSERT_EQUALS("void f ( ) { not p ; compl c ; }", tok(" void f() { not p; compl c; }", false));
+        ASSERT_EQUALS("void foo ( not i ) ;", tok("void foo(not i);", false));
+        ASSERT_EQUALS("int foo ( not i ) { return g ( i ) ; }", tok("int foo(not i) { return g(i); }", false));
     }
 
     void and1() {
         ASSERT_EQUALS("void f ( ) { if ( p && q ) { ; } }",
-                      tok("void f() { if (p and q) ; }", "test.c"));
+                      tok("void f() { if (p and q) ; }", false));
 
         ASSERT_EQUALS("void f ( ) { if ( foo ( ) && q ) { ; } }",
-                      tok("void f() { if (foo() and q) ; }", "test.c"));
+                      tok("void f() { if (foo() and q) ; }", false));
 
         ASSERT_EQUALS("void f ( ) { if ( foo ( ) && bar ( ) ) { ; } }",
-                      tok("void f() { if (foo() and bar()) ; }", "test.c"));
+                      tok("void f() { if (foo() and bar()) ; }", false));
 
         ASSERT_EQUALS("void f ( ) { if ( p && bar ( ) ) { ; } }",
-                      tok("void f() { if (p and bar()) ; }", "test.c"));
+                      tok("void f() { if (p and bar()) ; }", false));
 
         ASSERT_EQUALS("void f ( ) { if ( p && ! q ) { ; } }",
-                      tok("void f() { if (p and not q) ; }", "test.c"));
+                      tok("void f() { if (p and not q) ; }", false));
 
         ASSERT_EQUALS("void f ( ) { r = a && b ; }",
-                      tok("void f() { r = a and b; }", "test.c"));
+                      tok("void f() { r = a and b; }", false));
 
         ASSERT_EQUALS("void f ( ) { r = ( a || b ) && ( c || d ) ; }",
-                      tok("void f() { r = (a || b) and (c || d); }", "test.c"));
+                      tok("void f() { r = (a || b) and (c || d); }", false));
 
         ASSERT_EQUALS("void f ( ) { if ( test1 [ i ] == 'A' && test2 [ i ] == 'C' ) { } }",
-                      tok("void f() { if (test1[i] == 'A' and test2[i] == 'C') {} }", "test.c"));
+                      tok("void f() { if (test1[i] == 'A' and test2[i] == 'C') {} }", false));
     }
 
     void or1() {
         ASSERT_EQUALS("void f ( ) { if ( p || q ) { ; } }",
-                      tok("void f() { if (p or q) ; }", "test.c"));
+                      tok("void f() { if (p or q) ; }", false));
 
         ASSERT_EQUALS("void f ( ) { if ( foo ( ) || q ) { ; } }",
-                      tok("void f() { if (foo() or q) ; }", "test.c"));
+                      tok("void f() { if (foo() or q) ; }", false));
 
         ASSERT_EQUALS("void f ( ) { if ( foo ( ) || bar ( ) ) { ; } }",
-                      tok("void f() { if (foo() or bar()) ; }", "test.c"));
+                      tok("void f() { if (foo() or bar()) ; }", false));
 
         ASSERT_EQUALS("void f ( ) { if ( p || bar ( ) ) { ; } }",
-                      tok("void f() { if (p or bar()) ; }", "test.c"));
+                      tok("void f() { if (p or bar()) ; }", false));
 
         ASSERT_EQUALS("void f ( ) { if ( p || ! q ) { ; } }",
-                      tok("void f() { if (p or not q) ; }", "test.c"));
+                      tok("void f() { if (p or not q) ; }", false));
 
         ASSERT_EQUALS("void f ( ) { r = a || b ; }",
-                      tok("void f() { r = a or b; }", "test.c"));
+                      tok("void f() { r = a or b; }", false));
 
         ASSERT_EQUALS("void f ( ) { r = ( a && b ) || ( c && d ) ; }",
-                      tok("void f() { r = (a && b) or (c && d); }", "test.c"));
+                      tok("void f() { r = (a && b) or (c && d); }", false));
     }
 
     void cAlternativeTokens() {
         ASSERT_EQUALS("void f ( ) { err |= ( ( r & s ) && ! t ) ; }",
-                      tok("void f() { err or_eq ((r bitand s) and not t); }", "test.c"));
+                      tok("void f() { err or_eq ((r bitand s) and not t); }", false));
         ASSERT_EQUALS("void f ( ) const { r = f ( a [ 4 ] | 0x0F , ~ c , ! d ) ; }",
-                      tok("void f() const { r = f(a[4] bitor 0x0F, compl c, not d) ; }", "test.c"));
+                      tok("void f() const { r = f(a[4] bitor 0x0F, compl c, not d) ; }", false));
 
     }
 
@@ -1297,20 +1280,20 @@ private:
         ASSERT_EQUALS("constexpr int foo ( ) { }", tok("consteval int foo() { }"));
         ASSERT_EQUALS("int x ; x = 0 ;", tok("constinit int x = 0;"));
         ASSERT_EQUALS("void f ( ) { int final [ 10 ] ; }", tok("void f() { int final[10]; }"));
-        ASSERT_EQUALS("int * p ;", tok("int * __restrict p;", "test.c"));
-        ASSERT_EQUALS("int * * p ;", tok("int * __restrict__ * p;", "test.c"));
-        ASSERT_EQUALS("void foo ( float * a , float * b ) ;", tok("void foo(float * __restrict__ a, float * __restrict__ b);", "test.c"));
-        ASSERT_EQUALS("int * p ;", tok("int * restrict p;", "test.c"));
-        ASSERT_EQUALS("int * * p ;", tok("int * restrict * p;", "test.c"));
-        ASSERT_EQUALS("void foo ( float * a , float * b ) ;", tok("void foo(float * restrict a, float * restrict b);", "test.c"));
+        ASSERT_EQUALS("int * p ;", tok("int * __restrict p;", false));
+        ASSERT_EQUALS("int * * p ;", tok("int * __restrict__ * p;", false));
+        ASSERT_EQUALS("void foo ( float * a , float * b ) ;", tok("void foo(float * __restrict__ a, float * __restrict__ b);", false));
+        ASSERT_EQUALS("int * p ;", tok("int * restrict p;", false));
+        ASSERT_EQUALS("int * * p ;", tok("int * restrict * p;", false));
+        ASSERT_EQUALS("void foo ( float * a , float * b ) ;", tok("void foo(float * restrict a, float * restrict b);", false));
         ASSERT_EQUALS("void foo ( int restrict ) ;", tok("void foo(int restrict);"));
-        ASSERT_EQUALS("int * p ;", tok("typedef int * __restrict__ rint; rint p;", "test.c"));
+        ASSERT_EQUALS("int * p ;", tok("typedef int * __restrict__ rint; rint p;", false));
 
         // don't remove struct members:
         ASSERT_EQUALS("a = b . _inline ;", tok("a = b._inline;"));
 
-        ASSERT_EQUALS("int i ; i = 0 ;", tok("auto int i = 0;", "test.c"));
-        ASSERT_EQUALS("auto i ; i = 0 ;", tok("auto i = 0;", "test.cpp"));
+        ASSERT_EQUALS("int i ; i = 0 ;", tok("auto int i = 0;", false));
+        ASSERT_EQUALS("auto i ; i = 0 ;", tok("auto i = 0;", true));
     }
 
     void simplifyCallingConvention() {
@@ -1330,12 +1313,12 @@ private:
         ASSERT_EQUALS("int f ( ) ;", tok("int __far __syscall f();"));
         ASSERT_EQUALS("int f ( ) ;", tok("int __far __pascal f();"));
         ASSERT_EQUALS("int f ( ) ;", tok("int __far __fortran f();"));
-        ASSERT_EQUALS("int f ( ) ;", tok("int WINAPI f();", Platform::Type::Win32A));
-        ASSERT_EQUALS("int f ( ) ;", tok("int APIENTRY f();", Platform::Type::Win32A));
-        ASSERT_EQUALS("int f ( ) ;", tok("int CALLBACK f();", Platform::Type::Win32A));
+        ASSERT_EQUALS("int f ( ) ;", tok("int WINAPI f();", true, Platform::Type::Win32A));
+        ASSERT_EQUALS("int f ( ) ;", tok("int APIENTRY f();", true, Platform::Type::Win32A));
+        ASSERT_EQUALS("int f ( ) ;", tok("int CALLBACK f();", true, Platform::Type::Win32A));
 
         // don't simplify Microsoft defines in unix code (#7554)
-        ASSERT_EQUALS("enum E { CALLBACK } ;", tok("enum E { CALLBACK } ;", Platform::Type::Unix32));
+        ASSERT_EQUALS("enum E { CALLBACK } ;", tok("enum E { CALLBACK } ;", true, Platform::Type::Unix32));
     }
 
     void simplifyAttribute() {
@@ -1531,9 +1514,8 @@ private:
 
 #define simplifyKnownVariables(code) simplifyKnownVariables_(code, __FILE__, __LINE__)
     std::string simplifyKnownVariables_(const char code[], const char* file, int line) {
-        Tokenizer tokenizer(settings0, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
@@ -2074,7 +2056,7 @@ private:
                                     "strcpy ( a , \"hello\" ) ;\n"
                                     "strcat ( a , \"!\" ) ;\n"
                                     "}";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, "test.c"));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, false));
         }
 
         {
@@ -2171,7 +2153,7 @@ private:
                                     "cin >> x ;\n"
                                     "return x ;\n"
                                     "}";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, "test.cpp"));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, true));
         }
     }
 
@@ -2185,7 +2167,7 @@ private:
                                 "int x ; x = 0 ;\n"
                                 "cin >> std :: hex >> x ;\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, "test.cpp"));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, true));
     }
 
     void simplifyKnownVariables48() {
@@ -2198,7 +2180,7 @@ private:
                                 "int i ;\n"
                                 "for ( i = 0 ; ( i < sz ) && ( sz > 3 ) ; ++ i ) { }\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, "test.c"));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, false));
     }
 
     void simplifyKnownVariables49() { // #3691
@@ -2214,7 +2196,7 @@ private:
                                 "case 2 : ; x = sz ; break ;\n"
                                 "}\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, "test.c"));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, false));
     }
 
     void simplifyKnownVariables50() { // #4066

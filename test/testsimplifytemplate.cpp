@@ -16,12 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "errortypes.h"
+#include "fixture.h"
+#include "helpers.h"
 #include "platform.h"
 #include "settings.h"
 #include "templatesimplifier.h"
-#include "fixture.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
@@ -30,7 +30,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
 
 class TestSimplifyTemplate : public TestFixture {
 public:
@@ -311,10 +310,9 @@ private:
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
     std::string tok_(const char* file, int line, const char code[], bool debugwarnings = false, Platform::Type type = Platform::Type::Native) {
         const Settings settings1 = settingsBuilder(settings).library("std.cfg").debugwarnings(debugwarnings).platform(type).build();
-        Tokenizer tokenizer(settings1, this);
+        SimpleTokenizer tokenizer(settings1, *this);
 
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         return tokenizer.tokens()->stringifyList(nullptr, true);
     }
@@ -5777,10 +5775,9 @@ private:
 
 #define instantiateMatch(code, numberOfArguments, patternAfter) instantiateMatch_(code, numberOfArguments, patternAfter, __FILE__, __LINE__)
     bool instantiateMatch_(const char code[], const std::size_t numberOfArguments, const char patternAfter[], const char* file, int line) {
-        Tokenizer tokenizer(settings, this);
+        SimpleTokenizer tokenizer(settings, *this);
 
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp", ""), file, line);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         return (TemplateSimplifier::instantiateMatch)(tokenizer.tokens(), numberOfArguments, false, patternAfter);
     }

@@ -16,12 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "errortypes.h"
+#include "fixture.h"
 #include "helpers.h"
 #include "platform.h"
 #include "settings.h"
-#include "fixture.h"
 #include "standards.h"
 #include "token.h"
 #include "tokenize.h"
@@ -240,10 +239,9 @@ private:
     std::string tok_(const char* file, int line, const char code[], bool simplify = true, Platform::Type type = Platform::Type::Native, bool debugwarnings = true) {
         // show warnings about unhandled typedef
         const Settings settings = settingsBuilder(settings0).exhaustive().certainty(Certainty::inconclusive).debugwarnings(debugwarnings).platform(type).build();
-        Tokenizer tokenizer(settings, this);
+        SimpleTokenizer tokenizer(settings, *this);
 
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
@@ -278,9 +276,8 @@ private:
         // Tokenize..
         // show warnings about unhandled typedef
         const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings().build();
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
     }
 
 

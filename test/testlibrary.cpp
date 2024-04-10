@@ -17,13 +17,12 @@
  */
 
 #include "errortypes.h"
+#include "fixture.h"
+#include "helpers.h"
 #include "library.h"
 #include "settings.h"
 #include "standards.h"
-#include "fixture.h"
-#include "helpers.h"
 #include "token.h"
-#include "tokenize.h"
 #include "tokenlist.h"
 
 #include <cstddef>
@@ -571,16 +570,16 @@ private:
         ASSERT_EQUALS(library.functions.size(), 1U);
 
         {
-            Tokenizer tokenizer(settings, this);
-            std::istringstream istr("CString str; str.Format();");
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings, *this);
+            const char code[] = "CString str; str.Format();";
+            ASSERT(tokenizer.tokenize(code));
             ASSERT(library.isnotnoreturn(Token::findsimplematch(tokenizer.tokens(), "Format")));
         }
 
         {
-            Tokenizer tokenizer(settings, this);
-            std::istringstream istr("HardDrive hd; hd.Format();");
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings, *this);
+            const char code[] = "HardDrive hd; hd.Format();";
+            ASSERT(tokenizer.tokenize(code));
             ASSERT(!library.isnotnoreturn(Token::findsimplematch(tokenizer.tokens(), "Format")));
         }
     }
@@ -597,16 +596,16 @@ private:
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
         {
-            Tokenizer tokenizer(settings, this);
-            std::istringstream istr("struct X : public Base { void dostuff() { f(0); } };");
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings, *this);
+            const char code[] = "struct X : public Base { void dostuff() { f(0); } };";
+            ASSERT(tokenizer.tokenize(code));
             ASSERT(library.isnullargbad(Token::findsimplematch(tokenizer.tokens(), "f"),1));
         }
 
         {
-            Tokenizer tokenizer(settings, this);
-            std::istringstream istr("struct X : public Base { void dostuff() { f(1,2); } };");
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings, *this);
+            const char code[] = "struct X : public Base { void dostuff() { f(1,2); } };";
+            ASSERT(tokenizer.tokenize(code));
             ASSERT(!library.isnullargbad(Token::findsimplematch(tokenizer.tokens(), "f"),1));
         }
     }
