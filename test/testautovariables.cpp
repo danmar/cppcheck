@@ -3063,6 +3063,13 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:4] -> [test.cpp:3] -> [test.cpp:4]: (error) Returning pointer to local variable 'ptr' that will be invalid when returning.\n",
             errout_str());
+
+        // #12600
+        check("struct S { std::unique_ptr<int> p; };\n"
+              "int* f(const S* s) {\n"
+              "    return s[0].p.get();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
     void danglingLifetime() {
         check("auto f() {\n"
