@@ -4386,7 +4386,7 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         // Ticket #6132 "crash: daca: kvirc CheckOther::checkRedundantAssignment()"
-        check("void HttpFileTransfer :: transferTerminated ( bool bSuccess@1 ) {\n"
+        check("void HttpFileTransfer :: transferTerminated ( bool bSuccess ) {\n"
               "if ( m_szCompletionCallback . isNull ( ) ) {\n"
               "KVS_TRIGGER_EVENT ( KviEvent_OnHTTPGetTerminated , out ? out : ( g_pApp . activeConsole ( ) ) , & vParams )\n"
               "} else {\n"
