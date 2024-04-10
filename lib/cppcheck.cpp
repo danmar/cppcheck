@@ -506,8 +506,7 @@ unsigned int CppCheck::checkClang(const std::string &path)
     }
 
     try {
-        Preprocessor preprocessor(mSettings, this);
-        Tokenizer tokenizer(mSettings, this, &preprocessor);
+        Tokenizer tokenizer(mSettings, this);
         tokenizer.list.appendFileIfNew(path);
         std::istringstream ast(output2);
         clangimport::parseClangAstDump(tokenizer, ast);
@@ -887,7 +886,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 continue;
             }
 
-            Tokenizer tokenizer(mSettings, this, &preprocessor);
+            Tokenizer tokenizer(mSettings, this);
             if (mSettings.showtime != SHOWTIME_MODES::SHOWTIME_NONE)
                 tokenizer.setTimerResults(&s_timerResults);
             tokenizer.setDirectives(directives); // TODO: how to avoid repeated copies?

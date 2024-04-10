@@ -68,7 +68,7 @@ struct CPPCHECKLIB Directive {
  * The preprocessor has special functionality for extracting the various ifdef
  * configurations that exist in a source file.
  */
-class CPPCHECKLIB Preprocessor {
+class CPPCHECKLIB WARN_UNUSED Preprocessor {
     // TODO: get rid of this
     friend class PreprocessorHelper;
     friend class TestPreprocessor;

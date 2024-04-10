@@ -67,7 +67,7 @@ private:
 
         Preprocessor preprocessor(settings1);
         std::vector<std::string> files(1, filename);
-        Tokenizer tokenizer(settings1, this, &preprocessor);
+        Tokenizer tokenizer(settings1, this);
         PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer, dui);
 
         // Tokenizer..

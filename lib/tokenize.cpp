@@ -152,12 +152,11 @@ static bool isClassStructUnionEnumStart(const Token * tok)
 
 //---------------------------------------------------------------------------
 
-Tokenizer::Tokenizer(const Settings &settings, ErrorLogger *errorLogger, const Preprocessor *preprocessor) :
+Tokenizer::Tokenizer(const Settings &settings, ErrorLogger *errorLogger) :
     list(&settings),
     mSettings(settings),
     mErrorLogger(errorLogger),
-    mTemplateSimplifier(new TemplateSimplifier(*this)),
-    mPreprocessor(preprocessor)
+    mTemplateSimplifier(new TemplateSimplifier(*this))
 {}
 
 Tokenizer::~Tokenizer()
@@ -10676,8 +10675,6 @@ void Tokenizer::setDirectives(std::list<Directive> directives)
 
 bool Tokenizer::hasIfdef(const Token *start, const Token *end) const
 {
-    assert(mPreprocessor);
-
     const auto& directives = mDirectives;
     return std::any_of(directives.cbegin(), directives.cend(), [&](const Directive& d) {
         return startsWith(d.str, "#if") &&
@@ -10690,8 +10687,6 @@ bool Tokenizer::hasIfdef(const Token *start, const Token *end) const
 
 bool Tokenizer::isPacked(const Token * bodyStart) const
 {
-    assert(mPreprocessor);
-
     const auto& directives = mDirectives;
     // TODO: should this return true if the #pragma exists in any line before the start token?
     return std::any_of(directives.cbegin(), directives.cend(), [&](const Directive& d) {

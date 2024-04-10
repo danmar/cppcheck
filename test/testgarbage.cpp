@@ -20,7 +20,6 @@
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
-#include "preprocessor.h"
 #include "settings.h"
 #include "token.h"
 
@@ -283,10 +282,8 @@ private:
     }
 
     std::string checkCodeInternal_(const char code[], bool cpp, const char* file, int line) {
-        Preprocessor preprocessor(settings);
-
         // tokenize..
-        SimpleTokenizer tokenizer(settings, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
 
         // call all "runChecks" in all registered Check classes

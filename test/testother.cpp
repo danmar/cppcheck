@@ -306,10 +306,8 @@ private:
         settings->certainty.setEnabled(Certainty::inconclusive, inconclusive);
         settings->verbose = verbose;
 
-        Preprocessor preprocessor(*settings);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(*settings, *this, &preprocessor);
+        SimpleTokenizer tokenizer(*settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
 
         // Check..
@@ -335,7 +333,7 @@ private:
 
         Preprocessor preprocessor(*settings);
         std::vector<std::string> files(1, filename);
-        Tokenizer tokenizer(*settings, this, &preprocessor);
+        Tokenizer tokenizer(*settings, this);
         PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
 
         // Tokenizer..
@@ -1703,10 +1701,8 @@ private:
         // #5560 - set c++03
         const Settings settings = settingsBuilder().severity(Severity::style).cpp(Standards::CPP03).build();
 
-        Preprocessor preprocessor(settings);
-
         // Tokenize..
-        SimpleTokenizer tokenizerCpp(settings, *this, &preprocessor);
+        SimpleTokenizer tokenizerCpp(settings, *this);
         ASSERT_LOC(tokenizerCpp.tokenize(code), file, line);
 
         CheckOther checkOtherCpp(&tokenizerCpp, &settings, this);
@@ -1924,10 +1920,8 @@ private:
         /*const*/ Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability, portability).certainty(Certainty::inconclusive, inconclusive).build();
         settings.platform.defaultSign = 's';
 
-        Preprocessor preprocessor(settings);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         CheckOther checkOtherCpp(&tokenizer, &settings, this);

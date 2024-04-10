@@ -260,12 +260,10 @@ private:
 #define functionVariableUsage(...) functionVariableUsage_(__FILE__, __LINE__, __VA_ARGS__)
 #define checkStructMemberUsage(...) checkStructMemberUsage_(__FILE__, __LINE__, __VA_ARGS__)
     void checkStructMemberUsage_(const char* file, int line, const char code[], const std::list<Directive>* directives = nullptr, const Settings *s = nullptr) {
-        Preprocessor preprocessor(settings);
-
         const Settings *settings1 = s ? s : &settings;
 
         // Tokenize..
-        SimpleTokenizer tokenizer(*settings1, *this, &preprocessor);
+        SimpleTokenizer tokenizer(*settings1, *this);
         if (directives)
             tokenizer.setDirectives(*directives);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -279,7 +277,7 @@ private:
     void checkStructMemberUsageP_(const char* file, int line, const char code[]) {
         std::vector<std::string> files(1, "test.cpp");
         Preprocessor preprocessor(settings);
-        Tokenizer tokenizer(settings, this, &preprocessor);
+        Tokenizer tokenizer(settings, this);
         PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
 
         // Tokenizer..
@@ -294,7 +292,7 @@ private:
     void checkFunctionVariableUsageP_(const char* file, int line, const char code[], const char* filename = "test.cpp") {
         Preprocessor preprocessor(settings);
         std::vector<std::string> files(1, filename);
-        Tokenizer tokenizer(settings, this, &preprocessor);
+        Tokenizer tokenizer(settings, this);
         PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
 
         // Tokenizer..

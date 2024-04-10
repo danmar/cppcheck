@@ -36,7 +36,6 @@ class TimerResults;
 class Token;
 class TemplateSimplifier;
 class ErrorLogger;
-class Preprocessor;
 struct Directive;
 enum class Severity;
 
@@ -54,7 +53,7 @@ class CPPCHECKLIB Tokenizer {
     friend class TestTokenizer;
 
 public:
-    explicit Tokenizer(const Settings & settings, ErrorLogger *errorLogger, const Preprocessor *preprocessor = nullptr);
+    explicit Tokenizer(const Settings & settings, ErrorLogger *errorLogger);
     ~Tokenizer();
 
     void setTimerResults(TimerResults *tr) {
@@ -681,8 +680,6 @@ private:
      * TimerResults
      */
     TimerResults* mTimerResults{};
-
-    const Preprocessor * const mPreprocessor;
 };
 
 /// @}

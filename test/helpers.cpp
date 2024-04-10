@@ -45,7 +45,6 @@
 class SuppressionList;
 
 const Settings SimpleTokenizer::s_settings;
-const Preprocessor SimpleTokenizer::s_preprocessor{s_settings, nullptr}; // TODO: provide ErrorLogger
 
 // TODO: better path-only usage
 ScopedFile::ScopedFile(std::string name, const std::string &content, std::string path)

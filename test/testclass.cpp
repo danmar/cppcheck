@@ -21,7 +21,6 @@
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
-#include "preprocessor.h"
 #include "settings.h"
 #include "tokenize.h"
 
@@ -248,10 +247,8 @@ private:
     void checkCopyCtorAndEqOperator_(const char code[], const char* file, int line) {
         const Settings settings = settingsBuilder().severity(Severity::warning).build();
 
-        Preprocessor preprocessor(settings);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
@@ -350,10 +347,8 @@ private:
 
 #define checkExplicitConstructors(code) checkExplicitConstructors_(code, __FILE__, __LINE__)
     void checkExplicitConstructors_(const char code[], const char* file, int line) {
-        Preprocessor preprocessor(settings0);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(settings0, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings0, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
@@ -500,10 +495,8 @@ private:
 
 #define checkDuplInheritedMembers(code) checkDuplInheritedMembers_(code, __FILE__, __LINE__)
     void checkDuplInheritedMembers_(const char code[], const char* file, int line) {
-        Preprocessor preprocessor(settings1);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(settings1, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings1, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
@@ -718,10 +711,8 @@ private:
 
 #define checkCopyConstructor(code) checkCopyConstructor_(code, __FILE__, __LINE__)
     void checkCopyConstructor_(const char code[], const char* file, int line) {
-        Preprocessor preprocessor(settings3);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(settings3, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings3, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
@@ -1163,10 +1154,8 @@ private:
     // Check that operator Equal returns reference to this
 #define checkOpertorEqRetRefThis(code) checkOpertorEqRetRefThis_(code, __FILE__, __LINE__)
     void checkOpertorEqRetRefThis_(const char code[], const char* file, int line) {
-        Preprocessor preprocessor(settings0);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(settings0, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings0, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
@@ -1635,10 +1624,8 @@ private:
     // Check that operator Equal checks for assignment to self
 #define checkOpertorEqToSelf(code) checkOpertorEqToSelf_(code, __FILE__, __LINE__)
     void checkOpertorEqToSelf_(const char code[], const char* file, int line) {
-        Preprocessor preprocessor(settings1);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(settings1, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings1, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
@@ -2594,10 +2581,8 @@ private:
     void checkVirtualDestructor_(const char* file, int line, const char code[], bool inconclusive = false) {
         const Settings s = settingsBuilder(settings0).certainty(Certainty::inconclusive, inconclusive).severity(Severity::warning).build();
 
-        Preprocessor preprocessor(s);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(s, *this, &preprocessor);
+        SimpleTokenizer tokenizer(s, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
@@ -2932,10 +2917,8 @@ private:
     }
 
     void checkNoMemset_(const char* file, int line, const char code[], const Settings &settings) {
-        Preprocessor preprocessor(settings);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
@@ -3579,10 +3562,8 @@ private:
 
 #define checkThisSubtraction(code) checkThisSubtraction_(code, __FILE__, __LINE__)
     void checkThisSubtraction_(const char code[], const char* file, int line) {
-        Preprocessor preprocessor(settings1);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(settings1, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings1, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
@@ -3612,10 +3593,8 @@ private:
     void checkConst_(const char* file, int line, const char code[], const Settings *s = nullptr, bool inconclusive = true) {
         const Settings settings = settingsBuilder(s ? *s : settings0).certainty(Certainty::inconclusive, inconclusive).build();
 
-        Preprocessor preprocessor(settings);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         CheckClass checkClass(&tokenizer, &settings, this);
@@ -7532,11 +7511,8 @@ private:
 
 #define checkInitializerListOrder(code) checkInitializerListOrder_(code, __FILE__, __LINE__)
     void checkInitializerListOrder_(const char code[], const char* file, int line) {
-        // Check..
-        Preprocessor preprocessor(settings2);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(settings2, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings2, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         CheckClass checkClass(&tokenizer, &settings2, this);
@@ -7663,10 +7639,8 @@ private:
         // Check..
         const Settings settings = settingsBuilder().severity(Severity::performance).build();
 
-        Preprocessor preprocessor(settings);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         CheckClass checkClass(&tokenizer, &settings, this);
@@ -7873,10 +7847,8 @@ private:
 
 #define checkSelfInitialization(code) checkSelfInitialization_(code, __FILE__, __LINE__)
     void checkSelfInitialization_(const char code[], const char* file, int line) {
-        Preprocessor preprocessor(settings0);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(settings0, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings0, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         CheckClass checkClass(&tokenizer, &settings0, this);
@@ -7985,10 +7957,8 @@ private:
         // Check..
         const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::style).certainty(Certainty::inconclusive, inconclusive).build();
 
-        Preprocessor preprocessor(settings);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         CheckClass checkClass(&tokenizer, &settings, this);
@@ -8330,10 +8300,8 @@ private:
     void checkOverride_(const char code[], const char* file, int line) {
         const Settings settings = settingsBuilder().severity(Severity::style).build();
 
-        Preprocessor preprocessor(settings);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
@@ -8704,10 +8672,8 @@ private:
         /*const*/ Settings settings = settingsBuilder().severity(Severity::warning).build();
         settings.safeChecks.classes = true;
 
-        Preprocessor preprocessor(settings);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
@@ -8723,10 +8689,8 @@ private:
 
 #define checkThisUseAfterFree(code) checkThisUseAfterFree_(code, __FILE__, __LINE__)
     void checkThisUseAfterFree_(const char code[], const char* file, int line) {
-        Preprocessor preprocessor(settings1);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(settings1, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings1, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
@@ -8924,10 +8888,8 @@ private:
 
 #define getFileInfo(code) getFileInfo_(code, __FILE__, __LINE__)
     void getFileInfo_(const char code[], const char* file, int line) {
-        Preprocessor preprocessor(settings1);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(settings1, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings1, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
