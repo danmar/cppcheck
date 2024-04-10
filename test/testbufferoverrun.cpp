@@ -29,7 +29,6 @@
 #include "tokenize.h"
 
 #include <list>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -41,22 +40,20 @@ private:
     /*const*/ Settings settings0 = settingsBuilder().library("std.cfg").severity(Severity::warning).severity(Severity::style).severity(Severity::portability).build();
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
+    void check_(const char* file, int line, const char code[], bool cpp = true) {
         const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).build();
 
         // Tokenize..
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
 
         // Check for buffer overruns..
         runChecks<CheckBufferOverrun>(tokenizer, this);
     }
 
-    void check_(const char* file, int line, const char code[], const Settings &settings, const char filename[] = "test.cpp") {
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
+    void check_(const char* file, int line, const char code[], const Settings &settings, bool cpp = true) {
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
 
         // Check for buffer overruns..
         runChecks<CheckBufferOverrun>(tokenizer, this);
@@ -2474,7 +2471,7 @@ private:
               "            c++;\n"
               "     }\n"
               "    return c;\n"
-              "}", "test.c");
+              "}", false);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2680,7 +2677,7 @@ private:
               "    char str[6] = \"\\0\";\n"
               "    unsigned short port = 65535;\n"
               "    snprintf(str, sizeof(str), \"%hu\", port);\n"
-              "}", settings0, "test.c");
+              "}", settings0, false);
         ASSERT_EQUALS("", errout_str());
 
         check("int f(int x) {\n" // #11020
@@ -2737,13 +2734,13 @@ private:
         check("void f() {\n"
               "    char str[3];\n"
               "    str[((unsigned char)3) - 1] = 0;\n"
-              "}", "test.cpp");
+              "}");
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"  // #5416 FP
               "    char *str[3];\n"
               "    do_something(&str[0][5]);\n"
-              "}", "test.cpp");
+              "}");
         ASSERT_EQUALS("", errout_str());
 
         check("class X { static const int x[100]; };\n" // #6070
@@ -3698,7 +3695,7 @@ private:
         check("void f() {\n" // #6350 - fp when there is cast of buffer
               "  wchar_t buf[64];\n"
               "  p = (unsigned char *) buf + sizeof (buf);\n"
-              "}", "6350.c");
+              "}", false);
         ASSERT_EQUALS("", errout_str());
 
         check("int f() {\n"
@@ -5163,9 +5160,8 @@ private:
 #define ctu(code) ctu_(code, __FILE__, __LINE__)
     void ctu_(const char code[], const char* file, int line) {
         // Tokenize..
-        Tokenizer tokenizer(settings0, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         CTU::FileInfo *ctu = CTU::getFileInfo(&tokenizer);
 
@@ -5522,7 +5518,7 @@ private:
               "        (*str)[applen] = '\\0';\n"
               "    }\n"
               "    free(*str);\n"
-              "}\n", "test.c");
+              "}\n", false);
         ASSERT_EQUALS("", errout_str());
 
         check("template <typename T, unsigned N>\n"

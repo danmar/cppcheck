@@ -18,12 +18,12 @@
 
 #include "config.h"
 #include "errortypes.h"
+#include "fixture.h"
 #include "helpers.h"
 #include "platform.h"
 #include "preprocessor.h" // usually tests here should not use preprocessor...
 #include "settings.h"
 #include "standards.h"
-#include "fixture.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
@@ -452,13 +452,12 @@ private:
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tokenizeAndStringify_(const char* file, int linenr, const char code[], bool expand = true, Platform::Type platform = Platform::Type::Native, const char* filename = "test.cpp", Standards::cppstd_t std = Standards::CPP11) {
+    std::string tokenizeAndStringify_(const char* file, int linenr, const char code[], bool expand = true, Platform::Type platform = Platform::Type::Native, bool cpp = true, Standards::cppstd_t std = Standards::CPP11) {
         const Settings settings = settingsBuilder(settings1).debugwarnings().cpp(std).platform(platform).build();
 
         // tokenize..
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, linenr);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, linenr);
 
         if (tokenizer.tokens())
             return tokenizer.tokens()->stringifyList(false, expand, false, true, false, nullptr, nullptr);
@@ -466,36 +465,33 @@ private:
     }
 
 #define tokenizeAndStringifyWindows(...) tokenizeAndStringifyWindows_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tokenizeAndStringifyWindows_(const char* file, int linenr, const char code[], bool expand = true, Platform::Type platform = Platform::Type::Native, const char* filename = "test.cpp", bool cpp11 = true) {
+    std::string tokenizeAndStringifyWindows_(const char* file, int linenr, const char code[], bool expand = true, Platform::Type platform = Platform::Type::Native, bool cpp = true, bool cpp11 = true) {
         const Settings settings = settingsBuilder(settings_windows).debugwarnings().cpp(cpp11 ? Standards::CPP11 : Standards::CPP03).platform(platform).build();
 
         // tokenize..
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, linenr);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, linenr);
 
         if (tokenizer.tokens())
             return tokenizer.tokens()->stringifyList(false, expand, false, true, false, nullptr, nullptr);
         return "";
     }
 
-    std::string tokenizeAndStringify_(const char* file, int line, const char code[], const Settings &settings, const char filename[] = "test.cpp") {
+    std::string tokenizeAndStringify_(const char* file, int line, const char code[], const Settings &settings, bool cpp = true) {
         // tokenize..
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
         if (!tokenizer.tokens())
             return "";
         return tokenizer.tokens()->stringifyList(false, true, false, true, false, nullptr, nullptr);
     }
 
 #define tokenizeDebugListing(...) tokenizeDebugListing_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tokenizeDebugListing_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
+    std::string tokenizeDebugListing_(const char* file, int line, const char code[], bool cpp = true) {
         const Settings settings = settingsBuilder(settings0).c(Standards::C89).cpp(Standards::CPP03).build();
 
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
 
         // result..
         return tokenizer.tokens()->stringifyList(true,true,true,true,false);
@@ -573,7 +569,7 @@ private:
                             "-(Foo *)foo: (Bar *)bar\n"
                             "{ }\n"
                             "@end\n";
-        ASSERT_THROW(tokenizeAndStringify(code), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code), SYNTAX);
     }
 
     // Ticket #2361: 0X10 => 16
@@ -611,7 +607,7 @@ private:
 
     void tokenize19() {
         // #3006 - added hasComplicatedSyntaxErrorsInTemplates to avoid segmentation fault
-        ASSERT_THROW(tokenizeAndStringify("x < () <"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("x < () <"), SYNTAX);
 
         // #3496 - make sure hasComplicatedSyntaxErrorsInTemplates works
         ASSERT_EQUALS("void a ( Fred * f ) { for ( ; n < f . x ( ) ; ) { } }",
@@ -649,12 +645,12 @@ private:
 
     // #4239 - segfault for "f ( struct { int typedef T x ; } ) { }"
     void tokenize25() {
-        ASSERT_THROW(tokenizeAndStringify("f ( struct { int typedef T x ; } ) { }"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("f ( struct { int typedef T x ; } ) { }"), SYNTAX);
     }
 
     // #4245 - segfault
     void tokenize26() {
-        ASSERT_THROW(tokenizeAndStringify("class x { protected : template < int y = } ;"), InternalError); // Garbage code
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("class x { protected : template < int y = } ;"), SYNTAX); // Garbage code
     }
 
     void tokenize27() {
@@ -783,15 +779,21 @@ private:
 
     void validate() {
         // C++ code in C file
-        ASSERT_THROW(tokenizeAndStringify(";using namespace std;",false,Platform::Type::Native,"test.c"), InternalError);
-        ASSERT_THROW(tokenizeAndStringify(";std::map<int,int> m;",false,Platform::Type::Native,"test.c"), InternalError);
-        ASSERT_THROW(tokenizeAndStringify(";template<class T> class X { };",false,Platform::Type::Native,"test.c"), InternalError);
-        ASSERT_THROW(tokenizeAndStringify("int X<Y>() {};",false,Platform::Type::Native,"test.c"), InternalError);
-        ASSERT_THROW(tokenizeAndStringify("void foo(int i) { reinterpret_cast<char>(i) };",false,Platform::Type::Native,"test.h"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(";using namespace std;",false,Platform::Type::Native,false), SYNTAX);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(";std::map<int,int> m;",false,Platform::Type::Native,false), SYNTAX);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(";template<class T> class X { };",false,Platform::Type::Native,false), SYNTAX);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("int X<Y>() {};",false,Platform::Type::Native,false), SYNTAX);
+        {
+            Tokenizer tokenizer(settings1, this);
+            const char code[] = "void foo(int i) { reinterpret_cast<char>(i) };";
+            std::istringstream istr(code);
+            ASSERT(tokenizer.list.createTokens(istr, "test.h"));
+            ASSERT_THROW_INTERNAL(tokenizer.simplifyTokens1(""), SYNTAX);
+        }
     }
 
     void objectiveC() {
-        ASSERT_THROW(tokenizeAndStringify("void f() { [foo bar]; }"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void f() { [foo bar]; }"), SYNTAX);
     }
 
     void syntax_case_default() { // correct syntax
@@ -838,14 +840,14 @@ private:
     void removePragma() {
         const char code[] = "_Pragma(\"abc\") int x;";
         const Settings s_c89 = settingsBuilder().c(Standards::C89).build();
-        ASSERT_EQUALS("_Pragma ( \"abc\" ) int x ;", tokenizeAndStringify(code, s_c89, "test.c"));
+        ASSERT_EQUALS("_Pragma ( \"abc\" ) int x ;", tokenizeAndStringify(code, s_c89, false));
         const Settings s_clatest = settingsBuilder().c(Standards::CLatest).build();
-        ASSERT_EQUALS("int x ;", tokenizeAndStringify(code, s_clatest, "test.c"));
+        ASSERT_EQUALS("int x ;", tokenizeAndStringify(code, s_clatest, false));
 
         const Settings s_cpp03 = settingsBuilder().cpp(Standards::CPP03).build();
-        ASSERT_EQUALS("_Pragma ( \"abc\" ) int x ;", tokenizeAndStringify(code, s_cpp03, "test.cpp"));
+        ASSERT_EQUALS("_Pragma ( \"abc\" ) int x ;", tokenizeAndStringify(code, s_cpp03, true));
         const Settings s_cpplatest = settingsBuilder().cpp(Standards::CPPLatest).build();
-        ASSERT_EQUALS("int x ;", tokenizeAndStringify(code, s_cpplatest, "test.cpp"));
+        ASSERT_EQUALS("int x ;", tokenizeAndStringify(code, s_cpplatest, true));
     }
 
     void foreach () {
@@ -936,6 +938,8 @@ private:
         ASSERT_EQUALS("int x [ 10 ] ;", tokenizeAndStringify("int x[10]@0x100;"));
 
         ASSERT_EQUALS("interrupt@ f ( ) { }", tokenizeAndStringify("@interrupt f() {}"));
+
+        ASSERT_EQUALS("const short MyVariable = 0xF0F0 ;", tokenizeAndStringify("const short MyVariable @ \"MYOWNSECTION\" = 0xF0F0; ")); // #12602
     }
 
     void inlineasm() {
@@ -963,25 +967,25 @@ private:
 
     // #4725 - ^{}
     void simplifyAsm2() {
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { ^{} }"), InternalError, "syntax error");
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { x(^{}); }"), InternalError, "syntax error");
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { foo(A(), ^{ bar(); }); }"), InternalError, "syntax error");
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("int f0(Args args) {\n"
-                                                 "    return ^{\n"
-                                                 "        return sizeof...(Args);\n"
-                                                 "    }() + ^ {\n"
-                                                 "        return sizeof...(args);\n"
-                                                 "    }();\n"
-                                                 "};"), InternalError, "syntax error");
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("int(^block)(void) = ^{\n"
-                                                 "    static int test = 0;\n"
-                                                 "    return test;\n"
-                                                 "};"), InternalError, "syntax error");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("void f() { ^{} }"), SYNTAX, "syntax error");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("void f() { x(^{}); }"), SYNTAX, "syntax error");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("void f() { foo(A(), ^{ bar(); }); }"), SYNTAX, "syntax error");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("int f0(Args args) {\n"
+                                                          "    return ^{\n"
+                                                          "        return sizeof...(Args);\n"
+                                                          "    }() + ^ {\n"
+                                                          "        return sizeof...(args);\n"
+                                                          "    }();\n"
+                                                          "};"), SYNTAX, "syntax error");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("int(^block)(void) = ^{\n"
+                                                          "    static int test = 0;\n"
+                                                          "    return test;\n"
+                                                          "};"), SYNTAX, "syntax error");
 
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("; return f(a[b=c],^{});"), InternalError, "syntax error: keyword 'return' is not allowed in global scope"); // #7185
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("; return f(a[b=c],^{});"), SYNTAX, "syntax error: keyword 'return' is not allowed in global scope"); // #7185
         ASSERT_EQUALS("{ return f ( asm ( \"^(void){somecode}\" ) ) ; }",
                       tokenizeAndStringify("{ return f(^(void){somecode}); }"));
-        ASSERT_THROW_EQUALS(tokenizeAndStringify(";a?(b?(c,^{}):0):^{};"), InternalError, "syntax error");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify(";a?(b?(c,^{}):0):^{};"), SYNTAX, "syntax error");
         ASSERT_EQUALS("template < typename T > "
                       "CImg < T > operator| ( const char * const expression , const CImg < T > & img ) { "
                       "return img | expression ; "
@@ -1108,7 +1112,7 @@ private:
             "    for (int k=0; k<VectorSize; k++)"
             "        LOG_OUT(ID_Vector[k])"
             "}";
-        ASSERT_THROW(tokenizeAndStringify(code), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code), UNKNOWN_MACRO);
     }
 
     void ifAddBraces11() {
@@ -1208,7 +1212,7 @@ private:
 
     void ifAddBraces20() { // #5012 - syntax error 'else }'
         const char code[] = "void f() { if(x) {} else }";
-        ASSERT_THROW(tokenizeAndStringify(code), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code), SYNTAX);
     }
 
     void ifAddBracesLabels() {
@@ -1341,13 +1345,13 @@ private:
 
         {
             const char code[] = "{ UNKNOWN_MACRO ( do ) ; while ( a -- ) ; }";
-            ASSERT_THROW(tokenizeAndStringify(code), InternalError);
+            ASSERT_THROW_INTERNAL(tokenizeAndStringify(code), SYNTAX);
             ASSERT_EQUALS("", errout_str());
         }
 
         {
             const char code[] = "{ UNKNOWN_MACRO ( do , foo ) ; while ( a -- ) ; }";
-            ASSERT_THROW(tokenizeAndStringify(code), InternalError);
+            ASSERT_THROW_INTERNAL(tokenizeAndStringify(code), SYNTAX);
             ASSERT_EQUALS("", errout_str());
         }
 
@@ -1530,9 +1534,8 @@ private:
         {
             const char code[] = "extern \"C\" int foo();";
             // tokenize..
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             // Expected result..
             ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
             ASSERT(tokenizer.tokens()->next()->isExternC());
@@ -1540,9 +1543,8 @@ private:
         {
             const char code[] = "extern \"C\" { int foo(); }";
             // tokenize..
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             // Expected result..
             ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
             ASSERT(tokenizer.tokens()->next()->isExternC());
@@ -1550,9 +1552,8 @@ private:
         {
             const char code[] = "extern \"C++\" int foo();";
             // tokenize..
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             // Expected result..
             ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
             ASSERT(!tokenizer.tokens()->next()->isExternC());
@@ -1560,9 +1561,8 @@ private:
         {
             const char code[] = "extern \"C++\" { int foo(); }";
             // tokenize..
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             // Expected result..
             ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
             ASSERT(!tokenizer.tokens()->next()->isExternC());
@@ -1655,15 +1655,15 @@ private:
 
     void simplifyFunctionParametersErrors() {
         //same parameters...
-        ASSERT_THROW(tokenizeAndStringify("void foo(x, x)\n"
-                                          " int x;\n"
-                                          " int x;\n"
-                                          "{}\n"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void foo(x, x)\n"
+                                                   " int x;\n"
+                                                   " int x;\n"
+                                                   "{}\n"), SYNTAX);
 
-        ASSERT_THROW(tokenizeAndStringify("void foo(x, y)\n"
-                                          " int x;\n"
-                                          " int x;\n"
-                                          "{}\n"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void foo(x, y)\n"
+                                                   " int x;\n"
+                                                   " int x;\n"
+                                                   "{}\n"), SYNTAX);
 
         tokenizeAndStringify("void foo(int, int)\n"
                              "{}");
@@ -2303,7 +2303,7 @@ private:
 
     void vardecl14() {
         const char code[] = "::std::tr1::shared_ptr<int> pNum1, pNum2;\n";
-        ASSERT_EQUALS(":: std :: tr1 :: shared_ptr < int > pNum1 ; :: std :: tr1 :: shared_ptr < int > pNum2 ;", tokenizeAndStringify(code, false, Platform::Type::Native, "test.cpp", Standards::CPP03));
+        ASSERT_EQUALS(":: std :: tr1 :: shared_ptr < int > pNum1 ; :: std :: tr1 :: shared_ptr < int > pNum2 ;", tokenizeAndStringify(code, false, Platform::Type::Native, true, Standards::CPP03));
     }
 
     void vardecl15() {
@@ -2468,7 +2468,7 @@ private:
     }
 
     void vardecl23() {  // #4276 - segmentation fault
-        ASSERT_THROW(tokenizeAndStringify("class a { protected : template < class int x = 1 ; public : int f ( ) ; }"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("class a { protected : template < class int x = 1 ; public : int f ( ) ; }"), SYNTAX);
     }
 
     void vardecl24() {  // #4187 - variable declaration within lambda function
@@ -2510,7 +2510,7 @@ private:
     void vardecl26() { // #5907
         const char code[] = "extern int *new, obj, player;";
         const char expected[] = "extern int * new ; extern int obj ; extern int player ;";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, "test.c"));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, false));
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         ASSERT_EQUALS("[test.cpp:1]: (debug) Scope::checkVariable found variable 'new' with varid 0.\n", errout_str());
     }
@@ -2522,7 +2522,7 @@ private:
                             "    return 0;\n"
                             "  return 0;\n"
                             "}";
-        tokenizeAndStringify(code, /*expand=*/ true, Platform::Type::Native, "test.c");
+        tokenizeAndStringify(code, /*expand=*/ true, Platform::Type::Native, false);
     }
 
     void vardecl28() {
@@ -2534,7 +2534,7 @@ private:
                       "const unsigned short x ; x = 1 ;\n"
                       "return x ;\n"
                       "}",
-                      tokenizeAndStringify(code, /*expand=*/ true, Platform::Type::Native, "test.c"));
+                      tokenizeAndStringify(code, /*expand=*/ true, Platform::Type::Native, false));
     }
 
     void vardecl29() { // #9282
@@ -2554,9 +2554,9 @@ private:
     void vardecl30() {
         const char code[] = "struct D {} const d;";
         ASSERT_EQUALS("struct D { } ; struct D const d ;",
-                      tokenizeAndStringify(code, true, Platform::Type::Native, "test.cpp"));
+                      tokenizeAndStringify(code, true, Platform::Type::Native, true));
         ASSERT_EQUALS("struct D { } ; struct D const d ;",
-                      tokenizeAndStringify(code, true, Platform::Type::Native, "test.c"));
+                      tokenizeAndStringify(code, true, Platform::Type::Native, false));
     }
 
     void vardecl31() {
@@ -2627,15 +2627,15 @@ private:
     }
 
     void implicitIntConst() {
-        ASSERT_EQUALS("const int x ;", tokenizeAndStringify("const x;", true, Platform::Type::Native, "test.c"));
-        ASSERT_EQUALS("const int * x ;", tokenizeAndStringify("const *x;", true, Platform::Type::Native, "test.c"));
-        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();", true, Platform::Type::Native, "test.c"));
+        ASSERT_EQUALS("const int x ;", tokenizeAndStringify("const x;", true, Platform::Type::Native, false));
+        ASSERT_EQUALS("const int * x ;", tokenizeAndStringify("const *x;", true, Platform::Type::Native, false));
+        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();", true, Platform::Type::Native, false));
     }
 
     void implicitIntExtern() {
-        ASSERT_EQUALS("extern int x ;", tokenizeAndStringify("extern x;", true, Platform::Type::Native, "test.c"));
-        ASSERT_EQUALS("extern int * x ;", tokenizeAndStringify("extern *x;", true, Platform::Type::Native, "test.c"));
-        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();", true, Platform::Type::Native, "test.c"));
+        ASSERT_EQUALS("extern int x ;", tokenizeAndStringify("extern x;", true, Platform::Type::Native, false));
+        ASSERT_EQUALS("extern int * x ;", tokenizeAndStringify("extern *x;", true, Platform::Type::Native, false));
+        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();", true, Platform::Type::Native, false));
     }
 
     /**
@@ -2869,27 +2869,27 @@ private:
         {
             const char code[] = "float complex x;";
             const char expected[] = "_Complex float x ;";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Native, "test.c"));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Native, false));
         }
         {
             const char code[] = "complex float x;";
             const char expected[] = "_Complex float x ;";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Native, "test.c"));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Native, false));
         }
         {
             const char code[] = "complex long double x;";
             const char expected[] = "_Complex long double x ;";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Native, "test.c"));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Native, false));
         }
         {
             const char code[] = "long double complex x;";
             const char expected[] = "_Complex long double x ;";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Native, "test.c"));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Native, false));
         }
         {
             const char code[] = "double complex;";
             const char expected[] = "double complex ;";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Native, "test.c"));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Native, false));
         }
     }
 
@@ -2898,9 +2898,8 @@ private:
             const char code[] = "class A{\n"
                                 " void f() {}\n"
                                 "};";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok = tokenizer.tokens();
             // A body {}
             ASSERT_EQUALS(true, tok->linkAt(2) == tok->tokAt(9));
@@ -2922,9 +2921,8 @@ private:
                                 " char a[10];\n"
                                 " char *b ; b = new char[a[0]];\n"
                                 "};";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok = tokenizer.tokens();
             // a[10]
             ASSERT_EQUALS(true, tok->linkAt(7) == tok->tokAt(9));
@@ -2945,9 +2943,8 @@ private:
             const char code[] = "void f(){\n"
                                 " foo(g());\n"
                                 "};";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok = tokenizer.tokens();
             // foo(
             ASSERT_EQUALS(true, tok->linkAt(6) == tok->tokAt(10));
@@ -2964,9 +2961,8 @@ private:
             const char code[] = "bool foo(C<z> a, bar<int, x<float>>& f, int b) {\n"
                                 "    return(a<b && b>f);\n"
                                 "}";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok = tokenizer.tokens();
             // template<
             ASSERT_EQUALS(true, tok->tokAt(6) == tok->linkAt(4));
@@ -2991,9 +2987,8 @@ private:
             const char code[] = "void foo() {\n"
                                 "    return static_cast<bar>(a);\n"
                                 "}";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok = tokenizer.tokens();
 
             // static_cast<
@@ -3007,9 +3002,8 @@ private:
             const char code[] = "void foo() {\n"
                                 "    nvwa<(x > y)> ERROR_nnn;\n"
                                 "}";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok = tokenizer.tokens();
 
             // nvwa<(x > y)>
@@ -3022,9 +3016,8 @@ private:
         {
             // #4860
             const char code[] = "class A : public B<int> {};";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok = tokenizer.tokens();
 
             // B<..>
@@ -3037,9 +3030,8 @@ private:
         {
             // #4860
             const char code[] = "Bar<Typelist< int, Typelist< int, Typelist< int, FooNullType>>>>::set(1, 2, 3);";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok = tokenizer.tokens();
 
             ASSERT_EQUALS(true, tok->tokAt(1) == tok->linkAt(18));
@@ -3053,9 +3045,8 @@ private:
         {
             // #5627
             const char code[] = "new Foo<Bar>[10];";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok = tokenizer.tokens();
 
             ASSERT_EQUALS(true, tok->tokAt(2) == tok->linkAt(4));
@@ -3068,9 +3059,8 @@ private:
         {
             // #6242
             const char code[] = "func = integral_<uchar, int, double>;";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok = tokenizer.tokens();
 
             ASSERT_EQUALS(true, tok->tokAt(3) == tok->linkAt(9));
@@ -3082,9 +3072,8 @@ private:
         {
             // if (a < b || c > d) { }
             const char code[] = "{ if (a < b || c > d); }";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok = tokenizer.tokens();
 
             ASSERT_EQUALS(true, tok->linkAt(3) == nullptr);
@@ -3093,9 +3082,8 @@ private:
         {
             // bool f = a < b || c > d
             const char code[] = "bool f = a < b || c > d;";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok = tokenizer.tokens();
 
             ASSERT_EQUALS(true, tok->linkAt(4) == nullptr);
@@ -3104,9 +3092,8 @@ private:
         {
             // template
             const char code[] = "a < b || c > d;";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok = tokenizer.tokens();
 
             ASSERT_EQUALS(true, tok->linkAt(1) == tok->tokAt(5));
@@ -3115,9 +3102,8 @@ private:
         {
             // if (a < ... > d) { }
             const char code[] = "{ if (a < b || c == 3 || d > e); }";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok = tokenizer.tokens();
 
             ASSERT_EQUALS(true, tok->linkAt(3) == nullptr);
@@ -3126,9 +3112,8 @@ private:
         {
             // template
             const char code[] = "a<b==3 || c> d;";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok = tokenizer.tokens();
             ASSERT_EQUALS(true, tok->linkAt(1) == tok->tokAt(7));
         }
@@ -3136,18 +3121,16 @@ private:
         {
             // template
             const char code[] = "a<b || c==4> d;";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok = tokenizer.tokens();
             ASSERT_EQUALS(true, tok->linkAt(1) == tok->tokAt(7));
         }
 
         {
             const char code[] = "template < f = b || c > struct S;";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok = tokenizer.tokens();
             ASSERT_EQUALS(true, tok->linkAt(1) == tok->tokAt(7));
             ASSERT_EQUALS(true, tok->tokAt(1) == tok->linkAt(7));
@@ -3155,9 +3138,8 @@ private:
 
         {
             const char code[] = "struct A : B<c&&d> {};";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok = tokenizer.tokens();
             ASSERT_EQUALS(true, tok->linkAt(4) == tok->tokAt(8));
             ASSERT_EQUALS(true, tok->tokAt(4) == tok->linkAt(8));
@@ -3165,9 +3147,8 @@ private:
 
         {
             const char code[] = "Data<T&&>;";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok = tokenizer.tokens();
             ASSERT_EQUALS(true, tok->linkAt(1) == tok->tokAt(4));
             ASSERT_EQUALS(true, tok->tokAt(1) == tok->linkAt(4));
@@ -3176,9 +3157,8 @@ private:
         {
             // #6601
             const char code[] = "template<class R> struct FuncType<R(&)()> : FuncType<R()> { };";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok = tokenizer.tokens();
 
             ASSERT_EQUALS(true, tok->linkAt(1) == tok->tokAt(4)); // <class R>
@@ -3195,9 +3175,8 @@ private:
         {
             // #7158
             const char code[] = "enum { value = boost::mpl::at_c<B, C> };";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok = Token::findsimplematch(tokenizer.tokens(), "<");
             ASSERT_EQUALS(true, tok->link() == tok->tokAt(4));
             ASSERT_EQUALS(true, tok->linkAt(4) == tok);
@@ -3208,9 +3187,8 @@ private:
             const char code[] = "template <typename T, typename U>\n"
                                 "struct CheckedDivOp< T, U, typename std::enable_if<std::is_floating_point<T>::value || std::is_floating_point<U>::value>::type> {\n"
                                 "};\n";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok1 = Token::findsimplematch(tokenizer.tokens(), "struct")->tokAt(2);
             const Token *tok2 = Token::findsimplematch(tokenizer.tokens(), "{")->previous();
             ASSERT_EQUALS(true, tok1->link() == tok2);
@@ -3220,9 +3198,8 @@ private:
         {
             // #7975
             const char code[] = "template <class C> X<Y&&Z, C*> copy() {};\n";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok1 = Token::findsimplematch(tokenizer.tokens(), "< Y");
             const Token *tok2 = Token::findsimplematch(tok1, "> copy");
             ASSERT_EQUALS(true, tok1->link() == tok2);
@@ -3232,9 +3209,8 @@ private:
         {
             // #8006
             const char code[] = "C<int> && a = b;";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok1 = tokenizer.tokens()->next();
             const Token *tok2 = tok1->tokAt(2);
             ASSERT_EQUALS(true, tok1->link() == tok2);
@@ -3244,9 +3220,8 @@ private:
         {
             // #8115
             const char code[] = "void Test(C<int> && c);";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok1 = Token::findsimplematch(tokenizer.tokens(), "<");
             const Token *tok2 = tok1->tokAt(2);
             ASSERT_EQUALS(true, tok1->link() == tok2);
@@ -3256,9 +3231,8 @@ private:
             // #8654
             const char code[] = "template<int N> struct A {}; "
                                 "template<int... Ns> struct foo : A<Ns>... {};";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *A = Token::findsimplematch(tokenizer.tokens(), "A <");
             ASSERT_EQUALS(true, A->next()->link() == A->tokAt(3));
         }
@@ -3266,18 +3240,16 @@ private:
             // #8851
             const char code[] = "template<typename std::enable_if<!(std::value1) && std::value2>::type>"
                                 "void basic_json() {}";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             ASSERT_EQUALS(true, Token::simpleMatch(tokenizer.tokens()->next()->link(), "> void"));
         }
 
         {
             // #9094 - template usage or comparison?
             const char code[] = "a = f(x%x<--a==x>x);";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             ASSERT(nullptr == Token::findsimplematch(tokenizer.tokens(), "<")->link());
         }
 
@@ -3286,9 +3258,8 @@ private:
             const char code[] = "using std::same_as;\n"
                                 "template<same_as<int> T>\n"
                                 "void f();";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token *tok1 = Token::findsimplematch(tokenizer.tokens(), "template <");
             const Token *tok2 = Token ::findsimplematch(tokenizer.tokens(), "same_as <");
             ASSERT(tok1->next()->link() == tok1->tokAt(7));
@@ -3298,9 +3269,8 @@ private:
         {
             // #9131 - template usage or comparison?
             const char code[] = "using std::list; list<t *> l;";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "<")->link());
         }
 
@@ -3310,9 +3280,8 @@ private:
                                 "{\n"
                                 "    for (set<ParticleSource*>::iterator i = sources.begin(); i != sources.end(); ++i) {}\n"
                                 "}";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "<")->link());
         }
 
@@ -3322,9 +3291,8 @@ private:
                                 "  a<> b;\n"
                                 "  b.a<>::c();\n"
                                 "}\n";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> ::")->link());
         }
 
@@ -3334,9 +3302,8 @@ private:
                                 "template <char... b> struct c {\n"
                                 "  void d() { a<b...>[0]; }\n"
                                 "};\n";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> [")->link());
         }
 
@@ -3347,9 +3314,8 @@ private:
                                 "template <typename e> using f = c<e() && sizeof(int), int>;\n"
                                 "template <typename e, typename = f<e>> struct g {};\n"
                                 "template <typename e> using baz = g<e>;\n";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> ;")->link());
         }
 
@@ -3362,9 +3328,8 @@ private:
                                 "template <int> using c = a;\n"
                                 "template <int d> c<d> e;\n"
                                 "auto f = -e<1> == 0;\n";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> ==")->link());
         }
 
@@ -3381,18 +3346,16 @@ private:
                                 "constexpr void b<a, d>::operator()(c &&) const {\n"
                                 "  i<3>.f([] {});\n"
                                 "}\n";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> . f (")->link());
         }
 
         {
             // #10491
             const char code[] = "template <template <class> class> struct a;\n";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< class");
             const Token* tok2 = Token::findsimplematch(tok1, "> class");
             ASSERT_EQUALS(true, tok1->link() == tok2);
@@ -3402,9 +3365,8 @@ private:
         {
             // #10491
             const char code[] = "template <template <class> class> struct a;\n";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< template");
             const Token* tok2 = Token::findsimplematch(tok1, "> struct");
             ASSERT_EQUALS(true, tok1->link() == tok2);
@@ -3414,9 +3376,8 @@ private:
         {
             // #10552
             const char code[] = "v.value<QPair<int, int>>()\n";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< QPair");
             const Token* tok2 = Token::findsimplematch(tok1, "> (");
             ASSERT_EQUALS(true, tok1->link() == tok2);
@@ -3426,9 +3387,8 @@ private:
         {
             // #10552
             const char code[] = "v.value<QPair<int, int>>()\n";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< int");
             const Token* tok2 = Token::findsimplematch(tok1, "> > (");
             ASSERT_EQUALS(true, tok1->link() == tok2);
@@ -3438,9 +3398,8 @@ private:
         {
             // #10615
             const char code[] = "struct A : public B<__is_constructible()>{};\n";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< >");
             const Token* tok2 = Token::findsimplematch(tok1, "> { } >");
             ASSERT_EQUALS(true, tok1->link() == tok2);
@@ -3450,9 +3409,8 @@ private:
         {
             // #10664
             const char code[] = "class C1 : public T1<D2<C2>const> {};\n";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< C2");
             const Token* tok2 = Token::findsimplematch(tok1, "> const");
             ASSERT_EQUALS(true, tok1->link() == tok2);
@@ -3466,9 +3424,8 @@ private:
                                 "void f() {\n"
                                 "    if (a<int>[0]) {}\n"
                                 "}\n";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< int");
             const Token* tok2 = Token::findsimplematch(tok1, "> [");
             ASSERT_EQUALS(true, tok1->link() == tok2);
@@ -3481,9 +3438,8 @@ private:
                                 "    int b[2] = {};\n"
                                 "    if (b[idx<1>]) {}\n"
                                 "}\n";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< 1");
             const Token* tok2 = Token::findsimplematch(tok1, "> ]");
             ASSERT_EQUALS(true, tok1->link() == tok2);
@@ -3494,9 +3450,8 @@ private:
             const char code[] = "void f() {\n"
                                 "    []<typename T>() {};\n"
                                 "}\n";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< T");
             const Token* tok2 = Token::findsimplematch(tok1, "> (");
             ASSERT_EQUALS(true, tok1->link() == tok2);
@@ -3507,9 +3462,8 @@ private:
             const char code[] = "void f() {\n"
                                 "    auto g = [] <typename A, typename B> (A a, B&& b) { return a < b; };\n"
                                 "}\n";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< A");
             const Token* tok2 = Token::findsimplematch(tok1, "> (");
             ASSERT_EQUALS(true, tok1->link() == tok2);
@@ -3522,9 +3476,8 @@ private:
                                 "        return [] <typename T> () {};\n"
                                 "    };\n"
                                 "}\n";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< T");
             const Token* tok2 = Token::findsimplematch(tok1, "> (");
             ASSERT_EQUALS(true, tok1->link() == tok2);
@@ -3540,9 +3493,8 @@ private:
                                 "    S s;\n"
                                 "    s.operator()<int, int>(1);\n"
                                 "}\n";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< int");
             const Token* tok2 = Token::findsimplematch(tok1, "> (");
             ASSERT_EQUALS(true, tok1->link() == tok2);
@@ -3557,9 +3509,8 @@ private:
                                 "        std::is_same<typename T::size_type, std::size_t>::value && std::is_same<typename T::size_type, std::size_t>::value\n"
                                 "        >();\n"
                                 "}\n";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< bool");
             const Token* tok2 = Token::findsimplematch(tok1, "> (");
             ASSERT_EQUALS(true, tok1->link() == tok2);
@@ -3570,9 +3521,8 @@ private:
             const char code[] = "double f() {\n"
                                 "    return std::is_same_v<int, double> ? 1e-7 : 1e-3;\n"
                                 "}\n";
-            Tokenizer tokenizer(settings0, this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
             const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< int");
             const Token* tok2 = Token::findsimplematch(tok1, "> ?");
             ASSERT_EQUALS(true, tok1->link() == tok2);
@@ -3661,27 +3611,27 @@ private:
         tokenizeAndStringify("void printOwnedAttributes(int mode) { "
                              "  switch(mode) case 0: { break; } "
                              "}");
-        ASSERT_THROW(tokenizeAndStringify("void printOwnedAttributes(int mode) { "
-                                          "  switch(mode) case 0: { break; } case 1: ; "
-                                          "}"),
-                     InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void printOwnedAttributes(int mode) { "
+                                                   "  switch(mode) case 0: { break; } case 1: ; "
+                                                   "}"),
+                              SYNTAX);
     }
 
     void simplifyPointerToStandardType() {
         // Pointer to standard type
         ASSERT_EQUALS("char buf [ 100 ] ; readlink ( path , buf , 99 ) ;",
                       tokenizeAndStringify("char buf[100] ; readlink(path, &buf[0], 99);",
-                                           true, Platform::Type::Native, "test.c"));
+                                           true, Platform::Type::Native, false));
         ASSERT_EQUALS("", errout_str());
 
         ASSERT_EQUALS("void foo ( char * c ) { if ( 1 == ( 1 & c [ 0 ] ) ) { } }",
                       tokenizeAndStringify("void foo(char *c) { if (1==(1 & c[0])) {} }",
-                                           true, Platform::Type::Native, "test.c"));
+                                           true, Platform::Type::Native, false));
         ASSERT_EQUALS("", filter_valueflow(errout_str()));
 
         // Simplification of unknown type - C only
         ASSERT_EQUALS("foo data [ 100 ] ; something ( foo ) ;",
-                      tokenizeAndStringify("foo data[100]; something(&foo[0]);", true, Platform::Type::Native, "test.c"));
+                      tokenizeAndStringify("foo data[100]; something(&foo[0]);", true, Platform::Type::Native, false));
         ASSERT_EQUALS("", errout_str());
 
         // C++: No pointer simplification
@@ -3809,9 +3759,8 @@ private:
         const char expected[] = "void func1 ( ) ; void func2 ( ) ; void func3 ( ) ; void func4 ( ) ; void func5 ( ) ; void func6 ( ) ;";
 
         // tokenize..
-        Tokenizer tokenizer(settings0, this);
-        std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
 
         // Expected result..
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
@@ -3836,9 +3785,8 @@ private:
         const char expected[] = "extern vas_f * VAS_Fail ;";
 
         // tokenize..
-        Tokenizer tokenizer(settings0, this);
-        std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
 
         const Token * VAS_Fail = Token::findsimplematch(tokenizer.tokens(), "VAS_Fail");
@@ -3850,9 +3798,8 @@ private:
         const char expected[] = "void ( * func_notret ) ( void ) ;";
 
         // tokenize..
-        Tokenizer tokenizer(settings0, this);
-        std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
 
         const Token* func_notret = Token::findsimplematch(tokenizer.tokens(), "func_notret");
@@ -3864,9 +3811,8 @@ private:
         const char expected[] = "int & foo ( ) ;";
 
         // tokenize..
-        Tokenizer tokenizer(settings0, this);
-        std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
 
         const Token* foo = Token::findsimplematch(tokenizer.tokens(), "foo");
@@ -3878,9 +3824,8 @@ private:
         const char expected[] = "void func1 ( ) ;";
 
         // tokenize..
-        Tokenizer tokenizer(settings0, this);
-        std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
 
         // Expected result..
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
@@ -3899,9 +3844,8 @@ private:
         const char expected[] = "void func1 ( ) ; void func2 ( ) ; void func3 ( ) ; void func4 ( ) ; void func5 ( ) ;";
 
         // tokenize..
-        Tokenizer tokenizer(settings0, this);
-        std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
 
         // Expected result..
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
@@ -3927,9 +3871,8 @@ private:
         const char expected[] = "class foo { public: bool operator== ( const foo & ) ; } ;";
 
         // tokenize..
-        Tokenizer tokenizer(settings0, this);
-        std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
 
         // Expected result..
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
@@ -3951,9 +3894,8 @@ private:
                                 "void func6 ( ) ; void func7 ( ) ; void func8 ( ) ;";
 
         // tokenize..
-        Tokenizer tokenizer(settings0, this);
-        std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
 
         // Expected result..
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
@@ -3990,9 +3932,8 @@ private:
                                 "void func6 ( ) ; void func7 ( ) ; void func8 ( ) ;";
 
         // tokenize..
-        Tokenizer tokenizer(settings0, this);
-        std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
 
         // Expected result..
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
@@ -4200,7 +4141,7 @@ private:
         ASSERT_EQUALS("void f ( ) { ab : ; { & b = 0 ; } }", tokenizeAndStringify("void f() { ab: { &b=0;} }"));
         ASSERT_EQUALS("void f ( ) { ab : ; { & ( * b . x ) = 0 ; } }", tokenizeAndStringify("void f() { ab: {&(*b.x)=0;} }"));
         //with unhandled MACRO() code
-        ASSERT_THROW(tokenizeAndStringify("void f() { MACRO(ab: b=0;, foo)}"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void f() { MACRO(ab: b=0;, foo)}"), UNKNOWN_MACRO);
         ASSERT_EQUALS("void f ( ) { MACRO ( bar , ab : { & ( * b . x ) = 0 ; } ) }", tokenizeAndStringify("void f() { MACRO(bar, ab: {&(*b.x)=0;})}"));
     }
 
@@ -4645,9 +4586,8 @@ private:
     void bitfields16() {
         const char code[] = "struct A { unsigned int x : 1; };";
 
-        Tokenizer tokenizer(settings0, this);
-        std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
         const Token *x = Token::findsimplematch(tokenizer.tokens(), "x");
         ASSERT_EQUALS(1, x->bits());
     }
@@ -4877,7 +4817,7 @@ private:
         // Oracle PRO*C extensions for inline SQL. Just replace the SQL with "asm()" to fix wrong error messages
         // ticket: #1959
         ASSERT_EQUALS("asm ( \"\"__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL SELECT A FROM B\"\" ) ;", tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL SELECT A FROM B;"));
-        ASSERT_THROW(tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL"), SYNTAX);
 
         ASSERT_EQUALS("asm ( \"\"__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL EXECUTE BEGIN Proc1 ( A ) ; END ; END - __CPPCHECK_EMBEDDED_SQL_EXEC__\"\" ) ; asm ( \"\"__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL COMMIT\"\" ) ;",
                       tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL EXECUTE BEGIN Proc1(A); END; END-__CPPCHECK_EMBEDDED_SQL_EXEC__; __CPPCHECK_EMBEDDED_SQL_EXEC__ SQL COMMIT;"));
@@ -4886,49 +4826,49 @@ private:
         ASSERT_EQUALS("asm ( \"\"__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL COMMIT\"\" ) ; asm ( \"\"__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL EXECUTE BEGIN Proc1 ( A ) ; END ; END - __CPPCHECK_EMBEDDED_SQL_EXEC__\"\" ) ;",
                       tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL COMMIT; __CPPCHECK_EMBEDDED_SQL_EXEC__ SQL EXECUTE BEGIN Proc1(A); END; END-__CPPCHECK_EMBEDDED_SQL_EXEC__;"));
 
-        ASSERT_THROW(tokenizeAndStringify("int f(){ __CPPCHECK_EMBEDDED_SQL_EXEC__ SQL } int a;"), InternalError);
-        ASSERT_THROW(tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL int f(){"), InternalError);
-        ASSERT_THROW(tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL END-__CPPCHECK_EMBEDDED_SQL_EXEC__ int a;"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("int f(){ __CPPCHECK_EMBEDDED_SQL_EXEC__ SQL } int a;"), SYNTAX);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL int f(){"), SYNTAX);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL END-__CPPCHECK_EMBEDDED_SQL_EXEC__ int a;"), SYNTAX);
         ASSERT_NO_THROW(tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL UPDATE A SET B = :&b->b1, C = :c::c1;"));
     }
 
     void simplifyCAlternativeTokens() {
-        ASSERT_EQUALS("void or ( ) ;", tokenizeAndStringify("void or(void);", true, Platform::Type::Native, "test.c"));
-        ASSERT_EQUALS("void f ( ) { if ( a && b ) { ; } }", tokenizeAndStringify("void f() { if (a and b); }", true, Platform::Type::Native, "test.c"));
-        ASSERT_EQUALS("void f ( ) { if ( a && b ) { ; } }", tokenizeAndStringify("void f() { if (a and b); }", true, Platform::Type::Native, "test.cpp"));
-        ASSERT_EQUALS("void f ( ) { if ( a || b ) { ; } }", tokenizeAndStringify("void f() { if (a or b); }", true, Platform::Type::Native, "test.c"));
-        ASSERT_EQUALS("void f ( ) { if ( a || b ) { ; } }", tokenizeAndStringify("void f() { if (a or b); }", true, Platform::Type::Native, "test.cpp"));
-        ASSERT_EQUALS("void f ( ) { if ( a & b ) { ; } }", tokenizeAndStringify("void f() { if (a bitand b); }", true, Platform::Type::Native, "test.c"));
-        ASSERT_EQUALS("void f ( ) { if ( a & b ) { ; } }", tokenizeAndStringify("void f() { if (a bitand b); }", true, Platform::Type::Native, "test.cpp"));
-        ASSERT_EQUALS("void f ( ) { if ( a | b ) { ; } }", tokenizeAndStringify("void f() { if (a bitor b); }", true, Platform::Type::Native, "test.c"));
-        ASSERT_EQUALS("void f ( ) { if ( a | b ) { ; } }", tokenizeAndStringify("void f() { if (a bitor b); }", true, Platform::Type::Native, "test.cpp"));
-        ASSERT_EQUALS("void f ( ) { if ( a ^ b ) { ; } }", tokenizeAndStringify("void f() { if (a xor b); }", true, Platform::Type::Native, "test.c"));
-        ASSERT_EQUALS("void f ( ) { if ( a ^ b ) { ; } }", tokenizeAndStringify("void f() { if (a xor b); }", true, Platform::Type::Native, "test.cpp"));
-        ASSERT_EQUALS("void f ( ) { if ( ~ b ) { ; } }", tokenizeAndStringify("void f() { if (compl b); }", true, Platform::Type::Native, "test.c"));
-        ASSERT_EQUALS("void f ( ) { if ( ~ b ) { ; } }", tokenizeAndStringify("void f() { if (compl b); }", true, Platform::Type::Native, "test.cpp"));
-        ASSERT_EQUALS("void f ( ) { if ( ! b ) { ; } }", tokenizeAndStringify("void f() { if (not b); }", true, Platform::Type::Native, "test.c"));
-        ASSERT_EQUALS("void f ( ) { if ( ! b ) { ; } }", tokenizeAndStringify("void f() { if (not b); }", true, Platform::Type::Native, "test.cpp"));
-        ASSERT_EQUALS("void f ( ) const { if ( ! b ) { ; } }", tokenizeAndStringify("void f() const { if (not b); }", true, Platform::Type::Native, "test.cpp"));
-        ASSERT_EQUALS("void f ( ) { if ( a != b ) { ; } }", tokenizeAndStringify("void f() { if (a not_eq b); }", true, Platform::Type::Native, "test.c"));
-        ASSERT_EQUALS("void f ( ) { if ( a != b ) { ; } }", tokenizeAndStringify("void f() { if (a not_eq b); }", true, Platform::Type::Native, "test.cpp"));
+        ASSERT_EQUALS("void or ( ) ;", tokenizeAndStringify("void or(void);", true, Platform::Type::Native, false));
+        ASSERT_EQUALS("void f ( ) { if ( a && b ) { ; } }", tokenizeAndStringify("void f() { if (a and b); }", true, Platform::Type::Native, false));
+        ASSERT_EQUALS("void f ( ) { if ( a && b ) { ; } }", tokenizeAndStringify("void f() { if (a and b); }", true, Platform::Type::Native, true));
+        ASSERT_EQUALS("void f ( ) { if ( a || b ) { ; } }", tokenizeAndStringify("void f() { if (a or b); }", true, Platform::Type::Native, false));
+        ASSERT_EQUALS("void f ( ) { if ( a || b ) { ; } }", tokenizeAndStringify("void f() { if (a or b); }", true, Platform::Type::Native, true));
+        ASSERT_EQUALS("void f ( ) { if ( a & b ) { ; } }", tokenizeAndStringify("void f() { if (a bitand b); }", true, Platform::Type::Native, false));
+        ASSERT_EQUALS("void f ( ) { if ( a & b ) { ; } }", tokenizeAndStringify("void f() { if (a bitand b); }", true, Platform::Type::Native, true));
+        ASSERT_EQUALS("void f ( ) { if ( a | b ) { ; } }", tokenizeAndStringify("void f() { if (a bitor b); }", true, Platform::Type::Native, false));
+        ASSERT_EQUALS("void f ( ) { if ( a | b ) { ; } }", tokenizeAndStringify("void f() { if (a bitor b); }", true, Platform::Type::Native, true));
+        ASSERT_EQUALS("void f ( ) { if ( a ^ b ) { ; } }", tokenizeAndStringify("void f() { if (a xor b); }", true, Platform::Type::Native, false));
+        ASSERT_EQUALS("void f ( ) { if ( a ^ b ) { ; } }", tokenizeAndStringify("void f() { if (a xor b); }", true, Platform::Type::Native, true));
+        ASSERT_EQUALS("void f ( ) { if ( ~ b ) { ; } }", tokenizeAndStringify("void f() { if (compl b); }", true, Platform::Type::Native, false));
+        ASSERT_EQUALS("void f ( ) { if ( ~ b ) { ; } }", tokenizeAndStringify("void f() { if (compl b); }", true, Platform::Type::Native, true));
+        ASSERT_EQUALS("void f ( ) { if ( ! b ) { ; } }", tokenizeAndStringify("void f() { if (not b); }", true, Platform::Type::Native, false));
+        ASSERT_EQUALS("void f ( ) { if ( ! b ) { ; } }", tokenizeAndStringify("void f() { if (not b); }", true, Platform::Type::Native, true));
+        ASSERT_EQUALS("void f ( ) const { if ( ! b ) { ; } }", tokenizeAndStringify("void f() const { if (not b); }", true, Platform::Type::Native, true));
+        ASSERT_EQUALS("void f ( ) { if ( a != b ) { ; } }", tokenizeAndStringify("void f() { if (a not_eq b); }", true, Platform::Type::Native, false));
+        ASSERT_EQUALS("void f ( ) { if ( a != b ) { ; } }", tokenizeAndStringify("void f() { if (a not_eq b); }", true, Platform::Type::Native, true));
         // #6201
-        ASSERT_EQUALS("void f ( ) { if ( ! c || ! memcmp ( a , b , s ) ) { ; } }", tokenizeAndStringify("void f() { if (!c or !memcmp(a, b, s)); }", true, Platform::Type::Native, "test.c"));
-        ASSERT_EQUALS("void f ( ) { if ( ! c || ! memcmp ( a , b , s ) ) { ; } }", tokenizeAndStringify("void f() { if (!c or !memcmp(a, b, s)); }", true, Platform::Type::Native, "test.cpp"));
+        ASSERT_EQUALS("void f ( ) { if ( ! c || ! memcmp ( a , b , s ) ) { ; } }", tokenizeAndStringify("void f() { if (!c or !memcmp(a, b, s)); }", true, Platform::Type::Native, false));
+        ASSERT_EQUALS("void f ( ) { if ( ! c || ! memcmp ( a , b , s ) ) { ; } }", tokenizeAndStringify("void f() { if (!c or !memcmp(a, b, s)); }", true, Platform::Type::Native, true));
         // #6029
-        ASSERT_EQUALS("void f ( ) { if ( ! b ) { } }", tokenizeAndStringify("void f() { if (not b){} }", true, Platform::Type::Native, "test.c"));
-        ASSERT_EQUALS("void f ( ) { if ( ! b ) { } }", tokenizeAndStringify("void f() { if (not b){} }", true, Platform::Type::Native, "test.cpp"));
+        ASSERT_EQUALS("void f ( ) { if ( ! b ) { } }", tokenizeAndStringify("void f() { if (not b){} }", true, Platform::Type::Native, false));
+        ASSERT_EQUALS("void f ( ) { if ( ! b ) { } }", tokenizeAndStringify("void f() { if (not b){} }", true, Platform::Type::Native, true));
         // #6207
-        ASSERT_EQUALS("void f ( ) { if ( not = x ) { } }", tokenizeAndStringify("void f() { if (not=x){} }", true, Platform::Type::Native, "test.c"));
-        ASSERT_EQUALS("void f ( ) { if ( not = x ) { } }", tokenizeAndStringify("void f() { if (not=x){} }", true, Platform::Type::Native, "test.cpp"));
+        ASSERT_EQUALS("void f ( ) { if ( not = x ) { } }", tokenizeAndStringify("void f() { if (not=x){} }", true, Platform::Type::Native, false));
+        ASSERT_EQUALS("void f ( ) { if ( not = x ) { } }", tokenizeAndStringify("void f() { if (not=x){} }", true, Platform::Type::Native, true));
         // #8029
-        ASSERT_EQUALS("void f ( struct S * s ) { x = s . and + 1 ; }", tokenizeAndStringify("void f(struct S *s) { x = s->and + 1; }", true, Platform::Type::Native, "test.c"));
+        ASSERT_EQUALS("void f ( struct S * s ) { x = s . and + 1 ; }", tokenizeAndStringify("void f(struct S *s) { x = s->and + 1; }", true, Platform::Type::Native, false));
         // #8745
         ASSERT_EQUALS("void f ( ) { if ( x ) { or = 0 ; } }", tokenizeAndStringify("void f() { if (x) or = 0; }"));
         // #9324
         ASSERT_EQUALS("void f ( const char * str ) { while ( * str == '!' || * str == '[' ) { } }",
                       tokenizeAndStringify("void f(const char *str) { while (*str=='!' or *str=='['){} }"));
         // #9920
-        ASSERT_EQUALS("result = ch != s . end ( ) && * ch == ':' ;", tokenizeAndStringify("result = ch != s.end() and *ch == ':';", true, Platform::Type::Native, "test.c"));
+        ASSERT_EQUALS("result = ch != s . end ( ) && * ch == ':' ;", tokenizeAndStringify("result = ch != s.end() and *ch == ':';", true, Platform::Type::Native, false));
 
         // #8975
         ASSERT_EQUALS("void foo ( ) {\n"
@@ -4939,9 +4879,9 @@ private:
                           "void foo() {\n"
                           "  char *or;\n"
                           "  while ((*or != 0) && (*or != '|')) or++;\n"
-                          "}", true, Platform::Type::Native, "test.c"));
+                          "}", true, Platform::Type::Native, false));
         // #10013
-        ASSERT_EQUALS("void f ( ) { x = ! 123 ; }", tokenizeAndStringify("void f() { x = not 123; }", true, Platform::Type::Native, "test.cpp"));
+        ASSERT_EQUALS("void f ( ) { x = ! 123 ; }", tokenizeAndStringify("void f() { x = not 123; }", true, Platform::Type::Native, true));
 
         { // #12476
             const char code[] = "struct S { int a, b; };"
@@ -4949,7 +4889,7 @@ private:
                                 "    compl->a = compl->b;"
                                 "}";
             const char exp[] = "struct S { int a ; int b ; } ; void f ( struct S * compl ) { compl . a = compl . b ; }";
-            ASSERT_EQUALS(exp, tokenizeAndStringify(code, true, Platform::Type::Native, "test.c"));
+            ASSERT_EQUALS(exp, tokenizeAndStringify(code, true, Platform::Type::Native, false));
         }
 
         ASSERT_EQUALS("", filter_valueflow(errout_str()));
@@ -4974,7 +4914,7 @@ private:
                               "operator ( ) ; "
                               "}";
 
-        ASSERT_EQUALS(result, tokenizeAndStringify(code, /*expand=*/ true, /*platform=*/ Platform::Type::Native, "test.c"));
+        ASSERT_EQUALS(result, tokenizeAndStringify(code, /*expand=*/ true, /*platform=*/ Platform::Type::Native, false));
     }
 
     void simplifyOperatorName2() {
@@ -5421,10 +5361,10 @@ private:
         ASSERT_EQUALS("namespace { int a ; }", tokenizeAndStringify("ABA() namespace { int a ; }"));
 
         // #3750
-        ASSERT_THROW(tokenizeAndStringify("; AB(foo*) foo::foo() { }"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("; AB(foo*) foo::foo() { }"), UNKNOWN_MACRO);
 
         // #4834 - syntax error
-        ASSERT_THROW(tokenizeAndStringify("A(B) foo() {}"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("A(B) foo() {}"), UNKNOWN_MACRO);
 
         // #3855
         ASSERT_EQUALS("; class foo { }",
@@ -5438,14 +5378,14 @@ private:
                                              "  int x;\n"
                                              "};"));
 
-        ASSERT_THROW(tokenizeAndStringify("MACRO(test) void test() { }"), InternalError); // #7931
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("MACRO(test) void test() { }"), UNKNOWN_MACRO); // #7931
 
-        ASSERT_THROW(tokenizeAndStringify("BEGIN_MESSAGE_MAP(CSetProgsAdvDlg, CResizableStandAloneDialog)\n"
-                                          "    ON_BN_CLICKED(IDC_ADDTOOL, OnBnClickedAddtool)\n"
-                                          "END_MESSAGE_MAP()\n"
-                                          "\n"
-                                          "BOOL CSetProgsAdvDlg::OnInitDialog() {}"),
-                     InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("BEGIN_MESSAGE_MAP(CSetProgsAdvDlg, CResizableStandAloneDialog)\n"
+                                                   "    ON_BN_CLICKED(IDC_ADDTOOL, OnBnClickedAddtool)\n"
+                                                   "END_MESSAGE_MAP()\n"
+                                                   "\n"
+                                                   "BOOL CSetProgsAdvDlg::OnInitDialog() {}"),
+                              UNKNOWN_MACRO);
 
         ASSERT_EQUALS("struct S {\n"
                       "S ( ) : p { new ( malloc ( 4 ) ) int { } } { }\n"
@@ -5833,10 +5773,10 @@ private:
                       tokenizeAndStringify("[[deprecated]] int f();"));
 
         ASSERT_EQUALS("[ [ deprecated ] ] int f ( ) ;",
-                      tokenizeAndStringify("[[deprecated]] int f();", true, Platform::Type::Native, "test.cpp", Standards::CPP03));
+                      tokenizeAndStringify("[[deprecated]] int f();", true, Platform::Type::Native, true, Standards::CPP03));
 
         ASSERT_EQUALS("[ [ deprecated ] ] int f ( ) ;",
-                      tokenizeAndStringify("[[deprecated]] int f();", true, Platform::Type::Native, "test.c"));
+                      tokenizeAndStringify("[[deprecated]] int f();", true, Platform::Type::Native, false));
 
         ASSERT_EQUALS("template < class T > int f ( ) { }",
                       tokenizeAndStringify("template <class T> [[noreturn]] int f(){}"));
@@ -5845,7 +5785,7 @@ private:
                       tokenizeAndStringify("[[maybe_unused]] int f([[maybe_unused]] int i);"));
 
         ASSERT_EQUALS("[ [ maybe_unused ] ] int f ( [ [ maybe_unused ] ] int i ) ;",
-                      tokenizeAndStringify("[[maybe_unused]] int f([[maybe_unused]] int i);", true, Platform::Type::Native, "test.cpp", Standards::CPP03));
+                      tokenizeAndStringify("[[maybe_unused]] int f([[maybe_unused]] int i);", true, Platform::Type::Native, true, Standards::CPP03));
 
         ASSERT_EQUALS("struct a ;",
                       tokenizeAndStringify("struct [[]] a;"));
@@ -6765,7 +6705,7 @@ private:
                                              "        return y;\n"
                                              "    else\n"
                                              "        return z;\n"
-                                             "}\n", true, Platform::Type::Native, "test.cpp", Standards::CPP17));
+                                             "}\n", true, Platform::Type::Native, true, Standards::CPP17));
         ignore_errout();
 
         // #10079 - createInnerAST bug..
@@ -6894,14 +6834,13 @@ private:
         const std::string filedata = tokens1.stringify();
         const std::string code = PreprocessorHelper::getcode(preprocessor, filedata, emptyString, emptyString);
 
-        ASSERT_THROW(tokenizeAndStringify(code.c_str()), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code.c_str()), AST);
     }
 
 #define isStartOfExecutableScope(offset, code) isStartOfExecutableScope_(offset, code, __FILE__, __LINE__)
     bool isStartOfExecutableScope_(int offset, const char code[], const char* file, int line) {
-        Tokenizer tokenizer(settings0, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         return Tokenizer::startOfExecutableScope(tokenizer.tokens()->tokAt(offset)) != nullptr;
     }
@@ -6934,7 +6873,7 @@ private:
         ASSERT_EQUALS("class Fred : Base { } ;", tokenizeAndStringify("class Fred FINAL : Base { } ;"));
         ASSERT_EQUALS("class Fred : Base { } ;", tokenizeAndStringify("class DLLEXPORT Fred final : Base { } ;")); // #11422
         // Regression for C code:
-        ASSERT_EQUALS("struct Fred { } ;", tokenizeAndStringify("struct DLLEXPORT Fred { } ;", true, Platform::Type::Native, "test.c"));
+        ASSERT_EQUALS("struct Fred { } ;", tokenizeAndStringify("struct DLLEXPORT Fred { } ;", true, Platform::Type::Native, false));
     }
 
     void sizeofAddParentheses() {
@@ -6948,66 +6887,66 @@ private:
     void reportUnknownMacros() {
         const char code1[] = "MY_UNKNOWN_IMP1(IInStream)\n"
                              "STDMETHOD(Read)(void *data, UInt32 size, UInt32 *processedSize) { if (ptr); }";
-        ASSERT_THROW(tokenizeAndStringify(code1), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code1), UNKNOWN_MACRO);
 
         const char code2[] = "void foo() { dostuff(x 0); }";
-        ASSERT_THROW(tokenizeAndStringify(code2), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code2), UNKNOWN_MACRO);
 
         const char code3[] = "f(\"1\" __stringify(48) \"1\");";
-        ASSERT_THROW(tokenizeAndStringify(code3), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code3), UNKNOWN_MACRO);
 
         const char code4[] = "struct Foo {\n"
                              "  virtual MACRO(int) f1() {}\n"
                              "  virtual MACRO(int) f2() {}\n"
                              "};";
-        ASSERT_THROW(tokenizeAndStringify(code4), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code4), UNKNOWN_MACRO);
 
         const char code5[] = "void foo() {\n"
                              "  EVALUATE(123, int x=a; int y=b+c;);\n"
                              "}";
-        ASSERT_THROW(tokenizeAndStringify(code5), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code5), UNKNOWN_MACRO);
 
         const char code6[] = "void foo() { dostuff(a, .x=0); }";
-        ASSERT_THROW(tokenizeAndStringify(code6), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code6), UNKNOWN_MACRO);
 
         const char code7[] = "void foo() { dostuff(ZEND_NUM_ARGS() TSRMLS_CC, x, y); }"; // #9476
-        ASSERT_THROW(tokenizeAndStringify(code7), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code7), UNKNOWN_MACRO);
 
         const char code8[] = "void foo() { a = [](int x, decltype(vec) y){}; }";
         ASSERT_NO_THROW(tokenizeAndStringify(code8));
 
         const char code9[] = "void f(std::exception c) { b(M() c.what()); }";
-        ASSERT_THROW(tokenizeAndStringify(code9), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code9), UNKNOWN_MACRO);
 
         const char code10[] = "void f(std::exception c) { b(M() M() + N(c.what())); }";
-        ASSERT_THROW(tokenizeAndStringify(code10), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code10), UNKNOWN_MACRO);
 
         const char code11[] = "struct B { B(B&&) noexcept {} ~B() noexcept {} };";
         ASSERT_NO_THROW(tokenizeAndStringify(code11));
 
         ASSERT_NO_THROW(tokenizeAndStringify("alignas(8) alignas(16) int x;")); // alignas is not unknown macro
 
-        ASSERT_THROW(tokenizeAndStringify("void foo() { if(x) SYSTEM_ERROR }"), InternalError);
-        ASSERT_THROW(tokenizeAndStringify("void foo() { dostuff(); SYSTEM_ERROR }"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void foo() { if(x) SYSTEM_ERROR }"), UNKNOWN_MACRO);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void foo() { dostuff(); SYSTEM_ERROR }"), UNKNOWN_MACRO);
 
         ASSERT_NO_THROW(tokenizeAndStringify("void f(void* q) {\n"
                                              "    g(&(S) { .p = (int*)q });\n"
-                                             "}\n", /*expand*/ true, Platform::Type::Native, "test.c"));
+                                             "}\n", /*expand*/ true, Platform::Type::Native, false));
 
         ASSERT_NO_THROW(tokenizeAndStringify("typedef struct { int i; } S;\n"
                                              "void f(float a) {\n"
                                              "S s = (S){ .i = (int)a };\n"
-                                             "}\n", /*expand*/ true, Platform::Type::Native, "test.c"));
+                                             "}\n", /*expand*/ true, Platform::Type::Native, false));
 
-        ASSERT_THROW(tokenizeAndStringify("std::string g();\n"
-                                          "std::string f() {\n"
-                                          "    return std::string{ g() + \"abc\" MACRO \"def\" };\n"
-                                          "}\n", /*expand*/ true, Platform::Type::Native, "test.cpp"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("std::string g();\n"
+                                                   "std::string f() {\n"
+                                                   "    return std::string{ g() + \"abc\" MACRO \"def\" };\n"
+                                                   "}\n", /*expand*/ true, Platform::Type::Native, true), UNKNOWN_MACRO);
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()
         // C++ try/catch in global scope
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("try { }"), InternalError, "syntax error: keyword 'try' is not allowed in global scope");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("try { }"), SYNTAX, "syntax error: keyword 'try' is not allowed in global scope");
         ASSERT_NO_THROW(tokenizeAndStringify("void f() try { } catch (int) { }"));
         ASSERT_NO_THROW(tokenizeAndStringify("struct S {\n" // #9716
                                              "    S();\n"
@@ -7029,12 +6968,12 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { []() -> int * {}; }"));
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { const char* var = \"1\" \"2\"; }"));
 
-        ASSERT_THROW(tokenizeAndStringify("void f() { MACRO(switch); }"), InternalError);
-        ASSERT_THROW(tokenizeAndStringify("void f() { MACRO(x,switch); }"), InternalError);
-        ASSERT_THROW(tokenizeAndStringify("void foo() { for_chain( if (!done) done = 1); }"), InternalError);
-        ASSERT_THROW(tokenizeAndStringify("void foo() { for_chain( a, b, if (!done) done = 1); }"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void f() { MACRO(switch); }"), UNKNOWN_MACRO);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void f() { MACRO(x,switch); }"), UNKNOWN_MACRO);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void foo() { for_chain( if (!done) done = 1); }"), UNKNOWN_MACRO);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void foo() { for_chain( a, b, if (!done) done = 1); }"), UNKNOWN_MACRO);
 
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { if (retval==){} }"), InternalError, "syntax error: ==)");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("void f() { if (retval==){} }"), SYNTAX, "syntax error: ==)");
 
         // after (expr)
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { switch (a) int b; }"));
@@ -7084,18 +7023,18 @@ private:
 
 
         // op op
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { dostuff (x==>y); }"), InternalError, "syntax error: == >");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("void f() { dostuff (x==>y); }"), SYNTAX, "syntax error: == >");
 
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { assert(a==()); }"), InternalError, "syntax error: ==()");
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { assert(a+()); }"), InternalError, "syntax error: +()");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("void f() { assert(a==()); }"), SYNTAX, "syntax error: ==()");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("void f() { assert(a+()); }"), SYNTAX, "syntax error: +()");
 
         // #9445 - typeof is not a keyword in C
-        ASSERT_NO_THROW(tokenizeAndStringify("void foo() { char *typeof, *value; }", false, Platform::Type::Native, "test.c"));
+        ASSERT_NO_THROW(tokenizeAndStringify("void foo() { char *typeof, *value; }", false, Platform::Type::Native, false));
 
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("enum : { };"), InternalError, "syntax error: Unexpected token '{'");
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("enum : 3 { };"), InternalError, "syntax error: Unexpected token '3'");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("enum : { };"), SYNTAX, "syntax error: Unexpected token '{'");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("enum : 3 { };"), SYNTAX, "syntax error: Unexpected token '3'");
 
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("int a() { b((c)return 0) }"), InternalError, "syntax error");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("int a() { b((c)return 0) }"), SYNTAX, "syntax error");
         ASSERT_THROW_EQUALS(tokenizeAndStringify("int f() { MACRO(x) return 0; }"),
                             InternalError,
                             "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
@@ -7149,7 +7088,7 @@ private:
                             InternalError,
                             "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
 
-        ASSERT_THROW(tokenizeAndStringify("{ for (()()) }"), InternalError); // #11643
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("{ for (()()) }"), SYNTAX); // #11643
 
         ASSERT_NO_THROW(tokenizeAndStringify("S* g = ::new(ptr) S();")); // #12552
         ASSERT_NO_THROW(tokenizeAndStringify("void f(int* p) { return ::delete p; }"));
@@ -7658,18 +7597,17 @@ private:
     }
 
     void noCrash7() {
-        ASSERT_THROW(tokenizeAndStringify("void g() {\n"// TODO: don't throw
-                                          "    for (using T = int; (T)false;) {}\n" // C++23 P2360R0: Extend init-statement to allow alias-declaration
-                                          "}\n"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void g() {\n"// TODO: don't throw
+                                                   "    for (using T = int; (T)false;) {}\n" // C++23 P2360R0: Extend init-statement to allow alias-declaration
+                                                   "}\n"), SYNTAX);
     }
 
     void checkConfig(const char code[]) {
         const Settings s = settingsBuilder().checkConfiguration().build();
 
         // tokenize..
-        Tokenizer tokenizer(s, this);
-        std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        SimpleTokenizer tokenizer(s, *this);
+        ASSERT(tokenizer.tokenize(code));
     }
 
     void checkConfiguration() {
@@ -7689,9 +7627,8 @@ private:
                       "V::Type value;";
 
         // Tokenize..
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT(tokenizer.tokenize(code));
 
         tokenizer.printUnknownTypes();
 
@@ -7699,7 +7636,7 @@ private:
     }
 
     void unknownMacroBeforeReturn() {
-        ASSERT_THROW(tokenizeAndStringify("int f() { X return 0; }"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("int f() { X return 0; }"), UNKNOWN_MACRO);
     }
 
     void cppcast() {
@@ -7708,9 +7645,8 @@ private:
                             "a = reinterpret_cast<int>(x);\n"
                             "a = static_cast<int>(x);\n";
 
-        Tokenizer tokenizer(settingsDefault, this);
-        std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        SimpleTokenizer tokenizer(settingsDefault, *this);
+        ASSERT(tokenizer.tokenize(code));
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             ASSERT_EQUALS(tok->str() == "(", tok->isCast());
@@ -7837,15 +7773,14 @@ private:
         const char code[] = "struct S { int a:2 = 0; };";
         ASSERT_EQUALS("struct S { int a ; a = 0 ; } ;", tokenizeAndStringify(code, s1));
         const Settings s2 = settingsBuilder().cpp(Standards::CPP17).build();
-        ASSERT_THROW(tokenizeAndStringify(code, s2), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code, s2), SYNTAX);
     }
 
     void cpp11init() {
         #define testIsCpp11init(...) testIsCpp11init_(__FILE__, __LINE__, __VA_ARGS__)
         auto testIsCpp11init_ = [this](const char* file, int line, const char* code, const char* find, TokenImpl::Cpp11init expected) {
-            Tokenizer tokenizer(settingsDefault, this);
-            std::istringstream istr(code);
-            ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+            SimpleTokenizer tokenizer(settingsDefault, *this);
+            ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
             const Token* tok = Token::findsimplematch(tokenizer.tokens(), find, strlen(find));
             ASSERT_LOC(tok, file, line);

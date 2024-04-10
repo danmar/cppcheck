@@ -72,6 +72,7 @@ std::string severityToString(Severity severity)
     throw InternalError(nullptr, "Unknown severity");
 }
 
+// TODO: bail out on invalid severity
 Severity severityFromString(const std::string& severity)
 {
     if (severity.empty())

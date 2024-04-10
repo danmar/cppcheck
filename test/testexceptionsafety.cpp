@@ -16,14 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "checkexceptionsafety.h"
 #include "errortypes.h"
-#include "settings.h"
 #include "fixture.h"
-#include "tokenize.h"
-
-#include <sstream>
+#include "helpers.h"
+#include "settings.h"
 
 class TestExceptionSafety : public TestFixture {
 public:
@@ -63,9 +60,8 @@ private:
         const Settings settings1 = settingsBuilder(s ? *s : settings).certainty(Certainty::inconclusive, inconclusive).build();
 
         // Tokenize..
-        Tokenizer tokenizer(settings1, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings1, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check char variable usage..
         runChecks<CheckExceptionSafety>(tokenizer, this);

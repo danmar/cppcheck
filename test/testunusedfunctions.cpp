@@ -18,14 +18,13 @@
 
 #include "checkunusedfunctions.h"
 #include "errortypes.h"
+#include "fixture.h"
 #include "helpers.h"
 #include "platform.h"
 #include "preprocessor.h"
 #include "settings.h"
-#include "fixture.h"
 #include "tokenize.h"
 
-#include <sstream>
 #include <string>
 
 class TestUnusedFunctions : public TestFixture {
@@ -87,9 +86,8 @@ private:
         const Settings settings1 = settingsBuilder(s ? *s : settings).platform(platform).build();
 
         // Tokenize..
-        Tokenizer tokenizer(settings1, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings1, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for unused functions..
         CheckUnusedFunctions checkUnusedFunctions;
@@ -529,20 +527,19 @@ private:
     }
 
     void multipleFiles() {
-        Tokenizer tokenizer(settings, this);
         CheckUnusedFunctions c;
 
         const char code[] = "static void f() { }";
 
         for (int i = 1; i <= 2; ++i) {
-            std::ostringstream fname;
-            fname << "test" << i << ".cpp";
+            const std::string fname = "test" + std::to_string(i) + ".cpp";
 
-            Tokenizer tokenizer2(settings, this);
+            Tokenizer tokenizer(settings, this);
             std::istringstream istr(code);
-            ASSERT(tokenizer2.tokenize(istr, fname.str().c_str()));
+            ASSERT(tokenizer.list.createTokens(istr, fname));
+            ASSERT(tokenizer.simplifyTokens1(""));
 
-            c.parseTokens(tokenizer2, settings);
+            c.parseTokens(tokenizer, settings);
         }
 
         // Check for unused functions..

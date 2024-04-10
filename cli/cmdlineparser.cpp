@@ -1074,6 +1074,12 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 #ifdef HAVE_RULES
                 Settings::Rule rule;
                 rule.pattern = 7 + argv[i];
+
+                if (rule.pattern.empty()) {
+                    mLogger.printError("no rule pattern provided.");
+                    return Result::Fail;
+                }
+
                 mSettings.rules.emplace_back(std::move(rule));
 #else
                 mLogger.printError("Option --rule cannot be used as Cppcheck has not been built with rules support.");
@@ -1134,6 +1140,11 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                             return Result::Fail;
                         }
 
+                        if (rule.id.empty()) {
+                            mLogger.printError("unable to load rule-file '" + ruleFile + "' - a rule is lacking an id.");
+                            return Result::Fail;
+                        }
+
                         if (rule.tokenlist.empty()) {
                             mLogger.printError("unable to load rule-file '" + ruleFile + "' - a rule is lacking a tokenlist.");
                             return Result::Fail;
@@ -1141,6 +1152,11 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
                         if (rule.tokenlist != "normal" && rule.tokenlist != "define" && rule.tokenlist != "raw") {
                             mLogger.printError("unable to load rule-file '" + ruleFile + "' - a rule is using the unsupported tokenlist '" + rule.tokenlist + "'.");
+                            return Result::Fail;
+                        }
+
+                        if (rule.severity == Severity::none) {
+                            mLogger.printError("unable to load rule-file '" + ruleFile + "' - a rule has an invalid severity.");
                             return Result::Fail;
                         }
 

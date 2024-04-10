@@ -142,7 +142,7 @@ bool TranslationHandler::setLanguage(const QString &code)
     return true;
 }
 
-QString TranslationHandler::getCurrentLanguage() const
+const QString& TranslationHandler::getCurrentLanguage() const
 {
     return mCurrentLanguage;
 }

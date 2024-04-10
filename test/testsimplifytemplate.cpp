@@ -16,12 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "errortypes.h"
+#include "fixture.h"
+#include "helpers.h"
 #include "platform.h"
 #include "settings.h"
 #include "templatesimplifier.h"
-#include "fixture.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
@@ -30,7 +30,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
 
 class TestSimplifyTemplate : public TestFixture {
 public:
@@ -311,10 +310,9 @@ private:
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
     std::string tok_(const char* file, int line, const char code[], bool debugwarnings = false, Platform::Type type = Platform::Type::Native) {
         const Settings settings1 = settingsBuilder(settings).library("std.cfg").debugwarnings(debugwarnings).platform(type).build();
-        Tokenizer tokenizer(settings1, this);
+        SimpleTokenizer tokenizer(settings1, *this);
 
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         return tokenizer.tokens()->stringifyList(nullptr, true);
     }
@@ -887,7 +885,7 @@ private:
     void template27() {
         // #3350 - template inside macro call
         const char code[] = "X(template<class T> class Fred);";
-        ASSERT_THROW(tok(code), InternalError);
+        ASSERT_THROW_INTERNAL(tok(code), SYNTAX);
     }
 
     void template28() {
@@ -1108,7 +1106,7 @@ private:
                             "    return sizeof...(args);\n"
                             "  }();\n"
                             "}";
-        ASSERT_THROW(tok(code), InternalError);
+        ASSERT_THROW_INTERNAL(tok(code), SYNTAX);
     }
 
     void template43() { // #5097 - Assert due to '>>' in 'B<A<C>>' not being treated as end of template instantiation
@@ -3059,14 +3057,14 @@ private:
     }
 
     void template125() {
-        ASSERT_THROW(tok("template<int M, int N>\n"
-                         "class GCD {\n"
-                         "public:\n"
-                         "  enum { val = (N == 0) ? M : GCD<N, M % N>::val };\n"
-                         "};\n"
-                         "int main() {\n"
-                         "  GCD< 1, 0 >::val;\n"
-                         "}"), InternalError);
+        ASSERT_THROW_INTERNAL(tok("template<int M, int N>\n"
+                                  "class GCD {\n"
+                                  "public:\n"
+                                  "  enum { val = (N == 0) ? M : GCD<N, M % N>::val };\n"
+                                  "};\n"
+                                  "int main() {\n"
+                                  "  GCD< 1, 0 >::val;\n"
+                                  "}"), INSTANTIATION);
     }
 
     void template126() { // #9217
@@ -3662,7 +3660,7 @@ private:
         const char code[] = "BEGIN_VERSIONED_NAMESPACE_DECL\n"
                             "template<typename T> class Fred { };\n"
                             "END_VERSIONED_NAMESPACE_DECL";
-        ASSERT_THROW_EQUALS(tok(code), InternalError, "There is an unknown macro here somewhere. Configuration is required. If BEGIN_VERSIONED_NAMESPACE_DECL is a macro then please configure it.");
+        ASSERT_THROW_INTERNAL_EQUALS(tok(code), UNKNOWN_MACRO, "There is an unknown macro here somewhere. Configuration is required. If BEGIN_VERSIONED_NAMESPACE_DECL is a macro then please configure it.");
     }
 
     void template150() { // syntax error
@@ -4952,15 +4950,15 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         // bad code.. missing ">"
-        ASSERT_THROW(tok("x<y<int> xyz;\n"), InternalError);
+        ASSERT_THROW_INTERNAL(tok("x<y<int> xyz;\n"), SYNTAX);
 
         // bad code
-        ASSERT_THROW(tok("typedef\n"
-                         "    typename boost::mpl::if_c<\n"
-                         "          _visitableIndex < boost::mpl::size< typename _Visitables::ConcreteVisitables >::value\n"
-                         "          , ConcreteVisitable\n"
-                         "          , Dummy< _visitableIndex >\n"
-                         "    >::type ConcreteVisitableOrDummy;\n"), InternalError);
+        ASSERT_THROW_INTERNAL(tok("typedef\n"
+                                  "    typename boost::mpl::if_c<\n"
+                                  "          _visitableIndex < boost::mpl::size< typename _Visitables::ConcreteVisitables >::value\n"
+                                  "          , ConcreteVisitable\n"
+                                  "          , Dummy< _visitableIndex >\n"
+                                  "    >::type ConcreteVisitableOrDummy;\n"), SYNTAX);
 
         // code is ok, don't show syntax error
         tok("struct A {int a;int b};\n"
@@ -5777,10 +5775,9 @@ private:
 
 #define instantiateMatch(code, numberOfArguments, patternAfter) instantiateMatch_(code, numberOfArguments, patternAfter, __FILE__, __LINE__)
     bool instantiateMatch_(const char code[], const std::size_t numberOfArguments, const char patternAfter[], const char* file, int line) {
-        Tokenizer tokenizer(settings, this);
+        SimpleTokenizer tokenizer(settings, *this);
 
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp", ""), file, line);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         return (TemplateSimplifier::instantiateMatch)(tokenizer.tokens(), numberOfArguments, false, patternAfter);
     }

@@ -20,16 +20,15 @@
 #include "checknullpointer.h"
 #include "ctu.h"
 #include "errortypes.h"
+#include "fixture.h"
 #include "helpers.h"
 #include "library.h"
 #include "settings.h"
-#include "fixture.h"
 #include "token.h"
 #include "tokenize.h"
 
 #include <list>
 #include <map>
-#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -177,13 +176,12 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool inconclusive = false, const char filename[] = "test.cpp") {
+    void check_(const char* file, int line, const char code[], bool inconclusive = false, bool cpp = true) {
         const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).build();
 
         // Tokenize..
-        Tokenizer tokenizer(settings1, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
+        SimpleTokenizer tokenizer(settings1, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
 
         // Check for null pointer dereferences..
         runChecks<CheckNullPointer>(tokenizer, this);
@@ -1320,10 +1318,10 @@ private:
                             "  return *i;\n"
                             "}\n";
 
-        check(code, false, "test.cpp"); // C++ file => nullptr means NULL
+        check(code, false, true); // C++ file => nullptr means NULL
         ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference: i\n", errout_str());
 
-        check(code, false, "test.c"); // C file => nullptr does not mean NULL
+        check(code, false, false); // C file => nullptr does not mean NULL
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2634,7 +2632,7 @@ private:
               "    s->ppc = NULL;\n"
               "    if (alloc(s))\n"
               "        s->ppc[0] = \"\";\n"
-              "}\n", /*inconclusive*/ false, "test.c");
+              "}\n", /*inconclusive*/ false, false);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -4141,9 +4139,9 @@ private:
     }
 
     void functioncalllibrary() {
-        Tokenizer tokenizer(settingsDefault,this);
-        std::istringstream code("void f() { int a,b,c; x(a,b,c); }");
-        ASSERT_EQUALS(true, tokenizer.tokenize(code, "test.c"));
+        SimpleTokenizer tokenizer(settingsDefault,*this);
+        const char code[] = "void f() { int a,b,c; x(a,b,c); }";
+        ASSERT_EQUALS(true, tokenizer.tokenize(code, false));
         const Token *xtok = Token::findsimplematch(tokenizer.tokens(), "x");
 
         // nothing bad..
@@ -4376,7 +4374,7 @@ private:
               "}\n"
               "void bar() {\n"
               "  foo(0);\n"
-              "}\n", true, "test.c");
+              "}\n", true, false);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -4482,9 +4480,8 @@ private:
 #define ctu(code) ctu_(code, __FILE__, __LINE__)
     void ctu_(const char code[], const char* file, int line) {
         // Tokenize..
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         CTU::FileInfo *ctu = CTU::getFileInfo(&tokenizer);
 

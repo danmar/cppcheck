@@ -42,19 +42,19 @@
 class TestSymbolDatabase;
 
 #define GET_SYMBOL_DB(code) \
-    Tokenizer tokenizer(settings1, this); \
-    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, "test.cpp"); \
+    SimpleTokenizer tokenizer(settings1, *this); \
+    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, true); \
     ASSERT(db); \
     do {} while (false)
 
 #define GET_SYMBOL_DB_C(code) \
-    Tokenizer tokenizer(settings1, this); \
-    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, "test.c"); \
+    SimpleTokenizer tokenizer(settings1, *this); \
+    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, false); \
     do {} while (false)
 
 #define GET_SYMBOL_DB_DBG(code) \
-    Tokenizer tokenizer(settingsDbg, this); \
-    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, "test.cpp"); \
+    SimpleTokenizer tokenizer(settingsDbg, *this); \
+    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, true); \
     ASSERT(db); \
     do {} while (false)
 
@@ -74,9 +74,8 @@ private:
         typetok = nullptr;
     }
 
-    static const SymbolDatabase* getSymbolDB_inner(Tokenizer& tokenizer, const char* code, const char* filename) {
-        std::istringstream istr(code);
-        return tokenizer.tokenize(istr, filename) ? tokenizer.getSymbolDatabase() : nullptr;
+    static const SymbolDatabase* getSymbolDB_inner(SimpleTokenizer& tokenizer, const char* code, bool cpp) {
+        return tokenizer.tokenize(code, cpp) ? tokenizer.getSymbolDatabase() : nullptr;
     }
 
     static const Token* findToken(Tokenizer& tokenizer, const std::string& expr, unsigned int exprline)
@@ -101,9 +100,8 @@ private:
                                 unsigned int exprline2,
                                 SourceLocation loc = SourceLocation::current())
     {
-        Tokenizer tokenizer(settings1, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), loc.file_name(), loc.line());
+        SimpleTokenizer tokenizer(settings1, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), loc.file_name(), loc.line());
 
         const Token* tok1 = findToken(tokenizer, expr1, exprline1);
         const Token* tok2 = findToken(tokenizer, expr2, exprline2);
@@ -2580,14 +2578,13 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool debug = true, const char filename[] = "test.cpp", const Settings* pSettings = nullptr) {
+    void check_(const char* file, int line, const char code[], bool debug = true, bool cpp = true, const Settings* pSettings = nullptr) {
         // Check..
         const Settings settings = settingsBuilder(pSettings ? *pSettings : settings1).debugwarnings(debug).exhaustive().build();
 
         // Tokenize..
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
 
         // force symbol database creation
         tokenizer.createSymbolDatabase();
@@ -3222,11 +3219,11 @@ private:
               "static void function_declaration_after(void) __attribute__((__used__));");
         ASSERT_EQUALS("", errout_str());
 
-        check("main(int argc, char *argv[]) { }", true, "test.c");
+        check("main(int argc, char *argv[]) { }", true, false);
         ASSERT_EQUALS("", errout_str());
 
         const Settings s = settingsBuilder(settings1).severity(Severity::portability).build();
-        check("main(int argc, char *argv[]) { }", false, "test.c", &s);
+        check("main(int argc, char *argv[]) { }", false, false, &s);
         ASSERT_EQUALS("[test.c:1]: (portability) Omitted return type of function 'main' defaults to int, this is not supported by ISO C99 and later standards.\n",
                       errout_str());
 
@@ -3257,9 +3254,9 @@ private:
 
     void symboldatabase5() {
         // ticket #2178 - segmentation fault
-        ASSERT_THROW(check("int CL_INLINE_DECL(integer_decode_float) (int x) {\n"
-                           "    return (sign ? cl_I() : 0);\n"
-                           "}"), InternalError);
+        ASSERT_THROW_INTERNAL(check("int CL_INLINE_DECL(integer_decode_float) (int x) {\n"
+                                    "    return (sign ? cl_I() : 0);\n"
+                                    "}"), UNKNOWN_MACRO);
     }
 
     void symboldatabase6() {
@@ -3360,7 +3357,7 @@ private:
 
     void symboldatabase14() {
         // ticket #2589 - segmentation fault
-        ASSERT_THROW(check("struct B : A\n"), InternalError);
+        ASSERT_THROW_INTERNAL(check("struct B : A\n"), SYNTAX);
     }
 
     void symboldatabase17() {
@@ -3382,7 +3379,7 @@ private:
 
     void symboldatabase20() {
         // ticket #3013 - segmentation fault
-        ASSERT_THROW(check("struct x : virtual y\n"), InternalError);
+        ASSERT_THROW_INTERNAL(check("struct x : virtual y\n"), SYNTAX);
     }
 
     void symboldatabase21() {
@@ -8721,10 +8718,9 @@ private:
         }
     }
 #define typeOf(...) typeOf_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string typeOf_(const char* file, int line, const char code[], const char pattern[], const char filename[] = "test.cpp", const Settings *settings = nullptr) {
-        Tokenizer tokenizer(settings ? *settings : settings2, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
+    std::string typeOf_(const char* file, int line, const char code[], const char pattern[], bool cpp = true, const Settings *settings = nullptr) {
+        SimpleTokenizer tokenizer(settings ? *settings : settings2, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
         const Token* tok;
         for (tok = tokenizer.list.back(); tok; tok = tok->previous())
             if (Token::simpleMatch(tok, pattern, strlen(pattern)))
@@ -8747,30 +8743,30 @@ private:
         sSameSize.platform.long_long_bit = 64;
 
         // numbers
-        ASSERT_EQUALS("signed int", typeOf("1;", "1", "test.c", &s));
-        ASSERT_EQUALS("signed int", typeOf("(-1);", "-1", "test.c", &s));
-        ASSERT_EQUALS("signed int", typeOf("32767;", "32767", "test.c", &s));
-        ASSERT_EQUALS("signed int", typeOf("(-32767);", "-32767", "test.c", &s));
-        ASSERT_EQUALS("signed long", typeOf("32768;", "32768", "test.c", &s));
-        ASSERT_EQUALS("signed long", typeOf("(-32768);", "-32768", "test.c", &s));
-        ASSERT_EQUALS("signed long", typeOf("32768l;", "32768l", "test.c", &s));
-        ASSERT_EQUALS("unsigned int", typeOf("32768U;", "32768U", "test.c", &s));
-        ASSERT_EQUALS("signed long long", typeOf("2147483648;", "2147483648", "test.c", &s));
-        ASSERT_EQUALS("unsigned long", typeOf("2147483648u;", "2147483648u", "test.c", &s));
-        ASSERT_EQUALS("signed long long", typeOf("2147483648L;", "2147483648L", "test.c", &s));
-        ASSERT_EQUALS("unsigned long long", typeOf("18446744069414584320;", "18446744069414584320", "test.c", &s));
-        ASSERT_EQUALS("signed int", typeOf("0xFF;", "0xFF", "test.c", &s));
-        ASSERT_EQUALS("unsigned int", typeOf("0xFFU;", "0xFFU", "test.c", &s));
-        ASSERT_EQUALS("unsigned int", typeOf("0xFFFF;", "0xFFFF", "test.c", &s));
-        ASSERT_EQUALS("signed long", typeOf("0xFFFFFF;", "0xFFFFFF", "test.c", &s));
-        ASSERT_EQUALS("unsigned long", typeOf("0xFFFFFFU;", "0xFFFFFFU", "test.c", &s));
-        ASSERT_EQUALS("unsigned long", typeOf("0xFFFFFFFF;", "0xFFFFFFFF", "test.c", &s));
-        ASSERT_EQUALS("signed long long", typeOf("0xFFFFFFFFFFFF;", "0xFFFFFFFFFFFF", "test.c", &s));
-        ASSERT_EQUALS("unsigned long long", typeOf("0xFFFFFFFFFFFFU;", "0xFFFFFFFFFFFFU", "test.c", &s));
-        ASSERT_EQUALS("unsigned long long", typeOf("0xFFFFFFFF00000000;", "0xFFFFFFFF00000000", "test.c", &s));
+        ASSERT_EQUALS("signed int", typeOf("1;", "1", false, &s));
+        ASSERT_EQUALS("signed int", typeOf("(-1);", "-1", false, &s));
+        ASSERT_EQUALS("signed int", typeOf("32767;", "32767", false, &s));
+        ASSERT_EQUALS("signed int", typeOf("(-32767);", "-32767", false, &s));
+        ASSERT_EQUALS("signed long", typeOf("32768;", "32768", false, &s));
+        ASSERT_EQUALS("signed long", typeOf("(-32768);", "-32768", false, &s));
+        ASSERT_EQUALS("signed long", typeOf("32768l;", "32768l", false, &s));
+        ASSERT_EQUALS("unsigned int", typeOf("32768U;", "32768U", false, &s));
+        ASSERT_EQUALS("signed long long", typeOf("2147483648;", "2147483648", false, &s));
+        ASSERT_EQUALS("unsigned long", typeOf("2147483648u;", "2147483648u", false, &s));
+        ASSERT_EQUALS("signed long long", typeOf("2147483648L;", "2147483648L", false, &s));
+        ASSERT_EQUALS("unsigned long long", typeOf("18446744069414584320;", "18446744069414584320", false, &s));
+        ASSERT_EQUALS("signed int", typeOf("0xFF;", "0xFF", false, &s));
+        ASSERT_EQUALS("unsigned int", typeOf("0xFFU;", "0xFFU", false, &s));
+        ASSERT_EQUALS("unsigned int", typeOf("0xFFFF;", "0xFFFF", false, &s));
+        ASSERT_EQUALS("signed long", typeOf("0xFFFFFF;", "0xFFFFFF", false, &s));
+        ASSERT_EQUALS("unsigned long", typeOf("0xFFFFFFU;", "0xFFFFFFU", false, &s));
+        ASSERT_EQUALS("unsigned long", typeOf("0xFFFFFFFF;", "0xFFFFFFFF", false, &s));
+        ASSERT_EQUALS("signed long long", typeOf("0xFFFFFFFFFFFF;", "0xFFFFFFFFFFFF", false, &s));
+        ASSERT_EQUALS("unsigned long long", typeOf("0xFFFFFFFFFFFFU;", "0xFFFFFFFFFFFFU", false, &s));
+        ASSERT_EQUALS("unsigned long long", typeOf("0xFFFFFFFF00000000;", "0xFFFFFFFF00000000", false, &s));
 
-        ASSERT_EQUALS("signed long", typeOf("2147483648;", "2147483648", "test.c", &sSameSize));
-        ASSERT_EQUALS("unsigned long", typeOf("0xc000000000000000;", "0xc000000000000000", "test.c", &sSameSize));
+        ASSERT_EQUALS("signed long", typeOf("2147483648;", "2147483648", false, &sSameSize));
+        ASSERT_EQUALS("unsigned long", typeOf("0xc000000000000000;", "0xc000000000000000", false, &sSameSize));
 
         ASSERT_EQUALS("unsigned int", typeOf("1U;", "1U"));
         ASSERT_EQUALS("signed long", typeOf("1L;", "1L"));
@@ -8827,12 +8823,12 @@ private:
         ASSERT_EQUALS("unsigned long", typeOf("(unsigned long)1 + (signed int)2;", "+"));
 
         // char
-        ASSERT_EQUALS("char", typeOf("'a';", "'a'", "test.cpp"));
-        ASSERT_EQUALS("signed int", typeOf("'a';", "'a'", "test.c"));
-        ASSERT_EQUALS("wchar_t", typeOf("L'a';", "L'a'", "test.cpp"));
-        ASSERT_EQUALS("wchar_t", typeOf("L'a';", "L'a'", "test.c"));
-        ASSERT_EQUALS("signed int", typeOf("'aaa';", "'aaa'", "test.cpp"));
-        ASSERT_EQUALS("signed int", typeOf("'aaa';", "'aaa'", "test.c"));
+        ASSERT_EQUALS("char", typeOf("'a';", "'a'", true));
+        ASSERT_EQUALS("signed int", typeOf("'a';", "'a'", false));
+        ASSERT_EQUALS("wchar_t", typeOf("L'a';", "L'a'", true));
+        ASSERT_EQUALS("wchar_t", typeOf("L'a';", "L'a'", false));
+        ASSERT_EQUALS("signed int", typeOf("'aaa';", "'aaa'", true));
+        ASSERT_EQUALS("signed int", typeOf("'aaa';", "'aaa'", false));
 
         // char *
         ASSERT_EQUALS("const char *", typeOf("\"hello\" + 1;", "+"));
@@ -8893,10 +8889,10 @@ private:
         // shift => result has same type as lhs
         ASSERT_EQUALS("signed int", typeOf("int x; a = x << 1U;", "<<"));
         ASSERT_EQUALS("signed int", typeOf("int x; a = x >> 1U;", ">>"));
-        ASSERT_EQUALS("",           typeOf("a = 12 >> x;", ">>", "test.cpp")); // >> might be overloaded
-        ASSERT_EQUALS("signed int", typeOf("a = 12 >> x;", ">>", "test.c"));
-        ASSERT_EQUALS("",           typeOf("a = 12 << x;", "<<", "test.cpp")); // << might be overloaded
-        ASSERT_EQUALS("signed int", typeOf("a = 12 << x;", "<<", "test.c"));
+        ASSERT_EQUALS("",           typeOf("a = 12 >> x;", ">>", true)); // >> might be overloaded
+        ASSERT_EQUALS("signed int", typeOf("a = 12 >> x;", ">>", false));
+        ASSERT_EQUALS("",           typeOf("a = 12 << x;", "<<", true)); // << might be overloaded
+        ASSERT_EQUALS("signed int", typeOf("a = 12 << x;", "<<", false));
         ASSERT_EQUALS("signed int", typeOf("a = true << 1U;", "<<"));
 
         // assignment => result has same type as lhs
@@ -8906,8 +8902,8 @@ private:
         ASSERT_EQUALS("void * *", typeOf("void * x[10]; a = x + 0;", "+"));
         ASSERT_EQUALS("signed int *", typeOf("int x[10]; a = x + 1;", "+"));
         ASSERT_EQUALS("signed int",  typeOf("int x[10]; a = x[0] + 1;", "+"));
-        ASSERT_EQUALS("",            typeOf("a = x[\"hello\"];", "[", "test.cpp"));
-        ASSERT_EQUALS("const char",  typeOf("a = x[\"hello\"];", "[", "test.c"));
+        ASSERT_EQUALS("",            typeOf("a = x[\"hello\"];", "[", true));
+        ASSERT_EQUALS("const char",  typeOf("a = x[\"hello\"];", "[", false));
         ASSERT_EQUALS("signed int *", typeOf("int x[10]; a = &x;", "&"));
         ASSERT_EQUALS("signed int *", typeOf("int x[10]; a = &x[1];", "&"));
 
@@ -8977,7 +8973,7 @@ private:
                                "</function>\n" \
                                "</def>";              \
         const Settings sF = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build(); \
-        ASSERT_EQUALS(#type, typeOf("void f() { auto x = g(); }", "x", "test.cpp", &sF)); \
+        ASSERT_EQUALS(#type, typeOf("void f() { auto x = g(); }", "x", true, &sF)); \
 } while (false)
         // *INDENT-OFF*
         CHECK_LIBRARY_FUNCTION_RETURN_TYPE(bool);
@@ -9010,12 +9006,12 @@ private:
             settings.platform.sizeof_short = 2;
             settings.platform.sizeof_int = 4;
 
-            ASSERT_EQUALS("unsigned char", typeOf("u8'a';", "u8'a'", "test.cpp", &settings));
-            ASSERT_EQUALS("unsigned short", typeOf("u'a';", "u'a'", "test.cpp", &settings));
-            ASSERT_EQUALS("unsigned int", typeOf("U'a';", "U'a'", "test.cpp", &settings));
-            ASSERT_EQUALS("const unsigned char *", typeOf("u8\"a\";", "u8\"a\"", "test.cpp", &settings));
-            ASSERT_EQUALS("const unsigned short *", typeOf("u\"a\";", "u\"a\"", "test.cpp", &settings));
-            ASSERT_EQUALS("const unsigned int *", typeOf("U\"a\";", "U\"a\"", "test.cpp", &settings));
+            ASSERT_EQUALS("unsigned char", typeOf("u8'a';", "u8'a'", true, &settings));
+            ASSERT_EQUALS("unsigned short", typeOf("u'a';", "u'a'", true, &settings));
+            ASSERT_EQUALS("unsigned int", typeOf("U'a';", "U'a'", true, &settings));
+            ASSERT_EQUALS("const unsigned char *", typeOf("u8\"a\";", "u8\"a\"", true, &settings));
+            ASSERT_EQUALS("const unsigned short *", typeOf("u\"a\";", "u\"a\"", true, &settings));
+            ASSERT_EQUALS("const unsigned int *", typeOf("U\"a\";", "U\"a\"", true, &settings));
         }
         {
             // PodType
@@ -9033,11 +9029,11 @@ private:
             ValueType vt2;
             ASSERT_EQUALS(true, vt2.fromLibraryType("podtype2", settingsWin64));
             ASSERT_EQUALS(ValueType::Type::INT, vt2.type);
-            ASSERT_EQUALS("unsigned int *", typeOf(";void *data = new u32[10];", "new", "test.cpp", &settingsWin64));
-            ASSERT_EQUALS("unsigned int *", typeOf(";void *data = new xyz::x[10];", "new", "test.cpp", &settingsWin64));
-            ASSERT_EQUALS("unsigned int", typeOf("; x = (xyz::x)12;", "(", "test.cpp", &settingsWin64));
-            ASSERT_EQUALS("unsigned int", typeOf(";u32(12);", "(", "test.cpp", &settingsWin64));
-            ASSERT_EQUALS("unsigned int", typeOf("x = u32(y[i]);", "(", "test.cpp", &settingsWin64));
+            ASSERT_EQUALS("unsigned int *", typeOf(";void *data = new u32[10];", "new", true, &settingsWin64));
+            ASSERT_EQUALS("unsigned int *", typeOf(";void *data = new xyz::x[10];", "new", true, &settingsWin64));
+            ASSERT_EQUALS("unsigned int", typeOf("; x = (xyz::x)12;", "(", true, &settingsWin64));
+            ASSERT_EQUALS("unsigned int", typeOf(";u32(12);", "(", true, &settingsWin64));
+            ASSERT_EQUALS("unsigned int", typeOf("x = u32(y[i]);", "(", true, &settingsWin64));
         }
         {
             // PlatformType
@@ -9072,9 +9068,9 @@ private:
                                        "  <container id=\"C\" startPattern=\"C\"/>\n"
                                        "</def>";
             const Settings sC = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
-            ASSERT_EQUALS("container(C) *", typeOf("C*c=new C;","new","test.cpp",&sC));
-            ASSERT_EQUALS("container(C) *", typeOf("x=(C*)c;","(","test.cpp",&sC));
-            ASSERT_EQUALS("container(C)", typeOf("C c = C();","(","test.cpp",&sC));
+            ASSERT_EQUALS("container(C) *", typeOf("C*c=new C;","new",true,&sC));
+            ASSERT_EQUALS("container(C) *", typeOf("x=(C*)c;","(",true,&sC));
+            ASSERT_EQUALS("container(C)", typeOf("C c = C();","(",true,&sC));
         }
         {
             // Container (vector)
@@ -9094,31 +9090,31 @@ private:
                                        "  </container>\n"
                                        "</def>";
             const Settings set = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
-            ASSERT_EQUALS("signed int", typeOf("Vector<int> v; v[0]=3;", "[", "test.cpp", &set));
-            ASSERT_EQUALS("container(test :: string)", typeOf("{return test::string();}", "(", "test.cpp", &set));
+            ASSERT_EQUALS("signed int", typeOf("Vector<int> v; v[0]=3;", "[", true, &set));
+            ASSERT_EQUALS("container(test :: string)", typeOf("{return test::string();}", "(", true, &set));
             ASSERT_EQUALS(
                 "container(test :: string)",
-                typeOf("void foo(Vector<test::string> v) { for (auto s: v) { x=s+s; } }", "s", "test.cpp", &set));
+                typeOf("void foo(Vector<test::string> v) { for (auto s: v) { x=s+s; } }", "s", true, &set));
             ASSERT_EQUALS(
                 "container(test :: string)",
-                typeOf("void foo(Vector<test::string> v) { for (auto s: v) { x=s+s; } }", "+", "test.cpp", &set));
+                typeOf("void foo(Vector<test::string> v) { for (auto s: v) { x=s+s; } }", "+", true, &set));
             ASSERT_EQUALS("container(test :: string) &",
-                          typeOf("Vector<test::string> v; x = v.front();", "(", "test.cpp", &set));
+                          typeOf("Vector<test::string> v; x = v.front();", "(", true, &set));
             ASSERT_EQUALS("container(test :: string) *",
-                          typeOf("Vector<test::string> v; x = v.data();", "(", "test.cpp", &set));
-            ASSERT_EQUALS("signed int &", typeOf("Vector<int> v; x = v.front();", "(", "test.cpp", &set));
-            ASSERT_EQUALS("signed int *", typeOf("Vector<int> v; x = v.data();", "(", "test.cpp", &set));
-            ASSERT_EQUALS("signed int * *", typeOf("Vector<int*> v; x = v.data();", "(", "test.cpp", &set));
-            ASSERT_EQUALS("iterator(Vector <)", typeOf("Vector<int> v; x = v.begin();", "(", "test.cpp", &set));
-            ASSERT_EQUALS("signed int &", typeOf("Vector<int> v; x = *v.begin();", "*", "test.cpp", &set));
+                          typeOf("Vector<test::string> v; x = v.data();", "(", true, &set));
+            ASSERT_EQUALS("signed int &", typeOf("Vector<int> v; x = v.front();", "(", true, &set));
+            ASSERT_EQUALS("signed int *", typeOf("Vector<int> v; x = v.data();", "(", true, &set));
+            ASSERT_EQUALS("signed int * *", typeOf("Vector<int*> v; x = v.data();", "(", true, &set));
+            ASSERT_EQUALS("iterator(Vector <)", typeOf("Vector<int> v; x = v.begin();", "(", true, &set));
+            ASSERT_EQUALS("signed int &", typeOf("Vector<int> v; x = *v.begin();", "*", true, &set));
             ASSERT_EQUALS("container(test :: string)",
-                          typeOf("void foo(){test::string s; return \"x\"+s;}", "+", "test.cpp", &set));
+                          typeOf("void foo(){test::string s; return \"x\"+s;}", "+", true, &set));
             ASSERT_EQUALS("container(test :: string)",
-                          typeOf("void foo(){test::string s; return s+\"x\";}", "+", "test.cpp", &set));
+                          typeOf("void foo(){test::string s; return s+\"x\";}", "+", true, &set));
             ASSERT_EQUALS("container(test :: string)",
-                          typeOf("void foo(){test::string s; return 'x'+s;}", "+", "test.cpp", &set));
+                          typeOf("void foo(){test::string s; return 'x'+s;}", "+", true, &set));
             ASSERT_EQUALS("container(test :: string)",
-                          typeOf("void foo(){test::string s; return s+'x';}", "+", "test.cpp", &set));
+                          typeOf("void foo(){test::string s; return s+'x';}", "+", true, &set));
         }
 
         // new
@@ -9161,7 +9157,7 @@ private:
                                        "</def>";
             const Settings set = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
             ASSERT_EQUALS("smart-pointer(std::shared_ptr)",
-                          typeOf("class C {}; x = std::make_shared<C>();", "(", "test.cpp", &set));
+                          typeOf("class C {}; x = std::make_shared<C>();", "(", true, &set));
         }
 
         // return
@@ -9172,7 +9168,7 @@ private:
                                        "  <container id=\"C\" startPattern=\"C\"/>\n"
                                        "</def>";
             const Settings sC = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
-            ASSERT_EQUALS("container(C)", typeOf("C f(char *p) { char data[10]; return data; }", "return", "test.cpp", &sC));
+            ASSERT_EQUALS("container(C)", typeOf("C f(char *p) { char data[10]; return data; }", "return", true, &sC));
         }
         // Smart pointer
         {
@@ -9182,9 +9178,9 @@ private:
                                        "</def>";
             const Settings set = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
             ASSERT_EQUALS("smart-pointer(MyPtr)",
-                          typeOf("void f() { MyPtr<int> p; return p; }", "p ;", "test.cpp", &set));
-            ASSERT_EQUALS("signed int", typeOf("void f() { MyPtr<int> p; return *p; }", "* p ;", "test.cpp", &set));
-            ASSERT_EQUALS("smart-pointer(MyPtr)", typeOf("void f() {return MyPtr<int>();}", "(", "test.cpp", &set));
+                          typeOf("void f() { MyPtr<int> p; return p; }", "p ;", true, &set));
+            ASSERT_EQUALS("signed int", typeOf("void f() { MyPtr<int> p; return *p; }", "* p ;", true, &set));
+            ASSERT_EQUALS("smart-pointer(MyPtr)", typeOf("void f() {return MyPtr<int>();}", "(", true, &set));
         }
     }
 

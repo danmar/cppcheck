@@ -16,17 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "checkio.h"
 #include "config.h"
 #include "errortypes.h"
+#include "fixture.h"
 #include "helpers.h"
 #include "platform.h"
 #include "settings.h"
-#include "fixture.h"
-#include "tokenize.h"
 
-#include <sstream>
 #include <string>
 
 class TestIO : public TestFixture {
@@ -99,10 +96,8 @@ private:
         PLATFORM(settings1.platform, options.platform);
 
         // Tokenize..
-        Tokenizer tokenizer(settings1, this);
-        std::istringstream istr(code);
-        const std::string file_in = options.cpp ? "test.cpp" : "test.c";
-        ASSERT_LOC(tokenizer.tokenize(istr, file_in.c_str()), file, line);
+        SimpleTokenizer tokenizer(settings1, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
 
         // Check..
         if (options.onlyFormatStr) {

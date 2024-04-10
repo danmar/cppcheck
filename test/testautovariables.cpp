@@ -16,14 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "checkautovariables.h"
 #include "errortypes.h"
-#include "settings.h"
 #include "fixture.h"
-#include "tokenize.h"
-
-#include <sstream>
+#include "helpers.h"
+#include "settings.h"
 
 class TestAutoVariables : public TestFixture {
 public:
@@ -33,13 +30,12 @@ private:
     const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::style).library("std.cfg").library("qt.cfg").build();
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool inconclusive = true, const char* filename = "test.cpp") {
+    void check_(const char* file, int line, const char code[], bool inconclusive = true, bool cpp = true) {
         const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).build();
 
         // Tokenize..
-        Tokenizer tokenizer(settings1, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
+        SimpleTokenizer tokenizer(settings1, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
 
         runChecks<CheckAutoVariables>(tokenizer, this);
     }
@@ -443,7 +439,7 @@ private:
     }
 
     void testautovar12() { // Ticket #5024, #5050 - Crash on invalid input
-        ASSERT_THROW(check("void f(int* a) { a = }"), InternalError);
+        ASSERT_THROW_INTERNAL(check("void f(int* a) { a = }"), SYNTAX);
         check("struct custom_type { custom_type(int) {} };\n"
               "void func(int) {}\n"
               "int var;\n"
@@ -916,7 +912,7 @@ private:
         check("void svn_repos_dir_delta2() {\n"
               "  struct context c;\n"
               "      SVN_ERR(delete(&c, root_baton, src_entry, pool));\n"
-              "}\n", false, "test.c");
+              "}\n", false, /* cpp= */ false);
         ASSERT_EQUALS("", errout_str());
     }
 

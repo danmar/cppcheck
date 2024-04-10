@@ -62,7 +62,7 @@ public:
     /**
      * @brief Returns the formatted report.
      */
-    QString getFormattedReportText() const;
+    const QString& getFormattedReportText() const;
 
 private:
 

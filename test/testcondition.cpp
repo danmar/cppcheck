@@ -18,15 +18,14 @@
 
 #include "checkcondition.h"
 #include "errortypes.h"
+#include "fixture.h"
 #include "helpers.h"
 #include "platform.h"
 #include "preprocessor.h"
 #include "settings.h"
-#include "fixture.h"
 #include "tokenize.h"
 
 #include <limits>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -543,9 +542,8 @@ private:
 
     void checkPureFunction_(const char code[], const char* file, int line) {
         // Tokenize..
-        Tokenizer tokenizer(settings1, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings1, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         runChecks<CheckCondition>(tokenizer, this);
     }
@@ -2787,12 +2785,12 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition 'x>100', second condition is always false\n", errout_str());
 
-        ASSERT_THROW(check("void f(int x) {\n"  // #8217 - crash for incomplete code
-                           "  if (x > 100) { return; }\n"
-                           "  X(do);\n"
-                           "  if (x > 100) {}\n"
-                           "}"),
-                     InternalError);
+        ASSERT_THROW_INTERNAL(check("void f(int x) {\n"  // #8217 - crash for incomplete code
+                                    "  if (x > 100) { return; }\n"
+                                    "  X(do);\n"
+                                    "  if (x > 100) {}\n"
+                                    "}"),
+                              SYNTAX);
 
         check("void f(const int *i) {\n"
               "  if (!i) return;\n"

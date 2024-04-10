@@ -16,15 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "fixture.h"
+#include "helpers.h"
 #include "settings.h"
 #include "summaries.h"
-#include "fixture.h"
 #include "tokenize.h"
 
-#include <sstream>
 #include <string>
-
 
 class TestSummaries : public TestFixture {
 public:
@@ -39,11 +37,10 @@ private:
     }
 
 #define createSummaries(...) createSummaries_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string createSummaries_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
+    std::string createSummaries_(const char* file, int line, const char code[], bool cpp = true) {
         // tokenize..
-        Tokenizer tokenizer(settingsDefault, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
+        SimpleTokenizer tokenizer(settingsDefault, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
         return Summaries::create(&tokenizer, "");
     }
 

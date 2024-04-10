@@ -1751,7 +1751,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
     Settings::terminate(false);
 
     QFileInfo inf(projectFile->getFilename());
-    const QString rootpath = projectFile->getRootPath();
+    const QString& rootpath = projectFile->getRootPath();
 
     QDir::setCurrent(inf.absolutePath());
 

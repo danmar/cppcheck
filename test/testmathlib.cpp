@@ -144,13 +144,13 @@ private:
         ASSERT_EQUALS("5.0",  MathLib::divide("25.5", "5.1"));
         ASSERT_EQUALS("7.0",  MathLib::divide("21.", "3"));
         ASSERT_EQUALS("1",    MathLib::divide("3", "2"));
-        ASSERT_THROW_EQUALS(MathLib::divide("123", "0"), InternalError, "Internal Error: Division by zero");  // decimal zero: throw
-        ASSERT_THROW_EQUALS(MathLib::divide("123", "00"), InternalError, "Internal Error: Division by zero"); // octal zero: throw
-        ASSERT_THROW_EQUALS(MathLib::divide("123", "0x0"), InternalError, "Internal Error: Division by zero"); // hex zero: throw
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::divide("123", "0"), INTERNAL, "Internal Error: Division by zero");  // decimal zero: throw
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::divide("123", "00"), INTERNAL, "Internal Error: Division by zero"); // octal zero: throw
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::divide("123", "0x0"), INTERNAL, "Internal Error: Division by zero"); // hex zero: throw
         MathLib::divide("123", "0.0f"); // float zero: don't throw
         MathLib::divide("123", "0.0"); // double zero: don't throw
         MathLib::divide("123", "0.0L"); // long double zero: don't throw
-        ASSERT_THROW_EQUALS(MathLib::divide("-9223372036854775808", "-1"), InternalError, "Internal Error: Division overflow"); // #4520 - out of range => throw
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::divide("-9223372036854775808", "-1"), INTERNAL, "Internal Error: Division overflow"); // #4520 - out of range => throw
         ASSERT_EQUALS("4611686018427387904",  MathLib::divide("-9223372036854775808", "-2")); // #6679
 
 
@@ -165,7 +165,7 @@ private:
         ASSERT_EQUALS("1", MathLib::calculate("0", "1", '^'));
 
         // Unknown action should throw exception
-        ASSERT_THROW_EQUALS(MathLib::calculate("1","2",'j'),InternalError, "Unexpected action 'j' in MathLib::calculate(). Please report this to Cppcheck developers.");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::calculate("1","2",'j'),INTERNAL, "Unexpected action 'j' in MathLib::calculate(). Please report this to Cppcheck developers.");
     }
 
     void calculate1() const {
@@ -182,7 +182,7 @@ private:
         MathLib::calculate("123", "0.0", '%'); // don't throw
 #endif
 
-        ASSERT_THROW_EQUALS(MathLib::calculate("123", "0", '%'), InternalError, "Internal Error: Division by zero"); // throw
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::calculate("123", "0", '%'), INTERNAL, "Internal Error: Division by zero"); // throw
 
         ASSERT_EQUALS("0", MathLib::calculate("1", "1", '^'));
         ASSERT_EQUALS("3", MathLib::calculate("2", "1", '^'));
@@ -365,8 +365,8 @@ private:
             ASSERT_EQUALS(i, MathLib::toBigNumber("-0xFFFFFFFFFFFFFFFF"));
         }
 
-        ASSERT_THROW_EQUALS(MathLib::toBigNumber("0x10000000000000000"), InternalError, "Internal Error. MathLib::toBigNumber: out_of_range: 0x10000000000000000");
-        ASSERT_THROW_EQUALS(MathLib::toBigNumber("-0x10000000000000000"), InternalError, "Internal Error. MathLib::toBigNumber: out_of_range: -0x10000000000000000");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber("0x10000000000000000"), INTERNAL, "Internal Error. MathLib::toBigNumber: out_of_range: 0x10000000000000000");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber("-0x10000000000000000"), INTERNAL, "Internal Error. MathLib::toBigNumber: out_of_range: -0x10000000000000000");
 
         // min/max and out-of-bounds - octal
         {
@@ -380,8 +380,8 @@ private:
             ASSERT_EQUALS(i, MathLib::toBigNumber("-01777777777777777777777"));
         }
 
-        ASSERT_THROW_EQUALS(MathLib::toBigNumber("02000000000000000000000"), InternalError, "Internal Error. MathLib::toBigNumber: out_of_range: 02000000000000000000000");
-        ASSERT_THROW_EQUALS(MathLib::toBigNumber("-02000000000000000000000"), InternalError, "Internal Error. MathLib::toBigNumber: out_of_range: -02000000000000000000000");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber("02000000000000000000000"), INTERNAL, "Internal Error. MathLib::toBigNumber: out_of_range: 02000000000000000000000");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber("-02000000000000000000000"), INTERNAL, "Internal Error. MathLib::toBigNumber: out_of_range: -02000000000000000000000");
 
         // min/max and out-of-bounds - decimal
         SUPPRESS_WARNING_CLANG_PUSH("-Wimplicitly-unsigned-literal")
@@ -399,13 +399,13 @@ private:
         SUPPRESS_WARNING_GCC_POP
         SUPPRESS_WARNING_CLANG_POP
 
-            ASSERT_THROW_EQUALS(MathLib::toBigNumber("18446744073709551616"), InternalError, "Internal Error. MathLib::toBigNumber: out_of_range: 18446744073709551616");
-        ASSERT_THROW_EQUALS(MathLib::toBigNumber("-18446744073709551616"), InternalError, "Internal Error. MathLib::toBigNumber: out_of_range: -18446744073709551616");
+            ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber("18446744073709551616"), INTERNAL, "Internal Error. MathLib::toBigNumber: out_of_range: 18446744073709551616");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber("-18446744073709551616"), INTERNAL, "Internal Error. MathLib::toBigNumber: out_of_range: -18446744073709551616");
 
-        ASSERT_THROW_EQUALS(MathLib::toBigNumber("invalid"), InternalError, "Internal Error. MathLib::toBigNumber: invalid_argument: invalid");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber("invalid"), INTERNAL, "Internal Error. MathLib::toBigNumber: invalid_argument: invalid");
 
-        ASSERT_THROW_EQUALS(MathLib::toBigNumber("1invalid"), InternalError, "Internal Error. MathLib::toBigNumber: input was not completely consumed: 1invalid");
-        ASSERT_THROW_EQUALS(MathLib::toBigNumber("1 invalid"), InternalError, "Internal Error. MathLib::toBigNumber: input was not completely consumed: 1 invalid");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber("1invalid"), INTERNAL, "Internal Error. MathLib::toBigNumber: input was not completely consumed: 1invalid");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber("1 invalid"), INTERNAL, "Internal Error. MathLib::toBigNumber: input was not completely consumed: 1 invalid");
 
         // TODO: test binary
         // TODO: test floating point
@@ -530,8 +530,8 @@ private:
             ASSERT_EQUALS(u, MathLib::toBigUNumber("-0xFFFFFFFFFFFFFFFF"));
         }
 
-        ASSERT_THROW_EQUALS(MathLib::toBigUNumber("0x10000000000000000"), InternalError, "Internal Error. MathLib::toBigUNumber: out_of_range: 0x10000000000000000");
-        ASSERT_THROW_EQUALS(MathLib::toBigUNumber("-0x10000000000000000"), InternalError, "Internal Error. MathLib::toBigUNumber: out_of_range: -0x10000000000000000");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber("0x10000000000000000"), INTERNAL, "Internal Error. MathLib::toBigUNumber: out_of_range: 0x10000000000000000");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber("-0x10000000000000000"), INTERNAL, "Internal Error. MathLib::toBigUNumber: out_of_range: -0x10000000000000000");
 
         // min/max and out-of-bounds - octal
         {
@@ -545,8 +545,8 @@ private:
             ASSERT_EQUALS(u, MathLib::toBigUNumber("-01777777777777777777777"));
         }
 
-        ASSERT_THROW_EQUALS(MathLib::toBigUNumber("02000000000000000000000"), InternalError, "Internal Error. MathLib::toBigUNumber: out_of_range: 02000000000000000000000");
-        ASSERT_THROW_EQUALS(MathLib::toBigUNumber("-02000000000000000000000"), InternalError, "Internal Error. MathLib::toBigUNumber: out_of_range: -02000000000000000000000");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber("02000000000000000000000"), INTERNAL, "Internal Error. MathLib::toBigUNumber: out_of_range: 02000000000000000000000");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber("-02000000000000000000000"), INTERNAL, "Internal Error. MathLib::toBigUNumber: out_of_range: -02000000000000000000000");
 
         // min/max and out-of-bounds - decimal
         SUPPRESS_WARNING_CLANG_PUSH("-Wimplicitly-unsigned-literal")
@@ -564,13 +564,13 @@ private:
         SUPPRESS_WARNING_GCC_POP
         SUPPRESS_WARNING_CLANG_POP
 
-            ASSERT_THROW_EQUALS(MathLib::toBigUNumber("18446744073709551616"), InternalError, "Internal Error. MathLib::toBigUNumber: out_of_range: 18446744073709551616");
-        ASSERT_THROW_EQUALS(MathLib::toBigUNumber("-18446744073709551616"), InternalError, "Internal Error. MathLib::toBigUNumber: out_of_range: -18446744073709551616");
+            ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber("18446744073709551616"), INTERNAL, "Internal Error. MathLib::toBigUNumber: out_of_range: 18446744073709551616");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber("-18446744073709551616"), INTERNAL, "Internal Error. MathLib::toBigUNumber: out_of_range: -18446744073709551616");
 
-        ASSERT_THROW_EQUALS(MathLib::toBigUNumber("invalid"), InternalError, "Internal Error. MathLib::toBigUNumber: invalid_argument: invalid");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber("invalid"), INTERNAL, "Internal Error. MathLib::toBigUNumber: invalid_argument: invalid");
 
-        ASSERT_THROW_EQUALS(MathLib::toBigUNumber("1invalid"), InternalError, "Internal Error. MathLib::toBigUNumber: input was not completely consumed: 1invalid");
-        ASSERT_THROW_EQUALS(MathLib::toBigUNumber("1 invalid"), InternalError, "Internal Error. MathLib::toBigUNumber: input was not completely consumed: 1 invalid");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber("1invalid"), INTERNAL, "Internal Error. MathLib::toBigUNumber: input was not completely consumed: 1invalid");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber("1 invalid"), INTERNAL, "Internal Error. MathLib::toBigUNumber: input was not completely consumed: 1 invalid");
 
         // TODO: test binary
         // TODO: test floating point
@@ -657,39 +657,39 @@ private:
         ASSERT_EQUALS_DOUBLE((double)('\200'), MathLib::toDoubleNumber("'\\200'"), 0.000001);
         ASSERT_EQUALS_DOUBLE((double)(L'A'),   MathLib::toDoubleNumber("L'A'"), 0.000001);
 
-        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("invalid"), InternalError, "Internal Error. MathLib::toDoubleNumber: conversion failed: invalid");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("invalid"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: conversion failed: invalid");
 
 #ifdef _LIBCPP_VERSION
-        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1invalid"), InternalError, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1invalid");
-        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.1invalid"), InternalError, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1.1invalid");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1invalid"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1invalid");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1.1invalid"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1.1invalid");
 #else
-        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1invalid"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1invalid");
-        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.1invalid"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.1invalid");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1invalid"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1invalid");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1.1invalid"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.1invalid");
 #endif
-        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1 invalid"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1 invalid");
-        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("-1e-08.0"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: -1e-08.0");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1 invalid"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1 invalid");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("-1e-08.0"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: -1e-08.0");
 
         // invalid suffices
 #ifdef _LIBCPP_VERSION
-        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1f"), InternalError, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1f");
-        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1F"), InternalError, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1F");
-        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.ff"), InternalError, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1.ff");
-        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.FF"), InternalError, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1.FF");
-        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.0ff"), InternalError, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1.0ff");
-        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.0FF"), InternalError, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1.0FF");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1f"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1f");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1F"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1F");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1.ff"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1.ff");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1.FF"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1.FF");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1.0ff"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1.0ff");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1.0FF"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1.0FF");
 #else
-        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1f"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1f");
-        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1F"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1F");
-        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.ff"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.ff");
-        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.FF"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.FF");
-        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.0ff"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.0ff");
-        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.0FF"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.0FF");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1f"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1f");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1F"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1F");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1.ff"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.ff");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1.FF"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.FF");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1.0ff"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.0ff");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1.0FF"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.0FF");
 #endif
         // TODO: needs to fail
-        //ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.ll"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.ll");
-        //ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.0LL"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.0LL");
-        //ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.0ll"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.0ll");
-        //ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.0LL"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.0LL");
+        //ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1.ll"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.ll");
+        //ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1.0LL"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.0LL");
+        //ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1.0ll"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.0ll");
+        //ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1.0LL"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.0LL");
 
         // verify: string --> double --> string conversion
         ASSERT_EQUALS("1.0",  MathLib::toString(MathLib::toDoubleNumber("1.0f")));

@@ -16,18 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "settings.h"
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "settings.h"
 #include "standards.h"
 #include "token.h"
-#include "tokenize.h"
 #include "tokenlist.h"
 #include "vfvalue.h"
 
 #include <algorithm>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -142,10 +140,10 @@ private:
 
 #define MatchCheck(...) MatchCheck_(__FILE__, __LINE__, __VA_ARGS__)
     bool MatchCheck_(const char* file, int line, const std::string& code, const std::string& pattern, unsigned int varid = 0) {
-        Tokenizer tokenizer(settingsDefault, this);
-        std::istringstream istr(";" + code + ";");
+        SimpleTokenizer tokenizer(settingsDefault, *this);
+        const std::string code2 = ";" + code + ";";
         try {
-            ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+            ASSERT_LOC(tokenizer.tokenize(code2.c_str()), file, line);
         } catch (...) {}
         return Token::Match(tokenizer.tokens()->next(), pattern.c_str(), varid);
     }
@@ -665,7 +663,7 @@ private:
         const SimpleTokenizer var(*this, "int a ; int b ;");
 
         // Varid == 0 should throw exception
-        ASSERT_THROW((void)Token::Match(var.tokens(), "%type% %varid% ; %type% %name%", 0),InternalError);
+        ASSERT_THROW_INTERNAL_EQUALS((void)Token::Match(var.tokens(), "%type% %varid% ; %type% %name%", 0),INTERNAL,"Internal error. Token::Match called with varid 0. Please report this to Cppcheck developers");
 
         ASSERT_EQUALS(true, Token::Match(var.tokens(), "%type% %varid% ; %type% %name%", 1));
         ASSERT_EQUALS(true, Token::Match(var.tokens(), "%type% %name% ; %type% %varid%", 2));

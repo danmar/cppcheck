@@ -1110,6 +1110,7 @@ template<class F>
 static size_t accumulateStructMembers(const Scope* scope, F f)
 {
     size_t total = 0;
+    std::set<const Scope*> anonScopes;
     for (const Variable& var : scope->varlist) {
         if (var.isStatic())
             continue;
@@ -1119,7 +1120,13 @@ static size_t accumulateStructMembers(const Scope* scope, F f)
             const MathLib::bigint dim = std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), 1LL, [](MathLib::bigint i1, const Dimension& dim) {
                 return i1 * dim.num;
             });
-            total = f(total, *vt, dim);
+            if (var.nameToken()->scope() != scope && var.nameToken()->scope()->definedType) { // anonymous union
+                const auto ret = anonScopes.insert(var.nameToken()->scope());
+                if (ret.second)
+                    total = f(total, *vt, dim);
+            }
+            else
+                total = f(total, *vt, dim);
         }
         if (total == 0)
             return 0;
@@ -1148,11 +1155,22 @@ static size_t getAlignOf(const ValueType& vt, const Settings& settings)
         return align == 0 ? 0 : bitCeil(align);
     }
     if (vt.type == ValueType::Type::RECORD && vt.typeScope) {
-        return accumulateStructMembers(vt.typeScope, [&](size_t max, const ValueType& vt2, size_t /*dim*/) {
+        auto accHelper = [&](size_t max, const ValueType& vt2, size_t /*dim*/) {
             size_t a = getAlignOf(vt2, settings);
             return std::max(max, a);
-        });
+        };
+        size_t total = 0;
+        if (const Type* dt = vt.typeScope->definedType) {
+            total = std::accumulate(dt->derivedFrom.begin(), dt->derivedFrom.end(), total, [&](size_t v, const Type::BaseInfo& bi) {
+                if (bi.type && bi.type->classScope)
+                    v += accumulateStructMembers(bi.type->classScope, accHelper);
+                return v;
+            });
+        }
+        return total + accumulateStructMembers(vt.typeScope, accHelper);
     }
+    if (vt.type == ValueType::Type::CONTAINER)
+        return settings.platform.sizeof_pointer; // Just guess
     return 0;
 }
 
@@ -1185,16 +1203,26 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings)
         return settings.platform.sizeof_double;
     if (vt.type == ValueType::Type::LONGDOUBLE)
         return settings.platform.sizeof_long_double;
+    if (vt.type == ValueType::Type::CONTAINER)
+        return 3 * settings.platform.sizeof_pointer; // Just guess
     if (vt.type == ValueType::Type::RECORD && vt.typeScope) {
-        size_t total = accumulateStructMembers(vt.typeScope, [&](size_t total, const ValueType& vt2, size_t dim) -> size_t {
+        auto accHelper = [&](size_t total, const ValueType& vt2, size_t dim) -> size_t {
             size_t n = ValueFlow::getSizeOf(vt2, settings);
             size_t a = getAlignOf(vt2, settings);
             if (n == 0 || a == 0)
                 return 0;
             n *= dim;
             size_t padding = (a - (total % a)) % a;
-            return total + padding + n;
-        });
+            return vt.typeScope->type == Scope::eUnion ? std::max(total, n) : total + padding + n;
+        };
+        size_t total = accumulateStructMembers(vt.typeScope, accHelper);
+        if (const Type* dt = vt.typeScope->definedType) {
+            total = std::accumulate(dt->derivedFrom.begin(), dt->derivedFrom.end(), total, [&](size_t v, const Type::BaseInfo& bi) {
+                if (bi.type && bi.type->classScope)
+                    v += accumulateStructMembers(bi.type->classScope, accHelper);
+                return v;
+            });
+        }
         if (total == 0)
             return 0;
         size_t align = getAlignOf(vt, settings);

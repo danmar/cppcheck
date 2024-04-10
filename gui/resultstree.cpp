@@ -1337,7 +1337,7 @@ void ResultsTree::setCheckDirectory(const QString &dir)
 }
 
 
-QString ResultsTree::getCheckDirectory()
+const QString& ResultsTree::getCheckDirectory()
 {
     return mCheckPath;
 }

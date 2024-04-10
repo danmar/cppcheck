@@ -18,15 +18,14 @@
 
 #include "checkunusedvar.h"
 #include "errortypes.h"
+#include "fixture.h"
 #include "helpers.h"
 #include "preprocessor.h"
 #include "settings.h"
-#include "fixture.h"
 #include "standards.h"
 #include "tokenize.h"
 
 #include <list>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -268,9 +267,8 @@ private:
         const Settings *settings1 = s ? s : &settings;
 
         // Tokenize..
-        Tokenizer tokenizer(*settings1, this, &preprocessor);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(*settings1, *this, &preprocessor);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for unused variables..
         CheckUnusedVar checkUnusedVar(&tokenizer, settings1, this);
@@ -2008,11 +2006,10 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
-    void functionVariableUsage_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
+    void functionVariableUsage_(const char* file, int line, const char code[], bool cpp = true) {
         // Tokenize..
-        Tokenizer tokenizer(settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
 
         // Check for unused variables..
         CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
@@ -2134,7 +2131,7 @@ private:
                               "{\n"
                               "    undefined i = 0;\n"
                               "}\n",
-                              "test.c");
+                              false);
         ASSERT_EQUALS(
             "[test.c:3]: (style) Variable 'i' is assigned a value that is never used.\n"
             "[test.c:3]: (style) Variable 'i' is assigned a value that is never used.\n", // duplicate
@@ -2530,7 +2527,7 @@ private:
                               "    undefined i;\n"
                               "    return i;\n"
                               "}\n",
-                              "test.c");
+                              false);
         ASSERT_EQUALS("[test.c:3]: (style) Variable 'i' is not assigned a value.\n", errout_str());
 
         functionVariableUsage("undefined *foo()\n"
@@ -3297,7 +3294,7 @@ private:
         functionVariableUsage("void f(int x) {\n"
                               "    C c;\n"
                               "    if (c >>= x) {}\n"
-                              "}", "test.c");
+                              "}", false);
         ASSERT_EQUALS("[test.c:3]: (style) Variable 'c' is assigned a value that is never used.\n", errout_str());
 
         functionVariableUsage("void f() {\n"
@@ -5078,7 +5075,7 @@ private:
                               "  int x;\n"
                               "  unknown_type p = &x;\n"
                               "  *p = 9;\n"
-                              "}", "test.c");
+                              "}", false);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -5233,7 +5230,7 @@ private:
                               "    A a;\n"
                               "    return 0;\n"
                               "}\n",
-                              "test.c");
+                              false);
         ASSERT_EQUALS("[test.c:2]: (style) Unused variable: a\n", errout_str());
         // extracttests.enable
 
@@ -7042,7 +7039,7 @@ private:
                 "void fun(Date result) {"
                 "  result.x = 12;\n"
                 "}",
-                "test.c"
+                false
                 );
             ASSERT_EQUALS("[test.c:1]: (style) Variable 'result.x' is assigned a value that is never used.\n", errout_str());
 

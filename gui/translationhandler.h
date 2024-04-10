@@ -69,7 +69,7 @@ public:
      * @return List of available translations.
      *
      */
-    QList<TranslationInfo> getTranslations() const {
+    const QList<TranslationInfo>& getTranslations() const {
         return mTranslations;
     }
 
@@ -86,7 +86,7 @@ public:
      * @return ISO 639 language code for current translation.
      *
      */
-    QString getCurrentLanguage() const;
+    const QString& getCurrentLanguage() const;
 
     /**
      * @brief Get translation suggestion for the system.

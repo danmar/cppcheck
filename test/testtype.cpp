@@ -18,16 +18,15 @@
 
 #include "checktype.h"
 #include "errortypes.h"
+#include "fixture.h"
 #include "helpers.h"
 #include "platform.h"
 #include "preprocessor.h"
 #include "settings.h"
 #include "standards.h"
-#include "fixture.h"
 #include "tokenize.h"
 
 #include <list>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -51,13 +50,12 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], const Settings& settings, const char filename[] = "test.cpp", Standards::cppstd_t standard = Standards::cppstd_t::CPP11) {
+    void check_(const char* file, int line, const char code[], const Settings& settings, bool cpp = true, Standards::cppstd_t standard = Standards::cppstd_t::CPP11) {
         const Settings settings1 = settingsBuilder(settings).severity(Severity::warning).severity(Severity::portability).cpp(standard).build();
 
         // Tokenize..
-        Tokenizer tokenizer(settings1, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
+        SimpleTokenizer tokenizer(settings1, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
 
         // Check..
         runChecks<CheckType>(tokenizer, this);
@@ -113,9 +111,9 @@ private:
                 ASSERT_EQUALS("", errout_str());
 
                 // c++14
-                check((type + " foo(" + type + " x) { return x << 31; }").c_str(), settings, "test.cpp", Standards::cppstd_t::CPP14);
+                check((type + " foo(" + type + " x) { return x << 31; }").c_str(), settings, true, Standards::cppstd_t::CPP14);
                 ASSERT_EQUALS("[test.cpp:1]: (portability) Shifting signed 32-bit value by 31 bits is implementation-defined behaviour\n", errout_str());
-                check((type + " f(int x) { return (x = (" + type + ")x << 32); }").c_str(), settings, "test.cpp", Standards::cppstd_t::CPP14);
+                check((type + " f(int x) { return (x = (" + type + ")x << 32); }").c_str(), settings, true, Standards::cppstd_t::CPP14);
                 ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout_str());
             }
         }
@@ -148,11 +146,11 @@ private:
             ASSERT_EQUALS("", errout_str());
 
             // c++14
-            check("signed long long foo(signed long long x) { return x << 64; }",settings, "test.cpp", Standards::cppstd_t::CPP14);
+            check("signed long long foo(signed long long x) { return x << 64; }",settings, true, Standards::cppstd_t::CPP14);
             ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout_str());
-            check("signed long long f(long long x) { return (x = (signed long long)x << 64); }",settings, "test.cpp", Standards::cppstd_t::CPP14);
+            check("signed long long f(long long x) { return (x = (signed long long)x << 64); }",settings, true, Standards::cppstd_t::CPP14);
             ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout_str());
-            check("signed long long f(signed long long x) { return x << 63; }",settings, "test.cpp", Standards::cppstd_t::CPP14);
+            check("signed long long f(signed long long x) { return x << 63; }",settings, true, Standards::cppstd_t::CPP14);
             ASSERT_EQUALS("[test.cpp:1]: (portability) Shifting signed 64-bit value by 63 bits is implementation-defined behaviour\n", errout_str());
             check("signed long long f(signed long long x) { return x << 62; }",settings);
             ASSERT_EQUALS("", errout_str());
