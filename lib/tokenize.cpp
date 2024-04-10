@@ -5508,7 +5508,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     removeExtraTemplateKeywords();
 
     simplifySpaceshipOperator();
-    
+
     // @..
     simplifyAt();
 
