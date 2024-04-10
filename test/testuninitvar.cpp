@@ -3535,10 +3535,10 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: a\n", errout_str());
 
-        ASSERT_THROW(checkUninitVar("void f() {\n" // Don't crash
-                                    "    int a;\n"
-                                    "    dostuff(\"ab\" cd \"ef\", x?a:z);\n" // <- No AST is created for ?
-                                    "}"), InternalError);
+        ASSERT_THROW_INTERNAL(checkUninitVar("void f() {\n" // Don't crash
+                                             "    int a;\n"
+                                             "    dostuff(\"ab\" cd \"ef\", x?a:z);\n" // <- No AST is created for ?
+                                             "}"), UNKNOWN_MACRO);
 
         // Unknown => bail out..
         checkUninitVar("void f(int x) {\n"
@@ -3657,10 +3657,10 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Uninitialized variable: a\n", errout_str());
 
-        ASSERT_THROW(valueFlowUninit("void f() {\n" // Don't crash
-                                     "    int a;\n"
-                                     "    dostuff(\"ab\" cd \"ef\", x?a:z);\n" // <- No AST is created for ?
-                                     "}"), InternalError);
+        ASSERT_THROW_INTERNAL(valueFlowUninit("void f() {\n" // Don't crash
+                                              "    int a;\n"
+                                              "    dostuff(\"ab\" cd \"ef\", x?a:z);\n" // <- No AST is created for ?
+                                              "}"), UNKNOWN_MACRO);
 
         // Unknown => bail out..
         valueFlowUninit("void f(int x) {\n"
@@ -5401,7 +5401,7 @@ private:
                             "  struct cgroup_taskset tset = { };\n"
                             "  do { } while_each_thread(leader, tsk);\n"
                             "}";
-        ASSERT_THROW(checkUninitVar(code), InternalError);
+        ASSERT_THROW_INTERNAL(checkUninitVar(code), SYNTAX);
     }
 
     void trac_5970() { // Ticket #5970

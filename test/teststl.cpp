@@ -3619,10 +3619,10 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         // #3714 - segmentation fault for syntax error
-        ASSERT_THROW(check("void f() {\n"
-                           "    if (()) { }\n"
-                           "}"),
-                     InternalError);
+        ASSERT_THROW_INTERNAL(check("void f() {\n"
+                                    "    if (()) { }\n"
+                                    "}"),
+                              AST);
 
         // #3865
         check("void f() {\n"

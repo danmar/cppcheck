@@ -1613,7 +1613,7 @@ private:
     void simplifyKnownVariables16() {
         // ticket #807 - segmentation fault when macro isn't found
         const char code[] = "void f ( ) { int n = 1; DISPATCH(while); }";
-        ASSERT_THROW(simplifyKnownVariables(code), InternalError);
+        ASSERT_THROW_INTERNAL(simplifyKnownVariables(code), UNKNOWN_MACRO);
     }
 
     void simplifyKnownVariables17() {
@@ -2266,7 +2266,7 @@ private:
                             "  BENCH1(q = _mhz_M(n); n = 1;)\n"
                             "  use_pointer(q);\n"
                             "}";
-        ASSERT_THROW(tokenizeAndStringify(code, true), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code, true), UNKNOWN_MACRO);
     }
 
     void simplifyKnownVariables54() { // #4913

@@ -3257,9 +3257,9 @@ private:
 
     void symboldatabase5() {
         // ticket #2178 - segmentation fault
-        ASSERT_THROW(check("int CL_INLINE_DECL(integer_decode_float) (int x) {\n"
-                           "    return (sign ? cl_I() : 0);\n"
-                           "}"), InternalError);
+        ASSERT_THROW_INTERNAL(check("int CL_INLINE_DECL(integer_decode_float) (int x) {\n"
+                                    "    return (sign ? cl_I() : 0);\n"
+                                    "}"), UNKNOWN_MACRO);
     }
 
     void symboldatabase6() {
@@ -3360,7 +3360,7 @@ private:
 
     void symboldatabase14() {
         // ticket #2589 - segmentation fault
-        ASSERT_THROW(check("struct B : A\n"), InternalError);
+        ASSERT_THROW_INTERNAL(check("struct B : A\n"), SYNTAX);
     }
 
     void symboldatabase17() {
@@ -3382,7 +3382,7 @@ private:
 
     void symboldatabase20() {
         // ticket #3013 - segmentation fault
-        ASSERT_THROW(check("struct x : virtual y\n"), InternalError);
+        ASSERT_THROW_INTERNAL(check("struct x : virtual y\n"), SYNTAX);
     }
 
     void symboldatabase21() {

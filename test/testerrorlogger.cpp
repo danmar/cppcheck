@@ -348,22 +348,22 @@ private:
             // missing/invalid length
             // missing separator
             ErrorMessage msg;
-            ASSERT_THROW_EQUALS(msg.deserialize("500foobar"), InternalError, "Internal Error: Deserialization of error message failed - invalid separator");
+            ASSERT_THROW_INTERNAL_EQUALS(msg.deserialize("500foobar"), INTERNAL, "Internal Error: Deserialization of error message failed - invalid separator");
         }
         {
             // invalid length
             ErrorMessage msg;
-            ASSERT_THROW_EQUALS(msg.deserialize("foo foobar"), InternalError, "Internal Error: Deserialization of error message failed - invalid length");
+            ASSERT_THROW_INTERNAL_EQUALS(msg.deserialize("foo foobar"), INTERNAL, "Internal Error: Deserialization of error message failed - invalid length");
         }
         {
             // mismatching length
             ErrorMessage msg;
-            ASSERT_THROW_EQUALS(msg.deserialize("8 errorId"), InternalError, "Internal Error: Deserialization of error message failed - premature end of data");
+            ASSERT_THROW_INTERNAL_EQUALS(msg.deserialize("8 errorId"), INTERNAL, "Internal Error: Deserialization of error message failed - premature end of data");
         }
         {
             // incomplete message
             ErrorMessage msg;
-            ASSERT_THROW_EQUALS(msg.deserialize("7 errorId"), InternalError, "Internal Error: Deserialization of error message failed - invalid length");
+            ASSERT_THROW_INTERNAL_EQUALS(msg.deserialize("7 errorId"), INTERNAL, "Internal Error: Deserialization of error message failed - invalid length");
         }
         {
             // invalid CWE ID
@@ -376,7 +376,7 @@ private:
                                "17 Programming error"
                                "0 ";
             ErrorMessage msg;
-            ASSERT_THROW_EQUALS(msg.deserialize(str), InternalError, "Internal Error: Deserialization of error message failed - invalid CWE ID - not an integer");
+            ASSERT_THROW_INTERNAL_EQUALS(msg.deserialize(str), INTERNAL, "Internal Error: Deserialization of error message failed - invalid CWE ID - not an integer");
         }
         {
             // invalid hash
@@ -389,7 +389,7 @@ private:
                                "17 Programming error"
                                "0 ";
             ErrorMessage msg;
-            ASSERT_THROW_EQUALS(msg.deserialize(str), InternalError, "Internal Error: Deserialization of error message failed - invalid hash - not an integer");
+            ASSERT_THROW_INTERNAL_EQUALS(msg.deserialize(str), INTERNAL, "Internal Error: Deserialization of error message failed - invalid hash - not an integer");
         }
         {
             // out-of-range CWE ID
@@ -402,7 +402,7 @@ private:
                                "17 Programming error"
                                "0 ";
             ErrorMessage msg;
-            ASSERT_THROW(msg.deserialize(str), InternalError);
+            ASSERT_THROW_INTERNAL_EQUALS(msg.deserialize(str), INTERNAL, "Internal Error: Deserialization of error message failed - invalid CWE ID - out of range (limits)");
         }
     }
 
