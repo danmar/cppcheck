@@ -308,10 +308,10 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens, Suppre
     }
 }
 
-void Preprocessor::setDirectives(const simplecpp::TokenList &tokens)
+std::list<Directive> Preprocessor::createDirectives(const simplecpp::TokenList &tokens) const
 {
     // directive list..
-    mDirectives.clear();
+    std::list<Directive> directives;
 
     std::vector<const simplecpp::TokenList *> list;
     list.reserve(1U + mTokenLists.size());
@@ -337,9 +337,11 @@ void Preprocessor::setDirectives(const simplecpp::TokenList &tokens)
                 else
                     directive.str += tok2->str();
             }
-            mDirectives.push_back(std::move(directive));
+            directives.push_back(std::move(directive));
         }
     }
+
+    return directives;
 }
 
 static std::string readcondition(const simplecpp::Token *iftok, const std::set<std::string> &defined, const std::set<std::string> &undefined)
@@ -911,17 +913,6 @@ void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings &se
 void Preprocessor::dump(std::ostream &out) const
 {
     // Create a xml dump.
-
-    out << "  <directivelist>" << std::endl;
-    for (const Directive &dir : mDirectives) {
-        out << "    <directive "
-            << "file=\"" << ErrorLogger::toxml(dir.file) << "\" "
-            << "linenr=\"" << dir.linenr << "\" "
-            // str might contain characters such as '"', '<' or '>' which
-            // could result in invalid XML, so run it through toxml().
-            << "str=\"" << ErrorLogger::toxml(dir.str) << "\"/>" << std::endl;
-    }
-    out << "  </directivelist>" << std::endl;
 
     if (!mMacroUsage.empty()) {
         out << "  <macro-usage>" << std::endl;

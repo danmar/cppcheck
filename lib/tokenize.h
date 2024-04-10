@@ -37,6 +37,7 @@ class Token;
 class TemplateSimplifier;
 class ErrorLogger;
 class Preprocessor;
+struct Directive;
 enum class Severity;
 
 /// @addtogroup Core
@@ -624,6 +625,8 @@ public:
     /** Disable assignment operator */
     Tokenizer &operator=(const Tokenizer &) = delete;
 
+    void setDirectives(std::list<Directive> directives);
+
 private:
     const Token *processFunc(const Token *tok2, bool inOperator) const;
     Token *processFunc(Token *tok2, bool inOperator);
@@ -665,6 +668,8 @@ private:
         bool used;
     };
     std::vector<TypedefInfo> mTypedefInfo;
+
+    std::list<Directive> mDirectives;
 
     /** variable count */
     nonneg int mVarId{};

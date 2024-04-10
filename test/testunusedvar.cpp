@@ -261,13 +261,13 @@ private:
 #define checkStructMemberUsage(...) checkStructMemberUsage_(__FILE__, __LINE__, __VA_ARGS__)
     void checkStructMemberUsage_(const char* file, int line, const char code[], const std::list<Directive>* directives = nullptr, const Settings *s = nullptr) {
         Preprocessor preprocessor(settings);
-        if (directives)
-            preprocessor.setDirectives(*directives);
 
         const Settings *settings1 = s ? s : &settings;
 
         // Tokenize..
         SimpleTokenizer tokenizer(*settings1, *this, &preprocessor);
+        if (directives)
+            tokenizer.setDirectives(*directives);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for unused variables..

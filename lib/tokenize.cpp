@@ -5913,6 +5913,26 @@ void Tokenizer::dump(std::ostream &out) const
 
     std::set<const Library::Container*> containers;
 
+    outs += "  <directivelist>";
+    outs += '\n';
+    for (const Directive &dir : mDirectives) {
+        outs += "    <directive ";
+        outs += "file=\"";
+        outs += ErrorLogger::toxml(dir.file);
+        outs += "\" ";
+        outs += "linenr=\"";
+        outs += std::to_string(dir.linenr);
+        outs += "\" ";
+        // str might contain characters such as '"', '<' or '>' which
+        // could result in invalid XML, so run it through toxml().
+        outs += "str=\"";
+        outs += ErrorLogger::toxml(dir.str);
+        outs +="\"/>";
+        outs += '\n';
+    }
+    outs += "  </directivelist>";
+    outs += '\n';
+
     // tokens..
     outs += "  <tokenlist>";
     outs += '\n';
@@ -10649,12 +10669,17 @@ void Tokenizer::simplifyNamespaceAliases()
     }
 }
 
-// TODO: how to move the Preprocessor dependency out of here?
+void Tokenizer::setDirectives(std::list<Directive> directives)
+{
+    mDirectives = std::move(directives);
+}
+
 bool Tokenizer::hasIfdef(const Token *start, const Token *end) const
 {
     assert(mPreprocessor);
 
-    return std::any_of(mPreprocessor->getDirectives().cbegin(), mPreprocessor->getDirectives().cend(), [&](const Directive& d) {
+    const auto& directives = mDirectives;
+    return std::any_of(directives.cbegin(), directives.cend(), [&](const Directive& d) {
         return startsWith(d.str, "#if") &&
         d.linenr >= start->linenr() &&
         d.linenr <= end->linenr() &&
@@ -10667,7 +10692,7 @@ bool Tokenizer::isPacked(const Token * bodyStart) const
 {
     assert(mPreprocessor);
 
-    const auto& directives = mPreprocessor->getDirectives();
+    const auto& directives = mDirectives;
     // TODO: should this return true if the #pragma exists in any line before the start token?
     return std::any_of(directives.cbegin(), directives.cend(), [&](const Directive& d) {
         return d.linenr < bodyStart->linenr() && d.str == "#pragma pack(1)" && d.file == list.getFiles().front();

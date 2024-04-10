@@ -124,7 +124,6 @@ std::string PreprocessorHelper::getcode(Preprocessor &preprocessor, const std::s
     tokens1.removeComments();
     preprocessor.simplifyPragmaAsm(&tokens1);
     preprocessor.removeComments();
-    preprocessor.setDirectives(tokens1);
 
     preprocessor.reportOutput(outputList, true);
 
@@ -179,5 +178,6 @@ void PreprocessorHelper::preprocess(Preprocessor &preprocessor, const char code[
     // Tokenizer..
     tokenizer.list.createTokens(std::move(tokens2));
 
-    preprocessor.setDirectives(tokens1);
+    std::list<Directive> directives = preprocessor.createDirectives(tokens1);
+    tokenizer.setDirectives(std::move(directives));
 }
