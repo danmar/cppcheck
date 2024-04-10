@@ -402,7 +402,7 @@ private:
                                "17 Programming error"
                                "0 ";
             ErrorMessage msg;
-            ASSERT_THROW(msg.deserialize(str), InternalError);
+            ASSERT_THROW_INTERNAL(msg.deserialize(str), INTERNAL);
         }
     }
 

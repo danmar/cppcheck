@@ -573,7 +573,7 @@ private:
                             "-(Foo *)foo: (Bar *)bar\n"
                             "{ }\n"
                             "@end\n";
-        ASSERT_THROW(tokenizeAndStringify(code), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code), SYNTAX);
     }
 
     // Ticket #2361: 0X10 => 16
@@ -611,7 +611,7 @@ private:
 
     void tokenize19() {
         // #3006 - added hasComplicatedSyntaxErrorsInTemplates to avoid segmentation fault
-        ASSERT_THROW(tokenizeAndStringify("x < () <"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("x < () <"), SYNTAX);
 
         // #3496 - make sure hasComplicatedSyntaxErrorsInTemplates works
         ASSERT_EQUALS("void a ( Fred * f ) { for ( ; n < f . x ( ) ; ) { } }",
@@ -649,12 +649,12 @@ private:
 
     // #4239 - segfault for "f ( struct { int typedef T x ; } ) { }"
     void tokenize25() {
-        ASSERT_THROW(tokenizeAndStringify("f ( struct { int typedef T x ; } ) { }"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("f ( struct { int typedef T x ; } ) { }"), SYNTAX);
     }
 
     // #4245 - segfault
     void tokenize26() {
-        ASSERT_THROW(tokenizeAndStringify("class x { protected : template < int y = } ;"), InternalError); // Garbage code
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("class x { protected : template < int y = } ;"), SYNTAX); // Garbage code
     }
 
     void tokenize27() {
@@ -783,15 +783,15 @@ private:
 
     void validate() {
         // C++ code in C file
-        ASSERT_THROW(tokenizeAndStringify(";using namespace std;",false,Platform::Type::Native,"test.c"), InternalError);
-        ASSERT_THROW(tokenizeAndStringify(";std::map<int,int> m;",false,Platform::Type::Native,"test.c"), InternalError);
-        ASSERT_THROW(tokenizeAndStringify(";template<class T> class X { };",false,Platform::Type::Native,"test.c"), InternalError);
-        ASSERT_THROW(tokenizeAndStringify("int X<Y>() {};",false,Platform::Type::Native,"test.c"), InternalError);
-        ASSERT_THROW(tokenizeAndStringify("void foo(int i) { reinterpret_cast<char>(i) };",false,Platform::Type::Native,"test.h"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(";using namespace std;",false,Platform::Type::Native,"test.c"), SYNTAX);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(";std::map<int,int> m;",false,Platform::Type::Native,"test.c"), SYNTAX);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(";template<class T> class X { };",false,Platform::Type::Native,"test.c"), SYNTAX);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("int X<Y>() {};",false,Platform::Type::Native,"test.c"), SYNTAX);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void foo(int i) { reinterpret_cast<char>(i) };",false,Platform::Type::Native,"test.h"), SYNTAX);
     }
 
     void objectiveC() {
-        ASSERT_THROW(tokenizeAndStringify("void f() { [foo bar]; }"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void f() { [foo bar]; }"), SYNTAX);
     }
 
     void syntax_case_default() { // correct syntax
@@ -1108,7 +1108,7 @@ private:
             "    for (int k=0; k<VectorSize; k++)"
             "        LOG_OUT(ID_Vector[k])"
             "}";
-        ASSERT_THROW(tokenizeAndStringify(code), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code), UNKNOWN_MACRO);
     }
 
     void ifAddBraces11() {
@@ -1208,7 +1208,7 @@ private:
 
     void ifAddBraces20() { // #5012 - syntax error 'else }'
         const char code[] = "void f() { if(x) {} else }";
-        ASSERT_THROW(tokenizeAndStringify(code), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code), SYNTAX);
     }
 
     void ifAddBracesLabels() {
@@ -1341,13 +1341,13 @@ private:
 
         {
             const char code[] = "{ UNKNOWN_MACRO ( do ) ; while ( a -- ) ; }";
-            ASSERT_THROW(tokenizeAndStringify(code), InternalError);
+            ASSERT_THROW_INTERNAL(tokenizeAndStringify(code), SYNTAX);
             ASSERT_EQUALS("", errout_str());
         }
 
         {
             const char code[] = "{ UNKNOWN_MACRO ( do , foo ) ; while ( a -- ) ; }";
-            ASSERT_THROW(tokenizeAndStringify(code), InternalError);
+            ASSERT_THROW_INTERNAL(tokenizeAndStringify(code), SYNTAX);
             ASSERT_EQUALS("", errout_str());
         }
 
@@ -1655,15 +1655,15 @@ private:
 
     void simplifyFunctionParametersErrors() {
         //same parameters...
-        ASSERT_THROW(tokenizeAndStringify("void foo(x, x)\n"
-                                          " int x;\n"
-                                          " int x;\n"
-                                          "{}\n"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void foo(x, x)\n"
+                                                   " int x;\n"
+                                                   " int x;\n"
+                                                   "{}\n"), SYNTAX);
 
-        ASSERT_THROW(tokenizeAndStringify("void foo(x, y)\n"
-                                          " int x;\n"
-                                          " int x;\n"
-                                          "{}\n"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void foo(x, y)\n"
+                                                   " int x;\n"
+                                                   " int x;\n"
+                                                   "{}\n"), SYNTAX);
 
         tokenizeAndStringify("void foo(int, int)\n"
                              "{}");
@@ -2468,7 +2468,7 @@ private:
     }
 
     void vardecl23() {  // #4276 - segmentation fault
-        ASSERT_THROW(tokenizeAndStringify("class a { protected : template < class int x = 1 ; public : int f ( ) ; }"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("class a { protected : template < class int x = 1 ; public : int f ( ) ; }"), SYNTAX);
     }
 
     void vardecl24() {  // #4187 - variable declaration within lambda function
@@ -3661,10 +3661,10 @@ private:
         tokenizeAndStringify("void printOwnedAttributes(int mode) { "
                              "  switch(mode) case 0: { break; } "
                              "}");
-        ASSERT_THROW(tokenizeAndStringify("void printOwnedAttributes(int mode) { "
-                                          "  switch(mode) case 0: { break; } case 1: ; "
-                                          "}"),
-                     InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void printOwnedAttributes(int mode) { "
+                                                   "  switch(mode) case 0: { break; } case 1: ; "
+                                                   "}"),
+                              SYNTAX);
     }
 
     void simplifyPointerToStandardType() {
@@ -4200,7 +4200,7 @@ private:
         ASSERT_EQUALS("void f ( ) { ab : ; { & b = 0 ; } }", tokenizeAndStringify("void f() { ab: { &b=0;} }"));
         ASSERT_EQUALS("void f ( ) { ab : ; { & ( * b . x ) = 0 ; } }", tokenizeAndStringify("void f() { ab: {&(*b.x)=0;} }"));
         //with unhandled MACRO() code
-        ASSERT_THROW(tokenizeAndStringify("void f() { MACRO(ab: b=0;, foo)}"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void f() { MACRO(ab: b=0;, foo)}"), UNKNOWN_MACRO);
         ASSERT_EQUALS("void f ( ) { MACRO ( bar , ab : { & ( * b . x ) = 0 ; } ) }", tokenizeAndStringify("void f() { MACRO(bar, ab: {&(*b.x)=0;})}"));
     }
 
@@ -4877,7 +4877,7 @@ private:
         // Oracle PRO*C extensions for inline SQL. Just replace the SQL with "asm()" to fix wrong error messages
         // ticket: #1959
         ASSERT_EQUALS("asm ( \"\"__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL SELECT A FROM B\"\" ) ;", tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL SELECT A FROM B;"));
-        ASSERT_THROW(tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL"), SYNTAX);
 
         ASSERT_EQUALS("asm ( \"\"__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL EXECUTE BEGIN Proc1 ( A ) ; END ; END - __CPPCHECK_EMBEDDED_SQL_EXEC__\"\" ) ; asm ( \"\"__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL COMMIT\"\" ) ;",
                       tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL EXECUTE BEGIN Proc1(A); END; END-__CPPCHECK_EMBEDDED_SQL_EXEC__; __CPPCHECK_EMBEDDED_SQL_EXEC__ SQL COMMIT;"));
@@ -4886,9 +4886,9 @@ private:
         ASSERT_EQUALS("asm ( \"\"__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL COMMIT\"\" ) ; asm ( \"\"__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL EXECUTE BEGIN Proc1 ( A ) ; END ; END - __CPPCHECK_EMBEDDED_SQL_EXEC__\"\" ) ;",
                       tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL COMMIT; __CPPCHECK_EMBEDDED_SQL_EXEC__ SQL EXECUTE BEGIN Proc1(A); END; END-__CPPCHECK_EMBEDDED_SQL_EXEC__;"));
 
-        ASSERT_THROW(tokenizeAndStringify("int f(){ __CPPCHECK_EMBEDDED_SQL_EXEC__ SQL } int a;"), InternalError);
-        ASSERT_THROW(tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL int f(){"), InternalError);
-        ASSERT_THROW(tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL END-__CPPCHECK_EMBEDDED_SQL_EXEC__ int a;"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("int f(){ __CPPCHECK_EMBEDDED_SQL_EXEC__ SQL } int a;"), SYNTAX);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL int f(){"), SYNTAX);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL END-__CPPCHECK_EMBEDDED_SQL_EXEC__ int a;"), SYNTAX);
         ASSERT_NO_THROW(tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL UPDATE A SET B = :&b->b1, C = :c::c1;"));
     }
 
@@ -5421,10 +5421,10 @@ private:
         ASSERT_EQUALS("namespace { int a ; }", tokenizeAndStringify("ABA() namespace { int a ; }"));
 
         // #3750
-        ASSERT_THROW(tokenizeAndStringify("; AB(foo*) foo::foo() { }"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("; AB(foo*) foo::foo() { }"), UNKNOWN_MACRO);
 
         // #4834 - syntax error
-        ASSERT_THROW(tokenizeAndStringify("A(B) foo() {}"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("A(B) foo() {}"), UNKNOWN_MACRO);
 
         // #3855
         ASSERT_EQUALS("; class foo { }",
@@ -5438,14 +5438,14 @@ private:
                                              "  int x;\n"
                                              "};"));
 
-        ASSERT_THROW(tokenizeAndStringify("MACRO(test) void test() { }"), InternalError); // #7931
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("MACRO(test) void test() { }"), UNKNOWN_MACRO); // #7931
 
-        ASSERT_THROW(tokenizeAndStringify("BEGIN_MESSAGE_MAP(CSetProgsAdvDlg, CResizableStandAloneDialog)\n"
-                                          "    ON_BN_CLICKED(IDC_ADDTOOL, OnBnClickedAddtool)\n"
-                                          "END_MESSAGE_MAP()\n"
-                                          "\n"
-                                          "BOOL CSetProgsAdvDlg::OnInitDialog() {}"),
-                     InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("BEGIN_MESSAGE_MAP(CSetProgsAdvDlg, CResizableStandAloneDialog)\n"
+                                                   "    ON_BN_CLICKED(IDC_ADDTOOL, OnBnClickedAddtool)\n"
+                                                   "END_MESSAGE_MAP()\n"
+                                                   "\n"
+                                                   "BOOL CSetProgsAdvDlg::OnInitDialog() {}"),
+                              UNKNOWN_MACRO);
 
         ASSERT_EQUALS("struct S {\n"
                       "S ( ) : p { new ( malloc ( 4 ) ) int { } } { }\n"
@@ -6894,7 +6894,7 @@ private:
         const std::string filedata = tokens1.stringify();
         const std::string code = PreprocessorHelper::getcode(preprocessor, filedata, emptyString, emptyString);
 
-        ASSERT_THROW(tokenizeAndStringify(code.c_str()), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code.c_str()), AST);
     }
 
 #define isStartOfExecutableScope(offset, code) isStartOfExecutableScope_(offset, code, __FILE__, __LINE__)
@@ -6948,47 +6948,47 @@ private:
     void reportUnknownMacros() {
         const char code1[] = "MY_UNKNOWN_IMP1(IInStream)\n"
                              "STDMETHOD(Read)(void *data, UInt32 size, UInt32 *processedSize) { if (ptr); }";
-        ASSERT_THROW(tokenizeAndStringify(code1), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code1), UNKNOWN_MACRO);
 
         const char code2[] = "void foo() { dostuff(x 0); }";
-        ASSERT_THROW(tokenizeAndStringify(code2), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code2), UNKNOWN_MACRO);
 
         const char code3[] = "f(\"1\" __stringify(48) \"1\");";
-        ASSERT_THROW(tokenizeAndStringify(code3), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code3), UNKNOWN_MACRO);
 
         const char code4[] = "struct Foo {\n"
                              "  virtual MACRO(int) f1() {}\n"
                              "  virtual MACRO(int) f2() {}\n"
                              "};";
-        ASSERT_THROW(tokenizeAndStringify(code4), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code4), UNKNOWN_MACRO);
 
         const char code5[] = "void foo() {\n"
                              "  EVALUATE(123, int x=a; int y=b+c;);\n"
                              "}";
-        ASSERT_THROW(tokenizeAndStringify(code5), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code5), UNKNOWN_MACRO);
 
         const char code6[] = "void foo() { dostuff(a, .x=0); }";
-        ASSERT_THROW(tokenizeAndStringify(code6), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code6), UNKNOWN_MACRO);
 
         const char code7[] = "void foo() { dostuff(ZEND_NUM_ARGS() TSRMLS_CC, x, y); }"; // #9476
-        ASSERT_THROW(tokenizeAndStringify(code7), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code7), UNKNOWN_MACRO);
 
         const char code8[] = "void foo() { a = [](int x, decltype(vec) y){}; }";
         ASSERT_NO_THROW(tokenizeAndStringify(code8));
 
         const char code9[] = "void f(std::exception c) { b(M() c.what()); }";
-        ASSERT_THROW(tokenizeAndStringify(code9), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code9), UNKNOWN_MACRO);
 
         const char code10[] = "void f(std::exception c) { b(M() M() + N(c.what())); }";
-        ASSERT_THROW(tokenizeAndStringify(code10), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code10), UNKNOWN_MACRO);
 
         const char code11[] = "struct B { B(B&&) noexcept {} ~B() noexcept {} };";
         ASSERT_NO_THROW(tokenizeAndStringify(code11));
 
         ASSERT_NO_THROW(tokenizeAndStringify("alignas(8) alignas(16) int x;")); // alignas is not unknown macro
 
-        ASSERT_THROW(tokenizeAndStringify("void foo() { if(x) SYSTEM_ERROR }"), InternalError);
-        ASSERT_THROW(tokenizeAndStringify("void foo() { dostuff(); SYSTEM_ERROR }"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void foo() { if(x) SYSTEM_ERROR }"), UNKNOWN_MACRO);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void foo() { dostuff(); SYSTEM_ERROR }"), UNKNOWN_MACRO);
 
         ASSERT_NO_THROW(tokenizeAndStringify("void f(void* q) {\n"
                                              "    g(&(S) { .p = (int*)q });\n"
@@ -6999,10 +6999,10 @@ private:
                                              "S s = (S){ .i = (int)a };\n"
                                              "}\n", /*expand*/ true, Platform::Type::Native, "test.c"));
 
-        ASSERT_THROW(tokenizeAndStringify("std::string g();\n"
-                                          "std::string f() {\n"
-                                          "    return std::string{ g() + \"abc\" MACRO \"def\" };\n"
-                                          "}\n", /*expand*/ true, Platform::Type::Native, "test.cpp"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("std::string g();\n"
+                                                   "std::string f() {\n"
+                                                   "    return std::string{ g() + \"abc\" MACRO \"def\" };\n"
+                                                   "}\n", /*expand*/ true, Platform::Type::Native, "test.cpp"), UNKNOWN_MACRO);
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()
@@ -7029,10 +7029,10 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { []() -> int * {}; }"));
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { const char* var = \"1\" \"2\"; }"));
 
-        ASSERT_THROW(tokenizeAndStringify("void f() { MACRO(switch); }"), InternalError);
-        ASSERT_THROW(tokenizeAndStringify("void f() { MACRO(x,switch); }"), InternalError);
-        ASSERT_THROW(tokenizeAndStringify("void foo() { for_chain( if (!done) done = 1); }"), InternalError);
-        ASSERT_THROW(tokenizeAndStringify("void foo() { for_chain( a, b, if (!done) done = 1); }"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void f() { MACRO(switch); }"), UNKNOWN_MACRO);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void f() { MACRO(x,switch); }"), UNKNOWN_MACRO);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void foo() { for_chain( if (!done) done = 1); }"), UNKNOWN_MACRO);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void foo() { for_chain( a, b, if (!done) done = 1); }"), UNKNOWN_MACRO);
 
         ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { if (retval==){} }"), InternalError, "syntax error: ==)");
 
@@ -7149,7 +7149,7 @@ private:
                             InternalError,
                             "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
 
-        ASSERT_THROW(tokenizeAndStringify("{ for (()()) }"), InternalError); // #11643
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("{ for (()()) }"), SYNTAX); // #11643
 
         ASSERT_NO_THROW(tokenizeAndStringify("S* g = ::new(ptr) S();")); // #12552
         ASSERT_NO_THROW(tokenizeAndStringify("void f(int* p) { return ::delete p; }"));
@@ -7658,9 +7658,9 @@ private:
     }
 
     void noCrash7() {
-        ASSERT_THROW(tokenizeAndStringify("void g() {\n"// TODO: don't throw
-                                          "    for (using T = int; (T)false;) {}\n" // C++23 P2360R0: Extend init-statement to allow alias-declaration
-                                          "}\n"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void g() {\n"// TODO: don't throw
+                                                   "    for (using T = int; (T)false;) {}\n" // C++23 P2360R0: Extend init-statement to allow alias-declaration
+                                                   "}\n"), SYNTAX);
     }
 
     void checkConfig(const char code[]) {
@@ -7699,7 +7699,7 @@ private:
     }
 
     void unknownMacroBeforeReturn() {
-        ASSERT_THROW(tokenizeAndStringify("int f() { X return 0; }"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("int f() { X return 0; }"), UNKNOWN_MACRO);
     }
 
     void cppcast() {
@@ -7837,7 +7837,7 @@ private:
         const char code[] = "struct S { int a:2 = 0; };";
         ASSERT_EQUALS("struct S { int a ; a = 0 ; } ;", tokenizeAndStringify(code, s1));
         const Settings s2 = settingsBuilder().cpp(Standards::CPP17).build();
-        ASSERT_THROW(tokenizeAndStringify(code, s2), InternalError);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code, s2), SYNTAX);
     }
 
     void cpp11init() {

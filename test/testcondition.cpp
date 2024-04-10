@@ -2787,12 +2787,12 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition 'x>100', second condition is always false\n", errout_str());
 
-        ASSERT_THROW(check("void f(int x) {\n"  // #8217 - crash for incomplete code
-                           "  if (x > 100) { return; }\n"
-                           "  X(do);\n"
-                           "  if (x > 100) {}\n"
-                           "}"),
-                     InternalError);
+        ASSERT_THROW_INTERNAL(check("void f(int x) {\n"  // #8217 - crash for incomplete code
+                                    "  if (x > 100) { return; }\n"
+                                    "  X(do);\n"
+                                    "  if (x > 100) {}\n"
+                                    "}"),
+                              SYNTAX);
 
         check("void f(const int *i) {\n"
               "  if (!i) return;\n"

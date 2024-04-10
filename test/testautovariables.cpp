@@ -443,7 +443,7 @@ private:
     }
 
     void testautovar12() { // Ticket #5024, #5050 - Crash on invalid input
-        ASSERT_THROW(check("void f(int* a) { a = }"), InternalError);
+        ASSERT_THROW_INTERNAL(check("void f(int* a) { a = }"), SYNTAX);
         check("struct custom_type { custom_type(int) {} };\n"
               "void func(int) {}\n"
               "int var;\n"

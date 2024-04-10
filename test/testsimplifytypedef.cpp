@@ -1755,7 +1755,7 @@ private:
                                 "LOCAL(type1) foo() { }";
 
             // this is invalid C, assert that an "unknown macro" warning is written
-            ASSERT_THROW(checkSimplifyTypedef(code), InternalError);
+            ASSERT_THROW_INTERNAL(checkSimplifyTypedef(code), UNKNOWN_MACRO);
         }
     }
 
@@ -2121,7 +2121,7 @@ private:
     }
 
     void simplifyTypedef76() { // ticket #2453 segmentation fault
-        ASSERT_THROW(checkSimplifyTypedef("void f1(typedef int x) {}"), InternalError);
+        ASSERT_THROW_INTERNAL(checkSimplifyTypedef("void f1(typedef int x) {}"), SYNTAX);
     }
 
     void simplifyTypedef77() { // ticket #2554
@@ -2166,9 +2166,9 @@ private:
     }
 
     void simplifyTypedef81() { // ticket #2603 segmentation fault
-        ASSERT_THROW(checkSimplifyTypedef("typedef\n"), InternalError);
+        ASSERT_THROW_INTERNAL(checkSimplifyTypedef("typedef\n"), SYNTAX);
 
-        ASSERT_THROW(checkSimplifyTypedef("typedef constexpr\n"), InternalError);
+        ASSERT_THROW_INTERNAL(checkSimplifyTypedef("typedef constexpr\n"), SYNTAX);
     }
 
     void simplifyTypedef82() { // ticket #2403
@@ -2200,13 +2200,13 @@ private:
 
     void simplifyTypedef84() { // ticket #2630 (segmentation fault)
         const char code1[] = "typedef y x () x";
-        ASSERT_THROW(checkSimplifyTypedef(code1), InternalError);
+        ASSERT_THROW_INTERNAL(checkSimplifyTypedef(code1), SYNTAX);
 
         const char code2[] = "typedef struct template <>";
-        ASSERT_THROW(checkSimplifyTypedef(code2), InternalError);
+        ASSERT_THROW_INTERNAL(checkSimplifyTypedef(code2), SYNTAX);
 
         const char code3[] = "typedef ::<>";
-        ASSERT_THROW(checkSimplifyTypedef(code3), InternalError);
+        ASSERT_THROW_INTERNAL(checkSimplifyTypedef(code3), SYNTAX);
     }
 
     void simplifyTypedef85() { // ticket #2651
@@ -2444,7 +2444,7 @@ private:
 
     void simplifyTypedef96() { // ticket #2886 (segmentation fault)
         const char code[] = "typedef struct x { }";
-        ASSERT_THROW(tok(code), InternalError);
+        ASSERT_THROW_INTERNAL(tok(code), SYNTAX);
     }
 
     void simplifyTypedef97() { // ticket #2983 (segmentation fault)
@@ -2511,12 +2511,12 @@ private:
 
     void simplifyTypedef105() { // ticket #3616 (segmentation fault)
         const char code[] = "( int typedef char x; ){}";
-        ASSERT_THROW(tok(code), InternalError);
+        ASSERT_THROW_INTERNAL(tok(code), SYNTAX);
     }
 
     void simplifyTypedef106() { // ticket #3619 (segmentation fault)
         const char code[] = "typedef void f ();\ntypedef { f }";
-        ASSERT_THROW(tok(code), InternalError);
+        ASSERT_THROW_INTERNAL(tok(code), INTERNAL);
     }
 
     void simplifyTypedef107() { // ticket #3963 (bad code => segmentation fault)

@@ -751,7 +751,7 @@ private:
     }
 
     void varid28() { // ticket #2630 (segmentation fault)
-        ASSERT_THROW(tokenize("template <typedef A>\n"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenize("template <typedef A>\n"), SYNTAX);
     }
 
     void varid29() {
@@ -908,12 +908,12 @@ private:
         const char code1[] = "union evt; void f(const evt & event);";
         ASSERT_EQUALS("1: union evt ; void f ( const evt & event@1 ) ;\n",
                       tokenize(code1));
-        ASSERT_THROW(tokenize(code1, "test.c"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenize(code1, "test.c"), SYNTAX);
 
         const char code2[] = "struct evt; void f(const evt & event);";
         ASSERT_EQUALS("1: struct evt ; void f ( const evt & event@1 ) ;\n",
                       tokenize(code2));
-        ASSERT_THROW(tokenize(code2, "test.c"), InternalError);
+        ASSERT_THROW_INTERNAL(tokenize(code2, "test.c"), SYNTAX);
     }
 
     void varid42() {
