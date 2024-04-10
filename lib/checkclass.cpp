@@ -3348,7 +3348,7 @@ void CheckClass::checkReturnByReference()
 void CheckClass::returnByReferenceError(const Function* func, const Variable* var)
 {
     const Token* tok = func ? func->tokenDef : nullptr;
-    const std::string message = "Function '" + (func ? func->name() : "") + "()' should return member '" + (var ? var->name() : "") + "' by const reference.";
+    const std::string message = "Function '" + (func ? func->name() : "func") + "()' should return member '" + (var ? var->name() : "var") + "' by const reference.";
     reportError(tok, Severity::performance, "returnByReference", message);
 }
 
