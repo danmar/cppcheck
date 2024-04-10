@@ -87,7 +87,7 @@ public:
     /** character that is inserted in expanded macros */
     static char macroChar;
 
-    explicit Preprocessor(const Settings& settings, ErrorLogger *errorLogger = nullptr);
+    explicit Preprocessor(const Settings& settings, ErrorLogger *errorLogger);
     virtual ~Preprocessor();
 
     void inlineSuppressions(const simplecpp::TokenList &tokens, SuppressionList &suppressions);

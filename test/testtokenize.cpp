@@ -6866,7 +6866,7 @@ private:
                                 "int PTR4 q4_var RBR4 = 0;\n";
 
         // Preprocess file..
-        Preprocessor preprocessor(settings0);
+        Preprocessor preprocessor(settings0, this);
         std::istringstream fin(raw_code);
         simplecpp::OutputList outputList;
         std::vector<std::string> files;

@@ -162,7 +162,7 @@ void PreprocessorHelper::preprocess(const char code[], std::vector<std::string> 
     // Tokenizer..
     tokenizer.list.createTokens(std::move(tokens2));
 
-    const Preprocessor preprocessor(tokenizer.getSettings());
+    const Preprocessor preprocessor(tokenizer.getSettings(), nullptr);
     std::list<Directive> directives = preprocessor.createDirectives(tokens1);
     tokenizer.setDirectives(std::move(directives));
 }
