@@ -2516,7 +2516,7 @@ private:
 
     void simplifyTypedef106() { // ticket #3619 (segmentation fault)
         const char code[] = "typedef void f ();\ntypedef { f }";
-        ASSERT_THROW_INTERNAL(tok(code), INTERNAL);
+        ASSERT_THROW_INTERNAL_EQUALS(tok(code), INTERNAL, "Internal error. AST cyclic dependency.");
     }
 
     void simplifyTypedef107() { // ticket #3963 (bad code => segmentation fault)

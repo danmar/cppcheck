@@ -3090,14 +3090,14 @@ private:
     }
 
     void recursiveCountLimit() { // #5872 #6157 #9097
-        ASSERT_THROW_INTERNAL(checkP("#define ONE     else if (0) { }\n"
-                                     "#define TEN     ONE ONE ONE ONE ONE ONE ONE ONE ONE ONE\n"
-                                     "#define HUN     TEN TEN TEN TEN TEN TEN TEN TEN TEN TEN\n"
-                                     "#define THOU    HUN HUN HUN HUN HUN HUN HUN HUN HUN HUN\n"
-                                     "void foo() {\n"
-                                     "  if (0) { }\n"
-                                     "  THOU THOU\n"
-                                     "}"), LIMIT);
+        ASSERT_THROW_INTERNAL_EQUALS(checkP("#define ONE     else if (0) { }\n"
+                                            "#define TEN     ONE ONE ONE ONE ONE ONE ONE ONE ONE ONE\n"
+                                            "#define HUN     TEN TEN TEN TEN TEN TEN TEN TEN TEN TEN\n"
+                                            "#define THOU    HUN HUN HUN HUN HUN HUN HUN HUN HUN HUN\n"
+                                            "void foo() {\n"
+                                            "  if (0) { }\n"
+                                            "  THOU THOU\n"
+                                            "}"), LIMIT, "Internal limit: CheckLeakAutoVar::checkScope() Maximum recursive count of 1000 reached.");
         ASSERT_NO_THROW(checkP("#define ONE     if (0) { }\n"
                                "#define TEN     ONE ONE ONE ONE ONE ONE ONE ONE ONE ONE\n"
                                "#define HUN     TEN TEN TEN TEN TEN TEN TEN TEN TEN TEN\n"

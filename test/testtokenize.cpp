@@ -963,25 +963,25 @@ private:
 
     // #4725 - ^{}
     void simplifyAsm2() {
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { ^{} }"), InternalError, "syntax error");
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { x(^{}); }"), InternalError, "syntax error");
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { foo(A(), ^{ bar(); }); }"), InternalError, "syntax error");
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("int f0(Args args) {\n"
-                                                 "    return ^{\n"
-                                                 "        return sizeof...(Args);\n"
-                                                 "    }() + ^ {\n"
-                                                 "        return sizeof...(args);\n"
-                                                 "    }();\n"
-                                                 "};"), InternalError, "syntax error");
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("int(^block)(void) = ^{\n"
-                                                 "    static int test = 0;\n"
-                                                 "    return test;\n"
-                                                 "};"), InternalError, "syntax error");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("void f() { ^{} }"), SYNTAX, "syntax error");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("void f() { x(^{}); }"), SYNTAX, "syntax error");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("void f() { foo(A(), ^{ bar(); }); }"), SYNTAX, "syntax error");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("int f0(Args args) {\n"
+                                                          "    return ^{\n"
+                                                          "        return sizeof...(Args);\n"
+                                                          "    }() + ^ {\n"
+                                                          "        return sizeof...(args);\n"
+                                                          "    }();\n"
+                                                          "};"), SYNTAX, "syntax error");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("int(^block)(void) = ^{\n"
+                                                          "    static int test = 0;\n"
+                                                          "    return test;\n"
+                                                          "};"), SYNTAX, "syntax error");
 
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("; return f(a[b=c],^{});"), InternalError, "syntax error: keyword 'return' is not allowed in global scope"); // #7185
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("; return f(a[b=c],^{});"), SYNTAX, "syntax error: keyword 'return' is not allowed in global scope"); // #7185
         ASSERT_EQUALS("{ return f ( asm ( \"^(void){somecode}\" ) ) ; }",
                       tokenizeAndStringify("{ return f(^(void){somecode}); }"));
-        ASSERT_THROW_EQUALS(tokenizeAndStringify(";a?(b?(c,^{}):0):^{};"), InternalError, "syntax error");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify(";a?(b?(c,^{}):0):^{};"), SYNTAX, "syntax error");
         ASSERT_EQUALS("template < typename T > "
                       "CImg < T > operator| ( const char * const expression , const CImg < T > & img ) { "
                       "return img | expression ; "
@@ -7007,7 +7007,7 @@ private:
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()
         // C++ try/catch in global scope
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("try { }"), InternalError, "syntax error: keyword 'try' is not allowed in global scope");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("try { }"), SYNTAX, "syntax error: keyword 'try' is not allowed in global scope");
         ASSERT_NO_THROW(tokenizeAndStringify("void f() try { } catch (int) { }"));
         ASSERT_NO_THROW(tokenizeAndStringify("struct S {\n" // #9716
                                              "    S();\n"
@@ -7034,7 +7034,7 @@ private:
         ASSERT_THROW_INTERNAL(tokenizeAndStringify("void foo() { for_chain( if (!done) done = 1); }"), UNKNOWN_MACRO);
         ASSERT_THROW_INTERNAL(tokenizeAndStringify("void foo() { for_chain( a, b, if (!done) done = 1); }"), UNKNOWN_MACRO);
 
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { if (retval==){} }"), InternalError, "syntax error: ==)");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("void f() { if (retval==){} }"), SYNTAX, "syntax error: ==)");
 
         // after (expr)
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { switch (a) int b; }"));
@@ -7084,18 +7084,18 @@ private:
 
 
         // op op
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { dostuff (x==>y); }"), InternalError, "syntax error: == >");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("void f() { dostuff (x==>y); }"), SYNTAX, "syntax error: == >");
 
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { assert(a==()); }"), InternalError, "syntax error: ==()");
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { assert(a+()); }"), InternalError, "syntax error: +()");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("void f() { assert(a==()); }"), SYNTAX, "syntax error: ==()");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("void f() { assert(a+()); }"), SYNTAX, "syntax error: +()");
 
         // #9445 - typeof is not a keyword in C
         ASSERT_NO_THROW(tokenizeAndStringify("void foo() { char *typeof, *value; }", false, Platform::Type::Native, "test.c"));
 
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("enum : { };"), InternalError, "syntax error: Unexpected token '{'");
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("enum : 3 { };"), InternalError, "syntax error: Unexpected token '3'");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("enum : { };"), SYNTAX, "syntax error: Unexpected token '{'");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("enum : 3 { };"), SYNTAX, "syntax error: Unexpected token '3'");
 
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("int a() { b((c)return 0) }"), InternalError, "syntax error");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("int a() { b((c)return 0) }"), SYNTAX, "syntax error");
         ASSERT_THROW_EQUALS(tokenizeAndStringify("int f() { MACRO(x) return 0; }"),
                             InternalError,
                             "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");

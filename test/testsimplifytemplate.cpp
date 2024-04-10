@@ -3662,7 +3662,7 @@ private:
         const char code[] = "BEGIN_VERSIONED_NAMESPACE_DECL\n"
                             "template<typename T> class Fred { };\n"
                             "END_VERSIONED_NAMESPACE_DECL";
-        ASSERT_THROW_EQUALS(tok(code), InternalError, "There is an unknown macro here somewhere. Configuration is required. If BEGIN_VERSIONED_NAMESPACE_DECL is a macro then please configure it.");
+        ASSERT_THROW_INTERNAL_EQUALS(tok(code), UNKNOWN_MACRO, "There is an unknown macro here somewhere. Configuration is required. If BEGIN_VERSIONED_NAMESPACE_DECL is a macro then please configure it.");
     }
 
     void template150() { // syntax error

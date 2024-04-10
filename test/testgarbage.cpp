@@ -868,10 +868,10 @@ private:
     }
 
     void garbageCode99() { // #6726
-        ASSERT_THROW_INTERNAL(checkCode("{ xs :: i(:) ! ! x/5 ! !\n"
-                                        "i, :: a :: b integer, } foo2(x) :: j(:)\n"
-                                        "b type(*), d(:), a x :: end d(..), foo end\n"
-                                        "foo4 b d(..), a a x type(*), b foo2 b"), INTERNAL);
+        ASSERT_THROW_INTERNAL_EQUALS(checkCode("{ xs :: i(:) ! ! x/5 ! !\n"
+                                               "i, :: a :: b integer, } foo2(x) :: j(:)\n"
+                                               "b type(*), d(:), a x :: end d(..), foo end\n"
+                                               "foo4 b d(..), a a x type(*), b foo2 b"), INTERNAL, "Internal error. AST cyclic dependency.");
     }
 
     void garbageCode100() { // #6840
