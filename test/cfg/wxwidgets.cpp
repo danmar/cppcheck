@@ -14,6 +14,7 @@
 #include <wx/accel.h>
 #include <wx/any.h>
 #include <wx/app.h>
+#include <wx/archive.h>
 #include <wx/artprov.h>
 #include <wx/bitmap.h>
 #if wxCHECK_VERSION(3, 1, 6)  // wxWidets-3.1.6 or higher
@@ -67,6 +68,7 @@
 #include <wx/sizer.h>
 #include <wx/string.h>
 #include <wx/sysopt.h>
+#include <wx/tarstrm.h>
 #include <wx/textctrl.h>
 #include <wx/unichar.h>
 #include <wx/ustring.h>
@@ -74,6 +76,7 @@
 #include <wx/vector.h>
 #include <wx/versioninfo.h>
 #include <wx/wrapsizer.h>
+#include <wx/zipstrm.h>
 
 #if wxCHECK_VERSION(3, 1, 6)  // wxWidets-3.1.6 or higher
 void unreadVariable_wxBitmapBundle(const wxBitmap &bmp, const wxIcon &icon, const wxImage &image, const char *const * xpm, const wxBitmapBundle &bundle)
@@ -108,6 +111,24 @@ void unreadVariable_wxDCTextBgColourChanger(wxDC &dc, const wxColour &colour)
     wxDCTextBgColourChanger b(dc, colour);
 }
 #endif
+
+void unreadVariable_wxArchiveIterator()
+{
+    // cppcheck-suppress unreadVariable
+    wxArchiveIterator a;
+}
+
+void unreadVariable_wxZipEntry(const wxZipEntry &entry)
+{
+    // cppcheck-suppress unreadVariable
+    wxZipEntry a(entry);
+}
+
+void unreadVariable_wxTarEntry(const wxTarEntry &entry)
+{
+    // cppcheck-suppress unreadVariable
+    wxTarEntry a(entry);
+}
 
 void unreadVariable_wxDCTextColourChanger(wxDC &dc, const wxColour &colour)
 {
