@@ -1740,7 +1740,7 @@ private:
     void garbageCode225() {
         ASSERT_THROW_INTERNAL(checkCode("int n() { c * s0, 0 s0 = c(sizeof = ) }"), SYNTAX);
         ASSERT_THROW_INTERNAL(checkCode("int n() { c * s0, 0 s0 = c(sizeof |= ) }"), SYNTAX);
-    }    
+    }
     void garbageCode226() {
         ASSERT_THROW_INTERNAL(checkCode("int a() { (b((c)`)) } {}"), SYNTAX); // #11638
         ASSERT_THROW_INTERNAL(checkCode("int a() { (b((c)\\)) } {}"), SYNTAX);
