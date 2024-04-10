@@ -21,7 +21,6 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "platform.h"
-#include "preprocessor.h"
 #include "settings.h"
 #include "tokenize.h"
 
@@ -127,10 +126,9 @@ private:
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     void check_(const char* file, int line, const char code[], const Settings &settings, const char* filename = "test.cpp") {
-        Preprocessor preprocessor(settings);
         std::vector<std::string> files(1, filename);
         Tokenizer tokenizer(settings, this);
-        PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

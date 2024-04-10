@@ -151,8 +151,7 @@ public:
     static std::string getcode(Preprocessor &preprocessor, const std::string &filedata, const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression = nullptr);
 
     static void preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer);
-    static void preprocess(Preprocessor &preprocessor, const char code[], std::vector<std::string> &files, Tokenizer& tokenizer);
-    static void preprocess(Preprocessor &preprocessor, const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, const simplecpp::DUI& dui);
+    static void preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, const simplecpp::DUI& dui);
 };
 
 namespace cppcheck {

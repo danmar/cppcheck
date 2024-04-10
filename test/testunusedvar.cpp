@@ -276,9 +276,8 @@ private:
 #define checkStructMemberUsageP(...) checkStructMemberUsageP_(__FILE__, __LINE__, __VA_ARGS__)
     void checkStructMemberUsageP_(const char* file, int line, const char code[]) {
         std::vector<std::string> files(1, "test.cpp");
-        Preprocessor preprocessor(settings);
         Tokenizer tokenizer(settings, this);
-        PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
@@ -290,10 +289,9 @@ private:
 
 #define checkFunctionVariableUsageP(...) checkFunctionVariableUsageP_(__FILE__, __LINE__, __VA_ARGS__)
     void checkFunctionVariableUsageP_(const char* file, int line, const char code[], const char* filename = "test.cpp") {
-        Preprocessor preprocessor(settings);
         std::vector<std::string> files(1, filename);
         Tokenizer tokenizer(settings, this);
-        PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

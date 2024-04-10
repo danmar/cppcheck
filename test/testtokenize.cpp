@@ -7674,10 +7674,9 @@ private:
     std::string checkHdrs_(const char* file, int line, const char code[], bool checkHeadersFlag) {
         const Settings settings = settingsBuilder().checkHeaders(checkHeadersFlag).build();
 
-        Preprocessor preprocessor(settings0);
         std::vector<std::string> files(1, "test.cpp");
         Tokenizer tokenizer(settings, this);
-        PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

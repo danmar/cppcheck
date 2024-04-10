@@ -21,7 +21,6 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "platform.h"
-#include "preprocessor.h"
 #include "settings.h"
 #include "standards.h"
 #include "tokenize.h"
@@ -331,10 +330,9 @@ private:
         settings->standards.cpp = Standards::CPPLatest;
         settings->certainty.enable(Certainty::inconclusive);
 
-        Preprocessor preprocessor(*settings);
         std::vector<std::string> files(1, filename);
         Tokenizer tokenizer(*settings, this);
-        PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
