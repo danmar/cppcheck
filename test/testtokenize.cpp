@@ -936,7 +936,7 @@ private:
         ASSERT_EQUALS("int x [ 10 ] ;", tokenizeAndStringify("int x[10]@0x100;"));
 
         ASSERT_EQUALS("interrupt@ f ( ) { }", tokenizeAndStringify("@interrupt f() {}"));
-        
+
         ASSERT_EQUALS("const short MyVariable = 0xF0F0 ;", tokenizeAndStringify("const short MyVariable @ \"MYOWNSECTION\" = 0xF0F0; ")); // #12602
     }
 
