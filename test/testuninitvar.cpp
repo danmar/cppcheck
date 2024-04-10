@@ -4350,6 +4350,28 @@ private:
                         "    f(i);\n"
                         "}");
         ASSERT_EQUALS("", errout_str());
+
+        valueFlowUninit("int f(int& i, int j, int k) {\n" // #12514
+                        "    if (k)\n"
+                        "        i = 2;\n"
+                        "    return i + j;\n"
+                        "}\n"
+                        "int main() {\n"
+                        "    int i;\n"
+                        "    return f(i, 1, 0);\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:4]: (warning) Uninitialized variable: i\n", errout_str());
+
+        valueFlowUninit("int f(int& i, int k) {\n"
+                        "    if (k)\n"
+                        "        i = 2;\n"
+                        "    return i;\n"
+                        "}\n"
+                        "int main() {\n"
+                        "    int i;\n"
+                        "    return f(i, 0);\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:4]: (warning) Uninitialized variable: i\n", errout_str());
     }
 
     void uninitStructMember() { // struct members

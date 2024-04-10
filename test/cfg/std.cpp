@@ -554,7 +554,7 @@ void bufferAccessOutOfBounds_std_ifstream_get(std::ifstream& in, std::streambuf&
     in.getline(cBuf, 100, 'a');
 
     in.get(sb, 'a');
-    
+
     in.close();
 }
 
