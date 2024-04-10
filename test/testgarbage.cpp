@@ -254,6 +254,7 @@ private:
         TEST_CASE(garbageCode223); // #11639
         TEST_CASE(garbageCode224);
         TEST_CASE(garbageCode225);
+        TEST_CASE(garbageCode226);
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1750,6 +1751,11 @@ private:
     void garbageCode225() {
         ASSERT_THROW(checkCode("int n() { c * s0, 0 s0 = c(sizeof = ) }"), InternalError);
         ASSERT_THROW(checkCode("int n() { c * s0, 0 s0 = c(sizeof |= ) }"), InternalError);
+    }    
+    void garbageCode226() {
+        ASSERT_THROW(checkCode("int a() { (b((c)`)) } {}"), InternalError); // #11638
+        ASSERT_THROW(checkCode("int a() { (b((c)\\)) } {}"), InternalError);
+        ASSERT_THROW(checkCode("int a() { (b((c)@)) } {}"), InternalError);
     }
 
     void syntaxErrorFirstToken() {
