@@ -5508,6 +5508,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     removeExtraTemplateKeywords();
 
     simplifySpaceshipOperator();
+    
+    // @..
+    simplifyAt();
 
     // Bail out if code is garbage
     if (mTimerResults) {
@@ -5719,9 +5722,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // Put ^{} statements in asm()
     simplifyAsm2();
-
-    // @..
-    simplifyAt();
 
     // When the assembly code has been cleaned up, no @ is allowed
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
@@ -9609,9 +9609,9 @@ void Tokenizer::simplifyAt()
     std::set<std::string> var;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%name%|] @ %num%|%name%|(")) {
+        if (Token::Match(tok, "%name%|] @ %num%|%name%|%str%|(")) {
             const Token *end = tok->tokAt(2);
-            if (end->isNumber())
+            if (end->isLiteral())
                 end = end->next();
             else if (end->str() == "(") {
                 int par = 0;
@@ -9632,7 +9632,7 @@ void Tokenizer::simplifyAt()
             if (Token::Match(end, ": %num% ;"))
                 end = end->tokAt(2);
 
-            if (end && end->str() == ";") {
+            if (Token::Match(end, "[;=]")) {
                 if (tok->isName())
                     var.insert(tok->str());
                 tok->isAtAddress(true);
