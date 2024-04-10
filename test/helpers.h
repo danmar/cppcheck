@@ -56,13 +56,15 @@ public:
         : Tokenizer{settings, &errorlogger, preprocessor}
     {}
 
-    Token* tokens() {
+    /*
+        Token* tokens() {
         return Tokenizer::tokens();
-    }
+        }
 
-    const Token* tokens() const {
+        const Token* tokens() const {
         return Tokenizer::tokens();
-    }
+        }
+     */
 
     /**
      * Tokenize code
