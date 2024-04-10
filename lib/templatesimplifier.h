@@ -49,7 +49,7 @@ class CPPCHECKLIB TemplateSimplifier {
 public:
     explicit TemplateSimplifier(Tokenizer &tokenizer);
 
-    std::string dump() const {
+    const std::string& dump() const {
         return mDump;
     }
 

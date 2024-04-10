@@ -75,15 +75,15 @@ public:
      * @brief Get project root path.
      * @return project root path.
      */
-    QString getRootPath() const {
+    const QString& getRootPath() const {
         return mRootPath;
     }
 
-    QString getBuildDir() const {
+    const QString& getBuildDir() const {
         return mBuildDir;
     }
 
-    QString getImportProject() const {
+    const QString& getImportProject() const {
         return mImportProject;
     }
 
@@ -119,7 +119,7 @@ public:
      * @brief Get list of defines.
      * @return list of defines.
      */
-    QStringList getDefines() const {
+    const QStringList& getDefines() const {
         return mDefines;
     }
 
@@ -127,7 +127,7 @@ public:
      * @brief Get list of undefines.
      * @return list of undefines.
      */
-    QStringList getUndefines() const {
+    const QStringList& getUndefines() const {
         return mUndefines;
     }
 
@@ -151,7 +151,7 @@ public:
      * @brief Get list of paths to exclude from the check.
      * @return list of paths.
      */
-    QStringList getVsConfigurations() const {
+    const QStringList& getVsConfigurations() const {
         return mVsConfigurations;
     }
 
@@ -159,7 +159,7 @@ public:
      * @brief Get list libraries.
      * @return list of libraries.
      */
-    QStringList getLibraries() const {
+    const QStringList& getLibraries() const {
         return mLibraries;
     }
 
@@ -167,11 +167,11 @@ public:
      * @brief Get platform.
      * @return Current platform. If it ends with .xml then it is a file. Otherwise it must match one of the return values from @sa cppcheck::Platform::toString() ("win32A", "unix32", ..)
      */
-    QString getPlatform() const {
+    const QString& getPlatform() const {
         return mPlatform;
     }
 
-    QString getProjectName() const {
+    const QString& getProjectName() const {
         return mProjectName;
     }
 
@@ -183,7 +183,7 @@ public:
      * @brief Get "raw" suppressions.
      * @return list of suppressions.
      */
-    QList<SuppressionList::Suppression> getSuppressions() const {
+    const QList<SuppressionList::Suppression>& getSuppressions() const {
         return mSuppressions;
     }
 
@@ -197,7 +197,7 @@ public:
      * @brief Get list addons.
      * @return list of addons.
      */
-    QStringList getAddons() const {
+    const QStringList& getAddons() const {
         return mAddons;
     }
 
@@ -230,7 +230,7 @@ public:
         mClangTidy = c;
     }
 
-    QStringList getTags() const {
+    const QStringList& getTags() const {
         return mTags;
     }
 
@@ -254,7 +254,7 @@ public:
      * @brief Get filename for the project file.
      * @return file name.
      */
-    QString getFilename() const {
+    const QString& getFilename() const {
         return mFilename;
     }
 
@@ -367,7 +367,7 @@ public:
     }
 
     /** @brief Get list of coding standards (checked by Cppcheck Premium). */
-    QStringList getCodingStandards() const {
+    const QStringList& getCodingStandards() const {
         return mCodingStandards;
     }
 
@@ -414,7 +414,7 @@ public:
     SafeChecks safeChecks;
 
     /** Check unknown function return values */
-    QStringList getCheckUnknownFunctionReturn() const {
+    const QStringList& getCheckUnknownFunctionReturn() const {
         return mCheckUnknownFunctionReturn;
     }
     /*

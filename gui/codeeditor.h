@@ -114,7 +114,7 @@ public:
         mFileName = fileName;
     }
 
-    QString getFileName() const {
+    const QString& getFileName() const {
         return mFileName;
     }
 

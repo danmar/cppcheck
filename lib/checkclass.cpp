@@ -30,6 +30,7 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 #include "utils.h"
+#include "valueflow.h"
 
 #include <algorithm>
 #include <cctype>
@@ -3301,6 +3302,54 @@ void CheckClass::checkUselessOverride()
             }
         }
     }
+}
+
+static const Variable* getSingleReturnVar(const Scope* scope) {
+    if (!scope)
+        return nullptr;
+    const Token* const start = scope->bodyStart->next();
+    const Token* const end = Token::findsimplematch(start, ";", 1, scope->bodyEnd);
+    if (!end || end->next() != scope->bodyEnd)
+        return nullptr;
+    if (!start->astOperand1() || start->str() != "return")
+        return nullptr;
+    return start->astOperand1()->variable();
+}
+
+void CheckClass::checkReturnByReference()
+{
+    if (!mSettings->severity.isEnabled(Severity::performance) && !mSettings->isPremiumEnabled("returnByReference"))
+        return;
+
+    logChecker("CheckClass::checkReturnByReference"); // performance
+
+    for (const Scope* classScope : mSymbolDatabase->classAndStructScopes) {
+        for (const Function& func : classScope->functionList) {
+            if (Function::returnsPointer(&func) || Function::returnsReference(&func) || Function::returnsStandardType(&func))
+                continue;
+            if (const Variable* var = getSingleReturnVar(func.functionScope)) {
+                if (!var->valueType())
+                    continue;
+                const bool isContainer = var->valueType()->type == ValueType::Type::CONTAINER && var->valueType()->container;
+                const bool isView = isContainer && var->valueType()->container->view;
+                bool warn = isContainer && !isView;
+                if (!warn && !isView) {
+                    const std::size_t size = ValueFlow::getSizeOf(*var->valueType(), *mSettings);
+                    if (size > 2 * mSettings->platform.sizeof_pointer)
+                        warn = true;
+                }
+                if (warn)
+                    returnByReferenceError(&func, var);
+            }
+        }
+    }
+}
+
+void CheckClass::returnByReferenceError(const Function* func, const Variable* var)
+{
+    const Token* tok = func ? func->tokenDef : nullptr;
+    const std::string message = "Function '" + (func ? func->name() : "func") + "()' should return member '" + (var ? var->name() : "var") + "' by const reference.";
+    reportError(tok, Severity::performance, "returnByReference", message);
 }
 
 void CheckClass::checkThisUseAfterFree()
