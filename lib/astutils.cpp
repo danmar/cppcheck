@@ -3359,7 +3359,7 @@ ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings)
             return ExprUsage::NotUsed;
         if (Token::simpleMatch(parent, ":") && Token::simpleMatch(parent->astParent(), "?"))
             return getExprUsage(parent->astParent(), indirect, settings);
-        if(isUsedAsBool(tok, settings))
+        if (isUsedAsBool(tok, settings))
             return ExprUsage::NotUsed;
     }
     if (indirect == 0) {
