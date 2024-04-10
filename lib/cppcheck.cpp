@@ -1298,13 +1298,14 @@ void CppCheck::executeRules(const std::string &tokenlist, const TokenList &list)
         return;
 
     // Write all tokens in a string that can be parsed by pcre
-    std::ostringstream ostr;
-    for (const Token *tok = list.front(); tok; tok = tok->next())
-        ostr << " " << tok->str();
-    const std::string str(ostr.str());
+    std::string str;
+    for (const Token *tok = list.front(); tok; tok = tok->next()) {
+        str += " ";
+        str += tok->str();
+    }
 
     for (const Settings::Rule &rule : mSettings.rules) {
-        if (rule.pattern.empty() || rule.id.empty() || rule.severity == Severity::none || rule.tokenlist != tokenlist)
+        if (rule.tokenlist != tokenlist)
             continue;
 
         if (!mSettings.quiet) {
@@ -1379,28 +1380,30 @@ void CppCheck::executeRules(const std::string &tokenlist, const TokenList &list)
             pos = (int)pos2;
 
             // determine location..
-            std::string file = list.getSourceFilePath();
+            int fileIndex = 0;
             int line = 0;
 
             std::size_t len = 0;
             for (const Token *tok = list.front(); tok; tok = tok->next()) {
                 len = len + 1U + tok->str().size();
                 if (len > pos1) {
-                    file = list.getFiles().at(tok->fileIndex());
+                    fileIndex = tok->fileIndex();
                     line = tok->linenr();
                     break;
                 }
             }
 
+            const std::string& file = list.getFiles()[fileIndex];
+
             ErrorMessage::FileLocation loc(file, line, 0);
 
             // Create error message
-            std::string summary;
-            if (rule.summary.empty())
-                summary = "found '" + str.substr(pos1, pos2 - pos1) + "'";
-            else
-                summary = rule.summary;
-            const ErrorMessage errmsg({std::move(loc)}, list.getSourceFilePath(), rule.severity, summary, rule.id, Certainty::normal);
+            const ErrorMessage errmsg({std::move(loc)},
+                                      list.getSourceFilePath(),
+                                      rule.severity,
+                                      !rule.summary.empty() ? rule.summary : "found '" + str.substr(pos1, pos2 - pos1) + "'",
+                                      rule.id,
+                                      Certainty::normal);
 
             // Report error
             reportErr(errmsg);
