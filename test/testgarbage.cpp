@@ -498,6 +498,7 @@ private:
 
     void garbageCode16() {
         checkCode("{ } A() { delete }"); // #6080
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode17() {
@@ -563,6 +564,7 @@ private:
                                         "        case struct Tree : break;\n"
                                         "    }\n"
                                         "}"), SYNTAX);
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode26() {
@@ -633,10 +635,12 @@ private:
     void garbageCode37() {
         // #5166 segmentation fault (invalid code) in lib/checkother.cpp:329 ( void * f { } void b ( ) { * f } )
         checkCode("void * f { } void b ( ) { * f }");
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode38() { // Ticket #6666
         checkCode("{ f2 { } } void f3 () { delete[] } { }");
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode40() { // #6620
@@ -1222,6 +1226,7 @@ private:
                   "    for (j = 0; j < 1; j)\n"
                   "        j6;\n"
                   "}");
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode150() { // #7089
@@ -1441,6 +1446,7 @@ private:
     void garbageCode168() {
         // 7246
         checkCode("long foo(void) { return *bar; }", false);
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode169() {
@@ -1581,6 +1587,7 @@ private:
                   "  double e(b);\n"
                   "  if(e <= 0) {}\n"
                   "}");
+        ignore_errout(); // we do not care about the output
     }
 
     // #8265
@@ -1607,6 +1614,7 @@ private:
     // #8752
     void garbageCode199() {
         checkCode("d f(){e n00e0[]n00e0&" "0+f=0}");
+        ignore_errout(); // we do not care about the output
     }
 
     // #8757
@@ -1623,6 +1631,7 @@ private:
     void garbageCode202() {
         ASSERT_THROW_INTERNAL(checkCode("void f() { UNKNOWN_MACRO(return); }"), UNKNOWN_MACRO);
         ASSERT_THROW_INTERNAL(checkCode("void f() { UNKNOWN_MACRO(throw); }"), UNKNOWN_MACRO);
+        ignore_errout();
     }
 
     void garbageCode203() { // #8972
@@ -1735,7 +1744,9 @@ private:
     }
     void garbageCode224() {
         ASSERT_THROW_INTERNAL(checkCode("void f(){ auto* b = dynamic_cast<const }"), SYNTAX);  // don't crash
+        ASSERT_EQUALS("", errout_str());
         ASSERT_THROW_INTERNAL(checkCode("void f(){ auto* b = dynamic_cast x; }"), SYNTAX);
+        ignore_errout();
     }
     void garbageCode225() {
         ASSERT_THROW_INTERNAL(checkCode("int n() { c * s0, 0 s0 = c(sizeof = ) }"), SYNTAX);
@@ -1859,6 +1870,7 @@ private:
             "void f() {\n"
             "    auto fn = []() -> foo* { return new foo(); };\n"
             "}");
+        ignore_errout(); // we do not care about the output
     }
 };
 

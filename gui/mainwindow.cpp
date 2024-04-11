@@ -969,6 +969,9 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
 
     result.exename = QCoreApplication::applicationFilePath().toStdString();
 
+    // default to --check-level=normal for GUI for now
+    result.setCheckLevel(Settings::CheckLevel::normal);
+
     const bool std = tryLoadLibrary(&result.library, "std.cfg");
     if (!std) {
         QMessageBox::critical(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=<directory> at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.\n\nAnalysis is aborted.").arg("std.cfg"));
@@ -1061,9 +1064,9 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
         result.maxCtuDepth = mProjectFile->getMaxCtuDepth();
         result.maxTemplateRecursion = mProjectFile->getMaxTemplateRecursion();
         if (mProjectFile->isCheckLevelExhaustive())
-            result.setCheckLevelExhaustive();
+            result.setCheckLevel(Settings::CheckLevel::exhaustive);
         else
-            result.setCheckLevelNormal();
+            result.setCheckLevel(Settings::CheckLevel::normal);
         result.checkHeaders = mProjectFile->getCheckHeaders();
         result.checkUnusedTemplates = mProjectFile->getCheckUnusedTemplates();
         result.safeChecks.classes = mProjectFile->safeChecks.classes;

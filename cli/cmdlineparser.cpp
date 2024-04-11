@@ -311,6 +311,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 {
     mSettings.exename = Path::getCurrentExecutablePath(argv[0]);
 
+    // default to --check-level=normal from CLI for now
+    mSettings.setCheckLevel(Settings::CheckLevel::normal);
+
     if (argc <= 1) {
         printHelp();
         return Result::Exit;
@@ -468,13 +471,21 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             else if (std::strcmp(argv[i], "--check-config") == 0)
                 mSettings.checkConfiguration = true;
 
-            // Check code exhaustively
-            else if (std::strcmp(argv[i], "--check-level=exhaustive") == 0)
-                mSettings.setCheckLevelExhaustive();
+            // Check level
+            else if (std::strncmp(argv[i], "--check-level=", 14) == 0) {
+                Settings::CheckLevel level = Settings::CheckLevel::normal;
+                const std::string level_s(argv[i] + 14);
+                if (level_s == "normal")
+                    level = Settings::CheckLevel::normal;
+                else if (level_s == "exhaustive")
+                    level = Settings::CheckLevel::exhaustive;
+                else {
+                    mLogger.printError("unknown '--check-level' value '" + level_s + "'.");
+                    return Result::Fail;
+                }
 
-            // Check code with normal analysis
-            else if (std::strcmp(argv[i], "--check-level=normal") == 0)
-                mSettings.setCheckLevelNormal();
+                mSettings.setCheckLevel(level);
+            }
 
             // Check library definitions
             else if (std::strcmp(argv[i], "--check-library") == 0) {
