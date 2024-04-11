@@ -265,7 +265,7 @@ private:
 
 #define tokenizeHeader(...) tokenizeHeader_(__FILE__, __LINE__, __VA_ARGS__)
     std::string tokenizeHeader_(const char* file, int line, const char code[], const char filename[]) {
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settings, *this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.list.createTokens(istr, filename), file, line);
         EXPECT_EQ(true, tokenizer.simplifyTokens1(""));
@@ -279,7 +279,7 @@ private:
 #define tokenizeExpr(...) tokenizeExpr_(__FILE__, __LINE__, __VA_ARGS__)
     std::string tokenizeExpr_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         std::vector<std::string> files(1, filename);
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settings, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

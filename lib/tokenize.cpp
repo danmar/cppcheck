@@ -152,7 +152,7 @@ static bool isClassStructUnionEnumStart(const Token * tok)
 
 //---------------------------------------------------------------------------
 
-Tokenizer::Tokenizer(const Settings &settings, ErrorLogger *errorLogger) :
+Tokenizer::Tokenizer(const Settings &settings, ErrorLogger &errorLogger) :
     list(&settings),
     mSettings(settings),
     mErrorLogger(errorLogger),
@@ -1141,14 +1141,14 @@ void Tokenizer::simplifyTypedefCpp()
     const std::time_t maxTime = mSettings.typedefMaxTime > 0 ? std::time(nullptr) + mSettings.typedefMaxTime: 0;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (mErrorLogger && !list.getFiles().empty())
-            mErrorLogger->reportProgress(list.getFiles()[0], "Tokenize (typedef)", tok->progressValue());
+        if (!list.getFiles().empty())
+            mErrorLogger.reportProgress(list.getFiles()[0], "Tokenize (typedef)", tok->progressValue());
 
         if (Settings::terminated())
             return;
 
         if (maxTime > 0 && std::time(nullptr) > maxTime) {
-            if (mErrorLogger && mSettings.debugwarnings) {
+            if (mSettings.debugwarnings) {
                 ErrorMessage::FileLocation loc(list.getFiles()[0], 0, 0);
                 ErrorMessage errmsg({std::move(loc)},
                                     emptyString,
@@ -1156,7 +1156,7 @@ void Tokenizer::simplifyTypedefCpp()
                                     "Typedef simplification instantiation maximum time exceeded",
                                     "typedefMaxTime",
                                     Certainty::normal);
-                mErrorLogger->reportErr(errmsg);
+                mErrorLogger.reportErr(errmsg);
             }
             return;
         }
@@ -2876,8 +2876,8 @@ bool Tokenizer::simplifyUsing()
     std::list<Using> usingList;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (mErrorLogger && !list.getFiles().empty())
-            mErrorLogger->reportProgress(list.getFiles()[0], "Tokenize (using)", tok->progressValue());
+        if (!list.getFiles().empty())
+            mErrorLogger.reportProgress(list.getFiles()[0], "Tokenize (using)", tok->progressValue());
 
         if (Settings::terminated())
             return substitute;
@@ -3342,7 +3342,7 @@ bool Tokenizer::simplifyUsing()
 
 void Tokenizer::simplifyUsingError(const Token* usingStart, const Token* usingEnd)
 {
-    if (mSettings.debugwarnings && mErrorLogger) {
+    if (mSettings.debugwarnings) {
         std::string str;
         for (const Token *tok = usingStart; tok && tok != usingEnd; tok = tok->next()) {
             if (!str.empty())
@@ -3351,8 +3351,8 @@ void Tokenizer::simplifyUsingError(const Token* usingStart, const Token* usingEn
         }
         str += " ;";
         std::list<const Token *> callstack(1, usingStart);
-        mErrorLogger->reportErr(ErrorMessage(callstack, &list, Severity::debug, "simplifyUsing",
-                                             "Failed to parse \'" + str + "\'. The checking continues anyway.", Certainty::normal));
+        mErrorLogger.reportErr(ErrorMessage(callstack, &list, Severity::debug, "simplifyUsing",
+                                            "Failed to parse \'" + str + "\'. The checking continues anyway.", Certainty::normal));
     }
 }
 
@@ -3405,12 +3405,11 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     const bool doValueFlow = !disableValueflowEnv || (std::strcmp(disableValueflowEnv, "1") != 0);
 
     if (doValueFlow) {
-        assert(mErrorLogger);
         if (mTimerResults) {
             Timer t("Tokenizer::simplifyTokens1::ValueFlow", mSettings.showtime, mTimerResults);
-            ValueFlow::setValues(list, *mSymbolDatabase, *mErrorLogger, mSettings, mTimerResults);
+            ValueFlow::setValues(list, *mSymbolDatabase, mErrorLogger, mSettings, mTimerResults);
         } else {
-            ValueFlow::setValues(list, *mSymbolDatabase, *mErrorLogger, mSettings, mTimerResults);
+            ValueFlow::setValues(list, *mSymbolDatabase, mErrorLogger, mSettings, mTimerResults);
         }
 
         arraySizeAfterValueFlow();
@@ -9987,10 +9986,8 @@ void Tokenizer::simplifyBorland()
 
 void Tokenizer::createSymbolDatabase()
 {
-    if (!mSymbolDatabase) {
-        assert(mErrorLogger != nullptr);
-        mSymbolDatabase = new SymbolDatabase(*this, mSettings, *mErrorLogger);
-    }
+    if (!mSymbolDatabase)
+        mSymbolDatabase = new SymbolDatabase(*this, mSettings, mErrorLogger);
     mSymbolDatabase->validate();
 }
 
@@ -10430,10 +10427,7 @@ void Tokenizer::reportError(const Token* tok, const Severity severity, const std
 void Tokenizer::reportError(const std::list<const Token*>& callstack, Severity severity, const std::string& id, const std::string& msg, bool inconclusive) const
 {
     const ErrorMessage errmsg(callstack, &list, severity, id, msg, inconclusive ? Certainty::inconclusive : Certainty::normal);
-    if (mErrorLogger)
-        mErrorLogger->reportErr(errmsg);
-    else
-        Check::writeToErrorList(errmsg);
+    mErrorLogger.reportErr(errmsg);
 }
 
 void Tokenizer::setPodTypes()

@@ -247,7 +247,7 @@ private:
     }
 
     std::string simplifyTypedef(const char code[]) {
-        Tokenizer tokenizer(settings1, this);
+        Tokenizer tokenizer(settings1, *this);
 
         std::istringstream istr(code);
         if (!tokenizer.list.createTokens(istr, Standards::Language::CPP))
@@ -261,7 +261,7 @@ private:
 
     std::string simplifyTypedefP(const char code[]) {
         std::vector<std::string> files(1, "test.cpp");
-        Tokenizer tokenizer(settings0, this);
+        Tokenizer tokenizer(settings0, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         // Tokenize..
@@ -282,7 +282,7 @@ private:
 
 
     std::string simplifyTypedefC(const char code[]) {
-        Tokenizer tokenizer(settings1, this);
+        Tokenizer tokenizer(settings1, *this);
 
         std::istringstream istr(code);
         if (!tokenizer.list.createTokens(istr, "file.c"))
@@ -4173,7 +4173,7 @@ private:
                             "uint8_t t;"
                             "void test(rFunctionPointer_fp functionPointer);";
 
-        Tokenizer tokenizer(settings1, this);
+        Tokenizer tokenizer(settings1, *this);
         std::istringstream istr(code);
         ASSERT(tokenizer.list.createTokens(istr, "file.c"));
         tokenizer.createLinks();

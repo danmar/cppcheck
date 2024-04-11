@@ -53,7 +53,7 @@ class CPPCHECKLIB Tokenizer {
     friend class TestTokenizer;
 
 public:
-    explicit Tokenizer(const Settings & settings, ErrorLogger *errorLogger);
+    explicit Tokenizer(const Settings & settings, ErrorLogger &errorLogger);
     ~Tokenizer();
 
     void setTimerResults(TimerResults *tr) {
@@ -645,7 +645,7 @@ private:
     const Settings & mSettings;
 
     /** errorlogger */
-    ErrorLogger* const mErrorLogger;
+    ErrorLogger& mErrorLogger;
 
     /** Symbol database that all checks etc can use */
     SymbolDatabase* mSymbolDatabase{};

@@ -8504,7 +8504,7 @@ private:
         const Settings settings = settingsBuilder().severity(Severity::style).build();
 
         std::vector<std::string> files(1, "test.cpp");
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settings, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
@@ -8847,7 +8847,7 @@ private:
         // getFileInfo
         std::list<Check::FileInfo*> fileInfo;
         for (const std::string& c: code) {
-            Tokenizer tokenizer(settingsDefault, this);
+            Tokenizer tokenizer(settingsDefault, *this);
             std::istringstream istr(c);
             const std::string filename = std::to_string(fileInfo.size()) + ".cpp";
             ASSERT(tokenizer.list.createTokens(istr, filename));
@@ -8911,7 +8911,7 @@ private:
         const Settings settings = settingsBuilder().severity(Severity::performance).library("std.cfg").build();
 
         std::vector<std::string> files(1, "test.cpp");
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settings, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

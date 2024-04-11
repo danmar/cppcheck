@@ -3071,7 +3071,7 @@ private:
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
     void checkP_(const char* file, int line, const char code[], bool cpp = false) {
         std::vector<std::string> files(1, cpp?"test.cpp":"test.c");
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settings, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         // Tokenizer..

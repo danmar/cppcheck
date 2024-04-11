@@ -494,7 +494,7 @@ private:
     Tokenizer &mTokenizer;
     TokenList &mTokenList;
     const Settings &mSettings;
-    ErrorLogger *mErrorLogger;
+    ErrorLogger &mErrorLogger;
     bool mChanged{};
 
     std::list<TokenAndName> mTemplateDeclarations;

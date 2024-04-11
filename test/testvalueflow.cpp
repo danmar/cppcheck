@@ -476,7 +476,7 @@ private:
         const Settings s = settingsBuilder().debugwarnings().build();
 
         std::vector<std::string> files(1, "test.cpp");
-        Tokenizer tokenizer(s, this);
+        Tokenizer tokenizer(s, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         // Tokenize..

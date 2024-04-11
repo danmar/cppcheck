@@ -65,7 +65,7 @@ private:
         const Settings settings1 = settingsBuilder(settings).severity(Severity::warning).severity(Severity::portability).build();
 
         std::vector<std::string> files(1, filename);
-        Tokenizer tokenizer(settings1, this);
+        Tokenizer tokenizer(settings1, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this, dui);
 
         // Tokenizer..

@@ -42,14 +42,14 @@ namespace simplecpp {
 class SimpleTokenizer : public Tokenizer {
 public:
     SimpleTokenizer(ErrorLogger& errorlogger, const char code[], bool cpp = true)
-        : Tokenizer{s_settings, &errorlogger}
+        : Tokenizer{s_settings, errorlogger}
     {
         if (!tokenize(code, cpp))
             throw std::runtime_error("creating tokens failed");
     }
 
     SimpleTokenizer(const Settings& settings, ErrorLogger& errorlogger)
-        : Tokenizer{settings, &errorlogger}
+        : Tokenizer{settings, errorlogger}
     {}
 
     /*
