@@ -111,27 +111,28 @@ ScopedFile::~ScopedFile() {
 }
 
 // TODO: we should be using the actual Preprocessor implementation
-std::string PreprocessorHelper::getcode(Preprocessor &preprocessor, const std::string &filedata, const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression)
+std::string PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& errorlogger, const std::string &filedata, const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression)
 {
-    std::map<std::string, std::string> cfgcode = getcode(preprocessor, filedata.c_str(), std::set<std::string>{cfg}, filename, inlineSuppression);
+    std::map<std::string, std::string> cfgcode = getcode(settings, errorlogger, filedata.c_str(), std::set<std::string>{cfg}, filename, inlineSuppression);
     const auto it = cfgcode.find(cfg);
     if (it == cfgcode.end())
         return "";
     return it->second;
 }
 
-std::map<std::string, std::string> PreprocessorHelper::getcode(Preprocessor &preprocessor, const char code[], const std::string &filename, SuppressionList *inlineSuppression)
+std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], const std::string &filename, SuppressionList *inlineSuppression)
 {
-    return getcode(preprocessor, code, {}, filename, inlineSuppression);
+    return getcode(settings, errorlogger, code, {}, filename, inlineSuppression);
 }
 
-std::map<std::string, std::string> PreprocessorHelper::getcode(Preprocessor &preprocessor, const char code[], std::set<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression)
+std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::set<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression)
 {
     simplecpp::OutputList outputList;
     std::vector<std::string> files;
 
     std::istringstream istr(code);
     simplecpp::TokenList tokens(istr, files, Path::simplifyPath(filename), &outputList);
+    Preprocessor preprocessor(settings, errorlogger);
     if (inlineSuppression)
         preprocessor.inlineSuppressions(tokens, *inlineSuppression);
     tokens.removeComments();
@@ -154,10 +155,6 @@ std::map<std::string, std::string> PreprocessorHelper::getcode(Preprocessor &pre
             cfgcode[config] = "";
         }
     }
-
-    // Since "files" is a local variable the tracking info must be cleared..
-    preprocessor.mMacroUsage.clear();
-    preprocessor.mIfCond.clear();
 
     return cfgcode;
 }

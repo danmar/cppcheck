@@ -6866,13 +6866,12 @@ private:
                                 "int PTR4 q4_var RBR4 = 0;\n";
 
         // Preprocess file..
-        Preprocessor preprocessor(settings0, *this);
         std::istringstream fin(raw_code);
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
         const simplecpp::TokenList tokens1(fin, files, emptyString, &outputList);
         const std::string filedata = tokens1.stringify();
-        const std::string code = PreprocessorHelper::getcode(preprocessor, filedata, emptyString, emptyString);
+        const std::string code = PreprocessorHelper::getcode(settings0, *this, filedata, emptyString, emptyString);
 
         ASSERT_THROW_INTERNAL(tokenizeAndStringify(code.c_str()), AST);
     }

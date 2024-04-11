@@ -21,7 +21,6 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "platform.h"
-#include "preprocessor.h"
 #include "settings.h"
 #include "tokenize.h"
 
@@ -682,8 +681,7 @@ private:
                            "};";
         const char code[] = R"(#include "test.h")";
         ScopedFile header("test.h", inc);
-        Preprocessor preprocessor(settings, *this);
-        const std::string processed = PreprocessorHelper::getcode(preprocessor, code, "", "test.cpp");
+        const std::string processed = PreprocessorHelper::getcode(settings, *this, code, "", "test.cpp");
         check(processed.c_str());
         TODO_ASSERT_EQUALS("[test.h:3]: (style) The function 'f' is never used.\n", "[test.cpp:3]: (style) The function 'f' is never used.\n", errout_str());
     }
