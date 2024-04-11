@@ -7135,19 +7135,19 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify("enum { E = int{} };"));
 
         ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("int a() { b((c)return 0) }"), SYNTAX, "syntax error");
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("int f() { MACRO(x) return 0; }"),
-                            InternalError,
-                            "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("int f() { MACRO(x) return 0; }"),
+                                     UNKNOWN_MACRO,
+                                     "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
 
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f(int i) {\n" // #11770
-                                                 "    if (i == 0) {}\n"
-                                                 "    else if (i == 1) {}\n"
-                                                 "    else\n"
-                                                 "        MACRO(i)\n"
-                                                 "}\n"
-                                                 "void g() {}\n"),
-                            InternalError,
-                            "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("void f(int i) {\n" // #11770
+                                                          "    if (i == 0) {}\n"
+                                                          "    else if (i == 1) {}\n"
+                                                          "    else\n"
+                                                          "        MACRO(i)\n"
+                                                          "}\n"
+                                                          "void g() {}\n"),
+                                     UNKNOWN_MACRO,
+                                     "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
         ASSERT_NO_THROW(tokenizeAndStringify("void f(int i) {\n"
                                              "    if (i == 0) {}\n"
                                              "    else if (i == 1) {}\n"
@@ -7156,45 +7156,45 @@ private:
                                              "}\n"
                                              "void g() {}\n"));
 
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("class C : public QObject {\n" // #11770
-                                                 "    struct S { static void g() {} };\n"
-                                                 "private Q_SLOTS:\n"
-                                                 "    void f() { S::g(); }\n"
-                                                 "};\n"),
-                            InternalError,
-                            "There is an unknown macro here somewhere. Configuration is required. If Q_SLOTS is a macro then please configure it.");
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("class C : public QObject {\n"
-                                                 "    struct S { static void g() {} };\n"
-                                                 "private slots:\n"
-                                                 "    void f() { S::g(); }\n"
-                                                 "};\n"),
-                            InternalError,
-                            "There is an unknown macro here somewhere. Configuration is required. If slots is a macro then please configure it.");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("class C : public QObject {\n" // #11770
+                                                          "    struct S { static void g() {} };\n"
+                                                          "private Q_SLOTS:\n"
+                                                          "    void f() { S::g(); }\n"
+                                                          "};\n"),
+                                     UNKNOWN_MACRO,
+                                     "There is an unknown macro here somewhere. Configuration is required. If Q_SLOTS is a macro then please configure it.");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("class C : public QObject {\n"
+                                                          "    struct S { static void g() {} };\n"
+                                                          "private slots:\n"
+                                                          "    void f() { S::g(); }\n"
+                                                          "};\n"),
+                                     UNKNOWN_MACRO,
+                                     "There is an unknown macro here somewhere. Configuration is required. If slots is a macro then please configure it.");
 
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("namespace U_ICU_ENTRY_POINT_RENAME(icu) { }\n"
-                                                 "namespace icu = U_ICU_ENTRY_POINT_RENAME(icu);\n"
-                                                 "namespace U_ICU_ENTRY_POINT_RENAME(icu) {\n"
-                                                 "    class BreakIterator;\n"
-                                                 "}\n"
-                                                 "typedef int UStringCaseMapper(icu::BreakIterator* iter);\n"),
-                            InternalError,
-                            "There is an unknown macro here somewhere. Configuration is required. If U_ICU_ENTRY_POINT_RENAME is a macro then please configure it.");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("namespace U_ICU_ENTRY_POINT_RENAME(icu) { }\n"
+                                                          "namespace icu = U_ICU_ENTRY_POINT_RENAME(icu);\n"
+                                                          "namespace U_ICU_ENTRY_POINT_RENAME(icu) {\n"
+                                                          "    class BreakIterator;\n"
+                                                          "}\n"
+                                                          "typedef int UStringCaseMapper(icu::BreakIterator* iter);\n"),
+                                     UNKNOWN_MACRO,
+                                     "There is an unknown macro here somewhere. Configuration is required. If U_ICU_ENTRY_POINT_RENAME is a macro then please configure it.");
 
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { MACRO(x(), y(), \"abc\", z(); ok = true); }\n"), // #12006
-                            InternalError,
-                            "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("void f() { MACRO(x(), y(), \"abc\", z(); ok = true); }\n"), // #12006
+                                     UNKNOWN_MACRO,
+                                     "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
 
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("int (*f) MACRO((void *));\n"), // #12010
-                            InternalError,
-                            "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("int (*f) MACRO((void *));\n"), // #12010
+                                     UNKNOWN_MACRO,
+                                     "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
 
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("struct S { int a[2] PACKED; };\n"),
-                            InternalError,
-                            "There is an unknown macro here somewhere. Configuration is required. If PACKED is a macro then please configure it.");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("struct S { int a[2] PACKED; };\n"),
+                                     UNKNOWN_MACRO,
+                                     "There is an unknown macro here somewhere. Configuration is required. If PACKED is a macro then please configure it.");
 
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("MACRO(a, b,,)\n"),
-                            InternalError,
-                            "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("MACRO(a, b,,)\n"),
+                                     UNKNOWN_MACRO,
+                                     "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
 
         ASSERT_THROW_INTERNAL(tokenizeAndStringify("{ for (()()) }"), SYNTAX); // #11643
 
@@ -7735,9 +7735,9 @@ private:
     }
 
     void checkConfiguration() {
-        ASSERT_THROW_EQUALS(checkConfig("void f() { DEBUG(x();y()); }"),
-                            InternalError,
-                            "There is an unknown macro here somewhere. Configuration is required. If DEBUG is a macro then please configure it.");
+        ASSERT_THROW_INTERNAL_EQUALS(checkConfig("void f() { DEBUG(x();y()); }"),
+                                     UNKNOWN_MACRO,
+                                     "There is an unknown macro here somewhere. Configuration is required. If DEBUG is a macro then please configure it.");
     }
 
     void unknownType() { // #8952

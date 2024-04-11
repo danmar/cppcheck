@@ -538,12 +538,12 @@ private:
 
     void garbageCode23() {
         //garbage code : don't crash (#3481)
-        ASSERT_THROW_EQUALS(checkCode("{\n"
-                                      "    if (1) = x\n"
-                                      "    else abort s[2]\n"
-                                      "}"),
-                            InternalError,
-                            "syntax error");
+        ASSERT_THROW_INTERNAL_EQUALS(checkCode("{\n"
+                                               "    if (1) = x\n"
+                                               "    else abort s[2]\n"
+                                               "}"),
+                                     SYNTAX,
+                                     "syntax error");
     }
 
     void garbageCode24() {
