@@ -100,7 +100,7 @@ private:
         if (preprocess) {
             Tokenizer tokenizer(settings, this);
             std::vector<std::string> files(1, "test.cpp");
-            PreprocessorHelper::preprocess(code, files, tokenizer);
+            PreprocessorHelper::preprocess(code, files, tokenizer, *this);
             std::istringstream istr(code);
             ASSERT_LOC(tokenizer.list.createTokens(istr, "test.cpp"), file, line); // TODO: this creates the tokens a second time
             ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

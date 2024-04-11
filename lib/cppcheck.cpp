@@ -697,7 +697,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             return mExitCode;
         }
 
-        Preprocessor preprocessor(mSettings, this);
+        Preprocessor preprocessor(mSettings, *this);
 
         if (!preprocessor.loadFiles(tokens1, files))
             return mExitCode;
@@ -1694,7 +1694,7 @@ void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
         (*it)->getErrorMessages(&errorlogger, &s);
 
     CheckUnusedFunctions::getErrorMessages(errorlogger);
-    Preprocessor::getErrorMessages(&errorlogger, s);
+    Preprocessor::getErrorMessages(errorlogger, s);
 }
 
 void CppCheck::analyseClangTidy(const FileSettings &fileSettings)

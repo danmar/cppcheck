@@ -502,7 +502,7 @@ private:
     }
 
     void directiveDump(const char filedata[], std::ostream& ostr) {
-        Preprocessor preprocessor(settingsDefault, this);
+        Preprocessor preprocessor(settingsDefault, *this);
         std::istringstream istr(filedata);
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
@@ -6866,7 +6866,7 @@ private:
                                 "int PTR4 q4_var RBR4 = 0;\n";
 
         // Preprocess file..
-        Preprocessor preprocessor(settings0);
+        Preprocessor preprocessor(settings0, *this);
         std::istringstream fin(raw_code);
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
@@ -7702,7 +7702,7 @@ private:
 
         std::vector<std::string> files(1, "test.cpp");
         Tokenizer tokenizer(settings, this);
-        PreprocessorHelper::preprocess(code, files, tokenizer);
+        PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
