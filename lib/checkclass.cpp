@@ -3332,6 +3332,8 @@ void CheckClass::checkReturnByReference()
             if (const Variable* var = getSingleReturnVar(func.functionScope)) {
                 if (!var->valueType())
                     continue;
+                if (var->isArgument())
+                    continue;
                 const bool isContainer = var->valueType()->type == ValueType::Type::CONTAINER && var->valueType()->container;
                 const bool isView = isContainer && var->valueType()->container->view;
                 bool warn = isContainer && !isView;
