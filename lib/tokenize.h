@@ -36,7 +36,7 @@ class TimerResults;
 class Token;
 class TemplateSimplifier;
 class ErrorLogger;
-class Preprocessor;
+struct Directive;
 enum class Severity;
 
 /// @addtogroup Core
@@ -53,7 +53,7 @@ class CPPCHECKLIB Tokenizer {
     friend class TestTokenizer;
 
 public:
-    explicit Tokenizer(const Settings & settings, ErrorLogger *errorLogger, const Preprocessor *preprocessor = nullptr);
+    explicit Tokenizer(const Settings & settings, ErrorLogger *errorLogger);
     ~Tokenizer();
 
     void setTimerResults(TimerResults *tr) {
@@ -624,6 +624,8 @@ public:
     /** Disable assignment operator */
     Tokenizer &operator=(const Tokenizer &) = delete;
 
+    void setDirectives(std::list<Directive> directives);
+
 private:
     const Token *processFunc(const Token *tok2, bool inOperator) const;
     Token *processFunc(Token *tok2, bool inOperator);
@@ -666,6 +668,8 @@ private:
     };
     std::vector<TypedefInfo> mTypedefInfo;
 
+    std::list<Directive> mDirectives;
+
     /** variable count */
     nonneg int mVarId{};
 
@@ -676,8 +680,6 @@ private:
      * TimerResults
      */
     TimerResults* mTimerResults{};
-
-    const Preprocessor * const mPreprocessor;
 };
 
 /// @}

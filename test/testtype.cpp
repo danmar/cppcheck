@@ -21,7 +21,6 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "platform.h"
-#include "preprocessor.h"
 #include "settings.h"
 #include "standards.h"
 #include "tokenize.h"
@@ -65,10 +64,9 @@ private:
     void checkP_(const char* file, int line, const char code[], const Settings& settings, const char filename[] = "test.cpp", const simplecpp::DUI& dui = simplecpp::DUI()) {
         const Settings settings1 = settingsBuilder(settings).severity(Severity::warning).severity(Severity::portability).build();
 
-        Preprocessor preprocessor(settings1);
         std::vector<std::string> files(1, filename);
-        Tokenizer tokenizer(settings1, this, &preprocessor);
-        PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer, dui);
+        Tokenizer tokenizer(settings1, this);
+        PreprocessorHelper::preprocess(code, files, tokenizer, dui);
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

@@ -449,6 +449,10 @@ private:
         TEST_CASE(cpp20_default_bitfield_initializer);
 
         TEST_CASE(cpp11init);
+
+        TEST_CASE(testDirectiveIncludeTypes);
+        TEST_CASE(testDirectiveIncludeLocations);
+        TEST_CASE(testDirectiveIncludeComments);
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
@@ -495,6 +499,21 @@ private:
 
         // result..
         return tokenizer.tokens()->stringifyList(true,true,true,true,false);
+    }
+
+    void directiveDump(const char filedata[], std::ostream& ostr) {
+        Preprocessor preprocessor(settingsDefault, this);
+        std::istringstream istr(filedata);
+        simplecpp::OutputList outputList;
+        std::vector<std::string> files;
+        simplecpp::TokenList tokens1(istr, files, "test.c", &outputList);
+        std::list<Directive> directives = preprocessor.createDirectives(tokens1);
+
+        const Settings s = settingsBuilder().severity(Severity::information).build();
+        Tokenizer tokenizer(s, this);
+        tokenizer.setDirectives(std::move(directives));
+
+        tokenizer.dump(ostr);
     }
 
     void tokenize1() {
@@ -7681,10 +7700,9 @@ private:
     std::string checkHdrs_(const char* file, int line, const char code[], bool checkHeadersFlag) {
         const Settings settings = settingsBuilder().checkHeaders(checkHeadersFlag).build();
 
-        Preprocessor preprocessor(settings0);
         std::vector<std::string> files(1, "test.cpp");
         Tokenizer tokenizer(settings, this);
-        PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
@@ -7920,6 +7938,88 @@ private:
                                              "template<typename T> auto f(T t) -> X<decltype(t + 1)> {}\n"));
         ASSERT_EQUALS("[test.cpp:2]: (debug) auto token with no type.\n", errout_str());
         #undef testIsCpp11init
+    }
+
+    void testDirectiveIncludeTypes() {
+        const char filedata[] = "#define macro some definition\n"
+                                "#undef macro\n"
+                                "#ifdef macro\n"
+                                "#elif some (complex) condition\n"
+                                "#else\n"
+                                "#endif\n"
+                                "#if some other condition\n"
+                                "#pragma some proprietary content\n"
+                                "#\n" /* may appear in old C code */
+                                "#ident some text\n" /* may appear in old C code */
+                                "#unknownmacro some unpredictable text\n"
+                                "#warning some warning message\n"
+                                "#error some error message\n";
+        const char dumpdata[] = "  <directivelist>\n"
+
+                                "    <directive file=\"test.c\" linenr=\"1\" str=\"#define macro some definition\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"2\" str=\"#undef macro\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"3\" str=\"#ifdef macro\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"4\" str=\"#elif some (complex) condition\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"5\" str=\"#else\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"6\" str=\"#endif\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"7\" str=\"#if some other condition\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"8\" str=\"#pragma some proprietary content\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"9\" str=\"#\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"10\" str=\"#ident some text\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"11\" str=\"#unknownmacro some unpredictable text\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"12\" str=\"#warning some warning message\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"13\" str=\"#error some error message\"/>\n"
+                                "  </directivelist>\n"
+                                "  <tokenlist>\n"
+                                "  </tokenlist>\n";
+
+        std::ostringstream ostr;
+        directiveDump(filedata, ostr);
+        ASSERT_EQUALS(dumpdata, ostr.str());
+    }
+
+    void testDirectiveIncludeLocations() {
+        const char filedata[] = "#define macro1 val\n"
+                                "#file \"inc1.h\"\n"
+                                "#define macro2 val\n"
+                                "#file \"inc2.h\"\n"
+                                "#define macro3 val\n"
+                                "#endfile\n"
+                                "#define macro4 val\n"
+                                "#endfile\n"
+                                "#define macro5 val\n";
+        const char dumpdata[] = "  <directivelist>\n"
+                                "    <directive file=\"test.c\" linenr=\"1\" str=\"#define macro1 val\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"2\" str=\"#include &quot;inc1.h&quot;\"/>\n"
+                                "    <directive file=\"inc1.h\" linenr=\"1\" str=\"#define macro2 val\"/>\n"
+                                "    <directive file=\"inc1.h\" linenr=\"2\" str=\"#include &quot;inc2.h&quot;\"/>\n"
+                                "    <directive file=\"inc2.h\" linenr=\"1\" str=\"#define macro3 val\"/>\n"
+                                "    <directive file=\"inc1.h\" linenr=\"3\" str=\"#define macro4 val\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"3\" str=\"#define macro5 val\"/>\n"
+                                "  </directivelist>\n"
+                                "  <tokenlist>\n"
+                                "  </tokenlist>\n";
+
+        std::ostringstream ostr;
+        directiveDump(filedata, ostr);
+        ASSERT_EQUALS(dumpdata, ostr.str());
+    }
+
+    void testDirectiveIncludeComments() {
+        const char filedata[] = "#ifdef macro2 /* this will be removed */\n"
+                                "#else /* this will be removed too */\n"
+                                "#endif /* this will also be removed */\n";
+        const char dumpdata[] = "  <directivelist>\n"
+                                "    <directive file=\"test.c\" linenr=\"1\" str=\"#ifdef macro2\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"2\" str=\"#else\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"3\" str=\"#endif\"/>\n"
+                                "  </directivelist>\n"
+                                "  <tokenlist>\n"
+                                "  </tokenlist>\n";
+
+        std::ostringstream ostr;
+        directiveDump(filedata, ostr);
+        ASSERT_EQUALS(dumpdata, ostr.str());
     }
 };
 

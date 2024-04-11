@@ -68,7 +68,7 @@ struct CPPCHECKLIB Directive {
  * The preprocessor has special functionality for extracting the various ifdef
  * configurations that exist in a source file.
  */
-class CPPCHECKLIB Preprocessor {
+class CPPCHECKLIB WARN_UNUSED Preprocessor {
     // TODO: get rid of this
     friend class PreprocessorHelper;
     friend class TestPreprocessor;
@@ -92,12 +92,7 @@ public:
 
     void inlineSuppressions(const simplecpp::TokenList &tokens, SuppressionList &suppressions);
 
-    void setDirectives(const simplecpp::TokenList &tokens);
-
-    /** list of all directives met while preprocessing file */
-    const std::list<Directive> &getDirectives() const {
-        return mDirectives;
-    }
+    std::list<Directive> createDirectives(const simplecpp::TokenList &tokens) const;
 
     std::set<std::string> getConfigs(const simplecpp::TokenList &tokens) const;
 
@@ -143,15 +138,10 @@ private:
 
     static bool hasErrors(const simplecpp::OutputList &outputList);
 
-    void setDirectives(const std::list<Directive> &directives) {
-        mDirectives = directives;
-    }
-
     const Settings& mSettings;
     ErrorLogger *mErrorLogger;
 
     /** list of all directives met while preprocessing file */
-    std::list<Directive> mDirectives;
 
     std::map<std::string, simplecpp::TokenList *> mTokenLists;
 

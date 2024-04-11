@@ -506,8 +506,7 @@ unsigned int CppCheck::checkClang(const std::string &path)
     }
 
     try {
-        Preprocessor preprocessor(mSettings, this);
-        Tokenizer tokenizer(mSettings, this, &preprocessor);
+        Tokenizer tokenizer(mSettings, this);
         tokenizer.list.appendFileIfNew(path);
         std::istringstream ast(output2);
         clangimport::parseClangAstDump(tokenizer, ast);
@@ -796,7 +795,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         }
 
         // Get directives
-        preprocessor.setDirectives(tokens1);
+        std::list<Directive> directives = preprocessor.createDirectives(tokens1);
         preprocessor.simplifyPragmaAsm(&tokens1);
 
         preprocessor.setPlatformInfo(&tokens1);
@@ -821,7 +820,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         // Run define rules on raw code
         if (hasRule("define")) {
             std::string code;
-            for (const Directive &dir : preprocessor.getDirectives()) {
+            for (const Directive &dir : directives) {
                 if (startsWith(dir.str,"#define ") || startsWith(dir.str,"#include "))
                     code += "#line " + std::to_string(dir.linenr) + " \"" + dir.file + "\"\n" + dir.str + '\n';
             }
@@ -887,9 +886,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 continue;
             }
 
-            Tokenizer tokenizer(mSettings, this, &preprocessor);
+            Tokenizer tokenizer(mSettings, this);
             if (mSettings.showtime != SHOWTIME_MODES::SHOWTIME_NONE)
                 tokenizer.setTimerResults(&s_timerResults);
+            tokenizer.setDirectives(directives); // TODO: how to avoid repeated copies?
 
             try {
                 // Create tokens, skip rest of iteration if failed

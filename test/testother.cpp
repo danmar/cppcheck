@@ -21,7 +21,6 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "platform.h"
-#include "preprocessor.h"
 #include "settings.h"
 #include "standards.h"
 #include "tokenize.h"
@@ -306,10 +305,8 @@ private:
         settings->certainty.setEnabled(Certainty::inconclusive, inconclusive);
         settings->verbose = verbose;
 
-        Preprocessor preprocessor(*settings);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(*settings, *this, &preprocessor);
+        SimpleTokenizer tokenizer(*settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
 
         // Check..
@@ -333,10 +330,9 @@ private:
         settings->standards.cpp = Standards::CPPLatest;
         settings->certainty.enable(Certainty::inconclusive);
 
-        Preprocessor preprocessor(*settings);
         std::vector<std::string> files(1, filename);
-        Tokenizer tokenizer(*settings, this, &preprocessor);
-        PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
+        Tokenizer tokenizer(*settings, this);
+        PreprocessorHelper::preprocess(code, files, tokenizer);
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
@@ -1703,10 +1699,8 @@ private:
         // #5560 - set c++03
         const Settings settings = settingsBuilder().severity(Severity::style).cpp(Standards::CPP03).build();
 
-        Preprocessor preprocessor(settings);
-
         // Tokenize..
-        SimpleTokenizer tokenizerCpp(settings, *this, &preprocessor);
+        SimpleTokenizer tokenizerCpp(settings, *this);
         ASSERT_LOC(tokenizerCpp.tokenize(code), file, line);
 
         CheckOther checkOtherCpp(&tokenizerCpp, &settings, this);
@@ -1924,10 +1918,8 @@ private:
         /*const*/ Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability, portability).certainty(Certainty::inconclusive, inconclusive).build();
         settings.platform.defaultSign = 's';
 
-        Preprocessor preprocessor(settings);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         CheckOther checkOtherCpp(&tokenizer, &settings, this);

@@ -245,10 +245,6 @@ private:
 
         TEST_CASE(wrongPathOnErrorDirective);
 
-        TEST_CASE(testDirectiveIncludeTypes);
-        TEST_CASE(testDirectiveIncludeLocations);
-        TEST_CASE(testDirectiveIncludeComments);
-
         TEST_CASE(testMissingInclude);
         TEST_CASE(testMissingInclude2);
         TEST_CASE(testMissingInclude3);
@@ -275,7 +271,6 @@ private:
         tokens.removeComments();
         preprocessor0.simplifyPragmaAsm(&tokens);
         preprocessor0.removeComments();
-        preprocessor0.setDirectives(tokens);
 
         preprocessor0.reportOutput(outputList, true);
 
@@ -2311,88 +2306,6 @@ private:
         const std::string code("#error hello world!\n");
         PreprocessorHelper::getcode(preprocessor, code, "X", "./././test.c");
         ASSERT_EQUALS("[test.c:1]: (error) #error hello world!\n", errout_str());
-    }
-
-    void testDirectiveIncludeTypes() {
-        const char filedata[] = "#define macro some definition\n"
-                                "#undef macro\n"
-                                "#ifdef macro\n"
-                                "#elif some (complex) condition\n"
-                                "#else\n"
-                                "#endif\n"
-                                "#if some other condition\n"
-                                "#pragma some proprietary content\n"
-                                "#\n" /* may appear in old C code */
-                                "#ident some text\n" /* may appear in old C code */
-                                "#unknownmacro some unpredictable text\n"
-                                "#warning some warning message\n"
-                                "#error some error message\n";
-        const char dumpdata[] = "  <directivelist>\n"
-
-                                "    <directive file=\"test.c\" linenr=\"1\" str=\"#define macro some definition\"/>\n"
-                                "    <directive file=\"test.c\" linenr=\"2\" str=\"#undef macro\"/>\n"
-                                "    <directive file=\"test.c\" linenr=\"3\" str=\"#ifdef macro\"/>\n"
-                                "    <directive file=\"test.c\" linenr=\"4\" str=\"#elif some (complex) condition\"/>\n"
-                                "    <directive file=\"test.c\" linenr=\"5\" str=\"#else\"/>\n"
-                                "    <directive file=\"test.c\" linenr=\"6\" str=\"#endif\"/>\n"
-                                "    <directive file=\"test.c\" linenr=\"7\" str=\"#if some other condition\"/>\n"
-                                "    <directive file=\"test.c\" linenr=\"8\" str=\"#pragma some proprietary content\"/>\n"
-                                "    <directive file=\"test.c\" linenr=\"9\" str=\"#\"/>\n"
-                                "    <directive file=\"test.c\" linenr=\"10\" str=\"#ident some text\"/>\n"
-                                "    <directive file=\"test.c\" linenr=\"11\" str=\"#unknownmacro some unpredictable text\"/>\n"
-                                "    <directive file=\"test.c\" linenr=\"12\" str=\"#warning some warning message\"/>\n"
-                                "    <directive file=\"test.c\" linenr=\"13\" str=\"#error some error message\"/>\n"
-                                "  </directivelist>\n";
-
-        std::ostringstream ostr;
-        Preprocessor preprocessor(settings0, this);
-        PreprocessorHelper::getcode(preprocessor, filedata, "", "test.c");
-        preprocessor.dump(ostr);
-        ASSERT_EQUALS(dumpdata, ostr.str());
-    }
-
-    void testDirectiveIncludeLocations() {
-        const char filedata[] = "#define macro1 val\n"
-                                "#file \"inc1.h\"\n"
-                                "#define macro2 val\n"
-                                "#file \"inc2.h\"\n"
-                                "#define macro3 val\n"
-                                "#endfile\n"
-                                "#define macro4 val\n"
-                                "#endfile\n"
-                                "#define macro5 val\n";
-        const char dumpdata[] = "  <directivelist>\n"
-                                "    <directive file=\"test.c\" linenr=\"1\" str=\"#define macro1 val\"/>\n"
-                                "    <directive file=\"test.c\" linenr=\"2\" str=\"#include &quot;inc1.h&quot;\"/>\n"
-                                "    <directive file=\"inc1.h\" linenr=\"1\" str=\"#define macro2 val\"/>\n"
-                                "    <directive file=\"inc1.h\" linenr=\"2\" str=\"#include &quot;inc2.h&quot;\"/>\n"
-                                "    <directive file=\"inc2.h\" linenr=\"1\" str=\"#define macro3 val\"/>\n"
-                                "    <directive file=\"inc1.h\" linenr=\"3\" str=\"#define macro4 val\"/>\n"
-                                "    <directive file=\"test.c\" linenr=\"3\" str=\"#define macro5 val\"/>\n"
-                                "  </directivelist>\n";
-
-        std::ostringstream ostr;
-        Preprocessor preprocessor(settings0, this);
-        PreprocessorHelper::getcode(preprocessor, filedata, "", "test.c");
-        preprocessor.dump(ostr);
-        ASSERT_EQUALS(dumpdata, ostr.str());
-    }
-
-    void testDirectiveIncludeComments() {
-        const char filedata[] = "#ifdef macro2 /* this will be removed */\n"
-                                "#else /* this will be removed too */\n"
-                                "#endif /* this will also be removed */\n";
-        const char dumpdata[] = "  <directivelist>\n"
-                                "    <directive file=\"test.c\" linenr=\"1\" str=\"#ifdef macro2\"/>\n"
-                                "    <directive file=\"test.c\" linenr=\"2\" str=\"#else\"/>\n"
-                                "    <directive file=\"test.c\" linenr=\"3\" str=\"#endif\"/>\n"
-                                "  </directivelist>\n";
-
-        std::ostringstream ostr;
-        Preprocessor preprocessor(settings0, this);
-        PreprocessorHelper::getcode(preprocessor, filedata, "", "test.c");
-        preprocessor.dump(ostr);
-        ASSERT_EQUALS(dumpdata, ostr.str());
     }
 
     // test for existing local include
