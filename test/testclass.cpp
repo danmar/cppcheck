@@ -8960,21 +8960,29 @@ private:
     }
 
     void returnByReference() {
-        checkReturnByReference("struct T { int a[10]; };" // #12546
-                               "struct S {"
-                               "    T t;"
-                               "    int i;"
-                               "    std::string s;"
-                               "    T getT() const { return t; }"
-                               "    int getI() const { return i; }"
-                               "    std::string getS() const { return s; }"
-                               "    unknown_t f() { return; }"
-                               "};");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Function 'getT()' should return member 't' by const reference.\n"
-                      "[test.cpp:1]: (performance) Function 'getS()' should return member 's' by const reference.\n",
+        checkReturnByReference("struct T { int a[10]; };\n" // #12546
+                               "struct S {\n"
+                               "    T t;\n"
+                               "    int i;\n"
+                               "    std::string s;\n"
+                               "    T getT() const { return t; }\n"
+                               "    int getI() const { return i; }\n"
+                               "    std::string getS() const { return s; }\n"
+                               "    unknown_t f() { return; }\n"
+                               "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (performance) Function 'getT()' should return member 't' by const reference.\n"
+                      "[test.cpp:8]: (performance) Function 'getS()' should return member 's' by const reference.\n",
                       errout_str());
-    }
 
+        checkReturnByReference("struct B {\n" // #12608
+                               "    virtual std::string f() { return \"abc\"; }\n"
+                               "};\n"
+                               "struct D : B {\n"
+                               "    std::string f() override { return s; }\n"
+                               "    std::string s;\n"
+                               "}");
+        ASSERT_EQUALS("", errout_str());
+    }
 };
 
 REGISTER_TEST(TestClass)
