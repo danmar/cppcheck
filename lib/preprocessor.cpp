@@ -912,19 +912,19 @@ void Preprocessor::dump(std::ostream &out) const
 {
     // Create a xml dump.
 
-    out << "  <directivelist>" << std::endl;
+    out << "  <directivelist>" << '\n';
     for (const Directive &dir : mDirectives) {
         out << "    <directive "
             << "file=\"" << ErrorLogger::toxml(dir.file) << "\" "
             << "linenr=\"" << dir.linenr << "\" "
             // str might contain characters such as '"', '<' or '>' which
             // could result in invalid XML, so run it through toxml().
-            << "str=\"" << ErrorLogger::toxml(dir.str) << "\"/>" << std::endl;
+            << "str=\"" << ErrorLogger::toxml(dir.str) << "\"/>" << '\n';
     }
-    out << "  </directivelist>" << std::endl;
+    out << "  </directivelist>" << '\n';
 
     if (!mMacroUsage.empty()) {
-        out << "  <macro-usage>" << std::endl;
+        out << "  <macro-usage>" << '\n';
         for (const simplecpp::MacroUsage &macroUsage: mMacroUsage) {
             out << "    <macro"
                 << " name=\"" << macroUsage.macroName << "\""
@@ -935,13 +935,13 @@ void Preprocessor::dump(std::ostream &out) const
                 << " useline=\"" << macroUsage.useLocation.line << "\""
                 << " usecolumn=\"" << macroUsage.useLocation.col << "\""
                 << " is-known-value=\"" << bool_to_string(macroUsage.macroValueKnown) << "\""
-                << "/>" << std::endl;
+                << "/>" << '\n';
         }
-        out << "  </macro-usage>" << std::endl;
+        out << "  </macro-usage>" << '\n';
     }
 
     if (!mIfCond.empty()) {
-        out << "  <simplecpp-if-cond>" << std::endl;
+        out << "  <simplecpp-if-cond>" << '\n';
         for (const simplecpp::IfCond &ifCond: mIfCond) {
             out << "    <if-cond"
                 << " file=\"" << ErrorLogger::toxml(ifCond.location.file()) << "\""
@@ -949,9 +949,9 @@ void Preprocessor::dump(std::ostream &out) const
                 << " column=\"" << ifCond.location.col << "\""
                 << " E=\"" << ErrorLogger::toxml(ifCond.E) << "\""
                 << " result=\"" << ifCond.result << "\""
-                << "/>" << std::endl;
+                << "/>" << '\n';
         }
-        out << "  </simplecpp-if-cond>" << std::endl;
+        out << "  </simplecpp-if-cond>" << '\n';
     }
 }
 

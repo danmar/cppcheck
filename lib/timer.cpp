@@ -57,7 +57,7 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
     // lock the whole logging operation to avoid multiple threads printing their results at the same time
     std::lock_guard<std::mutex> l(stdCoutLock);
 
-    std::cout << std::endl;
+    std::cout << '\n';
 
     size_t ordinal = 1; // maybe it would be nice to have an ordinal in output later!
     for (std::vector<dataElementType>::const_iterator iter=data.cbegin(); iter!=data.cend(); ++iter) {
@@ -79,13 +79,13 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
         if (!hasParent)
             overallData.mClocks += iter->second.mClocks;
         if ((mode != SHOWTIME_MODES::SHOWTIME_TOP5_FILE && mode != SHOWTIME_MODES::SHOWTIME_TOP5_SUMMARY) || (ordinal<=5)) {
-            std::cout << iter->first << ": " << sec << "s (avg. " << secAverage << "s - " << iter->second.mNumberOfResults  << " result(s))" << std::endl;
+            std::cout << iter->first << ": " << sec << "s (avg. " << secAverage << "s - " << iter->second.mNumberOfResults  << " result(s))" << '\n';
         }
         ++ordinal;
     }
 
     const double secOverall = overallData.seconds();
-    std::cout << "Overall time: " << secOverall << "s" << std::endl;
+    std::cout << "Overall time: " << secOverall << "s" << '\n';
 }
 
 void TimerResults::addResults(const std::string& str, std::clock_t clocks)
@@ -129,11 +129,11 @@ void Timer::stop()
         if (mShowTimeMode == SHOWTIME_MODES::SHOWTIME_FILE) {
             const double sec = (double)diff / CLOCKS_PER_SEC;
             std::lock_guard<std::mutex> l(stdCoutLock);
-            std::cout << mStr << ": " << sec << "s" << std::endl;
+            std::cout << mStr << ": " << sec << "s" << '\n';
         } else if (mShowTimeMode == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL) {
             const double sec = (double)diff / CLOCKS_PER_SEC;
             std::lock_guard<std::mutex> l(stdCoutLock);
-            std::cout << "Check time: " << mStr << ": " << sec << "s" << std::endl;
+            std::cout << "Check time: " << mStr << ": " << sec << "s" << '\n';
         } else {
             if (mTimerResults)
                 mTimerResults->addResults(mStr, diff);

@@ -1345,7 +1345,7 @@ void ImportProject::setRelativePaths(const std::string &filename)
 
 void ImportProject::printError(const std::string &message)
 {
-    std::cout << "cppcheck: error: " << message << std::endl;
+    std::cout << "cppcheck: error: " << message << '\n';
 }
 
 bool ImportProject::sourceFileExists(const std::string &file)
