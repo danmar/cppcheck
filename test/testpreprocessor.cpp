@@ -262,36 +262,6 @@ private:
         TEST_CASE(limitsDefines);
     }
 
-    // TODO: merge with `PreprocessorHelper::getcode()`
-    void preprocess(const char* code, std::map<std::string, std::string>& actual, const char filename[] = "file.c") {
-        std::istringstream istr(code);
-        simplecpp::OutputList outputList;
-        std::vector<std::string> files;
-        simplecpp::TokenList tokens(istr, files, Path::simplifyPath(filename), &outputList);
-        tokens.removeComments();
-        preprocessor0.simplifyPragmaAsm(&tokens);
-        preprocessor0.removeComments();
-
-        preprocessor0.reportOutput(outputList, true);
-
-        if (Preprocessor::hasErrors(outputList))
-            return;
-
-        const std::set<std::string> configs(preprocessor0.getConfigs(tokens));
-        for (const std::string & config : configs) {
-            try {
-                const std::string &cfgcode = preprocessor0.getcode(tokens, config, files, std::string(code).find("#file") != std::string::npos);
-                actual[config] = cfgcode;
-            } catch (const simplecpp::Output &) {
-                actual[config] = "";
-            }
-        }
-
-        // Since "files" is a local variable the tracking info must be cleared..
-        preprocessor0.mMacroUsage.clear();
-        preprocessor0.mIfCond.clear();
-    }
-
     std::string getConfigsStr(const char filedata[], const char *arg = nullptr) {
         Settings settings;
         if (arg && std::strncmp(arg,"-D",2)==0)
@@ -319,23 +289,21 @@ private:
 
         {
             // Preprocess => actual result..
-            std::map<std::string, std::string> actual;
-            preprocess(filedata, actual, "file.cpp");
+            const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata, "file.cpp");
 
             // Compare results..
             ASSERT_EQUALS(1U, actual.size());
-            ASSERT_EQUALS("\ncpp", actual[""]);
+            ASSERT_EQUALS("\ncpp", actual.at(""));
         }
 
         {
             // Ticket #7102 - skip __cplusplus in C code
             // Preprocess => actual result..
-            std::map<std::string, std::string> actual;
-            preprocess(filedata, actual, "file.c");
+            const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata, "file.c");
 
             // Compare results..
             ASSERT_EQUALS(1U, actual.size());
-            ASSERT_EQUALS("\n\n\nc", actual[""]);
+            ASSERT_EQUALS("\n\n\nc", actual.at(""));
         }
     }
 
@@ -519,13 +487,12 @@ private:
                                 "int main() {}\n";
 
         // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
         // Expected configurations: "" and "ABC"
         ASSERT_EQUALS(2, actual.size());
-        ASSERT_EQUALS("\n\n\nint main ( ) { }", actual[""]);
-        ASSERT_EQUALS("\n#line 1 \"abc.h\"\nclass A { } ;\n#line 4 \"file.c\"\n int main ( ) { }", actual["ABC"]);
+        ASSERT_EQUALS("\n\n\nint main ( ) { }", actual.at(""));
+        ASSERT_EQUALS("\n#line 1 \"abc.h\"\nclass A { } ;\n#line 4 \"file.c\"\n int main ( ) { }", actual.at("ABC"));
     }
 
     void if0() {
@@ -738,8 +705,7 @@ private:
                                 "#endif\n";
 
         // Preprocess => don't crash..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        (void)PreprocessorHelper::getcode(preprocessor0, filedata);
     }
 
     void if_cond11() {
@@ -748,8 +714,7 @@ private:
                                 "#elif FLT_MANT_DIG < W_TYPE_SIZE\n"
                                 "#endif\n"
                                 "#endif\n";
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        (void)PreprocessorHelper::getcode(preprocessor0, filedata);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -811,8 +776,7 @@ private:
                            "#endif\n"
                            "#if YYDEBUG\n"
                            "#endif\n";
-        std::map<std::string, std::string> actual;
-        preprocess(code, actual);
+        (void)PreprocessorHelper::getcode(preprocessor0, code);
 
         // There's nothing to assert. It just needs to not hang.
     }
@@ -824,19 +788,17 @@ private:
                            "#if !defined(_WIN32)\n"
                            "#endif\n"
                            "INLINE inline __forceinline\n";
-        std::map<std::string, std::string> actual;
-        preprocess(code, actual);
+        const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, code);
 
         // First, it must not hang. Second, inline must becomes inline, and __forceinline must become __forceinline.
-        ASSERT_EQUALS("\n\n\n\n\n$__forceinline $inline $__forceinline", actual[""]);
+        ASSERT_EQUALS("\n\n\n\n\n$__forceinline $inline $__forceinline", actual.at(""));
     }
 
     void ticket_4922() { // #4922
         const char* code = "__asm__ \n"
                            "{ int extern __value) 0; (double return (\"\" } extern\n"
                            "__typeof __finite (__finite) __finite __inline \"__GI___finite\");";
-        std::map<std::string, std::string> actual;
-        preprocess(code, actual);
+        (void)PreprocessorHelper::getcode(preprocessor0, code);
     }
 
     void macro_simple1() const {
@@ -1171,12 +1133,11 @@ private:
                                 "}\n";
 
         // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
         // Compare results..
         ASSERT_EQUALS(1, actual.size());
-        ASSERT_EQUALS("int main ( ) { const char * a = \"#define A\" ; }", actual[""]);
+        ASSERT_EQUALS("int main ( ) { const char * a = \"#define A\" ; }", actual.at(""));
     }
 
     void string2() const {
@@ -1274,16 +1235,12 @@ private:
                                 "}\n";
 
         // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
         // Compare results..
         ASSERT_EQUALS(1, actual.size());
-        ASSERT_EQUALS("int main ( )\n{\nconst char * a = \"#include <string>\" ;\nreturn 0 ;\n}", actual[""]);
+        ASSERT_EQUALS("int main ( )\n{\nconst char * a = \"#include <string>\" ;\nreturn 0 ;\n}", actual.at(""));
     }
-
-
-
 
     void va_args_1() const {
         const char filedata[] = "#define DBG(fmt...) printf(fmt)\n"
@@ -1338,12 +1295,11 @@ private:
                                 "}\n";
 
         // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
         // Compare results..
         ASSERT_EQUALS(1, actual.size());
-        ASSERT_EQUALS("\nint main ( )\n{\nif ( $'ABCD' == 0 ) ;\nreturn 0 ;\n}", actual[""]);
+        ASSERT_EQUALS("\nint main ( )\n{\nif ( $'ABCD' == 0 ) ;\nreturn 0 ;\n}", actual.at(""));
     }
 
 
@@ -1402,12 +1358,11 @@ private:
                                 "}\n";
 
         // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
         // Compare results..
         ASSERT_EQUALS(1, actual.size());
-        ASSERT_EQUALS("\nvoid f ( )\n{\n}", actual[""]);
+        ASSERT_EQUALS("\nvoid f ( )\n{\n}", actual.at(""));
     }
 
     void pragma_asm_1() {
@@ -1421,12 +1376,11 @@ private:
                                 "bbb";
 
         // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
         // Compare results..
         ASSERT_EQUALS(1, actual.size());
-        ASSERT_EQUALS("asm ( )\n;\n\naaa\nasm ( ) ;\n\n\nbbb", actual[""]);
+        ASSERT_EQUALS("asm ( )\n;\n\naaa\nasm ( ) ;\n\n\nbbb", actual.at(""));
     }
 
     void pragma_asm_2() {
@@ -1436,12 +1390,11 @@ private:
                                 "bbb";
 
         // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
         // Compare results..
         ASSERT_EQUALS(1, actual.size());
-        ASSERT_EQUALS("asm ( )\n;\n\nbbb", actual[""]);
+        ASSERT_EQUALS("asm ( )\n;\n\nbbb", actual.at(""));
     }
 
     void endifsemicolon() {
@@ -1451,14 +1404,13 @@ private:
                                 "}\n";
 
         // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
         // Compare results..
         ASSERT_EQUALS(2, actual.size());
         const std::string expected("void f ( ) {\n\n\n}");
-        ASSERT_EQUALS(expected, actual[""]);
-        ASSERT_EQUALS(expected, actual["A"]);
+        ASSERT_EQUALS(expected, actual.at(""));
+        ASSERT_EQUALS(expected, actual.at("A"));
     }
 
     void handle_error() {
@@ -1472,10 +1424,9 @@ private:
                                     "}\n";
 
             // Preprocess => actual result..
-            std::map<std::string, std::string> actual;
-            preprocess(filedata, actual);
+            const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
-            ASSERT_EQUALS("", actual[""]);
+            ASSERT_EQUALS(0, actual.size());
             ASSERT_EQUALS("[file.c:2]: (error) No pair for character ('). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout_str());
         }
     }
@@ -1557,12 +1508,11 @@ private:
                                 "  }\n";
 
         // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
         // Compare results..
         ASSERT_EQUALS(1, actual.size());
-        ASSERT_EQUALS("\nvoid f ( ) {\n$g $( ) ;\n}", actual[""]);
+        ASSERT_EQUALS("\nvoid f ( ) {\n$g $( ) ;\n}", actual.at(""));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1575,13 +1525,12 @@ private:
                                 "N";
 
         // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
         // Compare results..
         ASSERT_EQUALS(2, actual.size());
-        ASSERT_EQUALS("\n\n\n\n\n$20", actual[""]);
-        ASSERT_EQUALS("\n\n\n\n\n$10", actual["A"]);
+        ASSERT_EQUALS("\n\n\n\n\n$20", actual.at(""));
+        ASSERT_EQUALS("\n\n\n\n\n$10", actual.at("A"));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1595,12 +1544,11 @@ private:
                                 "}\n";
 
         // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
         // Compare results..
         ASSERT_EQUALS(1, actual.size());
-        ASSERT_EQUALS("", actual[""]);
+        ASSERT_EQUALS("", actual.at(""));
         ASSERT_EQUALS("[file.c:6]: (error) failed to expand 'BC', Wrong number of parameters for macro 'BC'.\n", errout_str());
     }
 
@@ -1612,12 +1560,11 @@ private:
                                 "}\n";
 
         // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
         // Compare results..
         ASSERT_EQUALS(1, actual.size());
-        ASSERT_EQUALS("\nvoid f ( )\n{\n$printf $( \"\\n\" $) ;\n}", actual[""]);
+        ASSERT_EQUALS("\nvoid f ( )\n{\n$printf $( \"\\n\" $) ;\n}", actual.at(""));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1630,13 +1577,12 @@ private:
                                 "#endif\n";
 
         // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
         // Compare results..
-        ASSERT_EQUALS("", actual[""]);
-        ASSERT_EQUALS("\nA\n\n\nA", actual["ABC"]);
         ASSERT_EQUALS(2, actual.size());
+        ASSERT_EQUALS("", actual.at(""));
+        ASSERT_EQUALS("\nA\n\n\nA", actual.at("ABC"));
     }
 
     void define_if1() {
@@ -1738,12 +1684,11 @@ private:
                                     "#endif\n";
 
             // Preprocess => actual result..
-            std::map<std::string, std::string> actual;
-            preprocess(filedata, actual);
+            const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
             // Compare results..
             ASSERT_EQUALS(1, (int)actual.size());
-            ASSERT_EQUALS("\n\n\n\nB", actual[""]);
+            ASSERT_EQUALS("\n\n\n\nB", actual.at(""));
         }
 
         {
@@ -1753,12 +1698,11 @@ private:
                                     "#endif\n";
 
             // Preprocess => actual result..
-            std::map<std::string, std::string> actual;
-            preprocess(filedata, actual);
+            const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
             // Compare results..
             ASSERT_EQUALS(1, (int)actual.size());
-            ASSERT_EQUALS("\n\n$1", actual[""]);
+            ASSERT_EQUALS("\n\n$1", actual.at(""));
         }
 
         {
@@ -1768,12 +1712,11 @@ private:
                                     "#endif\n";
 
             // Preprocess => actual result..
-            std::map<std::string, std::string> actual;
-            preprocess(filedata, actual);
+            const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
             // Compare results..
             ASSERT_EQUALS(1, (int)actual.size());
-            ASSERT_EQUALS("\n\n$1", actual[""]);
+            ASSERT_EQUALS("\n\n$1", actual.at(""));
         }
 
         {
@@ -1783,12 +1726,11 @@ private:
                                     "#endif\n";
 
             // Preprocess => actual result..
-            std::map<std::string, std::string> actual;
-            preprocess(filedata, actual);
+            const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
             // Compare results..
             ASSERT_EQUALS(1, (int)actual.size());
-            ASSERT_EQUALS("\n\n$1", actual[""]);
+            ASSERT_EQUALS("\n\n$1", actual.at(""));
         }
 
         {
@@ -1799,12 +1741,11 @@ private:
                                     "A\n";
 
             // Preprocess => actual result..
-            std::map<std::string, std::string> actual;
-            preprocess(filedata, actual);
+            const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
             // Compare results..
             ASSERT_EQUALS(1, (int)actual.size());
-            ASSERT_EQUALS("\n\n\n\n$1", actual[""]);
+            ASSERT_EQUALS("\n\n\n\n$1", actual.at(""));
         }
     }
 
@@ -1815,12 +1756,11 @@ private:
                                 "#endif\n";
 
         // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
         // Compare results..
         ASSERT_EQUALS(1U, actual.size());
-        ASSERT_EQUALS("", actual[""]);
+        ASSERT_EQUALS("", actual.at(""));
     }
 
     void define_ifndef2() {
@@ -1844,11 +1784,10 @@ private:
                                 "A(123);";
 
         // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
         ASSERT_EQUALS(1U, actual.size());
-        ASSERT_EQUALS("\n\n\n123 ;", actual[""]);
+        ASSERT_EQUALS("\n\n\n123 ;", actual.at(""));
     }
 
     void undef_ifdef() {
@@ -1879,8 +1818,7 @@ private:
 
 
         // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
         // Compare results..
         ASSERT_EQUALS(4, (int)actual.size());
@@ -1897,12 +1835,11 @@ private:
                                 "#include \"notfound.h\"\n";
 
         // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
         // Compare results..
-        ASSERT_EQUALS("char a [ ] = \"#endfile\" ;\nchar b [ ] = \"#endfile\" ;", actual[""]);
         ASSERT_EQUALS(1, (int)actual.size());
+        ASSERT_EQUALS("char a [ ] = \"#endfile\" ;\nchar b [ ] = \"#endfile\" ;", actual.at(""));
     }
 
     void dup_defines() {
@@ -1916,8 +1853,7 @@ private:
                                 "#endif\n";
 
         // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, filedata);
 
         // B will always be defined if A is defined; the following test
         // cases should be fixed whenever this other bug is fixed
@@ -1929,14 +1865,12 @@ private:
     }
 
     void invalid_define_1() {
-        std::map<std::string, std::string> actual;
-        preprocess("#define =\n", actual); // don't hang
+        (void)PreprocessorHelper::getcode(preprocessor0, "#define =\n");
         ASSERT_EQUALS("[file.c:1]: (error) Failed to parse #define\n", errout_str());
     }
 
     void invalid_define_2() {  // #4036
-        std::map<std::string, std::string> actual;
-        preprocess("#define () {(int f(x) }\n", actual); // don't hang
+        (void)PreprocessorHelper::getcode(preprocessor0, "#define () {(int f(x) }\n");
         ASSERT_EQUALS("[file.c:1]: (error) Failed to parse #define\n", errout_str());
     }
 
@@ -2265,9 +2199,8 @@ private:
                                   "#else\n"
                                   "#endif";
 
-        std::map<std::string, std::string> actual;
-        preprocess(code, actual);
-        ASSERT_EQUALS("\nFred & Wilma", actual[""]);
+        const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(preprocessor0, code);
+        ASSERT_EQUALS("\nFred & Wilma", actual.at(""));
     }
 
     void invalid_ifs() {
@@ -2283,8 +2216,7 @@ private:
                                 "int x;\n";
 
         // Preprocess => don't crash..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        (void)PreprocessorHelper::getcode(preprocessor0, filedata);
         ASSERT_EQUALS(
             "[file.c:1]: (error) Syntax error in #ifdef\n"
             "[file.c:1]: (error) Syntax error in #ifdef\n", errout_str());
@@ -2296,8 +2228,7 @@ private:
                                 "#if ! defined ( Y )    #endif";
 
         // Preprocess => don't crash..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        (void)PreprocessorHelper::getcode(preprocessor0, filedata);
     }
 
     void wrongPathOnErrorDirective() {
