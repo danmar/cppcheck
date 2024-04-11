@@ -3327,8 +3327,12 @@ void CheckClass::checkReturnByReference()
         for (const Function& func : classScope->functionList) {
             if (Function::returnsPointer(&func) || Function::returnsReference(&func) || Function::returnsStandardType(&func))
                 continue;
+            if (func.isImplicitlyVirtual())
+                continue;
             if (const Variable* var = getSingleReturnVar(func.functionScope)) {
                 if (!var->valueType())
+                    continue;
+                if (var->isArgument())
                     continue;
                 const bool isContainer = var->valueType()->type == ValueType::Type::CONTAINER && var->valueType()->container;
                 const bool isView = isContainer && var->valueType()->container->view;
