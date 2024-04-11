@@ -716,36 +716,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
         std::string dumpProlog;
         if (mSettings.dump || !mSettings.addons.empty()) {
-            dumpProlog += "  <rawtokens>\n";
-            for (unsigned int i = 0; i < files.size(); ++i) {
-                dumpProlog += "    <file index=\"";
-                dumpProlog += std::to_string(i);
-                dumpProlog += "\" name=\"";
-                dumpProlog += ErrorLogger::toxml(files[i]);
-                dumpProlog += "\"/>\n";
-            }
-            for (const simplecpp::Token *tok = tokens1.cfront(); tok; tok = tok->next) {
-                dumpProlog += "    <tok ";
-
-                dumpProlog += "fileIndex=\"";
-                dumpProlog += std::to_string(tok->location.fileIndex);
-                dumpProlog += "\" ";
-
-                dumpProlog += "linenr=\"";
-                dumpProlog += std::to_string(tok->location.line);
-                dumpProlog += "\" ";
-
-                dumpProlog +="column=\"";
-                dumpProlog += std::to_string(tok->location.col);
-                dumpProlog += "\" ";
-
-                dumpProlog += "str=\"";
-                dumpProlog += ErrorLogger::toxml(tok->str());
-                dumpProlog += "\"";
-
-                dumpProlog += "/>\n";
-            }
-            dumpProlog += "  </rawtokens>\n";
+            dumpProlog += getDumpFileContentsRawTokens(files, tokens1);
         }
 
         // Parse comments and then remove them
@@ -1904,4 +1875,39 @@ bool CppCheck::isPremiumCodingStandardId(const std::string& id) const {
     if (mSettings.premiumArgs.find("--autosar") != std::string::npos && startsWith(id, "premium-autosar-"))
         return true;
     return false;
+}
+
+std::string CppCheck::getDumpFileContentsRawTokens(const std::vector<std::string>& files, const simplecpp::TokenList& tokens1) const {
+    std::string dumpProlog;
+    dumpProlog += "  <rawtokens>\n";
+    for (unsigned int i = 0; i < files.size(); ++i) {
+        dumpProlog += "    <file index=\"";
+        dumpProlog += std::to_string(i);
+        dumpProlog += "\" name=\"";
+        dumpProlog += ErrorLogger::toxml(Path::getRelativePath(files[i], mSettings.basePaths));
+        dumpProlog += "\"/>\n";
+    }
+    for (const simplecpp::Token *tok = tokens1.cfront(); tok; tok = tok->next) {
+        dumpProlog += "    <tok ";
+
+        dumpProlog += "fileIndex=\"";
+        dumpProlog += std::to_string(tok->location.fileIndex);
+        dumpProlog += "\" ";
+
+        dumpProlog += "linenr=\"";
+        dumpProlog += std::to_string(tok->location.line);
+        dumpProlog += "\" ";
+
+        dumpProlog +="column=\"";
+        dumpProlog += std::to_string(tok->location.col);
+        dumpProlog += "\" ";
+
+        dumpProlog += "str=\"";
+        dumpProlog += ErrorLogger::toxml(tok->str());
+        dumpProlog += "\"";
+
+        dumpProlog += "/>\n";
+    }
+    dumpProlog += "  </rawtokens>\n";
+    return dumpProlog;
 }
