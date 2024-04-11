@@ -24,6 +24,8 @@
 #include "helpers.h"
 #include "settings.h"
 
+#include "simplecpp.h"
+
 #include <algorithm>
 #include <list>
 #include <string>
@@ -56,6 +58,7 @@ private:
         TEST_CASE(suppress_error_library);
         TEST_CASE(unique_errors);
         TEST_CASE(isPremiumCodingStandardId);
+        TEST_CASE(getDumpFileContentsRawTokens);
     }
 
     void getErrorMessages() const {
@@ -204,6 +207,20 @@ private:
         ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c++2023-0.0.0"));
         ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-cert-int50-cpp"));
         ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-autosar-0-0-0"));
+    }
+
+    void getDumpFileContentsRawTokens() const {
+        ErrorLogger2 errorLogger;
+        CppCheck cppcheck(errorLogger, false, {});
+        cppcheck.settings() = settingsBuilder().build();
+        cppcheck.settings().relativePaths = true;
+        cppcheck.settings().basePaths.emplace_back("/some/path");
+        std::vector<std::string> files{"/some/path/test.cpp"};
+        simplecpp::TokenList tokens1(files);
+        const std::string expected = "  <rawtokens>\n"
+                                     "    <file index=\"0\" name=\"test.cpp\"/>\n"
+                                     "  </rawtokens>\n";
+        ASSERT_EQUALS(expected, cppcheck.getDumpFileContentsRawTokens(files, tokens1));
     }
 
     // TODO: test suppressions

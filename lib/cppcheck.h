@@ -44,6 +44,8 @@ enum class SHOWTIME_MODES;
 struct FileSettings;
 class CheckUnusedFunctions;
 
+namespace simplecpp { class TokenList; }
+
 /// @addtogroup Core
 /// @{
 
@@ -150,6 +152,11 @@ public:
     bool isPremiumCodingStandardId(const std::string& id) const;
 
     std::string getAddonMessage(const std::string& id, const std::string& text) const;
+
+    /**
+     * @brief Get dumpfile <rawtokens> contents, this is only public for testing purposes
+     */
+    std::string getDumpFileContentsRawTokens(const std::vector<std::string>& files, const simplecpp::TokenList& tokens1) const;
 
 private:
 #ifdef HAVE_RULES

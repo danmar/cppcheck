@@ -453,6 +453,7 @@ private:
         TEST_CASE(testDirectiveIncludeTypes);
         TEST_CASE(testDirectiveIncludeLocations);
         TEST_CASE(testDirectiveIncludeComments);
+        TEST_CASE(testDirectiveRelativePath);
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
@@ -502,15 +503,18 @@ private:
     }
 
     void directiveDump(const char filedata[], std::ostream& ostr) {
-        Preprocessor preprocessor(settingsDefault, *this);
+        directiveDump(filedata, "test.c", settingsDefault, ostr);
+    }
+
+    void directiveDump(const char filedata[], const char filename[], const Settings& settings, std::ostream& ostr) {
+        Preprocessor preprocessor(settings, *this);
         std::istringstream istr(filedata);
         simplecpp::OutputList outputList;
-        std::vector<std::string> files;
-        simplecpp::TokenList tokens1(istr, files, "test.c", &outputList);
+        std::vector<std::string> files{filename};
+        const simplecpp::TokenList tokens1(istr, files, filename, &outputList);
         std::list<Directive> directives = preprocessor.createDirectives(tokens1);
 
-        const Settings s = settingsBuilder().severity(Severity::information).build();
-        Tokenizer tokenizer(s, *this);
+        Tokenizer tokenizer(settings, *this);
         tokenizer.setDirectives(std::move(directives));
 
         tokenizer.dump(ostr);
@@ -7954,7 +7958,6 @@ private:
                                 "#warning some warning message\n"
                                 "#error some error message\n";
         const char dumpdata[] = "  <directivelist>\n"
-
                                 "    <directive file=\"test.c\" linenr=\"1\" str=\"#define macro some definition\"/>\n"
                                 "    <directive file=\"test.c\" linenr=\"2\" str=\"#undef macro\"/>\n"
                                 "    <directive file=\"test.c\" linenr=\"3\" str=\"#ifdef macro\"/>\n"
@@ -8018,6 +8021,21 @@ private:
 
         std::ostringstream ostr;
         directiveDump(filedata, ostr);
+        ASSERT_EQUALS(dumpdata, ostr.str());
+    }
+
+    void testDirectiveRelativePath() {
+        const char filedata[] = "#define macro 1\n";
+        const char dumpdata[] = "  <directivelist>\n"
+                                "    <directive file=\"test.c\" linenr=\"1\" str=\"#define macro 1\"/>\n"
+                                "  </directivelist>\n"
+                                "  <tokenlist>\n"
+                                "  </tokenlist>\n";
+        std::ostringstream ostr;
+        Settings s(settingsDefault);
+        s.relativePaths = true;
+        s.basePaths.emplace_back("/some/path");
+        directiveDump(filedata, "/some/path/test.c", s, ostr);
         ASSERT_EQUALS(dumpdata, ostr.str());
     }
 };

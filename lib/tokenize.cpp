@@ -24,6 +24,7 @@
 #include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
+#include "path.h"
 #include "platform.h"
 #include "preprocessor.h"
 #include "settings.h"
@@ -5916,7 +5917,7 @@ void Tokenizer::dump(std::ostream &out) const
     for (const Directive &dir : mDirectives) {
         outs += "    <directive ";
         outs += "file=\"";
-        outs += ErrorLogger::toxml(dir.file);
+        outs += ErrorLogger::toxml(Path::getRelativePath(dir.file, mSettings.basePaths));
         outs += "\" ";
         outs += "linenr=\"";
         outs += std::to_string(dir.linenr);
