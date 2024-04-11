@@ -21,6 +21,7 @@
 #ifndef _WIN32
 #include <unistd.h>
 #include <cstddef>
+#include <cstdlib>
 #include <sstream>
 #include <iostream>
 #endif
@@ -38,12 +39,19 @@ static bool isStreamATty(const std::ostream & os)
         return stderr_tty;
     return (stdout_tty && stderr_tty);
 }
+
+static bool isCliColorForced()
+{
+    // See https://bixense.com/clicolors/
+    static const bool force_color = (nullptr != getenv("CLICOLOR_FORCE"));
+    return force_color;
+}
 #endif
 
 std::ostream& operator<<(std::ostream & os, Color c)
 {
 #ifndef _WIN32
-    if (!gDisableColors && isStreamATty(os))
+    if (!gDisableColors && (isCliColorForced() || isStreamATty(os)))
         return os << "\033[" << static_cast<std::size_t>(c) << "m";
 #else
     (void)c;
