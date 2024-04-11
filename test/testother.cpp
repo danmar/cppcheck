@@ -331,7 +331,7 @@ private:
         settings->certainty.enable(Certainty::inconclusive);
 
         std::vector<std::string> files(1, filename);
-        Tokenizer tokenizer(*settings, this);
+        Tokenizer tokenizer(*settings, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         // Tokenizer..

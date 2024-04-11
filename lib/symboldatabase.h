@@ -1319,7 +1319,7 @@ public:
 class CPPCHECKLIB SymbolDatabase {
     friend class TestSymbolDatabase;
 public:
-    SymbolDatabase(Tokenizer& tokenizer, const Settings& settings, ErrorLogger* errorLogger);
+    SymbolDatabase(Tokenizer& tokenizer, const Settings& settings, ErrorLogger& errorLogger);
     ~SymbolDatabase();
 
     /** @brief Information about all namespaces/classes/structures */
@@ -1467,7 +1467,7 @@ private:
 
     Tokenizer& mTokenizer;
     const Settings &mSettings;
-    ErrorLogger *mErrorLogger;
+    ErrorLogger &mErrorLogger;
 
     /** variable symbol table */
     std::vector<const Variable *> mVariableList;

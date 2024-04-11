@@ -510,7 +510,7 @@ private:
         std::list<Directive> directives = preprocessor.createDirectives(tokens1);
 
         const Settings s = settingsBuilder().severity(Severity::information).build();
-        Tokenizer tokenizer(s, this);
+        Tokenizer tokenizer(s, *this);
         tokenizer.setDirectives(std::move(directives));
 
         tokenizer.dump(ostr);
@@ -804,7 +804,7 @@ private:
         ASSERT_THROW_INTERNAL(tokenizeAndStringify(";template<class T> class X { };",false,Platform::Type::Native,false), SYNTAX);
         ASSERT_THROW_INTERNAL(tokenizeAndStringify("int X<Y>() {};",false,Platform::Type::Native,false), SYNTAX);
         {
-            Tokenizer tokenizer(settings1, this);
+            Tokenizer tokenizer(settings1, *this);
             const char code[] = "void foo(int i) { reinterpret_cast<char>(i) };";
             std::istringstream istr(code);
             ASSERT(tokenizer.list.createTokens(istr, "test.h"));
@@ -3560,7 +3560,7 @@ private:
     }
 
     void simplifyString() {
-        Tokenizer tokenizer(settings0, this);
+        Tokenizer tokenizer(settings0, *this);
         ASSERT_EQUALS("\"abc\"", tokenizer.simplifyString("\"abc\""));
         ASSERT_EQUALS("\"\n\"", tokenizer.simplifyString("\"\\xa\""));
         ASSERT_EQUALS("\"3\"", tokenizer.simplifyString("\"\\x33\""));
@@ -5923,7 +5923,7 @@ private:
 
     std::string testAst(const char code[], AstStyle style = AstStyle::Simple) {
         // tokenize given code..
-        Tokenizer tokenizer(settings0, this);
+        Tokenizer tokenizer(settings0, *this);
         std::istringstream istr(code);
         if (!tokenizer.list.createTokens(istr,"test.cpp"))
             return "ERROR";
@@ -7701,7 +7701,7 @@ private:
         const Settings settings = settingsBuilder().checkHeaders(checkHeadersFlag).build();
 
         std::vector<std::string> files(1, "test.cpp");
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settings, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         // Tokenizer..

@@ -506,7 +506,7 @@ unsigned int CppCheck::checkClang(const std::string &path)
     }
 
     try {
-        Tokenizer tokenizer(mSettings, this);
+        Tokenizer tokenizer(mSettings, *this);
         tokenizer.list.appendFileIfNew(path);
         std::istringstream ast(output2);
         clangimport::parseClangAstDump(tokenizer, ast);
@@ -657,7 +657,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         if (mSettings.library.markupFile(filename)) {
             if (mUnusedFunctionsCheck && mSettings.useSingleJob() && mSettings.buildDir.empty()) {
                 // this is not a real source file - we just want to tokenize it. treat it as C anyways as the language needs to be determined.
-                Tokenizer tokenizer(mSettings, this);
+                Tokenizer tokenizer(mSettings, *this);
                 tokenizer.list.setLang(Standards::Language::C);
                 if (fileStream) {
                     tokenizer.list.createTokens(*fileStream, filename);
@@ -886,7 +886,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 continue;
             }
 
-            Tokenizer tokenizer(mSettings, this);
+            Tokenizer tokenizer(mSettings, *this);
             if (mSettings.showtime != SHOWTIME_MODES::SHOWTIME_NONE)
                 tokenizer.setTimerResults(&s_timerResults);
             tokenizer.setDirectives(directives); // TODO: how to avoid repeated copies?

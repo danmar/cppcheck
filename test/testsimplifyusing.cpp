@@ -98,7 +98,7 @@ private:
         const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings(debugwarnings).platform(type).build();
 
         if (preprocess) {
-            Tokenizer tokenizer(settings, this);
+            Tokenizer tokenizer(settings, *this);
             std::vector<std::string> files(1, "test.cpp");
             PreprocessorHelper::preprocess(code, files, tokenizer, *this);
             std::istringstream istr(code);
