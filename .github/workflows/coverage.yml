@@ -18,8 +18,8 @@ jobs:
   build:
 
     runs-on: ubuntu-22.04
-    # FIXME: disabled because the tokenless upload suddenly started to permanently fail
-    #if: false # ${{ github.repository_owner == 'danmar' }}
+
+    if: ${{ github.repository_owner == 'danmar' }}
 
     steps:
       - uses: actions/checkout@v3
