@@ -18,8 +18,8 @@ jobs:
   build:
 
     runs-on: ubuntu-22.04
-    # FIXME: disabled because the tokenless upload suddenly started to permanently fail
-    if: false # ${{ github.repository_owner == 'danmar' }}
+
+    if: ${{ github.repository_owner == 'danmar' }}
 
     steps:
       - uses: actions/checkout@v3
@@ -61,7 +61,7 @@ jobs:
          name: Coverage results
          path: coverage_report
          
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
           # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
           # file: ./coverage.xml # optional
