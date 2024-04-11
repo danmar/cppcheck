@@ -8980,7 +8980,12 @@ private:
                                "struct D : B {\n"
                                "    std::string f() override { return s; }\n"
                                "    std::string s;\n"
-                               "}");
+                               "};\n");
+        ASSERT_EQUALS("", errout_str());
+
+        checkReturnByReference("struct S {\n"
+                               "    std::string f(std::string s) { return s; }\n"
+                               "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 };
