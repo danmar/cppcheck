@@ -19,7 +19,6 @@
 //---------------------------------------------------------------------------
 #include "tokenize.h"
 
-#include "check.h"
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "library.h"

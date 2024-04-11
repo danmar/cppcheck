@@ -17,7 +17,6 @@
  */
 
 #include "config.h"
-#include "errortypes.h"
 #include "mathlib.h"
 #include "fixture.h"
 

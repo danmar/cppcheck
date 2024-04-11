@@ -25,6 +25,7 @@
 #include "standards.h"
 
 #include <climits>
+#include <cstddef>
 #include <stdexcept>
 #include <string>
 #include <vector>

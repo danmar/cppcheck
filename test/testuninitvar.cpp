@@ -19,11 +19,9 @@
 #include "check.h"
 #include "checkuninitvar.h"
 #include "ctu.h"
-#include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
 #include "settings.h"
-#include "tokenize.h"
 
 #include <list>
 #include <string>

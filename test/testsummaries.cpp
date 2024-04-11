@@ -18,9 +18,7 @@
 
 #include "fixture.h"
 #include "helpers.h"
-#include "settings.h"
 #include "summaries.h"
-#include "tokenize.h"
 
 #include <string>
 

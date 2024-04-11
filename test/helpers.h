@@ -19,13 +19,15 @@
 #ifndef helpersH
 #define helpersH
 
-#include "preprocessor.h"
+#include "config.h"
 #include "settings.h"
 #include "standards.h"
 #include "tokenize.h"
 #include "tokenlist.h"
 
 #include <cstddef>
+#include <map>
+#include <set>
 #include <stdexcept>
 #include <sstream>
 #include <string>

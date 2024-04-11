@@ -24,7 +24,6 @@
 #include "token.h"
 
 #include <list>
-#include <sstream>
 #include <string>
 
 class TestGarbage : public TestFixture {

@@ -19,7 +19,7 @@
 #include "cppcheck.h"
 #include "common.h"
 #include "mainwindow.h"
-#include "erroritem.h"
+#include "erroritem.h" // IWYU pragma: keep
 #include "translationhandler.h"
 
 #ifdef _WIN32

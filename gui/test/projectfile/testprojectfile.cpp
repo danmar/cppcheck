@@ -18,11 +18,11 @@
 
 #include "testprojectfile.h"
 
-#include "addoninfo.h"
 #include "importproject.h"
 #include "platform.h"
 #include "projectfile.h"
 #include "settings.h"
+#include "suppressions.h"
 
 #include <string>
 

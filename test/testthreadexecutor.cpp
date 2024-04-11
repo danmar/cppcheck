@@ -25,7 +25,6 @@
 #include "threadexecutor.h"
 #include "timer.h"
 
-#include <algorithm>
 #include <cstdlib>
 #include <list>
 #include <memory>
