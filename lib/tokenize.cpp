@@ -152,7 +152,7 @@ static bool isClassStructUnionEnumStart(const Token * tok)
 
 //---------------------------------------------------------------------------
 
-Tokenizer::Tokenizer(const Settings &settings, ErrorLogger &errorLogger) :
+Tokenizer::Tokenizer(const Settings &settings, ErrorLogger &errorLogger, const Preprocessor* preprocessor) :
     list(&settings),
     mSettings(settings),
     mErrorLogger(errorLogger),
@@ -1622,6 +1622,7 @@ void Tokenizer::simplifyTypedefCpp()
             bool globalScope = false;
             int classLevel = spaceInfo.size();
             bool inTypeDef = false;
+            bool inEnum = false;
             bool inEnumClass = false;
             std::string removed;
             std::string classPath;
@@ -1676,6 +1677,7 @@ void Tokenizer::simplifyTypedefCpp()
                             if (memberScope == 0)
                                 inMemberFunc = false;
                         }
+                        inEnum = false;
                         inEnumClass = false;
 
                         if (classLevel > 1 && tok2 == spaceInfo[classLevel - 1].bodyEnd2) {
@@ -1738,6 +1740,8 @@ void Tokenizer::simplifyTypedefCpp()
                             }
                             if (Token::Match(tok2->tokAt(-3), "enum class %name%"))
                                 inEnumClass = true;
+                            if (tok2->strAt(-1) == "enum" || Token::Match(tok2->tokAt(-2), "enum %name%"))
+                                inEnum = true;
                         }
 
                         // keep track of scopes within member function
@@ -1865,6 +1869,7 @@ void Tokenizer::simplifyTypedefCpp()
 
                 simplifyType = simplifyType && (!inEnumClass || Token::simpleMatch(tok2->previous(), "="));
                 simplifyType = simplifyType && !(Token::simpleMatch(tok2->next(), "<") && Token::simpleMatch(typeEnd, ">"));
+                simplifyType = simplifyType && !(inEnum && Token::Match(tok2, "%name% ="));
 
                 if (simplifyType) {
                     mTypedefInfo.back().used = true;
@@ -3297,8 +3302,10 @@ bool Tokenizer::simplifyUsing()
                         tok2->insertToken("0");
                         after = tok2->next();
                     }
-                    else { // just replace simple type aliases
-                        TokenList::copyTokens(tok1, start, usingEnd->previous());
+                    else { // just replace simple type aliases                        
+                        const bool skipElaboratedType = Token::simpleMatch(tok1->next(), "::") && Token::Match(start, "class|struct|union|enum");
+                        Token* copyStart = skipElaboratedType ? start->next() : start;
+                        TokenList::copyTokens(tok1, copyStart, usingEnd->previous());
                         tok1->deleteThis();
                     }
                     substitute = true;
@@ -3352,7 +3359,7 @@ void Tokenizer::simplifyUsingError(const Token* usingStart, const Token* usingEn
         str += " ;";
         std::list<const Token *> callstack(1, usingStart);
         mErrorLogger.reportErr(ErrorMessage(callstack, &list, Severity::debug, "simplifyUsing",
-                                            "Failed to parse \'" + str + "\'. The checking continues anyway.", Certainty::normal));
+                                             "Failed to parse \'" + str + "\'. The checking continues anyway.", Certainty::normal));
     }
 }
 
@@ -5913,7 +5920,7 @@ void Tokenizer::dump(std::ostream &out) const
 
     outs += "  <directivelist>";
     outs += '\n';
-    for (const Directive &dir : mDirectives) {
+    for (const Directive& dir : mDirectives) {
         outs += "    <directive ";
         outs += "file=\"";
         outs += ErrorLogger::toxml(Path::getRelativePath(dir.file, mSettings.basePaths));
@@ -5925,7 +5932,7 @@ void Tokenizer::dump(std::ostream &out) const
         // could result in invalid XML, so run it through toxml().
         outs += "str=\"";
         outs += ErrorLogger::toxml(dir.str);
-        outs +="\"/>";
+        outs += "\"/>";
         outs += '\n';
     }
     outs += "  </directivelist>";

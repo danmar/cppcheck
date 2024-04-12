@@ -214,6 +214,7 @@ private:
         TEST_CASE(simplifyTypedef148);
         TEST_CASE(simplifyTypedef149);
         TEST_CASE(simplifyTypedef150);
+        TEST_CASE(simplifyTypedef152);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -3526,6 +3527,20 @@ private:
               "void g ( const std :: vector < int > & ( S :: * ) ( int ) , int ) ; "
               "void f ( ) { "
               "g ( const std :: vector < int > & ( S :: * ( & S :: h ) ) ( int ) , 5 ) ; " // TODO: don't generate invalid code
+              "}";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void simplifyTypedef152() {
+        const char* code{}, *exp{};
+        code = "namespace O { struct T {}; }\n"
+               "typedef O::T S;\n"
+               "namespace N {\n"
+               "    enum E { E0, S = 1 };\n"
+               "}\n";
+        exp = "namespace O { struct T { } ; } "
+              "namespace N { "
+              "enum E { E0 , S = 1 } ; "
               "}";
         ASSERT_EQUALS(exp, tok(code));
     }
