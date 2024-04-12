@@ -40,18 +40,27 @@ static bool isStreamATty(const std::ostream & os)
     return (stdout_tty && stderr_tty);
 }
 
-static bool isCliColorForced()
+static bool isColorEnabled(const std::ostream & os)
 {
-    // See https://bixense.com/clicolors/
-    static const bool force_color = (nullptr != std::getenv("CLICOLOR_FORCE"));
-    return force_color;
+    // See https://bixense.com/clicolors/    
+    static const bool color_forced_off = (nullptr != std::getenv("NO_COLOR"));
+    if (color_forced_off)
+    {
+        return false;
+    }
+    static const bool color_forced_on = (nullptr != std::getenv("CLICOLOR_FORCE"));
+    if (color_forced_on)
+    {
+        return true;
+    }
+    return isStreamATty(os);
 }
 #endif
 
 std::ostream& operator<<(std::ostream & os, Color c)
 {
 #ifndef _WIN32
-    if (!gDisableColors && (isCliColorForced() || isStreamATty(os)))
+    if (!gDisableColors && isColorEnabled(os))
         return os << "\033[" << static_cast<std::size_t>(c) << "m";
 #else
     (void)c;
