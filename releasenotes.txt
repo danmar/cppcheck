@@ -29,4 +29,4 @@ Other:
 - Fixed crash with '--rule-file=' if some data was missing.
 - '--rule-file' will now bail out if a rule could not be added or a file contains unexpected data.
 - Add option '--check-version', you can use it to pin the cppcheck version in a script.
-- Add support for 'CLICOLOR_FORCE' environment variable to force color output for diagnostics in Unix-based systems.
+- Add support for 'CLICOLOR_FORCE'/'NO_COLOR' environment variables to force/disable color output for diagnostics in Unix-based systems.
