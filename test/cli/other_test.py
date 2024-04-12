@@ -75,15 +75,25 @@ def test_clicolor_force(tmpdir):
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt') as f:
         f.write('#error test\nx=1;\n')
-    _, _, stderr = cppcheck([test_file], env={"CLICOLOR_FORCE":"1"})
+    exitcode, _, stderr = cppcheck([test_file], env={"CLICOLOR_FORCE":"1"})
+    
     ANSI_BOLD = "\x1b[1m"
     ANSI_FG_RED = "\x1b[31m"
     ANSI_FG_DEFAULT = "\x1b[39m"
     ANSI_FG_RESET = "\x1b[0m"
-    assert ANSI_BOLD in stderr
-    assert ANSI_FG_RED in stderr
-    assert ANSI_FG_DEFAULT in stderr
-    assert ANSI_FG_RESET in stderr
+    
+    assert exitcode == 0
+    if sys.platform == "win32":
+        assert stderr
+        assert ANSI_BOLD not in stderr
+        assert ANSI_FG_RED not in stderr
+        assert ANSI_FG_DEFAULT not in stderr
+        assert ANSI_FG_RESET not in stderr
+    else:        
+        assert ANSI_BOLD in stderr
+        assert ANSI_FG_RED in stderr
+        assert ANSI_FG_DEFAULT in stderr
+        assert ANSI_FG_RESET in stderr
     
 
 def test_invalid_library(tmpdir):
