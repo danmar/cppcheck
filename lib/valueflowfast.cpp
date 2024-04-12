@@ -1059,246 +1059,6 @@ static void valueFlowEnumValue(SymbolDatabase & symboldatabase, const Settings &
     }
 }
 
-// Handle various constants..
-static Token * valueFlowSetConstantValue(Token *tok, const Settings &settings, bool cpp)
-{
-    if ((tok->isNumber() && MathLib::isInt(tok->str())) || (tok->tokType() == Token::eChar)) {
-        try {
-            MathLib::bigint signedValue = MathLib::toBigNumber(tok->str());
-            const ValueType* vt = tok->valueType();
-            if (vt && vt->sign == ValueType::UNSIGNED && signedValue < 0 && ValueFlow::getSizeOf(*vt, settings) < sizeof(MathLib::bigint)) {
-                MathLib::bigint minValue{}, maxValue{};
-                if (getMinMaxValues(tok->valueType(), settings.platform, minValue, maxValue))
-                    signedValue += maxValue + 1;
-            }
-            ValueFlow::Value value(signedValue);
-            if (!tok->isTemplateArg())
-                value.setKnown();
-            setTokenValue(tok, std::move(value), settings);
-        } catch (const std::exception & /*e*/) {
-            // Bad character literal
-        }
-    } else if (tok->isNumber() && MathLib::isFloat(tok->str())) {
-        ValueFlow::Value value;
-        value.valueType = ValueFlow::Value::ValueType::FLOAT;
-        value.floatValue = MathLib::toDoubleNumber(tok->str());
-        if (!tok->isTemplateArg())
-            value.setKnown();
-        setTokenValue(tok, std::move(value), settings);
-    } else if (tok->enumerator() && tok->enumerator()->value_known) {
-        ValueFlow::Value value(tok->enumerator()->value);
-        if (!tok->isTemplateArg())
-            value.setKnown();
-        setTokenValue(tok, std::move(value), settings);
-    } else if (tok->str() == "NULL" || (cpp && tok->str() == "nullptr")) {
-        ValueFlow::Value value(0);
-        if (!tok->isTemplateArg())
-            value.setKnown();
-        setTokenValue(tok, std::move(value), settings);
-    } else if (Token::simpleMatch(tok, "sizeof (")) {
-        if (tok->next()->astOperand2() && !tok->next()->astOperand2()->isLiteral() && tok->next()->astOperand2()->valueType() &&
-            (tok->next()->astOperand2()->valueType()->pointer == 0 || // <- TODO this is a bailout, abort when there are array->pointer conversions
-             (tok->next()->astOperand2()->variable() && !tok->next()->astOperand2()->variable()->isArray())) &&
-            !tok->next()->astOperand2()->valueType()->isEnum()) { // <- TODO this is a bailout, handle enum with non-int types
-            const size_t sz = ValueFlow::getSizeOf(*tok->next()->astOperand2()->valueType(), settings);
-            if (sz) {
-                ValueFlow::Value value(sz);
-                value.setKnown();
-                setTokenValue(tok->next(), std::move(value), settings);
-                return tok->linkAt(1);
-            }
-        }
-
-        const Token *tok2 = tok->tokAt(2);
-        // skip over tokens to find variable or type
-        while (tok2 && !tok2->isStandardType() && Token::Match(tok2, "%name% ::|.|[")) {
-            if (tok2->next()->str() == "[")
-                tok2 = tok2->linkAt(1)->next();
-            else
-                tok2 = tok2->tokAt(2);
-        }
-        if (Token::simpleMatch(tok, "sizeof ( *")) {
-            const ValueType *vt = tok->tokAt(2)->valueType();
-            const size_t sz = vt ? ValueFlow::getSizeOf(*vt, settings) : 0;
-            if (sz > 0) {
-                ValueFlow::Value value(sz);
-                if (!tok2->isTemplateArg() && settings.platform.type != Platform::Type::Unspecified)
-                    value.setKnown();
-                setTokenValue(tok->next(), std::move(value), settings);
-            }
-        } else if (tok2->enumerator() && tok2->enumerator()->scope) {
-            long long size = settings.platform.sizeof_int;
-            const Token * type = tok2->enumerator()->scope->enumType;
-            if (type) {
-                size = getSizeOfType(type, settings);
-                if (size == 0)
-                    tok->linkAt(1);
-            }
-            ValueFlow::Value value(size);
-            if (!tok2->isTemplateArg() && settings.platform.type != Platform::Type::Unspecified)
-                value.setKnown();
-            setTokenValue(tok, value, settings);
-            setTokenValue(tok->next(), std::move(value), settings);
-        } else if (tok2->type() && tok2->type()->isEnumType()) {
-            long long size = settings.platform.sizeof_int;
-            if (tok2->type()->classScope) {
-                const Token * type = tok2->type()->classScope->enumType;
-                if (type) {
-                    size = getSizeOfType(type, settings);
-                }
-            }
-            ValueFlow::Value value(size);
-            if (!tok2->isTemplateArg() && settings.platform.type != Platform::Type::Unspecified)
-                value.setKnown();
-            setTokenValue(tok, value, settings);
-            setTokenValue(tok->next(), std::move(value), settings);
-        } else if (Token::Match(tok, "sizeof ( %var% ) /") && tok->next()->astParent() == tok->tokAt(4) &&
-                   tok->tokAt(4)->astOperand2() && Token::simpleMatch(tok->tokAt(4)->astOperand2()->previous(), "sizeof (")) {
-            // Get number of elements in array
-            const Token *sz1 = tok->tokAt(2);
-            const Token *sz2 = tok->tokAt(4)->astOperand2(); // left parenthesis of sizeof on rhs
-            const nonneg int varid1 = sz1->varId();
-            if (varid1 &&
-                sz1->variable() &&
-                sz1->variable()->isArray() &&
-                !sz1->variable()->dimensions().empty() &&
-                sz1->variable()->dimensionKnown(0) &&
-                Token::Match(sz2->astOperand2(), "*|[") && Token::Match(sz2->astOperand2()->astOperand1(), "%varid%", varid1)) {
-                ValueFlow::Value value(sz1->variable()->dimension(0));
-                if (!tok2->isTemplateArg() && settings.platform.type != Platform::Type::Unspecified)
-                    value.setKnown();
-                setTokenValue(tok->tokAt(4), std::move(value), settings);
-            }
-        } else if (Token::Match(tok2, "%var% )")) {
-            const Variable *var = tok2->variable();
-            // only look for single token types (no pointers or references yet)
-            if (var && var->typeStartToken() == var->typeEndToken()) {
-                // find the size of the type
-                size_t size = 0;
-                if (var->isEnumType()) {
-                    size = settings.platform.sizeof_int;
-                    if (var->type()->classScope && var->type()->classScope->enumType)
-                        size = getSizeOfType(var->type()->classScope->enumType, settings);
-                } else if (var->valueType()) {
-                    size = ValueFlow::getSizeOf(*var->valueType(), settings);
-                } else if (!var->type()) {
-                    size = getSizeOfType(var->typeStartToken(), settings);
-                }
-                // find the number of elements
-                size_t count = 1;
-                for (size_t i = 0; i < var->dimensions().size(); ++i) {
-                    if (var->dimensionKnown(i))
-                        count *= var->dimension(i);
-                    else
-                        count = 0;
-                }
-                if (size && count > 0) {
-                    ValueFlow::Value value(count * size);
-                    if (settings.platform.type != Platform::Type::Unspecified)
-                        value.setKnown();
-                    setTokenValue(tok, value, settings);
-                    setTokenValue(tok->next(), std::move(value), settings);
-                }
-            }
-        } else if (tok2->tokType() == Token::eString) {
-            const size_t sz = Token::getStrSize(tok2, settings);
-            if (sz > 0) {
-                ValueFlow::Value value(sz);
-                value.setKnown();
-                setTokenValue(tok->next(), std::move(value), settings);
-            }
-        } else if (tok2->tokType() == Token::eChar) {
-            nonneg int sz = 0;
-            if (cpp && settings.standards.cpp >= Standards::CPP20 && tok2->isUtf8())
-                sz = 1;
-            else if (tok2->isUtf16())
-                sz = 2;
-            else if (tok2->isUtf32())
-                sz = 4;
-            else if (tok2->isLong())
-                sz = settings.platform.sizeof_wchar_t;
-            else if ((tok2->isCChar() && !cpp) || (tok2->isCMultiChar()))
-                sz = settings.platform.sizeof_int;
-            else
-                sz = 1;
-
-            if (sz > 0) {
-                ValueFlow::Value value(sz);
-                value.setKnown();
-                setTokenValue(tok->next(), std::move(value), settings);
-            }
-        } else if (!tok2->type()) {
-            const ValueType& vt = ValueType::parseDecl(tok2, settings);
-            size_t sz = ValueFlow::getSizeOf(vt, settings);
-            const Token* brac = tok2->astParent();
-            while (Token::simpleMatch(brac, "[")) {
-                const Token* num = brac->astOperand2();
-                if (num && ((num->isNumber() && MathLib::isInt(num->str())) || num->tokType() == Token::eChar)) {
-                    try {
-                        const MathLib::biguint dim = MathLib::toBigUNumber(num->str());
-                        sz *= dim;
-                        brac = brac->astParent();
-                        continue;
-                    }
-                    catch (const std::exception& /*e*/) {
-                        // Bad integer literal
-                    }
-                }
-                sz = 0;
-                break;
-            }
-            if (sz > 0) {
-                ValueFlow::Value value(sz);
-                if (!tok2->isTemplateArg() && settings.platform.type != Platform::Type::Unspecified)
-                    value.setKnown();
-                setTokenValue(tok->next(), std::move(value), settings);
-            }
-        }
-        // skip over enum
-        tok = tok->linkAt(1);
-    } else if (Token::Match(tok, "%name% [{(] [)}]") && (tok->isStandardType() ||
-                                                         (tok->variable() && tok->variable()->nameToken() == tok &&
-                                                          (tok->variable()->isPointer() || (tok->variable()->valueType() && tok->variable()->valueType()->isIntegral()))))) {
-        ValueFlow::Value value(0);
-        if (!tok->isTemplateArg())
-            value.setKnown();
-        setTokenValue(tok->next(), std::move(value), settings);
-    } else if (Token::simpleMatch(tok, "= { } ;")) {
-        const Token* lhs = tok->astOperand1();
-        if (lhs && lhs->valueType() && (lhs->valueType()->isIntegral() || lhs->valueType()->pointer > 0)) {
-            ValueFlow::Value value(0);
-            value.setKnown();
-            setTokenValue(tok->next(), std::move(value), settings);
-        }
-    }
-    return tok->next();
-}
-
-static void valueFlowNumber(TokenList &tokenlist, const Settings& settings)
-{
-    for (Token *tok = tokenlist.front(); tok;) {
-        tok = valueFlowSetConstantValue(tok, settings, tokenlist.isCPP());
-    }
-
-    if (tokenlist.isCPP()) {
-        for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
-            if (tok->isName() && !tok->varId() && Token::Match(tok, "false|true")) {
-                ValueFlow::Value value(tok->str() == "true");
-                if (!tok->isTemplateArg())
-                    value.setKnown();
-                setTokenValue(tok, std::move(value), settings);
-            } else if (Token::Match(tok, "[(,] NULL [,)]")) {
-                // NULL function parameters are not simplified in the
-                // normal tokenlist
-                ValueFlow::Value value(0);
-                if (!tok->isTemplateArg())
-                    value.setKnown();
-                setTokenValue(tok->next(), std::move(value), settings);
-            }
-        }
-    }
-}
-
 static void valueFlowString(TokenList &tokenlist, const Settings& settings)
 {
     for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
@@ -5372,7 +5132,7 @@ const ValueFlow::Value *ValueFlowFast::valueFlowConstantFoldAST(Token *expr, con
     if (expr && expr->values().empty()) {
         valueFlowConstantFoldAST(expr->astOperand1(), settings);
         valueFlowConstantFoldAST(expr->astOperand2(), settings);
-        valueFlowSetConstantValue(expr, settings, true /* TODO: this is a guess */);
+        ValueFlow::valueFlowSetConstantValue(expr, settings);
     }
     return expr && expr->hasKnownValue() ? &expr->values().front() : nullptr;
 }
@@ -5390,8 +5150,20 @@ void ValueFlowFast::setValues(TokenList& tokenlist, SymbolDatabase& symboldataba
     for (Token *tok = tokenlist.front(); tok; tok = tok->next())
         tok->clearValueFlow();
 
+    // commas in init..
+    for (Token* tok = tokenlist.front(); tok; tok = tok->next()) {
+        if (tok->str() != "{" || !tok->astOperand1())
+            continue;
+        for (Token* tok2 = tok->next(); tok2 != tok->link(); tok2 = tok2->next()) {
+            if (tok2->link() && Token::Match(tok2, "[{[(<]"))
+                tok2 = tok2->link();
+            else if (tok2->str() == ",")
+                tok2->isInitComma(true);
+        }
+    }
+
     valueFlowEnumValue(symboldatabase, settings);
-    valueFlowNumber(tokenlist, settings);
+    ValueFlow::valueFlowNumber(tokenlist, settings);
     valueFlowString(tokenlist, settings);
     valueFlowArray(tokenlist, settings);
     valueFlowUnknownFunctionReturn(tokenlist, settings);
