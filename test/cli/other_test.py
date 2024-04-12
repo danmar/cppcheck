@@ -69,14 +69,14 @@ def test_preprocessor_error(tmpdir):
     exitcode, _, stderr = cppcheck(['--error-exitcode=1', test_file])
     assert 'preprocessorErrorDirective' in stderr
     assert exitcode != 0
-    
-    
+
+
 ANSI_BOLD = "\x1b[1m"
 ANSI_FG_RED = "\x1b[31m"
 ANSI_FG_DEFAULT = "\x1b[39m"
 ANSI_FG_RESET = "\x1b[0m"
 
-    
+
 def test_clicolor_force(tmpdir):
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt') as f:
@@ -84,44 +84,39 @@ def test_clicolor_force(tmpdir):
     exitcode, _, stderr = cppcheck([test_file], env={"CLICOLOR_FORCE":"1"})
 
     assert exitcode == 0
-    if sys.platform == "win32":
-        assert stderr
-        assert ANSI_BOLD not in stderr
-        assert ANSI_FG_RED not in stderr
-        assert ANSI_FG_DEFAULT not in stderr
-        assert ANSI_FG_RESET not in stderr
-    else:        
-        assert ANSI_BOLD in stderr
-        assert ANSI_FG_RED in stderr
-        assert ANSI_FG_DEFAULT in stderr
-        assert ANSI_FG_RESET in stderr
+    assert ANSI_BOLD in stderr
+    assert ANSI_FG_RED in stderr
+    assert ANSI_FG_DEFAULT in stderr
+    assert ANSI_FG_RESET in stderr
 
 
-if sys.platform != "win32":
-    def test_color_tty(tmpdir):
-        test_file = os.path.join(tmpdir, 'test.c')
-        with open(test_file, 'wt') as f:
-            f.write('#error test\nx=1;\n')
-        exitcode, _, stderr = cppcheck([test_file], tty=True)
+@pytest.mark.skipif(sys.platform == "win32", reason="TTY not supported in Windows")
+def test_color_tty(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write('#error test\nx=1;\n')
+    exitcode, _, stderr = cppcheck([test_file], tty=True)
 
-        assert exitcode == 0
-        assert ANSI_BOLD in stderr
-        assert ANSI_FG_RED in stderr
-        assert ANSI_FG_DEFAULT in stderr
-        assert ANSI_FG_RESET in stderr
+    assert exitcode == 0
+    assert ANSI_BOLD in stderr
+    assert ANSI_FG_RED in stderr
+    assert ANSI_FG_DEFAULT in stderr
+    assert ANSI_FG_RESET in stderr
 
-    def test_no_color_tty(tmpdir):
-        test_file = os.path.join(tmpdir, 'test.c')
-        with open(test_file, 'wt') as f:
-            f.write('#error test\nx=1;\n')
-        exitcode, _, stderr = cppcheck([test_file], env={"NO_COLOR": "1"}, tty=True)
 
-        assert exitcode == 0
-        assert stderr
-        assert ANSI_BOLD not in stderr
-        assert ANSI_FG_RED not in stderr
-        assert ANSI_FG_DEFAULT not in stderr
-        assert ANSI_FG_RESET not in stderr
+@pytest.mark.skipif(sys.platform == "win32", reason="TTY not supported in Windows")
+def test_no_color_tty(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write('#error test\nx=1;\n')
+    exitcode, _, stderr = cppcheck([test_file], env={"NO_COLOR": "1"}, tty=True)
+
+    assert exitcode == 0
+    assert stderr
+    assert ANSI_BOLD not in stderr
+    assert ANSI_FG_RED not in stderr
+    assert ANSI_FG_DEFAULT not in stderr
+    assert ANSI_FG_RESET not in stderr
 
 
 def test_no_color(tmpdir):

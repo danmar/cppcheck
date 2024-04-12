@@ -18,12 +18,13 @@
 
 #include "color.h"
 
-#ifndef _WIN32
-#include <unistd.h>
 #include <cstddef>
 #include <cstdlib>
 #include <sstream>
 #include <iostream>
+
+#ifndef _WIN32
+#include <unistd.h>
 #endif
 
 bool gDisableColors = false;
@@ -39,10 +40,11 @@ static bool isStreamATty(const std::ostream & os)
         return stderr_tty;
     return (stdout_tty && stderr_tty);
 }
+#endif
 
 static bool isColorEnabled(const std::ostream & os)
 {
-    // See https://bixense.com/clicolors/    
+    // See https://bixense.com/clicolors/
     static const bool color_forced_off = (nullptr != std::getenv("NO_COLOR"));
     if (color_forced_off)
     {
@@ -53,30 +55,26 @@ static bool isColorEnabled(const std::ostream & os)
     {
         return true;
     }
+#ifdef _WIN32
+    (void)os;
+    return false;
+#else
     return isStreamATty(os);
-}
 #endif
+}
 
 std::ostream& operator<<(std::ostream & os, Color c)
 {
-#ifndef _WIN32
     if (!gDisableColors && isColorEnabled(os))
         return os << "\033[" << static_cast<std::size_t>(c) << "m";
-#else
-    (void)c;
-#endif
+
     return os;
 }
 
 std::string toString(Color c)
 {
-#ifndef _WIN32
     std::stringstream ss;
     ss << c;
     return ss.str();
-#else
-    (void)c;
-    return "";
-#endif
 }
 
