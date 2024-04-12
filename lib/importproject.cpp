@@ -926,7 +926,13 @@ bool ImportProject::importVcxproj(const std::string& filename, std::map<std::str
                                 printError("Could not simplify path to referenced shared items project");
                                 exit(-1);
                             }
-                            sharedItemsProjects.emplace_back(importVcxitems(pathToSharedItemsFile, fileFilters, cache));
+                            SharedItemsProject toAdd = importVcxitems(pathToSharedItemsFile, fileFilters, cache);
+                            if (!toAdd.successFull)
+                            {
+                                printError("Could not load shared items project \"" + pathToSharedItemsFile + "\" from original path \"" + std::string(projectAttribute) + "\".");
+                                return false;
+                            }
+                            sharedItemsProjects.emplace_back(toAdd);
                         }
                     }
                 }
@@ -1032,12 +1038,12 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
     const tinyxml2::XMLError error = doc.LoadFile(filename.c_str());
     if (error != tinyxml2::XML_SUCCESS) {
         printError(std::string("Visual Studio project file is not a valid XML - ") + tinyxml2::XMLDocument::ErrorIDToName(error));
-        exit(-1);
+        return result;
     }
     const tinyxml2::XMLElement* const rootnode = doc.FirstChildElement();
     if (rootnode == nullptr) {
         printError("Visual Studio project file has no XML root node");
-        exit(-1);
+        return result;
     }
     for (const tinyxml2::XMLElement* node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         if (std::strcmp(node->Name(), "ItemGroup") == 0) {
@@ -1054,7 +1060,7 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
                         result.sourceFiles.emplace_back(file);
                     } else {
                         printError("Could not find shared items source file");
-                        exit(-1);
+                        return result;
                     }
                 }
             }
@@ -1070,6 +1076,7 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
         }
     }
 
+    result.successFull = true;
     cache.emplace_back(result);
     return result;
 }
