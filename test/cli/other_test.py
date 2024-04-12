@@ -69,7 +69,22 @@ def test_preprocessor_error(tmpdir):
     exitcode, _, stderr = cppcheck(['--error-exitcode=1', test_file])
     assert 'preprocessorErrorDirective' in stderr
     assert exitcode != 0
-
+    
+    
+def test_clicolor_force(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write('#error test\nx=1;\n')
+    _, _, stderr = cppcheck([test_file], env={"CLICOLOR_FORCE":"1"})
+    ANSI_BOLD = "\x1b[1m"
+    ANSI_FG_RED = "\x1b[31m"
+    ANSI_FG_DEFAULT = "\x1b[39m"
+    ANSI_FG_RESET = "\x1b[0m"
+    assert ANSI_BOLD in stderr
+    assert ANSI_FG_RED in stderr
+    assert ANSI_FG_DEFAULT in stderr
+    assert ANSI_FG_RESET in stderr
+    
 
 def test_invalid_library(tmpdir):
     args = ['--library=none', '--library=posix', '--library=none2', 'file.c']
