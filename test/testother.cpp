@@ -99,6 +99,7 @@ private:
         TEST_CASE(varScope36);      // #12158
         TEST_CASE(varScope37);      // #12158
         TEST_CASE(varScope38);
+        TEST_CASE(varScope39);
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1690,6 +1691,22 @@ private:
                "void f(int a) {\n"
                "    DOSTUFFEX(a);\n"
                "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void varScope39() {
+        check("struct S {\n" // #12405
+              "    void f(const std::string&) const;\n"
+              "    const int* g(std::string&) const;\n"
+              "};\n"
+              "void h(int);\n"
+              "void S::f(const std::string& s) const {\n"
+              "    std::string n = s;\n"
+              "    const int* a = g(n);\n"
+              "    if (n == \"abc\") {\n"
+              "        h(a[0]);\n"
+              "    }\n"
+              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -4113,6 +4130,13 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) C-style pointer casting\n"
                       "[test.cpp:3]: (style) Variable 's' can be declared as pointer to const\n",
                       errout_str()); // don't crash
+
+        check("struct S { int i; };\n" // #12205
+              "void f(S* s) {\n"
+              "    (void)s->i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 's' can be declared as pointer to const\n",
+                      errout_str());
     }
 
     void switchRedundantAssignmentTest() {
