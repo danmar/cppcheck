@@ -297,8 +297,8 @@ unsigned int ProcessExecutor::check()
             close(pipes[1]);
             rpipes.push_back(pipes[0]);
             if (iFileSettings != mFileSettings.end()) {
-                childFile[pid] = iFileSettings->filename + ' ' + iFileSettings->cfg;
-                pipeFile[pipes[0]] = iFileSettings->filename + ' ' + iFileSettings->cfg;
+                childFile[pid] = iFileSettings->filename() + ' ' + iFileSettings->cfg;
+                pipeFile[pipes[0]] = iFileSettings->filename() + ' ' + iFileSettings->cfg;
                 ++iFileSettings;
             } else {
                 childFile[pid] = iFile->first;

@@ -75,7 +75,7 @@ private:
                 filelist.emplace_back(f_s, data.size());
                 if (useFS) {
                     FileSettings fs;
-                    fs.filename = std::move(f_s);
+                    fs.path = PathWithDetails{std::move(f_s)};
                     fileSettings.emplace_back(std::move(fs));
                 }
             }
@@ -86,7 +86,7 @@ private:
                 filelist.emplace_back(f, data.size());
                 if (useFS) {
                     FileSettings fs;
-                    fs.filename = f;
+                    fs.path = PathWithDetails{f};
                     fileSettings.emplace_back(std::move(fs));
                 }
             }

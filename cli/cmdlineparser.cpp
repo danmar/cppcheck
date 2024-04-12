@@ -204,7 +204,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         if (!mSettings.fileFilters.empty()) {
             // filter only for the selected filenames from all project files
             std::copy_if(fileSettingsRef.cbegin(), fileSettingsRef.cend(), std::back_inserter(fileSettings), [&](const FileSettings &fs) {
-                return matchglobs(mSettings.fileFilters, fs.filename);
+                return matchglobs(mSettings.fileFilters, fs.filename());
             });
             if (fileSettings.empty()) {
                 mLogger.printError("could not find any files matching the filter.");
@@ -219,11 +219,11 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
 
         // sort the markup last
         std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(mFileSettings), [&](const FileSettings &fs) {
-            return !mSettings.library.markupFile(fs.filename) || !mSettings.library.processMarkupAfterCode(fs.filename);
+            return !mSettings.library.markupFile(fs.filename()) || !mSettings.library.processMarkupAfterCode(fs.filename());
         });
 
         std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(mFileSettings), [&](const FileSettings &fs) {
-            return mSettings.library.markupFile(fs.filename) && mSettings.library.processMarkupAfterCode(fs.filename);
+            return mSettings.library.markupFile(fs.filename()) && mSettings.library.processMarkupAfterCode(fs.filename());
         });
 
         if (mFileSettings.empty()) {

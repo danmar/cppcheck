@@ -25,11 +25,35 @@
 #include <list>
 #include <set>
 #include <string>
+#include <utility>
+
+class PathWithDetails
+{
+public:
+    PathWithDetails() = default;
+
+    explicit PathWithDetails(std::string path)
+        : mPath(std::move(path))
+    {}
+
+    const std::string& path() const
+    {
+        return mPath;
+    }
+private:
+    std::string mPath;
+};
 
 /** File settings. Multiple configurations for a file is allowed. */
 struct CPPCHECKLIB FileSettings {
+    FileSettings() = default; // TODO: call PathWithDetails c'tor
+
     std::string cfg;
-    std::string filename;
+    PathWithDetails path;
+    const std::string& filename() const
+    {
+        return path.path();
+    }
     std::string defines;
     // TODO: handle differently
     std::string cppcheckDefines() const {

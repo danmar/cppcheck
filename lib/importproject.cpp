@@ -46,17 +46,17 @@ void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
     for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
         bool ignore = false;
         for (std::string i : ipaths) {
-            if (it->filename.size() > i.size() && it->filename.compare(0,i.size(),i)==0) {
+            if (it->filename().size() > i.size() && it->filename().compare(0,i.size(),i)==0) {
                 ignore = true;
                 break;
             }
-            if (isValidGlobPattern(i) && matchglob(i, it->filename)) {
+            if (isValidGlobPattern(i) && matchglob(i, it->filename())) {
                 ignore = true;
                 break;
             }
             if (!Path::isAbsolute(i)) {
                 i = mPath + i;
-                if (it->filename.size() > i.size() && it->filename.compare(0,i.size(),i)==0) {
+                if (it->filename().size() > i.size() && it->filename().compare(0,i.size(),i)==0) {
                     ignore = true;
                     break;
                 }
@@ -400,7 +400,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
 
         FileSettings fs;
         if (Path::isAbsolute(file))
-            fs.filename = Path::simplifyPath(file);
+            fs.path = PathWithDetails{Path::simplifyPath(file)};
 #ifdef _WIN32
         else if (file[0] == '/' && directory.size() > 2 && std::isalpha(directory[0]) && directory[1] == ':')
             // directory: C:\foo\bar
@@ -409,9 +409,9 @@ bool ImportProject::importCompileCommands(std::istream &istr)
             fs.filename = Path::simplifyPath(directory.substr(0,2) + file);
 #endif
         else
-            fs.filename = Path::simplifyPath(directory + file);
-        if (!sourceFileExists(fs.filename)) {
-            printError("'" + fs.filename + "' from compilation database does not exist");
+            fs.path = PathWithDetails{Path::simplifyPath(directory + file)};
+        if (!sourceFileExists(fs.filename())) {
+            printError("'" + fs.filename() + "' from compilation database does not exist");
             return false;
         }
         fsParseCommand(fs, command); // read settings; -D, -I, -U, -std, -m*, -f*
@@ -760,7 +760,7 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             }
 
             FileSettings fs;
-            fs.filename = cfilename;
+            fs.path = PathWithDetails{cfilename};
             fs.cfg = p.name;
             // TODO: detect actual MSC version
             fs.msc = true;
@@ -1058,7 +1058,7 @@ bool ImportProject::importBcb6Prj(const std::string &projectFilename)
         FileSettings fs;
         fsSetIncludePaths(fs, projectDir, toStringList(includePath), variables);
         fsSetDefines(fs, cppMode ? cppDefines : defines);
-        fs.filename = Path::simplifyPath(Path::isAbsolute(c) ? c : projectDir + c);
+        fs.path = PathWithDetails{Path::simplifyPath(Path::isAbsolute(c) ? c : projectDir + c)};
         fileSettings.push_back(std::move(fs));
     }
 
@@ -1294,12 +1294,12 @@ void ImportProject::selectOneVsConfig(Platform::Type platform)
             remove = true;
         else if ((platform == Platform::Type::Win32A || platform == Platform::Type::Win32W) && fs.platformType == Platform::Type::Win64)
             remove = true;
-        else if (filenames.find(fs.filename) != filenames.end())
+        else if (filenames.find(fs.filename()) != filenames.end())
             remove = true;
         if (remove) {
             it = fileSettings.erase(it);
         } else {
-            filenames.insert(fs.filename);
+            filenames.insert(fs.filename());
             ++it;
         }
     }
@@ -1340,7 +1340,7 @@ void ImportProject::setRelativePaths(const std::string &filename)
         return;
     const std::vector<std::string> basePaths{Path::fromNativeSeparators(Path::getCurrentPath())};
     for (auto &fs: fileSettings) {
-        fs.filename = Path::getRelativePath(fs.filename, basePaths);
+        fs.path = PathWithDetails{Path::getRelativePath(fs.filename(), basePaths)};
         for (auto &includePath: fs.includePaths)
             includePath = Path::getRelativePath(includePath, basePaths);
     }

@@ -237,7 +237,7 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, const Suppre
 
         for (std::list<FileSettings>::const_iterator i = fileSettings.cbegin(); i != fileSettings.cend(); ++i) {
             err |= SuppressionList::reportUnmatchedSuppressions(
-                suppressions.getUnmatchedLocalSuppressions(i->filename, unusedFunctionCheckEnabled), errorLogger);
+                suppressions.getUnmatchedLocalSuppressions(i->filename(), unusedFunctionCheckEnabled), errorLogger);
         }
     }
     err |= SuppressionList::reportUnmatchedSuppressions(suppressions.getUnmatchedGlobalSuppressions(unusedFunctionCheckEnabled), errorLogger);

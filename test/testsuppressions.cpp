@@ -234,7 +234,7 @@ private:
             filelist.emplace_back(i->first, i->second.size());
             if (useFS) {
                 FileSettings fs;
-                fs.filename = i->first;
+                fs.path = PathWithDetails{i->first};
                 fileSettings.emplace_back(std::move(fs));
             }
         }
@@ -283,7 +283,7 @@ private:
         filelist.emplace_back("test.cpp", strlen(code));
         if (useFS) {
             FileSettings fs;
-            fs.filename = "test.cpp";
+            fs.path = PathWithDetails{"test.cpp"};
             fileSettings.emplace_back(std::move(fs));
         }
 
@@ -329,7 +329,7 @@ private:
         filelist.emplace_back("test.cpp", strlen(code));
         if (useFS) {
             FileSettings fs;
-            fs.filename = "test.cpp";
+            fs.path = PathWithDetails{"test.cpp"};
             fileSettings.emplace_back(std::move(fs));
         }
 

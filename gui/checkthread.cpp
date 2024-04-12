@@ -133,11 +133,11 @@ void CheckThread::run()
     }
 
     FileSettings fileSettings = mResult.getNextFileSettings();
-    while (!fileSettings.filename.empty() && mState == Running) {
-        file = QString::fromStdString(fileSettings.filename);
+    while (!fileSettings.filename().empty() && mState == Running) {
+        file = QString::fromStdString(fileSettings.filename());
         qDebug() << "Checking file" << file;
         mCppcheck.check(fileSettings);
-        runAddonsAndTools(&fileSettings, QString::fromStdString(fileSettings.filename));
+        runAddonsAndTools(&fileSettings, QString::fromStdString(fileSettings.filename()));
         emit fileChecked(file);
 
         if (mState == Running)
@@ -214,7 +214,7 @@ void CheckThread::runAddonsAndTools(const FileSettings *fileSettings, const QStr
 
             const std::string &buildDir = mCppcheck.settings().buildDir;
             if (!buildDir.empty()) {
-                analyzerInfoFile = QString::fromStdString(AnalyzerInformation::getAnalyzerInfoFile(buildDir, fileSettings->filename, fileSettings->cfg));
+                analyzerInfoFile = QString::fromStdString(AnalyzerInformation::getAnalyzerInfoFile(buildDir, fileSettings->filename(), fileSettings->cfg));
 
                 QStringList args2(args);
                 args2.insert(0,"-E");

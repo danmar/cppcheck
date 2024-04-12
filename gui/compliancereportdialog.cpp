@@ -177,7 +177,7 @@ void ComplianceReportDialog::save()
 
             QDir dir(inf.absoluteDir());
             for (const FileSettings& fs: p.fileSettings)
-                fileList.addFile(dir.relativeFilePath(QString::fromStdString(fs.filename)));
+                fileList.addFile(dir.relativeFilePath(QString::fromStdString(fs.filename())));
         }
 
         QSet<QString> allFiles;
