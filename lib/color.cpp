@@ -43,7 +43,7 @@ static bool isStreamATty(const std::ostream & os)
 static bool isCliColorForced()
 {
     // See https://bixense.com/clicolors/
-    static const bool force_color = (nullptr != getenv("CLICOLOR_FORCE"));
+    static const bool force_color = (nullptr != std::getenv("CLICOLOR_FORCE"));
     return force_color;
 }
 #endif
