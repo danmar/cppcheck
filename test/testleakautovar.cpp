@@ -17,7 +17,6 @@
  */
 
 #include "checkleakautovar.h"
-#include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
 #include "settings.h"

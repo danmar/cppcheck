@@ -43,6 +43,7 @@ class TokenList;
 enum class SHOWTIME_MODES;
 struct FileSettings;
 class CheckUnusedFunctions;
+class Tokenizer;
 
 namespace simplecpp { class TokenList; }
 

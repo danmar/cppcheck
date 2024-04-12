@@ -16,10 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
-#include "settings.h"
 #include "standards.h"
 #include "token.h"
 #include "tokenlist.h"

@@ -23,8 +23,10 @@
 #include "helpers.h"
 #include "settings.h"
 #include "tokenize.h"
+#include "tokenlist.h"
 
 #include <list>
+#include <sstream>
 #include <string>
 #include <vector>
 

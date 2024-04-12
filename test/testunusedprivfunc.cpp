@@ -24,7 +24,6 @@
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <sstream>
 #include <string>
 #include <vector>
 

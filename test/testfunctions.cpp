@@ -23,7 +23,6 @@
 #include "settings.h"
 #include "standards.h"
 
-#include <sstream>
 #include <string>
 
 class TestFunctions : public TestFixture {

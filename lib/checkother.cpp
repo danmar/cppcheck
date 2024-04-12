@@ -42,7 +42,6 @@
 #include <set>
 #include <sstream>
 #include <utility>
-#include <numeric>
 
 //---------------------------------------------------------------------------
 

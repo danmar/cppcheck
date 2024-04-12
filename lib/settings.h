@@ -41,7 +41,6 @@
 #include <tuple>
 #include <vector>
 #include <unordered_set>
-#include <utility>
 
 enum class SHOWTIME_MODES;
 namespace ValueFlow {

@@ -23,7 +23,9 @@
 #include "platform.h"
 #include "settings.h"
 #include "tokenize.h"
+#include "tokenlist.h"
 
+#include <sstream>
 #include <string>
 
 class TestUnusedFunctions : public TestFixture {
