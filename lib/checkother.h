@@ -113,6 +113,7 @@ private:
         checkOther.checkAccessOfMovedVariable();
         checkOther.checkModuloOfOne();
         checkOther.checkOverlappingWrite();
+        checkOther.checkDeletionOfThis();
     }
 
     /** @brief Clarify calculation for ".. a * b ? .." */
@@ -234,6 +235,8 @@ private:
     void overlappingWriteUnion(const Token *tok);
     void overlappingWriteFunction(const Token *tok);
 
+    void checkDeletionOfThis();
+
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, const bool result);
     void checkCastIntToCharAndBackError(const Token *tok, const std::string &strFunctionName);
@@ -289,6 +292,7 @@ private:
     void knownPointerToBoolError(const Token* tok, const ValueFlow::Value* value);
     void comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2);
     void checkModuloOfOneError(const Token *tok);
+    void checkDeletionOfThisError(const Token* tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckOther c(nullptr, settings, errorLogger);
@@ -362,6 +366,8 @@ private:
         const std::vector<const Token *> nullvec;
         c.funcArgOrderDifferent("function", nullptr, nullptr, nullvec, nullvec);
         c.checkModuloOfOneError(nullptr);
+
+        c.checkDeletionOfThisError(nullptr);
     }
 
     static std::string myName() {

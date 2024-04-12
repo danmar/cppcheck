@@ -3861,6 +3861,11 @@ void CheckOther::checkModuloOfOneError(const Token *tok)
     reportError(tok, Severity::style, "moduloofone", "Modulo of one is always equal to zero");
 }
 
+void CheckOther::checkDeletionOfThisError(const Token* tok)
+{
+    reportError(tok, Severity::warning, "deletethis", "Deletion of this should never happen");
+}
+
 //-----------------------------------------------------------------------------
 // Overlapping write (undefined behavior)
 //-----------------------------------------------------------------------------
@@ -4005,4 +4010,18 @@ void CheckOther::overlappingWriteFunction(const Token *tok)
 {
     const std::string &funcname = tok ? tok->str() : emptyString;
     reportError(tok, Severity::error, "overlappingWriteFunction", "Overlapping read/write in " + funcname + "() is undefined behavior");
+}
+
+void CheckOther::checkDeletionOfThis()
+{
+    if (!mSettings->severity.isEnabled(Severity::warning) && !mSettings->isPremiumEnabled("deletethis"))
+        return;
+
+    logChecker("CheckOther::checkDeleteThis"); // warning
+
+    for (const Token* tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+        if (!tok->next()) break;
+        if (tok->str() == "delete" && tok->next()->str() == "this")
+            checkDeletionOfThisError(tok);
+    }
 }
