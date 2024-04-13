@@ -2249,6 +2249,8 @@ void Tokenizer::simplifyTypedefCpp()
                                     tok2 = tok3->tokAt(3);
                                 else if (Token::Match(tok2->tokAt(3), "[(),;]"))
                                     tok2 = tok2->tokAt(2);
+                                else if (Token::simpleMatch(tok2->tokAt(3), ">"))
+                                    tok2 = tok2->tokAt(2);
                                 else
                                     tok2 = tok2->tokAt(3);
                                 if (!tok2)
