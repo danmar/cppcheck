@@ -276,7 +276,7 @@ std::list<CTU::FileInfo::UnsafeUsage> CTU::loadUnsafeUsageListFromXml(const tiny
     return ret;
 }
 
-static int isCallFunction(const Scope *scope, int argnr, const Token **tok)
+static int isCallFunction(const Scope *scope, int argnr, const Token *&tok)
 {
     const Variable * const argvar = scope->function->getArgumentVar(argnr);
     if (!argvar->isPointer())
@@ -299,7 +299,7 @@ static int isCallFunction(const Scope *scope, int argnr, const Token **tok)
             break;
         if (!prev->astOperand1() || !prev->astOperand1()->function())
             break;
-        *tok = prev->previous();
+        tok = prev->previous();
         return argnr2;
     }
     return -1;
@@ -424,7 +424,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
         // Nested function calls
         for (int argnr = 0; argnr < scopeFunction->argCount(); ++argnr) {
             const Token *tok;
-            const int argnr2 = isCallFunction(&scope, argnr, &tok);
+            const int argnr2 = isCallFunction(&scope, argnr, tok);
             if (argnr2 > 0) {
                 FileInfo::NestedCall nestedCall(tokenizer, scopeFunction, tok);
                 nestedCall.myArgNr = argnr + 1;

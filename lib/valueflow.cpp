@@ -8561,7 +8561,7 @@ static void valueFlowSmartPointer(TokenList &tokenlist, ErrorLogger & errorLogge
 static Library::Container::Yield findIteratorYield(Token* tok, const Token** ftok, const Settings &settings)
 {
     auto yield = astContainerYield(tok, ftok);
-    if (*ftok)
+    if (ftok && *ftok)
         return yield;
 
     if (!tok->astParent())

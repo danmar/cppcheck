@@ -487,7 +487,7 @@ void CheckIO::invalidScanfError(const Token *tok)
 //---------------------------------------------------------------------------
 
 static bool findFormat(nonneg int arg, const Token *firstArg,
-                       const Token **formatStringTok, const Token **formatArgTok)
+                       const Token *&formatStringTok, const Token *&formatArgTok)
 {
     const Token* argTok = firstArg;
 
@@ -495,8 +495,8 @@ static bool findFormat(nonneg int arg, const Token *firstArg,
         argTok = argTok->nextArgument();
 
     if (Token::Match(argTok, "%str% [,)]")) {
-        *formatArgTok = argTok->nextArgument();
-        *formatStringTok = argTok;
+        formatArgTok = argTok->nextArgument();
+        formatStringTok = argTok;
         return true;
     }
     if (Token::Match(argTok, "%var% [,)]") &&
@@ -506,13 +506,13 @@ static bool findFormat(nonneg int arg, const Token *firstArg,
          (argTok->variable()->dimensions().size() == 1 &&
           argTok->variable()->dimensionKnown(0) &&
           argTok->variable()->dimension(0) != 0))) {
-        *formatArgTok = argTok->nextArgument();
+        formatArgTok = argTok->nextArgument();
         if (!argTok->values().empty()) {
             const std::list<ValueFlow::Value>::const_iterator value = std::find_if(
                 argTok->values().cbegin(), argTok->values().cend(), std::mem_fn(&ValueFlow::Value::isTokValue));
             if (value != argTok->values().cend() && value->isTokValue() && value->tokvalue &&
                 value->tokvalue->tokType() == Token::eString) {
-                *formatStringTok = value->tokvalue;
+                formatStringTok = value->tokvalue;
             }
         }
         return true;
@@ -552,37 +552,37 @@ void CheckIO::checkWrongPrintfScanfArguments()
 
             if (formatStringArgNo >= 0) {
                 // formatstring found in library. Find format string and first argument belonging to format string.
-                if (!findFormat(formatStringArgNo, tok->tokAt(2), &formatStringTok, &argListTok))
+                if (!findFormat(formatStringArgNo, tok->tokAt(2), formatStringTok, argListTok))
                     continue;
             } else if (Token::simpleMatch(tok, "swprintf (")) {
                 if (Token::Match(tok->tokAt(2)->nextArgument(), "%str%")) {
                     // Find third parameter and format string
-                    if (!findFormat(1, tok->tokAt(2), &formatStringTok, &argListTok))
+                    if (!findFormat(1, tok->tokAt(2), formatStringTok, argListTok))
                         continue;
                 } else {
                     // Find fourth parameter and format string
-                    if (!findFormat(2, tok->tokAt(2), &formatStringTok, &argListTok))
+                    if (!findFormat(2, tok->tokAt(2), formatStringTok, argListTok))
                         continue;
                 }
             } else if (isWindows && Token::Match(tok, "sprintf_s|swprintf_s (")) {
                 // template <size_t size> int sprintf_s(char (&buffer)[size], const char *format, ...);
-                if (findFormat(1, tok->tokAt(2), &formatStringTok, &argListTok)) {
+                if (findFormat(1, tok->tokAt(2), formatStringTok, argListTok)) {
                     if (!formatStringTok)
                         continue;
                 }
                 // int sprintf_s(char *buffer, size_t sizeOfBuffer, const char *format, ...);
-                else if (findFormat(2, tok->tokAt(2), &formatStringTok, &argListTok)) {
+                else if (findFormat(2, tok->tokAt(2), formatStringTok, argListTok)) {
                     if (!formatStringTok)
                         continue;
                 }
             } else if (isWindows && Token::Match(tok, "_snprintf_s|_snwprintf_s (")) {
                 // template <size_t size> int _snprintf_s(char (&buffer)[size], size_t count, const char *format, ...);
-                if (findFormat(2, tok->tokAt(2), &formatStringTok, &argListTok)) {
+                if (findFormat(2, tok->tokAt(2), formatStringTok, argListTok)) {
                     if (!formatStringTok)
                         continue;
                 }
                 // int _snprintf_s(char *buffer, size_t sizeOfBuffer, size_t count, const char *format, ...);
-                else if (findFormat(3, tok->tokAt(2), &formatStringTok, &argListTok)) {
+                else if (findFormat(3, tok->tokAt(2), formatStringTok, argListTok)) {
                     if (!formatStringTok)
                         continue;
                 }

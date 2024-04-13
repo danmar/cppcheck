@@ -115,7 +115,7 @@ struct ProgramMemory {
 
     void setUnknown(const Token* expr);
 
-    bool getTokValue(nonneg int exprid, const Token** result) const;
+    bool getTokValue(nonneg int exprid, const Token*& result) const;
     bool hasValue(nonneg int exprid);
 
     const ValueFlow::Value& at(nonneg int exprid) const;
