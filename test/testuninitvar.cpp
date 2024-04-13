@@ -7502,6 +7502,16 @@ private:
                         "  int len = strlen(arr);\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: arr\n", errout_str());
+
+        valueFlowUninit("struct S1 { int x; };\n" // #12401
+                        "struct S2 { struct S1 s1; };\n"
+                        "struct S2 f() {\n"
+                        "    struct S2 s2;\n"
+                        "    struct S1* s1 = &s2.s1;\n"
+                        "    s1->x = 0;\n"
+                        "    return s2;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void uninitvar_memberfunction() {
