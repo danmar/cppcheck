@@ -3286,7 +3286,7 @@ bool isConstVarExpression(const Token *tok, const std::function<bool(const Token
     return false;
 }
 
-static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings* settings)
+static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings& settings)
 {
     const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
 
@@ -3326,11 +3326,11 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
         if (ftok->variable()->isStlType() || (ftok->variable()->valueType() && ftok->variable()->valueType()->container)) // STL types or containers don't initialize external variables
             return ExprUsage::Used;
     } else {
-        const bool isnullbad = settings->library.isnullargbad(ftok, argnr + 1);
+        const bool isnullbad = settings.library.isnullargbad(ftok, argnr + 1);
         if (indirect == 0 && astIsPointer(tok) && !addressOf && isnullbad)
             return ExprUsage::Used;
         bool hasIndirect = false;
-        const bool isuninitbad = settings->library.isuninitargbad(ftok, argnr + 1, indirect, &hasIndirect);
+        const bool isuninitbad = settings.library.isuninitargbad(ftok, argnr + 1, indirect, &hasIndirect);
         if (isuninitbad && (!addressOf || isnullbad))
             return ExprUsage::Used;
     }
@@ -3349,7 +3349,7 @@ bool isLeafDot(const Token* tok)
     return isLeafDot(parent);
 }
 
-ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings)
+ExprUsage getExprUsage(const Token* tok, int indirect, const Settings& settings)
 {
     const Token* parent = tok->astParent();
     if (indirect > 0 && parent) {
@@ -3365,7 +3365,7 @@ ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings)
             return ExprUsage::NotUsed;
         if (Token::simpleMatch(parent, ":") && Token::simpleMatch(parent->astParent(), "?"))
             return getExprUsage(parent->astParent(), indirect, settings);
-        if (isUsedAsBool(tok, settings))
+        if (isUsedAsBool(tok, &settings))
             return ExprUsage::NotUsed;
     }
     if (indirect == 0) {

@@ -3533,14 +3533,14 @@ namespace
     };
 }
 
-Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
+Check::FileInfo *CheckClass::getFileInfo(const Tokenizer &tokenizer, const Settings& /*settings*/) const
 {
-    if (!tokenizer->isCPP())
+    if (!tokenizer.isCPP())
         return nullptr;
-    (void)settings;
+
     // One definition rule
     std::vector<MyFileInfo::NameLoc> classDefinitions;
-    for (const Scope * classScope : tokenizer->getSymbolDatabase()->classAndStructScopes) {
+    for (const Scope * classScope : tokenizer.getSymbolDatabase()->classAndStructScopes) {
         if (classScope->isAnonymous())
             continue;
 
@@ -3575,7 +3575,7 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
 
         MyFileInfo::NameLoc nameLoc;
         nameLoc.className = std::move(name);
-        nameLoc.fileName = tokenizer->list.file(classScope->classDef);
+        nameLoc.fileName = tokenizer.list.file(classScope->classDef);
         nameLoc.lineNumber = classScope->classDef->linenr();
         nameLoc.column = classScope->classDef->column();
 

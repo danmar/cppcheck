@@ -439,7 +439,7 @@ bool isLeafDot(const Token* tok);
 
 enum class ExprUsage { None, NotUsed, PassedByReference, Used, Inconclusive };
 
-ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings);
+ExprUsage getExprUsage(const Token* tok, int indirect, const Settings& settings);
 
 const Variable *getLHSVariable(const Token *tok);
 

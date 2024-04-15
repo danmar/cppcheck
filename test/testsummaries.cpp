@@ -39,7 +39,7 @@ private:
         // tokenize..
         SimpleTokenizer tokenizer(settingsDefault, *this);
         ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
-        return Summaries::create(&tokenizer, "");
+        return Summaries::create(tokenizer, "");
     }
 
     void createSummaries1() {

@@ -8854,7 +8854,7 @@ private:
             const std::string filename = std::to_string(fileInfo.size()) + ".cpp";
             ASSERT(tokenizer.list.createTokens(istr, filename));
             ASSERT(tokenizer.simplifyTokens1(""));
-            fileInfo.push_back(check.getFileInfo(&tokenizer, &settingsDefault));
+            fileInfo.push_back(check.getFileInfo(tokenizer, settingsDefault));
         }
 
         // Check code..
@@ -8898,7 +8898,7 @@ private:
 
         // Check..
         const Check& c = getCheck<CheckClass>();
-        Check::FileInfo * fileInfo = (c.getFileInfo)(&tokenizer, &settings1);
+        Check::FileInfo * fileInfo = (c.getFileInfo)(tokenizer, settings1);
 
         delete fileInfo;
     }
