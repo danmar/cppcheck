@@ -1728,10 +1728,10 @@ private:
                "    }\n"
                "    return 0.0;\n"
                "}\n");
-                ASSERT_EQUALS("[test.cpp:3]: (style) The scope of the variable 'a' can be reduced.\n"
-                              "[test.cpp:4]: (style) The scope of the variable 'b' can be reduced.\n"
-                              "[test.cpp:5]: (style) The scope of the variable 'c' can be reduced.\n",
-                              errout_str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) The scope of the variable 'a' can be reduced.\n"
+                      "[test.cpp:4]: (style) The scope of the variable 'b' can be reduced.\n"
+                      "[test.cpp:5]: (style) The scope of the variable 'c' can be reduced.\n",
+                      errout_str());
     }
 
 #define checkOldStylePointerCast(code) checkOldStylePointerCast_(code, __FILE__, __LINE__)
