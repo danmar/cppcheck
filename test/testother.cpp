@@ -100,6 +100,7 @@ private:
         TEST_CASE(varScope37);      // #12158
         TEST_CASE(varScope38);
         TEST_CASE(varScope39);
+        TEST_CASE(varScope40);
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1710,6 +1711,28 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
+    void varScope40() {
+        checkP("#define NUM (-999.9)\n"
+               "double f(int i) {\n"
+               "    double a = NUM;\n"
+               "    double b = -NUM;\n"
+               "    double c = -1.0 * NUM;\n"
+               "    if (i == 1) {\n"
+               "        return a;\n"
+               "    }\n"
+               "    if (i == 2) {\n"
+               "        return b;\n"
+               "    }\n"
+               "    if (i == 3) {\n"
+               "        return c;\n"
+               "    }\n"
+               "    return 0.0;\n"
+               "}\n");
+                ASSERT_EQUALS("[test.cpp:3]: (style) The scope of the variable 'a' can be reduced.\n"
+                      "[test.cpp:4]: (style) The scope of the variable 'b' can be reduced.\n"
+                      "[test.cpp:5]: (style) The scope of the variable 'c' can be reduced.\n",
+                      errout_str());
+    }
 
 #define checkOldStylePointerCast(code) checkOldStylePointerCast_(code, __FILE__, __LINE__)
     void checkOldStylePointerCast_(const char code[], const char* file, int line) {
