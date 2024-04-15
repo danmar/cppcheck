@@ -252,6 +252,7 @@ private:
         TEST_CASE(garbageCode224);
         TEST_CASE(garbageCode225);
         TEST_CASE(garbageCode226);
+        TEST_CASE(garbageCode227);
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1752,6 +1753,9 @@ private:
         ASSERT_THROW_INTERNAL(checkCode("int a() { (b((c)`)) } {}"), SYNTAX); // #11638
         ASSERT_THROW_INTERNAL(checkCode("int a() { (b((c)\\)) } {}"), SYNTAX);
         ASSERT_THROW_INTERNAL(checkCode("int a() { (b((c)@)) } {}"), SYNTAX);
+    }
+    void garbageCode227() { // #12615
+        ASSERT_NO_THROW(checkCode("f(&S::operator=);"));
     }
 
     void syntaxErrorFirstToken() {
