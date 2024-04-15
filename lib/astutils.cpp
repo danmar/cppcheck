@@ -304,15 +304,12 @@ Library::Container::Yield astContainerYield(const Token* tok, const Token** ftok
     return tok->valueType()->container->getYield(ftok2->str());
 }
 
-Library::Container::Yield astFunctionYield(const Token* tok, const Settings* settings, const Token** ftok)
+Library::Container::Yield astFunctionYield(const Token* tok, const Settings& settings, const Token** ftok)
 {
     if (!tok)
         return Library::Container::Yield::NO_YIELD;
 
-    if (!settings)
-        return Library::Container::Yield::NO_YIELD;
-
-    const auto* function = settings->library.getFunction(tok);
+    const auto* function = settings.library.getFunction(tok);
     if (!function)
         return Library::Container::Yield::NO_YIELD;
 
@@ -635,7 +632,7 @@ static std::vector<const Token*> getParentMembers(const Token* tok)
     return result;
 }
 
-const Token* getParentLifetime(const Token* tok, const Library* library)
+const Token* getParentLifetime(const Token* tok, const Library& library)
 {
     std::vector<const Token*> members = getParentMembers(tok);
     if (members.size() < 2)
@@ -647,7 +644,7 @@ const Token* getParentLifetime(const Token* tok, const Library* library)
             return var->isLocal() || var->isArgument();
         if (Token::simpleMatch(tok2, "["))
             return true;
-        return isTemporary(tok2, library);
+        return isTemporary(tok2, &library);
     });
     if (it == members.rend())
         return tok;
@@ -2127,18 +2124,18 @@ bool isUniqueExpression(const Token* tok)
     return isUniqueExpression(tok->astOperand2());
 }
 
-static bool isEscaped(const Token* tok, bool functionsScope, const Library* library)
+static bool isEscaped(const Token* tok, bool functionsScope, const Library& library)
 {
-    if (library && library->isnoreturn(tok))
+    if (library.isnoreturn(tok))
         return true;
     if (functionsScope)
         return Token::simpleMatch(tok, "throw");
     return Token::Match(tok, "return|throw");
 }
 
-static bool isEscapedOrJump(const Token* tok, bool functionsScope, const Library* library)
+static bool isEscapedOrJump(const Token* tok, bool functionsScope, const Library& library)
 {
-    if (library && library->isnoreturn(tok))
+    if (library.isnoreturn(tok))
         return true;
     if (functionsScope)
         return Token::simpleMatch(tok, "throw");
@@ -2162,7 +2159,7 @@ bool isEscapeFunction(const Token* ftok, const Library* library)
     return false;
 }
 
-static bool hasNoreturnFunction(const Token* tok, const Library* library, const Token** unknownFunc)
+static bool hasNoreturnFunction(const Token* tok, const Library& library, const Token** unknownFunc)
 {
     if (!tok)
         return false;
@@ -2176,12 +2173,12 @@ static bool hasNoreturnFunction(const Token* tok, const Library* library, const 
                 return true;
             if (function->isAttributeNoreturn())
                 return true;
-        } else if (library && library->isnoreturn(ftok)) {
+        } else if (library.isnoreturn(ftok)) {
             return true;
         } else if (Token::Match(ftok, "exit|abort")) {
             return true;
         }
-        if (unknownFunc && !function && library && library->functions.count(library->getFunctionName(ftok)) == 0)
+        if (unknownFunc && !function && library.functions.count(library.getFunctionName(ftok)) == 0)
             *unknownFunc = ftok;
         return false;
     }
@@ -2192,7 +2189,7 @@ static bool hasNoreturnFunction(const Token* tok, const Library* library, const 
     return false;
 }
 
-bool isReturnScope(const Token* const endToken, const Library* library, const Token** unknownFunc, bool functionScope)
+bool isReturnScope(const Token* const endToken, const Library& library, const Token** unknownFunc, bool functionScope)
 {
     if (!endToken || endToken->str() != "}")
         return false;
@@ -3005,9 +3002,9 @@ namespace {
     };
 
     struct ExpressionChangedSkipDeadCode {
-        const Library* library;
+        const Library& library;
         const std::function<std::vector<MathLib::bigint>(const Token* tok)>* evaluate;
-        ExpressionChangedSkipDeadCode(const Library* library,
+        ExpressionChangedSkipDeadCode(const Library& library,
                                       const std::function<std::vector<MathLib::bigint>(const Token* tok)>& evaluate)
             : library(library), evaluate(&evaluate)
         {}
@@ -3036,7 +3033,7 @@ const Token* findExpressionChangedSkipDeadCode(const Token* expr,
                                                int depth)
 {
     return findExpressionChangedImpl(
-        expr, start, end, settings, depth, ExpressionChangedSkipDeadCode{&settings->library, evaluate});
+        expr, start, end, settings, depth, ExpressionChangedSkipDeadCode{settings->library, evaluate});
 }
 
 const Token* getArgumentStart(const Token* ftok)

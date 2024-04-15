@@ -271,7 +271,7 @@ static bool isBasicForLoop(const Token* tok)
     return true;
 }
 
-void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Token* endTok, const Settings* settings, bool then)
+static void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Token* endTok, const Settings* settings, bool then)
 {
     auto eval = [&](const Token* t) -> std::vector<MathLib::bigint> {
         if (!t)
@@ -427,14 +427,14 @@ static void removeModifiedVars(ProgramMemory& pm, const Token* tok, const Token*
 
 static ProgramMemory getInitialProgramState(const Token* tok,
                                             const Token* origin,
-                                            const Settings* settings,
+                                            const Settings& settings,
                                             const ProgramMemory::Map& vars = ProgramMemory::Map {})
 {
     ProgramMemory pm;
     if (origin) {
         fillProgramMemoryFromConditions(pm, origin, nullptr);
         const ProgramMemory state = pm;
-        fillProgramMemoryFromAssignments(pm, tok, settings, state, vars);
+        fillProgramMemoryFromAssignments(pm, tok, &settings, state, vars);
         removeModifiedVars(pm, tok, origin);
     }
     return pm;
@@ -534,15 +534,15 @@ ProgramMemory ProgramMemoryState::get(const Token* tok, const Token* ctx, const 
     return local.state;
 }
 
-ProgramMemory getProgramMemory(const Token* tok, const Token* expr, const ValueFlow::Value& value, const Settings* settings)
+ProgramMemory getProgramMemory(const Token* tok, const Token* expr, const ValueFlow::Value& value, const Settings& settings)
 {
     ProgramMemory programMemory;
     programMemory.replace(getInitialProgramState(tok, value.tokvalue, settings));
     programMemory.replace(getInitialProgramState(tok, value.condition, settings));
-    fillProgramMemoryFromConditions(programMemory, tok, settings);
+    fillProgramMemoryFromConditions(programMemory, tok, &settings);
     programMemory.setValue(expr, value);
     const ProgramMemory state = programMemory;
-    fillProgramMemoryFromAssignments(programMemory, tok, settings, state, {{expr, value}});
+    fillProgramMemoryFromAssignments(programMemory, tok, &settings, state, {{expr, value}});
     return programMemory;
 }
 
@@ -1257,7 +1257,7 @@ namespace {
         int fdepth = 4;
         int depth = 10;
 
-        explicit Executor(ProgramMemory* pm = nullptr, const Settings* settings = nullptr) : pm(pm), settings(settings) {}
+        Executor(ProgramMemory* pm, const Settings* settings) : pm(pm), settings(settings) {}
 
         static ValueFlow::Value unknown() {
             return ValueFlow::Value::unknown();
@@ -1748,9 +1748,9 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Sett
     return ex.execute(expr);
 }
 
-std::vector<ValueFlow::Value> execute(const Scope* scope, ProgramMemory& pm, const Settings* settings)
+std::vector<ValueFlow::Value> execute(const Scope* scope, ProgramMemory& pm, const Settings& settings)
 {
-    Executor ex{&pm, settings};
+    Executor ex{&pm, &settings};
     return ex.execute(scope);
 }
 
