@@ -169,12 +169,11 @@ private:
 
 #define isSameExpression(...) isSameExpression_(__FILE__, __LINE__, __VA_ARGS__)
     bool isSameExpression_(const char* file, int line, const char code[], const char tokStr1[], const char tokStr2[], bool cpp) {
-        Library library;
         SimpleTokenizer tokenizer(settingsDefault, *this);
         ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), tokStr1, strlen(tokStr1));
         const Token * const tok2 = Token::findsimplematch(tok1->next(), tokStr2, strlen(tokStr2));
-        return (isSameExpression)(false, tok1, tok2, library, false, true, nullptr);
+        return (isSameExpression)(false, tok1, tok2, settingsDefault, false, true);
     }
 
     void isSameExpressionTestInternal(bool cpp) {
@@ -221,7 +220,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), startPattern, strlen(startPattern));
         const Token * const tok2 = Token::findsimplematch(tokenizer.tokens(), endPattern, strlen(endPattern));
-        return (isVariableChanged)(tok1, tok2, 1, false, &settingsDefault);
+        return (isVariableChanged)(tok1, tok2, 1, false, settingsDefault);
     }
 
     void isVariableChangedTest() {
@@ -255,7 +254,7 @@ private:
         const Token * const argtok = Token::findmatch(tokenizer.tokens(), pattern);
         ASSERT_LOC(argtok, file, line);
         int indirect = (argtok->variable() && argtok->variable()->isArray());
-        return (isVariableChangedByFunctionCall)(argtok, indirect, &settingsDefault, inconclusive);
+        return (isVariableChangedByFunctionCall)(argtok, indirect, settingsDefault, inconclusive);
     }
 
     void isVariableChangedByFunctionCallTest() {
@@ -397,7 +396,7 @@ private:
         const Token* const start = Token::findsimplematch(tokenizer.tokens(), startPattern, strlen(startPattern));
         const Token* const end = Token::findsimplematch(start, endPattern, strlen(endPattern));
         const Token* const expr = Token::findsimplematch(tokenizer.tokens(), var, strlen(var));
-        return (findExpressionChanged)(expr, start, end, &settings);
+        return (findExpressionChanged)(expr, start, end, settings);
     }
 
     void isExpressionChangedTest()
@@ -451,7 +450,7 @@ private:
         const Token * const argtok = Token::findmatch(tokenizer.tokens(), pattern);
         if (!argtok)
             return Result::Fail;
-        return ::isUsedAsBool(argtok) ? Result::True : Result::False;
+        return ::isUsedAsBool(argtok, settingsDefault) ? Result::True : Result::False;
     }
 
     void isUsedAsBool() {

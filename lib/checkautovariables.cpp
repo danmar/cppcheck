@@ -55,10 +55,10 @@ static bool isPtrArg(const Token *tok)
     return (var && var->isArgument() && var->isPointer());
 }
 
-static bool isArrayArg(const Token *tok, const Settings* settings)
+static bool isArrayArg(const Token *tok, const Settings& settings)
 {
     const Variable *var = tok->variable();
-    return (var && var->isArgument() && var->isArray() && !settings->library.isentrypoint(var->scope()->className));
+    return (var && var->isArgument() && var->isArray() && !settings.library.isentrypoint(var->scope()->className));
 }
 
 static bool isArrayVar(const Token *tok)
@@ -290,7 +290,7 @@ void CheckAutoVariables::autoVariables()
                     checkAutoVariableAssignment(tok->next(), inconclusive);
                 tok = tok->tokAt(5);
             } else if (Token::Match(tok, "[;{}] %var% [") && Token::simpleMatch(tok->linkAt(2), "] =") &&
-                       (isPtrArg(tok->next()) || isArrayArg(tok->next(), mSettings)) &&
+                       (isPtrArg(tok->next()) || isArrayArg(tok->next(), *mSettings)) &&
                        isAutoVariableRHS(tok->linkAt(2)->next()->astOperand2())) {
                 errorAutoVariableAssignment(tok->next(), false);
             }
@@ -553,7 +553,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
         // Return reference from function
         if (returnRef && Token::simpleMatch(tok->astParent(), "return")) {
-            for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(tok, true)) {
+            for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(tok, *mSettings, true)) {
                 if (!printInconclusive && lt.inconclusive)
                     continue;
                 const Variable* var = lt.token->variable();
@@ -573,14 +573,14 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                    tok->variable()->declarationId() == tok->varId() && tok->variable()->isStatic() &&
                    !tok->variable()->isArgument()) {
             ErrorPath errorPath;
-            const Variable *var = ValueFlow::getLifetimeVariable(tok, errorPath);
+            const Variable *var = ValueFlow::getLifetimeVariable(tok, errorPath, *mSettings);
             if (var && isInScope(var->nameToken(), tok->scope())) {
                 errorDanglingReference(tok, var, std::move(errorPath));
                 continue;
             }
             // Reference to temporary
         } else if (tok->variable() && (tok->variable()->isReference() || tok->variable()->isRValueReference())) {
-            for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(getParentLifetime(tok))) {
+            for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(getParentLifetime(tok), *mSettings)) {
                 if (!printInconclusive && lt.inconclusive)
                     continue;
                 const Token * tokvalue = lt.token;
@@ -601,7 +601,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             const Token* parent = getParentLifetime(val.tokvalue, mSettings->library);
             if (!exprs.insert(parent).second)
                 continue;
-            for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(parent, escape || isAssignedToNonLocal(tok))) {
+            for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(parent, *mSettings, escape || isAssignedToNonLocal(tok))) {
                 const Token * tokvalue = lt.token;
                 if (val.isLocalLifetimeValue()) {
                     if (escape) {
@@ -650,7 +650,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                                            tok->scope()->bodyEnd,
                                            var->declarationId(),
                                            var->isGlobal(),
-                                           mSettings)) {
+                                           *mSettings)) {
                         errorDanglngLifetime(tok2, &val);
                         break;
                     }

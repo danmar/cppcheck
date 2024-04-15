@@ -606,7 +606,7 @@ private:
 CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok);
 
 std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
-                                                 const Settings* settings,
+                                                 const Settings& settings,
                                                  bool cpp,
                                                  std::unordered_map<nonneg int, const Token*>* lookupVarId = nullptr);
 

@@ -27,7 +27,7 @@
 #include <vector>
 
 class Token;
-class Library;
+class Settings;
 
 /**
  * Forward data flow analysis for checks
@@ -37,7 +37,7 @@ class Library;
  */
 class FwdAnalysis {
 public:
-    explicit FwdAnalysis(const Library &library) : mLibrary(library) {}
+    explicit FwdAnalysis(const Settings &settings) : mSettings(settings) {}
 
     bool hasOperand(const Token *tok, const Token *lhs) const;
 
@@ -82,7 +82,7 @@ private:
     Result check(const Token *expr, const Token *startToken, const Token *endToken);
     Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<nonneg int> &exprVarIds, bool local, bool inInnerClass, int depth=0);
 
-    const Library &mLibrary;
+    const Settings &mSettings;
     enum class What { Reassign, UnusedValue, ValueFlow } mWhat = What::Reassign;
     std::vector<KnownAndToken> mValueFlow;
     bool mValueFlowKnown = true;

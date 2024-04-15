@@ -379,13 +379,13 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
             if (astIsBool(numTok))
                 continue;
 
-            const ValueFlow::Value *minval = numTok->getValueLE(0, mSettings);
+            const ValueFlow::Value *minval = numTok->getValueLE(0, *mSettings);
             if (minval && minval->intvalue == 0 &&
                 (numInRhs ? Token::Match(tok, ">|==|!=")
                  : Token::Match(tok, "<|==|!=")))
                 minval = nullptr;
 
-            const ValueFlow::Value *maxval = numTok->getValueGE(1, mSettings);
+            const ValueFlow::Value *maxval = numTok->getValueGE(1, *mSettings);
             if (maxval && maxval->intvalue == 1 &&
                 (numInRhs ? Token::Match(tok, "<|==|!=")
                  : Token::Match(tok, ">|==|!=")))
@@ -506,7 +506,7 @@ void CheckBool::returnValueOfFunctionReturningBool()
             else if (tok->scope() && tok->scope()->isClassOrStruct())
                 tok = tok->scope()->bodyEnd;
             else if (Token::simpleMatch(tok, "return") && tok->astOperand1() &&
-                     (tok->astOperand1()->getValueGE(2, mSettings) || tok->astOperand1()->getValueLE(-1, mSettings)) &&
+                     (tok->astOperand1()->getValueGE(2, *mSettings) || tok->astOperand1()->getValueLE(-1, *mSettings)) &&
                      !(tok->astOperand1()->astOperand1() && Token::Match(tok->astOperand1(), "&|%or%")))
                 returnValueBoolError(tok);
         }

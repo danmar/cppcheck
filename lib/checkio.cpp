@@ -696,9 +696,9 @@ void CheckIO::checkFormatString(const Token * const tok,
                 }
 
                 // Perform type checks
-                ArgumentInfo argInfo(argListTok, mSettings, mTokenizer->isCPP());
+                ArgumentInfo argInfo(argListTok, *mSettings, mTokenizer->isCPP());
 
-                if ((argInfo.typeToken && !argInfo.isLibraryType(mSettings)) || *i == ']') {
+                if ((argInfo.typeToken && !argInfo.isLibraryType(*mSettings)) || *i == ']') {
                     if (scan) {
                         std::string specifier;
                         bool done = false;
@@ -1342,7 +1342,7 @@ void CheckIO::checkFormatString(const Token * const tok,
 // We currently only support string literals, variables, and functions.
 /// @todo add non-string literals, and generic expressions
 
-CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings, bool _isCPP)
+CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings &settings, bool _isCPP)
     : isCPP(_isCPP)
 {
     if (!arg)
@@ -1486,12 +1486,12 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
                 tempToken = new Token(tok1);
                 if (tok1->next()->str() == "size") {
                     // size_t is platform dependent
-                    if (settings->platform.sizeof_size_t == 8) {
+                    if (settings.platform.sizeof_size_t == 8) {
                         tempToken->str("long");
-                        if (settings->platform.sizeof_long != 8)
+                        if (settings.platform.sizeof_long != 8)
                             tempToken->isLong(true);
-                    } else if (settings->platform.sizeof_size_t == 4) {
-                        if (settings->platform.sizeof_long == 4) {
+                    } else if (settings.platform.sizeof_size_t == 4) {
+                        if (settings.platform.sizeof_long == 4) {
                             tempToken->str("long");
                         } else {
                             tempToken->str("int");
@@ -1699,9 +1699,9 @@ bool CheckIO::ArgumentInfo::isKnownType() const
     return typeToken->isStandardType() || Token::Match(typeToken, "std :: string|wstring");
 }
 
-bool CheckIO::ArgumentInfo::isLibraryType(const Settings *settings) const
+bool CheckIO::ArgumentInfo::isLibraryType(const Settings &settings) const
 {
-    return typeToken && typeToken->isStandardType() && settings->library.podtype(typeToken->str());
+    return typeToken && typeToken->isStandardType() && settings.library.podtype(typeToken->str());
 }
 
 void CheckIO::wrongPrintfScanfArgumentsError(const Token* tok,

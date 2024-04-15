@@ -21,6 +21,7 @@
 #include "astutils.h"
 #include "config.h"
 #include "library.h"
+#include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "vfvalue.h"
@@ -236,7 +237,7 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *
                 }
             }
             tok = bodyStart->link();
-            if (isReturnScope(tok, mLibrary))
+            if (isReturnScope(tok, mSettings.library))
                 return Result(Result::Type::BAILOUT);
             if (Token::simpleMatch(tok, "} else {"))
                 tok = tok->linkAt(2);
@@ -272,12 +273,12 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *
         if (exprVarIds.find(tok->varId()) != exprVarIds.end()) {
             const Token *parent = tok;
             bool other = false;
-            bool same = tok->astParent() && isSameExpression(false, expr, tok, mLibrary, true, false, nullptr);
+            bool same = tok->astParent() && isSameExpression(false, expr, tok, mSettings, true, false, nullptr);
             while (!same && Token::Match(parent->astParent(), "*|.|::|[|(|%cop%")) {
                 parent = parent->astParent();
                 if (parent->str() == "(" && !parent->isCast())
                     break;
-                if (isSameExpression(false, expr, parent, mLibrary, true, false, nullptr)) {
+                if (isSameExpression(false, expr, parent, mSettings, true, false, nullptr)) {
                     same = true;
                     if (mWhat == What::ValueFlow) {
                         KnownAndToken v;
@@ -287,7 +288,7 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *
                     }
                 }
                 if (Token::Match(parent, ". %var%") && parent->next()->varId() && exprVarIds.find(parent->next()->varId()) == exprVarIds.end() &&
-                    isSameExpression(false, expr->astOperand1(), parent->astOperand1(), mLibrary, true, false, nullptr)) {
+                    isSameExpression(false, expr->astOperand1(), parent->astOperand1(), mSettings, true, false, nullptr)) {
                     other = true;
                     break;
                 }
@@ -317,7 +318,7 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *
                 if (hasGccCompoundStatement(parent->astParent()->astOperand2()))
                     return Result(Result::Type::BAILOUT);
                 // cppcheck-suppress shadowFunction - TODO: fix this
-                const bool reassign = isSameExpression(false, expr, parent, mLibrary, false, false, nullptr);
+                const bool reassign = isSameExpression(false, expr, parent, mSettings, false, false, nullptr);
                 if (reassign)
                     return Result(Result::Type::WRITE, parent->astParent());
                 return Result(Result::Type::READ);
@@ -343,7 +344,7 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *
                     while (argnr < args.size() && args[argnr] != parent)
                         argnr++;
                     if (argnr < args.size()) {
-                        const Library::Function* functionInfo = mLibrary.getFunction(ftok->astOperand1());
+                        const Library::Function* functionInfo = mSettings.library.getFunction(ftok->astOperand1());
                         if (functionInfo) {
                             const auto it = functionInfo->argumentChecks.find(argnr + 1);
                             if (it != functionInfo->argumentChecks.end() && it->second.direction == Library::ArgumentChecks::Direction::DIR_OUT)
@@ -464,7 +465,7 @@ bool FwdAnalysis::hasOperand(const Token *tok, const Token *lhs) const
 {
     if (!tok)
         return false;
-    if (isSameExpression(false, tok, lhs, mLibrary, false, false, nullptr))
+    if (isSameExpression(false, tok, lhs, mSettings, false, false, nullptr))
         return true;
     return hasOperand(tok->astOperand1(), lhs) || hasOperand(tok->astOperand2(), lhs);
 }
@@ -512,7 +513,7 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
                 if (tok->function() && tok->function()->getArgumentVar(argnr) && !tok->function()->getArgumentVar(argnr)->isReference() && !tok->function()->isConst())
                     continue;
                 for (const Token *subexpr = expr; subexpr; subexpr = subexpr->astOperand1()) {
-                    if (isSameExpression(macro, subexpr, args[argnr], mLibrary, pure, followVar)) {
+                    if (isSameExpression(macro, subexpr, args[argnr], mSettings, pure, followVar)) {
                         const Scope* scope = expr->scope(); // if there is no other variable, assume no aliasing
                         if (scope->varlist.size() > 1)
                             return true;
@@ -537,7 +538,7 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
             continue;
 
         for (const Token *subexpr = expr; subexpr; subexpr = subexpr->astOperand1()) {
-            if (subexpr != addrOf && isSameExpression(macro, subexpr, addrOf, mLibrary, pure, followVar))
+            if (subexpr != addrOf && isSameExpression(macro, subexpr, addrOf, mSettings, pure, followVar))
                 return true;
         }
     }

@@ -115,7 +115,7 @@ void CheckFunctions::invalidFunctionUsage()
                 const Token * const argtok = arguments[argnr-1];
 
                 // check <valid>...</valid>
-                const ValueFlow::Value *invalidValue = argtok->getInvalidValue(functionToken,argnr,mSettings);
+                const ValueFlow::Value *invalidValue = argtok->getInvalidValue(functionToken,argnr,*mSettings);
                 if (invalidValue) {
                     invalidFunctionArgError(argtok, functionToken->next()->astOperand1()->expressionString(), argnr, invalidValue, mSettings->library.validarg(functionToken, argnr));
                 }
@@ -148,7 +148,7 @@ void CheckFunctions::invalidFunctionUsage()
                     // Is non-null terminated local variable of type char (e.g. char buf[] = {'x'};) ?
                     if (variable && variable->isLocal()
                         && valueType && (valueType->type == ValueType::Type::CHAR || valueType->type == ValueType::Type::WCHAR_T)
-                        && !isVariablesChanged(variable->declEndToken(), functionToken, 0 /*indirect*/, { variable }, mSettings)) {
+                        && !isVariablesChanged(variable->declEndToken(), functionToken, 0 /*indirect*/, { variable }, *mSettings)) {
                         const Token* varTok = variable->declEndToken();
                         auto count = -1; // Find out explicitly set count, e.g.: char buf[3] = {...}. Variable 'count' is set to 3 then.
                         if (varTok && Token::simpleMatch(varTok->astOperand1(), "["))

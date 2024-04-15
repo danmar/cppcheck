@@ -443,7 +443,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 scope->definedTypesMap[new_type->name()] = new_type;
             }
 
-            scope->addVariable(varNameTok, tok, tok, access[scope], new_scope->definedType, scope, &mSettings);
+            scope->addVariable(varNameTok, tok, tok, access[scope], new_scope->definedType, scope, mSettings);
 
             const Token *tok2 = tok->next();
 
@@ -2294,7 +2294,7 @@ const Token * Variable::declEndToken() const
     return declEnd;
 }
 
-void Variable::evaluate(const Settings* settings)
+void Variable::evaluate(const Settings& settings)
 {
     // Is there initialization in variable declaration
     const Token *initTok = mNameToken ? mNameToken->next() : nullptr;
@@ -2306,18 +2306,15 @@ void Variable::evaluate(const Settings* settings)
     if (Token::Match(initTok, "[={(]") || (initTok && initTok->isSplittedVarDeclEq()))
         setFlag(fIsInit, true);
 
-    if (!settings)
-        return;
-
-    const Library & lib = settings->library;
+    const Library & lib = settings.library;
 
     // TODO: ValueType::parseDecl() is also performing a container lookup
     bool isContainer = false;
     if (mNameToken)
-        setFlag(fIsArray, arrayDimensions(*settings, isContainer));
+        setFlag(fIsArray, arrayDimensions(settings, isContainer));
 
     if (mTypeStartToken)
-        setValueType(ValueType::parseDecl(mTypeStartToken,*settings));
+        setValueType(ValueType::parseDecl(mTypeStartToken,settings));
 
     const Token* tok = mTypeStartToken;
     while (tok && tok->previous() && tok->previous()->isName())
@@ -2385,7 +2382,7 @@ void Variable::evaluate(const Settings* settings)
                 tok = tok->link()->previous();
             // add array dimensions if present
             if (tok && tok->next()->str() == "[")
-                setFlag(fIsArray, arrayDimensions(*settings, isContainer));
+                setFlag(fIsArray, arrayDimensions(settings, isContainer));
         }
         if (!tok)
             return;
@@ -4520,7 +4517,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
         if (startTok == nameTok)
             break;
 
-        argumentList.emplace_back(nameTok, startTok, endTok, count++, AccessControl::Argument, argType, functionScope, &symbolDatabase->mSettings);
+        argumentList.emplace_back(nameTok, startTok, endTok, count++, AccessControl::Argument, argType, functionScope, symbolDatabase->mSettings);
 
         if (tok->str() == ")") {
             // check for a variadic function or a variadic template function
@@ -4759,7 +4756,7 @@ AccessControl Scope::defaultAccess() const
 }
 
 void Scope::addVariable(const Token *token_, const Token *start_, const Token *end_,
-                        AccessControl access_, const Type *type_, const Scope *scope_, const Settings* settings)
+                        AccessControl access_, const Type *type_, const Scope *scope_, const Settings& settings)
 {
     // keep possible size_t -> int truncation outside emplace_back() to have a single line
     // C4267 VC++ warning instead of several dozens lines
@@ -4926,7 +4923,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
         const Token *typeend = Token::findsimplematch(typestart, "[")->previous();
         for (tok = typeend->tokAt(2); Token::Match(tok, "%name%|,"); tok = tok->next()) {
             if (tok->varId())
-                addVariable(tok, typestart, typeend, varaccess, nullptr, this, &settings);
+                addVariable(tok, typestart, typeend, varaccess, nullptr, this, settings);
         }
         return typeend->linkAt(1);
     }
@@ -4963,7 +4960,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
         if (Token::Match(typestart, "enum|struct"))
             typestart = typestart->next();
 
-        addVariable(vartok, typestart, vartok->previous(), varaccess, vType, this, &settings);
+        addVariable(vartok, typestart, vartok->previous(), varaccess, vType, this, settings);
     }
 
     return tok;

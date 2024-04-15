@@ -213,7 +213,7 @@ class CPPCHECKLIB Variable {
 public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
              nonneg int index_, AccessControl access_, const Type *type_,
-             const Scope *scope_, const Settings* settings)
+             const Scope *scope_, const Settings& settings)
         : mNameToken(name_),
         mTypeStartToken(start_),
         mTypeEndToken(end_),
@@ -692,7 +692,7 @@ private:
     std::vector<Dimension> mDimensions;
 
     /** @brief fill in information, depending on Tokens given at instantiation */
-    void evaluate(const Settings* settings);
+    void evaluate(const Settings& settings);
 };
 
 class CPPCHECKLIB Function {
@@ -1143,7 +1143,7 @@ public:
 
     void addVariable(const Token *token_, const Token *start_,
                      const Token *end_, AccessControl access_, const Type *type_,
-                     const Scope *scope_, const Settings* settings);
+                     const Scope *scope_, const Settings& settings);
 
     /** @brief initialize varlist */
     void getVariableList(const Settings& settings);

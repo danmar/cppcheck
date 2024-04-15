@@ -1654,10 +1654,10 @@ void CheckUninitVar::valueFlowUninit()
                     continue;
                 if (usage != ExprUsage::Used) {
                     if (!(Token::Match(tok->astParent(), ". %name% (|[") && uninitderef) &&
-                        isVariableChanged(tok, v->indirect, mSettings))
+                        isVariableChanged(tok, v->indirect, *mSettings))
                         continue;
                     bool inconclusive = false;
-                    if (isVariableChangedByFunctionCall(tok, v->indirect, mSettings, &inconclusive) || inconclusive)
+                    if (isVariableChangedByFunctionCall(tok, v->indirect, *mSettings, &inconclusive) || inconclusive)
                         continue;
                 }
                 uninitvarError(tok, *v);

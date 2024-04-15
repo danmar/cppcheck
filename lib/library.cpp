@@ -1745,11 +1745,11 @@ bool Library::hasAnyTypeCheck(const std::string& typeName) const
 }
 
 std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
-                                                 const Settings* settings,
+                                                 const Settings& settings,
                                                  bool cpp,
                                                  std::unordered_map<nonneg int, const Token*>* lookupVarId)
 {
-    std::shared_ptr<TokenList> tokenList = std::make_shared<TokenList>(settings);
+    std::shared_ptr<TokenList> tokenList = std::make_shared<TokenList>(&settings);
     {
         const std::string code = "return " + returnValue + ";";
         std::istringstream istr(code);
@@ -1788,6 +1788,6 @@ std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
     // Evaluate expression
     tokenList->createAst();
     Token* expr = tokenList->front()->astOperand1();
-    ValueFlow::valueFlowConstantFoldAST(expr, *settings);
+    ValueFlow::valueFlowConstantFoldAST(expr, settings);
     return {tokenList, expr};
 }
