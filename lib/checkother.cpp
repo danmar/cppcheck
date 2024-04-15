@@ -915,6 +915,10 @@ static bool isSimpleExpr(const Token* tok, const Variable* var, const Settings* 
         if (Token::Match(ftok, "%name% (") &&
             ((ftok->function() && ftok->function()->isConst()) || settings->library.isFunctionConst(ftok->str(), /*pure*/ true)))
             needsCheck = true;
+        if (tok->isArithmeticalOp() && 
+            (!tok->astOperand1() || isSimpleExpr(tok->astOperand1(), var, settings)) &&
+            (!tok->astOperand2() || isSimpleExpr(tok->astOperand2(), var, settings)))
+            return true;
     }
     return (needsCheck && !findExpressionChanged(tok, tok->astParent(), var->scope()->bodyEnd, settings));
 }
