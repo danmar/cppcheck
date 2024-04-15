@@ -1755,8 +1755,7 @@ private:
         ASSERT_THROW_INTERNAL(checkCode("int a() { (b((c)@)) } {}"), SYNTAX);
     }
     void garbageCode227() { // #12615
-        checkCode("f(&S::operator=);");
-        ignore_errout(); // we do not care about the output
+        ASSERT_NO_THROW(checkCode(checkCode("f(&S::operator=);"));
     }
 
     void syntaxErrorFirstToken() {
