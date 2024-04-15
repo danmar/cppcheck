@@ -3802,10 +3802,10 @@ void CheckOther::checkComparePointers()
                 continue;
             if (var1->isRValueReference() || var2->isRValueReference())
                 continue;
-            if (const Token* parent2 = getParentLifetime(v2.tokvalue, &mSettings->library))
+            if (const Token* parent2 = getParentLifetime(v2.tokvalue, mSettings->library))
                 if (var1 == parent2->variable())
                     continue;
-            if (const Token* parent1 = getParentLifetime(v1.tokvalue, &mSettings->library))
+            if (const Token* parent1 = getParentLifetime(v1.tokvalue, mSettings->library))
                 if (var2 == parent1->variable())
                     continue;
             comparePointersError(tok, &v1, &v2);

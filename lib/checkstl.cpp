@@ -1121,7 +1121,7 @@ void CheckStl::invalidContainer()
                         const Scope* s = tok2->scope();
                         if (!s)
                             continue;
-                        if (isReturnScope(s->bodyEnd, &mSettings->library))
+                        if (isReturnScope(s->bodyEnd, mSettings->library))
                             continue;
                         invalidContainerLoopError(r.ftok, tok, r.errorPath);
                         bail = true;

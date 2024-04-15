@@ -1522,7 +1522,7 @@ void SymbolDatabase::createSymbolDatabaseEscapeFunctions()
             continue;
         if (Token::findsimplematch(scope.bodyStart, "return", scope.bodyEnd))
             continue;
-        function->isEscapeFunction(isReturnScope(scope.bodyEnd, &mSettings.library, nullptr, true));
+        function->isEscapeFunction(isReturnScope(scope.bodyEnd, mSettings.library, nullptr, true));
     }
 }
 
@@ -2306,7 +2306,7 @@ void Variable::evaluate(const Settings* settings)
     if (!settings)
         return;
 
-    const Library * const lib = &settings->library;
+    const Library & lib = settings->library;
 
     // TODO: ValueType::parseDecl() is also performing a container lookup
     bool isContainer = false;
@@ -2367,10 +2367,10 @@ void Variable::evaluate(const Settings* settings)
         std::string strtype = mTypeStartToken->str();
         for (const Token *typeToken = mTypeStartToken; Token::Match(typeToken, "%type% :: %type%"); typeToken = typeToken->tokAt(2))
             strtype += "::" + typeToken->strAt(2);
-        setFlag(fIsClass, !lib->podtype(strtype) && !mTypeStartToken->isStandardType() && !isEnumType() && !isPointer() && strtype != "...");
+        setFlag(fIsClass, !lib.podtype(strtype) && !mTypeStartToken->isStandardType() && !isEnumType() && !isPointer() && strtype != "...");
         setFlag(fIsStlType, Token::simpleMatch(mTypeStartToken, "std ::"));
         setFlag(fIsStlString, ::isStlStringType(mTypeStartToken));
-        setFlag(fIsSmartPointer, mTypeStartToken->isCpp() && lib->isSmartPointer(mTypeStartToken));
+        setFlag(fIsSmartPointer, mTypeStartToken->isCpp() && lib.isSmartPointer(mTypeStartToken));
     }
     if (mAccess == AccessControl::Argument) {
         tok = mNameToken;
@@ -7599,7 +7599,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                             continue;
                         }
 
-                        const auto yield = astFunctionYield(tok->previous(), &mSettings);
+                        const auto yield = astFunctionYield(tok->previous(), mSettings);
                         if (yield == Library::Container::Yield::START_ITERATOR ||
                             yield == Library::Container::Yield::END_ITERATOR ||
                             yield == Library::Container::Yield::ITERATOR) {

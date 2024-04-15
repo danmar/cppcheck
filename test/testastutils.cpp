@@ -145,7 +145,7 @@ private:
         const Token * const tok = (offset < 0)
                                   ? tokenizer.list.back()->tokAt(1+offset)
                                   : tokenizer.tokens()->tokAt(offset);
-        return (isReturnScope)(tok);
+        return (isReturnScope)(tok, settingsDefault.library);
     }
 
     void isReturnScopeTest() {

@@ -161,8 +161,6 @@ private:
     Map mValues;
 };
 
-void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Token* endTok, const Settings* settings, bool then);
-
 struct ProgramMemoryState {
     ProgramMemory state;
     std::map<nonneg int, const Token*> origins;
@@ -182,13 +180,13 @@ struct ProgramMemoryState {
     ProgramMemory get(const Token* tok, const Token* ctx, const ProgramMemory::Map& vars) const;
 };
 
-std::vector<ValueFlow::Value> execute(const Scope* scope, ProgramMemory& pm, const Settings* settings);
+std::vector<ValueFlow::Value> execute(const Scope* scope, ProgramMemory& pm, const Settings& settings);
 
 void execute(const Token* expr,
              ProgramMemory& programMemory,
              MathLib::bigint* result,
              bool* error,
-             const Settings* settings = nullptr);
+             const Settings* settings);
 
 /**
  * Is condition always false when variable has given value?
@@ -207,7 +205,7 @@ bool conditionIsTrue(const Token* condition, ProgramMemory pm, const Settings* s
 /**
  * Get program memory by looking backwards from given token.
  */
-ProgramMemory getProgramMemory(const Token* tok, const Token* expr, const ValueFlow::Value& value, const Settings* settings);
+ProgramMemory getProgramMemory(const Token* tok, const Token* expr, const ValueFlow::Value& value, const Settings& settings);
 
 ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, ValueFlow::Value>& args,
                                          const std::string& returnValue,

@@ -4040,7 +4040,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList &tokenlist, ErrorLog
             // TODO: handle `[`
             if (Token::simpleMatch(parent->astOperand1(), ".")) {
                 const Token* parentLifetime =
-                    getParentLifetime(parent->astOperand1()->astOperand2(), &settings.library);
+                    getParentLifetime(parent->astOperand1()->astOperand2(), settings.library);
                 if (parentLifetime && parentLifetime->exprId() > 0) {
                     valueFlowForward(nextExpression, endOfVarScope, parentLifetime, std::move(values), tokenlist, errorLogger, settings);
                 }
@@ -5049,7 +5049,7 @@ static void valueFlowLifetime(TokenList &tokenlist, ErrorLogger &errorLogger, co
             // Skip if its a free function that doesnt yield an iterator to the container
             if (Token::Match(parent->previous(), "%name% (") &&
                 !contains({Library::Container::Yield::START_ITERATOR, Library::Container::Yield::END_ITERATOR},
-                          astFunctionYield(parent->previous(), &settings)))
+                          astFunctionYield(parent->previous(), settings)))
                 continue;
 
             ValueFlow::Value master;
@@ -5061,7 +5061,7 @@ static void valueFlowLifetime(TokenList &tokenlist, ErrorLogger &errorLogger, co
                 master.lifetimeKind = ValueFlow::Value::LifetimeKind::Iterator;
             } else if (astIsIterator(parent) && Token::Match(parent->previous(), "%name% (") &&
                        contains({Library::Container::Yield::START_ITERATOR, Library::Container::Yield::END_ITERATOR},
-                                astFunctionYield(parent->previous(), &settings))) {
+                                astFunctionYield(parent->previous(), settings))) {
                 master.errorPath.emplace_back(parent, "Iterator to container is created here.");
                 master.lifetimeKind = ValueFlow::Value::LifetimeKind::Iterator;
             } else if ((astIsPointer(parent->tokAt(2)) &&
@@ -5820,12 +5820,12 @@ static void valueFlowForwardConst(Token* start,
 static ValueFlow::Value::Bound findVarBound(const Variable* var,
                                             const Token* start,
                                             const Token* end,
-                                            const Settings* settings)
+                                            const Settings& settings)
 {
     ValueFlow::Value::Bound result = ValueFlow::Value::Bound::Point;
     const Token* next = start;
     while ((next = findExpressionChangedSkipDeadCode(
-                var->nameToken(), next->next(), end, settings, &evaluateKnownValues))) {
+                var->nameToken(), next->next(), end, &settings, &evaluateKnownValues))) {
         ValueFlow::Value::Bound b = ValueFlow::Value::Bound::Point;
         if (next->varId() != var->declarationId())
             return ValueFlow::Value::Bound::Point;
@@ -5948,7 +5948,7 @@ static void valueFlowForwardAssign(Token* const tok,
     }
     if (isInitialVarAssign(expr)) {
         // Check if variable is only incremented or decremented
-        ValueFlow::Value::Bound b = findVarBound(expr->variable(), nextExpression, endOfVarScope, &settings);
+        ValueFlow::Value::Bound b = findVarBound(expr->variable(), nextExpression, endOfVarScope, settings);
         if (b != ValueFlow::Value::Bound::Point) {
             auto knownValueIt = std::find_if(values.begin(), values.end(), [](const ValueFlow::Value& value) {
                 if (!value.isKnown())
@@ -6713,9 +6713,9 @@ struct ConditionHandler {
                 ProgramMemory pm;
                 fillFromPath(pm, initTok, path);
                 fillFromPath(pm, condTok, path);
-                execute(initTok, pm, nullptr, nullptr);
+                execute(initTok, pm, nullptr, nullptr, nullptr);
                 MathLib::bigint result = 1;
-                execute(condTok, pm, &result, nullptr);
+                execute(condTok, pm, &result, nullptr, nullptr);
                 if (result == 0)
                     return;
                 // Remove condition since for condition is not redundant
@@ -6783,7 +6783,7 @@ struct ConditionHandler {
                 if (condTok->astParent() && Token::Match(top->previous(), "while|for ("))
                     dead_if = !isBreakScope(after);
                 else if (!dead_if)
-                    dead_if = isReturnScope(after, &settings.library, &unknownFunction);
+                    dead_if = isReturnScope(after, settings.library, &unknownFunction);
 
                 if (!dead_if && unknownFunction) {
                     if (settings.debugwarnings)
@@ -6795,7 +6795,7 @@ struct ConditionHandler {
                     after = after->linkAt(2);
                     unknownFunction = nullptr;
                     if (!dead_else)
-                        dead_else = isReturnScope(after, &settings.library, &unknownFunction);
+                        dead_else = isReturnScope(after, settings.library, &unknownFunction);
                     if (!dead_else && unknownFunction) {
                         if (settings.debugwarnings)
                             bailout(tokenlist, errorLogger, unknownFunction, "possible noreturn scope");
@@ -7132,10 +7132,10 @@ static bool valueFlowForLoop2(const Token *tok,
     ProgramMemory programMemory;
     MathLib::bigint result(0);
     bool error = false;
-    execute(firstExpression, programMemory, &result, &error);
+    execute(firstExpression, programMemory, &result, &error, nullptr);
     if (error)
         return false;
-    execute(secondExpression, programMemory, &result, &error);
+    execute(secondExpression, programMemory, &result, &error, nullptr);
     if (result == 0) // 2nd expression is false => no looping
         return false;
     if (error) {
@@ -7158,9 +7158,9 @@ static bool valueFlowForLoop2(const Token *tok,
     int maxcount = 10000;
     while (result != 0 && !error && --maxcount > 0) {
         endMemory = programMemory;
-        execute(thirdExpression, programMemory, &result, &error);
+        execute(thirdExpression, programMemory, &result, &error, nullptr);
         if (!error)
-            execute(secondExpression, programMemory, &result, &error);
+            execute(secondExpression, programMemory, &result, &error, nullptr);
     }
 
     if (memory1)
@@ -7217,7 +7217,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
         }
 
         if (Token::Match(tok2, "%oror%|&&")) {
-            const ProgramMemory programMemory(getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), &settings));
+            const ProgramMemory programMemory(getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings));
             if ((tok2->str() == "&&" && !conditionIsTrue(tok2->astOperand1(), programMemory, &settings)) ||
                 (tok2->str() == "||" && !conditionIsFalse(tok2->astOperand1(), programMemory, &settings))) {
                 // Skip second expression..
@@ -7242,11 +7242,11 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
 
         if ((tok2->str() == "&&" &&
              conditionIsFalse(tok2->astOperand1(),
-                              getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), &settings),
+                              getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings),
                               &settings)) ||
             (tok2->str() == "||" &&
              conditionIsTrue(tok2->astOperand1(),
-                             getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), &settings),
+                             getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings),
                              &settings)))
             break;
 
@@ -7965,7 +7965,7 @@ static void valueFlowFunctionReturn(TokenList &tokenlist, ErrorLogger &errorLogg
         }
         if (programMemory.empty() && !arguments.empty())
             continue;
-        std::vector<ValueFlow::Value> values = execute(function->functionScope, programMemory, &settings);
+        std::vector<ValueFlow::Value> values = execute(function->functionScope, programMemory, settings);
         for (const ValueFlow::Value& v : values) {
             if (v.isUninitValue())
                 continue;
@@ -8020,7 +8020,7 @@ static void addToErrorPath(ValueFlow::Value& value, const ValueFlow::Value& from
 
 static std::vector<Token*> findAllUsages(const Variable* var,
                                          Token* start, // cppcheck-suppress constParameterPointer // FP
-                                         const Library* library)
+                                         const Library& library)
 {
     // std::vector<Token*> result;
     const Scope* scope = var->scope();
@@ -8031,7 +8031,7 @@ static std::vector<Token*> findAllUsages(const Variable* var,
     });
 }
 
-static Token* findStartToken(const Variable* var, Token* start, const Library* library)
+static Token* findStartToken(const Variable* var, Token* start, const Library& library)
 {
     std::vector<Token*> uses = findAllUsages(var, start, library);
     if (uses.empty())
@@ -8111,7 +8111,7 @@ static void valueFlowUninit(TokenList& tokenlist, ErrorLogger& errorLogger, cons
 
         bool partial = false;
 
-        Token* start = findStartToken(var, tok->next(), &settings.library);
+        Token* start = findStartToken(var, tok->next(), settings.library);
 
         std::map<Token*, ValueFlow::Value> partialReads;
         if (const Scope* scope = var->typeScope()) {
@@ -8568,7 +8568,7 @@ static Library::Container::Yield findIteratorYield(Token* tok, const Token** fto
         return yield;
 
     //begin/end free functions
-    return astFunctionYield(tok->astParent()->previous(), &settings, ftok);
+    return astFunctionYield(tok->astParent()->previous(), settings, ftok);
 }
 
 static void valueFlowIterators(TokenList &tokenlist, const Settings &settings)
