@@ -35,7 +35,7 @@ class LibraryDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit LibraryDialog(QWidget *parent = nullptr);
+    explicit LibraryDialog(QWidget *parent);
     LibraryDialog(const LibraryDialog &) = delete;
     ~LibraryDialog() override;
     LibraryDialog &operator=(const LibraryDialog &) = delete;

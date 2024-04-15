@@ -34,7 +34,7 @@ namespace Ui {
 
 class HelpBrowser : public QTextBrowser {
 public:
-    explicit HelpBrowser(QWidget* parent = nullptr) : QTextBrowser(parent) {}
+    explicit HelpBrowser(QWidget* parent) : QTextBrowser(parent) {}
     HelpBrowser(const HelpBrowser&) = delete;
     HelpBrowser(HelpBrowser&&) = delete;
     HelpBrowser& operator=(const HelpBrowser&) = delete;
@@ -49,7 +49,7 @@ class HelpDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit HelpDialog(QWidget *parent = nullptr);
+    explicit HelpDialog(QWidget *parent);
     ~HelpDialog() override;
 
 private:

@@ -52,7 +52,7 @@ enum class Severity;
 class ResultsTree : public QTreeView {
     Q_OBJECT
 public:
-    explicit ResultsTree(QWidget * parent = nullptr);
+    explicit ResultsTree(QWidget * parent);
 
     void initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler);
 

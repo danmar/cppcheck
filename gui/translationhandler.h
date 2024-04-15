@@ -62,7 +62,7 @@ struct TranslationInfo {
 class TranslationHandler : QObject {
     Q_OBJECT
 public:
-    explicit TranslationHandler(QObject *parent = nullptr);
+    explicit TranslationHandler(QObject *parent);
 
     /**
      * @brief Get a list of available translations.

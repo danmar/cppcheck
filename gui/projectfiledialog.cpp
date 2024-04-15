@@ -189,7 +189,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, bool premium, QWi
     }
 
     // Platforms..
-    Platforms platforms;
+    Platforms platforms(nullptr); // TODO: pass parent?
     for (const Platform::Type builtinPlatform : builtinPlatforms)
         mUI->mComboBoxPlatform->addItem(platforms.get(builtinPlatform).mTitle);
     QStringList platformFiles;
@@ -869,7 +869,7 @@ void ProjectFileDialog::moveIncludePathDown()
 
 void ProjectFileDialog::addSuppression()
 {
-    NewSuppressionDialog dlg;
+    NewSuppressionDialog dlg(nullptr); // TODO: pass parent?
     if (dlg.exec() == QDialog::Accepted) {
         addSingleSuppression(dlg.getSuppression());
     }
@@ -894,7 +894,7 @@ void ProjectFileDialog::editSuppression(const QModelIndex & /*index*/)
     QListWidgetItem *item = mUI->mListSuppressions->item(row);
     const int suppressionIndex = getSuppressionIndex(item->text());
     if (suppressionIndex >= 0) { // TODO what if suppression is not found?
-        NewSuppressionDialog dlg;
+        NewSuppressionDialog dlg(nullptr); // TODO: pass parent?
         dlg.setSuppression(mSuppressions[suppressionIndex]);
         if (dlg.exec() == QDialog::Accepted) {
             mSuppressions[suppressionIndex] = dlg.getSuppression();

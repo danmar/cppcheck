@@ -50,7 +50,7 @@ public:
      */
     ApplicationDialog(const QString &title,
                       Application &app,
-                      QWidget *parent = nullptr);
+                      QWidget *parent);
     ~ApplicationDialog() override;
 
 protected slots:
