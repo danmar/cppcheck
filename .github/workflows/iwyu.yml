@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        image: ["opensuse/tumbleweed:latest"] # "fedora:latest" / "debian:unstable" / "archlinux:latest"
+        image: ["opensuse/tumbleweed:latest"] # "opensuse/tumbleweed:latest" / "fedora:latest" / "debian:unstable" / "archlinux:latest"
 
     runs-on: ubuntu-22.04
     if: ${{ github.repository_owner == 'danmar' }}
@@ -26,22 +26,24 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # TODO: the necessary packages are excessive - mostly because of Qt - use a pre-built image
       - name: Install missing software on debian/ubuntu
         if: contains(matrix.image, 'debian')
         run: |
           apt-get update
-          apt-get install -y cmake g++ make libpcre3-dev
-          apt-get install -y qtbase5-dev qttools5-dev libqt5charts5-dev
+          apt-get install -y cmake clang make libpcre3-dev
+          apt-get install -y qt6-base-dev qt6-tools-dev qt6-charts-dev
           apt-get install -y wget iwyu
-          ln -s ../x86_64-linux-gnu/qt5 /usr/include/qt
+          ln -s x86_64-linux-gnu/qt6 /usr/include/qt
 
+      # TODO: fails with /usr/lib/qt6/bin/lupdate: symbol lookup error: /usr/lib/libproxy/libpxbackend-1.0.so: undefined symbol: g_once_init_leave_pointer
       - name: Install missing software on archlinux
         if: contains(matrix.image, 'archlinux')
         run: |
           set -x
           pacman -Sy
-          pacman -S cmake make gcc qt5-base qt5-tools qt5-charts pcre wget --noconfirm
+          pacman -S cmake make clang pcre --noconfirm
+          pacman -S qt6-base qt6-tools qt6-charts --noconfirm
+          pacman -S wget --noconfirm
           pacman-key --init
           pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com
           pacman-key --lsign-key 3056513887B78AEB 
@@ -51,28 +53,32 @@ jobs:
           pacman -Sy
           pacman -S include-what-you-use --noconfirm
           ln -s iwyu-tool /usr/sbin/iwyu_tool
+          ln -s qt6 /usr/include/qt
 
-      # TODO: the necessary packages are excessive - mostly because of Qt - use a pre-built image
       - name: Install missing software on Fedora
         if: contains(matrix.image, 'fedora')
         run: |
-          dnf install -y cmake gcc-c++ qt5-qtbase-devel qt5-linguist qt5-qttools-devel qt5-qtcharts-devel pcre-devel
+          dnf install -y cmake clang pcre-devel
+          dnf install -y qt6-qtbase-devel qt6-qttools-devel qt6-qtcharts-devel
           dnf install -y wget iwyu
           ln -s iwyu_tool.py /usr/bin/iwyu_tool
-          ln -s qt5 /usr/include/qt
+          ln -s qt6 /usr/include/qt
 
       - name: Install missing software on OpenSUSE
         if: contains(matrix.image, 'opensuse')
         run: |
-          zypper install -y cmake gcc-c++ pcre-devel libQt5Core-devel libQt5Gui-devel libQt5Widgets-devel libQt5PrintSupport-devel libqt5-linguist-devel libqt5-qttools-devel libQt5Network-devel libQt5Charts5-devel libQt5Test-devel
+          zypper install -y cmake clang pcre-devel
+          zypper install -y qt6-base-common-devel qt6-core-devel qt6-gui-devel qt6-widgets-devel qt6-printsupport-devel qt6-linguist-devel qt6-help-devel qt6-charts-devel qt6-test-devel
           zypper install -y wget include-what-you-use-tools
           ln -s iwyu_tool.py /usr/bin/iwyu_tool
-          ln -s qt5 /usr/include/qt          
+          ln -s qt6 /usr/include/qt          
 
-      # TODO: switch to Qt 6 after we enabled the Qt mappings again
       - name: Prepare CMake
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off -DEXTERNALS_AS_SYSTEM=On
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off -DEXTERNALS_AS_SYSTEM=On
+        env:
+          CC: clang
+          CXX: clang++
 
       - name: Prepare CMake dependencies
         run: |
@@ -90,13 +96,13 @@ jobs:
       - name: Build Qt mappings
         run: |
           wget https://raw.githubusercontent.com/include-what-you-use/include-what-you-use/master/mapgen/iwyu-mapgen-qt.py
-          python3 iwyu-mapgen-qt.py /usr/include/qt/ > qt5.imp
+          python3 iwyu-mapgen-qt.py /usr/include/qt/ > qt.imp
 
       - name: iwyu_tool
         run: |
           PWD=$(pwd)
           # -isystem/usr/lib/clang/17/include
-          iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --max_line_length=1024 -Xiwyu --comment_style=long -Xiwyu --quoted_includes_first -Xiwyu --update_comments -Xiwyu --mapping_file=$PWD/qt5.imp > iwyu.log
+          iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --max_line_length=1024 -Xiwyu --comment_style=long -Xiwyu --quoted_includes_first -Xiwyu --update_comments -Xiwyu --mapping_file=$PWD/qt.imp > iwyu.log
 
       - uses: actions/upload-artifact@v3
         if: success() || failure()
@@ -108,7 +114,7 @@ jobs:
         if: success() || failure()
         with:
           name: Qt Mappings
-          path: ./qt5.imp
+          path: ./qt.imp
 
       - uses: actions/upload-artifact@v3
         if: success() || failure()
