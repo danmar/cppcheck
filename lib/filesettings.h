@@ -30,18 +30,27 @@
 class PathWithDetails
 {
 public:
-    PathWithDetails() = default;
-
     explicit PathWithDetails(std::string path)
+        : PathWithDetails(std::move(path), 0)
+    {}
+
+    PathWithDetails(std::string path, std::size_t size)
         : mPath(std::move(path))
+        , mSize(size)
     {}
 
     const std::string& path() const
     {
         return mPath;
     }
+
+    std::size_t size() const
+    {
+        return mSize;
+    }
 private:
     std::string mPath;
+    std::size_t mSize;
 };
 
 /** File settings. Multiple configurations for a file is allowed. */

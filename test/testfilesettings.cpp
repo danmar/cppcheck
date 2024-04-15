@@ -32,22 +32,32 @@ private:
         {
             const PathWithDetails p{"file.cpp"};
             ASSERT_EQUALS("file.cpp", p.path());
+            ASSERT_EQUALS(0, p.size());
+        }
+        {
+            const PathWithDetails p{"file.cpp", 123};
+            ASSERT_EQUALS("file.cpp", p.path());
+            ASSERT_EQUALS(123, p.size());
         }
         {
             const PathWithDetails p{"in/file.cpp"};
             ASSERT_EQUALS("in/file.cpp", p.path());
+            ASSERT_EQUALS(0, p.size());
         }
         {
             const PathWithDetails p{"in\\file.cpp"};
             ASSERT_EQUALS("in\\file.cpp", p.path());
+            ASSERT_EQUALS(0, p.size());
         }
         {
             const PathWithDetails p{"in/../file.cpp"};
             ASSERT_EQUALS("in/../file.cpp", p.path());
+            ASSERT_EQUALS(0, p.size());
         }
         {
             const PathWithDetails p{"in\\..\\file.cpp"};
             ASSERT_EQUALS("in\\..\\file.cpp", p.path());
+            ASSERT_EQUALS(0, p.size());
         }
     }
 };

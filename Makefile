@@ -661,7 +661,7 @@ cli/cppcheckexecutorseh.o: cli/cppcheckexecutorseh.cpp cli/cppcheckexecutor.h cl
 cli/executor.o: cli/executor.cpp cli/executor.h lib/addoninfo.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/executor.cpp
 
-cli/filelister.o: cli/filelister.cpp cli/filelister.h lib/config.h lib/path.h lib/pathmatch.h lib/standards.h lib/utils.h
+cli/filelister.o: cli/filelister.cpp cli/filelister.h lib/config.h lib/filesettings.h lib/path.h lib/pathmatch.h lib/platform.h lib/standards.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/filelister.cpp
 
 cli/main.o: cli/main.cpp cli/cppcheckexecutor.h lib/config.h lib/errortypes.h lib/filesettings.h lib/platform.h lib/standards.h lib/utils.h
@@ -685,7 +685,7 @@ cli/threadexecutor.o: cli/threadexecutor.cpp cli/executor.h cli/threadexecutor.h
 test/fixture.o: test/fixture.cpp externals/tinyxml2/tinyxml2.h lib/addoninfo.h lib/analyzerinfo.h lib/check.h lib/color.h lib/config.h lib/cppcheck.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/utils.h lib/xml.h test/fixture.h test/options.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/fixture.cpp
 
-test/helpers.o: test/helpers.cpp cli/filelister.h externals/simplecpp/simplecpp.h lib/addoninfo.h lib/config.h lib/errortypes.h lib/library.h lib/mathlib.h lib/path.h lib/pathmatch.h lib/platform.h lib/preprocessor.h lib/settings.h lib/standards.h lib/suppressions.h lib/tokenize.h lib/tokenlist.h lib/utils.h test/helpers.h
+test/helpers.o: test/helpers.cpp cli/filelister.h externals/simplecpp/simplecpp.h lib/addoninfo.h lib/config.h lib/errortypes.h lib/filesettings.h lib/library.h lib/mathlib.h lib/path.h lib/pathmatch.h lib/platform.h lib/preprocessor.h lib/settings.h lib/standards.h lib/suppressions.h lib/tokenize.h lib/tokenlist.h lib/utils.h test/helpers.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/helpers.cpp
 
 test/main.o: test/main.cpp externals/simplecpp/simplecpp.h lib/addoninfo.h lib/check.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/preprocessor.h lib/settings.h lib/standards.h lib/suppressions.h lib/utils.h test/fixture.h test/options.h
@@ -751,7 +751,7 @@ test/testerrorlogger.o: test/testerrorlogger.cpp externals/tinyxml2/tinyxml2.h l
 test/testexceptionsafety.o: test/testexceptionsafety.cpp lib/addoninfo.h lib/check.h lib/checkexceptionsafety.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/tokenize.h lib/tokenlist.h lib/utils.h test/fixture.h test/helpers.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testexceptionsafety.cpp
 
-test/testfilelister.o: test/testfilelister.cpp cli/filelister.h lib/addoninfo.h lib/check.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/path.h lib/pathmatch.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/utils.h test/fixture.h
+test/testfilelister.o: test/testfilelister.cpp cli/filelister.h lib/addoninfo.h lib/check.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/filesettings.h lib/library.h lib/mathlib.h lib/path.h lib/pathmatch.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/utils.h test/fixture.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testfilelister.cpp
 
 test/testfilesettings.o: test/testfilesettings.cpp lib/addoninfo.h lib/check.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/filesettings.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/utils.h test/fixture.h
@@ -901,6 +901,6 @@ externals/simplecpp/simplecpp.o: externals/simplecpp/simplecpp.cpp externals/sim
 externals/tinyxml2/tinyxml2.o: externals/tinyxml2/tinyxml2.cpp externals/tinyxml2/tinyxml2.h
 	$(CXX)  $(CPPFLAGS) $(CXXFLAGS) -w -c -o $@ externals/tinyxml2/tinyxml2.cpp
 
-tools/dmake/dmake.o: tools/dmake/dmake.cpp cli/filelister.h lib/config.h lib/pathmatch.h lib/utils.h
+tools/dmake/dmake.o: tools/dmake/dmake.cpp cli/filelister.h lib/config.h lib/filesettings.h lib/pathmatch.h lib/platform.h lib/standards.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ tools/dmake/dmake.cpp
 

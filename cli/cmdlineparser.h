@@ -84,7 +84,7 @@ public:
     /**
      * Return the files user gave to command line.
      */
-    const std::list<std::pair<std::string, std::size_t>>& getFiles() const {
+    const std::list<PathWithDetails>& getFiles() const {
         return mFiles;
     }
 
@@ -159,7 +159,7 @@ private:
     CmdLineLogger &mLogger;
 
     std::vector<std::string> mPathNames;
-    std::list<std::pair<std::string, std::size_t>> mFiles;
+    std::list<PathWithDetails> mFiles;
     std::list<FileSettings> mFileSettings;
     std::vector<std::string> mIgnoredPaths;
     Settings &mSettings;

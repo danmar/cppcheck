@@ -218,7 +218,7 @@ int CppCheckExecutor::check_wrapper(const Settings& settings)
     return check_internal(settings);
 }
 
-bool CppCheckExecutor::reportSuppressions(const Settings &settings, const SuppressionList& suppressions, bool unusedFunctionCheckEnabled, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, ErrorLogger& errorLogger) {
+bool CppCheckExecutor::reportSuppressions(const Settings &settings, const SuppressionList& suppressions, bool unusedFunctionCheckEnabled, const std::list<PathWithDetails> &files, const std::list<FileSettings>& fileSettings, ErrorLogger& errorLogger) {
     const auto& suppr = suppressions.getSuppressions();
     if (std::any_of(suppr.begin(), suppr.end(), [](const SuppressionList::Suppression& s) {
         return s.errorId == "unmatchedSuppression" && s.fileName.empty() && s.lineNumber == SuppressionList::Suppression::NO_LINE;
@@ -230,9 +230,9 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, const Suppre
         // the two inputs may only be used exclusively
         assert(!(!files.empty() && !fileSettings.empty()));
 
-        for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = files.cbegin(); i != files.cend(); ++i) {
+        for (std::list<PathWithDetails>::const_iterator i = files.cbegin(); i != files.cend(); ++i) {
             err |= SuppressionList::reportUnmatchedSuppressions(
-                suppressions.getUnmatchedLocalSuppressions(i->first, unusedFunctionCheckEnabled), errorLogger);
+                suppressions.getUnmatchedLocalSuppressions(i->path(), unusedFunctionCheckEnabled), errorLogger);
         }
 
         for (std::list<FileSettings>::const_iterator i = fileSettings.cbegin(); i != fileSettings.cend(); ++i) {
@@ -260,8 +260,8 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
 
     if (!settings.buildDir.empty()) {
         std::list<std::string> fileNames;
-        for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i)
-            fileNames.emplace_back(i->first);
+        for (std::list<PathWithDetails>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i)
+            fileNames.emplace_back(i->path());
         AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.userDefines, mFileSettings);
     }
 

@@ -233,7 +233,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
     }
 
     if (!pathnamesRef.empty()) {
-        std::list<std::pair<std::string, std::size_t>> filesResolved;
+        std::list<PathWithDetails> filesResolved;
         // TODO: this needs to be inlined into PathMatch as it depends on the underlying filesystem
 #if defined(_WIN32)
         // For Windows we want case-insensitive path matching
@@ -264,19 +264,19 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         {
             auto it = filesResolved.begin();
             while (it != filesResolved.end()) {
-                const std::string& name = it->first;
+                const std::string& name = it->path();
                 // TODO: log if duplicated files were dropped
-                filesResolved.erase(std::remove_if(std::next(it), filesResolved.end(), [&](const std::pair<std::string, std::size_t>& entry) {
-                    return entry.first == name;
+                filesResolved.erase(std::remove_if(std::next(it), filesResolved.end(), [&](const decltype(filesResolved)::value_type& entry) {
+                    return entry.path() == name;
                 }), filesResolved.end());
                 ++it;
             }
         }
 
-        std::list<std::pair<std::string, std::size_t>> files;
+        std::list<PathWithDetails> files;
         if (!mSettings.fileFilters.empty()) {
             std::copy_if(filesResolved.cbegin(), filesResolved.cend(), std::inserter(files, files.end()), [&](const decltype(filesResolved)::value_type& entry) {
-                return matchglobs(mSettings.fileFilters, entry.first);
+                return matchglobs(mSettings.fileFilters, entry.path());
             });
             if (files.empty()) {
                 mLogger.printError("could not find any files matching the filter.");
@@ -289,11 +289,11 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
 
         // sort the markup last
         std::copy_if(files.cbegin(), files.cend(), std::inserter(mFiles, mFiles.end()), [&](const decltype(files)::value_type& entry) {
-            return !mSettings.library.markupFile(entry.first) || !mSettings.library.processMarkupAfterCode(entry.first);
+            return !mSettings.library.markupFile(entry.path()) || !mSettings.library.processMarkupAfterCode(entry.path());
         });
 
         std::copy_if(files.cbegin(), files.cend(), std::inserter(mFiles, mFiles.end()), [&](const decltype(files)::value_type& entry) {
-            return mSettings.library.markupFile(entry.first) && mSettings.library.processMarkupAfterCode(entry.first);
+            return mSettings.library.markupFile(entry.path()) && mSettings.library.processMarkupAfterCode(entry.path());
         });
 
         if (mFiles.empty()) {

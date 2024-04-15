@@ -111,9 +111,9 @@ void CheckThread::run()
     if (!mFiles.isEmpty() || mAnalyseWholeProgram) {
         mAnalyseWholeProgram = false;
         qDebug() << "Whole program analysis";
-        std::list<std::pair<std::string, std::size_t>> files2;
+        std::list<PathWithDetails> files2;
         std::transform(mFiles.cbegin(), mFiles.cend(), std::back_inserter(files2), [&](const QString& file) {
-            return std::pair<std::string, std::size_t>{file.toStdString(), 0};
+            return PathWithDetails{file.toStdString(), 0};
         });
         mCppcheck.analyseWholeProgram(mCppcheck.settings().buildDir, files2, {});
         mFiles.clear();

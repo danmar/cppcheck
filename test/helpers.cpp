@@ -19,6 +19,7 @@
 #include "helpers.h"
 
 #include "filelister.h"
+#include "filesettings.h"
 #include "path.h"
 #include "pathmatch.h"
 #include "preprocessor.h"
@@ -82,14 +83,14 @@ ScopedFile::~ScopedFile() {
         // TODO: remove all files
         // TODO: simplify the function call
         // hack to be able to delete *.plist output files
-        std::list<std::pair<std::string, std::size_t>> files;
+        std::list<PathWithDetails> files;
         const std::string res = FileLister::addFiles(files, mPath, {".plist"}, false, PathMatch({}));
         if (!res.empty()) {
             std::cout << "ScopedFile(" << mPath + ") - generating file list failed (" << res << ")" << std::endl;
         }
         for (const auto &f : files)
         {
-            const std::string &file = f.first;
+            const std::string &file = f.path();
             const int rm_f_res = std::remove(file.c_str());
             if (rm_f_res != 0) {
                 std::cout << "ScopedFile(" << mPath + ") - could not delete '" << file << "' (" << rm_f_res << ")" << std::endl;

@@ -33,6 +33,7 @@
 #include "config.h"
 
 #include "../cli/filelister.h"
+#include "../lib/filesettings.h"
 #include "../lib/pathmatch.h"
 #include "../lib/utils.h"
 
@@ -159,7 +160,7 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
 
 static std::string getCppFiles(std::vector<std::string> &files, const std::string &path, bool recursive)
 {
-    std::list<std::pair<std::string, std::size_t>> filelist;
+    std::list<PathWithDetails> filelist;
     const std::set<std::string> extra;
     const std::vector<std::string> masks;
     const PathMatch matcher(masks);
@@ -168,9 +169,9 @@ static std::string getCppFiles(std::vector<std::string> &files, const std::strin
         return err;
 
     // add *.cpp files to the "files" vector..
-    for (const std::pair<const std::string&, size_t> file : filelist) {
-        if (endsWith(file.first, ".cpp"))
-            files.push_back(file.first);
+    for (const auto& file : filelist) {
+        if (endsWith(file.path(), ".cpp"))
+            files.push_back(file.path());
     }
     return "";
 }
