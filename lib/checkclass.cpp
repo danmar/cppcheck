@@ -1740,7 +1740,7 @@ void CheckClass::operatorEqToSelf()
                     // find the parameter name
                     const Token *rhs = func.argumentList.cbegin()->nameToken();
                     const Token* out_ifStatementScopeStart = nullptr;
-                    if (!hasAssignSelf(&func, rhs, &out_ifStatementScopeStart)) {
+                    if (!hasAssignSelf(&func, rhs, out_ifStatementScopeStart)) {
                         if (hasAllocation(&func, scope))
                             operatorEqToSelfError(func.token);
                     } else if (out_ifStatementScopeStart != nullptr) {
@@ -1859,7 +1859,7 @@ const Token * CheckClass::getIfStmtBodyStart(const Token *tok, const Token *rhs)
     return nullptr;
 }
 
-bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs, const Token **out_ifStatementScopeStart)
+bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs, const Token *&out_ifStatementScopeStart)
 {
     if (!rhs)
         return false;
@@ -1882,7 +1882,7 @@ bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs, const Tok
             if (tok2 && tok2->isUnaryOp("&") && tok2->astOperand1()->str() == rhs->str())
                 ret = true;
             if (ret) {
-                *out_ifStatementScopeStart = getIfStmtBodyStart(tok2, rhs);
+                out_ifStatementScopeStart = getIfStmtBodyStart(tok2, rhs);
             }
             return ret ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
         });
@@ -3400,13 +3400,13 @@ void CheckClass::checkThisUseAfterFree()
 
                 const Token * freeToken = nullptr;
                 std::set<const Function *> callstack;
-                checkThisUseAfterFreeRecursive(classScope, &func, &var, std::move(callstack), &freeToken);
+                checkThisUseAfterFreeRecursive(classScope, &func, &var, std::move(callstack), freeToken);
             }
         }
     }
 }
 
-bool CheckClass::checkThisUseAfterFreeRecursive(const Scope *classScope, const Function *func, const Variable *selfPointer, std::set<const Function *> callstack, const Token **freeToken)
+bool CheckClass::checkThisUseAfterFreeRecursive(const Scope *classScope, const Function *func, const Variable *selfPointer, std::set<const Function *> callstack, const Token *&freeToken)
 {
     if (!func || !func->functionScope)
         return false;
@@ -3419,23 +3419,23 @@ bool CheckClass::checkThisUseAfterFreeRecursive(const Scope *classScope, const F
     const Token * const bodyStart = func->functionScope->bodyStart;
     const Token * const bodyEnd = func->functionScope->bodyEnd;
     for (const Token *tok = bodyStart; tok != bodyEnd; tok = tok->next()) {
-        const bool isDestroyed = *freeToken != nullptr && !func->isStatic();
+        const bool isDestroyed = freeToken != nullptr && !func->isStatic();
         if (Token::Match(tok, "delete %var% ;") && selfPointer == tok->next()->variable()) {
-            *freeToken = tok;
+            freeToken = tok;
             tok = tok->tokAt(2);
         } else if (Token::Match(tok, "%var% . reset ( )") && selfPointer == tok->variable())
-            *freeToken = tok;
+            freeToken = tok;
         else if (Token::Match(tok->previous(), "!!. %name% (") && tok->function() && tok->function()->nestedIn == classScope) {
             if (isDestroyed) {
-                thisUseAfterFree(selfPointer->nameToken(), *freeToken, tok);
+                thisUseAfterFree(selfPointer->nameToken(), freeToken, tok);
                 return true;
             }
             if (checkThisUseAfterFreeRecursive(classScope, tok->function(), selfPointer, callstack, freeToken))
                 return true;
         } else if (isDestroyed && Token::Match(tok->previous(), "!!. %name%") && tok->variable() && tok->variable()->scope() == classScope && !tok->variable()->isStatic() && !tok->variable()->isArgument()) {
-            thisUseAfterFree(selfPointer->nameToken(), *freeToken, tok);
+            thisUseAfterFree(selfPointer->nameToken(), freeToken, tok);
             return true;
-        } else if (*freeToken && Token::Match(tok, "return|throw")) {
+        } else if (freeToken && Token::Match(tok, "return|throw")) {
             // TODO
             return tok->str() == "throw";
         } else if (tok->str() == "{" && tok->scope()->type == Scope::ScopeType::eLambda) {
@@ -3533,14 +3533,14 @@ namespace
     };
 }
 
-Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
+Check::FileInfo *CheckClass::getFileInfo(const Tokenizer &tokenizer, const Settings& /*settings*/) const
 {
-    if (!tokenizer->isCPP())
+    if (!tokenizer.isCPP())
         return nullptr;
-    (void)settings;
+
     // One definition rule
     std::vector<MyFileInfo::NameLoc> classDefinitions;
-    for (const Scope * classScope : tokenizer->getSymbolDatabase()->classAndStructScopes) {
+    for (const Scope * classScope : tokenizer.getSymbolDatabase()->classAndStructScopes) {
         if (classScope->isAnonymous())
             continue;
 
@@ -3575,7 +3575,7 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
 
         MyFileInfo::NameLoc nameLoc;
         nameLoc.className = std::move(name);
-        nameLoc.fileName = tokenizer->list.file(classScope->classDef);
+        nameLoc.fileName = tokenizer.list.file(classScope->classDef);
         nameLoc.lineNumber = classScope->classDef->linenr();
         nameLoc.column = classScope->classDef->column();
 

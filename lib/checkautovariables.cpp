@@ -598,7 +598,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                 continue;
             if (!printInconclusive && val.isInconclusive())
                 continue;
-            const Token* parent = getParentLifetime(val.tokvalue, &mSettings->library);
+            const Token* parent = getParentLifetime(val.tokvalue, mSettings->library);
             if (!exprs.insert(parent).second)
                 continue;
             for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(parent, escape || isAssignedToNonLocal(tok))) {

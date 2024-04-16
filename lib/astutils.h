@@ -173,7 +173,7 @@ bool astIsContainerString(const Token* tok);
 Library::Container::Action astContainerAction(const Token* tok, const Token** ftok = nullptr);
 Library::Container::Yield astContainerYield(const Token* tok, const Token** ftok = nullptr);
 
-Library::Container::Yield astFunctionYield(const Token* tok, const Settings* settings, const Token** ftok = nullptr);
+Library::Container::Yield astFunctionYield(const Token* tok, const Settings& settings, const Token** ftok = nullptr);
 
 /** Is given token a range-declaration in a range-based for loop */
 bool astIsRangeBasedForDecl(const Token* tok);
@@ -209,7 +209,7 @@ const Token* astParentSkipParens(const Token* tok);
 const Token* getParentMember(const Token * tok);
 
 const Token* getParentLifetime(const Token* tok);
-const Token* getParentLifetime(const Token* tok, const Library* library);
+const Token* getParentLifetime(const Token* tok, const Library& library);
 
 std::vector<ValueType> getParentValueTypes(const Token* tok,
                                            const Settings* settings = nullptr,
@@ -304,7 +304,7 @@ bool isEscapeFunction(const Token* ftok, const Library* library);
 
 /** Is scope a return scope (scope will unconditionally return) */
 CPPCHECKLIB bool isReturnScope(const Token* const endToken,
-                               const Library* library = nullptr,
+                               const Library& library,
                                const Token** unknownFunc = nullptr,
                                bool functionScope = false);
 
@@ -439,7 +439,7 @@ bool isLeafDot(const Token* tok);
 
 enum class ExprUsage { None, NotUsed, PassedByReference, Used, Inconclusive };
 
-ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings);
+ExprUsage getExprUsage(const Token* tok, int indirect, const Settings& settings);
 
 const Variable *getLHSVariable(const Token *tok);
 
