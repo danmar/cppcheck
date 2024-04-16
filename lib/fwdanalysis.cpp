@@ -236,7 +236,7 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *
                 }
             }
             tok = bodyStart->link();
-            if (isReturnScope(tok, &mLibrary))
+            if (isReturnScope(tok, mLibrary))
                 return Result(Result::Type::BAILOUT);
             if (Token::simpleMatch(tok, "} else {"))
                 tok = tok->linkAt(2);

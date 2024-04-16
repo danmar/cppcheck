@@ -67,7 +67,7 @@ public:
      */
     bool isPointerDeRef(const Token *tok, bool &unknown) const;
 
-    static bool isPointerDeRef(const Token *tok, bool &unknown, const Settings *settings);
+    static bool isPointerDeRef(const Token *tok, bool &unknown, const Settings &settings);
 
 private:
     /**
@@ -78,7 +78,7 @@ private:
      */
     static void parseFunctionCall(const Token &tok,
                                   std::list<const Token *> &var,
-                                  const Library *library);
+                                  const Library &library);
 
     /** @brief This constructor is used when running checks. */
     CheckNullPointer(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
@@ -106,7 +106,7 @@ private:
     void nullPointerError(const Token *tok, const std::string &varname, const ValueFlow::Value* value, bool inconclusive);
 
     /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const override;
+    Check::FileInfo *getFileInfo(const Tokenizer &tokenizer, const Settings &settings) const override;
 
     Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const override;
 

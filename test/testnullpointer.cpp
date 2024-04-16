@@ -4153,7 +4153,7 @@ private:
             library.functions["x"].argumentChecks[3] = arg;
 
             std::list<const Token *> null;
-            CheckNullPointer::parseFunctionCall(*xtok, null, &library);
+            CheckNullPointer::parseFunctionCall(*xtok, null, library);
             ASSERT_EQUALS(0U, null.size());
         }
 
@@ -4167,7 +4167,7 @@ private:
             library.functions["x"].argumentChecks[1].notnull = true;
 
             std::list<const Token *> null;
-            CheckNullPointer::parseFunctionCall(*xtok, null, &library);
+            CheckNullPointer::parseFunctionCall(*xtok, null, library);
             ASSERT_EQUALS(1U, null.size());
             ASSERT_EQUALS("a", null.front()->str());
         }
@@ -4483,12 +4483,12 @@ private:
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        CTU::FileInfo *ctu = CTU::getFileInfo(&tokenizer);
+        CTU::FileInfo *ctu = CTU::getFileInfo(tokenizer);
 
         // Check code..
         std::list<Check::FileInfo*> fileInfo;
         Check& c = getCheck<CheckNullPointer>();
-        fileInfo.push_back(c.getFileInfo(&tokenizer, &settings));
+        fileInfo.push_back(c.getFileInfo(tokenizer, settings));
         c.analyseWholeProgram(ctu, fileInfo, settings, *this);
         while (!fileInfo.empty()) {
             delete fileInfo.back();

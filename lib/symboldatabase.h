@@ -1435,11 +1435,11 @@ private:
 
     void debugSymbolDatabase() const;
 
-    void addClassFunction(Scope **scope, const Token **tok, const Token *argStart);
+    void addClassFunction(Scope *&scope, const Token *&tok, const Token *argStart);
     static Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);
     Function *addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
-    void addNewFunction(Scope **scope, const Token **tok);
-    bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart, const Token** declEnd) const;
+    void addNewFunction(Scope *&scope, const Token *&tok);
+    bool isFunction(const Token *tok, const Scope* outerScope, const Token *&funcStart, const Token *&argStart, const Token*& declEnd) const;
     const Type *findTypeInNested(const Token *startTok, const Scope *startScope) const;
     const Scope *findNamespace(const Token * tok, const Scope * scope) const;
     static Function *findFunctionInScope(const Token *func, const Scope *ns, const std::string & path, nonneg int path_length);

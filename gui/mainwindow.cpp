@@ -823,24 +823,24 @@ void MainWindow::addIncludeDirs(const QStringList &includeDirs, Settings &result
     }
 }
 
-Library::Error MainWindow::loadLibrary(Library *library, const QString &filename)
+Library::Error MainWindow::loadLibrary(Library &library, const QString &filename)
 {
     Library::Error ret;
 
     // Try to load the library from the project folder..
     if (mProjectFile) {
         QString path = QFileInfo(mProjectFile->getFilename()).canonicalPath();
-        ret = library->load(nullptr, (path+"/"+filename).toLatin1());
+        ret = library.load(nullptr, (path+"/"+filename).toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
     }
 
     // Try to load the library from the application folder..
     const QString appPath = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
-    ret = library->load(nullptr, (appPath+"/"+filename).toLatin1());
+    ret = library.load(nullptr, (appPath+"/"+filename).toLatin1());
     if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
         return ret;
-    ret = library->load(nullptr, (appPath+"/cfg/"+filename).toLatin1());
+    ret = library.load(nullptr, (appPath+"/cfg/"+filename).toLatin1());
     if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
         return ret;
 
@@ -848,10 +848,10 @@ Library::Error MainWindow::loadLibrary(Library *library, const QString &filename
     // Try to load the library from FILESDIR/cfg..
     const QString filesdir = FILESDIR;
     if (!filesdir.isEmpty()) {
-        ret = library->load(nullptr, (filesdir+"/cfg/"+filename).toLatin1());
+        ret = library.load(nullptr, (filesdir+"/cfg/"+filename).toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
-        ret = library->load(nullptr, (filesdir+filename).toLatin1());
+        ret = library.load(nullptr, (filesdir+filename).toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
     }
@@ -860,10 +860,10 @@ Library::Error MainWindow::loadLibrary(Library *library, const QString &filename
     // Try to load the library from the cfg subfolder..
     const QString datadir = getDataDir();
     if (!datadir.isEmpty()) {
-        ret = library->load(nullptr, (datadir+"/"+filename).toLatin1());
+        ret = library.load(nullptr, (datadir+"/"+filename).toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
-        ret = library->load(nullptr, (datadir+"/cfg/"+filename).toLatin1());
+        ret = library.load(nullptr, (datadir+"/cfg/"+filename).toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
     }
@@ -871,7 +871,7 @@ Library::Error MainWindow::loadLibrary(Library *library, const QString &filename
     return ret;
 }
 
-bool MainWindow::tryLoadLibrary(Library *library, const QString& filename)
+bool MainWindow::tryLoadLibrary(Library &library, const QString& filename)
 {
     const Library::Error error = loadLibrary(library, filename);
     if (error.errorcode != Library::ErrorCode::OK) {
@@ -972,7 +972,7 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
     // default to --check-level=normal for GUI for now
     result.setCheckLevel(Settings::CheckLevel::normal);
 
-    const bool std = tryLoadLibrary(&result.library, "std.cfg");
+    const bool std = tryLoadLibrary(result.library, "std.cfg");
     if (!std) {
         QMessageBox::critical(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=<directory> at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.\n\nAnalysis is aborted.").arg("std.cfg"));
         return {false, {}};
@@ -1022,7 +1022,7 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
         for (const QString& library : libraries) {
             result.libraries.emplace_back(library.toStdString());
             const QString filename = library + ".cfg";
-            tryLoadLibrary(&result.library, filename);
+            tryLoadLibrary(result.library, filename);
         }
 
         for (const SuppressionList::Suppression &suppression : mProjectFile->getCheckingSuppressions()) {
