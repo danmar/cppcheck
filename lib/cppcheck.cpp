@@ -1460,7 +1460,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
     }
 }
 
-void CppCheck::executeAddonsWholeProgram(const std::list<PathWithDetails> &files)
+void CppCheck::executeAddonsWholeProgram(const std::list<FileWithDetails> &files)
 {
     if (mSettings.addons.empty())
         return;
@@ -1755,7 +1755,7 @@ bool CppCheck::analyseWholeProgram()
     return errors && (mExitCode > 0);
 }
 
-unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<PathWithDetails> &files, const std::list<FileSettings>& fileSettings)
+unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings)
 {
     executeAddonsWholeProgram(files); // TODO: pass FileSettings
     if (buildDir.empty()) {
@@ -1825,7 +1825,7 @@ unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const st
     return mExitCode;
 }
 
-void CppCheck::removeCtuInfoFiles(const std::list<PathWithDetails> &files, const std::list<FileSettings>& fileSettings)
+void CppCheck::removeCtuInfoFiles(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings)
 {
     if (mSettings.buildDir.empty()) {
         for (const auto& f: files) {

@@ -233,7 +233,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
     }
 
     if (!pathnamesRef.empty()) {
-        std::list<PathWithDetails> filesResolved;
+        std::list<FileWithDetails> filesResolved;
         // TODO: this needs to be inlined into PathMatch as it depends on the underlying filesystem
 #if defined(_WIN32)
         // For Windows we want case-insensitive path matching
@@ -273,7 +273,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
             }
         }
 
-        std::list<PathWithDetails> files;
+        std::list<FileWithDetails> files;
         if (!mSettings.fileFilters.empty()) {
             std::copy_if(filesResolved.cbegin(), filesResolved.cend(), std::inserter(files, files.end()), [&](const decltype(filesResolved)::value_type& entry) {
                 return matchglobs(mSettings.fileFilters, entry.path());

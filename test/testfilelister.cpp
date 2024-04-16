@@ -59,7 +59,7 @@ private:
         const std::string adddir = findBaseDir() + ".";
 
         // Recursively add add files..
-        std::list<PathWithDetails> files;
+        std::list<FileWithDetails> files;
         std::vector<std::string> masks;
         PathMatch matcher(std::move(masks));
         std::string err = FileLister::recursiveAddFiles(files, adddir, matcher);
@@ -76,7 +76,7 @@ private:
 #endif
 
         const auto find_file = [&](const std::string& name) {
-            return std::find_if(files.cbegin(), files.cend(), [&name](const PathWithDetails& entry) {
+            return std::find_if(files.cbegin(), files.cend(), [&name](const FileWithDetails& entry) {
                 return entry.path() == name;
             });
         };
@@ -93,7 +93,7 @@ private:
     }
 
     void recursiveAddFilesEmptyPath() const {
-        std::list<PathWithDetails> files;
+        std::list<FileWithDetails> files;
         const std::string err = FileLister::recursiveAddFiles(files, "", PathMatch({}));
         ASSERT_EQUALS("no path specified", err);
     }
@@ -101,7 +101,7 @@ private:
     void excludeFile1() const {
         const std::string basedir = findBaseDir();
 
-        std::list<PathWithDetails> files;
+        std::list<FileWithDetails> files;
         std::vector<std::string> ignored{"lib/token.cpp"};
         PathMatch matcher(ignored);
         std::string err = FileLister::recursiveAddFiles(files, basedir + "lib/token.cpp", matcher);
@@ -112,7 +112,7 @@ private:
     void excludeFile2() const {
         const std::string basedir = findBaseDir();
 
-        std::list<PathWithDetails> files;
+        std::list<FileWithDetails> files;
         std::vector<std::string> ignored;
         PathMatch matcher(ignored);
         std::string err = FileLister::recursiveAddFiles(files, basedir + "lib/token.cpp", matcher);

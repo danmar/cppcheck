@@ -30,7 +30,7 @@
 
 struct FileSettings;
 
-Executor::Executor(const std::list<PathWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger)
+Executor::Executor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger)
     : mFiles(files), mFileSettings(fileSettings), mSettings(settings), mSuppressions(suppressions), mErrorLogger(errorLogger)
 {
     // the two inputs may only be used exclusively

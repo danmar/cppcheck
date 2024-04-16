@@ -41,12 +41,12 @@
 // When compiling Unicode targets WinAPI automatically uses *W Unicode versions
 // of called functions. Thus, we explicitly call *A versions of the functions.
 
-std::string FileLister::recursiveAddFiles(std::list<PathWithDetails>&files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored)
+std::string FileLister::recursiveAddFiles(std::list<FileWithDetails>&files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored)
 {
     return addFiles(files, path, extra, true, ignored);
 }
 
-std::string FileLister::addFiles(std::list<PathWithDetails>&files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored)
+std::string FileLister::addFiles(std::list<FileWithDetails>&files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored)
 {
     if (path.empty())
         return "no path specified";
@@ -123,7 +123,7 @@ std::string FileLister::addFiles(std::list<PathWithDetails>&files, const std::st
                 // Directory
                 if (recursive) {
                     if (!ignored.match(fname)) {
-                        std::list<PathWithDetails> filesSorted;
+                        std::list<FileWithDetails> filesSorted;
 
                         std::string err = FileLister::recursiveAddFiles(filesSorted, fname, extra, ignored);
                         if (!err.empty())
@@ -166,7 +166,7 @@ std::string FileLister::addFiles(std::list<PathWithDetails>&files, const std::st
 #include <sys/stat.h>
 #include <cerrno>
 
-static std::string addFiles2(std::list<PathWithDetails> &files,
+static std::string addFiles2(std::list<FileWithDetails> &files,
                              const std::string &path,
                              const std::set<std::string> &extra,
                              bool recursive,
@@ -189,7 +189,7 @@ static std::string addFiles2(std::list<PathWithDetails> &files,
             std::string new_path = path;
             new_path += '/';
 
-            std::list<PathWithDetails> filesSorted;
+            std::list<FileWithDetails> filesSorted;
 
             while (const dirent* dir_result = readdir(dir)) {
                 if ((std::strcmp(dir_result->d_name, ".") == 0) ||
@@ -236,12 +236,12 @@ static std::string addFiles2(std::list<PathWithDetails> &files,
     return "";
 }
 
-std::string FileLister::recursiveAddFiles(std::list<PathWithDetails> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored)
+std::string FileLister::recursiveAddFiles(std::list<FileWithDetails> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored)
 {
     return addFiles(files, path, extra, true, ignored);
 }
 
-std::string FileLister::addFiles(std::list<PathWithDetails> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored)
+std::string FileLister::addFiles(std::list<FileWithDetails> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored)
 {
     if (path.empty())
         return "no path specified";

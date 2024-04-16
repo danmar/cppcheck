@@ -63,7 +63,7 @@ enum class Color;
 using std::memset;
 
 
-ProcessExecutor::ProcessExecutor(const std::list<PathWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand)
+ProcessExecutor::ProcessExecutor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand)
     : Executor(files, fileSettings, settings, suppressions, errorLogger)
     , mExecuteCommand(std::move(executeCommand))
 {
@@ -233,7 +233,7 @@ unsigned int ProcessExecutor::check()
     unsigned int fileCount = 0;
     unsigned int result = 0;
 
-    const std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const PathWithDetails& p) {
+    const std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const FileWithDetails& p) {
         return v + p.size();
     });
 
@@ -241,7 +241,7 @@ unsigned int ProcessExecutor::check()
     std::map<pid_t, std::string> childFile;
     std::map<int, std::string> pipeFile;
     std::size_t processedsize = 0;
-    std::list<PathWithDetails>::const_iterator iFile = mFiles.cbegin();
+    std::list<FileWithDetails>::const_iterator iFile = mFiles.cbegin();
     std::list<FileSettings>::const_iterator iFileSettings = mFileSettings.cbegin();
     for (;;) {
         // Start a new child
@@ -330,7 +330,7 @@ unsigned int ProcessExecutor::check()
                             std::size_t size = 0;
                             if (p != pipeFile.end()) {
                                 pipeFile.erase(p);
-                                const auto fs = std::find_if(mFiles.cbegin(), mFiles.cend(), [&name](const PathWithDetails& entry) {
+                                const auto fs = std::find_if(mFiles.cbegin(), mFiles.cend(), [&name](const FileWithDetails& entry) {
                                     return entry.path() == name;
                                 });
                                 if (fs != mFiles.end()) {

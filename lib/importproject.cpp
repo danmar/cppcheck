@@ -1339,7 +1339,7 @@ void ImportProject::setRelativePaths(const std::string &filename)
         return;
     const std::vector<std::string> basePaths{Path::fromNativeSeparators(Path::getCurrentPath())};
     for (auto &fs: fileSettings) {
-        fs.path = PathWithDetails{Path::getRelativePath(fs.filename(), basePaths)};
+        fs.file = FileWithDetails{Path::getRelativePath(fs.filename(), basePaths)};
         for (auto &includePath: fs.includePaths)
             includePath = Path::getRelativePath(includePath, basePaths);
     }

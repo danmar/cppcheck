@@ -31,7 +31,7 @@ class ErrorLogger;
 class ErrorMessage;
 class SuppressionList;
 struct FileSettings;
-class PathWithDetails;
+class FileWithDetails;
 
 /// @addtogroup CLI
 /// @{
@@ -42,7 +42,7 @@ class PathWithDetails;
  */
 class Executor {
 public:
-    Executor(const std::list<PathWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger);
+    Executor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger);
     virtual ~Executor() = default;
 
     Executor(const Executor &) = delete;
@@ -68,7 +68,7 @@ protected:
      */
     bool hasToLog(const ErrorMessage &msg);
 
-    const std::list<PathWithDetails> &mFiles;
+    const std::list<FileWithDetails> &mFiles;
     const std::list<FileSettings>& mFileSettings;
     const Settings &mSettings;
     SuppressionList &mSuppressions;

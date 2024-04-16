@@ -44,7 +44,7 @@ enum class SHOWTIME_MODES;
 struct FileSettings;
 class CheckUnusedFunctions;
 class Tokenizer;
-class PathWithDetails;
+class FileWithDetails;
 
 namespace simplecpp { class TokenList; }
 
@@ -143,10 +143,10 @@ public:
     void analyseClangTidy(const FileSettings &fileSettings);
 
     /** analyse whole program use .analyzeinfo files */
-    unsigned int analyseWholeProgram(const std::string &buildDir, const std::list<PathWithDetails> &files, const std::list<FileSettings>& fileSettings);
+    unsigned int analyseWholeProgram(const std::string &buildDir, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings);
 
     /** Remove *.ctu-info files */
-    void removeCtuInfoFiles(const std::list<PathWithDetails>& files, const std::list<FileSettings>& fileSettings); // cppcheck-suppress functionConst // has side effects
+    void removeCtuInfoFiles(const std::list<FileWithDetails>& files, const std::list<FileSettings>& fileSettings); // cppcheck-suppress functionConst // has side effects
 
     static void resetTimerResults();
     static void printTimerResults(SHOWTIME_MODES mode);
@@ -193,7 +193,7 @@ private:
     /**
      * Execute addons
      */
-    void executeAddonsWholeProgram(const std::list<PathWithDetails> &files);
+    void executeAddonsWholeProgram(const std::list<FileWithDetails> &files);
 
 #ifdef HAVE_RULES
     /**

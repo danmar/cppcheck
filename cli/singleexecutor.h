@@ -31,12 +31,12 @@ class Settings;
 class CppCheck;
 class SuppressionList;
 struct FileSettings;
-class PathWithDetails;
+class FileWithDetails;
 
 class SingleExecutor : public Executor
 {
 public:
-    SingleExecutor(CppCheck &cppcheck, const std::list<PathWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger);
+    SingleExecutor(CppCheck &cppcheck, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger);
     SingleExecutor(const SingleExecutor &) = delete;
     SingleExecutor& operator=(const SingleExecutor &) = delete;
 

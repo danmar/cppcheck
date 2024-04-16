@@ -27,14 +27,14 @@
 #include <string>
 #include <utility>
 
-class PathWithDetails
+class FileWithDetails
 {
 public:
-    explicit PathWithDetails(std::string path)
-        : PathWithDetails(std::move(path), 0)
+    explicit FileWithDetails(std::string path)
+        : FileWithDetails(std::move(path), 0)
     {}
 
-    PathWithDetails(std::string path, std::size_t size)
+    FileWithDetails(std::string path, std::size_t size)
         : mPath(std::move(path))
         , mSize(size)
     {}
@@ -56,18 +56,18 @@ private:
 /** File settings. Multiple configurations for a file is allowed. */
 struct CPPCHECKLIB FileSettings {
     explicit FileSettings(std::string path)
-        : path(std::move(path))
+        : file(std::move(path))
     {}
 
     FileSettings(std::string path, std::size_t size)
-        : path(std::move(path), size)
+        : file(std::move(path), size)
     {}
 
     std::string cfg;
-    PathWithDetails path;
+    FileWithDetails file;
     const std::string& filename() const
     {
-        return path.path();
+        return file.path();
     }
     std::string defines;
     // TODO: handle differently

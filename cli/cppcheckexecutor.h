@@ -31,7 +31,7 @@
 class Settings;
 class ErrorLogger;
 class SuppressionList;
-class PathWithDetails;
+class FileWithDetails;
 
 /**
  * This class works as an example of how CppCheck can be used in external
@@ -82,7 +82,7 @@ private:
 
 protected:
 
-    static bool reportSuppressions(const Settings &settings, const SuppressionList& suppressions, bool unusedFunctionCheckEnabled, const std::list<PathWithDetails> &files, const std::list<FileSettings>& fileSettings, ErrorLogger& errorLogger);
+    static bool reportSuppressions(const Settings &settings, const SuppressionList& suppressions, bool unusedFunctionCheckEnabled, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, ErrorLogger& errorLogger);
 
     /**
      * Wrapper around check_internal
@@ -107,7 +107,7 @@ protected:
     /**
      * Filename associated with size of file
      */
-    std::list<PathWithDetails> mFiles;
+    std::list<FileWithDetails> mFiles;
 
     std::list<FileSettings> mFileSettings;
 

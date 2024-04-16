@@ -229,7 +229,7 @@ private:
     unsigned int _checkSuppression(std::map<std::string, std::string> &f, bool useFS, const std::string &suppression = emptyString) {
         std::list<FileSettings> fileSettings;
 
-        std::list<PathWithDetails> filelist;
+        std::list<FileWithDetails> filelist;
         for (std::map<std::string, std::string>::const_iterator i = f.cbegin(); i != f.cend(); ++i) {
             filelist.emplace_back(i->first, i->second.size());
             if (useFS) {
@@ -277,7 +277,7 @@ private:
     unsigned int _checkSuppressionThreads(const char code[], bool useFS, const std::string &suppression = emptyString) {
         std::list<FileSettings> fileSettings;
 
-        std::list<PathWithDetails> filelist;
+        std::list<FileWithDetails> filelist;
         filelist.emplace_back("test.cpp", strlen(code));
         if (useFS) {
             fileSettings.emplace_back("test.cpp", strlen(code));
@@ -294,7 +294,7 @@ private:
 
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filelist.size());
-        for (std::list<PathWithDetails>::const_iterator i = filelist.cbegin(); i != filelist.cend(); ++i)
+        for (std::list<FileWithDetails>::const_iterator i = filelist.cbegin(); i != filelist.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->path(), code));
 
         // clear files list so only fileSettings are used
@@ -321,7 +321,7 @@ private:
     unsigned int _checkSuppressionProcesses(const char code[], bool useFS, const std::string &suppression = emptyString) {
         std::list<FileSettings> fileSettings;
 
-        std::list<PathWithDetails> filelist;
+        std::list<FileWithDetails> filelist;
         filelist.emplace_back("test.cpp", strlen(code));
         if (useFS) {
             fileSettings.emplace_back("test.cpp", strlen(code));
@@ -338,7 +338,7 @@ private:
 
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filelist.size());
-        for (std::list<PathWithDetails>::const_iterator i = filelist.cbegin(); i != filelist.cend(); ++i)
+        for (std::list<FileWithDetails>::const_iterator i = filelist.cbegin(); i != filelist.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->path(), code));
 
         // clear files list so only fileSettings are used

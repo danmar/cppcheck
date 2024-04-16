@@ -160,7 +160,7 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
 
 static std::string getCppFiles(std::vector<std::string> &files, const std::string &path, bool recursive)
 {
-    std::list<PathWithDetails> filelist;
+    std::list<FileWithDetails> filelist;
     const std::set<std::string> extra;
     const std::vector<std::string> masks;
     const PathMatch matcher(masks);
