@@ -122,8 +122,7 @@ private:
 
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(errorLogger, false, {});
-        FileSettings fs;
-        fs.path = PathWithDetails{file.path()};
+        FileSettings fs{file.path()};
         ASSERT_EQUALS(1, cppcheck.check(fs));
         // TODO: how to properly disable these warnings?
         errorLogger.ids.erase(std::remove_if(errorLogger.ids.begin(), errorLogger.ids.end(), [](const std::string& id) {

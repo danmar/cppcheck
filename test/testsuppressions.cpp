@@ -233,9 +233,7 @@ private:
         for (std::map<std::string, std::string>::const_iterator i = f.cbegin(); i != f.cend(); ++i) {
             filelist.emplace_back(i->first, i->second.size());
             if (useFS) {
-                FileSettings fs;
-                fs.path = PathWithDetails{i->first};
-                fileSettings.emplace_back(std::move(fs));
+                fileSettings.emplace_back(i->first, i->second.size());
             }
         }
 
@@ -282,9 +280,7 @@ private:
         std::list<PathWithDetails> filelist;
         filelist.emplace_back("test.cpp", strlen(code));
         if (useFS) {
-            FileSettings fs;
-            fs.path = PathWithDetails{"test.cpp"};
-            fileSettings.emplace_back(std::move(fs));
+            fileSettings.emplace_back("test.cpp", strlen(code));
         }
 
         /*const*/ auto settings = dinit(Settings,
@@ -328,9 +324,7 @@ private:
         std::list<PathWithDetails> filelist;
         filelist.emplace_back("test.cpp", strlen(code));
         if (useFS) {
-            FileSettings fs;
-            fs.path = PathWithDetails{"test.cpp"};
-            fileSettings.emplace_back(std::move(fs));
+            fileSettings.emplace_back("test.cpp", strlen(code));
         }
 
         /*const*/ auto settings = dinit(Settings,

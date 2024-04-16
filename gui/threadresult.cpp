@@ -72,7 +72,7 @@ FileSettings ThreadResult::getNextFileSettings()
 {
     std::lock_guard<std::mutex> locker(mutex);
     if (mFileSettings.empty()) {
-        return FileSettings();
+        return FileSettings("");
     }
     const FileSettings fs = mFileSettings.front();
     mFileSettings.pop_front();

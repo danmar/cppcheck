@@ -74,9 +74,7 @@ private:
                 std::string f_s = fprefix() + "_" + std::to_string(i) + ".cpp";
                 filelist.emplace_back(f_s, data.size());
                 if (useFS) {
-                    FileSettings fs;
-                    fs.path = PathWithDetails{std::move(f_s)};
-                    fileSettings.emplace_back(std::move(fs));
+                    fileSettings.emplace_back(std::move(f_s), data.size());
                 }
             }
         }
@@ -85,9 +83,7 @@ private:
             {
                 filelist.emplace_back(f, data.size());
                 if (useFS) {
-                    FileSettings fs;
-                    fs.path = PathWithDetails{f};
-                    fileSettings.emplace_back(std::move(fs));
+                    fileSettings.emplace_back(f, data.size());
                 }
             }
         }

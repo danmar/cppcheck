@@ -398,22 +398,23 @@ bool ImportProject::importCompileCommands(std::istream &istr)
         if (!Path::acceptFile(file))
             continue;
 
-        FileSettings fs;
+        std::string path;
         if (Path::isAbsolute(file))
-            fs.path = PathWithDetails{Path::simplifyPath(file)};
+            path = Path::simplifyPath(file);
 #ifdef _WIN32
         else if (file[0] == '/' && directory.size() > 2 && std::isalpha(directory[0]) && directory[1] == ':')
             // directory: C:\foo\bar
             // file: /xy/z.c
             // => c:/xy/z.c
-            fs.filename = Path::simplifyPath(directory.substr(0,2) + file);
+            path = Path::simplifyPath(directory.substr(0,2) + file);
 #endif
         else
-            fs.path = PathWithDetails{Path::simplifyPath(directory + file)};
-        if (!sourceFileExists(fs.filename())) {
-            printError("'" + fs.filename() + "' from compilation database does not exist");
+            path = Path::simplifyPath(directory + file);
+        if (!sourceFileExists(path)) {
+            printError("'" + path + "' from compilation database does not exist");
             return false;
         }
+        FileSettings fs{std::move(path)};
         fsParseCommand(fs, command); // read settings; -D, -I, -U, -std, -m*, -f*
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         fsSetIncludePaths(fs, directory, fs.includePaths, variables);
@@ -759,8 +760,7 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                     continue;
             }
 
-            FileSettings fs;
-            fs.path = PathWithDetails{cfilename};
+            FileSettings fs{cfilename};
             fs.cfg = p.name;
             // TODO: detect actual MSC version
             fs.msc = true;
@@ -1055,10 +1055,9 @@ bool ImportProject::importBcb6Prj(const std::string &projectFilename)
         //
         // We can also force C++ compilation for all files using the -P command line switch.
         const bool cppMode = forceCppMode || Path::getFilenameExtensionInLowerCase(c) == ".cpp";
-        FileSettings fs;
+        FileSettings fs{Path::simplifyPath(Path::isAbsolute(c) ? c : projectDir + c)};
         fsSetIncludePaths(fs, projectDir, toStringList(includePath), variables);
         fsSetDefines(fs, cppMode ? cppDefines : defines);
-        fs.path = PathWithDetails{Path::simplifyPath(Path::isAbsolute(c) ? c : projectDir + c)};
         fileSettings.push_back(std::move(fs));
     }
 

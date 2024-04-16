@@ -55,7 +55,13 @@ private:
 
 /** File settings. Multiple configurations for a file is allowed. */
 struct CPPCHECKLIB FileSettings {
-    FileSettings() = default; // TODO: call PathWithDetails c'tor
+    explicit FileSettings(std::string path)
+        : path(std::move(path))
+    {}
+
+    FileSettings(std::string path, std::size_t size)
+        : path(std::move(path), size)
+    {}
 
     std::string cfg;
     PathWithDetails path;
