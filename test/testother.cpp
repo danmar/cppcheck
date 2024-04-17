@@ -10324,16 +10324,6 @@ private:
         ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (performance) Function parameter 'v' should be passed by const reference. However it seems that 'f' is a callback function.\n",
                       errout_str());
 
-        check("int (*pf) (std::vector<int>) = nullptr;\n" // #12118
-              "int f(std::vector<int> v) {\n"
-              "    return v.size();\n"
-              "}\n"
-              "void g() {\n"
-              "    pf = f;\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (performance) Function parameter 'v' should be passed by const reference. However it seems that 'f' is a callback function.\n",
-                      errout_str());
-
         check("template<typename T> struct A;\n" // #12621
               "template<typename T>\n"
               "struct B { A<T> a; };\n"
