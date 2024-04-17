@@ -3306,7 +3306,7 @@ void CheckClass::checkUselessOverride()
 }
 
 static const Variable* getSingleReturnVar(const Scope* scope) {
-    if (!scope)
+    if (!scope || !scope->bodyStart)
         return nullptr;
     const Token* const start = scope->bodyStart->next();
     const Token* const end = Token::findsimplematch(start, ";", 1, scope->bodyEnd);
