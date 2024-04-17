@@ -923,7 +923,7 @@ static bool isSimpleExpr(const Token* tok, const Variable* var, const Settings* 
         }
         else if (isLeafDot(tok->astOperand2())) {
             needsCheck = tok->astOperand2()->varId() > 0;
-            tok = tok->astoperand2();
+            tok = tok->astOperand2();
         }
     }
     return (needsCheck && !findExpressionChanged(tok, tok->astParent(), var->scope()->bodyEnd, settings));
