@@ -215,6 +215,7 @@ private:
         TEST_CASE(simplifyTypedef149);
         TEST_CASE(simplifyTypedef150);
         TEST_CASE(simplifyTypedef151);
+        TEST_CASE(simplifyTypedef152);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -3539,6 +3540,25 @@ private:
                "}\n";
         exp = "namespace N { "
               "const int ( * f ( ) ) [ 10 ] { return static_cast < const int ( * ) [ 10 ] > ( nullptr ) ; } "
+              "}";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void simplifyTypedef152() {
+        const char* code{}, *exp{};
+        code = "namespace O { struct T {}; }\n"
+               "typedef O::T S;\n"
+               "namespace M {\n"
+               "    enum E { E0, S = 1 };\n"
+               "    enum class F : ::std::int8_t { F0, S = 1 };\n"
+               "}\n"
+               "namespace N { enum { G0, S = 1 }; }\n";
+        exp = "namespace O { struct T { } ; } "
+              "namespace M { "
+              "enum E { E0 , S = 1 } ; "
+              "enum class F : :: std :: int8_t { F0 , S = 1 } ; "
+              "}"
+              " namespace N { enum Anonymous0 { G0 , S = 1 } ; "
               "}";
         ASSERT_EQUALS(exp, tok(code));
     }

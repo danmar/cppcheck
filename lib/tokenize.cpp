@@ -1125,6 +1125,18 @@ void Tokenizer::simplifyTypedef()
     simplifyTypedefCpp();
 }
 
+static bool isEnumScope(const Token* tok)
+{
+    if (!Token::simpleMatch(tok, "{"))
+        return false;
+    tok = tok->previous();
+    while (tok && !tok->isKeyword() && Token::Match(tok, "%name%|::|:"))
+        tok = tok->previous();
+    if (Token::simpleMatch(tok, "class"))
+        tok = tok->previous();
+    return Token::simpleMatch(tok, "enum");
+}
+
 void Tokenizer::simplifyTypedefCpp()
 {
     bool isNamespace = false;
@@ -1622,7 +1634,7 @@ void Tokenizer::simplifyTypedefCpp()
             bool globalScope = false;
             int classLevel = spaceInfo.size();
             bool inTypeDef = false;
-            bool inEnumClass = false;
+            bool inEnum = false;
             std::string removed;
             std::string classPath;
             for (size_t i = 1; i < spaceInfo.size(); ++i) {
@@ -1676,7 +1688,7 @@ void Tokenizer::simplifyTypedefCpp()
                             if (memberScope == 0)
                                 inMemberFunc = false;
                         }
-                        inEnumClass = false;
+                        inEnum = false;
 
                         if (classLevel > 1 && tok2 == spaceInfo[classLevel - 1].bodyEnd2) {
                             --classLevel;
@@ -1736,8 +1748,8 @@ void Tokenizer::simplifyTypedefCpp()
                                 }
                                 ++scope;
                             }
-                            if (Token::Match(tok2->tokAt(-3), "enum class %name%"))
-                                inEnumClass = true;
+                            if (isEnumScope(tok2))
+                                inEnum = true;
                         }
 
                         // keep track of scopes within member function
@@ -1863,7 +1875,7 @@ void Tokenizer::simplifyTypedefCpp()
                     }
                 }
 
-                simplifyType = simplifyType && (!inEnumClass || Token::simpleMatch(tok2->previous(), "="));
+                simplifyType = simplifyType && (!inEnum || !Token::simpleMatch(tok2->next(), "="));
                 simplifyType = simplifyType && !(Token::simpleMatch(tok2->next(), "<") && Token::simpleMatch(typeEnd, ">"));
 
                 if (simplifyType) {
