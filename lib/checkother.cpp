@@ -917,10 +917,14 @@ static bool isSimpleExpr(const Token* tok, const Variable* var, const Settings* 
         if (Token::Match(ftok, "%name% (") &&
             ((ftok->function() && ftok->function()->isConst()) || settings->library.isFunctionConst(ftok->str(), /*pure*/ true)))
             needsCheck = true;
-        else if (tok->str() == "[")
+        else if (tok->str() == "[") {
             needsCheck = tok->astOperand1() && tok->astOperand1()->varId() > 0;
-        else if (isLeafDot(tok->astOperand2()))
+            tok = tok->astOperand1();
+        }
+        else if (isLeafDot(tok->astOperand2())) {
             needsCheck = tok->astOperand2()->varId() > 0;
+            tok = tok->astoperand2();
+        }
     }
     return (needsCheck && !findExpressionChanged(tok, tok->astParent(), var->scope()->bodyEnd, settings));
 }
