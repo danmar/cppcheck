@@ -1651,6 +1651,14 @@ def is_suppressed(location, message, errorId):
             return True
     return False
 
+def log_checker(message, addon):
+    if '--cli' in sys.argv:
+        msg = { 'addon': addon,
+                'severity': 'none',
+                'message': message,
+                'errorId': 'logChecker'}
+        sys.stdout.write(json.dumps(msg) + '\n')
+
 def reportError(location, severity, message, addon, errorId, extra='', columnOverride=None):
     if '--cli' in sys.argv:
         msg = { 'file': location.file,

@@ -4489,6 +4489,10 @@ class MisraChecker:
                 1901) # misra-c2012-19.1 : misra c++2008 2-13-3
 
             if (not self.is_cpp) or rule_num in misra_cpp:
+                # log checker
+                errmsg = 'Misra C: %i.%i' % (rule_num // 100, rule_num % 100)
+                cppcheckdata.log_checker(errmsg, 'misra')
+
                 check_function(*args)
 
     def parseDump(self, dumpfile, path_premium_addon=None):

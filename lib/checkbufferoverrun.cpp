@@ -462,7 +462,7 @@ void CheckBufferOverrun::negativeIndexError(const Token* tok,
 
 void CheckBufferOverrun::pointerArithmetic()
 {
-    if (!mSettings->severity.isEnabled(Severity::portability))
+    if (!mSettings->severity.isEnabled(Severity::portability) && !mSettings->isPremiumEnabled("pointerOutOfBounds"))
         return;
 
     logChecker("CheckBufferOverrun::pointerArithmetic"); // portability
@@ -820,7 +820,7 @@ void CheckBufferOverrun::terminateStrncpyError(const Token *tok, const std::stri
 void CheckBufferOverrun::argumentSize()
 {
     // Check '%type% x[10]' arguments
-    if (!mSettings->severity.isEnabled(Severity::warning))
+    if (!mSettings->severity.isEnabled(Severity::warning) && !mSettings->isPremiumEnabled("argumentSize"))
         return;
 
     logChecker("CheckBufferOverrun::argumentSize"); // warning
