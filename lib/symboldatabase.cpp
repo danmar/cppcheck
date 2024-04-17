@@ -1959,7 +1959,9 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
         }
 
         // skip over trailing return type
+        bool hasTrailingRet = false;
         if (tok2 && tok2->str() == ".") {
+            hasTrailingRet = true;
             for (tok2 = tok2->next(); tok2; tok2 = tok2->next()) {
                 if (Token::Match(tok2, ";|{|=|override|final"))
                     break;
@@ -2030,7 +2032,8 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
              (tok2->isUpperCaseName() && Token::Match(tok2, "%name% (") && tok2->next()->link()->strAt(1) == "{") ||
              Token::Match(tok2, ": ::| %name% (|::|<|{") ||
              Token::Match(tok2, "&|&&| ;|{") ||
-             Token::Match(tok2, "= delete|default ;"))) {
+             Token::Match(tok2, "= delete|default ;") ||
+             (hasTrailingRet && Token::Match(tok2, "final|override")))) {
             funcStart = tok;
             argStart = tok->next();
             declEnd = Token::findmatch(tok2, "{|;");
