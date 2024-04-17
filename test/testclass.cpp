@@ -8951,6 +8951,10 @@ private:
                                "    std::string f(std::string s) { return s; }\n"
                                "};\n");
         ASSERT_EQUALS("", errout_str());
+
+        checkReturnByReference("struct S { S(); };\n" // #12620
+                               "S::S() = delete;\n");
+        ASSERT_EQUALS("", errout_str()); // don't crash
     }
 };
 
