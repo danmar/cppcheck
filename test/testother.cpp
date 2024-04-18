@@ -1712,7 +1712,7 @@ private:
     }
 
     void varScope40() {
-        checkP("#define NUM (-999.9)\n"
+        checkP("#define NUM (-999.9)\n" // #8862
                "double f(int i) {\n"
                "    double a = NUM;\n"
                "    double b = -NUM;\n"
@@ -1731,6 +1731,19 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) The scope of the variable 'a' can be reduced.\n"
                       "[test.cpp:4]: (style) The scope of the variable 'b' can be reduced.\n"
                       "[test.cpp:5]: (style) The scope of the variable 'c' can be reduced.\n",
+                      errout_str());
+
+        check("struct S { int a; };\n" // #12618
+              "int f(const S* s, int i) {\n"
+              "    int x = s->a;\n"
+              "    const int b[] = { 1, 2, 3 };\n"
+              "    int y = b[1];\n"
+              "    if (i)\n"
+              "        return x + y;\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) The scope of the variable 'x' can be reduced.\n"
+                      "[test.cpp:5]: (style) The scope of the variable 'y' can be reduced.\n",
                       errout_str());
     }
 

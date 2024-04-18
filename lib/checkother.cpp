@@ -911,14 +911,20 @@ static bool isSimpleExpr(const Token* tok, const Variable* var, const Settings* 
         return true;
     bool needsCheck = tok->varId() > 0;
     if (!needsCheck) {
+        if (tok->isArithmeticalOp())
+            return isSimpleExpr(tok->astOperand1(), var, settings) && (!tok->astOperand2() || isSimpleExpr(tok->astOperand2(), var, settings));
         const Token* ftok = tok->previous();
         if (Token::Match(ftok, "%name% (") &&
             ((ftok->function() && ftok->function()->isConst()) || settings->library.isFunctionConst(ftok->str(), /*pure*/ true)))
             needsCheck = true;
-        if (tok->isArithmeticalOp() &&
-            (!tok->astOperand1() || isSimpleExpr(tok->astOperand1(), var, settings)) &&
-            (!tok->astOperand2() || isSimpleExpr(tok->astOperand2(), var, settings)))
-            return true;
+        else if (tok->str() == "[") {
+            needsCheck = tok->astOperand1() && tok->astOperand1()->varId() > 0;
+            tok = tok->astOperand1();
+        }
+        else if (isLeafDot(tok->astOperand2())) {
+            needsCheck = tok->astOperand2()->varId() > 0;
+            tok = tok->astOperand2();
+        }
     }
     return (needsCheck && !findExpressionChanged(tok, tok->astParent(), var->scope()->bodyEnd, settings));
 }
