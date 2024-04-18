@@ -1281,8 +1281,3 @@ wxString::iterator wxString_test3()
     // cppcheck-suppress returnDanglingLifetime
     return it;
 }
-
-wxGrid::wxGridSelectionModes get_wxGridSelectionModes()
-{
-    return wxGrid::wxGridSelectCells;
-}
