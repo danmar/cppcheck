@@ -65,6 +65,8 @@ private:
 
         TEST_CASE(substituteTemplateFormatStatic);
         TEST_CASE(substituteTemplateLocationStatic);
+
+        TEST_CASE(isCriticalErrorId);
     }
 
     void TestPatternSearchReplace(const std::string& idPlaceholder, const std::string& id) const {
@@ -518,6 +520,11 @@ private:
             ::substituteTemplateFormatStatic(s);
             ASSERT_EQUALS("{", s);
         }
+    }
+
+    void isCriticalErrorId() {
+        // It does not abort all the analysis of the file. Like "missingInclude" there can be false negatives.
+        ASSERT_EQUALS(false, ErrorLogger::isCriticalErrorId("misra-config"));
     }
 };
 
