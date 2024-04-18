@@ -142,6 +142,7 @@ private:
         TEST_CASE(localvar68);
         TEST_CASE(localvar69);
         TEST_CASE(localvar70);
+        TEST_CASE(localvar71);
         TEST_CASE(localvarloops); // loops
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
@@ -3903,6 +3904,12 @@ private:
                               "    S s1;\n"
                               "    if (s == s1) {}\n"
                               "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void localvar71() {
+        functionVariableUsage("struct A { explicit A(int i); };\n" // #12363
+                              "void f() { A a(0); }\n");
         ASSERT_EQUALS("", errout_str());
     }
 

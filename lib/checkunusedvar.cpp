@@ -1214,7 +1214,9 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             const bool isPointer = tok->valueType() && (tok->valueType()->pointer || tok->valueType()->type == ValueType::SMART_POINTER);
 
             if (tok->isName()) {
-                if (isRaiiClass(tok->valueType(), tok->isCpp(), false))
+                if (isRaiiClass(tok->valueType(), tok->isCpp(), false) ||
+                    (tok->valueType() && tok->valueType()->type == ValueType::RECORD &&
+                     (!tok->valueType()->typeScope || !isRecordTypeWithoutSideEffects(tok->valueType()->typeScope->definedType))))
                     continue;
                 tok = tok->next();
             }
