@@ -522,7 +522,7 @@ private:
         }
     }
 
-    void isCriticalErrorId() {
+    void isCriticalErrorId() const {
         // It does not abort all the analysis of the file. Like "missingInclude" there can be false negatives.
         ASSERT_EQUALS(false, ErrorLogger::isCriticalErrorId("misra-config"));
     }
