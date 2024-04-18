@@ -1148,15 +1148,17 @@ static size_t bitCeil(size_t x)
     return x + 1;
 }
 
-static size_t getAlignOf(const ValueType& vt, const Settings& settings)
+static size_t getAlignOf(const ValueType& vt, const Settings& settings, int maxRecursion = 0)
 {
+    if (maxRecursion == 100)
+        return 0;
     if (vt.pointer || vt.reference != Reference::None || vt.isPrimitive()) {
         auto align = ValueFlow::getSizeOf(vt, settings);
         return align == 0 ? 0 : bitCeil(align);
     }
     if (vt.type == ValueType::Type::RECORD && vt.typeScope) {
         auto accHelper = [&](size_t max, const ValueType& vt2, size_t /*dim*/) {
-            size_t a = getAlignOf(vt2, settings);
+            size_t a = getAlignOf(vt2, settings, ++maxRecursion);
             return std::max(max, a);
         };
         size_t total = 0;
@@ -1181,8 +1183,10 @@ static nonneg int getSizeOfType(const Token *typeTok, const Settings &settings)
     return ValueFlow::getSizeOf(valueType, settings);
 }
 
-size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings)
+size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, int maxRecursion)
 {
+    if (maxRecursion == 100)
+        return 0;
     if (vt.pointer || vt.reference != Reference::None)
         return settings.platform.sizeof_pointer;
     if (vt.type == ValueType::Type::BOOL || vt.type == ValueType::Type::CHAR)
@@ -1207,7 +1211,7 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings)
         return 3 * settings.platform.sizeof_pointer; // Just guess
     if (vt.type == ValueType::Type::RECORD && vt.typeScope) {
         auto accHelper = [&](size_t total, const ValueType& vt2, size_t dim) -> size_t {
-            size_t n = ValueFlow::getSizeOf(vt2, settings);
+            size_t n = ValueFlow::getSizeOf(vt2, settings, ++maxRecursion);
             size_t a = getAlignOf(vt2, settings);
             if (n == 0 || a == 0)
                 return 0;

@@ -59,7 +59,7 @@ namespace ValueFlow {
 
     std::string eitherTheConditionIsRedundant(const Token *condition);
 
-    size_t getSizeOf(const ValueType &vt, const Settings &settings);
+    size_t getSizeOf(const ValueType &vt, const Settings &settings, int maxRecursion = 0);
 
     const Value* findValue(const std::list<Value>& values,
                            const Settings* settings,
