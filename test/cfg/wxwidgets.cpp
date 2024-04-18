@@ -39,7 +39,6 @@
 #include <wx/gdicmn.h>
 #include <wx/geometry.h>
 #include <wx/graphics.h>
-#include <wx/grid.h>
 #include <wx/icon.h>
 #include <wx/iconbndl.h>
 #include <wx/iconloc.h>
