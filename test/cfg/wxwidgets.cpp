@@ -39,6 +39,7 @@
 #include <wx/gdicmn.h>
 #include <wx/geometry.h>
 #include <wx/graphics.h>
+#include <wx/grid.h>
 #include <wx/icon.h>
 #include <wx/iconbndl.h>
 #include <wx/iconloc.h>
@@ -1279,4 +1280,9 @@ wxString::iterator wxString_test3()
     wxString::iterator it = wxString1.begin();
     // cppcheck-suppress returnDanglingLifetime
     return it;
+}
+
+wxGrid::wxGridSelectionModes get_wxGridSelectionModes()
+{
+    return wxGrid::wxGridSelectCells;
 }
