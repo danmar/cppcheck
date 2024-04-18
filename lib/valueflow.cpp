@@ -604,6 +604,17 @@ static ValueFlow::Value truncateImplicitConversion(Token* parent, const ValueFlo
     return v;
 }
 
+static long long truncateIntValue(long long value, size_t value_size, bool dst_signed_value)
+{
+    const MathLib::biguint unsignedMaxValue = (1ULL << (value_size * 8)) - 1ULL;
+    const MathLib::biguint signBit = 1ULL << (value_size * 8 - 1);
+    value &= unsignedMaxValue;
+    if (dst_signed_value && (value & signBit))
+        value |= ~unsignedMaxValue;
+
+    return value;
+}
+
 /** set ValueFlow value and perform calculations if possible */
 static void setTokenValue(Token* tok,
                           ValueFlow::Value value,
@@ -2817,6 +2828,13 @@ struct ValueFlowAnalyzer : Analyzer {
             if (d == Direction::Reverse)
                 inc = !inc;
             value->intvalue += (inc ? 1 : -1);
+
+            /* Truncate value */
+            const ValueType *dst = tok->valueType();
+            const size_t sz = ValueFlow::getSizeOf(*dst, settings);
+            if (sz > 0 && sz < 8)
+                value->intvalue = truncateIntValue(value->intvalue, sz, dst->sign == ValueType::Sign::SIGNED);
+
             value->errorPath.emplace_back(tok, tok->str() + " is " + opName + "', new value is " + value->infoString());
         }
     }
@@ -6021,13 +6039,8 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
             value.valueType = ValueFlow::Value::ValueType::INT;
         }
 
-        if (value.isIntValue() && sz > 0 && sz < 8) {
-            const MathLib::biguint unsignedMaxValue = (1ULL << (sz * 8)) - 1ULL;
-            const MathLib::biguint signBit = 1ULL << (sz * 8 - 1);
-            value.intvalue &= unsignedMaxValue;
-            if (dst->sign == ValueType::Sign::SIGNED && (value.intvalue & signBit))
-                value.intvalue |= ~unsignedMaxValue;
-        }
+        if (value.isIntValue() && sz > 0 && sz < 8)
+            value.intvalue = truncateIntValue(value.intvalue, sz, dst->sign == ValueType::Sign::SIGNED);
     }
     return values;
 }
