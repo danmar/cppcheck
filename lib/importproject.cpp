@@ -452,30 +452,7 @@ bool ImportProject::importSln(std::istream &istr, const std::string &path, const
     std::vector<SharedItemsProject> sharedItemsProjects{};
     while (std::getline(istr,line)) {
         if (!startsWith(line,"Project("))
-            continue;
-
-        // NOTE(Felix): Custom code for vcxitems
-        {
-            const std::string::size_type pos = line.find(".vcxitems");
-            if (pos != std::string::npos)
-            {
-                const std::string::size_type pos1 = line.rfind('\"', pos);
-                if (pos1 != std::string::npos)
-                {
-                    std::string vcxitems(line.substr(pos1 + 1, pos - pos1 + 8));
-                    vcxitems = Path::toNativeSeparators(std::move(vcxitems));
-                    if (!Path::isAbsolute(vcxitems))
-                        vcxitems = path + vcxitems;
-                    vcxitems = Path::fromNativeSeparators(std::move(vcxitems));
-                    if (!importVcxitems(vcxitems, variables, emptyString, fileFilters)) {
-                        printError("failed to load '" + vcxitems + "' from Visual Studio solution");
-                        return false;
-                    }
-                    found = true;
-                }
-            }
-        }
-        
+            continue;        
         const std::string::size_type pos = line.find(".vcxproj");
         if (pos == std::string::npos)
             continue;
@@ -487,7 +464,7 @@ bool ImportProject::importSln(std::istream &istr, const std::string &path, const
         if (!Path::isAbsolute(vcxproj))
             vcxproj = path + vcxproj;
         vcxproj = Path::fromNativeSeparators(std::move(vcxproj));
-        if (!importVcxproj(vcxproj, variables, emptyString, fileFilters)) {
+        if (!importVcxproj(vcxproj, variables, emptyString, fileFilters, sharedItemsProjects)) {
             printError("failed to load '" + vcxproj + "' from Visual Studio solution");
             return false;
         }
@@ -852,9 +829,9 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             fs.useMfc = useOfMfc;
             fs.defines = "_WIN32=1";
             if (p.platform == ProjectConfiguration::Win32)
-                fs.platformType = cppcheck::Platform::Type::Win32W;
+                fs.platformType = Platform::Type::Win32W;
             else if (p.platform == ProjectConfiguration::x64) {
-                fs.platformType = cppcheck::Platform::Type::Win64;
+                fs.platformType = Platform::Type::Win64;
                 fs.defines += ";_WIN64=1";
             }
             std::string additionalIncludePaths;
@@ -875,8 +852,8 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                     fs.defines += ";__AVX512__";
                 additionalIncludePaths += ';' + i.additionalIncludePaths;
             }
-            fs.setDefines(fs.defines);
-            fs.setIncludePaths(Path::getPathFromFilename(filename), toStringList(includePath + ';' + additionalIncludePaths), variables);
+            fsSetDefines(fs, fs.defines);
+            fsSetIncludePaths(fs, Path::getPathFromFilename(filename), toStringList(includePath + ';' + additionalIncludePaths), variables);
             for (const auto &path : sharedItemsIncludePaths) {
                 fs.includePaths.emplace_back(path);
             }
