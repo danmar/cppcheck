@@ -7636,6 +7636,15 @@ private:
                                   "    int a, b{};\n"
                                   "};");
         ASSERT_EQUALS("", errout_str());
+
+        checkInitializerListOrder("class Foo {\n" // #3524
+                                  "public:\n"
+                                  "    Foo(int arg) : a(b), b(arg) {}\n"
+                                  "    int a;\n"
+                                  "    int b;\n"
+                                  "};\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style, inconclusive) Member variable 'Foo::a' uses an uninitialized argument 'b' due to the order of declarations.\n",
+                      errout_str());
     }
 
 #define checkInitializationListUsage(code) checkInitializationListUsage_(code, __FILE__, __LINE__)

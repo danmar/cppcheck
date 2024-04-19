@@ -5,7 +5,7 @@ eraseIteratorOutOfBounds: warns when erase() is called on an iterator that is ou
 returnByReference: warns when a large class member is returned by value from a getter function
 
 Improved checking:
--
+initializerList: warn if a member is used before it is initialized
 
 GUI:
 -
