@@ -742,16 +742,16 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
         printError(std::string("Visual Studio project file is not a valid XML - ") + tinyxml2::XMLDocument::ErrorIDToName(error));
         return false;
     }
-    const tinyxml2::XMLElement* const rootnode = doc.FirstChildElement();
+    const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
     if (rootnode == nullptr) {
         printError("Visual Studio project file has no XML root node");
         return false;
     }
-    for (const tinyxml2::XMLElement* node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
+    for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         if (std::strcmp(node->Name(), "ItemGroup") == 0) {
-            const char* labelAttribute = node->Attribute("Label");
+            const char *labelAttribute = node->Attribute("Label");
             if (labelAttribute && std::strcmp(labelAttribute, "ProjectConfigurations") == 0) {
-                for (const tinyxml2::XMLElement* cfg = node->FirstChildElement(); cfg; cfg = cfg->NextSiblingElement()) {
+                for (const tinyxml2::XMLElement *cfg = node->FirstChildElement(); cfg; cfg = cfg->NextSiblingElement()) {
                     if (std::strcmp(cfg->Name(), "ProjectConfiguration") == 0) {
                         const ProjectConfiguration p(cfg);
                         if (p.platform != ProjectConfiguration::Unknown) {
@@ -760,11 +760,10 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                         }
                     }
                 }
-            }
-            else {
-                for (const tinyxml2::XMLElement* e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
+            } else {
+                for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
                     if (std::strcmp(e->Name(), "ClCompile") == 0) {
-                        const char* include = e->Attribute("Include");
+                        const char *include = e->Attribute("Include");
                         if (include && Path::acceptFile(include)) {
                             std::string toInclude = Path::simplifyPath(Path::isAbsolute(include) ? include : Path::getPathFromFilename(filename) + include);
                             compileList.emplace_back(toInclude);
@@ -786,13 +785,11 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                             loadVisualStudioProperties(projectAttribute, variables, includePath, additionalIncludeDirectories, itemDefinitionGroupList);
                     }
                 }
-            }
-            else if (labelAttribute && std::strcmp(labelAttribute, "Shared") == 0) {
-                for (const tinyxml2::XMLElement* e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
+            } else if (labelAttribute && std::strcmp(labelAttribute, "Shared") == 0) {
+                for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
                     if (std::strcmp(e->Name(), "Import") == 0) {
-                        const char* projectAttribute = e->Attribute("Project");
-                        if (projectAttribute)
-                        {
+                        const char *projectAttribute = e->Attribute("Project");
+                        if (projectAttribute) {
                             // Path to shared items project is relative to current project directory,
                             // unless the string starts with $(SolutionDir)
                             std::string pathToSharedItemsFile;
@@ -805,9 +802,9 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                                 printError("Could not simplify path to referenced shared items project");
                                 exit(-1);
                             }
+							
                             SharedItemsProject toAdd = importVcxitems(pathToSharedItemsFile, fileFilters, cache);
-                            if (!toAdd.successFull)
-                            {
+                            if (!toAdd.successFull) {
                                 printError("Could not load shared items project \"" + pathToSharedItemsFile + "\" from original path \"" + std::string(projectAttribute) + "\".");
                                 return false;
                             }
@@ -822,27 +819,27 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
     // Include shared items project files
     std::vector<std::string> sharedItemsIncludePaths{};
     for (const auto& sharedProject : sharedItemsProjects) {
-        for (const auto& file : sharedProject.sourceFiles) {
+        for (const auto &file : sharedProject.sourceFiles) {
             std::string pathToFile = Path::simplifyPath(Path::getPathFromFilename(sharedProject.pathToProjectFile) + file);
             compileList.emplace_back(std::move(pathToFile));
         }
-        for (const auto& p : sharedProject.includePaths) {
+        for (const auto &p : sharedProject.includePaths) {
             std::string path = Path::simplifyPath(Path::getPathFromFilename(sharedProject.pathToProjectFile) + p);
             sharedItemsIncludePaths.emplace_back(std::move(path));
         }
     }
 
     // Project files
-    for (const std::string& cfilename : compileList) {
+    for (const std::string &cfilename : compileList) {
         if (!fileFilters.empty() && !matchglobs(fileFilters, cfilename))
             continue;
 
-        for (const ProjectConfiguration& p : projectConfigurationList) {
+        for (const ProjectConfiguration &p : projectConfigurationList) {
 
             if (!guiProject.checkVsConfigs.empty()) {
                 const bool doChecking = std::any_of(guiProject.checkVsConfigs.cbegin(), guiProject.checkVsConfigs.cend(), [&](const std::string& c) {
                     return c == p.configuration;
-                    });
+                });
                 if (!doChecking)
                     continue;
             }
@@ -902,10 +899,8 @@ static std::string stringReplace(const std::string& original, const std::string&
 
 ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::string& filename, const std::vector<std::string>& fileFilters, std::vector<SharedItemsProject> &cache)
 {
-    for (const auto& entry : cache)
-    {
-        if (filename == entry.pathToProjectFile)
-        {
+    for (const auto &entry : cache) {
+        if (filename == entry.pathToProjectFile) {
             return entry;
         }
     }
@@ -919,14 +914,14 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
         printError(std::string("Visual Studio project file is not a valid XML - ") + tinyxml2::XMLDocument::ErrorIDToName(error));
         return result;
     }
-    const tinyxml2::XMLElement* const rootnode = doc.FirstChildElement();
+    const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
     if (rootnode == nullptr) {
         printError("Visual Studio project file has no XML root node");
         return result;
     }
-    for (const tinyxml2::XMLElement* node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
+    for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         if (std::strcmp(node->Name(), "ItemGroup") == 0) {
-            for (const tinyxml2::XMLElement* e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
+            for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
                 if (std::strcmp(e->Name(), "ClCompile") == 0) {
                     const char* include = e->Attribute("Include");
                     if (include && Path::acceptFile(include)) {
@@ -943,8 +938,7 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
                     }
                 }
             }
-        }
-        else if (std::strcmp(node->Name(), "ItemDefinitionGroup") == 0) {
+        } else if (std::strcmp(node->Name(), "ItemDefinitionGroup") == 0) {
             ItemDefinitionGroup temp(node, "");
             for (const auto& includePath : toStringList(temp.additionalIncludePaths)) {
                 if (includePath == std::string("%(AdditionalIncludeDirectories)"))
