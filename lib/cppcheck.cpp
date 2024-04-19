@@ -1770,12 +1770,12 @@ bool CppCheck::analyseWholeProgram()
     return errors && (mExitCode > 0);
 }
 
-void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings)
+unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings)
 {
     executeAddonsWholeProgram(files); // TODO: pass FileSettings
     if (buildDir.empty()) {
         removeCtuInfoFiles(files, fileSettings);
-        return;
+        return mExitCode;
     }
     if (mSettings.checks.isEnabled(Checks::unusedFunction))
         CheckUnusedFunctions::analyseWholeProgram(mSettings, *this, buildDir);
@@ -1836,6 +1836,8 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<
 
     for (Check::FileInfo *fi : fileInfoList)
         delete fi;
+
+    return mExitCode;
 }
 
 void CppCheck::removeCtuInfoFiles(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings)

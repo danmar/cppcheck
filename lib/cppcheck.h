@@ -142,7 +142,7 @@ public:
     void analyseClangTidy(const FileSettings &fileSettings);
 
     /** analyse whole program use .analyzeinfo files */
-    void analyseWholeProgram(const std::string &buildDir, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings);
+    unsigned int analyseWholeProgram(const std::string &buildDir, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings);
 
     /** Remove *.ctu-info files */
     void removeCtuInfoFiles(const std::list<std::pair<std::string, std::size_t>>& files, const std::list<FileSettings>& fileSettings); // cppcheck-suppress functionConst // has side effects

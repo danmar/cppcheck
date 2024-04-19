@@ -292,7 +292,7 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
 #endif
     }
 
-    cppcheck.analyseWholeProgram(settings.buildDir, mFiles, mFileSettings);
+    returnValue |= cppcheck.analyseWholeProgram(settings.buildDir, mFiles, mFileSettings);
 
     if (settings.severity.isEnabled(Severity::information) || settings.checkConfiguration) {
         const bool err = reportSuppressions(settings, suppressions, settings.checks.isEnabled(Checks::unusedFunction), mFiles, mFileSettings, stdLogger);
@@ -311,7 +311,7 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
         stdLogger.reportErr(ErrorMessage::getXMLFooter());
     }
 
-    if (settings.safety && stdLogger.hasCriticalErrors())
+    if (settings.safety && (stdLogger.hasCriticalErrors() || returnValue != 0))
         return EXIT_FAILURE;
 
     if (returnValue)
