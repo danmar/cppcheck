@@ -1267,8 +1267,9 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         const char* name = node->Name();
         if (strcmp(name, CppcheckXml::RootPathName) == 0) {
-            if (node->Attribute(CppcheckXml::RootPathNameAttrib)) {
-                temp.basePaths.push_back(joinRelativePath(path, node->Attribute(CppcheckXml::RootPathNameAttrib)));
+            const char* attr = node->Attribute(CppcheckXml::RootPathNameAttrib);
+            if (attr) {
+                temp.basePaths.push_back(joinRelativePath(path, attr));
                 temp.relativePaths = true;
             }
         } else if (strcmp(name, CppcheckXml::BuildDirElementName) == 0)
