@@ -207,6 +207,17 @@ void f() {
     assert stderr == '{}:0:0: error: Bailing from out analysis: Checking file failed: converting \'1f\' to integer failed - not an integer [internalError]\n\n^\n'.format(test_file)
 
 
+def test_addon_ctu_exitcode(tmpdir):
+    """ #12440 - Misra ctu violations found => exit code should be non-zero """
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write("""typedef enum { BLOCK =  0x80U, } E;""")
+    args = ['--addon=misra', '--enable=style', '--error-exitcode=1', test_file]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert '2.3' in stderr, stderr
+    assert exitcode == 1
+
+
 # TODO: test with -j2
 def test_addon_misra(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')

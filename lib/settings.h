@@ -263,6 +263,9 @@ public:
     /** @brief max number of sets of arguments to pass to subfuncions in valueflow */
     int performanceValueFlowMaxSubFunctionArgs = 256;
 
+    /** @brief pid of cppcheck. Intention is that this is set in the main process. */
+    int pid;
+
     /** @brief plist output (--plist-output=&lt;dir&gt;) */
     std::string plistOutput;
 

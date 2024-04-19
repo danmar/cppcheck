@@ -60,12 +60,6 @@
 #include <utility>
 #include <vector>
 
-#ifndef _WIN32
-#include <unistd.h>
-#else
-#include <process.h>
-#endif
-
 #include "json.h"
 
 #include <simplecpp.h>
@@ -139,15 +133,6 @@ static std::vector<std::string> split(const std::string &str, const std::string 
     return ret;
 }
 
-static int getPid()
-{
-#ifndef _WIN32
-    return getpid();
-#else
-    return _getpid();
-#endif
-}
-
 static std::string getDumpFileName(const Settings& settings, const std::string& filename)
 {
     if (!settings.dumpFile.empty())
@@ -157,7 +142,7 @@ static std::string getDumpFileName(const Settings& settings, const std::string& 
     if (settings.dump)
         extension = ".dump";
     else
-        extension = "." + std::to_string(getPid()) + ".dump";
+        extension = "." + std::to_string(settings.pid) + ".dump";
 
     if (!settings.dump && !settings.buildDir.empty())
         return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, filename, emptyString) + extension;
@@ -1409,7 +1394,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
     std::string fileList;
 
     if (files.size() >= 2 || endsWith(files[0], ".ctu-info")) {
-        fileList = Path::getPathFromFilename(files[0]) + FILELIST + std::to_string(getPid());
+        fileList = Path::getPathFromFilename(files[0]) + FILELIST + std::to_string(mSettings.pid);
         filesDeleter.addFile(fileList);
         std::ofstream fout(fileList);
         for (const std::string& f: files)
@@ -1770,12 +1755,12 @@ bool CppCheck::analyseWholeProgram()
     return errors && (mExitCode > 0);
 }
 
-void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings)
+unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings)
 {
     executeAddonsWholeProgram(files); // TODO: pass FileSettings
     if (buildDir.empty()) {
         removeCtuInfoFiles(files, fileSettings);
-        return;
+        return mExitCode;
     }
     if (mSettings.checks.isEnabled(Checks::unusedFunction))
         CheckUnusedFunctions::analyseWholeProgram(mSettings, *this, buildDir);
@@ -1836,6 +1821,8 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<
 
     for (Check::FileInfo *fi : fileInfoList)
         delete fi;
+
+    return mExitCode;
 }
 
 void CppCheck::removeCtuInfoFiles(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings)

@@ -29,6 +29,13 @@
 
 #include "json.h"
 
+#ifndef _WIN32
+#include <unistd.h> // for getpid()
+#else
+#include <process.h> // for getpid()
+#endif
+
+
 std::atomic<bool> Settings::mTerminated;
 
 const char Settings::SafeChecks::XmlRootName[] = "safe-checks";
@@ -37,12 +44,22 @@ const char Settings::SafeChecks::XmlExternalFunctions[] = "external-functions";
 const char Settings::SafeChecks::XmlInternalFunctions[] = "internal-functions";
 const char Settings::SafeChecks::XmlExternalVariables[] = "external-variables";
 
+static int getPid()
+{
+#ifndef _WIN32
+    return getpid();
+#else
+    return _getpid();
+#endif
+}
+
 Settings::Settings()
 {
     severity.setEnabled(Severity::error, true);
     certainty.setEnabled(Certainty::normal, true);
     setCheckLevel(Settings::CheckLevel::exhaustive);
     executor = defaultExecutor();
+    pid = getPid();
 }
 
 std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppressions)
