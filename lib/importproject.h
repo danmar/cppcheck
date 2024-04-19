@@ -103,6 +103,7 @@ protected:
 private:
     bool importSln(std::istream &istr, const std::string &path, const std::vector<std::string> &fileFilters);
     bool importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters);
+    bool importVcxitems(const std::string& filename, std::map<std::string, std::string, cppcheck::stricmp>& variables, const std::string& additionalIncludeDirectories, const std::vector<std::string>& fileFilters);
     bool importBcb6Prj(const std::string &projectFilename);
 
     static void printError(const std::string &message);
