@@ -847,6 +847,7 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             FileSettings fs;
             fs.filename = cfilename;
             fs.cfg = p.name;
+			// TODO: detect actual MSC version
             fs.msc = true;
             fs.useMfc = useOfMfc;
             fs.defines = "_WIN32=1";
