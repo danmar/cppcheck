@@ -857,7 +857,7 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                 fs.defines += ";_WIN64=1";
             }
             std::string additionalIncludePaths;
-            for (const ItemDefinitionGroup& i : itemDefinitionGroupList) {
+            for (const ItemDefinitionGroup &i : itemDefinitionGroupList) {
                 if (!i.conditionIsTrue(p))
                     continue;
                 fs.standard = Standards::getCPP(i.cppstd);
@@ -876,7 +876,7 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             }
             fs.setDefines(fs.defines);
             fs.setIncludePaths(Path::getPathFromFilename(filename), toStringList(includePath + ';' + additionalIncludePaths), variables);
-            for (const auto& path : sharedItemsIncludePaths) {
+            for (const auto &path : sharedItemsIncludePaths) {
                 fs.includePaths.emplace_back(path);
             }
             fileSettings.push_back(std::move(fs));
@@ -886,7 +886,7 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
     return true;
 }
 
-static std::string stringReplace(const std::string& original, const std::string& toReplace, const std::string& replaceWith) 
+static std::string stringReplace(const std::string &original, const std::string &toReplace, const std::string &replaceWith) 
 {
     std::string result(original);
     size_t pos = result.find(toReplace);
