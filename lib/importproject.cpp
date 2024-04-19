@@ -452,7 +452,7 @@ bool ImportProject::importSln(std::istream &istr, const std::string &path, const
     std::vector<SharedItemsProject> sharedItemsProjects{};
     while (std::getline(istr,line)) {
         if (!startsWith(line,"Project("))
-            continue;        
+            continue;
         const std::string::size_type pos = line.find(".vcxproj");
         if (pos == std::string::npos)
             continue;
@@ -791,7 +791,9 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                 }
             }
         }
-    }
+    }    
+	// # TODO: support signedness of char via /J (and potential XML option for it)?
+    // we can only set it globally but in this context it needs to be treated per file
 
     // Include shared items project files
     std::vector<std::string> sharedItemsIncludePaths{};
@@ -824,7 +826,7 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             FileSettings fs;
             fs.filename = cfilename;
             fs.cfg = p.name;
-			// TODO: detect actual MSC version
+            // TODO: detect actual MSC version
             fs.msc = true;
             fs.useMfc = useOfMfc;
             fs.defines = "_WIN32=1";
