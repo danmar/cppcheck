@@ -791,8 +791,8 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                 }
             }
         }
-    }    
-	// # TODO: support signedness of char via /J (and potential XML option for it)?
+    }
+    // # TODO: support signedness of char via /J (and potential XML option for it)?
     // we can only set it globally but in this context it needs to be treated per file
 
     // Include shared items project files
