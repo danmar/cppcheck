@@ -3330,6 +3330,11 @@ void CheckClass::checkReturnByReference()
                 continue;
             if (func.isImplicitlyVirtual())
                 continue;
+            if (func.isOperator())
+                continue;
+            if (const Library::Container* container = mSettings->library.detectContainer(func.retDef))
+                if (container->view)
+                    continue;
             if (const Variable* var = getSingleReturnVar(func.functionScope)) {
                 if (!var->valueType())
                     continue;

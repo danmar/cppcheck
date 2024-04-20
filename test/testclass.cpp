@@ -8955,6 +8955,19 @@ private:
         checkReturnByReference("struct S { S(); };\n" // #12620
                                "S::S() = delete;\n");
         ASSERT_EQUALS("", errout_str()); // don't crash
+
+        checkReturnByReference("struct S {\n" // #12626
+                               "    std::string s;\n"
+                               "    operator std::string_view() const { return s; }\n"
+                               "    std::string_view get() const { return s; }\n"
+                               "};\n"
+                               "template<typename T>\n"
+                               "struct U {\n"
+                               "    T t;\n"
+                               "    operator const T& () const { return t; }\n"
+                               "};\n"
+                               "U<std::string> u;\n");
+        ASSERT_EQUALS("", errout_str());
     }
 };
 
