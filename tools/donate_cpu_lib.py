@@ -16,7 +16,7 @@ import copy
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.56"
+CLIENT_VERSION = "1.3.57"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -450,7 +450,7 @@ def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True, 
         options += ' --check-level=' + check_level
     if debug_warnings:
         options += ' --check-library --debug-warnings --suppress=autoNoType --suppress=valueFlowBailout' \
-                   ' --suppress=bailoutUninitVar --suppress=symbolDatabaseWarning'
+                   ' --suppress=bailoutUninitVar --suppress=symbolDatabaseWarning --suppress=normalCheckLevelConditionExpressions'
     options += ' -D__GNUC__ --platform=unix64'
     options_rp = options + ' -rp={}'.format(dir_to_scan)
     if __make_cmd == 'msbuild.exe':
