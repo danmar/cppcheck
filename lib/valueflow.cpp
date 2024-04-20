@@ -5379,7 +5379,14 @@ static const Scope* getLoopScope(const Token* tok)
 static void valueFlowConditionExpressions(const TokenList &tokenlist, const SymbolDatabase& symboldatabase, ErrorLogger &errorLogger, const Settings &settings)
 {
     if (!settings.daca && (settings.checkLevel == Settings::CheckLevel::normal))
+    {
+        if (settings.debugwarnings) {
+            ErrorMessage::FileLocation loc(tokenlist.getSourceFilePath(), 0, 0);
+            const ErrorMessage errmsg({std::move(loc)}, tokenlist.getSourceFilePath(), Severity::debug, "Analysis of condition expressions is disabled. Use --check-level=exhaustive to enable it.", "normalCheckLevelConditionExpressions", Certainty::normal);
+            errorLogger.reportErr(errmsg);
+        }
         return;
+    }
 
     for (const Scope * scope : symboldatabase.functionScopes) {
         if (const Token* incompleteTok = findIncompleteVar(scope->bodyStart, scope->bodyEnd)) {
