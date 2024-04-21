@@ -105,6 +105,8 @@
 #include "valueptr.h"
 #include "vfvalue.h"
 
+#include "vf_analyze.h"
+
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -122,6 +124,7 @@
 #include <numeric>
 #include <set>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -2041,33 +2044,6 @@ static void valueFlowImpossibleValues(TokenList& tokenList, const Settings& sett
             ValueFlow::Value value{0};
             value.setImpossible();
             setTokenValue(tok, std::move(value), settings);
-        }
-    }
-}
-
-static void valueFlowEnumValue(SymbolDatabase & symboldatabase, const Settings & settings)
-{
-    for (Scope & scope : symboldatabase.scopeList) {
-        if (scope.type != Scope::eEnum)
-            continue;
-        MathLib::bigint value = 0;
-        bool prev_enum_is_known = true;
-
-        for (Enumerator & enumerator : scope.enumeratorList) {
-            if (enumerator.start) {
-                auto* rhs = const_cast<Token*>(enumerator.start->previous()->astOperand2());
-                ValueFlow::valueFlowConstantFoldAST(rhs, settings);
-                if (rhs && rhs->hasKnownIntValue()) {
-                    enumerator.value = rhs->values().front().intvalue;
-                    enumerator.value_known = true;
-                    value = enumerator.value + 1;
-                    prev_enum_is_known = true;
-                } else
-                    prev_enum_is_known = false;
-            } else if (prev_enum_is_known) {
-                enumerator.value = value++;
-                enumerator.value_known = true;
-            }
         }
     }
 }
@@ -9654,13 +9630,13 @@ void ValueFlow::setValues(TokenList& tokenlist,
 
     ValueFlowPassRunner runner{ValueFlowState{tokenlist, symboldatabase, errorLogger, settings}, timerResults};
     runner.run_once({
-        VFA(valueFlowEnumValue(symboldatabase, settings)),
+        VFA(analyzeEnumValue(symboldatabase, settings)),
         VFA(valueFlowNumber(tokenlist, settings)),
         VFA(valueFlowString(tokenlist, settings)),
         VFA(valueFlowArray(tokenlist, settings)),
         VFA(valueFlowUnknownFunctionReturn(tokenlist, settings)),
         VFA(valueFlowGlobalConstVar(tokenlist, settings)),
-        VFA(valueFlowEnumValue(symboldatabase, settings)),
+        VFA(analyzeEnumValue(symboldatabase, settings)),
         VFA(valueFlowGlobalStaticVar(tokenlist, settings)),
         VFA(valueFlowPointerAlias(tokenlist, settings)),
         VFA(valueFlowLifetime(tokenlist, errorLogger, settings)),

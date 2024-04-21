@@ -95,6 +95,7 @@ LIBOBJ =      $(libcppdir)/valueflow.o \
               $(libcppdir)/token.o \
               $(libcppdir)/tokenlist.o \
               $(libcppdir)/utils.o \
+              $(libcppdir)/vf_enumvalue.o \
               $(libcppdir)/vfvalue.o
 
 EXTOBJ =      simplecpp.o \
@@ -139,7 +140,7 @@ simplecpp.o: ../externals/simplecpp/simplecpp.cpp ../externals/simplecpp/simplec
 tinyxml2.o: ../externals/tinyxml2/tinyxml2.cpp ../externals/tinyxml2/tinyxml2.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -w -c -o $@ ../externals/tinyxml2/tinyxml2.cpp
 
-$(libcppdir)/valueflow.o: ../lib/valueflow.cpp ../lib/addoninfo.h ../lib/analyzer.h ../lib/astutils.h ../lib/calculate.h ../lib/check.h ../lib/checkuninitvar.h ../lib/color.h ../lib/config.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/findtoken.h ../lib/forwardanalyzer.h ../lib/infer.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/programmemory.h ../lib/reverseanalyzer.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/suppressions.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/timer.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/valueptr.h ../lib/vfvalue.h
+$(libcppdir)/valueflow.o: ../lib/valueflow.cpp ../lib/addoninfo.h ../lib/analyzer.h ../lib/astutils.h ../lib/calculate.h ../lib/check.h ../lib/checkuninitvar.h ../lib/color.h ../lib/config.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/findtoken.h ../lib/forwardanalyzer.h ../lib/infer.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/programmemory.h ../lib/reverseanalyzer.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/suppressions.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/timer.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/valueptr.h ../lib/vf_analyze.h ../lib/vf_enumvalue.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/valueflow.cpp
 
 $(libcppdir)/tokenize.o: ../lib/tokenize.cpp ../externals/simplecpp/simplecpp.h ../lib/addoninfo.h ../lib/astutils.h ../lib/color.h ../lib/config.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/preprocessor.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/summaries.h ../lib/suppressions.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/timer.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/vfvalue.h
@@ -324,6 +325,9 @@ $(libcppdir)/tokenlist.o: ../lib/tokenlist.cpp ../externals/simplecpp/simplecpp.
 
 $(libcppdir)/utils.o: ../lib/utils.cpp ../lib/config.h ../lib/utils.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/utils.cpp
+
+$(libcppdir)/vf_enumvalue.o: ../lib/vf_enumvalue.cpp ../lib/config.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/utils.h ../lib/valueflow.h ../lib/vf_enumvalue.h ../lib/vfvalue.h
+	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/vf_enumvalue.cpp
 
 $(libcppdir)/vfvalue.o: ../lib/vfvalue.cpp ../lib/config.h ../lib/errortypes.h ../lib/mathlib.h ../lib/templatesimplifier.h ../lib/token.h ../lib/utils.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/vfvalue.cpp

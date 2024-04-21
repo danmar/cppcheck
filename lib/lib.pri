@@ -77,6 +77,8 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/valueflow.h \
            $${PWD}/valueptr.h \
            $${PWD}/version.h \
+           $${PWD}/vf_analyze.h \
+           $${PWD}/vf_enumvalue.h \
            $${PWD}/vfvalue.h \
            $${PWD}/xml.h
 
@@ -142,4 +144,5 @@ SOURCES += $${PWD}/valueflow.cpp \
            $${PWD}/token.cpp \
            $${PWD}/tokenlist.cpp \
            $${PWD}/utils.cpp \
+           $${PWD}/vf_enumvalue.cpp \
            $${PWD}/vfvalue.cpp

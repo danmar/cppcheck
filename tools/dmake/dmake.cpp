@@ -472,6 +472,7 @@ int main(int argc, char **argv)
     libfiles_h.emplace_back("tokenrange.h");
     libfiles_h.emplace_back("valueptr.h");
     libfiles_h.emplace_back("version.h");
+    libfiles_h.emplace_back("vf_analyze.h");
     libfiles_h.emplace_back("xml.h");
     std::sort(libfiles_h.begin(), libfiles_h.end());
 

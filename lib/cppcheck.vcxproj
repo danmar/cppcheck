@@ -87,6 +87,7 @@
     <ClCompile Include="token.cpp" />
     <ClCompile Include="tokenlist.cpp" />
     <ClCompile Include="utils.cpp" />
+    <ClCompile Include="vf_enumvalue.cpp" />
     <ClCompile Include="vfvalue.cpp" />
   </ItemGroup>
   <ItemGroup Label="HeaderFiles">
@@ -166,6 +167,8 @@
     <ClInclude Include="valueflow.h" />
     <ClInclude Include="valueptr.h" />
     <ClInclude Include="version.h" />
+    <ClInclude Include="vf_analyze.h" />
+    <ClInclude Include="vf_enumvalue.h" />
     <ClInclude Include="vfvalue.h" />
     <ClInclude Include="xml.h" />
   </ItemGroup>
