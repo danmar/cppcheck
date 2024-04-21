@@ -8686,7 +8686,7 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "& %comp%|&&|%oror%|&|%or%") && tok->strAt(1) != ">")
             syntaxError(tok);
-        if (Token::Match(tok, "^ %op%") && !Token::Match(tok->next(), "[>*]"))
+        if (Token::Match(tok, "^ %op%") && !Token::Match(tok->next(), "[>*+-!~]"))
             syntaxError(tok);
 
         if (tok->link() && Token::Match(tok, "[([]") && (!tok->tokAt(-1) || !tok->tokAt(-1)->isControlFlowKeyword())) {
