@@ -130,7 +130,7 @@ std::string FileLister::addFiles(std::list<FileWithDetails>&files, const std::st
                             return err;
 
                         // files inside directories need to be sorted as the filesystem doesn't provide a stable order
-                        filesSorted.sort([](const decltype(filesSorted)::value_type& a, const decltype(filesSorted)::value_type& b) {
+                        filesSorted.sort([](const FileWithDetails& a, const FileWithDetails& b) {
                             return a.path() < b.path();
                         });
 
@@ -225,7 +225,7 @@ static std::string addFiles2(std::list<FileWithDetails> &files,
             }
 
             // files inside directories need to be sorted as the filesystem doesn't provide a stable order
-            filesSorted.sort([](const decltype(filesSorted)::value_type& a, const decltype(filesSorted)::value_type& b) {
+            filesSorted.sort([](const FileWithDetails& a, const FileWithDetails& b) {
                 return a.path() < b.path();
             });
 

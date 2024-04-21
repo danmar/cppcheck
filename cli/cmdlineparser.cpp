@@ -266,7 +266,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
             while (it != filesResolved.end()) {
                 const std::string& name = it->path();
                 // TODO: log if duplicated files were dropped
-                filesResolved.erase(std::remove_if(std::next(it), filesResolved.end(), [&](const decltype(filesResolved)::value_type& entry) {
+                filesResolved.erase(std::remove_if(std::next(it), filesResolved.end(), [&](const FileWithDetails& entry) {
                     return entry.path() == name;
                 }), filesResolved.end());
                 ++it;
@@ -275,7 +275,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
 
         std::list<FileWithDetails> files;
         if (!mSettings.fileFilters.empty()) {
-            std::copy_if(filesResolved.cbegin(), filesResolved.cend(), std::inserter(files, files.end()), [&](const decltype(filesResolved)::value_type& entry) {
+            std::copy_if(filesResolved.cbegin(), filesResolved.cend(), std::inserter(files, files.end()), [&](const FileWithDetails& entry) {
                 return matchglobs(mSettings.fileFilters, entry.path());
             });
             if (files.empty()) {
@@ -288,11 +288,11 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         }
 
         // sort the markup last
-        std::copy_if(files.cbegin(), files.cend(), std::inserter(mFiles, mFiles.end()), [&](const decltype(files)::value_type& entry) {
+        std::copy_if(files.cbegin(), files.cend(), std::inserter(mFiles, mFiles.end()), [&](const FileWithDetails& entry) {
             return !mSettings.library.markupFile(entry.path()) || !mSettings.library.processMarkupAfterCode(entry.path());
         });
 
-        std::copy_if(files.cbegin(), files.cend(), std::inserter(mFiles, mFiles.end()), [&](const decltype(files)::value_type& entry) {
+        std::copy_if(files.cbegin(), files.cend(), std::inserter(mFiles, mFiles.end()), [&](const FileWithDetails& entry) {
             return mSettings.library.markupFile(entry.path()) && mSettings.library.processMarkupAfterCode(entry.path());
         });
 
