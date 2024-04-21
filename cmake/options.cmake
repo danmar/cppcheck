@@ -2,11 +2,11 @@
 #------------------------------------------------------
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo;MinSizeRel" CACHE STRING "Configs" FORCE)
 if(DEFINED CMAKE_BUILD_TYPE)
-   SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_CONFIGURATION_TYPES})
+  SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_CONFIGURATION_TYPES})
 endif()
 
 if(NOT CMAKE_BUILD_TYPE)
-   set(CMAKE_BUILD_TYPE "Debug")
+  set(CMAKE_BUILD_TYPE "Debug")
 endif()
 
 # ----------------------------------------------------------------------------
@@ -24,11 +24,11 @@ option(EXTERNALS_AS_SYSTEM  "Treat externals as system includes"                
 set(USE_MATCHCOMPILER "Auto" CACHE STRING "Usage of match compiler")
 set(_MATCHCOMPILER_STRINGS Auto Off On Verify)
 set_property(CACHE USE_MATCHCOMPILER PROPERTY STRINGS ${_MATCHCOMPILER_STRINGS})
-if (NOT ${USE_MATCHCOMPILER} IN_LIST _MATCHCOMPILER_STRINGS)
+if(NOT ${USE_MATCHCOMPILER} IN_LIST _MATCHCOMPILER_STRINGS)
     message(FATAL_ERROR "Invalid USE_MATCHCOMPILER value '${USE_MATCHCOMPILER}'")
 endif()
-if (USE_MATCHCOMPILER STREQUAL "Auto")
-    if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+if(USE_MATCHCOMPILER STREQUAL "Auto")
+    if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(USE_MATCHCOMPILER_OPT "On")
     else()
         set(USE_MATCHCOMPILER_OPT "Off")
@@ -38,7 +38,7 @@ else()
 endif()
 
 option(BUILD_CORE_DLL       "Build lib as cppcheck-core.dll with Visual Studio"             OFF)
-if (NOT MSVC)
+if(NOT MSVC)
     set(BUILD_CORE_DLL OFF)
 endif()
 option(BUILD_TESTS          "Build tests"                                                   OFF)
@@ -54,7 +54,7 @@ option(REGISTER_GUI_TESTS   "Register GUI tests in CTest"                       
 
 option(HAVE_RULES           "Usage of rules (needs PCRE library and headers)"               OFF)
 option(USE_BUNDLED_TINYXML2 "Usage of bundled tinyxml2 library"                             ON)
-if (BUILD_CORE_DLL)
+if(BUILD_CORE_DLL)
     set(USE_BUNDLED_TINYXML2 ON)
 endif()
 option(CPPCHK_GLIBCXX_DEBUG "Usage of STL debug checks in Debug build"                      ON)
@@ -62,7 +62,7 @@ option(DISALLOW_THREAD_EXECUTOR "Disallow usage of ThreadExecutor for -j"       
 option(USE_BOOST            "Usage of Boost"                                                OFF)
 option(USE_LIBCXX           "Use libc++ instead of libstdc++"                               OFF)
 
-if (DISALLOW_THREAD_EXECUTOR AND WIN32)
+if(DISALLOW_THREAD_EXECUTOR AND WIN32)
     message(FATAL_ERROR "Cannot disable usage of ThreadExecutor on Windows as no other executor implementation is currently available")
 endif()
 
@@ -71,7 +71,7 @@ option(NO_UNIX_SIGNAL_HANDLING "Disable usage of Unix Signal Handling"          
 option(NO_UNIX_BACKTRACE_SUPPORT "Disable usage of Unix Backtrace support"                  OFF)
 option(NO_WINDOWS_SEH       "Disable usage of Windows SEH"                                  OFF)
 
-if (CMAKE_VERSION VERSION_EQUAL "3.16" OR CMAKE_VERSION VERSION_GREATER "3.16")
+if(CMAKE_VERSION VERSION_EQUAL "3.16" OR CMAKE_VERSION VERSION_GREATER "3.16")
     set(CMAKE_DISABLE_PRECOMPILE_HEADERS Off CACHE BOOL "Disable precompiled headers")
     # need to disable the prologue or it will be treated like a system header and not emit any warnings
     # see https://gitlab.kitware.com/cmake/cmake/-/issues/21219
@@ -80,7 +80,7 @@ else()
     set(CMAKE_DISABLE_PRECOMPILE_HEADERS On CACHE BOOL "Disable precompiled headers")
 endif()
 
-if (BUILD_TESTS AND REGISTER_TESTS AND CMAKE_VERSION VERSION_LESS "3.9")
+if(BUILD_TESTS AND REGISTER_TESTS AND CMAKE_VERSION VERSION_LESS "3.9")
     message(FATAL_ERROR "Registering tests with CTest requires at least CMake 3.9. Use REGISTER_TESTS=OFF to disable this.")
 endif()
 

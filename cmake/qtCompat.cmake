@@ -1,4 +1,4 @@
-if (QT_VERSION VERSION_LESS 5.15)
+if(QT_VERSION VERSION_LESS 5.15)
     # "versionless" Qt is not supported until 5.15 so we need to use wrappers
 
     function(qt_wrap_ui out)
