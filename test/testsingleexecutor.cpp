@@ -73,15 +73,13 @@ private:
     void check(int files, int result, const std::string &data, const CheckOptions& opt = make_default_obj{}) {
         std::list<FileSettings> fileSettings;
 
-        std::list<std::pair<std::string, std::size_t>> filelist;
+        std::list<FileWithDetails> filelist;
         if (opt.filesList.empty()) {
             for (int i = 1; i <= files; ++i) {
                 std::string f_s = fprefix() + "_" + zpad3(i) + ".cpp";
                 filelist.emplace_back(f_s, data.size());
                 if (useFS) {
-                    FileSettings fs;
-                    fs.filename = std::move(f_s);
-                    fileSettings.emplace_back(std::move(fs));
+                    fileSettings.emplace_back(std::move(f_s), data.size());
                 }
             }
         }
@@ -90,9 +88,8 @@ private:
             {
                 filelist.emplace_back(f, data.size());
                 if (useFS) {
-                    FileSettings fs;
-                    fs.filename = f;
-                    fileSettings.emplace_back(std::move(fs));
+
+                    fileSettings.emplace_back(f, data.size());
                 }
             }
         }
@@ -118,8 +115,8 @@ private:
 
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filelist.size());
-        for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = filelist.cbegin(); i != filelist.cend(); ++i)
-            scopedfiles.emplace_back(new ScopedFile(i->first, data));
+        for (std::list<FileWithDetails>::const_iterator i = filelist.cbegin(); i != filelist.cend(); ++i)
+            scopedfiles.emplace_back(new ScopedFile(i->path(), data));
 
         // clear files list so only fileSettings are used
         if (useFS)

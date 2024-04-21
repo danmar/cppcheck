@@ -17,6 +17,7 @@
  */
 
 #include "filelister.h"
+#include "filesettings.h"
 #include "path.h"
 #include "pathmatch.h"
 #include "fixture.h"
@@ -58,7 +59,7 @@ private:
         const std::string adddir = findBaseDir() + ".";
 
         // Recursively add add files..
-        std::list<std::pair<std::string, std::size_t>> files;
+        std::list<FileWithDetails> files;
         std::vector<std::string> masks;
         PathMatch matcher(std::move(masks));
         std::string err = FileLister::recursiveAddFiles(files, adddir, matcher);
@@ -75,8 +76,8 @@ private:
 #endif
 
         const auto find_file = [&](const std::string& name) {
-            return std::find_if(files.cbegin(), files.cend(), [&name](const std::pair<std::string, std::size_t>& entry) {
-                return entry.first == name;
+            return std::find_if(files.cbegin(), files.cend(), [&name](const FileWithDetails& entry) {
+                return entry.path() == name;
             });
         };
 
@@ -92,7 +93,7 @@ private:
     }
 
     void recursiveAddFilesEmptyPath() const {
-        std::list<std::pair<std::string, std::size_t>> files;
+        std::list<FileWithDetails> files;
         const std::string err = FileLister::recursiveAddFiles(files, "", PathMatch({}));
         ASSERT_EQUALS("no path specified", err);
     }
@@ -100,7 +101,7 @@ private:
     void excludeFile1() const {
         const std::string basedir = findBaseDir();
 
-        std::list<std::pair<std::string, std::size_t>> files;
+        std::list<FileWithDetails> files;
         std::vector<std::string> ignored{"lib/token.cpp"};
         PathMatch matcher(ignored);
         std::string err = FileLister::recursiveAddFiles(files, basedir + "lib/token.cpp", matcher);
@@ -111,13 +112,13 @@ private:
     void excludeFile2() const {
         const std::string basedir = findBaseDir();
 
-        std::list<std::pair<std::string, std::size_t>> files;
+        std::list<FileWithDetails> files;
         std::vector<std::string> ignored;
         PathMatch matcher(ignored);
         std::string err = FileLister::recursiveAddFiles(files, basedir + "lib/token.cpp", matcher);
         ASSERT_EQUALS("", err);
         ASSERT_EQUALS(1, files.size());
-        ASSERT_EQUALS(basedir + "lib/token.cpp", files.begin()->first);
+        ASSERT_EQUALS(basedir + "lib/token.cpp", files.begin()->path());
     }
 
     // TODO: test errors

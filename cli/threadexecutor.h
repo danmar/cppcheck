@@ -31,6 +31,7 @@ class Settings;
 class ErrorLogger;
 class SuppressionList;
 struct FileSettings;
+class FileWithDetails;
 
 /// @addtogroup CLI
 /// @{
@@ -43,7 +44,7 @@ class ThreadExecutor : public Executor {
     friend class SyncLogForwarder;
 
 public:
-    ThreadExecutor(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand);
+    ThreadExecutor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand);
     ThreadExecutor(const ThreadExecutor &) = delete;
     ThreadExecutor& operator=(const ThreadExecutor &) = delete;
 

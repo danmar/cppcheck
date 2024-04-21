@@ -25,11 +25,50 @@
 #include <list>
 #include <set>
 #include <string>
+#include <utility>
+
+class FileWithDetails
+{
+public:
+    explicit FileWithDetails(std::string path)
+        : FileWithDetails(std::move(path), 0)
+    {}
+
+    FileWithDetails(std::string path, std::size_t size)
+        : mPath(std::move(path))
+        , mSize(size)
+    {}
+
+    const std::string& path() const
+    {
+        return mPath;
+    }
+
+    std::size_t size() const
+    {
+        return mSize;
+    }
+private:
+    std::string mPath;
+    std::size_t mSize;
+};
 
 /** File settings. Multiple configurations for a file is allowed. */
 struct CPPCHECKLIB FileSettings {
+    explicit FileSettings(std::string path)
+        : file(std::move(path))
+    {}
+
+    FileSettings(std::string path, std::size_t size)
+        : file(std::move(path), size)
+    {}
+
     std::string cfg;
-    std::string filename;
+    FileWithDetails file;
+    const std::string& filename() const
+    {
+        return file.path();
+    }
     std::string defines;
     // TODO: handle differently
     std::string cppcheckDefines() const {

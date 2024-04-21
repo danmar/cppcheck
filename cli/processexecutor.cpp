@@ -63,7 +63,7 @@ enum class Color;
 using std::memset;
 
 
-ProcessExecutor::ProcessExecutor(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand)
+ProcessExecutor::ProcessExecutor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand)
     : Executor(files, fileSettings, settings, suppressions, errorLogger)
     , mExecuteCommand(std::move(executeCommand))
 {
@@ -233,15 +233,15 @@ unsigned int ProcessExecutor::check()
     unsigned int fileCount = 0;
     unsigned int result = 0;
 
-    const std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& p) {
-        return v + p.second;
+    const std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const FileWithDetails& p) {
+        return v + p.size();
     });
 
     std::list<int> rpipes;
     std::map<pid_t, std::string> childFile;
     std::map<int, std::string> pipeFile;
     std::size_t processedsize = 0;
-    std::list<std::pair<std::string, std::size_t>>::const_iterator iFile = mFiles.cbegin();
+    std::list<FileWithDetails>::const_iterator iFile = mFiles.cbegin();
     std::list<FileSettings>::const_iterator iFileSettings = mFileSettings.cbegin();
     for (;;) {
         // Start a new child
@@ -286,7 +286,7 @@ unsigned int ProcessExecutor::check()
                         fileChecker.analyseClangTidy(*iFileSettings);
                 } else {
                     // Read file from a file
-                    resultOfCheck = fileChecker.check(iFile->first);
+                    resultOfCheck = fileChecker.check(iFile->path());
                     // TODO: call analyseClangTidy()?
                 }
 
@@ -297,12 +297,12 @@ unsigned int ProcessExecutor::check()
             close(pipes[1]);
             rpipes.push_back(pipes[0]);
             if (iFileSettings != mFileSettings.end()) {
-                childFile[pid] = iFileSettings->filename + ' ' + iFileSettings->cfg;
-                pipeFile[pipes[0]] = iFileSettings->filename + ' ' + iFileSettings->cfg;
+                childFile[pid] = iFileSettings->filename() + ' ' + iFileSettings->cfg;
+                pipeFile[pipes[0]] = iFileSettings->filename() + ' ' + iFileSettings->cfg;
                 ++iFileSettings;
             } else {
-                childFile[pid] = iFile->first;
-                pipeFile[pipes[0]] = iFile->first;
+                childFile[pid] = iFile->path();
+                pipeFile[pipes[0]] = iFile->path();
                 ++iFile;
             }
         }
@@ -330,11 +330,11 @@ unsigned int ProcessExecutor::check()
                             std::size_t size = 0;
                             if (p != pipeFile.end()) {
                                 pipeFile.erase(p);
-                                const auto fs = std::find_if(mFiles.cbegin(), mFiles.cend(), [&name](const std::pair<std::string, std::size_t>& entry) {
-                                    return entry.first == name;
+                                const auto fs = std::find_if(mFiles.cbegin(), mFiles.cend(), [&name](const FileWithDetails& entry) {
+                                    return entry.path() == name;
                                 });
                                 if (fs != mFiles.end()) {
-                                    size = fs->second;
+                                    size = fs->size();
                                 }
                             }
 

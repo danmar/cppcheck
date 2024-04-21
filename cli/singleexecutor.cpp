@@ -30,7 +30,7 @@
 
 class ErrorLogger;
 
-SingleExecutor::SingleExecutor(CppCheck &cppcheck, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger)
+SingleExecutor::SingleExecutor(CppCheck &cppcheck, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger)
     : Executor(files, fileSettings, settings, suppressions, errorLogger)
     , mCppcheck(cppcheck)
 {
@@ -42,16 +42,16 @@ unsigned int SingleExecutor::check()
 {
     unsigned int result = 0;
 
-    const std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& f) {
-        return v + f.second;
+    const std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const FileWithDetails& f) {
+        return v + f.size();
     });
 
     std::size_t processedsize = 0;
     unsigned int c = 0;
 
-    for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
-        result += mCppcheck.check(i->first);
-        processedsize += i->second;
+    for (std::list<FileWithDetails>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
+        result += mCppcheck.check(i->path());
+        processedsize += i->size();
         ++c;
         if (!mSettings.quiet)
             reportStatus(c, mFiles.size(), processedsize, totalfilesize);

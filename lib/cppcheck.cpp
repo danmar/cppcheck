@@ -578,12 +578,12 @@ unsigned int CppCheck::check(const FileSettings &fs)
     if (mSettings.clang) {
         temp.mSettings.includePaths.insert(temp.mSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
         // TODO: propagate back suppressions
-        const unsigned int returnValue = temp.check(Path::simplifyPath(fs.filename));
+        const unsigned int returnValue = temp.check(Path::simplifyPath(fs.filename()));
         if (mUnusedFunctionsCheck)
             mUnusedFunctionsCheck->updateFunctionData(*temp.mUnusedFunctionsCheck);
         return returnValue;
     }
-    const unsigned int returnValue = temp.checkFile(Path::simplifyPath(fs.filename), fs.cfg);
+    const unsigned int returnValue = temp.checkFile(Path::simplifyPath(fs.filename()), fs.cfg);
     mSettings.supprs.nomsg.addSuppressions(temp.mSettings.supprs.nomsg.getSuppressions());
     if (mUnusedFunctionsCheck)
         mUnusedFunctionsCheck->updateFunctionData(*temp.mUnusedFunctionsCheck);
@@ -1460,14 +1460,14 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
     }
 }
 
-void CppCheck::executeAddonsWholeProgram(const std::list<std::pair<std::string, std::size_t>> &files)
+void CppCheck::executeAddonsWholeProgram(const std::list<FileWithDetails> &files)
 {
     if (mSettings.addons.empty())
         return;
 
     std::vector<std::string> ctuInfoFiles;
     for (const auto &f: files) {
-        const std::string &dumpFileName = getDumpFileName(mSettings, f.first);
+        const std::string &dumpFileName = getDumpFileName(mSettings, f.path());
         ctuInfoFiles.push_back(getCtuInfoFileName(dumpFileName));
     }
 
@@ -1668,7 +1668,7 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
     constexpr char exe[] = "clang-tidy";
 #endif
 
-    const std::string args = "-quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename + "\" -- " + allIncludes + allDefines;
+    const std::string args = "-quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename() + "\" -- " + allIncludes + allDefines;
     std::string output;
     if (const int exitcode = mExecuteCommand(exe, split(args), emptyString, output)) {
         std::cerr << "Failed to execute '" << exe << "' (exitcode: " << std::to_string(exitcode) << ")" << std::endl;
@@ -1680,7 +1680,7 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
     std::string line;
 
     if (!mSettings.buildDir.empty()) {
-        const std::string analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, fileSettings.filename, emptyString);
+        const std::string analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, fileSettings.filename(), emptyString);
         std::ofstream fcmd(analyzerInfoFile + ".clang-tidy-cmd");
         fcmd << istr.str();
     }
@@ -1755,7 +1755,7 @@ bool CppCheck::analyseWholeProgram()
     return errors && (mExitCode > 0);
 }
 
-unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings)
+unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings)
 {
     executeAddonsWholeProgram(files); // TODO: pass FileSettings
     if (buildDir.empty()) {
@@ -1825,16 +1825,16 @@ unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const st
     return mExitCode;
 }
 
-void CppCheck::removeCtuInfoFiles(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings)
+void CppCheck::removeCtuInfoFiles(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings)
 {
     if (mSettings.buildDir.empty()) {
         for (const auto& f: files) {
-            const std::string &dumpFileName = getDumpFileName(mSettings, f.first);
+            const std::string &dumpFileName = getDumpFileName(mSettings, f.path());
             const std::string &ctuInfoFileName = getCtuInfoFileName(dumpFileName);
             std::remove(ctuInfoFileName.c_str());
         }
         for (const auto& fs: fileSettings) {
-            const std::string &dumpFileName = getDumpFileName(mSettings, fs.filename);
+            const std::string &dumpFileName = getDumpFileName(mSettings, fs.filename());
             const std::string &ctuInfoFileName = getCtuInfoFileName(dumpFileName);
             std::remove(ctuInfoFileName.c_str());
         }
