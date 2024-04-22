@@ -3873,7 +3873,7 @@ void CheckOther::checkModuloOfOneError(const Token *tok)
 //-----------------------------------------------------------------------------
 // Overlapping write (undefined behavior)
 //-----------------------------------------------------------------------------
-static bool getBufAndOffset(const Token *expr, const Token *&buf, MathLib::bigint *offset, const Settings& settings)
+static bool getBufAndOffset(const Token *expr, const Token *&buf, MathLib::bigint *offset, MathLib::bigint* sizeValue, const Settings& settings)
 {
     if (!expr)
         return false;
@@ -3890,9 +3890,15 @@ static bool getBufAndOffset(const Token *expr, const Token *&buf, MathLib::bigin
         if (pointer1 && !pointer2) {
             bufToken = expr->astOperand1();
             offsetToken = expr->astOperand2();
+            auto vt = *expr->astOperand1()->valueType();
+            --vt.pointer;
+            elementSize = ValueFlow::getSizeOf(vt, settings);
         } else if (!pointer1 && pointer2) {
             bufToken = expr->astOperand2();
             offsetToken = expr->astOperand1();
+            auto vt = *expr->astOperand2()->valueType();
+            --vt.pointer;
+            elementSize = ValueFlow::getSizeOf(vt, settings);
         } else {
             return false;
         }
@@ -3911,6 +3917,8 @@ static bool getBufAndOffset(const Token *expr, const Token *&buf, MathLib::bigin
     *offset = offsetToken->getKnownIntValue();
     if (elementSize > 0)
         *offset *= elementSize;
+    if (sizeValue)
+        *sizeValue *= elementSize;
     return true;
 }
 
@@ -3971,7 +3979,8 @@ void CheckOther::checkOverlappingWrite()
                     continue;
 
                 // TODO: nonOverlappingData->strlenArg
-                if (nonOverlappingData->sizeArg <= 0 || nonOverlappingData->sizeArg > args.size()) {
+                const int sizeArg = std::max(nonOverlappingData->sizeArg, nonOverlappingData->countArg);
+                if (sizeArg <= 0 || sizeArg > args.size()) {
                     if (nonOverlappingData->sizeArg == -1) {
                         ErrorPath errorPath;
                         constexpr bool macro = true;
@@ -3983,19 +3992,20 @@ void CheckOther::checkOverlappingWrite()
                     }
                     continue;
                 }
-                if (!args[nonOverlappingData->sizeArg-1]->hasKnownIntValue())
+                const bool isCountArg = nonOverlappingData->countArg > 0;                
+                if (!args[sizeArg-1]->hasKnownIntValue())
                     continue;
-                const MathLib::bigint sizeValue = args[nonOverlappingData->sizeArg-1]->getKnownIntValue();
+                MathLib::bigint sizeValue = args[sizeArg-1]->getKnownIntValue();
                 const Token *buf1, *buf2;
                 MathLib::bigint offset1, offset2;
-                if (!getBufAndOffset(ptr1, buf1, &offset1, *mSettings))
+                if (!getBufAndOffset(ptr1, buf1, &offset1, isCountArg ? &sizeValue : nullptr, *mSettings))
                     continue;
-                if (!getBufAndOffset(ptr2, buf2, &offset2, *mSettings))
+                if (!getBufAndOffset(ptr2, buf2, &offset2, isCountArg ? &sizeValue : nullptr, *mSettings))
                     continue;
 
                 if (offset1 < offset2 && offset1 + sizeValue <= offset2)
                     continue;
-                if (offset2 < offset1 && offset2 + sizeValue < offset1)
+                if (offset2 < offset1 && offset2 + sizeValue <= offset1)
                     continue;
 
                 ErrorPath errorPath;
