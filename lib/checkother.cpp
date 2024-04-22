@@ -3993,7 +3993,7 @@ void CheckOther::checkOverlappingWrite()
                     }
                     continue;
                 }
-                const bool isCountArg = nonOverlappingData->countArg > 0;                
+                const bool isCountArg = nonOverlappingData->countArg > 0;
                 if (!args[sizeArg-1]->hasKnownIntValue())
                     continue;
                 MathLib::bigint sizeValue = args[sizeArg-1]->getKnownIntValue();
