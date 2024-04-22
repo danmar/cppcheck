@@ -3905,6 +3905,14 @@ static bool getBufAndOffset(const Token *expr, const Token *&buf, MathLib::bigin
     } else if (expr->valueType() && expr->valueType()->pointer > 0) {
         buf = expr;
         *offset = 0;
+        auto vt = *expr->valueType();
+        --vt.pointer;
+        elementSize = ValueFlow::getSizeOf(vt, settings);
+        if (elementSize > 0) {
+            *offset *= elementSize;
+            if (sizeValue)
+                *sizeValue *= elementSize;
+        }
         return true;
     } else {
         return false;
