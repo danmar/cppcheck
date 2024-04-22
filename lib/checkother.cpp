@@ -3873,7 +3873,7 @@ void CheckOther::checkModuloOfOneError(const Token *tok)
 //-----------------------------------------------------------------------------
 // Overlapping write (undefined behavior)
 //-----------------------------------------------------------------------------
-static bool getBufAndOffset(const Token *expr, const Token *&buf, MathLib::bigint *offset, MathLib::bigint* sizeValue, const Settings& settings)
+static bool getBufAndOffset(const Token *expr, const Token *&buf, MathLib::bigint *offset, const Settings& settings, MathLib::bigint* sizeValue = nullptr)
 {
     if (!expr)
         return false;
@@ -3999,9 +3999,9 @@ void CheckOther::checkOverlappingWrite()
                 MathLib::bigint sizeValue = args[sizeArg-1]->getKnownIntValue();
                 const Token *buf1, *buf2;
                 MathLib::bigint offset1, offset2;
-                if (!getBufAndOffset(ptr1, buf1, &offset1, isCountArg ? &sizeValue : nullptr, *mSettings))
+                if (!getBufAndOffset(ptr1, buf1, &offset1, *mSettings, isCountArg ? &sizeValue : nullptr))
                     continue;
-                if (!getBufAndOffset(ptr2, buf2, &offset2, isCountArg ? &sizeValue : nullptr, *mSettings))
+                if (!getBufAndOffset(ptr2, buf2, &offset2, *mSettings))
                     continue;
 
                 if (offset1 < offset2 && offset1 + sizeValue <= offset2)
