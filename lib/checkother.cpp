@@ -3915,10 +3915,11 @@ static bool getBufAndOffset(const Token *expr, const Token *&buf, MathLib::bigin
         return false;
     buf = bufToken;
     *offset = offsetToken->getKnownIntValue();
-    if (elementSize > 0)
+    if (elementSize > 0) {
         *offset *= elementSize;
-    if (sizeValue)
-        *sizeValue *= elementSize;
+        if (sizeValue)
+            *sizeValue *= elementSize;
+    }
     return true;
 }
 
