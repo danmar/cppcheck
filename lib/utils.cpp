@@ -138,3 +138,12 @@ std::string trim(const std::string& s, const std::string& t)
     const std::string::size_type end = s.find_last_not_of(t);
     return s.substr(beg, end - beg + 1);
 }
+
+void findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith)
+{
+    std::string::size_type index = 0;
+    while ((index = source.find(searchFor, index)) != std::string::npos) {
+        source.replace(index, searchFor.length(), replaceWith);
+        index += replaceWith.length();
+    }
+}
