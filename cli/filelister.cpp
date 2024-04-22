@@ -151,7 +151,17 @@ std::string FileLister::addFiles(std::list<FileWithDetails> &files, const std::s
     if (path.empty())
         return "no path specified";
 
-    return addFiles2(files, path, extra, recursive, ignored);
+    std::list<FileWithDetails> filesSorted;
+
+    std::string err = addFiles2(filesSorted, path, extra, recursive, ignored);
+
+    // files need to be sorted as the filesystems dosn't provide a stable order
+    filesSorted.sort([](const FileWithDetails& a, const FileWithDetails& b) {
+        return a.path() < b.path();
+    });
+    files.insert(files.end(), std::make_move_iterator(filesSorted.begin()), std::make_move_iterator(filesSorted.end()));
+
+    return err;
 }
 
 #else
@@ -199,8 +209,6 @@ static std::string addFiles2(std::list<FileWithDetails> &files,
     std::string new_path = path;
     new_path += '/';
 
-    std::list<FileWithDetails> filesSorted;
-
     while (const dirent* dir_result = readdir(dir)) {
         if ((std::strcmp(dir_result->d_name, ".") == 0) ||
             (std::strcmp(dir_result->d_name, "..") == 0))
@@ -216,7 +224,7 @@ static std::string addFiles2(std::list<FileWithDetails> &files,
 #endif
         if (path_is_directory) {
             if (recursive && !ignored.match(new_path)) {
-                std::string err = addFiles2(filesSorted, new_path, extra, recursive, ignored);
+                std::string err = addFiles2(files, new_path, extra, recursive, ignored);
                 if (!err.empty()) {
                     return err;
                 }
@@ -227,17 +235,10 @@ static std::string addFiles2(std::list<FileWithDetails> &files,
                     const int err = errno;
                     return "could not stat file '" + new_path + "' (errno: " + std::to_string(err) + ")";
                 }
-                filesSorted.emplace_back(new_path, file_stat.st_size);
+                files.emplace_back(new_path, file_stat.st_size);
             }
         }
     }
-
-    // files inside directories need to be sorted as the filesystem doesn't provide a stable order
-    filesSorted.sort([](const FileWithDetails& a, const FileWithDetails& b) {
-        return a.path() < b.path();
-    });
-
-    files.insert(files.end(), std::make_move_iterator(filesSorted.begin()), std::make_move_iterator(filesSorted.end()));
 
     return "";
 }
@@ -251,7 +252,17 @@ std::string FileLister::addFiles(std::list<FileWithDetails> &files, const std::s
     if (endsWith(corrected_path, '/'))
         corrected_path.erase(corrected_path.end() - 1);
 
-    return addFiles2(files, corrected_path, extra, recursive, ignored);
+    std::list<FileWithDetails> filesSorted;
+
+    std::string err = addFiles2(filesSorted, corrected_path, extra, recursive, ignored);
+
+    // files need to be sorted as the filesystems dosn't provide a stable order
+    filesSorted.sort([](const FileWithDetails& a, const FileWithDetails& b) {
+        return a.path() < b.path();
+    });
+    files.insert(files.end(), std::make_move_iterator(filesSorted.begin()), std::make_move_iterator(filesSorted.end()));
+
+    return err;
 }
 
 #endif
