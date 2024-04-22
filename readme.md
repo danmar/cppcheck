@@ -62,7 +62,7 @@ For rules support (requires pcre) use the flag.
 -DHAVE_RULES=ON
 
 For release builds it is recommended that you use:
--DUSE_MATCHCOMPILER=ON
+-DUSE_MATCHCOMPILER=On
 
 For building the tests use the flag.
 -DBUILD_TESTS=ON
