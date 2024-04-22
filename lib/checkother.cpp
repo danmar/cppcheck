@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -3873,14 +3873,17 @@ void CheckOther::checkModuloOfOneError(const Token *tok)
 //-----------------------------------------------------------------------------
 // Overlapping write (undefined behavior)
 //-----------------------------------------------------------------------------
-static bool getBufAndOffset(const Token *expr, const Token *&buf, MathLib::bigint *offset)
+static bool getBufAndOffset(const Token *expr, const Token *&buf, MathLib::bigint *offset, const Settings& settings)
 {
     if (!expr)
         return false;
     const Token *bufToken, *offsetToken;
+    MathLib::bigint elementSize = 0;
     if (expr->isUnaryOp("&") && Token::simpleMatch(expr->astOperand1(), "[")) {
         bufToken = expr->astOperand1()->astOperand1();
         offsetToken = expr->astOperand1()->astOperand2();
+        if (expr->astOperand1()->valueType())
+            elementSize =  ValueFlow::getSizeOf(*expr->astOperand1()->valueType(), settings);
     } else if (Token::Match(expr, "+|-") && expr->isBinaryOp()) {
         const bool pointer1 = (expr->astOperand1()->valueType() && expr->astOperand1()->valueType()->pointer > 0);
         const bool pointer2 = (expr->astOperand2()->valueType() && expr->astOperand2()->valueType()->pointer > 0);
@@ -3906,6 +3909,8 @@ static bool getBufAndOffset(const Token *expr, const Token *&buf, MathLib::bigin
         return false;
     buf = bufToken;
     *offset = offsetToken->getKnownIntValue();
+    if (elementSize > 0)
+        *offset *= elementSize;
     return true;
 }
 
@@ -3983,14 +3988,14 @@ void CheckOther::checkOverlappingWrite()
                 const MathLib::bigint sizeValue = args[nonOverlappingData->sizeArg-1]->getKnownIntValue();
                 const Token *buf1, *buf2;
                 MathLib::bigint offset1, offset2;
-                if (!getBufAndOffset(ptr1, buf1, &offset1))
+                if (!getBufAndOffset(ptr1, buf1, &offset1, *mSettings))
                     continue;
-                if (!getBufAndOffset(ptr2, buf2, &offset2))
+                if (!getBufAndOffset(ptr2, buf2, &offset2, *mSettings))
                     continue;
 
                 if (offset1 < offset2 && offset1 + sizeValue <= offset2)
                     continue;
-                if (offset2 < offset1 && offset2 + sizeValue <= offset1)
+                if (offset2 < offset1 && offset2 + sizeValue < offset1)
                     continue;
 
                 ErrorPath errorPath;
