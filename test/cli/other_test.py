@@ -1358,3 +1358,73 @@ void f() { }
     assert lines == [
         "{}:4:0: style: found 'f' [rule]".format(test_file)
     ]
+
+
+def test_filelist(tmpdir):
+    list_dir = os.path.join(tmpdir, 'list-dir')
+    os.mkdir(list_dir)
+
+    with open(os.path.join(list_dir, 'aaa.c'), 'wt'):
+        pass
+    with open(os.path.join(list_dir, 'zzz.c'), 'wt'):
+        pass
+    with open(os.path.join(list_dir, 'valueflow.cpp'), 'wt'):
+        pass
+    with open(os.path.join(list_dir, 'vfvalue.cpp'), 'wt'):
+        pass
+    with open(os.path.join(list_dir, 'vf_enumvalue.cpp'), 'wt'):
+        pass
+    with open(os.path.join(list_dir, 'vf_analyze.h'), 'wt'):
+        pass
+
+    sub_dir_1 = os.path.join(list_dir, 'valueflow')
+    os.mkdir(sub_dir_1)
+    with open(os.path.join(sub_dir_1, 'file.cpp'), 'wt'):
+        pass
+    with open(os.path.join(sub_dir_1, 'file.c'), 'wt'):
+        pass
+    with open(os.path.join(sub_dir_1, 'file.h'), 'wt'):
+        pass
+
+    sub_dir_2 = os.path.join(list_dir, 'vfvalue')
+    os.mkdir(sub_dir_2)
+    with open(os.path.join(sub_dir_2, 'file.cpp'), 'wt'):
+        pass
+    with open(os.path.join(sub_dir_2, 'file.c'), 'wt'):
+        pass
+    with open(os.path.join(sub_dir_2, 'file.h'), 'wt'):
+        pass
+
+    sub_dir_3 = os.path.join(list_dir, 'vf_enumvalue')
+    os.mkdir(sub_dir_3)
+    with open(os.path.join(sub_dir_3, 'file.cpp'), 'wt'):
+        pass
+    with open(os.path.join(sub_dir_3, 'file.c'), 'wt'):
+        pass
+    with open(os.path.join(sub_dir_3, 'file.h'), 'wt'):
+        pass
+
+    # TODO: -rp is not applied to "Checking" messages
+    #exitcode, stdout, _ = cppcheck(['-j1', '-rp', list_dir])
+    exitcode, stdout, _ = cppcheck(['-j1', '.'], cwd=list_dir)
+    assert exitcode == 0, stdout
+    if sys.platform == "win32":
+        stdout = stdout.replace('\\', '/')
+    lines = stdout.splitlines()
+    expected = [
+        'Checking aaa.c ...',
+        'Checking valueflow.cpp ...',
+        'Checking valueflow/file.c ...',
+        'Checking valueflow/file.cpp ...',
+        'Checking vf_enumvalue.cpp ...',
+        'Checking vf_enumvalue/file.c ...',
+        'Checking vf_enumvalue/file.cpp ...',
+        'Checking vfvalue.cpp ...',
+        'Checking vfvalue/file.c ...',
+        'Checking vfvalue/file.cpp ...',
+        'Checking zzz.c ...'
+    ]
+    assert len(expected), len(lines)
+    for i in range(1, len(expected)+1):
+        lines.remove('{}/11 files checked 0% done'.format(i, len(expected)))
+    assert lines == expected
