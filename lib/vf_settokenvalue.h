@@ -16,10 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef vfAnalyzeH
-#define vfAnalyzeH
+#ifndef vfSetTokenValueH
+#define vfSetTokenValueH
 
-#include "vf_enumvalue.h" // IWYU pragma: export
-#include "vf_number.h" // IWYU pragma: export
+#include "sourcelocation.h"
 
-#endif // vfAnalyzeH
+class Token;
+class Settings;
+namespace ValueFlow { class Value; }
+
+namespace ValueFlow
+{
+    void setTokenValue(Token* tok,
+                       Value value,
+                       const Settings& settings,
+                       SourceLocation loc = SourceLocation::current());
+}
+
+#endif // vfSetTokenValueH

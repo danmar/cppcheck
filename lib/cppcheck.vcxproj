@@ -87,7 +87,10 @@
     <ClCompile Include="token.cpp" />
     <ClCompile Include="tokenlist.cpp" />
     <ClCompile Include="utils.cpp" />
+    <ClCompile Include="vf_common.cpp" />
     <ClCompile Include="vf_enumvalue.cpp" />
+    <ClCompile Include="vf_number.cpp" />
+    <ClCompile Include="vf_settokenvalue.cpp" />
     <ClCompile Include="vfvalue.cpp" />
   </ItemGroup>
   <ItemGroup Label="HeaderFiles">
@@ -168,7 +171,10 @@
     <ClInclude Include="valueptr.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="vf_analyze.h" />
+    <ClInclude Include="vf_common.h" />
     <ClInclude Include="vf_enumvalue.h" />
+    <ClInclude Include="vf_number.h" />
+    <ClInclude Include="vf_settokenvalue.h" />
     <ClInclude Include="vfvalue.h" />
     <ClInclude Include="xml.h" />
   </ItemGroup>
