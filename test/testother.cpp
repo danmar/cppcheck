@@ -11926,6 +11926,12 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Overlapping read/write in memcpy() is undefined behavior\n", errout_str());
 
+        check("int K[2];\n" // #12638
+              "void f() {\n"
+              "    memcpy(&K[0], &K[1], sizeof(K[0]));\n"
+              "}");
+        ASSERT_EQUALS("", errout_str());
+
         // wmemcpy
         check("void foo() {\n"
               "    wchar_t a[10];\n"
