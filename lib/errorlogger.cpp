@@ -523,22 +523,6 @@ std::string ErrorMessage::toXML() const
     return printer.CStr();
 }
 
-/**
- * Replace all occurrences of searchFor with replaceWith in the
- * given source.
- * @param source The string to modify
- * @param searchFor What should be searched for
- * @param replaceWith What will replace the found item
- */
-static void findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith)
-{
-    std::string::size_type index = 0;
-    while ((index = source.find(searchFor, index)) != std::string::npos) {
-        source.replace(index, searchFor.length(), replaceWith);
-        index += replaceWith.length();
-    }
-}
-
 // TODO: read info from some shared resource instead?
 static std::string readCode(const std::string &file, int linenr, int column, const char endl[])
 {

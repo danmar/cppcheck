@@ -347,6 +347,23 @@ static inline const char* bool_to_string(bool b)
     return b ? "true" : "false";
 }
 
+/**
+ * Remove heading and trailing whitespaces from the input parameter.
+ * If string is all spaces/tabs, return empty string.
+ * @param s The string to trim.
+ * @param t The characters to trim.
+ */
+CPPCHECKLIB std::string trim(const std::string& s, const std::string& t = " \t");
+
+/**
+ * Replace all occurrences of searchFor with replaceWith in the
+ * given source.
+ * @param source The string to modify
+ * @param searchFor What should be searched for
+ * @param replaceWith What will replace the found item
+ */
+CPPCHECKLIB void findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith);
+
 namespace cppcheck
 {
     NORETURN inline void unreachable()
