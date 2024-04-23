@@ -862,7 +862,7 @@ private:
         ASSERT_THROW_INTERNAL_EQUALS(checkCode("{ xs :: i(:) ! ! x/5 ! !\n"
                                                "i, :: a :: b integer, } foo2(x) :: j(:)\n"
                                                "b type(*), d(:), a x :: end d(..), foo end\n"
-                                               "foo4 b d(..), a a x type(*), b foo2 b"), INTERNAL, "Internal error. AST cyclic dependency.");
+                                               "foo4 b d(..), a a x type(*), b foo2 b"), SYNTAX, "syntax error");
     }
 
     void garbageCode100() { // #6840
@@ -987,7 +987,7 @@ private:
     }
 
     void garbageCode125() {
-        ASSERT_THROW_INTERNAL(checkCode("{ T struct B : T valueA_AA ; } T : [ T > ( ) { B } template < T > struct A < > : ] { ( ) { return valueA_AC struct { : } } b A < int > AC ( ) a_aa.M ; ( ) ( ) }"), UNKNOWN_MACRO);
+        ASSERT_THROW_INTERNAL(checkCode("{ T struct B : T valueA_AA ; } T : [ T > ( ) { B } template < T > struct A < > : ] { ( ) { return valueA_AC struct { : } } b A < int > AC ( ) a_aa.M ; ( ) ( ) }"), SYNTAX);
         ASSERT_THROW_INTERNAL(checkCode("template < Types > struct S :{ ( S < ) S >} { ( ) { } } ( ) { return S < void > ( ) }"),
                               SYNTAX);
     }
@@ -1661,7 +1661,7 @@ private:
 
     void garbageCode206() {
         ASSERT_EQUALS("[test.cpp:1] syntax error: operator", getSyntaxError("void foo() { for (auto operator new : int); }"));
-        ASSERT_EQUALS("[test.cpp:1] syntax error: operator", getSyntaxError("void foo() { for (a operator== :) }"));
+        ASSERT_EQUALS("[test.cpp:1] syntax error", getSyntaxError("void foo() { for (a operator== :) }"));
     }
 
     void garbageCode207() { // #8750
