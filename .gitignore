@@ -139,3 +139,6 @@ compile_commands.json
 /.venv/
 /venv/
 **/*.egg-info/
+
+# cppcheck-htmlreport auto files
+htmlreport/cppcheck_htmlreport/run.py

@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-
+import shutil
 from setuptools import find_packages, setup
 
 with open("README.txt") as f:
     readme = f.read()
+
+shutil.copy("cppcheck-htmlreport", "cppcheck_htmlreport/run.py")
 
 setup(
     name="cppcheck-htmlreport",
@@ -17,11 +19,13 @@ setup(
     url="https://github.com/danmar/cppcheck",
     license="GPL",
     packages=find_packages(exclude=("tests", "docs")),
+    use_scm_version={"root": ".."},
     entry_points={
         "console_scripts": [
-            "cppcheck-htmlreport = cppcheck_htmlreport:cppcheck_htmlreport.main",
+            "cppcheck-htmlreport = cppcheck_htmlreport:run.main",
         ]
     },
     test_suite="tests",
     install_requires=["Pygments"],
+    setup_requires=["setuptools>=60", "setuptools-scm>=8.0"],
 )
