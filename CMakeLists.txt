@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-if (MSVC)
+if(MSVC)
     cmake_minimum_required(VERSION 3.13)
 endif()
 cmake_policy(SET CMP0048 NEW) # allow VERSION in project()
@@ -7,7 +7,7 @@ project(Cppcheck VERSION 2.14.99 LANGUAGES CXX)
 
 include(cmake/cxx11.cmake)
 use_cxx11()
-set (CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
