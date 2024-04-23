@@ -10,7 +10,7 @@ function(build_src output filename)
     get_filename_component(file ${filename} NAME)
     set(outfile ${CMAKE_CURRENT_BINARY_DIR}/build/mc_${file})
     set(${output} ${${output}} ${outfile} PARENT_SCOPE)
-    if (USE_MATCHCOMPILER STREQUAL "Verify")
+    if (USE_MATCHCOMPILER_OPT STREQUAL "Verify")
         set(verify_option "--verify")
     endif()
     add_custom_command(
