@@ -7881,20 +7881,20 @@ private:
     }
 
     void valueFlowInc() {
-       const char *code;
-       std::list<ValueFlow::Value> values;
-        /*const*/ Settings s = settingsBuilder().library("std.cfg").build();
+        const char *code;
+        std::list<ValueFlow::Value> values;
+        /*const*/ Settings s = settingsBuilder().build();
 
-       // #11591
-       code = "int f() {\n"
-              "    const int a[1] = {};\n"
-              "    unsigned char i = 255;\n"
-              "    ++i;\n"
-              "    return a[i];\n"
-              "}\n";
-       values = tokenValues(code, "i ]", &s);
-       ASSERT_EQUALS(1U, values.size());
-       ASSERT_EQUALS(0LLU, values.back().intvalue);
+        // #11591
+        code = "int f() {\n"
+               "    const int a[1] = {};\n"
+               "    unsigned char i = 255;\n"
+               "    ++i;\n"
+               "    return a[i];\n"
+               "}\n";
+        values = tokenValues(code, "i ]", &s);
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(0LLU, values.back().intvalue);
     }
 
     void valueFlowNotNull()

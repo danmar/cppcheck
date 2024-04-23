@@ -2831,11 +2831,13 @@ struct ValueFlowAnalyzer : Analyzer {
 
             /* Truncate value */
             const ValueType *dst = tok->valueType();
-            const size_t sz = ValueFlow::getSizeOf(*dst, settings);
-            if (sz > 0 && sz < 8)
-                value->intvalue = truncateIntValue(value->intvalue, sz, dst->sign == ValueType::Sign::SIGNED);
+            if (dst) {
+                const size_t sz = ValueFlow::getSizeOf(*dst, settings);
+                if (sz > 0 && sz < 8)
+                    value->intvalue = truncateIntValue(value->intvalue, sz, dst->sign == ValueType::Sign::SIGNED);
 
-            value->errorPath.emplace_back(tok, tok->str() + " is " + opName + "', new value is " + value->infoString());
+                value->errorPath.emplace_back(tok, tok->str() + " is " + opName + "', new value is " + value->infoString());
+            }
         }
     }
 
