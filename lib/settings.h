@@ -398,6 +398,21 @@ public:
 
         /** @brief Control if condition expression analysis is performed */
         bool doConditionExpressionAnalysis = true;
+
+        /** @brief Maximum performed for-loop count */
+        int maxForLoopCount = 10000;
+
+        /** @brief Maximum performed forward branches */
+        int maxForwardBranches = -1;
+
+        /** @brief Maximum performed alignof recursion */
+        int maxAlignOfRecursion = 100;
+
+        /** @brief Maximum performed sizeof recursion */
+        int maxSizeOfRecursion = 100;
+
+        /** @brief Maximum expression varid depth */
+        int maxExprVarIdDepth = 4;
     };
 
     /** @brief The ValueFlow options */

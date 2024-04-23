@@ -1161,7 +1161,7 @@ static size_t bitCeil(size_t x)
 
 static size_t getAlignOf(const ValueType& vt, const Settings& settings, int maxRecursion = 0)
 {
-    if (maxRecursion == 100)
+    if (maxRecursion == settings.vfOptions.maxAlignOfRecursion)
         return 0;
     if (vt.pointer || vt.reference != Reference::None || vt.isPrimitive()) {
         auto align = ValueFlow::getSizeOf(vt, settings);
@@ -1196,7 +1196,7 @@ static nonneg int getSizeOfType(const Token *typeTok, const Settings &settings)
 
 size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, int maxRecursion)
 {
-    if (maxRecursion == 100)
+    if (maxRecursion == settings.vfOptions.maxSizeOfRecursion)
         return 0;
     if (vt.pointer || vt.reference != Reference::None)
         return settings.platform.sizeof_pointer;
@@ -3294,8 +3294,7 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     }
 
     void setupExprVarIds(const Token* start, int depth = 0) {
-        constexpr int maxDepth = 4;
-        if (depth > maxDepth)
+        if (depth > settings.vfOptions.maxExprVarIdDepth)
             return;
         visitAstNodes(start, [&](const Token* tok) {
             const bool top = depth == 0 && tok == start;
@@ -7195,7 +7194,7 @@ static bool valueFlowForLoop2(const Token *tok,
     ProgramMemory startMemory(programMemory);
     ProgramMemory endMemory;
 
-    int maxcount = 10000;
+    int maxcount = settings.vfOptions.maxForLoopCount;
     while (result != 0 && !error && --maxcount > 0) {
         endMemory = programMemory;
         execute(thirdExpression, programMemory, &result, &error, settings);
