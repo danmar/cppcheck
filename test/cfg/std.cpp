@@ -58,6 +58,13 @@
 #include <span>
 #endif
 
+void unreachableCode_std_terminate(int &x)
+{
+    std::terminate();
+    // cppcheck-suppress unreachableCode
+    x=42;
+}
+
 bool ignoredReturnValue_std_filesystem_exists(const std::filesystem::path &path, std::error_code& ec)
 {
     // cppcheck-suppress ignoredReturnValue
@@ -554,7 +561,7 @@ void bufferAccessOutOfBounds_std_ifstream_get(std::ifstream& in, std::streambuf&
     in.getline(cBuf, 100, 'a');
 
     in.get(sb, 'a');
-    
+
     in.close();
 }
 
