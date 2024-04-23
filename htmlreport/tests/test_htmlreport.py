@@ -14,9 +14,14 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 
-ROOT_DIR = os.path.split(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))[0]
+HTMLREPORT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+ROOT_DIR = os.path.split(HTMLREPORT_DIR)[0]
 CPPCHECK_BIN = os.path.join(ROOT_DIR, 'cppcheck')
-HTML_REPORT_BIN = 'cppcheck-htmlreport'
+
+if os.getenv("PIP_PACKAGE_TEST") is not None:
+    HTML_REPORT_BIN = ['cppcheck-htmlreport']
+else:
+    HTML_REPORT_BIN = [sys.executable, os.path.join(HTMLREPORT_DIR, 'cppcheck-htmlreport')]
 
 
 class TestHTMLReport(unittest.TestCase):
@@ -96,7 +101,7 @@ def runCheck(source_filename=None, xml_version='1', xml_filename=None):
     assert os.path.exists(xml_filename)
 
     subprocess.check_call(
-        [HTML_REPORT_BIN,
+        [*HTML_REPORT_BIN,
          '--file=' + os.path.realpath(xml_filename),
          '--report-dir=' + os.path.realpath(output_directory)],
         cwd=os.path.join(ROOT_DIR, 'htmlreport'))
