@@ -2576,6 +2576,7 @@ private:
         ASSERT_EQUALS_ENUM(Settings::CheckLevel::normal, settings->checkLevel);
         ASSERT_EQUALS(100, settings->vfOptions.maxIfCount);
         ASSERT_EQUALS(8, settings->vfOptions.maxSubFunctionArgs);
+        ASSERT_EQUALS(false, settings->vfOptions.doConditionExpressionAnalysis);
     }
 
     void checkLevelNormal() {
@@ -2585,6 +2586,7 @@ private:
         ASSERT_EQUALS_ENUM(Settings::CheckLevel::normal, settings->checkLevel);
         ASSERT_EQUALS(100, settings->vfOptions.maxIfCount);
         ASSERT_EQUALS(8, settings->vfOptions.maxSubFunctionArgs);
+        ASSERT_EQUALS(false, settings->vfOptions.doConditionExpressionAnalysis);
     }
 
     void checkLevelExhaustive() {
@@ -2594,6 +2596,7 @@ private:
         ASSERT_EQUALS_ENUM(Settings::CheckLevel::exhaustive, settings->checkLevel);
         ASSERT_EQUALS(-1, settings->vfOptions.maxIfCount);
         ASSERT_EQUALS(256, settings->vfOptions.maxSubFunctionArgs);
+        ASSERT_EQUALS(true, settings->vfOptions.doConditionExpressionAnalysis);
     }
 
     void checkLevelUnknown() {

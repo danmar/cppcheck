@@ -395,6 +395,9 @@ public:
 
         /** @brief Experimental: maximum execution time */
         int maxTime = -1;
+
+        /** @brief Control if condition expression analysis is performed */
+        bool doConditionExpressionAnalysis = true;
     };
 
     /** @brief The ValueFlow options */

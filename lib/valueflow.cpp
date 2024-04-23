@@ -5399,7 +5399,7 @@ static const Scope* getLoopScope(const Token* tok)
 //
 static void valueFlowConditionExpressions(const TokenList &tokenlist, const SymbolDatabase& symboldatabase, ErrorLogger &errorLogger, const Settings &settings)
 {
-    if (!settings.daca && (settings.checkLevel == Settings::CheckLevel::normal))
+    if (!settings.daca && !settings.vfOptions.doConditionExpressionAnalysis)
     {
         if (settings.debugwarnings) {
             ErrorMessage::FileLocation loc(tokenlist.getSourceFilePath(), 0, 0);
@@ -5416,7 +5416,7 @@ static void valueFlowConditionExpressions(const TokenList &tokenlist, const Symb
             continue;
         }
 
-        if (settings.daca && (settings.checkLevel == Settings::CheckLevel::normal))
+        if (settings.daca && !settings.vfOptions.doConditionExpressionAnalysis)
             continue;
 
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {

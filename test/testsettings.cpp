@@ -274,6 +274,7 @@ private:
         ASSERT_EQUALS_ENUM(s.checkLevel, Settings::CheckLevel::exhaustive);
         ASSERT_EQUALS(s.vfOptions.maxIfCount, -1);
         ASSERT_EQUALS(s.vfOptions.maxSubFunctionArgs, 256);
+        ASSERT_EQUALS(true, s.vfOptions.doConditionExpressionAnalysis);
     }
 };
 

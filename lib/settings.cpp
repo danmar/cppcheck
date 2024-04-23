@@ -292,12 +292,14 @@ void Settings::setCheckLevel(CheckLevel level)
         checkLevel = level;
         vfOptions.maxSubFunctionArgs = 8;
         vfOptions.maxIfCount = 100;
+        vfOptions.doConditionExpressionAnalysis = false;
     }
     else if (level == CheckLevel::exhaustive) {
         // Checking can take a little while. ~ 10 times slower than normal analysis is OK.
         checkLevel = CheckLevel::exhaustive;
         vfOptions.maxIfCount = -1;
         vfOptions.maxSubFunctionArgs = 256;
+        vfOptions.doConditionExpressionAnalysis = true;
     }
 }
 
