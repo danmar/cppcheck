@@ -272,8 +272,8 @@ private:
     {
         Settings s;
         ASSERT_EQUALS_ENUM(s.checkLevel, Settings::CheckLevel::exhaustive);
-        ASSERT_EQUALS(s.performanceValueFlowMaxIfCount, -1);
-        ASSERT_EQUALS(s.performanceValueFlowMaxSubFunctionArgs, 256);
+        ASSERT_EQUALS(s.vfOptions.maxIfCount, -1);
+        ASSERT_EQUALS(s.vfOptions.maxSubFunctionArgs, 256);
     }
 };
 

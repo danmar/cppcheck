@@ -8537,7 +8537,7 @@ private:
 
     void performanceIfCount() {
         /*const*/ Settings s(settings);
-        s.performanceValueFlowMaxIfCount = 1;
+        s.vfOptions.maxIfCount = 1;
 
         const char *code;
 

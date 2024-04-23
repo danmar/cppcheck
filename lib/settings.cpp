@@ -290,14 +290,14 @@ void Settings::setCheckLevel(CheckLevel level)
     if (level == CheckLevel::normal) {
         // Checking should finish in reasonable time.
         checkLevel = level;
-        performanceValueFlowMaxSubFunctionArgs = 8;
-        performanceValueFlowMaxIfCount = 100;
+        vfOptions.maxSubFunctionArgs = 8;
+        vfOptions.maxIfCount = 100;
     }
     else if (level == CheckLevel::exhaustive) {
         // Checking can take a little while. ~ 10 times slower than normal analysis is OK.
         checkLevel = CheckLevel::exhaustive;
-        performanceValueFlowMaxIfCount = -1;
-        performanceValueFlowMaxSubFunctionArgs = 256;
+        vfOptions.maxIfCount = -1;
+        vfOptions.maxSubFunctionArgs = 256;
     }
 }
 
