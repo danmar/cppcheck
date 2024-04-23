@@ -20,13 +20,13 @@
 #include <cstring>
 #include <ctime>
 #include <exception>
-#include <fstream>
+#include <fstream> // IWYU pragma: keep
 #include <iostream>
 #include <limits>
 #include <list>
 #include <map>
 #include <set>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <stdexcept>
 #include <string>
@@ -1984,7 +1984,7 @@ namespace simplecpp {
                             if (paren == 0)
                               return tok->next->next;
                             tok = tok->next;
-                            if (parametertokens.front()->next->str() != ")" && parametertokens.size() > args.size())
+                            if (parametertokens.size() > args.size() && parametertokens.front()->next->str() != ")")
                               tok = expandToken(output, loc, tok, macros, expandedmacros, parametertokens)->previous;
                         }
                     }
@@ -3085,9 +3085,11 @@ static std::string getFileName(const std::map<std::string, simplecpp::TokenList 
         return (filedata.find(header) != filedata.end()) ? simplecpp::simplifyPath(header) : "";
     }
 
-    const std::string relativeFilename = getRelativeFileName(sourcefile, header);
-    if (!systemheader && filedata.find(relativeFilename) != filedata.end())
-        return relativeFilename;
+    if (!systemheader) {
+        const std::string relativeFilename = getRelativeFileName(sourcefile, header);
+        if (filedata.find(relativeFilename) != filedata.end())
+            return relativeFilename;
+    }
 
     for (std::list<std::string>::const_iterator it = dui.includePaths.begin(); it != dui.includePaths.end(); ++it) {
         std::string s = simplecpp::simplifyPath(getIncludePathFileName(*it, header));
@@ -3143,6 +3145,8 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
             continue;
         }
 
+        if (dui.removeComments)
+            tokenlist->removeComments();
         ret[filename] = tokenlist;
         filelist.push_back(tokenlist->front());
     }
@@ -3178,6 +3182,8 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
         f.close();
 
         TokenList *tokens = new TokenList(header2, filenames, outputList);
+        if (dui.removeComments)
+            tokens->removeComments();
         ret[header2] = tokens;
         if (tokens->front())
             filelist.push_back(tokens->front());
@@ -3268,6 +3274,9 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
     sizeOfType.insert(std::make_pair("double *", sizeof(double *)));
     sizeOfType.insert(std::make_pair("long double *", sizeof(long double *)));
 
+    // use a dummy vector for the macros because as this is not part of the file and would add an empty entry - e.g. /usr/include/poll.h
+    std::vector<std::string> dummy;
+
     const bool hasInclude = (dui.std.size() == 5 && dui.std.compare(0,3,"c++") == 0 && dui.std >= "c++17");
     MacroMap macros;
     for (std::list<std::string>::const_iterator it = dui.defines.begin(); it != dui.defines.end(); ++it) {
@@ -3279,26 +3288,26 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
             continue;
         const std::string lhs(macrostr.substr(0,eq));
         const std::string rhs(eq==std::string::npos ? std::string("1") : macrostr.substr(eq+1));
-        const Macro macro(lhs, rhs, files);
+        const Macro macro(lhs, rhs, dummy);
         macros.insert(std::pair<TokenString,Macro>(macro.name(), macro));
     }
 
-    macros.insert(std::make_pair("__FILE__", Macro("__FILE__", "__FILE__", files)));
-    macros.insert(std::make_pair("__LINE__", Macro("__LINE__", "__LINE__", files)));
-    macros.insert(std::make_pair("__COUNTER__", Macro("__COUNTER__", "__COUNTER__", files)));
+    macros.insert(std::make_pair("__FILE__", Macro("__FILE__", "__FILE__", dummy)));
+    macros.insert(std::make_pair("__LINE__", Macro("__LINE__", "__LINE__", dummy)));
+    macros.insert(std::make_pair("__COUNTER__", Macro("__COUNTER__", "__COUNTER__", dummy)));
     struct tm ltime = {};
     getLocaltime(ltime);
-    macros.insert(std::make_pair("__DATE__", Macro("__DATE__", getDateDefine(&ltime), files)));
-    macros.insert(std::make_pair("__TIME__", Macro("__TIME__", getTimeDefine(&ltime), files)));
+    macros.insert(std::make_pair("__DATE__", Macro("__DATE__", getDateDefine(&ltime), dummy)));
+    macros.insert(std::make_pair("__TIME__", Macro("__TIME__", getTimeDefine(&ltime), dummy)));
 
     if (!dui.std.empty()) {
         std::string std_def = simplecpp::getCStdString(dui.std);
         if (!std_def.empty()) {
-            macros.insert(std::make_pair("__STDC_VERSION__", Macro("__STDC_VERSION__", std_def, files)));
+            macros.insert(std::make_pair("__STDC_VERSION__", Macro("__STDC_VERSION__", std_def, dummy)));
         } else {
             std_def = simplecpp::getCppStdString(dui.std);
             if (!std_def.empty())
-                macros.insert(std::make_pair("__cplusplus", Macro("__cplusplus", std_def, files)));
+                macros.insert(std::make_pair("__cplusplus", Macro("__cplusplus", std_def, dummy)));
         }
     }
 
@@ -3446,6 +3455,8 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                     header2 = openHeader(f, dui, rawtok->location.file(), header, systemheader);
                     if (f.is_open()) {
                         TokenList * const tokens = new TokenList(f, files, header2, outputList);
+                        if (dui.removeComments)
+                            tokens->removeComments();
                         filedata[header2] = tokens;
                     }
                 }
