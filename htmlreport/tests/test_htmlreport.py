@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test cppcheck-htmlreport."""
+"""Test cppcheck_htmlreport.py."""
 
 import os
 import contextlib
@@ -14,11 +14,9 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 
-ROOT_DIR = os.path.split(os.path.abspath(os.path.dirname(__file__)))[0]
+ROOT_DIR = os.path.split(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))[0]
 CPPCHECK_BIN = os.path.join(ROOT_DIR, 'cppcheck')
-
-HTML_REPORT_BIN = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                               'cppcheck-htmlreport')
+HTML_REPORT_BIN = 'cppcheck-htmlreport'
 
 
 class TestHTMLReport(unittest.TestCase):
@@ -98,7 +96,7 @@ def runCheck(source_filename=None, xml_version='1', xml_filename=None):
     assert os.path.exists(xml_filename)
 
     subprocess.check_call(
-        [sys.executable, HTML_REPORT_BIN,
+        [HTML_REPORT_BIN,
          '--file=' + os.path.realpath(xml_filename),
          '--report-dir=' + os.path.realpath(output_directory)],
         cwd=os.path.join(ROOT_DIR, 'htmlreport'))
