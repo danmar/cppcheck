@@ -154,9 +154,19 @@ jobs:
         env:
           PYTHONPATH: ./addons
 
-      - name: test htmlreport
+      - name: test htmlreport (standalone)
         run: |
           htmlreport/test_htmlreport.py
+          cd htmlreport
+          ./check.sh
+
+      - name: test htmlreport (pip)
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install htmlreport
+          which cppcheck-htmlreport
+          PIP_PACKAGE_TEST=1 htmlreport/test_htmlreport.py
           cd htmlreport
           ./check.sh
 
