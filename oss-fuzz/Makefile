@@ -120,18 +120,18 @@ preprare-samples:
 
 do-fuzz: oss-fuzz-client preprare-samples
 	mkdir -p corpus
-	./oss-fuzz-client -only_ascii=1 -timeout=3 -detect_leaks=0 corpus samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout
+	./oss-fuzz-client -only_ascii=1 -timeout=5 -detect_leaks=0 corpus samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout
 
 dedup-corpus: oss-fuzz-client preprare-samples
 	mv corpus corpus_
 	mkdir -p corpus
-	./oss-fuzz-client -only_ascii=1 -timeout=3 -detect_leaks=0 corpus corpus_ samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout -merge=1
+	./oss-fuzz-client -only_ascii=1 -timeout=5 -detect_leaks=0 corpus corpus_ samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout -merge=1
 
 # jobs:
-# ./oss-fuzz-client -only_ascii=1 -timeout=3 -detect_leaks=0 corpus samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout -workers=12 -jobs=9
+# ./oss-fuzz-client -only_ascii=1 -timeout=5 -detect_leaks=0 corpus samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout -workers=12 -jobs=9
 
 # minimize:
-# ./oss-fuzz-client -only_ascii=1 -timeout=3 -detect_leaks=0 -minimize_crash=1 crash-0123456789abcdef
+# ./oss-fuzz-client -only_ascii=1 -timeout=5 -detect_leaks=0 -minimize_crash=1 crash-0123456789abcdef
 
 simplecpp.o: ../externals/simplecpp/simplecpp.cpp ../externals/simplecpp/simplecpp.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -w -c -o $@ ../externals/simplecpp/simplecpp.cpp
