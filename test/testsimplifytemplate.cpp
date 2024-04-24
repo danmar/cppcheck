@@ -5273,11 +5273,11 @@ private:
 
     void template_array_type() {
         ASSERT_EQUALS("void foo<int[]> ( int [ ] x ) ; "
-                      "void bar ( ) { int [ 3 ] y ; foo<int[]> ( y ) ; } "
+                      "void bar ( ) { int y [ 3 ] ; foo<int[]> ( y ) ; } "
                       "void foo<int[]> ( int [ ] x ) { }",
                       tok("template <class T> void foo(T x) {};\n"
                           "void bar() {\n"
-                          "  int[3] y;\n"
+                          "  int y[3];\n"
                           "  foo<int[]>(y);\n"
                           "}"));
         ASSERT_EQUALS("struct A<int[2]> ; "

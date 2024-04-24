@@ -5514,6 +5514,18 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // @..
     simplifyAt();
 
+    // Remove __declspec()
+    simplifyDeclspec();
+
+    // Remove "inline", "register", and "restrict"
+    simplifyKeyword();
+
+    // Remove [[attribute]]
+    simplifyCPPAttribute();
+
+    // remove __attribute__((?))
+    simplifyAttribute();
+
     // Bail out if code is garbage
     if (mTimerResults) {
         Timer t("Tokenizer::simplifyTokens1::simplifyTokenList1::findGarbageCode", mSettings.showtime, mTimerResults);
@@ -5547,12 +5559,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // simplify namespace aliases
     simplifyNamespaceAliases();
-
-    // Remove [[attribute]]
-    simplifyCPPAttribute();
-
-    // remove __attribute__((?))
-    simplifyAttribute();
 
     // simplify cppcheck attributes __cppcheck_?__(?)
     simplifyCppcheckAttribute();
@@ -5595,12 +5601,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     if (Settings::terminated())
         return false;
 
-    // Remove __declspec()
-    simplifyDeclspec();
     validate();
-
-    // Remove "inline", "register", and "restrict"
-    simplifyKeyword();
 
     // simplify simple calculations inside <..>
     if (isCPP()) {
@@ -8656,7 +8657,7 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "%cop%|= ]") && !(isCPP() && Token::Match(tok->previous(), "%type%|[|,|%num% &|=|> ]")))
             syntaxError(tok);
-        if (Token::Match(tok, "[+-] [;,)]}]") && !(isCPP() && Token::Match(tok->previous(), "operator [+-] ;")))
+        if (Token::Match(tok, "[+-] [;,)]}]") && !(isCPP() && Token::simpleMatch(tok->previous(), "operator")))
             syntaxError(tok);
         if (Token::simpleMatch(tok, ",") &&
             !Token::Match(tok->tokAt(-2), "[ = , &|%name%")) {
@@ -8695,6 +8696,8 @@ void Tokenizer::findGarbageCode() const
         if (Token::Match(tok, "typedef [,;]"))
             syntaxError(tok);
         if (Token::Match(tok, "! %comp%"))
+            syntaxError(tok);
+        if (Token::Match(tok, "] %name%") && (!isCPP() || !(tok->tokAt(-1) && Token::simpleMatch(tok->tokAt(-2), "delete ["))))
             syntaxError(tok);
 
         if (tok->link() && Token::Match(tok, "[([]") && (!tok->tokAt(-1) || !tok->tokAt(-1)->isControlFlowKeyword())) {
@@ -9226,7 +9229,7 @@ void Tokenizer::simplifyCppcheckAttribute()
 
 void Tokenizer::simplifyCPPAttribute()
 {
-    if (!isCPP() || mSettings.standards.cpp < Standards::CPP11)
+    if (!isCPP())
         return;
 
     for (Token *tok = list.front(); tok;) {
