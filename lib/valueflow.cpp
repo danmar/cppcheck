@@ -604,12 +604,12 @@ static ValueFlow::Value truncateImplicitConversion(Token* parent, const ValueFlo
     return v;
 }
 
-static long long truncateIntValue(long long value, size_t value_size, bool dst_signed_value)
+static long long truncateIntValue(long long value, size_t value_size, const ValueType::Sign dst_sign)
 {
     const MathLib::biguint unsignedMaxValue = (1ULL << (value_size * 8)) - 1ULL;
     const MathLib::biguint signBit = 1ULL << (value_size * 8 - 1);
     value &= unsignedMaxValue;
-    if (dst_signed_value && (value & signBit))
+    if (dst_sign == ValueType::Sign::SIGNED && (value & signBit))
         value |= ~unsignedMaxValue;
 
     return value;
@@ -2834,7 +2834,7 @@ struct ValueFlowAnalyzer : Analyzer {
             if (dst) {
                 const size_t sz = ValueFlow::getSizeOf(*dst, settings);
                 if (sz > 0 && sz < 8)
-                    value->intvalue = truncateIntValue(value->intvalue, sz, dst->sign == ValueType::Sign::SIGNED);
+                    value->intvalue = truncateIntValue(value->intvalue, sz, dst->sign);
 
                 value->errorPath.emplace_back(tok, tok->str() + " is " + opName + "', new value is " + value->infoString());
             }
@@ -6042,7 +6042,7 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
         }
 
         if (value.isIntValue() && sz > 0 && sz < 8)
-            value.intvalue = truncateIntValue(value.intvalue, sz, dst->sign == ValueType::Sign::SIGNED);
+            value.intvalue = truncateIntValue(value.intvalue, sz, dst->sign);
     }
     return values;
 }
