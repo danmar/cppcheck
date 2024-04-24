@@ -164,7 +164,8 @@ jobs:
         run: |
           python -m venv venv
           source venv/bin/activate
-          pip install htmlreport
+          python -m pip install -U pip
+          pip install ./htmlreport/
           which cppcheck-htmlreport
           PIP_PACKAGE_TEST=1 htmlreport/tests/test_htmlreport.py
           cd htmlreport
