@@ -27,5 +27,5 @@ setup(
     },
     test_suite="tests",
     install_requires=["Pygments"],
-    setup_requires=["setuptools>=60", "setuptools-scm>=8.0"],
+    setup_requires=["setuptools>=60", "setuptools-scm>=7.0"],
 )

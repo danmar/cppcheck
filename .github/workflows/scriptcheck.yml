@@ -161,6 +161,7 @@ jobs:
           ./check.sh
 
       - name: test htmlreport (pip)
+        if: matrix.python-version != '3.5' && matrix.python-version != '3.6'
         run: |
           python -m venv venv
           source venv/bin/activate
