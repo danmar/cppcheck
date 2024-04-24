@@ -156,7 +156,7 @@ jobs:
 
       - name: test htmlreport (standalone)
         run: |
-          htmlreport/test_htmlreport.py
+          htmlreport/test/test_htmlreport.py
           cd htmlreport
           ./check.sh
 
@@ -166,7 +166,7 @@ jobs:
           source venv/bin/activate
           pip install htmlreport
           which cppcheck-htmlreport
-          PIP_PACKAGE_TEST=1 htmlreport/test_htmlreport.py
+          PIP_PACKAGE_TEST=1 htmlreport/test/test_htmlreport.py
           cd htmlreport
           ./check.sh
 
