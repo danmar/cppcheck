@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test cppcheck_htmlreport.py."""
+"""Test cppcheck-htmlreport."""
 
 import os
 import contextlib
