@@ -8690,6 +8690,12 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "^ %op%") && !Token::Match(tok->next(), "[>*+-!~]"))
             syntaxError(tok);
+        if (Token::Match(tok, ": [)]=]"))
+            syntaxError(tok);
+        if (Token::Match(tok, "typedef [,;]"))
+            syntaxError(tok);
+        if (Token::Match(tok, "! %comp%"))
+            syntaxError(tok);
 
         if (tok->link() && Token::Match(tok, "[([]") && (!tok->tokAt(-1) || !tok->tokAt(-1)->isControlFlowKeyword())) {
             const Token* const end = tok->link();
