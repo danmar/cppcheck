@@ -93,6 +93,20 @@ namespace ValueFlow
         return true;
     }
 
+    long long truncateIntValue(long long value, size_t value_size, const ValueType::Sign dst_sign)
+    {
+        if (value_size == 0)
+            return value;
+
+        const MathLib::biguint unsignedMaxValue = std::numeric_limits<MathLib::biguint>::max() >> (value_size < sizeof(unsignedMaxValue) ? ((sizeof(unsignedMaxValue) - value_size) * 8) : 0);
+        const MathLib::biguint signBit = 1ULL << (value_size * 8 - 1);
+        value &= unsignedMaxValue;
+        if (dst_sign == ValueType::Sign::SIGNED && (value & signBit))
+            value |= ~unsignedMaxValue;
+
+        return value;
+    }
+
     static nonneg int getSizeOfType(const Token *typeTok, const Settings &settings)
     {
         const ValueType &valueType = ValueType::parseDecl(typeTok, settings);

@@ -633,8 +633,22 @@ namespace ValueFlow
                     continue;
                 Value v(val);
                 if (parent == tok->previous()) {
-                    if (v.isIntValue() || v.isSymbolicValue())
-                        v.intvalue = v.intvalue + 1;
+                    if (v.isIntValue() || v.isSymbolicValue()) {
+                        const ValueType *dst = tok->valueType();
+                        if (dst) {
+                            const size_t sz = ValueFlow::getSizeOf(*dst, settings);
+                            long long newvalue = ValueFlow::truncateIntValue(v.intvalue + 1, sz, dst->sign);
+                            if (v.bound != ValueFlow::Value::Bound::Point) {
+                                if (newvalue < v.intvalue) {
+                                    v.invertBound();
+                                    newvalue -= 1;
+                                }
+                            }
+                            v.intvalue = newvalue;
+                        } else {
+                            v.intvalue = v.intvalue + 1;
+                        }
+                    }
                     else
                         v.floatValue = v.floatValue + 1.0;
                 }
@@ -649,8 +663,22 @@ namespace ValueFlow
                     continue;
                 Value v(val);
                 if (parent == tok->previous()) {
-                    if (v.isIntValue() || v.isSymbolicValue())
-                        v.intvalue = v.intvalue - 1;
+                    if (v.isIntValue() || v.isSymbolicValue()) {
+                        const ValueType *dst = tok->valueType();
+                        if (dst) {
+                            const size_t sz = ValueFlow::getSizeOf(*dst, settings);
+                            long long newvalue = ValueFlow::truncateIntValue(v.intvalue - 1, sz, dst->sign);
+                            if (v.bound != ValueFlow::Value::Bound::Point) {
+                                if (newvalue > v.intvalue) {
+                                    v.invertBound();
+                                    newvalue += 1;
+                                }
+                            }
+                            v.intvalue = newvalue;
+                        } else {
+                            v.intvalue = v.intvalue - 1;
+                        }
+                    }
                     else
                         v.floatValue = v.floatValue - 1.0;
                 }

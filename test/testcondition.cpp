@@ -123,6 +123,7 @@ private:
         TEST_CASE(knownConditionCast); // #9976
         TEST_CASE(knownConditionIncrementLoop); // #9808
         TEST_CASE(knownConditionAfterBailout); // #12526
+        TEST_CASE(knownConditionIncDecOperator);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -6045,6 +6046,20 @@ private:
             "};"
             );
         ASSERT_EQUALS("[test.cpp:13] -> [test.cpp:18]: (style) Condition 'mS.b' is always false\n", errout_str());
+    }
+
+    void knownConditionIncDecOperator() {
+        check(
+            "void f() {\n"
+            "    unsigned int d = 0;\n"
+            "    for (int i = 0; i < 4; ++i) {\n"
+            "        if (i < 3)\n"
+            "            ++d;\n"
+            "        else if (--d == 0)\n"
+            "            ;\n"
+            "    }\n"
+            "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 };
 

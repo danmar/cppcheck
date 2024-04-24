@@ -411,16 +411,6 @@ void ValueFlow::combineValueProperties(const ValueFlow::Value &value1, const Val
         result.path = value1.path;
 }
 
-static long long truncateIntValue(long long value, size_t value_size, const ValueType::Sign dst_sign)
-{
-    const MathLib::biguint unsignedMaxValue = (1ULL << (value_size * 8)) - 1ULL;
-    const MathLib::biguint signBit = 1ULL << (value_size * 8 - 1);
-    value &= unsignedMaxValue;
-    if (dst_sign == ValueType::Sign::SIGNED && (value & signBit))
-        value |= ~unsignedMaxValue;
-
-    return value;
-}
 
 template<class F>
 static size_t accumulateStructMembers(const Scope* scope, F f)
@@ -1868,7 +1858,7 @@ struct ValueFlowAnalyzer : Analyzer {
             if (dst) {
                 const size_t sz = ValueFlow::getSizeOf(*dst, settings);
                 if (sz > 0 && sz < sizeof(MathLib::biguint)) {
-                    long long newvalue = truncateIntValue(value->intvalue, sz, dst->sign);
+                    long long newvalue = ValueFlow::truncateIntValue(value->intvalue, sz, dst->sign);
 
                     /* Handle overflow/underflow for value bounds */
                     if (value->bound != ValueFlow::Value::Bound::Point) {
@@ -5094,7 +5084,7 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
         }
 
         if (value.isIntValue() && sz > 0 && sz < sizeof(MathLib::biguint))
-            value.intvalue = truncateIntValue(value.intvalue, sz, dst->sign);
+            value.intvalue = ValueFlow::truncateIntValue(value.intvalue, sz, dst->sign);
     }
     return values;
 }
