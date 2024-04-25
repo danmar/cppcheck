@@ -95,6 +95,7 @@ void TokenList::determineCppC()
 {
     // only try to determine if it wasn't enforced
     if (mLang == Standards::Language::None) {
+        ASSERT_LANG(!getSourceFilePath().empty());
         mLang = Path::identify(getSourceFilePath());
         // TODO: cannot enable assert as this might occur for unknown extensions
         //ASSERT_LANG(mLang != Standards::Language::None);
@@ -372,11 +373,11 @@ bool TokenList::createTokensInternal(std::istream &code, const std::string& file
 // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
 void TokenList::createTokens(simplecpp::TokenList&& tokenList)
 {
-    if (tokenList.cfront()) {
+    // tokenList.cfront() might be NULL if the file contained nothing to tokenize so we need to check the files instead
+    if (!tokenList.getFiles().empty()) {
         // this is a copy
-        // TODO: the same as TokenList.files - move that instead
         // TODO: this points to mFiles when called from createTokens(std::istream &, const std::string&)
-        mOrigFiles = mFiles = tokenList.cfront()->location.files;
+        mOrigFiles = mFiles = tokenList.getFiles();
     }
     else
         mFiles.clear();
