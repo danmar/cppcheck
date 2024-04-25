@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -834,7 +834,7 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
         const std::map<int, VarInfo::AllocInfo>::const_iterator var = varInfo.alloctype.find(tok->varId());
         if (var != varInfo.alloctype.end()) {
             bool unknown = false;
-            if (var->second.status == VarInfo::DEALLOC && CheckNullPointer::isPointerDeRef(tok, unknown, mSettings) && !unknown) {
+            if (var->second.status == VarInfo::DEALLOC && CheckNullPointer::isPointerDeRef(tok, unknown, *mSettings) && !unknown) {
                 deallocUseError(tok, tok->str());
             } else if (Token::simpleMatch(tok->tokAt(-2), "= &")) {
                 varInfo.erase(tok->varId());

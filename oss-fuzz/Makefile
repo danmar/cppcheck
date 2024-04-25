@@ -120,18 +120,18 @@ preprare-samples:
 
 do-fuzz: oss-fuzz-client preprare-samples
 	mkdir -p corpus
-	./oss-fuzz-client -only_ascii=1 -timeout=3 -detect_leaks=0 corpus samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout
+	./oss-fuzz-client -only_ascii=1 -timeout=5 -detect_leaks=0 corpus samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout
 
 dedup-corpus: oss-fuzz-client preprare-samples
 	mv corpus corpus_
 	mkdir -p corpus
-	./oss-fuzz-client -only_ascii=1 -timeout=3 -detect_leaks=0 corpus corpus_ samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout -merge=1
+	./oss-fuzz-client -only_ascii=1 -timeout=5 -detect_leaks=0 corpus corpus_ samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout -merge=1
 
 # jobs:
-# ./oss-fuzz-client -only_ascii=1 -timeout=3 -detect_leaks=0 corpus samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout -workers=12 -jobs=9
+# ./oss-fuzz-client -only_ascii=1 -timeout=5 -detect_leaks=0 corpus samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout -workers=12 -jobs=9
 
 # minimize:
-# ./oss-fuzz-client -only_ascii=1 -timeout=3 -detect_leaks=0 -minimize_crash=1 crash-0123456789abcdef
+# ./oss-fuzz-client -only_ascii=1 -timeout=5 -detect_leaks=0 -minimize_crash=1 crash-0123456789abcdef
 
 simplecpp.o: ../externals/simplecpp/simplecpp.cpp ../externals/simplecpp/simplecpp.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -w -c -o $@ ../externals/simplecpp/simplecpp.cpp
@@ -142,7 +142,7 @@ tinyxml2.o: ../externals/tinyxml2/tinyxml2.cpp ../externals/tinyxml2/tinyxml2.h
 $(libcppdir)/valueflow.o: ../lib/valueflow.cpp ../lib/addoninfo.h ../lib/analyzer.h ../lib/astutils.h ../lib/calculate.h ../lib/check.h ../lib/checkuninitvar.h ../lib/color.h ../lib/config.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/findtoken.h ../lib/forwardanalyzer.h ../lib/infer.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/programmemory.h ../lib/reverseanalyzer.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/suppressions.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/timer.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/valueptr.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/valueflow.cpp
 
-$(libcppdir)/tokenize.o: ../lib/tokenize.cpp ../externals/simplecpp/simplecpp.h ../lib/addoninfo.h ../lib/check.h ../lib/color.h ../lib/config.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/preprocessor.h ../lib/settings.h ../lib/sourcelocation.h ../lib/standards.h ../lib/summaries.h ../lib/suppressions.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/timer.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/vfvalue.h
+$(libcppdir)/tokenize.o: ../lib/tokenize.cpp ../externals/simplecpp/simplecpp.h ../lib/addoninfo.h ../lib/color.h ../lib/config.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/preprocessor.h ../lib/settings.h ../lib/sourcelocation.h ../lib/standards.h ../lib/summaries.h ../lib/suppressions.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/timer.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/tokenize.cpp
 
 $(libcppdir)/symboldatabase.o: ../lib/symboldatabase.cpp ../lib/addoninfo.h ../lib/astutils.h ../lib/color.h ../lib/config.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/keywords.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/suppressions.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/vfvalue.h
@@ -265,7 +265,7 @@ $(libcppdir)/forwardanalyzer.o: ../lib/forwardanalyzer.cpp ../lib/addoninfo.h ..
 $(libcppdir)/fwdanalysis.o: ../lib/fwdanalysis.cpp ../lib/astutils.h ../lib/config.h ../lib/errortypes.h ../lib/fwdanalysis.h ../lib/library.h ../lib/mathlib.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/utils.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/fwdanalysis.cpp
 
-$(libcppdir)/importproject.o: ../lib/importproject.cpp ../externals/picojson/picojson.h ../externals/tinyxml2/tinyxml2.h ../lib/addoninfo.h ../lib/config.h ../lib/errortypes.h ../lib/filesettings.h ../lib/importproject.h ../lib/json.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/settings.h ../lib/standards.h ../lib/suppressions.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/vfvalue.h ../lib/xml.h
+$(libcppdir)/importproject.o: ../lib/importproject.cpp ../externals/picojson/picojson.h ../externals/tinyxml2/tinyxml2.h ../lib/addoninfo.h ../lib/config.h ../lib/errortypes.h ../lib/filesettings.h ../lib/importproject.h ../lib/json.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/settings.h ../lib/standards.h ../lib/suppressions.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenlist.h ../lib/utils.h ../lib/vfvalue.h ../lib/xml.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/importproject.cpp
 
 $(libcppdir)/infer.o: ../lib/infer.cpp ../lib/calculate.h ../lib/config.h ../lib/errortypes.h ../lib/infer.h ../lib/mathlib.h ../lib/valueptr.h ../lib/vfvalue.h

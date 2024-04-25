@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -311,7 +311,7 @@ namespace {
             for (const Token* tok=start; tok != end; tok = tok->previous()) {
                 if (Token::simpleMatch(tok, "}")) {
                     const Token* ftok = nullptr;
-                    const bool r = isReturnScope(tok, &settings.library, &ftok);
+                    const bool r = isReturnScope(tok, settings.library, &ftok);
                     if (r)
                         return true;
                 }
@@ -321,7 +321,7 @@ namespace {
 
         bool isEscapeScope(const Token* endBlock, bool& unknown) const {
             const Token* ftok = nullptr;
-            const bool r = isReturnScope(endBlock, &settings.library, &ftok);
+            const bool r = isReturnScope(endBlock, settings.library, &ftok);
             if (!r && ftok)
                 unknown = true;
             return r;

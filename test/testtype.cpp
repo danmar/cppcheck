@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "platform.h"
-#include "preprocessor.h"
 #include "settings.h"
 #include "standards.h"
 #include "tokenize.h"
@@ -65,10 +64,9 @@ private:
     void checkP_(const char* file, int line, const char code[], const Settings& settings, const char filename[] = "test.cpp", const simplecpp::DUI& dui = simplecpp::DUI()) {
         const Settings settings1 = settingsBuilder(settings).severity(Severity::warning).severity(Severity::portability).build();
 
-        Preprocessor preprocessor(settings1);
         std::vector<std::string> files(1, filename);
-        Tokenizer tokenizer(settings1, this, &preprocessor);
-        PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer, dui);
+        Tokenizer tokenizer(settings1, *this);
+        PreprocessorHelper::preprocess(code, files, tokenizer, *this, dui);
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

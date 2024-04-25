@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1170,14 +1170,14 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
             while (it != eq.cend()) {
                 // check for end
                 if (!it->end) {
-                    if (mSettings.debugwarnings && mErrorLogger && mSettings.severity.isEnabled(Severity::debug)) {
+                    if (mSettings.debugwarnings && mSettings.severity.isEnabled(Severity::debug)) {
                         const std::list<const Token*> locationList(1, it->eq);
                         const ErrorMessage errmsg(locationList, &mTokenizer.list,
                                                   Severity::debug,
                                                   "noparamend",
                                                   "TemplateSimplifier couldn't find end of template parameter.",
                                                   Certainty::normal);
-                        mErrorLogger->reportErr(errmsg);
+                        mErrorLogger.reportErr(errmsg);
                     }
                     break;
                 }
@@ -3078,7 +3078,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             numberOfTemplateInstantiations = mTemplateInstantiations.size();
             ++recursiveCount;
             if (recursiveCount > mSettings.maxTemplateRecursion) {
-                if (mErrorLogger && mSettings.severity.isEnabled(Severity::information)) {
+                if (mSettings.severity.isEnabled(Severity::information)) {
                     std::list<std::string> typeStringsUsedInTemplateInstantiation;
                     const std::string typeForNewName = templateDeclaration.name() + "<" + getNewName(instantiation.token(), typeStringsUsedInTemplateInstantiation) + ">";
 
@@ -3091,7 +3091,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                                               + std::to_string(mSettings.maxTemplateRecursion)
                                               + ") reached for template '"+typeForNewName+"'. You might want to limit Cppcheck recursion.",
                                               Certainty::normal);
-                    mErrorLogger->reportErr(errmsg);
+                    mErrorLogger.reportErr(errmsg);
                 }
 
                 // bail out..
@@ -3159,8 +3159,8 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             continue;
 
         Token * const tok2 = instantiation.token();
-        if (mErrorLogger && !mTokenList.getFiles().empty())
-            mErrorLogger->reportProgress(mTokenList.getFiles()[0], "TemplateSimplifier::simplifyTemplateInstantiations()", tok2->progressValue());
+        if (!mTokenList.getFiles().empty())
+            mErrorLogger.reportProgress(mTokenList.getFiles()[0], "TemplateSimplifier::simplifyTemplateInstantiations()", tok2->progressValue());
 
         if (maxtime > 0 && std::time(nullptr) > maxtime) {
             if (mSettings.debugwarnings) {
@@ -3171,7 +3171,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                                     "Template instantiation maximum time exceeded",
                                     "templateMaxTime",
                                     Certainty::normal);
-                mErrorLogger->reportErr(errmsg);
+                mErrorLogger.reportErr(errmsg);
             }
             return false;
         }
@@ -3201,10 +3201,10 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
 
         if ((typeForNewName.empty() && !templateDeclaration.isVariadic()) ||
             (!typeParametersInDeclaration.empty() && !instantiateMatch(tok2, typeParametersInDeclaration.size(), templateDeclaration.isVariadic(), nullptr))) {
-            if (printDebug && mErrorLogger) {
+            if (printDebug) {
                 std::list<const Token *> callstack(1, tok2);
-                mErrorLogger->reportErr(ErrorMessage(callstack, &mTokenList, Severity::debug, "templateInstantiation",
-                                                     "Failed to instantiate template \"" + instantiation.name() + "\". The checking continues anyway.", Certainty::normal));
+                mErrorLogger.reportErr(ErrorMessage(callstack, &mTokenList, Severity::debug, "templateInstantiation",
+                                                    "Failed to instantiate template \"" + instantiation.name() + "\". The checking continues anyway.", Certainty::normal));
             }
             if (typeForNewName.empty())
                 continue;
@@ -3229,8 +3229,8 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     // TODO: remove the specialized check and handle all uninstantiated templates someday.
     if (!instantiated && specialized) {
         auto * tok2 = const_cast<Token *>(templateDeclaration.nameToken());
-        if (mErrorLogger && !mTokenList.getFiles().empty())
-            mErrorLogger->reportProgress(mTokenList.getFiles()[0], "TemplateSimplifier::simplifyTemplateInstantiations()", tok2->progressValue());
+        if (!mTokenList.getFiles().empty())
+            mErrorLogger.reportProgress(mTokenList.getFiles()[0], "TemplateSimplifier::simplifyTemplateInstantiations()", tok2->progressValue());
 
         if (maxtime > 0 && std::time(nullptr) > maxtime) {
             if (mSettings.debugwarnings) {
@@ -3241,7 +3241,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                                     "Template instantiation maximum time exceeded",
                                     "templateMaxTime",
                                     Certainty::normal);
-                mErrorLogger->reportErr(errmsg);
+                mErrorLogger.reportErr(errmsg);
             }
             return false;
         }
@@ -3278,10 +3278,10 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         std::string typeForNewName = getNewName(tok2, typeStringsUsedInTemplateInstantiation);
 
         if (typeForNewName.empty()) {
-            if (printDebug && mErrorLogger) {
+            if (printDebug) {
                 std::list<const Token *> callstack(1, tok2);
-                mErrorLogger->reportErr(ErrorMessage(callstack, &mTokenList, Severity::debug, "templateInstantiation",
-                                                     "Failed to instantiate template \"" + templateDeclaration.name() + "\". The checking continues anyway.", Certainty::normal));
+                mErrorLogger.reportErr(ErrorMessage(callstack, &mTokenList, Severity::debug, "templateInstantiation",
+                                                    "Failed to instantiate template \"" + templateDeclaration.name() + "\". The checking continues anyway.", Certainty::normal));
             }
             return false;
         }
@@ -3972,14 +3972,14 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
     }
 
     if (passCount == passCountMax) {
-        if (mSettings.debugwarnings && mErrorLogger) {
+        if (mSettings.debugwarnings) {
             const std::list<const Token*> locationList(1, mTokenList.front());
             const ErrorMessage errmsg(locationList, &mTokenizer.list,
                                       Severity::debug,
                                       "debug",
                                       "TemplateSimplifier: pass count limit hit before simplifications were finished.",
                                       Certainty::normal);
-            mErrorLogger->reportErr(errmsg);
+            mErrorLogger.reportErr(errmsg);
         }
     }
 

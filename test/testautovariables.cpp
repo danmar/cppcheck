@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -115,6 +115,7 @@ private:
         TEST_CASE(returnReference24); // #10098
         TEST_CASE(returnReference25); // #10983
         TEST_CASE(returnReference26);
+        TEST_CASE(returnReference27);
         TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
@@ -1654,6 +1655,18 @@ private:
               "    return s;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Reference to local variable returned.\n", errout_str());
+    }
+
+    void returnReference27()
+    {
+        check("struct S {\n" // #12607
+              "    const std::string & f(const std::string& a, const std::string& b) {\n"
+              "        auto status = m.emplace(a, b);\n"
+              "        return status.first->second;\n"
+              "    }\n"
+              "    std::map<std::string, std::string> m;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void returnReferenceFunction() {

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ class TimerResults;
 class Token;
 class TemplateSimplifier;
 class ErrorLogger;
-class Preprocessor;
+struct Directive; // IWYU pragma: keep
 enum class Severity;
 
 /// @addtogroup Core
@@ -53,7 +53,7 @@ class CPPCHECKLIB Tokenizer {
     friend class TestTokenizer;
 
 public:
-    explicit Tokenizer(const Settings & settings, ErrorLogger *errorLogger, const Preprocessor *preprocessor = nullptr);
+    explicit Tokenizer(const Settings & settings, ErrorLogger &errorLogger);
     ~Tokenizer();
 
     void setTimerResults(TimerResults *tr) {
@@ -538,7 +538,7 @@ private:
     void reportError(const Token* tok, const Severity severity, const std::string& id, const std::string& msg, bool inconclusive = false) const;
     void reportError(const std::list<const Token*>& callstack, Severity severity, const std::string& id, const std::string& msg, bool inconclusive = false) const;
 
-    bool duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef) const;
+    bool duplicateTypedef(Token *&tokPtr, const Token *name, const Token *typeDef) const;
 
     void unsupportedTypedef(const Token *tok) const;
 
@@ -624,6 +624,8 @@ public:
     /** Disable assignment operator */
     Tokenizer &operator=(const Tokenizer &) = delete;
 
+    void setDirectives(std::list<Directive> directives);
+
 private:
     const Token *processFunc(const Token *tok2, bool inOperator) const;
     Token *processFunc(Token *tok2, bool inOperator);
@@ -643,7 +645,7 @@ private:
     const Settings & mSettings;
 
     /** errorlogger */
-    ErrorLogger* const mErrorLogger;
+    ErrorLogger& mErrorLogger;
 
     /** Symbol database that all checks etc can use */
     SymbolDatabase* mSymbolDatabase{};
@@ -666,6 +668,8 @@ private:
     };
     std::vector<TypedefInfo> mTypedefInfo;
 
+    std::list<Directive> mDirectives;
+
     /** variable count */
     nonneg int mVarId{};
 
@@ -676,8 +680,6 @@ private:
      * TimerResults
      */
     TimerResults* mTimerResults{};
-
-    const Preprocessor * const mPreprocessor;
 };
 
 /// @}

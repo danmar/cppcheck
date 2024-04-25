@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -204,7 +204,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         if (!mSettings.fileFilters.empty()) {
             // filter only for the selected filenames from all project files
             std::copy_if(fileSettingsRef.cbegin(), fileSettingsRef.cend(), std::back_inserter(fileSettings), [&](const FileSettings &fs) {
-                return matchglobs(mSettings.fileFilters, fs.filename);
+                return matchglobs(mSettings.fileFilters, fs.filename());
             });
             if (fileSettings.empty()) {
                 mLogger.printError("could not find any files matching the filter.");
@@ -219,11 +219,11 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
 
         // sort the markup last
         std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(mFileSettings), [&](const FileSettings &fs) {
-            return !mSettings.library.markupFile(fs.filename) || !mSettings.library.processMarkupAfterCode(fs.filename);
+            return !mSettings.library.markupFile(fs.filename()) || !mSettings.library.processMarkupAfterCode(fs.filename());
         });
 
         std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(mFileSettings), [&](const FileSettings &fs) {
-            return mSettings.library.markupFile(fs.filename) && mSettings.library.processMarkupAfterCode(fs.filename);
+            return mSettings.library.markupFile(fs.filename()) && mSettings.library.processMarkupAfterCode(fs.filename());
         });
 
         if (mFileSettings.empty()) {
@@ -233,7 +233,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
     }
 
     if (!pathnamesRef.empty()) {
-        std::list<std::pair<std::string, std::size_t>> filesResolved;
+        std::list<FileWithDetails> filesResolved;
         // TODO: this needs to be inlined into PathMatch as it depends on the underlying filesystem
 #if defined(_WIN32)
         // For Windows we want case-insensitive path matching
@@ -264,19 +264,19 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         {
             auto it = filesResolved.begin();
             while (it != filesResolved.end()) {
-                const std::string& name = it->first;
+                const std::string& name = it->path();
                 // TODO: log if duplicated files were dropped
-                filesResolved.erase(std::remove_if(std::next(it), filesResolved.end(), [&](const std::pair<std::string, std::size_t>& entry) {
-                    return entry.first == name;
+                filesResolved.erase(std::remove_if(std::next(it), filesResolved.end(), [&](const FileWithDetails& entry) {
+                    return entry.path() == name;
                 }), filesResolved.end());
                 ++it;
             }
         }
 
-        std::list<std::pair<std::string, std::size_t>> files;
+        std::list<FileWithDetails> files;
         if (!mSettings.fileFilters.empty()) {
-            std::copy_if(filesResolved.cbegin(), filesResolved.cend(), std::inserter(files, files.end()), [&](const decltype(filesResolved)::value_type& entry) {
-                return matchglobs(mSettings.fileFilters, entry.first);
+            std::copy_if(filesResolved.cbegin(), filesResolved.cend(), std::inserter(files, files.end()), [&](const FileWithDetails& entry) {
+                return matchglobs(mSettings.fileFilters, entry.path());
             });
             if (files.empty()) {
                 mLogger.printError("could not find any files matching the filter.");
@@ -288,12 +288,12 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         }
 
         // sort the markup last
-        std::copy_if(files.cbegin(), files.cend(), std::inserter(mFiles, mFiles.end()), [&](const decltype(files)::value_type& entry) {
-            return !mSettings.library.markupFile(entry.first) || !mSettings.library.processMarkupAfterCode(entry.first);
+        std::copy_if(files.cbegin(), files.cend(), std::inserter(mFiles, mFiles.end()), [&](const FileWithDetails& entry) {
+            return !mSettings.library.markupFile(entry.path()) || !mSettings.library.processMarkupAfterCode(entry.path());
         });
 
-        std::copy_if(files.cbegin(), files.cend(), std::inserter(mFiles, mFiles.end()), [&](const decltype(files)::value_type& entry) {
-            return mSettings.library.markupFile(entry.first) && mSettings.library.processMarkupAfterCode(entry.first);
+        std::copy_if(files.cbegin(), files.cend(), std::inserter(mFiles, mFiles.end()), [&](const FileWithDetails& entry) {
+            return mSettings.library.markupFile(entry.path()) && mSettings.library.processMarkupAfterCode(entry.path());
         });
 
         if (mFiles.empty()) {
@@ -310,6 +310,9 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
 CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 {
     mSettings.exename = Path::getCurrentExecutablePath(argv[0]);
+
+    // default to --check-level=normal from CLI for now
+    mSettings.setCheckLevel(Settings::CheckLevel::normal);
 
     if (argc <= 1) {
         printHelp();
@@ -468,13 +471,21 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             else if (std::strcmp(argv[i], "--check-config") == 0)
                 mSettings.checkConfiguration = true;
 
-            // Check code exhaustively
-            else if (std::strcmp(argv[i], "--check-level=exhaustive") == 0)
-                mSettings.setCheckLevelExhaustive();
+            // Check level
+            else if (std::strncmp(argv[i], "--check-level=", 14) == 0) {
+                Settings::CheckLevel level = Settings::CheckLevel::normal;
+                const std::string level_s(argv[i] + 14);
+                if (level_s == "normal")
+                    level = Settings::CheckLevel::normal;
+                else if (level_s == "exhaustive")
+                    level = Settings::CheckLevel::exhaustive;
+                else {
+                    mLogger.printError("unknown '--check-level' value '" + level_s + "'.");
+                    return Result::Fail;
+                }
 
-            // Check code with normal analysis
-            else if (std::strcmp(argv[i], "--check-level=normal") == 0)
-                mSettings.setCheckLevelNormal();
+                mSettings.setCheckLevel(level);
+            }
 
             // Check library definitions
             else if (std::strcmp(argv[i], "--check-library") == 0) {

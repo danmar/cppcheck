@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -111,9 +111,9 @@ void CheckThread::run()
     if (!mFiles.isEmpty() || mAnalyseWholeProgram) {
         mAnalyseWholeProgram = false;
         qDebug() << "Whole program analysis";
-        std::list<std::pair<std::string, std::size_t>> files2;
+        std::list<FileWithDetails> files2;
         std::transform(mFiles.cbegin(), mFiles.cend(), std::back_inserter(files2), [&](const QString& file) {
-            return std::pair<std::string, std::size_t>{file.toStdString(), 0};
+            return FileWithDetails{file.toStdString(), 0};
         });
         mCppcheck.analyseWholeProgram(mCppcheck.settings().buildDir, files2, {});
         mFiles.clear();
@@ -133,11 +133,11 @@ void CheckThread::run()
     }
 
     FileSettings fileSettings = mResult.getNextFileSettings();
-    while (!fileSettings.filename.empty() && mState == Running) {
-        file = QString::fromStdString(fileSettings.filename);
+    while (!fileSettings.filename().empty() && mState == Running) {
+        file = QString::fromStdString(fileSettings.filename());
         qDebug() << "Checking file" << file;
         mCppcheck.check(fileSettings);
-        runAddonsAndTools(&fileSettings, QString::fromStdString(fileSettings.filename));
+        runAddonsAndTools(&fileSettings, QString::fromStdString(fileSettings.filename()));
         emit fileChecked(file);
 
         if (mState == Running)
@@ -214,7 +214,7 @@ void CheckThread::runAddonsAndTools(const FileSettings *fileSettings, const QStr
 
             const std::string &buildDir = mCppcheck.settings().buildDir;
             if (!buildDir.empty()) {
-                analyzerInfoFile = QString::fromStdString(AnalyzerInformation::getAnalyzerInfoFile(buildDir, fileSettings->filename, fileSettings->cfg));
+                analyzerInfoFile = QString::fromStdString(AnalyzerInformation::getAnalyzerInfoFile(buildDir, fileSettings->filename(), fileSettings->cfg));
 
                 QStringList args2(args);
                 args2.insert(0,"-E");

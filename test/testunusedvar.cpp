@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -142,6 +142,7 @@ private:
         TEST_CASE(localvar68);
         TEST_CASE(localvar69);
         TEST_CASE(localvar70);
+        TEST_CASE(localvar71);
         TEST_CASE(localvarloops); // loops
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
@@ -260,14 +261,12 @@ private:
 #define functionVariableUsage(...) functionVariableUsage_(__FILE__, __LINE__, __VA_ARGS__)
 #define checkStructMemberUsage(...) checkStructMemberUsage_(__FILE__, __LINE__, __VA_ARGS__)
     void checkStructMemberUsage_(const char* file, int line, const char code[], const std::list<Directive>* directives = nullptr, const Settings *s = nullptr) {
-        Preprocessor preprocessor(settings);
-        if (directives)
-            preprocessor.setDirectives(*directives);
-
         const Settings *settings1 = s ? s : &settings;
 
         // Tokenize..
-        SimpleTokenizer tokenizer(*settings1, *this, &preprocessor);
+        SimpleTokenizer tokenizer(*settings1, *this);
+        if (directives)
+            tokenizer.setDirectives(*directives);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for unused variables..
@@ -278,9 +277,8 @@ private:
 #define checkStructMemberUsageP(...) checkStructMemberUsageP_(__FILE__, __LINE__, __VA_ARGS__)
     void checkStructMemberUsageP_(const char* file, int line, const char code[]) {
         std::vector<std::string> files(1, "test.cpp");
-        Preprocessor preprocessor(settings);
-        Tokenizer tokenizer(settings, this, &preprocessor);
-        PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
+        Tokenizer tokenizer(settings, *this);
+        PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
@@ -292,10 +290,9 @@ private:
 
 #define checkFunctionVariableUsageP(...) checkFunctionVariableUsageP_(__FILE__, __LINE__, __VA_ARGS__)
     void checkFunctionVariableUsageP_(const char* file, int line, const char code[], const char* filename = "test.cpp") {
-        Preprocessor preprocessor(settings);
         std::vector<std::string> files(1, filename);
-        Tokenizer tokenizer(settings, this, &preprocessor);
-        PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
+        Tokenizer tokenizer(settings, *this);
+        PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
@@ -3907,6 +3904,12 @@ private:
                               "    S s1;\n"
                               "    if (s == s1) {}\n"
                               "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void localvar71() {
+        functionVariableUsage("struct A { explicit A(int i); };\n" // #12363
+                              "void f() { A a(0); }\n");
         ASSERT_EQUALS("", errout_str());
     }
 

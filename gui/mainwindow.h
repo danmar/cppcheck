@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -392,7 +392,7 @@ private:
      * @param filename filename (no path)
      * @return error code
      */
-    Library::Error loadLibrary(Library *library, const QString &filename);
+    Library::Error loadLibrary(Library &library, const QString &filename);
 
     /**
      * @brief Tries to load library file, prints message on error
@@ -400,7 +400,7 @@ private:
      * @param filename filename (no path)
      * @return True if no error
      */
-    bool tryLoadLibrary(Library *library, const QString& filename);
+    bool tryLoadLibrary(Library &library, const QString& filename);
 
     QString loadAddon(Settings &settings, const QString &filesDir, const QString &pythonCmd, const QString& addon);
 

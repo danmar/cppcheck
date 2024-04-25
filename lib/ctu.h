@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,7 +57,7 @@ namespace CTU {
 
         struct Location {
             Location() = default;
-            Location(const Tokenizer *tokenizer, const Token *tok);
+            Location(const Tokenizer &tokenizer, const Token *tok);
             Location(std::string fileName, nonneg int lineNumber, nonneg int column) : fileName(std::move(fileName)), lineNumber(lineNumber), column(column) {}
             std::string fileName;
             nonneg int lineNumber{};
@@ -81,7 +81,7 @@ namespace CTU {
             CallBase(std::string callId, int callArgNr, std::string callFunctionName, Location loc)
                 : callId(std::move(callId)), callArgNr(callArgNr), callFunctionName(std::move(callFunctionName)), location(std::move(loc))
             {}
-            CallBase(const Tokenizer *tokenizer, const Token *callToken);
+            CallBase(const Tokenizer &tokenizer, const Token *callToken);
             virtual ~CallBase() = default;
             CallBase(const CallBase&) = default;
             std::string callId;
@@ -114,7 +114,7 @@ namespace CTU {
                 myId(std::move(myId)),
                 myArgNr(myArgNr) {}
 
-            NestedCall(const Tokenizer *tokenizer, const Function *myFunction, const Token *callToken);
+            NestedCall(const Tokenizer &tokenizer, const Function *myFunction, const Token *callToken);
 
             std::string toXmlString() const;
             bool loadFromXml(const tinyxml2::XMLElement *xmlElement);
@@ -141,12 +141,12 @@ namespace CTU {
 
     CPPCHECKLIB std::string toString(const std::list<FileInfo::UnsafeUsage> &unsafeUsage);
 
-    CPPCHECKLIB std::string getFunctionId(const Tokenizer *tokenizer, const Function *function);
+    CPPCHECKLIB std::string getFunctionId(const Tokenizer &tokenizer, const Function *function);
 
     /** @brief Parse current TU and extract file info */
-    CPPCHECKLIB FileInfo *getFileInfo(const Tokenizer *tokenizer);
+    CPPCHECKLIB FileInfo *getFileInfo(const Tokenizer &tokenizer);
 
-    CPPCHECKLIB std::list<FileInfo::UnsafeUsage> getUnsafeUsage(const Tokenizer *tokenizer, const Settings *settings, bool (*isUnsafeUsage)(const Settings *settings, const Token *argtok, MathLib::bigint *value));
+    CPPCHECKLIB std::list<FileInfo::UnsafeUsage> getUnsafeUsage(const Tokenizer &tokenizer, const Settings &settings, bool (*isUnsafeUsage)(const Settings &settings, const Token *argtok, MathLib::bigint *value));
 
     CPPCHECKLIB std::list<FileInfo::UnsafeUsage> loadUnsafeUsageListFromXml(const tinyxml2::XMLElement *xmlElement);
 }

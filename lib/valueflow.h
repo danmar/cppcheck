@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ namespace ValueFlow {
 
     std::string eitherTheConditionIsRedundant(const Token *condition);
 
-    size_t getSizeOf(const ValueType &vt, const Settings &settings);
+    size_t getSizeOf(const ValueType &vt, const Settings &settings, int maxRecursion = 0);
 
     const Value* findValue(const std::list<Value>& values,
                            const Settings* settings,

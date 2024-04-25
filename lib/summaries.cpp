@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,10 +34,10 @@
 
 
 
-std::string Summaries::create(const Tokenizer *tokenizer, const std::string &cfg)
+std::string Summaries::create(const Tokenizer &tokenizer, const std::string &cfg)
 {
-    const SymbolDatabase *symbolDatabase = tokenizer->getSymbolDatabase();
-    const Settings &settings = tokenizer->getSettings();
+    const SymbolDatabase *symbolDatabase = tokenizer.getSymbolDatabase();
+    const Settings &settings = tokenizer.getSettings();
 
     std::ostringstream ostr;
     for (const Scope *scope : symbolDatabase->functionScopes) {
@@ -82,7 +82,7 @@ std::string Summaries::create(const Tokenizer *tokenizer, const std::string &cfg
     }
 
     if (!settings.buildDir.empty()) {
-        std::string filename = AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, tokenizer->list.getSourceFilePath(), cfg);
+        std::string filename = AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, tokenizer.list.getSourceFilePath(), cfg);
         const std::string::size_type pos = filename.rfind(".a");
         if (pos != std::string::npos) {
             filename[pos+1] = 's';

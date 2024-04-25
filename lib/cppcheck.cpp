@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,12 +59,6 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
-
-#ifndef _WIN32
-#include <unistd.h>
-#else
-#include <process.h>
-#endif
 
 #include "json.h"
 
@@ -139,15 +133,6 @@ static std::vector<std::string> split(const std::string &str, const std::string 
     return ret;
 }
 
-static int getPid()
-{
-#ifndef _WIN32
-    return getpid();
-#else
-    return _getpid();
-#endif
-}
-
 static std::string getDumpFileName(const Settings& settings, const std::string& filename)
 {
     if (!settings.dumpFile.empty())
@@ -157,7 +142,7 @@ static std::string getDumpFileName(const Settings& settings, const std::string& 
     if (settings.dump)
         extension = ".dump";
     else
-        extension = "." + std::to_string(getPid()) + ".dump";
+        extension = "." + std::to_string(settings.pid) + ".dump";
 
     if (!settings.dump && !settings.buildDir.empty())
         return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, filename, emptyString) + extension;
@@ -506,8 +491,7 @@ unsigned int CppCheck::checkClang(const std::string &path)
     }
 
     try {
-        Preprocessor preprocessor(mSettings, this);
-        Tokenizer tokenizer(mSettings, this, &preprocessor);
+        Tokenizer tokenizer(mSettings, *this);
         tokenizer.list.appendFileIfNew(path);
         std::istringstream ast(output2);
         clangimport::parseClangAstDump(tokenizer, ast);
@@ -594,12 +578,12 @@ unsigned int CppCheck::check(const FileSettings &fs)
     if (mSettings.clang) {
         temp.mSettings.includePaths.insert(temp.mSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
         // TODO: propagate back suppressions
-        const unsigned int returnValue = temp.check(Path::simplifyPath(fs.filename));
+        const unsigned int returnValue = temp.check(Path::simplifyPath(fs.filename()));
         if (mUnusedFunctionsCheck)
             mUnusedFunctionsCheck->updateFunctionData(*temp.mUnusedFunctionsCheck);
         return returnValue;
     }
-    const unsigned int returnValue = temp.checkFile(Path::simplifyPath(fs.filename), fs.cfg);
+    const unsigned int returnValue = temp.checkFile(Path::simplifyPath(fs.filename()), fs.cfg);
     mSettings.supprs.nomsg.addSuppressions(temp.mSettings.supprs.nomsg.getSuppressions());
     if (mUnusedFunctionsCheck)
         mUnusedFunctionsCheck->updateFunctionData(*temp.mUnusedFunctionsCheck);
@@ -658,7 +642,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         if (mSettings.library.markupFile(filename)) {
             if (mUnusedFunctionsCheck && mSettings.useSingleJob() && mSettings.buildDir.empty()) {
                 // this is not a real source file - we just want to tokenize it. treat it as C anyways as the language needs to be determined.
-                Tokenizer tokenizer(mSettings, this);
+                Tokenizer tokenizer(mSettings, *this);
                 tokenizer.list.setLang(Standards::Language::C);
                 if (fileStream) {
                     tokenizer.list.createTokens(*fileStream, filename);
@@ -698,7 +682,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             return mExitCode;
         }
 
-        Preprocessor preprocessor(mSettings, this);
+        Preprocessor preprocessor(mSettings, *this);
 
         if (!preprocessor.loadFiles(tokens1, files))
             return mExitCode;
@@ -717,36 +701,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
         std::string dumpProlog;
         if (mSettings.dump || !mSettings.addons.empty()) {
-            dumpProlog += "  <rawtokens>\n";
-            for (unsigned int i = 0; i < files.size(); ++i) {
-                dumpProlog += "    <file index=\"";
-                dumpProlog += std::to_string(i);
-                dumpProlog += "\" name=\"";
-                dumpProlog += ErrorLogger::toxml(files[i]);
-                dumpProlog += "\"/>\n";
-            }
-            for (const simplecpp::Token *tok = tokens1.cfront(); tok; tok = tok->next) {
-                dumpProlog += "    <tok ";
-
-                dumpProlog += "fileIndex=\"";
-                dumpProlog += std::to_string(tok->location.fileIndex);
-                dumpProlog += "\" ";
-
-                dumpProlog += "linenr=\"";
-                dumpProlog += std::to_string(tok->location.line);
-                dumpProlog += "\" ";
-
-                dumpProlog +="column=\"";
-                dumpProlog += std::to_string(tok->location.col);
-                dumpProlog += "\" ";
-
-                dumpProlog += "str=\"";
-                dumpProlog += ErrorLogger::toxml(tok->str());
-                dumpProlog += "\"";
-
-                dumpProlog += "/>\n";
-            }
-            dumpProlog += "  </rawtokens>\n";
+            dumpProlog += getDumpFileContentsRawTokens(files, tokens1);
         }
 
         // Parse comments and then remove them
@@ -796,7 +751,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         }
 
         // Get directives
-        preprocessor.setDirectives(tokens1);
+        std::list<Directive> directives = preprocessor.createDirectives(tokens1);
         preprocessor.simplifyPragmaAsm(&tokens1);
 
         preprocessor.setPlatformInfo(&tokens1);
@@ -821,7 +776,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         // Run define rules on raw code
         if (hasRule("define")) {
             std::string code;
-            for (const Directive &dir : preprocessor.getDirectives()) {
+            for (const Directive &dir : directives) {
                 if (startsWith(dir.str,"#define ") || startsWith(dir.str,"#include "))
                     code += "#line " + std::to_string(dir.linenr) + " \"" + dir.file + "\"\n" + dir.str + '\n';
             }
@@ -887,9 +842,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 continue;
             }
 
-            Tokenizer tokenizer(mSettings, this, &preprocessor);
+            Tokenizer tokenizer(mSettings, *this);
             if (mSettings.showtime != SHOWTIME_MODES::SHOWTIME_NONE)
                 tokenizer.setTimerResults(&s_timerResults);
+            tokenizer.setDirectives(directives); // TODO: how to avoid repeated copies?
 
             try {
                 // Create tokens, skip rest of iteration if failed
@@ -1119,7 +1075,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
     if (mSettings.useSingleJob() || !mSettings.buildDir.empty()) {
         // Analyse the tokens..
 
-        if (CTU::FileInfo * const fi1 = CTU::getFileInfo(&tokenizer)) {
+        if (CTU::FileInfo * const fi1 = CTU::getFileInfo(tokenizer)) {
             if (!mSettings.buildDir.empty())
                 mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
             if (mSettings.useSingleJob())
@@ -1131,7 +1087,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
         if (!doUnusedFunctionOnly) {
             // cppcheck-suppress shadowFunction - TODO: fix this
             for (const Check *check : Check::instances()) {
-                if (Check::FileInfo * const fi = check->getFileInfo(&tokenizer, &mSettings)) {
+                if (Check::FileInfo * const fi = check->getFileInfo(tokenizer, mSettings)) {
                     if (!mSettings.buildDir.empty())
                         mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
                     if (mSettings.useSingleJob())
@@ -1438,7 +1394,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
     std::string fileList;
 
     if (files.size() >= 2 || endsWith(files[0], ".ctu-info")) {
-        fileList = Path::getPathFromFilename(files[0]) + FILELIST + std::to_string(getPid());
+        fileList = Path::getPathFromFilename(files[0]) + FILELIST + std::to_string(mSettings.pid);
         filesDeleter.addFile(fileList);
         std::ofstream fout(fileList);
         for (const std::string& f: files)
@@ -1504,14 +1460,14 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
     }
 }
 
-void CppCheck::executeAddonsWholeProgram(const std::list<std::pair<std::string, std::size_t>> &files)
+void CppCheck::executeAddonsWholeProgram(const std::list<FileWithDetails> &files)
 {
     if (mSettings.addons.empty())
         return;
 
     std::vector<std::string> ctuInfoFiles;
     for (const auto &f: files) {
-        const std::string &dumpFileName = getDumpFileName(mSettings, f.first);
+        const std::string &dumpFileName = getDumpFileName(mSettings, f.path());
         ctuInfoFiles.push_back(getCtuInfoFileName(dumpFileName));
     }
 
@@ -1694,7 +1650,7 @@ void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
         (*it)->getErrorMessages(&errorlogger, &s);
 
     CheckUnusedFunctions::getErrorMessages(errorlogger);
-    Preprocessor::getErrorMessages(&errorlogger, s);
+    Preprocessor::getErrorMessages(errorlogger, s);
 }
 
 void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
@@ -1712,7 +1668,7 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
     constexpr char exe[] = "clang-tidy";
 #endif
 
-    const std::string args = "-quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename + "\" -- " + allIncludes + allDefines;
+    const std::string args = "-quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename() + "\" -- " + allIncludes + allDefines;
     std::string output;
     if (const int exitcode = mExecuteCommand(exe, split(args), emptyString, output)) {
         std::cerr << "Failed to execute '" << exe << "' (exitcode: " << std::to_string(exitcode) << ")" << std::endl;
@@ -1724,7 +1680,7 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
     std::string line;
 
     if (!mSettings.buildDir.empty()) {
-        const std::string analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, fileSettings.filename, emptyString);
+        const std::string analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, fileSettings.filename(), emptyString);
         std::ofstream fcmd(analyzerInfoFile + ".clang-tidy-cmd");
         fcmd << istr.str();
     }
@@ -1799,12 +1755,12 @@ bool CppCheck::analyseWholeProgram()
     return errors && (mExitCode > 0);
 }
 
-void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings)
+unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings)
 {
     executeAddonsWholeProgram(files); // TODO: pass FileSettings
     if (buildDir.empty()) {
         removeCtuInfoFiles(files, fileSettings);
-        return;
+        return mExitCode;
     }
     if (mSettings.checks.isEnabled(Checks::unusedFunction))
         CheckUnusedFunctions::analyseWholeProgram(mSettings, *this, buildDir);
@@ -1865,18 +1821,20 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<
 
     for (Check::FileInfo *fi : fileInfoList)
         delete fi;
+
+    return mExitCode;
 }
 
-void CppCheck::removeCtuInfoFiles(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings)
+void CppCheck::removeCtuInfoFiles(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings)
 {
     if (mSettings.buildDir.empty()) {
         for (const auto& f: files) {
-            const std::string &dumpFileName = getDumpFileName(mSettings, f.first);
+            const std::string &dumpFileName = getDumpFileName(mSettings, f.path());
             const std::string &ctuInfoFileName = getCtuInfoFileName(dumpFileName);
             std::remove(ctuInfoFileName.c_str());
         }
         for (const auto& fs: fileSettings) {
-            const std::string &dumpFileName = getDumpFileName(mSettings, fs.filename);
+            const std::string &dumpFileName = getDumpFileName(mSettings, fs.filename());
             const std::string &ctuInfoFileName = getCtuInfoFileName(dumpFileName);
             std::remove(ctuInfoFileName.c_str());
         }
@@ -1904,4 +1862,39 @@ bool CppCheck::isPremiumCodingStandardId(const std::string& id) const {
     if (mSettings.premiumArgs.find("--autosar") != std::string::npos && startsWith(id, "premium-autosar-"))
         return true;
     return false;
+}
+
+std::string CppCheck::getDumpFileContentsRawTokens(const std::vector<std::string>& files, const simplecpp::TokenList& tokens1) const {
+    std::string dumpProlog;
+    dumpProlog += "  <rawtokens>\n";
+    for (unsigned int i = 0; i < files.size(); ++i) {
+        dumpProlog += "    <file index=\"";
+        dumpProlog += std::to_string(i);
+        dumpProlog += "\" name=\"";
+        dumpProlog += ErrorLogger::toxml(Path::getRelativePath(files[i], mSettings.basePaths));
+        dumpProlog += "\"/>\n";
+    }
+    for (const simplecpp::Token *tok = tokens1.cfront(); tok; tok = tok->next) {
+        dumpProlog += "    <tok ";
+
+        dumpProlog += "fileIndex=\"";
+        dumpProlog += std::to_string(tok->location.fileIndex);
+        dumpProlog += "\" ";
+
+        dumpProlog += "linenr=\"";
+        dumpProlog += std::to_string(tok->location.line);
+        dumpProlog += "\" ";
+
+        dumpProlog +="column=\"";
+        dumpProlog += std::to_string(tok->location.col);
+        dumpProlog += "\" ";
+
+        dumpProlog += "str=\"";
+        dumpProlog += ErrorLogger::toxml(tok->str());
+        dumpProlog += "\"";
+
+        dumpProlog += "/>\n";
+    }
+    dumpProlog += "  </rawtokens>\n";
+    return dumpProlog;
 }

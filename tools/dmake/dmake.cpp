@@ -33,6 +33,7 @@
 #include "config.h"
 
 #include "../cli/filelister.h"
+#include "../lib/filesettings.h"
 #include "../lib/pathmatch.h"
 #include "../lib/utils.h"
 
@@ -159,7 +160,7 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
 
 static std::string getCppFiles(std::vector<std::string> &files, const std::string &path, bool recursive)
 {
-    std::list<std::pair<std::string, std::size_t>> filelist;
+    std::list<FileWithDetails> filelist;
     const std::set<std::string> extra;
     const std::vector<std::string> masks;
     const PathMatch matcher(masks);
@@ -168,9 +169,9 @@ static std::string getCppFiles(std::vector<std::string> &files, const std::strin
         return err;
 
     // add *.cpp files to the "files" vector..
-    for (const std::pair<const std::string&, size_t> file : filelist) {
-        if (endsWith(file.first, ".cpp"))
-            files.push_back(file.first);
+    for (const auto& file : filelist) {
+        if (endsWith(file.path(), ".cpp"))
+            files.push_back(file.path());
     }
     return "";
 }
@@ -375,18 +376,18 @@ static void write_ossfuzz_makefile(std::vector<std::string> libfiles_prio, std::
     fout << '\n';
     fout << "do-fuzz: oss-fuzz-client preprare-samples\n";
     fout << "\tmkdir -p corpus\n";
-    fout << "\t./oss-fuzz-client -only_ascii=1 -timeout=3 -detect_leaks=0 corpus samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout\n";
+    fout << "\t./oss-fuzz-client -only_ascii=1 -timeout=5 -detect_leaks=0 corpus samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout\n";
     fout << '\n';
     fout << "dedup-corpus: oss-fuzz-client preprare-samples\n";
     fout << "\tmv corpus corpus_\n";
     fout << "\tmkdir -p corpus\n";
-    fout << "\t./oss-fuzz-client -only_ascii=1 -timeout=3 -detect_leaks=0 corpus corpus_ samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout -merge=1\n";
+    fout << "\t./oss-fuzz-client -only_ascii=1 -timeout=5 -detect_leaks=0 corpus corpus_ samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout -merge=1\n";
     fout << '\n';
     fout << "# jobs:\n";
-    fout << "# ./oss-fuzz-client -only_ascii=1 -timeout=3 -detect_leaks=0 corpus samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout -workers=12 -jobs=9\n";
+    fout << "# ./oss-fuzz-client -only_ascii=1 -timeout=5 -detect_leaks=0 corpus samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout -workers=12 -jobs=9\n";
     fout << '\n';
     fout << "# minimize:\n";
-    fout << "# ./oss-fuzz-client -only_ascii=1 -timeout=3 -detect_leaks=0 -minimize_crash=1 crash-0123456789abcdef\n";
+    fout << "# ./oss-fuzz-client -only_ascii=1 -timeout=5 -detect_leaks=0 -minimize_crash=1 crash-0123456789abcdef\n";
     fout << '\n';
 
     compilefiles(fout, extfiles, "${LIB_FUZZING_ENGINE}");

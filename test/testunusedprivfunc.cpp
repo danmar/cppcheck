@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -84,6 +83,7 @@ private:
 
         TEST_CASE(templateSimplification); //ticket #6183
         TEST_CASE(maybeUnused);
+        TEST_CASE(trailingReturn);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -91,8 +91,8 @@ private:
         const Settings settings1 = settingsBuilder(settings).platform(platform).build();
 
         std::vector<std::string> files(1, "test.cpp");
-        Tokenizer tokenizer(settings1, this);
-        PreprocessorHelper::preprocess(code, files, tokenizer);
+        Tokenizer tokenizer(settings1, *this);
+        PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         // Tokenize..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
@@ -862,6 +862,18 @@ private:
         check("class C {\n"
               "    [[maybe_unused]] int f() { return 42; }\n"
               "};");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void trailingReturn() {
+        check("struct B { virtual void f(); };\n"
+              "struct D : B {\n"
+              "    auto f() -> void override;\n"
+              "private:\n"
+              "    auto g() -> void;\n"
+              "};\n"
+              "auto D::f() -> void { g(); }\n"
+              "auto D::g() -> void {}\n");
         ASSERT_EQUALS("", errout_str());
     }
 };

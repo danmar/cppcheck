@@ -1,8 +1,7 @@
-Release Notes for Cppcheck 2.14
+Release Notes for Cppcheck 2.15
 
 New checks:
-eraseIteratorOutOfBounds: warns when erase() is called on an iterator that is out of bounds
-returnByReference: warns when a large class member is returned by value from a getter function
+-
 
 Improved checking:
 -
@@ -17,16 +16,4 @@ Deprecations:
 -
 
 Other:
-- Added CMake option 'EXTERNALS_AS_SYSTEM' to treat external includes as 'SYSTEM' ones.
-- The minimum required compiler versions have been bumped to GCC 5.1 / Clang 3.5 / Visual Studio 2015
-- The minimum required CMake version has been bumped to 3.5
-- Using Visual Studio with CMake now checks if the CMake version is at least 3.13. This was always required but was not checked explicitly.
-- Added '--template=simple'. It is expands to '{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]' without any additional location details.
-- Removed deprecated platform type 'Unspecified'. Please use 'unspecified' instead.
-- Removed deprecated 'Makefile' option 'SRCDIR'.
-- Added CMake option 'DISALLOW_THREAD_EXECUTOR' to control the inclusion of the executor which performs the analysis within a thread of the main process.
-- Removed CMake option 'USE_THREADS' in favor of 'DISALLOW_THREAD_EXECUTOR'.
-- Fixed crash with '--rule-file=' if some data was missing.
-- '--rule-file' will now bail out if a rule could not be added or a file contains unexpected data.
-- Add option '--check-version', you can use it to pin the cppcheck version in a script.
 - Add support for 'CLICOLOR_FORCE'/'NO_COLOR' environment variables to force/disable ANSI color output for diagnostics.

@@ -3,37 +3,37 @@ include(CheckCXXCompilerFlag)
 function(add_compile_options_safe FLAG)
     string(MAKE_C_IDENTIFIER "HAS_CXX_FLAG${FLAG}" mangled_flag)
     check_cxx_compiler_flag(${FLAG} ${mangled_flag})
-    if (${mangled_flag})
+    if(${mangled_flag})
         add_compile_options(${FLAG})
     endif()
 endfunction()
-    
+
 function(target_compile_options_safe TARGET FLAG)
     string(MAKE_C_IDENTIFIER "HAS_CXX_FLAG${FLAG}" mangled_flag)
     check_cxx_compiler_flag(${FLAG} ${mangled_flag})
-    if (${mangled_flag})
+    if(${mangled_flag})
         target_compile_options(${TARGET} PRIVATE ${FLAG})
     endif()
 endfunction()
 
 function(target_externals_include_directories TARGET)
-    if (EXTERNALS_AS_SYSTEM)
+    if(EXTERNALS_AS_SYSTEM)
         target_include_directories(${TARGET} SYSTEM ${ARGN})
     else()
         target_include_directories(${TARGET} ${ARGN})
     endif()
 endfunction()
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Weverything)
 endif()
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     if(CMAKE_BUILD_TYPE STREQUAL "Release")
         # "Release" uses -O3 by default
         add_compile_options(-O2)
     endif()
-    if (WARNINGS_ARE_ERRORS)
+    if(WARNINGS_ARE_ERRORS)
         add_compile_options(-Werror)
     endif()
     add_compile_options(-pedantic)
@@ -61,20 +61,20 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang
     #add_compile_options(-Wsign-promo)
 endif()
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # use pipes instead of temporary files - greatly reduces I/O usage
     add_compile_options(-pipe)
 
     add_compile_options(-Wno-maybe-uninitialized)   # there are some false positives
     add_compile_options(-Wsuggest-attribute=noreturn)
     add_compile_options(-Wno-shadow)                # whenever a local variable or type declaration shadows another one
-elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 14 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 14)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 14 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 14)
         # TODO: verify this regression still exists in clang-15
-        if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+        if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
             # work around performance regression - see https://github.com/llvm/llvm-project/issues/53555
             check_cxx_compiler_flag("-mllvm -inline-deferral" _has_mllvm_inline_deferral)
-            if (_has_mllvm_inline_deferral)
+            if(_has_mllvm_inline_deferral)
                 add_compile_options(-mllvm -inline-deferral)
             endif()
         endif()
@@ -83,7 +83,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         add_compile_options(-gdwarf-4)
     endif()
 
-    if (USE_LIBCXX)
+    if(USE_LIBCXX)
         add_compile_options(-stdlib=libc++)
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++")
     endif()
@@ -133,13 +133,13 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     endif()
 endif()
 
-if (MSVC)
+if(MSVC)
     # add_link_options() requires CMake 3.13
 
     # General
     add_compile_options(/W4) # Warning Level
     add_compile_options(/Zi) # Debug Information Format - Program Database
-    if (WARNINGS_ARE_ERRORS)
+    if(WARNINGS_ARE_ERRORS)
         add_compile_options(/WX) # Treat Warning As Errors
     endif()
     add_compile_options(/MP) # Multi-processor Compilation
@@ -213,17 +213,17 @@ if (MSVC)
 endif()
 
 # TODO: check if this can be enabled again - also done in Makefile
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND
     CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
     add_compile_options(-U_GLIBCXX_DEBUG)
 endif()
 
-if (MSVC)
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /STACK:8000000")
+if(MSVC)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /STACK:8000000")
 endif()
 
-if (CYGWIN)
+if(CYGWIN)
     # TODO: this is a linker flag - not a compiler flag
     add_compile_options(-Wl,--stack,8388608)
 endif()

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +20,10 @@
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
-#include "preprocessor.h"
 #include "settings.h"
 #include "token.h"
 
 #include <list>
-#include <sstream>
 #include <string>
 
 class TestGarbage : public TestFixture {
@@ -254,6 +252,7 @@ private:
         TEST_CASE(garbageCode224);
         TEST_CASE(garbageCode225);
         TEST_CASE(garbageCode226);
+        TEST_CASE(garbageCode227);
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -284,10 +283,8 @@ private:
     }
 
     std::string checkCodeInternal_(const char code[], bool cpp, const char* file, int line) {
-        Preprocessor preprocessor(settings);
-
         // tokenize..
-        SimpleTokenizer tokenizer(settings, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
 
         // call all "runChecks" in all registered Check classes
@@ -498,6 +495,7 @@ private:
 
     void garbageCode16() {
         checkCode("{ } A() { delete }"); // #6080
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode17() {
@@ -563,6 +561,7 @@ private:
                                         "        case struct Tree : break;\n"
                                         "    }\n"
                                         "}"), SYNTAX);
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode26() {
@@ -633,10 +632,12 @@ private:
     void garbageCode37() {
         // #5166 segmentation fault (invalid code) in lib/checkother.cpp:329 ( void * f { } void b ( ) { * f } )
         checkCode("void * f { } void b ( ) { * f }");
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode38() { // Ticket #6666
         checkCode("{ f2 { } } void f3 () { delete[] } { }");
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode40() { // #6620
@@ -861,7 +862,7 @@ private:
         ASSERT_THROW_INTERNAL_EQUALS(checkCode("{ xs :: i(:) ! ! x/5 ! !\n"
                                                "i, :: a :: b integer, } foo2(x) :: j(:)\n"
                                                "b type(*), d(:), a x :: end d(..), foo end\n"
-                                               "foo4 b d(..), a a x type(*), b foo2 b"), INTERNAL, "Internal error. AST cyclic dependency.");
+                                               "foo4 b d(..), a a x type(*), b foo2 b"), SYNTAX, "syntax error");
     }
 
     void garbageCode100() { // #6840
@@ -906,7 +907,6 @@ private:
 
     void garbageCode109() { //  #6900 "segmentation fault (invalid code) in CheckStl::runSimplifiedChecks"
         checkCode("( *const<> (( ) ) { } ( *const ( ) ( ) ) { } ( * const<> ( size_t )) ) { } ( * const ( ) ( ) ) { }");
-        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode110() { //  #6902 "segmentation fault (invalid code) in CheckStl::string_c_str"
@@ -987,7 +987,7 @@ private:
     }
 
     void garbageCode125() {
-        ASSERT_THROW_INTERNAL(checkCode("{ T struct B : T valueA_AA ; } T : [ T > ( ) { B } template < T > struct A < > : ] { ( ) { return valueA_AC struct { : } } b A < int > AC ( ) a_aa.M ; ( ) ( ) }"), UNKNOWN_MACRO);
+        ASSERT_THROW_INTERNAL(checkCode("{ T struct B : T valueA_AA ; } T : [ T > ( ) { B } template < T > struct A < > : ] { ( ) { return valueA_AC struct { : } } b A < int > AC ( ) a_aa.M ; ( ) ( ) }"), SYNTAX);
         ASSERT_THROW_INTERNAL(checkCode("template < Types > struct S :{ ( S < ) S >} { ( ) { } } ( ) { return S < void > ( ) }"),
                               SYNTAX);
     }
@@ -1222,6 +1222,7 @@ private:
                   "    for (j = 0; j < 1; j)\n"
                   "        j6;\n"
                   "}");
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode150() { // #7089
@@ -1441,6 +1442,7 @@ private:
     void garbageCode168() {
         // 7246
         checkCode("long foo(void) { return *bar; }", false);
+        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode169() {
@@ -1581,6 +1583,7 @@ private:
                   "  double e(b);\n"
                   "  if(e <= 0) {}\n"
                   "}");
+        ignore_errout(); // we do not care about the output
     }
 
     // #8265
@@ -1607,6 +1610,7 @@ private:
     // #8752
     void garbageCode199() {
         checkCode("d f(){e n00e0[]n00e0&" "0+f=0}");
+        ignore_errout(); // we do not care about the output
     }
 
     // #8757
@@ -1623,6 +1627,7 @@ private:
     void garbageCode202() {
         ASSERT_THROW_INTERNAL(checkCode("void f() { UNKNOWN_MACRO(return); }"), UNKNOWN_MACRO);
         ASSERT_THROW_INTERNAL(checkCode("void f() { UNKNOWN_MACRO(throw); }"), UNKNOWN_MACRO);
+        ignore_errout();
     }
 
     void garbageCode203() { // #8972
@@ -1656,7 +1661,7 @@ private:
 
     void garbageCode206() {
         ASSERT_EQUALS("[test.cpp:1] syntax error: operator", getSyntaxError("void foo() { for (auto operator new : int); }"));
-        ASSERT_EQUALS("[test.cpp:1] syntax error: operator", getSyntaxError("void foo() { for (a operator== :) }"));
+        ASSERT_EQUALS("[test.cpp:1] syntax error", getSyntaxError("void foo() { for (a operator== :) }"));
     }
 
     void garbageCode207() { // #8750
@@ -1735,7 +1740,9 @@ private:
     }
     void garbageCode224() {
         ASSERT_THROW_INTERNAL(checkCode("void f(){ auto* b = dynamic_cast<const }"), SYNTAX);  // don't crash
+        ASSERT_EQUALS("", errout_str());
         ASSERT_THROW_INTERNAL(checkCode("void f(){ auto* b = dynamic_cast x; }"), SYNTAX);
+        ignore_errout();
     }
     void garbageCode225() {
         ASSERT_THROW_INTERNAL(checkCode("int n() { c * s0, 0 s0 = c(sizeof = ) }"), SYNTAX);
@@ -1745,6 +1752,9 @@ private:
         ASSERT_THROW_INTERNAL(checkCode("int a() { (b((c)`)) } {}"), SYNTAX); // #11638
         ASSERT_THROW_INTERNAL(checkCode("int a() { (b((c)\\)) } {}"), SYNTAX);
         ASSERT_THROW_INTERNAL(checkCode("int a() { (b((c)@)) } {}"), SYNTAX);
+    }
+    void garbageCode227() { // #12615
+        ASSERT_NO_THROW(checkCode("f(&S::operator=);"));
     }
 
     void syntaxErrorFirstToken() {
@@ -1859,6 +1869,7 @@ private:
             "void f() {\n"
             "    auto fn = []() -> foo* { return new foo(); };\n"
             "}");
+        ignore_errout(); // we do not care about the output
     }
 };
 

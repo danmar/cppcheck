@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,28 +62,26 @@ static bool checkNullpointerFunctionCallPlausibility(const Function* func, unsig
  * @param var variables that the function read / write.
  * @param library --library files data
  */
-void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token *> &var, const Library *library)
+void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token *> &var, const Library &library)
 {
     if (Token::Match(&tok, "%name% ( )") || !tok.tokAt(2))
         return;
 
     const std::vector<const Token *> args = getArguments(&tok);
 
-    if (library || tok.function() != nullptr) {
-        for (int argnr = 1; argnr <= args.size(); ++argnr) {
-            const Token *param = args[argnr - 1];
-            if (library && library->isnullargbad(&tok, argnr) && checkNullpointerFunctionCallPlausibility(tok.function(), argnr))
+    for (int argnr = 1; argnr <= args.size(); ++argnr) {
+        const Token *param = args[argnr - 1];
+        if (library.isnullargbad(&tok, argnr) && checkNullpointerFunctionCallPlausibility(tok.function(), argnr))
+            var.push_back(param);
+        else if (tok.function()) {
+            const Variable* argVar = tok.function()->getArgumentVar(argnr-1);
+            if (argVar && argVar->isStlStringType() && !argVar->isArrayOrPointer())
                 var.push_back(param);
-            else if (tok.function()) {
-                const Variable* argVar = tok.function()->getArgumentVar(argnr-1);
-                if (argVar && argVar->isStlStringType() && !argVar->isArrayOrPointer())
-                    var.push_back(param);
-            }
         }
     }
 
-    if (library && library->formatstr_function(&tok)) {
-        const int formatStringArgNr = library->formatstr_argno(&tok);
+    if (library.formatstr_function(&tok)) {
+        const int formatStringArgNr = library.formatstr_argno(&tok);
         if (formatStringArgNr < 0 || formatStringArgNr >= args.size())
             return;
 
@@ -95,7 +93,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
             return;
         const std::string &formatString = args[formatStringArgNr]->strValue();
         int argnr = formatStringArgNr + 1;
-        const bool scan = library->formatstr_scan(&tok);
+        const bool scan = library.formatstr_scan(&tok);
 
         bool percent = false;
         for (std::string::const_iterator i = formatString.cbegin(); i != formatString.cend(); ++i) {
@@ -148,15 +146,15 @@ namespace {
  */
 bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown) const
 {
-    return isPointerDeRef(tok, unknown, mSettings);
+    return isPointerDeRef(tok, unknown, *mSettings);
 }
 
-bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Settings *settings)
+bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Settings &settings)
 {
     unknown = false;
 
     // Is pointer used as function parameter?
-    if (Token::Match(tok->previous(), "[(,] %name% [,)]") && settings) {
+    if (Token::Match(tok->previous(), "[(,] %name% [,)]")) {
         const Token *ftok = tok->previous();
         while (ftok && ftok->str() != "(") {
             if (ftok->str() == ")")
@@ -165,7 +163,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
         }
         if (ftok && ftok->previous()) {
             std::list<const Token *> varlist;
-            parseFunctionCall(*ftok->previous(), varlist, &settings->library);
+            parseFunctionCall(*ftok->previous(), varlist, settings.library);
             if (std::find(varlist.cbegin(), varlist.cend(), tok) != varlist.cend()) {
                 return true;
             }
@@ -263,7 +261,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
 }
 
 
-static bool isNullablePointer(const Token* tok, const Settings* settings)
+static bool isNullablePointer(const Token* tok)
 {
     if (!tok)
         return false;
@@ -274,7 +272,7 @@ static bool isNullablePointer(const Token* tok, const Settings* settings)
     if (astIsSmartPointer(tok))
         return true;
     if (Token::simpleMatch(tok, "."))
-        return isNullablePointer(tok->astOperand2(), settings);
+        return isNullablePointer(tok->astOperand2());
     if (const Variable* var = tok->variable()) {
         return (var->isPointer() || var->isSmartPointer());
     }
@@ -294,8 +292,8 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         if (Token::Match(tok, "%num%|%char%|%str%"))
             continue;
 
-        if (!isNullablePointer(tok, mSettings) ||
-            (tok->str() == "." && isNullablePointer(tok->astOperand2(), mSettings) && tok->astOperand2()->getValue(0))) // avoid duplicate warning
+        if (!isNullablePointer(tok) ||
+            (tok->str() == "." && isNullablePointer(tok->astOperand2()) && tok->astOperand2()->getValue(0))) // avoid duplicate warning
             continue;
 
         // Can pointer be NULL?
@@ -367,7 +365,7 @@ void CheckNullPointer::nullConstantDereference()
                         nullPointerError(tok);
                 } else { // function call
                     std::list<const Token *> var;
-                    parseFunctionCall(*tok, var, &mSettings->library);
+                    parseFunctionCall(*tok, var, mSettings->library);
 
                     // is one of the var items a NULL pointer?
                     for (const Token *vartok : var) {
@@ -551,7 +549,7 @@ void CheckNullPointer::redundantConditionWarning(const Token* tok, const ValueFl
 }
 
 // NOLINTNEXTLINE(readability-non-const-parameter) - used as callback so we need to preserve the signature
-static bool isUnsafeUsage(const Settings *settings, const Token *vartok, MathLib::bigint *value)
+static bool isUnsafeUsage(const Settings &settings, const Token *vartok, MathLib::bigint *value)
 {
     (void)value;
     bool unknown = false;
@@ -580,7 +578,7 @@ namespace
     };
 }
 
-Check::FileInfo *CheckNullPointer::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
+Check::FileInfo *CheckNullPointer::getFileInfo(const Tokenizer &tokenizer, const Settings &settings) const
 {
     const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, isUnsafeUsage);
     if (unsafeUsage.empty())

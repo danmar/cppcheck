@@ -1,5 +1,5 @@
 // Cppcheck - A tool for static C/C++ code analysis
-// Copyright (C) 2007-2023 Cppcheck team.
+// Copyright (C) 2007-2024 Cppcheck team.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -140,7 +140,7 @@ private:
 
     std::string parse(const char clang[]) {
         const Settings settings = settingsBuilder().clang().build();
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settings, *this);
         std::istringstream istr(clang);
         clangimport::parseClangAstDump(tokenizer, istr);
         if (!tokenizer.tokens()) {
@@ -1054,7 +1054,7 @@ private:
 
 #define GET_SYMBOL_DB(AST) \
     const Settings settings = settingsBuilder().clang().platform(Platform::Type::Unix64).build(); \
-    Tokenizer tokenizer(settings, this); \
+    Tokenizer tokenizer(settings, *this); \
     { \
         std::istringstream istr(AST); \
         clangimport::parseClangAstDump(tokenizer, istr); \

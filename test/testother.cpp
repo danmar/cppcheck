@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "platform.h"
-#include "preprocessor.h"
 #include "settings.h"
 #include "standards.h"
 #include "tokenize.h"
@@ -100,6 +99,8 @@ private:
         TEST_CASE(varScope36);      // #12158
         TEST_CASE(varScope37);      // #12158
         TEST_CASE(varScope38);
+        TEST_CASE(varScope39);
+        TEST_CASE(varScope40);
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -306,10 +307,8 @@ private:
         settings->certainty.setEnabled(Certainty::inconclusive, inconclusive);
         settings->verbose = verbose;
 
-        Preprocessor preprocessor(*settings);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(*settings, *this, &preprocessor);
+        SimpleTokenizer tokenizer(*settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
 
         // Check..
@@ -333,10 +332,9 @@ private:
         settings->standards.cpp = Standards::CPPLatest;
         settings->certainty.enable(Certainty::inconclusive);
 
-        Preprocessor preprocessor(*settings);
         std::vector<std::string> files(1, filename);
-        Tokenizer tokenizer(*settings, this, &preprocessor);
-        PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
+        Tokenizer tokenizer(*settings, *this);
+        PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
@@ -1697,16 +1695,65 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
+    void varScope39() {
+        check("struct S {\n" // #12405
+              "    void f(const std::string&) const;\n"
+              "    const int* g(std::string&) const;\n"
+              "};\n"
+              "void h(int);\n"
+              "void S::f(const std::string& s) const {\n"
+              "    std::string n = s;\n"
+              "    const int* a = g(n);\n"
+              "    if (n == \"abc\") {\n"
+              "        h(a[0]);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void varScope40() {
+        checkP("#define NUM (-999.9)\n" // #8862
+               "double f(int i) {\n"
+               "    double a = NUM;\n"
+               "    double b = -NUM;\n"
+               "    double c = -1.0 * NUM;\n"
+               "    if (i == 1) {\n"
+               "        return a;\n"
+               "    }\n"
+               "    if (i == 2) {\n"
+               "        return b;\n"
+               "    }\n"
+               "    if (i == 3) {\n"
+               "        return c;\n"
+               "    }\n"
+               "    return 0.0;\n"
+               "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) The scope of the variable 'a' can be reduced.\n"
+                      "[test.cpp:4]: (style) The scope of the variable 'b' can be reduced.\n"
+                      "[test.cpp:5]: (style) The scope of the variable 'c' can be reduced.\n",
+                      errout_str());
+
+        check("struct S { int a; };\n" // #12618
+              "int f(const S* s, int i) {\n"
+              "    int x = s->a;\n"
+              "    const int b[] = { 1, 2, 3 };\n"
+              "    int y = b[1];\n"
+              "    if (i)\n"
+              "        return x + y;\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) The scope of the variable 'x' can be reduced.\n"
+                      "[test.cpp:5]: (style) The scope of the variable 'y' can be reduced.\n",
+                      errout_str());
+    }
 
 #define checkOldStylePointerCast(code) checkOldStylePointerCast_(code, __FILE__, __LINE__)
     void checkOldStylePointerCast_(const char code[], const char* file, int line) {
         // #5560 - set c++03
         const Settings settings = settingsBuilder().severity(Severity::style).cpp(Standards::CPP03).build();
 
-        Preprocessor preprocessor(settings);
-
         // Tokenize..
-        SimpleTokenizer tokenizerCpp(settings, *this, &preprocessor);
+        SimpleTokenizer tokenizerCpp(settings, *this);
         ASSERT_LOC(tokenizerCpp.tokenize(code), file, line);
 
         CheckOther checkOtherCpp(&tokenizerCpp, &settings, this);
@@ -1924,10 +1971,8 @@ private:
         /*const*/ Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability, portability).certainty(Certainty::inconclusive, inconclusive).build();
         settings.platform.defaultSign = 's';
 
-        Preprocessor preprocessor(settings);
-
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this, &preprocessor);
+        SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         CheckOther checkOtherCpp(&tokenizer, &settings, this);
@@ -4121,6 +4166,13 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) C-style pointer casting\n"
                       "[test.cpp:3]: (style) Variable 's' can be declared as pointer to const\n",
                       errout_str()); // don't crash
+
+        check("struct S { int i; };\n" // #12205
+              "void f(S* s) {\n"
+              "    (void)s->i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 's' can be declared as pointer to const\n",
+                      errout_str());
     }
 
     void switchRedundantAssignmentTest() {
@@ -10284,6 +10336,19 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (performance) Function parameter 'v' should be passed by const reference. However it seems that 'f' is a callback function.\n",
                       errout_str());
+
+        check("template<typename T> struct A;\n" // #12621
+              "template<typename T>\n"
+              "struct B { A<T> a; };\n"
+              "template<typename T>\n"
+              "struct A { B<T> b; };\n"
+              "template<typename T>\n"
+              "struct C : public virtual A<T>, public virtual B<T> {\n"
+              "    A<T> x;\n"
+              "    B<T> y;\n"
+              "    C(A<T> x_, B<T> y_) : x(x_), y(y_) {}\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str()); // don't crash
     }
 
     void checkComparisonFunctionIsAlwaysTrueOrFalse() {

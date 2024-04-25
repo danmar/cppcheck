@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,13 +19,15 @@
 #ifndef helpersH
 #define helpersH
 
-#include "preprocessor.h"
+#include "config.h"
 #include "settings.h"
 #include "standards.h"
 #include "tokenize.h"
 #include "tokenlist.h"
 
 #include <cstddef>
+#include <map>
+#include <set>
 #include <stdexcept>
 #include <sstream>
 #include <string>
@@ -42,18 +44,14 @@ namespace simplecpp {
 class SimpleTokenizer : public Tokenizer {
 public:
     SimpleTokenizer(ErrorLogger& errorlogger, const char code[], bool cpp = true)
-        : Tokenizer{s_settings, &errorlogger, &s_preprocessor}
+        : Tokenizer{s_settings, errorlogger}
     {
         if (!tokenize(code, cpp))
             throw std::runtime_error("creating tokens failed");
     }
 
     SimpleTokenizer(const Settings& settings, ErrorLogger& errorlogger)
-        : Tokenizer{settings, &errorlogger, &s_preprocessor}
-    {}
-
-    SimpleTokenizer(const Settings& settings, ErrorLogger& errorlogger, const Preprocessor* preprocessor)
-        : Tokenizer{settings, &errorlogger, preprocessor}
+        : Tokenizer{settings, errorlogger}
     {}
 
     /*
@@ -87,7 +85,6 @@ public:
 private:
     // TODO. find a better solution
     static const Settings s_settings;
-    static const Preprocessor s_preprocessor;
 };
 
 class SimpleTokenList
@@ -153,11 +150,14 @@ public:
      * @param filename name of source file
      * @param inlineSuppression the inline suppressions
      */
-    static std::string getcode(Preprocessor &preprocessor, const std::string &filedata, const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression = nullptr);
+    static std::string getcode(const Settings& settings, ErrorLogger& errorlogger, const std::string &filedata, const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression = nullptr);
+    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], const std::string &filename = "file.c", SuppressionList *inlineSuppression = nullptr);
 
-    static void preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer);
-    static void preprocess(Preprocessor &preprocessor, const char code[], std::vector<std::string> &files, Tokenizer& tokenizer);
-    static void preprocess(Preprocessor &preprocessor, const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, const simplecpp::DUI& dui);
+    static void preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger);
+    static void preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger, const simplecpp::DUI& dui);
+
+private:
+    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::set<std::string> cfgs, const std::string &filename = "file.c", SuppressionList *inlineSuppression = nullptr);
 };
 
 namespace cppcheck {

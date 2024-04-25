@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,7 +68,7 @@ struct CPPCHECKLIB Directive {
  * The preprocessor has special functionality for extracting the various ifdef
  * configurations that exist in a source file.
  */
-class CPPCHECKLIB Preprocessor {
+class CPPCHECKLIB WARN_UNUSED Preprocessor {
     // TODO: get rid of this
     friend class PreprocessorHelper;
     friend class TestPreprocessor;
@@ -87,17 +87,12 @@ public:
     /** character that is inserted in expanded macros */
     static char macroChar;
 
-    explicit Preprocessor(const Settings& settings, ErrorLogger *errorLogger = nullptr);
+    explicit Preprocessor(const Settings& settings, ErrorLogger &errorLogger);
     virtual ~Preprocessor();
 
     void inlineSuppressions(const simplecpp::TokenList &tokens, SuppressionList &suppressions);
 
-    void setDirectives(const simplecpp::TokenList &tokens);
-
-    /** list of all directives met while preprocessing file */
-    const std::list<Directive> &getDirectives() const {
-        return mDirectives;
-    }
+    std::list<Directive> createDirectives(const simplecpp::TokenList &tokens) const;
 
     std::set<std::string> getConfigs(const simplecpp::TokenList &tokens) const;
 
@@ -124,7 +119,7 @@ public:
 
     void simplifyPragmaAsm(simplecpp::TokenList *tokenList) const;
 
-    static void getErrorMessages(ErrorLogger *errorLogger, const Settings &settings);
+    static void getErrorMessages(ErrorLogger &errorLogger, const Settings &settings);
 
     /**
      * dump all directives present in source file
@@ -143,15 +138,10 @@ private:
 
     static bool hasErrors(const simplecpp::OutputList &outputList);
 
-    void setDirectives(const std::list<Directive> &directives) {
-        mDirectives = directives;
-    }
-
     const Settings& mSettings;
-    ErrorLogger *mErrorLogger;
+    ErrorLogger &mErrorLogger;
 
     /** list of all directives met while preprocessing file */
-    std::list<Directive> mDirectives;
 
     std::map<std::string, simplecpp::TokenList *> mTokenLists;
 

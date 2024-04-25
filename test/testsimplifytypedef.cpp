@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -214,6 +214,8 @@ private:
         TEST_CASE(simplifyTypedef148);
         TEST_CASE(simplifyTypedef149);
         TEST_CASE(simplifyTypedef150);
+        TEST_CASE(simplifyTypedef151);
+        TEST_CASE(simplifyTypedef152);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -238,7 +240,7 @@ private:
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
     std::string tok_(const char* file, int line, const char code[], bool simplify = true, Platform::Type type = Platform::Type::Native, bool debugwarnings = true) {
         // show warnings about unhandled typedef
-        const Settings settings = settingsBuilder(settings0).exhaustive().certainty(Certainty::inconclusive).debugwarnings(debugwarnings).platform(type).build();
+        const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings(debugwarnings).platform(type).build();
         SimpleTokenizer tokenizer(settings, *this);
 
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -247,7 +249,7 @@ private:
     }
 
     std::string simplifyTypedef(const char code[]) {
-        Tokenizer tokenizer(settings1, this);
+        Tokenizer tokenizer(settings1, *this);
 
         std::istringstream istr(code);
         if (!tokenizer.list.createTokens(istr, Standards::Language::CPP))
@@ -261,8 +263,8 @@ private:
 
     std::string simplifyTypedefP(const char code[]) {
         std::vector<std::string> files(1, "test.cpp");
-        Tokenizer tokenizer(settings0, this);
-        PreprocessorHelper::preprocess(code, files, tokenizer);
+        Tokenizer tokenizer(settings0, *this);
+        PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         // Tokenize..
         tokenizer.createLinks();
@@ -282,7 +284,7 @@ private:
 
 
     std::string simplifyTypedefC(const char code[]) {
-        Tokenizer tokenizer(settings1, this);
+        Tokenizer tokenizer(settings1, *this);
 
         std::istringstream istr(code);
         if (!tokenizer.list.createTokens(istr, "file.c"))
@@ -3530,6 +3532,37 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
+    void simplifyTypedef151() {
+        const char* code{}, *exp{};
+        code = "namespace N {\n" // #12597
+               "    typedef int T[10];\n"
+               "    const T* f() { return static_cast<const T*>(nullptr); }\n"
+               "}\n";
+        exp = "namespace N { "
+              "const int ( * f ( ) ) [ 10 ] { return static_cast < const int ( * ) [ 10 ] > ( nullptr ) ; } "
+              "}";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void simplifyTypedef152() {
+        const char* code{}, *exp{};
+        code = "namespace O { struct T {}; }\n"
+               "typedef O::T S;\n"
+               "namespace M {\n"
+               "    enum E { E0, S = 1 };\n"
+               "    enum class F : ::std::int8_t { F0, S = 1 };\n"
+               "}\n"
+               "namespace N { enum { G0, S = 1 }; }\n";
+        exp = "namespace O { struct T { } ; } "
+              "namespace M { "
+              "enum E { E0 , S = 1 } ; "
+              "enum class F : :: std :: int8_t { F0 , S = 1 } ; "
+              "}"
+              " namespace N { enum Anonymous0 { G0 , S = 1 } ; "
+              "}";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
     void simplifyTypedefFunction1() {
         {
             const char code[] = "typedef void (*my_func)();\n"
@@ -4173,7 +4206,7 @@ private:
                             "uint8_t t;"
                             "void test(rFunctionPointer_fp functionPointer);";
 
-        Tokenizer tokenizer(settings1, this);
+        Tokenizer tokenizer(settings1, *this);
         std::istringstream istr(code);
         ASSERT(tokenizer.list.createTokens(istr, "file.c"));
         tokenizer.createLinks();

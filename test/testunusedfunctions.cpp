@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +21,11 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "platform.h"
-#include "preprocessor.h"
 #include "settings.h"
 #include "tokenize.h"
+#include "tokenlist.h"
 
+#include <sstream>
 #include <string>
 
 class TestUnusedFunctions : public TestFixture {
@@ -534,7 +535,7 @@ private:
         for (int i = 1; i <= 2; ++i) {
             const std::string fname = "test" + std::to_string(i) + ".cpp";
 
-            Tokenizer tokenizer(settings, this);
+            Tokenizer tokenizer(settings, *this);
             std::istringstream istr(code);
             ASSERT(tokenizer.list.createTokens(istr, fname));
             ASSERT(tokenizer.simplifyTokens1(""));
@@ -682,8 +683,7 @@ private:
                            "};";
         const char code[] = R"(#include "test.h")";
         ScopedFile header("test.h", inc);
-        Preprocessor preprocessor(settings, this);
-        const std::string processed = PreprocessorHelper::getcode(preprocessor, code, "", "test.cpp");
+        const std::string processed = PreprocessorHelper::getcode(settings, *this, code, "", "test.cpp");
         check(processed.c_str());
         TODO_ASSERT_EQUALS("[test.h:3]: (style) The function 'f' is never used.\n", "[test.cpp:3]: (style) The function 'f' is never used.\n", errout_str());
     }

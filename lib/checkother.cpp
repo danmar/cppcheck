@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,6 @@
 #include <set>
 #include <sstream>
 #include <utility>
-#include <numeric>
 
 //---------------------------------------------------------------------------
 
@@ -912,10 +911,20 @@ static bool isSimpleExpr(const Token* tok, const Variable* var, const Settings* 
         return true;
     bool needsCheck = tok->varId() > 0;
     if (!needsCheck) {
+        if (tok->isArithmeticalOp())
+            return isSimpleExpr(tok->astOperand1(), var, settings) && (!tok->astOperand2() || isSimpleExpr(tok->astOperand2(), var, settings));
         const Token* ftok = tok->previous();
         if (Token::Match(ftok, "%name% (") &&
             ((ftok->function() && ftok->function()->isConst()) || settings->library.isFunctionConst(ftok->str(), /*pure*/ true)))
             needsCheck = true;
+        else if (tok->str() == "[") {
+            needsCheck = tok->astOperand1() && tok->astOperand1()->varId() > 0;
+            tok = tok->astOperand1();
+        }
+        else if (isLeafDot(tok->astOperand2())) {
+            needsCheck = tok->astOperand2()->varId() > 0;
+            tok = tok->astOperand2();
+        }
     }
     return (needsCheck && !findExpressionChanged(tok, tok->astParent(), var->scope()->bodyEnd, settings));
 }
@@ -2714,13 +2723,13 @@ void CheckOther::checkSignOfUnsignedVariable()
         for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             const ValueFlow::Value *zeroValue = nullptr;
             const Token *nonZeroExpr = nullptr;
-            if (comparisonNonZeroExpressionLessThanZero(tok, &zeroValue, &nonZeroExpr)) {
+            if (comparisonNonZeroExpressionLessThanZero(tok, zeroValue, nonZeroExpr)) {
                 const ValueType* vt = nonZeroExpr->valueType();
                 if (vt->pointer)
                     pointerLessThanZeroError(tok, zeroValue);
                 else
                     unsignedLessThanZeroError(tok, zeroValue, nonZeroExpr->expressionString());
-            } else if (testIfNonZeroExpressionIsPositive(tok, &zeroValue, &nonZeroExpr)) {
+            } else if (testIfNonZeroExpressionIsPositive(tok, zeroValue, nonZeroExpr)) {
                 const ValueType* vt = nonZeroExpr->valueType();
                 if (vt->pointer)
                     pointerPositiveError(tok, zeroValue);
@@ -2731,7 +2740,7 @@ void CheckOther::checkSignOfUnsignedVariable()
     }
 }
 
-bool CheckOther::comparisonNonZeroExpressionLessThanZero(const Token *tok, const ValueFlow::Value **zeroValue, const Token **nonZeroExpr, bool suppress)
+bool CheckOther::comparisonNonZeroExpressionLessThanZero(const Token *tok, const ValueFlow::Value *&zeroValue, const Token *&nonZeroExpr, bool suppress)
 {
     if (!tok->isComparisonOp() || !tok->astOperand1() || !tok->astOperand2())
         return false;
@@ -2740,24 +2749,24 @@ bool CheckOther::comparisonNonZeroExpressionLessThanZero(const Token *tok, const
     const ValueFlow::Value *v2 = tok->astOperand2()->getValue(0);
 
     if (Token::Match(tok, "<|<=") && v2 && v2->isKnown()) {
-        *zeroValue = v2;
-        *nonZeroExpr = tok->astOperand1();
+        zeroValue = v2;
+        nonZeroExpr = tok->astOperand1();
     } else if (Token::Match(tok, ">|>=") && v1 && v1->isKnown()) {
-        *zeroValue = v1;
-        *nonZeroExpr = tok->astOperand2();
+        zeroValue = v1;
+        nonZeroExpr = tok->astOperand2();
     } else {
         return false;
     }
 
-    if (const Variable* var = (*nonZeroExpr)->variable())
+    if (const Variable* var = nonZeroExpr->variable())
         if (var->typeStartToken()->isTemplateArg())
             return suppress;
 
-    const ValueType* vt = (*nonZeroExpr)->valueType();
+    const ValueType* vt = nonZeroExpr->valueType();
     return vt && (vt->pointer || vt->sign == ValueType::UNSIGNED);
 }
 
-bool CheckOther::testIfNonZeroExpressionIsPositive(const Token *tok, const ValueFlow::Value **zeroValue, const Token **nonZeroExpr)
+bool CheckOther::testIfNonZeroExpressionIsPositive(const Token *tok, const ValueFlow::Value *&zeroValue, const Token *&nonZeroExpr)
 {
     if (!tok->isComparisonOp() || !tok->astOperand1() || !tok->astOperand2())
         return false;
@@ -2766,16 +2775,16 @@ bool CheckOther::testIfNonZeroExpressionIsPositive(const Token *tok, const Value
     const ValueFlow::Value *v2 = tok->astOperand2()->getValue(0);
 
     if (Token::simpleMatch(tok, ">=") && v2 && v2->isKnown()) {
-        *zeroValue = v2;
-        *nonZeroExpr = tok->astOperand1();
+        zeroValue = v2;
+        nonZeroExpr = tok->astOperand1();
     } else if (Token::simpleMatch(tok, "<=") && v1 && v1->isKnown()) {
-        *zeroValue = v1;
-        *nonZeroExpr = tok->astOperand2();
+        zeroValue = v1;
+        nonZeroExpr = tok->astOperand2();
     } else {
         return false;
     }
 
-    const ValueType* vt = (*nonZeroExpr)->valueType();
+    const ValueType* vt = nonZeroExpr->valueType();
     return vt && (vt->pointer || vt->sign == ValueType::UNSIGNED);
 }
 
@@ -3364,7 +3373,7 @@ void CheckOther::checkAccessOfMovedVariable()
                 else
                     inconclusive = true;
             } else {
-                const ExprUsage usage = getExprUsage(tok, 0, mSettings);
+                const ExprUsage usage = getExprUsage(tok, 0, *mSettings);
                 if (usage == ExprUsage::Used)
                     accessOfMoved = true;
                 if (usage == ExprUsage::PassedByReference)
@@ -3554,7 +3563,7 @@ static const Token *findShadowed(const Scope *scope, const Variable& var, int li
 
 void CheckOther::checkShadowVariables()
 {
-    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("shadowVariables"))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("shadowVariable"))
         return;
     logChecker("CheckOther::checkShadowVariables"); // style
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -3803,10 +3812,10 @@ void CheckOther::checkComparePointers()
                 continue;
             if (var1->isRValueReference() || var2->isRValueReference())
                 continue;
-            if (const Token* parent2 = getParentLifetime(v2.tokvalue, &mSettings->library))
+            if (const Token* parent2 = getParentLifetime(v2.tokvalue, mSettings->library))
                 if (var1 == parent2->variable())
                     continue;
-            if (const Token* parent1 = getParentLifetime(v1.tokvalue, &mSettings->library))
+            if (const Token* parent1 = getParentLifetime(v1.tokvalue, mSettings->library))
                 if (var2 == parent1->variable())
                     continue;
             comparePointersError(tok, &v1, &v2);
@@ -3864,7 +3873,7 @@ void CheckOther::checkModuloOfOneError(const Token *tok)
 //-----------------------------------------------------------------------------
 // Overlapping write (undefined behavior)
 //-----------------------------------------------------------------------------
-static bool getBufAndOffset(const Token *expr, const Token **buf, MathLib::bigint *offset)
+static bool getBufAndOffset(const Token *expr, const Token *&buf, MathLib::bigint *offset)
 {
     if (!expr)
         return false;
@@ -3885,7 +3894,7 @@ static bool getBufAndOffset(const Token *expr, const Token **buf, MathLib::bigin
             return false;
         }
     } else if (expr->valueType() && expr->valueType()->pointer > 0) {
-        *buf = expr;
+        buf = expr;
         *offset = 0;
         return true;
     } else {
@@ -3895,7 +3904,7 @@ static bool getBufAndOffset(const Token *expr, const Token **buf, MathLib::bigin
         return false;
     if (!offsetToken->hasKnownIntValue())
         return false;
-    *buf = bufToken;
+    buf = bufToken;
     *offset = offsetToken->getKnownIntValue();
     return true;
 }
@@ -3974,9 +3983,9 @@ void CheckOther::checkOverlappingWrite()
                 const MathLib::bigint sizeValue = args[nonOverlappingData->sizeArg-1]->getKnownIntValue();
                 const Token *buf1, *buf2;
                 MathLib::bigint offset1, offset2;
-                if (!getBufAndOffset(ptr1, &buf1, &offset1))
+                if (!getBufAndOffset(ptr1, buf1, &offset1))
                     continue;
-                if (!getBufAndOffset(ptr2, &buf2, &offset2))
+                if (!getBufAndOffset(ptr2, buf2, &offset2))
                     continue;
 
                 if (offset1 < offset2 && offset1 + sizeValue <= offset2)

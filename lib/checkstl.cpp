@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -727,12 +727,18 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
 
 static ValueFlow::Value getLifetimeIteratorValue(const Token* tok, MathLib::bigint path = 0)
 {
+    auto findIterVal = [](const std::vector<ValueFlow::Value>& values, const std::vector<ValueFlow::Value>::const_iterator beg) {
+        return std::find_if(beg, values.cend(), [](const ValueFlow::Value& v) {
+            return v.lifetimeKind == ValueFlow::Value::LifetimeKind::Iterator;
+        });
+    };
     std::vector<ValueFlow::Value> values = ValueFlow::getLifetimeObjValues(tok, false, path);
-    auto it = std::find_if(values.cbegin(), values.cend(), [](const ValueFlow::Value& v) {
-        return v.lifetimeKind == ValueFlow::Value::LifetimeKind::Iterator;
-    });
-    if (it != values.end())
-        return *it;
+    auto it = findIterVal(values, values.begin());
+    if (it != values.end()) {
+        auto it2 = findIterVal(values, it + 1);
+        if (it2 == values.cend())
+            return *it;
+    }
     if (values.size() == 1)
         return values.front();
     return ValueFlow::Value{};
@@ -1121,7 +1127,7 @@ void CheckStl::invalidContainer()
                         const Scope* s = tok2->scope();
                         if (!s)
                             continue;
-                        if (isReturnScope(s->bodyEnd, &mSettings->library))
+                        if (isReturnScope(s->bodyEnd, mSettings->library))
                             continue;
                         invalidContainerLoopError(r.ftok, tok, r.errorPath);
                         bail = true;
@@ -2479,7 +2485,7 @@ void CheckStl::checkDereferenceInvalidIterator2()
                     emptyAdvance = tok->astParent();
                 }
             }
-            if (!CheckNullPointer::isPointerDeRef(tok, unknown, mSettings) && !isInvalidIterator && !emptyAdvance) {
+            if (!CheckNullPointer::isPointerDeRef(tok, unknown, *mSettings) && !isInvalidIterator && !emptyAdvance) {
                 if (!unknown)
                     continue;
                 inconclusive = true;

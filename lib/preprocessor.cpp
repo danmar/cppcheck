@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <iterator>
 #include <sstream>
 #include <utility>
 
@@ -42,20 +43,6 @@ static bool sameline(const simplecpp::Token *tok1, const simplecpp::Token *tok2)
     return tok1 && tok2 && tok1->location.sameline(tok2->location);
 }
 
-/**
- * Remove heading and trailing whitespaces from the input parameter.
- * If string is all spaces/tabs, return empty string.
- * @param s The string to trim.
- */
-static std::string trim(const std::string& s)
-{
-    const std::string::size_type beg = s.find_first_not_of(" \t");
-    if (beg == std::string::npos)
-        return "";
-    const std::string::size_type end = s.find_last_not_of(" \t");
-    return s.substr(beg, end - beg + 1);
-}
-
 Directive::Directive(std::string _file, const int _linenr, const std::string &_str) :
     file(std::move(_file)),
     linenr(_linenr),
@@ -64,7 +51,7 @@ Directive::Directive(std::string _file, const int _linenr, const std::string &_s
 
 char Preprocessor::macroChar = char(1);
 
-Preprocessor::Preprocessor(const Settings& settings, ErrorLogger *errorLogger) : mSettings(settings), mErrorLogger(errorLogger)
+Preprocessor::Preprocessor(const Settings& settings, ErrorLogger &errorLogger) : mSettings(settings), mErrorLogger(errorLogger)
 {}
 
 Preprocessor::~Preprocessor()
@@ -308,10 +295,10 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens, Suppre
     }
 }
 
-void Preprocessor::setDirectives(const simplecpp::TokenList &tokens)
+std::list<Directive> Preprocessor::createDirectives(const simplecpp::TokenList &tokens) const
 {
     // directive list..
-    mDirectives.clear();
+    std::list<Directive> directives;
 
     std::vector<const simplecpp::TokenList *> list;
     list.reserve(1U + mTokenLists.size());
@@ -337,9 +324,11 @@ void Preprocessor::setDirectives(const simplecpp::TokenList &tokens)
                 else
                     directive.str += tok2->str();
             }
-            mDirectives.push_back(std::move(directive));
+            directives.push_back(std::move(directive));
         }
     }
+
+    return directives;
 }
 
 static std::string readcondition(const simplecpp::Token *iftok, const std::set<std::string> &defined, const std::set<std::string> &undefined)
@@ -873,18 +862,18 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
 
         locationList.emplace_back(file, linenr, 0);
     }
-    mErrorLogger->reportErr(ErrorMessage(std::move(locationList),
-                                         mFile0,
-                                         Severity::error,
-                                         msg,
-                                         "preprocessorErrorDirective",
-                                         Certainty::normal));
+    mErrorLogger.reportErr(ErrorMessage(std::move(locationList),
+                                        mFile0,
+                                        Severity::error,
+                                        msg,
+                                        "preprocessorErrorDirective",
+                                        Certainty::normal));
 }
 
 // Report that include is missing
 void Preprocessor::missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType)
 {
-    if (!mSettings.checks.isEnabled(Checks::missingInclude) || !mErrorLogger)
+    if (!mSettings.checks.isEnabled(Checks::missingInclude))
         return;
 
     std::list<ErrorMessage::FileLocation> locationList;
@@ -897,10 +886,10 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
                         "Include file: \"" + header + "\" not found.",
                         (headerType==SystemHeader) ? "missingIncludeSystem" : "missingInclude",
                         Certainty::normal);
-    mErrorLogger->reportErr(errmsg);
+    mErrorLogger.reportErr(errmsg);
 }
 
-void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings &settings)
+void Preprocessor::getErrorMessages(ErrorLogger &errorLogger, const Settings &settings)
 {
     Preprocessor preprocessor(settings, errorLogger);
     preprocessor.missingInclude(emptyString, 1, emptyString, UserHeader);
@@ -911,17 +900,6 @@ void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings &se
 void Preprocessor::dump(std::ostream &out) const
 {
     // Create a xml dump.
-
-    out << "  <directivelist>" << std::endl;
-    for (const Directive &dir : mDirectives) {
-        out << "    <directive "
-            << "file=\"" << ErrorLogger::toxml(dir.file) << "\" "
-            << "linenr=\"" << dir.linenr << "\" "
-            // str might contain characters such as '"', '<' or '>' which
-            // could result in invalid XML, so run it through toxml().
-            << "str=\"" << ErrorLogger::toxml(dir.str) << "\"/>" << std::endl;
-    }
-    out << "  </directivelist>" << std::endl;
 
     if (!mMacroUsage.empty()) {
         out << "  <macro-usage>" << std::endl;

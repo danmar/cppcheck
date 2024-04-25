@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,8 +60,8 @@ private:
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
     void checkP_(const char* file, int line, const char code[]) {
         std::vector<std::string> files(1, "test.cpp");
-        Tokenizer tokenizer(settings, this);
-        PreprocessorHelper::preprocess(code, files, tokenizer);
+        Tokenizer tokenizer(settings, *this);
+        PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         // Tokenize..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

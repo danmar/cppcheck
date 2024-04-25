@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,13 @@
 
 #include "json.h"
 
+#ifndef _WIN32
+#include <unistd.h> // for getpid()
+#else
+#include <process.h> // for getpid()
+#endif
+
+
 std::atomic<bool> Settings::mTerminated;
 
 const char Settings::SafeChecks::XmlRootName[] = "safe-checks";
@@ -37,12 +44,22 @@ const char Settings::SafeChecks::XmlExternalFunctions[] = "external-functions";
 const char Settings::SafeChecks::XmlInternalFunctions[] = "internal-functions";
 const char Settings::SafeChecks::XmlExternalVariables[] = "external-variables";
 
+static int getPid()
+{
+#ifndef _WIN32
+    return getpid();
+#else
+    return _getpid();
+#endif
+}
+
 Settings::Settings()
 {
     severity.setEnabled(Severity::error, true);
     certainty.setEnabled(Certainty::normal, true);
-    setCheckLevelNormal();
+    setCheckLevel(Settings::CheckLevel::exhaustive);
     executor = defaultExecutor();
+    pid = getPid();
 }
 
 std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppressions)
@@ -268,21 +285,20 @@ void Settings::loadSummaries()
     Summaries::loadReturn(buildDir, summaryReturn);
 }
 
-
-void Settings::setCheckLevelExhaustive()
+void Settings::setCheckLevel(CheckLevel level)
 {
-    // Checking can take a little while. ~ 10 times slower than normal analysis is OK.
-    checkLevel = CheckLevel::exhaustive;
-    performanceValueFlowMaxIfCount = -1;
-    performanceValueFlowMaxSubFunctionArgs = 256;
-}
-
-void Settings::setCheckLevelNormal()
-{
-    // Checking should finish in reasonable time.
-    checkLevel = CheckLevel::normal;
-    performanceValueFlowMaxSubFunctionArgs = 8;
-    performanceValueFlowMaxIfCount = 100;
+    if (level == CheckLevel::normal) {
+        // Checking should finish in reasonable time.
+        checkLevel = level;
+        performanceValueFlowMaxSubFunctionArgs = 8;
+        performanceValueFlowMaxIfCount = 100;
+    }
+    else if (level == CheckLevel::exhaustive) {
+        // Checking can take a little while. ~ 10 times slower than normal analysis is OK.
+        checkLevel = CheckLevel::exhaustive;
+        performanceValueFlowMaxIfCount = -1;
+        performanceValueFlowMaxSubFunctionArgs = 256;
+    }
 }
 
 // TODO: auto generate these tables

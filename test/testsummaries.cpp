@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,7 @@
 
 #include "fixture.h"
 #include "helpers.h"
-#include "settings.h"
 #include "summaries.h"
-#include "tokenize.h"
 
 #include <string>
 
@@ -41,7 +39,7 @@ private:
         // tokenize..
         SimpleTokenizer tokenizer(settingsDefault, *this);
         ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
-        return Summaries::create(&tokenizer, "");
+        return Summaries::create(tokenizer, "");
     }
 
     void createSummaries1() {

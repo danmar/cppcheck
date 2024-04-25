@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@ private:
         TEST_CASE(loadCppcheckCfgSafety);
         TEST_CASE(getNameAndVersion);
         TEST_CASE(ruleTexts);
+        TEST_CASE(checkLevelDefault);
     }
 
     void simpleEnableGroup() const {
@@ -265,6 +266,14 @@ private:
         s.setMisraRuleTexts("1.1 text 1\n1.2 text 2\n");
         ASSERT_EQUALS("text 1", s.getMisraRuleText("misra-c2012-1.1", "---"));
         ASSERT_EQUALS("text 2", s.getMisraRuleText("misra-c2012-1.2", "---"));
+    }
+
+    void checkLevelDefault() const
+    {
+        Settings s;
+        ASSERT_EQUALS_ENUM(s.checkLevel, Settings::CheckLevel::exhaustive);
+        ASSERT_EQUALS(s.performanceValueFlowMaxIfCount, -1);
+        ASSERT_EQUALS(s.performanceValueFlowMaxSubFunctionArgs, 256);
     }
 };
 

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,10 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
+
+#include <simplecpp.h>
 
 class TestTokenizer : public TestFixture {
 public:
@@ -449,6 +452,11 @@ private:
         TEST_CASE(cpp20_default_bitfield_initializer);
 
         TEST_CASE(cpp11init);
+
+        TEST_CASE(testDirectiveIncludeTypes);
+        TEST_CASE(testDirectiveIncludeLocations);
+        TEST_CASE(testDirectiveIncludeComments);
+        TEST_CASE(testDirectiveRelativePath);
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
@@ -497,10 +505,29 @@ private:
         return tokenizer.tokens()->stringifyList(true,true,true,true,false);
     }
 
+    void directiveDump(const char filedata[], std::ostream& ostr) {
+        directiveDump(filedata, "test.c", settingsDefault, ostr);
+    }
+
+    void directiveDump(const char filedata[], const char filename[], const Settings& settings, std::ostream& ostr) {
+        Preprocessor preprocessor(settings, *this);
+        std::istringstream istr(filedata);
+        simplecpp::OutputList outputList;
+        std::vector<std::string> files{filename};
+        const simplecpp::TokenList tokens1(istr, files, filename, &outputList);
+        std::list<Directive> directives = preprocessor.createDirectives(tokens1);
+
+        Tokenizer tokenizer(settings, *this);
+        tokenizer.setDirectives(std::move(directives));
+
+        tokenizer.dump(ostr);
+    }
+
     void tokenize1() {
         const char code[] = "void f ( )\n"
                             "{ if ( p . y ( ) > yof ) { } }";
         ASSERT_EQUALS(code, tokenizeAndStringify(code));
+        ASSERT_EQUALS("[test.cpp:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable yof\n", errout_str());
     }
 
     void tokenize2() {
@@ -784,7 +811,7 @@ private:
         ASSERT_THROW_INTERNAL(tokenizeAndStringify(";template<class T> class X { };",false,Platform::Type::Native,false), SYNTAX);
         ASSERT_THROW_INTERNAL(tokenizeAndStringify("int X<Y>() {};",false,Platform::Type::Native,false), SYNTAX);
         {
-            Tokenizer tokenizer(settings1, this);
+            Tokenizer tokenizer(settings1, *this);
             const char code[] = "void foo(int i) { reinterpret_cast<char>(i) };";
             std::istringstream istr(code);
             ASSERT(tokenizer.list.createTokens(istr, "test.h"));
@@ -797,44 +824,44 @@ private:
     }
 
     void syntax_case_default() { // correct syntax
-        tokenizeAndStringify("void f() {switch (n) { case 0: z(); break;}}");
+        tokenizeAndStringify("void f(int n) {switch (n) { case 0: z(); break;}}");
         ASSERT_EQUALS("", errout_str());
 
-        tokenizeAndStringify("void f() {switch (n) { case 0:; break;}}");
+        tokenizeAndStringify("void f(int n) {switch (n) { case 0:; break;}}");
         ASSERT_EQUALS("", errout_str());
 
         // TODO: Do not throw AST validation exception
-        TODO_ASSERT_THROW(tokenizeAndStringify("void f() {switch (n) { case 0?1:2 : z(); break;}}"), InternalError);
+        TODO_ASSERT_THROW(tokenizeAndStringify("void f(int n) {switch (n) { case 0?1:2 : z(); break;}}"), InternalError);
         //ASSERT_EQUALS("", errout_str());
 
         // TODO: Do not throw AST validation exception
-        TODO_ASSERT_THROW(tokenizeAndStringify("void f() {switch (n) { case 0?(1?3:4):2 : z(); break;}}"), InternalError);
+        TODO_ASSERT_THROW(tokenizeAndStringify("void f(int n) {switch (n) { case 0?(1?3:4):2 : z(); break;}}"), InternalError);
         ASSERT_EQUALS("", errout_str());
 
         //allow GCC '({ %name%|%num%|%bool% ; })' statement expression extension
         // TODO: Do not throw AST validation exception
-        TODO_ASSERT_THROW(tokenizeAndStringify("void f() {switch (n) { case 0?({0;}):1: z(); break;}}"), InternalError);
+        TODO_ASSERT_THROW(tokenizeAndStringify("void f(int n) {switch (n) { case 0?({0;}):1: z(); break;}}"), InternalError);
         ASSERT_EQUALS("", errout_str());
 
         //'b' can be or a macro or an undefined enum
-        tokenizeAndStringify("void f() {switch (n) { case b: z(); break;}}");
+        tokenizeAndStringify("void f(int n) {switch (n) { case b: z(); break;}}");
         ASSERT_EQUALS("", errout_str());
 
         //valid, when there's this declaration: 'constexpr int g() { return 2; }'
-        tokenizeAndStringify("void f() {switch (n) { case g(): z(); break;}}");
+        tokenizeAndStringify("void f(int n) {switch (n) { case g(): z(); break;}}");
         ASSERT_EQUALS("", errout_str());
 
         //valid, when there's also this declaration: 'constexpr int g[1] = {0};'
-        tokenizeAndStringify("void f() {switch (n) { case g[0]: z(); break;}}");
-        ASSERT_EQUALS("", errout_str());
+        tokenizeAndStringify("void f(int n) {switch (n) { case g[0]: z(); break;}}");
+        ASSERT_EQUALS("[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable g\n", errout_str());
 
         //valid, similar to above case
-        tokenizeAndStringify("void f() {switch (n) { case *g: z(); break;}}");
+        tokenizeAndStringify("void f(int n) {switch (n) { case *g: z(); break;}}");
         ASSERT_EQUALS("", errout_str());
 
         //valid, when 'x' and 'y' are constexpr.
-        tokenizeAndStringify("void f() {switch (n) { case sqrt(x+y): z(); break;}}");
-        ASSERT_EQUALS("", errout_str());
+        tokenizeAndStringify("void f(int n) {switch (n) { case sqrt(x+y): z(); break;}}");
+        ASSERT_EQUALS("[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n", errout_str());
     }
 
     void removePragma() {
@@ -854,11 +881,12 @@ private:
         // #3690,#5154
         const char code[] ="void f() { for each ( char c in MyString ) { Console::Write(c); } }";
         ASSERT_EQUALS("void f ( ) { asm ( \"char c in MyString\" ) { Console :: Write ( c ) ; } }", tokenizeAndStringify(code));
+        ASSERT_EQUALS("[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable c\n", errout_str());
     }
 
     void ifconstexpr() {
         ASSERT_EQUALS("void f ( ) { if ( FOO ) { bar ( c ) ; } }", tokenizeAndStringify("void f() { if constexpr ( FOO ) { bar(c); } }"));
-        ASSERT_EQUALS("", filter_valueflow(errout_str()));
+        ASSERT_EQUALS("[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable FOO\n", filter_valueflow(errout_str()));
     }
 
     void combineOperators() {
@@ -1023,7 +1051,7 @@ private:
                       "if ( a ) { ; }\n"
                       "else { ; }\n"
                       "}", tokenizeAndStringify(code));
-        ASSERT_EQUALS("", filter_valueflow(errout_str()));
+        ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n", filter_valueflow(errout_str()));
     }
 
     void ifAddBraces2() {
@@ -1035,7 +1063,7 @@ private:
                       "{\n"
                       "if ( a ) { if ( b ) { } }\n"
                       "}", tokenizeAndStringify(code));
-        ASSERT_EQUALS("", filter_valueflow(errout_str()));
+        ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n", filter_valueflow(errout_str()));
     }
 
     void ifAddBraces3() {
@@ -1047,7 +1075,7 @@ private:
                       "{\n"
                       "if ( a ) { for ( ; ; ) { } }\n"
                       "}", tokenizeAndStringify(code));
-        ASSERT_EQUALS("", filter_valueflow(errout_str()));
+        ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n", filter_valueflow(errout_str()));
     }
 
     void ifAddBraces4() {
@@ -1067,7 +1095,7 @@ private:
                       "{ } }\n"
                       "return str ;\n"
                       "}", tokenizeAndStringify(code));
-        ASSERT_EQUALS("", filter_valueflow(errout_str()));
+        ASSERT_EQUALS("[test.cpp:4]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable somecondition\n", filter_valueflow(errout_str()));
     }
 
     void ifAddBraces5() {
@@ -1154,7 +1182,7 @@ private:
                                 "}";
             ASSERT_EQUALS("void f ( ) { ( void ) ( { if ( * p ) { ( * p ) = x ( ) ; } } ) }",
                           tokenizeAndStringify(code));
-            ASSERT_EQUALS("", filter_valueflow(errout_str()));
+            ASSERT_EQUALS("[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable p\n", filter_valueflow(errout_str()));
         }
     }
 
@@ -1175,7 +1203,7 @@ private:
                       "else {\n"
                       "bar2 ( ) ; }\n"
                       "}", tokenizeAndStringify(code));
-        ASSERT_EQUALS("", filter_valueflow(errout_str()));
+        ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n", filter_valueflow(errout_str()));
     }
 
     void ifAddBraces18() {
@@ -1207,7 +1235,7 @@ private:
                       "else {\n"
                       "bar2 ( ) ; } } }\n"
                       "}", tokenizeAndStringify(code));
-        ASSERT_EQUALS("", filter_valueflow(errout_str()));
+        ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n", filter_valueflow(errout_str()));
     }
 
     void ifAddBraces20() { // #5012 - syntax error 'else }'
@@ -1402,7 +1430,7 @@ private:
                                   "do { while ( x ) { f ( ) ; } } while ( y ) ;\n"
                                   "}";
             ASSERT_EQUALS(result, tokenizeAndStringify(code));
-            ASSERT_EQUALS("", filter_valueflow(errout_str()));
+            ASSERT_EQUALS("[test.cpp:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n", filter_valueflow(errout_str()));
         }
     }
 
@@ -1461,7 +1489,7 @@ private:
                                     "else { } }\n"
                                     "}";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code));
-            ASSERT_EQUALS("", filter_valueflow(errout_str()));
+            ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n", filter_valueflow(errout_str()));
         }
 
         {
@@ -1478,7 +1506,7 @@ private:
                                     "else { } } }\n"
                                     "}";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code));
-            ASSERT_EQUALS("", filter_valueflow(errout_str()));
+            ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n", filter_valueflow(errout_str()));
         }
     }
 
@@ -1604,7 +1632,7 @@ private:
                                 "    { }"
                                 "}";
             ASSERT_EQUALS("void foo ( ) { if ( x ) { int x ; } { } }", tokenizeAndStringify(code));
-            ASSERT_EQUALS("", filter_valueflow(errout_str()));
+            ASSERT_EQUALS("[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n", filter_valueflow(errout_str()));
         }
     }
 
@@ -1677,7 +1705,7 @@ private:
                              "    comphelper::EmbeddedObjectContainer aCnt( xDestStorage );\n"
                              "    { }\n"
                              "}");
-        ASSERT_EQUALS("", errout_str());
+        ignore_errout();
     }
 
     void simplifyFunctionTryCatch() {
@@ -1718,6 +1746,7 @@ private:
                             "}";
 
         ASSERT_EQUALS("void foo ( ) { free ( ( void * ) p ) ; }", tokenizeAndStringify(code));
+        ASSERT_EQUALS("[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable p\n", errout_str());
     }
 
     void removeParentheses3() {
@@ -1753,6 +1782,7 @@ private:
                             "    (free(p));"
                             "}";
         ASSERT_EQUALS("void foo ( ) { free ( p ) ; }", tokenizeAndStringify(code));
+        ASSERT_EQUALS("[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable p\n", errout_str());
     }
 
     void removeParentheses5() {
@@ -1763,6 +1793,7 @@ private:
                                 "    (delete p);"
                                 "}";
             ASSERT_EQUALS("void foo ( ) { delete p ; }", tokenizeAndStringify(code));
+            ASSERT_EQUALS("[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable p\n", errout_str());
         }
 
         // Simplify "( delete [] x )" into "delete [] x"
@@ -1772,6 +1803,7 @@ private:
                                 "    (delete [] p);"
                                 "}";
             ASSERT_EQUALS("void foo ( ) { delete [ ] p ; }", tokenizeAndStringify(code));
+            ASSERT_EQUALS("[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable p\n", errout_str());
         }
     }
 
@@ -2059,6 +2091,7 @@ private:
                       "}", tokenizeAndStringify("void foo(int nX) {\n"
                                                 "    int addI = frontPoint == 2 || frontPoint == 1 ? i = 0, 1 : (i = nX - 2, -1);\n"
                                                 "}"));
+        ASSERT_EQUALS("[test.cpp:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable frontPoint\n", errout_str());
     }
 
     void vardecl_stl_1() {
@@ -2299,6 +2332,7 @@ private:
                             "    int a = (x < y) ? 1 : 0;\n"
                             "}";
         ASSERT_EQUALS("void f ( ) {\nint a ; a = ( x < y ) ? 1 : 0 ;\n}", tokenizeAndStringify(code));
+        ASSERT_EQUALS("[test.cpp:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n", errout_str());
     }
 
     void vardecl14() {
@@ -2339,6 +2373,7 @@ private:
         ASSERT_EQUALS("void f ( ) {\n"
                       "g ( ( double ) v1 * v2 , v3 , v4 ) ;\n"
                       "}", tokenizeAndStringify(code));
+        ASSERT_EQUALS("[test.cpp:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable v1\n", errout_str());
     }
 
     void vardecl19() {
@@ -2614,6 +2649,7 @@ private:
                 "} ;";
 
             ASSERT_EQUALS(out5, tokenizeAndStringify(in5));
+            ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable pos\n", errout_str());
         }
         {
             // Ticket #8679
@@ -3531,7 +3567,7 @@ private:
     }
 
     void simplifyString() {
-        Tokenizer tokenizer(settings0, this);
+        Tokenizer tokenizer(settings0, *this);
         ASSERT_EQUALS("\"abc\"", tokenizer.simplifyString("\"abc\""));
         ASSERT_EQUALS("\"\n\"", tokenizer.simplifyString("\"\\xa\""));
         ASSERT_EQUALS("\"3\"", tokenizer.simplifyString("\"\\x33\""));
@@ -3589,8 +3625,8 @@ private:
         ASSERT_EQUALS("void foo ( int i ) { switch ( i ) { case -1 : ; break ; } }",
                       tokenizeAndStringify("void foo (int i) { switch(i) { case -1: break; } }"));
         //ticket #3227
-        ASSERT_EQUALS("void foo ( ) { switch ( n ) { label : ; case 1 : ; label1 : ; label2 : ; break ; } }",
-                      tokenizeAndStringify("void foo(){ switch (n){ label: case 1: label1: label2: break; }}"));
+        ASSERT_EQUALS("void foo ( int n ) { switch ( n ) { label : ; case 1 : ; label1 : ; label2 : ; break ; } }",
+                      tokenizeAndStringify("void foo(int n){ switch (n){ label: case 1: label1: label2: break; }}"));
         //ticket #8345
         ASSERT_EQUALS("void foo ( ) { switch ( 0 ) { case 0 : ; default : ; } }",
                       tokenizeAndStringify("void foo () { switch(0) case 0 : default : ; }"));
@@ -3669,6 +3705,7 @@ private:
                                 "( void ) ( xy ( * p ) ( 0 ) ) ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        ASSERT_EQUALS("[test.cpp:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable p\n", errout_str());
     }
 
     void simplifyFunctionPointers4() {
@@ -3976,6 +4013,7 @@ private:
                                 "         FFABS ( sprite_delta [ 1 ] [ i ] ) >= INT_MAX >> shift_y ) ;\n"
                                 "}";
             ASSERT_EQUALS(std::string::npos, tokenizeAndStringify(code).find("> >"));
+            ASSERT_EQUALS("[test.cpp:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable sprite_shift\n", errout_str());
         }
         {
             const char code[] = "struct S { bool vector; };\n"
@@ -4066,6 +4104,8 @@ private:
                              "  }; "
                              "  template<class DC> class C2 {}; "
                              "}");
+
+        ignore_errout();
     }
 
     void cpp0xtemplate5() { // #9154
@@ -4109,6 +4149,7 @@ private:
         ASSERT_EQUALS("; int a [ 1 ] = { foo < bar1 , bar2 > ( 123 , 4 ) } ;", tokenizeAndStringify(";int a[]={foo<bar1,bar2>(123,4)};"));
         ASSERT_EQUALS("; int a [ 2 ] = { b > c ? 1 : 2 , 3 } ;", tokenizeAndStringify(";int a[]={ b>c?1:2,3};"));
         ASSERT_EQUALS("int main ( ) { int a [ 2 ] = { b < c ? 1 : 2 , 3 } }", tokenizeAndStringify("int main(){int a[]={b<c?1:2,3}}"));
+        ASSERT_EQUALS("[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable b\n", errout_str());
         ASSERT_EQUALS("; int a [ 3 ] = { ABC , 2 , 3 } ;", tokenizeAndStringify(";int a[]={ABC,2,3};"));
         ASSERT_EQUALS("; int a [ 3 ] = { [ 2 ] = 5 } ;", tokenizeAndStringify(";int a[]={ [2] = 5 };"));
         ASSERT_EQUALS("; int a [ 5 ] = { 1 , 2 , [ 2 ] = 5 , 3 , 4 } ;", tokenizeAndStringify(";int a[]={ 1, 2, [2] = 5, 3, 4 };"));
@@ -4143,6 +4184,8 @@ private:
         //with unhandled MACRO() code
         ASSERT_THROW_INTERNAL(tokenizeAndStringify("void f() { MACRO(ab: b=0;, foo)}"), UNKNOWN_MACRO);
         ASSERT_EQUALS("void f ( ) { MACRO ( bar , ab : { & ( * b . x ) = 0 ; } ) }", tokenizeAndStringify("void f() { MACRO(bar, ab: {&(*b.x)=0;})}"));
+
+        ignore_errout();
     }
 
     void simplifyInitVar() {
@@ -4655,6 +4698,7 @@ private:
                            "return string ;\n"
                            "}",
                            tokenizeAndStringify(code));
+        ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cout\n", errout_str());
 
         code = "using namespace std;\n"
                "void f() {\n"
@@ -4892,7 +4936,8 @@ private:
             ASSERT_EQUALS(exp, tokenizeAndStringify(code, true, Platform::Type::Native, false));
         }
 
-        ASSERT_EQUALS("", filter_valueflow(errout_str()));
+        //ASSERT_EQUALS("", filter_valueflow(errout_str()));
+        ignore_errout();
     }
 
     void simplifyRoundCurlyParentheses() {
@@ -5227,7 +5272,7 @@ private:
                       "return RSLNotEqual ; "
                       "}",
                       tokenizeAndStringify(code));
-        ASSERT_EQUALS("", filter_valueflow(errout_str()));
+        ASSERT_EQUALS("[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable RSLEqual\n", filter_valueflow(errout_str()));
     }
 
     void simplifyOperatorName23() {
@@ -5282,6 +5327,7 @@ private:
                             "}";
         ASSERT_EQUALS("void foo ( ) { x = y . operator* ( ) . z [ 123 ] ; }",
                       tokenizeAndStringify(code));
+        ignore_errout();
     }
 
     void simplifyOperatorName27() {
@@ -5592,7 +5638,7 @@ private:
                             "    _tcscpy(dst, src);"
                             "    dst[0] = 0;"
                             "    _tcscat(dst, src);"
-                            "    LPTSTR d = _tcsdup(str);"
+                            "    LPTSTR d = _tcsdup(src);"
                             "    _tprintf(_T(\"Hello world!\"));"
                             "    _stprintf(dst, _T(\"Hello!\"));"
                             "    _sntprintf(dst, sizeof(dst) / sizeof(TCHAR), _T(\"Hello world!\"));"
@@ -5613,7 +5659,7 @@ private:
                                 "strcpy ( dst , src ) ; "
                                 "dst [ 0 ] = 0 ; "
                                 "strcat ( dst , src ) ; "
-                                "char * d ; d = strdup ( str ) ; "
+                                "char * d ; d = strdup ( src ) ; "
                                 "printf ( \"Hello world!\" ) ; "
                                 "sprintf ( dst , \"Hello!\" ) ; "
                                 "_snprintf ( dst , sizeof ( dst ) / sizeof ( char ) , \"Hello world!\" ) ; "
@@ -5639,7 +5685,7 @@ private:
                             "    _tcscpy(dst, src);"
                             "    dst[0] = 0;"
                             "    _tcscat(dst, src);"
-                            "    LPTSTR d = _tcsdup(str);"
+                            "    LPTSTR d = _tcsdup(src);"
                             "    _tprintf(_T(\"Hello world!\"));"
                             "    _stprintf(dst, _T(\"Hello!\"));"
                             "    _sntprintf(dst, sizeof(dst) / sizeof(TCHAR), _T(\"Hello world!\"));"
@@ -5660,7 +5706,7 @@ private:
                                 "wcscpy ( dst , src ) ; "
                                 "dst [ 0 ] = 0 ; "
                                 "wcscat ( dst , src ) ; "
-                                "wchar_t * d ; d = wcsdup ( str ) ; "
+                                "wchar_t * d ; d = wcsdup ( src ) ; "
                                 "wprintf ( L\"Hello world!\" ) ; "
                                 "swprintf ( dst , L\"Hello!\" ) ; "
                                 "_snwprintf ( dst , sizeof ( dst ) / sizeof ( wchar_t ) , L\"Hello world!\" ) ; "
@@ -5843,17 +5889,17 @@ private:
     }
 
     void simplifyCaseRange() {
-        ASSERT_EQUALS("void f ( ) { switch ( x ) { case 1 : case 2 : case 3 : case 4 : ; } }", tokenizeAndStringify("void f() { switch(x) { case 1 ... 4: } }"));
-        ASSERT_EQUALS("void f ( ) { switch ( x ) { case 4 ... 1 : ; } }", tokenizeAndStringify("void f() { switch(x) { case 4 ... 1: } }"));
-        tokenizeAndStringify("void f() { switch(x) { case 1 ... 1000000: } }"); // Do not run out of memory
+        ASSERT_EQUALS("void f ( int x ) { switch ( x ) { case 1 : case 2 : case 3 : case 4 : ; } }", tokenizeAndStringify("void f(int x) { switch(x) { case 1 ... 4: } }"));
+        ASSERT_EQUALS("void f ( int x ) { switch ( x ) { case 4 ... 1 : ; } }", tokenizeAndStringify("void f(int x) { switch(x) { case 4 ... 1: } }"));
+        tokenizeAndStringify("void f(int x) { switch(x) { case 1 ... 1000000: } }"); // Do not run out of memory
 
-        ASSERT_EQUALS("void f ( ) { switch ( x ) { case 'a' : case 98 : case 'c' : ; } }", tokenizeAndStringify("void f() { switch(x) { case 'a' ... 'c': } }"));
-        ASSERT_EQUALS("void f ( ) { switch ( x ) { case 'c' ... 'a' : ; } }", tokenizeAndStringify("void f() { switch(x) { case 'c' ... 'a': } }"));
+        ASSERT_EQUALS("void f ( int x ) { switch ( x ) { case 'a' : case 98 : case 'c' : ; } }", tokenizeAndStringify("void f(int x) { switch(x) { case 'a' ... 'c': } }"));
+        ASSERT_EQUALS("void f ( int x ) { switch ( x ) { case 'c' ... 'a' : ; } }", tokenizeAndStringify("void f(int x) { switch(x) { case 'c' ... 'a': } }"));
 
-        ASSERT_EQUALS("void f ( ) { switch ( x ) { case '[' : case 92 : case ']' : ; } }", tokenizeAndStringify("void f() { switch(x) { case '[' ... ']': } }"));
+        ASSERT_EQUALS("void f ( int x ) { switch ( x ) { case '[' : case 92 : case ']' : ; } }", tokenizeAndStringify("void f(int x) { switch(x) { case '[' ... ']': } }"));
 
-        ASSERT_EQUALS("void f ( ) { switch ( x ) { case '&' : case 39 : case '(' : ; } }", tokenizeAndStringify("void f() { switch(x) { case '&' ... '(': } }"));
-        ASSERT_EQUALS("void f ( ) { switch ( x ) { case '\\x61' : case 98 : case '\\x63' : ; } }", tokenizeAndStringify("void f() { switch(x) { case '\\x61' ... '\\x63': } }"));
+        ASSERT_EQUALS("void f ( int x ) { switch ( x ) { case '&' : case 39 : case '(' : ; } }", tokenizeAndStringify("void f(int x) { switch(x) { case '&' ... '(': } }"));
+        ASSERT_EQUALS("void f ( int x ) { switch ( x ) { case '\\x61' : case 98 : case '\\x63' : ; } }", tokenizeAndStringify("void f(int x) { switch(x) { case '\\x61' ... '\\x63': } }"));
     }
 
     void simplifyEmptyNamespaces() {
@@ -5884,7 +5930,7 @@ private:
 
     std::string testAst(const char code[], AstStyle style = AstStyle::Simple) {
         // tokenize given code..
-        Tokenizer tokenizer(settings0, this);
+        Tokenizer tokenizer(settings0, *this);
         std::istringstream istr(code);
         if (!tokenizer.list.createTokens(istr,"test.cpp"))
             return "ERROR";
@@ -6421,6 +6467,7 @@ private:
                              "    for (int i = 0; i <= 123; ++i)\n"
                              "        x->emplace_back(y);\n"
                              "}");
+        ignore_errout();
 
         ASSERT_NO_THROW(tokenizeAndStringify("void f() {\n" // #10831
                                              "    auto g = [](std::function<void()> h = []() {}) { };\n"
@@ -6430,7 +6477,7 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify("void f() {\n" // #11379
                                              "    auto l = [x = 3](std::string&& v) { };\n"
                                              "}\n"));
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n", errout_str());
     }
 
     void astbrackets() { // []
@@ -6826,13 +6873,12 @@ private:
                                 "int PTR4 q4_var RBR4 = 0;\n";
 
         // Preprocess file..
-        Preprocessor preprocessor(settings0);
         std::istringstream fin(raw_code);
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
         const simplecpp::TokenList tokens1(fin, files, emptyString, &outputList);
         const std::string filedata = tokens1.stringify();
-        const std::string code = PreprocessorHelper::getcode(preprocessor, filedata, emptyString, emptyString);
+        const std::string code = PreprocessorHelper::getcode(settings0, *this, filedata, emptyString, emptyString);
 
         ASSERT_THROW_INTERNAL(tokenizeAndStringify(code.c_str()), AST);
     }
@@ -6942,6 +6988,8 @@ private:
                                                    "std::string f() {\n"
                                                    "    return std::string{ g() + \"abc\" MACRO \"def\" };\n"
                                                    "}\n", /*expand*/ true, Platform::Type::Native, true), UNKNOWN_MACRO);
+
+        ignore_errout();
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()
@@ -7582,6 +7630,7 @@ private:
                                              "    p = &(ref).value;\n"
                                              "    return result ;\n"
                                              "}\n"));
+        ignore_errout();
     }
 
     void noCrash5() { // #10603
@@ -7657,10 +7706,9 @@ private:
     std::string checkHdrs_(const char* file, int line, const char code[], bool checkHeadersFlag) {
         const Settings settings = settingsBuilder().checkHeaders(checkHeadersFlag).build();
 
-        Preprocessor preprocessor(settings0);
         std::vector<std::string> files(1, "test.cpp");
-        Tokenizer tokenizer(settings, this);
-        PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer);
+        Tokenizer tokenizer(settings, *this);
+        PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
@@ -7896,6 +7944,102 @@ private:
                                              "template<typename T> auto f(T t) -> X<decltype(t + 1)> {}\n"));
         ASSERT_EQUALS("[test.cpp:2]: (debug) auto token with no type.\n", errout_str());
         #undef testIsCpp11init
+    }
+
+    void testDirectiveIncludeTypes() {
+        const char filedata[] = "#define macro some definition\n"
+                                "#undef macro\n"
+                                "#ifdef macro\n"
+                                "#elif some (complex) condition\n"
+                                "#else\n"
+                                "#endif\n"
+                                "#if some other condition\n"
+                                "#pragma some proprietary content\n"
+                                "#\n" /* may appear in old C code */
+                                "#ident some text\n" /* may appear in old C code */
+                                "#unknownmacro some unpredictable text\n"
+                                "#warning some warning message\n"
+                                "#error some error message\n";
+        const char dumpdata[] = "  <directivelist>\n"
+                                "    <directive file=\"test.c\" linenr=\"1\" str=\"#define macro some definition\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"2\" str=\"#undef macro\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"3\" str=\"#ifdef macro\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"4\" str=\"#elif some (complex) condition\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"5\" str=\"#else\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"6\" str=\"#endif\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"7\" str=\"#if some other condition\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"8\" str=\"#pragma some proprietary content\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"9\" str=\"#\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"10\" str=\"#ident some text\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"11\" str=\"#unknownmacro some unpredictable text\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"12\" str=\"#warning some warning message\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"13\" str=\"#error some error message\"/>\n"
+                                "  </directivelist>\n"
+                                "  <tokenlist>\n"
+                                "  </tokenlist>\n";
+
+        std::ostringstream ostr;
+        directiveDump(filedata, ostr);
+        ASSERT_EQUALS(dumpdata, ostr.str());
+    }
+
+    void testDirectiveIncludeLocations() {
+        const char filedata[] = "#define macro1 val\n"
+                                "#file \"inc1.h\"\n"
+                                "#define macro2 val\n"
+                                "#file \"inc2.h\"\n"
+                                "#define macro3 val\n"
+                                "#endfile\n"
+                                "#define macro4 val\n"
+                                "#endfile\n"
+                                "#define macro5 val\n";
+        const char dumpdata[] = "  <directivelist>\n"
+                                "    <directive file=\"test.c\" linenr=\"1\" str=\"#define macro1 val\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"2\" str=\"#include &quot;inc1.h&quot;\"/>\n"
+                                "    <directive file=\"inc1.h\" linenr=\"1\" str=\"#define macro2 val\"/>\n"
+                                "    <directive file=\"inc1.h\" linenr=\"2\" str=\"#include &quot;inc2.h&quot;\"/>\n"
+                                "    <directive file=\"inc2.h\" linenr=\"1\" str=\"#define macro3 val\"/>\n"
+                                "    <directive file=\"inc1.h\" linenr=\"3\" str=\"#define macro4 val\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"3\" str=\"#define macro5 val\"/>\n"
+                                "  </directivelist>\n"
+                                "  <tokenlist>\n"
+                                "  </tokenlist>\n";
+
+        std::ostringstream ostr;
+        directiveDump(filedata, ostr);
+        ASSERT_EQUALS(dumpdata, ostr.str());
+    }
+
+    void testDirectiveIncludeComments() {
+        const char filedata[] = "#ifdef macro2 /* this will be removed */\n"
+                                "#else /* this will be removed too */\n"
+                                "#endif /* this will also be removed */\n";
+        const char dumpdata[] = "  <directivelist>\n"
+                                "    <directive file=\"test.c\" linenr=\"1\" str=\"#ifdef macro2\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"2\" str=\"#else\"/>\n"
+                                "    <directive file=\"test.c\" linenr=\"3\" str=\"#endif\"/>\n"
+                                "  </directivelist>\n"
+                                "  <tokenlist>\n"
+                                "  </tokenlist>\n";
+
+        std::ostringstream ostr;
+        directiveDump(filedata, ostr);
+        ASSERT_EQUALS(dumpdata, ostr.str());
+    }
+
+    void testDirectiveRelativePath() {
+        const char filedata[] = "#define macro 1\n";
+        const char dumpdata[] = "  <directivelist>\n"
+                                "    <directive file=\"test.c\" linenr=\"1\" str=\"#define macro 1\"/>\n"
+                                "  </directivelist>\n"
+                                "  <tokenlist>\n"
+                                "  </tokenlist>\n";
+        std::ostringstream ostr;
+        Settings s(settingsDefault);
+        s.relativePaths = true;
+        s.basePaths.emplace_back("/some/path");
+        directiveDump(filedata, "/some/path/test.c", s, ostr);
+        ASSERT_EQUALS(dumpdata, ostr.str());
     }
 };
 

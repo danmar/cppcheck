@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,7 +69,7 @@ private:
     }
 
     void setDefines() const {
-        FileSettings fs;
+        FileSettings fs{""};
 
         ImportProject::fsSetDefines(fs, "A");
         ASSERT_EQUALS("A=1", fs.defines);
@@ -85,7 +85,7 @@ private:
     }
 
     void setIncludePaths1() const {
-        FileSettings fs;
+        FileSettings fs{""};
         std::list<std::string> in(1, "../include");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         ImportProject::fsSetIncludePaths(fs, "abc/def/", in, variables);
@@ -94,7 +94,7 @@ private:
     }
 
     void setIncludePaths2() const {
-        FileSettings fs;
+        FileSettings fs{""};
         std::list<std::string> in(1, "$(SolutionDir)other");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         variables["SolutionDir"] = "c:/abc/";
@@ -104,7 +104,7 @@ private:
     }
 
     void setIncludePaths3() const { // macro names are case insensitive
-        FileSettings fs;
+        FileSettings fs{""};
         std::list<std::string> in(1, "$(SOLUTIONDIR)other");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         variables["SolutionDir"] = "c:/abc/";
@@ -140,7 +140,7 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(1, importer.fileSettings.size());
-        ASSERT_EQUALS("C:/bar.c", importer.fileSettings.cbegin()->filename);
+        ASSERT_EQUALS("C:/bar.c", importer.fileSettings.cbegin()->filename());
 #else
         constexpr char json[] = R"([{
                                    "directory": "/foo",
@@ -151,7 +151,7 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(1, importer.fileSettings.size());
-        ASSERT_EQUALS("/bar.c", importer.fileSettings.cbegin()->filename);
+        ASSERT_EQUALS("/bar.c", importer.fileSettings.cbegin()->filename());
 #endif
     }
 
@@ -166,7 +166,7 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(1, importer.fileSettings.size());
-        ASSERT_EQUALS("/tmp/src.c", importer.fileSettings.cbegin()->filename);
+        ASSERT_EQUALS("/tmp/src.c", importer.fileSettings.cbegin()->filename());
     }
 
     void importCompileCommands4() const {
@@ -328,7 +328,7 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(1, importer.fileSettings.size());
-        ASSERT_EQUALS("/tmp/src.c", importer.fileSettings.cbegin()->filename);
+        ASSERT_EQUALS("/tmp/src.c", importer.fileSettings.cbegin()->filename());
     }
 
     void importCompileCommandsNoCommandSection() const {
@@ -371,9 +371,8 @@ private:
     }
 
     void ignorePaths() const {
-        FileSettings fs1, fs2;
-        fs1.filename = "foo/bar";
-        fs2.filename = "qwe/rty";
+        FileSettings fs1{"foo/bar"};
+        FileSettings fs2{"qwe/rty"};
         TestImporter project;
         project.fileSettings = {std::move(fs1), std::move(fs2)};
 
@@ -382,7 +381,7 @@ private:
 
         project.ignorePaths({"foo/*"});
         ASSERT_EQUALS(1, project.fileSettings.size());
-        ASSERT_EQUALS("qwe/rty", project.fileSettings.front().filename);
+        ASSERT_EQUALS("qwe/rty", project.fileSettings.front().filename());
 
         project.ignorePaths({ "*e/r*" });
         ASSERT_EQUALS(0, project.fileSettings.size());

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "settings.h"
 #include "token.h"
 #include "tokenize.h"
+#include "tokenlist.h"
 #include "utils.h"
 
 #include <sstream>
@@ -98,9 +99,9 @@ private:
         const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings(debugwarnings).platform(type).build();
 
         if (preprocess) {
-            Tokenizer tokenizer(settings, this);
+            Tokenizer tokenizer(settings, *this);
             std::vector<std::string> files(1, "test.cpp");
-            PreprocessorHelper::preprocess(code, files, tokenizer);
+            PreprocessorHelper::preprocess(code, files, tokenizer, *this);
             std::istringstream istr(code);
             ASSERT_LOC(tokenizer.list.createTokens(istr, "test.cpp"), file, line); // TODO: this creates the tokens a second time
             ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
@@ -737,7 +738,7 @@ private:
                                     "cout << std :: string ( c ) << \"abc\" ; "
                                     "}";
             ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
-            ASSERT_EQUALS("", errout_str());
+            ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cout\n", errout_str());
         }
         {
             const char code[] = "class T : private std::vector<std::pair<std::string, const int*>> {\n" // #12521
@@ -853,6 +854,9 @@ private:
                            "}";
 
         ASSERT_EQUALS(exp, tok(code));
+        ASSERT_EQUALS("[test.cpp:7]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable NS1\n"
+                      "[test.cpp:11]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable NS2\n",
+                      errout_str());
     }
 
     void simplifyUsing9381() {

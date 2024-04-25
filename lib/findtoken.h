@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -79,7 +79,7 @@ template<class T,
          class Found,
          class Evaluate,
          REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-bool findTokensSkipDeadCodeImpl(const Library* library,
+bool findTokensSkipDeadCodeImpl(const Library& library,
                                 T* start,
                                 const Token* end,
                                 const Predicate& pred,
@@ -169,7 +169,7 @@ bool findTokensSkipDeadCodeImpl(const Library* library,
 }
 
 template<class T, class Predicate, class Evaluate, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-std::vector<T*> findTokensSkipDeadCode(const Library* library,
+std::vector<T*> findTokensSkipDeadCode(const Library& library,
                                        T* start,
                                        const Token* end,
                                        const Predicate& pred,
@@ -190,13 +190,13 @@ std::vector<T*> findTokensSkipDeadCode(const Library* library,
 }
 
 template<class T, class Predicate, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-std::vector<T*> findTokensSkipDeadCode(const Library* library, T* start, const Token* end, const Predicate& pred)
+std::vector<T*> findTokensSkipDeadCode(const Library& library, T* start, const Token* end, const Predicate& pred)
 {
     return findTokensSkipDeadCode(library, start, end, pred, &evaluateKnownValues);
 }
 
 template<class T, class Predicate, class Evaluate, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-T* findTokenSkipDeadCode(const Library* library, T* start, const Token* end, const Predicate& pred, const Evaluate& evaluate)
+T* findTokenSkipDeadCode(const Library& library, T* start, const Token* end, const Predicate& pred, const Evaluate& evaluate)
 {
     T* result = nullptr;
     (void)findTokensSkipDeadCodeImpl(
@@ -213,7 +213,7 @@ T* findTokenSkipDeadCode(const Library* library, T* start, const Token* end, con
 }
 
 template<class T, class Predicate, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-T* findTokenSkipDeadCode(const Library* library, T* start, const Token* end, const Predicate& pred)
+T* findTokenSkipDeadCode(const Library& library, T* start, const Token* end, const Predicate& pred)
 {
     return findTokenSkipDeadCode(library, start, end, pred, &evaluateKnownValues);
 }

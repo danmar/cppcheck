@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -229,13 +229,11 @@ private:
     unsigned int _checkSuppression(std::map<std::string, std::string> &f, bool useFS, const std::string &suppression = emptyString) {
         std::list<FileSettings> fileSettings;
 
-        std::list<std::pair<std::string, std::size_t>> filelist;
+        std::list<FileWithDetails> filelist;
         for (std::map<std::string, std::string>::const_iterator i = f.cbegin(); i != f.cend(); ++i) {
             filelist.emplace_back(i->first, i->second.size());
             if (useFS) {
-                FileSettings fs;
-                fs.filename = i->first;
-                fileSettings.emplace_back(std::move(fs));
+                fileSettings.emplace_back(i->first, i->second.size());
             }
         }
 
@@ -279,12 +277,10 @@ private:
     unsigned int _checkSuppressionThreads(const char code[], bool useFS, const std::string &suppression = emptyString) {
         std::list<FileSettings> fileSettings;
 
-        std::list<std::pair<std::string, std::size_t>> filelist;
+        std::list<FileWithDetails> filelist;
         filelist.emplace_back("test.cpp", strlen(code));
         if (useFS) {
-            FileSettings fs;
-            fs.filename = "test.cpp";
-            fileSettings.emplace_back(std::move(fs));
+            fileSettings.emplace_back("test.cpp", strlen(code));
         }
 
         /*const*/ auto settings = dinit(Settings,
@@ -298,8 +294,8 @@ private:
 
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filelist.size());
-        for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = filelist.cbegin(); i != filelist.cend(); ++i)
-            scopedfiles.emplace_back(new ScopedFile(i->first, code));
+        for (std::list<FileWithDetails>::const_iterator i = filelist.cbegin(); i != filelist.cend(); ++i)
+            scopedfiles.emplace_back(new ScopedFile(i->path(), code));
 
         // clear files list so only fileSettings are used
         if (useFS)
@@ -325,12 +321,10 @@ private:
     unsigned int _checkSuppressionProcesses(const char code[], bool useFS, const std::string &suppression = emptyString) {
         std::list<FileSettings> fileSettings;
 
-        std::list<std::pair<std::string, std::size_t>> filelist;
+        std::list<FileWithDetails> filelist;
         filelist.emplace_back("test.cpp", strlen(code));
         if (useFS) {
-            FileSettings fs;
-            fs.filename = "test.cpp";
-            fileSettings.emplace_back(std::move(fs));
+            fileSettings.emplace_back("test.cpp", strlen(code));
         }
 
         /*const*/ auto settings = dinit(Settings,
@@ -344,8 +338,8 @@ private:
 
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filelist.size());
-        for (std::list<std::pair<std::string, std::size_t>>::const_iterator i = filelist.cbegin(); i != filelist.cend(); ++i)
-            scopedfiles.emplace_back(new ScopedFile(i->first, code));
+        for (std::list<FileWithDetails>::const_iterator i = filelist.cbegin(); i != filelist.cend(); ++i)
+            scopedfiles.emplace_back(new ScopedFile(i->path(), code));
 
         // clear files list so only fileSettings are used
         if (useFS)

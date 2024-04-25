@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,6 +65,8 @@ private:
 
         TEST_CASE(substituteTemplateFormatStatic);
         TEST_CASE(substituteTemplateLocationStatic);
+
+        TEST_CASE(isCriticalErrorId);
     }
 
     void TestPatternSearchReplace(const std::string& idPlaceholder, const std::string& id) const {
@@ -518,6 +520,11 @@ private:
             ::substituteTemplateFormatStatic(s);
             ASSERT_EQUALS("{", s);
         }
+    }
+
+    void isCriticalErrorId() const {
+        // It does not abort all the analysis of the file. Like "missingInclude" there can be false negatives.
+        ASSERT_EQUALS(false, ErrorLogger::isCriticalErrorId("misra-config"));
     }
 };
 

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -177,7 +177,7 @@ void ComplianceReportDialog::save()
 
             QDir dir(inf.absoluteDir());
             for (const FileSettings& fs: p.fileSettings)
-                fileList.addFile(dir.relativeFilePath(QString::fromStdString(fs.filename)));
+                fileList.addFile(dir.relativeFilePath(QString::fromStdString(fs.filename())));
         }
 
         QSet<QString> allFiles;

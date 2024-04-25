@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,10 +56,10 @@ public:
     CheckOther() : Check(myName()) {}
 
     /** Is expression a comparison that checks if a nonzero (unsigned/pointer) expression is less than zero? */
-    static bool comparisonNonZeroExpressionLessThanZero(const Token *tok, const ValueFlow::Value **zeroValue, const Token **nonZeroExpr, bool suppress = false);
+    static bool comparisonNonZeroExpressionLessThanZero(const Token *tok, const ValueFlow::Value *&zeroValue, const Token *&nonZeroExpr, bool suppress = false);
 
     /** Is expression a comparison that checks if a nonzero (unsigned/pointer) expression is positive? */
-    static bool testIfNonZeroExpressionIsPositive(const Token *tok, const ValueFlow::Value **zeroValue, const Token **nonZeroExpr);
+    static bool testIfNonZeroExpressionIsPositive(const Token *tok, const ValueFlow::Value *&zeroValue, const Token *&nonZeroExpr);
 
 private:
     /** @brief This constructor is used when running checks. */

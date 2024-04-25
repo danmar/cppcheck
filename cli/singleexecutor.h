@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,11 +31,12 @@ class Settings;
 class CppCheck;
 class SuppressionList;
 struct FileSettings;
+class FileWithDetails;
 
 class SingleExecutor : public Executor
 {
 public:
-    SingleExecutor(CppCheck &cppcheck, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger);
+    SingleExecutor(CppCheck &cppcheck, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger);
     SingleExecutor(const SingleExecutor &) = delete;
     SingleExecutor& operator=(const SingleExecutor &) = delete;
 

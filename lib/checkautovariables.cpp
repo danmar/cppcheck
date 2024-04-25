@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -598,7 +598,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                 continue;
             if (!printInconclusive && val.isInconclusive())
                 continue;
-            const Token* parent = getParentLifetime(val.tokvalue, &mSettings->library);
+            const Token* parent = getParentLifetime(val.tokvalue, mSettings->library);
             if (!exprs.insert(parent).second)
                 continue;
             for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(parent, escape || isAssignedToNonLocal(tok))) {

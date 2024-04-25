@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@
 
 enum class Color;
 
-ThreadExecutor::ThreadExecutor(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand)
+ThreadExecutor::ThreadExecutor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand)
     : Executor(files, fileSettings, settings, suppressions, errorLogger)
     , mExecuteCommand(std::move(executeCommand))
 {
@@ -81,24 +81,24 @@ private:
 class ThreadData
 {
 public:
-    ThreadData(ThreadExecutor &threadExecutor, ErrorLogger &errorLogger, const Settings &settings, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings> &fileSettings, CppCheck::ExecuteCmdFn executeCommand)
+    ThreadData(ThreadExecutor &threadExecutor, ErrorLogger &errorLogger, const Settings &settings, const std::list<FileWithDetails> &files, const std::list<FileSettings> &fileSettings, CppCheck::ExecuteCmdFn executeCommand)
         : mFiles(files), mFileSettings(fileSettings), mSettings(settings), mExecuteCommand(std::move(executeCommand)), logForwarder(threadExecutor, errorLogger)
     {
         mItNextFile = mFiles.begin();
         mItNextFileSettings = mFileSettings.begin();
 
         mTotalFiles = mFiles.size() + mFileSettings.size();
-        mTotalFileSize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& p) {
-            return v + p.second;
+        mTotalFileSize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const FileWithDetails& p) {
+            return v + p.size();
         });
     }
 
     bool next(const std::string *&file, const FileSettings *&fs, std::size_t &fileSize) {
         std::lock_guard<std::mutex> l(mFileSync);
         if (mItNextFile != mFiles.end()) {
-            file = &mItNextFile->first;
+            file = &mItNextFile->path();
             fs = nullptr;
-            fileSize = mItNextFile->second;
+            fileSize = mItNextFile->size();
             ++mItNextFile;
             return true;
         }
@@ -140,8 +140,8 @@ public:
     }
 
 private:
-    const std::list<std::pair<std::string, std::size_t>> &mFiles;
-    std::list<std::pair<std::string, std::size_t>>::const_iterator mItNextFile;
+    const std::list<FileWithDetails> &mFiles;
+    std::list<FileWithDetails>::const_iterator mItNextFile;
     const std::list<FileSettings> &mFileSettings;
     std::list<FileSettings>::const_iterator mItNextFileSettings;
 

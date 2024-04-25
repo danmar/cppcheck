@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@
 #include "helpers.h"
 #include "settings.h"
 #include "standards.h"
-#include "tokenize.h"
 #include "utils.h"
 
 #include <cstddef>
@@ -70,6 +69,7 @@ private:
         TEST_CASE(iterator27); // #10378
         TEST_CASE(iterator28); // #10450
         TEST_CASE(iterator29);
+        TEST_CASE(iterator30);
         TEST_CASE(iteratorExpression);
         TEST_CASE(iteratorSameExpression);
         TEST_CASE(mismatchingContainerIterator);
@@ -1866,6 +1866,22 @@ private:
               "    auto it = g().begin();\n"
               "    while (it != g().end())\n"
               "        it = r.erase(it);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void iterator30()
+    {
+        check("struct S {\n" // #12641
+              "    bool b;\n"
+              "    std::list<int> A, B;\n"
+              "    void f();\n"
+              "};\n"
+              "void S::f() {\n"
+              "    std::list<int>::iterator i = (b ? B : A).begin();\n"
+              "    while (i != (b ? B : A).end()) {\n"
+              "        ++i;\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,8 +59,8 @@ void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::
     }
 
     for (const FileSettings &fs : fileSettings) {
-        const std::string afile = getFilename(fs.filename);
-        fout << afile << ".a" << (++fileCount[afile]) << ":" << fs.cfg << ":" << Path::simplifyPath(Path::fromNativeSeparators(fs.filename)) << std::endl;
+        const std::string afile = getFilename(fs.filename());
+        fout << afile << ".a" << (++fileCount[afile]) << ":" << fs.cfg << ":" << Path::simplifyPath(Path::fromNativeSeparators(fs.filename())) << std::endl;
     }
 }
 

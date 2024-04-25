@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2580,7 +2580,7 @@ private:
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     void check_(const char* file, int line, const char code[], bool debug = true, bool cpp = true, const Settings* pSettings = nullptr) {
         // Check..
-        const Settings settings = settingsBuilder(pSettings ? *pSettings : settings1).debugwarnings(debug).exhaustive().build();
+        const Settings settings = settingsBuilder(pSettings ? *pSettings : settings1).debugwarnings(debug).build();
 
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this);
@@ -6568,7 +6568,8 @@ private:
                       "    *PTRRELOC(&x) = &y;\n"
                       "}");
         ASSERT(db != nullptr);
-        ASSERT(db && !db->isFunction(Token::findsimplematch(tokenizer.tokens(), "PTRRELOC ( &"), &db->scopeList.back(), nullptr, nullptr, nullptr));
+        const Token *funcStart, *argStart, *declEnd;
+        ASSERT(db && !db->isFunction(Token::findsimplematch(tokenizer.tokens(), "PTRRELOC ( &"), &db->scopeList.back(), funcStart, argStart, declEnd));
         ASSERT(db->findScopeByName("set_cur_cpu_spec") != nullptr);
         ASSERT(db->findScopeByName("setup_cpu_spec") != nullptr);
         ASSERT(db->findScopeByName("PTRRELOC") == nullptr);

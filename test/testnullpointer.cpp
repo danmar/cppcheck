@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -192,8 +192,8 @@ private:
         const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, false).build();
 
         std::vector<std::string> files(1, "test.cpp");
-        Tokenizer tokenizer(settings1, this);
-        PreprocessorHelper::preprocess(code, files, tokenizer);
+        Tokenizer tokenizer(settings1, *this);
+        PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
@@ -4153,7 +4153,7 @@ private:
             library.functions["x"].argumentChecks[3] = arg;
 
             std::list<const Token *> null;
-            CheckNullPointer::parseFunctionCall(*xtok, null, &library);
+            CheckNullPointer::parseFunctionCall(*xtok, null, library);
             ASSERT_EQUALS(0U, null.size());
         }
 
@@ -4167,7 +4167,7 @@ private:
             library.functions["x"].argumentChecks[1].notnull = true;
 
             std::list<const Token *> null;
-            CheckNullPointer::parseFunctionCall(*xtok, null, &library);
+            CheckNullPointer::parseFunctionCall(*xtok, null, library);
             ASSERT_EQUALS(1U, null.size());
             ASSERT_EQUALS("a", null.front()->str());
         }
@@ -4483,12 +4483,12 @@ private:
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        CTU::FileInfo *ctu = CTU::getFileInfo(&tokenizer);
+        CTU::FileInfo *ctu = CTU::getFileInfo(tokenizer);
 
         // Check code..
         std::list<Check::FileInfo*> fileInfo;
         Check& c = getCheck<CheckNullPointer>();
-        fileInfo.push_back(c.getFileInfo(&tokenizer, &settings));
+        fileInfo.push_back(c.getFileInfo(tokenizer, settings));
         c.analyseWholeProgram(ctu, fileInfo, settings, *this);
         while (!fileInfo.empty()) {
             delete fileInfo.back();

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +43,10 @@ class TokenList;
 enum class SHOWTIME_MODES;
 struct FileSettings;
 class CheckUnusedFunctions;
+class Tokenizer;
+class FileWithDetails;
+
+namespace simplecpp { class TokenList; }
 
 /// @addtogroup Core
 /// @{
@@ -139,10 +143,10 @@ public:
     void analyseClangTidy(const FileSettings &fileSettings);
 
     /** analyse whole program use .analyzeinfo files */
-    void analyseWholeProgram(const std::string &buildDir, const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings);
+    unsigned int analyseWholeProgram(const std::string &buildDir, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings);
 
     /** Remove *.ctu-info files */
-    void removeCtuInfoFiles(const std::list<std::pair<std::string, std::size_t>>& files, const std::list<FileSettings>& fileSettings); // cppcheck-suppress functionConst // has side effects
+    void removeCtuInfoFiles(const std::list<FileWithDetails>& files, const std::list<FileSettings>& fileSettings); // cppcheck-suppress functionConst // has side effects
 
     static void resetTimerResults();
     static void printTimerResults(SHOWTIME_MODES mode);
@@ -150,6 +154,11 @@ public:
     bool isPremiumCodingStandardId(const std::string& id) const;
 
     std::string getAddonMessage(const std::string& id, const std::string& text) const;
+
+    /**
+     * @brief Get dumpfile <rawtokens> contents, this is only public for testing purposes
+     */
+    std::string getDumpFileContentsRawTokens(const std::vector<std::string>& files, const simplecpp::TokenList& tokens1) const;
 
 private:
 #ifdef HAVE_RULES
@@ -184,7 +193,7 @@ private:
     /**
      * Execute addons
      */
-    void executeAddonsWholeProgram(const std::list<std::pair<std::string, std::size_t>> &files);
+    void executeAddonsWholeProgram(const std::list<FileWithDetails> &files);
 
 #ifdef HAVE_RULES
     /**

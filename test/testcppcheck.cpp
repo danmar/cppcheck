@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "settings.h"
+
+#include "simplecpp.h"
 
 #include <algorithm>
 #include <list>
@@ -56,6 +58,7 @@ private:
         TEST_CASE(suppress_error_library);
         TEST_CASE(unique_errors);
         TEST_CASE(isPremiumCodingStandardId);
+        TEST_CASE(getDumpFileContentsRawTokens);
     }
 
     void getErrorMessages() const {
@@ -119,8 +122,7 @@ private:
 
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(errorLogger, false, {});
-        FileSettings fs;
-        fs.filename = file.path();
+        FileSettings fs{file.path()};
         ASSERT_EQUALS(1, cppcheck.check(fs));
         // TODO: how to properly disable these warnings?
         errorLogger.ids.erase(std::remove_if(errorLogger.ids.begin(), errorLogger.ids.end(), [](const std::string& id) {
@@ -204,6 +206,20 @@ private:
         ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c++2023-0.0.0"));
         ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-cert-int50-cpp"));
         ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-autosar-0-0-0"));
+    }
+
+    void getDumpFileContentsRawTokens() const {
+        ErrorLogger2 errorLogger;
+        CppCheck cppcheck(errorLogger, false, {});
+        cppcheck.settings() = settingsBuilder().build();
+        cppcheck.settings().relativePaths = true;
+        cppcheck.settings().basePaths.emplace_back("/some/path");
+        std::vector<std::string> files{"/some/path/test.cpp"};
+        simplecpp::TokenList tokens1(files);
+        const std::string expected = "  <rawtokens>\n"
+                                     "    <file index=\"0\" name=\"test.cpp\"/>\n"
+                                     "  </rawtokens>\n";
+        ASSERT_EQUALS(expected, cppcheck.getDumpFileContentsRawTokens(files, tokens1));
     }
 
     // TODO: test suppressions

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,6 @@ const std::set<std::string> ErrorLogger::mCriticalErrorIds{
     "internalAstError",
     "instantiationError",
     "internalError",
-    "misra-config",
     "premium-internalError",
     "premium-invalidArgument",
     "premium-invalidLicense",
@@ -522,22 +521,6 @@ std::string ErrorMessage::toXML() const
     }
     printer.CloseElement(false);
     return printer.CStr();
-}
-
-/**
- * Replace all occurrences of searchFor with replaceWith in the
- * given source.
- * @param source The string to modify
- * @param searchFor What should be searched for
- * @param replaceWith What will replace the found item
- */
-static void findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith)
-{
-    std::string::size_type index = 0;
-    while ((index = source.find(searchFor, index)) != std::string::npos) {
-        source.replace(index, searchFor.length(), replaceWith);
-        index += replaceWith.length();
-    }
 }
 
 // TODO: read info from some shared resource instead?

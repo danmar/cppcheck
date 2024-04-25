@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,8 +66,8 @@ private:
                                   .c(Standards::CLatest).cpp(Standards::CPPLatest).certainty(Certainty::inconclusive).build();
 
         std::vector<std::string> files(1, filename);
-        Tokenizer tokenizer(settings, this);
-        PreprocessorHelper::preprocess(code, files, tokenizer);
+        Tokenizer tokenizer(settings, *this);
+        PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
@@ -5163,12 +5163,12 @@ private:
         SimpleTokenizer tokenizer(settings0, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        CTU::FileInfo *ctu = CTU::getFileInfo(&tokenizer);
+        CTU::FileInfo *ctu = CTU::getFileInfo(tokenizer);
 
         // Check code..
         std::list<Check::FileInfo*> fileInfo;
         Check& c = getCheck<CheckBufferOverrun>();
-        fileInfo.push_back(c.getFileInfo(&tokenizer, &settings0));
+        fileInfo.push_back(c.getFileInfo(tokenizer, settings0));
         c.analyseWholeProgram(ctu, fileInfo, settings0, *this);
         while (!fileInfo.empty()) {
             delete fileInfo.back();

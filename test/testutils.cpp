@@ -38,6 +38,8 @@ private:
         TEST_CASE(strToInt);
         TEST_CASE(id_string);
         TEST_CASE(startsWith);
+        TEST_CASE(trim);
+        TEST_CASE(findAndReplace);
     }
 
     void isValidGlobPattern() const {
@@ -356,6 +358,74 @@ private:
         ASSERT(!::startsWith("tes", "test"));
         ASSERT(!::startsWith("2test", "t"));
         ASSERT(!::startsWith("t", "test"));
+    }
+
+    void trim() const
+    {
+        ASSERT_EQUALS("test", ::trim("test"));
+        ASSERT_EQUALS("test", ::trim(" test"));
+        ASSERT_EQUALS("test", ::trim("test "));
+        ASSERT_EQUALS("test", ::trim(" test "));
+        ASSERT_EQUALS("test", ::trim("  test"));
+        ASSERT_EQUALS("test", ::trim("test  "));
+        ASSERT_EQUALS("test", ::trim("  test  "));
+        ASSERT_EQUALS("test", ::trim("\ttest"));
+        ASSERT_EQUALS("test", ::trim("test\t"));
+        ASSERT_EQUALS("test", ::trim("\ttest\t"));
+        ASSERT_EQUALS("test", ::trim("\t\ttest"));
+        ASSERT_EQUALS("test", ::trim("test\t\t"));
+        ASSERT_EQUALS("test", ::trim("\t\ttest\t\t"));
+        ASSERT_EQUALS("test", ::trim(" \ttest"));
+        ASSERT_EQUALS("test", ::trim("test\t "));
+        ASSERT_EQUALS("test", ::trim(" \ttest\t"));
+        ASSERT_EQUALS("test", ::trim("\t \ttest"));
+        ASSERT_EQUALS("test", ::trim("test\t \t"));
+        ASSERT_EQUALS("test", ::trim("\t \ttest\t \t"));
+
+        ASSERT_EQUALS("test test", ::trim("test test"));
+        ASSERT_EQUALS("test test", ::trim(" test test"));
+        ASSERT_EQUALS("test test", ::trim("test test "));
+        ASSERT_EQUALS("test test", ::trim(" test test "));
+        ASSERT_EQUALS("test\ttest", ::trim(" test\ttest"));
+        ASSERT_EQUALS("test\ttest", ::trim("test\ttest "));
+        ASSERT_EQUALS("test\ttest", ::trim(" test\ttest "));
+
+        ASSERT_EQUALS("test", ::trim("\ntest", "\n"));
+        ASSERT_EQUALS("test", ::trim("test\n", "\n"));
+        ASSERT_EQUALS("test", ::trim("\ntest\n", "\n"));
+    }
+
+    void findAndReplace() const {
+        {
+            std::string s{"test"};
+            ::findAndReplace(s, "test", "tset");
+            ASSERT_EQUALS("tset", s);
+        }
+        {
+            std::string s{"testtest"};
+            ::findAndReplace(s, "test", "tset");
+            ASSERT_EQUALS("tsettset", s);
+        }
+        {
+            std::string s{"1test1test1"};
+            ::findAndReplace(s, "test", "tset");
+            ASSERT_EQUALS("1tset1tset1", s);
+        }
+        {
+            std::string s{"1test1test1"};
+            ::findAndReplace(s, "test", "");
+            ASSERT_EQUALS("111", s);
+        }
+        {
+            std::string s{"111"};
+            ::findAndReplace(s, "test", "tset");
+            ASSERT_EQUALS("111", s);
+        }
+        {
+            std::string s;
+            ::findAndReplace(s, "test", "tset");
+            ASSERT_EQUALS("", s);
+        }
     }
 };
 
