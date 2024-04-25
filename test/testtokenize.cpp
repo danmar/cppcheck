@@ -7141,6 +7141,9 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify("S* g = ::new(ptr) S();")); // #12552
         ASSERT_NO_THROW(tokenizeAndStringify("void f(int* p) { return ::delete p; }"));
 
+        ASSERT_NO_THROW(tokenizeAndStringify("template <typename T, int N>\n" // #12659
+                                             "constexpr void f(T(&&a)[N]) {}"));
+
         ignore_errout();
     }
 
