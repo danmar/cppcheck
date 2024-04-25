@@ -77,60 +77,35 @@ ANSI_FG_DEFAULT = "\x1b[39m"
 ANSI_FG_RESET = "\x1b[0m"
 
 
-def test_clicolor_force(tmpdir):
+@pytest.mark.parametrize("env,color_expected", [({"CLICOLOR_FORCE":"1"}, True), ({"NO_COLOR": "1", "CLICOLOR_FORCE":"1"}, False)])
+def test_color_non_tty(tmpdir, env, color_expected):
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt') as f:
         f.write('#error test\nx=1;\n')
-    exitcode, _, stderr = cppcheck([test_file], env={"CLICOLOR_FORCE":"1"})
-
-    assert exitcode == 0
-    assert ANSI_BOLD in stderr
-    assert ANSI_FG_RED in stderr
-    assert ANSI_FG_DEFAULT in stderr
-    assert ANSI_FG_RESET in stderr
-
-
-@pytest.mark.skipif(sys.platform == "win32", reason="TTY not supported in Windows")
-def test_color_tty(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt') as f:
-        f.write('#error test\nx=1;\n')
-    exitcode, _, stderr = cppcheck([test_file], tty=True)
-
-    assert exitcode == 0
-    assert ANSI_BOLD in stderr
-    assert ANSI_FG_RED in stderr
-    assert ANSI_FG_DEFAULT in stderr
-    assert ANSI_FG_RESET in stderr
-
-
-@pytest.mark.skipif(sys.platform == "win32", reason="TTY not supported in Windows")
-def test_no_color_tty(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt') as f:
-        f.write('#error test\nx=1;\n')
-    exitcode, _, stderr = cppcheck([test_file], env={"NO_COLOR": "1"}, tty=True)
+    exitcode, _, stderr = cppcheck([test_file], env=env)
 
     assert exitcode == 0
     assert stderr
-    assert ANSI_BOLD not in stderr
-    assert ANSI_FG_RED not in stderr
-    assert ANSI_FG_DEFAULT not in stderr
-    assert ANSI_FG_RESET not in stderr
+    assert (ANSI_BOLD in stderr) == color_expected
+    assert (ANSI_FG_RED in stderr)  == color_expected
+    assert (ANSI_FG_DEFAULT in stderr) == color_expected
+    assert (ANSI_FG_RESET in stderr) == color_expected
 
 
-def test_no_color(tmpdir):
+@pytest.mark.skipif(sys.platform == "win32", reason="TTY not supported in Windows")
+@pytest.mark.parametrize("env,color_expected", [({}, True), ({"NO_COLOR": "1"}, False)])
+def test_color_tty(tmpdir, env, color_expected):
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt') as f:
         f.write('#error test\nx=1;\n')
-    exitcode, _, stderr = cppcheck([test_file], env={"NO_COLOR": "1", "CLICOLOR_FORCE":"1"})
+    exitcode, _, stderr = cppcheck([test_file], env=env, tty=True)
 
     assert exitcode == 0
     assert stderr
-    assert ANSI_BOLD not in stderr
-    assert ANSI_FG_RED not in stderr
-    assert ANSI_FG_DEFAULT not in stderr
-    assert ANSI_FG_RESET not in stderr
+    assert (ANSI_BOLD in stderr) == color_expected
+    assert (ANSI_FG_RED in stderr) == color_expected
+    assert (ANSI_FG_DEFAULT in stderr) == color_expected
+    assert (ANSI_FG_RESET in stderr) == color_expected
 
 
 def test_invalid_library(tmpdir):
