@@ -73,7 +73,7 @@ std::ostream& operator<<(std::ostream & os, Color c)
 
 std::string toString(Color c)
 {
-    std::stringstream ss;
+    std::ostringstream ss;
     ss << c;
     return ss.str();
 }
