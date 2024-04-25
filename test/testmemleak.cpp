@@ -2105,8 +2105,6 @@ private:
 
         check(code2, true);
         ASSERT_EQUALS("", errout_str());
-        check(code2, false);
-        ASSERT_EQUALS("", errout_str());
 
         // Test unknown struct. In C++, it might have a destructor
         const char code3[] = "void func() {\n"

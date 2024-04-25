@@ -8603,7 +8603,7 @@ private:
                       "    auto lambda = [&]() -> bool\n"
                       "    {\n"
                       "        float x = 1.0f;\n"
-                      "    }\n"
+                      "    };\n"
                       "    lambda();\n"
                       "}");
 
@@ -8618,7 +8618,7 @@ private:
 
     void lambda3() {
         GET_SYMBOL_DB("void func() {\n"
-                      "    auto f = []() mutable {}\n"
+                      "    auto f = []() mutable {};\n"
                       "}");
 
         ASSERT(db && db->scopeList.size() == 3);
