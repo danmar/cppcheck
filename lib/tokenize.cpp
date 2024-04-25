@@ -4352,7 +4352,7 @@ static void setVarIdStructMembers(Token *&tok1,
 
     while (Token::Match(tok->next(), ")| . %name% !!(")) {
         // Don't set varid for trailing return type
-        if (tok->strAt(1) == ")" && (tok->linkAt(1)->previous()->isName() || tok->linkAt(1)->strAt(-1) == "]") &&
+        if (tok->strAt(1) == ")" && Token::Match(tok->linkAt(1)->tokAt(-1), "%name%|]") &&
             Tokenizer::isFunctionHead(tok->linkAt(1), "{|;")) {
             tok = tok->tokAt(3);
             continue;
@@ -10607,6 +10607,8 @@ void Tokenizer::simplifyNamespaceAliases()
         else if (Token::Match(tok, "namespace %name% =") || (isPrev = Token::Match(tok->previous(), "namespace %name% ="))) {
             if (isPrev)
                 tok = tok->previous();
+            if (tok->tokAt(-1) && !Token::Match(tok->tokAt(-1), "[;{}]"))
+                syntaxError(tok->tokAt(-1));
             const std::string name(tok->next()->str());
             Token * tokNameStart = tok->tokAt(3);
             Token * tokNameEnd = tokNameStart;
