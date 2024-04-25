@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        image: ["archlinux:latest"] # "opensuse/tumbleweed:latest" / "fedora:latest" / "debian:unstable" / "archlinux:latest"
+        image: ["fedora:latest"] # "opensuse/tumbleweed:latest" / "fedora:latest" / "debian:unstable" / "archlinux:latest"
 
     runs-on: ubuntu-22.04
     if: ${{ github.repository_owner == 'danmar' }}
@@ -59,6 +59,7 @@ jobs:
         run: |
           dnf install -y cmake clang pcre-devel
           dnf install -y libglvnd-devel  # fixes missing dependency for Qt in CMake
+          dnf install -y p7zip-plugins  # required as fallback for py7zr in Qt installation
           dnf install -y iwyu
           ln -s iwyu_tool.py /usr/bin/iwyu_tool
 
