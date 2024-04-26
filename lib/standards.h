@@ -37,7 +37,7 @@ struct Standards {
     enum Language { None, C, CPP };
 
     /** C code standard */
-    enum cstd_t { C89, C99, C11, CLatest = C11 } c = CLatest;
+    enum cstd_t { C89, C99, C11, /*, C17*/ C23, CLatest = C23 } c = CLatest;
 
     /** C++ code standard */
     enum cppstd_t { CPP03, CPP11, CPP14, CPP17, CPP20, CPP23, CPPLatest = CPP23 } cpp = CPPLatest;
@@ -48,7 +48,7 @@ struct Standards {
     bool setC(const std::string& str) {
         stdValue = str;
         if (str == "c89" || str == "C89") {
-            c = C89;
+            c = C89;  
             return true;
         }
         if (str == "c99" || str == "C99") {
