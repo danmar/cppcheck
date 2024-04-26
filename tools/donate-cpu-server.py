@@ -1238,8 +1238,16 @@ def read_data(connection, cmd, pos_nl, max_data_size, check_done, cmd_name, time
         print_ts('Socket error occurred ({}): {}'.format(cmd_name, e))
         data = None
 
-    if timeout > 0 and t >= timeout:
+    if (timeout > 0) and (t >= timeout):
         print_ts('Timeout occurred ({}).'.format(cmd_name))
+        data = None
+
+    if data and (len(data) >= (max_data_size + 1024)):
+        print_ts('Maximum allowed data ({} bytes) exceeded ({}).'.format(max_data_size, cmd_name))
+        data = None
+
+    if data and check_done and not data.endswith('\nDONE'):
+        print_ts('Incomplete data received ({}).'.format(cmd_name))
         data = None
 
     return data
