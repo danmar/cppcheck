@@ -632,6 +632,13 @@ static std::vector<const Token*> getParentMembers(const Token* tok)
     return result;
 }
 
+static const Token* getParentLifetimeObject(const Token* tok)
+{
+    while(Token::simpleMatch(tok, "["))
+        tok = tok->astOperand1();
+    return tok;
+}
+
 const Token* getParentLifetime(const Token* tok, const Library& library)
 {
     std::vector<const Token*> members = getParentMembers(tok);
@@ -650,9 +657,7 @@ const Token* getParentLifetime(const Token* tok, const Library& library)
         return tok;
     // If any of the submembers are borrowed types then stop
     if (std::any_of(it.base() - 1, members.cend() - 1, [&](const Token* tok2) {
-        const Token* obj = tok2;
-        if (Token::simpleMatch(obj, "["))
-            obj = tok2->astOperand1();
+        const Token* obj = getParentLifetimeObject(tok2);
         const Variable* var = obj->variable();
         // Check for arrays first since astIsPointer will return true, but an array is not a borrowed type
         if (var && var->isArray())
@@ -679,9 +684,9 @@ const Token* getParentLifetime(const Token* tok, const Library& library)
         return var && var->isReference();
     }))
         return nullptr;
-    const Token* result = *it;
-    if (Token::simpleMatch(result, "[") && result->astOperand1())
-        return getParentLifetime(result->astOperand1());
+    const Token* result = getParentLifetimeObject(*it);
+    if (result != *it)
+        return getParentLifetime(result);
     return result;
 }
 
