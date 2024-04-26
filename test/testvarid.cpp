@@ -1288,6 +1288,10 @@ private:
                                  "2: void foo ( bool init@2 ) ;\n"
                                  "3: void init ( ) ;\n";
         ASSERT_EQUALS(expected2, tokenize(code2, true));
+
+        const char code3[] = "extern void (*arr[10])(uint32_t some);\n";
+        const char expected3[] = "1: extern void ( * arr@1 [ 10 ] ) ( uint32_t some@2 ) ;\n";
+        ASSERT_EQUALS(expected3, tokenize(code3, true));
     }
 
     void varid_for_1() {
