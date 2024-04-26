@@ -634,7 +634,7 @@ static std::vector<const Token*> getParentMembers(const Token* tok)
 
 static const Token* getParentLifetimeObject(const Token* tok)
 {
-    while(Token::simpleMatch(tok, "["))
+    while (Token::simpleMatch(tok, "["))
         tok = tok->astOperand1();
     return tok;
 }
