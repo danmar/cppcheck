@@ -48,7 +48,7 @@ struct Standards {
     bool setC(const std::string& str) {
         stdValue = str;
         if (str == "c89" || str == "C89") {
-            c = C89;  
+            c = C89;
             return true;
         }
         if (str == "c99" || str == "C99") {
