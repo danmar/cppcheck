@@ -197,7 +197,7 @@ const std::unordered_set<std::string>& Keywords::getOnly(Standards::cstd_t cStd)
     case Standards::cstd_t::C11:
         return c11_keywords;
     case Standards::cstd_t::C23:
-            return c23_keywords_all;
+        return c23_keywords_all;
     }
     cppcheck::unreachable();
 }
