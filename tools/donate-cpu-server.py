@@ -1321,7 +1321,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             connection.close()
             continue
         elif cmd.startswith('write\nftp://') or cmd.startswith('write\nhttp://'):
-            data = read_data(connection, cmd, pos_nl, max_data_size=2 * 1024 * 1024, check_done=True, cmd_name='write')
+            data = read_data(connection, cmd, pos_nl, max_data_size=2.5 * 1024 * 1024, check_done=True, cmd_name='write')
             if data is None:
                 continue
 
@@ -1376,7 +1376,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             generate_package_diff_statistics(filename)
             continue
         elif cmd.startswith('write_info\nftp://') or cmd.startswith('write_info\nhttp://'):
-            data = read_data(connection, cmd, pos_nl, max_data_size=1024 * 1024, check_done=True, cmd_name='write_info')
+            data = read_data(connection, cmd, pos_nl, max_data_size=7 * 1024 * 1024, check_done=True, cmd_name='write_info')
             if data is None:
                 continue
 
