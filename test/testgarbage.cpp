@@ -1609,8 +1609,7 @@ private:
 
     // #8752
     void garbageCode199() {
-        checkCode("d f(){e n00e0[]n00e0&" "0+f=0}");
-        ignore_errout(); // we do not care about the output
+        ASSERT_THROW_INTERNAL(checkCode("d f(){e n00e0[]n00e0&" "0+f=0}"), SYNTAX);
     }
 
     // #8757
@@ -1715,8 +1714,7 @@ private:
     }
 
     void garbageCode218() { // #8763
-        checkCode("d f(){t n0000 const[]n0000+0!=n0000,(0)}"); // don't crash
-        ignore_errout(); // we are not interested in the output
+        ASSERT_THROW_INTERNAL(checkCode("d f(){t n0000 const[]n0000+0!=n0000,(0)}"), SYNTAX);
     }
     void garbageCode219() { // #10101
         checkCode("typedef void (*func) (addr) ;\n"

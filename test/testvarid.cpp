@@ -101,6 +101,7 @@ private:
         TEST_CASE(varid67); // #11711 - NOT function pointer
         TEST_CASE(varid68); // #11740 - switch (str_chars(&strOut)[0])
         TEST_CASE(varid69);
+        TEST_CASE(varid70); // #12660 - function
         TEST_CASE(varid_for_1);
         TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
@@ -1268,6 +1269,29 @@ private:
                                  "2: auto g@1 ; g@1 = [ ] ( int & , int & r@2 , int i@3 ) { } ;\n"
                                  "3: }\n";
         ASSERT_EQUALS(expected1, tokenize(code1, true));
+    }
+
+    void varid70() {
+        // isFunctionHead
+        const char code1[] = "int x = 1 ? (1 << 0) : 0;\n"
+                             "void foo(bool init);\n"
+                             "void init();\n";
+        const char expected1[] = "1: int x@1 ; x@1 = 1 ? ( 1 << 0 ) : 0 ;\n"
+                                 "2: void foo ( bool init@2 ) ;\n"
+                                 "3: void init ( ) ;\n";
+        ASSERT_EQUALS(expected1, tokenize(code1, true));
+
+        const char code2[] = "int x = 1 ? f(1 << 0) : 0;\n"
+                             "void foo(bool init);\n"
+                             "void init();\n";
+        const char expected2[] = "1: int x@1 ; x@1 = 1 ? f ( 1 << 0 ) : 0 ;\n"
+                                 "2: void foo ( bool init@2 ) ;\n"
+                                 "3: void init ( ) ;\n";
+        ASSERT_EQUALS(expected2, tokenize(code2, true));
+
+        const char code3[] = "extern void (*arr[10])(uint32_t some);\n";
+        const char expected3[] = "1: extern void ( * arr@1 [ 10 ] ) ( uint32_t some@2 ) ;\n";
+        ASSERT_EQUALS(expected3, tokenize(code3, true));
     }
 
     void varid_for_1() {

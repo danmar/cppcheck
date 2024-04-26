@@ -99,11 +99,11 @@ void CheckType::checkTooBigBitwiseShift()
             continue;
 
         // Get biggest rhs value. preferably a value which doesn't have 'condition'.
-        const ValueFlow::Value * value = tok->astOperand2()->getValueGE(lhsbits, mSettings);
+        const ValueFlow::Value * value = tok->astOperand2()->getValueGE(lhsbits, *mSettings);
         if (value && mSettings->isEnabled(value, false))
             tooBigBitwiseShiftError(tok, lhsbits, *value);
         else if (lhstype->sign == ValueType::Sign::SIGNED) {
-            value = tok->astOperand2()->getValueGE(lhsbits-1, mSettings);
+            value = tok->astOperand2()->getValueGE(lhsbits-1, *mSettings);
             if (value && mSettings->isEnabled(value, false))
                 tooBigSignedBitwiseShiftError(tok, lhsbits, *value);
         }
@@ -198,9 +198,9 @@ void CheckType::checkIntegerOverflow()
         const MathLib::bigint maxvalue = (((MathLib::biguint)1) << (bits - 1)) - 1;
 
         // is there a overflow result value
-        const ValueFlow::Value *value = tok->getValueGE(maxvalue + 1, mSettings);
+        const ValueFlow::Value *value = tok->getValueGE(maxvalue + 1, *mSettings);
         if (!value)
-            value = tok->getValueLE(-maxvalue - 2, mSettings);
+            value = tok->getValueLE(-maxvalue - 2, *mSettings);
         if (!value || !mSettings->isEnabled(value,false))
             continue;
 
@@ -259,7 +259,7 @@ void CheckType::checkSignConversion()
             if (!tok1)
                 continue;
             const ValueFlow::Value* negativeValue =
-                ValueFlow::findValue(tok1->values(), mSettings, [&](const ValueFlow::Value& v) {
+                ValueFlow::findValue(tok1->values(), *mSettings, [&](const ValueFlow::Value& v) {
                 return !v.isImpossible() && v.isIntValue() && (v.intvalue <= -1 || v.wideintvalue <= -1);
             });
             if (!negativeValue)

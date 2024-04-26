@@ -315,7 +315,7 @@ void CheckString::checkIncorrectStringCompare()
                     }
                 }
             } else if (Token::Match(tok, "%str%|%char%") &&
-                       isUsedAsBool(tok) &&
+                       isUsedAsBool(tok, *mSettings) &&
                        !isMacroUsage(tok))
                 incorrectStringBooleanError(tok, tok->str());
         }
@@ -396,7 +396,7 @@ void CheckString::overlappingStrcmp()
                     if (args1[1]->isLiteral() &&
                         args2[1]->isLiteral() &&
                         args1[1]->str() != args2[1]->str() &&
-                        isSameExpression(true, args1[0], args2[0], mSettings->library, true, false))
+                        isSameExpression(true, args1[0], args2[0], *mSettings, true, false))
                         overlappingStrcmpError(eq0, ne0);
                 }
             }
@@ -447,7 +447,7 @@ void CheckString::sprintfOverlappingData()
                 const bool same = isSameExpression(false,
                                                    dest,
                                                    arg,
-                                                   mSettings->library,
+                                                   *mSettings,
                                                    true,
                                                    false);
                 if (same) {

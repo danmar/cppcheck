@@ -122,7 +122,7 @@
                 </attribute>
               </optional>
               <empty/>
-            </element>            
+            </element>
           </optional>
           <optional>
             <element name="pure"><empty/></element>
@@ -573,7 +573,7 @@
                 </element>
               </choice>
             </zeroOrMore>
-          </element>          
+          </element>
         </optional>
       </element>
 
@@ -651,7 +651,7 @@
       <param name="maxInclusive">2</param>
     </data>
   </define>
-  
+
   <define name="ARG-DIRECTION">
     <choice>
       <value>in</value>
@@ -720,7 +720,7 @@
       <value>empty</value>
     </choice>
   </define>
-  
+
   <define name="MINSIZE-VALUE">
     <data type="unsignedLong">
       <param name="minInclusive">1</param>
