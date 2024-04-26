@@ -80,7 +80,7 @@ static bool isEnumStart(const Token* tok)
 {
     if (!tok || tok->str() != "{")
         return false;
-    return (tok->strAt(-1) == "enum") || (tok->strAt(-2) == "enum") || Token::Match(tok->tokAt(-3), "enum class %name%");
+    return (tok->strAt(-1) == "enum") || (tok->strAt(-2) == "enum") || Token::Match(tok->tokAt(-3), "enum class %name%") || Token::Match(tok->tokAt(-3), "enum %type% %name%");
 }
 
 template<typename T>
@@ -152,7 +152,7 @@ static bool isClassStructUnionEnumStart(const Token * tok)
     const Token * tok2 = tok->previous();
     while (tok2 && !Token::Match(tok2, "class|struct|union|enum|{|}|;"))
         tok2 = tok2->previous();
-    return Token::Match(tok2, "class|struct|union|enum");
+    return Token::Match(tok2, "class|struct|union|enum") || Token::Match(tok2, "enum %type% %name%");
 }
 
 //---------------------------------------------------------------------------
