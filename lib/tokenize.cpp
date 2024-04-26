@@ -101,10 +101,8 @@ const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &end
         tok = tok->link();
     if (tok->str() != ")")
         return nullptr;
-    if (!Token::Match(tok->link()->previous(), "%name%|]|)|}")) {
-        if (!tok->isCpp() || !Token::Match(tok->link()->previous(), ">|>>"))
-            return nullptr;
-    }
+    if (!tok->isCpp() && !Token::Match(tok->link()->previous(), "%name%"))
+        return nullptr;
     if (Token::Match(tok, ") ;|{|[")) {
         tok = tok->next();
         while (tok && tok->str() == "[" && tok->link()) {
