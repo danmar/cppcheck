@@ -1303,7 +1303,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (tok->previous() && tok->previous()->variable() && tok->previous()->variable()->nameToken()->scope()->type == Scope::eUnion)
                 continue;
 
-            FwdAnalysis fwdAnalysis(mSettings->library);
+            FwdAnalysis fwdAnalysis(*mSettings);
             const Token* scopeEnd = ValueFlow::getEndOfExprScope(expr, scope, /*smallest*/ false);
             if (fwdAnalysis.unusedValue(expr, start, scopeEnd)) {
                 if (!bailoutTypeName.empty()) {
@@ -1311,7 +1311,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                         reportLibraryCfgError(tok, bailoutTypeName);
                     continue;
                 }
-                if (isTrivialInit && findExpressionChanged(expr, start, scopeEnd, mSettings))
+                if (isTrivialInit && findExpressionChanged(expr, start, scopeEnd, *mSettings))
                     continue;
 
                 // warn
@@ -1695,7 +1695,7 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
             // check if global variable is changed
             if (bodyVariable->isGlobal() || (pointersToGlobals.find(bodyVariable) != pointersToGlobals.end())) {
                 const int indirect = bodyVariable->isArray() ? bodyVariable->dimensions().size() : bodyVariable->isPointer();
-                if (isVariableChanged(bodyToken, indirect, mSettings)) {
+                if (isVariableChanged(bodyToken, indirect, *mSettings)) {
                     return false;
                 }
                 // check if pointer to global variable assigned to another variable (another_var = &global_var)

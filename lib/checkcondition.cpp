@@ -200,7 +200,7 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
                 // is variable changed in loop?
                 const Token *bodyStart = tok2->linkAt(1)->next();
                 const Token *bodyEnd   = bodyStart ? bodyStart->link() : nullptr;
-                if (!bodyEnd || bodyEnd->str() != "}" || isVariableChanged(bodyStart, bodyEnd, varid, !islocal, mSettings))
+                if (!bodyEnd || bodyEnd->str() != "}" || isVariableChanged(bodyStart, bodyEnd, varid, !islocal, *mSettings))
                     continue;
             }
 
@@ -435,7 +435,7 @@ bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * 
         return false;
 
     // same expressions
-    if (isSameExpression(true, cond1, cond2, mSettings->library, pure, false))
+    if (isSameExpression(true, cond1, cond2, *mSettings, pure, false))
         return true;
 
     // bitwise overlap for example 'x&7' and 'x==1'
@@ -458,7 +458,7 @@ bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * 
         if (!num2->isNumber() || MathLib::isNegative(num2->str()))
             return false;
 
-        if (!isSameExpression(true, expr1, expr2, mSettings->library, pure, false))
+        if (!isSameExpression(true, expr1, expr2, *mSettings, pure, false))
             return false;
 
         const MathLib::bigint value1 = MathLib::toBigNumber(num1->str());
@@ -503,8 +503,8 @@ void CheckCondition::duplicateCondition()
             continue;
 
         ErrorPath errorPath;
-        if (!findExpressionChanged(cond1, scope.classDef->next(), cond2, mSettings) &&
-            isSameExpression(true, cond1, cond2, mSettings->library, true, true, &errorPath))
+        if (!findExpressionChanged(cond1, scope.classDef->next(), cond2, *mSettings) &&
+            isSameExpression(true, cond1, cond2, *mSettings, true, true, &errorPath))
             duplicateConditionError(cond1, cond2, std::move(errorPath));
     }
 }
@@ -553,11 +553,11 @@ void CheckCondition::multiCondition()
             if (tok2->astOperand2()) {
                 ErrorPath errorPath;
                 if (isOverlappingCond(cond1, tok2->astOperand2(), true) &&
-                    !findExpressionChanged(cond1, cond1, tok2->astOperand2(), mSettings))
+                    !findExpressionChanged(cond1, cond1, tok2->astOperand2(), *mSettings))
                     overlappingElseIfConditionError(tok2->astOperand2(), cond1->linenr());
                 else if (isOppositeCond(
-                             true, cond1, tok2->astOperand2(), mSettings->library, true, true, &errorPath) &&
-                         !findExpressionChanged(cond1, cond1, tok2->astOperand2(), mSettings))
+                             true, cond1, tok2->astOperand2(), *mSettings, true, true, &errorPath) &&
+                         !findExpressionChanged(cond1, cond1, tok2->astOperand2(), *mSettings))
                     oppositeElseIfConditionError(cond1, tok2->astOperand2(), std::move(errorPath));
             }
         }
@@ -703,13 +703,13 @@ void CheckCondition::multiCondition2()
             const Token * const endToken = tok->scope()->bodyEnd;
 
             for (; tok && tok != endToken; tok = tok->next()) {
-                if (isExpressionChangedAt(cond1, tok, 0, false, mSettings))
+                if (isExpressionChangedAt(cond1, tok, 0, false, *mSettings))
                     break;
                 if (Token::Match(tok, "if|return")) {
                     const Token * condStartToken = tok->str() == "if" ? tok->next() : tok;
                     const Token * condEndToken = tok->str() == "if" ? condStartToken->link() : Token::findsimplematch(condStartToken, ";");
                     // Does condition modify tracked variables?
-                    if (findExpressionChanged(cond1, condStartToken, condEndToken, mSettings))
+                    if (findExpressionChanged(cond1, condStartToken, condEndToken, *mSettings))
                         break;
 
                     // Condition..
@@ -723,14 +723,14 @@ void CheckCondition::multiCondition2()
                             if (!firstCondition)
                                 return ChildrenToVisit::none;
                             if (firstCondition->str() == "&&") {
-                                if (!isOppositeCond(false, firstCondition, cond2, mSettings->library, true, true))
+                                if (!isOppositeCond(false, firstCondition, cond2, *mSettings, true, true))
                                     return ChildrenToVisit::op1_and_op2;
                             }
                             if (!firstCondition->hasKnownIntValue()) {
-                                if (!isReturnVar && isOppositeCond(false, firstCondition, cond2, mSettings->library, true, true, &errorPath)) {
+                                if (!isReturnVar && isOppositeCond(false, firstCondition, cond2, *mSettings, true, true, &errorPath)) {
                                     if (!isAliased(vars))
                                         oppositeInnerConditionError(firstCondition, cond2, errorPath);
-                                } else if (!isReturnVar && isSameExpression(true, firstCondition, cond2, mSettings->library, true, true, &errorPath)) {
+                                } else if (!isReturnVar && isSameExpression(true, firstCondition, cond2, *mSettings, true, true, &errorPath)) {
                                     identicalInnerConditionError(firstCondition, cond2, errorPath);
                                 }
                             }
@@ -742,7 +742,7 @@ void CheckCondition::multiCondition2()
                                 return ChildrenToVisit::op1_and_op2;
 
                             if ((!cond1->hasKnownIntValue() || !secondCondition->hasKnownIntValue()) &&
-                                isSameExpression(true, cond1, secondCondition, mSettings->library, true, true, &errorPath)) {
+                                isSameExpression(true, cond1, secondCondition, *mSettings, true, true, &errorPath)) {
                                 if (!isAliased(vars) && !mTokenizer->hasIfdef(cond1, secondCondition)) {
                                     identicalConditionAfterEarlyExitError(cond1, secondCondition, errorPath);
                                     return ChildrenToVisit::done;
@@ -753,7 +753,7 @@ void CheckCondition::multiCondition2()
                     }
                 }
                 if (Token::Match(tok, "%name% (") &&
-                    isVariablesChanged(tok, tok->linkAt(1), 0, varsInCond, mSettings)) {
+                    isVariablesChanged(tok, tok->linkAt(1), 0, varsInCond, *mSettings)) {
                     break;
                 }
                 if (Token::Match(tok, "%type% (") && nonlocal && isNonConstFunctionCall(tok, mSettings->library)) // non const function call -> bailout if there are nonlocal variables
@@ -782,7 +782,7 @@ void CheckCondition::multiCondition2()
                         break;
                     }
                     const bool changed = std::any_of(vars.cbegin(), vars.cend(), [&](int varid) {
-                        return isVariableChanged(tok1, tok2, varid, nonlocal, mSettings);
+                        return isVariableChanged(tok1, tok2, varid, nonlocal, *mSettings);
                     });
                     if (changed)
                         break;
@@ -1145,7 +1145,7 @@ void CheckCondition::checkIncorrectLogicOperator()
                 ((tok->str() == "||" && tok->astOperand2()->str() == "&&") ||
                  (tok->str() == "&&" && tok->astOperand2()->str() == "||"))) {
                 const Token* tok2 = tok->astOperand2()->astOperand1();
-                if (isOppositeCond(true, tok->astOperand1(), tok2, mSettings->library, true, false)) {
+                if (isOppositeCond(true, tok->astOperand1(), tok2, *mSettings, true, false)) {
                     std::string expr1(tok->astOperand1()->expressionString());
                     std::string expr2(tok->astOperand2()->astOperand1()->expressionString());
                     std::string expr3(tok->astOperand2()->astOperand2()->expressionString());
@@ -1177,7 +1177,7 @@ void CheckCondition::checkIncorrectLogicOperator()
                     redundantConditionError(tok, msg, false);
                     continue;
                 }
-                if (isSameExpression(false, tok->astOperand1(), tok2, mSettings->library, true, true)) {
+                if (isSameExpression(false, tok->astOperand1(), tok2, *mSettings, true, true)) {
                     std::string expr1(tok->astOperand1()->expressionString());
                     std::string expr2(tok->astOperand2()->astOperand1()->expressionString());
                     std::string expr3(tok->astOperand2()->astOperand2()->expressionString());
@@ -1242,7 +1242,7 @@ void CheckCondition::checkIncorrectLogicOperator()
 
             // Opposite comparisons around || or && => always true or always false
             const bool isLogicalOr(tok->str() == "||");
-            if (!isfloat && isOppositeCond(isLogicalOr, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true, &errorPath)) {
+            if (!isfloat && isOppositeCond(isLogicalOr, tok->astOperand1(), tok->astOperand2(), *mSettings, true, true, &errorPath)) {
                 if (!isIfConstexpr(tok)) {
                     const bool alwaysTrue(isLogicalOr);
                     incorrectLogicOperatorError(tok, conditionString(tok), alwaysTrue, inconclusive, errorPath);
@@ -1253,9 +1253,9 @@ void CheckCondition::checkIncorrectLogicOperator()
             if (!parseable)
                 continue;
 
-            if (isSameExpression(true, comp1, comp2, mSettings->library, true, true))
+            if (isSameExpression(true, comp1, comp2, *mSettings, true, true))
                 continue; // same expressions => only report that there are same expressions
-            if (!isSameExpression(true, expr1, expr2, mSettings->library, true, true))
+            if (!isSameExpression(true, expr1, expr2, *mSettings, true, true))
                 continue;
 
 
@@ -1530,7 +1530,7 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (condition->isConstexpr())
                 continue;
-            if (!isUsedAsBool(tok))
+            if (!isUsedAsBool(tok, *mSettings))
                 continue;
             if (Token::simpleMatch(condition, "return") && Token::Match(tok, "%assign%"))
                 continue;
@@ -1559,7 +1559,7 @@ void CheckCondition::alwaysTrueFalse()
                 isSameExpression(true,
                                  tok->astOperand1(),
                                  tok->astOperand2(),
-                                 mSettings->library,
+                                 *mSettings,
                                  true,
                                  true))
                 continue;
@@ -1687,7 +1687,7 @@ void CheckCondition::checkInvalidTestForOverflow()
                 if (!isSameExpression(true,
                                       expr,
                                       lhs->astSibling(),
-                                      mSettings->library,
+                                      *mSettings,
                                       true,
                                       false))
                     continue;
@@ -1834,10 +1834,10 @@ void CheckCondition::checkDuplicateConditionalAssign()
                 isRedundant = (isNegation && val == 0) || (!isNegation && val == 1);
             } else { // comparison
                 if (!isSameExpression(
-                        true, condTok->astOperand1(), assignTok->astOperand1(), mSettings->library, true, true))
+                        true, condTok->astOperand1(), assignTok->astOperand1(), *mSettings, true, true))
                     continue;
                 if (!isSameExpression(
-                        true, condTok->astOperand2(), assignTok->astOperand2(), mSettings->library, true, true))
+                        true, condTok->astOperand2(), assignTok->astOperand2(), *mSettings, true, true))
                     continue;
             }
             duplicateConditionalAssignError(condTok, assignTok, isRedundant);

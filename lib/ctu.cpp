@@ -451,7 +451,7 @@ static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(co
             int indirect = 0;
             if (argvar->valueType())
                 indirect = argvar->valueType()->pointer;
-            if (isVariableChanged(tok2->link(), tok2, indirect, argvar->declarationId(), false, &settings))
+            if (isVariableChanged(tok2->link(), tok2, indirect, argvar->declarationId(), false, settings))
                 return ret;
         }
         if (Token::Match(tok2, "%oror%|&&|?")) {

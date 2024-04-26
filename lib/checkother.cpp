@@ -497,7 +497,7 @@ void CheckOther::checkRedundantAssignment()
                 if (inconclusive && !mSettings->certainty.isEnabled(Certainty::inconclusive))
                     continue;
 
-                FwdAnalysis fwdAnalysis(mSettings->library);
+                FwdAnalysis fwdAnalysis(*mSettings);
                 if (fwdAnalysis.hasOperand(tok->astOperand2(), tok->astOperand1()))
                     continue;
 
@@ -904,7 +904,7 @@ void CheckOther::redundantContinueError(const Token *tok)
                 "'continue' is redundant since it is the last statement in a loop.", CWE561, Certainty::normal);
 }
 
-static bool isSimpleExpr(const Token* tok, const Variable* var, const Settings* settings) {
+static bool isSimpleExpr(const Token* tok, const Variable* var, const Settings& settings) {
     if (!tok)
         return false;
     if (tok->isNumber() || tok->tokType() == Token::eString || tok->tokType() == Token::eChar || tok->isBoolean())
@@ -915,7 +915,7 @@ static bool isSimpleExpr(const Token* tok, const Variable* var, const Settings* 
             return isSimpleExpr(tok->astOperand1(), var, settings) && (!tok->astOperand2() || isSimpleExpr(tok->astOperand2(), var, settings));
         const Token* ftok = tok->previous();
         if (Token::Match(ftok, "%name% (") &&
-            ((ftok->function() && ftok->function()->isConst()) || settings->library.isFunctionConst(ftok->str(), /*pure*/ true)))
+            ((ftok->function() && ftok->function()->isConst()) || settings.library.isFunctionConst(ftok->str(), /*pure*/ true)))
             needsCheck = true;
         else if (tok->str() == "[") {
             needsCheck = tok->astOperand1() && tok->astOperand1()->varId() > 0;
@@ -990,7 +990,7 @@ void CheckOther::checkVariableScope()
         bool isConstructor = false;
         if (Token::Match(tok, "; %varid% =", var->declarationId())) { // bailout for assignment
             tok = tok->tokAt(2)->astOperand2();
-            if (!isSimpleExpr(tok, var, mSettings))
+            if (!isSimpleExpr(tok, var, *mSettings))
                 continue;
         }
         else if (Token::Match(tok, "{|(")) { // bailout for constructor
@@ -999,11 +999,11 @@ void CheckOther::checkVariableScope()
             bool bail = false;
             while (argTok) {
                 if (Token::simpleMatch(argTok, ",")) {
-                    if (!isSimpleExpr(argTok->astOperand2(), var, mSettings)) {
+                    if (!isSimpleExpr(argTok->astOperand2(), var, *mSettings)) {
                         bail = true;
                         break;
                     }
-                } else if (argTok->str() != "." && !isSimpleExpr(argTok, var, mSettings)) {
+                } else if (argTok->str() != "." && !isSimpleExpr(argTok, var, *mSettings)) {
                     bail = true;
                     break;
                 }
@@ -1268,7 +1268,7 @@ void CheckOther::checkPassByReference()
         if (!isRangeBasedFor && (!var->scope() || var->scope()->function->isImplicitlyVirtual()))
             continue;
 
-        if (!isVariableChanged(var, mSettings)) {
+        if (!isVariableChanged(var, *mSettings)) {
             passedByValueError(var, inconclusive, isRangeBasedFor);
         }
     }
@@ -1370,7 +1370,7 @@ void CheckOther::checkConstVariable()
             continue;
         if (isStructuredBindingVariable(var)) // TODO: check all bound variables
             continue;
-        if (isVariableChanged(var, mSettings))
+        if (isVariableChanged(var, *mSettings))
             continue;
         const bool hasFunction = function != nullptr;
         if (!hasFunction) {
@@ -1390,7 +1390,7 @@ void CheckOther::checkConstVariable()
                     retTok = retTok->astOperand2();
                 if (Token::simpleMatch(retTok, "&"))
                     retTok = retTok->astOperand1();
-                return ValueFlow::hasLifetimeToken(getParentLifetime(retTok), var->nameToken());
+                return ValueFlow::hasLifetimeToken(getParentLifetime(retTok), var->nameToken(), *mSettings);
             }))
                 continue;
         }
@@ -1422,7 +1422,7 @@ void CheckOther::checkConstVariable()
                             continue;
                     } else if (const Token* ftok = getTokenArgumentFunction(tok, argn)) {
                         bool inconclusive{};
-                        if (var->valueType() && !isVariableChangedByFunctionCall(ftok, var->valueType()->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
+                        if (var->valueType() && !isVariableChangedByFunctionCall(ftok, var->valueType()->pointer, var->declarationId(), *mSettings, &inconclusive) && !inconclusive)
                             continue;
                     }
                     usedInAssignment = true;
@@ -1560,7 +1560,7 @@ void CheckOther::checkConstPointer()
                 continue;
             else if (const Token* ftok = getTokenArgumentFunction(parent, argn)) {
                 bool inconclusive{};
-                if (!isVariableChangedByFunctionCall(ftok->next(), vt->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
+                if (!isVariableChangedByFunctionCall(ftok->next(), vt->pointer, var->declarationId(), *mSettings, &inconclusive) && !inconclusive)
                     continue;
             }
         } else {
@@ -1578,7 +1578,7 @@ void CheckOther::checkConstPointer()
                         const Variable* argVar = ftok->function()->getArgumentVar(argn);
                         if (argVar && argVar->valueType() && argVar->valueType()->isConst(vt->pointer)) {
                             bool inconclusive{};
-                            if (!isVariableChangedByFunctionCall(ftok, vt->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
+                            if (!isVariableChangedByFunctionCall(ftok, vt->pointer, var->declarationId(), *mSettings, &inconclusive) && !inconclusive)
                                 continue;
                         }
                     }
@@ -1606,7 +1606,7 @@ void CheckOther::checkConstPointer()
         if (std::find(nonConstPointers.cbegin(), nonConstPointers.cend(), p) == nonConstPointers.cend()) {
             const Token *start = getVariableChangedStart(p);
             const int indirect = p->isArray() ? p->dimensions().size() : 1;
-            if (isVariableChanged(start, p->scope()->bodyEnd, indirect, p->declarationId(), false, mSettings))
+            if (isVariableChanged(start, p->scope()->bodyEnd, indirect, p->declarationId(), false, *mSettings))
                 continue;
             if (p->typeStartToken() && p->typeStartToken()->isSimplifiedTypedef() && !(Token::simpleMatch(p->typeEndToken(), "*") && !p->typeEndToken()->isSimplifiedTypedef()))
                 continue;
@@ -1671,24 +1671,24 @@ void CheckOther::checkCharVariable()
                 if (!tok->variable()->isArray() && !tok->variable()->isPointer())
                     continue;
                 const Token *index = tok->next()->astOperand2();
-                if (warning && tok->variable()->isArray() && astIsSignedChar(index) && index->getValueGE(0x80, mSettings))
+                if (warning && tok->variable()->isArray() && astIsSignedChar(index) && index->getValueGE(0x80, *mSettings))
                     signedCharArrayIndexError(tok);
-                if (portability && astIsUnknownSignChar(index) && index->getValueGE(0x80, mSettings))
+                if (portability && astIsUnknownSignChar(index) && index->getValueGE(0x80, *mSettings))
                     unknownSignCharArrayIndexError(tok);
             } else if (warning && Token::Match(tok, "[&|^]") && tok->isBinaryOp()) {
                 bool warn = false;
                 if (astIsSignedChar(tok->astOperand1())) {
-                    const ValueFlow::Value *v1 = tok->astOperand1()->getValueLE(-1, mSettings);
+                    const ValueFlow::Value *v1 = tok->astOperand1()->getValueLE(-1, *mSettings);
                     const ValueFlow::Value *v2 = tok->astOperand2()->getMaxValue(false);
                     if (!v1)
-                        v1 = tok->astOperand1()->getValueGE(0x80, mSettings);
+                        v1 = tok->astOperand1()->getValueGE(0x80, *mSettings);
                     if (v1 && !(tok->str() == "&" && v2 && v2->isKnown() && v2->intvalue >= 0 && v2->intvalue < 0x100))
                         warn = true;
                 } else if (astIsSignedChar(tok->astOperand2())) {
-                    const ValueFlow::Value *v1 = tok->astOperand2()->getValueLE(-1, mSettings);
+                    const ValueFlow::Value *v1 = tok->astOperand2()->getValueLE(-1, *mSettings);
                     const ValueFlow::Value *v2 = tok->astOperand1()->getMaxValue(false);
                     if (!v1)
-                        v1 = tok->astOperand2()->getValueGE(0x80, mSettings);
+                        v1 = tok->astOperand2()->getValueGE(0x80, *mSettings);
                     if (v1 && !(tok->str() == "&" && v2 && v2->isKnown() && v2->intvalue >= 0 && v2->intvalue < 0x100))
                         warn = true;
                 }
@@ -2248,8 +2248,8 @@ void CheckOther::checkDuplicateBranch()
             if (branchTop1->str() != branchTop2->str())
                 continue;
             ErrorPath errorPath;
-            if (isSameExpression(false, branchTop1->astOperand1(), branchTop2->astOperand1(), mSettings->library, true, true, &errorPath) &&
-                isSameExpression(false, branchTop1->astOperand2(), branchTop2->astOperand2(), mSettings->library, true, true, &errorPath))
+            if (isSameExpression(false, branchTop1->astOperand1(), branchTop2->astOperand1(), *mSettings, true, true, &errorPath) &&
+                isSameExpression(false, branchTop1->astOperand2(), branchTop2->astOperand2(), *mSettings, true, true, &errorPath))
                 duplicateBranchError(scope.classDef, scope.bodyEnd->next(), std::move(errorPath));
         }
     }
@@ -2437,8 +2437,8 @@ void CheckOther::checkDuplicateExpression()
                             Token::Match(tok->astOperand2()->previous(), "%name% (")
                             ) &&
                         tok->next()->tokType() != Token::eType &&
-                        isSameExpression(true, tok->next(), nextAssign->next(), mSettings->library, true, false) &&
-                        isSameExpression(true, tok->astOperand2(), nextAssign->astOperand2(), mSettings->library, true, false) &&
+                        isSameExpression(true, tok->next(), nextAssign->next(), *mSettings, true, false) &&
+                        isSameExpression(true, tok->astOperand2(), nextAssign->astOperand2(), *mSettings, true, false) &&
                         tok->astOperand2()->expressionString() == nextAssign->astOperand2()->expressionString()) {
                         bool differentDomain = false;
                         const Scope * varScope = var1->scope() ? var1->scope() : scope;
@@ -2455,7 +2455,7 @@ void CheckOther::checkDuplicateExpression()
                                 !isSameExpression(true,
                                                   tok->astOperand2(),
                                                   assignTok->astOperand1(),
-                                                  mSettings->library,
+                                                  *mSettings,
                                                   true,
                                                   true))
                                 continue;
@@ -2464,7 +2464,7 @@ void CheckOther::checkDuplicateExpression()
                                 !isSameExpression(true,
                                                   tok->astOperand2(),
                                                   assignTok->astOperand2(),
-                                                  mSettings->library,
+                                                  *mSettings,
                                                   true,
                                                   true))
                                 continue;
@@ -2494,14 +2494,14 @@ void CheckOther::checkDuplicateExpression()
                 if (isSameExpression(true,
                                      tok->astOperand1(),
                                      tok->astOperand2(),
-                                     mSettings->library,
+                                     *mSettings,
                                      true,
                                      followVar,
                                      &errorPath)) {
                     if (isWithoutSideEffects(tok->astOperand1())) {
                         const Token* loopTok = isInLoopCondition(tok);
                         if (!loopTok ||
-                            !findExpressionChanged(tok, tok, loopTok->link()->next()->link(), mSettings)) {
+                            !findExpressionChanged(tok, tok, loopTok->link()->next()->link(), *mSettings)) {
                             const bool isEnum = tok->scope()->type == Scope::eEnum;
                             const bool assignment = !isEnum && tok->str() == "=";
                             if (assignment)
@@ -2524,7 +2524,7 @@ void CheckOther::checkDuplicateExpression()
                            isSameExpression(false,
                                             tok->astOperand1(),
                                             tok->astOperand2()->astOperand1(),
-                                            mSettings->library,
+                                            *mSettings,
                                             true,
                                             false)) {
                     if (isWithoutSideEffects(tok->astOperand1())) {
@@ -2532,7 +2532,7 @@ void CheckOther::checkDuplicateExpression()
                     }
                 } else if (isOppositeExpression(tok->astOperand1(),
                                                 tok->astOperand2(),
-                                                mSettings->library,
+                                                *mSettings,
                                                 false,
                                                 true,
                                                 &errorPath) &&
@@ -2544,7 +2544,7 @@ void CheckOther::checkDuplicateExpression()
                         isSameExpression(true,
                                          tok->astOperand2(),
                                          tok->astOperand1()->astOperand2(),
-                                         mSettings->library,
+                                         *mSettings,
                                          true,
                                          followVar,
                                          &errorPath) &&
@@ -2552,7 +2552,7 @@ void CheckOther::checkDuplicateExpression()
                         duplicateExpressionError(tok->astOperand2(), tok->astOperand1()->astOperand2(), tok, errorPath);
                     else if (tok->astOperand2() && isConstExpression(tok->astOperand1(), mSettings->library)) {
                         auto checkDuplicate = [&](const Token* exp1, const Token* exp2, const Token* ast1) {
-                            if (isSameExpression(true, exp1, exp2, mSettings->library, true, true, &errorPath) &&
+                            if (isSameExpression(true, exp1, exp2, *mSettings, true, true, &errorPath) &&
                                 isWithoutSideEffects(exp1) &&
                                 isWithoutSideEffects(ast1->astOperand2()))
                                 duplicateExpressionError(exp1, exp2, tok, errorPath, /*hasMultipleExpr*/ true);
@@ -2568,10 +2568,10 @@ void CheckOther::checkDuplicateExpression()
                 }
             } else if (tok->astOperand1() && tok->astOperand2() && tok->str() == ":" && tok->astParent() && tok->astParent()->str() == "?") {
                 if (!tok->astOperand1()->values().empty() && !tok->astOperand2()->values().empty() && isEqualKnownValue(tok->astOperand1(), tok->astOperand2()) &&
-                    !isVariableChanged(tok->astParent(), /*indirect*/ 0, mSettings) &&
+                    !isVariableChanged(tok->astParent(), /*indirect*/ 0, *mSettings) &&
                     isConstStatement(tok->astOperand1()) && isConstStatement(tok->astOperand2()))
                     duplicateValueTernaryError(tok);
-                else if (isSameExpression(true, tok->astOperand1(), tok->astOperand2(), mSettings->library, false, true, &errorPath))
+                else if (isSameExpression(true, tok->astOperand1(), tok->astOperand2(), *mSettings, false, true, &errorPath))
                     duplicateExpressionTernaryError(tok, std::move(errorPath));
             }
         }
@@ -2848,7 +2848,7 @@ void CheckOther::checkRedundantCopy()
     for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || var->isReference() || var->isPointer() ||
             (!var->type() && !var->isStlType()) || // bailout if var is of standard type, if it is a pointer or non-const
-            (!var->isConst() && isVariableChanged(var, mSettings)))
+            (!var->isConst() && isVariableChanged(var, *mSettings)))
             continue;
 
         const Token* startTok = var->nameToken();
@@ -2873,7 +2873,7 @@ void CheckOther::checkRedundantCopy()
 
         const Token* dot = tok->astOperand1();
         if (Token::simpleMatch(dot, ".")) {
-            if (dot->astOperand1() && isVariableChanged(dot->astOperand1()->variable(), mSettings))
+            if (dot->astOperand1() && isVariableChanged(dot->astOperand1()->variable(), *mSettings))
                 continue;
             if (isTemporary(dot, &mSettings->library, /*unknown*/ true))
                 continue;
@@ -2910,7 +2910,7 @@ void CheckOther::redundantCopyError(const Token *tok,const std::string& varname)
 // Checking for shift by negative values
 //---------------------------------------------------------------------------
 
-static bool isNegative(const Token *tok, const Settings *settings)
+static bool isNegative(const Token *tok, const Settings &settings)
 {
     return tok->valueType() && tok->valueType()->sign == ValueType::SIGNED && tok->getValueLE(-1LL, settings);
 }
@@ -2947,9 +2947,9 @@ void CheckOther::checkNegativeBitwiseShift()
             continue;
 
         // Get negative rhs value. preferably a value which doesn't have 'condition'.
-        if (portability && isNegative(tok->astOperand1(), mSettings))
+        if (portability && isNegative(tok->astOperand1(), *mSettings))
             negativeBitwiseShiftError(tok, 1);
-        else if (isNegative(tok->astOperand2(), mSettings))
+        else if (isNegative(tok->astOperand2(), *mSettings))
             negativeBitwiseShiftError(tok, 2);
     }
 }
@@ -3307,9 +3307,9 @@ void CheckOther::checkEvaluationOrder()
                 if (tok2 == tok &&
                     tok->str() == "=" &&
                     parent->str() == "=" &&
-                    isSameExpression(false, tok->astOperand1(), parent->astOperand1(), mSettings->library, true, false)) {
+                    isSameExpression(false, tok->astOperand1(), parent->astOperand1(), *mSettings, true, false)) {
                     if (mSettings->severity.isEnabled(Severity::warning) &&
-                        isSameExpression(true, tok->astOperand1(), parent->astOperand1(), mSettings->library, true, false))
+                        isSameExpression(true, tok->astOperand1(), parent->astOperand1(), *mSettings, true, false))
                         selfAssignmentError(parent, tok->astOperand1()->expressionString());
                     break;
                 }
@@ -3322,7 +3322,7 @@ void CheckOther::checkEvaluationOrder()
                         return ChildrenToVisit::none; // don't handle address-of for now
                     if (tok3->str() == "(" && Token::simpleMatch(tok3->previous(), "sizeof"))
                         return ChildrenToVisit::none; // don't care about sizeof usage
-                    if (isSameExpression(false, tok->astOperand1(), tok3, mSettings->library, true, false))
+                    if (isSameExpression(false, tok->astOperand1(), tok3, *mSettings, true, false))
                         foundError = true;
                     return foundError ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
                 });
@@ -3377,7 +3377,7 @@ void CheckOther::checkAccessOfMovedVariable()
                 if (usage == ExprUsage::Used)
                     accessOfMoved = true;
                 if (usage == ExprUsage::PassedByReference)
-                    accessOfMoved = !isVariableChangedByFunctionCall(tok, 0, mSettings, &inconclusive);
+                    accessOfMoved = !isVariableChangedByFunctionCall(tok, 0, *mSettings, &inconclusive);
                 else if (usage == ExprUsage::Inconclusive)
                     inconclusive = true;
             }
@@ -3679,7 +3679,7 @@ void CheckOther::checkKnownArgument()
                 continue;
             if (tok->isComparisonOp() &&
                 isSameExpression(
-                    true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true))
+                    true, tok->astOperand1(), tok->astOperand2(), *mSettings, true, true))
                 continue;
             // ensure that there is a integer variable in expression with unknown value
             const Token* vartok = nullptr;
@@ -3765,7 +3765,7 @@ void CheckOther::checkKnownPointerToBool()
                 return parent->isExpandedMacro();
             }))
                 continue;
-            if (!isUsedAsBool(tok, mSettings))
+            if (!isUsedAsBool(tok, *mSettings))
                 continue;
             const ValueFlow::Value& value = tok->values().front();
             knownPointerToBoolError(tok, &value);
@@ -3972,7 +3972,7 @@ void CheckOther::checkOverlappingWrite()
                         constexpr bool macro = true;
                         constexpr bool pure = true;
                         constexpr bool follow = true;
-                        if (!isSameExpression(macro, ptr1, ptr2, mSettings->library, pure, follow, &errorPath))
+                        if (!isSameExpression(macro, ptr1, ptr2, *mSettings, pure, follow, &errorPath))
                             continue;
                         overlappingWriteFunction(tok);
                     }
@@ -3997,7 +3997,7 @@ void CheckOther::checkOverlappingWrite()
                 constexpr bool macro = true;
                 constexpr bool pure = true;
                 constexpr bool follow = true;
-                if (!isSameExpression(macro, buf1, buf2, mSettings->library, pure, follow, &errorPath))
+                if (!isSameExpression(macro, buf1, buf2, *mSettings, pure, follow, &errorPath))
                     continue;
                 overlappingWriteFunction(tok);
             }
