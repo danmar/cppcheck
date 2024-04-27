@@ -1357,7 +1357,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             if old_version_wrong:
                 print_ts('Unexpected old version. Ignoring result data.')
                 continue
-            print_ts('results added for package ' + res.group(1))
+            print_ts('results added for package ' + res.group(1) + ' (' + str(len(data)) + ' bytes)')
             filename = os.path.join(resultPath, res.group(1))
             with open(filename, 'wt') as f:
                 f.write(strDateTime() + '\n' + data)
@@ -1394,7 +1394,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             if url not in packages:
                 print_ts('Url is not in packages. Ignoring information data.')
                 continue
-            print_ts('adding info output for package ' + res.group(1))
+            print_ts('adding info output for package ' + res.group(1) + ' (' + str(len(data)) + ' bytes)')
             info_path = resultPath + '/' + 'info_output'
             if not os.path.exists(info_path):
                 os.mkdir(info_path)
