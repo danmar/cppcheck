@@ -1,5 +1,4 @@
 
-
 // Test library configuration for qt.cfg
 //
 // Usage:
