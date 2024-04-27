@@ -815,6 +815,12 @@ static T* getCondTokImpl(T* tok)
         return nullptr;
     if (Token::simpleMatch(tok, "("))
         return getCondTok(tok->previous());
+    if (Token::simpleMatch(tok, "do {"))
+    {
+        T* endTok = tok->linkAt(1);
+        if (Token::simpleMatch(endTok, "} while ("))
+            return endTok->tokAt(2)->astOperand2();
+    }
     if (Token::simpleMatch(tok, "for") && Token::simpleMatch(tok->next()->astOperand2(), ";") &&
         tok->next()->astOperand2()->astOperand2())
         return tok->next()->astOperand2()->astOperand2()->astOperand1();
@@ -831,6 +837,8 @@ static T* getCondTokFromEndImpl(T* endBlock)
     T* startBlock = endBlock->link();
     if (!Token::simpleMatch(startBlock, "{"))
         return nullptr;
+    if (Token::simpleMatch(startBlock->previous(), "do"))
+        return getCondTok(startBlock->previous());
     if (Token::simpleMatch(startBlock->previous(), ")"))
         return getCondTok(startBlock->previous()->link());
     if (Token::simpleMatch(startBlock->tokAt(-2), "} else {"))

@@ -106,6 +106,17 @@ namespace {
             return top;
         }
 
+        static Token* jumpToStart(Token* tok)
+        {
+            if (Token::simpleMatch(tok->tokAt(-2), "} else {"))
+                tok = tok->linkAt(-2);
+            if (Token::simpleMatch(tok->previous(), ") {"))
+                return tok->previous()->link();
+            if (Token::simpleMatch(tok->previous(), "do {"))
+                return tok->previous();
+            return tok;
+        }
+
         bool updateRecursive(Token* start) {
             bool continueB = true;
             visitAstNodes(start, [&](Token* tok) {
@@ -326,7 +337,7 @@ namespace {
                     // If the condition modifies the variable then bail
                     if (condAction.isModified())
                         break;
-                    tok = condTok->astTop()->previous();
+                    tok = jumpToStart(tok->link());
                     continue;
                 }
                 if (tok->str() == "{") {
@@ -343,10 +354,7 @@ namespace {
                         if (r.action.isModified())
                             break;
                     }
-                    if (Token::simpleMatch(tok->tokAt(-2), "} else {"))
-                        tok = tok->linkAt(-2);
-                    if (Token::simpleMatch(tok->previous(), ") {"))
-                        tok = tok->previous()->link();
+                    tok = jumpToStart(tok);
                     continue;
                 }
                 if (Token* next = isUnevaluated(tok)) {
