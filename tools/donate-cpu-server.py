@@ -1288,7 +1288,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             continue
         pos_nl = cmd.find('\n')
         if pos_nl < 1:
-            print_ts('No newline found in data.')
+            print_ts("No newline found in data: '{}'".format(cmd))
             connection.close()
             continue
         firstLine = cmd[:pos_nl]
