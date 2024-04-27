@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.49"
+SERVER_VERSION = "1.3.50"
 
 OLD_VERSION = '2.14.0'
 
@@ -1233,13 +1233,22 @@ def read_data(connection, cmd, pos_nl, max_data_size, check_done, cmd_name, time
             else:
                 time.sleep(0.2)
                 t += 0.2
-        connection.close()
     except socket.error as e:
         print_ts('Socket error occurred ({}): {}'.format(cmd_name, e))
         data = None
 
-    if timeout > 0 and t >= timeout:
+    connection.close()
+
+    if (timeout > 0) and (t >= timeout):
         print_ts('Timeout occurred ({}).'.format(cmd_name))
+        data = None
+
+    if data and (len(data) >= (max_data_size + 1024)):
+        print_ts('Maximum allowed data ({} bytes) exceeded ({}).'.format(max_data_size, cmd_name))
+        data = None
+
+    if data and check_done and not data.endswith('\nDONE'):
+        print_ts('Incomplete data received ({}).'.format(cmd_name))
         data = None
 
     return data
@@ -1268,16 +1277,18 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
         try:
             bytes_received = connection.recv(128)
             cmd = bytes_received.decode('utf-8', 'ignore')
-        except socket.error:
+        except socket.error as e:
+            print_ts('Error: Recv error: ' + str(e))
             connection.close()
             continue
         except UnicodeDecodeError as e:
-            connection.close()
             print_ts('Error: Decoding failed: ' + str(e))
+            connection.close()
             continue
         pos_nl = cmd.find('\n')
         if pos_nl < 1:
             print_ts('No newline found in data.')
+            connection.close()
             continue
         firstLine = cmd[:pos_nl]
         if re.match('[a-zA-Z0-9./ ]+', firstLine) is None:
@@ -1292,6 +1303,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             print_ts('GetCppcheckVersions: ' + reply)
             connection.send(reply.encode('utf-8', 'ignore'))
             connection.close()
+            continue
         elif cmd == 'get\n':
             while True:
                 pkg = packages[packageIndex]
@@ -1307,6 +1319,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             print_ts('get:' + pkg)
             connection.send(pkg.encode('utf-8', 'ignore'))
             connection.close()
+            continue
         elif cmd.startswith('write\nftp://') or cmd.startswith('write\nhttp://'):
             data = read_data(connection, cmd, pos_nl, max_data_size=2 * 1024 * 1024, check_done=True, cmd_name='write')
             if data is None:
@@ -1349,7 +1362,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             if old_version_wrong:
                 print_ts('Unexpected old version. Ignoring result data.')
                 continue
-            print_ts('results added for package ' + res.group(1))
+            print_ts('results added for package ' + res.group(1) + ' (' + str(len(data)) + ' bytes)')
             filename = os.path.join(resultPath, res.group(1))
             with open(filename, 'wt') as f:
                 f.write(strDateTime() + '\n' + data)
@@ -1361,6 +1374,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 f.write(' '.join(latestResults))
             # generate package.diff..
             generate_package_diff_statistics(filename)
+            continue
         elif cmd.startswith('write_info\nftp://') or cmd.startswith('write_info\nhttp://'):
             data = read_data(connection, cmd, pos_nl, max_data_size=1024 * 1024, check_done=True, cmd_name='write_info')
             if data is None:
@@ -1386,29 +1400,29 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             if url not in packages:
                 print_ts('Url is not in packages. Ignoring information data.')
                 continue
-            print_ts('adding info output for package ' + res.group(1))
+            print_ts('adding info output for package ' + res.group(1) + ' (' + str(len(data)) + ' bytes)')
             info_path = resultPath + '/' + 'info_output'
             if not os.path.exists(info_path):
                 os.mkdir(info_path)
             filename = info_path + '/' + res.group(1)
             with open(filename, 'wt') as f:
                 f.write(strDateTime() + '\n' + data)
+            continue
         elif cmd == 'getPackagesCount\n':
             packages_count = str(len(packages))
             connection.send(packages_count.encode('utf-8', 'ignore'))
-            connection.close()
             print_ts('getPackagesCount: ' + packages_count)
+            connection.close()
             continue
         elif cmd.startswith('getPackageIdx'):
             request_idx = abs(int(cmd[len('getPackageIdx:'):]))
             if request_idx < len(packages):
                 pkg = packages[request_idx]
                 connection.send(pkg.encode('utf-8', 'ignore'))
-                connection.close()
                 print_ts('getPackageIdx: ' + pkg)
             else:
-                connection.close()
                 print_ts('getPackageIdx: index is out of range')
+            connection.close()
             continue
         elif cmd.startswith('write_nodata\nftp://'):
             data = read_data(connection, cmd, pos_nl, max_data_size=8 * 1024, check_done=False, cmd_name='write_nodata')
@@ -1441,8 +1455,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 if currentIdx == startIdx:
                     print_ts('write_nodata:' + url + ' - package not found')
                     break
-
-            connection.close()
+            continue
         else:
             if pos_nl < 0:
                 print_ts('invalid command: "' + firstLine + '"')
@@ -1453,6 +1466,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                     s += '...'
                 print_ts('invalid command: "' + s + '"')
             connection.close()
+            continue
 
 
 if __name__ == "__main__":
