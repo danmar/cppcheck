@@ -1,4 +1,5 @@
 
+
 // Test library configuration for qt.cfg
 //
 // Usage:
@@ -775,3 +776,11 @@ void unusedVariable_qtContainers() // #10689
     QLatin1String ql1s;
 }
 
+void unreadVariable_QMapIterator(QMap<QString, QObject*>& m)
+{
+    auto it = m.find("abc"); // #12662
+    if (it != m.end()) {
+        delete it.value();
+        it.value() = new QObject();
+    }
+}

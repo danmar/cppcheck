@@ -497,6 +497,8 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
         return true;
     if (Token::simpleMatch(expr, ". *"))
         return true;
+    if (expr->str() == "(" && Token::simpleMatch(expr->astOperand1(), "."))
+        return true;
 
     const bool macro = false;
     const bool pure = false;
