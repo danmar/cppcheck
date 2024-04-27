@@ -9234,7 +9234,7 @@ void Tokenizer::simplifyCppcheckAttribute()
 
 void Tokenizer::simplifyCPPAttribute()
 {
-    if (!isCPP())
+    if ((isCPP() && mSettings.standards.cpp < Standards::CPP11) || (isC() && mSettings.standards.c < Standards::C23))
         return;
 
     for (Token *tok = list.front(); tok;) {
