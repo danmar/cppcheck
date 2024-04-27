@@ -194,6 +194,9 @@
               <optional>
                 <attribute name="strlen-arg"><data type="positiveInteger"/></attribute>
               </optional>
+              <optional>
+                <attribute name="count-arg"><data type="positiveInteger"/></attribute>
+              </optional>
               <empty/>
             </element>
           </optional>

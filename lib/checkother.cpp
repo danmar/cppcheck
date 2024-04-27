@@ -3873,29 +3873,46 @@ void CheckOther::checkModuloOfOneError(const Token *tok)
 //-----------------------------------------------------------------------------
 // Overlapping write (undefined behavior)
 //-----------------------------------------------------------------------------
-static bool getBufAndOffset(const Token *expr, const Token *&buf, MathLib::bigint *offset)
+static bool getBufAndOffset(const Token *expr, const Token *&buf, MathLib::bigint *offset, const Settings& settings, MathLib::bigint* sizeValue = nullptr)
 {
     if (!expr)
         return false;
     const Token *bufToken, *offsetToken;
+    MathLib::bigint elementSize = 0;
     if (expr->isUnaryOp("&") && Token::simpleMatch(expr->astOperand1(), "[")) {
         bufToken = expr->astOperand1()->astOperand1();
         offsetToken = expr->astOperand1()->astOperand2();
+        if (expr->astOperand1()->valueType())
+            elementSize =  ValueFlow::getSizeOf(*expr->astOperand1()->valueType(), settings);
     } else if (Token::Match(expr, "+|-") && expr->isBinaryOp()) {
         const bool pointer1 = (expr->astOperand1()->valueType() && expr->astOperand1()->valueType()->pointer > 0);
         const bool pointer2 = (expr->astOperand2()->valueType() && expr->astOperand2()->valueType()->pointer > 0);
         if (pointer1 && !pointer2) {
             bufToken = expr->astOperand1();
             offsetToken = expr->astOperand2();
+            auto vt = *expr->astOperand1()->valueType();
+            --vt.pointer;
+            elementSize = ValueFlow::getSizeOf(vt, settings);
         } else if (!pointer1 && pointer2) {
             bufToken = expr->astOperand2();
             offsetToken = expr->astOperand1();
+            auto vt = *expr->astOperand2()->valueType();
+            --vt.pointer;
+            elementSize = ValueFlow::getSizeOf(vt, settings);
         } else {
             return false;
         }
     } else if (expr->valueType() && expr->valueType()->pointer > 0) {
         buf = expr;
         *offset = 0;
+        auto vt = *expr->valueType();
+        --vt.pointer;
+        elementSize = ValueFlow::getSizeOf(vt, settings);
+        if (elementSize > 0) {
+            *offset *= elementSize;
+            if (sizeValue)
+                *sizeValue *= elementSize;
+        }
         return true;
     } else {
         return false;
@@ -3906,6 +3923,11 @@ static bool getBufAndOffset(const Token *expr, const Token *&buf, MathLib::bigin
         return false;
     buf = bufToken;
     *offset = offsetToken->getKnownIntValue();
+    if (elementSize > 0) {
+        *offset *= elementSize;
+        if (sizeValue)
+            *sizeValue *= elementSize;
+    }
     return true;
 }
 
@@ -3966,7 +3988,8 @@ void CheckOther::checkOverlappingWrite()
                     continue;
 
                 // TODO: nonOverlappingData->strlenArg
-                if (nonOverlappingData->sizeArg <= 0 || nonOverlappingData->sizeArg > args.size()) {
+                const int sizeArg = std::max(nonOverlappingData->sizeArg, nonOverlappingData->countArg);
+                if (sizeArg <= 0 || sizeArg > args.size()) {
                     if (nonOverlappingData->sizeArg == -1) {
                         ErrorPath errorPath;
                         constexpr bool macro = true;
@@ -3978,14 +4001,15 @@ void CheckOther::checkOverlappingWrite()
                     }
                     continue;
                 }
-                if (!args[nonOverlappingData->sizeArg-1]->hasKnownIntValue())
+                const bool isCountArg = nonOverlappingData->countArg > 0;
+                if (!args[sizeArg-1]->hasKnownIntValue())
                     continue;
-                const MathLib::bigint sizeValue = args[nonOverlappingData->sizeArg-1]->getKnownIntValue();
+                MathLib::bigint sizeValue = args[sizeArg-1]->getKnownIntValue();
                 const Token *buf1, *buf2;
                 MathLib::bigint offset1, offset2;
-                if (!getBufAndOffset(ptr1, buf1, &offset1))
+                if (!getBufAndOffset(ptr1, buf1, &offset1, *mSettings, isCountArg ? &sizeValue : nullptr))
                     continue;
-                if (!getBufAndOffset(ptr2, buf2, &offset2))
+                if (!getBufAndOffset(ptr2, buf2, &offset2, *mSettings))
                     continue;
 
                 if (offset1 < offset2 && offset1 + sizeValue <= offset2)

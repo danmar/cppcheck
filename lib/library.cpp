@@ -704,6 +704,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             nonOverlappingData.ptr2Arg = functionnode->IntAttribute("ptr2-arg", -1);
             nonOverlappingData.sizeArg = functionnode->IntAttribute("size-arg", -1);
             nonOverlappingData.strlenArg = functionnode->IntAttribute("strlen-arg", -1);
+            nonOverlappingData.countArg = functionnode->IntAttribute("count-arg", -1);
             mNonOverlappingData[name] = nonOverlappingData;
         } else if (functionnodename == "use-retval") {
             func.useretval = Library::UseRetValType::DEFAULT;

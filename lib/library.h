@@ -162,6 +162,7 @@ public:
         int ptr2Arg;
         int sizeArg;
         int strlenArg;
+        int countArg;
     };
     const NonOverlappingData* getNonOverlappingData(const Token *ftok) const;
 
