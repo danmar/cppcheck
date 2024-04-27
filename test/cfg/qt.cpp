@@ -779,7 +779,9 @@ void unreadVariable_QMapIterator(QMap<QString, QObject*>& m)
 {
     auto it = m.find("abc"); // #12662
     if (it != m.end()) {
+        // cppcheck-suppress checkLibraryFunction // TODO
         delete it.value();
+        // cppcheck-suppress checkLibraryFunction
         it.value() = new QObject();
     }
 }
