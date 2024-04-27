@@ -1072,7 +1072,8 @@ void Tokenizer::simplifyTypedef()
 
         if (indentlevel == 0 && tok->str() == "typedef") {
             TypedefSimplifier ts(tok);
-            if (!ts.fail() && numberOfTypedefs[ts.name()] == 1) {
+            if (!ts.fail() && numberOfTypedefs[ts.name()] == 1 &&
+                (numberOfTypedefs.find(ts.getTypedefToken()->strAt(1)) == numberOfTypedefs.end() || ts.getTypedefToken()->strAt(2) == "(")) {
                 if (mSettings.severity.isEnabled(Severity::portability) && ts.isInvalidConstFunctionType(typedefs))
                     reportError(tok->next(), Severity::portability, "invalidConstFunctionType",
                                 "It is unspecified behavior to const qualify a function type.");
