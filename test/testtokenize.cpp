@@ -460,8 +460,9 @@ private:
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tokenizeAndStringify_(const char* file, int linenr, const char code[], bool expand = true, Platform::Type platform = Platform::Type::Native, bool cpp = true, Standards::cppstd_t std = Standards::CPP11) {
-        const Settings settings = settingsBuilder(settings1).debugwarnings().cpp(std).platform(platform).build();
+    std::string tokenizeAndStringify_(const char* file, int linenr, const char code[], bool expand = true, Platform::Type platform = Platform::Type::Native,
+                                      bool cpp = true, Standards::cppstd_t cppstd = Standards::CPP11, Standards::cstd_t cstd = Standards::C11) {
+        const Settings settings = settingsBuilder(settings1).debugwarnings().cpp(cppstd).c(cstd).platform(platform).build();
 
         // tokenize..
         SimpleTokenizer tokenizer(settings, *this);
@@ -5818,20 +5819,13 @@ private:
         ASSERT_EQUALS("int f ( ) ;",
                       tokenizeAndStringify("[[deprecated]] int f();"));
 
-        ASSERT_EQUALS("[ [ deprecated ] ] int f ( ) ;",
-                      tokenizeAndStringify("[[deprecated]] int f();", true, Platform::Type::Native, true, Standards::CPP03));
-
-        ASSERT_EQUALS("[ [ deprecated ] ] int f ( ) ;",
-                      tokenizeAndStringify("[[deprecated]] int f();", true, Platform::Type::Native, false));
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("[[deprecated]] int f();", true, Platform::Type::Native, false), SYNTAX);
 
         ASSERT_EQUALS("template < class T > int f ( ) { }",
                       tokenizeAndStringify("template <class T> [[noreturn]] int f(){}"));
 
         ASSERT_EQUALS("int f ( int i ) ;",
                       tokenizeAndStringify("[[maybe_unused]] int f([[maybe_unused]] int i);"));
-
-        ASSERT_EQUALS("[ [ maybe_unused ] ] int f ( [ [ maybe_unused ] ] int i ) ;",
-                      tokenizeAndStringify("[[maybe_unused]] int f([[maybe_unused]] int i);", true, Platform::Type::Native, true, Standards::CPP03));
 
         ASSERT_EQUALS("struct a ;",
                       tokenizeAndStringify("struct [[]] a;"));
@@ -5886,6 +5880,9 @@ private:
 
         ASSERT_EQUALS("int func1 ( ) ;",
                       tokenizeAndStringify("[[clang::optnone]] [[nodiscard]] int func1();"));
+
+        ASSERT_EQUALS("void f ( int i ) { exit ( i ) ; }",
+                      tokenizeAndStringify("[[noreturn]] void f(int i) { exit(i); }", /*expand*/ true, Platform::Type::Native, /*cpp*/ false, Standards::CPP11, Standards::C23));
     }
 
     void simplifyCaseRange() {
@@ -7140,6 +7137,9 @@ private:
 
         ASSERT_NO_THROW(tokenizeAndStringify("S* g = ::new(ptr) S();")); // #12552
         ASSERT_NO_THROW(tokenizeAndStringify("void f(int* p) { return ::delete p; }"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("template <typename T, int N>\n" // #12659
+                                             "constexpr void f(T(&&a)[N]) {}"));
 
         ignore_errout();
     }

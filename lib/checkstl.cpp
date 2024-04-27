@@ -178,7 +178,7 @@ void CheckStl::outOfBounds()
             }
             if (indexTok && !indexTok->hasKnownIntValue()) {
                 const ValueFlow::Value* value =
-                    ValueFlow::findValue(indexTok->values(), mSettings, [&](const ValueFlow::Value& v) {
+                    ValueFlow::findValue(indexTok->values(), *mSettings, [&](const ValueFlow::Value& v) {
                     if (!v.isSymbolicValue())
                         return false;
                     if (v.isImpossible())
@@ -283,7 +283,7 @@ bool CheckStl::isContainerSize(const Token *containerToken, const Token *expr) c
         return false;
     if (!Token::Match(expr->astOperand1(), ". %name% ("))
         return false;
-    if (!isSameExpression(false, containerToken, expr->astOperand1()->astOperand1(), mSettings->library, false, false))
+    if (!isSameExpression(false, containerToken, expr->astOperand1()->astOperand1(), *mSettings, false, false))
         return false;
     return containerToken->valueType()->container->getYield(expr->previous()->str()) == Library::Container::Yield::SIZE;
 }
@@ -312,7 +312,7 @@ bool CheckStl::isContainerSizeGE(const Token * containerToken, const Token *expr
             op = expr->astOperand1();
         else
             return false;
-        return op && op->getValueGE(0, mSettings);
+        return op && op->getValueGE(0, *mSettings);
     }
     return false;
 }
@@ -705,11 +705,11 @@ static std::vector<const Token*> getAddressContainer(const Token* tok)
 
 static bool isSameIteratorContainerExpression(const Token* tok1,
                                               const Token* tok2,
-                                              const Library& library,
+                                              const Settings& settings,
                                               ValueFlow::Value::LifetimeKind kind = ValueFlow::Value::LifetimeKind::Iterator)
 {
-    if (isSameExpression(false, tok1, tok2, library, false, false)) {
-        return !astIsContainerOwned(tok1) || !isTemporary(tok1, &library);
+    if (isSameExpression(false, tok1, tok2, settings, false, false)) {
+        return !astIsContainerOwned(tok1) || !isTemporary(tok1, &settings.library);
     }
     if (astContainerYield(tok2) == Library::Container::Yield::ITEM)
         return true;
@@ -718,7 +718,7 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
         const auto address2 = getAddressContainer(tok2);
         return std::any_of(address1.begin(), address1.end(), [&](const Token* tok1) {
             return std::any_of(address2.begin(), address2.end(), [&](const Token* tok2) {
-                return isSameExpression(false, tok1, tok2, library, false, false);
+                return isSameExpression(false, tok1, tok2, settings, false, false);
             });
         });
     }
@@ -762,7 +762,7 @@ bool CheckStl::checkIteratorPair(const Token* tok1, const Token* tok2)
                 (!astIsContainer(val1.tokvalue) || !astIsContainer(val2.tokvalue)))
                 return false;
         }
-        if (isSameIteratorContainerExpression(val1.tokvalue, val2.tokvalue, mSettings->library, val1.lifetimeKind))
+        if (isSameIteratorContainerExpression(val1.tokvalue, val2.tokvalue, *mSettings, val1.lifetimeKind))
             return false;
         if (val1.tokvalue->expressionString() == val2.tokvalue->expressionString())
             iteratorsError(tok1, val1.tokvalue, val1.tokvalue->expressionString());
@@ -778,7 +778,7 @@ bool CheckStl::checkIteratorPair(const Token* tok1, const Token* tok2)
     }
     const Token* iter1 = getIteratorExpression(tok1);
     const Token* iter2 = getIteratorExpression(tok2);
-    if (iter1 && iter2 && !isSameIteratorContainerExpression(iter1, iter2, mSettings->library)) {
+    if (iter1 && iter2 && !isSameIteratorContainerExpression(iter1, iter2, *mSettings)) {
         mismatchingContainerExpressionError(iter1, iter2);
         return true;
     }
@@ -832,7 +832,7 @@ void CheckStl::mismatchingContainers()
                             if (iter1.tok == iter2.tok)
                                 continue;
                             if (iter1.info->first && iter2.info->last &&
-                                isSameExpression(false, iter1.tok, iter2.tok, mSettings->library, false, false))
+                                isSameExpression(false, iter1.tok, iter2.tok, *mSettings, false, false))
                                 sameIteratorExpressionError(iter1.tok);
                             if (checkIteratorPair(iter1.tok, iter2.tok))
                                 return;
@@ -896,7 +896,7 @@ void CheckStl::mismatchingContainerIterator()
                 continue;
             if (iterTok->str() == "*" && iterTok->astOperand1()->valueType() && iterTok->astOperand1()->valueType()->type == ValueType::ITERATOR)
                 continue;
-            if (isSameIteratorContainerExpression(tok, val.tokvalue, mSettings->library))
+            if (isSameIteratorContainerExpression(tok, val.tokvalue, *mSettings))
                 continue;
             mismatchingContainerIteratorError(tok, iterTok, val.tokvalue);
         }
@@ -1174,7 +1174,7 @@ void CheckStl::invalidContainer()
 
                             ErrorPath ep;
                             bool addressOf = false;
-                            const Variable* var = ValueFlow::getLifetimeVariable(info.tok, ep, &addressOf);
+                            const Variable* var = ValueFlow::getLifetimeVariable(info.tok, ep, *mSettings, &addressOf);
                             // Check the reference is created before the change
                             if (var && var->declarationId() == r.tok->varId() && !addressOf) {
                                 // An argument always reaches
@@ -1354,7 +1354,7 @@ void CheckStl::negativeIndex()
             const Library::Container * const container = mSettings->library.detectContainer(var->typeStartToken());
             if (!container || !container->arrayLike_indexOp)
                 continue;
-            const ValueFlow::Value *index = tok->next()->astOperand2()->getValueLE(-1, mSettings);
+            const ValueFlow::Value *index = tok->next()->astOperand2()->getValueLE(-1, *mSettings);
             if (!index)
                 continue;
             negativeIndexError(tok, *index);
@@ -1643,7 +1643,7 @@ static const Token* skipLocalVars(const Token* const tok)
     return tok;
 }
 
-static const Token *findInsertValue(const Token *tok, const Token *containerTok, const Token *keyTok, const Library &library)
+static const Token *findInsertValue(const Token *tok, const Token *containerTok, const Token *keyTok, const Settings &settings)
 {
     const Token *startTok = skipLocalVars(tok);
     const Token *top = startTok->astTop();
@@ -1668,8 +1668,8 @@ static const Token *findInsertValue(const Token *tok, const Token *containerTok,
     }
     if (!ikeyTok || !icontainerTok)
         return nullptr;
-    if (isSameExpression(true, containerTok, icontainerTok, library, true, false) &&
-        isSameExpression(true, keyTok, ikeyTok, library, true, true)) {
+    if (isSameExpression(true, containerTok, icontainerTok, settings, true, false) &&
+        isSameExpression(true, keyTok, ikeyTok, settings, true, true)) {
         if (ivalueTok)
             return ivalueTok;
         return ikeyTok;
@@ -1704,16 +1704,16 @@ void CheckStl::checkFindInsert()
                 continue;
 
             const Token *thenTok = tok->next()->link()->next();
-            const Token *valueTok = findInsertValue(thenTok, containerTok, keyTok, mSettings->library);
+            const Token *valueTok = findInsertValue(thenTok, containerTok, keyTok, *mSettings);
             if (!valueTok)
                 continue;
 
             if (Token::simpleMatch(thenTok->link(), "} else {")) {
                 const Token *valueTok2 =
-                    findInsertValue(thenTok->link()->tokAt(2), containerTok, keyTok, mSettings->library);
+                    findInsertValue(thenTok->link()->tokAt(2), containerTok, keyTok, *mSettings);
                 if (!valueTok2)
                     continue;
-                if (isSameExpression(true, valueTok, valueTok2, mSettings->library, true, true)) {
+                if (isSameExpression(true, valueTok, valueTok2, *mSettings, true, true)) {
                     checkFindInsertError(valueTok);
                 }
             } else {
@@ -2583,7 +2583,7 @@ static const Token *singleStatement(const Token *start)
     return endStatement;
 }
 
-static const Token *singleAssignInScope(const Token *start, nonneg int varid, bool &input, bool &hasBreak, const Settings* settings)
+static const Token *singleAssignInScope(const Token *start, nonneg int varid, bool &input, bool &hasBreak, const Settings& settings)
 {
     const Token *endStatement = singleStatement(start);
     if (!endStatement)
@@ -2600,7 +2600,7 @@ static const Token *singleAssignInScope(const Token *start, nonneg int varid, bo
     return assignTok;
 }
 
-static const Token *singleMemberCallInScope(const Token *start, nonneg int varid, bool &input, const Settings* settings)
+static const Token *singleMemberCallInScope(const Token *start, nonneg int varid, bool &input, const Settings& settings)
 {
     if (start->str() != "{")
         return nullptr;
@@ -2637,7 +2637,7 @@ static const Token *singleIncrementInScope(const Token *start, nonneg int varid,
     return varTok;
 }
 
-static const Token *singleConditionalInScope(const Token *start, nonneg int varid, const Settings* settings)
+static const Token *singleConditionalInScope(const Token *start, nonneg int varid, const Settings& settings)
 {
     if (start->str() != "{")
         return nullptr;
@@ -2765,11 +2765,11 @@ namespace {
             int n = 1 + (astIsPointer(tok) ? 1 : 0);
             for (int i = 0; i < n; i++) {
                 bool inconclusive = false;
-                if (isVariableChangedByFunctionCall(tok, i, settings, &inconclusive))
+                if (isVariableChangedByFunctionCall(tok, i, *settings, &inconclusive))
                     return true;
                 if (inconclusive)
                     return true;
-                if (isVariableChanged(tok, i, settings))
+                if (isVariableChanged(tok, i, *settings))
                     return true;
             }
             return false;
@@ -2933,7 +2933,7 @@ void CheckStl::useStlAlgorithm()
 
             // Check for single assignment
             bool useLoopVarInAssign{}, hasBreak{};
-            const Token *assignTok = singleAssignInScope(bodyTok, loopVar->varId(), useLoopVarInAssign, hasBreak, mSettings);
+            const Token *assignTok = singleAssignInScope(bodyTok, loopVar->varId(), useLoopVarInAssign, hasBreak, *mSettings);
             if (assignTok) {
                 if (!checkAssignee(assignTok->astOperand1()))
                     continue;
@@ -2963,7 +2963,7 @@ void CheckStl::useStlAlgorithm()
             }
             // Check for container calls
             bool useLoopVarInMemCall;
-            const Token *memberAccessTok = singleMemberCallInScope(bodyTok, loopVar->varId(), useLoopVarInMemCall, mSettings);
+            const Token *memberAccessTok = singleMemberCallInScope(bodyTok, loopVar->varId(), useLoopVarInMemCall, *mSettings);
             if (memberAccessTok && !isIteratorLoop) {
                 const Token *memberCallTok = memberAccessTok->astOperand2();
                 const int contVarId = memberAccessTok->astOperand1()->varId();
@@ -2996,10 +2996,10 @@ void CheckStl::useStlAlgorithm()
             }
 
             // Check for conditionals
-            const Token *condBodyTok = singleConditionalInScope(bodyTok, loopVar->varId(), mSettings);
+            const Token *condBodyTok = singleConditionalInScope(bodyTok, loopVar->varId(), *mSettings);
             if (condBodyTok) {
                 // Check for single assign
-                assignTok = singleAssignInScope(condBodyTok, loopVar->varId(), useLoopVarInAssign, hasBreak, mSettings);
+                assignTok = singleAssignInScope(condBodyTok, loopVar->varId(), useLoopVarInAssign, hasBreak, *mSettings);
                 if (assignTok) {
                     if (!checkAssignee(assignTok->astOperand1()))
                         continue;
@@ -3027,7 +3027,7 @@ void CheckStl::useStlAlgorithm()
                 }
 
                 // Check for container call
-                memberAccessTok = singleMemberCallInScope(condBodyTok, loopVar->varId(), useLoopVarInMemCall, mSettings);
+                memberAccessTok = singleMemberCallInScope(condBodyTok, loopVar->varId(), useLoopVarInMemCall, *mSettings);
                 if (memberAccessTok) {
                     const Token *memberCallTok = memberAccessTok->astOperand2();
                     const int contVarId = memberAccessTok->astOperand1()->varId();

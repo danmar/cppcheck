@@ -58,6 +58,16 @@
 #include <span>
 #endif
 
+#if __cplusplus <= 201402L
+void unreachableCode_std_unexpected(int &x)
+{
+    // cppcheck-suppress unexpectedCalled
+    std::unexpected();
+    // cppcheck-suppress unreachableCode
+    x=42;
+}
+#endif
+
 void unreachableCode_std_terminate(int &x)
 {
     std::terminate();

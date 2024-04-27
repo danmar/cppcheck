@@ -7503,6 +7503,19 @@ private:
                         "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: arr\n", errout_str());
 
+        valueFlowUninit("struct S {\n"
+                        "  void *out;\n"
+                        "};\n"
+                        "void bar(S* s);\n"
+                        "void foo() {\n"
+                        "  S s[1][1];\n"
+                        "  char arr[5];\n"
+                        "  s[0][0].out = &arr;\n"
+                        "  bar(s[0]);\n"
+                        "  int len = strlen(arr);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout_str());
+
         valueFlowUninit("struct S1 { int x; };\n" // #12401
                         "struct S2 { struct S1 s1; };\n"
                         "struct S2 f() {\n"

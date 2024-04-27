@@ -1226,10 +1226,10 @@ public:
 
     const ValueFlow::Value* getMovedValue() const;
 
-    const ValueFlow::Value * getValueLE(const MathLib::bigint val, const Settings *settings) const;
-    const ValueFlow::Value * getValueGE(const MathLib::bigint val, const Settings *settings) const;
+    const ValueFlow::Value * getValueLE(const MathLib::bigint val, const Settings &settings) const;
+    const ValueFlow::Value * getValueGE(const MathLib::bigint val, const Settings &settings) const;
 
-    const ValueFlow::Value * getInvalidValue(const Token *ftok, nonneg int argnr, const Settings *settings) const;
+    const ValueFlow::Value * getInvalidValue(const Token *ftok, nonneg int argnr, const Settings &settings) const;
 
     const ValueFlow::Value* getContainerSizeValue(const MathLib::bigint val) const;
 

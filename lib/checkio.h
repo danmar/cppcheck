@@ -75,7 +75,7 @@ private:
 
     class ArgumentInfo {
     public:
-        ArgumentInfo(const Token *arg, const Settings *settings, bool _isCPP);
+        ArgumentInfo(const Token *arg, const Settings &settings, bool _isCPP);
         ~ArgumentInfo();
 
         ArgumentInfo(const ArgumentInfo &) = delete;
@@ -86,7 +86,7 @@ private:
         bool isKnownType() const;
         bool isStdVectorOrString();
         bool isStdContainer(const Token *tok);
-        bool isLibraryType(const Settings *settings) const;
+        bool isLibraryType(const Settings &settings) const;
 
         const Variable* variableInfo{};
         const Token* typeToken{};

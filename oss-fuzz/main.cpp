@@ -60,7 +60,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataSize)
 #else
 int main(int argc, char * argv[])
 {
-    if (argc != 2)
+    if (argc < 2 || argc > 3)
         return EXIT_FAILURE;
 
     std::ifstream f(argv[1]);
@@ -73,8 +73,11 @@ int main(int argc, char * argv[])
     if (!f.good())
         return EXIT_FAILURE;
 
+    const int cnt = (argc == 3) ? std::stoi(argv[2]) : 1;
+
     const std::string code = oss.str();
-    doCheck(code);
+    for (int i = 0; i < cnt; ++i)
+        doCheck(code);
 
     return EXIT_SUCCESS;
 }

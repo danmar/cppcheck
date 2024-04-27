@@ -707,7 +707,7 @@ private:
         ASSERT_EQUALS(false, result);
         ASSERT(nullptr == vartok);
         ASSERT(nullptr == typetok);
-        Variable v(nullptr, nullptr, nullptr, 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(nullptr, nullptr, nullptr, 0, AccessControl::Public, nullptr, nullptr, settings1);
     }
 
     void test_isVariableDeclarationIdentifiesSimpleDeclaration() {
@@ -717,7 +717,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -730,7 +730,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -743,7 +743,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -756,7 +756,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -769,7 +769,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
         ASSERT_EQUALS("string", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -782,7 +782,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
         ASSERT_EQUALS("string", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -795,7 +795,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
         ASSERT_EQUALS("EE", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -809,7 +809,7 @@ private:
             ASSERT_EQUALS(true, result1);
             ASSERT_EQUALS("p", vartok->str());
             ASSERT_EQUALS("int", typetok->str());
-            Variable v1(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+            Variable v1(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
             ASSERT(false == v1.isArray());
             ASSERT(true == v1.isPointer());
             ASSERT(false == v1.isReference());
@@ -817,7 +817,7 @@ private:
         {
             reset();
             const SimpleTokenizer constpointer(*this, "const int* p;");
-            Variable v2(constpointer.tokens()->tokAt(3), constpointer.tokens()->next(), constpointer.tokens()->tokAt(2), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+            Variable v2(constpointer.tokens()->tokAt(3), constpointer.tokens()->next(), constpointer.tokens()->tokAt(2), 0, AccessControl::Public, nullptr, nullptr, settings1);
             ASSERT(false == v2.isArray());
             ASSERT(true == v2.isPointer());
             ASSERT(false == v2.isConst());
@@ -830,7 +830,7 @@ private:
             ASSERT_EQUALS(true, result2);
             ASSERT_EQUALS("p", vartok->str());
             ASSERT_EQUALS("int", typetok->str());
-            Variable v3(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+            Variable v3(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
             ASSERT(false == v3.isArray());
             ASSERT(true == v3.isPointer());
             ASSERT(true == v3.isConst());
@@ -866,7 +866,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("first", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -879,7 +879,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("p", vartok->str());
         ASSERT_EQUALS("EE", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
@@ -892,7 +892,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("pp", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
@@ -905,7 +905,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("p", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
@@ -918,7 +918,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("v", vartok->str());
         ASSERT_EQUALS("string", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(true == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isPointerArray());
@@ -932,7 +932,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("a", vartok->str());
         ASSERT_EQUALS("A", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isPointer());
         ASSERT(true == v.isArray());
         ASSERT(false == v.isPointerToArray());
@@ -947,7 +947,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("a", vartok->str());
         ASSERT_EQUALS("A", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointerToArray());
@@ -962,7 +962,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("a", vartok->str());
         ASSERT_EQUALS("A", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointerToArray());
@@ -977,7 +977,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("a", vartok->str());
         ASSERT_EQUALS("A", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointerToArray());
@@ -992,7 +992,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("a", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isPointer());
         ASSERT(true == v.isArray());
         ASSERT(false == v.isPointerToArray());
@@ -1008,7 +1008,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("chars", vartok->str());
         ASSERT_EQUALS("set", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
@@ -1021,7 +1021,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("ints", vartok->str());
         ASSERT_EQUALS("deque", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
@@ -1034,7 +1034,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("ints", vartok->str());
         ASSERT_EQUALS("deque", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(true == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -1047,7 +1047,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("ints", vartok->str());
         ASSERT_EQUALS("vector", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -1060,7 +1060,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("floats", vartok->str());
         ASSERT_EQUALS("const_iterator", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -1073,7 +1073,7 @@ private:
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("intsets", vartok->str());
         ASSERT_EQUALS("deque", typetok->str());
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
@@ -1085,7 +1085,7 @@ private:
             GET_SYMBOL_DB("int& foo;");
             const bool result1 = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
             ASSERT_EQUALS(true, result1);
-            Variable v1(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+            Variable v1(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
             ASSERT(false == v1.isArray());
             ASSERT(false == v1.isPointer());
             ASSERT(true == v1.isReference());
@@ -1095,7 +1095,7 @@ private:
             GET_SYMBOL_DB("foo*& bar;");
             const bool result2 = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
             ASSERT_EQUALS(true, result2);
-            Variable v2(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+            Variable v2(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
             ASSERT(false == v2.isArray());
             ASSERT(true == v2.isPointer());
             ASSERT(true == v2.isReference());
@@ -1105,7 +1105,7 @@ private:
             GET_SYMBOL_DB("std::vector<int>& foo;");
             const bool result3 = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
             ASSERT_EQUALS(true, result3);
-            Variable v3(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+            Variable v3(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
             ASSERT(false == v3.isArray());
             ASSERT(false == v3.isPointer());
             ASSERT(true == v3.isReference());
@@ -1131,7 +1131,7 @@ private:
         GET_SYMBOL_DB("std::string const* s;");
         const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens()->next(), vartok, typetok);
         ASSERT_EQUALS(true, result);
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
@@ -1142,7 +1142,7 @@ private:
         GET_SYMBOL_DB("int&& i;");
         const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(true == v.isReference());
@@ -1575,7 +1575,7 @@ private:
             GET_SYMBOL_DB("std::string s;");
             const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
             ASSERT_EQUALS(true, result);
-            Variable v(vartok, tokenizer.tokens(), tokenizer.list.back(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+            Variable v(vartok, tokenizer.tokens(), tokenizer.list.back(), 0, AccessControl::Public, nullptr, nullptr, settings1);
             static const std::set<std::string> types = { "string", "wstring" };
             static const std::set<std::string> no_types = { "set" };
             ASSERT_EQUALS(true, v.isStlType());
@@ -1588,7 +1588,7 @@ private:
             GET_SYMBOL_DB("std::vector<int> v;");
             const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
             ASSERT_EQUALS(true, result);
-            Variable v(vartok, tokenizer.tokens(), tokenizer.list.back(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+            Variable v(vartok, tokenizer.tokens(), tokenizer.list.back(), 0, AccessControl::Public, nullptr, nullptr, settings1);
             static const std::set<std::string> types = { "bitset", "set", "vector", "wstring" };
             static const std::set<std::string> no_types = { "bitset", "map", "set" };
             ASSERT_EQUALS(true, v.isStlType());
@@ -1601,7 +1601,7 @@ private:
             GET_SYMBOL_DB("SomeClass s;");
             const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
             ASSERT_EQUALS(true, result);
-            Variable v(vartok, tokenizer.tokens(), tokenizer.list.back(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+            Variable v(vartok, tokenizer.tokens(), tokenizer.list.back(), 0, AccessControl::Public, nullptr, nullptr, settings1);
             static const std::set<std::string> types = { "bitset", "set", "vector" };
             ASSERT_EQUALS(false, v.isStlType());
             ASSERT_EQUALS(false, v.isStlType(types));
@@ -1614,7 +1614,7 @@ private:
         GET_SYMBOL_DB("char* const * s;");
         const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
@@ -1625,7 +1625,7 @@ private:
         GET_SYMBOL_DB("char* volatile * s;");
         const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
@@ -1636,7 +1636,7 @@ private:
         GET_SYMBOL_DB("char* const volatile * s;");
         const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
@@ -1647,7 +1647,7 @@ private:
         GET_SYMBOL_DB("const char* const volatile * const volatile * const volatile * const volatile s;");
         const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens()->next(), vartok, typetok);
         ASSERT_EQUALS(true, result);
-        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, settings1);
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
@@ -1715,7 +1715,7 @@ private:
         ASSERT(db);
         ASSERT_EQUALS(2, db->scopeList.front().varlist.size());
         const Variable *x1 = Token::findsimplematch(tokenizer.tokens(), "x")->variable();
-        ASSERT(x1 && Token::simpleMatch(x1->typeStartToken(), "alignas ( 16 ) int x ;"));
+        ASSERT(x1 && Token::simpleMatch(x1->typeStartToken(), "int x ;"));
     }
 
     void memberVar1() {
@@ -8603,7 +8603,7 @@ private:
                       "    auto lambda = [&]() -> bool\n"
                       "    {\n"
                       "        float x = 1.0f;\n"
-                      "    }\n"
+                      "    };\n"
                       "    lambda();\n"
                       "}");
 
@@ -8618,7 +8618,7 @@ private:
 
     void lambda3() {
         GET_SYMBOL_DB("void func() {\n"
-                      "    auto f = []() mutable {}\n"
+                      "    auto f = []() mutable {};\n"
                       "}");
 
         ASSERT(db && db->scopeList.size() == 3);

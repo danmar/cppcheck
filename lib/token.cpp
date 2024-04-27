@@ -1976,7 +1976,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
     out << outs;
 }
 
-const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Settings *settings) const
+const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Settings &settings) const
 {
     if (!mImpl->mValues)
         return nullptr;
@@ -1985,7 +1985,7 @@ const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Sett
     });
 }
 
-const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Settings *settings) const
+const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Settings &settings) const
 {
     if (!mImpl->mValues)
         return nullptr;
@@ -1994,16 +1994,16 @@ const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Sett
     });
 }
 
-const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, nonneg int argnr, const Settings *settings) const
+const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, nonneg int argnr, const Settings &settings) const
 {
-    if (!mImpl->mValues || !settings)
+    if (!mImpl->mValues)
         return nullptr;
     const ValueFlow::Value *ret = nullptr;
     for (std::list<ValueFlow::Value>::const_iterator it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
         if (it->isImpossible())
             continue;
-        if ((it->isIntValue() && !settings->library.isIntArgValid(ftok, argnr, it->intvalue)) ||
-            (it->isFloatValue() && !settings->library.isFloatArgValid(ftok, argnr, it->floatValue))) {
+        if ((it->isIntValue() && !settings.library.isIntArgValid(ftok, argnr, it->intvalue)) ||
+            (it->isFloatValue() && !settings.library.isFloatArgValid(ftok, argnr, it->floatValue))) {
             if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
                 ret = &(*it);
             if (!ret->isInconclusive() && !ret->condition)
@@ -2011,9 +2011,9 @@ const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, nonneg int ar
         }
     }
     if (ret) {
-        if (ret->isInconclusive() && !settings->certainty.isEnabled(Certainty::inconclusive))
+        if (ret->isInconclusive() && !settings.certainty.isEnabled(Certainty::inconclusive))
             return nullptr;
-        if (ret->condition && !settings->severity.isEnabled(Severity::warning))
+        if (ret->condition && !settings.severity.isEnabled(Severity::warning))
             return nullptr;
     }
     return ret;

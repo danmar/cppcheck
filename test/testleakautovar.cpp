@@ -1540,7 +1540,7 @@ private:
               "    delete[] p;\n"
               "    if (x && (p = new char[10]))\n"
               "        delete[] p;\n"
-              "}");
+              "}", /*cpp*/ true);
         ASSERT_EQUALS("", errout_str());
     }
 

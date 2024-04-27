@@ -37,7 +37,7 @@ struct Standards {
     enum Language { None, C, CPP };
 
     /** C code standard */
-    enum cstd_t { C89, C99, C11, CLatest = C11 } c = CLatest;
+    enum cstd_t { C89, C99, C11, C17, C23, CLatest = C23 } c = CLatest;
 
     /** C++ code standard */
     enum cppstd_t { CPP03, CPP11, CPP14, CPP17, CPP20, CPP23, CPPLatest = CPP23 } cpp = CPPLatest;
@@ -69,6 +69,10 @@ struct Standards {
             return "c99";
         case C11:
             return "c11";
+        case C17:
+            return "c17";
+        case C23:
+            return "c23";
         }
         return "";
     }
@@ -81,6 +85,12 @@ struct Standards {
         }
         if (std == "c11") {
             return Standards::C11;
+        }
+        if (std == "c17") {
+            return Standards::C17;
+        }
+        if (std == "c23") {
+            return Standards::C23;
         }
         return Standards::CLatest;
     }

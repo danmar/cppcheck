@@ -583,7 +583,7 @@ $(libcppdir)/errortypes.o: lib/errortypes.cpp lib/config.h lib/errortypes.h lib/
 $(libcppdir)/forwardanalyzer.o: lib/forwardanalyzer.cpp lib/addoninfo.h lib/analyzer.h lib/astutils.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/forwardanalyzer.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/smallvector.h lib/sourcelocation.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenlist.h lib/utils.h lib/valueptr.h lib/vfvalue.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/forwardanalyzer.cpp
 
-$(libcppdir)/fwdanalysis.o: lib/fwdanalysis.cpp lib/astutils.h lib/config.h lib/errortypes.h lib/fwdanalysis.h lib/library.h lib/mathlib.h lib/smallvector.h lib/sourcelocation.h lib/standards.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/utils.h lib/vfvalue.h
+$(libcppdir)/fwdanalysis.o: lib/fwdanalysis.cpp lib/addoninfo.h lib/astutils.h lib/config.h lib/errortypes.h lib/fwdanalysis.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/smallvector.h lib/sourcelocation.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/utils.h lib/vfvalue.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/fwdanalysis.cpp
 
 $(libcppdir)/importproject.o: lib/importproject.cpp externals/picojson/picojson.h externals/tinyxml2/tinyxml2.h lib/addoninfo.h lib/config.h lib/errortypes.h lib/filesettings.h lib/importproject.h lib/json.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/token.h lib/tokenlist.h lib/utils.h lib/vfvalue.h lib/xml.h
@@ -862,7 +862,7 @@ test/testtoken.o: test/testtoken.cpp lib/addoninfo.h lib/check.h lib/color.h lib
 test/testtokenize.o: test/testtokenize.cpp externals/simplecpp/simplecpp.h lib/addoninfo.h lib/check.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/preprocessor.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/vfvalue.h test/fixture.h test/helpers.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testtokenize.cpp
 
-test/testtokenlist.o: test/testtokenlist.cpp lib/addoninfo.h lib/check.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/vfvalue.h test/fixture.h test/helpers.h
+test/testtokenlist.o: test/testtokenlist.cpp externals/simplecpp/simplecpp.h lib/addoninfo.h lib/check.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/preprocessor.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/vfvalue.h test/fixture.h test/helpers.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testtokenlist.cpp
 
 test/testtokenrange.o: test/testtokenrange.cpp lib/addoninfo.h lib/check.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/sourcelocation.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/tokenrange.h lib/utils.h lib/vfvalue.h test/fixture.h test/helpers.h

@@ -20,12 +20,15 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "platform.h"
+#include "preprocessor.h"
 #include "standards.h"
 #include "token.h"
 #include "tokenlist.h"
 
 #include <sstream>
 #include <string>
+
+#include <simplecpp.h>
 
 class TestTokenList : public TestFixture {
 public:
@@ -39,6 +42,7 @@ private:
         TEST_CASE(testaddtoken2);
         TEST_CASE(inc);
         TEST_CASE(isKeyword);
+        TEST_CASE(notokens);
     }
 
     // inspired by #5895
@@ -143,6 +147,19 @@ private:
             ASSERT(tokenlist.createTokens(istr, "a.cpp"));
             ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
         }
+    }
+
+    void notokens() {
+        // analyzing /usr/include/poll.h caused Path::identify() to be called with an empty filename from
+        // TokenList::determineCppC() because there are no tokens
+        const char code[] = "#include <sys/poll.h>";
+        std::istringstream istr(code);
+        std::vector<std::string> files;
+        simplecpp::TokenList tokens1(istr, files, "poll.h", nullptr);
+        Preprocessor preprocessor(settingsDefault, *this);
+        simplecpp::TokenList tokensP = preprocessor.preprocess(tokens1, "", files, true);
+        TokenList tokenlist(&settingsDefault);
+        tokenlist.createTokens(std::move(tokensP)); // do not assert
     }
 };
 

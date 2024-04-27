@@ -506,7 +506,7 @@ private:
     void simplifyOverloadedOperators();
 
     /**
-     * Remove [[attribute]] (C++11 and later) from TokenList
+     * Remove [[attribute]] (C++11, C23) from TokenList
      */
     void simplifyCPPAttribute();
 

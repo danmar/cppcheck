@@ -62,7 +62,7 @@ namespace ValueFlow {
     size_t getSizeOf(const ValueType &vt, const Settings &settings, int maxRecursion = 0);
 
     const Value* findValue(const std::list<Value>& values,
-                           const Settings* settings,
+                           const Settings& settings,
                            const std::function<bool(const Value&)> &pred);
 
     std::vector<Value> isOutOfBounds(const Value& size, const Token* indexTok, bool possible = true);
@@ -110,14 +110,15 @@ namespace ValueFlow {
                                 Value& value);
 
     std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
+                                                 const Settings& settings,
                                                  bool escape = false,
                                                  Value::ErrorPath errorPath = Value::ErrorPath{});
 
-    bool hasLifetimeToken(const Token* tok, const Token* lifetime);
+    bool hasLifetimeToken(const Token* tok, const Token* lifetime, const Settings& settings);
 
-    const Variable* getLifetimeVariable(const Token* tok, Value::ErrorPath& errorPath, bool* addressOf = nullptr);
+    const Variable* getLifetimeVariable(const Token* tok, Value::ErrorPath& errorPath, const Settings& settings, bool* addressOf = nullptr);
 
-    const Variable* getLifetimeVariable(const Token* tok);
+    const Variable* getLifetimeVariable(const Token* tok, const Settings& settings);
 
     bool isLifetimeBorrowed(const Token *tok, const Settings &settings);
 

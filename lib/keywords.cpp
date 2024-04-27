@@ -69,15 +69,13 @@ static const std::unordered_set<std::string> c11_keywords = {
     C11_KEYWORDS
 };
 
-/*
-   static const std::unordered_set<std::string> c23_keywords_all = {
+static const std::unordered_set<std::string> c23_keywords_all = {
     C90_KEYWORDS, C99_KEYWORDS, C11_KEYWORDS, C23_KEYWORDS
-   };
+};
 
-   static const std::unordered_set<std::string> c23_keywords = {
+static const std::unordered_set<std::string> c23_keywords = {
     C23_KEYWORDS
-   };
- */
+};
 
 // see https://en.cppreference.com/w/cpp/keyword
 
@@ -160,9 +158,10 @@ const std::unordered_set<std::string>& Keywords::getAll(Standards::cstd_t cStd)
     case Standards::cstd_t::C99:
         return c99_keywords_all;
     case Standards::cstd_t::C11:
+    case Standards::cstd_t::C17:
         return c11_keywords_all;
-        /*case Standards::cstd_t::C23:
-            return c23_keywords_all;*/
+    case Standards::cstd_t::C23:
+        return c23_keywords_all;
     }
     cppcheck::unreachable();
 }
@@ -197,9 +196,10 @@ const std::unordered_set<std::string>& Keywords::getOnly(Standards::cstd_t cStd)
     case Standards::cstd_t::C99:
         return c99_keywords;
     case Standards::cstd_t::C11:
+    case Standards::cstd_t::C17:
         return c11_keywords;
-        /*case Standards::cstd_t::C23:
-            return c23_keywords_all;*/
+    case Standards::cstd_t::C23:
+        return c23_keywords_all;
     }
     cppcheck::unreachable();
 }
