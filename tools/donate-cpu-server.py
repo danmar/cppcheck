@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.48"
+SERVER_VERSION = "1.3.49"
 
 OLD_VERSION = '2.14.0'
 
@@ -422,7 +422,7 @@ def diffReport(resultsPath: str) -> str:
         for messageId in data['sums']:
             sums = data['sums'][messageId]
             if OLD_VERSION not in sums:
-                continue
+                break
             if messageId not in out:
                 out[messageId] = [0, 0]
             out[messageId][0] += sums[OLD_VERSION]
@@ -490,9 +490,12 @@ def diffMessageIdReport(resultPath: str, messageId: str) -> str:
         if not os.path.isfile(filename):
             continue
         with open(filename, 'rt') as f:
-            diff_stats = f.read()
-        if messageId not in diff_stats:
+            diff_stats = json.loads(f.read())
+        if messageId not in diff_stats['sums']:
             continue
+        if OLD_VERSION not in diff_stats['sums'][messageId]:
+            continue
+
         url = None
         diff = False
         for line in open(filename[:-5], 'rt'):
@@ -518,11 +521,14 @@ def diffMessageIdTodayReport(resultPath: str, messageId: str) -> str:
         if not os.path.isfile(filename):
             continue
         with open(filename, 'rt') as f:
-            diff_stats = f.read()
-        if messageId not in diff_stats:
+            diff_stats = json.loads(f.read())
+        if messageId not in diff_stats['sums']:
             continue
-        if today not in diff_stats:
+        if OLD_VERSION not in diff_stats['sums'][messageId]:
             continue
+        if today not in diff_stats["date"]:
+            continue
+
         url = None
         diff = False
         firstLine = True
