@@ -725,7 +725,7 @@ private:
     }
 
     void garbageCode63() { // #6739
-        ASSERT_THROW_INTERNAL(checkCode("{ } { } typedef int u_array[]; typedef u_array &u_array_ref; (u_array_ref arg) { } u_array_ref u_array_ref_gbl_obj0"), INTERNAL);
+        ASSERT_THROW_INTERNAL(checkCode("{ } { } typedef int u_array[]; typedef u_array &u_array_ref; (u_array_ref arg) { } u_array_ref u_array_ref_gbl_obj0"), SYNTAX);
     }
 
     void garbageCode64() { // #6740
