@@ -3569,8 +3569,12 @@ private:
         code = "typedef unsigned long X;\n"
                "typedef unsigned long X;\n"
                "typedef X Y;\n"
-               "Y y;\n";
-        exp = "long y ;";
+               "typedef X* Yp;\n"
+               "typedef X Ya[3];\n"
+               "Y y;\n"
+               "Yp yp;\n"
+               "Ya ya;\n";
+        exp = "long y ; long * yp ; long ya [ 3 ] ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
