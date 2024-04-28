@@ -1221,7 +1221,7 @@ def read_data(connection, cmd, pos_nl, max_data_size, check_done, cmd_name, time
             bytes_received = connection.recv(1024)
             if bytes_received:
                 try:
-                    text_received = bytes_received.decode('utf-8', 'ignore')
+                    text_received = bytes_received.decode('ascii', 'ignore')
                 except UnicodeDecodeError as e:
                     print_ts('Error: Decoding failed ({}): {}'.format(cmd_name, e))
                     data = None
