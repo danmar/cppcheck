@@ -1243,7 +1243,7 @@ def read_data(connection, cmd, pos_nl, max_data_size, check_done, cmd_name, time
         print_ts('Timeout occurred ({}).'.format(cmd_name))
         data = None
 
-    if data and (len(data) >= (max_data_size + 1024)):
+    if data and (len(data) >= max_data_size):
         print_ts('Maximum allowed data ({} bytes) exceeded ({}).'.format(max_data_size, cmd_name))
         data = None
 
