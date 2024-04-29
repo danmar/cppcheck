@@ -8713,7 +8713,7 @@ void Tokenizer::findGarbageCode() const
             for (const Token* inner = tok->next(); inner != end; inner = inner->next()) {
                 if (inner->str() == "{")
                     inner = inner->link();
-                else if (inner->str() == ";" || Token::simpleMatch(inner, ", ,")) {
+                else if (inner->str() == ";" || (Token::simpleMatch(inner, ", ,") && (!isCPP() || !Token::simpleMatch(inner->previous(), "operator")))) {
                     if (tok->tokAt(-1) && tok->tokAt(-1)->isUpperCaseName())
                         unknownMacroError(tok->tokAt(-1));
                     else
