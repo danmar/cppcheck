@@ -57,8 +57,13 @@ void CheckAssert::assertWithSideEffects()
 
             checkVariableAssignment(tmp, tok->scope());
 
-            if (tmp->tokType() != Token::eFunction)
+            if (tmp->tokType() != Token::eFunction) {
+                if (const Library::Function* f = mSettings->library.getFunction(tmp)) {
+                    if (!f->isconst && !f->ispure)
+                        sideEffectInAssertError(tmp, mSettings->library.getFunctionName(tmp));
+                }
                 continue;
+            }
 
             const Function* f = tmp->function();
             const Scope* scope = f->functionScope;
