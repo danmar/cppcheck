@@ -135,7 +135,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout_str());
 
-        check("struct S {\n" // #4811 
+        check("struct S {\n" // #4811
               "    void f() const;\n"
               "    bool g(std::ostream& os = std::cerr) const;\n"
               "};\n"
