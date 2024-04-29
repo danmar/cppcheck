@@ -8674,8 +8674,6 @@ void Tokenizer::findGarbageCode() const
             if (Token::Match(tok->next(), ")|]|>|%assign%|%or%|%oror%|==|!=|/|>=|<=|&&"))
                 syntaxError(tok);
         }
-        if ((!isCPP() || !Token::simpleMatch(tok->previous(), "operator")) && Token::Match(tok, "[,;] ,"))
-            syntaxError(tok);
         if (Token::simpleMatch(tok, ".") &&
             !Token::simpleMatch(tok->previous(), ".") &&
             !Token::simpleMatch(tok->next(), ".") &&
@@ -8715,7 +8713,7 @@ void Tokenizer::findGarbageCode() const
             for (const Token* inner = tok->next(); inner != end; inner = inner->next()) {
                 if (inner->str() == "{")
                     inner = inner->link();
-                else if (inner->str() == ";") {
+                else if (inner->str() == ";" || Token::simpleMatch(inner, ", ,")) {
                     if (tok->tokAt(-1) && tok->tokAt(-1)->isUpperCaseName())
                         unknownMacroError(tok->tokAt(-1));
                     else
@@ -8723,6 +8721,8 @@ void Tokenizer::findGarbageCode() const
                 }
             }
         }
+        if ((!isCPP() || !Token::simpleMatch(tok->previous(), "operator")) && Token::Match(tok, "[,;] ,"))
+            syntaxError(tok);
     }
 
     // ternary operator without :
