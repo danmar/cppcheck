@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.50"
+SERVER_VERSION = "1.3.51"
 
 OLD_VERSION = '2.14.0'
 
@@ -1221,7 +1221,7 @@ def read_data(connection, cmd, pos_nl, max_data_size, check_done, cmd_name, time
             bytes_received = connection.recv(1024)
             if bytes_received:
                 try:
-                    text_received = bytes_received.decode('utf-8', 'ignore')
+                    text_received = bytes_received.decode('ascii', 'ignore')
                 except UnicodeDecodeError as e:
                     print_ts('Error: Decoding failed ({}): {}'.format(cmd_name, e))
                     data = None
@@ -1243,7 +1243,7 @@ def read_data(connection, cmd, pos_nl, max_data_size, check_done, cmd_name, time
         print_ts('Timeout occurred ({}).'.format(cmd_name))
         data = None
 
-    if data and (len(data) >= (max_data_size + 1024)):
+    if data and (len(data) >= max_data_size):
         print_ts('Maximum allowed data ({} bytes) exceeded ({}).'.format(max_data_size, cmd_name))
         data = None
 
@@ -1321,7 +1321,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             connection.close()
             continue
         elif cmd.startswith('write\nftp://') or cmd.startswith('write\nhttp://'):
-            data = read_data(connection, cmd, pos_nl, max_data_size=2 * 1024 * 1024, check_done=True, cmd_name='write')
+            data = read_data(connection, cmd, pos_nl, max_data_size=2.5 * 1024 * 1024, check_done=True, cmd_name='write')
             if data is None:
                 continue
 
@@ -1376,7 +1376,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             generate_package_diff_statistics(filename)
             continue
         elif cmd.startswith('write_info\nftp://') or cmd.startswith('write_info\nhttp://'):
-            data = read_data(connection, cmd, pos_nl, max_data_size=1024 * 1024, check_done=True, cmd_name='write_info')
+            data = read_data(connection, cmd, pos_nl, max_data_size=7 * 1024 * 1024, check_done=True, cmd_name='write_info')
             if data is None:
                 continue
 
