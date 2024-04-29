@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.51"
+SERVER_VERSION = "1.3.52"
 
 OLD_VERSION = '2.14.0'
 
@@ -1085,7 +1085,7 @@ class HttpClientThread(Thread):
     def __init__(self, connection: socket.socket, cmd: str, resultPath: str, latestResults: list) -> None:
         Thread.__init__(self)
         self.connection = connection
-        self.cmd = cmd[:cmd.find('\r\n')]
+        self.cmd = cmd
         self.resultPath = resultPath
         self.infoPath = os.path.join(self.resultPath, 'info_output')
         self.latestResults = latestResults
@@ -1102,12 +1102,12 @@ class HttpClientThread(Thread):
     def run(self):
         try:
             cmd = self.cmd
-            print_ts(cmd)
             url, queryParams = self.parse_req(cmd)
             if url is None:
                 print_ts('invalid request: {}'.format(cmd))
                 self.connection.close()
                 return
+            t_start = time.perf_counter()
             if url == '/':
                 html = overviewReport()
                 httpGetResponse(self.connection, html, 'text/html')
@@ -1204,6 +1204,7 @@ class HttpClientThread(Thread):
                     with open(filename, 'rt') as f:
                         data = f.read()
                     httpGetResponse(self.connection, data, 'text/plain')
+            print_ts('{} finished in {}s'.format(url, (time.perf_counter() - t_start)))
         except:
             tb = "".join(traceback.format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2]))
             print_ts(tb)
@@ -1287,7 +1288,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             continue
         pos_nl = cmd.find('\n')
         if pos_nl < 1:
-            print_ts('No newline found in data.')
+            print_ts("No newline found in data: '{}'".format(cmd))
             connection.close()
             continue
         firstLine = cmd[:pos_nl]
@@ -1296,8 +1297,11 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             connection.close()
             continue
         if cmd.startswith('GET /'):
+            cmd = cmd[:cmd.find('\r\n')]
+            print_ts(cmd)
             newThread = HttpClientThread(connection, cmd, resultPath, latestResults)
             newThread.start()
+            continue
         elif cmd == 'GetCppcheckVersions\n':
             reply = 'head ' + OLD_VERSION
             print_ts('GetCppcheckVersions: ' + reply)
@@ -1321,6 +1325,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             connection.close()
             continue
         elif cmd.startswith('write\nftp://') or cmd.startswith('write\nhttp://'):
+            t_start = time.perf_counter()
             data = read_data(connection, cmd, pos_nl, max_data_size=2.5 * 1024 * 1024, check_done=True, cmd_name='write')
             if data is None:
                 continue
@@ -1362,7 +1367,6 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             if old_version_wrong:
                 print_ts('Unexpected old version. Ignoring result data.')
                 continue
-            print_ts('results added for package ' + res.group(1) + ' (' + str(len(data)) + ' bytes)')
             filename = os.path.join(resultPath, res.group(1))
             with open(filename, 'wt') as f:
                 f.write(strDateTime() + '\n' + data)
@@ -1374,8 +1378,10 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 f.write(' '.join(latestResults))
             # generate package.diff..
             generate_package_diff_statistics(filename)
+            print_ts('write finished for {} ({} bytes / {}s)'.format(res.group(1), len(data), (time.perf_counter() - t_start)))
             continue
         elif cmd.startswith('write_info\nftp://') or cmd.startswith('write_info\nhttp://'):
+            t_start = time.perf_counter()
             data = read_data(connection, cmd, pos_nl, max_data_size=7 * 1024 * 1024, check_done=True, cmd_name='write_info')
             if data is None:
                 continue
@@ -1400,13 +1406,13 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             if url not in packages:
                 print_ts('Url is not in packages. Ignoring information data.')
                 continue
-            print_ts('adding info output for package ' + res.group(1) + ' (' + str(len(data)) + ' bytes)')
             info_path = resultPath + '/' + 'info_output'
             if not os.path.exists(info_path):
                 os.mkdir(info_path)
             filename = info_path + '/' + res.group(1)
             with open(filename, 'wt') as f:
                 f.write(strDateTime() + '\n' + data)
+            print_ts('write_info finished for {} ({} bytes / {}s)'.format(res.group(1), len(data), (time.perf_counter() - t_start)))
             continue
         elif cmd == 'getPackagesCount\n':
             packages_count = str(len(packages))
@@ -1421,7 +1427,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 connection.send(pkg.encode('utf-8', 'ignore'))
                 print_ts('getPackageIdx: ' + pkg)
             else:
-                print_ts('getPackageIdx: index is out of range')
+                print_ts('getPackageIdx: index {} is out of range'.format(request_idx))
             connection.close()
             continue
         elif cmd.startswith('write_nodata\nftp://'):
