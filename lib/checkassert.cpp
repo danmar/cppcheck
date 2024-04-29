@@ -49,11 +49,15 @@ void CheckAssert::assertWithSideEffects()
     for (const Token* tok = mTokenizer->list.front(); tok; tok = tok->next()) {
         if (!Token::simpleMatch(tok, "assert ("))
             continue;
+        if (Token::Match(tok->next()->astOperand1(), "%cop%")) // bailout
+            continue;
 
         const Token *endTok = tok->next()->link();
         for (const Token* tmp = tok->next(); tmp != endTok; tmp = tmp->next()) {
             if (Token::simpleMatch(tmp, "sizeof ("))
                 tmp = tmp->linkAt(1);
+            if (findLambdaEndToken(tmp)) // bailout
+                continue;
 
             checkVariableAssignment(tmp, tok->scope());
 
