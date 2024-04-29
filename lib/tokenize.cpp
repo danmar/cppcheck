@@ -8703,8 +8703,12 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "! %comp%"))
             syntaxError(tok);
-        if (Token::Match(tok, "] %name%") && (!isCPP() || !(tok->tokAt(-1) && Token::simpleMatch(tok->tokAt(-2), "delete ["))))
-            syntaxError(tok);
+        if (Token::Match(tok, "] %name%") && (!isCPP() || !(tok->tokAt(-1) && Token::simpleMatch(tok->tokAt(-2), "delete [")))) {
+            if (tok->next()->isUpperCaseName())
+                unknownMacroError(tok->next());
+            else
+                syntaxError(tok);
+        }
 
         if (tok->link() && Token::Match(tok, "[([]") && (!tok->tokAt(-1) || !tok->tokAt(-1)->isControlFlowKeyword())) {
             const Token* const end = tok->link();
