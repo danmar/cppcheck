@@ -50,8 +50,6 @@ void CheckAssert::assertWithSideEffects()
     for (const Token* tok = mTokenizer->list.front(); tok; tok = tok->next()) {
         if (!Token::simpleMatch(tok, "assert ("))
             continue;
-        if (Token::Match(tok->next()->astOperand2(), "%cop%")) // bailout
-            continue;
 
         const Token *endTok = tok->next()->link();
         for (const Token* tmp = tok->next(); tmp != endTok; tmp = tmp->next()) {
@@ -64,6 +62,8 @@ void CheckAssert::assertWithSideEffects()
 
             if (tmp->tokType() != Token::eFunction) {
                 if (const Library::Function* f = mSettings->library.getFunction(tmp)) {
+                    if (Library::getContainerYield(tmp->next()) != Library::Container::Yield::NO_YIELD) // bailout, assume read access
+                        continue;
                     if (!f->isconst && !f->ispure)
                         sideEffectInAssertError(tmp, mSettings->library.getFunctionName(tmp));
                 }
