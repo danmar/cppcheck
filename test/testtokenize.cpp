@@ -7137,6 +7137,10 @@ private:
                             InternalError,
                             "There is an unknown macro here somewhere. Configuration is required. If PACKED is a macro then please configure it.");
 
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("MACRO(a, b,,)\n"),
+                            InternalError,
+                            "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
+
         ASSERT_THROW_INTERNAL(tokenizeAndStringify("{ for (()()) }"), SYNTAX); // #11643
 
         ASSERT_NO_THROW(tokenizeAndStringify("S* g = ::new(ptr) S();")); // #12552
