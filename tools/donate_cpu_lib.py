@@ -16,7 +16,7 @@ import copy
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.57"
+CLIENT_VERSION = "1.3.58"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -685,7 +685,7 @@ class LibraryIncludes:
                             'ginac': ['<ginac/', '"ginac/'],
                             'googletest': ['<gtest/gtest.h>'],
                             'gtk': ['<gtk', '<glib.h>', '<glib-', '<glib/', '<gdk/', '<gnome'],
-                            'kde': ['<KGlobal>', '<KApplication>', '<KDE/'],
+                            'kde': ['<KGlobal>', '<KApplication>', '<KDE/', '<klocalizedstring.h>'],
                             'libcerror': ['<libcerror.h>'],
                             'libcurl': ['<curl/curl.h>'],
                             'libsigc++': ['<sigc++/'],
