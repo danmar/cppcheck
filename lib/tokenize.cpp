@@ -8674,8 +8674,6 @@ void Tokenizer::findGarbageCode() const
             if (Token::Match(tok->next(), ")|]|>|%assign%|%or%|%oror%|==|!=|/|>=|<=|&&"))
                 syntaxError(tok);
         }
-        if ((!isCPP() || !Token::simpleMatch(tok->previous(), "operator")) && Token::Match(tok, "[,;] ,"))
-            syntaxError(tok);
         if (Token::simpleMatch(tok, ".") &&
             !Token::simpleMatch(tok->previous(), ".") &&
             !Token::simpleMatch(tok->next(), ".") &&
@@ -8703,15 +8701,19 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "! %comp%"))
             syntaxError(tok);
-        if (Token::Match(tok, "] %name%") && (!isCPP() || !(tok->tokAt(-1) && Token::simpleMatch(tok->tokAt(-2), "delete ["))))
-            syntaxError(tok);
+        if (Token::Match(tok, "] %name%") && (!isCPP() || !(tok->tokAt(-1) && Token::simpleMatch(tok->tokAt(-2), "delete [")))) {
+            if (tok->next()->isUpperCaseName())
+                unknownMacroError(tok->next());
+            else
+                syntaxError(tok);
+        }
 
         if (tok->link() && Token::Match(tok, "[([]") && (!tok->tokAt(-1) || !tok->tokAt(-1)->isControlFlowKeyword())) {
             const Token* const end = tok->link();
             for (const Token* inner = tok->next(); inner != end; inner = inner->next()) {
                 if (inner->str() == "{")
                     inner = inner->link();
-                else if (inner->str() == ";") {
+                else if (inner->str() == ";" || (Token::simpleMatch(inner, ", ,") && (!isCPP() || !Token::simpleMatch(inner->previous(), "operator")))) {
                     if (tok->tokAt(-1) && tok->tokAt(-1)->isUpperCaseName())
                         unknownMacroError(tok->tokAt(-1));
                     else
@@ -8719,6 +8721,8 @@ void Tokenizer::findGarbageCode() const
                 }
             }
         }
+        if ((!isCPP() || !Token::simpleMatch(tok->previous(), "operator")) && Token::Match(tok, "[,;] ,"))
+            syntaxError(tok);
     }
 
     // ternary operator without :
