@@ -347,23 +347,17 @@ def staleReport(results_path: str) -> str:
     html += '<h1>Stale report</h1>\n'
     html += '<pre>\n'
     html += '<b>' + fmt('Package', 'Date       Time', link=False) + '</b>\n'
-    current_year = datetime.date.today().year
     for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
-        if not os.path.isfile(filename) or filename.endswith('.diff'):
+        if filename.endswith('.diff') or not os.path.isfile(filename):
             continue
-        for line in open(filename, 'rt'):
-            line = line.strip()
-            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
-                datestr = line
-            else:
-                continue
+        with open(filename, 'rt') as f:
+            # first line is datetime string
+            datestr = f.readline().strip()
             dt = dateTimeFromStr(datestr)
             diff = datetime.datetime.now() - dt
-            if diff.days < 30:
-                continue
-            package = filename[filename.rfind('/')+1:]
-            html += fmt(package, datestr) + '\n'
-            break
+            if diff.days >= 30:
+                package = filename[filename.rfind('/')+1:]
+                html += fmt(package, datestr) + '\n'
     html += '</pre>\n'
 
     html += '</body></html>\n'
