@@ -382,6 +382,7 @@ public:
     /** @brief forced includes given by the user */
     std::list<std::string> userIncludes;
 
+    // TODO: adjust all options so 0 means "disabled" and -1 "means "unlimited"
     struct ValueFlowOptions
     {
         /** @brief the maximum iterations to execute */

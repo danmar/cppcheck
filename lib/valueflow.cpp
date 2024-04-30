@@ -1161,8 +1161,10 @@ static size_t bitCeil(size_t x)
 
 static size_t getAlignOf(const ValueType& vt, const Settings& settings, int maxRecursion = 0)
 {
-    if (maxRecursion == settings.vfOptions.maxAlignOfRecursion)
+    if (maxRecursion == settings.vfOptions.maxAlignOfRecursion) {
+        // TODO: add bailout message
         return 0;
+    }
     if (vt.pointer || vt.reference != Reference::None || vt.isPrimitive()) {
         auto align = ValueFlow::getSizeOf(vt, settings);
         return align == 0 ? 0 : bitCeil(align);
@@ -1196,8 +1198,10 @@ static nonneg int getSizeOfType(const Token *typeTok, const Settings &settings)
 
 size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, int maxRecursion)
 {
-    if (maxRecursion == settings.vfOptions.maxSizeOfRecursion)
+    if (maxRecursion == settings.vfOptions.maxSizeOfRecursion) {
+        // TODO: add bailout message
         return 0;
+    }
     if (vt.pointer || vt.reference != Reference::None)
         return settings.platform.sizeof_pointer;
     if (vt.type == ValueType::Type::BOOL || vt.type == ValueType::Type::CHAR)
@@ -3294,8 +3298,10 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     }
 
     void setupExprVarIds(const Token* start, int depth = 0) {
-        if (depth > settings.vfOptions.maxExprVarIdDepth)
+        if (depth > settings.vfOptions.maxExprVarIdDepth) {
+            // TODO: add bailout message
             return;
+        }
         visitAstNodes(start, [&](const Token* tok) {
             const bool top = depth == 0 && tok == start;
             const bool ispointer = astIsPointer(tok) || astIsSmartPointer(tok) || astIsIterator(tok);
@@ -7201,6 +7207,7 @@ static bool valueFlowForLoop2(const Token *tok,
         if (!error)
             execute(secondExpression, programMemory, &result, &error, settings);
     }
+    // TODO: add bailout message
 
     if (memory1)
         memory1->swap(startMemory);
@@ -7610,6 +7617,7 @@ static bool productParams(const Settings& settings, const std::unordered_map<Key
     if (args.size() > max) {
         bail = true;
         args.resize(max);
+        // TODO: add bailout message
     }
 
     for (const auto& arg:args) {
@@ -9500,8 +9508,10 @@ struct ValueFlowPassRunner {
     bool run(const ValuePtr<ValueFlowPass>& pass) const
     {
         auto start = Clock::now();
-        if (start > stop)
+        if (start > stop) {
+            // TODO: add bailout message
             return true;
+        }
         if (!state.tokenlist.isCPP() && pass->cpp())
             return false;
         if (timerResults) {
@@ -9549,7 +9559,7 @@ struct ValueFlowPassRunner {
                                                   Severity::information,
                                                   "Limiting ValueFlow analysis in function '" + functionName + "' since it is too complex. "
                                                   "Please specify --check-level=exhaustive to perform full analysis.",
-                                                  "checkLevelNormal",
+                                                  "checkLevelNormal", // TODO: use more specific ID
                                                   Certainty::normal);
                         state.errorLogger.reportErr(errmsg);
                     }
