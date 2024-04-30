@@ -7535,6 +7535,16 @@ private:
                         "    S s(d);\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: d\n", errout_str());
+
+        valueFlowUninit("struct S {\n"
+                        "    explicit S(double v) : m(v) {}\n"
+                        "    double m;\n"
+                        "};\n"
+                        "void f() {\n"
+                        "    double d;\n"
+                        "    S s{ d };\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: d\n", errout_str());
     }
 
     void uninitvar_memberfunction() {
