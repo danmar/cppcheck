@@ -3295,15 +3295,32 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
     const Token* ftok = getTokenArgumentFunction(tok, argnr);
     if (!ftok)
         return ExprUsage::None;
-    if (ftok->function()) {
+    const Function* func = ftok->function();
+    if (!func && ftok->variable() && ftok == ftok->variable()->nameToken()) { // variable init/constructor call
+         if (ftok->variable()->isStlType() || (ftok->variable()->valueType() && ftok->variable()->valueType()->container)) // STL types or containers don't initialize external variables
+             return ExprUsage::Used;
+         // TODO: resolve between different constructors
+         if (ftok->variable()->type() && ftok->variable()->type()->classScope) {
+             const int nCtor = ftok->variable()->type()->classScope->numConstructors;
+             if (nCtor == 0)
+                 return ExprUsage::Used;
+             if (nCtor == 1) {
+                 const Scope* scope = ftok->variable()->type()->classScope;
+                 auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [](const Function& f) { return f.isConstructor(); });
+                 if (it != scope->functionList.end())
+                     func = &*it;
+             }
+         }
+    }
+    if (func) {
         std::vector<const Variable*> args = getArgumentVars(ftok, argnr);
         for (const Variable* arg : args) {
             if (!arg)
                 continue;
             if (arg->isReference() || (arg->isPointer() && indirect == 1)) {
-                if (!ftok->function()->hasBody())
+                if (!func->hasBody())
                     return ExprUsage::PassedByReference;
-                for (const Token* bodytok = ftok->function()->functionScope->bodyStart; bodytok != ftok->function()->functionScope->bodyEnd; bodytok = bodytok->next()) {
+                for (const Token* bodytok = func->functionScope->bodyStart; bodytok != func->functionScope->bodyEnd; bodytok = bodytok->next()) {
                     if (bodytok->variable() == arg) {
                         if (arg->isReference())
                             return ExprUsage::PassedByReference;
@@ -3321,11 +3338,6 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
         return ExprUsage::Used;
     } else if (ftok->str() == "{") {
         return indirect == 0 ? ExprUsage::Used : ExprUsage::Inconclusive;
-    } else if (ftok->variable() && ftok == ftok->variable()->nameToken()) { // variable init/constructor call
-        if (ftok->variable()->type() && ftok->variable()->type()->classScope && ftok->variable()->type()->classScope->numConstructors == 0)
-            return ExprUsage::Used;
-        if (ftok->variable()->isStlType() || (ftok->variable()->valueType() && ftok->variable()->valueType()->container)) // STL types or containers don't initialize external variables
-            return ExprUsage::Used;
     } else {
         const bool isnullbad = settings.library.isnullargbad(ftok, argnr + 1);
         if (indirect == 0 && astIsPointer(tok) && !addressOf && isnullbad)
