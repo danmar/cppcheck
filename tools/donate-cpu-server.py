@@ -363,8 +363,12 @@ def staleReport(results_path: str, query_params: dict) -> str:
         with open(filename, 'rt') as f:
             # first line is datetime string
             datestr = f.readline().strip()
-            dt = dateTimeFromStr(datestr)
-            diff = datetime.datetime.now() - dt
+            try:
+                dt = dateTimeFromStr(datestr)
+                diff = datetime.datetime.now() - dt
+            except:
+                # there might be very outdated files which still might have an invalid timestamp
+                diff = datetime.timedelta(days=thresh_d)
             if diff.days >= thresh_d:
                 package = pkg_from_file(filename)
                 html += fmt(package, datestr) + '\n'
