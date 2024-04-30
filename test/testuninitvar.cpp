@@ -7438,7 +7438,7 @@ private:
                       "[test.cpp:27]: (error) Uninitialized variable: s.t.j\n",
                       errout_str());
 
-        valueFlowUninit("struct S { int x; };\n"
+        valueFlowUninit("struct S { int x; };\n" // #6933
                         "void f() {\n"
                         "    int i;\n"
                         "    S s(i);\n"
@@ -7525,6 +7525,16 @@ private:
                         "    return s2;\n"
                         "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        valueFlowUninit("struct S {\n" // #12685
+                        "    explicit S(double v);\n"
+                        "    double m;\n"
+                        "};\n"
+                        "void f() {\n"
+                        "    double d;\n"
+                        "    S s(d);\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: d\n", errout_str());
     }
 
     void uninitvar_memberfunction() {
