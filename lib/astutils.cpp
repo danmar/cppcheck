@@ -3296,23 +3296,25 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
     if (!ftok)
         return ExprUsage::None;
     const Function* func = ftok->function();
-     // variable init/constructor call?
+    // variable init/constructor call?
     if (!func && ftok->variable() && ftok == ftok->variable()->nameToken()) {
-         // STL types or containers don't initialize external variables
-         if (ftok->variable()->isStlType() || (ftok->variable()->valueType() && ftok->variable()->valueType()->container))
-             return ExprUsage::Used;
-         // TODO: resolve between different constructors
-         if (ftok->variable()->type() && ftok->variable()->type()->classScope) {
-             const int nCtor = ftok->variable()->type()->classScope->numConstructors;
-             if (nCtor == 0)
-                 return ExprUsage::Used;
-             if (nCtor == 1) {
-                 const Scope* scope = ftok->variable()->type()->classScope;
-                 auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [](const Function& f) { return f.isConstructor(); });
-                 if (it != scope->functionList.end())
-                     func = &*it;
-             }
-         }
+        // STL types or containers don't initialize external variables
+        if (ftok->variable()->isStlType() || (ftok->variable()->valueType() && ftok->variable()->valueType()->container))
+            return ExprUsage::Used;
+        // TODO: resolve multiple constructors
+        if (ftok->variable()->type() && ftok->variable()->type()->classScope) {
+            const int nCtor = ftok->variable()->type()->classScope->numConstructors;
+            if (nCtor == 0)
+                return ExprUsage::Used;
+            if (nCtor == 1) {
+                const Scope* scope = ftok->variable()->type()->classScope;
+                auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [](const Function& f) {
+                    return f.isConstructor();
+                });
+                if (it != scope->functionList.end())
+                    func = &*it;
+            }
+        }
     }
     if (func) {
         std::vector<const Variable*> args = getArgumentVars(ftok, argnr);
