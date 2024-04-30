@@ -823,8 +823,7 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                     continue;
             }
 
-            FileSettings fs;
-            fs.filename = cfilename;
+            FileSettings fs{cfilename};
             fs.cfg = p.name;
             // TODO: detect actual MSC version
             fs.msc = true;
@@ -866,17 +865,6 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
     return true;
 }
 
-static std::string stringReplace(const std::string &original, const std::string &toReplace, const std::string &replaceWith) 
-{
-    std::string result(original);
-    size_t pos = result.find(toReplace);
-    while (pos != std::string::npos) {
-        result.replace(pos, toReplace.length(), replaceWith);
-        pos = result.find(toReplace);
-    }
-    return result;
-}
-
 ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::string& filename, const std::vector<std::string>& fileFilters, std::vector<SharedItemsProject> &cache)
 {
     for (const auto &entry : cache) {
@@ -905,7 +893,8 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
                 if (std::strcmp(e->Name(), "ClCompile") == 0) {
                     const char* include = e->Attribute("Include");
                     if (include && Path::acceptFile(include)) {
-                        std::string file = stringReplace(include, "$(MSBuildThisFileDirectory)", "./");
+                        std::string file(include);
+                        findAndReplace(file, "$(MSBuildThisFileDirectory)", "./");
 
                         // Don't include file if it matches the filter
                         if (!fileFilters.empty() && !matchglobs(fileFilters, file))
@@ -924,7 +913,9 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
                 if (includePath == std::string("%(AdditionalIncludeDirectories)"))
                     continue;
 
-                result.includePaths.emplace_back(stringReplace(includePath, "$(MSBuildThisFileDirectory)", "./"));
+                std::string toAdd(includePath);
+                findAndReplace(toAdd, "$(MSBuildThisFileDirectory)", "./");
+                result.includePaths.emplace_back(toAdd);
             }
         }
     }
