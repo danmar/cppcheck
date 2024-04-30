@@ -2492,9 +2492,9 @@ void CheckStl::checkDereferenceInvalidIterator2()
             }
             if (cValue) {
                 const ValueFlow::Value& lValue = getLifetimeIteratorValue(tok, cValue->path);
-                assert(cValue->isInconclusive() || value.isInconclusive() || lValue.isLifetimeValue());
                 if (!lValue.isLifetimeValue())
                     continue;
+                assert(cValue->isInconclusive() || value.isInconclusive());
                 if (emptyAdvance)
                     outOfBoundsError(emptyAdvance,
                                      lValue.tokvalue->expressionString(),
