@@ -141,4 +141,4 @@ compile_commands.json
 **/*.egg-info/
 
 # cppcheck-htmlreport auto files
-htmlreport/cppcheck_htmlreport/run.py
+/htmlreport/cppcheck_htmlreport/run.py
