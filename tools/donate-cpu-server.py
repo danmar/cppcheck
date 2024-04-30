@@ -76,6 +76,10 @@ def dateTimeFromStr(datestr: str) -> datetime.datetime:
     return datetime.datetime.strptime(datestr, '%Y-%m-%d %H:%M')
 
 
+def pkg_from_file(filename: str) -> str:
+    return filename[filename.rfind('/')+1:]
+
+
 def overviewReport() -> str:
     html = '<!DOCTYPE html>\n'
     html += '<html><head><title>daca@home</title></head><body>\n'
@@ -164,7 +168,7 @@ def latestReport(latestResults: list) -> str:
     for filename in latestResults:
         if not os.path.isfile(filename):
             continue
-        package = filename[filename.rfind('/')+1:]
+        package = pkg_from_file(filename)
         current_year = datetime.date.today().year
 
         datestr = None
@@ -226,7 +230,7 @@ def crashReport(results_path: str, query_params: dict):
                 elif line.startswith('count:'):
                     if line.find('Crash') < 0:
                         break
-                    package = filename[filename.rfind('/')+1:]
+                    package = pkg_from_file(filename)
                     counts = line.split(' ')
                     c_version = ''
                     if counts[2] == 'Crash!':
@@ -325,7 +329,7 @@ def timeoutReport(results_path: str) -> str:
                 elif line.startswith('count:'):
                     if line.find('TO!') < 0:
                         break
-                    package = filename[filename.rfind('/')+1:]
+                    package = pkg_from_file(filename)
                     counts = line.split(' ')
                     c2 = ''
                     if counts[2] == 'TO!':
@@ -356,7 +360,7 @@ def staleReport(results_path: str) -> str:
             dt = dateTimeFromStr(datestr)
             diff = datetime.datetime.now() - dt
             if diff.days >= 30:
-                package = filename[filename.rfind('/')+1:]
+                package = pkg_from_file(filename)
                 html += fmt(package, datestr) + '\n'
     html += '</pre>\n'
 
