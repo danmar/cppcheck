@@ -22,6 +22,7 @@
 
 #include "checkassert.h"
 
+#include "astutils.h"
 #include "errortypes.h"
 #include "settings.h"
 #include "symboldatabase.h"
@@ -57,8 +58,20 @@ void CheckAssert::assertWithSideEffects()
 
             checkVariableAssignment(tmp, tok->scope());
 
-            if (tmp->tokType() != Token::eFunction)
+            if (tmp->tokType() != Token::eFunction) {
+                if (const Library::Function* f = mSettings->library.getFunction(tmp)) {
+                    if (f->isconst || f->ispure)
+                        continue;
+                    if (Library::getContainerYield(tmp->next()) != Library::Container::Yield::NO_YIELD) // bailout, assume read access
+                        continue;
+                    if (std::any_of(f->argumentChecks.begin(), f->argumentChecks.end(), [](const std::pair<int, Library::ArgumentChecks>& ac) {
+                        return ac.second.iteratorInfo.container > 0; // bailout, takes iterators -> assume read access
+                    }))
+                        continue;
+                    sideEffectInAssertError(tmp, mSettings->library.getFunctionName(tmp));
+                }
                 continue;
+            }
 
             const Function* f = tmp->function();
             const Scope* scope = f->functionScope;

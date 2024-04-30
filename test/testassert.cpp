@@ -134,6 +134,15 @@ private:
               "    assert(empty());\n"
               "}");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S {\n" // #4811
+              "    void f() const;\n"
+              "    bool g(std::ostream& os = std::cerr) const;\n"
+              "};\n"
+              "void S::f() const {\n"
+              "    assert(g());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void memberFunctionCallInAssert() {

@@ -68,6 +68,7 @@ void validCode(int argInt, GHashTableIter * hash_table_iter, GHashTable * hash_t
     // NULL is handled graciously
     char* str = g_strdup(NULL);
     if (g_strcmp0(str, NULL) || g_strcmp0(NULL, str))
+        // cppcheck-suppress valueFlowBailout // TODO: caused by <pure/>?
         printf("%s", str);
     g_free(str);
 }
