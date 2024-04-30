@@ -724,125 +724,7 @@ static void loadVisualStudioProperties(const std::string &props, std::map<std::s
     }
 }
 
-bool ImportProject::importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters)
-{
-    variables["ProjectDir"] = Path::simplifyPath(Path::getPathFromFilename(filename));
-
-    std::list<ProjectConfiguration> projectConfigurationList;
-    std::list<std::string> compileList;
-    std::list<ItemDefinitionGroup> itemDefinitionGroupList;
-    std::string includePath;
-
-    bool useOfMfc = false;
-
-    tinyxml2::XMLDocument doc;
-    const tinyxml2::XMLError error = doc.LoadFile(filename.c_str());
-    if (error != tinyxml2::XML_SUCCESS) {
-        printError(std::string("Visual Studio project file is not a valid XML - ") + tinyxml2::XMLDocument::ErrorIDToName(error));
-        return false;
-    }
-    const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
-    if (rootnode == nullptr) {
-        printError("Visual Studio project file has no XML root node");
-        return false;
-    }
-    for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
-        if (std::strcmp(node->Name(), "ItemGroup") == 0) {
-            const char *labelAttribute = node->Attribute("Label");
-            if (labelAttribute && std::strcmp(labelAttribute, "ProjectConfigurations") == 0) {
-                for (const tinyxml2::XMLElement *cfg = node->FirstChildElement(); cfg; cfg = cfg->NextSiblingElement()) {
-                    if (std::strcmp(cfg->Name(), "ProjectConfiguration") == 0) {
-                        const ProjectConfiguration p(cfg);
-                        if (p.platform != ProjectConfiguration::Unknown) {
-                            projectConfigurationList.emplace_back(cfg);
-                            mAllVSConfigs.insert(p.configuration);
-                        }
-                    }
-                }
-            } else {
-                for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
-                    if (std::strcmp(e->Name(), "ClCompile") == 0) {
-                        const char *include = e->Attribute("Include");
-                        if (include && Path::acceptFile(include))
-                            compileList.emplace_back(include);
-                    }
-                }
-            }
-        } else if (std::strcmp(node->Name(), "ItemDefinitionGroup") == 0) {
-            itemDefinitionGroupList.emplace_back(node, additionalIncludeDirectories);
-        } else if (std::strcmp(node->Name(), "PropertyGroup") == 0) {
-            importPropertyGroup(node, variables, includePath, &useOfMfc);
-        } else if (std::strcmp(node->Name(), "ImportGroup") == 0) {
-            const char *labelAttribute = node->Attribute("Label");
-            if (labelAttribute && std::strcmp(labelAttribute, "PropertySheets") == 0) {
-                for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
-                    if (std::strcmp(e->Name(), "Import") == 0) {
-                        const char *projectAttribute = e->Attribute("Project");
-                        if (projectAttribute)
-                            loadVisualStudioProperties(projectAttribute, variables, includePath, additionalIncludeDirectories, itemDefinitionGroupList);
-                    }
-                }
-            }
-        }
-    }
-    // # TODO: support signedness of char via /J (and potential XML option for it)?
-    // we can only set it globally but in this context it needs to be treated per file
-
-    for (const std::string &c : compileList) {
-        const std::string cfilename = Path::simplifyPath(Path::isAbsolute(c) ? c : Path::getPathFromFilename(filename) + c);
-        if (!fileFilters.empty() && !matchglobs(fileFilters, cfilename))
-            continue;
-
-        for (const ProjectConfiguration &p : projectConfigurationList) {
-
-            if (!guiProject.checkVsConfigs.empty()) {
-                const bool doChecking = std::any_of(guiProject.checkVsConfigs.cbegin(), guiProject.checkVsConfigs.cend(), [&](const std::string& c) {
-                    return c == p.configuration;
-                });
-                if (!doChecking)
-                    continue;
-            }
-
-            FileSettings fs{cfilename};
-            fs.cfg = p.name;
-            // TODO: detect actual MSC version
-            fs.msc = true;
-            fs.useMfc = useOfMfc;
-            fs.defines = "_WIN32=1";
-            if (p.platform == ProjectConfiguration::Win32)
-                fs.platformType = Platform::Type::Win32W;
-            else if (p.platform == ProjectConfiguration::x64) {
-                fs.platformType = Platform::Type::Win64;
-                fs.defines += ";_WIN64=1";
-            }
-            std::string additionalIncludePaths;
-            for (const ItemDefinitionGroup &i : itemDefinitionGroupList) {
-                if (!i.conditionIsTrue(p))
-                    continue;
-                fs.standard = Standards::getCPP(i.cppstd);
-                fs.defines += ';' + i.preprocessorDefinitions;
-                if (i.enhancedInstructionSet == "StreamingSIMDExtensions")
-                    fs.defines += ";__SSE__";
-                else if (i.enhancedInstructionSet == "StreamingSIMDExtensions2")
-                    fs.defines += ";__SSE2__";
-                else if (i.enhancedInstructionSet == "AdvancedVectorExtensions")
-                    fs.defines += ";__AVX__";
-                else if (i.enhancedInstructionSet == "AdvancedVectorExtensions2")
-                    fs.defines += ";__AVX2__";
-                else if (i.enhancedInstructionSet == "AdvancedVectorExtensions512")
-                    fs.defines += ";__AVX512__";
-                additionalIncludePaths += ';' + i.additionalIncludePaths;
-            }
-            fsSetDefines(fs, fs.defines);
-            fsSetIncludePaths(fs, Path::getPathFromFilename(filename), toStringList(includePath + ';' + additionalIncludePaths), variables);
-            fileSettings.push_back(std::move(fs));
-        }
-    }
-
-    return true;
-}
-
-bool ImportProject::importVcxproj(const std::string& filename, std::map<std::string, std::string, cppcheck::stricmp>& variables, const std::string& additionalIncludeDirectories, const std::vector<std::string>& fileFilters, std::vector<SharedItemsProject>& cache)
+bool ImportProject::importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache)
 {
     variables["ProjectDir"] = Path::simplifyPath(Path::getPathFromFilename(filename));
 
@@ -890,19 +772,16 @@ bool ImportProject::importVcxproj(const std::string& filename, std::map<std::str
                     }
                 }
             }
-        }
-        else if (std::strcmp(node->Name(), "ItemDefinitionGroup") == 0) {
+        } else if (std::strcmp(node->Name(), "ItemDefinitionGroup") == 0) {
             itemDefinitionGroupList.emplace_back(node, additionalIncludeDirectories);
-        }
-        else if (std::strcmp(node->Name(), "PropertyGroup") == 0) {
+        } else if (std::strcmp(node->Name(), "PropertyGroup") == 0) {
             importPropertyGroup(node, variables, includePath, &useOfMfc);
-        }
-        else if (std::strcmp(node->Name(), "ImportGroup") == 0) {
-            const char* labelAttribute = node->Attribute("Label");
+        } else if (std::strcmp(node->Name(), "ImportGroup") == 0) {
+            const char *labelAttribute = node->Attribute("Label");
             if (labelAttribute && std::strcmp(labelAttribute, "PropertySheets") == 0) {
-                for (const tinyxml2::XMLElement* e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
+                for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
                     if (std::strcmp(e->Name(), "Import") == 0) {
-                        const char* projectAttribute = e->Attribute("Project");
+                        const char *projectAttribute = e->Attribute("Project");
                         if (projectAttribute)
                             loadVisualStudioProperties(projectAttribute, variables, includePath, additionalIncludeDirectories, itemDefinitionGroupList);
                     }
