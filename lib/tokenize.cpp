@@ -8427,7 +8427,6 @@ void Tokenizer::findGarbageCode() const
                                                                          "goto",
                                                                          "if",
                                                                          "return",
-                                                                         "static",
                                                                          "switch",
                                                                          "throw",
                                                                          "typedef",
@@ -8718,6 +8717,12 @@ void Tokenizer::findGarbageCode() const
                     else
                         syntaxError(inner);
                 }
+            }
+        }
+        if (tok->str() == "typedef") {
+            for (const Token* tok2 = tok->next(); tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
+                if (!tok2->next() || tok2->isControlFlowKeyword() || Token::Match(tok2, "typedef|static|."))
+                    syntaxError(tok);
             }
         }
     }

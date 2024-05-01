@@ -767,7 +767,6 @@ private:
 
     void garbageCode74() { // #6751
         ASSERT_THROW_INTERNAL(checkCode("_lenraw(const char* digits) { } typedef decltype(sizeof(0)) { } operator"), SYNTAX);
-        ignore_errout(); // we do not care about the output
     }
 
     void garbageCode76() { // #6754
