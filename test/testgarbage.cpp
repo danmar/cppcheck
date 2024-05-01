@@ -1213,7 +1213,7 @@ private:
                                         "    typedef S0 b[][1][1] != 0\n"
                                         "};\n"
                                         "b[K][0] S0 b[][1][1] != 4{ 0 };\n"
-                                        "b[0][0]"), SYNTAX);
+                                        "b[0][0]"), UNKNOWN_MACRO);
     }
 
     void garbageCode149() { // #7085

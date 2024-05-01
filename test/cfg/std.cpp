@@ -5016,3 +5016,9 @@ void eraseIteratorOutOfBounds_std_deque(std::deque<int>& x) // #8690
     // cppcheck-suppress eraseIteratorOutOfBounds
     x.erase(x.end());
 }
+
+void assertWithSideEffect_system()
+{
+    // cppcheck-suppress [assertWithSideEffect,checkLibraryNoReturn] // TODO: #8329
+    assert(std::system("abc"));
+}

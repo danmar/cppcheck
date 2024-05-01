@@ -1266,6 +1266,22 @@ bool Library::isContainerYield(const Token * const cond, Library::Container::Yie
     return false;
 }
 
+Library::Container::Yield Library::getContainerYield(const Token* const cond)
+{
+    if (Token::simpleMatch(cond, "(")) {
+        const Token* tok = cond->astOperand1();
+        if (tok && tok->str() == ".") {
+            if (tok->astOperand1() && tok->astOperand1()->valueType()) {
+                if (const Library::Container *container = tok->astOperand1()->valueType()->container) {
+                    if (tok->astOperand2())
+                        return container->getYield(tok->astOperand2()->str());
+                }
+            }
+        }
+    }
+    return Library::Container::Yield::NO_YIELD;
+}
+
 // returns true if ftok is not a library function
 bool Library::isNotLibraryFunction(const Token *ftok) const
 {
