@@ -5029,10 +5029,10 @@ void assertWithSideEffect_std_map_at(const std::map<int, int>& m) // #12695
     assert(m.at(0));
 }
 
-void assertWithSideEffect_std_unique_ptr_get((std::unique_ptr<int>& p)
+void assertWithSideEffect_std_unique_ptr_get(std::unique_ptr<int>& p)
 {
     // cppcheck-suppress checkLibraryNoReturn
-	assert(p.get());
+    assert(p.get());
 }
 
 void assertWithSideEffect_std_begin(const std::vector<std::string>& v) {
