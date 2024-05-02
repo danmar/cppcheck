@@ -5028,3 +5028,16 @@ void assertWithSideEffect_std_map_at(const std::map<int, int>& m) // #12695
     // cppcheck-suppress checkLibraryNoReturn
     assert(m.at(0));
 }
+
+void assertWithSideEffect_std_unique_ptr_get((std::unique_ptr<int>& p)
+{
+    // cppcheck-suppress checkLibraryNoReturn
+	assert(p.get());
+}
+
+void assertWithSideEffect_std_begin(const std::vector<std::string>& v) {
+    // cppcheck-suppress [checkLibraryNoReturn, checkLibraryFunction] // TODO
+    assert(std::is_sorted(std::begin(v), std::end(v), [](const std::string& a, const std::string& b) {
+        return a.size() < b.size();
+    }));
+}
