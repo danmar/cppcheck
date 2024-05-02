@@ -143,7 +143,7 @@ $(libcppdir)/valueflow.o: ../lib/valueflow.cpp ../lib/addoninfo.h ../lib/analyze
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/valueflow.cpp
 
 $(libcppdir)/tokenize.o: ../lib/tokenize.cpp ../externals/simplecpp/simplecpp.h ../lib/addoninfo.h ../lib/astutils.h ../lib/color.h ../lib/config.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/preprocessor.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/summaries.h ../lib/suppressions.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/timer.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/vfvalue.h
- 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/tokenize.cpp
+	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/tokenize.cpp
 
 $(libcppdir)/symboldatabase.o: ../lib/symboldatabase.cpp ../lib/addoninfo.h ../lib/astutils.h ../lib/color.h ../lib/config.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/keywords.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/suppressions.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/symboldatabase.cpp
