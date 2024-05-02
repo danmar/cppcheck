@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.52"
+SERVER_VERSION = "1.3.53"
 
 OLD_VERSION = '2.14.0'
 
@@ -74,6 +74,10 @@ def strDateTime() -> str:
 
 def dateTimeFromStr(datestr: str) -> datetime.datetime:
     return datetime.datetime.strptime(datestr, '%Y-%m-%d %H:%M')
+
+
+def pkg_from_file(filename: str) -> str:
+    return filename[filename.rfind('/')+1:]
 
 
 def overviewReport() -> str:
@@ -164,7 +168,7 @@ def latestReport(latestResults: list) -> str:
     for filename in latestResults:
         if not os.path.isfile(filename):
             continue
-        package = filename[filename.rfind('/')+1:]
+        package = pkg_from_file(filename)
         current_year = datetime.date.today().year
 
         datestr = None
@@ -226,7 +230,7 @@ def crashReport(results_path: str, query_params: dict):
                 elif line.startswith('count:'):
                     if line.find('Crash') < 0:
                         break
-                    package = filename[filename.rfind('/')+1:]
+                    package = pkg_from_file(filename)
                     counts = line.split(' ')
                     c_version = ''
                     if counts[2] == 'Crash!':
@@ -325,7 +329,7 @@ def timeoutReport(results_path: str) -> str:
                 elif line.startswith('count:'):
                     if line.find('TO!') < 0:
                         break
-                    package = filename[filename.rfind('/')+1:]
+                    package = pkg_from_file(filename)
                     counts = line.split(' ')
                     c2 = ''
                     if counts[2] == 'TO!':
@@ -341,29 +345,33 @@ def timeoutReport(results_path: str) -> str:
     return html
 
 
-def staleReport(results_path: str) -> str:
+def staleReport(results_path: str, query_params: dict) -> str:
+    thresh_d = query_params.get('days')
+    if thresh_d is None:
+        thresh_d = 30
+    else:
+        thresh_d = int(thresh_d)
+
     html = '<!DOCTYPE html>\n'
     html += '<html><head><title>Stale report</title></head><body>\n'
     html += '<h1>Stale report</h1>\n'
     html += '<pre>\n'
     html += '<b>' + fmt('Package', 'Date       Time', link=False) + '</b>\n'
-    current_year = datetime.date.today().year
     for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
-        if not os.path.isfile(filename) or filename.endswith('.diff'):
+        if filename.endswith('.diff') or not os.path.isfile(filename):
             continue
-        for line in open(filename, 'rt'):
-            line = line.strip()
-            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
-                datestr = line
-            else:
-                continue
-            dt = dateTimeFromStr(datestr)
-            diff = datetime.datetime.now() - dt
-            if diff.days < 30:
-                continue
-            package = filename[filename.rfind('/')+1:]
-            html += fmt(package, datestr) + '\n'
-            break
+        with open(filename, 'rt') as f:
+            # first line is datetime string
+            datestr = f.readline().strip()
+            try:
+                dt = dateTimeFromStr(datestr)
+                diff = datetime.datetime.now() - dt
+            except:
+                # there might be very outdated files which still might have an invalid timestamp
+                diff = datetime.timedelta(days=thresh_d)
+            if diff.days >= thresh_d:
+                package = pkg_from_file(filename)
+                html += fmt(package, datestr) + '\n'
     html += '</pre>\n'
 
     html += '</body></html>\n'
@@ -1121,7 +1129,7 @@ class HttpClientThread(Thread):
                 html = timeoutReport(self.resultPath)
                 httpGetResponse(self.connection, html, 'text/html')
             elif url == '/stale.html':
-                html = staleReport(self.resultPath)
+                html = staleReport(self.resultPath, queryParams)
                 httpGetResponse(self.connection, html, 'text/html')
             elif url == '/diff.html':
                 html = diffReport(self.resultPath)
