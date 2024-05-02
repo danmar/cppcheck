@@ -5022,3 +5022,9 @@ void assertWithSideEffect_system()
     // cppcheck-suppress [assertWithSideEffect,checkLibraryNoReturn] // TODO: #8329
     assert(std::system("abc"));
 }
+
+void assertWithSideEffect_std_map_at(const std::map<int, int>& m) // #12695
+{
+    // cppcheck-suppress checkLibraryNoReturn
+    assert(m.at(0));
+}
