@@ -68,6 +68,8 @@ void CheckAssert::assertWithSideEffects()
                         return ac.second.iteratorInfo.container > 0; // bailout, takes iterators -> assume read access
                     }))
                         continue;
+                    if (tmp->str() == "get" && Token::simpleMatch(tmp->astParent(), ".") && astIsSmartPointer(tmp->astParent()->astOperand1()))
+                        continue;
                     sideEffectInAssertError(tmp, mSettings->library.getFunctionName(tmp));
                 }
                 continue;
