@@ -5036,8 +5036,8 @@ void assertWithSideEffect_std_unique_ptr_get(std::unique_ptr<int>& p)
 }
 
 void assertWithSideEffect_std_begin(const std::vector<std::string>& v) {
-    // cppcheck-suppress [checkLibraryNoReturn, checkLibraryFunction] // TODO
+    // cppcheck-suppress checkLibraryFunction // TODO
     assert(std::is_sorted(std::begin(v), std::end(v), [](const std::string& a, const std::string& b) {
         return a.size() < b.size();
-    }));
+    })); // cppcheck-suppress checkLibraryNoReturn
 }
