@@ -8726,6 +8726,10 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (tok->str() == "typedef") {
             for (const Token* tok2 = tok->next(); tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
+                if (isUnevaluated(tok2)) {
+                    tok2 = tok2->linkAt(1);
+                    continue;
+                }
                 if (!tok2->next() || tok2->isControlFlowKeyword() || Token::Match(tok2, "typedef|static|."))
                     syntaxError(tok);
             }
