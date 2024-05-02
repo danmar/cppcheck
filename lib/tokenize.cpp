@@ -6225,6 +6225,17 @@ void Tokenizer::simplifyHeadersAndUnusedTemplates()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         const bool isIncluded = (tok->fileIndex() != 0);
 
+        // Remove constructor initializer
+        if (isIncluded && !mSettings.checkHeaders && tok->str() == ":") {
+            if (tok->previous() && tok->previous()->str() == ")") {
+                const Token *next = tok->next();
+                while (next && next->str() != "{")
+                    next = next->next();
+                Token::eraseTokens(tok, next);
+                tok->deleteThis();
+            }
+        }
+
         // Remove executable code
         if (isIncluded && !mSettings.checkHeaders && tok->str() == "{") {
             // TODO: We probably need to keep the executable code if this function is called from the source file.
