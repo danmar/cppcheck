@@ -5533,6 +5533,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // remove __attribute__((?))
     simplifyAttribute();
 
+    validate();
+
     // Bail out if code is garbage
     if (mTimerResults) {
         Timer t("Tokenizer::simplifyTokens1::simplifyTokenList1::findGarbageCode", mSettings.showtime, mTimerResults);
