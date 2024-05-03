@@ -622,18 +622,6 @@ unsigned int CppCheck::checkBuffer(const FileWithDetails &file, const std::strin
     });
 }
 
-// cppcheck-suppress unusedFunction
-unsigned int CppCheck::checkStream(const FileWithDetails &file, const std::string &cfgname, std::istream& fileStream)
-{
-    return checkInternal(file, cfgname,
-                         [&file, &fileStream](TokenList& list) {
-        list.createTokens(fileStream, file.spath());
-    },
-                         [&file, &fileStream](std::vector<std::string>& files, simplecpp::OutputList* outputList) {
-        return simplecpp::TokenList{fileStream, files, file.spath(), outputList};
-    });
-}
-
 unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string &cfgname)
 {
     return checkInternal(file, cfgname,
