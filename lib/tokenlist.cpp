@@ -321,13 +321,6 @@ void TokenList::insertTokens(Token *dest, const Token *src, nonneg int n)
 
 //---------------------------------------------------------------------------
 
-bool TokenList::createTokens(std::istream &code)
-{
-    return createTokensInternal(code, mFiles.empty() ? "" : *mFiles.cbegin());
-}
-
-//---------------------------------------------------------------------------
-
 bool TokenList::createTokens(const uint8_t* data, size_t size)
 {
     return createTokensInternal(data, size, mFiles.empty() ? "" : *mFiles.cbegin());

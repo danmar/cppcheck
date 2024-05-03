@@ -98,9 +98,7 @@ public:
      * - multiline strings are not handled.
      * - UTF in the code are not handled.
      * - comments are not handled.
-     * @param code input stream for code
      */
-    bool createTokens(std::istream &code);
     bool createTokens(const uint8_t* data, size_t size);
     bool createTokens(const char* data, size_t size) {
         return createTokens(reinterpret_cast<const uint8_t*>(data), size);

@@ -861,18 +861,6 @@ unsigned int CppCheck::checkBuffer(const FileWithDetails &file, const std::strin
     });
 }
 
-// cppcheck-suppress unusedFunction
-unsigned int CppCheck::checkStream(const FileWithDetails &file, const std::string &cfgname, int fileIndex, std::istream& fileStream)
-{
-    return checkInternal(file, cfgname, fileIndex,
-                         [&fileStream](std::vector<std::string>& files) {
-       return simplecpp::TokenList{fileStream, files};
-    },
-                         [&file, &fileStream](std::vector<std::string>& files, simplecpp::OutputList* outputList) {
-        return simplecpp::TokenList{fileStream, files, file.spath(), outputList};
-    });
-}
-
 std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const simplecpp::TokenList& tokens, const std::string& filePath) const
 {
     std::ostringstream toolinfo;
