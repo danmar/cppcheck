@@ -6229,10 +6229,26 @@ void Tokenizer::simplifyHeadersAndUnusedTemplates()
         if (isIncluded && !mSettings.checkHeaders && tok->str() == ":") {
             if (tok->previous() && tok->previous()->str() == ")") {
                 const Token *next = tok->next();
-                while (next && next->str() != "{")
+                //Skip over firts name
+                while (next && !next->link())
                     next = next->next();
-                Token::eraseTokens(tok, next);
-                tok->deleteThis();
+                if (next) {
+                    next = next->link();
+                    next = next->next();
+                    //Skip over all following elements that start with , (still part of the initializer)
+                    while (next && next->str() == ",") {
+                        while (next && !next->link())
+                            next = next->next();
+                        if (next) {
+                            next = next->link();
+                            next = next->next();
+                        }
+                    }
+                    if (next) {
+                        Token::eraseTokens(tok, next);
+                        tok->deleteThis();
+                    }
+                }
             }
         }
 
