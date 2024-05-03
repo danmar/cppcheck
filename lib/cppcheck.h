@@ -179,16 +179,6 @@ private:
     std::size_t calculateHash(const Preprocessor &preprocessor, const simplecpp::TokenList &tokens, const std::string& filePath = {}) const;
 
     /**
-     * @brief Check a file using stream
-     * @param file the file
-     * @param cfgname  cfg name
-     * @param fileStream stream the file content can be read from
-     * @return number of errors found
-     */
-    unsigned int checkStream(const FileWithDetails& file, const std::string &cfgname, int fileIndex, std::istream& fileStream);
-
-
-    /**
      * @brief Check a file
      * @param file the file
      * @param cfgname  cfg name

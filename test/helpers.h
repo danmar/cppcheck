@@ -107,8 +107,7 @@ public:
     explicit SimpleTokenList(const char (&code)[size], Standards::Language lang = Standards::Language::CPP)
         : list{settings, lang}
     {
-        std::istringstream iss(code);
-        if (!list.createTokens(iss))
+        if (!list.createTokens(code, size-1))
             throw std::runtime_error("creating tokens failed");
     }
 
