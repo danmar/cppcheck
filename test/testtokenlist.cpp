@@ -164,11 +164,10 @@ private:
     }
 
     void ast1() const {
-        const std::string s = "('Release|x64' == 'Release|x64');";
+        const char code[] = "('Release|x64' == 'Release|x64');";
 
         TokenList tokenlist(&settings);
-        std::istringstream istr(s);
-        ASSERT(tokenlist.createTokens(istr, Standards::Language::C));
+        ASSERT(tokenlist.createTokens(code, Standards::Language::C));
         // TODO: put this logic in TokenList
         // generate links
         {

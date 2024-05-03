@@ -26,7 +26,6 @@
 #include "tokenlist.h"
 
 #include <cstddef>
-#include <sstream>
 #include <string>
 
 class TestUnusedFunctions : public TestFixture {
@@ -584,8 +583,7 @@ private:
             const std::string fname = "test" + std::to_string(i) + ".cpp";
 
             Tokenizer tokenizer(settings, *this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.list.createTokens(istr, fname));
+            ASSERT(tokenizer.list.createTokens(code, fname));
             ASSERT(tokenizer.simplifyTokens1(""));
 
             c.parseTokens(tokenizer, settings);
