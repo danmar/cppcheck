@@ -8727,6 +8727,10 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (tok->str() == "typedef") {
             for (const Token* tok2 = tok->next(); tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
+                if (tok2->str() == "{") {
+                    tok2 = tok2->link();
+                    continue;
+                }
                 if (isUnevaluated(tok2)) {
                     tok2 = tok2->linkAt(1);
                     continue;
