@@ -5070,6 +5070,18 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'i+1!=s.end()' is redundant or there is possible dereference of an invalid iterator: i+1.\n",
                       errout_str());
+
+        check("void f(bool b, std::vector<std::string> v) {\n" // #12680
+              "    if (!v.empty()) {\n"
+              "        auto it = v.begin();\n"
+              "        if (b) {\n"
+              "            v.clear();\n"
+              "            it = v.begin();\n"
+              "        }\n"
+              "        for (++it; it != v.end(); ++it) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str()); // don't crash
     }
 
     void dereferenceInvalidIterator2() {
