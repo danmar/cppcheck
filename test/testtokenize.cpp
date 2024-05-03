@@ -7149,6 +7149,8 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify("template <typename T, int N>\n" // #12659
                                              "constexpr void f(T(&&a)[N]) {}"));
 
+        ASSERT_NO_THROW(tokenizeAndStringify("typedef struct { typedef int T; } S;")); // #12700
+
         ignore_errout();
     }
 
