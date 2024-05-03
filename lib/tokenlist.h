@@ -114,7 +114,6 @@ public:
     bool createTokens(const char (&data)[size], const std::string& file0) {
         return createTokens(reinterpret_cast<const uint8_t*>(data), size-1, file0);
     }
-    bool createTokens(std::istream &code, Standards::Language lang);
     bool createTokens(const uint8_t* data, size_t size, Standards::Language lang);
     bool createTokens(const char* data, size_t size, Standards::Language lang) {
         return createTokens(reinterpret_cast<const uint8_t*>(data), size, lang);

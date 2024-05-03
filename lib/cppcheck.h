@@ -176,16 +176,6 @@ private:
     void internalError(const std::string &filename, const std::string &msg);
 
     /**
-     * @brief Check a file using stream
-     * @param file the file
-     * @param cfgname  cfg name
-     * @param fileStream stream the file content can be read from
-     * @return number of errors found
-     */
-    unsigned int checkStream(const FileWithDetails& file, const std::string &cfgname, std::istream& fileStream);
-
-
-    /**
      * @brief Check a file
      * @param file the file
      * @param cfgname  cfg name

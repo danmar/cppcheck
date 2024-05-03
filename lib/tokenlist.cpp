@@ -356,20 +356,6 @@ bool TokenList::createTokens(const uint8_t* data, size_t size, const std::string
 
 //---------------------------------------------------------------------------
 
-bool TokenList::createTokens(std::istream &code, Standards::Language lang)
-{
-    ASSERT_LANG(lang != Standards::Language::None);
-    if (mLang == Standards::Language::None) {
-        mLang = lang;
-    } else {
-        ASSERT_LANG(lang == mLang);
-    }
-
-    return createTokensInternal(code, "");
-}
-
-//---------------------------------------------------------------------------
-
 bool TokenList::createTokens(const uint8_t* data, size_t size, Standards::Language lang)
 {
     ASSERT_LANG(lang != Standards::Language::None);
