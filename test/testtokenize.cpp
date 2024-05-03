@@ -834,8 +834,7 @@ private:
         {
             Tokenizer tokenizer(settings1, *this);
             const char code[] = "void foo(int i) { reinterpret_cast<char>(i) };";
-            std::istringstream istr(code);
-            ASSERT(tokenizer.list.createTokens(istr, "test.h"));
+            ASSERT(tokenizer.list.createTokens(code, "test.h"));
             ASSERT_THROW_INTERNAL(tokenizer.simplifyTokens1(""), SYNTAX);
         }
     }

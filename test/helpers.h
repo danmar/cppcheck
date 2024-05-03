@@ -78,8 +78,7 @@ public:
                   bool cpp = true,
                   const std::string &configuration = emptyString)
     {
-        std::istringstream istr(code);
-        if (!list.createTokens(istr, cpp ? "test.cpp" : "test.c"))
+        if (!list.createTokens(code, size-1, cpp ? "test.cpp" : "test.c"))
             return false;
 
         return simplifyTokens1(configuration);
@@ -90,8 +89,7 @@ public:
                   bool cpp = true,
                   const std::string &configuration = emptyString)
     {
-        std::istringstream istr(code);
-        if (!list.createTokens(istr, cpp ? "test.cpp" : "test.c"))
+        if (!list.createTokens(code.c_str(), code.size(), cpp ? "test.cpp" : "test.c"))
             return false;
 
         return simplifyTokens1(configuration);
