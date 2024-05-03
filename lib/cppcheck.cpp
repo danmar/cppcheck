@@ -861,6 +861,7 @@ unsigned int CppCheck::checkBuffer(const FileWithDetails &file, const std::strin
     });
 }
 
+// cppcheck-suppress unusedFunction
 unsigned int CppCheck::checkStream(const FileWithDetails &file, const std::string &cfgname, int fileIndex, std::istream& fileStream)
 {
     return checkInternal(file, cfgname, fileIndex,
