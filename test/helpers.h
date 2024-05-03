@@ -61,30 +61,36 @@ public:
     template<size_t size>
     bool tokenize(const char (&code)[size])
     {
-        std::istringstream istr(code);
-        return tokenize(istr, std::string(list.isCPP() ? "test.cpp" : "test.c"));
+        return tokenize(code, size-1, std::string(list.isCPP() ? "test.cpp" : "test.c"));
     }
 
     bool tokenize(const std::string& code)
     {
-        std::istringstream istr(code);
-        return tokenize(istr, std::string(list.isCPP() ? "test.cpp" : "test.c"));
+        return tokenize(code.data(), code.size(), std::string(list.isCPP() ? "test.cpp" : "test.c"));
     }
 
 private:
     /**
      * Tokenize code
-     * @param istr The code as stream
+     * @param code The code
      * @param filename Indicates if the code is C++
      * @return false if source code contains syntax errors
      */
-    bool tokenize(std::istream& istr,
+    template<size_t size>
+    bool tokenize(const char (&code)[size],
+                  const std::string& filename)
+    {
+        return tokenize(code, size-1, filename);
+    }
+
+    bool tokenize(const char* code,
+                  std::size_t size,
                   const std::string& filename)
     {
         if (list.front())
             throw std::runtime_error("token list is not empty");
         list.appendFileIfNew(filename);
-        if (!list.createTokens(istr))
+        if (!list.createTokens(code, size))
             return false;
 
         return simplifyTokens1("");
