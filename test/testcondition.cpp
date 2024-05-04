@@ -5263,6 +5263,17 @@ private:
               "    for (int i = 1000; i < 20; ++i) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'i<20' is always false\n", errout_str());
+
+        check("int foo(int foo, int bar, bool baz, bool flag) {\n"
+              "    if (baz && flag) {\n"
+              "        do {\n"
+              "            if (bar==42)\n"
+              "                return 0;\n"
+              "        } while (flag);\n"
+              "    }\n"
+              "    return foo;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:6]: (style) Condition 'flag' is always true\n", errout_str());
     }
 
     void alwaysTrueTryCatch()

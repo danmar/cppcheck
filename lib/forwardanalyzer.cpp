@@ -605,10 +605,10 @@ namespace {
                     const Scope* scope = tok->scope();
                     if (!scope)
                         return Break();
-                    if (Token::Match(tok->link()->previous(), ")|else {")) {
-                        const Token* tok2 = tok->link()->previous();
-                        const bool inElse = Token::simpleMatch(tok2, "else {");
-                        const bool inLoop = inElse ? false : Token::Match(tok2->link()->previous(), "while|for (");
+                    if (contains({Scope::eDo, Scope::eFor, Scope::eWhile, Scope::eIf, Scope::eElse}, scope->type)) {
+                        const bool inElse = scope->type == Scope::eElse;
+                        const bool inDoWhile = scope->type == Scope::eDo;
+                        const bool inLoop = contains({Scope::eDo, Scope::eFor, Scope::eWhile}, scope->type);
                         Token* condTok = getCondTokFromEnd(tok);
                         if (!condTok)
                             return Break();
@@ -637,19 +637,14 @@ namespace {
                             }
                         }
                         analyzer->assume(condTok, !inElse, Analyzer::Assume::Quiet);
-                        if (Token::simpleMatch(tok, "} else {"))
+                        assert(!inDoWhile || Token::simpleMatch(tok, "} while ("));
+                        if (Token::simpleMatch(tok, "} else {") || inDoWhile)
                             tok = tok->linkAt(2);
-                    } else if (scope->type == Scope::eTry) {
+                    } else if (contains({Scope::eTry, Scope::eCatch}, scope->type)) {
                         if (!analyzer->lowerToPossible())
                             return Break(Analyzer::Terminate::Bail);
                     } else if (scope->type == Scope::eLambda) {
                         return Break();
-                    } else if (scope->type == Scope::eDo && Token::simpleMatch(tok, "} while (")) {
-                        if (updateLoopExit(end, tok, tok->tokAt(2)->astOperand2()) == Progress::Break)
-                            return Break();
-                        tok = tok->linkAt(2);
-                    } else if (Token::simpleMatch(tok->next(), "else {")) {
-                        tok = tok->linkAt(2);
                     }
                 } else if (tok->isControlFlowKeyword() && Token::Match(tok, "if|while|for (") &&
                            Token::simpleMatch(tok->next()->link(), ") {")) {
