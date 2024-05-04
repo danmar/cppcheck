@@ -694,8 +694,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
         } else if (functionnodename == "pure")
             func.ispure = true;
         else if (functionnodename == "const") {
-            func.ispure = true;
-            func.isconst = true; // a constant function is pure
+            func.isconst = true;
         } else if (functionnodename == "leak-ignore")
             func.leakignore = true;
         else if (functionnodename == "not-overlapping-data") {
