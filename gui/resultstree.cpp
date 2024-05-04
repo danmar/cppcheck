@@ -898,7 +898,7 @@ void ResultsTree::copy()
         return;
 
     QString text;
-    for (QModelIndex index : mSelectionModel->selectedRows()) {
+    for (const QModelIndex& index : mSelectionModel->selectedRows()) {
         QStandardItem *item = mModel.itemFromIndex(index);
         if (!item->parent()) {
             text += item->text() + '\n';
@@ -929,7 +929,7 @@ void ResultsTree::hideResult()
     if (!mSelectionModel)
         return;
 
-    for (QModelIndex index : mSelectionModel->selectedRows()) {
+    for (const QModelIndex& index : mSelectionModel->selectedRows()) {
         QStandardItem *item = mModel.itemFromIndex(index);
         //Set the "hide" flag for this item
         QVariantMap data = item->data().toMap();
@@ -947,7 +947,7 @@ void ResultsTree::recheckSelectedFiles()
         return;
 
     QStringList selectedItems;
-    for (QModelIndex index : mSelectionModel->selectedRows()) {
+    for (const QModelIndex& index : mSelectionModel->selectedRows()) {
         QStandardItem *item = mModel.itemFromIndex(index);
         while (item->parent())
             item = item->parent();
@@ -1029,7 +1029,7 @@ void ResultsTree::suppressSelectedIds()
         return;
 
     QSet<QString> selectedIds;
-    for (QModelIndex index : mSelectionModel->selectedRows()) {
+    for (const QModelIndex& index : mSelectionModel->selectedRows()) {
         QStandardItem *item = mModel.itemFromIndex(index);
         if (!item->parent())
             continue;
@@ -1068,7 +1068,7 @@ void ResultsTree::suppressHash()
 
     // Extract selected warnings
     QSet<QStandardItem *> selectedWarnings;
-    for (QModelIndex index : mSelectionModel->selectedRows()) {
+    for (const QModelIndex& index : mSelectionModel->selectedRows()) {
         QStandardItem *item = mModel.itemFromIndex(index);
         if (!item->parent())
             continue;
@@ -1115,7 +1115,7 @@ void ResultsTree::tagSelectedItems(const QString &tag)
         return;
     bool isTagged = false;
     ProjectFile *currentProject = ProjectFile::getActiveProject();
-    for (QModelIndex index : mSelectionModel->selectedRows()) {
+    for (const QModelIndex& index : mSelectionModel->selectedRows()) {
         QStandardItem *item = mModel.itemFromIndex(index);
         QVariantMap data = item->data().toMap();
         if (data.contains("tags")) {
