@@ -8678,6 +8678,16 @@ private:
                              "    int f() override { return MACRO; }\n"
                              "};\n");
         ASSERT_EQUALS("", errout_str());
+
+        checkUselessOverride("struct B {\n" // #12706
+                             "    virtual void f() { g(); }\n"
+                             "    void g() { std::cout << \"Base\\n\"; }\n"
+                             "};\n"
+                             "struct D : B {\n"
+                             "    void f() override { g(); }\n"
+                             "    virtual void g() { std::cout << \"Derived\\n\"; }\n"
+                             "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
 #define checkUnsafeClassRefMember(code) checkUnsafeClassRefMember_(code, __FILE__, __LINE__)
