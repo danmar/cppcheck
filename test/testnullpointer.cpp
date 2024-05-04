@@ -176,7 +176,8 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool inconclusive = false, bool cpp = true) {
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], bool inconclusive = false, bool cpp = true) {
         const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).build();
 
         // Tokenize..
@@ -188,7 +189,8 @@ private:
     }
 
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkP_(const char* file, int line, const char code[]) {
+    template<size_t size>
+    void checkP_(const char* file, int line, const char (&code)[size]) {
         const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, false).build();
 
         std::vector<std::string> files(1, "test.cpp");
@@ -4478,7 +4480,8 @@ private:
     }
 
 #define ctu(code) ctu_(code, __FILE__, __LINE__)
-    void ctu_(const char code[], const char* file, int line) {
+    template<size_t size>
+    void ctu_(const char (&code)[size], const char* file, int line) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);

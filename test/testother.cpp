@@ -294,7 +294,8 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool cpp = true, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], bool cpp = true, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
         if (!settings) {
             settings = &_settings;
         }
@@ -317,12 +318,14 @@ private:
         (void)runSimpleChecks; // TODO Remove this
     }
 
-    void check_(const char* file, int line, const char code[], Settings *s) {
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], Settings *s) {
         check_(file, line, code, true, true, true, false, s);
     }
 
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkP_(const char* file, int line, const char code[], const char *filename = "test.cpp") {
+    template<size_t size>
+    void checkP_(const char* file, int line, const char (&code)[size], const char *filename = "test.cpp") {
         Settings* settings = &_settings;
         settings->severity.enable(Severity::style);
         settings->severity.enable(Severity::warning);
@@ -343,7 +346,8 @@ private:
         runChecks<CheckOther>(tokenizer, this);
     }
 
-    void checkInterlockedDecrement(const char code[]) {
+    template<size_t size>
+    void checkInterlockedDecrement(const char (&code)[size]) {
         /*const*/ Settings settings = settingsBuilder().platform(Platform::Type::Win32A).build();
 
         check(code, true, false, true, false, &settings);
@@ -1748,7 +1752,8 @@ private:
     }
 
 #define checkOldStylePointerCast(code) checkOldStylePointerCast_(code, __FILE__, __LINE__)
-    void checkOldStylePointerCast_(const char code[], const char* file, int line) {
+    template<size_t size>
+    void checkOldStylePointerCast_(const char (&code)[size], const char* file, int line) {
         // #5560 - set c++03
         const Settings settings = settingsBuilder().severity(Severity::style).cpp(Standards::CPP03).build();
 
@@ -1967,7 +1972,8 @@ private:
     }
 
 #define checkInvalidPointerCast(...) checkInvalidPointerCast_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkInvalidPointerCast_(const char* file, int line, const char code[], bool portability = true, bool inconclusive = false) {
+    template<size_t size>
+    void checkInvalidPointerCast_(const char* file, int line, const char (&code)[size], bool portability = true, bool inconclusive = false) {
         /*const*/ Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability, portability).certainty(Certainty::inconclusive, inconclusive).build();
         settings.platform.defaultSign = 's';
 
@@ -8864,16 +8870,16 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         // #5618
-        const char* code5618 = "class Token {\n"
-                               "public:\n"
-                               "    const std::string& str();\n"
-                               "};\n"
-                               "void simplifyArrayAccessSyntax() {\n"
-                               "    for (Token *tok = list.front(); tok; tok = tok->next()) {\n"
-                               "        const std::string temp = tok->str();\n"
-                               "        tok->str(tok->strAt(2));\n"
-                               "    }\n"
-                               "}";
+        const char code5618[] = "class Token {\n"
+                                "public:\n"
+                                "    const std::string& str();\n"
+                                "};\n"
+                                "void simplifyArrayAccessSyntax() {\n"
+                                "    for (Token *tok = list.front(); tok; tok = tok->next()) {\n"
+                                "        const std::string temp = tok->str();\n"
+                                "        tok->str(tok->strAt(2));\n"
+                                "    }\n"
+                                "}";
         check(code5618, true, true);
         ASSERT_EQUALS("", errout_str());
         check(code5618, true, false);

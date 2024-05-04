@@ -271,7 +271,8 @@ private:
     }
 
 #define checkCodeInternal(code, filename) checkCodeInternal_(code, filename, __FILE__, __LINE__)
-    std::string checkCode(const char code[], bool cpp = true) {
+    template<size_t size>
+    std::string checkCode(const char (&code)[size], bool cpp = true) {
         // double the tests - run each example as C as well as C++
 
         // run alternate check first. It should only ensure stability - so we catch exceptions here.
@@ -282,7 +283,8 @@ private:
         return checkCodeInternal(code, cpp);
     }
 
-    std::string checkCodeInternal_(const char code[], bool cpp, const char* file, int line) {
+    template<size_t size>
+    std::string checkCodeInternal_(const char (&code)[size], bool cpp, const char* file, int line) {
         // tokenize..
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
@@ -296,7 +298,8 @@ private:
     }
 
 #define getSyntaxError(code) getSyntaxError_(code, __FILE__, __LINE__)
-    std::string getSyntaxError_(const char code[], const char* file, int line) {
+    template<size_t size>
+    std::string getSyntaxError_(const char (&code)[size], const char* file, int line) {
         SimpleTokenizer tokenizer(settings, *this);
         try {
             ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -1241,9 +1244,9 @@ private:
     }
 
     void garbageCode152() { // happened in travis, originally from llvm clang code
-        const char* code = "template <bool foo = std::value &&>\n"
-                           "static std::string foo(char *Bla) {\n"
-                           "    while (Bla[1] && Bla[1] != ',') }\n";
+        const char code[] = "template <bool foo = std::value &&>\n"
+                            "static std::string foo(char *Bla) {\n"
+                            "    while (Bla[1] && Bla[1] != ',') }\n";
         checkCode(code);
         ignore_errout(); // we are not interested in the output
     }
@@ -1290,19 +1293,23 @@ private:
     }
 
     void garbageValueFlow() {
-        // #6089
-        const char* code = "{} int foo(struct, x1, struct x2, x3, int, x5, x6, x7)\n"
-                           "{\n"
-                           "    (foo(s, , 2, , , 5, , 7)) abort()\n"
-                           "}\n";
-        ASSERT_THROW_INTERNAL(checkCode(code), SYNTAX);
+        { // #6089
+            const char code[] = "{} int foo(struct, x1, struct x2, x3, int, x5, x6, x7)\n"
+                                "{\n"
+                                "    (foo(s, , 2, , , 5, , 7)) abort()\n"
+                                "}\n";
+            ASSERT_THROW_INTERNAL(checkCode(code), SYNTAX);
+        }
 
-        // 6122 survive garbage code
-        code = "; { int i ; for ( i = 0 ; = 123 ; ) - ; }";
-        ASSERT_THROW_INTERNAL(checkCode(code), SYNTAX);
+        { // 6122 survive garbage code
+            const char code[] = "; { int i ; for ( i = 0 ; = 123 ; ) - ; }";
+            ASSERT_THROW_INTERNAL(checkCode(code), SYNTAX);
+        }
 
-        code = "void f1() { for (int n = 0 n < 10 n++); }";
-        ASSERT_THROW_INTERNAL(checkCode(code), SYNTAX);
+        {
+            const char code[] = "void f1() { for (int n = 0 n < 10 n++); }";
+            ASSERT_THROW_INTERNAL(checkCode(code), SYNTAX);
+        }
     }
 
     void garbageSymbolDatabase() {

@@ -402,7 +402,8 @@ private:
     }
 
 #define testLifetimeOfX(...) testLifetimeOfX_(__FILE__, __LINE__, __VA_ARGS__)
-    bool testLifetimeOfX_(const char* file, int line, const char code[], unsigned int linenr, const char value[], ValueFlow::Value::LifetimeScope lifetimeScope = ValueFlow::Value::LifetimeScope::Local) {
+    template<size_t size>
+    bool testLifetimeOfX_(const char* file, int line, const char (&code)[size], unsigned int linenr, const char value[], ValueFlow::Value::LifetimeScope lifetimeScope = ValueFlow::Value::LifetimeScope::Local) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -455,7 +456,8 @@ private:
     }
 
 #define testConditionalValueOfX(code, linenr, value) testConditionalValueOfX_(code, linenr, value, __FILE__, __LINE__)
-    bool testConditionalValueOfX_(const char code[], unsigned int linenr, int value, const char* file, int line) {
+    template<size_t size>
+    bool testConditionalValueOfX_(const char (&code)[size], unsigned int linenr, int value, const char* file, int line) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -473,7 +475,8 @@ private:
     }
 
 #define bailout(...) bailout_(__FILE__, __LINE__, __VA_ARGS__)
-    void bailout_(const char* file, int line, const char code[]) {
+    template<size_t size>
+    void bailout_(const char* file, int line, const char (&code)[size]) {
         const Settings s = settingsBuilder().debugwarnings().build();
 
         std::vector<std::string> files(1, "test.cpp");
@@ -501,7 +504,8 @@ private:
     }
 
 #define lifetimeValues(...) lifetimeValues_(__FILE__, __LINE__, __VA_ARGS__)
-    std::vector<std::string> lifetimeValues_(const char* file, int line, const char code[], const char tokstr[], const Settings *s = nullptr) {
+    template<size_t size>
+    std::vector<std::string> lifetimeValues_(const char* file, int line, const char (&code)[size], const char tokstr[], const Settings *s = nullptr) {
         std::vector<std::string> result;
         SimpleTokenizer tokenizer(s ? *s : settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -614,98 +618,119 @@ private:
     }
 
     void valueFlowLifetime() {
-        const char *code;
         std::vector<std::string> lifetimes;
 
-        code  = "void f() {\n"
-                "    int a = 1;\n"
-                "    auto x = [&]() { return a + 1; };\n"
-                "    auto b = x;\n"
-                "}\n";
-        ASSERT_EQUALS(true, testLifetimeOfX(code, 4, "a + 1"));
+        {
+            const char code[] = "void f() {\n"
+                                "    int a = 1;\n"
+                                "    auto x = [&]() { return a + 1; };\n"
+                                "    auto b = x;\n"
+                                "}\n";
+            ASSERT_EQUALS(true, testLifetimeOfX(code, 4, "a + 1"));
+        }
 
-        code  = "void f() {\n"
-                "    int a = 1;\n"
-                "    auto x = [=]() { return a + 1; };\n"
-                "    auto b = x;\n"
-                "}\n";
-        ASSERT_EQUALS(false, testLifetimeOfX(code, 4, "a ;"));
+        {
+            const char code[] = "void f() {\n"
+                                "    int a = 1;\n"
+                                "    auto x = [=]() { return a + 1; };\n"
+                                "    auto b = x;\n"
+                                "}\n";
+            ASSERT_EQUALS(false, testLifetimeOfX(code, 4, "a ;"));
+        }
 
-        code  = "void f(int v) {\n"
-                "    int a = v;\n"
-                "    int * p = &a;\n"
-                "    auto x = [=]() { return p + 1; };\n"
-                "    auto b = x;\n"
-                "}\n";
-        ASSERT_EQUALS(true, testLifetimeOfX(code, 5, "a ;"));
+        {
+            const char code[] = "void f(int v) {\n"
+                                "    int a = v;\n"
+                                "    int * p = &a;\n"
+                                "    auto x = [=]() { return p + 1; };\n"
+                                "    auto b = x;\n"
+                                "}\n";
+            ASSERT_EQUALS(true, testLifetimeOfX(code, 5, "a ;"));
+        }
 
-        code  = "void f() {\n"
-                "    std::vector<int> v;\n"
-                "    auto x = v.begin();\n"
-                "    auto it = x;\n"
-                "}\n";
-        ASSERT_EQUALS(true, testLifetimeOfX(code, 4, "v . begin"));
+        {
+            const char code[] = "void f() {\n"
+                                "    std::vector<int> v;\n"
+                                "    auto x = v.begin();\n"
+                                "    auto it = x;\n"
+                                "}\n";
+            ASSERT_EQUALS(true, testLifetimeOfX(code, 4, "v . begin"));
+        }
 
-        code  = "void f() {\n"
-                "    std::vector<int> v;\n"
-                "    auto x = v.begin() + 1;\n"
-                "    auto it = x;\n"
-                "}\n";
-        ASSERT_EQUALS(true, testLifetimeOfX(code, 4, "v . begin"));
+        {
+            const char code[] = "void f() {\n"
+                                "    std::vector<int> v;\n"
+                                "    auto x = v.begin() + 1;\n"
+                                "    auto it = x;\n"
+                                "}\n";
+            ASSERT_EQUALS(true, testLifetimeOfX(code, 4, "v . begin"));
+        }
 
-        code  = "int* f() {\n"
-                "    std::vector<int> v;\n"
-                "    int * x = v.data();\n"
-                "    return x;\n"
-                "}\n";
-        ASSERT_EQUALS(true, testLifetimeOfX(code, 4, "v . data"));
+        {
+            const char code[] = "int* f() {\n"
+                                "    std::vector<int> v;\n"
+                                "    int * x = v.data();\n"
+                                "    return x;\n"
+                                "}\n";
+            ASSERT_EQUALS(true, testLifetimeOfX(code, 4, "v . data"));
+        }
 
-        code  = "int* f() {\n"
-                "    std::vector<int> v;\n"
-                "    int * x = v.data() + 1;\n"
-                "    return x;\n"
-                "}\n";
-        ASSERT_EQUALS(true, testLifetimeOfX(code, 4, "v . data"));
+        {
+            const char code[] = "int* f() {\n"
+                                "    std::vector<int> v;\n"
+                                "    int * x = v.data() + 1;\n"
+                                "    return x;\n"
+                                "}\n";
+            ASSERT_EQUALS(true, testLifetimeOfX(code, 4, "v . data"));
+        }
 
-        code  = "int f(int* a) {\n"
-                "    int **p = &a;\n"
-                "    int * x = *p;\n"
-                "    return x; \n"
-                "}\n";
-        ASSERT_EQUALS(false, testLifetimeOfX(code, 4, "a"));
+        {
+            const char code[] = "int f(int* a) {\n"
+                                "    int **p = &a;\n"
+                                "    int * x = *p;\n"
+                                "    return x; \n"
+                                "}\n";
+            ASSERT_EQUALS(false, testLifetimeOfX(code, 4, "a"));
+        }
 
-        code  = "void f() {\n"
-                "    int i = 0;\n"
-                "    void* x = (void*)&i;\n"
-                "}\n";
-        lifetimes = lifetimeValues(code, "( void * )");
-        ASSERT_EQUALS(true, lifetimes.size() == 1);
-        ASSERT_EQUALS(true, lifetimes.front() == "i");
+        {
+            const char code[] = "void f() {\n"
+                                "    int i = 0;\n"
+                                "    void* x = (void*)&i;\n"
+                                "}\n";
+            lifetimes = lifetimeValues(code, "( void * )");
+            ASSERT_EQUALS(true, lifetimes.size() == 1);
+            ASSERT_EQUALS(true, lifetimes.front() == "i");
+        }
 
-        code  = "struct T {\n" // #10810
-                "    static int g() { return 0; }\n"
-                "};\n"
-                "T t;\n"
-                "struct S { int i; };\n"
-                "S f() {\n"
-                "    S s = { decltype(t)::g() };\n"
-                "    return s;\n"
-                "};\n";
-        lifetimes = lifetimeValues(code, "=");
-        ASSERT_EQUALS(true, lifetimes.empty());
+        {
+            const char code[] = "struct T {\n" // #10810
+                                "    static int g() { return 0; }\n"
+                                "};\n"
+                                "T t;\n"
+                                "struct S { int i; };\n"
+                                "S f() {\n"
+                                "    S s = { decltype(t)::g() };\n"
+                                "    return s;\n"
+                                "};\n";
+            lifetimes = lifetimeValues(code, "=");
+            ASSERT_EQUALS(true, lifetimes.empty());
+        }
 
-        code  = "struct T {\n" // #10838
-                "     void f();\n"
-                "     double d[4][4];\n"
-                "};\n"
-                "void T::f() {\n"
-                "    auto g = [this]() -> double(&)[4] {\n"
-                "        double(&q)[4] = d[0];\n"
-                "        return q;\n"
-                "    };\n"
-                "}\n";
-        lifetimes = lifetimeValues(code, "return"); // don't crash
-        ASSERT_EQUALS(true, lifetimes.empty());
+        {
+            const char code[] = "struct T {\n" // #10838
+                                "     void f();\n"
+                                "     double d[4][4];\n"
+                                "};\n"
+                                "void T::f() {\n"
+                                "    auto g = [this]() -> double(&)[4] {\n"
+                                "        double(&q)[4] = d[0];\n"
+                                "        return q;\n"
+                                "    };\n"
+                                "}\n";
+            lifetimes = lifetimeValues(code, "return"); // don't crash
+            ASSERT_EQUALS(true, lifetimes.empty());
+        }
     }
 
     void valueFlowArrayElement() {
@@ -4143,14 +4168,13 @@ private:
     }
 
     void valueFlowSwitchVariable() {
-        const char *code;
-        code = "void f(int x) {\n"
-               "    a = x - 1;\n"  // <- x can be 14
-               "    switch (x) {\n"
-               "    case 14: a=x+2; break;\n"  // <- x is 14
-               "    };\n"
-               "    a = x;\n"  // <- x can be 14
-               "}";
+        const char code[] = "void f(int x) {\n"
+                            "    a = x - 1;\n"  // <- x can be 14
+                            "    switch (x) {\n"
+                            "    case 14: a=x+2; break;\n"  // <- x is 14
+                            "    };\n"
+                            "    a = x;\n"  // <- x can be 14
+                            "}";
         ASSERT_EQUALS(true, testConditionalValueOfX(code, 2U, 14));
         TODO_ASSERT_EQUALS(true, false, testConditionalValueOfX(code, 4U, 14));
         TODO_ASSERT_EQUALS(true, false, testConditionalValueOfX(code, 6U, 14));

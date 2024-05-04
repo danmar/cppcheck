@@ -49,7 +49,20 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], const Settings& settings, bool cpp = true, Standards::cppstd_t standard = Standards::cppstd_t::CPP11) {
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], const Settings& settings, bool cpp = true, Standards::cppstd_t standard = Standards::cppstd_t::CPP11) {
+        const Settings settings1 = settingsBuilder(settings).severity(Severity::warning).severity(Severity::portability).cpp(standard).build();
+
+        // Tokenize..
+        SimpleTokenizer tokenizer(settings1, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+
+        // Check..
+        runChecks<CheckType>(tokenizer, this);
+    }
+
+    // TODO: get rid of this
+    void check_(const char* file, int line, const std::string& code, const Settings& settings, bool cpp = true, Standards::cppstd_t standard = Standards::cppstd_t::CPP11) {
         const Settings settings1 = settingsBuilder(settings).severity(Severity::warning).severity(Severity::portability).cpp(standard).build();
 
         // Tokenize..
@@ -61,7 +74,8 @@ private:
     }
 
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkP_(const char* file, int line, const char code[], const Settings& settings, const char filename[] = "test.cpp", const simplecpp::DUI& dui = simplecpp::DUI()) {
+    template<size_t size>
+    void checkP_(const char* file, int line, const char (&code)[size], const Settings& settings, const char filename[] = "test.cpp", const simplecpp::DUI& dui = simplecpp::DUI()) {
         const Settings settings1 = settingsBuilder(settings).severity(Severity::warning).severity(Severity::portability).build();
 
         std::vector<std::string> files(1, filename);

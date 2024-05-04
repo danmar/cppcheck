@@ -83,7 +83,8 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], Platform::Type platform = Platform::Type::Native, const Settings *s = nullptr) {
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], Platform::Type platform = Platform::Type::Native, const Settings *s = nullptr) {
         const Settings settings1 = settingsBuilder(s ? *s : settings).platform(platform).build();
 
         // Tokenize..
@@ -94,6 +95,18 @@ private:
         CheckUnusedFunctions checkUnusedFunctions;
         checkUnusedFunctions.parseTokens(tokenizer, settings1);
         (checkUnusedFunctions.check)(settings1, *this); // TODO: check result
+    }
+
+    // TODO: get rid of this
+    void check_(const char* file, int line, const std::string& code ) {
+        // Tokenize..
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
+
+        // Check for unused functions..
+        CheckUnusedFunctions checkUnusedFunctions;
+        checkUnusedFunctions.parseTokens(tokenizer, settings);
+        (checkUnusedFunctions.check)(settings, *this); // TODO: check result
     }
 
     void incondition() {

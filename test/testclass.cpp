@@ -248,7 +248,8 @@ private:
     }
 
 #define checkCopyCtorAndEqOperator(code) checkCopyCtorAndEqOperator_(code, __FILE__, __LINE__)
-    void checkCopyCtorAndEqOperator_(const char code[], const char* file, int line) {
+    template<size_t size>
+    void checkCopyCtorAndEqOperator_(const char (&code)[size], const char* file, int line) {
         const Settings settings = settingsBuilder().severity(Severity::warning).build();
 
         // Tokenize..
@@ -350,7 +351,8 @@ private:
     }
 
 #define checkExplicitConstructors(code) checkExplicitConstructors_(code, __FILE__, __LINE__)
-    void checkExplicitConstructors_(const char code[], const char* file, int line) {
+    template<size_t size>
+    void checkExplicitConstructors_(const char (&code)[size], const char* file, int line) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings0, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -498,7 +500,8 @@ private:
     }
 
 #define checkDuplInheritedMembers(code) checkDuplInheritedMembers_(code, __FILE__, __LINE__)
-    void checkDuplInheritedMembers_(const char code[], const char* file, int line) {
+    template<size_t size>
+    void checkDuplInheritedMembers_(const char (&code)[size], const char* file, int line) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings1, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -714,7 +717,8 @@ private:
     }
 
 #define checkCopyConstructor(code) checkCopyConstructor_(code, __FILE__, __LINE__)
-    void checkCopyConstructor_(const char code[], const char* file, int line) {
+    template<size_t size>
+    void checkCopyConstructor_(const char (&code)[size], const char* file, int line) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings3, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -1157,7 +1161,8 @@ private:
 
     // Check that operator Equal returns reference to this
 #define checkOpertorEqRetRefThis(code) checkOpertorEqRetRefThis_(code, __FILE__, __LINE__)
-    void checkOpertorEqRetRefThis_(const char code[], const char* file, int line) {
+    template<size_t size>
+    void checkOpertorEqRetRefThis_(const char (&code)[size], const char* file, int line) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings0, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -1627,7 +1632,8 @@ private:
 
     // Check that operator Equal checks for assignment to self
 #define checkOpertorEqToSelf(code) checkOpertorEqToSelf_(code, __FILE__, __LINE__)
-    void checkOpertorEqToSelf_(const char code[], const char* file, int line) {
+    template<size_t size>
+    void checkOpertorEqToSelf_(const char (&code)[size], const char* file, int line) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings1, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -2582,7 +2588,8 @@ private:
 
     // Check that base classes have virtual destructors
 #define checkVirtualDestructor(...) checkVirtualDestructor_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkVirtualDestructor_(const char* file, int line, const char code[], bool inconclusive = false) {
+    template<size_t size>
+    void checkVirtualDestructor_(const char* file, int line, const char (&code)[size], bool inconclusive = false) {
         const Settings s = settingsBuilder(settings0).certainty(Certainty::inconclusive, inconclusive).severity(Severity::warning).build();
 
         // Tokenize..
@@ -2915,12 +2922,14 @@ private:
 
 
 #define checkNoMemset(...) checkNoMemset_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkNoMemset_(const char* file, int line, const char code[]) {
+    template<size_t size>
+    void checkNoMemset_(const char* file, int line, const char (&code)[size]) {
         const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).library("std.cfg").library("posix.cfg").build();
         checkNoMemset_(file, line, code, settings);
     }
 
-    void checkNoMemset_(const char* file, int line, const char code[], const Settings &settings) {
+    template<size_t size>
+    void checkNoMemset_(const char* file, int line, const char (&code)[size], const Settings &settings) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -3565,7 +3574,8 @@ private:
     }
 
 #define checkThisSubtraction(code) checkThisSubtraction_(code, __FILE__, __LINE__)
-    void checkThisSubtraction_(const char code[], const char* file, int line) {
+    template<size_t size>
+    void checkThisSubtraction_(const char (&code)[size], const char* file, int line) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings1, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -3594,7 +3604,8 @@ private:
     }
 
 #define checkConst(...) checkConst_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkConst_(const char* file, int line, const char code[], const Settings *s = nullptr, bool inconclusive = true) {
+    template<size_t size>
+    void checkConst_(const char* file, int line, const char (&code)[size], const Settings *s = nullptr, bool inconclusive = true) {
         const Settings settings = settingsBuilder(s ? *s : settings0).certainty(Certainty::inconclusive, inconclusive).build();
 
         // Tokenize..
@@ -7514,7 +7525,8 @@ private:
     }
 
 #define checkInitializerListOrder(code) checkInitializerListOrder_(code, __FILE__, __LINE__)
-    void checkInitializerListOrder_(const char code[], const char* file, int line) {
+    template<size_t size>
+    void checkInitializerListOrder_(const char (&code)[size], const char* file, int line) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings2, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -7664,7 +7676,8 @@ private:
     }
 
 #define checkInitializationListUsage(code) checkInitializationListUsage_(code, __FILE__, __LINE__)
-    void checkInitializationListUsage_(const char code[], const char* file, int line) {
+    template<size_t size>
+    void checkInitializationListUsage_(const char (&code)[size], const char* file, int line) {
         // Check..
         const Settings settings = settingsBuilder().severity(Severity::performance).build();
 
@@ -7875,7 +7888,8 @@ private:
 
 
 #define checkSelfInitialization(code) checkSelfInitialization_(code, __FILE__, __LINE__)
-    void checkSelfInitialization_(const char code[], const char* file, int line) {
+    template<size_t size>
+    void checkSelfInitialization_(const char (&code)[size], const char* file, int line) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings0, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -7982,7 +7996,8 @@ private:
 
 
 #define checkVirtualFunctionCall(...) checkVirtualFunctionCall_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkVirtualFunctionCall_(const char* file, int line, const char code[], bool inconclusive = true) {
+    template<size_t size>
+    void checkVirtualFunctionCall_(const char* file, int line, const char (&code)[size], bool inconclusive = true) {
         // Check..
         const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::style).certainty(Certainty::inconclusive, inconclusive).build();
 
@@ -8326,7 +8341,8 @@ private:
 
 
 #define checkOverride(code) checkOverride_(code, __FILE__, __LINE__)
-    void checkOverride_(const char code[], const char* file, int line) {
+    template<size_t size>
+    void checkOverride_(const char (&code)[size], const char* file, int line) {
         const Settings settings = settingsBuilder().severity(Severity::style).build();
 
         // Tokenize..
@@ -8707,7 +8723,8 @@ private:
     }
 
 #define checkUnsafeClassRefMember(code) checkUnsafeClassRefMember_(code, __FILE__, __LINE__)
-    void checkUnsafeClassRefMember_(const char code[], const char* file, int line) {
+    template<size_t size>
+    void checkUnsafeClassRefMember_(const char (&code)[size], const char* file, int line) {
         /*const*/ Settings settings = settingsBuilder().severity(Severity::warning).build();
         settings.safeChecks.classes = true;
 
@@ -8727,7 +8744,8 @@ private:
 
 
 #define checkThisUseAfterFree(code) checkThisUseAfterFree_(code, __FILE__, __LINE__)
-    void checkThisUseAfterFree_(const char code[], const char* file, int line) {
+    template<size_t size>
+    void checkThisUseAfterFree_(const char (&code)[size], const char* file, int line) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings1, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -8926,7 +8944,8 @@ private:
 
 
 #define getFileInfo(code) getFileInfo_(code, __FILE__, __LINE__)
-    void getFileInfo_(const char code[], const char* file, int line) {
+    template<size_t size>
+    void getFileInfo_(const char (&code)[size], const char* file, int line) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings1, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -8944,7 +8963,8 @@ private:
     }
 
 #define checkReturnByReference(...) checkReturnByReference_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkReturnByReference_(const char* file, int line, const char code[]) {
+    template<size_t size>
+    void checkReturnByReference_(const char* file, int line, const char (&code)[size]) {
         const Settings settings = settingsBuilder().severity(Severity::performance).library("std.cfg").build();
 
         std::vector<std::string> files(1, "test.cpp");

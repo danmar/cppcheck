@@ -460,7 +460,8 @@ private:
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tokenizeAndStringify_(const char* file, int linenr, const char code[], bool expand = true, Platform::Type platform = Platform::Type::Native,
+    template<size_t size>
+    std::string tokenizeAndStringify_(const char* file, int linenr, const char (&code)[size], bool expand = true, Platform::Type platform = Platform::Type::Native,
                                       bool cpp = true, Standards::cppstd_t cppstd = Standards::CPP11, Standards::cstd_t cstd = Standards::C11) {
         const Settings settings = settingsBuilder(settings1).debugwarnings().cpp(cppstd).c(cstd).platform(platform).build();
 
@@ -473,8 +474,22 @@ private:
         return "";
     }
 
+    // TODO: get rid of this
+    std::string tokenizeAndStringify_(const char* file, int linenr, const std::string& code) {
+        const Settings settings = settingsBuilder(settings1).debugwarnings().cpp(Standards::CPP11).c(Standards::C11).build();
+
+        // tokenize..
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, linenr);
+
+        if (tokenizer.tokens())
+            return tokenizer.tokens()->stringifyList(false, true, false, true, false, nullptr, nullptr);
+        return "";
+    }
+
 #define tokenizeAndStringifyWindows(...) tokenizeAndStringifyWindows_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tokenizeAndStringifyWindows_(const char* file, int linenr, const char code[], bool expand = true, Platform::Type platform = Platform::Type::Native, bool cpp = true, bool cpp11 = true) {
+    template<size_t size>
+    std::string tokenizeAndStringifyWindows_(const char* file, int linenr, const char (&code)[size], bool expand = true, Platform::Type platform = Platform::Type::Native, bool cpp = true, bool cpp11 = true) {
         const Settings settings = settingsBuilder(settings_windows).debugwarnings().cpp(cpp11 ? Standards::CPP11 : Standards::CPP03).platform(platform).build();
 
         // tokenize..
@@ -486,7 +501,8 @@ private:
         return "";
     }
 
-    std::string tokenizeAndStringify_(const char* file, int line, const char code[], const Settings &settings, bool cpp = true) {
+    template<size_t size>
+    std::string tokenizeAndStringify_(const char* file, int line, const char (&code)[size], const Settings &settings, bool cpp = true) {
         // tokenize..
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
@@ -496,7 +512,8 @@ private:
     }
 
 #define tokenizeDebugListing(...) tokenizeDebugListing_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tokenizeDebugListing_(const char* file, int line, const char code[], bool cpp = true) {
+    template<size_t size>
+    std::string tokenizeDebugListing_(const char* file, int line, const char (&code)[size], bool cpp = true) {
         const Settings settings = settingsBuilder(settings0).c(Standards::C89).cpp(Standards::CPP03).build();
 
         SimpleTokenizer tokenizer(settings, *this);
@@ -714,13 +731,13 @@ private:
     // #5884 - Avoid left shift of negative integer value.
     void tokenize32() {
         // Do not simplify negative integer left shifts.
-        const char * code = "void f ( ) { int max_x ; max_x = -10000 << 16 ; }";
+        const char code[] = "void f ( ) { int max_x ; max_x = -10000 << 16 ; }";
         ASSERT_EQUALS(code, tokenizeAndStringify(code));
     }
 
     // #5780 Various crashes on valid template code in Tokenizer::setVarId()
     void tokenize33() {
-        const char * code = "template<typename T, typename A = Alloc<T>> struct vector {};\n"
+        const char code[] = "template<typename T, typename A = Alloc<T>> struct vector {};\n"
                             "void z() {\n"
                             "    vector<int> VI;\n"
                             "}\n";
@@ -2574,17 +2591,21 @@ private:
     }
 
     void vardecl29() { // #9282
-        const char* code = "double f1() noexcept, f2(double) noexcept;";
-        ASSERT_EQUALS("double f1 ( ) noexcept ( true ) ; double f2 ( double ) noexcept ( true ) ;",
-                      tokenizeAndStringify(code));
+        {
+            const char code[] = "double f1() noexcept, f2(double) noexcept;";
+            ASSERT_EQUALS("double f1 ( ) noexcept ( true ) ; double f2 ( double ) noexcept ( true ) ;",
+                          tokenizeAndStringify(code));
+        }
 
-        code = "class C {\n"
-               "    double f1() const noexcept, f2 (double) const noexcept;\n"
-               "};\n";
-        ASSERT_EQUALS("class C {\n"
-                      "double f1 ( ) const noexcept ( true ) ; double f2 ( double ) const noexcept ( true ) ;\n"
-                      "} ;",
-                      tokenizeAndStringify(code));
+        {
+            const char code[] = "class C {\n"
+                                "    double f1() const noexcept, f2 (double) const noexcept;\n"
+                                "};\n";
+            ASSERT_EQUALS("class C {\n"
+                          "double f1 ( ) const noexcept ( true ) ; double f2 ( double ) const noexcept ( true ) ;\n"
+                          "} ;",
+                          tokenizeAndStringify(code));
+        }
     }
 
     void vardecl30() {
@@ -2596,11 +2617,15 @@ private:
     }
 
     void vardecl31() {
-        const char code1[] = "void foo() { int (*fptr)() = 0; }";
-        ASSERT_EQUALS("void foo ( ) { int ( * fptr ) ( ) ; fptr = 0 ; }", tokenizeAndStringify(code1));
+        {
+            const char code[] = "void foo() { int (*fptr)() = 0; }";
+            ASSERT_EQUALS("void foo ( ) { int ( * fptr ) ( ) ; fptr = 0 ; }", tokenizeAndStringify(code));
+        }
 
-        const char code2[] = "void foo() { int (*fptr)(int) = 0; }";
-        ASSERT_EQUALS("void foo ( ) { int ( * fptr ) ( int ) ; fptr = 0 ; }", tokenizeAndStringify(code2));
+        {
+            const char code[] = "void foo() { int (*fptr)(int) = 0; }";
+            ASSERT_EQUALS("void foo ( ) { int ( * fptr ) ( int ) ; fptr = 0 ; }", tokenizeAndStringify(code));
+        }
     }
 
     void volatile_variables() {
@@ -4028,27 +4053,27 @@ private:
 
     void cpp03template1() {
         {
-            const char *code = "template<typename> struct extent {};";
+            const char code[] = "template<typename> struct extent {};";
             ASSERT_EQUALS("template < typename > struct extent { } ;", tokenizeAndStringify(code));
         }
         {
-            const char *code = "template<typename> struct extent;";
+            const char code[] = "template<typename> struct extent;";
             ASSERT_EQUALS("template < typename > struct extent ;", tokenizeAndStringify(code));
         }
         {
-            const char *code = "template<typename, unsigned = 0> struct extent;";
+            const char code[] = "template<typename, unsigned = 0> struct extent;";
             ASSERT_EQUALS("template < typename , unsigned int = 0 > struct extent ;", tokenizeAndStringify(code));
         }
     }
 
     void cpp0xtemplate1() {
-        const char *code = "template <class T>\n"
-                           "void fn2 (T t = []{return 1;}())\n"
-                           "{}\n"
-                           "int main()\n"
-                           "{\n"
-                           "  fn2<int>();\n"
-                           "}\n";
+        const char code[] = "template <class T>\n"
+                            "void fn2 (T t = []{return 1;}())\n"
+                            "{}\n"
+                            "int main()\n"
+                            "{\n"
+                            "  fn2<int>();\n"
+                            "}\n";
         ASSERT_EQUALS("void fn2<int> ( int t = [ ] { return 1 ; } ( ) ) ;\n"
                       "\n"
                       "int main ( )\n"
@@ -4061,16 +4086,16 @@ private:
 
     void cpp0xtemplate2() {
         // tokenize ">>" into "> >"
-        const char *code = "list<list<int>> ints;\n";
+        const char code[] = "list<list<int>> ints;\n";
         ASSERT_EQUALS("list < list < int > > ints ;", tokenizeAndStringify(code));
     }
 
     void cpp0xtemplate3() {
         // #2549
-        const char *code = "template<class T, T t = (T)0>\n"
-                           "struct S\n"
-                           "{};\n"
-                           "S<int> s;\n";
+        const char code[] = "template<class T, T t = (T)0>\n"
+                            "struct S\n"
+                            "{};\n"
+                            "S<int> s;\n";
         ASSERT_EQUALS("struct S<int,(int)0> ;\n"
                       "\n"
                       "\n"
@@ -4111,27 +4136,27 @@ private:
 
     void cpp0xtemplate5() { // #9154
         {
-            const char *code = "struct s<x<u...>>;";
+            const char code[] = "struct s<x<u...>>;";
             ASSERT_EQUALS("struct s < x < u ... > > ;",
                           tokenizeAndStringify(code));
         }
         {
-            const char *code = "template <class f> using c = e<i<q<f,r>,b...>>;";
+            const char code[] = "template <class f> using c = e<i<q<f,r>,b...>>;";
             ASSERT_EQUALS("template < class f > using c = e < i < q < f , r > , b ... > > ;",
                           tokenizeAndStringify(code));
         }
         {
-            const char *code = "struct s<x<u...>> { };";
+            const char code[] = "struct s<x<u...>> { };";
             ASSERT_EQUALS("struct s < x < u ... > > { } ;",
                           tokenizeAndStringify(code));
         }
         {
-            const char *code = "struct q : s<x<u...>> { };";
+            const char code[] = "struct q : s<x<u...>> { };";
             ASSERT_EQUALS("struct q : s < x < u ... > > { } ;",
                           tokenizeAndStringify(code));
         }
         {
-            const char *code = "struct q : private s<x<u...>> { };";
+            const char code[] = "struct q : private s<x<u...>> { };";
             ASSERT_EQUALS("struct q : private s < x < u ... > > { } ;",
                           tokenizeAndStringify(code));
         }
@@ -4637,94 +4662,120 @@ private:
     }
 
     void simplifyNamespaceStd() {
-        const char *code, *expected;
+        const char *expected;
 
-        code = "map<foo, bar> m;"; // namespace std is not used
-        ASSERT_EQUALS("map < foo , bar > m ;", tokenizeAndStringify(code));
+        {
+            const char code[] = "map<foo, bar> m;"; // namespace std is not used
+            ASSERT_EQUALS("map < foo , bar > m ;", tokenizeAndStringify(code));
+        }
 
-        code = "using namespace std;\n"
-               "map<foo, bar> m;";
-        ASSERT_EQUALS("std :: map < foo , bar > m ;", tokenizeAndStringify(code));
+        {
+            const char code[] = "using namespace std;\n"
+                                "map<foo, bar> m;";
+            ASSERT_EQUALS("std :: map < foo , bar > m ;", tokenizeAndStringify(code));
+        }
 
-        code = "using namespace std;\n"
-               "string s;";
-        ASSERT_EQUALS("std :: string s ;", tokenizeAndStringify(code));
+        {
+            const char code[] = "using namespace std;\n"
+                                "string s;";
+            ASSERT_EQUALS("std :: string s ;", tokenizeAndStringify(code));
+        }
 
-        code = "using namespace std;\n"
-               "void foo() {swap(a, b); }";
-        ASSERT_EQUALS("void foo ( ) { std :: swap ( a , b ) ; }", tokenizeAndStringify(code));
+        {
+            const char code[] = "using namespace std;\n"
+                                "void foo() {swap(a, b); }";
+            ASSERT_EQUALS("void foo ( ) { std :: swap ( a , b ) ; }", tokenizeAndStringify(code));
+        }
 
-        code = "using namespace std;\n"
-               "void search() {}";
-        ASSERT_EQUALS("void search ( ) { }", tokenizeAndStringify(code));
+        {
+            const char code[] = "using namespace std;\n"
+                                "void search() {}";
+            ASSERT_EQUALS("void search ( ) { }", tokenizeAndStringify(code));
+        }
 
-        code = "using namespace std;\n"
-               "void search();\n"
-               "void dostuff() { search(); }";
-        ASSERT_EQUALS("void search ( ) ;\nvoid dostuff ( ) { search ( ) ; }", tokenizeAndStringify(code));
+        {
+            const char code[] = "using namespace std;\n"
+                                "void search();\n"
+                                "void dostuff() { search(); }";
+            ASSERT_EQUALS("void search ( ) ;\nvoid dostuff ( ) { search ( ) ; }", tokenizeAndStringify(code));
+        }
 
-        code = "using namespace std;\n"
-               "void foo() {map(a, b); }"; // That's obviously not std::map<>
-        ASSERT_EQUALS("void foo ( ) { map ( a , b ) ; }", tokenizeAndStringify(code));
+        {
+            const char code[] = "using namespace std;\n"
+                                "void foo() {map(a, b); }"; // That's obviously not std::map<>
+            ASSERT_EQUALS("void foo ( ) { map ( a , b ) ; }", tokenizeAndStringify(code));
+        }
 
-        code = "using namespace std;\n"
-               "string<wchar_t> s;"; // That's obviously not std::string
-        TODO_ASSERT_EQUALS("string < wchar_t > s ;", "std :: string < wchar_t > s ;", tokenizeAndStringify(code));
+        {
+            const char code[] = "using namespace std;\n"
+                                "string<wchar_t> s;"; // That's obviously not std::string
+            TODO_ASSERT_EQUALS("string < wchar_t > s ;", "std :: string < wchar_t > s ;", tokenizeAndStringify(code));
+        }
 
-        code = "using namespace std;\n"
-               "swap s;"; // That's obviously not std::swap
-        ASSERT_EQUALS("swap s ;", tokenizeAndStringify(code));
+        {
+            const char code[] = "using namespace std;\n"
+                                "swap s;"; // That's obviously not std::swap
+            ASSERT_EQUALS("swap s ;", tokenizeAndStringify(code));
+        }
 
-        code = "using namespace std;\n"
-               "std::string s;";
-        ASSERT_EQUALS("std :: string s ;", tokenizeAndStringify(code));
+        {
+            const char code[] = "using namespace std;\n"
+                                "std::string s;";
+            ASSERT_EQUALS("std :: string s ;", tokenizeAndStringify(code));
+        }
 
-        // #4042 (Do not add 'std ::' to variables)
-        code = "using namespace std;\n"
-               "const char * string = \"Hi\";";
-        ASSERT_EQUALS("const char * string ; string = \"Hi\" ;", tokenizeAndStringify(code));
+        { // #4042 (Do not add 'std ::' to variables)
+            const char code[] = "using namespace std;\n"
+                                "const char * string = \"Hi\";";
+            ASSERT_EQUALS("const char * string ; string = \"Hi\" ;", tokenizeAndStringify(code));
+        }
 
-        code = "using namespace std;\n"
-               "string f(const char * string) {\n"
-               "    cout << string << endl;\n"
-               "    return string;\n"
-               "}";
-        expected = "std :: string f ( const char * string ) {\n"
-                   "std :: cout << string << std :: endl ;\n"
-                   "return string ;\n"
-                   "}";
-        TODO_ASSERT_EQUALS(expected,
-                           "std :: string f ( const char * string ) {\n"
-                           "cout << string << endl ;\n"
-                           "return string ;\n"
-                           "}",
-                           tokenizeAndStringify(code));
-        ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cout\n", errout_str());
+        {
+            const char code[] = "using namespace std;\n"
+                                "string f(const char * string) {\n"
+                                "    cout << string << endl;\n"
+                                "    return string;\n"
+                                "}";
+            expected = "std :: string f ( const char * string ) {\n"
+                       "std :: cout << string << std :: endl ;\n"
+                       "return string ;\n"
+                       "}";
+            TODO_ASSERT_EQUALS(expected,
+                               "std :: string f ( const char * string ) {\n"
+                               "cout << string << endl ;\n"
+                               "return string ;\n"
+                               "}",
+                               tokenizeAndStringify(code));
+            ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cout\n", errout_str());
+        }
 
-        code = "using namespace std;\n"
-               "void f() {\n"
-               "  try { }\n"
-               "  catch(std::exception &exception) { }\n"
-               "}";
-        expected = "void f ( ) {\n"
-                   "try { }\n"
-                   "catch ( std :: exception & exception ) { }\n"
-                   "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        {
+            const char code[] = "using namespace std;\n"
+                                "void f() {\n"
+                                "  try { }\n"
+                                "  catch(std::exception &exception) { }\n"
+                                "}";
+            expected = "void f ( ) {\n"
+                       "try { }\n"
+                       "catch ( std :: exception & exception ) { }\n"
+                       "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
 
-        // #5773 (Don't prepend 'std ::' to function definitions)
-        code = "using namespace std;\n"
-               "class C {\n"
-               "    void search() {}\n"
-               "    void search() const {}\n"
-               "    void search() THROW_MACRO {}\n"
-               "};";
-        expected = "class C {\n"
-                   "void search ( ) { }\n"
-                   "void search ( ) const { }\n"
-                   "void search ( ) { }\n"
-                   "} ;";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        { // #5773 (Don't prepend 'std ::' to function definitions)
+            const char code[] = "using namespace std;\n"
+                                "class C {\n"
+                                "    void search() {}\n"
+                                "    void search() const {}\n"
+                                "    void search() THROW_MACRO {}\n"
+                                "};";
+            expected = "class C {\n"
+                       "void search ( ) { }\n"
+                       "void search ( ) const { }\n"
+                       "void search ( ) { }\n"
+                       "} ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
 
         // Ticket #8091
         ASSERT_EQUALS("enum Anonymous0 { string } ;",
@@ -4755,37 +4806,43 @@ private:
 
         ASSERT_NO_THROW(tokenizeAndStringify("NS_BEGIN(IMAGEIO_2D_DICOM) using namespace std; NS_END")); // #11045
 
-        code = "using namespace std;\n"
-               "void f(const unique_ptr<int>& p) {\n"
-               "    if (!p)\n"
-               "        throw runtime_error(\"abc\");\n"
-               "}";
-        expected = "void f ( const std :: unique_ptr < int > & p ) {\n"
-                   "if ( ! p ) {\n"
-                   "throw std :: runtime_error ( \"abc\" ) ; }\n"
-                   "}";
-        TODO_ASSERT_EQUALS(expected,
-                           "void f ( const std :: unique_ptr < int > & p ) {\n"
-                           "if ( ! p ) {\n"
-                           "throw runtime_error ( \"abc\" ) ; }\n"
-                           "}",
-                           tokenizeAndStringify(code));
+        {
+            const char code[] = "using namespace std;\n"
+                                "void f(const unique_ptr<int>& p) {\n"
+                                "    if (!p)\n"
+                                "        throw runtime_error(\"abc\");\n"
+                                "}";
+            expected = "void f ( const std :: unique_ptr < int > & p ) {\n"
+                       "if ( ! p ) {\n"
+                       "throw std :: runtime_error ( \"abc\" ) ; }\n"
+                       "}";
+            TODO_ASSERT_EQUALS(expected,
+                               "void f ( const std :: unique_ptr < int > & p ) {\n"
+                               "if ( ! p ) {\n"
+                               "throw runtime_error ( \"abc\" ) ; }\n"
+                               "}",
+                               tokenizeAndStringify(code));
+        }
 
-        code = "using namespace std;\n" // #8454
-               "void f() { string str = to_string(1); }\n";
-        expected = "void f ( ) { std :: string str ; str = std :: to_string ( 1 ) ; }";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        {
+            const char code[] = "using namespace std;\n" // #8454
+                                "void f() { string str = to_string(1); }\n";
+            expected = "void f ( ) { std :: string str ; str = std :: to_string ( 1 ) ; }";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
 
-        code = "using namespace std;\n"
-               "vector<int>&& f(vector<int>& v) {\n"
-               "    v.push_back(1);\n"
-               "    return move(v);\n"
-               "}\n";
-        expected = "std :: vector < int > && f ( std :: vector < int > & v ) {\n"
-                   "v . push_back ( 1 ) ;\n"
-                   "return std :: move ( v ) ;\n"
-                   "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        {
+            const char code[] = "using namespace std;\n"
+                                "vector<int>&& f(vector<int>& v) {\n"
+                                "    v.push_back(1);\n"
+                                "    return move(v);\n"
+                                "}\n";
+            expected = "std :: vector < int > && f ( std :: vector < int > & v ) {\n"
+                       "v . push_back ( 1 ) ;\n"
+                       "return std :: move ( v ) ;\n"
+                       "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
     }
 
     void microsoftMemory() {
@@ -6107,140 +6164,140 @@ private:
     void astexpr2() { // limit for large expressions
         // #7724 - wrong AST causes hang
         // Ideally a proper AST is created for this code.
-        const char* code = "const char * a(int type) {\n"
-                           "  return (\n"
-                           "   (type == 1) ? \"\"\n"
-                           " : (type == 2) ? \"\"\n"
-                           " : (type == 3) ? \"\"\n"
-                           " : (type == 4) ? \"\"\n"
-                           " : (type == 5) ? \"\"\n"
-                           " : (type == 6) ? \"\"\n"
-                           " : (type == 7) ? \"\"\n"
-                           " : (type == 8) ? \"\"\n"
-                           " : (type == 9) ? \"\"\n"
-                           " : (type == 10) ? \"\"\n"
-                           " : (type == 11) ? \"\"\n"
-                           " : (type == 12) ? \"\"\n"
-                           " : (type == 13) ? \"\"\n"
-                           " : (type == 14) ? \"\"\n"
-                           " : (type == 15) ? \"\"\n"
-                           " : (type == 16) ? \"\"\n"
-                           " : (type == 17) ? \"\"\n"
-                           " : (type == 18) ? \"\"\n"
-                           " : (type == 19) ? \"\"\n"
-                           " : (type == 20) ? \"\"\n"
-                           " : (type == 21) ? \"\"\n"
-                           " : (type == 22) ? \"\"\n"
-                           " : (type == 23) ? \"\"\n"
-                           " : (type == 24) ? \"\"\n"
-                           " : (type == 25) ? \"\"\n"
-                           " : (type == 26) ? \"\"\n"
-                           " : (type == 27) ? \"\"\n"
-                           " : (type == 28) ? \"\"\n"
-                           " : (type == 29) ? \"\"\n"
-                           " : (type == 30) ? \"\"\n"
-                           " : (type == 31) ? \"\"\n"
-                           " : (type == 32) ? \"\"\n"
-                           " : (type == 33) ? \"\"\n"
-                           " : (type == 34) ? \"\"\n"
-                           " : (type == 35) ? \"\"\n"
-                           " : (type == 36) ? \"\"\n"
-                           " : (type == 37) ? \"\"\n"
-                           " : (type == 38) ? \"\"\n"
-                           " : (type == 39) ? \"\"\n"
-                           " : (type == 40) ? \"\"\n"
-                           " : (type == 41) ? \"\"\n"
-                           " : (type == 42) ? \"\"\n"
-                           " : (type == 43) ? \"\"\n"
-                           " : (type == 44) ? \"\"\n"
-                           " : (type == 45) ? \"\"\n"
-                           " : (type == 46) ? \"\"\n"
-                           " : (type == 47) ? \"\"\n"
-                           " : (type == 48) ? \"\"\n"
-                           " : (type == 49) ? \"\"\n"
-                           " : (type == 50) ? \"\"\n"
-                           " : (type == 51) ? \"\"\n"
-                           " : \"\");\n"
-                           "}\n";
+        const char code1[] = "const char * a(int type) {\n"
+                             "  return (\n"
+                             "   (type == 1) ? \"\"\n"
+                             " : (type == 2) ? \"\"\n"
+                             " : (type == 3) ? \"\"\n"
+                             " : (type == 4) ? \"\"\n"
+                             " : (type == 5) ? \"\"\n"
+                             " : (type == 6) ? \"\"\n"
+                             " : (type == 7) ? \"\"\n"
+                             " : (type == 8) ? \"\"\n"
+                             " : (type == 9) ? \"\"\n"
+                             " : (type == 10) ? \"\"\n"
+                             " : (type == 11) ? \"\"\n"
+                             " : (type == 12) ? \"\"\n"
+                             " : (type == 13) ? \"\"\n"
+                             " : (type == 14) ? \"\"\n"
+                             " : (type == 15) ? \"\"\n"
+                             " : (type == 16) ? \"\"\n"
+                             " : (type == 17) ? \"\"\n"
+                             " : (type == 18) ? \"\"\n"
+                             " : (type == 19) ? \"\"\n"
+                             " : (type == 20) ? \"\"\n"
+                             " : (type == 21) ? \"\"\n"
+                             " : (type == 22) ? \"\"\n"
+                             " : (type == 23) ? \"\"\n"
+                             " : (type == 24) ? \"\"\n"
+                             " : (type == 25) ? \"\"\n"
+                             " : (type == 26) ? \"\"\n"
+                             " : (type == 27) ? \"\"\n"
+                             " : (type == 28) ? \"\"\n"
+                             " : (type == 29) ? \"\"\n"
+                             " : (type == 30) ? \"\"\n"
+                             " : (type == 31) ? \"\"\n"
+                             " : (type == 32) ? \"\"\n"
+                             " : (type == 33) ? \"\"\n"
+                             " : (type == 34) ? \"\"\n"
+                             " : (type == 35) ? \"\"\n"
+                             " : (type == 36) ? \"\"\n"
+                             " : (type == 37) ? \"\"\n"
+                             " : (type == 38) ? \"\"\n"
+                             " : (type == 39) ? \"\"\n"
+                             " : (type == 40) ? \"\"\n"
+                             " : (type == 41) ? \"\"\n"
+                             " : (type == 42) ? \"\"\n"
+                             " : (type == 43) ? \"\"\n"
+                             " : (type == 44) ? \"\"\n"
+                             " : (type == 45) ? \"\"\n"
+                             " : (type == 46) ? \"\"\n"
+                             " : (type == 47) ? \"\"\n"
+                             " : (type == 48) ? \"\"\n"
+                             " : (type == 49) ? \"\"\n"
+                             " : (type == 50) ? \"\"\n"
+                             " : (type == 51) ? \"\"\n"
+                             " : \"\");\n"
+                             "}\n";
         // Ensure that the AST is validated for the simplified token list
-        TODO_ASSERT_THROW(tokenizeAndStringify(code), InternalError); // this should not crash/hang
+        TODO_ASSERT_THROW(tokenizeAndStringify(code1), InternalError); // this should not crash/hang
 
-        code = "template<uint64_t kInput>\n" // #11515
-               "struct ConstCTZ {\n"
-               "    static constexpr uint32_t value =\n"
-               "        (kInput & (uint64_t(1) << 0)) ? 0 :\n"
-               "        (kInput & (uint64_t(1) << 1)) ? 1 :\n"
-               "        (kInput & (uint64_t(1) << 2)) ? 2 :\n"
-               "        (kInput & (uint64_t(1) << 3)) ? 3 :\n"
-               "        (kInput & (uint64_t(1) << 4)) ? 4 :\n"
-               "        (kInput & (uint64_t(1) << 5)) ? 5 :\n"
-               "        (kInput & (uint64_t(1) << 6)) ? 6 :\n"
-               "        (kInput & (uint64_t(1) << 7)) ? 7 :\n"
-               "        (kInput & (uint64_t(1) << 8)) ? 8 :\n"
-               "        (kInput & (uint64_t(1) << 9)) ? 9 :\n"
-               "        (kInput & (uint64_t(1) << 10)) ? 10 :\n"
-               "        (kInput & (uint64_t(1) << 11)) ? 11 :\n"
-               "        (kInput & (uint64_t(1) << 12)) ? 12 :\n"
-               "        (kInput & (uint64_t(1) << 13)) ? 13 :\n"
-               "        (kInput & (uint64_t(1) << 14)) ? 14 :\n"
-               "        (kInput & (uint64_t(1) << 15)) ? 15 :\n"
-               "        (kInput & (uint64_t(1) << 16)) ? 16 :\n"
-               "        (kInput & (uint64_t(1) << 17)) ? 17 :\n"
-               "        (kInput & (uint64_t(1) << 18)) ? 18 :\n"
-               "        (kInput & (uint64_t(1) << 19)) ? 19 :\n"
-               "        (kInput & (uint64_t(1) << 20)) ? 20 :\n"
-               "        (kInput & (uint64_t(1) << 21)) ? 21 :\n"
-               "        (kInput & (uint64_t(1) << 22)) ? 22 :\n"
-               "        (kInput & (uint64_t(1) << 23)) ? 23 :\n"
-               "        (kInput & (uint64_t(1) << 24)) ? 24 :\n"
-               "        (kInput & (uint64_t(1) << 25)) ? 25 :\n"
-               "        (kInput & (uint64_t(1) << 26)) ? 26 :\n"
-               "        (kInput & (uint64_t(1) << 27)) ? 27 :\n"
-               "        (kInput & (uint64_t(1) << 28)) ? 28 :\n"
-               "        (kInput & (uint64_t(1) << 29)) ? 29 :\n"
-               "        (kInput & (uint64_t(1) << 30)) ? 30 :\n"
-               "        (kInput & (uint64_t(1) << 31)) ? 31 :\n"
-               "        (kInput & (uint64_t(1) << 32)) ? 32 :\n"
-               "        (kInput & (uint64_t(1) << 33)) ? 33 :\n"
-               "        (kInput & (uint64_t(1) << 34)) ? 34 :\n"
-               "        (kInput & (uint64_t(1) << 35)) ? 35 :\n"
-               "        (kInput & (uint64_t(1) << 36)) ? 36 :\n"
-               "        (kInput & (uint64_t(1) << 37)) ? 37 :\n"
-               "        (kInput & (uint64_t(1) << 38)) ? 38 :\n"
-               "        (kInput & (uint64_t(1) << 39)) ? 39 :\n"
-               "        (kInput & (uint64_t(1) << 40)) ? 40 :\n"
-               "        (kInput & (uint64_t(1) << 41)) ? 41 :\n"
-               "        (kInput & (uint64_t(1) << 42)) ? 42 :\n"
-               "        (kInput & (uint64_t(1) << 43)) ? 43 :\n"
-               "        (kInput & (uint64_t(1) << 44)) ? 44 :\n"
-               "        (kInput & (uint64_t(1) << 45)) ? 45 :\n"
-               "        (kInput & (uint64_t(1) << 46)) ? 46 :\n"
-               "        (kInput & (uint64_t(1) << 47)) ? 47 :\n"
-               "        (kInput & (uint64_t(1) << 48)) ? 48 :\n"
-               "        (kInput & (uint64_t(1) << 49)) ? 49 :\n"
-               "        (kInput & (uint64_t(1) << 50)) ? 50 :\n"
-               "        (kInput & (uint64_t(1) << 51)) ? 51 :\n"
-               "        (kInput & (uint64_t(1) << 52)) ? 52 :\n"
-               "        (kInput & (uint64_t(1) << 53)) ? 53 :\n"
-               "        (kInput & (uint64_t(1) << 54)) ? 54 :\n"
-               "        (kInput & (uint64_t(1) << 55)) ? 55 :\n"
-               "        (kInput & (uint64_t(1) << 56)) ? 56 :\n"
-               "        (kInput & (uint64_t(1) << 57)) ? 57 :\n"
-               "        (kInput & (uint64_t(1) << 58)) ? 58 :\n"
-               "        (kInput & (uint64_t(1) << 59)) ? 59 :\n"
-               "        (kInput & (uint64_t(1) << 60)) ? 60 :\n"
-               "        (kInput & (uint64_t(1) << 61)) ? 61 :\n"
-               "        (kInput & (uint64_t(1) << 62)) ? 62 :\n"
-               "        (kInput & (uint64_t(1) << 63)) ? 63 : 64;\n"
-               "};\n";
-        ASSERT_NO_THROW(tokenizeAndStringify(code));
+        const char code2[] = "template<uint64_t kInput>\n" // #11515
+                             "struct ConstCTZ {\n"
+                             "    static constexpr uint32_t value =\n"
+                             "        (kInput & (uint64_t(1) << 0)) ? 0 :\n"
+                             "        (kInput & (uint64_t(1) << 1)) ? 1 :\n"
+                             "        (kInput & (uint64_t(1) << 2)) ? 2 :\n"
+                             "        (kInput & (uint64_t(1) << 3)) ? 3 :\n"
+                             "        (kInput & (uint64_t(1) << 4)) ? 4 :\n"
+                             "        (kInput & (uint64_t(1) << 5)) ? 5 :\n"
+                             "        (kInput & (uint64_t(1) << 6)) ? 6 :\n"
+                             "        (kInput & (uint64_t(1) << 7)) ? 7 :\n"
+                             "        (kInput & (uint64_t(1) << 8)) ? 8 :\n"
+                             "        (kInput & (uint64_t(1) << 9)) ? 9 :\n"
+                             "        (kInput & (uint64_t(1) << 10)) ? 10 :\n"
+                             "        (kInput & (uint64_t(1) << 11)) ? 11 :\n"
+                             "        (kInput & (uint64_t(1) << 12)) ? 12 :\n"
+                             "        (kInput & (uint64_t(1) << 13)) ? 13 :\n"
+                             "        (kInput & (uint64_t(1) << 14)) ? 14 :\n"
+                             "        (kInput & (uint64_t(1) << 15)) ? 15 :\n"
+                             "        (kInput & (uint64_t(1) << 16)) ? 16 :\n"
+                             "        (kInput & (uint64_t(1) << 17)) ? 17 :\n"
+                             "        (kInput & (uint64_t(1) << 18)) ? 18 :\n"
+                             "        (kInput & (uint64_t(1) << 19)) ? 19 :\n"
+                             "        (kInput & (uint64_t(1) << 20)) ? 20 :\n"
+                             "        (kInput & (uint64_t(1) << 21)) ? 21 :\n"
+                             "        (kInput & (uint64_t(1) << 22)) ? 22 :\n"
+                             "        (kInput & (uint64_t(1) << 23)) ? 23 :\n"
+                             "        (kInput & (uint64_t(1) << 24)) ? 24 :\n"
+                             "        (kInput & (uint64_t(1) << 25)) ? 25 :\n"
+                             "        (kInput & (uint64_t(1) << 26)) ? 26 :\n"
+                             "        (kInput & (uint64_t(1) << 27)) ? 27 :\n"
+                             "        (kInput & (uint64_t(1) << 28)) ? 28 :\n"
+                             "        (kInput & (uint64_t(1) << 29)) ? 29 :\n"
+                             "        (kInput & (uint64_t(1) << 30)) ? 30 :\n"
+                             "        (kInput & (uint64_t(1) << 31)) ? 31 :\n"
+                             "        (kInput & (uint64_t(1) << 32)) ? 32 :\n"
+                             "        (kInput & (uint64_t(1) << 33)) ? 33 :\n"
+                             "        (kInput & (uint64_t(1) << 34)) ? 34 :\n"
+                             "        (kInput & (uint64_t(1) << 35)) ? 35 :\n"
+                             "        (kInput & (uint64_t(1) << 36)) ? 36 :\n"
+                             "        (kInput & (uint64_t(1) << 37)) ? 37 :\n"
+                             "        (kInput & (uint64_t(1) << 38)) ? 38 :\n"
+                             "        (kInput & (uint64_t(1) << 39)) ? 39 :\n"
+                             "        (kInput & (uint64_t(1) << 40)) ? 40 :\n"
+                             "        (kInput & (uint64_t(1) << 41)) ? 41 :\n"
+                             "        (kInput & (uint64_t(1) << 42)) ? 42 :\n"
+                             "        (kInput & (uint64_t(1) << 43)) ? 43 :\n"
+                             "        (kInput & (uint64_t(1) << 44)) ? 44 :\n"
+                             "        (kInput & (uint64_t(1) << 45)) ? 45 :\n"
+                             "        (kInput & (uint64_t(1) << 46)) ? 46 :\n"
+                             "        (kInput & (uint64_t(1) << 47)) ? 47 :\n"
+                             "        (kInput & (uint64_t(1) << 48)) ? 48 :\n"
+                             "        (kInput & (uint64_t(1) << 49)) ? 49 :\n"
+                             "        (kInput & (uint64_t(1) << 50)) ? 50 :\n"
+                             "        (kInput & (uint64_t(1) << 51)) ? 51 :\n"
+                             "        (kInput & (uint64_t(1) << 52)) ? 52 :\n"
+                             "        (kInput & (uint64_t(1) << 53)) ? 53 :\n"
+                             "        (kInput & (uint64_t(1) << 54)) ? 54 :\n"
+                             "        (kInput & (uint64_t(1) << 55)) ? 55 :\n"
+                             "        (kInput & (uint64_t(1) << 56)) ? 56 :\n"
+                             "        (kInput & (uint64_t(1) << 57)) ? 57 :\n"
+                             "        (kInput & (uint64_t(1) << 58)) ? 58 :\n"
+                             "        (kInput & (uint64_t(1) << 59)) ? 59 :\n"
+                             "        (kInput & (uint64_t(1) << 60)) ? 60 :\n"
+                             "        (kInput & (uint64_t(1) << 61)) ? 61 :\n"
+                             "        (kInput & (uint64_t(1) << 62)) ? 62 :\n"
+                             "        (kInput & (uint64_t(1) << 63)) ? 63 : 64;\n"
+                             "};\n";
+        ASSERT_NO_THROW(tokenizeAndStringify(code2));
 
-        code = "void f(const std::vector<int>& v) {\n" // #12569
-               "    ::std::for_each(v.begin(), v.end(), [](int i) {\n"
-               "        int j(i ? i : 5);\n"
-               "    });\n"
-               "}\n";
-        ASSERT_NO_THROW(tokenizeAndStringify(code));
+        const char code3[] = "void f(const std::vector<int>& v) {\n" // #12569
+                             "    ::std::for_each(v.begin(), v.end(), [](int i) {\n"
+                             "        int j(i ? i : 5);\n"
+                             "    });\n"
+                             "}\n";
+        ASSERT_NO_THROW(tokenizeAndStringify(code3));
     }
 
     void astnewdelete() {
@@ -6881,7 +6938,8 @@ private:
     }
 
 #define isStartOfExecutableScope(offset, code) isStartOfExecutableScope_(offset, code, __FILE__, __LINE__)
-    bool isStartOfExecutableScope_(int offset, const char code[], const char* file, int line) {
+    template<size_t size>
+    bool isStartOfExecutableScope_(int offset, const char (&code)[size], const char* file, int line) {
         SimpleTokenizer tokenizer(settings0, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
@@ -7664,7 +7722,8 @@ private:
                                                    "}\n"), SYNTAX);
     }
 
-    void checkConfig(const char code[]) {
+    template<size_t size>
+    void checkConfig(const char (&code)[size]) {
         const Settings s = settingsBuilder().checkConfiguration().build();
 
         // tokenize..

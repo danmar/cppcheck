@@ -104,7 +104,8 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool cpp = true, const Settings* settings_ = nullptr) {
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], bool cpp = true, const Settings* settings_ = nullptr) {
         if (!settings_)
             settings_ = &settings;
 
