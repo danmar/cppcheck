@@ -15,7 +15,7 @@ setup(
         "highlighting."
     ),
     long_description=readme,
-    author="Henrik Nilsson",
+    author="Cppcheck Team",
     url="https://github.com/danmar/cppcheck",
     license="GPL",
     packages=find_packages(exclude=("tests", "docs")),
@@ -25,7 +25,7 @@ setup(
             "cppcheck-htmlreport = cppcheck_htmlreport:run.main",
         ]
     },
-    test_suite="tests",
     install_requires=["Pygments"],
+    # Required by setuptools-scm 7.0 for Python 3.7+
     setup_requires=["setuptools>=60", "setuptools-scm>=7.0"],
 )

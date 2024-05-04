@@ -14,8 +14,9 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 
-HTMLREPORT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-ROOT_DIR = os.path.split(HTMLREPORT_DIR)[0]
+TEST_TOOLS_DIR = os.path.abspath(os.path.dirname(__file__))
+ROOT_DIR = os.path.split(os.path.dirname(TEST_TOOLS_DIR))[0]
+HTMLREPORT_DIR = os.path.join(ROOT_DIR, 'htmlreport')
 CPPCHECK_BIN = os.path.join(ROOT_DIR, 'cppcheck')
 
 if os.getenv("PIP_PACKAGE_TEST") is not None:
@@ -68,7 +69,7 @@ class TestHTMLReport(unittest.TestCase):
 
     def testMissingInclude(self):
         with runCheck(
-            xml_filename=os.path.join(ROOT_DIR, 'htmlreport', 'example.xml'),
+            xml_filename=os.path.join(TEST_TOOLS_DIR, 'example.xml'),
         ) as (report, output_directory):
             self.assertIn('<html', report)
 
@@ -104,7 +105,7 @@ def runCheck(source_filename=None, xml_version='1', xml_filename=None):
         [*HTML_REPORT_BIN,
          '--file=' + os.path.realpath(xml_filename),
          '--report-dir=' + os.path.realpath(output_directory)],
-        cwd=os.path.join(ROOT_DIR, 'htmlreport'))
+        cwd=TEST_TOOLS_DIR)
 
     with open(os.path.join(output_directory, 'index.html')) as index_file:
         index_contents = index_file.read()

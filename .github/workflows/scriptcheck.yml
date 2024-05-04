@@ -156,10 +156,11 @@ jobs:
 
       - name: test htmlreport (standalone)
         run: |
-          htmlreport/tests/test_htmlreport.py
+          test/tools/test_htmlreport.py
           cd htmlreport
           ./check.sh
-
+      # Python 3.5 and 3.6 are excluded as they are not supported by setuptools-scm package for getting
+      # package version
       - name: test htmlreport (pip)
         if: matrix.python-version != '3.5' && matrix.python-version != '3.6'
         run: |
@@ -168,7 +169,7 @@ jobs:
           python -m pip install -U pip
           pip install ./htmlreport/
           which cppcheck-htmlreport
-          PIP_PACKAGE_TEST=1 htmlreport/tests/test_htmlreport.py
+          PIP_PACKAGE_TEST=1 test/tools/test_htmlreport.py
           cd htmlreport
           ./check.sh
 
