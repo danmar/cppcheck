@@ -697,7 +697,7 @@ private:
         const char code[] = R"(#include "test.h")";
         ScopedFile header("test.h", inc);
         const std::string processed = PreprocessorHelper::getcode(settings, *this, code, "", "test.cpp");
-        check(processed.c_str());
+        check(processed);
         TODO_ASSERT_EQUALS("[test.h:3]: (style) The function 'f' is never used.\n", "[test.cpp:3]: (style) The function 'f' is never used.\n", errout_str());
     }
 };

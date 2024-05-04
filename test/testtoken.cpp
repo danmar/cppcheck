@@ -141,7 +141,7 @@ private:
         SimpleTokenizer tokenizer(settingsDefault, *this);
         const std::string code2 = ";" + code + ";";
         try {
-            ASSERT_LOC(tokenizer.tokenize(code2.c_str()), file, line);
+            ASSERT_LOC(tokenizer.tokenize(code2), file, line);
         } catch (...) {}
         return Token::Match(tokenizer.tokens()->next(), pattern.c_str(), varid);
     }

@@ -931,7 +931,7 @@ private:
 
     void longtok() {
         const std::string filedata(10000, 'a');
-        ASSERT_EQUALS(filedata, tokenizeAndStringify(filedata.c_str()));
+        ASSERT_EQUALS(filedata, tokenizeAndStringify(filedata));
     }
 
 
@@ -6934,7 +6934,7 @@ private:
         const std::string filedata = tokens1.stringify();
         const std::string code = PreprocessorHelper::getcode(settings0, *this, filedata, emptyString, emptyString);
 
-        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code.c_str()), AST);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code), AST);
     }
 
 #define isStartOfExecutableScope(offset, code) isStartOfExecutableScope_(offset, code, __FILE__, __LINE__)
