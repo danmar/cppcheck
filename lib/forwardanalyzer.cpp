@@ -640,7 +640,7 @@ namespace {
                         assert(!inDoWhile || Token::simpleMatch(tok, "} while ("));
                         if (Token::simpleMatch(tok, "} else {") || inDoWhile)
                             tok = tok->linkAt(2);
-                    } else if (scope->type == Scope::eTry) {
+                    } else if (ontains({Scope::eDo, Scope::eTry, Scope::eCatch}, scope->type)) {
                         if (!analyzer->lowerToPossible())
                             return Break(Analyzer::Terminate::Bail);
                     } else if (scope->type == Scope::eLambda) {
