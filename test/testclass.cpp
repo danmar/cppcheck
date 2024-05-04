@@ -8679,7 +8679,7 @@ private:
                              "};\n");
         ASSERT_EQUALS("", errout_str());
 
-        checkUselessOverride("struct B {\n"
+        checkUselessOverride("struct B {\n" // #12706
                              "    virtual void f() { g(); }\n"
                              "    void g() { std::cout << \"Base\\n\"; }\n"
                              "};\n"
