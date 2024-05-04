@@ -3230,6 +3230,8 @@ static bool compareTokenRanges(const Token* start1, const Token* end1, const Tok
     const Token* tok2 = start2;
     bool isEqual = false;
     while (tok1 && tok2) {
+        if (tok1->function() != tok2->function())
+            break;
         if (tok1->str() != tok2->str())
             break;
         if (tok1->str() == "this")
