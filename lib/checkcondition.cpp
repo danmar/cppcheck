@@ -613,7 +613,9 @@ static bool isNonConstFunctionCall(const Token *ftok, const Library &library)
 
 void CheckCondition::multiCondition2()
 {
-    if (!mSettings->severity.isEnabled(Severity::warning))
+    if (!mSettings->severity.isEnabled(Severity::warning) &&
+        !mSettings->isPremiumEnabled("identicalConditionAfterEarlyExit") &&
+        !mSettings->isPremiumEnabled("identicalInnerCondition"))
         return;
 
     logChecker("CheckCondition::multiCondition2"); // warning
@@ -1482,7 +1484,8 @@ void CheckCondition::alwaysTrueFalse()
 {
     if (!mSettings->severity.isEnabled(Severity::style) &&
         !mSettings->isPremiumEnabled("alwaysTrue") &&
-        !mSettings->isPremiumEnabled("alwaysFalse"))
+        !mSettings->isPremiumEnabled("alwaysFalse") &&
+        !mSettings->isPremiumEnabled("knownConditionTrueFalse"))
         return;
 
     logChecker("CheckCondition::alwaysTrueFalse"); // style

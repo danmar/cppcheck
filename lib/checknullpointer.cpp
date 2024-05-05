@@ -441,7 +441,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
         return;
     }
 
-    if (!mSettings->isEnabled(value, inconclusive))
+    if (!mSettings->isEnabled(value, inconclusive) && !mSettings->isPremiumEnabled("nullPointer"))
         return;
 
     const ErrorPath errorPath = getErrorPath(tok, value, "Null pointer dereference");

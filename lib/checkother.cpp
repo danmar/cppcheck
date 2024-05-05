@@ -424,7 +424,9 @@ void CheckOther::invalidPointerCastError(const Token* tok, const std::string& fr
 
 void CheckOther::checkRedundantAssignment()
 {
-    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("redundantAssignment"))
+    if (!mSettings->severity.isEnabled(Severity::style) &&
+        !mSettings->isPremiumEnabled("redundantAssignment") &&
+        !mSettings->isPremiumEnabled("redundantAssignInSwitch"))
         return;
 
     logChecker("CheckOther::checkRedundantAssignment"); // style
@@ -773,7 +775,7 @@ void CheckOther::checkUnreachableCode()
     // misra-c-2023-2.1
     // misra-cpp-2008-0-1-1
     // autosar
-    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("unreachableCode"))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("duplicateBreak") && !mSettings->isPremiumEnabled("unreachableCode"))
         return;
 
     logChecker("CheckOther::checkUnreachableCode"); // style
@@ -1326,8 +1328,10 @@ static bool isVariableMutableInInitializer(const Token* start, const Token * end
 
 void CheckOther::checkConstVariable()
 {
-    if (!mSettings->severity.isEnabled(Severity::style) || mTokenizer->isC())
+    if ((!mSettings->severity.isEnabled(Severity::style) || mTokenizer->isC()) && !mSettings->isPremiumEnabled("constVariable"))
         return;
+
+    logChecker("CheckOther::checkConstVariable"); // style,c++
 
     const SymbolDatabase *const symbolDatabase = mTokenizer->getSymbolDatabase();
 
@@ -1476,6 +1480,7 @@ void CheckOther::checkConstPointer()
 {
     if (!mSettings->severity.isEnabled(Severity::style) &&
         !mSettings->isPremiumEnabled("constParameter") &&
+        !mSettings->isPremiumEnabled("constParameterReference") &&
         !mSettings->isPremiumEnabled("constPointer"))
         return;
 
@@ -3344,7 +3349,9 @@ void CheckOther::unknownEvaluationOrder(const Token* tok)
 
 void CheckOther::checkAccessOfMovedVariable()
 {
-    if (!mTokenizer->isCPP() || mSettings->standards.cpp < Standards::CPP11 || !mSettings->severity.isEnabled(Severity::warning))
+    if (!mTokenizer->isCPP() || mSettings->standards.cpp < Standards::CPP11)
+        return;
+    if (!mSettings->isPremiumEnabled("accessMoved") && !mSettings->severity.isEnabled(Severity::warning))
         return;
     logChecker("CheckOther::checkAccessOfMovedVariable"); // c++11,warning
     const bool reportInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
