@@ -4,6 +4,7 @@
 import json
 import os
 import pytest
+import sys
 from testutils import cppcheck
 
 __script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -233,7 +234,7 @@ def test_build_dir(tmpdir):
     assert ret == 0, stdout
 
 
-def __test_build_dir_unused_template(tmpdir, use_j):
+def __test_build_dir_unused_template(tmpdir, extra_args):
     args = [
         '-q',
         '--template=simple',
@@ -242,10 +243,8 @@ def __test_build_dir_unused_template(tmpdir, use_j):
         '--inline-suppr',
         '{}template.cpp'.format(__proj_inline_suppres_path)
     ]
-    if use_j:
-        args.append('-j2')
-    else:
-        args.append('-j1')
+
+    args = args + extra_args
 
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
@@ -255,12 +254,17 @@ def __test_build_dir_unused_template(tmpdir, use_j):
 
 
 def test_build_dir_unused_template(tmpdir):
-    __test_build_dir_unused_template(tmpdir, False)
+    __test_build_dir_unused_template(tmpdir, ['-j1'])
+
+
+def test_build_dir_unused_template_j_thread(tmpdir):
+    __test_build_dir_unused_template(tmpdir, ['-j2', '--executor=thread'])
 
 
 @pytest.mark.xfail(strict=True)
-def test_build_dir_unused_template_j(tmpdir):
-    __test_build_dir_unused_template(tmpdir, True)
+@pytest.mark.skipif(sys.platform == 'win32', reason='ProcessExecutor not available on Windows')
+def test_build_dir_unused_template_j_process(tmpdir):
+    __test_build_dir_unused_template(tmpdir, ['-j2', '--executor=process'])
 
 
 def test_suppress_unmatched_inline_suppression():  # 11172
@@ -279,76 +283,7 @@ def test_suppress_unmatched_inline_suppression():  # 11172
     assert ret == 0, stdout
 
 
-# reporting of inline unusedFunction is deferred
-def __test_unused_function_unmatched(tmpdir, use_j):
-    args = [
-        '-q',
-        '--template=simple',
-        '--enable=all',
-        '--inline-suppr',
-        'proj-inline-suppress/unusedFunctionUnmatched.cpp'
-    ]
-
-    if use_j:
-        args.append('-j2')
-    else:
-        args.append('-j1')
-
-    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
-    lines = stderr.splitlines()
-    lines.sort()
-    assert lines == [
-        '{}unusedFunctionUnmatched.cpp:5:0: information: Unmatched suppression: uninitvar [unmatchedSuppression]'.format(__proj_inline_suppres_path),
-        '{}unusedFunctionUnmatched.cpp:5:0: information: Unmatched suppression: unusedFunction [unmatchedSuppression]'.format(__proj_inline_suppres_path)
-    ]
-    assert stdout == ''
-    assert ret == 0, stdout
-
-
-def test_unused_function_unmatched(tmpdir):
-    __test_unused_function_unmatched(tmpdir, False)
-
-
-@pytest.mark.skip  # unusedFunction does not work with -j
-def test_unused_function_unmatched_j(tmpdir):
-    __test_unused_function_unmatched(tmpdir, True)
-
-
-# reporting of inline unusedFunction is deferred
-def __test_unused_function_unmatched_build_dir(tmpdir, extra_args):
-    args = [
-        '-q',
-        '--template=simple',
-        '--cppcheck-build-dir={}'.format(tmpdir),
-        '--enable=all',
-        '--inline-suppr',
-        'proj-inline-suppress/unusedFunctionUnmatched.cpp'
-    ]
-
-    args = args + extra_args
-
-    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
-    lines = stderr.splitlines()
-    lines.sort()
-    print(lines)
-    assert lines == [
-        '{}unusedFunctionUnmatched.cpp:5:0: information: Unmatched suppression: uninitvar [unmatchedSuppression]'.format(__proj_inline_suppres_path),
-        '{}unusedFunctionUnmatched.cpp:5:0: information: Unmatched suppression: unusedFunction [unmatchedSuppression]'.format(__proj_inline_suppres_path)
-    ]
-    assert stdout == ''
-    assert ret == 0, stdout
-
-
-def test_unused_function_unmatched_build_dir(tmpdir):
-    __test_unused_function_unmatched_build_dir(tmpdir, ['-j1'])
-
-
-@pytest.mark.xfail(strict=True)
-def test_unused_function_unmatched_build_dir_j(tmpdir):
-    __test_unused_function_unmatched_build_dir(tmpdir, ['-j2'])
-
-
-# no error as inline suppressions are currently not being propagated back
+# TODO: should this error out?
 def test_duplicate(tmpdir):
     args = [
         '-q',
@@ -366,8 +301,8 @@ def test_duplicate(tmpdir):
     assert ret == 0, stdout
 
 
-# no error as inline suppressions are currently not being propagated back
-def test_duplicate_cmd(tmpdir):
+# no error as inline suppressions are handled separately
+def __test_duplicate_cmd(tmpdir, extra_args):
     args = [
         '-q',
         '--template=simple',
@@ -378,15 +313,29 @@ def test_duplicate_cmd(tmpdir):
         'proj-inline-suppress/4.c'
     ]
 
+    args = args + extra_args
+
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
-    assert lines == []
+    # this is the suppression provided via the command-line which is unused because only the inline suppression is being matched
+    assert lines == [
+        'nofile:0:0: information: Unmatched suppression: unreadVariable [unmatchedSuppression]'
+    ]
     assert stdout == ''
     assert ret == 0, stdout
 
 
-# no error as inline suppressions are currently not being propagated back
-def test_duplicate_file(tmpdir):
+@pytest.mark.xfail(strict=True)
+def test_duplicate_cmd(tmpdir):
+    __test_duplicate_cmd(tmpdir, ['-j1'])
+
+
+def test_duplicate_cmd_j(tmpdir):
+    __test_duplicate_cmd(tmpdir, ['-j2'])
+
+
+# no error as inline suppressions are handled separately
+def __test_duplicate_file(tmpdir, extra_args):
     suppr_file = os.path.join(tmpdir, 'suppressions')
     with open(suppr_file, 'wt') as f:
         f.write('''unreadVariable''')
@@ -401,11 +350,25 @@ def test_duplicate_file(tmpdir):
         'proj-inline-suppress/4.c'
     ]
 
+    args = args + extra_args
+
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
-    assert lines == []
+    # this is the suppression provided via the suppression file which is unused because only the inline suppression is being matched
+    assert lines == [
+        'nofile:0:0: information: Unmatched suppression: unreadVariable [unmatchedSuppression]'
+    ]
     assert stdout == ''
     assert ret == 0, stdout
+
+
+@pytest.mark.xfail(strict=True)
+def test_duplicate_file(tmpdir):
+    __test_duplicate_file(tmpdir, ['-j1'])
+
+
+def test_duplicate_file_j(tmpdir):
+    __test_duplicate_file(tmpdir, ['-j2'])
 
 
 # reporting of inline unusedFunction is deferred
@@ -425,6 +388,7 @@ def __test_unused_function_unmatched(tmpdir, use_j):
 
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
+    lines.sort()
     assert lines == [
         '{}unusedFunctionUnmatched.cpp:5:0: information: Unmatched suppression: uninitvar [unmatchedSuppression]'.format(__proj_inline_suppres_path),
         '{}unusedFunctionUnmatched.cpp:5:0: information: Unmatched suppression: unusedFunction [unmatchedSuppression]'.format(__proj_inline_suppres_path)
@@ -457,6 +421,7 @@ def __test_unused_function_unmatched_build_dir(tmpdir, extra_args):
 
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
+    lines.sort()
     assert lines == [
         '{}unusedFunctionUnmatched.cpp:5:0: information: Unmatched suppression: uninitvar [unmatchedSuppression]'.format(__proj_inline_suppres_path),
         '{}unusedFunctionUnmatched.cpp:5:0: information: Unmatched suppression: unusedFunction [unmatchedSuppression]'.format(__proj_inline_suppres_path)
@@ -469,10 +434,6 @@ def test_unused_function_unmatched_build_dir(tmpdir):
     __test_unused_function_unmatched_build_dir(tmpdir, ['-j1'])
 
 
-def test_unused_function_unmatched_build_dir_j_thread(tmpdir):
-    __test_unused_function_unmatched_build_dir(tmpdir, ['-j2', '--executor=thread'])
-
-
 @pytest.mark.xfail(strict=True)
-def test_unused_function_unmatched_build_dir_j_process(tmpdir):
-    __test_unused_function_unmatched_build_dir(tmpdir, ['-j2', '--executor=process'])
+def test_unused_function_unmatched_build_dir_j(tmpdir):
+    __test_unused_function_unmatched_build_dir(tmpdir, ['-j2'])
