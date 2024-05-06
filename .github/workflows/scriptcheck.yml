@@ -156,7 +156,7 @@ jobs:
 
       - name: test htmlreport (standalone)
         run: |
-          test/tools/test_htmlreport.py
+          test/tools/htmlreport/test_htmlreport.py
           cd htmlreport
           ./check.sh
       # Python 3.5 and 3.6 are excluded as they are not supported by setuptools-scm package for getting
@@ -169,7 +169,7 @@ jobs:
           python -m pip install -U pip
           pip install ./htmlreport/
           which cppcheck-htmlreport
-          PIP_PACKAGE_TEST=1 test/tools/test_htmlreport.py
+          PIP_PACKAGE_TEST=1 test/tools/htmlreport/test_htmlreport.py
           cd htmlreport
           ./check.sh
 
