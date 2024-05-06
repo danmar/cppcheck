@@ -15,7 +15,7 @@ else:
     import unittest
 
 TEST_TOOLS_DIR = os.path.abspath(os.path.dirname(__file__))
-ROOT_DIR = os.path.split(os.path.dirname(TEST_TOOLS_DIR))[0]
+ROOT_DIR = os.path.split(os.path.dirname(os.path.dirname(TEST_TOOLS_DIR)))[0]
 HTMLREPORT_DIR = os.path.join(ROOT_DIR, 'htmlreport')
 CPPCHECK_BIN = os.path.join(ROOT_DIR, 'cppcheck')
 
