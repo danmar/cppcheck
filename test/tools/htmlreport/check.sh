@@ -44,7 +44,7 @@ validate_html "$STATS_HTML"
 
 ${PROJECT_ROOT_DIR}/cppcheck ${PROJECT_ROOT_DIR}/samples --enable=all --inconclusive --xml-version=2 2> "$GUI_TEST_XML"
 xmllint --noout "$GUI_TEST_XML"
-$PYTHON cppcheck-htmlreport --file "$GUI_TEST_XML" --title "xml2 + inconclusive test" --report-dir "$REPORT_DIR"
+$PYTHON ${PROJECT_ROOT_DIR}/htmlreport/cppcheck-htmlreport --file "$GUI_TEST_XML" --title "xml2 + inconclusive test" --report-dir "$REPORT_DIR"
 echo ""
 # Check HTML syntax
 validate_html "$INDEX_HTML"
@@ -53,7 +53,7 @@ validate_html "$STATS_HTML"
 
 ${PROJECT_ROOT_DIR}/cppcheck ${PROJECT_ROOT_DIR}/samples --enable=all --inconclusive --verbose --xml-version=2 2> "$GUI_TEST_XML"
 xmllint --noout "$GUI_TEST_XML"
-$PYTHON cppcheck-htmlreport --file "$GUI_TEST_XML" --title "xml2 + inconclusive + verbose test" --report-dir "$REPORT_DIR"
+$PYTHON ${PROJECT_ROOT_DIR}/htmlreport/cppcheck-htmlreport --file "$GUI_TEST_XML" --title "xml2 + inconclusive + verbose test" --report-dir "$REPORT_DIR"
 echo -e "\n"
 # Check HTML syntax
 validate_html "$INDEX_HTML"
@@ -62,7 +62,7 @@ validate_html "$STATS_HTML"
 
 ${PROJECT_ROOT_DIR}/cppcheck --errorlist --inconclusive --xml-version=2 > "$ERRORLIST_XML"
 xmllint --noout "$ERRORLIST_XML"
-$PYTHON ${PROJECT_ROOT_DIR}/cppcheck-htmlreport --file "$ERRORLIST_XML" --title "errorlist" --report-dir "$REPORT_DIR"
+$PYTHON ${PROJECT_ROOT_DIR}/htmlreport/cppcheck-htmlreport --file "$ERRORLIST_XML" --title "errorlist" --report-dir "$REPORT_DIR"
 # Check HTML syntax
 validate_html "$INDEX_HTML"
 validate_html "$STATS_HTML"
@@ -70,7 +70,7 @@ validate_html "$STATS_HTML"
 
 ${PROJECT_ROOT_DIR}/cppcheck ${PROJECT_ROOT_DIR}/samples/memleak/good.c ${PROJECT_ROOT_DIR}/samples/resourceLeak/good.c  --xml-version=2 --enable=information --suppressions-list=test_suppressions.txt --xml 2> "$UNMATCHEDSUPPR_XML"
 xmllint --noout "$UNMATCHEDSUPPR_XML"
-$PYTHON ${PROJECT_ROOT_DIR}/cppcheck-htmlreport --file "$UNMATCHEDSUPPR_XML" --title "unmatched Suppressions" --report-dir="$REPORT_DIR"
+$PYTHON ${PROJECT_ROOT_DIR}/htmlreport/cppcheck-htmlreport --file "$UNMATCHEDSUPPR_XML" --title "unmatched Suppressions" --report-dir="$REPORT_DIR"
 grep "unmatchedSuppression<.*>information<.*>Unmatched suppression: variableScope*<" "$INDEX_HTML"
 grep ">unmatchedSuppression</.*>information<.*>Unmatched suppression: uninitstring<" "$INDEX_HTML"
 grep "notexisting" "$INDEX_HTML"
