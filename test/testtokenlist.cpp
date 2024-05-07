@@ -26,6 +26,7 @@
 #include "tokenlist.h"
 
 #include <sstream>
+#include <stack>
 #include <string>
 
 #include <simplecpp.h>
@@ -43,6 +44,7 @@ private:
         TEST_CASE(inc);
         TEST_CASE(isKeyword);
         TEST_CASE(notokens);
+        TEST_CASE(ast1);
     }
 
     // inspired by #5895
@@ -160,6 +162,30 @@ private:
         simplecpp::TokenList tokensP = preprocessor.preprocess(tokens1, "", files, true);
         TokenList tokenlist(&settingsDefault);
         tokenlist.createTokens(std::move(tokensP)); // do not assert
+    }
+
+    void ast1() const {
+        const std::string s = "('Release|x64' == 'Release|x64');";
+
+        TokenList tokenlist(&settings);
+        std::istringstream istr(s);
+        tokenlist.createTokens(istr, Standards::Language::C);
+        // TODO: put this logic in TokenList
+        // generate links
+        {
+            std::stack<Token*> lpar;
+            for (Token* tok2 = tokenlist.front(); tok2; tok2 = tok2->next()) {
+                if (tok2->str() == "(")
+                    lpar.push(tok2);
+                else if (tok2->str() == ")") {
+                    if (lpar.empty())
+                        break;
+                    Token::createMutualLinks(lpar.top(), tok2);
+                    lpar.pop();
+                }
+            }
+        }
+        tokenlist.createAst(); // do not crash
     }
 };
 
