@@ -26,7 +26,8 @@ if [ -z "$PYTHON" ]; then
     PYTHON=python
 fi
 
-PROJECT_ROOT_DIR=$(git rev-parse --show-toplevel)
+SCRIPT_DIR="$(dirname ${BASH_SOURCE[0]})"
+PROJECT_ROOT_DIR="$(cd -- ${SCRIPT_DIR}/../../../ ; pwd -P)"
 REPORT_DIR=$(mktemp -d -t htmlreport-XXXXXXXXXX)
 INDEX_HTML="$REPORT_DIR/index.html"
 STATS_HTML="$REPORT_DIR/stats.html"
