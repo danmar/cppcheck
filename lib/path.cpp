@@ -284,8 +284,10 @@ static bool hasEmacsCppMarker(const char* path)
     findAndReplace(marker, "mode:", "");
     findAndReplace(marker, "Mode:", "");
     marker = trim(marker);
-    if (marker == "C++" || marker == "c++")
+    if (marker == "C++" || marker == "c++") {
+        // NOLINTNEXTLINE(readability-simplify-boolean-expr) - TODO: FP
         return true; // C++ marker found
+    }
 
     //if (marker == "C" || marker == "c")
     //    return false;
