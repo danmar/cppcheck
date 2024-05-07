@@ -6226,28 +6226,24 @@ void Tokenizer::simplifyHeadersAndUnusedTemplates()
         const bool isIncluded = (tok->fileIndex() != 0);
 
         // Remove constructor initializer
-        if (isIncluded && !mSettings.checkHeaders && tok->str() == ":") {
-            if (tok->previous() && tok->previous()->str() == ")") {
-                const Token *next = tok->next();
-                //Skip over firts name
-                while (next && !next->link())
-                    next = next->next();
-                if (next) {
-                    next = next->link();
-                    next = next->next();
-                    //Skip over all following elements that start with , (still part of the initializer)
-                    while (next && next->str() == ",") {
-                        while (next && !next->link())
-                            next = next->next();
-                        if (next) {
-                            next = next->link();
-                            next = next->next();
-                        }
-                    }
+        if (isIncluded && !mSettings.checkHeaders && Token::Match(tok, "%name% (")) {
+            Token *start = tok->next()->link();
+            if (start) {
+                start = start->next();
+            }
+            if (start && start->str() == ":") {
+                const Token *next = start;
+                while (Token::Match(next, "[,:]")) {
+                    // Skip to ( or {
+                    while (next && !next->link())
+                        next = next->next();
                     if (next) {
-                        Token::eraseTokens(tok, next);
-                        tok->deleteThis();
+                        next = next->link();
+                        next = next->next(); // Go to next, either ',' or '{'
                     }
+                }
+                if (next && next->str() == "{") {
+                    Token::eraseTokens(start->previous(), next);
                 }
             }
         }
