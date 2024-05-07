@@ -247,6 +247,7 @@ private:
         TEST_CASE(exprid8);
         TEST_CASE(exprid9);
         TEST_CASE(exprid10);
+        TEST_CASE(exprid11);
 
         TEST_CASE(structuredBindings);
     }
@@ -4100,6 +4101,26 @@ private:
                                 "3: ( ( s@2 =@UNIQUE \"abc\" ) +=@UNIQUE p@1 ) +=@UNIQUE \"def\"@UNIQUE ;\n"
                                 "4: }\n";
         ASSERT_EQUALS(expected, tokenizeExpr(code));
+    }
+
+    void exprid11()
+    {
+        const char* code{}, *exp{};
+        code = "struct S { void f(); };\n" // #12713
+               "int g(int, S*);\n"
+               "int h(void (*)(), S*);\n"
+               "void S::f() {\n"
+               "    std::make_unique<int>(g({}, this)).release();\n"
+               "    std::make_unique<int>(h([]() {}, this)).release();\n"
+               "}\n";
+        exp = "1: struct S { void f ( ) ; } ;\n"
+              "2: int g ( int , S * ) ;\n"
+              "3: int h ( void ( * ) ( ) , S * ) ;\n"
+              "4: void S :: f ( ) {\n"
+              "5: std ::@UNIQUE make_unique < int > (@UNIQUE g (@UNIQUE { } ,@6 this ) ) .@UNIQUE release (@UNIQUE ) ;\n"
+              "6: std ::@UNIQUE make_unique < int > (@UNIQUE h (@UNIQUE [ ] ( ) { } ,@6 this ) ) .@UNIQUE release (@UNIQUE ) ;\n"
+              "7: }\n";
+        ASSERT_EQUALS(exp, tokenizeExpr(code));
     }
 
     void structuredBindings() {
