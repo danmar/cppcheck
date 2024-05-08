@@ -242,7 +242,7 @@ Standards::Language Path::identify(const std::string &path, bool *header)
     return Standards::Language::None;
 }
 
-bool Path::isHeader2(const std::string &path)
+bool Path::isHeader(const std::string &path)
 {
     bool header;
     (void)Path::identify(path, &header);

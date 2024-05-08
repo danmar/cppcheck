@@ -158,7 +158,7 @@ public:
      * @param path filename to check. path info is optional
      * @return true if filename extension is meant for headers
      */
-    static bool isHeader2(const std::string &path);
+    static bool isHeader(const std::string &path);
 
     /**
      * @brief Identify the language based on the file extension

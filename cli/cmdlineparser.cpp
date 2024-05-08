@@ -184,7 +184,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
     // Output a warning for the user if he tries to exclude headers
     const std::vector<std::string>& ignored = getIgnoredPaths();
     const bool warn = std::any_of(ignored.cbegin(), ignored.cend(), [](const std::string& i) {
-        return Path::isHeader2(i);
+        return Path::isHeader(i);
     });
     if (warn) {
         mLogger.printMessage("filename exclusion does not apply to header (.h and .hpp) files.");
