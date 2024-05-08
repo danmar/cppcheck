@@ -38,9 +38,6 @@ private:
         TEST_CASE(getCurrentExecutablePath);
         TEST_CASE(isAbsolute);
         TEST_CASE(getRelative);
-        TEST_CASE(is_c);
-        TEST_CASE(is_cpp);
-        TEST_CASE(is_header);
         TEST_CASE(get_path_from_filename);
         TEST_CASE(join);
         TEST_CASE(isDirectory);
@@ -130,82 +127,6 @@ private:
         ASSERT_EQUALS("C:/test.cpp", Path::getRelativePath("C:/test.cpp", basePaths));
         ASSERT_EQUALS("C:/foobar/test.cpp", Path::getRelativePath("C:/foobar/test.cpp", basePaths));
     }
-
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
-    void is_c() const {
-        ASSERT(Path::isC("index.c"));
-        ASSERT(Path::isC("index.cl"));
-        ASSERT(Path::isC("C:\\foo\\index.c"));
-        ASSERT(Path::isC("/mnt/c/foo/index.c"));
-
-        // In unix .C is considered C++
-#if defined(_WIN32) || (defined(__APPLE__) && defined(__MACH__))
-        ASSERT_EQUALS(true, Path::isC("C:\\foo\\index.C"));
-#else
-        ASSERT_EQUALS(false, Path::isC("C:\\foo\\index.C"));
-#endif
-
-        ASSERT(Path::isC("index.cpp")==false);
-        ASSERT(Path::isC("")==false);
-        ASSERT(Path::isC("c")==false);
-
-        // unlike isCPP() it does not account for headers
-        ASSERT(Path::isC(".h")==false);
-    }
-
-    void is_cpp() const {
-        ASSERT(Path::isCPP("index.cpp"));
-        ASSERT(Path::isCPP("index.cxx"));
-        ASSERT(Path::isCPP("index.cc"));
-        ASSERT(Path::isCPP("index.c++"));
-        ASSERT(Path::isCPP("index.tpp"));
-        ASSERT(Path::isCPP("index.txx"));
-        ASSERT(Path::isCPP("index.ipp"));
-        ASSERT(Path::isCPP("index.ixx"));
-        ASSERT(Path::isCPP("C:\\foo\\index.cpp"));
-        ASSERT(Path::isCPP("C:\\foo\\index.Cpp"));
-        ASSERT(Path::isCPP("/mnt/c/foo/index.cpp"));
-        ASSERT(Path::isCPP("/mnt/c/foo/index.Cpp"));
-
-        // In unix .C is considered C++
-#if defined(_WIN32) || (defined(__APPLE__) && defined(__MACH__))
-        ASSERT_EQUALS(false, Path::isCPP("index.C"));
-#else
-        ASSERT_EQUALS(true, Path::isCPP("index.C"));
-#endif
-
-        ASSERT(Path::isCPP("index.c")==false);
-
-        // C++ headers are also considered C++
-        ASSERT(Path::isCPP("index.hpp"));
-        // .h++ is missing in the list of C++ headers
-        ASSERT(Path::isCPP("index.h++")==false);
-    }
-
-    void is_header() const {
-        ASSERT(Path::isHeader("index.h"));
-        ASSERT(Path::isHeader("index.hpp"));
-        ASSERT(Path::isHeader("index.hxx"));
-        ASSERT(Path::isHeader("index.h++"));
-        ASSERT(Path::isHeader("index.hh"));
-
-        ASSERT(Path::isHeader("index.c")==false);
-        ASSERT(Path::isHeader("index.cpp")==false);
-
-        // function uses heuristic approach which causes these false positives
-        // no need to fix - function is deprecated and was replaced by identify()
-        TODO_ASSERT(Path::isHeader("index.header")==false);
-        TODO_ASSERT(Path::isHeader("index.htm")==false);
-        TODO_ASSERT(Path::isHeader("index.html")==false);
-    }
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
 
     void get_path_from_filename() const {
         ASSERT_EQUALS("", Path::getPathFromFilename("index.h"));

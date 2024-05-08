@@ -207,42 +207,10 @@ static const std::unordered_set<std::string> header_exts = {
     ".h", ".hpp", ".h++", ".hxx", ".hh"
 };
 
-bool Path::isC(const std::string &path)
-{
-    // In unix, ".C" is considered C++ file
-    const std::string extension = getFilenameExtension(path);
-    return extension == ".c" ||
-           extension == ".cl";
-}
-
-bool Path::isCPP(const std::string &path)
-{
-    const std::string extension = getFilenameExtensionInLowerCase(path);
-    return extension == ".cpp" ||
-           extension == ".cxx" ||
-           extension == ".cc" ||
-           extension == ".c++" ||
-           extension == ".hpp" ||
-           extension == ".hxx" ||
-           extension == ".hh" ||
-           extension == ".tpp" ||
-           extension == ".txx" ||
-           extension == ".ipp" ||
-           extension == ".ixx" ||
-           getFilenameExtension(path) == ".C"; // In unix, ".C" is considered C++ file
-}
-
 bool Path::acceptFile(const std::string &path, const std::set<std::string> &extra)
 {
     bool header = false;
     return (identify(path, &header) != Standards::Language::None && !header) || extra.find(getFilenameExtension(path)) != extra.end();
-}
-
-// cppcheck-suppress unusedFunction
-bool Path::isHeader(const std::string &path)
-{
-    const std::string extension = getFilenameExtensionInLowerCase(path);
-    return startsWith(extension, ".h");
 }
 
 Standards::Language Path::identify(const std::string &path, bool *header)

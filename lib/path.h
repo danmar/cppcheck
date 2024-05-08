@@ -154,30 +154,6 @@ public:
     static bool acceptFile(const std::string &path, const std::set<std::string> &extra);
 
     /**
-     * @brief Identify language based on file extension.
-     * @param path filename to check. path info is optional
-     * @return true if extension is meant for C files
-     * @deprecated does not account for headers - use @identify() instead
-     */
-    static DEPRECATED bool isC(const std::string &path);
-
-    /**
-     * @brief Identify language based on file extension.
-     * @param path filename to check. path info is optional
-     * @return true if extension is meant for C++ files
-     * @deprecated returns true for some header extensions - use @identify() instead
-     */
-    static DEPRECATED bool isCPP(const std::string &path);
-
-    /**
-     * @brief Is filename a header based on file extension
-     * @param path filename to check. path info is optional
-     * @return true if filename extension is meant for headers
-     * @deprecated returns only heuristic result - use @identify() or @isHeader2() instead
-     */
-    static DEPRECATED bool isHeader(const std::string &path);
-
-    /**
      * @brief Is filename a header based on file extension
      * @param path filename to check. path info is optional
      * @return true if filename extension is meant for headers
