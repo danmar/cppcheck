@@ -102,6 +102,7 @@ private:
         TEST_CASE(varid68); // #11740 - switch (str_chars(&strOut)[0])
         TEST_CASE(varid69);
         TEST_CASE(varid70); // #12660 - function
+        TEST_CASE(varid71); // #12676 - wrong varid in uninstantiated templated constructor
         TEST_CASE(varid_for_1);
         TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
@@ -1292,6 +1293,72 @@ private:
         const char code3[] = "extern void (*arr[10])(uint32_t some);\n";
         const char expected3[] = "1: extern void ( * arr@1 [ 10 ] ) ( uint32_t some@2 ) ;\n";
         ASSERT_EQUALS(expected3, tokenize(code3, true));
+    }
+
+    void varid71() {
+        const char code[] = "namespace myspace {\n"
+                            "\n"
+                            "template <typename T>\n"
+                            "class CounterTest {\n"
+                            "public:\n"
+                            "  CounterTest(T _obj);\n"
+                            "  template <typename T2>\n"
+                            "  CounterTest(const CounterTest<T2>& ptr);\n"
+                            "  T obj;\n"
+                            "  int count;\n"
+                            "};\n"
+                            "\n"
+                            "template <typename T>\n"
+                            "CounterTest<T>::CounterTest(T _obj) : obj(_obj) {\n"
+                            "  count = 0;\n"
+                            "}\n"
+                            "\n"
+                            "template <typename T>\n"
+                            "template <typename T2>\n"
+                            "CounterTest<T>::CounterTest(const CounterTest<T2>& p) : obj(0) {\n"
+                            "  count = p.count;\n"
+                            "}\n"
+                            "\n"
+                            "}\n"
+                            "\n"
+                            "using namespace myspace;\n"
+                            "CounterTest<int> myobj(0);\n";
+        const char expected[] = "1: namespace myspace {\n"
+                                "2:\n"
+                                "3: class CounterTest<int> ;\n"
+                                "4:\n"
+                                "|\n"
+                                "17:\n"
+                                "18: template < typename T >\n"
+                                "19: template < typename T2 >\n"
+                                "20: CounterTest < T > :: CounterTest ( const CounterTest < T2 > & p@1 ) : obj ( 0 ) {\n"
+                                "21: count = p@1 . count@2 ;\n"
+                                "22: }\n"
+                                "23:\n"
+                                "24: }\n"
+                                "25:\n"
+                                "26: using namespace myspace ;\n"
+                                "27: myspace :: CounterTest<int> myobj@3 ( 0 ) ;\n"
+                                "4: class myspace :: CounterTest<int> {\n"
+                                "5: public:\n"
+                                "6: CounterTest<int> ( int _obj@4 ) ;\n"
+                                "7: template < typename T2 >\n"
+                                "8: CounterTest<int> ( const myspace :: CounterTest < T2 > & ptr@5 ) ;\n"
+                                "9: int obj@6 ;\n"
+                                "10: int count@7 ;\n"
+                                "11: } ;\n"
+                                "12:\n"
+                                "13:\n"
+                                "14: myspace :: CounterTest<int> :: CounterTest<int> ( int _obj@8 ) : obj@6 ( _obj@8 ) {\n"
+                                "15: count@7 = 0 ;\n"
+                                "16: }\n"
+                                "17:\n"
+                                "18:\n"
+                                "19:\n"
+                                "20: myspace :: CounterTest<int> :: CounterTest<int> ( const myspace :: CounterTest < T2 > & p@9 ) : obj@6 ( 0 ) {\n"
+                                "21: count@7 = p@9 . count@10 ;\n"
+                                "22: }\n";
+        ASSERT_EQUALS(expected, tokenize(code, true));
     }
 
     void varid_for_1() {
