@@ -401,7 +401,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
             if (Token::simpleMatch(tokAssignOp->astOperand1(), "."))
                 continue;
             // taking address of another variable..
-            if (Token::Match(tokAssignOp, "= %var% [+;?]")) {
+            if (Token::Match(tokAssignOp, "= %var% +|;|?|%comp%")) {
                 if (varTok->tokAt(2)->varId() != varTok->varId()) {
                     // If variable points at allocated memory => error
                     leakIfAllocated(varTok, varInfo);

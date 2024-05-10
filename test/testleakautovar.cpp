@@ -627,6 +627,12 @@ private:
               "    x = p ? p : nullptr;\n"
             "}", true);
         ASSERT_EQUALS("", errout_str());
+
+        check("void f(int*& x) {\n"
+              "    int* p = (int*)malloc(10);\n"
+              "    x = p != nullptr ? p : nullptr;\n"
+            "}", true);
+        ASSERT_EQUALS("", errout_str());
     }
 
     void isAutoDealloc() {
