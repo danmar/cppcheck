@@ -10842,6 +10842,17 @@ private:
               "  a[x+y] = a[y+x]++;;\n"
               "}\n", false);
         ASSERT_EQUALS("[test.c:3]: (error) Expression 'a[x+y]=a[y+x]++' depends on order of evaluation of side effects\n", errout_str());
+
+        check("void f(int i) {\n"
+              "  int n = ++i + i;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Expression '++i+i' depends on order of evaluation of side effects\n", errout_str());
+
+        check("long int f1(const char *exp) {\n"
+              "  return dostuff(++exp, ++exp, 10);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Expression '++exp,++exp' depends on order of evaluation of side effects\n"
+                      "[test.cpp:2]: (portability) Expression '++exp,++exp' depends on order of evaluation of side effects\n", errout_str());
     }
 
     void testEvaluationOrderSelfAssignment() {

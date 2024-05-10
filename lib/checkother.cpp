@@ -3265,15 +3265,9 @@ void CheckOther::unusedLabelError(const Token* tok, bool inSwitch, bool hasIfdef
                 Certainty::normal);
 }
 
-
-void CheckOther::checkEvaluationOrder()
+void CheckOther::checkEvaluationOrderPre11()
 {
-    // This checker is not written according to C++11 sequencing rules
-    if (mTokenizer->isCPP() && mSettings->standards.cpp >= Standards::CPP11)
-        return;
-
-    logChecker("CheckOther::checkEvaluationOrder"); // C/C++03
-
+    logChecker("CheckOther::checkEvaluationOrder");
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * functionScope : symbolDatabase->functionScopes) {
         for (const Token* tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
@@ -3341,9 +3335,86 @@ void CheckOther::checkEvaluationOrder()
     }
 }
 
-void CheckOther::unknownEvaluationOrder(const Token* tok)
+void CheckOther::checkEvaluationOrderPost11()
 {
-    reportError(tok, Severity::error, "unknownEvaluationOrder",
+    return;
+}
+
+void CheckOther::checkEvaluationOrderPost17()
+{
+    logChecker("CheckOther::checkEvaluationOrder");
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope * functionScope : symbolDatabase->functionScopes) {
+        for (const Token* tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
+            if (tok->tokType() != Token::eIncDecOp || !tok->astOperand1())
+                continue;
+            for (const Token *tok2 = tok;; tok2 = tok2->astParent()) {
+                const Token * const parent = tok2->astParent();
+                if (!parent || !parent->isBinaryOp())
+                    break;
+                if (parent->str() == ",") {
+                    const Token *par = parent;
+                    while (Token::simpleMatch(par,","))
+                        par = par->astParent();
+                    // not function or in a while clause => break
+                    if (!(par && par->str() == "(" && par->astOperand2() && par->strAt(-1) != "while"))
+                        break;
+                    // control flow (if|while|etc) => break
+                    if (Token::simpleMatch(par->link(),") {"))
+                        break;
+                    // sequence point in function argument: dostuff((1,2),3) => break
+                    par = par->next();
+                    while (par && (par->previous() != parent))
+                        par = par->nextArgument();
+                    if (!par)
+                        break;
+                }
+                if (parent->str() == "(" && parent->astOperand2())
+                    break;
+
+                // Is expression used?
+                bool foundUndefined{false}, foundUnspecified{false};
+                visitAstNodes((parent->astOperand1() != tok2) ? parent->astOperand1() : parent->astOperand2(),
+                              [&](const Token *tok3) {
+                    if (tok3->str() == "&" && !tok3->astOperand2())
+                        return ChildrenToVisit::none; // don't handle address-of for now
+                    if (tok3->str() == "(" && Token::simpleMatch(tok3->previous(), "sizeof"))
+                        return ChildrenToVisit::none; // don't care about sizeof usage
+                    if (isSameExpression(false, tok->astOperand1(), tok3, *mSettings, true, false) && parent->isArithmeticalOp())
+                        foundUndefined = true;
+                    if (tok3->tokType() == Token::eIncDecOp && isSameExpression(false, tok->astOperand1(), tok3->astOperand1(), *mSettings, true, false)) {
+                        if (parent->isArithmeticalOp())
+                            foundUndefined = true;
+                        else
+                            foundUnspecified = true;
+                    }
+                    return (foundUndefined || foundUnspecified) ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
+                });
+
+                if (foundUndefined || foundUnspecified) {
+                    unknownEvaluationOrder(parent, !foundUndefined);
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void CheckOther::checkEvaluationOrder()
+{
+    if (mTokenizer->isCPP() && mSettings->standards.cpp >= Standards::CPP11) {
+        if (mSettings->standards.cpp >= Standards::CPP17)
+            checkEvaluationOrderPost17();
+        if (mSettings->standards.cpp >= Standards::CPP11)
+            checkEvaluationOrderPost11();
+    }
+    else
+        checkEvaluationOrderPre11();
+}
+
+void CheckOther::unknownEvaluationOrder(const Token* tok, bool isUnspecifiedBehavior)
+{
+    reportError(tok, isUnspecifiedBehavior ? Severity::portability : Severity::error, "unknownEvaluationOrder",
                 "Expression '" + (tok ? tok->expressionString() : std::string("x = x++;")) + "' depends on order of evaluation of side effects", CWE768, Certainty::normal);
 }
 

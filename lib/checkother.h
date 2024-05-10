@@ -212,6 +212,9 @@ private:
 
     /** @brief %Check for expression that depends on order of evaluation of side effects */
     void checkEvaluationOrder();
+    void checkEvaluationOrderPost17();
+    void checkEvaluationOrderPost11();
+    void checkEvaluationOrderPre11();
 
     /** @brief %Check for access of moved or forwarded variable */
     void checkAccessOfMovedVariable();
@@ -280,7 +283,7 @@ private:
     void redundantPointerOpError(const Token* tok, const std::string& varname, bool inconclusive, bool addressOfDeref);
     void raceAfterInterlockedDecrementError(const Token* tok);
     void unusedLabelError(const Token* tok, bool inSwitch, bool hasIfdef);
-    void unknownEvaluationOrder(const Token* tok);
+    void unknownEvaluationOrder(const Token* tok, bool isUnspecifiedBehavior = false);
     void accessMovedError(const Token *tok, const std::string &varname, const ValueFlow::Value *value, bool inconclusive);
     void funcArgNamesDifferent(const std::string & functionName, nonneg int index, const Token* declaration, const Token* definition);
     void funcArgOrderDifferent(const std::string & functionName, const Token * declaration, const Token * definition, const std::vector<const Token*> & declarations, const std::vector<const Token*> & definitions);
