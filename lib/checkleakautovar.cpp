@@ -643,6 +643,11 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
             }
         }
 
+        // Handle loops (possible?)
+        else if (Token::Match(tok, "for|while|do")) {
+            continue;
+        }
+
         // unknown control.. (TODO: handle loops)
         else if ((Token::Match(tok, "%type% (") && Token::simpleMatch(tok->linkAt(1), ") {")) || Token::simpleMatch(tok, "do {")) {
             varInfo.clear();
