@@ -625,13 +625,13 @@ private:
         check("void f(int*& x) {\n" // #8235
               "    int* p = (int*)malloc(10);\n"
               "    x = p ? p : nullptr;\n"
-            "}", true);
+              "}", true);
         ASSERT_EQUALS("", errout_str());
 
         check("void f(int*& x) {\n"
               "    int* p = (int*)malloc(10);\n"
               "    x = p != nullptr ? p : nullptr;\n"
-            "}", true);
+              "}", true);
         ASSERT_EQUALS("", errout_str());
     }
 
