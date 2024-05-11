@@ -134,3 +134,11 @@ compile_commands.json
 /oss-fuzz/corpus
 /oss-fuzz/corpus_
 /oss-fuzz/samples
+
+# Python
+/.venv/
+/venv/
+**/*.egg-info/
+
+# cppcheck-htmlreport auto files
+/htmlreport/cppcheck_htmlreport/run.py

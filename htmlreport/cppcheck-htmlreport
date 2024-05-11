@@ -616,7 +616,7 @@ class CppCheckHandler(XmlContentHandler):
                 'info': attributes.get('info')
             })
 
-if __name__ == '__main__':
+def main() -> None:
     # Configure all the options this little utility is using.
     parser = optparse.OptionParser()
     parser.add_option('--title', dest='title',
@@ -984,3 +984,7 @@ if __name__ == '__main__':
         stats_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
 
     print("\nOpen '" + options.report_dir + "/index.html' to see the results.")
+
+
+if __name__ == "__main__":
+    main()
