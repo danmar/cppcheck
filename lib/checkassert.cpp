@@ -70,8 +70,9 @@ void CheckAssert::assertWithSideEffects()
                         continue;
                     if (tmp->str() == "get" && Token::simpleMatch(tmp->astParent(), ".") && astIsSmartPointer(tmp->astParent()->astOperand1()))
                         continue;
-                    if (f->containerYield == Library::Container::Yield::START_ITERATOR || // bailout for std::begin/end
-                        f->containerYield == Library::Container::Yield::END_ITERATOR)
+                    if (f->containerYield == Library::Container::Yield::START_ITERATOR || // bailout for std::begin/end/prev/next
+                        f->containerYield == Library::Container::Yield::END_ITERATOR ||
+                        f->containerYield == Library::Container::Yield::ITERATOR)
                         continue;
                     sideEffectInAssertError(tmp, mSettings->library.getFunctionName(tmp));
                 }
