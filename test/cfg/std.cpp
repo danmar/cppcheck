@@ -5041,3 +5041,9 @@ void assertWithSideEffect_std_begin(const std::vector<std::string>& v) {
         return a.size() < b.size();
     })); // cppcheck-suppress checkLibraryNoReturn
 }
+
+void assertWithSideEffect_std_prev_next(const std::vector<int>& v, std::vector<int>::const_iterator it) {
+    assert(std::prev(it, 1) == v.begin());
+    // cppcheck-suppress checkLibraryNoReturn
+    assert(std::next(it, 1) == v.end());
+}
