@@ -1684,8 +1684,6 @@ bool isSameExpression(bool macro, const Token *tok1, const Token *tok2, const Se
                     return false;
             } else {
                 const Token * ftok = tok1;
-                if (Token::simpleMatch(tok1->previous(), "::"))
-                    ftok = tok1->previous();
                 if (!settings.library.isFunctionConst(ftok) && !ftok->isAttributeConst() && !ftok->isAttributePure())
                     return false;
             }

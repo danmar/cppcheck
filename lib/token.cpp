@@ -100,38 +100,6 @@ static const std::unordered_set<std::string> controlFlowKeywords = {
     "return"
 };
 
-// TODO: replace with Keywords::getX()?
-// Another list of keywords
-static const std::unordered_set<std::string> baseKeywords = {
-    "asm",
-    "auto",
-    "break",
-    "case",
-    "const",
-    "continue",
-    "default",
-    "do",
-    "else",
-    "enum",
-    "extern",
-    "for",
-    "goto",
-    "if",
-    "inline",
-    "register",
-    "restrict",
-    "return",
-    "sizeof",
-    "static",
-    "struct",
-    "switch",
-    "typedef",
-    "union",
-    "volatile",
-    "while",
-    "void"
-};
-
 void Token::update_property_info()
 {
     setFlag(fIsControlFlowKeyword, controlFlowKeywords.find(mStr) != controlFlowKeywords.end());
@@ -146,9 +114,7 @@ void Token::update_property_info()
         else if (std::isalpha((unsigned char)mStr[0]) || mStr[0] == '_' || mStr[0] == '$') { // Name
             if (mImpl->mVarId)
                 tokType(eVariable);
-            else if (mTokensFrontBack.list.isKeyword(mStr))
-                tokType(eKeyword);
-            else if (baseKeywords.count(mStr) > 0)
+            else if (mTokensFrontBack.list.isKeyword(mStr) || mStr == "asm") // TODO: not a keyword
                 tokType(eKeyword);
             else if (mTokType != eVariable && mTokType != eFunction && mTokType != eType && mTokType != eKeyword)
                 tokType(eName);
