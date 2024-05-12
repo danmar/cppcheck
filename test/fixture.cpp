@@ -34,6 +34,10 @@
 
 #include "xml.h"
 
+#include <cstdlib> // for getenv and setenv
+#include <sys/stat.h> // for mkdir
+extern "C" void __gcov_flush();
+
 /**
  * TestRegistry
  **/
@@ -88,6 +92,29 @@ TestFixture::TestFixture(const char * const _name)
 
 bool TestFixture::prepareTest(const char testname[])
 {
+    const char* coverage = std::getenv("COVERAGE");
+    if (coverage) {
+        std::string testDir = "./coverage_per_test/" + std::string(testname); // Adjust the path as needed
+        if (mkdir(testDir.c_str(), 0777) != 0) {
+        // If directory creation fails and it's not because the directory exists
+            if (errno != EEXIST) {
+                std::cerr << "Failed to create directory for test: " << testDir
+                        << ", Error: " << strerror(errno) << std::endl;
+                return false;
+            }
+        }
+
+        // Set the environment variables to point to the new directory
+        if (setenv("GCOV_PREFIX", testDir.c_str(), 1) != 0) {
+            std::cerr << "Failed to set GCOV_PREFIX environment variable." << std::endl;
+            return false;
+        }
+
+        if (setenv("GCOV_PREFIX_STRIP", "0", 1) != 0) {
+            std::cerr << "Failed to set GCOV_PREFIX_STRIP environment variable." << std::endl;
+            return false;
+        }
+    }
     mVerbose = false;
     mTemplateFormat.clear();
     mTemplateLocation.clear();
@@ -114,7 +141,7 @@ bool TestFixture::prepareTest(const char testname[])
 void TestFixture::teardownTest()
 {
     teardownTestInternal();
-
+    __gcov_flush();
     {
         const std::string s = errout_str();
         if (!s.empty())
