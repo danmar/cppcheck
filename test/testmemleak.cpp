@@ -2740,6 +2740,16 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
     void resourceLeak() {
+        check("bool f(const char* name)\n" // FP: #12253
+              "{\n"
+              "    FILE* fp = fopen(name, \"r\");\n"
+              "    bool result = (fp == nullptr);\n"
+              "    if (result) return !result;\n"
+              "    fclose(fp);\n"
+              "    return result;\n"
+              "}");
+        ASSERT_EQUALS("", errout_str());
+
         check("void foo() {\n"
               "  fopen(\"file.txt\", \"r\");\n"
               "}");
