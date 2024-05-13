@@ -3265,13 +3265,60 @@ void CheckOther::unusedLabelError(const Token* tok, bool inSwitch, bool hasIfdef
                 Certainty::normal);
 }
 
-void CheckOther::checkEvaluationOrderPre11()
+static bool checkEvaluationOrderPre11(const Token * tok, const Token * tok2, const Token * parent, const Settings & settings, bool & selfAssignmentError)
+{
+    // self assignment..
+    if (tok2 == tok && tok->str() == "=" && parent->str() == "=" && isSameExpression(false, tok->astOperand1(), parent->astOperand1(), settings, true, false)) {
+        if (settings.severity.isEnabled(Severity::warning) && isSameExpression(true, tok->astOperand1(), parent->astOperand1(), settings, true, false))
+            selfAssignmentError = true;
+        return false;
+    }
+    // Is expression used?
+    bool foundError = false;
+    visitAstNodes((parent->astOperand1() != tok2) ? parent->astOperand1() : parent->astOperand2(), [&](const Token *tok3) {
+        if (tok3->str() == "&" && !tok3->astOperand2())
+            return ChildrenToVisit::none; // don't handle address-of for now
+        if (tok3->str() == "(" && Token::simpleMatch(tok3->previous(), "sizeof"))
+            return ChildrenToVisit::none; // don't care about sizeof usage
+        if (isSameExpression(false, tok->astOperand1(), tok3, settings, true, false))
+            foundError = true;
+        return foundError ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
+    });
+
+    return foundError;
+}
+
+static bool checkEvaluationOrderPost17(const Token * tok, const Token * tok2, const Token * parent, const Settings & settings, bool & foundUnspecified)
+{
+    if (tok->isAssignmentOp())
+        return false;
+    bool foundUndefined{false};
+    visitAstNodes((parent->astOperand1() != tok2) ? parent->astOperand1() : parent->astOperand2(), [&](const Token *tok3) {
+        if (tok3->str() == "&" && !tok3->astOperand2())
+            return ChildrenToVisit::none; // don't handle address-of for now
+        if (tok3->str() == "(" && Token::simpleMatch(tok3->previous(), "sizeof"))
+            return ChildrenToVisit::none; // don't care about sizeof usage
+        if (isSameExpression(false, tok->astOperand1(), tok3, settings, true, false) && parent->isArithmeticalOp() && parent->isBinaryOp())
+            foundUndefined = true;
+        if (tok3->tokType() == Token::eIncDecOp && isSameExpression(false, tok->astOperand1(), tok3->astOperand1(), settings, true, false)) {
+            if (parent->isArithmeticalOp() && parent->isBinaryOp())
+                foundUndefined = true;
+            else
+                foundUnspecified = true;
+        }
+        return (foundUndefined || foundUnspecified) ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
+    });
+
+    return foundUndefined || foundUnspecified;
+}
+
+void CheckOther::checkEvaluationOrder()
 {
     logChecker("CheckOther::checkEvaluationOrder");
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * functionScope : symbolDatabase->functionScopes) {
         for (const Token* tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
-            if (tok->tokType() != Token::eIncDecOp && !tok->isAssignmentOp())
+            if (!tok->isIncDecOp() && !tok->isAssignmentOp())
                 continue;
             if (!tok->astOperand1())
                 continue;
@@ -3302,116 +3349,23 @@ void CheckOther::checkEvaluationOrderPre11()
                 if (parent->str() == "(" && parent->astOperand2())
                     break;
 
-                // self assignment..
-                if (tok2 == tok &&
-                    tok->str() == "=" &&
-                    parent->str() == "=" &&
-                    isSameExpression(false, tok->astOperand1(), parent->astOperand1(), *mSettings, true, false)) {
-                    if (mSettings->severity.isEnabled(Severity::warning) &&
-                        isSameExpression(true, tok->astOperand1(), parent->astOperand1(), *mSettings, true, false))
-                        selfAssignmentError(parent, tok->astOperand1()->expressionString());
-                    break;
-                }
-
-                // Is expression used?
-                bool foundError = false;
-                visitAstNodes((parent->astOperand1() != tok2) ? parent->astOperand1() : parent->astOperand2(),
-                              [&](const Token *tok3) {
-                    if (tok3->str() == "&" && !tok3->astOperand2())
-                        return ChildrenToVisit::none; // don't handle address-of for now
-                    if (tok3->str() == "(" && Token::simpleMatch(tok3->previous(), "sizeof"))
-                        return ChildrenToVisit::none; // don't care about sizeof usage
-                    if (isSameExpression(false, tok->astOperand1(), tok3, *mSettings, true, false))
-                        foundError = true;
-                    return foundError ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
-                });
+                bool foundError{false}, foundUnspecified{false}, bSelfAssignmentError{false};
+                if (mTokenizer->isCPP() && mSettings->standards.cpp >= Standards::CPP17)
+                    foundError = checkEvaluationOrderPost17(tok, tok2, parent, *mSettings, foundUnspecified);
+                else
+                    foundError = checkEvaluationOrderPre11(tok, tok2, parent, *mSettings, bSelfAssignmentError);
 
                 if (foundError) {
-                    unknownEvaluationOrder(parent);
+                    unknownEvaluationOrder(parent, foundUnspecified);
+                    break;
+                }
+                if (bSelfAssignmentError) {
+                    selfAssignmentError(parent, tok->astOperand1()->expressionString());
                     break;
                 }
             }
         }
     }
-}
-
-void CheckOther::checkEvaluationOrderPost11()
-{
-    // TODO
-}
-
-void CheckOther::checkEvaluationOrderPost17()
-{
-    logChecker("CheckOther::checkEvaluationOrder");
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * functionScope : symbolDatabase->functionScopes) {
-        for (const Token* tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
-            if (tok->tokType() != Token::eIncDecOp || !tok->astOperand1())
-                continue;
-            for (const Token *tok2 = tok;; tok2 = tok2->astParent()) {
-                const Token * const parent = tok2->astParent();
-                if (!parent)
-                    break;
-                if (Token::Match(parent, "%oror%|&&|?|:|;"))
-                    break;
-                if (parent->str() == ",") {
-                    const Token *par = parent;
-                    while (Token::simpleMatch(par,","))
-                        par = par->astParent();
-                    // not function or in a while clause => break
-                    if (!(par && par->str() == "(" && par->astOperand2() && par->strAt(-1) != "while"))
-                        break;
-                    // control flow (if|while|etc) => break
-                    if (Token::simpleMatch(par->link(),") {"))
-                        break;
-                    // sequence point in function argument: dostuff((1,2),3) => break
-                    par = par->next();
-                    while (par && (par->previous() != parent))
-                        par = par->nextArgument();
-                    if (!par)
-                        break;
-                }
-                if (parent->str() == "(" && parent->astOperand2())
-                    break;
-
-                // Is expression used?
-                bool foundUndefined{false}, foundUnspecified{false};
-                visitAstNodes((parent->astOperand1() != tok2) ? parent->astOperand1() : parent->astOperand2(),
-                              [&](const Token *tok3) {
-                    if (tok3->str() == "&" && !tok3->astOperand2())
-                        return ChildrenToVisit::none; // don't handle address-of for now
-                    if (tok3->str() == "(" && Token::simpleMatch(tok3->previous(), "sizeof"))
-                        return ChildrenToVisit::none; // don't care about sizeof usage
-                    if (isSameExpression(false, tok->astOperand1(), tok3, *mSettings, true, false) && parent->isArithmeticalOp() && parent->isBinaryOp())
-                        foundUndefined = true;
-                    if (tok3->tokType() == Token::eIncDecOp && isSameExpression(false, tok->astOperand1(), tok3->astOperand1(), *mSettings, true, false)) {
-                        if (parent->isArithmeticalOp() && parent->isBinaryOp())
-                            foundUndefined = true;
-                        else
-                            foundUnspecified = true;
-                    }
-                    return (foundUndefined || foundUnspecified) ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
-                });
-
-                if (foundUndefined || foundUnspecified) {
-                    unknownEvaluationOrder(parent, !foundUndefined);
-                    break;
-                }
-            }
-        }
-    }
-}
-
-void CheckOther::checkEvaluationOrder()
-{
-    if (mTokenizer->isCPP() && mSettings->standards.cpp >= Standards::CPP11) {
-        if (mSettings->standards.cpp >= Standards::CPP17)
-            checkEvaluationOrderPost17();
-        else
-            checkEvaluationOrderPost11();
-    }
-    else
-        checkEvaluationOrderPre11();
 }
 
 void CheckOther::unknownEvaluationOrder(const Token* tok, bool isUnspecifiedBehavior)

@@ -212,9 +212,6 @@ private:
 
     /** @brief %Check for expression that depends on order of evaluation of side effects */
     void checkEvaluationOrder();
-    void checkEvaluationOrderPost17();
-    void checkEvaluationOrderPost11();
-    void checkEvaluationOrderPre11();
 
     /** @brief %Check for access of moved or forwarded variable */
     void checkAccessOfMovedVariable();
