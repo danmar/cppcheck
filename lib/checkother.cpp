@@ -3265,6 +3265,17 @@ void CheckOther::unusedLabelError(const Token* tok, bool inSwitch, bool hasIfdef
                 Certainty::normal);
 }
 
+static bool isFunctionCall(const Token* tok)
+{
+    if (Token::Match(tok, "%name% ("))
+        return true;
+    if (Token::Match(tok, "%name% <") && Token::simpleMatch(tok->next()->link(), "> ("))
+        return true;
+    if (Token::Match(tok, "%name% ::"))
+        return isFunctionCall(tok->tokAt(2));
+    return false;
+}
+
 void CheckOther::checkEvaluationOrderPre11()
 {
     logChecker("CheckOther::checkEvaluationOrder");
@@ -3337,7 +3348,7 @@ void CheckOther::checkEvaluationOrderPre11()
 
 void CheckOther::checkEvaluationOrderPost11()
 {
-    return;
+    // TODO
 }
 
 void CheckOther::checkEvaluationOrderPost17()
@@ -3350,7 +3361,9 @@ void CheckOther::checkEvaluationOrderPost17()
                 continue;
             for (const Token *tok2 = tok;; tok2 = tok2->astParent()) {
                 const Token * const parent = tok2->astParent();
-                if (!parent || !parent->isBinaryOp())
+                if (!parent)
+                    break;
+                if (Token::Match(parent, "%oror%|&&|?|:|;"))
                     break;
                 if (parent->str() == ",") {
                     const Token *par = parent;
@@ -3380,10 +3393,10 @@ void CheckOther::checkEvaluationOrderPost17()
                         return ChildrenToVisit::none; // don't handle address-of for now
                     if (tok3->str() == "(" && Token::simpleMatch(tok3->previous(), "sizeof"))
                         return ChildrenToVisit::none; // don't care about sizeof usage
-                    if (isSameExpression(false, tok->astOperand1(), tok3, *mSettings, true, false) && parent->isArithmeticalOp())
+                    if (isSameExpression(false, tok->astOperand1(), tok3, *mSettings, true, false) && parent->isArithmeticalOp() && parent->isBinaryOp())
                         foundUndefined = true;
                     if (tok3->tokType() == Token::eIncDecOp && isSameExpression(false, tok->astOperand1(), tok3->astOperand1(), *mSettings, true, false)) {
-                        if (parent->isArithmeticalOp())
+                        if (parent->isArithmeticalOp() && parent->isBinaryOp())
                             foundUndefined = true;
                         else
                             foundUnspecified = true;
@@ -3405,7 +3418,7 @@ void CheckOther::checkEvaluationOrder()
     if (mTokenizer->isCPP() && mSettings->standards.cpp >= Standards::CPP11) {
         if (mSettings->standards.cpp >= Standards::CPP17)
             checkEvaluationOrderPost17();
-        if (mSettings->standards.cpp >= Standards::CPP11)
+        else
             checkEvaluationOrderPost11();
     }
     else
@@ -3414,8 +3427,11 @@ void CheckOther::checkEvaluationOrder()
 
 void CheckOther::unknownEvaluationOrder(const Token* tok, bool isUnspecifiedBehavior)
 {
-    reportError(tok, isUnspecifiedBehavior ? Severity::portability : Severity::error, "unknownEvaluationOrder",
-                "Expression '" + (tok ? tok->expressionString() : std::string("x = x++;")) + "' depends on order of evaluation of side effects", CWE768, Certainty::normal);
+    isUnspecifiedBehavior ?
+    reportError(tok, Severity::portability, "unknownEvaluationOrder",
+                "Expression '" + (tok ? tok->expressionString() : std::string("x++, x++")) + "' depends on order of evaluation of side effects. Behavior is Unspecified according to c++17", CWE768, Certainty::normal)
+    :   reportError(tok, Severity::error, "unknownEvaluationOrder",
+                    "Expression '" + (tok ? tok->expressionString() : std::string("x = x++;")) + "' depends on order of evaluation of side effects", CWE768, Certainty::normal);
 }
 
 void CheckOther::checkAccessOfMovedVariable()

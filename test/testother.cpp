@@ -10851,8 +10851,13 @@ private:
         check("long int f1(const char *exp) {\n"
               "  return dostuff(++exp, ++exp, 10);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (portability) Expression '++exp,++exp' depends on order of evaluation of side effects\n"
-                      "[test.cpp:2]: (portability) Expression '++exp,++exp' depends on order of evaluation of side effects\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Expression '++exp,++exp' depends on order of evaluation of side effects. Behavior is Unspecified according to c++17\n"
+                      "[test.cpp:2]: (portability) Expression '++exp,++exp' depends on order of evaluation of side effects. Behavior is Unspecified according to c++17\n", errout_str());
+
+        check("void f(int i) {\n"
+              "  int n = (~(-(++i)) + i);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Expression '~(-(++i))+i' depends on order of evaluation of side effects\n", errout_str());
     }
 
     void testEvaluationOrderSelfAssignment() {
