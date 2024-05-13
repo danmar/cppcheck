@@ -2129,6 +2129,15 @@ private:
               "    bool m_value = false;\n"
               "};");
         ASSERT_EQUALS("", errout_str());
+
+        // #12725
+        check("bool f(bool b) {\n"
+              "    if (b)\n"
+              "        return !b;\n"
+              "    b = g();\n"
+              "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Return value '!b' is always false\n", errout_str());
     }
 
     void oppositeInnerConditionPointers() {
