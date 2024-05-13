@@ -5167,12 +5167,15 @@ void Tokenizer::setVarIdPass2()
                     if (tok2->strAt(-1) == ")")
                         setVarIdClassFunction(scopeName2 + classname, tok2, tok2->link(), thisClassVars, structMembers, mVarId);
                     tok2 = tok2->link();
-                } else if (Token::Match(tok2, "( %name%|)") && !Token::Match(tok2->link(), "(|[")) {
+                } else if (Token::Match(tok2, "( %name%|)")) {
                     tok2 = tok2->link();
 
                     // Skip initialization list
-                    if (Token::simpleMatch(tok2, ") :"))
+                    if (Token::simpleMatch(tok2, ") :")) {
                         tok2 = skipInitializerList(tok2->next());
+                        if (Token::simpleMatch(tok2, "{"))
+                            tok2 = tok2->link();
+                    }
                 }
             }
 
