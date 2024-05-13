@@ -1570,7 +1570,7 @@ namespace {
         if (!tok->astParent() || tok->astParent()->isControlFlowKeyword())
             return;
         const Token* op1 = tok->astParent()->astOperand1();
-        if (op1 && op1->exprId() == 0)
+        if (op1 && op1->exprId() == 0 && !Token::Match(op1, "[{[]"))
             return;
         const Token* op2 = tok->astParent()->astOperand2();
         if (op2 && op2->exprId() == 0 &&
