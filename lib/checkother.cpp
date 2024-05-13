@@ -3265,17 +3265,6 @@ void CheckOther::unusedLabelError(const Token* tok, bool inSwitch, bool hasIfdef
                 Certainty::normal);
 }
 
-static bool isFunctionCall(const Token* tok)
-{
-    if (Token::Match(tok, "%name% ("))
-        return true;
-    if (Token::Match(tok, "%name% <") && Token::simpleMatch(tok->next()->link(), "> ("))
-        return true;
-    if (Token::Match(tok, "%name% ::"))
-        return isFunctionCall(tok->tokAt(2));
-    return false;
-}
-
 void CheckOther::checkEvaluationOrderPre11()
 {
     logChecker("CheckOther::checkEvaluationOrder");
