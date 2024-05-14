@@ -33,6 +33,7 @@
 #include <iostream>
 #include <iterator>
 #include <sstream>
+#include <stack>
 #include <unordered_set>
 #include <utility>
 
@@ -567,6 +568,22 @@ namespace {
             TokenList tokenlist(&s);
             std::istringstream istr(c);
             tokenlist.createTokens(istr, Standards::Language::C); // TODO: check result
+            // TODO: put in a helper
+            // generate links
+            {
+                std::stack<Token*> lpar;
+                for (Token* tok2 = tokenlist.front(); tok2; tok2 = tok2->next()) {
+                    if (tok2->str() == "(")
+                        lpar.push(tok2);
+                    else if (tok2->str() == ")") {
+                        if (lpar.empty())
+                            break;
+                        Token::createMutualLinks(lpar.top(), tok2);
+                        lpar.pop();
+                    }
+                }
+            }
+            tokenlist.createAst();
             for (const Token *tok = tokenlist.front(); tok; tok = tok->next()) {
                 if (tok->str() == "(" && tok->astOperand1() && tok->astOperand2()) {
                     // TODO: this is wrong - it is Contains() not Equals()
