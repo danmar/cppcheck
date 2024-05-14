@@ -2682,7 +2682,7 @@ void CheckClass::initializerListOrder()
                                 tok = end;
 
                             for (; tok != end; tok = tok->next()) {
-                                if (Token::simpleMatch(tok->astParent(), "."))
+                                if (Token::Match(tok->astParent(), ".|::"))
                                     continue;
                                 if (const Variable* argVar = scope->getVariable(tok->str())) {
                                     if (scope != argVar->scope())

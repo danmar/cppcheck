@@ -7653,6 +7653,14 @@ private:
                                   "    double a, d;\n"
                                   "};\n");
         ASSERT_EQUALS("", errout_str());
+
+        checkInitializerListOrder("struct S { static const int d = 1; };\n"
+                                  "struct T {\n"
+                                  "    T() : s(), a(S::d), d(0) {}\n"
+                                  "    S s;\n"
+                                  "    int a, d;\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
 #define checkInitializationListUsage(code) checkInitializationListUsage_(code, __FILE__, __LINE__)
