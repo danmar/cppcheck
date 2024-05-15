@@ -566,6 +566,7 @@ const ::Type * clangimport::AstNode::addTypeTokens(TokenList &tokenList, const s
     if (type.find('(') != std::string::npos)
         type.erase(type.find('('));
 
+    // TODO: put in a helper?
     std::stack<Token *> lpar;
     for (const std::string &s: splitString(type)) {
         Token *tok = addtoken(tokenList, s, false);

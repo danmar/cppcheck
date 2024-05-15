@@ -83,6 +83,7 @@ private:
         TEST_CASE(assign23);
         TEST_CASE(assign24); // #7440
         TEST_CASE(assign25);
+        TEST_CASE(assign26);
 
         TEST_CASE(isAutoDealloc);
 
@@ -617,6 +618,20 @@ private:
               "    li.push_back(c);\n"
               "    delete[] li.front().m_p;\n"
               "}\n", true);
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void assign26() {
+        check("void f(int*& x) {\n" // #8235
+              "    int* p = (int*)malloc(10);\n"
+              "    x = p ? p : nullptr;\n"
+              "}", true);
+        ASSERT_EQUALS("", errout_str());
+
+        check("void f(int*& x) {\n"
+              "    int* p = (int*)malloc(10);\n"
+              "    x = p != nullptr ? p : nullptr;\n"
+              "}", true);
         ASSERT_EQUALS("", errout_str());
     }
 

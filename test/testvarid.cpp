@@ -102,6 +102,7 @@ private:
         TEST_CASE(varid68); // #11740 - switch (str_chars(&strOut)[0])
         TEST_CASE(varid69);
         TEST_CASE(varid70); // #12660 - function
+        TEST_CASE(varid71); // #12676 - wrong varid in uninstantiated templated constructor
         TEST_CASE(varid_for_1);
         TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
@@ -247,6 +248,7 @@ private:
         TEST_CASE(exprid8);
         TEST_CASE(exprid9);
         TEST_CASE(exprid10);
+        TEST_CASE(exprid11);
 
         TEST_CASE(structuredBindings);
     }
@@ -1292,6 +1294,76 @@ private:
         const char code3[] = "extern void (*arr[10])(uint32_t some);\n";
         const char expected3[] = "1: extern void ( * arr@1 [ 10 ] ) ( uint32_t some@2 ) ;\n";
         ASSERT_EQUALS(expected3, tokenize(code3, true));
+
+        const char code4[] = "_Static_assert(sizeof((struct S){0}.i) == 4);\n"; // #12729
+        const char expected4[] = "1: _Static_assert ( sizeof ( ( struct S ) { 0 } . i ) == 4 ) ;\n";
+        ASSERT_EQUALS(expected4, tokenize(code4, false));
+    }
+
+    void varid71() {
+        const char code[] = "namespace myspace {\n"
+                            "\n"
+                            "template <typename T>\n"
+                            "class CounterTest {\n"
+                            "public:\n"
+                            "  CounterTest(T _obj);\n"
+                            "  template <typename T2>\n"
+                            "  CounterTest(const CounterTest<T2>& ptr);\n"
+                            "  T obj;\n"
+                            "  int count;\n"
+                            "};\n"
+                            "\n"
+                            "template <typename T>\n"
+                            "CounterTest<T>::CounterTest(T _obj) : obj(_obj) {\n"
+                            "  count = 0;\n"
+                            "}\n"
+                            "\n"
+                            "template <typename T>\n"
+                            "template <typename T2>\n"
+                            "CounterTest<T>::CounterTest(const CounterTest<T2>& p) : obj(0) {\n"
+                            "  count = p.count;\n"
+                            "}\n"
+                            "\n"
+                            "}\n"
+                            "\n"
+                            "using namespace myspace;\n"
+                            "CounterTest<int> myobj(0);\n";
+        const char expected[] = "1: namespace myspace {\n"
+                                "2:\n"
+                                "3: class CounterTest<int> ;\n"
+                                "4:\n"
+                                "|\n"
+                                "17:\n"
+                                "18: template < typename T >\n"
+                                "19: template < typename T2 >\n"
+                                "20: CounterTest < T > :: CounterTest ( const CounterTest < T2 > & p@1 ) : obj ( 0 ) {\n"
+                                "21: count = p@1 . count@2 ;\n"
+                                "22: }\n"
+                                "23:\n"
+                                "24: }\n"
+                                "25:\n"
+                                "26: using namespace myspace ;\n"
+                                "27: myspace :: CounterTest<int> myobj@3 ( 0 ) ;\n"
+                                "4: class myspace :: CounterTest<int> {\n"
+                                "5: public:\n"
+                                "6: CounterTest<int> ( int _obj@4 ) ;\n"
+                                "7: template < typename T2 >\n"
+                                "8: CounterTest<int> ( const myspace :: CounterTest < T2 > & ptr@5 ) ;\n"
+                                "9: int obj@6 ;\n"
+                                "10: int count@7 ;\n"
+                                "11: } ;\n"
+                                "12:\n"
+                                "13:\n"
+                                "14: myspace :: CounterTest<int> :: CounterTest<int> ( int _obj@8 ) : obj@6 ( _obj@8 ) {\n"
+                                "15: count@7 = 0 ;\n"
+                                "16: }\n"
+                                "17:\n"
+                                "18:\n"
+                                "19:\n"
+                                "20: myspace :: CounterTest<int> :: CounterTest<int> ( const myspace :: CounterTest < T2 > & p@9 ) : obj@6 ( 0 ) {\n"
+                                "21: count@7 = p@9 . count@10 ;\n"
+                                "22: }\n";
+        ASSERT_EQUALS(expected, tokenize(code, true));
     }
 
     void varid_for_1() {
@@ -4100,6 +4172,26 @@ private:
                                 "3: ( ( s@2 =@UNIQUE \"abc\" ) +=@UNIQUE p@1 ) +=@UNIQUE \"def\"@UNIQUE ;\n"
                                 "4: }\n";
         ASSERT_EQUALS(expected, tokenizeExpr(code));
+    }
+
+    void exprid11()
+    {
+        const char* code{}, *exp{};
+        code = "struct S { void f(); };\n" // #12713
+               "int g(int, S*);\n"
+               "int h(void (*)(), S*);\n"
+               "void S::f() {\n"
+               "    std::make_unique<int>(g({}, this)).release();\n"
+               "    std::make_unique<int>(h([]() {}, this)).release();\n"
+               "}\n";
+        exp = "1: struct S { void f ( ) ; } ;\n"
+              "2: int g ( int , S * ) ;\n"
+              "3: int h ( void ( * ) ( ) , S * ) ;\n"
+              "4: void S :: f ( ) {\n"
+              "5: std ::@UNIQUE make_unique < int > (@UNIQUE g (@UNIQUE { } ,@6 this ) ) .@UNIQUE release (@UNIQUE ) ;\n"
+              "6: std ::@UNIQUE make_unique < int > (@UNIQUE h (@UNIQUE [ ] ( ) { } ,@6 this ) ) .@UNIQUE release (@UNIQUE ) ;\n"
+              "7: }\n";
+        ASSERT_EQUALS(exp, tokenizeExpr(code));
     }
 
     void structuredBindings() {

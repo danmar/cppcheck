@@ -303,6 +303,7 @@ Token *TokenList::copyTokens(Token *dest, const Token *first, const Token *last,
 
 void TokenList::insertTokens(Token *dest, const Token *src, nonneg int n)
 {
+    // TODO: put the linking in a helper?
     std::stack<Token *> link;
 
     while (n > 0) {

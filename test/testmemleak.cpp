@@ -2493,6 +2493,15 @@ private:
               "}");
         ASSERT_EQUALS("", errout_str());
 
+        check("int f( void ) {\n" // FP: #11246
+              "  void* address = malloc( 1 );\n"
+              "  int ok = address != 0;\n"
+              "  if ( ok )\n"
+              "    free( address ), address = 0;\n"
+              "  return 0;\n"
+              "} ");
+        ASSERT_EQUALS("", errout_str());
+
         check("char** x(const char* str) {\n"
               "    char* ptr[] = { malloc(10), malloc(5), strdup(str) };\n"
               "    return ptr;\n"
@@ -2740,6 +2749,16 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
     void resourceLeak() {
+        check("bool f(const char* name)\n" // FP: #12253
+              "{\n"
+              "    FILE* fp = fopen(name, \"r\");\n"
+              "    bool result = (fp == nullptr);\n"
+              "    if (result) return !result;\n"
+              "    fclose(fp);\n"
+              "    return result;\n"
+              "}");
+        ASSERT_EQUALS("", errout_str());
+
         check("void foo() {\n"
               "  fopen(\"file.txt\", \"r\");\n"
               "}");

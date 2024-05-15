@@ -1774,6 +1774,7 @@ std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
             return nullptr;
     }
 
+    // TODO: put in a helper?
     // combine operators, set links, etc..
     std::stack<Token*> lpar;
     for (Token* tok2 = tokenList->front(); tok2; tok2 = tok2->next()) {

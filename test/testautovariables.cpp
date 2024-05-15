@@ -2442,7 +2442,7 @@ private:
               "    return std::next(it);\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:3] -> [test.cpp:4] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'x' that will be invalid when returning.\n",
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning iterator to local container 'x' that will be invalid when returning.\n",
             errout_str());
 
         check("auto f() {\n"
