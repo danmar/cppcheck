@@ -3265,7 +3265,7 @@ void CheckOther::unusedLabelError(const Token* tok, bool inSwitch, bool hasIfdef
                 Certainty::normal);
 }
 
-static bool checkEvaluationOrderPre11(const Token * tok, const Token * tok2, const Token * parent, const Settings & settings, bool & selfAssignmentError)
+static bool checkEvaluationOrderC(const Token * tok, const Token * tok2, const Token * parent, const Settings & settings, bool & selfAssignmentError)
 {
     // self assignment..
     if (tok2 == tok && tok->str() == "=" && parent->str() == "=" && isSameExpression(false, tok->astOperand1(), parent->astOperand1(), settings, true, false)) {
@@ -3288,7 +3288,27 @@ static bool checkEvaluationOrderPre11(const Token * tok, const Token * tok2, con
     return foundError;
 }
 
-static bool checkEvaluationOrderPost17(const Token * tok, const Token * tok2, const Token * parent, const Settings & settings, bool & foundUnspecified)
+static bool checkEvaluationOrderCpp11(const Token * tok, const Token * tok2, const Token * parent, const Settings & settings)
+{
+    if (tok->isAssignmentOp()) // TODO check assignment
+        return false;
+    if (tok->previous() == tok->astOperand1() && parent->isArithmeticalOp() && parent->isBinaryOp())
+        return true;
+    bool foundUndefined{false};
+    visitAstNodes((parent->astOperand1() != tok2) ? parent->astOperand1() : parent->astOperand2(), [&](const Token *tok3) {
+        if (tok3->str() == "&" && !tok3->astOperand2())
+            return ChildrenToVisit::none; // don't handle address-of for now
+        if (tok3->str() == "(" && Token::simpleMatch(tok3->previous(), "sizeof"))
+            return ChildrenToVisit::none; // don't care about sizeof usage
+        if (isSameExpression(false, tok->astOperand1(), tok3, settings, true, false))
+            foundUndefined = true;
+        return foundUndefined ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
+    });
+
+    return foundUndefined;
+}
+
+static bool checkEvaluationOrderCpp17(const Token * tok, const Token * tok2, const Token * parent, const Settings & settings, bool & foundUnspecified)
 {
     if (tok->isAssignmentOp())
         return false;
@@ -3350,10 +3370,14 @@ void CheckOther::checkEvaluationOrder()
                     break;
 
                 bool foundError{false}, foundUnspecified{false}, bSelfAssignmentError{false};
-                if (mTokenizer->isCPP() && mSettings->standards.cpp >= Standards::CPP17)
-                    foundError = checkEvaluationOrderPost17(tok, tok2, parent, *mSettings, foundUnspecified);
+                if (mTokenizer->isCPP() && mSettings->standards.cpp >= Standards::CPP11) {
+                    if (mSettings->standards.cpp >= Standards::CPP17)
+                        foundError = checkEvaluationOrderCpp17(tok, tok2, parent, *mSettings, foundUnspecified);
+                    else
+                        foundError = checkEvaluationOrderCpp11(tok, tok2, parent, *mSettings);
+                }
                 else
-                    foundError = checkEvaluationOrderPre11(tok, tok2, parent, *mSettings, bSelfAssignmentError);
+                    foundError = checkEvaluationOrderC(tok, tok2, parent, *mSettings, bSelfAssignmentError);
 
                 if (foundError) {
                     unknownEvaluationOrder(parent, foundUnspecified);
