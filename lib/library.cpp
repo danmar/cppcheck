@@ -1179,6 +1179,7 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
     return false;
 }
 
+// cppcheck-suppress unusedFunction - used in tests only
 const std::unordered_map<std::string, Library::Container>& Library::containers() const
 {
     return mContainers;
