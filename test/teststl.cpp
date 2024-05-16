@@ -926,6 +926,12 @@ private:
                     "    return s[2];\n"
                     "}\n");
         ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression 's[2]' because 's' is empty.\n", errout_str());
+
+        checkNormal("void f() {\n" // #12738
+                    "    std::vector<double> v{ 0, 0.1 };\n"
+                    "    (void)v[0];\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void outOfBoundsSymbolic()

@@ -8788,7 +8788,7 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
     bool initList = true;
     // Try to disambiguate init list from constructor
     if (args.size() < 4) {
-        initList = !isIteratorPair(args) && !(args.size() < 3 && astIsIntegral(args[0], false));
+        initList = !isIteratorPair(args);
         const Token* containerTypeToken = valueType->containerTypeToken;
         if (valueType->container->stdStringLike) {
             initList = astIsGenericChar(args[0]) && !astIsPointer(args[0]);
