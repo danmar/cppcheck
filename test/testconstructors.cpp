@@ -31,7 +31,8 @@ private:
     const Settings settings = settingsBuilder().severity(Severity::style).severity(Severity::warning).build();
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool inconclusive = false) {
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], bool inconclusive = false) {
         const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).build();
 
         // Tokenize..
@@ -43,7 +44,8 @@ private:
         checkClass.constructors();
     }
 
-    void check_(const char* file, int line, const char code[], const Settings &s) {
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], const Settings &s) {
         // Tokenize..
         SimpleTokenizer tokenizer(s, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);

@@ -56,7 +56,8 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool inconclusive = false, const Settings *s = nullptr) {
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], bool inconclusive = false, const Settings *s = nullptr) {
         const Settings settings1 = settingsBuilder(s ? *s : settings).certainty(Certainty::inconclusive, inconclusive).build();
 
         // Tokenize..

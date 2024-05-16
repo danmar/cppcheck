@@ -239,7 +239,8 @@ private:
     }
 
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tok_(const char* file, int line, const char code[], bool simplify = true, Platform::Type type = Platform::Type::Native, bool debugwarnings = true) {
+    template<size_t size>
+    std::string tok_(const char* file, int line, const char (&code)[size], bool simplify = true, Platform::Type type = Platform::Type::Native, bool debugwarnings = true) {
         // show warnings about unhandled typedef
         const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings(debugwarnings).platform(type).build();
         SimpleTokenizer tokenizer(settings, *this);
@@ -275,7 +276,8 @@ private:
     }
 
 #define checkSimplifyTypedef(code) checkSimplifyTypedef_(code, __FILE__, __LINE__)
-    void checkSimplifyTypedef_(const char code[], const char* file, int line) {
+    template<size_t size>
+    void checkSimplifyTypedef_(const char (&code)[size], const char* file, int line) {
         // Tokenize..
         // show warnings about unhandled typedef
         const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings().build();
@@ -479,9 +481,8 @@ private:
     }
 
     void carray4() {
-        const char* code{};
-        code = "typedef int arr[12];\n" // #12019
-               "void foo() { arr temp = {0}; }\n";
+        const char code[] = "typedef int arr[12];\n" // #12019
+                            "void foo() { arr temp = {0}; }\n";
         ASSERT_EQUALS("void foo ( ) { int temp [ 12 ] = { 0 } ; }", tok(code));
     }
 
@@ -3369,160 +3370,179 @@ private:
     }
 
     void simplifyTypedef145() {
-        // #11634
-        const char* code{};
-        code = "int typedef i;\n"
-               "i main() {}\n";
-        ASSERT_EQUALS("int main ( ) { }", tok(code));
+        { // #11634
+            const char code[] = "int typedef i;\n"
+                                "i main() {}\n";
+            ASSERT_EQUALS("int main ( ) { }", tok(code));
+        }
 
-        code = "struct {} typedef S;\n"
-               "void f() {\n"
-               "    S();\n"
-               "}\n";
-        ASSERT_EQUALS("struct S { } ; void f ( ) { struct S ( ) ; }", tok(code));
+        {
+            const char code[] = "struct {} typedef S;\n"
+                                "void f() {\n"
+                                "    S();\n"
+                                "}\n";
+            ASSERT_EQUALS("struct S { } ; void f ( ) { struct S ( ) ; }", tok(code));
+        }
 
-        code = "struct {} typedef S;\n" // don't crash
-               "S();\n";
-        ASSERT_EQUALS("struct S { } ; struct S ( ) ;", tok(code));
+        {
+            const char code[] = "struct {} typedef S;\n" // don't crash
+                                "S();\n";
+            ASSERT_EQUALS("struct S { } ; struct S ( ) ;", tok(code));
+        }
 
-        // #11693
-        code = "typedef unsigned char unsigned char;\n" // don't hang
-               "void f(char);\n";
-        ASSERT_EQUALS("void f ( char ) ;", tok(code));
+        { // #11693
+            const char code[] = "typedef unsigned char unsigned char;\n" // don't hang
+                                "void f(char);\n";
+            ASSERT_EQUALS("void f ( char ) ;", tok(code));
+        }
 
-        // #10796
-        code = "typedef unsigned a[7];\n"
-               "void f(unsigned N) {\n"
-               "    a** p = new a * [N];\n"
-               "}\n";
-        TODO_ASSERT_EQUALS("does not compile", "void f ( int N ) { int ( * * p ) [ 7 ] ; p = new int ( * ) [ N ] [ 7 ] ; }", tok(code));
+        { // #10796
+            const char code[] = "typedef unsigned a[7];\n"
+                                "void f(unsigned N) {\n"
+                                "    a** p = new a * [N];\n"
+                                "}\n";
+            TODO_ASSERT_EQUALS("does not compile", "void f ( int N ) { int ( * * p ) [ 7 ] ; p = new int ( * ) [ N ] [ 7 ] ; }", tok(code));
+        }
 
-        // #11772
-        code = "typedef t;\n" // don't crash on implicit int
-               "void g() {\n"
-               "    sizeof(t);\n"
-               "}\n";
-        ASSERT_EQUALS("void g ( ) { sizeof ( t ) ; }", tok(code)); // TODO: handle implicit int
-        ignore_errout(); // we do not care about the output
+        { // #11772
+            const char code[] = "typedef t;\n" // don't crash on implicit int
+                                "void g() {\n"
+                                "    sizeof(t);\n"
+                                "}\n";
+            ASSERT_EQUALS("void g ( ) { sizeof ( t ) ; }", tok(code)); // TODO: handle implicit int
+            ignore_errout(); // we do not care about the output
+        }
 
-        code = "typedef t[3];\n"
-               "void g() {\n"
-               "    sizeof(t);\n"
-               "}\n";
-        ASSERT_EQUALS("void g ( ) { sizeof ( t ) ; }", tok(code)); // TODO: handle implicit int
-        ignore_errout(); // we do not care about the output
+        {
+            const char code[] = "typedef t[3];\n"
+                                "void g() {\n"
+                                "    sizeof(t);\n"
+                                "}\n";
+            ASSERT_EQUALS("void g ( ) { sizeof ( t ) ; }", tok(code)); // TODO: handle implicit int
+            ignore_errout(); // we do not care about the output
+        }
     }
 
     void simplifyTypedef146() {
-        const char* code{};
-        code = "namespace N {\n" // #11978
-               "    typedef int T;\n"
-               "    struct C {\n"
-               "        C(T*);\n"
-               "        void* p;\n"
-               "    };\n"
-               "}\n"
-               "N::C::C(T*) : p(nullptr) {}\n";
-        ASSERT_EQUALS("namespace N { struct C { C ( int * ) ; void * p ; } ; } N :: C :: C ( int * ) : p ( nullptr ) { }", tok(code));
+        {
+            const char code[] = "namespace N {\n" // #11978
+                                "    typedef int T;\n"
+                                "    struct C {\n"
+                                "        C(T*);\n"
+                                "        void* p;\n"
+                                "    };\n"
+                                "}\n"
+                                "N::C::C(T*) : p(nullptr) {}\n";
+            ASSERT_EQUALS("namespace N { struct C { C ( int * ) ; void * p ; } ; } N :: C :: C ( int * ) : p ( nullptr ) { }", tok(code));
+        }
 
-        code = "namespace N {\n" // #11986
-               "    typedef char U;\n"
-               "    typedef int V;\n"
-               "    struct S {};\n"
-               "    struct T { void f(V*); };\n"
-               "}\n"
-               "void N::T::f(V*) {}\n"
-               "namespace N {}\n";
-        ASSERT_EQUALS("namespace N { struct S { } ; struct T { void f ( int * ) ; } ; } void N :: T :: f ( int * ) { }", tok(code));
+        {
+            const char code[] = "namespace N {\n" // #11986
+                                "    typedef char U;\n"
+                                "    typedef int V;\n"
+                                "    struct S {};\n"
+                                "    struct T { void f(V*); };\n"
+                                "}\n"
+                                "void N::T::f(V*) {}\n"
+                                "namespace N {}\n";
+            ASSERT_EQUALS("namespace N { struct S { } ; struct T { void f ( int * ) ; } ; } void N :: T :: f ( int * ) { }", tok(code));
+        }
 
-        code = "namespace N {\n" // #12008
-               "    typedef char U;\n"
-               "    typedef int V;\n"
-               "    struct S {\n"
-               "        S(V* v);\n"
-               "    };\n"
-               "}\n"
-               "void f() {}\n"
-               "N::S::S(V* v) {}\n"
-               "namespace N {}\n";
-        ASSERT_EQUALS("namespace N { struct S { S ( int * v ) ; } ; } void f ( ) { } N :: S :: S ( int * v ) { }", tok(code));
+        {
+            const char code[] = "namespace N {\n" // #12008
+                                "    typedef char U;\n"
+                                "    typedef int V;\n"
+                                "    struct S {\n"
+                                "        S(V* v);\n"
+                                "    };\n"
+                                "}\n"
+                                "void f() {}\n"
+                                "N::S::S(V* v) {}\n"
+                                "namespace N {}\n";
+            ASSERT_EQUALS("namespace N { struct S { S ( int * v ) ; } ; } void f ( ) { } N :: S :: S ( int * v ) { }", tok(code));
+        }
     }
 
     void simplifyTypedef147() {
-        const char* code{};
-        code = "namespace N {\n" // #12014
-               "    template<typename T>\n"
-               "    struct S {};\n"
-               "}\n"
-               "typedef N::S<int> S;\n"
-               "namespace N {\n"
-               "    template<typename T>\n"
-               "    struct U {\n"
-               "        S<T> operator()() {\n"
-               "            return {};\n"
-               "        }\n"
-               "    };\n"
-               "}\n";
+        const char code[] = "namespace N {\n" // #12014
+                            "    template<typename T>\n"
+                            "    struct S {};\n"
+                            "}\n"
+                            "typedef N::S<int> S;\n"
+                            "namespace N {\n"
+                            "    template<typename T>\n"
+                            "    struct U {\n"
+                            "        S<T> operator()() {\n"
+                            "            return {};\n"
+                            "        }\n"
+                            "    };\n"
+                            "}\n";
         ASSERT_EQUALS("namespace N { template < typename T > struct S { } ; } namespace N { template < typename T > struct U { S < T > operator() ( ) { return { } ; } } ; }",
                       tok(code));
     }
 
     void simplifyTypedef148() {
-        const char* code{};
-        code = "typedef int& R;\n" // #12166
-               "R r = i;\n";
+        const char code[] = "typedef int& R;\n" // #12166
+                            "R r = i;\n";
         ASSERT_EQUALS("int & r = i ;", tok(code));
     }
 
     void simplifyTypedef149() { // #12218
-        const char* code{};
-        code = "namespace N {\n"
-               "    typedef struct S {} S;\n"
-               "}\n"
-               "void g(int);\n"
-               "void f() {\n"
-               "    g(sizeof(struct N::S));\n"
-               "}\n";
-        ASSERT_EQUALS("namespace N { struct S { } ; } void g ( int ) ; void f ( ) { g ( sizeof ( struct N :: S ) ) ; }", tok(code));
+        {
+            const char code[] = "namespace N {\n"
+                                "    typedef struct S {} S;\n"
+                                "}\n"
+                                "void g(int);\n"
+                                "void f() {\n"
+                                "    g(sizeof(struct N::S));\n"
+                                "}\n";
+            ASSERT_EQUALS("namespace N { struct S { } ; } void g ( int ) ; void f ( ) { g ( sizeof ( struct N :: S ) ) ; }", tok(code));
+        }
 
-        code = "namespace N {\n"
-               "    typedef class C {} C;\n"
-               "}\n"
-               "void g(int);\n"
-               "void f() {\n"
-               "    g(sizeof(class N::C));\n"
-               "}\n";
-        ASSERT_EQUALS("namespace N { class C { } ; } void g ( int ) ; void f ( ) { g ( sizeof ( class N :: C ) ) ; }", tok(code));
+        {
+            const char code[] = "namespace N {\n"
+                                "    typedef class C {} C;\n"
+                                "}\n"
+                                "void g(int);\n"
+                                "void f() {\n"
+                                "    g(sizeof(class N::C));\n"
+                                "}\n";
+            ASSERT_EQUALS("namespace N { class C { } ; } void g ( int ) ; void f ( ) { g ( sizeof ( class N :: C ) ) ; }", tok(code));
+        }
 
-        code = "namespace N {\n"
-               "    typedef union U {} U;\n"
-               "}\n"
-               "void g(int);\n"
-               "void f() {\n"
-               "    g(sizeof(union N::U));\n"
-               "}\n";
-        ASSERT_EQUALS("namespace N { union U { } ; } void g ( int ) ; void f ( ) { g ( sizeof ( union N :: U ) ) ; }", tok(code));
+        {
+            const char code[] = "namespace N {\n"
+                                "    typedef union U {} U;\n"
+                                "}\n"
+                                "void g(int);\n"
+                                "void f() {\n"
+                                "    g(sizeof(union N::U));\n"
+                                "}\n";
+            ASSERT_EQUALS("namespace N { union U { } ; } void g ( int ) ; void f ( ) { g ( sizeof ( union N :: U ) ) ; }", tok(code));
+        }
 
-        code = "namespace N {\n"
-               "    typedef enum E {} E;\n"
-               "}\n"
-               "void g(int);\n"
-               "void f() {\n"
-               "    g(sizeof(enum N::E));\n"
-               "}\n";
-        ASSERT_EQUALS("namespace N { enum E { } ; } void g ( int ) ; void f ( ) { g ( sizeof ( enum N :: E ) ) ; }", tok(code));
+        {
+            const char code[] = "namespace N {\n"
+                                "    typedef enum E {} E;\n"
+                                "}\n"
+                                "void g(int);\n"
+                                "void f() {\n"
+                                "    g(sizeof(enum N::E));\n"
+                                "}\n";
+            ASSERT_EQUALS("namespace N { enum E { } ; } void g ( int ) ; void f ( ) { g ( sizeof ( enum N :: E ) ) ; }", tok(code));
+        }
     }
 
     void simplifyTypedef150() { // #12475
-        const char* code{}, *exp{};
-        code = "struct S {\n"
-               "    std::vector<int> const& h(int);\n"
-               "};\n"
-               "typedef std::vector<int> const& (S::* func_t)(int);\n"
-               "void g(func_t, int);\n"
-               "void f() {\n"
-               "    g(func_t(&S::h), 5);\n"
-               "}\n";
+        const char *exp{};
+        const char code[] = "struct S {\n"
+                            "    std::vector<int> const& h(int);\n"
+                            "};\n"
+                            "typedef std::vector<int> const& (S::* func_t)(int);\n"
+                            "void g(func_t, int);\n"
+                            "void f() {\n"
+                            "    g(func_t(&S::h), 5);\n"
+                            "}\n";
         exp = "struct S { "
               "const std :: vector < int > & h ( int ) ; "
               "} ; "
@@ -3534,11 +3554,11 @@ private:
     }
 
     void simplifyTypedef151() {
-        const char* code{}, *exp{};
-        code = "namespace N {\n" // #12597
-               "    typedef int T[10];\n"
-               "    const T* f() { return static_cast<const T*>(nullptr); }\n"
-               "}\n";
+        const char *exp{};
+        const char code[] = "namespace N {\n" // #12597
+                            "    typedef int T[10];\n"
+                            "    const T* f() { return static_cast<const T*>(nullptr); }\n"
+                            "}\n";
         exp = "namespace N { "
               "const int ( * f ( ) ) [ 10 ] { return static_cast < const int ( * ) [ 10 ] > ( nullptr ) ; } "
               "}";
@@ -3546,14 +3566,14 @@ private:
     }
 
     void simplifyTypedef152() {
-        const char* code{}, *exp{};
-        code = "namespace O { struct T {}; }\n"
-               "typedef O::T S;\n"
-               "namespace M {\n"
-               "    enum E { E0, S = 1 };\n"
-               "    enum class F : ::std::int8_t { F0, S = 1 };\n"
-               "}\n"
-               "namespace N { enum { G0, S = 1 }; }\n";
+        const char *exp{};
+        const char code[] = "namespace O { struct T {}; }\n"
+                            "typedef O::T S;\n"
+                            "namespace M {\n"
+                            "    enum E { E0, S = 1 };\n"
+                            "    enum class F : ::std::int8_t { F0, S = 1 };\n"
+                            "}\n"
+                            "namespace N { enum { G0, S = 1 }; }\n";
         exp = "namespace O { struct T { } ; } "
               "namespace M { "
               "enum E { E0 , S = 1 } ; "
@@ -3565,15 +3585,15 @@ private:
     }
 
     void simplifyTypedef153() {
-        const char* code{}, *exp{}; // #12647
-        code = "typedef unsigned long X;\n"
-               "typedef unsigned long X;\n"
-               "typedef X Y;\n"
-               "typedef X* Yp;\n"
-               "typedef X Ya[3];\n"
-               "Y y;\n"
-               "Yp yp;\n"
-               "Ya ya;\n";
+        const char *exp{}; // #12647
+        const char code[] = "typedef unsigned long X;\n"
+                            "typedef unsigned long X;\n"
+                            "typedef X Y;\n"
+                            "typedef X* Yp;\n"
+                            "typedef X Ya[3];\n"
+                            "Y y;\n"
+                            "Yp yp;\n"
+                            "Ya ya;\n";
         exp = "long y ; long * yp ; long ya [ 3 ] ;";
         ASSERT_EQUALS(exp, tok(code));
     }

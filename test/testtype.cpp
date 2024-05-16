@@ -49,7 +49,20 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], const Settings& settings, bool cpp = true, Standards::cppstd_t standard = Standards::cppstd_t::CPP11) {
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], const Settings& settings, bool cpp = true, Standards::cppstd_t standard = Standards::cppstd_t::CPP11) {
+        const Settings settings1 = settingsBuilder(settings).severity(Severity::warning).severity(Severity::portability).cpp(standard).build();
+
+        // Tokenize..
+        SimpleTokenizer tokenizer(settings1, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+
+        // Check..
+        runChecks<CheckType>(tokenizer, this);
+    }
+
+    // TODO: get rid of this
+    void check_(const char* file, int line, const std::string& code, const Settings& settings, bool cpp = true, Standards::cppstd_t standard = Standards::cppstd_t::CPP11) {
         const Settings settings1 = settingsBuilder(settings).severity(Severity::warning).severity(Severity::portability).cpp(standard).build();
 
         // Tokenize..
@@ -61,7 +74,8 @@ private:
     }
 
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkP_(const char* file, int line, const char code[], const Settings& settings, const char filename[] = "test.cpp", const simplecpp::DUI& dui = simplecpp::DUI()) {
+    template<size_t size>
+    void checkP_(const char* file, int line, const char (&code)[size], const Settings& settings, const char filename[] = "test.cpp", const simplecpp::DUI& dui = simplecpp::DUI()) {
         const Settings settings1 = settingsBuilder(settings).severity(Severity::warning).severity(Severity::portability).build();
 
         std::vector<std::string> files(1, filename);
@@ -83,13 +97,13 @@ private:
         {
             const std::string types[] = {"unsigned char", /*[unsigned]*/ "char", "bool", "unsigned short", "unsigned int", "unsigned long"};
             for (const std::string& type : types) {
-                check((type + " f(" + type +" x) { return x << 31; }").c_str(), settings);
+                check(type + " f(" + type +" x) { return x << 31; }", settings);
                 ASSERT_EQUALS("", errout_str());
-                check((type + " f(" + type +" x) { return x << 33; }").c_str(), settings);
+                check(type + " f(" + type +" x) { return x << 33; }", settings);
                 ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 33 bits is undefined behaviour\n", errout_str());
-                check((type + " f(int x) { return (x = (" + type + ")x << 32); }").c_str(), settings);
+                check(type + " f(int x) { return (x = (" + type + ")x << 32); }", settings);
                 ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout_str());
-                check((type + " foo(" + type + " x) { return x << 31; }").c_str(), settings);
+                check(type + " foo(" + type + " x) { return x << 31; }", settings);
                 ASSERT_EQUALS("", errout_str());
             }
         }
@@ -99,19 +113,19 @@ private:
             const std::string types[] = {"signed char", "signed short", /*[signed]*/ "short", "wchar_t", /*[signed]*/ "int", "signed int", /*[signed]*/ "long", "signed long"};
             for (const std::string& type : types) {
                 // c++11
-                check((type + " f(" + type +" x) { return x << 33; }").c_str(), settings);
+                check(type + " f(" + type +" x) { return x << 33; }", settings);
                 ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 33 bits is undefined behaviour\n", errout_str());
-                check((type + " f(int x) { return (x = (" + type + ")x << 32); }").c_str(), settings);
+                check(type + " f(int x) { return (x = (" + type + ")x << 32); }", settings);
                 ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout_str());
-                check((type + " foo(" + type + " x) { return x << 31; }").c_str(), settings);
+                check(type + " foo(" + type + " x) { return x << 31; }", settings);
                 ASSERT_EQUALS("[test.cpp:1]: (error) Shifting signed 32-bit value by 31 bits is undefined behaviour\n", errout_str());
-                check((type + " foo(" + type + " x) { return x << 30; }").c_str(), settings);
+                check(type + " foo(" + type + " x) { return x << 30; }", settings);
                 ASSERT_EQUALS("", errout_str());
 
                 // c++14
-                check((type + " foo(" + type + " x) { return x << 31; }").c_str(), settings, true, Standards::cppstd_t::CPP14);
+                check(type + " foo(" + type + " x) { return x << 31; }", settings, true, Standards::cppstd_t::CPP14);
                 ASSERT_EQUALS("[test.cpp:1]: (portability) Shifting signed 32-bit value by 31 bits is implementation-defined behaviour\n", errout_str());
-                check((type + " f(int x) { return (x = (" + type + ")x << 32); }").c_str(), settings, true, Standards::cppstd_t::CPP14);
+                check(type + " f(int x) { return (x = (" + type + ")x << 32); }", settings, true, Standards::cppstd_t::CPP14);
                 ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout_str());
             }
         }

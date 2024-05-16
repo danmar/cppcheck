@@ -30,7 +30,8 @@ private:
     const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::style).library("std.cfg").library("qt.cfg").build();
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool inconclusive = true, bool cpp = true) {
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], bool inconclusive = true, bool cpp = true) {
         const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).build();
 
         // Tokenize..

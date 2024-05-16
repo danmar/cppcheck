@@ -538,7 +538,8 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
-    void checkPureFunction_(const char code[], const char* file, int line) {
+    template<size_t size>
+    void checkPureFunction_(const char (&code)[size], const char* file, int line) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings1, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);

@@ -30,7 +30,8 @@ private:
     const Settings settings = settingsBuilder().severity(Severity::warning).build();
 
 #define check(code) check_(code, __FILE__, __LINE__)
-    void check_(const char code[], const char* file, int line) {
+    template<size_t size>
+    void check_(const char (&code)[size], const char* file, int line) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);

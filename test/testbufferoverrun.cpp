@@ -40,7 +40,8 @@ private:
     /*const*/ Settings settings0 = settingsBuilder().library("std.cfg").severity(Severity::warning).severity(Severity::style).severity(Severity::portability).build();
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool cpp = true) {
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], bool cpp = true) {
         const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).build();
 
         // Tokenize..
@@ -51,9 +52,22 @@ private:
         runChecks<CheckBufferOverrun>(tokenizer, this);
     }
 
-    void check_(const char* file, int line, const char code[], const Settings &settings, bool cpp = true) {
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], const Settings &settings, bool cpp = true) {
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+
+        // Check for buffer overruns..
+        runChecks<CheckBufferOverrun>(tokenizer, this);
+    }
+
+    // TODO: get rid of this
+    void check_(const char* file, int line, const std::string& code) {
+        const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).build();
+
+        // Tokenize..
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for buffer overruns..
         runChecks<CheckBufferOverrun>(tokenizer, this);
@@ -918,11 +932,11 @@ private:
     void array_index_24() {
         // ticket #1492 and #1539
         const std::string charMaxPlusOne(settings0.platform.defaultSign == 'u' ? "256" : "128");
-        check(("void f(char n) {\n"
-               "    int a[n];\n"     // n <= CHAR_MAX
-               "    a[-1] = 0;\n"    // negative index
-               "    a[" + charMaxPlusOne + "] = 0;\n"   // 128/256 > CHAR_MAX
-               "}\n").c_str());
+        check("void f(char n) {\n"
+              "    int a[n];\n"     // n <= CHAR_MAX
+              "    a[-1] = 0;\n"    // negative index
+              "    a[" + charMaxPlusOne + "] = 0;\n"   // 128/256 > CHAR_MAX
+              "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[" + charMaxPlusOne + "]' accessed at index -1, which is out of bounds.\n"
                       "[test.cpp:4]: (error) Array 'a[" + charMaxPlusOne + "]' accessed at index " + charMaxPlusOne + ", which is out of bounds.\n", errout_str());
 
@@ -5158,7 +5172,8 @@ private:
     }
 
 #define ctu(code) ctu_(code, __FILE__, __LINE__)
-    void ctu_(const char code[], const char* file, int line) {
+    template<size_t size>
+    void ctu_(const char (&code)[size], const char* file, int line) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings0, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);

@@ -308,7 +308,8 @@ private:
     }
 
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tok_(const char* file, int line, const char code[], bool debugwarnings = false, Platform::Type type = Platform::Type::Native) {
+    template<size_t size>
+    std::string tok_(const char* file, int line, const char (&code)[size], bool debugwarnings = false, Platform::Type type = Platform::Type::Native) {
         const Settings settings1 = settingsBuilder(settings).library("std.cfg").debugwarnings(debugwarnings).platform(type).build();
         SimpleTokenizer tokenizer(settings1, *this);
 
@@ -5774,7 +5775,8 @@ private:
     }
 
 #define instantiateMatch(code, numberOfArguments, patternAfter) instantiateMatch_(code, numberOfArguments, patternAfter, __FILE__, __LINE__)
-    bool instantiateMatch_(const char code[], const std::size_t numberOfArguments, const char patternAfter[], const char* file, int line) {
+    template<size_t size>
+    bool instantiateMatch_(const char (&code)[size], const std::size_t numberOfArguments, const char patternAfter[], const char* file, int line) {
         SimpleTokenizer tokenizer(settings, *this);
 
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
