@@ -3292,8 +3292,10 @@ static bool checkEvaluationOrderCpp11(const Token * tok, const Token * tok2, con
 {
     if (tok->isAssignmentOp()) // TODO check assignment
         return false;
-    if (tok->previous() == tok->astOperand1() && parent->isArithmeticalOp() && parent->isBinaryOp())
-        return true;
+    if (tok->previous() == tok->astOperand1() && parent->isArithmeticalOp() && parent->isBinaryOp()) {
+        if (parent->astParent() && parent->astParent()->isAssignmentOp() && isSameExpression(false, tok->astOperand1(), parent->astParent()->astOperand1(), settings, true, false))
+            return true;
+    }
     bool foundUndefined{false};
     visitAstNodes((parent->astOperand1() != tok2) ? parent->astOperand1() : parent->astOperand2(), [&](const Token *tok3) {
         if (tok3->str() == "&" && !tok3->astOperand2())

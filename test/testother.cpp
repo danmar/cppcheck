@@ -10884,7 +10884,7 @@ private:
         /*const*/ Settings settings11 = settingsBuilder(_settings).cpp(Standards::CPP11).build();
 
         checkCustomSettings("void f(int i) {\n"
-                            "  int n = i++ + 2;\n"
+                            "  i = i++ + 2;\n"
                             "}", &settings11);
         ASSERT_EQUALS("[test.cpp:2]: (error) Expression 'i+++2' depends on order of evaluation of side effects\n", errout_str());
     }
