@@ -79,9 +79,14 @@ namespace {
 /** Return whether tok is the "{" that starts an enumerator list */
 static bool isEnumStart(const Token* tok)
 {
-    if (!tok || tok->str() != "{")
+    if (!Token::simpleMatch(tok, "{"))
         return false;
-    return (tok->strAt(-1) == "enum") || (tok->strAt(-2) == "enum") || Token::Match(tok->tokAt(-3), "enum class %name%");
+    tok = tok->previous();
+    while (tok && !tok->isKeyword() && Token::Match(tok, "%name%|::|:"))
+        tok = tok->previous();
+    if (Token::simpleMatch(tok, "class"))
+        tok = tok->previous();
+    return Token::simpleMatch(tok, "enum");
 }
 
 template<typename T>
@@ -1132,18 +1137,6 @@ void Tokenizer::simplifyTypedef()
     simplifyTypedefCpp();
 }
 
-static bool isEnumScope(const Token* tok)
-{
-    if (!Token::simpleMatch(tok, "{"))
-        return false;
-    tok = tok->previous();
-    while (tok && !tok->isKeyword() && Token::Match(tok, "%name%|::|:"))
-        tok = tok->previous();
-    if (Token::simpleMatch(tok, "class"))
-        tok = tok->previous();
-    return Token::simpleMatch(tok, "enum");
-}
-
 void Tokenizer::simplifyTypedefCpp()
 {
     bool isNamespace = false;
@@ -1755,7 +1748,7 @@ void Tokenizer::simplifyTypedefCpp()
                                 }
                                 ++scope;
                             }
-                            if (isEnumScope(tok2))
+                            if (isEnumStart(tok2))
                                 inEnum = true;
                         }
 
