@@ -1638,6 +1638,7 @@ void CmdLineParser::printHelp() const
             "                          * misra-c-2012      Misra C 2012\n"
             "                          * misra-c-2023      Misra C 2023\n"
             "                          * misra-c++-2008    Misra C++ 2008\n"
+            "                          * misra-c++-2023    Misra C++ 2023\n"
             "                         Other:\n"
             "                          * bughunting        Soundy analysis\n"
             "                          * cert-c-int-precision=BITS  Integer precision to use in Cert C analysis.\n"
