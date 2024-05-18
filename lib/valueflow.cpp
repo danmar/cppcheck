@@ -2996,7 +2996,7 @@ struct ValueFlowAnalyzer : Analyzer {
             return isThisModified(tok);
 
         // bailout: global non-const variables
-        if (isGlobal() && !dependsOnThis() && Token::Match(tok, "%name% (") &&
+        if (isGlobal() && !dependsOnThis() && Token::Match(tok, "%name% (") && !tok->variable() &&
             !Token::simpleMatch(tok->linkAt(1), ") {")) {
             return isGlobalModified(tok);
         }
@@ -5938,7 +5938,7 @@ static void valueFlowForwardAssign(Token* const tok,
     }
 
     // Static variable initialisation?
-    if (vars.size() == 1 && vars.front()->isStatic() && init)
+    if (vars.size() == 1 && vars.front()->isStatic() && !vars.front()->isConst() && init)
         lowerToPossible(values);
 
     // is volatile
@@ -6057,13 +6057,25 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
 
 static bool isVariableInit(const Token *tok)
 {
-    return (tok->str() == "(" || tok->str() == "{") &&
-           (tok->isBinaryOp() || (tok->astOperand1() && tok->link() == tok->next())) &&
-           tok->astOperand1()->variable() &&
-           tok->astOperand1()->variable()->nameToken() == tok->astOperand1() &&
-           tok->astOperand1()->variable()->valueType() &&
-           tok->astOperand1()->variable()->valueType()->type >= ValueType::Type::VOID &&
-           !Token::simpleMatch(tok->astOperand2(), ",");
+    if (!tok)
+        return false;
+    if (!Token::Match(tok->previous(), "%var% (|{"))
+        return false;
+    if (!tok->isBinaryOp() && !(tok->astOperand1() && tok->link() == tok->next()))
+        return false;
+    if (Token::simpleMatch(tok->astOperand2(), ","))
+        return false;
+    const Variable* var = tok->astOperand1()->variable();
+    if (!var)
+        return false;
+    if (var->nameToken() != tok->astOperand1())
+        return false;
+    const ValueType* vt = var->valueType();
+    if (!vt)
+        return false;
+    if (vt->type < ValueType::Type::VOID)
+        return false;
+    return true;
 }
 
 // Return true if two associative containers intersect

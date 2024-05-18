@@ -2818,6 +2818,27 @@ private:
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 3));
         ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 3));
+
+        code = "void f() {\n"
+               "    constexpr int x(123);\n"
+               "    constexpr int y(x*x);\n"
+               "    return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 123));
+
+        code = "void f() {\n"
+               "    static const int x(123);\n"
+               "    static const int y(x*x);\n"
+               "    return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 123));
+
+        code = "void f() {\n"
+               "    static int x(123);\n"
+               "    static int y(x*x);\n"
+               "    return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 123));
     }
 
     void valueFlowAfterSwap()
