@@ -2996,8 +2996,8 @@ struct ValueFlowAnalyzer : Analyzer {
             return isThisModified(tok);
 
         // bailout: global non-const variables
-        if (isGlobal() && !dependsOnThis() && Token::Match(tok, "%name% (") && !tok->variable()
-            && !Token::simpleMatch(tok->linkAt(1), ") {")) {
+        if (isGlobal() && !dependsOnThis() && Token::Match(tok, "%name% (") && !tok->variable() &&
+            !Token::simpleMatch(tok->linkAt(1), ") {")) {
             return isGlobalModified(tok);
         }
         return Action::None;
@@ -6071,9 +6071,9 @@ static bool isVariableInit(const Token *tok)
     if (var->nameToken() != tok->astOperand1())
         return false;
     const ValueType* vt = var->valueType();
-    if(!vt)
+    if (!vt)
         return false;
-    if(vt->type < ValueType::Type::VOID)
+    if (vt->type < ValueType::Type::VOID)
         return false;
     return true;
 }
