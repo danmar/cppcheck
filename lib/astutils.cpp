@@ -2441,13 +2441,13 @@ static bool isMutableExpression(const Token* tok)
         return false;
     if (tok->isLiteral() || tok->isKeyword() || tok->isStandardType() || tok->isEnumerator())
         return false;
-    if (Token::Match(tok, ",|;|:"))
+    if (Token::Match(tok, ",|;|:|]|)|}"))
         return false;
     if (Token::simpleMatch(tok, "[ ]"))
         return false;
     if (Token::Match(tok->previous(), "%name% (") && tok->previous()->isKeyword())
         return false;
-    if (Token::simpleMatch(tok, "<") && tok->link())
+    if (Token::Match(tok, "<|>") && tok->link())
         return false;
     if (Token::simpleMatch(tok, "[") && tok->astOperand1())
         return isMutableExpression(tok->astOperand1());
