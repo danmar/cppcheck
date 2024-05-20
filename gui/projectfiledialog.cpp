@@ -397,18 +397,8 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     mUI->mMisraCppVersion->setEnabled(mUI->mMisraCpp->isChecked());
     connect(mUI->mMisraCpp, &QCheckBox::toggled, mUI->mMisraCppVersion, &QComboBox::setEnabled);
 
-    const QString &misraFile = settings.value(SETTINGS_MISRA_FILE, QString()).toString();
-    mUI->mEditMisraFile->setText(misraFile);
-    mUI->mMisraVersion->setVisible(mPremium);
-    mUI->mMisraVersion->setCurrentIndex(projectFile->getCodingStandards().contains(CODING_STANDARD_MISRA_CPP_2023));
-    if (mPremium) {
-        mUI->mLabelMisraFile->setVisible(false);
-        mUI->mEditMisraFile->setVisible(false);
-        mUI->mBtnBrowseMisraFile->setVisible(false);
-    } else if (!mUI->mMisraCpp->isEnabled()) {
-        mUI->mEditMisraFile->setEnabled(false);
-        mUI->mBtnBrowseMisraFile->setEnabled(false);
-    }
+    mUI->mMisraCppVersion->setVisible(mPremium);
+    mUI->mMisraCppVersion->setCurrentIndex(projectFile->getCodingStandards().contains(CODING_STANDARD_MISRA_CPP_2023));
 
     mUI->mCertC2016->setChecked(mPremium && projectFile->getCodingStandards().contains(CODING_STANDARD_CERT_C));
     mUI->mCertCpp2016->setChecked(mPremium && projectFile->getCodingStandards().contains(CODING_STANDARD_CERT_CPP));
