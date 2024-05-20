@@ -2454,7 +2454,7 @@ static bool isMutableExpression(const Token* tok)
     if (const Variable* var = tok->variable()) {
         if (var->nameToken() == tok)
             return false;
-        if(!var->isPointer() && var->isConst())
+        if (!var->isPointer() && var->isConst())
             return false;
     }
     return true;
@@ -2623,8 +2623,8 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings &settings,
             return true;
         // Check if assigning to a non-const lvalue
         const Variable * var = getLHSVariable(tok2->astParent());
-        if (var && var->isReference() && !var->isConst() &&
-            var->nameToken() && var->nameToken()->next() == tok2->astParent()) {
+        if (var && var->isReference() && !var->isConst() && var->nameToken() &&
+            var->nameToken()->next() == tok2->astParent()) {
             if (!var->isLocal() || isVariableChanged(var, settings, depth - 1))
                 return true;
         }

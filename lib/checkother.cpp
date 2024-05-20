@@ -1461,15 +1461,15 @@ static const Token* getVariableChangedStart(const Variable* p)
 static bool isConstPointerVariable(const Variable* p, const Settings& settings)
 {
     const int indirect = p->isArray() ? p->dimensions().size() : 1;
-    const Token *start = getVariableChangedStart(p);
-    while (const Token* tok = findVariableChanged(start, p->scope()->bodyEnd, indirect, p->declarationId(), false, settings))
-    {
-        if(p->isReference())
+    const Token* start = getVariableChangedStart(p);
+    while (const Token* tok =
+               findVariableChanged(start, p->scope()->bodyEnd, indirect, p->declarationId(), false, settings)) {
+        if (p->isReference())
             return false;
         // Assigning a pointer through another pointer may still be const
         if (!Token::simpleMatch(tok->astParent(), "="))
             return false;
-        if(!astIsLHS(tok))
+        if (!astIsLHS(tok))
             return false;
         start = tok->next();
     }
