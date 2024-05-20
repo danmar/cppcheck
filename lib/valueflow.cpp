@@ -2838,15 +2838,8 @@ struct ValueFlowAnalyzer : Analyzer {
 
                     /* Handle overflow/underflow for value bounds */
                     if (value->bound != ValueFlow::Value::Bound::Point) {
-                        if (newvalue > value->intvalue) {
-                            if ((inc && value->bound == ValueFlow::Value::Bound::Lower)
-                            || (!inc && value->bound == ValueFlow::Value::Bound::Upper))
-                                value->invertBound();
-                        } else if (newvalue < value->intvalue) {
-                            if ((!inc && value->bound == ValueFlow::Value::Bound::Lower)
-                            || (inc && value->bound == ValueFlow::Value::Bound::Upper))
-                                value->invertBound();
-                        }
+                        if ((newvalue > value->intvalue && !inc) || (newvalue < value->intvalue && inc))
+                            value->invertBound();
                     }
 
                     value->intvalue = newvalue;
