@@ -2443,7 +2443,7 @@ static bool isMutableExpression(const Token* tok)
         return false;
     if (Token::Match(tok, ",|;|:"))
         return false;
-    if (Token::simpleMatch(tok, "[]"))
+    if (Token::simpleMatch(tok, "[ ]"))
         return false;
     if (Token::Match(tok->previous(), "%name% (") && tok->previous()->isKeyword())
         return false;
