@@ -230,7 +230,6 @@ private:
     }
 
     void isVariableChangedTest() {
-#if 0
         // #8211 - no lhs for >> , do not crash
         isVariableChanged("void f() {\n"
                           "  int b;\n"
@@ -250,7 +249,6 @@ private:
                                         "void f(int x) { g(&x); }\n",
                                         "{",
                                         "}"));
-#endif
         ASSERT_EQUALS(false, isVariableChanged("const int A[] = { 1, 2, 3 };", "[", "]"));
     }
 
