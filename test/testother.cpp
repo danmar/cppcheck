@@ -10799,6 +10799,28 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (style) Label 'label' is not used.\n", errout_str());
     }
 
+    #define checkCustomSettings(...) checkCustomSettings_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkCustomSettings_(const char* file, int line, const char code[], bool cpp = true, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
+        if (!settings) {
+            settings = &_settings;
+        }
+        settings->certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        settings->verbose = verbose;
+
+        // Tokenize..
+        SimpleTokenizer tokenizer(*settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+
+        // Check..
+        runChecks<CheckOther>(tokenizer, this);
+
+        (void)runSimpleChecks; // TODO Remove this
+    }
+
+    void checkCustomSettings_(const char* file, int line, const char code[], Settings *s) {
+        checkCustomSettings_(file, line, code, true, true, true, false, s);
+    }
+
     void testEvaluationOrder() {
         check("void f() {\n"
               "  int x = dostuff();\n"
@@ -10842,6 +10864,29 @@ private:
               "  a[x+y] = a[y+x]++;;\n"
               "}\n", false);
         ASSERT_EQUALS("[test.c:3]: (error) Expression 'a[x+y]=a[y+x]++' depends on order of evaluation of side effects\n", errout_str());
+
+        check("void f(int i) {\n"
+              "  int n = ++i + i;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Expression '++i+i' depends on order of evaluation of side effects\n", errout_str());
+
+        check("long int f1(const char *exp) {\n"
+              "  return dostuff(++exp, ++exp, 10);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Expression '++exp,++exp' depends on order of evaluation of side effects. Behavior is Unspecified according to c++17\n"
+                      "[test.cpp:2]: (portability) Expression '++exp,++exp' depends on order of evaluation of side effects. Behavior is Unspecified according to c++17\n", errout_str());
+
+        check("void f(int i) {\n"
+              "  int n = (~(-(++i)) + i);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Expression '~(-(++i))+i' depends on order of evaluation of side effects\n", errout_str());
+
+        /*const*/ Settings settings11 = settingsBuilder(_settings).cpp(Standards::CPP11).build();
+
+        checkCustomSettings("void f(int i) {\n"
+                            "  i = i++ + 2;\n"
+                            "}", &settings11);
+        ASSERT_EQUALS("[test.cpp:2]: (error) Expression 'i+++2' depends on order of evaluation of side effects\n", errout_str());
     }
 
     void testEvaluationOrderSelfAssignment() {
