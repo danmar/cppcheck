@@ -2833,8 +2833,24 @@ struct ValueFlowAnalyzer : Analyzer {
             const ValueType *dst = tok->valueType();
             if (dst) {
                 const size_t sz = ValueFlow::getSizeOf(*dst, settings);
-                if (sz > 0 && sz < 8)
-                    value->intvalue = truncateIntValue(value->intvalue, sz, dst->sign);
+                if (sz > 0 && sz < 8) {
+                    long long newvalue = truncateIntValue(value->intvalue, sz, dst->sign);
+
+                    /* Handle overflow/underflow for value bounds */
+                    if (value->bound != ValueFlow::Value::Bound::Point) {
+                        if (newvalue > value->intvalue) {
+                            if ((inc && value->bound == ValueFlow::Value::Bound::Lower)
+                            || (!inc && value->bound == ValueFlow::Value::Bound::Upper))
+                                value->invertBound();
+                        } else if (newvalue < value->intvalue) {
+                            if ((!inc && value->bound == ValueFlow::Value::Bound::Lower)
+                            || (inc && value->bound == ValueFlow::Value::Bound::Upper))
+                                value->invertBound();
+                        }
+                    }
+
+                    value->intvalue = newvalue;
+                }
 
                 value->errorPath.emplace_back(tok, tok->str() + " is " + opName + "', new value is " + value->infoString());
             }

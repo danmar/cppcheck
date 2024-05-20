@@ -4783,6 +4783,15 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+      // #12681
+        check("void f(unsigned u) {\n"
+              "      if (u > 0) {\n"
+              "             u--;\n"
+              "             if (u == 0) {}\n"
+              "      }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void alwaysTrueInfer() {
