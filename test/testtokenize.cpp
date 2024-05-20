@@ -6663,7 +6663,6 @@ private:
                                                "}\n"));
         ASSERT_EQUALS("", errout_str());
 
-
         ASSERT_EQUALS("ad*astdforward::e((new= ifd(", testAst("struct a {};\n" // #11103
                                                               "template <class... b> void c(b... e) {\n"
                                                               "    a* d = new a(std::forward<b>(e)...);\n"
@@ -6686,11 +6685,13 @@ private:
         ignore_errout();
     }
 
-    void astrequires() {
+    void astrequires()
+    {
         ASSERT_EQUALS("requires{ac::||= ac::", testAst("template <class a> concept b = requires { a::c; } || a::c;"));
-        ASSERT_EQUALS("requires{ac::||= a{b{||", testAst("template <class a, class b> concept c = requires { a{} || b{}; } || a::c;"));
+        ASSERT_EQUALS("requires{ac::||= a{b{||",
+                      testAst("template <class a, class b> concept c = requires { a{} || b{}; } || a::c;"));
     }
-    
+
     void astcast() {
         ASSERT_EQUALS("ac&(=", testAst("a = (long)&c;"));
         ASSERT_EQUALS("ac*(=", testAst("a = (Foo*)*c;"));
