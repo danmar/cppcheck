@@ -24,6 +24,7 @@
 #include "settings.h"
 #include "tokenize.h"
 
+#include <cstddef>
 #include <limits>
 #include <string>
 #include <vector>

@@ -34,7 +34,6 @@
 #include "checknullpointer.h"
 
 #include <algorithm>
-#include <cassert>
 #include <iterator>
 #include <list>
 #include <map>

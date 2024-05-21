@@ -22,6 +22,8 @@
 #include "helpers.h"
 #include "settings.h"
 
+#include <cstddef>
+
 class Test64BitPortability : public TestFixture {
 public:
     Test64BitPortability() : TestFixture("Test64BitPortability") {}

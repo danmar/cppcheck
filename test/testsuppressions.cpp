@@ -29,7 +29,6 @@
 #include "threadexecutor.h"
 #include "singleexecutor.h"
 
-#include <cstddef>
 #include <cstring>
 #include <list>
 #include <map>

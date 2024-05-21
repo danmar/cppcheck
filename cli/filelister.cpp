@@ -23,7 +23,6 @@
 #include "pathmatch.h"
 #include "utils.h"
 
-#include <cstddef>
 #include <cstring>
 #include <iterator>
 #include <memory>

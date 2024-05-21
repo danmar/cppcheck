@@ -22,6 +22,8 @@
 #include "helpers.h"
 #include "settings.h"
 
+#include <cstddef>
+
 class TestExceptionSafety : public TestFixture {
 public:
     TestExceptionSafety() : TestFixture("TestExceptionSafety") {}

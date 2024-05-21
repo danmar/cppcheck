@@ -19,7 +19,6 @@
 #include "astutils.h"
 #include "fixture.h"
 #include "helpers.h"
-#include "library.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"

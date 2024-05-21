@@ -24,6 +24,7 @@
 #include "symboldatabase.h"
 #include "token.h"
 
+#include <cstddef>
 #include <list>
 
 class TestMemleak : private TestFixture {

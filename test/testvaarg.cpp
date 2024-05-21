@@ -22,6 +22,8 @@
 #include "helpers.h"
 #include "settings.h"
 
+#include <cstddef>
+
 class TestVaarg : public TestFixture {
 public:
     TestVaarg() : TestFixture("TestVaarg") {}
