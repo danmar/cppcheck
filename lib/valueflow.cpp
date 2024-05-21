@@ -1161,8 +1161,10 @@ static size_t bitCeil(size_t x)
 
 static size_t getAlignOf(const ValueType& vt, const Settings& settings, int maxRecursion = 0)
 {
-    if (maxRecursion == 100)
+    if (maxRecursion == settings.vfOptions.maxAlignOfRecursion) {
+        // TODO: add bailout message
         return 0;
+    }
     if (vt.pointer || vt.reference != Reference::None || vt.isPrimitive()) {
         auto align = ValueFlow::getSizeOf(vt, settings);
         return align == 0 ? 0 : bitCeil(align);
@@ -1196,8 +1198,10 @@ static nonneg int getSizeOfType(const Token *typeTok, const Settings &settings)
 
 size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, int maxRecursion)
 {
-    if (maxRecursion == 100)
+    if (maxRecursion == settings.vfOptions.maxSizeOfRecursion) {
+        // TODO: add bailout message
         return 0;
+    }
     if (vt.pointer || vt.reference != Reference::None)
         return settings.platform.sizeof_pointer;
     if (vt.type == ValueType::Type::BOOL || vt.type == ValueType::Type::CHAR)
@@ -3294,9 +3298,10 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     }
 
     void setupExprVarIds(const Token* start, int depth = 0) {
-        constexpr int maxDepth = 4;
-        if (depth > maxDepth)
+        if (depth > settings.vfOptions.maxExprVarIdDepth) {
+            // TODO: add bailout message
             return;
+        }
         visitAstNodes(start, [&](const Token* tok) {
             const bool top = depth == 0 && tok == start;
             const bool ispointer = astIsPointer(tok) || astIsSmartPointer(tok) || astIsIterator(tok);
@@ -5399,7 +5404,7 @@ static const Scope* getLoopScope(const Token* tok)
 //
 static void valueFlowConditionExpressions(const TokenList &tokenlist, const SymbolDatabase& symboldatabase, ErrorLogger &errorLogger, const Settings &settings)
 {
-    if (!settings.daca && (settings.checkLevel == Settings::CheckLevel::normal))
+    if (!settings.daca && !settings.vfOptions.doConditionExpressionAnalysis)
     {
         if (settings.debugwarnings) {
             ErrorMessage::FileLocation loc(tokenlist.getSourceFilePath(), 0, 0);
@@ -5416,7 +5421,7 @@ static void valueFlowConditionExpressions(const TokenList &tokenlist, const Symb
             continue;
         }
 
-        if (settings.daca && (settings.checkLevel == Settings::CheckLevel::normal))
+        if (settings.daca && !settings.vfOptions.doConditionExpressionAnalysis)
             continue;
 
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
@@ -7195,13 +7200,14 @@ static bool valueFlowForLoop2(const Token *tok,
     ProgramMemory startMemory(programMemory);
     ProgramMemory endMemory;
 
-    int maxcount = 10000;
+    int maxcount = settings.vfOptions.maxForLoopCount;
     while (result != 0 && !error && --maxcount > 0) {
         endMemory = programMemory;
         execute(thirdExpression, programMemory, &result, &error, settings);
         if (!error)
             execute(secondExpression, programMemory, &result, &error, settings);
     }
+    // TODO: add bailout message
 
     if (memory1)
         memory1->swap(startMemory);
@@ -7580,7 +7586,7 @@ static bool productParams(const Settings& settings, const std::unordered_map<Key
         args.back()[p.first] = p.second.front();
     }
     bool bail = false;
-    int max = settings.performanceValueFlowMaxSubFunctionArgs;
+    int max = settings.vfOptions.maxSubFunctionArgs;
     for (const auto& p:vars) {
         if (args.size() > max) {
             bail = true;
@@ -7611,6 +7617,7 @@ static bool productParams(const Settings& settings, const std::unordered_map<Key
     if (args.size() > max) {
         bail = true;
         args.resize(max);
+        // TODO: add bailout message
     }
 
     for (const auto& arg:args) {
@@ -9474,7 +9481,7 @@ struct ValueFlowPassRunner {
     bool run(std::initializer_list<ValuePtr<ValueFlowPass>> passes) const
     {
         std::size_t values = 0;
-        std::size_t n = state.settings.valueFlowMaxIterations;
+        std::size_t n = state.settings.vfOptions.maxIterations;
         while (n > 0 && values != getTotalValues()) {
             values = getTotalValues();
             if (std::any_of(passes.begin(), passes.end(), [&](const ValuePtr<ValueFlowPass>& pass) {
@@ -9501,8 +9508,10 @@ struct ValueFlowPassRunner {
     bool run(const ValuePtr<ValueFlowPass>& pass) const
     {
         auto start = Clock::now();
-        if (start > stop)
+        if (start > stop) {
+            // TODO: add bailout message
             return true;
+        }
         if (!state.tokenlist.isCPP() && pass->cpp())
             return false;
         if (timerResults) {
@@ -9524,7 +9533,7 @@ struct ValueFlowPassRunner {
 
     void setSkippedFunctions()
     {
-        if (state.settings.performanceValueFlowMaxIfCount > 0) {
+        if (state.settings.vfOptions.maxIfCount > 0) {
             for (const Scope* functionScope : state.symboldatabase.functionScopes) {
                 int countIfScopes = 0;
                 std::vector<const Scope*> scopes{functionScope};
@@ -9537,7 +9546,7 @@ struct ValueFlowPassRunner {
                             ++countIfScopes;
                     }
                 }
-                if (countIfScopes > state.settings.performanceValueFlowMaxIfCount) {
+                if (countIfScopes > state.settings.vfOptions.maxIfCount) {
                     state.skippedFunctions.emplace(functionScope);
 
                     if (state.settings.severity.isEnabled(Severity::information)) {
@@ -9550,7 +9559,7 @@ struct ValueFlowPassRunner {
                                                   Severity::information,
                                                   "Limiting ValueFlow analysis in function '" + functionName + "' since it is too complex. "
                                                   "Please specify --check-level=exhaustive to perform full analysis.",
-                                                  "checkLevelNormal",
+                                                  "checkLevelNormal", // TODO: use more specific ID
                                                   Certainty::normal);
                         state.errorLogger.reportErr(errmsg);
                     }
@@ -9561,8 +9570,8 @@ struct ValueFlowPassRunner {
 
     void setStopTime()
     {
-        if (state.settings.performanceValueFlowMaxTime >= 0)
-            stop = Clock::now() + std::chrono::seconds{state.settings.performanceValueFlowMaxTime};
+        if (state.settings.vfOptions.maxTime >= 0)
+            stop = Clock::now() + std::chrono::seconds{state.settings.vfOptions.maxTime};
     }
 
     ValueFlowState state;

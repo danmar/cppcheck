@@ -1906,14 +1906,14 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--valueflow-max-iterations=0", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS(0, settings->valueFlowMaxIterations);
+        ASSERT_EQUALS(0, settings->vfOptions.maxIterations);
     }
 
     void valueFlowMaxIterations2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--valueflow-max-iterations=11", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS(11, settings->valueFlowMaxIterations);
+        ASSERT_EQUALS(11, settings->vfOptions.maxIterations);
     }
 
     void valueFlowMaxIterationsInvalid() {
@@ -2006,7 +2006,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--performance-valueflow-max-time=12", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS(12, settings->performanceValueFlowMaxTime);
+        ASSERT_EQUALS(12, settings->vfOptions.maxTime);
     }
 
     void performanceValueflowMaxTimeInvalid() {
@@ -2020,7 +2020,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--performance-valueflow-max-if-count=12", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS(12, settings->performanceValueFlowMaxIfCount);
+        ASSERT_EQUALS(12, settings->vfOptions.maxIfCount);
     }
 
     void performanceValueFlowMaxIfCountInvalid() {
@@ -2569,13 +2569,16 @@ private:
     }
 #endif
 
+    // the CLI default to --check-level=normal
     void checkLevelDefault() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(2, argv));
         ASSERT_EQUALS_ENUM(Settings::CheckLevel::normal, settings->checkLevel);
-        ASSERT_EQUALS(100, settings->performanceValueFlowMaxIfCount);
-        ASSERT_EQUALS(8, settings->performanceValueFlowMaxSubFunctionArgs);
+        ASSERT_EQUALS(100, settings->vfOptions.maxIfCount);
+        ASSERT_EQUALS(8, settings->vfOptions.maxSubFunctionArgs);
+        ASSERT_EQUALS(false, settings->vfOptions.doConditionExpressionAnalysis);
+        ASSERT_EQUALS(4, settings->vfOptions.maxForwardBranches);
     }
 
     void checkLevelNormal() {
@@ -2583,8 +2586,10 @@ private:
         const char * const argv[] = {"cppcheck", "--check-level=normal", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS_ENUM(Settings::CheckLevel::normal, settings->checkLevel);
-        ASSERT_EQUALS(100, settings->performanceValueFlowMaxIfCount);
-        ASSERT_EQUALS(8, settings->performanceValueFlowMaxSubFunctionArgs);
+        ASSERT_EQUALS(100, settings->vfOptions.maxIfCount);
+        ASSERT_EQUALS(8, settings->vfOptions.maxSubFunctionArgs);
+        ASSERT_EQUALS(false, settings->vfOptions.doConditionExpressionAnalysis);
+        ASSERT_EQUALS(4, settings->vfOptions.maxForwardBranches);
     }
 
     void checkLevelExhaustive() {
@@ -2592,8 +2597,10 @@ private:
         const char * const argv[] = {"cppcheck", "--check-level=exhaustive", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS_ENUM(Settings::CheckLevel::exhaustive, settings->checkLevel);
-        ASSERT_EQUALS(-1, settings->performanceValueFlowMaxIfCount);
-        ASSERT_EQUALS(256, settings->performanceValueFlowMaxSubFunctionArgs);
+        ASSERT_EQUALS(-1, settings->vfOptions.maxIfCount);
+        ASSERT_EQUALS(256, settings->vfOptions.maxSubFunctionArgs);
+        ASSERT_EQUALS(true, settings->vfOptions.doConditionExpressionAnalysis);
+        ASSERT_EQUALS(-1, settings->vfOptions.maxForwardBranches);
     }
 
     void checkLevelUnknown() {

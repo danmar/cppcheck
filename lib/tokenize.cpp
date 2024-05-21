@@ -3414,6 +3414,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     if (!mSettings.buildDir.empty())
         Summaries::create(*this, configuration);
 
+    // TODO: apply this through Settings::ValueFlowOptions
     // TODO: do not run valueflow if no checks are being performed at all - e.g. unusedFunctions only
     const char* disableValueflowEnv = std::getenv("DISABLE_VALUEFLOW");
     const bool doValueFlow = !disableValueflowEnv || (std::strcmp(disableValueflowEnv, "1") != 0);
