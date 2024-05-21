@@ -232,4 +232,11 @@ inline std::string filter_valueflow(const std::string& s) {
     return ostr;
 }
 
+struct LibraryHelper
+{
+    static bool loadxmldata(Library &lib, const char xmldata[], std::size_t len);
+    static bool loadxmldata(Library &lib, Library::Error& liberr, const char xmldata[], std::size_t len);
+    static Library::Error loadxmldoc(Library &lib, const tinyxml2::XMLDocument& doc);
+};
+
 #endif // helpersH

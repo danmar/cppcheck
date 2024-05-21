@@ -20,6 +20,7 @@
 
 #include "cppcheck.h"
 #include "errortypes.h"
+#include "helpers.h"
 #include "options.h"
 #include "redirect.h"
 
@@ -484,8 +485,8 @@ TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::libraryxml(const cha
     tinyxml2::XMLDocument doc;
     const tinyxml2::XMLError xml_error = doc.Parse(xmldata, len);
     if (tinyxml2::XML_SUCCESS != xml_error)
-        throw std::runtime_error(std::string("loading XML data failed - ") + tinyxml2::XMLDocument::ErrorIDToName(xml_error));
-    const Library::ErrorCode lib_error = settings.library.load(doc).errorcode;
+        throw std::runtime_error(std::string("loading library XML data failed - ") + tinyxml2::XMLDocument::ErrorIDToName(xml_error));
+    const Library::ErrorCode lib_error = LibraryHelper::loadxmldoc(settings.library, doc).errorcode;
     if (lib_error != Library::ErrorCode::OK)
         throw std::runtime_error("loading library XML failed - " + std::to_string(static_cast<int>(lib_error)));
     return *this;

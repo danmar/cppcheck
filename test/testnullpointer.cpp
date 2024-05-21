@@ -34,8 +34,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "xml.h"
-
 class TestNullPointer : public TestFixture {
 public:
     TestNullPointer() : TestFixture("TestNullPointer") {}
@@ -176,12 +174,6 @@ private:
         TEST_CASE(isPointerDeRefFunctionDecl);
 
         TEST_CASE(ctuTest);
-    }
-
-    static bool loadxmldata(Library &lib, const char xmldata[], std::size_t len)
-    {
-        tinyxml2::XMLDocument doc;
-        return (tinyxml2::XML_SUCCESS == doc.Parse(xmldata, len)) && (lib.load(doc).errorcode == Library::ErrorCode::OK);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -4167,7 +4159,7 @@ private:
                                        "</def>";
 
             Library library;
-            ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
+            ASSERT(LibraryHelper::loadxmldata(library, xmldata, sizeof(xmldata)));
 
             std::list<const Token *> null;
             CheckNullPointer::parseFunctionCall(*xtok, null, library);
@@ -4186,7 +4178,7 @@ private:
                                        "</def>";
 
             Library library;
-            ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
+            ASSERT(LibraryHelper::loadxmldata(library, xmldata, sizeof(xmldata)));
 
             std::list<const Token *> null;
             CheckNullPointer::parseFunctionCall(*xtok, null, library);
