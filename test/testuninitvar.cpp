@@ -3645,7 +3645,7 @@ private:
                         "}");
         ASSERT_EQUALS("", errout_str());
 
-        valueFlowUninit("int f(int x) {\n"
+        valueFlowUninit("int f(int x, int y) {\n"
                         "    int a;\n"
                         "    if (x)\n"
                         "        a = y;\n"
@@ -6492,6 +6492,18 @@ private:
                         "    f(i);\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (warning) Uninitialized variable: r\n", errout_str());
+
+        // #12197
+        valueFlowUninit("void f() {\n"
+                        "    char a[N];\n"
+                        "    for (int i = 0; i < N; i++)\n"
+                        "        a[i] = 1;\n"
+                        "    const int* p = a;\n"
+                        "    for (int i = 0; i < N; i++) {\n"
+                        "        if (p[i]) {}\n"
+                        "    }\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value

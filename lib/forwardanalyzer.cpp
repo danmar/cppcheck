@@ -97,6 +97,14 @@ namespace {
             return actions.isModified();
         }
 
+        bool stopOnCondition(const Token* condTok) {
+            if(analyzer->isConditional() && findAstNode(condTok, [](const Token* tok) {
+                return tok->isIncompleteVar();
+            }))
+                return true;
+            return analyzer->stopOnCondition(condTok);
+        }
+
         std::pair<bool, bool> evalCond(const Token* tok, const Token* ctx = nullptr) const {
             if (!tok)
                 return std::make_pair(false, false);
@@ -199,7 +207,7 @@ namespace {
                 bool checkThen, checkElse;
                 std::tie(checkThen, checkElse) = evalCond(condTok);
                 if (!checkThen && !checkElse) {
-                    if (!traverseUnknown && analyzer->stopOnCondition(condTok) && stopUpdates()) {
+                    if (!traverseUnknown && stopOnCondition(condTok) && stopUpdates()) {
                         return Progress::Continue;
                     }
                     checkThen = true;
@@ -467,7 +475,7 @@ namespace {
                     if (updateRecursive(condTok) == Progress::Break)
                         return Break();
             }
-            if (!checkThen && !checkElse && !isDoWhile && analyzer->stopOnCondition(condTok) && stopUpdates())
+            if (!checkThen && !checkElse && !isDoWhile && stopOnCondition(condTok) && stopUpdates())
                 return Break(Analyzer::Terminate::Conditional);
             // condition is false, we don't enter the loop
             if (checkElse)
@@ -689,7 +697,7 @@ namespace {
                         Branch elseBranch{endBlock->tokAt(2) ? endBlock->linkAt(2) : nullptr};
                         // Check if condition is true or false
                         std::tie(thenBranch.check, elseBranch.check) = evalCond(condTok);
-                        if (!thenBranch.check && !elseBranch.check && analyzer->stopOnCondition(condTok) && stopUpdates())
+                        if (!thenBranch.check && !elseBranch.check && stopOnCondition(condTok) && stopUpdates())
                             return Break(Analyzer::Terminate::Conditional);
                         const bool hasElse = Token::simpleMatch(endBlock, "} else {");
                         bool bail = false;
