@@ -8975,6 +8975,45 @@ private:
               "    if (a.x > a.y) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S {\n" // #12740
+              "    const std::string & get() const { return m; }\n"
+              "    void set(const std::string& v) { m = v; }\n"
+              "    std::string m;\n"
+              "};\n"
+              "struct T {\n"
+              "    void f();\n"
+              "    S* s;\n"
+              "};\n"
+              "void T::f() {\n"
+              "    const std::string o = s->get();\n"
+              "    s->set(\"abc\");\n"
+              "    s->set(o);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("struct S {\n" // #12196
+              "    std::string s;\n"
+              "    const std::string& get() const { return s; }\n"
+              "};\n"
+              "struct T {\n"
+              "    S* m;\n"
+              "    void f();\n"
+              "};\n"
+              "struct U {\n"
+              "    explicit U(S* p);\n"
+              "    void g();\n"
+              "    S* n;\n"
+              "};\n"
+              "void T::f() {\n"
+              "    U u(m);\n"
+              "    const std::string c = m->get();\n"
+              "    u.g();\n"
+              "    if (c == m->get()) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("",
+                           "[test.cpp:16] -> [test.cpp:18]: (style) The comparison 'c == m->get()' is always true because 'c' and 'm->get()' represent the same value.\n",
+                           errout_str());
     }
 
     void checkNegativeShift() {

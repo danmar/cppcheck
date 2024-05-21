@@ -2901,7 +2901,9 @@ void CheckOther::checkRedundantCopy()
 
         const Token* dot = tok->astOperand1();
         if (Token::simpleMatch(dot, ".")) {
-            if (dot->astOperand1() && isVariableChanged(dot->astOperand1()->variable(), *mSettings))
+            const Token* varTok = dot->astOperand1();
+            const int indirect = varTok->valueType() ? varTok->valueType()->pointer : 0;
+            if (isVariableChanged(tok, tok->scope()->bodyEnd, varTok->varId(), indirect, /*globalvar*/ false, *mSettings))
                 continue;
             if (isTemporary(dot, &mSettings->library, /*unknown*/ true))
                 continue;
