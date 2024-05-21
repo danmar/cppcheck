@@ -97,8 +97,9 @@ namespace {
             return actions.isModified();
         }
 
-        bool stopOnCondition(const Token* condTok) {
-            if(analyzer->isConditional() && findAstNode(condTok, [](const Token* tok) {
+        bool stopOnCondition(const Token* condTok)
+        {
+            if (analyzer->isConditional() && findAstNode(condTok, [](const Token* tok) {
                 return tok->isIncompleteVar();
             }))
                 return true;
