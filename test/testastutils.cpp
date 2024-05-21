@@ -249,7 +249,6 @@ private:
                                         "void f(int x) { g(&x); }\n",
                                         "{",
                                         "}"));
-
         ASSERT_EQUALS(false, isVariableChanged("const int A[] = { 1, 2, 3 };", "[", "]"));
     }
 
