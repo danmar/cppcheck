@@ -2520,6 +2520,16 @@ private:
                       "5: A :: A ( const Matrix & m@3 ) throw ( e ) : work@1 ( 0 )\n"
                       "6: { }\n",
                       tokenize(code10));
+
+        const char code11[] = "struct S {\n" // #12733
+                              "    explicit S(int& r) : a{ int{ 1 } }, b{ r } {}\n"
+                              "    int a, &b;\n"
+                              "};";
+        ASSERT_EQUALS("1: struct S {\n"
+                      "2: explicit S ( int & r@1 ) : a@2 { int { 1 } } , b@3 { r@1 } { }\n"
+                      "3: int a@2 ; int & b@3 ;\n"
+                      "4: } ;\n",
+                      tokenize(code11));
     }
 
     void varid_initListWithBaseTemplate() {
