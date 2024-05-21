@@ -392,8 +392,8 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
         mUI->mBtnBrowseMisraFile->setEnabled(false);
     }
 
-    mUI->mMisraCpp->setText(mPremium ? "Misra C++" : "Misra C++ 2008");
-    updateAddonCheckBox(mUI->mMisraCpp, projectFile, dataDir, ADDON_MISRA);
+    mUI->mMisraCpp->setVisible(mPremium);
+    mUI->mMisraCpp->setEnabled(mPremium);
     mUI->mMisraCppVersion->setEnabled(mUI->mMisraCpp->isChecked());
     connect(mUI->mMisraCpp, &QCheckBox::toggled, mUI->mMisraCppVersion, &QComboBox::setEnabled);
 
@@ -489,9 +489,9 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
         codingStandards << CODING_STANDARD_CERT_CPP;
     if (mPremium && mUI->mMisraVersion->currentIndex() == 1)
         codingStandards << CODING_STANDARD_MISRA_C_2023;
-    if (mPremium && mUI->mMisraCppVersion->currentIndex() == 0)
+    if (mUI->mMisraCpp->isChecked() && mUI->mMisraCppVersion->currentIndex() == 0)
         codingStandards << CODING_STANDARD_MISRA_CPP_2008;
-    if (mPremium && mUI->mMisraCppVersion->currentIndex() == 1)
+    if (mUI->mMisraCpp->isChecked() && mUI->mMisraCppVersion->currentIndex() == 1)
         codingStandards << CODING_STANDARD_MISRA_CPP_2023;
     if (mUI->mAutosar->isChecked())
         codingStandards << CODING_STANDARD_AUTOSAR;
