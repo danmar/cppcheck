@@ -2833,7 +2833,7 @@ struct ValueFlowAnalyzer : Analyzer {
             const ValueType *dst = tok->valueType();
             if (dst) {
                 const size_t sz = ValueFlow::getSizeOf(*dst, settings);
-                if (sz > 0 && sz < 8) {
+                if (sz > 0 && sz < sizeof(MathLib::biguint)) {
                     long long newvalue = truncateIntValue(value->intvalue, sz, dst->sign);
 
                     /* Handle overflow/underflow for value bounds */
@@ -6058,7 +6058,7 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
             value.valueType = ValueFlow::Value::ValueType::INT;
         }
 
-        if (value.isIntValue() && sz > 0 && sz < 8)
+        if (value.isIntValue() && sz > 0 && sz < sizeof(MathLib::biguint))
             value.intvalue = truncateIntValue(value.intvalue, sz, dst->sign);
     }
     return values;
