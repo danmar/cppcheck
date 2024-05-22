@@ -20,10 +20,10 @@ include(cmake/findDependencies.cmake)
 include(cmake/compileroptions.cmake)
 include(cmake/compilerDefinitions.cmake)
 include(cmake/buildFiles.cmake)
-include(cmake/printInfo.cmake)
 if(BUILD_GUI)
     include(cmake/qtCompat.cmake)
 endif()
+include(cmake/printInfo.cmake)
 
 
 file(GLOB addons "addons/*.py")

@@ -8,10 +8,10 @@ if(BUILD_GUI)
     endif()
     if(USE_QT6)
         find_package(Qt6 COMPONENTS ${qt_components} REQUIRED)
-        set(QT_VERSION "${Qt6Core_VERSION_STRING}")
+        set(QT_VERSION "${Qt6Core_VERSION}")
         if(NOT QT_VERSION)
-            # TODO: how to get the actual version?
-            message(WARNING "'Qt6Core_VERSION_STRING' is not set - using 6.0.0 as fallback")
+            # TODO: remove fallback
+            message(WARNING "'Qt6Core_VERSION' is not set - using 6.0.0 as fallback")
             set(QT_VERSION "6.0.0")
         endif()
         if(MSVC)
