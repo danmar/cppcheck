@@ -68,6 +68,9 @@ public:
     /** @return true if the code is C++ */
     bool isCPP() const;
 
+    /** @return true if the code is a Markup language */
+    bool isMarkup() const;
+
     void setLang(Standards::Language lang);
 
     /**

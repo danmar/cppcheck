@@ -643,7 +643,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             if (mUnusedFunctionsCheck && mSettings.useSingleJob() && mSettings.buildDir.empty()) {
                 // this is not a real source file - we just want to tokenize it. treat it as C anyways as the language needs to be determined.
                 Tokenizer tokenizer(mSettings, *this);
-                tokenizer.list.setLang(Standards::Language::C);
+                tokenizer.list.setLang(Standards::Language::Markup);
                 if (fileStream) {
                     tokenizer.list.createTokens(*fileStream, filename);
                 }

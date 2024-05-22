@@ -2190,10 +2190,18 @@ bool TokenList::isCPP() const
     return mLang == Standards::Language::CPP;
 }
 
+bool TokenList::isMarkup() const
+{
+    return mLang == Standards::Language::Markup;
+}
+
 void TokenList::setLang(Standards::Language lang)
 {
     ASSERT_LANG(lang != Standards::Language::None);
-    ASSERT_LANG(mLang == Standards::Language::None);
+    //ASSERT_LANG(mLang == Standards::Language::None);
+    /* OL: We should have an ability to change between languages when we have markup inside c++ project
+     *  which we treat as C
+     */
 
     mLang = lang;
 }
