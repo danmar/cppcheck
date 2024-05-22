@@ -23,6 +23,8 @@
 #include "platform.h"
 #include "settings.h"
 
+#include <cstddef>
+
 class TestCharVar : public TestFixture {
 public:
     TestCharVar() : TestFixture("TestCharVar") {}

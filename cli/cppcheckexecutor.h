@@ -25,13 +25,11 @@
 #include <cstdio>
 #include <list>
 #include <string>
-#include <utility>
 #include <vector>
 
 class Settings;
 class ErrorLogger;
 class SuppressionList;
-class FileWithDetails;
 
 /**
  * This class works as an example of how CppCheck can be used in external

@@ -20,6 +20,7 @@
 #include "helpers.h"
 #include "summaries.h"
 
+#include <cstddef>
 #include <string>
 
 class TestSummaries : public TestFixture {

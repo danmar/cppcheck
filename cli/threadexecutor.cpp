@@ -25,14 +25,15 @@
 #include "settings.h"
 #include "timer.h"
 
-#include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <cstdlib>
 #include <future>
 #include <iostream>
 #include <list>
 #include <numeric>
 #include <mutex>
+#include <string>
 #include <system_error>
 #include <utility>
 #include <vector>

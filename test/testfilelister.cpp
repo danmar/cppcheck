@@ -23,7 +23,6 @@
 #include "fixture.h"
 
 #include <algorithm>
-#include <cstddef>
 #include <list>
 #include <stdexcept>
 #include <string>

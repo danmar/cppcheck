@@ -22,6 +22,8 @@
 #include "helpers.h"
 #include "settings.h"
 
+#include <cstddef>
+
 class TestAutoVariables : public TestFixture {
 public:
     TestAutoVariables() : TestFixture("TestAutoVariables") {}

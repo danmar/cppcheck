@@ -22,6 +22,8 @@
 #include "helpers.h"
 #include "settings.h"
 
+#include <cstddef>
+
 class TestBoost : public TestFixture {
 public:
     TestBoost() : TestFixture("TestBoost") {}

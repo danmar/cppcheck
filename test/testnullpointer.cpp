@@ -27,6 +27,7 @@
 #include "token.h"
 #include "tokenize.h"
 
+#include <cstddef>
 #include <list>
 #include <map>
 #include <string>

@@ -22,6 +22,8 @@
 #include "helpers.h"
 #include "settings.h"
 
+#include <cstddef>
+
 class TestPostfixOperator : public TestFixture {
 public:
     TestPostfixOperator() : TestFixture("TestPostfixOperator") {}

@@ -28,6 +28,7 @@
 #include "fixture.h"
 #include "tokenize.h"
 
+#include <cstddef>
 #include <list>
 #include <string>
 #include <vector>

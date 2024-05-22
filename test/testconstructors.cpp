@@ -23,6 +23,8 @@
 #include "standards.h"
 #include "settings.h"
 
+#include <cstddef>
+
 class TestConstructors : public TestFixture {
 public:
     TestConstructors() : TestFixture("TestConstructors") {}
