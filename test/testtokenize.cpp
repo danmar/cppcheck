@@ -386,6 +386,7 @@ private:
         TEST_CASE(astunaryop);
         TEST_CASE(astfunction);
         TEST_CASE(asttemplate);
+        TEST_CASE(astrequires);
         TEST_CASE(astcast);
         TEST_CASE(astlambda);
         TEST_CASE(astcase);
@@ -6682,6 +6683,13 @@ private:
                                              "    if (a) {}\n"
                                              "}\n"));
         ignore_errout();
+    }
+
+    void astrequires()
+    {
+        ASSERT_EQUALS("requires{ac::||= ac::", testAst("template <class a> concept b = requires { a::c; } || a::c;"));
+        ASSERT_EQUALS("requires{ac::||= a{b{||",
+                      testAst("template <class a, class b> concept c = requires { a{} || b{}; } || a::c;"));
     }
 
     void astcast() {
