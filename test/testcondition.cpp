@@ -24,6 +24,7 @@
 #include "settings.h"
 #include "tokenize.h"
 
+#include <cstddef>
 #include <limits>
 #include <string>
 #include <vector>
@@ -4781,6 +4782,23 @@ private:
               "        else if (i > n) {}\n"
               "        else {}\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        // #12681
+        check("void f(unsigned u) {\n"
+              "      if (u > 0) {\n"
+              "             u--;\n"
+              "             if (u == 0) {}\n"
+              "      }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("void f(unsigned u) {\n"
+              "      if (u < 0xFFFFFFFF) {\n"
+              "             u++;\n"
+              "             if (u == 0xFFFFFFFF) {}\n"
+              "      }\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }

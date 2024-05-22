@@ -25,6 +25,7 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
+#include <cstddef>
 #include <list>
 #include <sstream>
 #include <string>

@@ -22,6 +22,7 @@
 #include "applicationlist.h"
 #include "aboutdialog.h"
 #include "analyzerinfo.h"
+#include "checkstatistics.h"
 #include "checkthread.h"
 #include "common.h"
 #include "cppcheck.h"
@@ -1593,7 +1594,7 @@ void MainWindow::complianceReport()
 
     mUI->mResults->save(tempResults.fileName(), Report::XMLV2, mCppcheckCfgProductName);
 
-    ComplianceReportDialog dlg(mProjectFile, tempResults.fileName());
+    ComplianceReportDialog dlg(mProjectFile, tempResults.fileName(), mUI->mResults->getStatistics()->getCheckersReport());
     dlg.exec();
 }
 

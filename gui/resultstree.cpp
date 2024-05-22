@@ -21,7 +21,6 @@
 #include "application.h"
 #include "applicationlist.h"
 #include "common.h"
-#include "config.h"
 #include "erroritem.h"
 #include "errorlogger.h"
 #include "errortypes.h"

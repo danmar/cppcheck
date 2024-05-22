@@ -23,6 +23,7 @@
 #include "settings.h"
 #include "tokenize.h"
 
+#include <cstddef>
 #include <string>
 #include <vector>
 

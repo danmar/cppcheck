@@ -24,6 +24,7 @@
 #include "platform.h"
 #include "settings.h"
 
+#include <cstddef>
 #include <string>
 
 class TestIO : public TestFixture {

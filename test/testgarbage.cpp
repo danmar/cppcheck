@@ -23,6 +23,7 @@
 #include "settings.h"
 #include "token.h"
 
+#include <cstddef>
 #include <list>
 #include <string>
 

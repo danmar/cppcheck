@@ -25,7 +25,6 @@
 #include <cstddef>
 #include <list>
 #include <string>
-#include <utility>
 
 class Settings;
 class ErrorLogger;

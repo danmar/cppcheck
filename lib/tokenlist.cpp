@@ -1026,11 +1026,17 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             else
                 compileUnaryOp(tok, state, compileExpression);
             tok = tok2->link()->next();
-        } else if (Token::simpleMatch(tok, "( {") && Token::simpleMatch(tok->linkAt(1)->previous(), "; } )") && !Token::Match(tok->previous(), "%name% (")) {
+        } else if (Token::simpleMatch(tok->previous(), "requires {")) {
+            state.op.push(tok);
+            tok = tok->link()->next();
+            continue;
+        } else if (Token::simpleMatch(tok, "( {") && Token::simpleMatch(tok->linkAt(1)->previous(), "; } )") &&
+                   !Token::Match(tok->previous(), "%name% (")) {
             state.op.push(tok->next());
             tok = tok->link()->next();
             continue;
-        } else if (tok->str() == "(" && (!iscast(tok, state.cpp) || Token::Match(tok->previous(), "if|while|for|switch|catch"))) {
+        } else if (tok->str() == "(" &&
+                   (!iscast(tok, state.cpp) || Token::Match(tok->previous(), "if|while|for|switch|catch"))) {
             Token* tok2 = tok;
             tok = tok->next();
             const bool opPrevTopSquare = !state.op.empty() && state.op.top() && state.op.top()->str() == "[";
@@ -1052,7 +1058,8 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             tok = tok->link()->next();
             if (Token::simpleMatch(tok, "::"))
                 compileBinOp(tok, state, compileTerm);
-        } else if (iscast(tok, state.cpp) && Token::simpleMatch(tok->link(), ") {") && Token::simpleMatch(tok->link()->linkAt(1), "} [")) {
+        } else if (iscast(tok, state.cpp) && Token::simpleMatch(tok->link(), ") {") &&
+                   Token::simpleMatch(tok->link()->linkAt(1), "} [")) {
             Token *cast = tok;
             tok = tok->link()->next();
             Token *tok1 = tok;
@@ -1074,7 +1081,8 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 tok = end->next();
             else
                 throw InternalError(tok, "Syntax error. Unexpected tokens in initializer.", InternalError::AST);
-        } else break;
+        } else
+            break;
     }
 }
 

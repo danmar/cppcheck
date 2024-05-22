@@ -254,15 +254,6 @@ public:
 
     Platform platform;
 
-    /** @brief Experimental: --performance-valueflow-max-time=T */
-    int performanceValueFlowMaxTime = -1;
-
-    /** @brief --performance-valueflow-max-if-count=C */
-    int performanceValueFlowMaxIfCount = -1;
-
-    /** @brief max number of sets of arguments to pass to subfuncions in valueflow */
-    int performanceValueFlowMaxSubFunctionArgs = 256;
-
     /** @brief pid of cppcheck. Intention is that this is set in the main process. */
     int pid;
 
@@ -391,8 +382,42 @@ public:
     /** @brief forced includes given by the user */
     std::list<std::string> userIncludes;
 
-    /** @brief the maximum iterations of valueflow (--valueflow-max-iterations=T) */
-    std::size_t valueFlowMaxIterations = 4;
+    // TODO: adjust all options so 0 means "disabled" and -1 "means "unlimited"
+    struct ValueFlowOptions
+    {
+        /** @brief the maximum iterations to execute */
+        std::size_t maxIterations = 4;
+
+        /** @brief maximum numer if-branches */
+        int maxIfCount = -1;
+
+        /** @brief maximum number of sets of arguments to pass to subfuncions */
+        int maxSubFunctionArgs = 256;
+
+        /** @brief Experimental: maximum execution time */
+        int maxTime = -1;
+
+        /** @brief Control if condition expression analysis is performed */
+        bool doConditionExpressionAnalysis = true;
+
+        /** @brief Maximum performed for-loop count */
+        int maxForLoopCount = 10000;
+
+        /** @brief Maximum performed forward branches */
+        int maxForwardBranches = -1;
+
+        /** @brief Maximum performed alignof recursion */
+        int maxAlignOfRecursion = 100;
+
+        /** @brief Maximum performed sizeof recursion */
+        int maxSizeOfRecursion = 100;
+
+        /** @brief Maximum expression varid depth */
+        int maxExprVarIdDepth = 4;
+    };
+
+    /** @brief The ValueFlow options */
+    ValueFlowOptions vfOptions;
 
     /** @brief Is --verbose given? */
     bool verbose{};

@@ -60,6 +60,7 @@
 static constexpr char ADDON_MISRA[]   = "misra";
 static constexpr char CODING_STANDARD_MISRA_C_2023[] = "misra-c-2023";
 static constexpr char CODING_STANDARD_MISRA_CPP_2008[] = "misra-cpp-2008";
+static constexpr char CODING_STANDARD_MISRA_CPP_2023[] = "misra-cpp-2023";
 static constexpr char CODING_STANDARD_CERT_C[] = "cert-c-2016";
 static constexpr char CODING_STANDARD_CERT_CPP[] = "cert-cpp-2016";
 static constexpr char CODING_STANDARD_AUTOSAR[] = "autosar";
@@ -391,9 +392,15 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
         mUI->mBtnBrowseMisraFile->setEnabled(false);
     }
 
+    mUI->mMisraCpp->setEnabled(mPremium);
+    mUI->mMisraCppVersion->setEnabled(mUI->mMisraCpp->isChecked());
+    connect(mUI->mMisraCpp, &QCheckBox::toggled, mUI->mMisraCppVersion, &QComboBox::setEnabled);
+
+    mUI->mMisraCppVersion->setVisible(mPremium);
+    mUI->mMisraCppVersion->setCurrentIndex(projectFile->getCodingStandards().contains(CODING_STANDARD_MISRA_CPP_2023));
+
     mUI->mCertC2016->setChecked(mPremium && projectFile->getCodingStandards().contains(CODING_STANDARD_CERT_C));
     mUI->mCertCpp2016->setChecked(mPremium && projectFile->getCodingStandards().contains(CODING_STANDARD_CERT_CPP));
-    mUI->mMisraCpp2008->setChecked(mPremium && projectFile->getCodingStandards().contains(CODING_STANDARD_MISRA_CPP_2008));
     mUI->mAutosar->setChecked(mPremium && projectFile->getCodingStandards().contains(CODING_STANDARD_AUTOSAR));
 
     if (projectFile->getCertIntPrecision() <= 0)
@@ -401,7 +408,6 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     else
         mUI->mEditCertIntPrecision->setText(QString::number(projectFile->getCertIntPrecision()));
 
-    mUI->mMisraCpp2008->setEnabled(mPremium);
     mUI->mCertC2016->setEnabled(mPremium);
     mUI->mCertCpp2016->setEnabled(mPremium);
     mUI->mAutosar->setEnabled(mPremium);
@@ -482,8 +488,10 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
         codingStandards << CODING_STANDARD_CERT_CPP;
     if (mPremium && mUI->mMisraVersion->currentIndex() == 1)
         codingStandards << CODING_STANDARD_MISRA_C_2023;
-    if (mUI->mMisraCpp2008->isChecked())
+    if (mUI->mMisraCpp->isChecked() && mUI->mMisraCppVersion->currentIndex() == 0)
         codingStandards << CODING_STANDARD_MISRA_CPP_2008;
+    if (mUI->mMisraCpp->isChecked() && mUI->mMisraCppVersion->currentIndex() == 1)
+        codingStandards << CODING_STANDARD_MISRA_CPP_2023;
     if (mUI->mAutosar->isChecked())
         codingStandards << CODING_STANDARD_AUTOSAR;
     projectFile->setCodingStandards(std::move(codingStandards));

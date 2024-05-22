@@ -22,7 +22,6 @@
 #include <cstddef>
 #include <list>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "cmdlinelogger.h"

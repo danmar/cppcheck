@@ -36,7 +36,7 @@ class TimerResults;
 class Token;
 class TemplateSimplifier;
 class ErrorLogger;
-struct Directive; // IWYU pragma: keep
+struct Directive;
 enum class Severity;
 
 /// @addtogroup Core

@@ -24,8 +24,8 @@
 #include "fixture.h"
 #include "token.h"
 
+#include <cstddef>
 #include <string>
-
 
 class TestSimplifyTokens : public TestFixture {
 public:

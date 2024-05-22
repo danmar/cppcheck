@@ -3414,6 +3414,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     if (!mSettings.buildDir.empty())
         Summaries::create(*this, configuration);
 
+    // TODO: apply this through Settings::ValueFlowOptions
     // TODO: do not run valueflow if no checks are being performed at all - e.g. unusedFunctions only
     const char* disableValueflowEnv = std::getenv("DISABLE_VALUEFLOW");
     const bool doValueFlow = !disableValueflowEnv || (std::strcmp(disableValueflowEnv, "1") != 0);
@@ -4610,8 +4611,9 @@ void Tokenizer::setVarIdPass1()
                         if (!(scopeStack.top().isStructInit || tok->strAt(-1) == "="))
                             variableMap.enterScope();
                     }
+                    const bool isStructInit = scopeStack.top().isStructInit || tok->strAt(-1) == "=" || (initlist && !Token::Match(tok->tokAt(-1), "[)}]"));
+                    scopeStack.emplace(isExecutable, isStructInit, isEnumStart(tok), variableMap.getVarId());
                     initlist = false;
-                    scopeStack.emplace(isExecutable, scopeStack.top().isStructInit || tok->strAt(-1) == "=", isEnumStart(tok), variableMap.getVarId());
                 } else { /* if (tok->str() == "}") */
                     bool isNamespace = false;
                     for (const Token *tok1 = tok->link()->previous(); tok1 && tok1->isName(); tok1 = tok1->previous()) {

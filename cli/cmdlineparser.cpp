@@ -894,12 +894,12 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             // Experimental: limit execution time for extended valueflow analysis. basic valueflow analysis
             // is always executed.
             else if (std::strncmp(argv[i], "--performance-valueflow-max-time=", 33) == 0) {
-                if (!parseNumberArg(argv[i], 33, mSettings.performanceValueFlowMaxTime, true))
+                if (!parseNumberArg(argv[i], 33, mSettings.vfOptions.maxTime, true))
                     return Result::Fail;
             }
 
             else if (std::strncmp(argv[i], "--performance-valueflow-max-if-count=", 37) == 0) {
-                if (!parseNumberArg(argv[i], 37, mSettings.performanceValueFlowMaxIfCount, true))
+                if (!parseNumberArg(argv[i], 37, mSettings.vfOptions.maxIfCount, true))
                     return Result::Fail;
             }
 
@@ -1323,7 +1323,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             }
 
             else if (std::strncmp(argv[i], "--valueflow-max-iterations=", 27) == 0) {
-                if (!parseNumberArg(argv[i], 27, mSettings.valueFlowMaxIterations))
+                if (!parseNumberArg(argv[i], 27, mSettings.vfOptions.maxIterations))
                     return Result::Fail;
             }
 

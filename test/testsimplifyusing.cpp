@@ -26,6 +26,7 @@
 #include "tokenlist.h"
 #include "utils.h"
 
+#include <cstddef>
 #include <sstream>
 #include <string>
 #include <vector>

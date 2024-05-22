@@ -23,6 +23,8 @@
 #include "helpers.h"
 #include "settings.h"
 
+#include <cstddef>
+
 class TestInternal : public TestFixture {
 public:
     TestInternal() : TestFixture("TestInternal") {}

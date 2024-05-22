@@ -19,11 +19,9 @@
 #ifndef filelisterH
 #define filelisterH
 
-#include <cstddef>
 #include <list>
 #include <set>
 #include <string>
-#include <utility>
 
 class PathMatch;
 class FileWithDetails;
