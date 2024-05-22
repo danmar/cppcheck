@@ -35,7 +35,7 @@ class ComplianceReportDialog final : public QDialog
     Q_OBJECT
 
 public:
-    explicit ComplianceReportDialog(ProjectFile* projectFile, QString resultsFile);
+    explicit ComplianceReportDialog(ProjectFile* projectFile, QString resultsFile, QString checkersReport);
     ~ComplianceReportDialog() final;
 
 private slots:
@@ -46,7 +46,8 @@ private:
 
     Ui::ComplianceReportDialog *mUI;
     ProjectFile* mProjectFile;
-    QString mResultsFile;
+    const QString mResultsFile;
+    const QString mCheckersReport;
 };
 
 #endif // COMPLIANCEREPORTDIALOG_H
