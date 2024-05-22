@@ -75,6 +75,9 @@ option(NO_UNIX_SIGNAL_HANDLING "Disable usage of Unix Signal Handling"          
 option(NO_UNIX_BACKTRACE_SUPPORT "Disable usage of Unix Backtrace support"                  OFF)
 option(NO_WINDOWS_SEH       "Disable usage of Windows SEH"                                  OFF)
 
+# TODO: disable by default like make build?
+option(FILESDIR "Hard-coded directory for files to load from"                               OFF)
+
 if(CMAKE_VERSION VERSION_EQUAL "3.16" OR CMAKE_VERSION VERSION_GREATER "3.16")
     set(CMAKE_DISABLE_PRECOMPILE_HEADERS Off CACHE BOOL "Disable precompiled headers")
     # need to disable the prologue or it will be treated like a system header and not emit any warnings
@@ -95,5 +98,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
-set(FILESDIR                       ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME} CACHE STRING "Cppcheck files directory")
-
+string(LENGTH "${FILESDIR}" _filesdir_len)
+# override FILESDIR if it is set or empty
+if(FILESDIR OR ${_filesdir_len} EQUAL 0)
+# TODO: verify that it is an abolute path?
+    set(FILESDIR_DEF                   ${FILESDIR})
+else()
+    set(FILESDIR_DEF                   ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME} CACHE STRING "Cppcheck files directory")
+endif()
