@@ -392,7 +392,6 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
         mUI->mBtnBrowseMisraFile->setEnabled(false);
     }
 
-    mUI->mMisraCpp->setVisible(mPremium);
     mUI->mMisraCpp->setEnabled(mPremium);
     mUI->mMisraCppVersion->setEnabled(mUI->mMisraCpp->isChecked());
     connect(mUI->mMisraCpp, &QCheckBox::toggled, mUI->mMisraCppVersion, &QComboBox::setEnabled);
