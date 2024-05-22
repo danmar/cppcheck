@@ -869,11 +869,42 @@
            </layout>
           </item>
           <item>
-           <widget class="QCheckBox" name="mMisraCpp2008">
-            <property name="text">
-             <string>Misra C++ 2008</string>
-            </property>
-           </widget>
+           <layout class="QHBoxLayout" name="horizontalLayout_11">
+            <item>
+             <widget class="QCheckBox" name="mMisraCpp">
+              <property name="text">
+               <string>Misra C++</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="mMisraCppVersion">
+              <item>
+               <property name="text">
+                <string>2008</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2023</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_5">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
           </item>
           <item>
            <widget class="QCheckBox" name="mCertC2016">
