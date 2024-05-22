@@ -745,10 +745,8 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     scopeList.emplace_back(this, tok, scope, Scope::eUnconditional, tok);
                     scope->nestedList.push_back(&scopeList.back());
                     scope = &scopeList.back();
-                } else if (scope->isExecutable()) {
-                    endInitList.emplace(tok->link(), scope);
                 } else {
-                    tok = tok->link();
+                    endInitList.emplace(tok->link(), scope);
                 }
             } else if (Token::Match(tok, "extern %type%")) {
                 const Token * ftok = tok->next();
