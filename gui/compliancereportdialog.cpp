@@ -87,7 +87,7 @@ static std::vector<std::string> toStdStringList(const QStringList& from) {
 }
 
 ComplianceReportDialog::ComplianceReportDialog(ProjectFile* projectFile, QString resultsFile, QString checkersReport)
-  : QDialog(nullptr),
+    : QDialog(nullptr),
     mUI(new Ui::ComplianceReportDialog),
     mProjectFile(projectFile),
     mResultsFile(std::move(resultsFile)),
