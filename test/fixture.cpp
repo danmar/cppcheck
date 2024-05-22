@@ -455,7 +455,8 @@ TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::library(const char l
     if (REDUNDANT_CHECK && std::find(settings.libraries.cbegin(), settings.libraries.cend(), lib) != settings.libraries.cend())
         throw std::runtime_error("redundant setting: libraries (" + std::string(lib) + ")");
     // TODO: exename is not yet set
-    LOAD_LIB_2_EXE(settings.library, lib, fixture.exename.c_str());
+    if (settings.library.load(fixture.exename.c_str(), lib).errorcode != Library::ErrorCode::OK)
+        throw std::runtime_error("library '" + std::string(lib) + "' not found");
     // strip extension
     std::string lib_s(lib);
     const std::string ext(".cfg");
