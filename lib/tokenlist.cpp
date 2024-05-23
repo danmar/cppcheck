@@ -2180,10 +2180,13 @@ bool TokenList::isCPP() const
     return mLang == Standards::Language::CPP;
 }
 
-void TokenList::setLang(Standards::Language lang)
+void TokenList::setLang(Standards::Language lang, bool force)
 {
     ASSERT_LANG(lang != Standards::Language::None);
-    ASSERT_LANG(mLang == Standards::Language::None);
+    if (!force)
+    {
+        ASSERT_LANG(mLang == Standards::Language::None);
+    }
 
     mLang = lang;
 }
