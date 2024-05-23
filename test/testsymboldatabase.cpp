@@ -5772,7 +5772,7 @@ private:
                       "\n"
                       "template <>\n"
                       "class Test<void, void, void> {\n"
-                       "private:\n"
+                      "private:\n"
                       "  template <class T>\n"
                       "  struct myst {\n"
                       "    T* x;\n"
