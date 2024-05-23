@@ -964,7 +964,7 @@ void ResultsTree::recheckSelectedFiles()
                 askFileDir(currentFile);
                 return;
             }
-            if (Path::isHeader2(currentFile.toStdString())) {
+            if (Path::isHeader(currentFile.toStdString())) {
                 if (!data[FILE0].toString().isEmpty() && !selectedItems.contains(data[FILE0].toString())) {
                     selectedItems<<((!mCheckPath.isEmpty() && (data[FILE0].toString().indexOf(mCheckPath) != 0)) ? (mCheckPath + "/" + data[FILE0].toString()) : data[FILE0].toString());
                     if (!selectedItems.contains(fileNameWithCheckPath))
