@@ -35,7 +35,7 @@ public:
     TestVarID() : TestFixture("TestVarID") {}
 
 private:
-    const Settings settings = settingsBuilder().c(Standards::C89).cpp(Standards::CPPLatest).platform(Platform::Type::Unix64).build();
+    const Settings settings = settingsBuilder().c(Standards::C89).platform(Platform::Type::Unix64).build();
     void run() override {
         TEST_CASE(varid1);
         TEST_CASE(varid2);
