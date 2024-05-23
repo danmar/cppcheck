@@ -56,6 +56,7 @@ private:
         TEST_CASE(cfunction1);
         TEST_CASE(cfunction2);
         TEST_CASE(cfunction3);
+        TEST_CASE(cfunction4);
         TEST_CASE(cfp1);
         TEST_CASE(cfp2);
         TEST_CASE(cfp4);
@@ -413,6 +414,12 @@ private:
                             "typedef const f cf;\n";
         simplifyTypedefC(code);
         ASSERT_EQUALS("[file.c:2]: (portability) It is unspecified behavior to const qualify a function type.\n", errout_str());
+    }
+
+    void cfunction4() {
+        const char code[] = "typedef int (func_t) (int);\n" // #12625
+                            "int f(int*, func_t*, int);\n";
+        ASSERT_EQUALS("int f ( int * , int ( * ) ( int ) , int ) ;", simplifyTypedefC(code));
     }
 
     void cfp1() {
