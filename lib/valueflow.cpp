@@ -8425,7 +8425,7 @@ const Token* ValueFlow::solveExprValue(const Token* expr,
         return expr;
     if (value.isSymbolicValue() && !Token::Match(expr, "+|-"))
         return expr;
-    MathLib::bigint intval;
+    MathLib::bigint intval = 0;
     const Token* binaryTok = parseBinaryIntOp(expr, eval, intval);
     const bool rhs = astIsRHS(binaryTok);
     // If its on the rhs, then -1 multiplication is needed, which is not possible with simple delta analysis used currently for symbolic values
