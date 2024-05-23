@@ -323,7 +323,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     mUI->mBtnSafeClasses->setChecked(projectFile->safeChecks.classes);
     setExcludedPaths(projectFile->getExcludedPaths());
     setLibraries(projectFile->getLibraries());
-    const QString platform = projectFile->getPlatform();
+    const QString& platform = projectFile->getPlatform();
     if (platform.endsWith(".xml")) {
         int i;
         for (i = numberOfBuiltinPlatforms; i < mUI->mComboBoxPlatform->count(); ++i) {
