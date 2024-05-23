@@ -430,6 +430,7 @@ private:
         TEST_CASE(createSymbolDatabaseFindAllScopes5);
         TEST_CASE(createSymbolDatabaseFindAllScopes6);
         TEST_CASE(createSymbolDatabaseFindAllScopes7);
+        TEST_CASE(createSymbolDatabaseFindAllScopes8); // #12761
 
         TEST_CASE(createSymbolDatabaseIncompleteVars);
 
@@ -5611,7 +5612,7 @@ private:
                       "static const int foo = 8;\n"
                       "}\n");
         ASSERT(db);
-        ASSERT_EQUALS(6, db->scopeList.size());
+        ASSERT_EQUALS(9, db->scopeList.size());
         ASSERT_EQUALS(1, db->scopeList.front().varlist.size());
         auto list = db->scopeList;
         list.pop_front();
@@ -5658,12 +5659,12 @@ private:
                       "};\n"
                       "const S S::IN(1);\n");
         ASSERT(db);
-        ASSERT_EQUALS(6, db->scopeList.size());
+        ASSERT_EQUALS(7, db->scopeList.size());
         const Token* const var = Token::findsimplematch(tokenizer.tokens(), "IN (");
         ASSERT(var && var->variable());
         ASSERT_EQUALS(var->variable()->name(), "IN");
-        auto it = db->scopeList.begin();
-        std::advance(it, 4);
+        auto it = db->scopeList.cbegin();
+        std::advance(it, 5);
         ASSERT_EQUALS(it->className, "S");
         ASSERT_EQUALS(var->variable()->scope(), &*it);
     }
@@ -5752,6 +5753,39 @@ private:
             ASSERT(db); // don't crash
             ASSERT_EQUALS("", errout_str());
         }
+    }
+
+    void createSymbolDatabaseFindAllScopes8() // #12761
+    {
+        // There are 2 myst constructors. They should belong to different scopes.
+        GET_SYMBOL_DB("template <class A = void, class B = void, class C = void>\n"
+                      "class Test {\n"
+                      "private:\n"
+                      "  template <class T>\n"
+                      "  struct myst {\n"
+                      "    T* x;\n"
+                      "    myst(T* y) : x(y){};\n"  // <- myst constructor
+                      "  };\n"
+                      "};\n"
+                      "\n"
+                      "template <class A, class B> class Test<A, B, void> {};\n"
+                      "\n"
+                      "template <>\n"
+                      "class Test<void, void, void> {\n"
+                       "private:\n"
+                      "  template <class T>\n"
+                      "  struct myst {\n"
+                      "    T* x;\n"
+                      "    myst(T* y) : x(y){};\n"  // <- myst constructor
+                      "  };\n"
+                      "};");
+        ASSERT(db);
+
+        const Token* myst1 = Token::findsimplematch(tokenizer.tokens(), "myst ( T * y )");
+        const Token* myst2 = Token::findsimplematch(myst1->next(), "myst ( T * y )");
+        ASSERT(myst1);
+        ASSERT(myst2);
+        ASSERT(myst1->scope() != myst2->scope());
     }
 
     void createSymbolDatabaseIncompleteVars()
