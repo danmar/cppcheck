@@ -105,7 +105,7 @@ private:
         constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n<def/>";
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
-        ASSERT(library.functions.empty());
+        ASSERT(library.functions().empty());
     }
 
     void function() const {
@@ -122,8 +122,8 @@ private:
 
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
-        ASSERT_EQUALS(library.functions.size(), 1U);
-        ASSERT(library.functions.at("foo").argumentChecks.empty());
+        ASSERT_EQUALS(library.functions().size(), 1U);
+        ASSERT(library.functions().at("foo").argumentChecks.empty());
         ASSERT(library.isnotnoreturn(tokenList.front()));
     }
 
@@ -252,13 +252,13 @@ private:
 
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
-        ASSERT_EQUALS(0, library.functions["foo"].argumentChecks[1].notuninit);
-        ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[2].notnull);
-        ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[3].formatstr);
-        ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[4].strz);
-        ASSERT_EQUALS(false, library.functions["foo"].argumentChecks[4].optional);
-        ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[5].notbool);
-        ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[5].optional);
+        ASSERT_EQUALS(0, library.functions().at("foo").argumentChecks.at(1).notuninit);
+        ASSERT_EQUALS(true, library.functions().at("foo").argumentChecks.at(2).notnull);
+        ASSERT_EQUALS(true, library.functions().at("foo").argumentChecks.at(3).formatstr);
+        ASSERT_EQUALS(true, library.functions().at("foo").argumentChecks.at(4).strz);
+        ASSERT_EQUALS(false, library.functions().at("foo").argumentChecks.at(4).optional);
+        ASSERT_EQUALS(true, library.functions().at("foo").argumentChecks.at(5).notbool);
+        ASSERT_EQUALS(true, library.functions().at("foo").argumentChecks.at(5).optional);
     }
 
     void function_arg_any() const {
@@ -271,7 +271,7 @@ private:
 
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
-        ASSERT_EQUALS(0, library.functions["foo"].argumentChecks[-1].notuninit);
+        ASSERT_EQUALS(0, library.functions().at("foo").argumentChecks.at(-1).notuninit);
     }
 
     void function_arg_variadic() const {
@@ -285,7 +285,7 @@ private:
 
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
-        ASSERT_EQUALS(0, library.functions["foo"].argumentChecks[-1].notuninit);
+        ASSERT_EQUALS(0, library.functions().at("foo").argumentChecks.at(-1).notuninit);
 
         const char code[] = "foo(a,b,c,d,e);";
         SimpleTokenList tokenList(code);
@@ -540,9 +540,9 @@ private:
 
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
-        ASSERT_EQUALS(library.functions.size(), 2U);
-        ASSERT(library.functions.at("Foo::foo").argumentChecks.empty());
-        ASSERT(library.functions.at("bar").argumentChecks.empty());
+        ASSERT_EQUALS(library.functions().size(), 2U);
+        ASSERT(library.functions().at("Foo::foo").argumentChecks.empty());
+        ASSERT(library.functions().at("bar").argumentChecks.empty());
 
         {
             const char code[] = "Foo::foo();";
@@ -567,7 +567,7 @@ private:
 
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
-        ASSERT_EQUALS(library.functions.size(), 1U);
+        ASSERT_EQUALS(library.functions().size(), 1U);
 
         {
             SimpleTokenizer tokenizer(settings, *this);
@@ -656,7 +656,7 @@ private:
 
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
-        ASSERT(library.functions.empty());
+        ASSERT(library.functions().empty());
 
         const Library::AllocFunc* af = library.getAllocFuncInfo("CreateX");
         ASSERT(af && af->arg == -1);
@@ -699,7 +699,7 @@ private:
 
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
-        ASSERT(library.functions.empty());
+        ASSERT(library.functions().empty());
 
         const Library::AllocFunc* af = library.getAllocFuncInfo("CreateX");
         ASSERT(af && af->arg == 5 && !af->initData);
@@ -718,7 +718,7 @@ private:
 
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
-        ASSERT(library.functions.empty());
+        ASSERT(library.functions().empty());
 
         ASSERT(Library::isresource(library.allocId("CreateX")));
         ASSERT_EQUALS(library.allocId("CreateX"), library.deallocId("DeleteX"));
@@ -815,9 +815,9 @@ private:
         Library library;
         ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
-        const Library::Container& A = library.containers["A"];
-        const Library::Container& B = library.containers["B"];
-        const Library::Container& C = library.containers["C"];
+        const Library::Container& A = library.containers().at("A");
+        const Library::Container& B = library.containers().at("B");
+        const Library::Container& C = library.containers().at("C");
 
         ASSERT_EQUALS(A.type_templateArgNo, 1);
         ASSERT_EQUALS(A.size_templateArgNo, 4);

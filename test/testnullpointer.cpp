@@ -34,6 +34,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "xml.h"
+
 class TestNullPointer : public TestFixture {
 public:
     TestNullPointer() : TestFixture("TestNullPointer") {}
@@ -174,6 +176,12 @@ private:
         TEST_CASE(isPointerDeRefFunctionDecl);
 
         TEST_CASE(ctuTest);
+    }
+
+    static bool loadxmldata(Library &lib, const char xmldata[], std::size_t len)
+    {
+        tinyxml2::XMLDocument doc;
+        return (tinyxml2::XML_SUCCESS == doc.Parse(xmldata, len)) && (lib.load(doc).errorcode == Library::ErrorCode::OK);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -4149,11 +4157,17 @@ private:
 
         // nothing bad..
         {
+            constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                       "<def>\n"
+                                       "  <function name=\"x\">\n"
+                                       "    <arg nr=\"1\"></arg>\n"
+                                       "    <arg nr=\"2\"></arg>\n"
+                                       "    <arg nr=\"3\"></arg>\n"
+                                       "  </function>\n"
+                                       "</def>";
+
             Library library;
-            Library::ArgumentChecks arg;
-            library.functions["x"].argumentChecks[1] = arg;
-            library.functions["x"].argumentChecks[2] = arg;
-            library.functions["x"].argumentChecks[3] = arg;
+            ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
             std::list<const Token *> null;
             CheckNullPointer::parseFunctionCall(*xtok, null, library);
@@ -4162,12 +4176,17 @@ private:
 
         // for 1st parameter null pointer is not ok..
         {
+            constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                       "<def>\n"
+                                       "  <function name=\"x\">\n"
+                                       "    <arg nr=\"1\"><not-null/></arg>\n"
+                                       "    <arg nr=\"2\"></arg>\n"
+                                       "    <arg nr=\"3\"></arg>\n"
+                                       "  </function>\n"
+                                       "</def>";
+
             Library library;
-            Library::ArgumentChecks arg;
-            library.functions["x"].argumentChecks[1] = arg;
-            library.functions["x"].argumentChecks[2] = arg;
-            library.functions["x"].argumentChecks[3] = arg;
-            library.functions["x"].argumentChecks[1].notnull = true;
+            ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
             std::list<const Token *> null;
             CheckNullPointer::parseFunctionCall(*xtok, null, library);

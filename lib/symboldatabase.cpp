@@ -1494,7 +1494,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             fstr.insert(0, ftok->previous()->str() + "::");
             ftok = ftok->tokAt(-2);
         }
-        if (mSettings.library.functions.find(fstr) != mSettings.library.functions.end())
+        if (mSettings.library.functions().find(fstr) != mSettings.library.functions().end())
             continue;
         if (tok->isCpp()) {
             const Token* parent = tok->astParent();
@@ -7536,10 +7536,10 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                             vt.smartPointerType = vt.typeScope->definedType;
                             vt.typeScope = nullptr;
                         }
-                        if (e == "std::make_shared" && mSettings.library.smartPointers.count("std::shared_ptr") > 0)
-                            vt.smartPointer = &mSettings.library.smartPointers.at("std::shared_ptr");
-                        if (e == "std::make_unique" && mSettings.library.smartPointers.count("std::unique_ptr") > 0)
-                            vt.smartPointer = &mSettings.library.smartPointers.at("std::unique_ptr");
+                        if (e == "std::make_shared" && mSettings.library.smartPointers().count("std::shared_ptr") > 0)
+                            vt.smartPointer = &mSettings.library.smartPointers().at("std::shared_ptr");
+                        if (e == "std::make_unique" && mSettings.library.smartPointers().count("std::unique_ptr") > 0)
+                            vt.smartPointer = &mSettings.library.smartPointers().at("std::unique_ptr");
                         vt.type = ValueType::Type::SMART_POINTER;
                         vt.smartPointerTypeToken = tok->astOperand1()->tokAt(3);
                         setValueType(tok, vt);

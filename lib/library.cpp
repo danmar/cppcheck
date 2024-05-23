@@ -285,7 +285,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         mDealloc[n] = temp;
                 } else if (memorynodename == "use")
                     for (const auto& n : names)
-                        functions[n].use = true;
+                        mFunctions[n].use = true;
                 else
                     unknown_elements.insert(memorynodename);
             }
@@ -420,12 +420,12 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             if (!id)
                 return Error(ErrorCode::MISSING_ATTRIBUTE, "id");
 
-            Container& container = containers[id];
+            Container& container = mContainers[id];
 
             const char* const inherits = node->Attribute("inherits");
             if (inherits) {
-                const std::unordered_map<std::string, Container>::const_iterator i = containers.find(inherits);
-                if (i != containers.end())
+                const std::unordered_map<std::string, Container>::const_iterator i = mContainers.find(inherits);
+                if (i != mContainers.end())
                     container = i->second; // Take values from parent and overwrite them if necessary
                 else
                     return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, inherits);
@@ -539,7 +539,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const char *className = node->Attribute("class-name");
             if (!className)
                 return Error(ErrorCode::MISSING_ATTRIBUTE, "class-name");
-            SmartPointer& smartPointer = smartPointers[className];
+            SmartPointer& smartPointer = mSmartPointers[className];
             smartPointer.name = className;
             for (const tinyxml2::XMLElement* smartPointerNode = node->FirstChildElement(); smartPointerNode;
                  smartPointerNode = smartPointerNode->NextSiblingElement()) {
@@ -679,7 +679,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
         return Error(ErrorCode::OK);
 
     // TODO: write debug warning if we modify an existing entry
-    Function& func = functions[name];
+    Function& func = mFunctions[name];
 
     for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
         const std::string functionnodename = functionnode->Name();
@@ -989,7 +989,7 @@ std::string Library::getFunctionName(const Token *ftok, bool &error) const
                     tok = tok->next();
                 }
                 name += "::" + ftok->str();
-                if (functions.find(name) != functions.end() && matchArguments(ftok, name))
+                if (mFunctions.find(name) != mFunctions.end() && matchArguments(ftok, name))
                     return name;
             }
         }
@@ -1050,8 +1050,8 @@ bool Library::isnullargbad(const Token *ftok, int argnr) const
     if (!arg) {
         // scan format string argument should not be null
         const std::string funcname = getFunctionName(ftok);
-        const std::unordered_map<std::string, Function>::const_iterator it = functions.find(funcname);
-        if (it != functions.cend() && it->second.formatstr && it->second.formatstr_scan)
+        const std::unordered_map<std::string, Function>::const_iterator it = mFunctions.find(funcname);
+        if (it != mFunctions.cend() && it->second.formatstr && it->second.formatstr_scan)
             return true;
     }
     return arg && arg->notnull;
@@ -1063,8 +1063,8 @@ bool Library::isuninitargbad(const Token *ftok, int argnr, int indirect, bool *h
     if (!arg) {
         // non-scan format string argument should not be uninitialized
         const std::string funcname = getFunctionName(ftok);
-        const std::unordered_map<std::string, Function>::const_iterator it = functions.find(funcname);
-        if (it != functions.cend() && it->second.formatstr && !it->second.formatstr_scan)
+        const std::unordered_map<std::string, Function>::const_iterator it = mFunctions.find(funcname);
+        if (it != mFunctions.cend() && it->second.formatstr && !it->second.formatstr_scan)
             return true;
     }
     if (hasIndirect && arg && arg->notuninit >= 1)
@@ -1079,7 +1079,7 @@ const Library::AllocFunc* Library::getAllocFuncInfo(const Token *tok) const
     while (Token::simpleMatch(tok, "::"))
         tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
     const std::string funcname = getFunctionName(tok);
-    return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(mAlloc, funcname);
+    return isNotLibraryFunction(tok) && mFunctions.find(funcname) != mFunctions.end() ? nullptr : getAllocDealloc(mAlloc, funcname);
 }
 
 /** get deallocation info for function */
@@ -1088,7 +1088,7 @@ const Library::AllocFunc* Library::getDeallocFuncInfo(const Token *tok) const
     while (Token::simpleMatch(tok, "::"))
         tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
     const std::string funcname = getFunctionName(tok);
-    return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(mDealloc, funcname);
+    return isNotLibraryFunction(tok) && mFunctions.find(funcname) != mFunctions.end() ? nullptr : getAllocDealloc(mDealloc, funcname);
 }
 
 /** get reallocation info for function */
@@ -1097,7 +1097,7 @@ const Library::AllocFunc* Library::getReallocFuncInfo(const Token *tok) const
     while (Token::simpleMatch(tok, "::"))
         tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
     const std::string funcname = getFunctionName(tok);
-    return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(mRealloc, funcname);
+    return isNotLibraryFunction(tok) && mFunctions.find(funcname) != mFunctions.end() ? nullptr : getAllocDealloc(mRealloc, funcname);
 }
 
 /** get allocation id for function */
@@ -1126,8 +1126,8 @@ const Library::ArgumentChecks * Library::getarg(const Token *ftok, int argnr) co
 {
     if (isNotLibraryFunction(ftok))
         return nullptr;
-    const std::unordered_map<std::string, Function>::const_iterator it1 = functions.find(getFunctionName(ftok));
-    if (it1 == functions.cend())
+    const std::unordered_map<std::string, Function>::const_iterator it1 = mFunctions.find(getFunctionName(ftok));
+    if (it1 == mFunctions.cend())
         return nullptr;
     const std::map<int,ArgumentChecks>::const_iterator it2 = it1->second.argumentChecks.find(argnr);
     if (it2 != it1->second.argumentChecks.cend())
@@ -1179,6 +1179,12 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
     return false;
 }
 
+// cppcheck-suppress unusedFunction - used in tests only
+const std::unordered_map<std::string, Library::Container>& Library::containers() const
+{
+    return mContainers;
+}
+
 const Library::Container* Library::detectContainerInternal(const Token* const typeStart, DetectContainer detect, bool* isIterator, bool withoutStd) const
 {
     const Token* firstLinkedTok = nullptr;
@@ -1190,7 +1196,7 @@ const Library::Container* Library::detectContainerInternal(const Token* const ty
         break;
     }
 
-    for (const std::pair<const std::string, Library::Container> & c : containers) {
+    for (const std::pair<const std::string, Library::Container> & c : mContainers) {
         const Container& container = c.second;
         if (container.startPattern.empty())
             continue;
@@ -1303,8 +1309,8 @@ bool Library::matchArguments(const Token *ftok, const std::string &functionName)
     if (functionName.empty())
         return false;
     const int callargs = numberOfArgumentsWithoutAst(ftok);
-    const std::unordered_map<std::string, Function>::const_iterator it = functions.find(functionName);
-    if (it == functions.cend())
+    const std::unordered_map<std::string, Function>::const_iterator it = mFunctions.find(functionName);
+    if (it == mFunctions.cend())
         return false;
     int args = 0;
     int firstOptionalArg = -1;
@@ -1380,15 +1386,15 @@ bool Library::formatstr_function(const Token* ftok) const
     if (isNotLibraryFunction(ftok))
         return false;
 
-    const std::unordered_map<std::string, Function>::const_iterator it = functions.find(getFunctionName(ftok));
-    if (it != functions.cend())
+    const std::unordered_map<std::string, Function>::const_iterator it = mFunctions.find(getFunctionName(ftok));
+    if (it != mFunctions.cend())
         return it->second.formatstr;
     return false;
 }
 
 int Library::formatstr_argno(const Token* ftok) const
 {
-    const std::map<int, Library::ArgumentChecks>& argumentChecksFunc = functions.at(getFunctionName(ftok)).argumentChecks;
+    const std::map<int, Library::ArgumentChecks>& argumentChecksFunc = mFunctions.at(getFunctionName(ftok)).argumentChecks;
     auto it = std::find_if(argumentChecksFunc.cbegin(), argumentChecksFunc.cend(), [](const std::pair<const int, Library::ArgumentChecks>& a) {
         return a.second.formatstr;
     });
@@ -1397,12 +1403,12 @@ int Library::formatstr_argno(const Token* ftok) const
 
 bool Library::formatstr_scan(const Token* ftok) const
 {
-    return functions.at(getFunctionName(ftok)).formatstr_scan;
+    return mFunctions.at(getFunctionName(ftok)).formatstr_scan;
 }
 
 bool Library::formatstr_secure(const Token* ftok) const
 {
-    return functions.at(getFunctionName(ftok)).formatstr_secure;
+    return mFunctions.at(getFunctionName(ftok)).formatstr_secure;
 }
 
 const Library::NonOverlappingData* Library::getNonOverlappingData(const Token *ftok) const
@@ -1427,8 +1433,8 @@ Library::UseRetValType Library::getUseRetValType(const Token *ftok) const
         }
         return Library::UseRetValType::NONE;
     }
-    const std::unordered_map<std::string, Function>::const_iterator it = functions.find(getFunctionName(ftok));
-    if (it != functions.cend())
+    const std::unordered_map<std::string, Function>::const_iterator it = mFunctions.find(getFunctionName(ftok));
+    if (it != mFunctions.cend())
         return it->second.useretval;
     return Library::UseRetValType::NONE;
 }
@@ -1475,8 +1481,8 @@ const Library::Function *Library::getFunction(const Token *ftok) const
 {
     if (isNotLibraryFunction(ftok))
         return nullptr;
-    const std::unordered_map<std::string, Function>::const_iterator it1 = functions.find(getFunctionName(ftok));
-    if (it1 == functions.cend())
+    const std::unordered_map<std::string, Function>::const_iterator it1 = mFunctions.find(getFunctionName(ftok));
+    if (it1 == mFunctions.cend())
         return nullptr;
     return &it1->second;
 }
@@ -1486,8 +1492,8 @@ bool Library::hasminsize(const Token *ftok) const
 {
     if (isNotLibraryFunction(ftok))
         return false;
-    const std::unordered_map<std::string, Function>::const_iterator it = functions.find(getFunctionName(ftok));
-    if (it == functions.cend())
+    const std::unordered_map<std::string, Function>::const_iterator it = mFunctions.find(getFunctionName(ftok));
+    if (it == mFunctions.cend())
         return false;
     return std::any_of(it->second.argumentChecks.cbegin(), it->second.argumentChecks.cend(), [](const std::pair<const int, Library::ArgumentChecks>& a) {
         return !a.second.minsizes.empty();
@@ -1512,29 +1518,33 @@ Library::ArgumentChecks::Direction Library::getArgDirection(const Token* ftok, i
 
 bool Library::ignorefunction(const std::string& functionName) const
 {
-    const std::unordered_map<std::string, Function>::const_iterator it = functions.find(functionName);
-    if (it != functions.cend())
+    const std::unordered_map<std::string, Function>::const_iterator it = mFunctions.find(functionName);
+    if (it != mFunctions.cend())
         return it->second.ignore;
     return false;
 }
+const std::unordered_map<std::string, Library::Function>& Library::functions() const
+{
+    return mFunctions;
+}
 bool Library::isUse(const std::string& functionName) const
 {
-    const std::unordered_map<std::string, Function>::const_iterator it = functions.find(functionName);
-    if (it != functions.cend())
+    const std::unordered_map<std::string, Function>::const_iterator it = mFunctions.find(functionName);
+    if (it != mFunctions.cend())
         return it->second.use;
     return false;
 }
 bool Library::isLeakIgnore(const std::string& functionName) const
 {
-    const std::unordered_map<std::string, Function>::const_iterator it = functions.find(functionName);
-    if (it != functions.cend())
+    const std::unordered_map<std::string, Function>::const_iterator it = mFunctions.find(functionName);
+    if (it != mFunctions.cend())
         return it->second.leakignore;
     return false;
 }
 bool Library::isFunctionConst(const std::string& functionName, bool pure) const
 {
-    const std::unordered_map<std::string, Function>::const_iterator it = functions.find(functionName);
-    if (it != functions.cend())
+    const std::unordered_map<std::string, Function>::const_iterator it = mFunctions.find(functionName);
+    if (it != mFunctions.cend())
         return pure ? it->second.ispure : it->second.isconst;
     return false;
 }
@@ -1551,8 +1561,8 @@ bool Library::isFunctionConst(const Token *ftok) const
         }
         return false;
     }
-    const std::unordered_map<std::string, Function>::const_iterator it = functions.find(getFunctionName(ftok));
-    return (it != functions.cend() && it->second.isconst);
+    const std::unordered_map<std::string, Function>::const_iterator it = mFunctions.find(getFunctionName(ftok));
+    return (it != mFunctions.cend() && it->second.isconst);
 }
 
 bool Library::isnoreturn(const Token *ftok) const
@@ -1710,6 +1720,11 @@ const Token* Library::getContainerFromAction(const Token* tok, Library::Containe
     return nullptr;
 }
 
+const std::unordered_map<std::string, Library::SmartPointer>& Library::smartPointers() const
+{
+    return mSmartPointers;
+}
+
 bool Library::isSmartPointer(const Token* tok) const
 {
     return detectSmartPointer(tok);
@@ -1722,8 +1737,8 @@ const Library::SmartPointer* Library::detectSmartPointer(const Token* tok, bool 
         typestr += tok->str();
         tok = tok->next();
     }
-    auto it = smartPointers.find(typestr);
-    if (it == smartPointers.end())
+    auto it = mSmartPointers.find(typestr);
+    if (it == mSmartPointers.end())
         return nullptr;
     return &it->second;
 }
@@ -1808,4 +1823,86 @@ std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
     Token* expr = tokenList->front()->astOperand1();
     ValueFlow::valueFlowConstantFoldAST(expr, settings);
     return {tokenList, expr};
+}
+
+const Library::AllocFunc* Library::getAllocFuncInfo(const char name[]) const
+{
+    return getAllocDealloc(mAlloc, name);
+}
+
+const Library::AllocFunc* Library::getDeallocFuncInfo(const char name[]) const
+{
+    return getAllocDealloc(mDealloc, name);
+}
+
+// cppcheck-suppress unusedFunction
+int Library::allocId(const char name[]) const
+{
+    const AllocFunc* af = getAllocDealloc(mAlloc, name);
+    return af ? af->groupId : 0;
+}
+
+int Library::deallocId(const char name[]) const
+{
+    const AllocFunc* af = getAllocDealloc(mDealloc, name);
+    return af ? af->groupId : 0;
+}
+
+const std::set<std::string> &Library::markupExtensions() const
+{
+    return mMarkupExtensions;
+}
+
+bool Library::isexporter(const std::string &prefix) const
+{
+    return mExporters.find(prefix) != mExporters.end();
+}
+
+bool Library::isexportedprefix(const std::string &prefix, const std::string &token) const
+{
+    const std::map<std::string, ExportedFunctions>::const_iterator it = mExporters.find(prefix);
+    return (it != mExporters.end() && it->second.isPrefix(token));
+}
+
+bool Library::isexportedsuffix(const std::string &prefix, const std::string &token) const
+{
+    const std::map<std::string, ExportedFunctions>::const_iterator it = mExporters.find(prefix);
+    return (it != mExporters.end() && it->second.isSuffix(token));
+}
+
+bool Library::isreflection(const std::string &token) const
+{
+    return mReflection.find(token) != mReflection.end();
+}
+
+int Library::reflectionArgument(const std::string &token) const
+{
+    const std::map<std::string, int>::const_iterator it = mReflection.find(token);
+    if (it != mReflection.end())
+        return it->second;
+    return -1;
+}
+
+bool Library::isentrypoint(const std::string &func) const
+{
+    return func == "main" || mEntrypoints.find(func) != mEntrypoints.end();
+}
+
+const Library::PodType *Library::podtype(const std::string &name) const
+{
+    const std::unordered_map<std::string, struct PodType>::const_iterator it = mPodTypes.find(name);
+    return (it != mPodTypes.end()) ? &(it->second) : nullptr;
+}
+
+const Library::PlatformType *Library::platform_type(const std::string &name, const std::string & platform) const
+{
+    const std::map<std::string, Platform>::const_iterator it = mPlatforms.find(platform);
+    if (it != mPlatforms.end()) {
+        const PlatformType * const type = it->second.platform_type(name);
+        if (type)
+            return type;
+    }
+
+    const std::map<std::string, PlatformType>::const_iterator it2 = mPlatformTypes.find(name);
+    return (it2 != mPlatformTypes.end()) ? &(it2->second) : nullptr;
 }
