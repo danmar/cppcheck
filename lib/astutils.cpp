@@ -2297,7 +2297,7 @@ static T* getTokenArgumentFunctionImpl(T* tok, int& argn)
             parent = parent->astParent();
 
         // passing variable to subfunction?
-        if (Token::Match(parent, "[*[(,{.]") || Token::Match(parent, "%oror%|&&"))
+        if (Token::Match(parent, "[[(,{.]") || Token::Match(parent, "%oror%|&&") || (parent && parent->isUnaryOp("*")))
             ;
         else if (Token::simpleMatch(parent, ":")) {
             while (Token::Match(parent, "[?:]"))
