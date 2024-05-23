@@ -2167,7 +2167,7 @@ static int getVersion(const QString& nameWithVersion) {
             break;
         if (c == ' ') {
             if (ret > 0 && dot == 1 && nameWithVersion.endsWith(" dev"))
-                return ret * 1000000 + v * 1000 + 500;
+                return (ret * 1000000) + (v * 1000) + 500;
             dot = ret = v = 0;
         }
         else if (c == '.') {
