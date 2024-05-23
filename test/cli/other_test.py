@@ -1465,3 +1465,25 @@ def test_filelist(tmpdir):
     for i in range(1, len(expected)+1):
         lines.remove('{}/11 files checked 0% done'.format(i, len(expected)))
     assert lines == expected
+
+
+def test_markup_lang(tmpdir):
+    test_file_1 = os.path.join(tmpdir, 'test_1.qml')
+    with open(test_file_1, 'wt') as f:
+        pass
+    test_file_2 = os.path.join(tmpdir, 'test_2.cpp')
+    with open(test_file_2, 'wt') as f:
+        pass
+
+    # do not assert processing markup file with enforced language
+    args = [
+        '--library=qt',
+        '--enable=unusedFunction',
+        '--language=c++',
+        '-j1',
+        test_file_1,
+        test_file_2
+    ]
+
+    exitcode, stdout, _ = cppcheck(args)
+    assert exitcode == 0, stdout
