@@ -68,7 +68,8 @@ public:
     /** @return true if the code is C++ */
     bool isCPP() const;
 
-    void setLang(Standards::Language lang);
+    // TODO: get rid of this
+    void setLang(Standards::Language lang, bool force = false);
 
     /**
      * Delete all tokens in given token list
