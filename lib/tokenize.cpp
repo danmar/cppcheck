@@ -132,7 +132,7 @@ const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &end
         if (Token::Match(tok, "%name% (") && tok->isUpperCaseName())
             tok = tok->linkAt(1)->next();
         if (tok && tok->originalName() == "->") { // trailing return type
-            for (tok = tok->next(); tok && !Token::Match(tok, ";|{|override|final"); tok = tok->next())
+            for (tok = tok->next(); tok && !Token::Match(tok, ";|{|override|final|}|)|]"); tok = tok->next())
                 if (tok->link() && Token::Match(tok, "<|[|("))
                     tok = tok->link();
         }
@@ -141,6 +141,14 @@ const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &end
             tok = tok->next();
         if (Token::Match(tok, "= 0|default|delete ;"))
             tok = tok->tokAt(2);
+        if (Token::simpleMatch(tok, "requires")) {
+            for (tok = tok->next(); tok && !Token::Match(tok, ";|{|}|)|]"); tok = tok->next()) {
+                if (tok->link() && Token::Match(tok, "<|[|("))
+                    tok = tok->link();
+                if (Token::simpleMatch(tok, "bool {"))
+                    tok = tok->linkAt(1);
+            }
+        }
         if (tok && tok->str() == ":" && !Token::Match(tok->next(), "%name%|::"))
             return nullptr;
         return (tok && endsWith.find(tok->str()) != std::string::npos) ? tok : nullptr;

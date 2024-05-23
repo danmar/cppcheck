@@ -7671,6 +7671,12 @@ private:
     {
         ASSERT_NO_THROW(tokenizeAndStringify("template<class T, class U>\n"
                                              "struct X { X(U) requires true {} };\n"));
+        ASSERT_NO_THROW(tokenizeAndStringify("template<class T, class U>\n"
+                                             "struct X { X(U) requires bool{std::is_integral<T>{}} {} };\n"));
+        ASSERT_NO_THROW(tokenizeAndStringify("template <typename T>\n"
+                                             "struct test { operator int() requires true { return 0; } };\n"));
+        ASSERT_NO_THROW(tokenizeAndStringify("template <typename T>\n"
+                                             "struct test { operator int() requires bool{std::is_integral<T>{}} { return 0; } };\n"));
     }
 
     void noCrash1() {
