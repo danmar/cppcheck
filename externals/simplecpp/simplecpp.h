@@ -272,6 +272,10 @@ namespace simplecpp {
         /** sizeof(T) */
         std::map<std::string, std::size_t> sizeOfType;
 
+        const std::vector<std::string>& getFiles() const {
+            return files;
+        }
+
     private:
         void combineOperators();
 
@@ -320,13 +324,14 @@ namespace simplecpp {
      * On the command line these are configured by -D, -U, -I, --include, -std
      */
     struct SIMPLECPP_LIB DUI {
-        DUI() : clearIncludeCache(false) {}
+        DUI() : clearIncludeCache(false), removeComments(false) {}
         std::list<std::string> defines;
         std::set<std::string> undefined;
         std::list<std::string> includePaths;
         std::list<std::string> includes;
         std::string std;
         bool clearIncludeCache;
+        bool removeComments; /** remove comment tokens from included files */
     };
 
     SIMPLECPP_LIB long long characterLiteralToLL(const std::string& str);
