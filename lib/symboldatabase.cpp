@@ -6194,10 +6194,9 @@ const Scope *SymbolDatabase::findScope(const Token *tok, const Scope *startScope
         if (tok->strAt(1) == "::") {
             scope = scope->findRecordInNestedList(tok->str());
             tok = tok->tokAt(2);
-        } else if (tok->strAt(1) == "<" && Token::simpleMatch(tok->linkAt(1), "> ::")) {
-            scope = scope->findRecordInNestedList(tok->str());
-            tok = tok->linkAt(1)->tokAt(2);
-        } else
+        } else if (tok->strAt(1) == "<")
+            return nullptr;
+        else
             return scope->findRecordInNestedList(tok->str());
     }
 
