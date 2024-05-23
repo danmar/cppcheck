@@ -936,7 +936,6 @@ private:
             constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                        "<def format=\"42\">\n"
                                        "</def>";
-            Library library;
             LOADLIBERROR(xmldata, Library::ErrorCode::UNSUPPORTED_FORMAT);
         }
     }
