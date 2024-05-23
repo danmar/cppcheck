@@ -71,6 +71,43 @@ def test_preprocessor_error(tmpdir):
     assert exitcode != 0
 
 
+ANSI_BOLD = "\x1b[1m"
+ANSI_FG_RED = "\x1b[31m"
+ANSI_FG_DEFAULT = "\x1b[39m"
+ANSI_FG_RESET = "\x1b[0m"
+
+
+@pytest.mark.parametrize("env,color_expected", [({"CLICOLOR_FORCE":"1"}, True), ({"NO_COLOR": "1", "CLICOLOR_FORCE":"1"}, False)])
+def test_color_non_tty(tmpdir, env, color_expected):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write('#error test\nx=1;\n')
+    exitcode, _, stderr = cppcheck([test_file], env=env)
+
+    assert exitcode == 0
+    assert stderr
+    assert (ANSI_BOLD in stderr) == color_expected
+    assert (ANSI_FG_RED in stderr)  == color_expected
+    assert (ANSI_FG_DEFAULT in stderr) == color_expected
+    assert (ANSI_FG_RESET in stderr) == color_expected
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="TTY not supported in Windows")
+@pytest.mark.parametrize("env,color_expected", [({}, True), ({"NO_COLOR": "1"}, False)])
+def test_color_tty(tmpdir, env, color_expected):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write('#error test\nx=1;\n')
+    exitcode, _, stderr = cppcheck([test_file], env=env, tty=True)
+
+    assert exitcode == 0
+    assert stderr
+    assert (ANSI_BOLD in stderr) == color_expected
+    assert (ANSI_FG_RED in stderr) == color_expected
+    assert (ANSI_FG_DEFAULT in stderr) == color_expected
+    assert (ANSI_FG_RESET in stderr) == color_expected
+
+
 def test_invalid_library(tmpdir):
     args = ['--library=none', '--library=posix', '--library=none2', 'file.c']
 

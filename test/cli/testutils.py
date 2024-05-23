@@ -1,7 +1,10 @@
+import errno
 import logging
 import os
+import select
 import signal
 import subprocess
+import time
 
 # Create Cppcheck project file
 import sys
@@ -72,8 +75,82 @@ def __lookup_cppcheck_exe():
     return exe_path
 
 
+def __run_subprocess_tty(args, env=None, cwd=None, timeout=None):
+    import pty
+    mo, so = pty.openpty()
+    me, se = pty.openpty() 
+    p = subprocess.Popen(args, stdout=so, stderr=se, env=env, cwd=cwd)
+    for fd in [so, se]:
+        os.close(fd)
+        
+    select_timeout = 0.04  # seconds
+    readable = [mo, me]
+    result = {mo: b'', me: b''}
+    try:
+        start_time = time.monotonic()
+        while readable:
+            ready, _, _ = select.select(readable, [], [], select_timeout)
+            for fd in ready:
+                try:
+                    data = os.read(fd, 512)
+                except OSError as e:
+                    if e.errno != errno.EIO:
+                        raise
+                    # EIO means EOF on some systems
+                    readable.remove(fd)
+                else:
+                    if not data: # EOF
+                        readable.remove(fd)
+                    result[fd] += data
+            if timeout is not None and (time.monotonic() - start_time):
+                break
+    finally:
+        for fd in [mo, me]:
+            os.close(fd)
+        if p.poll() is None:
+            p.kill()
+        return_code = p.wait()
+        
+    stdout = result[mo]
+    stderr = result[me]        
+    return return_code, stdout, stderr
+
+        
+def __run_subprocess(args, env=None, cwd=None, timeout=None):
+    p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, cwd=cwd)
+    
+    try:
+        comm = p.communicate(timeout=timeout)
+        return_code = p.returncode
+        p = None
+    except subprocess.TimeoutExpired:
+        import psutil
+        # terminate all the child processes
+        child_procs = psutil.Process(p.pid).children(recursive=True)
+        if len(child_procs) > 0:
+            for child in child_procs:
+                child.terminate()
+            try:
+                # call with timeout since it might be stuck
+                p.communicate(timeout=5)
+                p = None
+            except subprocess.TimeoutExpired:
+                pass
+        raise
+    finally:
+        if p:
+            # sending the signal to the process groups causes the parent Python process to terminate as well
+            #os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
+            p.terminate()
+            comm = p.communicate()
+            
+    stdout = comm[0]
+    stderr = comm[1]    
+    return return_code, stdout, stderr
+
+
 # Run Cppcheck with args
-def cppcheck(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_exe=None, timeout=None):
+def cppcheck(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_exe=None, timeout=None, tty=False):
     exe = cppcheck_exe if cppcheck_exe else __lookup_cppcheck_exe()
     assert exe is not None, 'no cppcheck binary found'
 
@@ -113,33 +190,13 @@ def cppcheck(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_exe
             args.append(arg_executor)
 
     logging.info(exe + ' ' + ' '.join(args))
-    p = subprocess.Popen([exe] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, cwd=cwd)
-    try:
-        comm = p.communicate(timeout=timeout)
-        return_code = p.returncode
-        p = None
-    except subprocess.TimeoutExpired:
-        import psutil
-        # terminate all the child processes
-        child_procs = psutil.Process(p.pid).children(recursive=True)
-        if len(child_procs) > 0:
-            for child in child_procs:
-                child.terminate()
-            try:
-                # call with timeout since it might be stuck
-                p.communicate(timeout=5)
-                p = None
-            except subprocess.TimeoutExpired:
-                pass
-        raise
-    finally:
-        if p:
-            # sending the signal to the process groups causes the parent Python process to terminate as well
-            #os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
-            p.terminate()
-            comm = p.communicate()
-    stdout = comm[0].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
-    stderr = comm[1].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
+    
+    run_subprocess = __run_subprocess_tty if tty else __run_subprocess
+    return_code, stdout, stderr = run_subprocess([exe] + args, env=env, cwd=cwd, timeout=timeout)
+        
+    stdout = stdout.decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
+    stderr = stderr.decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
+    
     if remove_checkers_report:
         if stderr.find('[checkersReport]\n') > 0:
             start_id = stderr.find('[checkersReport]\n')

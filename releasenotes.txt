@@ -17,4 +17,4 @@ Deprecations:
 -
 
 Other:
--
+- Add support for 'CLICOLOR_FORCE'/'NO_COLOR' environment variables to force/disable ANSI color output for diagnostics.
