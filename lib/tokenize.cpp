@@ -509,7 +509,7 @@ const Token *Tokenizer::processFunc(const Token *tok2, bool inOperator) const
                 tok2 = tok2->next();
 
                 while (Token::Match(tok2, "*|&") &&
-                       !Token::Match(tok2->next(), ")|>"))
+                       !Token::Match(tok2->next(), "[)>,]"))
                     tok2 = tok2->next();
 
                 // skip over namespace
