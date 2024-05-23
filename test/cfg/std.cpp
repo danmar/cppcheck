@@ -4948,6 +4948,12 @@ void smartPtr_get2(std::vector<std::unique_ptr<int>>& v)
     }
 }
 
+bool smartPtr_get3(size_t n, size_t i) { // #12748
+	std::unique_ptr<int[]> buf = std::make_unique<int[]>(n);
+	const int* p = buf.get() + i;
+	return p != nullptr;
+}
+
 void smartPtr_reset()
 {
     std::unique_ptr<int> p(new int());
