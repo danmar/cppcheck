@@ -3613,6 +3613,16 @@ private:
               "    });\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 's' can be declared as reference to const\n", errout_str());
+
+        check("struct S {\n" // #12762
+              "    std::vector<int> m;\n"
+              "    void f();\n"
+              "};\n"
+              "void S::f() {\n"
+              "    std::vector<int>& r = m;\n"
+              "    g(r[0] * 2);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'r' can be declared as reference to const\n", errout_str());
     }
 
     void constParameterCallback() {
