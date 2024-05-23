@@ -50,11 +50,7 @@ namespace tinyxml2 {
  * @brief Library definitions handling
  */
 class CPPCHECKLIB Library {
-    // TODO: get rid of this
-    friend class TestSymbolDatabase; // For testing only
-    friend class TestSingleExecutorBase; // For testing only
-    friend class TestThreadExecutorBase; // For testing only
-    friend class TestProcessExecutorBase; // For testing only
+    friend struct LibraryHelper; // for testing
 
 public:
     Library() = default;
@@ -76,7 +72,6 @@ public:
     };
 
     Error load(const char exename[], const char path[]);
-    Error load(const tinyxml2::XMLDocument &doc);
 
     struct AllocFunc {
         int groupId;
@@ -466,6 +461,8 @@ public:
     bool hasAnyTypeCheck(const std::string& typeName) const;
 
 private:
+    Error load(const tinyxml2::XMLDocument &doc);
+
     // load a <function> xml node
     Error loadFunction(const tinyxml2::XMLElement * const node, const std::string &name, std::set<std::string> &unknown_elements);
 
