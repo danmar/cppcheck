@@ -544,6 +544,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 }
             }
 
+            else if (std::strcmp(argv[i], "--cpp-header-probe") == 0) {
+                mSettings.cppHeaderProbe = true;
+            }
+
             // Show --debug output after the first simplifications
             else if (std::strcmp(argv[i], "--debug") == 0 ||
                      std::strcmp(argv[i], "--debug-normal") == 0)
@@ -885,6 +889,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             else if (std::strncmp(argv[i], "--max-ctu-depth=", 16) == 0) {
                 if (!parseNumberArg(argv[i], 16, mSettings.maxCtuDepth))
                     return Result::Fail;
+            }
+
+            else if (std::strcmp(argv[i], "--no-cpp-header-probe") == 0) {
+                mSettings.cppHeaderProbe = false;
             }
 
             // Write results in file

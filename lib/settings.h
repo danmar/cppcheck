@@ -167,6 +167,9 @@ public:
     /** cppcheck.cfg: About text */
     std::string cppcheckCfgAbout;
 
+    /** @brief check Emacs marker to detect extension-less and *.h files as C++ */
+    bool cppHeaderProbe{};
+
     /** @brief Are we running from DACA script? */
     bool daca{};
 

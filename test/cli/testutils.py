@@ -220,7 +220,7 @@ def assert_cppcheck(args, ec_exp=None, out_exp=None, err_exp=None, env=None):
         assert exitcode == ec_exp, stdout
     if out_exp is not None:
         out_lines = stdout.splitlines()
-        assert out_lines == out_exp, stdout
+        assert out_lines == out_exp, out_lines
     if err_exp is not None:
         err_lines = stderr.splitlines()
-        assert err_lines == err_exp, stderr
+        assert err_lines == err_exp, err_lines

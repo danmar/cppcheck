@@ -387,6 +387,10 @@ private:
         TEST_CASE(checkLevelNormal);
         TEST_CASE(checkLevelExhaustive);
         TEST_CASE(checkLevelUnknown);
+        TEST_CASE(cppHeaderProbe);
+        TEST_CASE(cppHeaderProbe2);
+        TEST_CASE(noCppHeaderProbe);
+        TEST_CASE(noCppHeaderProbe2);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -2608,6 +2612,34 @@ private:
         const char * const argv[] = {"cppcheck", "--check-level=default", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unknown '--check-level' value 'default'.\n", logger->str());
+    }
+
+    void cppHeaderProbe() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--cpp-header-probe", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings->cppHeaderProbe);
+    }
+
+    void cppHeaderProbe2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--no-cpp-header-probe", "--cpp-header-probe", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS(true, settings->cppHeaderProbe);
+    }
+
+    void noCppHeaderProbe() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--no-cpp-header-probe", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(false, settings->cppHeaderProbe);
+    }
+
+    void noCppHeaderProbe2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--cpp-header-probe", "--no-cpp-header-probe", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS(false, settings->cppHeaderProbe);
     }
 
     void ignorepaths1() {

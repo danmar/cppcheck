@@ -163,10 +163,11 @@ public:
     /**
      * @brief Identify the language based on the file extension
      * @param path filename to check. path info is optional
+     * @param cppHeaderProbe check optional Emacs marker to identify extension-less and *.h files as C++
      * @param header if provided indicates if the file is a header
      * @return the language type
      */
-    static Standards::Language identify(const std::string &path, bool *header = nullptr);
+    static Standards::Language identify(const std::string &path, bool cppHeaderProbe, bool *header = nullptr);
 
     /**
      * @brief Get filename without a directory path part.

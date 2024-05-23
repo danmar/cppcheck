@@ -684,7 +684,7 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
     dui.includes = mSettings.userIncludes;  // --include
     // TODO: use mSettings.standards.stdValue instead
     // TODO: error out on unknown language?
-    const Standards::Language lang = Path::identify(filename);
+    const Standards::Language lang = Path::identify(filename, mSettings.cppHeaderProbe);
     if (lang == Standards::Language::CPP) {
         dui.std = mSettings.standards.getCPP();
         splitcfg(mSettings.platform.getLimitsDefines(Standards::getCPP(dui.std)), dui.defines, "");

@@ -182,7 +182,7 @@ static void createDumpFile(const Settings& settings,
     case Standards::Language::None:
     {
         // TODO: error out on unknown language?
-        const Standards::Language lang = Path::identify(filename);
+        const Standards::Language lang = Path::identify(filename, settings.cppHeaderProbe);
         if (lang == Standards::Language::CPP)
             language = " language=\"cpp\"";
         else if (lang == Standards::Language::C)
@@ -420,7 +420,7 @@ unsigned int CppCheck::checkClang(const std::string &path)
         mErrorLogger.reportOut(std::string("Checking ") + path + " ...", Color::FgGreen);
 
     // TODO: this ignores the configured language
-    const bool isCpp = Path::identify(path) == Standards::Language::CPP;
+    const bool isCpp = Path::identify(path, mSettings.cppHeaderProbe) == Standards::Language::CPP;
     const std::string langOpt = isCpp ? "-x c++" : "-x c";
     const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, emptyString);
     const std::string clangcmd = analyzerInfo + ".clang-cmd";
@@ -784,7 +784,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             TokenList tokenlist(&mSettings);
             std::istringstream istr2(code);
             // TODO: asserts when file has unknown extension
-            tokenlist.createTokens(istr2, Path::identify(*files.begin())); // TODO: check result?
+            tokenlist.createTokens(istr2, Path::identify(*files.begin(), false)); // TODO: check result?
             executeRules("define", tokenlist);
         }
 #endif
