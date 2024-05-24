@@ -785,3 +785,8 @@ void unreadVariable_QMapIterator(QMap<QString, QObject*>& m)
         it.value() = new QObject();
     }
 }
+
+void constVariablePointer_QVector(QVector<int*>& qv, int* p)
+{
+    qv.push_back(p); // #12661
+}
