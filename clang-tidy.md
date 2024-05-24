@@ -34,9 +34,7 @@ These are coding guidelines we do not follow. Some of the checks might be explic
 `readability-braces-around-statements`<br/>
 `readability-isolate-declaration`<br/>
 `modernize-use-trailing-return-type`<br/>
-`modernize-use-auto`<br/>
 `readability-uppercase-literal-suffix`<br/>
-`readability-else-after-return`<br/>
 `readability-identifier-length`<br/>
 
 These do not reflect the style we are (currently) enforcing.
@@ -73,7 +71,7 @@ This leads to a mismatch of raw string literals and regular ones and does reduce
 
 `-clang-analyzer-*`<br/>
 
-Disabled because of false positives (needs to file an upstream bug report).
+Disabled because of false positives (need to file upstream bug reports). The checks are also quite time consuming.
 
 `misc-non-private-member-variables-in-classes`<br/>
 
@@ -82,7 +80,6 @@ We intentionally use this.
 `misc-no-recursion`<br/>
 
 Leads to lots of "false positives". This seem to enforce a coding guidelines of certain codebases.
-
 
 `bugprone-easily-swappable-parameters`<br/>
 
@@ -122,7 +119,6 @@ We run this separately via `clang-include-cleaner` in the `iwyu.yml` workflow as
 `misc-throw-by-value-catch-by-reference`<br/>
 `readability-avoid-const-params-in-decls`<br/>
 `bugprone-signed-char-misuse`<br/>
-`readability-redundant-access-specifiers`<br/>
 `concurrency-mt-unsafe`<br/>
 `misc-use-anonymous-namespace`<br/>
 `performance-avoid-endl`<br/>
@@ -152,6 +148,10 @@ To be evaluated (need to enable explicitly).
 `modernize-use-nodiscard`</br>
 
 These apply to codebases which use later standards then C++11 (C++17 is used when building with Qt6) so we cannot simply apply them.
+
+`modernize-use-auto`<br/>
+
+This cannot be enabled as it might lead to changes in the constness of iterators - see https://github.com/llvm/llvm-project/issues/84324.
 
 ### Disabled for performance reasons
 
@@ -183,7 +183,7 @@ We are not using SIMD instructions and it suggests to use `std::experiemental::`
 
 It does not seem to produce any warnings for us (needs to be investigated) and it is one of the more expensive checks.
 
-`misc-unused-using-decls`
+`misc-unused-using-decls`<br/>
 
 This is the most expensive check for several files and it is providing much in terms of code quality. Reported upstream as https://github.com/llvm/llvm-project/issues/72300.
 

@@ -2055,7 +2055,7 @@ static void valueFlowEnumValue(SymbolDatabase & symboldatabase, const Settings &
 
         for (Enumerator & enumerator : scope.enumeratorList) {
             if (enumerator.start) {
-                Token* rhs = const_cast<Token*>(enumerator.start->previous()->astOperand2());
+                auto* rhs = const_cast<Token*>(enumerator.start->previous()->astOperand2());
                 ValueFlow::valueFlowConstantFoldAST(rhs, settings);
                 if (rhs && rhs->hasKnownIntValue()) {
                     enumerator.value = rhs->values().front().intvalue;
@@ -5433,7 +5433,7 @@ static void valueFlowConditionExpressions(const TokenList &tokenlist, const Symb
         if (settings.daca && !settings.vfOptions.doConditionExpressionAnalysis)
             continue;
 
-        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+        for (auto* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "if ("))
                 continue;
             Token* parenTok = tok->next();
@@ -7728,7 +7728,7 @@ static void valueFlowSwitchVariable(const TokenList &tokenlist, const SymbolData
                     values.back().condition = tok;
                     values.back().errorPath.emplace_back(tok, "case " + tok->next()->str() + ": " + vartok->str() + " is " + tok->next()->str() + " here.");
                 }
-                for (std::list<ValueFlow::Value>::const_iterator val = values.cbegin(); val != values.cend(); ++val) {
+                for (auto val = values.cbegin(); val != values.cend(); ++val) {
                     valueFlowReverse(tokenlist,
                                      const_cast<Token*>(scope.classDef),
                                      vartok,
@@ -7829,7 +7829,7 @@ static void valueFlowSubFunction(TokenList& tokenlist, SymbolDatabase& symboldat
         const Function* function = scope->function;
         if (!function)
             continue;
-        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+        for (auto* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->isKeyword() || !Token::Match(tok, "%name% ("))
                 continue;
 
@@ -8131,7 +8131,7 @@ static Token* findStartToken(const Variable* var, Token* start, const Library& l
         scope = scope->nestedIn;
     if (!scope)
         return start;
-    Token* tok = const_cast<Token*>(scope->bodyStart);
+    auto* tok = const_cast<Token*>(scope->bodyStart);
     if (!tok)
         return start;
     if (Token::simpleMatch(tok->tokAt(-2), "} else {"))
@@ -8930,7 +8930,7 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
         }
         if (!staticSize && nonLocal)
             continue;
-        Token* nameToken = const_cast<Token*>(var->nameToken());
+        auto* nameToken = const_cast<Token*>(var->nameToken());
         if (nameToken->hasKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
             continue;
         if (!staticSize) {
