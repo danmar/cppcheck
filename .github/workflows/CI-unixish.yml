@@ -303,6 +303,12 @@ jobs:
           make -j$(nproc)
           ./test-projectfile
           popd
+          pushd gui/test/resultstree
+          qmake CONFIG+=debug CONFIG+=ccache
+          make -j$(nproc)
+          export QT_QPA_PLATFORM=offscreen
+          ./test-resultstree
+          popd
           pushd gui/test/translationhandler
           qmake CONFIG+=debug CONFIG+=ccache
           make -j$(nproc)
