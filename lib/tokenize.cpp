@@ -3862,7 +3862,7 @@ void Tokenizer::arraySizeAfterValueFlow()
         }
         if (maxIndex >= 0) {
             // insert array size
-            Token* tok = const_cast<Token*>(var->nameToken()->next());
+            auto* tok = const_cast<Token*>(var->nameToken()->next());
             tok->insertToken(std::to_string(maxIndex + 1));
             // ast
             tok->astOperand2(tok->next());
