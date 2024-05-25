@@ -8749,7 +8749,9 @@ void Tokenizer::findGarbageCode() const
         }
         if (isCPP() && tok->str() == "namespace" && tok->tokAt(-1)) {
             if (!Token::Match(tok->tokAt(-1), ";|{|}|using|inline")) {
-                if (tok->linkAt(-1) && tok->linkAt(-1)->tokAt(-1) && tok->linkAt(-1)->tokAt(-1)->isUpperCaseName())
+                if (tok->tokAt(-1)->isUpperCaseName())
+                    unknownMacroError(tok->tokAt(-1));
+                else if (tok->linkAt(-1) && tok->linkAt(-1)->tokAt(-1) && tok->linkAt(-1)->tokAt(-1)->isUpperCaseName())
                     unknownMacroError(tok->linkAt(-1)->tokAt(-1));
                 else
                     syntaxError(tok);
