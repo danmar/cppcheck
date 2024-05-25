@@ -19,7 +19,13 @@ A manual is available [online](https://cppcheck.sourceforge.io/manual.pdf).
 Cppcheck is a hobby project with limited resources. You can help us by donating CPU (1 core or as many as you like). It is simple:
 
  1. Download (and extract) Cppcheck source code.
- 2. Run script: `python cppcheck/tools/donate-cpu.py`.
+ 2. Run:
+    ```
+    cd cppcheck/
+    virtualenv .env
+    .env/bin/pip install -r tools/donate-cpu-requirements.txt
+    .env/bin/python tools/donate-cpu.py
+    ```
 
 The script will analyse debian source code and upload the results to a cppcheck server. We need these results both to improve Cppcheck and to detect regressions.
 
