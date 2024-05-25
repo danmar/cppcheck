@@ -24,6 +24,7 @@
 #include "ctu.h"
 #include "errorlogger.h"
 #include "errortypes.h"
+#include "findtoken.h"
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"
@@ -279,47 +280,72 @@ static bool isNullablePointer(const Token* tok)
     return false;
 }
 
-void CheckNullPointer::nullPointerByDeRefAndChec()
+static bool isPointerUnevaluated(const Token *tok)
+{
+    if (isUnevaluated(tok))
+        return true;
+
+    while (tok) {
+        if (isUnevaluated(tok->previous()))
+            return true;
+
+        tok = tok->astParent();
+    }
+    return false;
+}
+
+
+void CheckNullPointer::nullPointerByDeRefAndCheck()
 {
     const bool printInconclusive = (mSettings->certainty.isEnabled(Certainty::inconclusive));
 
-    for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-        if (isUnevaluated(tok)) {
-            tok = tok->linkAt(1);
-            continue;
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope * scope : symbolDatabase->functionScopes) {
+        auto pred = [printInconclusive](const Token* tok) -> bool {
+            if (!tok)
+                return false;
+
+            if (Token::Match(tok, "%num%|%char%|%str%"))
+                return false;
+
+            if (!isNullablePointer(tok) ||
+                (tok->str() == "." && isNullablePointer(tok->astOperand2()) && tok->astOperand2()->getValue(0))) // avoid duplicate warning
+                return false;
+
+            // Can pointer be NULL?
+            const ValueFlow::Value *value = tok->getValue(0);
+            if (!value)
+                return false;
+
+            if (!printInconclusive && value->isInconclusive())
+                return false;
+
+            return true;
+        };
+        std::vector<const Token *> tokens = findTokensSkipDeadCode(mSettings->library, scope->bodyStart, scope->bodyEnd, pred);
+        for (const Token *tok : tokens) {
+            if (isPointerUnevaluated(tok))
+                continue;
+
+            const ValueFlow::Value *value = tok->getValue(0);
+
+            // Pointer dereference.
+            bool unknown = false;
+            if (!isPointerDeRef(tok, unknown)) {
+                if (unknown)
+                    nullPointerError(tok, tok->expressionString(), value, true);
+                continue;
+            }
+
+            nullPointerError(tok, tok->expressionString(), value, value->isInconclusive());
         }
-
-        if (Token::Match(tok, "%num%|%char%|%str%"))
-            continue;
-
-        if (!isNullablePointer(tok) ||
-            (tok->str() == "." && isNullablePointer(tok->astOperand2()) && tok->astOperand2()->getValue(0))) // avoid duplicate warning
-            continue;
-
-        // Can pointer be NULL?
-        const ValueFlow::Value *value = tok->getValue(0);
-        if (!value)
-            continue;
-
-        if (!printInconclusive && value->isInconclusive())
-            continue;
-
-        // Pointer dereference.
-        bool unknown = false;
-        if (!isPointerDeRef(tok,unknown)) {
-            if (unknown)
-                nullPointerError(tok, tok->expressionString(), value, true);
-            continue;
-        }
-
-        nullPointerError(tok, tok->expressionString(), value, value->isInconclusive());
     }
 }
 
 void CheckNullPointer::nullPointer()
 {
     logChecker("CheckNullPointer::nullPointer");
-    nullPointerByDeRefAndChec();
+    nullPointerByDeRefAndCheck();
 }
 
 namespace {
