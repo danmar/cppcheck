@@ -2205,6 +2205,8 @@ static Analyzer::Result valueFlowForward(Token* startToken,
     const Function* f = Scope::nestedInFunction(startToken->scope());
     if (f && f->functionScope)
         endToken = f->functionScope->bodyEnd;
+    if (!endToken && exprTok && exprTok->variable() && !exprTok->variable()->isLocal())
+        endToken = startToken->scope()->bodyEnd;
     return valueFlowForward(startToken, endToken, exprTok, std::move(v), tokenlist, errorLogger, settings, loc);
 }
 
