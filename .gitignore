@@ -142,3 +142,6 @@ compile_commands.json
 
 # cppcheck-htmlreport auto files
 /htmlreport/cppcheck_htmlreport/run.py
+
+# GDB configuration
+.gdbinit
