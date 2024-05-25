@@ -250,9 +250,16 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     }
 
     // Partially refresh the tree: Unhide file item if necessary
-    if (!hide) {
-        setRowHidden(fileItem->row(), QModelIndex(), !mShowSeverities.isShown(item.severity));
+    setRowHidden(stditem->row(), fileItem->index(), hide || !mShowSeverities.isShown(item.severity));
+
+    bool hideFile = true;
+    for (int i = 0; i < fileItem->rowCount(); ++i) {
+        if (!isRowHidden(i, fileItem->index())) {
+            hideFile = false;
+        }
     }
+    setRowHidden(fileItem->row(), QModelIndex(), hideFile);
+
     return true;
 }
 
