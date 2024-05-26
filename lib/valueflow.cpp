@@ -8103,25 +8103,6 @@ static void valueFlowSafeFunctions(const TokenList& tokenlist, const SymbolDatab
     }
 }
 
-static void valueFlowDebug(TokenList& tokenlist, ErrorLogger& errorLogger, const Settings& settings)
-{
-    if (!settings.debugnormal && !settings.debugwarnings)
-        return;
-    for (Token* tok = tokenlist.front(); tok; tok = tok->next()) {
-        if (tok->getTokenDebug() != TokenDebug::ValueFlow)
-            continue;
-        if (tok->astParent() && tok->astParent()->getTokenDebug() == TokenDebug::ValueFlow)
-            continue;
-        for (const ValueFlow::Value& v : tok->values()) {
-            std::string msg = "The value is " + debugString(v);
-            ErrorPath errorPath = v.errorPath;
-            errorPath.insert(errorPath.end(), v.debugPath.cbegin(), v.debugPath.cend());
-            errorPath.emplace_back(tok, "");
-            errorLogger.reportErr({errorPath, &tokenlist, Severity::debug, "valueFlow", msg, CWE{0}, Certainty::normal});
-        }
-    }
-}
-
 const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(Token *expr, const Settings &settings)
 {
     if (expr && expr->values().empty()) {
@@ -8392,7 +8373,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
 
     runner.run_once({
         VFA(valueFlowDynamicBufferSize(tokenlist, symboldatabase, errorLogger, settings)),
-        VFA(valueFlowDebug(tokenlist, errorLogger, settings)),
+        VFA(analyzeDebug(tokenlist, errorLogger, settings)),
     });
 }
 
