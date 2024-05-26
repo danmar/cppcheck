@@ -74,6 +74,9 @@ XmlReport::XmlReport(const QString& filename) : Report(filename) {}
 bool Path::isHeader(std::string const& /*unused*/) {
     return false;
 }
+bool Path::isHeader2(std::string const& /*unused*/) {
+    return false;
+}
 const std::set<std::string> ErrorLogger::mCriticalErrorIds;
 std::string ErrorMessage::FileLocation::getfile(bool /*unused*/) const {
     return std::string();
