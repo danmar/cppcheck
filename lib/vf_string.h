@@ -16,11 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef vfAnalyzeH
-#define vfAnalyzeH
+#ifndef vfStringH
+#define vfStringH
 
-#include "vf_enumvalue.h" // IWYU pragma: export
-#include "vf_number.h" // IWYU pragma: export
-#include "vf_string.h" // IWYU pragma: export
+class TokenList;
+class Settings;
 
-#endif // vfAnalyzeH
+namespace ValueFlow
+{
+    void analyzeString(TokenList &tokenlist, const Settings& settings);
+}
+
+#endif // vfStringH

@@ -541,19 +541,6 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, int m
     return 0;
 }
 
-static void valueFlowString(TokenList &tokenlist, const Settings& settings)
-{
-    for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
-        if (tok->tokType() == Token::eString) {
-            ValueFlow::Value strvalue;
-            strvalue.valueType = ValueFlow::Value::ValueType::TOK;
-            strvalue.tokvalue = tok;
-            strvalue.setKnown();
-            setTokenValue(tok, std::move(strvalue), settings);
-        }
-    }
-}
-
 static void valueFlowArray(TokenList &tokenlist, const Settings &settings)
 {
     std::map<nonneg int, const Token *> constantArrays;
@@ -8636,7 +8623,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
     runner.run_once({
         VFA(analyzeEnumValue(symboldatabase, settings)),
         VFA(analyzeNumber(tokenlist, settings)),
-        VFA(valueFlowString(tokenlist, settings)),
+        VFA(analyzeString(tokenlist, settings)),
         VFA(valueFlowArray(tokenlist, settings)),
         VFA(valueFlowUnknownFunctionReturn(tokenlist, settings)),
         VFA(valueFlowGlobalConstVar(tokenlist, settings)),
