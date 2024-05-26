@@ -668,37 +668,6 @@ static void valueFlowArrayElement(TokenList& tokenlist, const Settings& settings
     }
 }
 
-static void valueFlowBitAnd(TokenList &tokenlist, const Settings& settings)
-{
-    for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
-        if (tok->str() != "&")
-            continue;
-
-        if (tok->hasKnownValue())
-            continue;
-
-        if (!tok->astOperand1() || !tok->astOperand2())
-            continue;
-
-        MathLib::bigint number;
-        if (MathLib::isInt(tok->astOperand1()->str()))
-            number = MathLib::toBigNumber(tok->astOperand1()->str());
-        else if (MathLib::isInt(tok->astOperand2()->str()))
-            number = MathLib::toBigNumber(tok->astOperand2()->str());
-        else
-            continue;
-
-        int bit = 0;
-        while (bit <= (MathLib::bigint_bits - 2) && ((((MathLib::bigint)1) << bit) < number))
-            ++bit;
-
-        if ((((MathLib::bigint)1) << bit) == number) {
-            setTokenValue(tok, ValueFlow::Value(0), settings);
-            setTokenValue(tok, ValueFlow::Value(number), settings);
-        }
-    }
-}
-
 static void valueFlowSameExpressions(TokenList &tokenlist, const Settings& settings)
 {
     for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
@@ -8421,7 +8390,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
         VFA(analyzePointerAlias(tokenlist, settings)),
         VFA(valueFlowLifetime(tokenlist, errorLogger, settings)),
         VFA(valueFlowSymbolic(tokenlist, symboldatabase, errorLogger, settings)),
-        VFA(valueFlowBitAnd(tokenlist, settings)),
+        VFA(analyzeBitAnd(tokenlist, settings)),
         VFA(valueFlowSameExpressions(tokenlist, settings)),
         VFA(valueFlowConditionExpressions(tokenlist, symboldatabase, errorLogger, settings)),
     });
