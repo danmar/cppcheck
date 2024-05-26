@@ -669,37 +669,6 @@ static void valueFlowArrayElement(TokenList& tokenlist, const Settings& settings
     }
 }
 
-static void valueFlowPointerAlias(TokenList &tokenlist, const Settings& settings)
-{
-    for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
-        // not address of
-        if (!tok->isUnaryOp("&"))
-            continue;
-
-        // parent should be a '='
-        if (!Token::simpleMatch(tok->astParent(), "="))
-            continue;
-
-        // child should be some buffer or variable
-        const Token *vartok = tok->astOperand1();
-        while (vartok) {
-            if (vartok->str() == "[")
-                vartok = vartok->astOperand1();
-            else if (vartok->str() == "." || vartok->str() == "::")
-                vartok = vartok->astOperand2();
-            else
-                break;
-        }
-        if (!(vartok && vartok->variable() && !vartok->variable()->isPointer()))
-            continue;
-
-        ValueFlow::Value value;
-        value.valueType = ValueFlow::Value::ValueType::TOK;
-        value.tokvalue = tok;
-        setTokenValue(tok, std::move(value), settings);
-    }
-}
-
 static void valueFlowBitAnd(TokenList &tokenlist, const Settings& settings)
 {
     for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
@@ -8450,7 +8419,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
         VFA(analyzeGlobalConstVar(tokenlist, settings)),
         VFA(analyzeEnumValue(symboldatabase, settings)),
         VFA(analyzeGlobalStaticVar(tokenlist, settings)),
-        VFA(valueFlowPointerAlias(tokenlist, settings)),
+        VFA(analyzePointerAlias(tokenlist, settings)),
         VFA(valueFlowLifetime(tokenlist, errorLogger, settings)),
         VFA(valueFlowSymbolic(tokenlist, symboldatabase, errorLogger, settings)),
         VFA(valueFlowBitAnd(tokenlist, settings)),
