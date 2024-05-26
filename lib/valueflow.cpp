@@ -1026,40 +1026,6 @@ static void valueFlowImpossibleValues(TokenList& tokenList, const Settings& sett
     }
 }
 
-static void valueFlowGlobalConstVar(TokenList& tokenList, const Settings &settings)
-{
-    // Get variable values...
-    std::map<const Variable*, ValueFlow::Value> vars;
-    for (const Token* tok = tokenList.front(); tok; tok = tok->next()) {
-        if (!tok->variable())
-            continue;
-        // Initialization...
-        if (tok == tok->variable()->nameToken() &&
-            !tok->variable()->isVolatile() &&
-            !tok->variable()->isArgument() &&
-            tok->variable()->isConst() &&
-            tok->valueType() &&
-            tok->valueType()->isIntegral() &&
-            tok->valueType()->pointer == 0 &&
-            tok->valueType()->constness == 1 &&
-            Token::Match(tok, "%name% =") &&
-            tok->next()->astOperand2() &&
-            tok->next()->astOperand2()->hasKnownIntValue()) {
-            vars[tok->variable()] = tok->next()->astOperand2()->values().front();
-        }
-    }
-
-    // Set values..
-    for (Token* tok = tokenList.front(); tok; tok = tok->next()) {
-        if (!tok->variable())
-            continue;
-        const std::map<const Variable*, ValueFlow::Value>::const_iterator var = vars.find(tok->variable());
-        if (var == vars.end())
-            continue;
-        setTokenValue(tok, var->second, settings);
-    }
-}
-
 static void valueFlowGlobalStaticVar(TokenList &tokenList, const Settings &settings)
 {
     // Get variable values...
@@ -8529,7 +8495,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
         VFA(analyzeString(tokenlist, settings)),
         VFA(analyzeArray(tokenlist, settings)),
         VFA(analyzeUnknownFunctionReturn(tokenlist, settings)),
-        VFA(valueFlowGlobalConstVar(tokenlist, settings)),
+        VFA(analyzeGlobalConstVar(tokenlist, settings)),
         VFA(analyzeEnumValue(symboldatabase, settings)),
         VFA(valueFlowGlobalStaticVar(tokenlist, settings)),
         VFA(valueFlowPointerAlias(tokenlist, settings)),
