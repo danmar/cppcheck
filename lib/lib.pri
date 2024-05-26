@@ -84,6 +84,7 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/vf_number.h \
            $${PWD}/vf_settokenvalue.h \
            $${PWD}/vf_string.h \
+           $${PWD}/vf_unknownfunctionreturn.h \
            $${PWD}/vfvalue.h \
            $${PWD}/xml.h
 
@@ -155,4 +156,5 @@ SOURCES += $${PWD}/valueflow.cpp \
            $${PWD}/vf_number.cpp \
            $${PWD}/vf_settokenvalue.cpp \
            $${PWD}/vf_string.cpp \
+           $${PWD}/vf_unknownfunctionreturn.cpp \
            $${PWD}/vfvalue.cpp
