@@ -668,42 +668,6 @@ static void valueFlowArrayElement(TokenList& tokenlist, const Settings& settings
     }
 }
 
-static void valueFlowSameExpressions(TokenList &tokenlist, const Settings& settings)
-{
-    for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
-        if (tok->hasKnownIntValue())
-            continue;
-
-        if (!tok->astOperand1() || !tok->astOperand2())
-            continue;
-
-        if (tok->astOperand1()->isLiteral() || tok->astOperand2()->isLiteral())
-            continue;
-
-        if (!astIsIntegral(tok->astOperand1(), false) && !astIsIntegral(tok->astOperand2(), false))
-            continue;
-
-        ValueFlow::Value val;
-
-        if (Token::Match(tok, "==|>=|<=|/")) {
-            val = ValueFlow::Value(1);
-            val.setKnown();
-        }
-
-        if (Token::Match(tok, "!=|>|<|%|-")) {
-            val = ValueFlow::Value(0);
-            val.setKnown();
-        }
-
-        if (!val.isKnown())
-            continue;
-
-        if (isSameExpression(false, tok->astOperand1(), tok->astOperand2(), settings, true, true, &val.errorPath)) {
-            setTokenValue(tok, std::move(val), settings);
-        }
-    }
-}
-
 static bool getExpressionRange(const Token *expr, MathLib::bigint *minvalue, MathLib::bigint *maxvalue)
 {
     if (expr->hasKnownIntValue()) {
@@ -8391,7 +8355,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
         VFA(valueFlowLifetime(tokenlist, errorLogger, settings)),
         VFA(valueFlowSymbolic(tokenlist, symboldatabase, errorLogger, settings)),
         VFA(analyzeBitAnd(tokenlist, settings)),
-        VFA(valueFlowSameExpressions(tokenlist, settings)),
+        VFA(analyzeSameExpressions(tokenlist, settings)),
         VFA(valueFlowConditionExpressions(tokenlist, symboldatabase, errorLogger, settings)),
     });
 
