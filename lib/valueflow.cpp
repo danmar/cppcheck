@@ -541,62 +541,6 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, int m
     return 0;
 }
 
-static void valueFlowArray(TokenList &tokenlist, const Settings &settings)
-{
-    std::map<nonneg int, const Token *> constantArrays;
-
-    for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
-        if (tok->varId() > 0) {
-            // array
-            const std::map<nonneg int, const Token *>::const_iterator it = constantArrays.find(tok->varId());
-            if (it != constantArrays.end()) {
-                ValueFlow::Value value;
-                value.valueType = ValueFlow::Value::ValueType::TOK;
-                value.tokvalue = it->second;
-                value.setKnown();
-                setTokenValue(tok, std::move(value), settings);
-            }
-
-            // const array decl
-            else if (tok->variable() && tok->variable()->isArray() && tok->variable()->isConst() &&
-                     tok->variable()->nameToken() == tok && Token::Match(tok, "%var% [ %num%| ] = {")) {
-                Token* rhstok = tok->linkAt(1)->tokAt(2);
-                constantArrays[tok->varId()] = rhstok;
-                tok = rhstok->link();
-            }
-
-            // pointer = array
-            else if (tok->variable() && tok->variable()->isArray() && Token::simpleMatch(tok->astParent(), "=") &&
-                     astIsRHS(tok) && tok->astParent()->astOperand1() &&
-                     tok->astParent()->astOperand1()->variable() &&
-                     tok->astParent()->astOperand1()->variable()->isPointer()) {
-                ValueFlow::Value value;
-                value.valueType = ValueFlow::Value::ValueType::TOK;
-                value.tokvalue = tok;
-                value.setKnown();
-                setTokenValue(tok, std::move(value), settings);
-            }
-            continue;
-        }
-
-        if (Token::Match(tok, "const %type% %var% [ %num%| ] = {")) {
-            Token *vartok = tok->tokAt(2);
-            Token *rhstok = vartok->linkAt(1)->tokAt(2);
-            constantArrays[vartok->varId()] = rhstok;
-            tok = rhstok->link();
-            continue;
-        }
-
-        if (Token::Match(tok, "const char %var% [ %num%| ] = %str% ;")) {
-            Token *vartok = tok->tokAt(2);
-            Token *strtok = vartok->linkAt(1)->tokAt(2);
-            constantArrays[vartok->varId()] = strtok;
-            tok = strtok->next();
-            continue;
-        }
-    }
-}
-
 static bool isNonZero(const Token *tok)
 {
     return tok && (!tok->hasKnownIntValue() || tok->values().front().intvalue != 0);
@@ -8624,7 +8568,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
         VFA(analyzeEnumValue(symboldatabase, settings)),
         VFA(analyzeNumber(tokenlist, settings)),
         VFA(analyzeString(tokenlist, settings)),
-        VFA(valueFlowArray(tokenlist, settings)),
+        VFA(analyzeArray(tokenlist, settings)),
         VFA(valueFlowUnknownFunctionReturn(tokenlist, settings)),
         VFA(valueFlowGlobalConstVar(tokenlist, settings)),
         VFA(analyzeEnumValue(symboldatabase, settings)),
