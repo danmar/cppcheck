@@ -87,6 +87,7 @@
     <ClCompile Include="token.cpp" />
     <ClCompile Include="tokenlist.cpp" />
     <ClCompile Include="utils.cpp" />
+    <ClCompile Include="vf_array.cpp" />
     <ClCompile Include="vf_common.cpp" />
     <ClCompile Include="vf_enumvalue.cpp" />
     <ClCompile Include="vf_number.cpp" />
@@ -172,6 +173,7 @@
     <ClInclude Include="valueptr.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="vf_analyze.h" />
+    <ClInclude Include="vf_array.h" />
     <ClInclude Include="vf_common.h" />
     <ClInclude Include="vf_enumvalue.h" />
     <ClInclude Include="vf_number.h" />
