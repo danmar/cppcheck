@@ -1026,54 +1026,6 @@ static void valueFlowImpossibleValues(TokenList& tokenList, const Settings& sett
     }
 }
 
-static void valueFlowGlobalStaticVar(TokenList &tokenList, const Settings &settings)
-{
-    // Get variable values...
-    std::map<const Variable *, ValueFlow::Value> vars;
-    for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
-        if (!tok->variable())
-            continue;
-        // Initialization...
-        if (tok == tok->variable()->nameToken() &&
-            tok->variable()->isStatic() &&
-            !tok->variable()->isConst() &&
-            tok->valueType() &&
-            tok->valueType()->isIntegral() &&
-            tok->valueType()->pointer == 0 &&
-            tok->valueType()->constness == 0 &&
-            Token::Match(tok, "%name% =") &&
-            tok->next()->astOperand2() &&
-            tok->next()->astOperand2()->hasKnownIntValue()) {
-            vars[tok->variable()] = tok->next()->astOperand2()->values().front();
-        } else {
-            // If variable is written anywhere in TU then remove it from vars
-            if (!tok->astParent())
-                continue;
-            if (Token::Match(tok->astParent(), "++|--|&") && !tok->astParent()->astOperand2())
-                vars.erase(tok->variable());
-            else if (tok->astParent()->isAssignmentOp()) {
-                if (tok == tok->astParent()->astOperand1())
-                    vars.erase(tok->variable());
-                else if (tok->isCpp() && Token::Match(tok->astParent()->tokAt(-2), "& %name% ="))
-                    vars.erase(tok->variable());
-            } else if (isLikelyStreamRead(tok->astParent())) {
-                vars.erase(tok->variable());
-            } else if (Token::Match(tok->astParent(), "[(,]"))
-                vars.erase(tok->variable());
-        }
-    }
-
-    // Set values..
-    for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
-        if (!tok->variable())
-            continue;
-        const std::map<const Variable *, ValueFlow::Value>::const_iterator var = vars.find(tok->variable());
-        if (var == vars.end())
-            continue;
-        setTokenValue(tok, var->second, settings);
-    }
-}
-
 static ValuePtr<Analyzer> makeAnalyzer(const Token* exprTok, ValueFlow::Value value, const Settings& settings);
 static ValuePtr<Analyzer> makeReverseAnalyzer(const Token* exprTok, ValueFlow::Value value, const Settings& settings);
 
@@ -8497,7 +8449,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
         VFA(analyzeUnknownFunctionReturn(tokenlist, settings)),
         VFA(analyzeGlobalConstVar(tokenlist, settings)),
         VFA(analyzeEnumValue(symboldatabase, settings)),
-        VFA(valueFlowGlobalStaticVar(tokenlist, settings)),
+        VFA(analyzeGlobalStaticVar(tokenlist, settings)),
         VFA(valueFlowPointerAlias(tokenlist, settings)),
         VFA(valueFlowLifetime(tokenlist, errorLogger, settings)),
         VFA(valueFlowSymbolic(tokenlist, symboldatabase, errorLogger, settings)),

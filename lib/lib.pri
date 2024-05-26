@@ -82,6 +82,7 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/vf_common.h \
            $${PWD}/vf_enumvalue.h \
            $${PWD}/vf_globalconstvar.h \
+           $${PWD}/vf_globalstaticvar.h \
            $${PWD}/vf_number.h \
            $${PWD}/vf_settokenvalue.h \
            $${PWD}/vf_string.h \
@@ -155,6 +156,7 @@ SOURCES += $${PWD}/valueflow.cpp \
            $${PWD}/vf_common.cpp \
            $${PWD}/vf_enumvalue.cpp \
            $${PWD}/vf_globalconstvar.cpp \
+           $${PWD}/vf_globalstaticvar.cpp \
            $${PWD}/vf_number.cpp \
            $${PWD}/vf_settokenvalue.cpp \
            $${PWD}/vf_string.cpp \
