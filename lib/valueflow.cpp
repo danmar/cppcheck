@@ -8186,18 +8186,6 @@ static void valueFlowDynamicBufferSize(const TokenList& tokenlist, const SymbolD
     }
 }
 
-static bool getMinMaxValues(const std::string &typestr, const Settings &settings, bool cpp, MathLib::bigint &minvalue, MathLib::bigint &maxvalue)
-{
-    TokenList typeTokens(&settings);
-    std::istringstream istr(typestr+";");
-    if (!typeTokens.createTokens(istr, cpp ? Standards::Language::CPP : Standards::Language::C))
-        return false;
-    typeTokens.simplifyPlatformTypes();
-    typeTokens.simplifyStdType();
-    const ValueType &vt = ValueType::parseDecl(typeTokens.front(), settings);
-    return ValueFlow::getMinMaxValues(&vt, settings.platform, minvalue, maxvalue);
-}
-
 static void valueFlowSafeFunctions(const TokenList& tokenlist, const SymbolDatabase& symboldatabase, ErrorLogger& errorLogger, const Settings& settings)
 {
     for (const Scope *functionScope : symboldatabase.functionScopes) {
@@ -8292,35 +8280,6 @@ static void valueFlowSafeFunctions(const TokenList& tokenlist, const SymbolDatab
                                  tokenlist,
                                  errorLogger,
                                  settings);
-        }
-    }
-}
-
-static void valueFlowUnknownFunctionReturn(TokenList &tokenlist, const Settings &settings)
-{
-    if (settings.checkUnknownFunctionReturn.empty())
-        return;
-    for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
-        if (!tok->astParent() || tok->str() != "(" || !tok->previous()->isName())
-            continue;
-        if (settings.checkUnknownFunctionReturn.find(tok->strAt(-1)) == settings.checkUnknownFunctionReturn.end())
-            continue;
-        std::vector<MathLib::bigint> unknownValues = settings.library.unknownReturnValues(tok->astOperand1());
-        if (unknownValues.empty())
-            continue;
-
-        // Get min/max values for return type
-        const std::string &typestr = settings.library.returnValueType(tok->previous());
-        MathLib::bigint minvalue, maxvalue;
-        if (!getMinMaxValues(typestr, settings, tok->isCpp(), minvalue, maxvalue))
-            continue;
-
-        for (MathLib::bigint value : unknownValues) {
-            if (value < minvalue)
-                value = minvalue;
-            else if (value > maxvalue)
-                value = maxvalue;
-            setTokenValue(tok, ValueFlow::Value(value), settings);
         }
     }
 }
@@ -8569,7 +8528,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
         VFA(analyzeNumber(tokenlist, settings)),
         VFA(analyzeString(tokenlist, settings)),
         VFA(analyzeArray(tokenlist, settings)),
-        VFA(valueFlowUnknownFunctionReturn(tokenlist, settings)),
+        VFA(analyzeUnknownFunctionReturn(tokenlist, settings)),
         VFA(valueFlowGlobalConstVar(tokenlist, settings)),
         VFA(analyzeEnumValue(symboldatabase, settings)),
         VFA(valueFlowGlobalStaticVar(tokenlist, settings)),
