@@ -91,6 +91,7 @@
     <ClCompile Include="vf_enumvalue.cpp" />
     <ClCompile Include="vf_number.cpp" />
     <ClCompile Include="vf_settokenvalue.cpp" />
+    <ClCompile Include="vf_string.cpp" />
     <ClCompile Include="vfvalue.cpp" />
   </ItemGroup>
   <ItemGroup Label="HeaderFiles">
@@ -175,6 +176,7 @@
     <ClInclude Include="vf_enumvalue.h" />
     <ClInclude Include="vf_number.h" />
     <ClInclude Include="vf_settokenvalue.h" />
+    <ClInclude Include="vf_string.h" />
     <ClInclude Include="vfvalue.h" />
     <ClInclude Include="xml.h" />
   </ItemGroup>

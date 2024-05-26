@@ -16,11 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef vfAnalyzeH
-#define vfAnalyzeH
+#include "vf_string.h"
 
-#include "vf_enumvalue.h" // IWYU pragma: export
-#include "vf_number.h" // IWYU pragma: export
-#include "vf_string.h" // IWYU pragma: export
+#include "token.h"
+#include "tokenlist.h"
+#include "vfvalue.h"
 
-#endif // vfAnalyzeH
+#include "vf_settokenvalue.h"
+
+#include <utility>
+
+namespace ValueFlow
+{
+    void analyzeString(TokenList &tokenlist, const Settings& settings)
+    {
+        for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
+            if (tok->tokType() == Token::eString) {
+                Value strvalue;
+                strvalue.valueType = Value::ValueType::TOK;
+                strvalue.tokvalue = tok;
+                strvalue.setKnown();
+                setTokenValue(tok, std::move(strvalue), settings);
+            }
+        }
+    }
+}
