@@ -16,16 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef vfAnalyzeH
-#define vfAnalyzeH
+#ifndef vfPointerAliasH
+#define vfPointerAliasH
 
-#include "vf_array.h" // IWYU pragma: export
-#include "vf_enumvalue.h" // IWYU pragma: export
-#include "vf_globalconstvar.h" // IWYU pragma: export
-#include "vf_globalstaticvar.h" // IWYU pragma: export
-#include "vf_number.h" // IWYU pragma: export
-#include "vf_pointeralias.h" // IWYU pragma: export
-#include "vf_string.h" // IWYU pragma: export
-#include "vf_unknownfunctionreturn.h" // IWYU pragma: export
+class TokenList;
+class Settings;
 
-#endif // vfAnalyzeH
+namespace ValueFlow
+{
+    void analyzePointerAlias(TokenList &tokenlist, const Settings& settings);
+}
+
+#endif // vfPointerAliasH

@@ -93,6 +93,7 @@
     <ClCompile Include="vf_globalconstvar.cpp" />
     <ClCompile Include="vf_globalstaticvar.cpp" />
     <ClCompile Include="vf_number.cpp" />
+    <ClCompile Include="vf_pointeralias.cpp" />
     <ClCompile Include="vf_settokenvalue.cpp" />
     <ClCompile Include="vf_string.cpp" />
     <ClCompile Include="vf_unknownfunctionreturn.cpp" />
@@ -182,6 +183,7 @@
     <ClInclude Include="vf_globalconstvar.h" />
     <ClInclude Include="vf_globalstaticvar.h" />
     <ClInclude Include="vf_number.h" />
+    <ClInclude Include="vf_pointeralias.h" />
     <ClInclude Include="vf_settokenvalue.h" />
     <ClInclude Include="vf_string.h" />
     <ClInclude Include="vf_unknownfunctionreturn.h" />
