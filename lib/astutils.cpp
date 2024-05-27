@@ -2500,7 +2500,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
 
     if (!tok->function() && !tok->variable() && tok->isName()) {
         // Check if direction (in, out, inout) is specified in the library configuration and use that
-        const Library::ArgumentChecks::Direction argDirection = settings.library.getArgDirection(tok, 1 + argnr);
+        const Library::ArgumentChecks::Direction argDirection = settings.library.getArgDirection(tok, 1 + argnr, indirect);
         if (argDirection == Library::ArgumentChecks::Direction::DIR_IN)
             return false;
 
