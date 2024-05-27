@@ -394,4 +394,14 @@ namespace ValueFlow
                         " => " + local.function_name() + ": " + debugString(v);
         v.debugPath.emplace_back(tok, std::move(s));
     }
+
+    std::list<Value> getIteratorValues(std::list<Value> values, const Value::ValueKind* kind)
+    {
+        values.remove_if([&](const Value& v) {
+            if (kind && v.valueKind != *kind)
+                return true;
+            return !v.isIteratorValue();
+        });
+        return values;
+    }
 }

@@ -27,6 +27,7 @@
 #include "vf_enumvalue.h" // IWYU pragma: export
 #include "vf_globalconstvar.h" // IWYU pragma: export
 #include "vf_globalstaticvar.h" // IWYU pragma: export
+#include "vf_iteratorinfer.h" // IWYU pragma: export
 #include "vf_number.h" // IWYU pragma: export
 #include "vf_pointeralias.h" // IWYU pragma: export
 #include "vf_rightshift.h" // IWYU pragma: export

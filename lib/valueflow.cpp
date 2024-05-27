@@ -7204,16 +7204,6 @@ static void valueFlowIterators(TokenList &tokenlist, const Settings &settings)
     }
 }
 
-static std::list<ValueFlow::Value> getIteratorValues(std::list<ValueFlow::Value> values, const ValueFlow::Value::ValueKind* kind = nullptr)
-{
-    values.remove_if([&](const ValueFlow::Value& v) {
-        if (kind && v.valueKind != *kind)
-            return true;
-        return !v.isIteratorValue();
-    });
-    return values;
-}
-
 struct IteratorConditionHandler : SimpleConditionHandler {
     std::vector<Condition> parse(const Token* tok, const Settings& /*settings*/) const override {
         Condition cond;
@@ -7242,38 +7232,6 @@ struct IteratorConditionHandler : SimpleConditionHandler {
         return {std::move(cond)};
     }
 };
-
-static void valueFlowIteratorInfer(TokenList &tokenlist, const Settings &settings)
-{
-    for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
-        if (!tok->scope())
-            continue;
-        if (!tok->scope()->isExecutable())
-            continue;
-        std::list<ValueFlow::Value> values = getIteratorValues(tok->values());
-        values.remove_if([&](const ValueFlow::Value& v) {
-            if (!v.isImpossible())
-                return true;
-            if (!v.condition)
-                return true;
-            if (v.bound != ValueFlow::Value::Bound::Point)
-                return true;
-            if (v.isIteratorEndValue() && v.intvalue <= 0)
-                return true;
-            if (v.isIteratorStartValue() && v.intvalue >= 0)
-                return true;
-            return false;
-        });
-        for (ValueFlow::Value& v:values) {
-            v.setPossible();
-            if (v.isIteratorStartValue())
-                v.intvalue++;
-            if (v.isIteratorEndValue())
-                v.intvalue--;
-            setTokenValue(tok, std::move(v), settings);
-        }
-    }
-}
 
 static std::vector<ValueFlow::Value> getContainerValues(const Token* tok)
 {
@@ -8132,7 +8090,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
         VFA_CPP(valueFlowIterators(tokenlist, settings)),
         VFA_CPP(
             valueFlowCondition(IteratorConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
-        VFA_CPP(valueFlowIteratorInfer(tokenlist, settings)),
+        VFA_CPP(analyzeIteratorInfer(tokenlist, settings)),
         VFA_CPP(valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
         VFA_CPP(
             valueFlowCondition(ContainerConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
