@@ -556,7 +556,6 @@ void ProjectFileDialog::updatePathsAndDefines()
     mUI->mBtnAddCheckPath->setEnabled(!importProject);
     mUI->mBtnEditCheckPath->setEnabled(!importProject);
     mUI->mBtnRemoveCheckPath->setEnabled(!importProject);
-    mUI->mEditDefines->setEnabled(!importProject);
     mUI->mEditUndefines->setEnabled(!importProject);
     mUI->mBtnAddInclude->setEnabled(!importProject);
     mUI->mBtnEditInclude->setEnabled(!importProject);
