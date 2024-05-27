@@ -344,12 +344,8 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *
                     while (argnr < args.size() && args[argnr] != parent)
                         argnr++;
                     if (argnr < args.size()) {
-                        const Library::Function* functionInfo = mSettings.library.getFunction(ftok->astOperand1());
-                        if (functionInfo) {
-                            const auto it = functionInfo->argumentChecks.find(argnr + 1);
-                            if (it != functionInfo->argumentChecks.end() && it->second.direction == Library::ArgumentChecks::Direction::DIR_OUT)
-                                continue;
-                        }
+                        if (mSettings.library.getArgDirection(ftok, argnr) == Library::ArgumentChecks::Direction::DIR_OUT)
+                            continue;
                     }
                 }
                 return Result(Result::Type::BAILOUT, parent->astParent());
