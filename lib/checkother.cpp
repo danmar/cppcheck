@@ -1629,6 +1629,9 @@ void CheckOther::checkConstPointer()
             if (p->isMaybeUnused())
                 continue;
         }
+        if (const Function* func = Scope::nestedInFunction(p->scope()))
+            if (func->templateDef)
+                continue;
         if (std::find(nonConstPointers.cbegin(), nonConstPointers.cend(), p) == nonConstPointers.cend()) {
             // const Token *start = getVariableChangedStart(p);
             // const int indirect = p->isArray() ? p->dimensions().size() : 1;
