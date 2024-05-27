@@ -88,6 +88,7 @@
     <ClCompile Include="tokenlist.cpp" />
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="vf_array.cpp" />
+    <ClCompile Include="vf_arraybool.cpp" />
     <ClCompile Include="vf_bitand.cpp" />
     <ClCompile Include="vf_common.cpp" />
     <ClCompile Include="vf_debug.cpp" />
@@ -181,6 +182,7 @@
     <ClInclude Include="version.h" />
     <ClInclude Include="vf_analyze.h" />
     <ClInclude Include="vf_array.h" />
+    <ClInclude Include="vf_arraybool.h" />
     <ClInclude Include="vf_bitand.h" />
     <ClInclude Include="vf_common.h" />
     <ClInclude Include="vf_debug.h" />
