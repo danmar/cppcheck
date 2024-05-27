@@ -540,83 +540,6 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, int m
     return 0;
 }
 
-static void valueFlowArrayElement(TokenList& tokenlist, const Settings& settings)
-{
-    for (Token* tok = tokenlist.front(); tok; tok = tok->next()) {
-        if (tok->hasKnownIntValue())
-            continue;
-        const Token* indexTok = nullptr;
-        const Token* arrayTok = nullptr;
-        if (Token::simpleMatch(tok, "[") && tok->isBinaryOp()) {
-            indexTok = tok->astOperand2();
-            arrayTok = tok->astOperand1();
-        } else if (Token::Match(tok->tokAt(-2), ". %name% (") && astIsContainer(tok->tokAt(-2)->astOperand1())) {
-            arrayTok = tok->tokAt(-2)->astOperand1();
-            const Library::Container* container = getLibraryContainer(arrayTok);
-            if (!container || container->stdAssociativeLike)
-                continue;
-            const Library::Container::Yield yield = container->getYield(tok->strAt(-1));
-            if (yield != Library::Container::Yield::AT_INDEX)
-                continue;
-            indexTok = tok->astOperand2();
-        }
-
-        if (!indexTok || !arrayTok)
-            continue;
-
-        for (const ValueFlow::Value& arrayValue : arrayTok->values()) {
-            if (!arrayValue.isTokValue())
-                continue;
-            if (arrayValue.isImpossible())
-                continue;
-            for (const ValueFlow::Value& indexValue : indexTok->values()) {
-                if (!indexValue.isIntValue())
-                    continue;
-                if (indexValue.isImpossible())
-                    continue;
-                if (!arrayValue.isKnown() && !indexValue.isKnown() && arrayValue.varId != 0 && indexValue.varId != 0 &&
-                    !(arrayValue.varId == indexValue.varId && arrayValue.varvalue == indexValue.varvalue))
-                    continue;
-
-                ValueFlow::Value result(0);
-                result.condition = arrayValue.condition ? arrayValue.condition : indexValue.condition;
-                result.setInconclusive(arrayValue.isInconclusive() || indexValue.isInconclusive());
-                result.varId = (arrayValue.varId != 0) ? arrayValue.varId : indexValue.varId;
-                result.varvalue = (result.varId == arrayValue.varId) ? arrayValue.intvalue : indexValue.intvalue;
-                if (arrayValue.valueKind == indexValue.valueKind)
-                    result.valueKind = arrayValue.valueKind;
-
-                result.errorPath.insert(result.errorPath.end(), arrayValue.errorPath.cbegin(), arrayValue.errorPath.cend());
-                result.errorPath.insert(result.errorPath.end(), indexValue.errorPath.cbegin(), indexValue.errorPath.cend());
-
-                const MathLib::bigint index = indexValue.intvalue;
-
-                if (arrayValue.tokvalue->tokType() == Token::eString) {
-                    const std::string s = arrayValue.tokvalue->strValue();
-                    if (index == s.size()) {
-                        result.intvalue = 0;
-                        setTokenValue(tok, std::move(result), settings);
-                    } else if (index >= 0 && index < s.size()) {
-                        result.intvalue = s[index];
-                        setTokenValue(tok, std::move(result), settings);
-                    }
-                } else if (Token::simpleMatch(arrayValue.tokvalue, "{")) {
-                    std::vector<const Token*> args = getArguments(arrayValue.tokvalue);
-                    if (index < 0 || index >= args.size())
-                        continue;
-                    const Token* arg = args[index];
-                    if (!arg->hasKnownIntValue())
-                        continue;
-                    const ValueFlow::Value& v = arg->values().front();
-                    result.intvalue = v.intvalue;
-                    result.errorPath.insert(result.errorPath.end(), v.errorPath.cbegin(), v.errorPath.cend());
-                    setTokenValue(tok, std::move(result), settings);
-                }
-            }
-        }
-    }
-}
-
 static bool getExpressionRange(const Token *expr, MathLib::bigint *minvalue, MathLib::bigint *maxvalue)
 {
     if (expr->hasKnownIntValue()) {
@@ -8295,7 +8218,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
         VFA(valueFlowCondition(SymbolicConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
         VFA(valueFlowSymbolicInfer(symboldatabase, settings)),
         VFA(analyzeArrayBool(tokenlist, settings)),
-        VFA(valueFlowArrayElement(tokenlist, settings)),
+        VFA(analyzeArrayElement(tokenlist, settings)),
         VFA(valueFlowRightShift(tokenlist, settings)),
         VFA(valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
         VFA_CPP(valueFlowAfterSwap(tokenlist, symboldatabase, errorLogger, settings)),
