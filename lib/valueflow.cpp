@@ -7166,44 +7166,6 @@ static void valueFlowSmartPointer(TokenList &tokenlist, ErrorLogger & errorLogge
     }
 }
 
-static Library::Container::Yield findIteratorYield(Token* tok, const Token** ftok, const Settings &settings)
-{
-    auto yield = astContainerYield(tok, ftok);
-    if (ftok && *ftok)
-        return yield;
-
-    if (!tok->astParent())
-        return yield;
-
-    //begin/end free functions
-    return astFunctionYield(tok->astParent()->previous(), settings, ftok);
-}
-
-static void valueFlowIterators(TokenList &tokenlist, const Settings &settings)
-{
-    for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
-        if (!tok->scope())
-            continue;
-        if (!tok->scope()->isExecutable())
-            continue;
-        if (!astIsContainer(tok))
-            continue;
-        Token* ftok = nullptr;
-        const Library::Container::Yield yield = findIteratorYield(tok, const_cast<const Token**>(&ftok), settings);
-        if (ftok) {
-            ValueFlow::Value v(0);
-            v.setKnown();
-            if (yield == Library::Container::Yield::START_ITERATOR) {
-                v.valueType = ValueFlow::Value::ValueType::ITERATOR_START;
-                setTokenValue(ftok->next(), std::move(v), settings);
-            } else if (yield == Library::Container::Yield::END_ITERATOR) {
-                v.valueType = ValueFlow::Value::ValueType::ITERATOR_END;
-                setTokenValue(ftok->next(), std::move(v), settings);
-            }
-        }
-    }
-}
-
 struct IteratorConditionHandler : SimpleConditionHandler {
     std::vector<Condition> parse(const Token* tok, const Settings& /*settings*/) const override {
         Condition cond;
@@ -8087,7 +8049,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
         VFA(valueFlowUninit(tokenlist, errorLogger, settings)),
         VFA_CPP(valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings)),
         VFA_CPP(valueFlowSmartPointer(tokenlist, errorLogger, settings)),
-        VFA_CPP(valueFlowIterators(tokenlist, settings)),
+        VFA_CPP(analyzeIterators(tokenlist, settings)),
         VFA_CPP(
             valueFlowCondition(IteratorConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
         VFA_CPP(analyzeIteratorInfer(tokenlist, settings)),

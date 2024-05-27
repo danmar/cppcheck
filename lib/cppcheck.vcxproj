@@ -97,6 +97,7 @@
     <ClCompile Include="vf_globalconstvar.cpp" />
     <ClCompile Include="vf_globalstaticvar.cpp" />
     <ClCompile Include="vf_iteratorinfer.cpp" />
+    <ClCompile Include="vf_iterators.cpp" />
     <ClCompile Include="vf_number.cpp" />
     <ClCompile Include="vf_pointeralias.cpp" />
     <ClCompile Include="vf_rightshift.cpp" />
@@ -194,6 +195,7 @@
     <ClInclude Include="vf_globalconstvar.h" />
     <ClInclude Include="vf_globalstaticvar.h" />
     <ClInclude Include="vf_iteratorinfer.h" />
+    <ClInclude Include="vf_iterators.h" />
     <ClInclude Include="vf_number.h" />
     <ClInclude Include="vf_pointeralias.h" />
     <ClInclude Include="vf_rightshift.h" />
