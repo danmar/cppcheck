@@ -2419,8 +2419,7 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:6]: (error) Out of bounds access in expression 'foo[ii]' because 'foo' is empty.\n"
-            "[test.cpp:6]: (error) Out of bounds access in expression 'foo[ii]'\n",
+            "[test.cpp:6]: (error) Out of bounds access in expression 'foo[ii]' because 'foo' is empty.\n",
             errout_str());
 
         check("void foo(std::vector<int> foo) {\n"
@@ -2435,7 +2434,8 @@ private:
               "       foo[ii] = 'x';\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) When ii==foo.size(), foo[ii] is out of bounds.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) When ii==foo.size(), foo[ii] is out of bounds.\n",
+                      errout_str());
 
         check("void foo(std::string& foo, unsigned int ii) {\n"
               "    if (ii <= foo.length()) {\n"

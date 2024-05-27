@@ -1747,6 +1747,7 @@ struct ValueFlowAnalyzer : Analyzer {
                     tok2 = tok2->astParent();
                     --indirect;
                 }
+                indirect = std::max(indirect, 0);
             }
         }
         for (int i = 0; i <= indirect; ++i)
