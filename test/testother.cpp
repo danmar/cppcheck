@@ -9023,7 +9023,8 @@ private:
               "    if (c == m->get()) {}\n"
               "}\n");
         TODO_ASSERT_EQUALS("",
-                           "[test.cpp:16] -> [test.cpp:18]: (style) The comparison 'c == m->get()' is always true because 'c' and 'm->get()' represent the same value.\n",
+                           "[test.cpp:16] -> [test.cpp:18]: (style) The comparison 'c == m->get()' is always true because 'c' and 'm->get()' represent the same value.\n"
+                           "[test.cpp:16]: (performance, inconclusive) Use const reference for 'c' to avoid unnecessary data copying.\n",
                            errout_str());
     }
 
