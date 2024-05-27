@@ -738,13 +738,22 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             const char * const argDirection = functionnode->Attribute("direction");
             if (argDirection) {
                 const size_t argDirLen = strlen(argDirection);
+                ArgumentChecks::Direction dir = ArgumentChecks::Direction::DIR_UNKNOWN;
                 if (!strncmp(argDirection, "in", argDirLen)) {
-                    ac.direction = ArgumentChecks::Direction::DIR_IN;
+                    dir = ArgumentChecks::Direction::DIR_IN;
                 } else if (!strncmp(argDirection, "out", argDirLen)) {
-                    ac.direction = ArgumentChecks::Direction::DIR_OUT;
+                    dir = ArgumentChecks::Direction::DIR_OUT;
                 } else if (!strncmp(argDirection, "inout", argDirLen)) {
-                    ac.direction = ArgumentChecks::Direction::DIR_INOUT;
+                    dir = ArgumentChecks::Direction::DIR_INOUT;
                 }
+                if (const char* const argIndirect = functionnode->Attribute("indirect")) {
+                    const int indirect = strToInt<int>(argIndirect);
+                    for (int i = 0; i < ac.direction.size(); ++i)
+                        if ((indirect & (1 << i)) != 0)
+                            ac.direction[i] = dir;
+                }
+                else
+                    ac.direction.fill(dir);
             }
             for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
                 const std::string argnodename = argnode->Name();
@@ -1500,11 +1509,13 @@ bool Library::hasminsize(const Token *ftok) const
     });
 }
 
-Library::ArgumentChecks::Direction Library::getArgDirection(const Token* ftok, int argnr) const
+Library::ArgumentChecks::Direction Library::getArgDirection(const Token* ftok, int argnr, int indirect) const
 {
     const ArgumentChecks* arg = getarg(ftok, argnr);
-    if (arg)
-        return arg->direction;
+    if (arg) {
+        assert(indirect < arg->direction.size());
+        return arg->direction[indirect];
+    }
     if (formatstr_function(ftok)) {
         const int fs_argno = formatstr_argno(ftok);
         if (fs_argno >= 0 && argnr >= fs_argno) {
