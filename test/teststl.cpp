@@ -2419,7 +2419,8 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:6]: (error) Out of bounds access in expression 'foo[ii]' because 'foo' is empty.\n",
+            "[test.cpp:6]: (error) Out of bounds access in expression 'foo[ii]' because 'foo' is empty.\n"
+            "[test.cpp:6]: (error) Out of bounds access in expression 'foo[ii]'\n",
             errout_str());
 
         check("void foo(std::vector<int> foo) {\n"
