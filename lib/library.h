@@ -291,7 +291,7 @@ public:
             DIR_INOUT,  ///< Input to called function, and output to caller. Data is passed by reference or address and is potentially modified.
             DIR_UNKNOWN ///< direction not known / specified
         };
-        Direction direction = Direction::DIR_UNKNOWN;
+        std::array<Direction, 4> direction = { Direction::DIR_UNKNOWN, Direction::DIR_UNKNOWN, Direction::DIR_UNKNOWN, Direction::DIR_UNKNOWN };
     };
 
     struct Function {
@@ -355,7 +355,7 @@ public:
         return arg ? &arg->minsizes : nullptr;
     }
 
-    ArgumentChecks::Direction getArgDirection(const Token* ftok, int argnr) const;
+    ArgumentChecks::Direction getArgDirection(const Token* ftok, int argnr, int indirect = 0) const;
 
     bool markupFile(const std::string &path) const;
 
