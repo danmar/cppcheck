@@ -81,10 +81,12 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/vf_array.h \
            $${PWD}/vf_arraybool.h \
            $${PWD}/vf_arrayelement.h \
+           $${PWD}/vf_bailout.h \
            $${PWD}/vf_bitand.h \
            $${PWD}/vf_common.h \
            $${PWD}/vf_debug.h \
            $${PWD}/vf_enumvalue.h \
+           $${PWD}/vf_functionreturn.h \
            $${PWD}/vf_globalconstvar.h \
            $${PWD}/vf_globalstaticvar.h \
            $${PWD}/vf_iteratorinfer.h \
@@ -164,10 +166,12 @@ SOURCES += $${PWD}/valueflow.cpp \
            $${PWD}/vf_array.cpp \
            $${PWD}/vf_arraybool.cpp \
            $${PWD}/vf_arrayelement.cpp \
+           $${PWD}/vf_bailout.cpp \
            $${PWD}/vf_bitand.cpp \
            $${PWD}/vf_common.cpp \
            $${PWD}/vf_debug.cpp \
            $${PWD}/vf_enumvalue.cpp \
+           $${PWD}/vf_functionreturn.cpp \
            $${PWD}/vf_globalconstvar.cpp \
            $${PWD}/vf_globalstaticvar.cpp \
            $${PWD}/vf_iteratorinfer.cpp \

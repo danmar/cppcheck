@@ -89,7 +89,6 @@
 #include "infer.h"
 #include "library.h"
 #include "mathlib.h"
-#include "path.h"
 #include "platform.h"
 #include "programmemory.h"
 #include "reverseanalyzer.h"
@@ -106,6 +105,7 @@
 #include "vfvalue.h"
 
 #include "vf_analyze.h"
+#include "vf_bailout.h"
 #include "vf_common.h"
 #include "vf_settokenvalue.h"
 
@@ -129,23 +129,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-
-static void bailoutInternal(const std::string& type, const TokenList &tokenlist, ErrorLogger &errorLogger, const Token *tok, const std::string &what, const std::string &file, int line, std::string function)
-{
-    if (function.find("operator") != std::string::npos)
-        function = "(valueFlow)";
-    ErrorMessage::FileLocation loc(tok, &tokenlist);
-    const std::string location = Path::stripDirectoryPart(file) + ":" + std::to_string(line) + ":";
-    ErrorMessage errmsg({std::move(loc)}, tokenlist.getSourceFilePath(), Severity::debug,
-                        (file.empty() ? "" : location) + function + " bailout: " + what, type, Certainty::normal);
-    errorLogger.reportErr(errmsg);
-}
-
-#define bailout2(type, tokenlist, errorLogger, tok, what) bailoutInternal((type), (tokenlist), (errorLogger), (tok), (what), __FILE__, __LINE__, __func__)
-
-#define bailout(tokenlist, errorLogger, tok, what) bailout2("valueFlowBailout", (tokenlist), (errorLogger), (tok), (what))
-
-#define bailoutIncompleteVar(tokenlist, errorLogger, tok, what) bailoutInternal("valueFlowBailoutIncompleteVar", (tokenlist), (errorLogger), (tok), (what), "", 0, __func__)
 
 static void changeKnownToPossible(std::list<ValueFlow::Value> &values, int indirect=-1)
 {
@@ -6476,104 +6459,6 @@ static void valueFlowFunctionDefaultParameter(const TokenList& tokenlist, const 
     }
 }
 
-static const ValueFlow::Value* getKnownValueFromToken(const Token* tok)
-{
-    if (!tok)
-        return nullptr;
-    auto it = std::find_if(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
-        return (v.isIntValue() || v.isContainerSizeValue() || v.isFloatValue()) && v.isKnown();
-    });
-    if (it == tok->values().end())
-        return nullptr;
-    return std::addressof(*it);
-}
-
-static const ValueFlow::Value* getKnownValueFromTokens(const std::vector<const Token*>& toks)
-{
-    if (toks.empty())
-        return nullptr;
-    const ValueFlow::Value* result = getKnownValueFromToken(toks.front());
-    if (!result)
-        return nullptr;
-    if (!std::all_of(std::next(toks.begin()), toks.end(), [&](const Token* tok) {
-        return std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
-            return v.equalValue(*result) && v.valueKind == result->valueKind;
-        });
-    }))
-        return nullptr;
-    return result;
-}
-
-static void setFunctionReturnValue(const Function* f, Token* tok, ValueFlow::Value v, const Settings& settings)
-{
-    if (f->hasVirtualSpecifier()) {
-        if (v.isImpossible())
-            return;
-        v.setPossible();
-    } else if (!v.isImpossible()) {
-        v.setKnown();
-    }
-    v.errorPath.emplace_back(tok, "Calling function '" + f->name() + "' returns " + v.toString());
-    setTokenValue(tok, std::move(v), settings);
-}
-
-static void valueFlowFunctionReturn(TokenList &tokenlist, ErrorLogger &errorLogger, const Settings& settings)
-{
-    for (Token *tok = tokenlist.back(); tok; tok = tok->previous()) {
-        if (tok->str() != "(" || !tok->astOperand1() || tok->isCast())
-            continue;
-
-        const Function* function = nullptr;
-        if (Token::Match(tok->previous(), "%name% ("))
-            function = tok->previous()->function();
-        else
-            function = tok->astOperand1()->function();
-        if (!function)
-            continue;
-        // TODO: Check if member variable is a pointer or reference
-        if (function->isImplicitlyVirtual() && !function->hasFinalSpecifier())
-            continue;
-
-        if (tok->hasKnownValue())
-            continue;
-
-        std::vector<const Token*> returns = Function::findReturns(function);
-        if (returns.empty())
-            continue;
-
-        if (const ValueFlow::Value* v = getKnownValueFromTokens(returns)) {
-            setFunctionReturnValue(function, tok, *v, settings);
-            continue;
-        }
-
-        // Arguments..
-        std::vector<const Token*> arguments = getArguments(tok);
-
-        ProgramMemory programMemory;
-        for (std::size_t i = 0; i < arguments.size(); ++i) {
-            const Variable * const arg = function->getArgumentVar(i);
-            if (!arg) {
-                if (settings.debugwarnings)
-                    bailout(tokenlist, errorLogger, tok, "function return; unhandled argument type");
-                programMemory.clear();
-                break;
-            }
-            const ValueFlow::Value* v = getKnownValueFromToken(arguments[i]);
-            if (!v)
-                continue;
-            programMemory.setValue(arg->nameToken(), *v);
-        }
-        if (programMemory.empty() && !arguments.empty())
-            continue;
-        std::vector<ValueFlow::Value> values = execute(function->functionScope, programMemory, settings);
-        for (const ValueFlow::Value& v : values) {
-            if (v.isUninitValue())
-                continue;
-            setFunctionReturnValue(function, tok, v, settings);
-        }
-    }
-}
-
 static bool needsInitialization(const Variable* var)
 {
     if (!var)
@@ -8043,7 +7928,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
         VFA(valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings)),
         VFA(valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings)),
         VFA(valueFlowSubFunction(tokenlist, symboldatabase, errorLogger, settings)),
-        VFA(valueFlowFunctionReturn(tokenlist, errorLogger, settings)),
+        VFA(analyzeFunctionReturn(tokenlist, errorLogger, settings)),
         VFA(valueFlowLifetime(tokenlist, errorLogger, settings)),
         VFA(valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, errorLogger, settings)),
         VFA(valueFlowUninit(tokenlist, errorLogger, settings)),
