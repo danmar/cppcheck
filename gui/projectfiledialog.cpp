@@ -258,6 +258,7 @@ void ProjectFileDialog::loadSettings()
     QSettings settings;
     resize(settings.value(SETTINGS_PROJECT_DIALOG_WIDTH, 470).toInt(),
            settings.value(SETTINGS_PROJECT_DIALOG_HEIGHT, 330).toInt());
+    //mUI->mInlineSuppressions->setCheckState(settings.value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool() ? Qt::Checked : Qt::Unchecked);
 }
 
 void ProjectFileDialog::saveSettings() const
@@ -367,8 +368,10 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
        mUI->mCheckSafeExternalVariables->setChecked(projectFile->getSafeChecks().externalVariables);
      */
 
-    // Addons..
     QSettings settings;
+    settings.setValue(SETTINGS_INLINE_SUPPRESSIONS, mUI->mInlineSuppressions->isChecked());
+
+    // Addons..
     const QString dataDir = getDataDir();
     updateAddonCheckBox(mUI->mAddonThreadSafety, projectFile, dataDir, "threadsafety");
     updateAddonCheckBox(mUI->mAddonY2038, projectFile, dataDir, "y2038");
