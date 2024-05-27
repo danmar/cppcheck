@@ -5062,3 +5062,11 @@ std::vector<int> containerOutOfBounds_push_back() { // #12775
     }
     return v;
 }
+
+template <typename T>
+void constPointer_push_back(std::vector<T*>& d, const std::vector<T*>& s) {
+    for (const auto& e : s) {
+        T* newE = new T(*e);
+        d.push_back(newE);
+    }
+}
