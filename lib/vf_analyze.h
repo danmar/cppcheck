@@ -29,6 +29,7 @@
 #include "vf_globalstaticvar.h" // IWYU pragma: export
 #include "vf_number.h" // IWYU pragma: export
 #include "vf_pointeralias.h" // IWYU pragma: export
+#include "vf_rightshift.h" // IWYU pragma: export
 #include "vf_sameexpressions.h" // IWYU pragma: export
 #include "vf_string.h" // IWYU pragma: export
 #include "vf_unknownfunctionreturn.h" // IWYU pragma: export

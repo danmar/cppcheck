@@ -540,110 +540,6 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, int m
     return 0;
 }
 
-static bool getExpressionRange(const Token *expr, MathLib::bigint *minvalue, MathLib::bigint *maxvalue)
-{
-    if (expr->hasKnownIntValue()) {
-        if (minvalue)
-            *minvalue = expr->values().front().intvalue;
-        if (maxvalue)
-            *maxvalue = expr->values().front().intvalue;
-        return true;
-    }
-
-    if (expr->str() == "&" && expr->astOperand1() && expr->astOperand2()) {
-        MathLib::bigint vals[4];
-        const bool lhsHasKnownRange = getExpressionRange(expr->astOperand1(), &vals[0], &vals[1]);
-        const bool rhsHasKnownRange = getExpressionRange(expr->astOperand2(), &vals[2], &vals[3]);
-        if (!lhsHasKnownRange && !rhsHasKnownRange)
-            return false;
-        if (!lhsHasKnownRange || !rhsHasKnownRange) {
-            if (minvalue)
-                *minvalue = lhsHasKnownRange ? vals[0] : vals[2];
-            if (maxvalue)
-                *maxvalue = lhsHasKnownRange ? vals[1] : vals[3];
-        } else {
-            if (minvalue)
-                *minvalue = vals[0] & vals[2];
-            if (maxvalue)
-                *maxvalue = vals[1] & vals[3];
-        }
-        return true;
-    }
-
-    if (expr->str() == "%" && expr->astOperand1() && expr->astOperand2()) {
-        MathLib::bigint vals[4];
-        if (!getExpressionRange(expr->astOperand2(), &vals[2], &vals[3]))
-            return false;
-        if (vals[2] <= 0)
-            return false;
-        const bool lhsHasKnownRange = getExpressionRange(expr->astOperand1(), &vals[0], &vals[1]);
-        if (lhsHasKnownRange && vals[0] < 0)
-            return false;
-        // If lhs has unknown value, it must be unsigned
-        if (!lhsHasKnownRange && (!expr->astOperand1()->valueType() || expr->astOperand1()->valueType()->sign != ValueType::Sign::UNSIGNED))
-            return false;
-        if (minvalue)
-            *minvalue = 0;
-        if (maxvalue)
-            *maxvalue = vals[3] - 1;
-        return true;
-    }
-
-    return false;
-}
-
-static void valueFlowRightShift(TokenList &tokenList, const Settings& settings)
-{
-    for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
-        if (tok->str() != ">>")
-            continue;
-
-        if (tok->hasKnownValue())
-            continue;
-
-        if (!tok->astOperand1() || !tok->astOperand2())
-            continue;
-
-        if (!tok->astOperand2()->hasKnownValue())
-            continue;
-
-        const MathLib::bigint rhsvalue = tok->astOperand2()->values().front().intvalue;
-        if (rhsvalue < 0)
-            continue;
-
-        if (!tok->astOperand1()->valueType() || !tok->astOperand1()->valueType()->isIntegral())
-            continue;
-
-        if (!tok->astOperand2()->valueType() || !tok->astOperand2()->valueType()->isIntegral())
-            continue;
-
-        MathLib::bigint lhsmax=0;
-        if (!getExpressionRange(tok->astOperand1(), nullptr, &lhsmax))
-            continue;
-        if (lhsmax < 0)
-            continue;
-        int lhsbits;
-        if ((tok->astOperand1()->valueType()->type == ValueType::Type::CHAR) ||
-            (tok->astOperand1()->valueType()->type == ValueType::Type::SHORT) ||
-            (tok->astOperand1()->valueType()->type == ValueType::Type::WCHAR_T) ||
-            (tok->astOperand1()->valueType()->type == ValueType::Type::BOOL) ||
-            (tok->astOperand1()->valueType()->type == ValueType::Type::INT))
-            lhsbits = settings.platform.int_bit;
-        else if (tok->astOperand1()->valueType()->type == ValueType::Type::LONG)
-            lhsbits = settings.platform.long_bit;
-        else if (tok->astOperand1()->valueType()->type == ValueType::Type::LONGLONG)
-            lhsbits = settings.platform.long_long_bit;
-        else
-            continue;
-        if (rhsvalue >= lhsbits || rhsvalue >= MathLib::bigint_bits || (1ULL << rhsvalue) <= lhsmax)
-            continue;
-
-        ValueFlow::Value val(0);
-        val.setKnown();
-        setTokenValue(tok, std::move(val), settings);
-    }
-}
-
 static std::vector<MathLib::bigint> minUnsignedValue(const Token* tok, int depth = 8)
 {
     std::vector<MathLib::bigint> result;
@@ -8219,7 +8115,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
         VFA(valueFlowSymbolicInfer(symboldatabase, settings)),
         VFA(analyzeArrayBool(tokenlist, settings)),
         VFA(analyzeArrayElement(tokenlist, settings)),
-        VFA(valueFlowRightShift(tokenlist, settings)),
+        VFA(analyzeRightShift(tokenlist, settings)),
         VFA(valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
         VFA_CPP(valueFlowAfterSwap(tokenlist, symboldatabase, errorLogger, settings)),
         VFA(valueFlowCondition(SimpleConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
