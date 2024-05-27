@@ -97,6 +97,7 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/vf_sameexpressions.h \
            $${PWD}/vf_settokenvalue.h \
            $${PWD}/vf_string.h \
+           $${PWD}/vf_symbolicinfer.h \
            $${PWD}/vf_unknownfunctionreturn.h \
            $${PWD}/vfvalue.h \
            $${PWD}/xml.h
@@ -182,5 +183,6 @@ SOURCES += $${PWD}/valueflow.cpp \
            $${PWD}/vf_sameexpressions.cpp \
            $${PWD}/vf_settokenvalue.cpp \
            $${PWD}/vf_string.cpp \
+           $${PWD}/vf_symbolicinfer.cpp \
            $${PWD}/vf_unknownfunctionreturn.cpp \
            $${PWD}/vfvalue.cpp

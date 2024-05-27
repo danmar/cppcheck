@@ -4266,63 +4266,6 @@ static void valueFlowSymbolicOperators(const SymbolDatabase& symboldatabase, con
     }
 }
 
-struct SymbolicInferModel : InferModel {
-    const Token* expr;
-    explicit SymbolicInferModel(const Token* tok) : expr(tok) {
-        assert(expr->exprId() != 0);
-    }
-    bool match(const ValueFlow::Value& value) const override
-    {
-        return value.isSymbolicValue() && value.tokvalue && value.tokvalue->exprId() == expr->exprId();
-    }
-    ValueFlow::Value yield(MathLib::bigint value) const override
-    {
-        ValueFlow::Value result(value);
-        result.valueType = ValueFlow::Value::ValueType::SYMBOLIC;
-        result.tokvalue = expr;
-        result.setKnown();
-        return result;
-    }
-};
-
-static void valueFlowSymbolicInfer(const SymbolDatabase& symboldatabase, const Settings& settings)
-{
-    for (const Scope* scope : symboldatabase.functionScopes) {
-        for (auto* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "-|%comp%"))
-                continue;
-            if (tok->hasKnownIntValue())
-                continue;
-            if (!tok->astOperand1())
-                continue;
-            if (!tok->astOperand2())
-                continue;
-            if (tok->astOperand1()->exprId() == 0)
-                continue;
-            if (tok->astOperand2()->exprId() == 0)
-                continue;
-            if (tok->astOperand1()->hasKnownIntValue())
-                continue;
-            if (tok->astOperand2()->hasKnownIntValue())
-                continue;
-            if (astIsFloat(tok->astOperand1(), false))
-                continue;
-            if (astIsFloat(tok->astOperand2(), false))
-                continue;
-
-            SymbolicInferModel leftModel{tok->astOperand1()};
-            std::vector<ValueFlow::Value> values = infer(leftModel, tok->str(), 0, tok->astOperand2()->values());
-            if (values.empty()) {
-                SymbolicInferModel rightModel{tok->astOperand2()};
-                values = infer(rightModel, tok->str(), tok->astOperand1()->values(), 0);
-            }
-            for (ValueFlow::Value& value : values) {
-                setTokenValue(tok, std::move(value), settings);
-            }
-        }
-    }
-}
-
 template<class ContainerOfValue>
 static void valueFlowForwardConst(Token* start,
                                   const Token* end,

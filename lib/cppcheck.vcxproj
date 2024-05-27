@@ -106,6 +106,7 @@
     <ClCompile Include="vf_sameexpressions.cpp" />
     <ClCompile Include="vf_settokenvalue.cpp" />
     <ClCompile Include="vf_string.cpp" />
+    <ClCompile Include="vf_symbolicinfer.cpp" />
     <ClCompile Include="vf_unknownfunctionreturn.cpp" />
     <ClCompile Include="vfvalue.cpp" />
   </ItemGroup>
@@ -206,6 +207,7 @@
     <ClInclude Include="vf_sameexpressions.h" />
     <ClInclude Include="vf_settokenvalue.h" />
     <ClInclude Include="vf_string.h" />
+    <ClInclude Include="vf_symbolicinfer.h" />
     <ClInclude Include="vf_unknownfunctionreturn.h" />
     <ClInclude Include="vfvalue.h" />
     <ClInclude Include="xml.h" />
