@@ -2434,8 +2434,7 @@ private:
               "       foo[ii] = 'x';\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) When ii==foo.size(), foo[ii] is out of bounds.\n",
-                      errout_str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) When ii==foo.size(), foo[ii] is out of bounds.\n", errout_str());
 
         check("void foo(std::string& foo, unsigned int ii) {\n"
               "    if (ii <= foo.length()) {\n"
