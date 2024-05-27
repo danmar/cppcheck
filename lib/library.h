@@ -291,7 +291,8 @@ public:
             DIR_INOUT,  ///< Input to called function, and output to caller. Data is passed by reference or address and is potentially modified.
             DIR_UNKNOWN ///< direction not known / specified
         };
-        std::array<Direction, 4> direction = { { Direction::DIR_UNKNOWN, Direction::DIR_UNKNOWN, Direction::DIR_UNKNOWN, Direction::DIR_UNKNOWN } };
+        // argument directions up to ** indirect level (only one can be configured explicitly at the moment)
+        std::array<Direction, 3> direction = { { Direction::DIR_UNKNOWN, Direction::DIR_UNKNOWN, Direction::DIR_UNKNOWN } };
     };
 
     struct Function {

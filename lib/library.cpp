@@ -748,9 +748,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                 }
                 if (const char* const argIndirect = functionnode->Attribute("indirect")) {
                     const int indirect = strToInt<int>(argIndirect);
-                    for (int i = 0; i < ac.direction.size(); ++i)
-                        if ((indirect & (1 << i)) != 0)
-                            ac.direction[i] = dir;
+                    ac.direction[indirect] = dir; // TODO: handle multiple directions/indirect levels
                 }
                 else
                     ac.direction.fill(dir);
