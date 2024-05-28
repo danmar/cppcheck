@@ -2843,9 +2843,16 @@ static bool isExpressionChangedAt(const F& getExprTok,
     if (!isMutableExpression(tok))
         return false;
     if (tok->exprId() != exprid || (!tok->varId() && !tok->isName())) {
-        if (globalvar && Token::Match(tok, "%name% (") && !(tok->function() && tok->function()->isAttributePure()))
+        if (globalvar && Token::Match(tok, "%name% (") &&
+            (!(tok->function() && (tok->function()->isAttributePure() || tok->function()->isAttributeConst())))) {
+            if (!Token::simpleMatch(tok->astParent(), "."))
+                return true;
+            const auto yield = astContainerYield(tok->astParent()->astOperand1());
+            if (yield != Library::Container::Yield::SIZE && yield != Library::Container::Yield::EMPTY &&
+                yield != Library::Container::Yield::BUFFER && yield != Library::Container::Yield::BUFFER_NT)
             // TODO: Is global variable really changed by function call?
             return true;
+        }
         int i = 1;
         bool aliased = false;
         // If we can't find the expression then assume it is an alias
