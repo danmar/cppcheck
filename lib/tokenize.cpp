@@ -6233,12 +6233,11 @@ void Tokenizer::simplifyHeadersAndUnusedTemplates()
             }
             if (start && start->str() == ":") {
                 const Token *next = start;
-                while (Token::Match(next, "[,:]")) {
-                    // Skip to ( or {
-                    while (next && !next->link())
-                        next = next->next();
-                    if (next) {
-                        next = next->link();
+                while (Token::Match(next, "[,:] %name%")) {
+                    next = next->next(); // Go to %name%
+                    next = next->next(); // Go to opening '(' or '{'
+                    if (next && next->link()) {
+                        next = next->link(); // Go to closing ')' or '}'
                         next = next->next(); // Go to next, either ',' or '{'
                     }
                 }
