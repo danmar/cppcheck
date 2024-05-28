@@ -89,6 +89,7 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/vf_functionreturn.h \
            $${PWD}/vf_globalconstvar.h \
            $${PWD}/vf_globalstaticvar.h \
+           $${PWD}/vf_impossiblevalues.h \
            $${PWD}/vf_iteratorinfer.h \
            $${PWD}/vf_iterators.h \
            $${PWD}/vf_number.h \
@@ -175,6 +176,7 @@ SOURCES += $${PWD}/valueflow.cpp \
            $${PWD}/vf_functionreturn.cpp \
            $${PWD}/vf_globalconstvar.cpp \
            $${PWD}/vf_globalstaticvar.cpp \
+           $${PWD}/vf_impossiblevalues.cpp \
            $${PWD}/vf_iteratorinfer.cpp \
            $${PWD}/vf_iterators.cpp \
            $${PWD}/vf_number.cpp \
