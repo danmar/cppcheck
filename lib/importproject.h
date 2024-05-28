@@ -163,6 +163,7 @@ namespace CppcheckXml {
     static constexpr char MaxCtuDepthElementName[] = "max-ctu-depth";
     static constexpr char MaxTemplateRecursionElementName[] = "max-template-recursion";
     static constexpr char CheckUnknownFunctionReturn[] = "check-unknown-function-return-values";
+    static constexpr char NoInlineSuppression[] = "no-inline-suppression";
     static constexpr char ClangTidy[] = "clang-tidy";
     static constexpr char Name[] = "name";
     static constexpr char VSConfigurationElementName[] = "vs-configurations";

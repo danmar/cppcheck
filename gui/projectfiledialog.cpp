@@ -258,7 +258,6 @@ void ProjectFileDialog::loadSettings()
     QSettings settings;
     resize(settings.value(SETTINGS_PROJECT_DIALOG_WIDTH, 470).toInt(),
            settings.value(SETTINGS_PROJECT_DIALOG_HEIGHT, 330).toInt());
-    //mUI->mInlineSuppressions->setCheckState(settings.value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool() ? Qt::Checked : Qt::Unchecked);
 }
 
 void ProjectFileDialog::saveSettings() const
@@ -313,6 +312,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
         mUI->mCheckLevelNormal->setChecked(true);
     mUI->mCheckHeaders->setChecked(projectFile->getCheckHeaders());
     mUI->mCheckUnusedTemplates->setChecked(projectFile->getCheckUnusedTemplates());
+    mUI->mInlineSuppressions->setChecked(projectFile->getInlineSuppression());
     mUI->mMaxCtuDepth->setValue(projectFile->getMaxCtuDepth());
     mUI->mMaxTemplateRecursion->setValue(projectFile->getMaxTemplateRecursion());
     if (projectFile->clangParser)
@@ -368,10 +368,8 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
        mUI->mCheckSafeExternalVariables->setChecked(projectFile->getSafeChecks().externalVariables);
      */
 
-    QSettings settings;
-    settings.setValue(SETTINGS_INLINE_SUPPRESSIONS, mUI->mInlineSuppressions->isChecked());
-
     // Addons..
+    QSettings settings;
     const QString dataDir = getDataDir();
     updateAddonCheckBox(mUI->mAddonThreadSafety, projectFile, dataDir, "threadsafety");
     updateAddonCheckBox(mUI->mAddonY2038, projectFile, dataDir, "y2038");
@@ -438,6 +436,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setVSConfigurations(getProjectConfigurations());
     projectFile->setCheckHeaders(mUI->mCheckHeaders->isChecked());
     projectFile->setCheckUnusedTemplates(mUI->mCheckUnusedTemplates->isChecked());
+    projectFile->setInlineSuppression(mUI->mInlineSuppressions->isChecked());
     projectFile->setMaxCtuDepth(mUI->mMaxCtuDepth->value());
     projectFile->setMaxTemplateRecursion(mUI->mMaxTemplateRecursion->value());
     projectFile->setIncludes(getIncludePaths());

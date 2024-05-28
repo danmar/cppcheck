@@ -108,6 +108,21 @@ public:
     }
 
     /**
+     * @brief Get inline suppression usage.
+     * @return inline suppression usage.
+     */
+    bool getInlineSuppression() const {
+        return mInlineSuppression;
+    }
+
+    /**
+     * @brief Set inline suppression usage.
+     */
+    void setInlineSuppression(bool b) {
+        mInlineSuppression = b;
+    }
+
+    /**
      * @brief Get list of include directories.
      * @return list of directories.
      */
@@ -556,6 +571,11 @@ private:
 
     /** Check code in unused templates */
     bool mCheckUnusedTemplates;
+
+    /**
+     * @brief Usage of inline suppression.
+     */
+    bool mInlineSuppression;
 
     /**
      * @brief List of include directories used to search include files.
