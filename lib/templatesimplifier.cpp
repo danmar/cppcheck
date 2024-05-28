@@ -4011,7 +4011,7 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
                 continue;
             }
 
-            const std::string strop = op->str(); // cppcheck-suppress redundantCopyLocalConst
+            const std::string strop = op->str();
             const std::string strargs = (args && args->isName()) ? args->str() : "";
 
             Token::eraseTokens(tok, tok->link());
