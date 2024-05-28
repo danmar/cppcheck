@@ -1407,8 +1407,20 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     }
 
     if (!mPathNames.empty() && project.projectType != ImportProject::Type::NONE) {
-        mLogger.printError("--project cannot be used in conjunction with source files.");
-        return Result::Fail;
+        if (project.fileSettings.empty()) {
+            // FIXME should we enforce that mPathNames belong in the project?
+            project.guiProject.pathNames = mPathNames;
+        } else {
+            // convert mPathNames to file filters..
+            // FIXME warn about paths that does not have any matches?
+            for (const auto &path : mPathNames) {
+                if (Path::isDirectory(path))
+                    mSettings.fileFilters.emplace_back(path + "/*");
+                else
+                    mSettings.fileFilters.emplace_back(path);
+            }
+        }
+        mPathNames.clear();
     }
 
     // Print error only if we have "real" command and expect files
