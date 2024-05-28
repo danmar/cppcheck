@@ -2850,8 +2850,8 @@ static bool isExpressionChangedAt(const F& getExprTok,
             const auto yield = astContainerYield(tok->astParent()->astOperand1());
             if (yield != Library::Container::Yield::SIZE && yield != Library::Container::Yield::EMPTY &&
                 yield != Library::Container::Yield::BUFFER && yield != Library::Container::Yield::BUFFER_NT)
-            // TODO: Is global variable really changed by function call?
-            return true;
+                // TODO: Is global variable really changed by function call?
+                return true;
         }
         int i = 1;
         bool aliased = false;
