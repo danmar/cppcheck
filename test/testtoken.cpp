@@ -1159,8 +1159,9 @@ private:
     }
 
     void findClosingBracket3() {
-        const SimpleTokenizer var(*this, "template <size_t I = 0, typename... ArgsT, std::enable_if_t<I < sizeof...(ArgsT)>* = nullptr>\n" // #12789
-                                         "void f();\n");
+        const SimpleTokenizer var(*this, // #12789
+                                  "template <size_t I = 0, typename... ArgsT, std::enable_if_t<I < sizeof...(ArgsT)>* = nullptr>\n"
+                                  "void f();\n");
         const Token* const t = Token::findsimplematch(var.tokens(), "<");
         ASSERT(t && Token::simpleMatch(t->findClosingBracket(), ">"));
     }
