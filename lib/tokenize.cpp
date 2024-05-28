@@ -8782,12 +8782,8 @@ void Tokenizer::findGarbageCode() const
     // Garbage templates..
     if (isCPP()) {
         for (const Token *tok = tokens(); tok; tok = tok->next()) {
-            if (Token::simpleMatch(tok, "< >")) {
-                if (!(Token::Match(tok->tokAt(-1), "%name%") || (tok->tokAt(-1) && Token::Match(tok->tokAt(-2), "operator %op%"))))
-                    syntaxError(tok);
-                if (!tok->tokAt(-1) || tok->tokAt(-1)->isLiteral())
-                    syntaxError(tok);
-            }
+            if (Token::simpleMatch(tok, "< >") && !(Token::Match(tok->tokAt(-1), "%name%") || (tok->tokAt(-1) && Token::Match(tok->tokAt(-2), "operator %op%"))))
+                syntaxError(tok);
             if (!Token::simpleMatch(tok, "template <"))
                 continue;
             if (!tok->tokAt(2) || tok->tokAt(2)->isLiteral())
