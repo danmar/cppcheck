@@ -5463,7 +5463,7 @@ private:
         // remove some unhandled macros in the global scope.
         ASSERT_EQUALS("void f ( ) { }", tokenizeAndStringify("void f() NOTHROW { }"));
         ASSERT_EQUALS("struct Foo { } ;", tokenizeAndStringify("struct __declspec(dllexport) Foo {};"));
-        ASSERT_EQUALS("namespace { int a ; }", tokenizeAndStringify("ABA() namespace { int a ; }"));
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("ABA() namespace { int a ; }"), UNKNOWN_MACRO);
 
         // #3750
         ASSERT_THROW_INTERNAL(tokenizeAndStringify("; AB(foo*) foo::foo() { }"), UNKNOWN_MACRO);

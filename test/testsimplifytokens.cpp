@@ -586,9 +586,7 @@ private:
         {
             const char code[] = "void f(int namespace) { }";
 
-            const char expected[] = "void f ( int namespace ) { }";
-
-            ASSERT_EQUALS(expected, tok(code));
+            ASSERT_THROW_INTERNAL(tok(code), SYNTAX);
         }
     }
 

@@ -8706,7 +8706,7 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, ": [)]=]"))
             syntaxError(tok);
-        if (Token::Match(tok, "typedef [,;]"))
+        if (Token::Match(tok, "typedef [,;:]"))
             syntaxError(tok);
         if (Token::Match(tok, "! %comp%"))
             syntaxError(tok);
@@ -8747,6 +8747,16 @@ void Tokenizer::findGarbageCode() const
                     syntaxError(tok);
             }
         }
+        if (isCPP() && tok->str() == "namespace" && tok->tokAt(-1)) {
+            if (!Token::Match(tok->tokAt(-1), ";|{|}|using|inline")) {
+                if (tok->tokAt(-1)->isUpperCaseName())
+                    unknownMacroError(tok->tokAt(-1));
+                else if (tok->linkAt(-1) && tok->linkAt(-1)->tokAt(-1) && tok->linkAt(-1)->tokAt(-1)->isUpperCaseName())
+                    unknownMacroError(tok->linkAt(-1)->tokAt(-1));
+                else
+                    syntaxError(tok);
+            }
+        }
     }
 
     // ternary operator without :
@@ -8772,10 +8782,16 @@ void Tokenizer::findGarbageCode() const
     // Garbage templates..
     if (isCPP()) {
         for (const Token *tok = tokens(); tok; tok = tok->next()) {
-            if (Token::simpleMatch(tok, "< >") && !(Token::Match(tok->tokAt(-1), "%name%") || (tok->tokAt(-1) && Token::Match(tok->tokAt(-2), "operator %op%"))))
-                syntaxError(tok);
+            if (Token::simpleMatch(tok, "< >")) {
+                if (!(Token::Match(tok->tokAt(-1), "%name%") || (tok->tokAt(-1) && Token::Match(tok->tokAt(-2), "operator %op%"))))
+                    syntaxError(tok);
+                if (!tok->tokAt(-1) || tok->tokAt(-1)->isLiteral())
+                    syntaxError(tok);
+            }
             if (!Token::simpleMatch(tok, "template <"))
                 continue;
+            if (!tok->tokAt(2) || tok->tokAt(2)->isLiteral())
+                syntaxError(tok);
             if (tok->previous() && !Token::Match(tok->previous(), ":|;|{|}|)|>|\"C++\"")) {
                 if (tok->previous()->isUpperCaseName())
                     unknownMacroError(tok->previous());
