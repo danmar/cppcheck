@@ -14,7 +14,6 @@
 #
 # Total number of rules: 143
 
-from __future__ import print_function
 
 import cppcheckdata
 import itertools
@@ -536,9 +535,9 @@ def get_essential_type_from_value(value, is_signed):
             range_max = (1 << bits) - 1
         sign = 'signed' if is_signed else 'unsigned'
         if is_signed and value < 0 and value >= range_min:
-            return '%s %s' % (sign, t)
+            return '{} {}'.format(sign, t)
         if value >= 0 and value <= range_max:
-            return '%s %s' % (sign, t)
+            return '{} {}'.format(sign, t)
     return None
 
 def getEssentialType(expr):
@@ -549,7 +548,7 @@ def getEssentialType(expr):
     if expr.str[0] == "'" and expr.str[-1] == "'":
         if len(expr.str) == 3 or (len(expr.str) == 4 and expr.str[1] == '\\'):
             return 'char'
-        return '%s %s' % (expr.valueType.sign, expr.valueType.type)
+        return '{} {}'.format(expr.valueType.sign, expr.valueType.type)
 
     if expr.variable or isCast(expr):
         typeToken = expr.variable.typeStartToken if expr.variable else expr.next
@@ -565,7 +564,7 @@ def getEssentialType(expr):
             if expr.valueType.isIntegral():
                 if (expr.valueType.sign is None) and expr.valueType.type == 'char':
                     return 'char'
-                return '%s %s' % (expr.valueType.sign, expr.valueType.type)
+                return '{} {}'.format(expr.valueType.sign, expr.valueType.type)
 
     elif expr.isNumber:
         # Appendix D, D.6 The essential type of literal constants
@@ -576,7 +575,7 @@ def getEssentialType(expr):
             return expr.valueType.type
         if expr.valueType.isIntegral():
             if expr.valueType.type != 'int':
-                return '%s %s' % (expr.valueType.sign, expr.valueType.type)
+                return '{} {}'.format(expr.valueType.sign, expr.valueType.type)
             return get_essential_type_from_value(expr.getKnownIntValue(), expr.valueType.sign == 'signed')
 
     elif expr.str in ('<', '<=', '>=', '>', '==', '!=', '&&', '||', '!'):
@@ -1169,7 +1168,7 @@ class Define:
         attrs = ["name", "args", "expansionList"]
         return "{}({})".format(
             "Define",
-            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+            ", ".join(f"{a}={repr(getattr(self, a))}" for a in attrs)
         )
 
 
@@ -1285,7 +1284,7 @@ def remove_file_prefix(file_path, prefix):
     return result
 
 
-class Rule(object):
+class Rule:
     """Class to keep rule text and metadata"""
 
     MISRA_SEVERITY_LEVELS = ['Required', 'Mandatory', 'Advisory']
@@ -1319,7 +1318,7 @@ class Rule(object):
         return "%d.%d (%s)" % (self.num1, self.num2, self.misra_severity)
 
 
-class MisraSettings(object):
+class MisraSettings:
     """Hold settings for misra.py script."""
 
     __slots__ = ["verify", "quiet", "show_summary"]
@@ -1346,7 +1345,7 @@ class MisraSettings(object):
         attrs = ["verify", "quiet", "show_summary", "verify"]
         return "{}({})".format(
             "MisraSettings",
-            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+            ", ".join(f"{a}={repr(getattr(self, a))}" for a in attrs)
         )
 
 
@@ -1408,7 +1407,7 @@ class MisraChecker:
                  "suppressionStats", "stdversion", "severity"]
         return "{}({})".format(
             "MisraChecker",
-            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+            ", ".join(f"{a}={repr(getattr(self, a))}" for a in attrs)
         )
 
     def get_num_significant_naming_chars(self, cfg):
@@ -3348,7 +3347,7 @@ class MisraChecker:
                                     has_var = True
                                     continue
                                 unknown_constant = True
-                                self.report_config_error(tok, 'Unknown constant {}, please review configuration'.format(t.str))
+                                self.report_config_error(tok, f'Unknown constant {t.str}, please review configuration')
                             if t.isArithmeticalOp:
                                 tokens += [t.astOperand1, t.astOperand2]
                     if not unknown_constant and not has_var:
@@ -4335,7 +4334,7 @@ class MisraChecker:
             if self.severity:
                 cppcheck_severity = self.severity
 
-            this_violation = '{}-{}-{}-{}'.format(location.file, location.linenr, location.column, ruleNum)
+            this_violation = f'{location.file}-{location.linenr}-{location.column}-{ruleNum}'
 
             # If this is new violation then record it and show it. If not then
             # skip it since it has already been displayed.
@@ -4376,10 +4375,10 @@ class MisraChecker:
             print('If you know the codec please report it to the developers so the list can be enhanced.')
             print('Trying with default codec now and ignoring errors if possible ...')
             try:
-                file_stream = open(filename, 'rt', errors='ignore')
+                file_stream = open(filename, errors='ignore')
             except TypeError:
                 # Python 2 does not support the errors parameter
-                file_stream = open(filename, 'rt')
+                file_stream = open(filename)
 
         rule = None
         have_severity = False
@@ -4537,7 +4536,7 @@ class MisraChecker:
 
         for cfgNumber, cfg in enumerate(data.iterconfigurations()):
             if not self.settings.quiet:
-                self.printStatus('Checking %s, config %s...' % (dumpfile, cfg.name))
+                self.printStatus('Checking {}, config {}...'.format(dumpfile, cfg.name))
 
             self.executeCheck(102, self.misra_1_2, cfg)
             if not path_premium_addon:
@@ -4720,7 +4719,7 @@ class MisraChecker:
 
         try:
             for filename in ctu_info_files:
-                for line in open(filename, 'rt'):
+                for line in open(filename):
                     s = self.read_ctu_info_line(line)
                     if s is None:
                         continue

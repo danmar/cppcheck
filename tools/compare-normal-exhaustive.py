@@ -13,7 +13,7 @@ import subprocess
 
 def format_float(a, b=1):
     if a > 0 and b > 0:
-        return '{:.2f}'.format(a / b)
+        return f'{a / b:.2f}'
     return 'N/A'
 
 
@@ -70,7 +70,7 @@ if __name__ == "__main__":
             lib.clone_cppcheck(cppcheck_path, '')
             pass
         except Exception as e:
-            print('Failed to clone Cppcheck repository ({}), retry later'.format(e))
+            print(f'Failed to clone Cppcheck repository ({e}), retry later')
             sys.exit(1)
 
         if not lib.compile_cppcheck(cppcheck_path):

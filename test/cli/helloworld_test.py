@@ -1,4 +1,3 @@
-
 # python -m pytest test-helloworld.py
 
 import os
@@ -210,14 +209,14 @@ def test_checkers_report():
 
         cppcheck(args.split())
 
-        with open(filename, 'rt') as f:
+        with open(filename) as f:
             data = f.read()
             assert 'No   CheckAutoVariables::assignFunctionArg' in data
             assert 'Yes  CheckAutoVariables::autoVariables' in data
 
         args = '--enable=style ' + args
         cppcheck(args.split())
-        with open(filename, 'rt') as f:
+        with open(filename) as f:
             data = f.read()
             # checker has been activated by --enable=style
             assert 'Yes  CheckAutoVariables::assignFunctionArg' in data

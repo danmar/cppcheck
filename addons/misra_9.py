@@ -35,7 +35,7 @@ class ElementDef:
             "ElementDef",
             self.getLongName(),
             inits,
-            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+            ", ".join(f"{a}={repr(getattr(self, a))}" for a in attrs)
         )
 
     @property
@@ -521,7 +521,7 @@ def createRecordChildrenDefs(ed, var):
                     child = getElementDef(variable.nameToken)
                     ed1.addChild(child)
                 child_dict[scopes.bodyStart] = ed1
-    sorted_keys = sorted(list(child_dict.keys()), key=lambda k: "%s %s %s" % (k.file, k.linenr, k.column))
+    sorted_keys = sorted(list(child_dict.keys()), key=lambda k: "{} {} {}".format(k.file, k.linenr, k.column))
     for _key in sorted_keys:
         ed.addChild(child_dict[_key])
 

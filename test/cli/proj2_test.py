@@ -1,4 +1,3 @@
-
 # python -m pytest test-proj2.py
 
 import json
@@ -20,7 +19,7 @@ def realpath(s):
 def create_compile_commands():
     j = [{'directory': realpath('proj2/a'), 'command': 'gcc -c a.c', 'file': 'a.c'},
          {'directory': realpath('proj2'), 'command': 'gcc -c b/b.c', 'file': 'b/b.c'}]
-    with open('proj2/' + COMPILE_COMMANDS_JSON, 'wt') as f:
+    with open('proj2/' + COMPILE_COMMANDS_JSON, 'w') as f:
         f.write(json.dumps(j))
 
 # Run Cppcheck from project path

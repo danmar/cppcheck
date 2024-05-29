@@ -1,4 +1,3 @@
-
 import cppcheckdata, sys, os
 
 __checkers__ = []
@@ -33,7 +32,7 @@ def runcheckers():
 
         for cfg in data.iterconfigurations():
             if not args.quiet:
-                print('Checking %s, config %s...' % (dumpfile, cfg.name))
+                print('Checking {}, config {}...'.format(dumpfile, cfg.name))
             for c in __checkers__:
                 __errorid__ = c.__name__
                 c(cfg, data)

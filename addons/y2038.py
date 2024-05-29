@@ -12,7 +12,6 @@
 # $ cppcheck --addon=y2038 path-to-src/test.c
 #
 
-from __future__ import print_function
 
 import cppcheckdata
 import sys
@@ -157,7 +156,7 @@ def check_y2038_safe(dumpfile, quiet=False):
     srcfile = data.files[0]
     for cfg in data.iterconfigurations():
         if not quiet:
-            print('Checking %s, config %s...' % (srcfile, cfg.name))
+            print('Checking {}, config {}...'.format(srcfile, cfg.name))
         safe_ranges = []
         safe = -1
         time_bits_defined = False

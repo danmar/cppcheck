@@ -22,7 +22,7 @@ def upload(file_to_upload, destination):
         child.expect('Password:')
         child.sendline(password)
         child.interact()
-    except (IOError, OSError, pexpect.TIMEOUT):
+    except (OSError, pexpect.TIMEOUT):
         pass
 
 
@@ -34,7 +34,7 @@ def gitpush():
         child.expect("Enter passphrase for key '/home/daniel/.ssh/id_rsa':")
         child.sendline(password)
         child.interact()
-    except (IOError, OSError, pexpect.TIMEOUT):
+    except (OSError, pexpect.TIMEOUT):
         pass
 
 
@@ -72,7 +72,7 @@ def gitpull():
         child.expect('Already up-to-date.')
         child.interact()
 
-    except (IOError, OSError, pexpect.TIMEOUT):
+    except (OSError, pexpect.TIMEOUT):
         pass
     except pexpect.EOF:
         return True
