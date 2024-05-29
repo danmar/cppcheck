@@ -8784,6 +8784,8 @@ void Tokenizer::findGarbageCode() const
         for (const Token *tok = tokens(); tok; tok = tok->next()) {
             if (Token::simpleMatch(tok, "< >") && !(Token::Match(tok->tokAt(-1), "%name%") || (tok->tokAt(-1) && Token::Match(tok->tokAt(-2), "operator %op%"))))
                 syntaxError(tok);
+            if (Token::simpleMatch(tok, ": template") && !Token::Match(tok->tokAt(-1), "public|private|protected"))
+                syntaxError(tok);
             if (!Token::simpleMatch(tok, "template <"))
                 continue;
             if (!tok->tokAt(2) || tok->tokAt(2)->isLiteral())
