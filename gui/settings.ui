@@ -136,7 +136,7 @@
          </property>
         </widget>
        </item>
-        <item>
+       <item>
         <widget class="QCheckBox" name="mInlineSuppressions">
          <property name="text">
           <string>Enable inline suppressions</string>
