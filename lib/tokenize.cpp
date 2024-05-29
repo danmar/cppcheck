@@ -8790,20 +8790,19 @@ void Tokenizer::findGarbageCode() const
                 continue;
             if (!tok->tokAt(2) || tok->tokAt(2)->isLiteral())
                 syntaxError(tok);
-            if (tok->previous() && !Token::Match(tok->previous(), ":|;|{|}|)|>|\"C++\"")) {
+            if (tok->previous() && !Token::Match(tok->previous(), ":|,|;|{|}|)|<|>|\"C++\"")) {
                 if (tok->previous()->isUpperCaseName())
                     unknownMacroError(tok->previous());
                 else
                     syntaxError(tok);
             }
-            const Token * const tok1 = tok;
-            tok = tok->next()->findClosingBracket();
-            if (!tok)
-                syntaxError(tok1);
-            if (!Token::Match(tok, ">|>> ::|...| %name%") &&
-                !Token::Match(tok, ">|>> [ [ %name%") &&
-                !Token::Match(tok, "> >|*"))
-                syntaxError(tok->next() ? tok->next() : tok1);
+            const Token * const tok1 = tok->next()->findClosingBracket();
+            if (!tok1)
+                syntaxError(tok);
+            if (!Token::Match(tok1, ">|>> ::|...| %name%") &&
+                !Token::Match(tok1, ">|>> [ [ %name%") &&
+                !Token::Match(tok1, "> >|*"))
+                syntaxError(tok1->next() ? tok1->next() : tok);
         }
     }
 
