@@ -98,10 +98,7 @@ jobs:
       - name: run pylint
         if: matrix.python-latest
         run: |
-          echo "FIXME pylint is disabled for now because it fails to import files:"
-          echo "FIXME addons/runaddon.py:1:0: E0401: Unable to import 'cppcheckdata' (import-error)"
-          echo "FIXME addons/runaddon.py:1:0: E0401: Unable to import 'cppcheck' (import-error)"
-          # pylint --rcfile=pylintrc_travis --jobs $(nproc) addons/*.py htmlreport/cppcheck-htmlreport htmlreport/*.py tools/*.py
+          pylint --rcfile=pylintrc_travis --jobs $(nproc) addons/*.py htmlreport/cppcheck-htmlreport htmlreport/*.py tools/*.py
 
       - name: check .json files
         if: matrix.python-latest
