@@ -98,7 +98,7 @@ jobs:
       - name: run pylint
         if: matrix.python-latest
         run: |
-          pylint --rcfile=pylintrc_travis --jobs $(nproc) addons/*.py htmlreport/cppcheck-htmlreport htmlreport/*.py tools/*.py
+          pylint --jobs $(nproc) addons/*.py htmlreport/cppcheck-htmlreport htmlreport/*.py tools/*.py
 
       - name: check .json files
         if: matrix.python-latest
