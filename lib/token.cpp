@@ -943,9 +943,6 @@ const Token * Token::findClosingBracket() const
 
     unsigned int depth = 0;
     for (closing = this; closing != nullptr; closing = closing->next()) {
-        if (Token::simpleMatch(closing, "< >") &&
-            !(Token::Match(closing->tokAt(-1), "%name%") || (closing->tokAt(-1) && Token::Match(closing->tokAt(-2), "operator %op%"))))
-            return nullptr;
         if (Token::Match(closing, "{|[|(")) {
             closing = closing->link();
             if (!closing)
