@@ -1,10 +1,9 @@
 # python -m pytest test-other.py
 
 import os
-import sys
 import pytest
 
-from testutils import cppcheck, assert_cppcheck
+from testutils import cppcheck
 
 
 

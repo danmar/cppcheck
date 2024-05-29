@@ -1,4 +1,3 @@
-import cppcheckdata
 
 # Holds information about an array, struct or union's element definition.
 class ElementDef:
@@ -527,7 +526,7 @@ def createRecordChildrenDefs(ed, var):
 
 
 def getElementByDesignator(ed, token):
-    if not token.str in [ '.', '[' ]:
+    if token.str not in [ '.', '[' ]:
         return None
 
     while token.str in [ '.', '[' ]:

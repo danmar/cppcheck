@@ -2,7 +2,6 @@ import errno
 import logging
 import os
 import select
-import signal
 import subprocess
 import time
 

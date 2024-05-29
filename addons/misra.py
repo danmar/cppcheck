@@ -2712,7 +2712,7 @@ class MisraChecker:
 
     def misra_12_2(self, data):
         for token in data.tokenlist:
-            if not (token.str in ('<<', '>>')):
+            if token.str not in ('<<', '>>'):
                 continue
             if (not token.astOperand2) or (not token.astOperand2.values):
                 continue
@@ -2856,7 +2856,7 @@ class MisraChecker:
                 continue
             if token.astOperand1.str == '[' and token.astOperand1.previous.str in ('{', ','):
                 continue
-            if not (token.astParent.str in [',', ';', '{']):
+            if token.astParent.str not in [',', ';', '{']:
                 self.reportError(token, 13, 4)
 
     def misra_13_5(self, data):
@@ -2929,7 +2929,7 @@ class MisraChecker:
         for token in data.tokenlist:
             if token.str != '(':
                 continue
-            if not token.astOperand1 or not (token.astOperand1.str in ['if', 'while']):
+            if not token.astOperand1 or token.astOperand1.str not in ['if', 'while']:
                 continue
             if isBoolExpression(token.astOperand2):
                 continue

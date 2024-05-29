@@ -1052,7 +1052,7 @@ def check_library_function_name(result_path: str, function_name: str, query_para
                 break
             if id not in line:
                 continue
-            if not (' ' + function_name + ' ') in line:
+            if (' ' + function_name + ' ') not in line:
                 continue
             if pkgs is not None and package_url is not None:
                 pkgs += f'{package_url.strip()}\n'
@@ -1506,7 +1506,7 @@ if __name__ == "__main__":
 
         print_ts(f'packages_nodata: {len(packages_nodata)}')
 
-        print_ts(f'removing packages with no files to process')
+        print_ts('removing packages with no files to process')
         packages_nodata_clean = []
         for pkg_n in packages_nodata:
             if pkg_n in packages:
