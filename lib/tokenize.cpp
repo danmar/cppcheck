@@ -8708,7 +8708,7 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "typedef [,;:]"))
             syntaxError(tok);
-        if (Token::Match(tok, "! %comp%"))
+        if (Token::Match(tok, "!|~ %comp%"))
             syntaxError(tok);
         if (Token::Match(tok, "] %name%") && (!isCPP() || !(tok->tokAt(-1) && Token::simpleMatch(tok->tokAt(-2), "delete [")))) {
             if (tok->next()->isUpperCaseName())
