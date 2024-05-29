@@ -70,6 +70,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mUI->mShowDebugWarnings->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool()));
     mUI->mSaveAllErrors->setCheckState(boolToCheckState(settings.value(SETTINGS_SAVE_ALL_ERRORS, false).toBool()));
     mUI->mSaveFullPath->setCheckState(boolToCheckState(settings.value(SETTINGS_SAVE_FULL_PATH, false).toBool()));
+    mUI->mInlineSuppressions->setCheckState(boolToCheckState(settings.value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool()));
     mUI->mEnableInconclusive->setCheckState(boolToCheckState(settings.value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool()));
     mUI->mShowStatistics->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_STATISTICS, false).toBool()));
     mUI->mShowErrorId->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_ERROR_ID, true).toBool()));
@@ -191,6 +192,7 @@ void SettingsDialog::saveSettingValues() const
     saveCheckboxValue(&settings, mUI->mShowFullPath, SETTINGS_SHOW_FULL_PATH);
     saveCheckboxValue(&settings, mUI->mShowNoErrorsMessage, SETTINGS_SHOW_NO_ERRORS);
     saveCheckboxValue(&settings, mUI->mShowDebugWarnings, SETTINGS_SHOW_DEBUG_WARNINGS);
+    saveCheckboxValue(&settings, mUI->mInlineSuppressions, SETTINGS_INLINE_SUPPRESSIONS);
     saveCheckboxValue(&settings, mUI->mEnableInconclusive, SETTINGS_INCONCLUSIVE_ERRORS);
     saveCheckboxValue(&settings, mUI->mShowStatistics, SETTINGS_SHOW_STATISTICS);
     saveCheckboxValue(&settings, mUI->mShowErrorId, SETTINGS_SHOW_ERROR_ID);

@@ -144,8 +144,8 @@ bool ProjectFile::read(const QString &filename)
             if (xmlReader.name() == QString(CppcheckXml::CheckUnusedTemplatesElementName))
                 mCheckUnusedTemplates = readBool(xmlReader);
 
-            if (xmlReader.name() == QString(CppcheckXml::NoInlineSuppression))
-                mInlineSuppression = !readBool(xmlReader);
+            if (xmlReader.name() == QString(CppcheckXml::InlineSuppression))
+                mInlineSuppression = readBool(xmlReader);
 
             if (xmlReader.name() == QString(CppcheckXml::CheckLevelExhaustiveElementName))
                 mCheckLevel = CheckLevel::exhaustive;
@@ -877,11 +877,9 @@ bool ProjectFile::write(const QString &filename)
     xmlWriter.writeCharacters(bool_to_string(mCheckUnusedTemplates));
     xmlWriter.writeEndElement();
 
-    if (mInlineSuppression) {
-        xmlWriter.writeStartElement(CppcheckXml::NoInlineSuppression);
-        xmlWriter.writeCharacters(bool_to_string(!mInlineSuppression));
-        xmlWriter.writeEndElement();
-    }
+    xmlWriter.writeStartElement(CppcheckXml::InlineSuppression);
+    xmlWriter.writeCharacters(bool_to_string(mInlineSuppression));
+    xmlWriter.writeEndElement();
 
     xmlWriter.writeStartElement(CppcheckXml::MaxCtuDepthElementName);
     xmlWriter.writeCharacters(QString::number(mMaxCtuDepth));
