@@ -136,6 +136,13 @@
          </property>
         </widget>
        </item>
+        <item>
+        <widget class="QCheckBox" name="mInlineSuppressions">
+         <property name="text">
+          <string>Enable inline suppressions</string>
+         </property>
+        </widget>
+       </item>
        <item>
         <widget class="QCheckBox" name="mEnableInconclusive">
          <property name="text">
@@ -532,6 +539,7 @@
   <tabstop>mForce</tabstop>
   <tabstop>mShowFullPath</tabstop>
   <tabstop>mShowNoErrorsMessage</tabstop>
+  <tabstop>mInlineSuppressions</tabstop>
   <tabstop>mListWidget</tabstop>
   <tabstop>mBtnAddApplication</tabstop>
   <tabstop>mBtnEditApplication</tabstop>
