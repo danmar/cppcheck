@@ -422,6 +422,7 @@ def git_blame(errors, path, file, blame_options):
     full_path = os.path.join(path, file)
     path, filename = os.path.split(full_path)
 
+    cwd = os.getcwd()
     if path:
         os.chdir(path)
 

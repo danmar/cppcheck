@@ -200,8 +200,8 @@ def check_include_guards(conf,cfg,unguarded_include_files):
     # - test whether include guards are in place
     max_linenr = conf.include_guard.get('max_linenr', 5)
 
-    def report(directive,msg,errorId,column=0):
-        reportNamingError(directive,msg,errorId,column=column)
+    def report(directive,msg,errorId,severity='style',column=0):
+        reportNamingError(directive,msg,errorId,severity=severity,column=column)
 
     def report_pending_ifndef(directive,column):
         report(directive,'include guard #ifndef is not followed by #define','includeGuardIncomplete',column=column)
@@ -266,8 +266,10 @@ def check_include_guards(conf,cfg,unguarded_include_files):
 def process(dumpfiles, configfile):
     conf = loadConfig(configfile)
 
+    # pylint: disable-next=no-member - TODO: fix this
     if conf.include_guard:
         global include_guard_header_re
+        # pylint: disable-next=no-member - TODO: fix this
         include_guard_header_re = conf.include_guard.get('RE_HEADERFILE',"[^/].*\\.h\\Z")
 
     for afile in dumpfiles:
