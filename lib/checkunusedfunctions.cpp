@@ -107,6 +107,8 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
 
             if (!usage.lineNumber)
                 usage.lineNumber = func->token->linenr();
+            usage.isC = func->token->isC();
+            usage.isStatic = func->isStatic();
 
             // TODO: why always overwrite this but not the filename and line?
             usage.fileIndex = func->token->fileIndex();
@@ -337,6 +339,23 @@ static bool isOperatorFunction(const std::string & funcName)
     return std::find(additionalOperators.cbegin(), additionalOperators.cend(), funcName.substr(operatorPrefix.length())) != additionalOperators.cend();
 }
 
+static void staticFunctionError(ErrorLogger& errorLogger,
+                                const std::string &filename,
+                                unsigned int fileIndex,
+                                unsigned int lineNumber,
+                                const std::string &funcname)
+{
+    std::list<ErrorMessage::FileLocation> locationList;
+    if (!filename.empty()) {
+        locationList.emplace_back(filename, lineNumber, 0);
+        locationList.back().fileIndex = fileIndex;
+    }
+
+    const ErrorMessage errmsg(std::move(locationList), emptyString, Severity::style, "$symbol:" + funcname + "\nThe function '$symbol' should have static linkage since it is not used outside of its translation unit.", "staticFunction", Certainty::normal);
+    errorLogger.reportErr(errmsg);
+}
+
+
 #define logChecker(id) \
     do { \
         const ErrorMessage errmsg({}, nullptr, Severity::internal, "logChecker", (id), CWE(0U), Certainty::normal); \
@@ -349,6 +368,7 @@ bool CheckUnusedFunctions::check(const Settings& settings, ErrorLogger& errorLog
 
     using ErrorParams = std::tuple<std::string, unsigned int, unsigned int, std::string>;
     std::vector<ErrorParams> errors; // ensure well-defined order
+    std::vector<ErrorParams> staticFunctionErrors;
 
     for (auto it = mFunctions.cbegin(); it != mFunctions.cend(); ++it) {
         const FunctionUsage &func = it->second;
@@ -363,19 +383,22 @@ bool CheckUnusedFunctions::check(const Settings& settings, ErrorLogger& errorLog
             if (func.filename != "+")
                 filename = func.filename;
             errors.emplace_back(filename, func.fileIndex, func.lineNumber, it->first);
-        } else if (!func.usedOtherFile) {
-            /** @todo add error message "function is only used in <file> it can be static" */
-            /*
-               std::ostringstream errmsg;
-               errmsg << "The function '" << it->first << "' is only used in the file it was declared in so it should have local linkage.";
-               mErrorLogger->reportErr( errmsg.str() );
-               errors = true;
-             */
+        } else if (func.isC && !func.isStatic && !func.usedOtherFile) {
+            std::string filename;
+            if (func.filename != "+")
+                filename = func.filename;
+            staticFunctionErrors.emplace_back(filename, func.fileIndex, func.lineNumber, it->first);
         }
     }
+
     std::sort(errors.begin(), errors.end());
     for (const auto& e : errors)
         unusedFunctionError(errorLogger, std::get<0>(e), std::get<1>(e), std::get<2>(e), std::get<3>(e));
+
+    std::sort(staticFunctionErrors.begin(), staticFunctionErrors.end());
+    for (const auto& e : staticFunctionErrors)
+        staticFunctionError(errorLogger, std::get<0>(e), std::get<1>(e), std::get<2>(e), std::get<3>(e));
+
     return !errors.empty();
 }
 

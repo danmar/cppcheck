@@ -76,6 +76,8 @@ private:
         unsigned int fileIndex{};
         bool usedSameFile{};
         bool usedOtherFile{};
+        bool isC{};
+        bool isStatic{};
     };
 
     std::unordered_map<std::string, FunctionUsage> mFunctions;

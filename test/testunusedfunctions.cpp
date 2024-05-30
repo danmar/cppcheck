@@ -88,6 +88,7 @@ private:
         TEST_CASE(attributeCleanup);
         TEST_CASE(attributeUnused);
         TEST_CASE(attributeMaybeUnused);
+        TEST_CASE(staticFunction);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -819,6 +820,21 @@ private:
 
         check("[[maybe_unused]] void f() {}\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void staticFunction()
+    {
+        check("void f(void) {}\n"
+              "int main() {\n"
+              "    f();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("void f(void) {}\n"
+              "int main() {\n"
+              "    f();\n"
+              "}\n", Platform::Type::Native, nullptr, false);
+        ASSERT_EQUALS("[test.c:1]: (style) The function 'f' should have static linkage since it is not used outside of its translation unit.\n", errout_str());
     }
 };
 
