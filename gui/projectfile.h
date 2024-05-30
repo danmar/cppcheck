@@ -107,17 +107,10 @@ public:
         mCheckUnusedTemplates = b;
     }
 
-    /**
-     * @brief Get inline suppression usage.
-     * @return inline suppression usage.
-     */
     bool getInlineSuppression() const {
         return mInlineSuppression;
     }
 
-    /**
-     * @brief Set inline suppression usage.
-     */
     void setInlineSuppression(bool b) {
         mInlineSuppression = b;
     }
