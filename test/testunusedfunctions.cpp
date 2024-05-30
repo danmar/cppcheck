@@ -86,16 +86,17 @@ private:
         TEST_CASE(parensInit);
         TEST_CASE(typeInCast);
         TEST_CASE(attributeCleanup);
+        TEST_CASE(staticFunction);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    void check_(const char* file, int line, const char (&code)[size], Platform::Type platform = Platform::Type::Native, const Settings *s = nullptr) {
+    void check_(const char* file, int line, const char (&code)[size], Platform::Type platform = Platform::Type::Native, const Settings *s = nullptr, bool cpp = true) {
         const Settings settings1 = settingsBuilder(s ? *s : settings).platform(platform).build();
 
         // Tokenize..
         SimpleTokenizer tokenizer(settings1, *this);
-        ASSERT_LOC(tokenizer.tokenize(code), file, line);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
 
         // Check for unused functions..
         CheckUnusedFunctions checkUnusedFunctions;
@@ -793,6 +794,21 @@ private:
               "    void * __attribute__((cleanup(clean))) p;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void staticFunction()
+    {
+        check("void f(void) {}\n"
+              "int main() {\n"
+              "    f();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("void f(void) {}\n"
+              "int main() {\n"
+              "    f();\n"
+              "}\n", Platform::Type::Native, nullptr, false);
+        ASSERT_EQUALS("[test.c:1]: (style) The function 'f' should have static linkage since it is not used outside of its translation unit.\n", errout_str());
     }
 };
 

@@ -74,8 +74,10 @@ private:
         std::string filename;
         unsigned int lineNumber{};
         unsigned int fileIndex{};
+        bool isC;
         bool usedSameFile{};
         bool usedOtherFile{};
+        bool isStatic{};
     };
 
     std::unordered_map<std::string, FunctionUsage> mFunctions;
