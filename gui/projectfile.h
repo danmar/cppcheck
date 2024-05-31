@@ -566,7 +566,7 @@ private:
     bool mCheckUnusedTemplates;
 
     /**
-     * @brief Usage of inline suppression.
+     * @brief Enable inline suppression.
      */
     bool mInlineSuppression;
 
