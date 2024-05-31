@@ -888,11 +888,12 @@ def main() -> None:
                 except KeyError:
                     pass
 
+                cwe_url = ""
                 try:
                     if error['cwe']:
                         cwe_url = "<a href=\"https://cwe.mitre.org/data/definitions/" + error['cwe'] + ".html\">" + error['cwe'] + "</a>"
                 except KeyError:
-                    cwe_url = ""
+                    pass
 
                 if error['severity'] in ['error', 'warning']:
                     message_class = error['severity']

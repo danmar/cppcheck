@@ -89,6 +89,7 @@ jobs:
           python -m pip install pygments
           python -m pip install requests
           python -m pip install psutil
+          python -m pip install setuptools
 
       - name: run Shellcheck
         if: matrix.python-latest
