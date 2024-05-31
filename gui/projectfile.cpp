@@ -77,6 +77,7 @@ void ProjectFile::clear()
     mAnalyzeAllVsConfigs = false;
     mCheckHeaders = true;
     mCheckUnusedTemplates = true;
+    mInlineSuppression = true;
     mMaxCtuDepth = settings.maxCtuDepth;
     mMaxTemplateRecursion = settings.maxTemplateRecursion;
     mCheckUnknownFunctionReturn.clear();
@@ -142,6 +143,9 @@ bool ProjectFile::read(const QString &filename)
 
             if (xmlReader.name() == QString(CppcheckXml::CheckUnusedTemplatesElementName))
                 mCheckUnusedTemplates = readBool(xmlReader);
+
+            if (xmlReader.name() == QString(CppcheckXml::InlineSuppression))
+                mInlineSuppression = readBool(xmlReader);
 
             if (xmlReader.name() == QString(CppcheckXml::CheckLevelExhaustiveElementName))
                 mCheckLevel = CheckLevel::exhaustive;
@@ -871,6 +875,10 @@ bool ProjectFile::write(const QString &filename)
 
     xmlWriter.writeStartElement(CppcheckXml::CheckUnusedTemplatesElementName);
     xmlWriter.writeCharacters(bool_to_string(mCheckUnusedTemplates));
+    xmlWriter.writeEndElement();
+
+    xmlWriter.writeStartElement(CppcheckXml::InlineSuppression);
+    xmlWriter.writeCharacters(bool_to_string(mInlineSuppression));
     xmlWriter.writeEndElement();
 
     xmlWriter.writeStartElement(CppcheckXml::MaxCtuDepthElementName);

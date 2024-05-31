@@ -107,6 +107,14 @@ public:
         mCheckUnusedTemplates = b;
     }
 
+    bool getInlineSuppression() const {
+        return mInlineSuppression;
+    }
+
+    void setInlineSuppression(bool b) {
+        mInlineSuppression = b;
+    }
+
     /**
      * @brief Get list of include directories.
      * @return list of directories.
@@ -556,6 +564,11 @@ private:
 
     /** Check code in unused templates */
     bool mCheckUnusedTemplates;
+
+    /**
+     * @brief Enable inline suppression.
+     */
+    bool mInlineSuppression;
 
     /**
      * @brief List of include directories used to search include files.

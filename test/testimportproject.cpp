@@ -358,6 +358,7 @@ private:
                                "    <exclude>\n"
                                "        <path name=\"gui/temp/\"/>\n"
                                "    </exclude>\n"
+                               "    <inline-suppression>true</inline-suppression>\n"
                                "    <project-name>test test</project-name>\n"
                                "</project>\n";
         std::istringstream istr(xml);
@@ -368,6 +369,7 @@ private:
         ASSERT_EQUALS("cli/", project.guiProject.pathNames[0]);
         ASSERT_EQUALS(1, s.includePaths.size());
         ASSERT_EQUALS("lib/", s.includePaths.front());
+        ASSERT_EQUALS(true, s.inlineSuppressions);
     }
 
     void ignorePaths() const {

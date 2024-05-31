@@ -747,6 +747,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="mInlineSuppressions">
+         <property name="text">
+          <string>Enable inline suppressions</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer_9">
          <property name="orientation">
           <enum>Qt::Vertical</enum>

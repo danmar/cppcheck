@@ -1018,6 +1018,8 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
         QStringList dirs = mProjectFile->getIncludeDirs();
         addIncludeDirs(dirs, result);
 
+        result.inlineSuppressions = mProjectFile->getInlineSuppression();
+
         const QStringList defines = mProjectFile->getDefines();
         for (const QString& define : defines) {
             if (!result.userDefines.empty())
@@ -1111,6 +1113,8 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
             result.setMisraRuleTexts(CheckThread::executeCommand);
         }
     }
+    else
+        result.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
 
     // Include directories (and files) are searched in listed order.
     // Global include directories must be added AFTER the per project include
@@ -1135,7 +1139,6 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
     result.force = mSettings->value(SETTINGS_CHECK_FORCE, 1).toBool();
     result.xml = false;
     result.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
-    result.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
     result.certainty.setEnabled(Certainty::inconclusive, mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool());
     if (!mProjectFile || result.platform.type == Platform::Type::Unspecified)
         result.platform.set((Platform::Type) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
