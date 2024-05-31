@@ -267,13 +267,14 @@ static bool isNullablePointer(const Token* tok)
         return false;
     if (Token::simpleMatch(tok, "new") && tok->varId() == 0)
         return false;
-    if (astIsPointer(tok))
+    const Variable* var = tok->variable();
+    if (astIsPointer(tok)/* && !(var && var->isArray())*/)
         return true;
     if (astIsSmartPointer(tok))
         return true;
     if (Token::simpleMatch(tok, "."))
         return isNullablePointer(tok->astOperand2());
-    if (const Variable* var = tok->variable()) {
+    if (var) {
         return (var->isPointer() || var->isSmartPointer());
     }
     return false;
