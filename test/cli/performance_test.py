@@ -185,7 +185,7 @@ def test_slow_initlist_varchanged(tmpdir):
                     }
                 }""")
     cppcheck([filename]) # should not take more than ~1 second
-    
+
 
 @pytest.mark.timeout(10)
 def test_slow_many_scopes(tmpdir):

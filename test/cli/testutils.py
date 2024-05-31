@@ -78,11 +78,11 @@ def __lookup_cppcheck_exe():
 def __run_subprocess_tty(args, env=None, cwd=None, timeout=None):
     import pty
     mo, so = pty.openpty()
-    me, se = pty.openpty() 
+    me, se = pty.openpty()
     p = subprocess.Popen(args, stdout=so, stderr=se, env=env, cwd=cwd)
     for fd in [so, se]:
         os.close(fd)
-        
+
     select_timeout = 0.04  # seconds
     readable = [mo, me]
     result = {mo: b'', me: b''}
@@ -110,15 +110,15 @@ def __run_subprocess_tty(args, env=None, cwd=None, timeout=None):
         if p.poll() is None:
             p.kill()
         return_code = p.wait()
-        
+
     stdout = result[mo]
-    stderr = result[me]        
+    stderr = result[me]
     return return_code, stdout, stderr
 
-        
+
 def __run_subprocess(args, env=None, cwd=None, timeout=None):
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, cwd=cwd)
-    
+
     try:
         comm = p.communicate(timeout=timeout)
         return_code = p.returncode
@@ -143,9 +143,9 @@ def __run_subprocess(args, env=None, cwd=None, timeout=None):
             #os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
             p.terminate()
             comm = p.communicate()
-            
+
     stdout = comm[0]
-    stderr = comm[1]    
+    stderr = comm[1]
     return return_code, stdout, stderr
 
 
@@ -190,13 +190,13 @@ def cppcheck(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_exe
             args.append(arg_executor)
 
     logging.info(exe + ' ' + ' '.join(args))
-    
+
     run_subprocess = __run_subprocess_tty if tty else __run_subprocess
     return_code, stdout, stderr = run_subprocess([exe] + args, env=env, cwd=cwd, timeout=timeout)
-        
+
     stdout = stdout.decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
     stderr = stderr.decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
-    
+
     if remove_checkers_report:
         if stderr.find('[checkersReport]\n') > 0:
             start_id = stderr.find('[checkersReport]\n')
