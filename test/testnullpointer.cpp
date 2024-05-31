@@ -164,6 +164,7 @@ private:
         TEST_CASE(nullpointerStdString);
         TEST_CASE(nullpointerStdStream);
         TEST_CASE(nullpointerSmartPointer);
+        TEST_CASE(nullpointerArray);
         TEST_CASE(functioncall);
         TEST_CASE(functioncalllibrary); // use Library to parse function call
         TEST_CASE(functioncallDefaultArguments);
@@ -4037,6 +4038,14 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("[test.cpp:5]: (error) Null pointer dereference: f()\n", errout_str());
+    }
+
+    void nullpointerArray() {
+        check("void f() {\n" // #12786
+              "    const int b[2] = {};\n"
+              "    if (b) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void functioncall() {    // #3443 - function calls
