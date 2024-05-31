@@ -98,7 +98,8 @@ jobs:
       - name: run pylint
         if: matrix.python-latest
         run: |
-          pylint --jobs $(nproc) addons/*.py htmlreport/cppcheck-htmlreport htmlreport/*.py tools/*.py
+          shopt -s globstar
+          pylint --jobs $(nproc) addons/**/*.py htmlreport/cppcheck-htmlreport htmlreport/**/*.py test/**/*.py tools/**/*.py
 
       - name: check .json files
         if: matrix.python-latest
@@ -112,10 +113,12 @@ jobs:
 
       - name: check python syntax
         run: |
-          python -m py_compile addons/*.py
+          shopt -s globstar
+          python -m py_compile addons/**/*.py
           python -m py_compile htmlreport/cppcheck-htmlreport
-          python -m py_compile htmlreport/*.py
-          python -m py_compile tools/*.py
+          python -m py_compile htmlreport/**/*.py
+          python -m py_compile test/**/*.py
+          python -m py_compile tools/**/*.py
 
       - name: compile addons
         run: |
