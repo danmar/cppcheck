@@ -63,6 +63,7 @@ jobs:
           python3 -m pip install pip --upgrade
           python3 -m pip install pytest
           python3 -m pip install pytest-timeout
+          python3 -m pip install psutil
 
       # TODO: disable warnings
       - name: CMake
