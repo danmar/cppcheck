@@ -1286,7 +1286,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->checkUnusedTemplates = temp.checkUnusedTemplates;
     settings->maxCtuDepth = temp.maxCtuDepth;
     settings->maxTemplateRecursion = temp.maxTemplateRecursion;
-    settings->inlineSuppressions = temp.inlineSuppressions;
+    settings->inlineSuppressions |= temp.inlineSuppressions;
     settings->safeChecks = temp.safeChecks;
 
     if (checkLevelExhaustive)
