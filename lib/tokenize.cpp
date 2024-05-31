@@ -1142,7 +1142,8 @@ void Tokenizer::simplifyTypedef()
             list.front()->deleteThis();
     }
 
-    simplifyTypedefCpp();
+    if (isCPP())
+        simplifyTypedefCpp();
 }
 
 void Tokenizer::simplifyTypedefCpp()
