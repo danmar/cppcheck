@@ -8192,7 +8192,7 @@ void Tokenizer::validateC() const
             syntaxErrorC(tok, "template<...");
         if (Token::Match(tok, "%name% :: %name%"))
             syntaxErrorC(tok, tok->str() + tok->strAt(1) + tok->strAt(2));
-        if (Token::Match(tok, "class|namespace %name% [:{]"))
+        if (Token::Match(tok, "class|namespace %name% :|::|{"))
             syntaxErrorC(tok, tok->str() + tok->strAt(1) + tok->strAt(2));
     }
 }
