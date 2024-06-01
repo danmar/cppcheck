@@ -548,7 +548,8 @@ jobs:
           ./cppcheck $selfcheck_options externals/simplecpp || ec=1
           # self check lib/cli
           mkdir b1
-          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b1 --addon=naming.json cli lib || ec=1
+          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b1 --addon=naming.json cli || ec=1
+          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b1 --addon=naming.json --rule-file=rules/token-matching.xml lib || ec=1
           # check gui with qt settings
           mkdir b2
           ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b2 -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 -DQT_CHARTS_LIB --library=qt --addon=naming.json -Icmake.output/gui -Igui gui/*.cpp cmake.output/gui || ec=1
