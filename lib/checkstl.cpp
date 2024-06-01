@@ -1110,7 +1110,7 @@ void CheckStl::invalidContainer()
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (const Token* contTok = getLoopContainer(tok)) {
-                const Token* blockStart = tok->next()->link()->next();
+                const Token* blockStart = tok->linkAt(1)->next();
                 const Token* blockEnd = blockStart->link();
                 if (contTok->exprId() == 0)
                     continue;
@@ -1688,7 +1688,7 @@ void CheckStl::checkFindInsert()
         for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "if ("))
                 continue;
-            if (!Token::simpleMatch(tok->next()->link(), ") {"))
+            if (!Token::simpleMatch(tok->linkAt(1), ") {"))
                 continue;
             if (!Token::Match(tok->next()->astOperand2(), "%comp%"))
                 continue;
@@ -1702,7 +1702,7 @@ void CheckStl::checkFindInsert()
             if (mSettings->standards.cpp < Standards::CPP17 && !(keyTok && keyTok->valueType() && (keyTok->valueType()->isIntegral() || keyTok->valueType()->pointer > 0)))
                 continue;
 
-            const Token *thenTok = tok->next()->link()->next();
+            const Token *thenTok = tok->linkAt(1)->next();
             const Token *valueTok = findInsertValue(thenTok, containerTok, keyTok, *mSettings);
             if (!valueTok)
                 continue;
@@ -2040,7 +2040,7 @@ void CheckStl::string_c_str()
                     else
                         break;
                     if (!tok2 && j == i->second.n - 1)
-                        tok2 = tok->next()->link();
+                        tok2 = tok->linkAt(1);
                     else if (tok2)
                         tok2 = tok2->previous();
                     else
@@ -2420,7 +2420,7 @@ void CheckStl::checkDereferenceInvalidIterator2()
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "sizeof|decltype|typeid|typeof (")) {
-            tok = tok->next()->link();
+            tok = tok->linkAt(1);
             continue;
         }
 
@@ -2742,7 +2742,7 @@ namespace {
         std::set<nonneg int> varsChanged;
 
         explicit LoopAnalyzer(const Token* tok, const Settings* psettings)
-            : bodyTok(tok->next()->link()->next()), settings(psettings)
+            : bodyTok(tok->linkAt(1)->next()), settings(psettings)
         {
             const Token* splitTok = tok->next()->astOperand2();
             if (Token::simpleMatch(splitTok, ":") && splitTok->previous()->varId() != 0) {
@@ -2893,7 +2893,7 @@ void CheckStl::useStlAlgorithm()
             // Parse range-based for loop
             if (!Token::simpleMatch(tok, "for ("))
                 continue;
-            if (!Token::simpleMatch(tok->next()->link(), ") {"))
+            if (!Token::simpleMatch(tok->linkAt(1), ") {"))
                 continue;
             LoopAnalyzer a{tok, mSettings};
             std::string algoName = a.findAlgo();
@@ -2902,7 +2902,7 @@ void CheckStl::useStlAlgorithm()
                 continue;
             }
 
-            const Token *bodyTok = tok->next()->link()->next();
+            const Token *bodyTok = tok->linkAt(1)->next();
             const Token *splitTok = tok->next()->astOperand2();
             const Token* loopVar{};
             bool isIteratorLoop = false;
@@ -3114,7 +3114,7 @@ void CheckStl::knownEmptyContainer()
 
             // Parse range-based for loop
             if (tok->str() == "for") {
-                if (!Token::simpleMatch(tok->next()->link(), ") {"))
+                if (!Token::simpleMatch(tok->linkAt(1), ") {"))
                     continue;
                 const Token *splitTok = tok->next()->astOperand2();
                 if (!Token::simpleMatch(splitTok, ":"))

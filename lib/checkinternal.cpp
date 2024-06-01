@@ -296,20 +296,12 @@ void CheckInternal::checkRedundantNextPrevious()
                 continue;
             tok = tok->next();
 
-            if (Token::Match(tok, "previous ( ) . next|tokAt|strAt|linkAt (") || Token::Match(tok, "next ( ) . previous|tokAt|strAt|linkAt (") ||
+            if (Token::Match(tok, "previous ( ) . previous|next|tokAt|str|strAt|link|linkAt (") || Token::Match(tok, "next ( ) . previous|next|tokAt|str|strAt|link|linkAt (") ||
                 (Token::simpleMatch(tok, "tokAt (") && Token::Match(tok->linkAt(1), ") . previous|next|tokAt|strAt|linkAt|str|link ("))) {
                 const std::string& func1 = tok->str();
                 const std::string& func2 = tok->linkAt(1)->strAt(2);
 
                 if ((func2 == "previous" || func2 == "next" || func2 == "str" || func2 == "link") && tok->linkAt(1)->strAt(4) != ")")
-                    continue;
-
-                redundantNextPreviousError(tok, func1, func2);
-            } else if (Token::Match(tok, "next|previous ( ) . next|previous ( ) . next|previous|linkAt|strAt|link|str (")) {
-                const std::string& func1 = tok->str();
-                const std::string& func2 = tok->strAt(8);
-
-                if ((func2 == "previous" || func2 == "next" || func2 == "str" || func2 == "link") && tok->strAt(10) != ")")
                     continue;
 
                 redundantNextPreviousError(tok, func1, func2);

@@ -287,8 +287,8 @@ void CheckString::checkIncorrectStringCompare()
             // skip "assert(str && ..)" and "assert(.. && str)"
             if ((endsWith(tok->str(), "assert") || endsWith(tok->str(), "ASSERT")) &&
                 Token::Match(tok, "%name% (") &&
-                (Token::Match(tok->tokAt(2), "%str% &&") || Token::Match(tok->next()->link()->tokAt(-2), "&& %str% )")))
-                tok = tok->next()->link();
+                (Token::Match(tok->tokAt(2), "%str% &&") || Token::Match(tok->linkAt(1)->tokAt(-2), "&& %str% )")))
+                tok = tok->linkAt(1);
 
             if (Token::simpleMatch(tok, ". substr (") && Token::Match(tok->tokAt(3)->nextArgument(), "%num% )")) {
                 const MathLib::biguint clen = MathLib::toBigUNumber(tok->linkAt(2)->strAt(-1));

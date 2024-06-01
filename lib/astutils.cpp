@@ -484,7 +484,7 @@ static bool isFunctionCall(const Token* tok)
 {
     if (Token::Match(tok, "%name% ("))
         return true;
-    if (Token::Match(tok, "%name% <") && Token::simpleMatch(tok->next()->link(), "> ("))
+    if (Token::Match(tok, "%name% <") && Token::simpleMatch(tok->linkAt(1), "> ("))
         return true;
     if (Token::Match(tok, "%name% ::"))
         return isFunctionCall(tok->tokAt(2));
@@ -538,7 +538,7 @@ static T* nextAfterAstRightmostLeafGeneric(T* tok)
         else
             break;
     } while (rightmostLeaf->astOperand1() || rightmostLeaf->astOperand2());
-    while (Token::Match(rightmostLeaf->next(), "]|)") && !hasToken(rightmostLeaf->next()->link(), rightmostLeaf->next(), tok))
+    while (Token::Match(rightmostLeaf->next(), "]|)") && !hasToken(rightmostLeaf->linkAt(1), rightmostLeaf->next(), tok))
         rightmostLeaf = rightmostLeaf->next();
     if (Token::Match(rightmostLeaf, "{|(|[") && rightmostLeaf->link())
         rightmostLeaf = rightmostLeaf->link();
@@ -1694,11 +1694,11 @@ bool isSameExpression(bool macro, const Token *tok1, const Token *tok2, const Se
         }
     }
     // templates/casts
-    if ((tok1->next() && tok1->next()->link() && Token::Match(tok1, "%name% <")) ||
-        (tok2->next() && tok2->next()->link() && Token::Match(tok2, "%name% <"))) {
+    if ((tok1->next() && tok1->linkAt(1) && Token::Match(tok1, "%name% <")) ||
+        (tok2->next() && tok2->linkAt(1) && Token::Match(tok2, "%name% <"))) {
 
         // non-const template function that is not a dynamic_cast => return false
-        if (pure && Token::simpleMatch(tok1->next()->link(), "> (") &&
+        if (pure && Token::simpleMatch(tok1->linkAt(1), "> (") &&
             !(tok1->function() && tok1->function()->isConst()) &&
             tok1->str() != "dynamic_cast")
             return false;

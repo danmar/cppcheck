@@ -191,7 +191,7 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
             ret = true;
         if (ret && tok2->str() == ";")
             return false;
-        if (!islocal && Token::Match(tok2, "%name% (") && !Token::simpleMatch(tok2->next()->link(), ") {"))
+        if (!islocal && Token::Match(tok2, "%name% (") && !Token::simpleMatch(tok2->linkAt(1), ") {"))
             return true;
         if (Token::Match(tok2, "if|while (")) {
             if (!islocal && tok2->str() == "while")
@@ -205,7 +205,7 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
             }
 
             // parse condition
-            const Token * const end = tok2->next()->link();
+            const Token * const end = tok2->linkAt(1);
             for (; tok2 != end; tok2 = tok2->next()) {
                 if (Token::Match(tok2, "[(,] &| %varid% [,)]", varid)) {
                     return true;
@@ -227,8 +227,8 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
 
             const bool ret1 = assignIfParseScope(assignTok, end->tokAt(2), varid, islocal, bitop, num);
             bool ret2 = false;
-            if (Token::simpleMatch(end->next()->link(), "} else {"))
-                ret2 = assignIfParseScope(assignTok, end->next()->link()->tokAt(3), varid, islocal, bitop, num);
+            if (Token::simpleMatch(end->linkAt(1), "} else {"))
+                ret2 = assignIfParseScope(assignTok, end->linkAt(1)->tokAt(3), varid, islocal, bitop, num);
             if (ret1 || ret2)
                 return true;
         }
@@ -1803,9 +1803,9 @@ void CheckCondition::checkDuplicateConditionalAssign()
         for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "if ("))
                 continue;
-            if (!Token::simpleMatch(tok->next()->link(), ") {"))
+            if (!Token::simpleMatch(tok->linkAt(1), ") {"))
                 continue;
-            const Token *blockTok = tok->next()->link()->next();
+            const Token *blockTok = tok->linkAt(1)->next();
             const Token *condTok = tok->next()->astOperand2();
             const bool isBoolVar = Token::Match(condTok, "!| %var%");
             if (!isBoolVar && !Token::Match(condTok, "==|!="))

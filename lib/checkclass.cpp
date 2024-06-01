@@ -949,7 +949,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                 ftok = ftok->next();
 
             // Passing "this" => assume that everything is initialized
-            for (const Token *tok2 = ftok->next()->link(); tok2 && tok2 != ftok; tok2 = tok2->previous()) {
+            for (const Token *tok2 = ftok->linkAt(1); tok2 && tok2 != ftok; tok2 = tok2->previous()) {
                 if (tok2->str() == "this") {
                     assignAllVar(usage);
                     return;
@@ -1020,7 +1020,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                 // the function is external and it's neither friend nor inherited virtual function.
                 // assume all variables that are passed to it are initialized..
                 else {
-                    for (const Token *tok = ftok->tokAt(2); tok && tok != ftok->next()->link(); tok = tok->next()) {
+                    for (const Token *tok = ftok->tokAt(2); tok && tok != ftok->linkAt(1); tok = tok->next()) {
                         if (tok->isName()) {
                             assignVar(usage, tok->varId());
                         }
@@ -1047,7 +1047,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             const Token *tok2 = ftok;
             while (tok2) {
                 if (tok2->strAt(1) == "[")
-                    tok2 = tok2->next()->link();
+                    tok2 = tok2->linkAt(1);
                 else if (Token::Match(tok2->next(), ". %name%"))
                     tok2 = tok2->tokAt(2);
                 else
@@ -1637,7 +1637,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
                             // avoid endless recursions
                             if (analyzedFunctions.find(&*it) == analyzedFunctions.end()) {
                                 analyzedFunctions.insert(&*it);
-                                checkReturnPtrThis(scope, &*it, it->arg->link()->next(), it->arg->link()->next()->link(),
+                                checkReturnPtrThis(scope, &*it, it->arg->link()->next(), it->arg->link()->linkAt(1),
                                                    analyzedFunctions);
                             }
                             // just bail for now
@@ -1853,7 +1853,7 @@ const Token * CheckClass::getIfStmtBodyStart(const Token *tok, const Token *rhs)
         case Bool::TRUE:
             return top->link()->next();
         case Bool::FALSE:
-            return top->link()->next()->link();
+            return top->link()->linkAt(1);
         }
     }
     return nullptr;
@@ -2407,7 +2407,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
         const Token *lpar = funcTok->next();
         if (Token::simpleMatch(lpar, "( ) ("))
             lpar = lpar->tokAt(2);
-        for (const Token* tok = lpar->next(); tok && tok != funcTok->next()->link(); tok = tok->next()) {
+        for (const Token* tok = lpar->next(); tok && tok != funcTok->linkAt(1); tok = tok->next()) {
             if (tok->str() == "(")
                 tok = tok->link();
             else if ((tok->isName() && isMemberVar(scope, tok)) || (tok->isUnaryOp("&") && (tok = tok->astOperand1()) && isMemberVar(scope, tok))) {

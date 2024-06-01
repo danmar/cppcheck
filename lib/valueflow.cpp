@@ -583,7 +583,7 @@ static void valueFlowArray(TokenList &tokenlist, const Settings &settings)
             // const array decl
             else if (tok->variable() && tok->variable()->isArray() && tok->variable()->isConst() &&
                      tok->variable()->nameToken() == tok && Token::Match(tok, "%var% [ %num%| ] = {")) {
-                Token* rhstok = tok->next()->link()->tokAt(2);
+                Token* rhstok = tok->linkAt(1)->tokAt(2);
                 constantArrays[tok->varId()] = rhstok;
                 tok = rhstok->link();
             }
@@ -604,7 +604,7 @@ static void valueFlowArray(TokenList &tokenlist, const Settings &settings)
 
         if (Token::Match(tok, "const %type% %var% [ %num%| ] = {")) {
             Token *vartok = tok->tokAt(2);
-            Token *rhstok = vartok->next()->link()->tokAt(2);
+            Token *rhstok = vartok->linkAt(1)->tokAt(2);
             constantArrays[vartok->varId()] = rhstok;
             tok = rhstok->link();
             continue;
@@ -612,7 +612,7 @@ static void valueFlowArray(TokenList &tokenlist, const Settings &settings)
 
         if (Token::Match(tok, "const char %var% [ %num%| ] = %str% ;")) {
             Token *vartok = tok->tokAt(2);
-            Token *strtok = vartok->next()->link()->tokAt(2);
+            Token *strtok = vartok->linkAt(1)->tokAt(2);
             constantArrays[vartok->varId()] = strtok;
             tok = strtok->next();
             continue;
@@ -4191,7 +4191,7 @@ static void valueFlowLifetime(TokenList &tokenlist, ErrorLogger &errorLogger, co
             valueFlowLifetimeConstructor(tok->next(), tokenlist, errorLogger, settings);
         }
         // Check function calls
-        else if (Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->next()->link(), ") {")) {
+        else if (Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
             valueFlowLifetimeFunction(tok, tokenlist, errorLogger, settings);
         }
         // Unique pointer lifetimes
@@ -6344,7 +6344,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
                 }
                 if (settings.debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "For loop variable skipping conditional scope");
-                tok2 = tok2->next()->link();
+                tok2 = tok2->linkAt(1);
                 if (Token::simpleMatch(tok2, "} else {")) {
                     if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(2), vartok->varId())) {
                         if (settings.debugwarnings)
@@ -7965,7 +7965,7 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
             continue;
         if (!staticSize) {
             if (!Token::Match(nameToken, "%name% ;") &&
-                !(Token::Match(nameToken, "%name% {") && Token::simpleMatch(nameToken->next()->link(), "} ;")) &&
+                !(Token::Match(nameToken, "%name% {") && Token::simpleMatch(nameToken->linkAt(1), "} ;")) &&
                 !Token::Match(nameToken, "%name% ("))
                 continue;
         }

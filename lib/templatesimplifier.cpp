@@ -296,11 +296,11 @@ void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates()
 
         // skip executing scopes (ticket #1985)..
         else if (Token::simpleMatch(tok, "try {")) {
-            tok = tok->next()->link();
+            tok = tok->linkAt(1);
             while (Token::simpleMatch(tok, "} catch (")) {
                 tok = tok->linkAt(2);
                 if (Token::simpleMatch(tok, ") {"))
-                    tok = tok->next()->link();
+                    tok = tok->linkAt(1);
             }
         }
 
@@ -2801,7 +2801,7 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, const Token *ba
                               validTokenEnd(bounded, tok, backToken, 2))))) {
                     tok->deleteNext();
                     if (tok->next()->str() == "(")
-                        eraseTokens(tok, tok->next()->link());
+                        eraseTokens(tok, tok->linkAt(1));
                     tok->deleteNext();
                     ret = true;
                 } else if (validTokenEnd(bounded, tok, backToken, 4) &&
@@ -2810,7 +2810,7 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, const Token *ba
                     tok->deleteNext();
                     tok->deleteNext();
                     if (tok->next()->str() == "(")
-                        eraseTokens(tok, tok->next()->link());
+                        eraseTokens(tok, tok->linkAt(1));
                     tok->deleteNext();
                     ret = true;
                 }
@@ -2822,7 +2822,7 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, const Token *ba
                      Token::Match(tok->previous(), "return|case 1 %oror% %any% ,|:|;|=|%cop%"))) {
                     tok->deleteNext();
                     if (tok->next()->str() == "(")
-                        eraseTokens(tok, tok->next()->link());
+                        eraseTokens(tok, tok->linkAt(1));
                     tok->deleteNext();
                     ret = true;
                 } else if (validTokenEnd(bounded, tok, backToken, 4) &&
@@ -2831,7 +2831,7 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, const Token *ba
                     tok->deleteNext();
                     tok->deleteNext();
                     if (tok->next()->str() == "(")
-                        eraseTokens(tok, tok->next()->link());
+                        eraseTokens(tok, tok->linkAt(1));
                     tok->deleteNext();
                     ret = true;
                 }

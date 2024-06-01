@@ -2529,7 +2529,7 @@ void CheckOther::checkDuplicateExpression()
                     if (isWithoutSideEffects(tok->astOperand1())) {
                         const Token* loopTok = isInLoopCondition(tok);
                         if (!loopTok ||
-                            !findExpressionChanged(tok, tok, loopTok->link()->next()->link(), *mSettings)) {
+                            !findExpressionChanged(tok, tok, loopTok->link()->linkAt(1), *mSettings)) {
                             const bool isEnum = tok->scope()->type == Scope::eEnum;
                             const bool assignment = !isEnum && tok->str() == "=";
                             if (assignment)
@@ -3215,11 +3215,11 @@ void CheckOther::checkInterlockedDecrement()
                 raceAfterInterlockedDecrementError(checkStartTok);
             }
         } else if (Token::Match(tok, "if ( ::| InterlockedDecrement ( & %name%")) {
-            const Token* condEnd = tok->next()->link();
+            const Token* condEnd = tok->linkAt(1);
             const Token* funcTok = tok->tokAt(2);
             const Token* firstAccessTok = funcTok->str() == "::" ? funcTok->tokAt(4) : funcTok->tokAt(3);
-            if (condEnd && condEnd->next() && condEnd->next()->link()) {
-                const Token* ifEndTok = condEnd->next()->link();
+            if (condEnd && condEnd->next() && condEnd->linkAt(1)) {
+                const Token* ifEndTok = condEnd->linkAt(1);
                 if (Token::Match(ifEndTok, "} return %name%")) {
                     const Token* secondAccessTok = ifEndTok->tokAt(2);
                     if (secondAccessTok->str() == firstAccessTok->str()) {

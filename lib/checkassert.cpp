@@ -55,7 +55,7 @@ void CheckAssert::assertWithSideEffects()
         if (!Token::simpleMatch(tok, "assert ("))
             continue;
 
-        const Token *endTok = tok->next()->link();
+        const Token *endTok = tok->linkAt(1);
         for (const Token* tmp = tok->next(); tmp != endTok; tmp = tmp->next()) {
             if (Token::simpleMatch(tmp, "sizeof ("))
                 tmp = tmp->linkAt(1);
