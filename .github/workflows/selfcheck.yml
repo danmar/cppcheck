@@ -129,7 +129,7 @@ jobs:
         env:
           DISABLE_VALUEFLOW: 1
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: Callgrind Output
           path: ./callgrind.*
