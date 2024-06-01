@@ -51,7 +51,7 @@
   <rule version="1">
     <pattern><![CDATA[(?:\b\w+\b) \. next \( \) \. link \( \)]]></pattern>
     <message>
-      <id>TokenNext</id>
+      <id>TokenLink</id>
       <severity>error</severity>
       <summary>Simplify 'tok-&gt;next()-&gt;link()' to 'tok-&gt;linkAt(1).'</summary>
     </message>
