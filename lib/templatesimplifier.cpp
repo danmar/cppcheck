@@ -833,6 +833,8 @@ void TemplateSimplifier::getTemplateInstantiations()
         } else if (Token::Match(tok->previous(), "(|{|}|;|=|>|<<|:|.|*|&|return|<|,|!|[ %name% ::|<|(") ||
                    Token::Match(tok->previous(), "%type% %name% ::|<") ||
                    Token::Match(tok->tokAt(-2), "[,:] private|protected|public %name% ::|<")) {
+            if (!tok->scopeInfo())
+                syntaxError(tok);
             std::string scopeName = tok->scopeInfo()->name;
             std::string qualification;
             Token * qualificationTok = tok;
