@@ -48,4 +48,12 @@
       <summary>Simplify 'tok-&gt;next()-&gt;next()' to 'tok-&gt;tokAt(2).'</summary>
     </message>
   </rule>
+  <rule version="1">
+    <pattern><![CDATA[(?:\b\w+\b) \. next \( \) \. link \( \)]]></pattern>
+    <message>
+      <id>TokenNext</id>
+      <severity>error</severity>
+      <summary>Simplify 'tok-&gt;next()-&gt;link()' to 'tok-&gt;linkAt(1).'</summary>
+    </message>
+  </rule>
 </rules>
