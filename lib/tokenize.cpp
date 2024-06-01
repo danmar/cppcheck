@@ -4526,6 +4526,7 @@ static const std::unordered_set<std::string> notstart_cpp = { NOTSTART_C,
 
 void Tokenizer::setVarIdPass1()
 {
+    const bool cpp = isCPP();
     // Variable declarations can't start with "return" etc.
     const std::unordered_set<std::string>& notstart = (isC()) ? notstart_c : notstart_cpp;
 
@@ -4542,7 +4543,7 @@ void Tokenizer::setVarIdPass1()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->isOp())
             continue;
-        if (tok->isCpp() && Token::simpleMatch(tok, "template <")) {
+        if (cpp && Token::simpleMatch(tok, "template <")) {
             Token* closingBracket = tok->next()->findClosingBracket();
             if (closingBracket)
                 tok = closingBracket;
@@ -4697,7 +4698,7 @@ void Tokenizer::setVarIdPass1()
                 continue;
 
             bool decl;
-            if (isCPP() && mSettings.standards.cpp >= Standards::CPP17 && Token::Match(tok, "[(;{}] const| auto &|&&| [")) {
+            if (cpp && mSettings.standards.cpp >= Standards::CPP17 && Token::Match(tok, "[(;{}] const| auto &|&&| [")) {
                 // Structured bindings
                 tok2 = Token::findsimplematch(tok, "[");
                 if ((Token::simpleMatch(tok->previous(), "for (") && Token::simpleMatch(tok2->link(), "] :")) ||
@@ -4721,7 +4722,7 @@ void Tokenizer::setVarIdPass1()
                 inlineFunction = true;
 
             if (decl) {
-                if (isCPP()) {
+                if (cpp) {
                     if (Token *declTypeTok = Token::findsimplematch(tok, "decltype (", tok2)) {
                         for (Token *declTok = declTypeTok->linkAt(1); declTok != declTypeTok; declTok = declTok->previous()) {
                             if (declTok->isName() && !Token::Match(declTok->previous(), "::|.") && variableMap.hasVariable(declTok->str()))
@@ -4737,7 +4738,7 @@ void Tokenizer::setVarIdPass1()
                     ;
                 else if (Token::Match(prev2, "%type% ( !!)") && Token::simpleMatch(tok2->link(), ") ;")) {
                     // In C++ , a variable can't be called operator+ or something like that.
-                    if (prev2->isCpp() &&
+                    if (cpp &&
                         prev2->isOperatorKeyword())
                         continue;
 
@@ -4774,7 +4775,7 @@ void Tokenizer::setVarIdPass1()
                         }
                     } else
                         decl = false;
-                } else if (isCPP() && Token::Match(prev2, "%type% {") && Token::simpleMatch(tok2->link(), "} ;")) { // C++11 initialization style
+                } else if (cpp && Token::Match(prev2, "%type% {") && Token::simpleMatch(tok2->link(), "} ;")) { // C++11 initialization style
                     if (tok2->link() != tok2->next() && // add value-initialized variable T x{};
                         (Token::Match(prev2, "do|try|else") || Token::Match(prev2->tokAt(-2), "struct|class|:")))
                         continue;
@@ -4819,7 +4820,7 @@ void Tokenizer::setVarIdPass1()
 
         if (tok->isName() && !tok->isKeyword() && !tok->isStandardType()) {
             // don't set variable id after a struct|enum|union
-            if (Token::Match(tok->previous(), "struct|enum|union") || (tok->isCpp() && tok->strAt(-1) == "class"))
+            if (Token::Match(tok->previous(), "struct|enum|union") || (cpp && tok->strAt(-1) == "class"))
                 continue;
 
             bool globalNamespace = false;
