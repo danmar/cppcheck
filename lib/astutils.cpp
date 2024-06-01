@@ -484,7 +484,7 @@ static bool isFunctionCall(const Token* tok)
 {
     if (Token::Match(tok, "%name% ("))
         return true;
-    if (Token::Match(tok, "%name% <") && Token::simpleMatch(tok->next()->link(), "> ("))
+    if (Token::Match(tok, "%name% <") && Token::simpleMatch(tok->linkAt(1), "> ("))
         return true;
     if (Token::Match(tok, "%name% ::"))
         return isFunctionCall(tok->tokAt(2));

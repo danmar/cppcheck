@@ -949,7 +949,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                 ftok = ftok->next();
 
             // Passing "this" => assume that everything is initialized
-            for (const Token *tok2 = ftok->next()->link(); tok2 && tok2 != ftok; tok2 = tok2->previous()) {
+            for (const Token *tok2 = ftok->linkAt(1); tok2 && tok2 != ftok; tok2 = tok2->previous()) {
                 if (tok2->str() == "this") {
                     assignAllVar(usage);
                     return;
@@ -1020,7 +1020,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                 // the function is external and it's neither friend nor inherited virtual function.
                 // assume all variables that are passed to it are initialized..
                 else {
-                    for (const Token *tok = ftok->tokAt(2); tok && tok != ftok->next()->link(); tok = tok->next()) {
+                    for (const Token *tok = ftok->tokAt(2); tok && tok != ftok->linkAt(1); tok = tok->next()) {
                         if (tok->isName()) {
                             assignVar(usage, tok->varId());
                         }

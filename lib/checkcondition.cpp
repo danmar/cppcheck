@@ -1803,9 +1803,9 @@ void CheckCondition::checkDuplicateConditionalAssign()
         for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "if ("))
                 continue;
-            if (!Token::simpleMatch(tok->next()->link(), ") {"))
+            if (!Token::simpleMatch(tok->linkAt(1), ") {"))
                 continue;
-            const Token *blockTok = tok->next()->link()->next();
+            const Token *blockTok = tok->linkAt(1)->next();
             const Token *condTok = tok->next()->astOperand2();
             const bool isBoolVar = Token::Match(condTok, "!| %var%");
             if (!isBoolVar && !Token::Match(condTok, "==|!="))

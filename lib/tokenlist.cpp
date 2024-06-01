@@ -804,7 +804,7 @@ static void compileTerm(Token *&tok, AST_state& state)
                     repeat = true;
                 }
                 if (Token::simpleMatch(tok->next(), "<") && Token::Match(tok->linkAt(1), "> %name%")) {
-                    tok = tok->next()->link()->next();
+                    tok = tok->linkAt(1)->next();
                     repeat = true;
                 }
             }
@@ -1597,7 +1597,7 @@ static Token * createAstAtToken(Token *tok)
             compileExpression(tok3, state1);
         }
         Token *init1 = nullptr;
-        Token * const endPar = tok->next()->link();
+        Token * const endPar = tok->linkAt(1);
         if (tok2 == tok->tokAt(2) && Token::Match(tok2, "%op%|(")) {
             init1 = tok2;
             AST_state state1(cpp);

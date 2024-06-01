@@ -1103,7 +1103,7 @@ void CheckMemoryLeakNoVar::checkForUnsafeArgAlloc(const Scope *scope)
 
     for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
         if (Token::Match(tok, "%name% (")) {
-            const Token *endParamToken = tok->next()->link();
+            const Token *endParamToken = tok->linkAt(1);
             const Token* pointerType = nullptr;
             const Token* functionCalled = nullptr;
 

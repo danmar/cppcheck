@@ -701,7 +701,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 continue;
             functionCall(ftok, openingPar, varInfo, allocation, af);
 
-            tok = ftok->next()->link();
+            tok = ftok->linkAt(1);
 
             // Handle scopes that might be noreturn
             if (allocation.status == VarInfo::NOALLOC && Token::simpleMatch(tok, ") ; }")) {
