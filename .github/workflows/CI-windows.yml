@@ -88,7 +88,7 @@ jobs:
 
       - name: Set up Python 3.12
         if: matrix.config == 'release'
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
           check-latest: true
@@ -100,7 +100,7 @@ jobs:
 
       - name: Cache PCRE
         id: cache-pcre
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             externals\pcre.h
@@ -132,6 +132,7 @@ jobs:
           python -m pip install pytest || exit /b !errorlevel!
           python -m pip install pytest-custom_exit_code || exit /b !errorlevel!
           python -m pip install pytest-timeout || exit /b !errorlevel!
+          python -m pip install psutil || exit /b !errorlevel!
 
       - name: Run CMake
         if: false # TODO: enable

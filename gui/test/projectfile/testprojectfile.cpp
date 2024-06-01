@@ -139,6 +139,21 @@ void TestProjectFile::getAddonFilePath() const
     QCOMPARE(ProjectFile::getAddonFilePath(tempdir.path(), filepath), filepath);
 }
 
+void TestProjectFile::getInlineSuppressionDefaultValue() const
+{
+    ProjectFile projectFile;
+    projectFile.setFilename("/some/path/123.cppcheck");
+    QCOMPARE(projectFile.getInlineSuppression(), true);
+}
+
+void TestProjectFile::getInlineSuppression() const
+{
+    ProjectFile projectFile;
+    projectFile.setFilename("/some/path/123.cppcheck");
+    projectFile.setInlineSuppression(false);
+    QCOMPARE(projectFile.getInlineSuppression(), false);
+}
+
 void TestProjectFile::getCheckingSuppressionsRelative() const
 {
     const SuppressionList::Suppression suppression("*", "externals/*");

@@ -108,6 +108,7 @@ private:
         TEST_CASE(canFindMatchingBracketsWithTooManyOpening);
         TEST_CASE(findClosingBracket);
         TEST_CASE(findClosingBracket2);
+        TEST_CASE(findClosingBracket3);
 
         TEST_CASE(expressionString);
 
@@ -1153,6 +1154,14 @@ private:
     void findClosingBracket2() {
         const SimpleTokenizer var(*this, "const auto g = []<typename T>() {};\n"); // #11275
 
+        const Token* const t = Token::findsimplematch(var.tokens(), "<");
+        ASSERT(t && Token::simpleMatch(t->findClosingBracket(), ">"));
+    }
+
+    void findClosingBracket3() {
+        const SimpleTokenizer var(*this, // #12789
+                                  "template <size_t I = 0, typename... ArgsT, std::enable_if_t<I < sizeof...(ArgsT)>* = nullptr>\n"
+                                  "void f();\n");
         const Token* const t = Token::findsimplematch(var.tokens(), "<");
         ASSERT(t && Token::simpleMatch(t->findClosingBracket(), ">"));
     }

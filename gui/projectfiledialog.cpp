@@ -312,6 +312,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
         mUI->mCheckLevelNormal->setChecked(true);
     mUI->mCheckHeaders->setChecked(projectFile->getCheckHeaders());
     mUI->mCheckUnusedTemplates->setChecked(projectFile->getCheckUnusedTemplates());
+    mUI->mInlineSuppressions->setChecked(projectFile->getInlineSuppression());
     mUI->mMaxCtuDepth->setValue(projectFile->getMaxCtuDepth());
     mUI->mMaxTemplateRecursion->setValue(projectFile->getMaxTemplateRecursion());
     if (projectFile->clangParser)
@@ -435,6 +436,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setVSConfigurations(getProjectConfigurations());
     projectFile->setCheckHeaders(mUI->mCheckHeaders->isChecked());
     projectFile->setCheckUnusedTemplates(mUI->mCheckUnusedTemplates->isChecked());
+    projectFile->setInlineSuppression(mUI->mInlineSuppressions->isChecked());
     projectFile->setMaxCtuDepth(mUI->mMaxCtuDepth->value());
     projectFile->setMaxTemplateRecursion(mUI->mMaxTemplateRecursion->value());
     projectFile->setIncludes(getIncludePaths());

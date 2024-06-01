@@ -56,7 +56,7 @@ jobs:
           lcov --extract lcov_tmp.info "$(pwd)/*" --output-file lcov.info
           genhtml lcov.info -o coverage_report --frame --legend --demangle-cpp
           
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
          name: Coverage results
          path: coverage_report

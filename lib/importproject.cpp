@@ -1221,6 +1221,8 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             checkLevelExhaustive = true;
         else if (strcmp(node->Name(), CppcheckXml::CheckUnusedTemplatesElementName) == 0)
             temp.checkUnusedTemplates = (strcmp(readSafe(node->GetText(), ""), "true") == 0);
+        else if (strcmp(node->Name(), CppcheckXml::InlineSuppression) == 0)
+            temp.inlineSuppressions = (strcmp(readSafe(node->GetText(), ""), "true") == 0);
         else if (strcmp(node->Name(), CppcheckXml::MaxCtuDepthElementName) == 0)
             temp.maxCtuDepth = strToInt<int>(readSafe(node->GetText(), "2")); // TODO: bail out when missing?
         else if (strcmp(node->Name(), CppcheckXml::MaxTemplateRecursionElementName) == 0)
@@ -1284,6 +1286,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->checkUnusedTemplates = temp.checkUnusedTemplates;
     settings->maxCtuDepth = temp.maxCtuDepth;
     settings->maxTemplateRecursion = temp.maxTemplateRecursion;
+    settings->inlineSuppressions |= temp.inlineSuppressions;
     settings->safeChecks = temp.safeChecks;
 
     if (checkLevelExhaustive)
