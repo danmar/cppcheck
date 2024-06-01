@@ -1147,6 +1147,7 @@ void Tokenizer::simplifyTypedef()
 
 void Tokenizer::simplifyTypedefCpp()
 {
+    const bool cpp = isCPP();
     bool isNamespace = false;
     std::string className, fullClassName;
     bool hasClass = false;
@@ -1714,7 +1715,7 @@ void Tokenizer::simplifyTypedefCpp()
                     }
 
                     // check for member functions
-                    else if (tok2->isCpp() && tok2->str() == "(" && isFunctionHead(tok2, "{:")) {
+                    else if (cpp && tok2->str() == "(" && isFunctionHead(tok2, "{:")) {
                         const Token *func = tok2->previous();
 
                         /** @todo add support for multi-token operators */
@@ -1741,7 +1742,7 @@ void Tokenizer::simplifyTypedefCpp()
                     // check for entering a new scope
                     else if (tok2->str() == "{") {
                         // check for entering a new namespace
-                        if (tok2->isCpp()) {
+                        if (cpp) {
                             if (tok2->strAt(-2) == "namespace") {
                                 if (classLevel < spaceInfo.size() &&
                                     spaceInfo[classLevel].isNamespace &&
@@ -1770,7 +1771,7 @@ void Tokenizer::simplifyTypedefCpp()
 
                 // check for operator typedef
                 /** @todo add support for multi-token operators */
-                else if (tok2->isCpp() &&
+                else if (cpp &&
                          tok2->str() == "operator" &&
                          tok2->next() &&
                          tok2->next()->str() == typeName->str() &&
