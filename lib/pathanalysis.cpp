@@ -123,14 +123,14 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
             if (Token::simpleMatch(tok, "} else {")) {
                 tok = tok->linkAt(2);
             }
-        } else if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
-            const Token * endCond = tok->next()->link();
+        } else if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->linkAt(1), ") {")) {
+            const Token * endCond = tok->linkAt(1);
             const Token * endBlock = endCond->next()->link();
             const Token * condTok = getCondTok(tok);
             if (!condTok)
                 continue;
             // Traverse condition
-            if (forwardRange(tok->next(), tok->next()->link(), info, f) == Progress::Break)
+            if (forwardRange(tok->next(), tok->linkAt(1), info, f) == Progress::Break)
                 return Progress::Break;
             Info i = info;
             i.known = false;

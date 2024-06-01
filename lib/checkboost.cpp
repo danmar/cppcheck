@@ -40,7 +40,7 @@ void CheckBoost::checkBoostForeachModification()
             if (!Token::simpleMatch(tok, "BOOST_FOREACH ("))
                 continue;
 
-            const Token *containerTok = tok->next()->link()->previous();
+            const Token *containerTok = tok->linkAt(1)->previous();
             if (!Token::Match(containerTok, "%var% ) {"))
                 continue;
 

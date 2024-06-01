@@ -1069,8 +1069,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         } else if (Token::Match(tok, "[(,] & %var% [,)]")) {
             variables.eraseAll(tok->tokAt(2)->varId());
         } else if (Token::Match(tok, "[(,] (") &&
-                   Token::Match(tok->next()->link(), ") %var% [,)[]")) {
-            variables.use(tok->next()->link()->next()->varId(), tok);   // use = read + write
+                   Token::Match(tok->linkAt(1), ") %var% [,)[]")) {
+            variables.use(tok->linkAt(1)->next()->varId(), tok);   // use = read + write
         } else if (Token::Match(tok, "[(,] *| *| %var%")) {
             const Token* vartok = tok->next();
             while (vartok->str() == "*")
