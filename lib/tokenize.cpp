@@ -7786,7 +7786,7 @@ void Tokenizer::simplifyIfSwitchForInit()
         // Simplify, the initialization expression is broken out..
         semicolon->insertToken(tok->str());
         semicolon->next()->insertToken("(");
-        Token::createMutualLinks(semicolon->next()->next(), endpar);
+        Token::createMutualLinks(semicolon->tokAt(2), endpar);
         tok->deleteNext();
         tok->str("{");
         endscope->insertToken("}");

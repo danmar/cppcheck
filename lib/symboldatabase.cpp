@@ -1353,9 +1353,9 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
             const Type *type = tok->function()->retType;
             Token* membertok;
             if (tok->linkAt(1)->strAt(1) == ".")
-                membertok = tok->linkAt(1)->next()->next();
+                membertok = tok->linkAt(1)->tokAt(2);
             else
-                membertok = tok->linkAt(1)->linkAt(1)->next()->next();
+                membertok = tok->linkAt(1)->linkAt(1)->tokAt(2);
             if (type) {
                 const Variable *membervar = membertok->variable();
                 if (!membervar) {

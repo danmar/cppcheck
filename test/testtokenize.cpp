@@ -3297,7 +3297,7 @@ private:
             SimpleTokenizer tokenizer(settings0, *this);
             ASSERT(tokenizer.tokenize(code));
             const Token *A = Token::findsimplematch(tokenizer.tokens(), "A <");
-            ASSERT_EQUALS(true, A->next()->link() == A->tokAt(3));
+            ASSERT_EQUALS(true, A->linkAt(1) == A->tokAt(3));
         }
         {
             // #8851
@@ -3305,7 +3305,7 @@ private:
                                 "void basic_json() {}";
             SimpleTokenizer tokenizer(settings0, *this);
             ASSERT(tokenizer.tokenize(code));
-            ASSERT_EQUALS(true, Token::simpleMatch(tokenizer.tokens()->next()->link(), "> void"));
+            ASSERT_EQUALS(true, Token::simpleMatch(tokenizer.tokens()->linkAt(1), "> void"));
         }
 
         {
@@ -3325,8 +3325,8 @@ private:
             ASSERT(tokenizer.tokenize(code));
             const Token *tok1 = Token::findsimplematch(tokenizer.tokens(), "template <");
             const Token *tok2 = Token ::findsimplematch(tokenizer.tokens(), "same_as <");
-            ASSERT(tok1->next()->link() == tok1->tokAt(7));
-            ASSERT(tok2->next()->link() == tok2->tokAt(3));
+            ASSERT(tok1->linkAt(1) == tok1->tokAt(7));
+            ASSERT(tok2->linkAt(1) == tok2->tokAt(3));
         }
 
         {
