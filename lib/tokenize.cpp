@@ -8428,7 +8428,8 @@ void Tokenizer::reportUnknownMacros() const
 
 void Tokenizer::findGarbageCode() const
 {
-    const bool isCPP11 = isCPP() && mSettings.standards.cpp >= Standards::CPP11;
+    const bool cpp = isCPP();
+    const bool isCPP11 = cpp && mSettings.standards.cpp >= Standards::CPP11;
 
     static const std::unordered_set<std::string> nonConsecutiveKeywords{ "break",
                                                                          "continue",
@@ -8476,7 +8477,7 @@ void Tokenizer::findGarbageCode() const
 
         // Assign/increment/decrement literal
         else if (Token::Match(tok, "!!) %num%|%str%|%char% %assign%|++|--")) {
-            if (!isCPP() || mSettings.standards.cpp < Standards::CPP20 || !Token::Match(tok->previous(), "%name% : %num% ="))
+            if (!cpp || mSettings.standards.cpp < Standards::CPP20 || !Token::Match(tok->previous(), "%name% : %num% ="))
                 syntaxError(tok, tok->next()->str() + " " + tok->strAt(2));
         }
         else if (Token::simpleMatch(tok, ") return") && !Token::Match(tok->link()->previous(), "if|while|for (")) {
@@ -8504,7 +8505,7 @@ void Tokenizer::findGarbageCode() const
             if (!Token::Match(tok->next(), "( !!)"))
                 syntaxError(tok);
             if (tok->str() != "for") {
-                if (isGarbageExpr(tok->next(), tok->linkAt(1), isCPP() && (mSettings.standards.cpp>=Standards::cppstd_t::CPP17)))
+                if (isGarbageExpr(tok->next(), tok->linkAt(1), cpp && (mSettings.standards.cpp>=Standards::cppstd_t::CPP17)))
                     syntaxError(tok);
             }
         }
@@ -8613,7 +8614,7 @@ void Tokenizer::findGarbageCode() const
         // if we have an invalid number of semicolons inside for( ), assume syntax error
         if (semicolons > 2)
             syntaxError(tok);
-        if (semicolons == 1 && !(isCPP() && mSettings.standards.cpp >= Standards::CPP20))
+        if (semicolons == 1 && !(cpp && mSettings.standards.cpp >= Standards::CPP20))
             syntaxError(tok);
         if (semicolons == 0 && colons == 0)
             syntaxError(tok);
@@ -8623,7 +8624,7 @@ void Tokenizer::findGarbageCode() const
     const Token *templateEndToken = nullptr;
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (!templateEndToken) {
-            if (tok->str() == "<" && isCPP())
+            if (tok->str() == "<" && cpp)
                 templateEndToken = tok->findClosingBracket();
         } else {
             if (templateEndToken == tok)
@@ -8639,7 +8640,7 @@ void Tokenizer::findGarbageCode() const
         {
             bool match1 = Token::Match(tok, "%or%|%oror%|==|!=|+|-|/|!|>=|<=|~|^|++|--|::|sizeof");
             bool match2 = Token::Match(tok->next(), "{|if|else|while|do|for|return|switch|break");
-            if (isCPP()) {
+            if (cpp) {
                 match1 = match1 || Token::Match(tok, "throw|decltype|typeof");
                 match2 = match2 || Token::Match(tok->next(), "try|catch|namespace");
             }
@@ -8664,21 +8665,21 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "%assign% typename|class %assign%"))
             syntaxError(tok);
-        if (Token::Match(tok, "%assign% [;)}]") && (!isCPP() || !Token::simpleMatch(tok->previous(), "operator")))
+        if (Token::Match(tok, "%assign% [;)}]") && (!cpp || !Token::simpleMatch(tok->previous(), "operator")))
             syntaxError(tok);
         if (Token::Match(tok, "%cop%|=|,|[ %or%|%oror%|/|%"))
             syntaxError(tok);
         if (Token::Match(tok, "[;([{] %comp%|%oror%|%or%|%|/"))
             syntaxError(tok);
-        if (Token::Match(tok, "%cop%|= ]") && !(isCPP() && Token::Match(tok->previous(), "%type%|[|,|%num% &|=|> ]")))
+        if (Token::Match(tok, "%cop%|= ]") && !(cpp && Token::Match(tok->previous(), "%type%|[|,|%num% &|=|> ]")))
             syntaxError(tok);
-        if (Token::Match(tok, "[+-] [;,)]}]") && !(isCPP() && Token::simpleMatch(tok->previous(), "operator")))
+        if (Token::Match(tok, "[+-] [;,)]}]") && !(cpp && Token::simpleMatch(tok->previous(), "operator")))
             syntaxError(tok);
         if (Token::simpleMatch(tok, ",") &&
             !Token::Match(tok->tokAt(-2), "[ = , &|%name%")) {
             if (Token::Match(tok->previous(), "(|[|{|<|%assign%|%or%|%oror%|==|!=|+|-|/|!|>=|<=|~|^|::|sizeof"))
                 syntaxError(tok);
-            if (isCPP() && Token::Match(tok->previous(), "throw|decltype|typeof"))
+            if (cpp && Token::Match(tok->previous(), "throw|decltype|typeof"))
                 syntaxError(tok);
             if (Token::Match(tok->next(), ")|]|>|%assign%|%or%|%oror%|==|!=|/|>=|<=|&&"))
                 syntaxError(tok);
@@ -8709,9 +8710,9 @@ void Tokenizer::findGarbageCode() const
         if (Token::Match(tok, "typedef [,;:]"))
             syntaxError(tok);
         if (Token::Match(tok, "!|~ %comp%") &&
-            !(isCPP() && tok->strAt(1) == ">" && Token::simpleMatch(tok->tokAt(-1), "operator")))
+            !(cpp && tok->strAt(1) == ">" && Token::simpleMatch(tok->tokAt(-1), "operator")))
             syntaxError(tok);
-        if (Token::Match(tok, "] %name%") && (!isCPP() || !(tok->tokAt(-1) && Token::simpleMatch(tok->tokAt(-2), "delete [")))) {
+        if (Token::Match(tok, "] %name%") && (!cpp || !(tok->tokAt(-1) && Token::simpleMatch(tok->tokAt(-2), "delete [")))) {
             if (tok->next()->isUpperCaseName())
                 unknownMacroError(tok->next());
             else
@@ -8723,7 +8724,7 @@ void Tokenizer::findGarbageCode() const
             for (const Token* inner = tok->next(); inner != end; inner = inner->next()) {
                 if (inner->str() == "{")
                     inner = inner->link();
-                else if (inner->str() == ";" || (Token::simpleMatch(inner, ", ,") && (!isCPP() || !Token::simpleMatch(inner->previous(), "operator")))) {
+                else if (inner->str() == ";" || (Token::simpleMatch(inner, ", ,") && (!cpp || !Token::simpleMatch(inner->previous(), "operator")))) {
                     if (tok->tokAt(-1) && tok->tokAt(-1)->isUpperCaseName())
                         unknownMacroError(tok->tokAt(-1));
                     else
@@ -8732,7 +8733,7 @@ void Tokenizer::findGarbageCode() const
             }
         }
 
-        if ((!isCPP() || !Token::simpleMatch(tok->previous(), "operator")) && Token::Match(tok, "[,;] ,"))
+        if ((!cpp || !Token::simpleMatch(tok->previous(), "operator")) && Token::Match(tok, "[,;] ,"))
             syntaxError(tok);
         if (tok->str() == "typedef") {
             for (const Token* tok2 = tok->next(); tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
@@ -8748,7 +8749,7 @@ void Tokenizer::findGarbageCode() const
                     syntaxError(tok);
             }
         }
-        if (isCPP() && tok->str() == "namespace" && tok->tokAt(-1)) {
+        if (cpp && tok->str() == "namespace" && tok->tokAt(-1)) {
             if (!Token::Match(tok->tokAt(-1), ";|{|}|using|inline")) {
                 if (tok->tokAt(-1)->isUpperCaseName())
                     unknownMacroError(tok->tokAt(-1));
@@ -8781,7 +8782,7 @@ void Tokenizer::findGarbageCode() const
         syntaxError(list.back()->previous());
 
     // Garbage templates..
-    if (isCPP()) {
+    if (cpp) {
         for (const Token *tok = tokens(); tok; tok = tok->next()) {
             if (Token::simpleMatch(tok, "< >") && !(Token::Match(tok->tokAt(-1), "%name%") || (tok->tokAt(-1) && Token::Match(tok->tokAt(-2), "operator %op%"))))
                 syntaxError(tok);
