@@ -37,6 +37,8 @@ jobs:
       image: ${{ matrix.image }}
 
     steps:
+      # we need to stay at v3 for now because Node 20 does not support the older distros
+      # /__e/node20/bin/node: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by /__e/node20/bin/node)
       - uses: actions/checkout@v3
 
       - name: Install missing software on ubuntu
@@ -101,6 +103,8 @@ jobs:
       image: ${{ matrix.image }}
 
     steps:
+      # we need to stay at v3 for now because Node 20 does not support the older distros
+      # /__e/node20/bin/node: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by /__e/node20/bin/node)
       - uses: actions/checkout@v3
 
       - name: Install missing software on ubuntu

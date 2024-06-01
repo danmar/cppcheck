@@ -27,7 +27,7 @@ jobs:
       QT_VERSION: 6.7.0
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install missing software on debian/ubuntu
         if: contains(matrix.image, 'debian')
@@ -134,7 +134,7 @@ jobs:
       QT_VERSION: 6.7.0
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install missing software
         run: |

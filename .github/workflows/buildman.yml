@@ -18,7 +18,7 @@ jobs:
   convert_via_pandoc:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - run: |
           mkdir output
@@ -43,7 +43,7 @@ jobs:
   manpage:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install missing software on ubuntu
         run: |

@@ -30,7 +30,7 @@ jobs:
       QT_VERSION: 5.15.2
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Visual Studio environment
         uses: ilammy/msvc-dev-cmd@v1
