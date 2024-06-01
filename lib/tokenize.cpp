@@ -6749,7 +6749,7 @@ void Tokenizer::simplifyFunctionParameters()
             // First step: Get list of argument names in parentheses
             std::map<std::string, Token *> argumentNames;
             bool bailOut = false;
-            Token * tokparam = nullptr;
+            const Token * tokparam = nullptr;
 
             //take count of the function name..
             const std::string& funcName(tok->str());
