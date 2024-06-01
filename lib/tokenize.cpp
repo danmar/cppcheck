@@ -7056,7 +7056,8 @@ void Tokenizer::simplifyVarDecl(const bool only_k_r_fpar)
 
 void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, const bool only_k_r_fpar)
 {
-    const bool isCPP11 = isCPP() && (mSettings.standards.cpp >= Standards::CPP11);
+    const bool cpp = isCPP();
+    const bool isCPP11 = cpp && (mSettings.standards.cpp >= Standards::CPP11);
 
     // Split up variable declarations..
     // "int a=4;" => "int a; a=4;"
@@ -7065,7 +7066,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
     for (Token *tok = tokBegin; tok != tokEnd; tok = tok->next()) {
         if (Token::Match(tok, "{|;"))
             scopeDecl = false;
-        if (isCPP()) {
+        if (cpp) {
             if (Token::Match(tok, "class|struct|namespace|union"))
                 scopeDecl = true;
             if (Token::Match(tok, "decltype|noexcept (")) {
@@ -7114,7 +7115,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
             } else
                 continue;
         } else if (tok->str() == "(") {
-            if (isCPP()) {
+            if (cpp) {
                 for (Token * tok2 = tok; tok2 && tok2 != tok->link(); tok2 = tok2->next()) {
                     if (Token::Match(tok2, "[(,] [")) {
                         // lambda function at tok2->next()
@@ -7144,7 +7145,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
             continue;
         if (isCPP11 && type0->str() == "using")
             continue;
-        if (type0->isCpp() && Token::Match(type0, "namespace|delete"))
+        if (cpp && Token::Match(type0, "namespace|delete"))
             continue;
 
         bool isconst = false;
@@ -7264,7 +7265,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                 varName = varName->next();
             else
                 --typelen;
-            if (isCPP() && Token::Match(varName, "public:|private:|protected:|using"))
+            if (cpp && Token::Match(varName, "public:|private:|protected:|using"))
                 continue;
             //skip all the pointer part
             bool isPointerOrRef = false;
@@ -8345,6 +8346,8 @@ void Tokenizer::reportUnknownMacros() const
         }
     }
 
+    const bool cpp = isCPP();
+
     // Report unknown macros in non-executable scopes..
     std::set<std::string> possible;
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
@@ -8378,7 +8381,7 @@ void Tokenizer::reportUnknownMacros() const
                 else
                     unknownMacroError(tok);
             }
-        } else if (isCPP() && Token::Match(tok, "public|private|protected %name% :")) {
+        } else if (cpp && Token::Match(tok, "public|private|protected %name% :")) {
             unknownMacroError(tok->next());
         }
     }
