@@ -274,11 +274,9 @@ std::string ErrorMessage::serialize() const
     serializeString(oss, severityToString(severity));
     serializeString(oss, std::to_string(cwe.id));
     serializeString(oss, std::to_string(hash));
+    serializeString(oss, fixInvalidChars(remark));
     serializeString(oss, file0);
-    if (certainty == Certainty::inconclusive) {
-        const std::string text("inconclusive");
-        serializeString(oss, text);
-    }
+    serializeString(oss, (certainty == Certainty::inconclusive) ? "1" : "0");
 
     const std::string saneShortMessage = fixInvalidChars(mShortMessage);
     const std::string saneVerboseMessage = fixInvalidChars(mVerboseMessage);
@@ -312,9 +310,9 @@ void ErrorMessage::deserialize(const std::string &data)
     callStack.clear();
 
     std::istringstream iss(data);
-    std::array<std::string, 7> results;
+    std::array<std::string, 9> results;
     std::size_t elem = 0;
-    while (iss.good() && elem < 7) {
+    while (iss.good() && elem < 9) {
         unsigned int len = 0;
         if (!(iss >> len))
             throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid length");
@@ -332,11 +330,6 @@ void ErrorMessage::deserialize(const std::string &data)
 
             if (!iss.good())
                 throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - premature end of data");
-
-            if (temp == "inconclusive") {
-                certainty = Certainty::inconclusive;
-                continue;
-            }
         }
 
         results[elem++] = std::move(temp);
@@ -345,7 +338,7 @@ void ErrorMessage::deserialize(const std::string &data)
     if (!iss.good())
         throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - premature end of data");
 
-    if (elem != 7)
+    if (elem != 9)
         throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - insufficient elements");
 
     id = std::move(results[0]);
@@ -362,9 +355,12 @@ void ErrorMessage::deserialize(const std::string &data)
         if (!strToInt(results[3], hash, &err))
             throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid hash - " + err);
     }
-    file0 = std::move(results[4]);
-    mShortMessage = std::move(results[5]);
-    mVerboseMessage = std::move(results[6]);
+    remark = std::move(results[4]);
+    file0 = std::move(results[5]);
+    if (results[6] == "1")
+        certainty = Certainty::inconclusive;
+    mShortMessage = std::move(results[7]);
+    mVerboseMessage = std::move(results[8]);
 
     unsigned int stackSize = 0;
     if (!(iss >> stackSize))
@@ -495,6 +491,9 @@ std::string ErrorMessage::toXML() const
 
     if (!file0.empty())
         printer.PushAttribute("file0", file0.c_str());
+
+    if (!remark.empty())
+        printer.PushAttribute("remark", fixInvalidChars(remark).c_str());
 
     for (std::list<FileLocation>::const_reverse_iterator it = callStack.crbegin(); it != callStack.crend(); ++it) {
         printer.OpenElement("location", false);
@@ -641,6 +640,7 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
     findAndReplace(result, "{severity}", severityToString(severity));
     findAndReplace(result, "{cwe}", std::to_string(cwe.id));
     findAndReplace(result, "{message}", verbose ? mVerboseMessage : mShortMessage);
+    findAndReplace(result, "{remark}", remark);
     if (!callStack.empty()) {
         if (result.find("{callstack}") != std::string::npos)
             findAndReplace(result, "{callstack}", ErrorLogger::callStackToString(callStack));
