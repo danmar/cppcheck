@@ -113,13 +113,13 @@ jobs:
           # -isystem/usr/lib/clang/17/include
           iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --max_line_length=1024 -Xiwyu --comment_style=long -Xiwyu --quoted_includes_first -Xiwyu --update_comments > iwyu.log
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
           name: Compilation Database
           path: ./cmake.output/compile_commands.json
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
           name: Logs (include-what-you-use)
@@ -182,7 +182,7 @@ jobs:
           # TODO: run multi-threaded
           find $PWD/cli $PWD/lib $PWD/test $PWD/gui -maxdepth 1 -name "*.cpp" | xargs -t -n 1 clang-include-cleaner-18 --print=changes --extra-arg=-w -p cmake.output > clang-include-cleaner.log 2>&1
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: Logs (clang-include-cleaner)
           path: ./*.log
