@@ -265,11 +265,21 @@ static bool hasEmacsCppMarker(const char* path)
 #endif
     // TODO: support /* */ comments
     const std::string buf_trim = trim(buf); // trim whitespaces
-    if (buf_trim[0] != '/' || buf_trim[1] != '/') {
+    if (buf_trim[0] == '/' && buf_trim[1] == '*') {
+        const auto pos_cmt = buf.find("*/", 2);
+        if (pos_cmt != std::string::npos && pos_cmt < (pos2 + 3))
+        {
+ #ifdef LOG_EMACS_MARKER
+            std::cout << path << " - Emacs marker not contained in C-style comment block: '"  << buf.substr(pos1, (pos2 + 3) - pos1) << "'" << '\n';
+ #endif
+            return false; // not in a comment
+        }
+    }
+    else if (buf_trim[0] != '/' || buf_trim[1] != '/') {
 #ifdef LOG_EMACS_MARKER
         std::cout << path << " - Emacs marker not in a comment: '"  << buf.substr(pos1, (pos2 + 3) - pos1) << "'" << '\n';
 #endif
-        return false; // not a comment
+        return false; // not in a comment
     }
 
     // there are more variations with lowercase and no whitespaces
