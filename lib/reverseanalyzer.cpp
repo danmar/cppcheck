@@ -111,7 +111,7 @@ namespace {
             if (Token::simpleMatch(tok->tokAt(-2), "} else {"))
                 tok = tok->linkAt(-2);
             if (Token::simpleMatch(tok->previous(), ") {"))
-                return tok->previous()->link();
+                return tok->linkAt(-1);
             if (Token::simpleMatch(tok->previous(), "do {"))
                 return tok->previous();
             return tok;

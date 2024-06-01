@@ -406,7 +406,7 @@ std::set<nonneg int> FwdAnalysis::getExprVarIds(const Token* expr, bool* localOu
                   [&](const Token *tok) {
         if (tok->str() == "[" && mWhat == What::UnusedValue)
             return ChildrenToVisit::op1;
-        if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
+        if (tok->varId() == 0 && tok->isName() && tok->strAt(-1) != ".") {
             // unknown variable
             unknownVarId = true;
             return ChildrenToVisit::none;

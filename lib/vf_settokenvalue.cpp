@@ -350,7 +350,7 @@ namespace ValueFlow
             }
             Value pvalue = value;
             if (!value.subexpressions.empty() && Token::Match(parent, ". %var%")) {
-                if (contains(value.subexpressions, parent->next()->str()))
+                if (contains(value.subexpressions, parent->strAt(1)))
                     pvalue.subexpressions.clear();
                 else
                     return;

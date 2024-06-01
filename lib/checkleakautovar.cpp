@@ -923,7 +923,7 @@ void CheckLeakAutoVar::changeAllocStatus(VarInfo &varInfo, const VarInfo::AllocI
         if (allocation.status == VarInfo::NOALLOC) {
             // possible usage
             varInfo.possibleUsage[arg->varId()] = { tok, VarInfo::USED };
-            if (var->second.status == VarInfo::DEALLOC && arg->previous()->str() == "&")
+            if (var->second.status == VarInfo::DEALLOC && arg->strAt(-1) == "&")
                 varInfo.erase(arg->varId());
         } else if (var->second.managed()) {
             doubleFreeError(tok, var->second.allocTok, arg->str(), allocation.type);

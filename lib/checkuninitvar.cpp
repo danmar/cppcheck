@@ -1373,7 +1373,7 @@ int CheckUninitVar::isFunctionParUsage(const Token *vartok, const Library& libra
 
     // is this a function call?
     if (Token::Match(start->previous(), "%name% (")) {
-        const bool address(vartok->previous()->str() == "&");
+        const bool address(vartok->strAt(-1) == "&");
         const bool array(vartok->variable() && vartok->variable()->isArray());
         // check how function handle uninitialized data arguments..
         const Function *func = start->previous()->function();

@@ -1549,7 +1549,7 @@ namespace {
 
                 return unknown();
             } else if (expr->str() == "(" && expr->isCast()) {
-                if (Token::simpleMatch(expr->previous(), ">") && expr->previous()->link())
+                if (Token::simpleMatch(expr->previous(), ">") && expr->linkAt(-1))
                     return execute(expr->astOperand2());
                 return execute(expr->astOperand1());
             }

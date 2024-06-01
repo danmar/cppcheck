@@ -106,7 +106,7 @@ void CheckCondition::assignIf()
 
             if (Token::Match(tok->next(), "%num% [&|]")) {
                 bitop = tok->strAt(2).at(0);
-                num = MathLib::toBigNumber(tok->next()->str());
+                num = MathLib::toBigNumber(tok->strAt(1));
             } else {
                 const Token *endToken = Token::findsimplematch(tok, ";");
 
@@ -116,7 +116,7 @@ void CheckCondition::assignIf()
 
                 if (endToken && Token::Match(endToken->tokAt(-2), "[&|] %num% ;")) {
                     bitop = endToken->strAt(-2).at(0);
-                    num = MathLib::toBigNumber(endToken->previous()->str());
+                    num = MathLib::toBigNumber(endToken->strAt(-1));
                 }
             }
 

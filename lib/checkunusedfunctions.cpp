@@ -131,7 +131,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
                     mFunctionCalls.insert(markupVarToken->str());
                     if (mFunctions.find(markupVarToken->str()) != mFunctions.end())
                         mFunctions[markupVarToken->str()].usedOtherFile = true;
-                    else if (markupVarToken->next()->str() == "(") {
+                    else if (markupVarToken->strAt(1) == "(") {
                         FunctionUsage &func = mFunctions[markupVarToken->str()];
                         func.filename = tokenizer.list.getFiles()[markupVarToken->fileIndex()];
                         if (func.filename.empty() || func.filename == "+")
