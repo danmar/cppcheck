@@ -37,7 +37,7 @@ jobs:
 
       - name: Cache PCRE
         id: cache-pcre
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             externals\pcre.h
