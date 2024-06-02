@@ -702,6 +702,10 @@ this attribute is only used when the error message is inconclusive
 
 CWE ID for the problem; note that this attribute is only used when the CWE ID for the message is known
 
+**remark**
+
+Optional attribute. The related remark/justification from a remark comment.
+
 ## The `<location>` element
 
 All locations related to an error are listed with `<location>` elements. The primary location is listed first.
@@ -848,6 +852,10 @@ The warning message
 
 Warning id
 
+**{remark}**
+
+The remark text if a remark comment has been provided
+
 **{code}**
 
 The real code
@@ -899,6 +907,35 @@ Newline
 **\\r**
 
 Carriage return
+
+# Justifications for warnings in the report
+
+You can add remark comments in the source code that justify why there is a warning/violation.
+
+Such a remark comment shall:
+ * start with REMARK.
+ * can either be added above the source code that generates the warning, or after the code on the same line.
+
+Example code:
+
+    void foo(void) {
+        // REMARK Initialize x with 0
+        int x = 0;
+    }
+
+In Cppcheck text output the remarks are not shown by default, you can use `--template` option `{remark}` to show remarks:
+
+    $ ./cppcheck --enable=style --template="{file}:{line}: {message} [{id}]\\n{remark}" test1.c
+    Checking test1.c ...
+    test1.c:4: Variable 'x' is assigned a value that is never used. [unreadVariable]
+    Initialize x with 0
+
+In xml output the comment text is provided in a "remark" attribute:
+
+    $ ./cppcheck --enable=style --xml test1.c
+    ....
+    remark="Initialize x with 0"
+    ....
 
 # Addons
 
