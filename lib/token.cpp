@@ -376,56 +376,6 @@ void Token::replace(Token *replaceThis, Token *start, Token *end)
     delete replaceThis;
 }
 
-template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-static T *tokAtImpl(T *tok, int index)
-{
-    while (index > 0 && tok) {
-        tok = tok->next();
-        --index;
-    }
-    while (index < 0 && tok) {
-        tok = tok->previous();
-        ++index;
-    }
-    return tok;
-}
-
-const Token *Token::tokAt(int index) const
-{
-    return tokAtImpl(this, index);
-}
-
-Token *Token::tokAt(int index)
-{
-    return tokAtImpl(this, index);
-}
-
-template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-static T *linkAtImpl(T *thisTok, int index)
-{
-    T *tok = thisTok->tokAt(index);
-    if (!tok) {
-        throw InternalError(thisTok, "Internal error. Token::linkAt called with index outside the tokens range.");
-    }
-    return tok->link();
-}
-
-const Token *Token::linkAt(int index) const
-{
-    return linkAtImpl(this, index);
-}
-
-Token *Token::linkAt(int index)
-{
-    return linkAtImpl(this, index);
-}
-
-const std::string &Token::strAt(int index) const
-{
-    const Token *tok = this->tokAt(index);
-    return tok ? tok->mStr : emptyString;
-}
-
 static
 #if defined(__GNUC__)
 // GCC does not inline this by itself
