@@ -51,12 +51,10 @@ ErrorItem::ErrorItem(const ErrorMessage &errmsg)
     , cwe(errmsg.cwe.id)
     , hash(errmsg.hash)
     , symbolNames(QString::fromStdString(errmsg.symbolNames()))
+    , remark(QString::fromStdString(errmsg.remark))
 {
-    for (std::list<ErrorMessage::FileLocation>::const_iterator loc = errmsg.callStack.cbegin();
-         loc != errmsg.callStack.cend();
-         ++loc) {
-        errorPath << QErrorPathItem(*loc);
-    }
+    for (const auto& loc: errmsg.callStack)
+        errorPath << QErrorPathItem(loc);
 }
 
 QString ErrorItem::tool() const
