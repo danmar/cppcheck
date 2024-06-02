@@ -8752,6 +8752,13 @@ void Tokenizer::findGarbageCode() const
                 }
                 if (!tok2->next() || tok2->isControlFlowKeyword() || Token::Match(tok2, "typedef|static|."))
                     syntaxError(tok);
+                if (Token::Match(tok2, "%name% %name%") && tok2->str() == tok2->strAt(1)) {
+                    if (tok2->isStandardType() && tok2->str() == "long")
+                        continue;
+                    if (Token::Match(tok2->tokAt(-1), "enum|struct|union") || (isCPP() && Token::Match(tok2->tokAt(-1), "class|::")))
+                        continue;
+                    syntaxError(tok2);
+                }
             }
         }
         if (cpp && tok->str() == "namespace" && tok->tokAt(-1)) {
