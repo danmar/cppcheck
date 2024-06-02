@@ -62,10 +62,10 @@ struct CPPCHECKLIB Directive {
 
 class CPPCHECKLIB RemarkComment {
 public:
-    RemarkComment(const std::string &file, const unsigned int lineNumber, const std::string &str)
-        : file(file)
+    RemarkComment(std::string file, unsigned int lineNumber, std::string str)
+        : file(std::move(file))
         , lineNumber(lineNumber)
-        , str(str)
+        , str(std::move(str))
     {}
 
     /** name of file */
