@@ -966,7 +966,7 @@ const Token * Token::findClosingBracket() const
         }
         // save named template parameter
         else if (templateParameter && depth == 1 && Token::Match(closing, "[,=]") &&
-                 closing->previous()->isName() && !Match(closing->previous(), "class|typename|."))
+                 closing->previous()->isName() && !Token::Match(closing->previous(), "class|typename|."))
             templateParameters.insert(closing->strAt(-1));
     }
 
@@ -2328,6 +2328,13 @@ void Token::setValueType(ValueType *vt)
         delete mImpl->mValueType;
         mImpl->mValueType = vt;
     }
+}
+
+const ValueType *Token::argumentType() const {
+    const Token *top = this;
+    while (top && !Token::Match(top->astParent(), ",|("))
+        top = top->astParent();
+    return top ? top->mImpl->mValueType : nullptr;
 }
 
 void Token::type(const ::Type *t)

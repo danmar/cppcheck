@@ -333,12 +333,7 @@ public:
     }
     void setValueType(ValueType *vt);
 
-    const ValueType *argumentType() const {
-        const Token *top = this;
-        while (top && !Token::Match(top->astParent(), ",|("))
-            top = top->astParent();
-        return top ? top->mImpl->mValueType : nullptr;
-    }
+    const ValueType *argumentType() const;
 
     Token::Type tokType() const {
         return mTokType;
