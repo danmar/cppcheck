@@ -171,6 +171,9 @@ public:
     CWE cwe;
     Certainty certainty;
 
+    /** remark from REMARK comment */
+    std::string remark;
+
     /** Warning hash */
     std::size_t hash;
 

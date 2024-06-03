@@ -91,6 +91,7 @@ public:
     unsigned long long hash;
     QList<QErrorPathItem> errorPath;
     QString symbolNames;
+    QString remark;
 
     // Special GUI properties
     QString sinceDate;
@@ -122,6 +123,7 @@ public:
     QString message;
     QString sinceDate;
     QString tags;
+    QString remark;
 };
 
 /// @}

@@ -49,6 +49,7 @@ static const QString TagsAttribute = "tag";
 static const QString FilenameAttribute = "file";
 static const QString IncludedFromFilenameAttribute = "file0";
 static const QString InconclusiveAttribute = "inconclusive";
+static const QString RemarkAttribute = "remark";
 static const QString InfoAttribute = "info";
 static const QString LineAttribute = "line";
 static const QString ColumnAttribute = "column";
@@ -137,6 +138,8 @@ void XmlReportV2::writeError(const ErrorItem &error)
     mXmlWriter->writeAttribute(VerboseAttribute, message);
     if (error.inconclusive)
         mXmlWriter->writeAttribute(InconclusiveAttribute, "true");
+    if (!error.remark.isEmpty())
+        mXmlWriter->writeAttribute(RemarkAttribute, error.remark);
     if (error.cwe > 0)
         mXmlWriter->writeAttribute(CWEAttribute, QString::number(error.cwe));
     if (error.hash > 0)
@@ -231,6 +234,8 @@ ErrorItem XmlReportV2::readError(const QXmlStreamReader *reader)
         item.message = XmlReport::unquoteMessage(message);
         if (attribs.hasAttribute(QString(), InconclusiveAttribute))
             item.inconclusive = true;
+        if (attribs.hasAttribute(QString(), RemarkAttribute))
+            item.remark = attribs.value(QString(), RemarkAttribute).toString();
         if (attribs.hasAttribute(QString(), CWEAttribute))
             item.cwe = attribs.value(QString(), CWEAttribute).toInt();
         if (attribs.hasAttribute(QString(), HashAttribute))
