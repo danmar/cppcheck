@@ -78,6 +78,7 @@ static constexpr char SINCEDATE[] = "sinceDate";
 static constexpr char SYMBOLNAMES[] = "symbolNames";
 static constexpr char SUMMARY[] = "summary";
 static constexpr char TAGS[] = "tags";
+static constexpr char REMARK[] = "remark";
 
 // These must match column headers given in ResultsTree::translate()
 static constexpr int COLUMN_SINCE_DATE = 6;
@@ -186,6 +187,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     if (const ProjectFile *activeProject = ProjectFile::getActiveProject()) {
         line.tags = activeProject->getWarningTags(item.hash);
     }
+    line.remark = item.remark;
     //Create the base item for the error and ensure it has a proper
     //file item as a parent
     QStandardItem* fileItem = ensureFileItem(loc.file, item.file0, hide);
@@ -214,6 +216,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     data[SINCEDATE] = item.sinceDate;
     data[SYMBOLNAMES] = item.symbolNames;
     data[TAGS] = line.tags;
+    data[REMARK] = line.remark;
     data[HIDE] = hide;
     stditem->setData(QVariant(data));
 
@@ -1296,6 +1299,7 @@ void ResultsTree::readErrorItem(const QStandardItem *error, ErrorItem *item) con
     item->file0 = data[FILE0].toString();
     item->sinceDate = data[SINCEDATE].toString();
     item->tags = data[TAGS].toString();
+    item->remark = data[REMARK].toString();
 
     if (error->rowCount() == 0) {
         QErrorPathItem e;
