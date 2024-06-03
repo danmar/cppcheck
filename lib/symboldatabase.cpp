@@ -7096,6 +7096,7 @@ static const Token* parsedecl(const Token* type,
             valuetype->type = getEnumType(valuetype->typeScope, settings.platform);
     } else
         valuetype->type = ValueType::Type::RECORD;
+    const bool cpp = type->isCpp();
     bool par = false;
     while (Token::Match(type, "%name%|*|&|&&|::|(") && !Token::Match(type, "typename|template") && type->varId() == 0 &&
            !type->variable() && !type->function()) {
@@ -7158,7 +7159,7 @@ static const Token* parsedecl(const Token* type,
                 if (valuetype->typeScope)
                     valuetype->type = (scope->type == Scope::ScopeType::eClass) ? ValueType::Type::RECORD : ValueType::Type::NONSTD;
             }
-        } else if (const Library::Container* container = (type->isCpp() ? settings.library.detectContainerOrIterator(type, &isIterator) : nullptr)) {
+        } else if (const Library::Container* container = (cpp ? settings.library.detectContainerOrIterator(type, &isIterator) : nullptr)) {
             if (isIterator)
                 valuetype->type = ValueType::Type::ITERATOR;
             else
@@ -7180,7 +7181,7 @@ static const Token* parsedecl(const Token* type,
                 // we are past the end of the type
                 type = type->previous();
             continue;
-        } else if (const Library::SmartPointer* smartPointer = (type->isCpp() ? settings.library.detectSmartPointer(type) : nullptr)) {
+        } else if (const Library::SmartPointer* smartPointer = (cpp ? settings.library.detectSmartPointer(type) : nullptr)) {
             const Token* argTok = Token::findsimplematch(type, "<");
             if (!argTok)
                 break;

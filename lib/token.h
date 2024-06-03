@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "errortypes.h"
 #include "mathlib.h"
 #include "templatesimplifier.h"
 #include "utils.h"
@@ -213,21 +214,37 @@ public:
      * For example index 1 would return next token, and 2
      * would return next from that one.
      */
-    const Token *tokAt(int index) const;
-    Token *tokAt(int index);
+    const Token *tokAt(int index) const
+    {
+        return tokAtImpl(this, index);
+    }
+    Token *tokAt(int index)
+    {
+        return tokAtImpl(this, index);
+    }
 
     /**
      * @return the link to the token in given index, related to this token.
      * For example index 1 would return the link to next token.
      */
-    const Token *linkAt(int index) const;
-    Token *linkAt(int index);
+    const Token *linkAt(int index) const
+    {
+        return linkAtImpl(this, index);
+    }
+    Token *linkAt(int index)
+    {
+        return linkAtImpl(this, index);
+    }
 
     /**
      * @return String of the token in given index, related to this token.
      * If that token does not exist, an empty string is being returned.
      */
-    const std::string &strAt(int index) const;
+    const std::string &strAt(int index) const
+    {
+        const Token *tok = this->tokAt(index);
+        return tok ? tok->mStr : emptyString;
+    }
 
     /**
      * Match given token (or list of tokens) to a pattern list.
@@ -333,12 +350,7 @@ public:
     }
     void setValueType(ValueType *vt);
 
-    const ValueType *argumentType() const {
-        const Token *top = this;
-        while (top && !Token::Match(top->astParent(), ",|("))
-            top = top->astParent();
-        return top ? top->mImpl->mValueType : nullptr;
-    }
+    const ValueType *argumentType() const;
 
     Token::Type tokType() const {
         return mTokType;
@@ -789,6 +801,30 @@ public:
     static Token *findmatch(Token * const startTok, const char pattern[], const Token * const end, const nonneg int varId = 0);
 
 private:
+    template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+    static T *tokAtImpl(T *tok, int index)
+    {
+        while (index > 0 && tok) {
+            tok = tok->next();
+            --index;
+        }
+        while (index < 0 && tok) {
+            tok = tok->previous();
+            ++index;
+        }
+        return tok;
+    }
+
+    template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+    static T *linkAtImpl(T *thisTok, int index)
+    {
+        T *tok = thisTok->tokAt(index);
+        if (!tok) {
+            throw InternalError(thisTok, "Internal error. Token::linkAt called with index outside the tokens range.");
+        }
+        return tok->link();
+    }
+
     /**
      * Needle is build from multiple alternatives. If one of
      * them is equal to haystack, return value is 1. If there
