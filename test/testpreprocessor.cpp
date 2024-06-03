@@ -199,6 +199,11 @@ private:
         // inline suppression, missingInclude/missingIncludeSystem
         TEST_CASE(inline_suppressions);
 
+        // remark comment
+        TEST_CASE(remarkComment1);
+        TEST_CASE(remarkComment2);
+        TEST_CASE(remarkComment3);
+
         // Using -D to predefine symbols
         TEST_CASE(predefine1);
         TEST_CASE(predefine2);
@@ -1901,6 +1906,32 @@ private:
         ASSERT_EQUALS(false, suppr.matched);
 
         ignore_errout(); // we are not interested in the output
+    }
+
+    void remarkComment1() {
+        const char code[] = "// REMARK: assignment with 1\n"
+                            "x=1;\n";
+        const auto remarkComments = PreprocessorHelper::getRemarkComments(code, *this);
+        ASSERT_EQUALS(1, remarkComments.size());
+        ASSERT_EQUALS(2, remarkComments[0].lineNumber);
+        ASSERT_EQUALS("assignment with 1", remarkComments[0].str);
+    }
+
+    void remarkComment2() {
+        const char code[] = "x=1; ///REMARK assignment with 1\n";
+        const auto remarkComments = PreprocessorHelper::getRemarkComments(code, *this);
+        ASSERT_EQUALS(1, remarkComments.size());
+        ASSERT_EQUALS(1, remarkComments[0].lineNumber);
+        ASSERT_EQUALS("assignment with 1", remarkComments[0].str);
+    }
+
+    void remarkComment3() {
+        const char code[] = "/**   REMARK: assignment with 1 */\n"
+                            "x=1;\n";
+        const auto remarkComments = PreprocessorHelper::getRemarkComments(code, *this);
+        ASSERT_EQUALS(1, remarkComments.size());
+        ASSERT_EQUALS(2, remarkComments[0].lineNumber);
+        ASSERT_EQUALS("assignment with 1 ", remarkComments[0].str);
     }
 
     void predefine1() {

@@ -153,6 +153,19 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
     return true;
 }
 
+static std::string getRelativeFilename(const simplecpp::Token* tok, const Settings &settings) {
+    std::string relativeFilename(tok->location.file());
+    if (settings.relativePaths) {
+        for (const std::string & basePath : settings.basePaths) {
+            const std::string bp = basePath + "/";
+            if (relativeFilename.compare(0,bp.size(),bp)==0) {
+                relativeFilename = relativeFilename.substr(bp.size());
+            }
+        }
+    }
+    return Path::simplifyPath(relativeFilename);
+}
+
 static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Settings &settings, SuppressionList &suppressions, std::list<BadInlineSuppression> &bad)
 {
     std::list<SuppressionList::Suppression> inlineSuppressionsBlockBegin;
@@ -193,16 +206,7 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
             continue;
 
         // Relative filename
-        std::string relativeFilename(tok->location.file());
-        if (settings.relativePaths) {
-            for (const std::string & basePath : settings.basePaths) {
-                const std::string bp = basePath + "/";
-                if (relativeFilename.compare(0,bp.size(),bp)==0) {
-                    relativeFilename = relativeFilename.substr(bp.size());
-                }
-            }
-        }
-        relativeFilename = Path::simplifyPath(relativeFilename);
+        const std::string relativeFilename = getRelativeFilename(tok, settings);
 
         // Macro name
         std::string macroName;
@@ -293,6 +297,17 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens, Suppre
     for (const BadInlineSuppression &bad : err) {
         error(bad.file, bad.line, bad.errmsg);
     }
+}
+
+std::vector<RemarkComment> Preprocessor::getRemarkComments(const simplecpp::TokenList &tokens) const
+{
+    std::vector<RemarkComment> ret;
+    addRemarkComments(tokens, ret);
+    for (std::map<std::string,simplecpp::TokenList*>::const_iterator it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
+        if (it->second)
+            addRemarkComments(*it->second, ret);
+    }
+    return ret;
 }
 
 std::list<Directive> Preprocessor::createDirectives(const simplecpp::TokenList &tokens) const
@@ -996,5 +1011,54 @@ void Preprocessor::simplifyPragmaAsmPrivate(simplecpp::TokenList *tokenList)
         const_cast<simplecpp::Token *>(tok4)->setstr(";");
         while (tok4->next != endasm)
             tokenList->deleteToken(tok4->next);
+    }
+}
+
+
+void Preprocessor::addRemarkComments(const simplecpp::TokenList &tokens, std::vector<RemarkComment> &remarkComments) const
+{
+    for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
+        if (!tok->comment)
+            continue;
+
+        const std::string& comment = tok->str();
+
+        // is it a remark comment?
+        const std::string::size_type pos1 = comment.find_first_not_of("/* \t");
+        if (pos1 == std::string::npos)
+            continue;
+        const std::string::size_type pos2 = comment.find_first_of(": \t", pos1);
+        if (pos2 != pos1 + 6 || comment.compare(pos1, 6, "REMARK") != 0)
+            continue;
+        const std::string::size_type pos3 = comment.find_first_not_of(": \t", pos2);
+        if (pos3 == std::string::npos)
+            continue;
+        if (comment.compare(0,2,"/*") == 0 && pos3 + 2 >= tok->str().size())
+            continue;
+
+        const std::string::size_type pos4 = (comment.compare(0,2,"/*") == 0) ? comment.size()-2 : comment.size();
+        const std::string remarkText = comment.substr(pos3, pos4-pos3);
+
+        // Get remarked token
+        const simplecpp::Token* remarkedToken = nullptr;
+        for (const simplecpp::Token* after = tok->next; after; after = after->next) {
+            if (after->comment)
+                continue;
+            remarkedToken = after;
+            break;
+        }
+        for (const simplecpp::Token* prev = tok->previous; prev; prev = prev->previous) {
+            if (prev->comment)
+                continue;
+            if (sameline(prev, tok))
+                remarkedToken = prev;
+            break;
+        }
+
+        // Relative filename
+        const std::string relativeFilename = getRelativeFilename(remarkedToken, mSettings);
+
+        // Add the suppressions.
+        remarkComments.emplace_back(relativeFilename, remarkedToken->location.line, remarkText);
     }
 }

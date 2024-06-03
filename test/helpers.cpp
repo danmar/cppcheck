@@ -186,6 +186,18 @@ void PreprocessorHelper::preprocess(const char code[], std::vector<std::string> 
     tokenizer.setDirectives(std::move(directives));
 }
 
+std::vector<RemarkComment> PreprocessorHelper::getRemarkComments(const char code[], ErrorLogger& errorLogger)
+{
+    std::vector<std::string> files{"test.cpp"};
+    std::istringstream istr(code);
+    const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+    const Settings settings;
+
+    const Preprocessor preprocessor(settings, errorLogger);
+    return preprocessor.getRemarkComments(tokens1);
+}
+
 bool LibraryHelper::loadxmldata(Library &lib, const char xmldata[], std::size_t len)
 {
     tinyxml2::XMLDocument doc;
