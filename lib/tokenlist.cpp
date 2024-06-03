@@ -497,11 +497,11 @@ static bool iscast(const Token *tok, bool cpp)
     if (Token::Match(tok->link(), ") %assign%|,|..."))
         return false;
 
-    if (tok->previous() && tok->previous()->isName() && tok->previous()->str() != "return" &&
+    if (tok->previous() && tok->previous()->isName() && tok->strAt(-1) != "return" &&
         (!cpp || !Token::Match(tok->previous(), "delete|throw")))
         return false;
 
-    if (Token::simpleMatch(tok->previous(), ">") && tok->previous()->link())
+    if (Token::simpleMatch(tok->previous(), ">") && tok->linkAt(-1))
         return false;
 
     if (Token::Match(tok, "( (| typeof (") && Token::Match(tok->link(), ") %num%"))
@@ -548,7 +548,7 @@ static bool iscast(const Token *tok, bool cpp)
         if (!Token::Match(tok2, "%name%|*|::"))
             return false;
 
-        if (tok2->isStandardType() && (tok2->next()->str() != "(" || Token::Match(tok2->next(), "( * *| )")))
+        if (tok2->isStandardType() && (tok2->strAt(1) != "(" || Token::Match(tok2->next(), "( * *| )")))
             type = true;
     }
 
@@ -913,7 +913,7 @@ static bool isPrefixUnary(const Token* tok, bool cpp)
             && (tok->previous()->tokType() != Token::eIncDecOp || tok->tokType() == Token::eIncDecOp)))
         return true;
 
-    if (tok->previous()->str() == "}") {
+    if (tok->strAt(-1) == "}") {
         const Token* parent = tok->linkAt(-1)->tokAt(-1);
         return !Token::Match(parent, "%type%") || parent->isKeyword();
     }
@@ -980,9 +980,9 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 }
 
                 const bool hasTemplateArg = Token::simpleMatch(squareBracket->link(), "] <") &&
-                                            Token::simpleMatch(squareBracket->link()->next()->link(), "> (");
+                                            Token::simpleMatch(squareBracket->link()->linkAt(1), "> (");
                 if (Token::simpleMatch(squareBracket->link(), "] (") || hasTemplateArg) {
-                    Token* const roundBracket = hasTemplateArg ? squareBracket->link()->next()->link()->next() : squareBracket->link()->next();
+                    Token* const roundBracket = hasTemplateArg ? squareBracket->link()->linkAt(1)->next() : squareBracket->link()->next();
                     Token* curlyBracket = roundBracket->link()->next();
                     while (Token::Match(curlyBracket, "mutable|const|constexpr|consteval"))
                         curlyBracket = curlyBracket->next();
@@ -1882,7 +1882,7 @@ void TokenList::validateAst(bool print) const
         if (Token::Match(tok->previous(), "if|while|for|switch|assert|ASSERT (")) {
             if (!tok->astOperand1() || !tok->astOperand2())
                 throw InternalError(tok,
-                                    "Syntax Error: AST broken, '" + tok->previous()->str() +
+                                    "Syntax Error: AST broken, '" + tok->strAt(-1) +
                                     "' doesn't have two operands.",
                                     InternalError::AST);
         }
@@ -1895,7 +1895,7 @@ void TokenList::validateAst(bool print) const
             }
             if (!tok->next()->astOperand1() || !tok->next()->astOperand2()) {
                 const std::string& op =
-                    tok->next()->originalName().empty() ? tok->next()->str() : tok->next()->originalName();
+                    tok->next()->originalName().empty() ? tok->strAt(1) : tok->next()->originalName();
                 throw InternalError(
                           tok, "Syntax Error: AST broken, '" + op + "' doesn't have two operands.", InternalError::AST);
             }
@@ -1969,7 +1969,7 @@ void TokenList::simplifyPlatformTypes()
         if (tok->str() == "::") {
             tok->deleteThis();
         } else if (tok->str() == "std") {
-            if (tok->next()->str() != "::")
+            if (tok->strAt(1) != "::")
                 continue;
             inStd = true;
             tok->deleteNext();

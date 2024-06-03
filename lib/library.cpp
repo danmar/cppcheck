@@ -938,7 +938,7 @@ bool Library::isIntArgValid(const Token *ftok, int argnr, const MathLib::bigint 
             return true;
         if (Token::Match(tok, "%num% : ,") && argvalue >= MathLib::toBigNumber(tok->str()))
             return true;
-        if ((!tok->previous() || tok->previous()->str() == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toBigNumber(tok->strAt(1)))
+        if ((!tok->previous() || tok->strAt(-1) == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toBigNumber(tok->strAt(1)))
             return true;
     }
     return false;
@@ -956,12 +956,12 @@ bool Library::isFloatArgValid(const Token *ftok, int argnr, double argvalue) con
             return true;
         if (Token::Match(tok, "%num% : ,") && argvalue >= MathLib::toDoubleNumber(tok->str()))
             return true;
-        if ((!tok->previous() || tok->previous()->str() == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toDoubleNumber(tok->strAt(1)))
+        if ((!tok->previous() || tok->strAt(-1) == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toDoubleNumber(tok->strAt(1)))
             return true;
         if (Token::Match(tok, "%num%") && MathLib::isFloat(tok->str()) && MathLib::isEqual(tok->str(), MathLib::toString(argvalue)))
             return true;
-        if (Token::Match(tok, "! %num%") && MathLib::isFloat(tok->next()->str()))
-            return MathLib::isNotEqual(tok->next()->str(), MathLib::toString(argvalue));
+        if (Token::Match(tok, "! %num%") && MathLib::isFloat(tok->strAt(1)))
+            return MathLib::isNotEqual(tok->strAt(1), MathLib::toString(argvalue));
     }
     return false;
 }
@@ -1265,7 +1265,7 @@ bool Library::isContainerYield(const Token * const cond, Library::Container::Yie
                     return tok->astOperand2() && y == container->getYield(tok->astOperand2()->str());
                 }
             } else if (!fallback.empty()) {
-                return Token::simpleMatch(cond, "( )") && cond->previous()->str() == fallback;
+                return Token::simpleMatch(cond, "( )") && cond->strAt(-1) == fallback;
             }
         }
     }

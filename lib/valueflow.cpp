@@ -2499,7 +2499,7 @@ struct MemberExpressionAnalyzer : SubExpressionAnalyzer {
             return false;
         if (!exact)
             return true;
-        return tok->next()->str() == varname;
+        return tok->strAt(1) == varname;
     }
 };
 
@@ -2722,7 +2722,7 @@ static std::vector<ValueFlow::LifetimeToken> getLifetimeTokens(const Token* tok,
         }
         if (Token::Match(tok->tokAt(-2), ". %name% (") && tok->tokAt(-2)->originalName() != "->" && astIsContainer(tok->tokAt(-2)->astOperand1())) {
             const Library::Container* library = getLibraryContainer(tok->tokAt(-2)->astOperand1());
-            const Library::Container::Yield y = library->getYield(tok->previous()->str());
+            const Library::Container::Yield y = library->getYield(tok->strAt(-1));
             if (y == Library::Container::Yield::AT_INDEX || y == Library::Container::Yield::ITEM) {
                 errorPath.emplace_back(tok->previous(), "Accessing container.");
                 return ValueFlow::LifetimeToken::setAddressOf(
@@ -5755,7 +5755,7 @@ struct ConditionHandler {
             if (!Token::Match(top->previous(), "if|while|for ("))
                 return;
 
-            if (top->previous()->str() == "for") {
+            if (top->strAt(-1) == "for") {
                 if (!Token::Match(condTok, "%comp%"))
                     return;
                 if (!Token::simpleMatch(condTok->astParent(), ";"))
@@ -6344,7 +6344,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
                 }
                 if (settings.debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "For loop variable skipping conditional scope");
-                tok2 = tok2->next()->link();
+                tok2 = tok2->linkAt(1);
                 if (Token::simpleMatch(tok2, "} else {")) {
                     if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(2), vartok->varId())) {
                         if (settings.debugwarnings)
@@ -6743,9 +6743,9 @@ static void valueFlowSwitchVariable(const TokenList &tokenlist, const SymbolData
             }
             if (Token::Match(tok, "case %num% :")) {
                 std::list<ValueFlow::Value> values;
-                values.emplace_back(MathLib::toBigNumber(tok->next()->str()));
+                values.emplace_back(MathLib::toBigNumber(tok->strAt(1)));
                 values.back().condition = tok;
-                values.back().errorPath.emplace_back(tok, "case " + tok->next()->str() + ": " + vartok->str() + " is " + tok->next()->str() + " here.");
+                values.back().errorPath.emplace_back(tok, "case " + tok->strAt(1) + ": " + vartok->str() + " is " + tok->strAt(1) + " here.");
                 bool known = false;
                 if ((Token::simpleMatch(tok->previous(), "{") || Token::simpleMatch(tok->tokAt(-2), "break ;")) && !Token::Match(tok->tokAt(3), ";| case"))
                     known = true;
@@ -6754,9 +6754,9 @@ static void valueFlowSwitchVariable(const TokenList &tokenlist, const SymbolData
                     tok = tok->tokAt(3);
                     if (!tok->isName())
                         tok = tok->next();
-                    values.emplace_back(MathLib::toBigNumber(tok->next()->str()));
+                    values.emplace_back(MathLib::toBigNumber(tok->strAt(1)));
                     values.back().condition = tok;
-                    values.back().errorPath.emplace_back(tok, "case " + tok->next()->str() + ": " + vartok->str() + " is " + tok->next()->str() + " here.");
+                    values.back().errorPath.emplace_back(tok, "case " + tok->strAt(1) + ": " + vartok->str() + " is " + tok->strAt(1) + " here.");
                 }
                 for (auto val = values.cbegin(); val != values.cend(); ++val) {
                     valueFlowReverse(tokenlist,
@@ -7965,7 +7965,7 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
             continue;
         if (!staticSize) {
             if (!Token::Match(nameToken, "%name% ;") &&
-                !(Token::Match(nameToken, "%name% {") && Token::simpleMatch(nameToken->next()->link(), "} ;")) &&
+                !(Token::Match(nameToken, "%name% {") && Token::simpleMatch(nameToken->linkAt(1), "} ;")) &&
                 !Token::Match(nameToken, "%name% ("))
                 continue;
         }
@@ -8367,7 +8367,7 @@ static void valueFlowUnknownFunctionReturn(TokenList &tokenlist, const Settings 
     for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
         if (!tok->astParent() || tok->str() != "(" || !tok->previous()->isName())
             continue;
-        if (settings.checkUnknownFunctionReturn.find(tok->previous()->str()) == settings.checkUnknownFunctionReturn.end())
+        if (settings.checkUnknownFunctionReturn.find(tok->strAt(-1)) == settings.checkUnknownFunctionReturn.end())
             continue;
         std::vector<MathLib::bigint> unknownValues = settings.library.unknownReturnValues(tok->astOperand1());
         if (unknownValues.empty())

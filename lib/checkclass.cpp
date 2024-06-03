@@ -983,7 +983,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                             tok2 = tok2->next();
                             if (tok2->str() == "&")
                                 tok2 = tok2->next();
-                            if (isVariableChangedByFunctionCall(tok2, tok2->previous()->str() == "&", tok2->varId(), *mSettings, nullptr))
+                            if (isVariableChangedByFunctionCall(tok2, tok2->strAt(-1) == "&", tok2->varId(), *mSettings, nullptr))
                                 assignVar(usage, tok2->varId());
                         }
                     }
@@ -1047,7 +1047,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             const Token *tok2 = ftok;
             while (tok2) {
                 if (tok2->strAt(1) == "[")
-                    tok2 = tok2->next()->link();
+                    tok2 = tok2->linkAt(1);
                 else if (Token::Match(tok2->next(), ". %name%"))
                     tok2 = tok2->tokAt(2);
                 else
@@ -1622,14 +1622,14 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
 
         // check if a function is called
         if (tok->strAt(2) == "(" &&
-            tok->linkAt(2)->next()->str() == ";") {
+            tok->linkAt(2)->strAt(1) == ";") {
             // check if it is a member function
             for (std::list<Function>::const_iterator it = scope->functionList.cbegin(); it != scope->functionList.cend(); ++it) {
                 // check for a regular function with the same name and a body
                 if (it->type == Function::eFunction && it->hasBody() &&
-                    it->token->str() == tok->next()->str()) {
+                    it->token->str() == tok->strAt(1)) {
                     // check for the proper return type
-                    if (it->tokenDef->previous()->str() == "&" &&
+                    if (it->tokenDef->strAt(-1) == "&" &&
                         it->tokenDef->strAt(-2) == scope->className) {
                         // make sure it's not a const function
                         if (!it->isConst()) {
@@ -1637,7 +1637,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
                             // avoid endless recursions
                             if (analyzedFunctions.find(&*it) == analyzedFunctions.end()) {
                                 analyzedFunctions.insert(&*it);
-                                checkReturnPtrThis(scope, &*it, it->arg->link()->next(), it->arg->link()->next()->link(),
+                                checkReturnPtrThis(scope, &*it, it->arg->link()->next(), it->arg->link()->linkAt(1),
                                                    analyzedFunctions);
                             }
                             // just bail for now
@@ -1653,7 +1653,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
         else if (!(Token::simpleMatch(tok->next(), "operator= (") ||
                    Token::simpleMatch(tok->next(), "this . operator= (") ||
                    (Token::Match(tok->next(), "%type% :: operator= (") &&
-                    tok->next()->str() == scope->className)))
+                    tok->strAt(1) == scope->className)))
             operatorEqRetRefThisError(func->token);
     }
     if (foundReturn) {
@@ -1853,7 +1853,7 @@ const Token * CheckClass::getIfStmtBodyStart(const Token *tok, const Token *rhs)
         case Bool::TRUE:
             return top->link()->next();
         case Bool::FALSE:
-            return top->link()->next()->link();
+            return top->link()->linkAt(1);
         }
     }
     return nullptr;
@@ -2407,7 +2407,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
         const Token *lpar = funcTok->next();
         if (Token::simpleMatch(lpar, "( ) ("))
             lpar = lpar->tokAt(2);
-        for (const Token* tok = lpar->next(); tok && tok != funcTok->next()->link(); tok = tok->next()) {
+        for (const Token* tok = lpar->next(); tok && tok != funcTok->linkAt(1); tok = tok->next()) {
             if (tok->str() == "(")
                 tok = tok->link();
             else if ((tok->isName() && isMemberVar(scope, tok)) || (tok->isUnaryOp("&") && (tok = tok->astOperand1()) && isMemberVar(scope, tok))) {
@@ -2848,11 +2848,11 @@ const std::list<const Token *> & CheckClass::getVirtualFunctionCalls(const Funct
             continue;
 
         if (tok->previous() &&
-            tok->previous()->str() == "(") {
+            tok->strAt(-1) == "(") {
             const Token * prev = tok->previous();
             if (prev->previous() &&
                 (mSettings->library.ignorefunction(tok->str())
-                 || mSettings->library.ignorefunction(prev->previous()->str())))
+                 || mSettings->library.ignorefunction(prev->strAt(-1))))
                 continue;
         }
 

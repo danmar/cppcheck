@@ -106,7 +106,7 @@ void CheckCondition::assignIf()
 
             if (Token::Match(tok->next(), "%num% [&|]")) {
                 bitop = tok->strAt(2).at(0);
-                num = MathLib::toBigNumber(tok->next()->str());
+                num = MathLib::toBigNumber(tok->strAt(1));
             } else {
                 const Token *endToken = Token::findsimplematch(tok, ";");
 
@@ -116,7 +116,7 @@ void CheckCondition::assignIf()
 
                 if (endToken && Token::Match(endToken->tokAt(-2), "[&|] %num% ;")) {
                     bitop = endToken->strAt(-2).at(0);
-                    num = MathLib::toBigNumber(endToken->previous()->str());
+                    num = MathLib::toBigNumber(endToken->strAt(-1));
                 }
             }
 
@@ -191,7 +191,7 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
             ret = true;
         if (ret && tok2->str() == ";")
             return false;
-        if (!islocal && Token::Match(tok2, "%name% (") && !Token::simpleMatch(tok2->next()->link(), ") {"))
+        if (!islocal && Token::Match(tok2, "%name% (") && !Token::simpleMatch(tok2->linkAt(1), ") {"))
             return true;
         if (Token::Match(tok2, "if|while (")) {
             if (!islocal && tok2->str() == "while")
@@ -205,7 +205,7 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
             }
 
             // parse condition
-            const Token * const end = tok2->next()->link();
+            const Token * const end = tok2->linkAt(1);
             for (; tok2 != end; tok2 = tok2->next()) {
                 if (Token::Match(tok2, "[(,] &| %varid% [,)]", varid)) {
                     return true;
@@ -227,8 +227,8 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
 
             const bool ret1 = assignIfParseScope(assignTok, end->tokAt(2), varid, islocal, bitop, num);
             bool ret2 = false;
-            if (Token::simpleMatch(end->next()->link(), "} else {"))
-                ret2 = assignIfParseScope(assignTok, end->next()->link()->tokAt(3), varid, islocal, bitop, num);
+            if (Token::simpleMatch(end->linkAt(1), "} else {"))
+                ret2 = assignIfParseScope(assignTok, end->linkAt(1)->tokAt(3), varid, islocal, bitop, num);
             if (ret1 || ret2)
                 return true;
         }

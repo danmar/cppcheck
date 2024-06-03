@@ -663,7 +663,7 @@ namespace {
                         return Break(Analyzer::Terminate::Bail);
                     }
                     Token* endCond = tok->linkAt(1);
-                    Token* endBlock = endCond->next()->link();
+                    Token* endBlock = endCond->linkAt(1);
                     Token* condTok = getCondTok(tok);
                     Token* initTok = getInitTok(tok);
                     if (initTok && updateRecursive(initTok) == Progress::Break)

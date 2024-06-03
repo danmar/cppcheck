@@ -2309,7 +2309,7 @@ private:
         ASSERT(!foo->hasBody());
 
         const Token*parenthesis = foo->tokenDef->next();
-        ASSERT(parenthesis->str() == "(" && parenthesis->previous()->str() == "foo");
+        ASSERT(parenthesis->str() == "(" && parenthesis->strAt(-1) == "foo");
         ASSERT(parenthesis->valueType()->type == ValueType::Type::CONTAINER);
     }
 

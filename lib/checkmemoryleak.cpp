@@ -860,20 +860,20 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable* const vari
                 else if (Token::simpleMatch(tok3, "if (") &&
                          notvar(tok3->next()->astOperand2(), structmemberid)) {
                     // Goto the ")"
-                    tok3 = tok3->next()->link();
+                    tok3 = tok3->linkAt(1);
 
                     // make sure we have ") {".. it should be
                     if (!Token::simpleMatch(tok3, ") {"))
                         break;
 
                     // Goto the "}"
-                    tok3 = tok3->next()->link();
+                    tok3 = tok3->linkAt(1);
                 }
 
                 // succeeded allocation
                 else if (ifvar(tok3, structmemberid, "!=", "0")) {
                     // goto the ")"
-                    tok3 = tok3->next()->link();
+                    tok3 = tok3->linkAt(1);
 
                     // check if the variable is deallocated or returned..
                     int indentlevel4 = 0;
@@ -1112,12 +1112,12 @@ void CheckMemoryLeakNoVar::checkForUnsafeArgAlloc(const Scope *scope)
                 const Function *func = tok2->function();
                 const bool isNothrow = func && (func->isAttributeNothrow() || func->isThrow());
 
-                if (Token::Match(tok2, "shared_ptr|unique_ptr <") && Token::Match(tok2->next()->link(), "> ( new %name%")) {
+                if (Token::Match(tok2, "shared_ptr|unique_ptr <") && Token::Match(tok2->linkAt(1), "> ( new %name%")) {
                     pointerType = tok2;
                 } else if (!isNothrow) {
                     if (Token::Match(tok2, "%name% ("))
                         functionCalled = tok2;
-                    else if (tok2->isName() && Token::simpleMatch(tok2->next()->link(), "> ("))
+                    else if (tok2->isName() && Token::simpleMatch(tok2->linkAt(1), "> ("))
                         functionCalled = tok2;
                 }
             }
@@ -1126,12 +1126,12 @@ void CheckMemoryLeakNoVar::checkForUnsafeArgAlloc(const Scope *scope)
                 std::string functionName = functionCalled->str();
                 if (functionCalled->strAt(1) == "<") {
                     functionName += '<';
-                    for (const Token* tok2 = functionCalled->tokAt(2); tok2 != functionCalled->next()->link(); tok2 = tok2->next())
+                    for (const Token* tok2 = functionCalled->tokAt(2); tok2 != functionCalled->linkAt(1); tok2 = tok2->next())
                         functionName += tok2->str();
                     functionName += '>';
                 }
                 std::string objectTypeName;
-                for (const Token* tok2 = pointerType->tokAt(2); tok2 != pointerType->next()->link(); tok2 = tok2->next())
+                for (const Token* tok2 = pointerType->tokAt(2); tok2 != pointerType->linkAt(1); tok2 = tok2->next())
                     objectTypeName += tok2->str();
 
                 unsafeArgAllocError(tok, functionName, pointerType->str(), objectTypeName);

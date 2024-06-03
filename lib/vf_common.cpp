@@ -153,7 +153,7 @@ namespace ValueFlow
             const Token *tok2 = tok->tokAt(2);
             // skip over tokens to find variable or type
             while (tok2 && !tok2->isStandardType() && Token::Match(tok2, "%name% ::|.|[")) {
-                if (tok2->next()->str() == "[")
+                if (tok2->strAt(1) == "[")
                     tok2 = tok2->linkAt(1)->next();
                 else
                     tok2 = tok2->tokAt(2);

@@ -355,10 +355,10 @@ void CheckNullPointer::nullConstantDereference()
                 }
             }
 
-            else if (Token::Match(tok, "0 [") && (tok->previous()->str() != "&" || !Token::Match(tok->linkAt(1)->next(), "[.(]")))
+            else if (Token::Match(tok, "0 [") && (tok->strAt(-1) != "&" || !Token::Match(tok->linkAt(1)->next(), "[.(]")))
                 nullPointerError(tok);
 
-            else if (Token::Match(tok->previous(), "!!. %name% (|{") && (tok->previous()->str() != "::" || tok->strAt(-2) == "std")) {
+            else if (Token::Match(tok->previous(), "!!. %name% (|{") && (tok->strAt(-1) != "::" || tok->strAt(-2) == "std")) {
                 if (Token::Match(tok->tokAt(2), "0|NULL|nullptr )|}") && tok->varId()) { // constructor call
                     const Variable *var = tok->variable();
                     if (var && !var->isPointer() && !var->isArray() && var->isStlStringType())
@@ -395,7 +395,7 @@ void CheckNullPointer::nullConstantDereference()
                     if (Token::Match(tok2->previous(), ";|{|}|:|("))
                         break;
                 }
-                if (tok2 && tok2->previous() && tok2->previous()->str()=="(")
+                if (tok2 && tok2->previous() && tok2->strAt(-1)=="(")
                     continue;
                 if (Token::simpleMatch(tok2, "std :: cin"))
                     nullPointerError(tok);

@@ -697,15 +697,15 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             if (i->isThrow() || i->isExtern())
                 continue;
             Variables::VariableType type = Variables::none;
-            if (i->isArray() && (i->nameToken()->previous()->str() == "*" || i->nameToken()->strAt(-2) == "*"))
+            if (i->isArray() && (i->nameToken()->strAt(-1) == "*" || i->nameToken()->strAt(-2) == "*"))
                 type = Variables::pointerArray;
-            else if (i->isArray() && i->nameToken()->previous()->str() == "&")
+            else if (i->isArray() && i->nameToken()->strAt(-1) == "&")
                 type = Variables::referenceArray;
             else if (i->isArray())
                 type = Variables::array;
             else if (i->isReference() && !(i->valueType() && i->valueType()->type == ValueType::UNKNOWN_TYPE && Token::simpleMatch(i->typeStartToken(), "auto")))
                 type = Variables::reference;
-            else if (i->nameToken()->previous()->str() == "*" && i->nameToken()->strAt(-2) == "*")
+            else if (i->nameToken()->strAt(-1) == "*" && i->nameToken()->strAt(-2) == "*")
                 type = Variables::pointerPointer;
             else if (i->isPointerToArray())
                 type = Variables::pointerPointer;
@@ -743,7 +743,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
             if (defValTok && defValTok->next()) {
                 // simple assignment "var = 123"
-                if (defValTok->str() == "=" && defValTok->next()->str() != "{") {
+                if (defValTok->str() == "=" && defValTok->strAt(1) != "{") {
                     doAssignment(variables, i->nameToken(), false, scope);
                 } else {
                     // could be "var = {...}" OR "var{...}" (since C++11)
@@ -1064,7 +1064,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         // function parameter
         else if (Token::Match(tok, "[(,] %var% [")) {
             variables.use(tok->next()->varId(), tok);   // use = read + write
-        } else if (Token::Match(tok, "[(,] %var% [,)]") && tok->previous()->str() != "*") {
+        } else if (Token::Match(tok, "[(,] %var% [,)]") && tok->strAt(-1) != "*") {
             variables.use(tok->next()->varId(), tok);   // use = read + write
         } else if (Token::Match(tok, "[(,] & %var% [,)]")) {
             variables.eraseAll(tok->tokAt(2)->varId());
@@ -1110,7 +1110,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             variables.readAll(tok->next()->varId(), tok);
         }
 
-        else if (tok->varId() && !isVarDecl(tok) && tok->next() && (tok->next()->str() == ")" || tok->next()->isExtendedOp())) {
+        else if (tok->varId() && !isVarDecl(tok) && tok->next() && (tok->strAt(1) == ")" || tok->next()->isExtendedOp())) {
             if (Token::Match(tok->tokAt(-2), "%name% ( %var% [,)]") &&
                 !(tok->tokAt(-2)->variable() && tok->tokAt(-2)->variable()->isReference()))
                 variables.use(tok->varId(), tok);
@@ -1143,7 +1143,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             }
         } else if (tok->variable() && tok->variable()->isClass() && tok->variable()->type() &&
                    (tok->variable()->type()->needInitialization == Type::NeedInitialization::False) &&
-                   tok->next()->str() == ";") {
+                   tok->strAt(1) == ";") {
             variables.write(tok->varId(), tok);
         }
     }
@@ -1369,7 +1369,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             else if (!usage._var->isMaybeUnused() && !usage._modified && !usage._read && var) {
                 const Token* vnt = var->nameToken();
                 bool error = false;
-                if (vnt->next()->isSplittedVarDeclEq() || (!var->isReference() && vnt->next()->str() == "=")) {
+                if (vnt->next()->isSplittedVarDeclEq() || (!var->isReference() && vnt->strAt(1) == "=")) {
                     const Token* nextStmt = vnt->tokAt(2);
                     if (nextStmt->isExpandedMacro()) {
                         const Token* parent = nextStmt;
@@ -1524,7 +1524,7 @@ void CheckUnusedVar::checkStructMemberUsage()
             // Check if the struct member variable is used anywhere in the file
             bool use = false;
             for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-                if (Token::Match(tok, ". %name%") && !tok->next()->variable() && !tok->next()->function() && tok->next()->str() == var.name()) {
+                if (Token::Match(tok, ". %name%") && !tok->next()->variable() && !tok->next()->function() && tok->strAt(1) == var.name()) {
                     // not known => assume variable is used
                     use = true;
                     break;

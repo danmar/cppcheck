@@ -106,7 +106,7 @@ public:
         else if (classDef_ && classDef_->str() == "using") {
             typeStart = classDef->tokAt(3);
             typeEnd = typeStart;
-            while (typeEnd->next() && typeEnd->next()->str() != ";") {
+            while (typeEnd->next() && typeEnd->strAt(1) != ";") {
                 if (Token::simpleMatch(typeEnd, "decltype ("))
                     typeEnd = typeEnd->linkAt(1);
                 else

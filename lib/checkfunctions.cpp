@@ -335,7 +335,7 @@ static bool isForwardJump(const Token *gotoToken)
     if (!Token::Match(gotoToken, "goto %name% ;"))
         return false;
     for (const Token *prev = gotoToken; gotoToken; gotoToken = gotoToken->previous()) {
-        if (Token::Match(prev, "%name% :") && prev->str() == gotoToken->next()->str())
+        if (Token::Match(prev, "%name% :") && prev->str() == gotoToken->strAt(1))
             return true;
         if (prev->str() == "{" && prev->scope()->type == Scope::eFunction)
             return false;

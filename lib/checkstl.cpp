@@ -284,7 +284,7 @@ bool CheckStl::isContainerSize(const Token *containerToken, const Token *expr) c
         return false;
     if (!isSameExpression(false, containerToken, expr->astOperand1()->astOperand1(), *mSettings, false, false))
         return false;
-    return containerToken->valueType()->container->getYield(expr->previous()->str()) == Library::Container::Yield::SIZE;
+    return containerToken->valueType()->container->getYield(expr->strAt(-1)) == Library::Container::Yield::SIZE;
 }
 
 bool CheckStl::isContainerSizeGE(const Token * containerToken, const Token *expr) const
@@ -537,7 +537,7 @@ void CheckStl::iterators()
                         continue; // No warning
 
                     // skip error message if the iterator is erased/inserted by value
-                    if (itTok->previous()->str() == "*")
+                    if (itTok->strAt(-1) == "*")
                         continue;
 
                     // inserting iterator range..
@@ -2885,7 +2885,7 @@ void CheckStl::useStlAlgorithm()
     auto isConditionWithoutSideEffects = [this](const Token* tok) -> bool {
         if (!Token::simpleMatch(tok, "{") || !Token::simpleMatch(tok->previous(), ")"))
             return false;
-        return isConstExpression(tok->previous()->link()->astOperand2(), mSettings->library);
+        return isConstExpression(tok->linkAt(-1)->astOperand2(), mSettings->library);
     };
 
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {

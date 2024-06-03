@@ -184,7 +184,7 @@ void CheckExceptionSafety::checkRethrowCopy()
         if (varid) {
             for (const Token* tok = scope.bodyStart->next(); tok && tok != scope.bodyEnd; tok = tok->next()) {
                 if (Token::simpleMatch(tok, "catch (") && tok->linkAt(1) && tok->linkAt(1)->next()) { // Don't check inner catch - it is handled in another iteration of outer loop.
-                    tok = tok->linkAt(1)->next()->link();
+                    tok = tok->linkAt(1)->linkAt(1);
                     if (!tok)
                         break;
                 } else if (Token::Match(tok, "%varid% .", varid)) {

@@ -1886,7 +1886,7 @@ static bool isVoidStmt(const Token *tok)
     const Token *tok2 = tok;
     while (tok2->astOperand1())
         tok2 = tok2->astOperand1();
-    if (Token::simpleMatch(tok2->previous(), ")") && Token::simpleMatch(tok2->previous()->link(), "( void"))
+    if (Token::simpleMatch(tok2->previous(), ")") && Token::simpleMatch(tok2->linkAt(-1), "( void"))
         return true;
     if (Token::simpleMatch(tok2, "( void"))
         return true;
@@ -2529,7 +2529,7 @@ void CheckOther::checkDuplicateExpression()
                     if (isWithoutSideEffects(tok->astOperand1())) {
                         const Token* loopTok = isInLoopCondition(tok);
                         if (!loopTok ||
-                            !findExpressionChanged(tok, tok, loopTok->link()->next()->link(), *mSettings)) {
+                            !findExpressionChanged(tok, tok, loopTok->link()->linkAt(1), *mSettings)) {
                             const bool isEnum = tok->scope()->type == Scope::eEnum;
                             const bool assignment = !isEnum && tok->str() == "=";
                             if (assignment)
@@ -2540,7 +2540,7 @@ void CheckOther::checkDuplicateExpression()
                                     while (parent && parent->astParent()) {
                                         parent = parent->astParent();
                                     }
-                                    if (parent && parent->previous() && parent->previous()->str() == "static_assert") {
+                                    if (parent && parent->previous() && parent->strAt(-1) == "static_assert") {
                                         continue;
                                     }
                                 }
@@ -3218,8 +3218,8 @@ void CheckOther::checkInterlockedDecrement()
             const Token* condEnd = tok->linkAt(1);
             const Token* funcTok = tok->tokAt(2);
             const Token* firstAccessTok = funcTok->str() == "::" ? funcTok->tokAt(4) : funcTok->tokAt(3);
-            if (condEnd && condEnd->next() && condEnd->next()->link()) {
-                const Token* ifEndTok = condEnd->next()->link();
+            if (condEnd && condEnd->next() && condEnd->linkAt(1)) {
+                const Token* ifEndTok = condEnd->linkAt(1);
                 if (Token::Match(ifEndTok, "} return %name%")) {
                     const Token* secondAccessTok = ifEndTok->tokAt(2);
                     if (secondAccessTok->str() == firstAccessTok->str()) {
