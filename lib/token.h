@@ -123,7 +123,13 @@ struct TokenImpl {
     CppcheckAttributes* mCppcheckAttributes{};
 
     // alignas expressions
-    std::string mAttributeAlignas;
+    std::unique_ptr<std::vector<std::string>> mAttributeAlignas;
+    void addAttributeAlignas(const std::string& a) {
+        if (!mAttributeAlignas)
+            mAttributeAlignas = std::unique_ptr<std::vector<std::string>>(new std::vector<std::string>());
+        if (std::find(mAttributeAlignas->cbegin(), mAttributeAlignas->cend(), a) == mAttributeAlignas->cend())
+            mAttributeAlignas->push_back(a);
+    }
 
     // For memoization, to speed up parsing of huge arrays #8897
     enum class Cpp11init { UNKNOWN, CPP11INIT, NOINIT } mCpp11init = Cpp11init::UNKNOWN;
@@ -549,23 +555,13 @@ public:
         setFlag(fIsAttributeMaybeUnused, value);
     }
     std::vector<std::string> getAttributeAlignas() const {
-        if (mImpl->mAttributeAlignas.empty())
-            return {};
-        const std::string::size_type pos = mImpl->mAttributeAlignas.find('\n');
-        if (pos == std::string::npos)
-            return {mImpl->mAttributeAlignas};
-        return {mImpl->mAttributeAlignas.substr(0, pos),
-                mImpl->mAttributeAlignas.substr(pos + 1)};
+        return !mImpl->mAttributeAlignas ? std::vector<std::string>() : *mImpl->mAttributeAlignas;
     }
     bool hasAttributeAlignas() const {
-        return !mImpl->mAttributeAlignas.empty();
+        return !!mImpl->mAttributeAlignas;
     }
     void addAttributeAlignas(const std::string& a) {
-        if (mImpl->mAttributeAlignas.empty())
-            mImpl->mAttributeAlignas = a;
-        else if (a != mImpl->mAttributeAlignas && mImpl->mAttributeAlignas.find('\n') == std::string::npos)
-            // mismatching alignas expressions, add both
-            mImpl->mAttributeAlignas += '\n' + a;
+        mImpl->addAttributeAlignas(a);
     }
     void setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value) {
         mImpl->setCppcheckAttribute(type, value);
