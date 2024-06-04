@@ -4472,6 +4472,30 @@ private:
               "  }\n"
               "}");
         ASSERT_EQUALS("", errout_str());
+
+        // Ticket #5115 "redundantAssignment when using a union"
+        check("void main(void)\n"
+              "{\n"
+              "    unsigned long lTotal = 0;\n"
+              "    union\n"
+              "    {\n"
+              "        unsigned long l1;\n"
+              "        struct\n"
+              "        {\n"
+              "            unsigned char b1;\n"
+              "            unsigned char b2;\n"
+              "            unsigned char b3;\n"
+              "            unsigned char b4;\n"
+              "        } b;\n"
+              "    } u;\n"
+              "    u.l1 = 1;\n"
+              "    lTotal += u.b.b1;\n"
+              "    u.l1 = 2;\n" //Should not show RedundantAssignment
+              "    lTotal += u.b.b1;\n"
+              "    printf(\"b1 %u, b2 %u, b3 %u b4 %u, l1 %lu, lTotal %lu\",\n"
+              "        u.b.b1, u.b.b2, u.b.b3, u.b.b4, u.l1, lTotal);\n"
+              "}", true, false, false);
+        ASSERT_EQUALS("", errout_str());
     }
 
     void switchRedundantOperationTest() {
