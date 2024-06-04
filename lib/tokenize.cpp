@@ -6026,6 +6026,13 @@ void Tokenizer::dump(std::ostream &out) const
             outs += " isAttributeMaybeUnused=\"true\"";
         if (tok->isAttributeUnused())
             outs += " isAttributeUnused=\"true\"";
+        if (tok->hasAttributeAlignas()) {
+            const std::vector<std::string>& a = tok->getAttributeAlignas();
+            outs += " alignas=\"" + ErrorLogger::toxml(a[0]) + "\"";
+            if (a.size() > 1)
+                // we could write all alignas expressions but currently we only need 2
+                outs += " alignas2=\"" + ErrorLogger::toxml(a[1]) + "\"";
+        }
         if (tok->link()) {
             outs += " link=\"";
             outs += id_string(tok->link());
@@ -9277,6 +9284,21 @@ void Tokenizer::simplifyCPPAttribute()
             }
         } else {
             if (Token::simpleMatch(tok, "alignas (")) {
+                Token* atok = nullptr;
+                if (Token::Match(tok->previous(), "%name%"))
+                    atok = tok->previous();
+                else {
+                    atok = tok;
+                    while (isCPPAttribute(atok) || isAlignAttribute(atok))
+                        atok = skipCPPOrAlignAttribute(atok)->next();
+                }
+                if (atok) {
+                    std::string a;
+                    for (const Token* t = tok->tokAt(2); t && t->str() != ")"; t = t->next())
+                        a += " " + t->str();
+                    if (a.size() > 1)
+                        atok->addAttributeAlignas(a.substr(1));
+                }
                 // alignment requirements could be checked here
             }
         }

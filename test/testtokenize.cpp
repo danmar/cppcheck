@@ -438,6 +438,7 @@ private:
 
         TEST_CASE(removeAlignas1);
         TEST_CASE(removeAlignas2); // Do not remove alignof in the same way
+        TEST_CASE(dumpAlignas);
 
         TEST_CASE(simplifyCoroutines);
 
@@ -7762,6 +7763,17 @@ private:
         const char code[] = "static_assert( alignof( VertexC ) == 4 );";
         const char expected[] = "static_assert ( alignof ( VertexC ) == 4 ) ;";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+    }
+
+    void dumpAlignas() {
+        Settings settings;
+        SimpleTokenizer tokenizer(settings, *this);
+        tokenizer.tokenize("int alignas(8) alignas(16) x;", false);
+        ASSERT(Token::simpleMatch(tokenizer.tokens(), "int x ;"));
+        std::ostringstream ostr;
+        tokenizer.dump(ostr);
+        const std::string dump = ostr.str();
+        ASSERT(dump.find(" alignas=\"8\" alignas2=\"16\"") != std::string::npos);
     }
 
     void simplifyCoroutines() {
