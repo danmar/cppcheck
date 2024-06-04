@@ -122,6 +122,15 @@ struct TokenImpl {
     };
     CppcheckAttributes* mCppcheckAttributes{};
 
+    // alignas expressions
+    std::unique_ptr<std::vector<std::string>> mAttributeAlignas;
+    void addAttributeAlignas(const std::string& a) {
+        if (!mAttributeAlignas)
+            mAttributeAlignas = std::unique_ptr<std::vector<std::string>>(new std::vector<std::string>());
+        if (std::find(mAttributeAlignas->cbegin(), mAttributeAlignas->cend(), a) == mAttributeAlignas->cend())
+            mAttributeAlignas->push_back(a);
+    }
+
     // For memoization, to speed up parsing of huge arrays #8897
     enum class Cpp11init { UNKNOWN, CPP11INIT, NOINIT } mCpp11init = Cpp11init::UNKNOWN;
 
@@ -544,6 +553,15 @@ public:
     }
     void isAttributeMaybeUnused(const bool value) {
         setFlag(fIsAttributeMaybeUnused, value);
+    }
+    std::vector<std::string> getAttributeAlignas() const {
+        return mImpl->mAttributeAlignas ? *mImpl->mAttributeAlignas : std::vector<std::string>();
+    }
+    bool hasAttributeAlignas() const {
+        return !!mImpl->mAttributeAlignas;
+    }
+    void addAttributeAlignas(const std::string& a) {
+        mImpl->addAttributeAlignas(a);
     }
     void setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value) {
         mImpl->setCppcheckAttribute(type, value);
