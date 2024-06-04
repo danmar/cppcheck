@@ -6048,6 +6048,7 @@ void Tokenizer::dump(std::ostream &out) const
             const std::vector<std::string>& a = tok->getAttributeAlignas();
             outs += " alignas=\"" + ErrorLogger::toxml(a[0]) + "\"";
             if (a.size() > 1)
+                // we could write all alignas expressions but currently we only need 2
                 outs += " alignas2=\"" + ErrorLogger::toxml(a[1]) + "\"";
         }
         if (tok->link()) {

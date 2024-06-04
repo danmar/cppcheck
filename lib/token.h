@@ -555,7 +555,7 @@ public:
         setFlag(fIsAttributeMaybeUnused, value);
     }
     std::vector<std::string> getAttributeAlignas() const {
-        return !mImpl->mAttributeAlignas ? std::vector<std::string>() : *mImpl->mAttributeAlignas;
+        return mImpl->mAttributeAlignas ? *mImpl->mAttributeAlignas : std::vector<std::string>();
     }
     bool hasAttributeAlignas() const {
         return !!mImpl->mAttributeAlignas;
