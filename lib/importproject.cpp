@@ -777,7 +777,7 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                                 printError("Could not simplify path to referenced shared items project");
                                 exit(-1);
                             }
-							
+
                             SharedItemsProject toAdd = importVcxitems(pathToSharedItemsFile, fileFilters, cache);
                             if (!toAdd.successFull) {
                                 printError("Could not load shared items project \"" + pathToSharedItemsFile + "\" from original path \"" + std::string(projectAttribute) + "\".");
