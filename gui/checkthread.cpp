@@ -124,7 +124,7 @@ void CheckThread::run()
     QString file = mResult.getNextFile();
     while (!file.isEmpty() && mState == Running) {
         qDebug() << "Checking file" << file;
-        mCppcheck.check(file.toStdString());
+        mCppcheck.check(FileWithDetails(file.toStdString()));
         runAddonsAndTools(nullptr, file);
         emit fileChecked(file);
 

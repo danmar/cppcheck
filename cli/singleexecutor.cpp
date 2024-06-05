@@ -50,7 +50,7 @@ unsigned int SingleExecutor::check()
     unsigned int c = 0;
 
     for (std::list<FileWithDetails>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
-        result += mCppcheck.check(i->path());
+        result += mCppcheck.check(*i);
         processedsize += i->size();
         ++c;
         if (!mSettings.quiet)

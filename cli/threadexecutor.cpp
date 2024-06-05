@@ -94,10 +94,10 @@ public:
         });
     }
 
-    bool next(const std::string *&file, const FileSettings *&fs, std::size_t &fileSize) {
+    bool next(const FileWithDetails *&file, const FileSettings *&fs, std::size_t &fileSize) {
         std::lock_guard<std::mutex> l(mFileSync);
         if (mItNextFile != mFiles.end()) {
-            file = &mItNextFile->path();
+            file = &(*mItNextFile);
             fs = nullptr;
             fileSize = mItNextFile->size();
             ++mItNextFile;
@@ -114,7 +114,7 @@ public:
         return false;
     }
 
-    unsigned int check(ErrorLogger &errorLogger, const std::string *file, const FileSettings *fs) const {
+    unsigned int check(ErrorLogger &errorLogger, const FileWithDetails *file, const FileSettings *fs) const {
         CppCheck fileChecker(errorLogger, false, mExecuteCommand);
         fileChecker.settings() = mSettings; // this is a copy
 
@@ -163,7 +163,7 @@ static unsigned int STDCALL threadProc(ThreadData *data)
 {
     unsigned int result = 0;
 
-    const std::string *file;
+    const FileWithDetails *file;
     const FileSettings *fs;
     std::size_t fileSize;
 

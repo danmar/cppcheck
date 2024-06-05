@@ -20,6 +20,7 @@
 #define fileSettingsH
 
 #include "config.h"
+#include "path.h"
 #include "platform.h"
 
 #include <list>
@@ -42,6 +43,11 @@ public:
     const std::string& path() const
     {
         return mPath;
+    }
+
+    std::string spath() const
+    {
+        return Path::simplifyPath(mPath);
     }
 
     std::size_t size() const
@@ -68,6 +74,10 @@ struct CPPCHECKLIB FileSettings {
     const std::string& filename() const
     {
         return file.path();
+    }
+    std::string sfilename() const
+    {
+        return file.spath();
     }
     std::string defines;
     // TODO: handle differently
