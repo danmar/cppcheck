@@ -439,6 +439,7 @@ private:
 
         TEST_CASE(removeAlignas1);
         TEST_CASE(removeAlignas2); // Do not remove alignof in the same way
+        TEST_CASE(removeAlignas3); // remove alignas in C11 code
         TEST_CASE(dumpAlignas);
 
         TEST_CASE(simplifyCoroutines);
@@ -7849,6 +7850,16 @@ private:
         const char code[] = "static_assert( alignof( VertexC ) == 4 );";
         const char expected[] = "static_assert ( alignof ( VertexC ) == 4 ) ;";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+    }
+
+    void removeAlignas3() {
+        const char code[] = "alignas(16) int x;";
+        const char expected[] = "int x ;";
+        // According to cppreference alignas() is a C23 macro; but it is often available when compiling C11.
+        // Misra C has C11 examples with alignas.
+        // Microsoft provides alignas in C11.
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, false, Standards::CPP11, Standards::C11));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, true, Standards::CPP11, Standards::C11));
     }
 
     void dumpAlignas() {
