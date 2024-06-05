@@ -323,8 +323,23 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *
                     return Result(Result::Type::WRITE, parent->astParent());
                 return Result(Result::Type::READ);
             }
-            if (mWhat == What::Reassign && parent->valueType() && parent->valueType()->pointer && Token::Match(parent->astParent(), "%assign%") && parent == parent->astParent()->astOperand1())
-                return Result(Result::Type::READ);
+            if (mWhat == What::Reassign) {
+                if (parent->variable() && parent->variable()->type() && parent->variable()->type()->isUnionType() && parent->varId() == expr->varId()) {
+                    const Token * tempToken = parent;
+                    while (tempToken && Token::Match(tempToken->astParent(), ".|->"))
+                        tempToken = tempToken->astParent();
+                    if (tempToken->valueType() && Token::Match(tempToken->astParent(), "%assign%") && !Token::Match(tempToken->astParent()->astParent(), "%assign%") && tempToken->astParent()->astOperand1() == tempToken) {
+                        const Token * assignment = tempToken->astParent()->astOperand2();
+                        while (Token::Match(assignment, ".|->") && assignment->varId() != expr->varId())
+                            assignment = assignment->astOperand1();
+                        if (assignment && assignment->varId() != expr->varId())
+                            return Result(Result::Type::WRITE, tempToken->astParent());
+                    }
+                    return Result(Result::Type::READ);
+                }
+                if (parent->valueType() && parent->valueType()->pointer && Token::Match(parent->astParent(), "%assign%"))
+                    return Result(Result::Type::READ);
+            }
 
             if (Token::Match(parent->astParent(), "%assign%") && !parent->astParent()->astParent() && parent == parent->astParent()->astOperand1()) {
                 if (mWhat == What::Reassign)
