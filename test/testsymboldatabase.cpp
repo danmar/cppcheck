@@ -1715,7 +1715,7 @@ private:
         ASSERT(db);
         ASSERT_EQUALS(2, db->scopeList.front().varlist.size());
         const Variable *x1 = Token::findsimplematch(tokenizer.tokens(), "x")->variable();
-        ASSERT(x1 && Token::simpleMatch(x1->typeStartToken(), "alignas ( 16 ) int x ;"));
+        ASSERT(x1 && Token::simpleMatch(x1->typeStartToken(), "int x ;"));
     }
 
     void memberVar1() {

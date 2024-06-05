@@ -9223,7 +9223,11 @@ void Tokenizer::simplifyCppcheckAttribute()
 
 void Tokenizer::simplifyCPPAttribute()
 {
-    if (!isCPP() || mSettings.standards.cpp < Standards::CPP11)
+    // According to cppreference alignas is a c21 feature however the macro is often available when compiling c11
+    const bool hasAlignas = ((isCPP() && mSettings.standards.cpp >= Standards::CPP11) || (isC() && mSettings.standards.c >= Standards::C11));
+    const bool hasCppAttribute = (isCPP() && mSettings.standards.cpp >= Standards::CPP11);
+
+    if (!hasAlignas && !hasCppAttribute)
         return;
 
     for (Token *tok = list.front(); tok;) {
@@ -9232,6 +9236,10 @@ void Tokenizer::simplifyCPPAttribute()
             continue;
         }
         if (isCPPAttribute(tok)) {
+            if (!hasCppAttribute) {
+                tok = skipCPPOrAlignAttribute(tok)->next();
+                continue;
+            }
             if (Token::findsimplematch(tok->tokAt(2), "noreturn", tok->link())) {
                 Token * head = skipCPPOrAlignAttribute(tok)->next();
                 while (isCPPAttribute(head) || isAlignAttribute(head))
@@ -9283,23 +9291,29 @@ void Tokenizer::simplifyCPPAttribute()
                 }
             }
         } else {
-            if (Token::simpleMatch(tok, "alignas (")) {
-                Token* atok = nullptr;
-                if (Token::Match(tok->previous(), "%name%"))
-                    atok = tok->previous();
-                else {
-                    atok = tok;
-                    while (isCPPAttribute(atok) || isAlignAttribute(atok))
-                        atok = skipCPPOrAlignAttribute(atok)->next();
-                }
-                if (atok) {
-                    std::string a;
-                    for (const Token* t = tok->tokAt(2); t && t->str() != ")"; t = t->next())
-                        a += " " + t->str();
-                    if (a.size() > 1)
-                        atok->addAttributeAlignas(a.substr(1));
-                }
-                // alignment requirements could be checked here
+            // alignas(expr)
+
+            if (!hasAlignas) {
+                tok = skipCPPOrAlignAttribute(tok)->next();
+                continue;
+            }
+
+            // alignment requirements could be checked here
+
+            Token* atok = nullptr;
+            if (Token::Match(tok->previous(), "%name%"))
+                atok = tok->previous();
+            else {
+                atok = tok;
+                while (isCPPAttribute(atok) || isAlignAttribute(atok))
+                    atok = skipCPPOrAlignAttribute(atok)->next();
+            }
+            if (atok) {
+                std::string a;
+                for (const Token* t = tok->tokAt(2); t && t->str() != ")"; t = t->next())
+                    a += " " + t->str();
+                if (a.size() > 1)
+                    atok->addAttributeAlignas(a.substr(1));
             }
         }
         Token::eraseTokens(tok, skipCPPOrAlignAttribute(tok)->next());
