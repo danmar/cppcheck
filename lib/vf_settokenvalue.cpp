@@ -441,6 +441,11 @@ namespace ValueFlow
                 setTokenValue(parent, v, settings);
         }
 
+        // Offset of non null pointer is not null also
+        else if (astIsPointer(tok) && Token::Match(parent, "+|-") && value.isIntValue() && value.isImpossible() && value.intvalue == 0) {
+            setTokenValue(parent, value, settings);
+        }
+
         // Calculations..
         else if ((parent->isArithmeticalOp() || parent->isComparisonOp() || (parent->tokType() == Token::eBitOp) || (parent->tokType() == Token::eLogicalOp)) &&
                  parent->astOperand1() &&
