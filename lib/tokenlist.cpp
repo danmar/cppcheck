@@ -960,7 +960,10 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 tok = tok->tokAt(3);
                 break;
             }
-            compileBinOp(tok, state, compileScope);
+            if (!Token::Match(tok->tokAt(-1), "[{,]"))
+                compileBinOp(tok, state, compileScope);
+            else
+                compileUnaryOp(tok, state, compileScope);
         } else if (tok->str() == "[") {
             if (state.cpp && isPrefixUnary(tok, /*cpp*/ true) && Token::Match(tok->link(), "] (|{|<")) { // Lambda
                 // What we do here:
