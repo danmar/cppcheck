@@ -331,8 +331,11 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *
                         const Token * assignment = parent->astParent()->astOperand2();
                         while (Token::Match(assignment, ".|->") && assignment->varId() != expr->varId())
                             assignment = assignment->astOperand1();
-                        if (assignment && assignment->varId() != expr->varId())
+                        if (assignment && assignment->varId() != expr->varId()) {
+                            if (assignment->valueType() && assignment->valueType()->type == ValueType::Type::VOID)
+                                return Result(Result::Type::READ);
                             return Result(Result::Type::WRITE, parent->astParent());
+                        }
                     }
                     return Result(Result::Type::READ);
                 }
