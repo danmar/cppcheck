@@ -379,14 +379,13 @@ void CheckExceptionSafety::rethrowNoCurrentException()
         if (!function)
             continue;
 
-        // Rethrow can be used in 'exception dispatcher' idiom which is FP in such case
-        // https://isocpp.org/wiki/faq/exceptions#throw-without-an-object
-        // We check the beginning of the function with idiom pattern
-        if (Token::simpleMatch(function->functionScope->bodyStart->next(), "try { throw ; } catch ("))
-            continue;
-
+        //// Rethrow can be used in 'exception dispatcher' idiom which is FP in such case
+        //// https://isocpp.org/wiki/faq/exceptions#throw-without-an-object
+        //// 
+        //// After the idiom is found, continue to the next function scope in the above for loop.
         for (const Token *tok = function->functionScope->bodyStart->next();
-             tok != function->functionScope->bodyEnd; tok = tok->next()) {
+             tok != function->functionScope->bodyEnd && 
+             !Token::simpleMatch(tok, "try { throw ; } catch ("); tok = tok->next()) {
             if (Token::simpleMatch(tok, "catch (")) {
                 tok = tok->linkAt(1);       // skip catch argument
                 if (Token::simpleMatch(tok, ") {"))
@@ -394,6 +393,7 @@ void CheckExceptionSafety::rethrowNoCurrentException()
                 else
                     break;
             }
+
             if (Token::simpleMatch(tok, "throw ;")) {
                 rethrowNoCurrentExceptionError(tok);
             }

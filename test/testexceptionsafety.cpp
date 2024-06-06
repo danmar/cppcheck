@@ -55,6 +55,9 @@ private:
         TEST_CASE(rethrowNoCurrentException1);
         TEST_CASE(rethrowNoCurrentException2);
         TEST_CASE(rethrowNoCurrentException3);
+        TEST_CASE(exceptionDispatchIdiomInMiddleOfFunction);
+        TEST_CASE(exceptionDispatchIdiomExtraStatements);
+        TEST_CASE(exceptionDispatchIdiomSubsequentRethrows);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -448,6 +451,26 @@ private:
               "void func2() { try{ ; } catch (const int&) { throw; } ; }\n"
               "void func3() { throw 0; }");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void exceptionDispatchIdiomInMiddleOfFunction() {
+      check("void on_error() { int foo = 5; try { throw; } catch (...) { ; } }");
+      ASSERT_EQUALS("", errout.str());
+
+      check("void on_error() { int foo = 5; try { throw; } catch (const std::exception& e) { ; } }");
+      ASSERT_EQUALS("", errout.str());
+    }
+
+    void exceptionDispatchIdiomExtraStatements() {
+      // extra statements aside from the rethrow should be done before/after the idiom rather than inside it.
+      check("void on_error() { try { int foo = 5; throw; } catch (...) { ; } }");
+      ASSERT_EQUALS("[test.cpp:1]: (error) Rethrowing current exception with 'throw;', it seems there is no current exception to rethrow. If there is no current exception this calls std::terminate(). More: https://isocpp.org/wiki/faq/exceptions#throw-without-an-object\n", errout.str());
+    }
+
+    void exceptionDispatchIdiomSubsequentRethrows() {
+      // if you use the exception dispatch idiom, you have already asserted that you are in a catch block, so subsequent rethrows are valid.
+      check("void on_error() { int foo = 5; try { throw; } catch (...) { ; } throw; }");
+      ASSERT_EQUALS("", errout.str());
     }
 };
 
