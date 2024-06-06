@@ -374,6 +374,7 @@ void CheckExceptionSafety::rethrowNoCurrentException()
 {
     logChecker("CheckExceptionSafety::rethrowNoCurrentException");
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
+    
     for (const Scope * scope : symbolDatabase->functionScopes) {
         const Function* function = scope->function;
         if (!function)
