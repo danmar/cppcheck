@@ -513,8 +513,7 @@ void CheckOther::checkRedundantAssignment()
                 const Token * tokenToCheck = tok->astOperand1();
 
                 // Check if we are working with union
-                const Token * tempToken = tokenToCheck;
-                while (Token::Match(tempToken, ".|->")) {
+                for (const Token* tempToken = tokenToCheck; Token::Match(tempToken, ".");) {
                     tempToken = tempToken->astOperand1();
                     if (tempToken && tempToken->variable() && tempToken->variable()->type() && tempToken->variable()->type()->isUnionType())
                         tokenToCheck = tempToken;
