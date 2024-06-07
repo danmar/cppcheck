@@ -436,7 +436,7 @@ def __run_command(cmd, print_cmd=True):
     return return_code, stdout, stderr, elapsed_time
 
 
-def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True, enable='style,information', debug_warnings=True, check_level=None):
+def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True, enable='style,information', debug_warnings=True, check_level=None, extra_args=None):
     print('Analyze..')
     libs = ''
     for library in libraries:
@@ -453,6 +453,8 @@ def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True, 
         options += ' --disable=missingInclude --suppress=unmatchedSuppression'
     if check_level:
         options += ' --check-level=' + check_level
+    if extra_args:
+        options += ' ' + extra_args
     if debug_warnings:
         options += ' --check-library --debug-warnings --suppress=autoNoType --suppress=valueFlowBailout' \
                    ' --suppress=bailoutUninitVar --suppress=symbolDatabaseWarning --suppress=normalCheckLevelConditionExpressions'

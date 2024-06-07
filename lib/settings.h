@@ -512,6 +512,7 @@ public:
     }
 
     enum class CheckLevel : std::uint8_t {
+        reduced,
         normal,
         exhaustive
     };

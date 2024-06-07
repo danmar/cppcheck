@@ -299,7 +299,16 @@ void Settings::loadSummaries()
 
 void Settings::setCheckLevel(CheckLevel level)
 {
-    if (level == CheckLevel::normal) {
+    if (level == CheckLevel::reduced) {
+        // Checking should finish quickly.
+        checkLevel = level;
+        vfOptions.maxSubFunctionArgs = 8;
+        vfOptions.maxIfCount = 100;
+        vfOptions.doConditionExpressionAnalysis = false;
+        vfOptions.maxForwardBranches = 4;
+        vfOptions.maxIterations = 1;
+    }
+    else if (level == CheckLevel::normal) {
         // Checking should finish in reasonable time.
         checkLevel = level;
         vfOptions.maxSubFunctionArgs = 8;
