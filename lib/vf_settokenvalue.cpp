@@ -641,7 +641,7 @@ namespace ValueFlow
                             if (v.bound != ValueFlow::Value::Bound::Point) {
                                 if (newvalue < v.intvalue) {
                                     v.invertBound();
-                                    newvalue -= 1;
+                                    newvalue -= 2;
                                 }
                             }
                             v.intvalue = newvalue;
@@ -671,7 +671,7 @@ namespace ValueFlow
                             if (v.bound != ValueFlow::Value::Bound::Point) {
                                 if (newvalue > v.intvalue) {
                                     v.invertBound();
-                                    newvalue += 1;
+                                    newvalue += 2;
                                 }
                             }
                             v.intvalue = newvalue;
