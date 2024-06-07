@@ -441,10 +441,16 @@ namespace ValueFlow
                 setTokenValue(parent, v, settings);
         }
 
+        // Offset of non null pointer is not null also
+        else if (astIsPointer(tok) && Token::Match(parent, "+|-") && value.isIntValue() && value.isImpossible() &&
+                 value.intvalue == 0) {
+            setTokenValue(parent, value, settings);
+        }
+
         // Calculations..
-        else if ((parent->isArithmeticalOp() || parent->isComparisonOp() || (parent->tokType() == Token::eBitOp) || (parent->tokType() == Token::eLogicalOp)) &&
-                 parent->astOperand1() &&
-                 parent->astOperand2()) {
+        else if ((parent->isArithmeticalOp() || parent->isComparisonOp() || (parent->tokType() == Token::eBitOp) ||
+                  (parent->tokType() == Token::eLogicalOp)) &&
+                 parent->astOperand1() && parent->astOperand2()) {
 
             const bool noninvertible = isNonInvertibleOperation(parent);
 
@@ -659,7 +665,8 @@ namespace ValueFlow
         }
 
         // C++ init
-        else if (parent->str() == "{" && Token::simpleMatch(parent->previous(), "= {") && Token::simpleMatch(parent->link(), "} ;")) {
+        else if (parent->str() == "{" && Token::simpleMatch(parent->previous(), "= {") &&
+                 Token::simpleMatch(parent->link(), "} ;")) {
             const Token* lhs = parent->previous()->astOperand1();
             if (lhs && lhs->valueType()) {
                 if (lhs->valueType()->isIntegral() || lhs->valueType()->isFloat() || (lhs->valueType()->pointer > 0 && value.isIntValue())) {
