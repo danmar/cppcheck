@@ -17,6 +17,7 @@
 #include <boost/smart_ptr/scoped_array.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/lock_guard.hpp>
+#include <boost/test/unit_test.hpp>
 
 BOOST_FORCEINLINE void boost_forceinline_test()
 {}
@@ -105,3 +106,24 @@ void lock_guard_finiteLifetime(boost::mutex& m)
     // cppcheck-suppress unusedScopedObject
     boost::lock_guard<boost::mutex>{ m };
 }
+
+BOOST_AUTO_TEST_SUITE(my_auto_test_suite)
+
+BOOST_AUTO_TEST_CASE(test_message_macros)
+{
+    bool my_bool = false;
+    BOOST_WARN_MESSAGE(my_bool, "warn");
+    BOOST_CHECK_MESSAGE(my_bool, "check");
+    BOOST_REQUIRE_MESSAGE(my_bool, "require");
+
+    BOOST_WARN_MESSAGE(my_bool, "my_bool was: " << my_bool);
+}
+
+using test_types_w_tuples = std::tuple<int, long, unsigned char>;
+BOOST_AUTO_TEST_CASE_TEMPLATE(my_tuple_test, T, test_types_w_tuples)
+{
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
+    BOOST_TEST(sizeof(T) == 4U);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
