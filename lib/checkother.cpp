@@ -510,8 +510,17 @@ void CheckOther::checkRedundantAssignment()
                 else
                     start = tok->findExpressionStartEndTokens().second->next();
 
+                const Token * tokenToCheck = tok->astOperand1();
+
+                // Check if we are working with union
+                for (const Token* tempToken = tokenToCheck; Token::simpleMatch(tempToken, ".");) {
+                    tempToken = tempToken->astOperand1();
+                    if (tempToken && tempToken->variable() && tempToken->variable()->type() && tempToken->variable()->type()->isUnionType())
+                        tokenToCheck = tempToken;
+                }
+
                 // Get next assignment..
-                const Token *nextAssign = fwdAnalysis.reassign(tok->astOperand1(), start, scope->bodyEnd);
+                const Token *nextAssign = fwdAnalysis.reassign(tokenToCheck, start, scope->bodyEnd);
 
                 if (!nextAssign)
                     continue;
