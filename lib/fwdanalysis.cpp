@@ -325,11 +325,11 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *
             }
             if (mWhat == What::Reassign) {
                 if (parent->variable() && parent->variable()->type() && parent->variable()->type()->isUnionType() && parent->varId() == expr->varId()) {
-                    while (parent && Token::Match(parent->astParent(), ".|->"))
+                    while (parent && Token::simpleMatch(parent->astParent(), "."))
                         parent = parent->astParent();
                     if (parent && parent->valueType() && Token::Match(parent->astParent(), "%assign%") && !Token::Match(parent->astParent()->astParent(), "%assign%") && parent->astParent()->astOperand1() == parent) {
                         const Token * assignment = parent->astParent()->astOperand2();
-                        while (Token::Match(assignment, ".|->") && assignment->varId() != expr->varId())
+                        while (Token::simpleMatch(assignment, ".") && assignment->varId() != expr->varId())
                             assignment = assignment->astOperand1();
                         if (assignment && assignment->varId() != expr->varId()) {
                             if (assignment->valueType() && assignment->valueType()->pointer) // Bailout
