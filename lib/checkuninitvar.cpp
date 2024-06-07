@@ -1653,6 +1653,8 @@ void CheckUninitVar::valueFlowUninit()
                 if (!v->subexpressions.empty() && usage == ExprUsage::PassedByReference)
                     continue;
                 if (usage != ExprUsage::Used) {
+                    if (tok->isUnaryOp("&") && !tok->astParent())
+                        continue;
                     if (!(Token::Match(tok->astParent(), ". %name% (|[") && uninitderef) &&
                         isVariableChanged(tok, v->indirect, *mSettings))
                         continue;
