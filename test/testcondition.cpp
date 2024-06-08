@@ -4607,6 +4607,19 @@ private:
               "    if (q) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'q' is always true\n", errout_str());
+
+        check("void f(int i) {\n"
+              "    int j = 0;\n"
+              "    switch (i) {\n"
+              "    case 1:\n"
+              "        j = 0;\n"
+              "        break;\n"
+              "    default:\n"
+              "        j = 1;\n"
+              "    }\n"
+              "    if (j != 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void alwaysTrueSymbolic()
