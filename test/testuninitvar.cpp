@@ -4304,7 +4304,7 @@ private:
                         "    long a;\n"
                         "    &a;\n"
                         "}");
-        TODO_ASSERT_EQUALS("", "[test.cpp:3]: (error) Uninitialized variable: &a\n", errout_str());
+        ASSERT_EQUALS("", errout_str());
 
         valueFlowUninit("void f() {\n" // #4717 - ({})
                         "    int a = ({ long b = (long)(123); 2 + b; });\n"

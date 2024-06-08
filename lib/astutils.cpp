@@ -3415,6 +3415,8 @@ ExprUsage getExprUsage(const Token* tok, int indirect, const Settings& settings)
         if (isUsedAsBool(tok, settings))
             return ExprUsage::NotUsed;
     }
+    if (tok->isUnaryOp("&") && !parent)
+        return ExprUsage::NotUsed;
     if (indirect == 0) {
         if (Token::Match(parent, "%cop%|%assign%|++|--") && parent->str() != "=" &&
             !parent->isUnaryOp("&") &&
