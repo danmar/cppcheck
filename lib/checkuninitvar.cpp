@@ -503,7 +503,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             }
 
             // goto the {
-            tok = tok->next()->link()->next();
+            tok = tok->linkAt(1)->next();
 
             if (!tok)
                 break;
@@ -583,7 +583,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
         // = { .. }
         else if (Token::simpleMatch(tok, "= {") || (Token::Match(tok, "%name% {") && tok->variable() && tok == tok->variable()->nameToken())) {
             // end token
-            const Token *end = tok->next()->link();
+            const Token *end = tok->linkAt(1);
 
             // If address of variable is taken in the block then bail out
             if (var.isPointer() || var.isArray()) {
@@ -630,7 +630,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 return true;
 
             // goto the {
-            const Token *tok2 = forwhile ? tok->next()->link()->next() : tok->next();
+            const Token *tok2 = forwhile ? tok->linkAt(1)->next() : tok->next();
 
             if (tok2 && tok2->str() == "{") {
                 const bool init = checkLoopBody(tok2, var, *alloc, membervar, (number_of_if > 0) || suppressErrors);
@@ -642,7 +642,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 // is variable used in for-head?
                 bool initcond = false;
                 if (!suppressErrors) {
-                    const Token *startCond = forwhile ? tok->next() : tok->next()->link()->tokAt(2);
+                    const Token *startCond = forwhile ? tok->next() : tok->linkAt(1)->tokAt(2);
                     initcond = checkIfForWhileHead(startCond, var, false, bool(number_of_if == 0), *alloc, membervar);
                 }
 
@@ -1373,7 +1373,7 @@ int CheckUninitVar::isFunctionParUsage(const Token *vartok, const Library& libra
 
     // is this a function call?
     if (Token::Match(start->previous(), "%name% (")) {
-        const bool address(vartok->previous()->str() == "&");
+        const bool address(vartok->strAt(-1) == "&");
         const bool array(vartok->variable() && vartok->variable()->isArray());
         // check how function handle uninitialized data arguments..
         const Function *func = start->previous()->function();
@@ -1730,7 +1730,7 @@ bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo *ctu, const std::li
     const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu->getCallsMap();
 
     for (const Check::FileInfo* fi1 : fileInfo) {
-        const MyFileInfo *fi = dynamic_cast<const MyFileInfo*>(fi1);
+        const auto *fi = dynamic_cast<const MyFileInfo*>(fi1);
         if (!fi)
             continue;
         for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafeUsage) {

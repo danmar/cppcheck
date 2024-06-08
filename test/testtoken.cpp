@@ -108,6 +108,7 @@ private:
         TEST_CASE(canFindMatchingBracketsWithTooManyOpening);
         TEST_CASE(findClosingBracket);
         TEST_CASE(findClosingBracket2);
+        TEST_CASE(findClosingBracket3);
 
         TEST_CASE(expressionString);
 
@@ -122,13 +123,13 @@ private:
         token->next()->insertToken("3");
         Token *last = token->tokAt(2);
         ASSERT_EQUALS(token->str(), "1");
-        ASSERT_EQUALS(token->next()->str(), "2");
+        ASSERT_EQUALS(token->strAt(1), "2");
         // cppcheck-suppress redundantNextPrevious - this is intentional
         ASSERT_EQUALS(token->tokAt(2)->str(), "3");
         ASSERT_EQUALS_MSG(true, last->next() == nullptr, "Null was expected");
 
         ASSERT_EQUALS(last->str(), "3");
-        ASSERT_EQUALS(last->previous()->str(), "2");
+        ASSERT_EQUALS(last->strAt(-1), "2");
         // cppcheck-suppress redundantNextPrevious - this is intentional
         ASSERT_EQUALS(last->tokAt(-2)->str(), "1");
         ASSERT_EQUALS_MSG(true, token->previous() == nullptr, "Null was expected");
@@ -1153,6 +1154,14 @@ private:
     void findClosingBracket2() {
         const SimpleTokenizer var(*this, "const auto g = []<typename T>() {};\n"); // #11275
 
+        const Token* const t = Token::findsimplematch(var.tokens(), "<");
+        ASSERT(t && Token::simpleMatch(t->findClosingBracket(), ">"));
+    }
+
+    void findClosingBracket3() {
+        const SimpleTokenizer var(*this, // #12789
+                                  "template <size_t I = 0, typename... ArgsT, std::enable_if_t<I < sizeof...(ArgsT)>* = nullptr>\n"
+                                  "void f();\n");
         const Token* const t = Token::findsimplematch(var.tokens(), "<");
         ASSERT(t && Token::simpleMatch(t->findClosingBracket(), ">"));
     }

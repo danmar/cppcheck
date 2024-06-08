@@ -285,7 +285,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (isUnevaluated(tok)) {
-            tok = tok->next()->link();
+            tok = tok->linkAt(1);
             continue;
         }
 
@@ -347,7 +347,7 @@ void CheckNullPointer::nullConstantDereference()
 
         for (; tok != scope->bodyEnd; tok = tok->next()) {
             if (isUnevaluated(tok))
-                tok = tok->next()->link();
+                tok = tok->linkAt(1);
 
             else if (Token::simpleMatch(tok, "* 0")) {
                 if (Token::Match(tok->previous(), "return|throw|;|{|}|:|[|(|,") || tok->previous()->isOp()) {
@@ -355,10 +355,10 @@ void CheckNullPointer::nullConstantDereference()
                 }
             }
 
-            else if (Token::Match(tok, "0 [") && (tok->previous()->str() != "&" || !Token::Match(tok->next()->link()->next(), "[.(]")))
+            else if (Token::Match(tok, "0 [") && (tok->strAt(-1) != "&" || !Token::Match(tok->linkAt(1)->next(), "[.(]")))
                 nullPointerError(tok);
 
-            else if (Token::Match(tok->previous(), "!!. %name% (|{") && (tok->previous()->str() != "::" || tok->strAt(-2) == "std")) {
+            else if (Token::Match(tok->previous(), "!!. %name% (|{") && (tok->strAt(-1) != "::" || tok->strAt(-2) == "std")) {
                 if (Token::Match(tok->tokAt(2), "0|NULL|nullptr )|}") && tok->varId()) { // constructor call
                     const Variable *var = tok->variable();
                     if (var && !var->isPointer() && !var->isArray() && var->isStlStringType())
@@ -395,7 +395,7 @@ void CheckNullPointer::nullConstantDereference()
                     if (Token::Match(tok2->previous(), ";|{|}|:|("))
                         break;
                 }
-                if (tok2 && tok2->previous() && tok2->previous()->str()=="(")
+                if (tok2 && tok2->previous() && tok2->strAt(-1)=="(")
                     continue;
                 if (Token::simpleMatch(tok2, "std :: cin"))
                     nullPointerError(tok);
@@ -614,7 +614,7 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
     const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu->getCallsMap();
 
     for (const Check::FileInfo* fi1 : fileInfo) {
-        const MyFileInfo *fi = dynamic_cast<const MyFileInfo*>(fi1);
+        const auto *fi = dynamic_cast<const MyFileInfo*>(fi1);
         if (!fi)
             continue;
         for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafeUsage) {

@@ -291,7 +291,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
 
         // call all "runChecks" in all registered Check classes
-        for (std::list<Check *>::const_iterator it = Check::instances().cbegin(); it != Check::instances().cend(); ++it) {
+        for (auto it = Check::instances().cbegin(); it != Check::instances().cend(); ++it) {
             (*it)->runChecks(tokenizer, this);
         }
 

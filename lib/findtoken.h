@@ -91,7 +91,7 @@ bool findTokensSkipDeadCodeImpl(const Library& library,
             if (found(tok))
                 return true;
         }
-        if (Token::Match(tok, "if|for|while (") && Token::simpleMatch(tok->next()->link(), ") {")) {
+        if (Token::Match(tok, "if|for|while (") && Token::simpleMatch(tok->linkAt(1), ") {")) {
             const Token* condTok = getCondTok(tok);
             if (!condTok)
                 continue;

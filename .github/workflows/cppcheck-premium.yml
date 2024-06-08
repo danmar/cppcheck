@@ -10,6 +10,10 @@ on:
     tags:
       - '2.*'
   pull_request:
+  workflow_dispatch:
+    inputs:
+      premium_version:
+        description: 'Cppcheck Premium version'
 
 permissions:
   contents: read
@@ -18,17 +22,20 @@ jobs:
 
   build:
     runs-on: ubuntu-22.04 # run on the latest image only
-
-    env:
-      PREMIUM_VERSION: 24.2.0
-
+    # FIXME: enable after update
+    if: false
     steps:
       - uses: actions/checkout@v3
 
       - name: Download cppcheckpremium
         run: |
-          wget https://files.cppchecksolutions.com/${{ env.PREMIUM_VERSION }}/ubuntu-22.04/cppcheckpremium-${{ env.PREMIUM_VERSION }}-amd64.tar.gz
-          tar xzf cppcheckpremium-${{ env.PREMIUM_VERSION }}-amd64.tar.gz
+          premium_version=${{ inputs.premium_version }}
+          if [ -z $premium_version ]; then
+            premium_version=24.2.0
+          fi
+          wget https://files.cppchecksolutions.com/$premium_version/ubuntu-22.04/cppcheckpremium-$premium_version-amd64.tar.gz -O cppcheckpremium.tar.gz
+          tar xvzf cppcheckpremium.tar.gz
+          mv cppcheckpremium-$premium_version cppcheckpremium
 
       - name: Generate a license file
         run: |
@@ -40,5 +47,5 @@ jobs:
 
       - name: Check
         run: |
-          cppcheckpremium-${{ env.PREMIUM_VERSION }}/premiumaddon --check-loc-license cppcheck.lic > cppcheck-premium-loc
-          cppcheckpremium-${{ env.PREMIUM_VERSION }}/cppcheck -j$(nproc) -D__GNUC__ -D__CPPCHECK__ --suppressions-list=cppcheckpremium-suppressions --platform=unix64 --enable=style --premium=misra-c++-2008 --premium=cert-c++-2016 --inline-suppr --error-exitcode=1 lib
+          cppcheckpremium/premiumaddon --check-loc-license cppcheck.lic > cppcheck-premium-loc
+          cppcheckpremium/cppcheck -j$(nproc) -D__GNUC__ -D__CPPCHECK__ --suppressions-list=cppcheckpremium-suppressions --platform=unix64 --enable=style --premium=misra-c++-2008 --premium=cert-c++-2016 --inline-suppr --error-exitcode=1 lib

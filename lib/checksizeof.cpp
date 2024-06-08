@@ -326,7 +326,7 @@ void CheckSizeof::sizeofCalculation()
         // ignore if the `sizeof` result is cast to void inside a macro, i.e. the calculation is
         // expected to be parsed but skipped, such as in a disabled custom ASSERT() macro
         if (tok->isExpandedMacro() && tok->previous()) {
-            const Token *cast_end = (tok->previous()->str() == "(") ? tok->previous() : tok;
+            const Token *cast_end = (tok->strAt(-1) == "(") ? tok->previous() : tok;
             if (Token::simpleMatch(cast_end->tokAt(-3), "( void )") ||
                 Token::simpleMatch(cast_end->tokAt(-4), "static_cast < void >")) {
                 continue;
@@ -369,7 +369,7 @@ void CheckSizeof::sizeofFunction()
             // ignore if the `sizeof` result is cast to void inside a macro, i.e. the calculation is
             // expected to be parsed but skipped, such as in a disabled custom ASSERT() macro
             if (tok->isExpandedMacro() && tok->previous()) {
-                const Token *cast_end = (tok->previous()->str() == "(") ? tok->previous() : tok;
+                const Token *cast_end = (tok->strAt(-1) == "(") ? tok->previous() : tok;
                 if (Token::simpleMatch(cast_end->tokAt(-3), "( void )") ||
                     Token::simpleMatch(cast_end->tokAt(-4), "static_cast < void >")) {
                     continue;

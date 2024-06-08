@@ -738,13 +738,20 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             const char * const argDirection = functionnode->Attribute("direction");
             if (argDirection) {
                 const size_t argDirLen = strlen(argDirection);
+                ArgumentChecks::Direction dir = ArgumentChecks::Direction::DIR_UNKNOWN;
                 if (!strncmp(argDirection, "in", argDirLen)) {
-                    ac.direction = ArgumentChecks::Direction::DIR_IN;
+                    dir = ArgumentChecks::Direction::DIR_IN;
                 } else if (!strncmp(argDirection, "out", argDirLen)) {
-                    ac.direction = ArgumentChecks::Direction::DIR_OUT;
+                    dir = ArgumentChecks::Direction::DIR_OUT;
                 } else if (!strncmp(argDirection, "inout", argDirLen)) {
-                    ac.direction = ArgumentChecks::Direction::DIR_INOUT;
+                    dir = ArgumentChecks::Direction::DIR_INOUT;
                 }
+                if (const char* const argIndirect = functionnode->Attribute("indirect")) {
+                    const int indirect = strToInt<int>(argIndirect);
+                    ac.direction[indirect] = dir; // TODO: handle multiple directions/indirect levels
+                }
+                else
+                    ac.direction.fill(dir);
             }
             for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
                 const std::string argnodename = argnode->Name();
@@ -938,7 +945,7 @@ bool Library::isIntArgValid(const Token *ftok, int argnr, const MathLib::bigint 
             return true;
         if (Token::Match(tok, "%num% : ,") && argvalue >= MathLib::toBigNumber(tok->str()))
             return true;
-        if ((!tok->previous() || tok->previous()->str() == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toBigNumber(tok->strAt(1)))
+        if ((!tok->previous() || tok->strAt(-1) == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toBigNumber(tok->strAt(1)))
             return true;
     }
     return false;
@@ -956,12 +963,12 @@ bool Library::isFloatArgValid(const Token *ftok, int argnr, double argvalue) con
             return true;
         if (Token::Match(tok, "%num% : ,") && argvalue >= MathLib::toDoubleNumber(tok->str()))
             return true;
-        if ((!tok->previous() || tok->previous()->str() == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toDoubleNumber(tok->strAt(1)))
+        if ((!tok->previous() || tok->strAt(-1) == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toDoubleNumber(tok->strAt(1)))
             return true;
         if (Token::Match(tok, "%num%") && MathLib::isFloat(tok->str()) && MathLib::isEqual(tok->str(), MathLib::toString(argvalue)))
             return true;
-        if (Token::Match(tok, "! %num%") && MathLib::isFloat(tok->next()->str()))
-            return MathLib::isNotEqual(tok->next()->str(), MathLib::toString(argvalue));
+        if (Token::Match(tok, "! %num%") && MathLib::isFloat(tok->strAt(1)))
+            return MathLib::isNotEqual(tok->strAt(1), MathLib::toString(argvalue));
     }
     return false;
 }
@@ -1265,7 +1272,7 @@ bool Library::isContainerYield(const Token * const cond, Library::Container::Yie
                     return tok->astOperand2() && y == container->getYield(tok->astOperand2()->str());
                 }
             } else if (!fallback.empty()) {
-                return Token::simpleMatch(cond, "( )") && cond->previous()->str() == fallback;
+                return Token::simpleMatch(cond, "( )") && cond->strAt(-1) == fallback;
             }
         }
     }
@@ -1500,11 +1507,14 @@ bool Library::hasminsize(const Token *ftok) const
     });
 }
 
-Library::ArgumentChecks::Direction Library::getArgDirection(const Token* ftok, int argnr) const
+Library::ArgumentChecks::Direction Library::getArgDirection(const Token* ftok, int argnr, int indirect) const
 {
     const ArgumentChecks* arg = getarg(ftok, argnr);
-    if (arg)
-        return arg->direction;
+    if (arg) {
+        if (indirect < 0 || indirect >= arg->direction.size())
+            throw InternalError(ftok, "Bad indirect value: " + std::to_string(indirect));
+        return arg->direction[indirect];
+    }
     if (formatstr_function(ftok)) {
         const int fs_argno = formatstr_argno(ftok);
         if (fs_argno >= 0 && argnr >= fs_argno) {

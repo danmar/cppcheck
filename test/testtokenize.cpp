@@ -439,6 +439,8 @@ private:
 
         TEST_CASE(removeAlignas1);
         TEST_CASE(removeAlignas2); // Do not remove alignof in the same way
+        TEST_CASE(removeAlignas3); // remove alignas in C11 code
+        TEST_CASE(dumpAlignas);
 
         TEST_CASE(simplifyCoroutines);
 
@@ -3297,7 +3299,7 @@ private:
             SimpleTokenizer tokenizer(settings0, *this);
             ASSERT(tokenizer.tokenize(code));
             const Token *A = Token::findsimplematch(tokenizer.tokens(), "A <");
-            ASSERT_EQUALS(true, A->next()->link() == A->tokAt(3));
+            ASSERT_EQUALS(true, A->linkAt(1) == A->tokAt(3));
         }
         {
             // #8851
@@ -3305,7 +3307,7 @@ private:
                                 "void basic_json() {}";
             SimpleTokenizer tokenizer(settings0, *this);
             ASSERT(tokenizer.tokenize(code));
-            ASSERT_EQUALS(true, Token::simpleMatch(tokenizer.tokens()->next()->link(), "> void"));
+            ASSERT_EQUALS(true, Token::simpleMatch(tokenizer.tokens()->linkAt(1), "> void"));
         }
 
         {
@@ -3325,8 +3327,8 @@ private:
             ASSERT(tokenizer.tokenize(code));
             const Token *tok1 = Token::findsimplematch(tokenizer.tokens(), "template <");
             const Token *tok2 = Token ::findsimplematch(tokenizer.tokens(), "same_as <");
-            ASSERT(tok1->next()->link() == tok1->tokAt(7));
-            ASSERT(tok2->next()->link() == tok2->tokAt(3));
+            ASSERT(tok1->linkAt(1) == tok1->tokAt(7));
+            ASSERT(tok2->linkAt(1) == tok2->tokAt(3));
         }
 
         {
@@ -5463,7 +5465,7 @@ private:
         // remove some unhandled macros in the global scope.
         ASSERT_EQUALS("void f ( ) { }", tokenizeAndStringify("void f() NOTHROW { }"));
         ASSERT_EQUALS("struct Foo { } ;", tokenizeAndStringify("struct __declspec(dllexport) Foo {};"));
-        ASSERT_EQUALS("namespace { int a ; }", tokenizeAndStringify("ABA() namespace { int a ; }"));
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("ABA() namespace { int a ; }"), UNKNOWN_MACRO);
 
         // #3750
         ASSERT_THROW_INTERNAL(tokenizeAndStringify("; AB(foo*) foo::foo() { }"), UNKNOWN_MACRO);
@@ -6632,6 +6634,9 @@ private:
         ASSERT_EQUALS("double&(4[", testAst("void f(double(&)[4]) {}"));
         ASSERT_EQUALS("voidu*", testAst("int* g ( void* (f) (void*), void* u);")); // #12475
         ASSERT_EQUALS("f::(", testAst("::f();")); // #12544
+        ASSERT_EQUALS("(( f (, c ({ (= (. x) 0))))", testAst("f(c, { .x = 0 });", AstStyle::Z3)); // #12806
+        ASSERT_EQUALS("(= it (( (. s insert) (, it ({ (, (, (= (. a) i) (= (. b) 2)) (= (. c) 3))))))",
+                      testAst("it = s.insert(it, { .a = i, .b = 2, .c = 3 });", AstStyle::Z3)); // #12815
     }
 
     void asttemplate() { // uninstantiated templates will have <,>,etc..
@@ -7102,6 +7107,8 @@ private:
 
         // Ticket #9664
         ASSERT_NO_THROW(tokenizeAndStringify("S s = { .x { 2 }, .y[0] { 3 } };"));
+
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("f(0, .x());"), SYNTAX); // #12823
 
         // Ticket #11134
         ASSERT_NO_THROW(tokenizeAndStringify("struct my_struct { int x; }; "
@@ -7848,6 +7855,27 @@ private:
         const char code[] = "static_assert( alignof( VertexC ) == 4 );";
         const char expected[] = "static_assert ( alignof ( VertexC ) == 4 ) ;";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+    }
+
+    void removeAlignas3() {
+        const char code[] = "alignas(16) int x;";
+        const char expected[] = "int x ;";
+        // According to cppreference alignas() is a C23 macro; but it is often available when compiling C11.
+        // Misra C has C11 examples with alignas.
+        // Microsoft provides alignas in C11.
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, false, Standards::CPP11, Standards::C11));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, true, Standards::CPP11, Standards::C11));
+    }
+
+    void dumpAlignas() {
+        Settings settings;
+        SimpleTokenizer tokenizer(settings, *this);
+        tokenizer.tokenize("int alignas(8) alignas(16) x;", false);
+        ASSERT(Token::simpleMatch(tokenizer.tokens(), "int x ;"));
+        std::ostringstream ostr;
+        tokenizer.dump(ostr);
+        const std::string dump = ostr.str();
+        ASSERT(dump.find(" alignas=\"8\" alignas2=\"16\"") != std::string::npos);
     }
 
     void simplifyCoroutines() {

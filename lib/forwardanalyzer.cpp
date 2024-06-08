@@ -656,14 +656,14 @@ namespace {
                         return Break();
                     }
                 } else if (tok->isControlFlowKeyword() && Token::Match(tok, "if|while|for (") &&
-                           Token::simpleMatch(tok->next()->link(), ") {")) {
+                           Token::simpleMatch(tok->linkAt(1), ") {")) {
                     if ((settings.vfOptions.maxForwardBranches > 0) && (++branchCount > settings.vfOptions.maxForwardBranches)) {
                         // TODO: should be logged on function-level instead of file-level
                         reportError(Severity::information, "normalCheckLevelMaxBranches", "Limiting analysis of branches. Use --check-level=exhaustive to analyze all branches.");
                         return Break(Analyzer::Terminate::Bail);
                     }
-                    Token* endCond = tok->next()->link();
-                    Token* endBlock = endCond->next()->link();
+                    Token* endCond = tok->linkAt(1);
+                    Token* endBlock = endCond->linkAt(1);
                     Token* condTok = getCondTok(tok);
                     Token* initTok = getInitTok(tok);
                     if (initTok && updateRecursive(initTok) == Progress::Break)
@@ -769,7 +769,7 @@ namespace {
                         }
                     }
                 } else if (Token::simpleMatch(tok, "try {")) {
-                    Token* endBlock = tok->next()->link();
+                    Token* endBlock = tok->linkAt(1);
                     ForwardTraversal tryTraversal = fork();
                     tryTraversal.updateScope(endBlock, depth - 1);
                     bool bail = tryTraversal.actions.isModified();
@@ -792,7 +792,7 @@ namespace {
                         return Break();
                     tok = endBlock;
                 } else if (Token::simpleMatch(tok, "do {")) {
-                    Token* endBlock = tok->next()->link();
+                    Token* endBlock = tok->linkAt(1);
                     Token* condTok = Token::simpleMatch(endBlock, "} while (") ? endBlock->tokAt(2)->astOperand2() : nullptr;
                     if (updateLoop(end, endBlock, condTok) == Progress::Break)
                         return Break();

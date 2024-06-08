@@ -296,11 +296,11 @@ void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates()
 
         // skip executing scopes (ticket #1985)..
         else if (Token::simpleMatch(tok, "try {")) {
-            tok = tok->next()->link();
+            tok = tok->linkAt(1);
             while (Token::simpleMatch(tok, "} catch (")) {
                 tok = tok->linkAt(2);
                 if (Token::simpleMatch(tok, ") {"))
-                    tok = tok->next()->link();
+                    tok = tok->linkAt(1);
             }
         }
 
@@ -347,9 +347,9 @@ void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates()
                         inclevel = true;
                     else if (Token::simpleMatch(tok2, "< typename"))
                         inclevel = true;
-                    else if (Token::Match(tok2->tokAt(-2), "<|, %type% <") && usedtypes.find(tok2->previous()->str()) != usedtypes.end())
+                    else if (Token::Match(tok2->tokAt(-2), "<|, %type% <") && usedtypes.find(tok2->strAt(-1)) != usedtypes.end())
                         inclevel = true;
-                    else if (Token::Match(tok2, "< %type%") && usedtypes.find(tok2->next()->str()) != usedtypes.end())
+                    else if (Token::Match(tok2, "< %type%") && usedtypes.find(tok2->strAt(1)) != usedtypes.end())
                         inclevel = true;
                     else if (Token::Match(tok2, "< %type%")) {
                         // is the next token a type and not a variable/constant?
@@ -365,7 +365,7 @@ void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates()
                     if (inclevel) {
                         ++level;
                         if (Token::Match(tok2->tokAt(-2), "<|, %type% <"))
-                            usedtypes.insert(tok2->previous()->str());
+                            usedtypes.insert(tok2->strAt(-1));
                     }
                 } else if (tok2->str() == ">") {
                     if (level > 0)
@@ -833,6 +833,8 @@ void TemplateSimplifier::getTemplateInstantiations()
         } else if (Token::Match(tok->previous(), "(|{|}|;|=|>|<<|:|.|*|&|return|<|,|!|[ %name% ::|<|(") ||
                    Token::Match(tok->previous(), "%type% %name% ::|<") ||
                    Token::Match(tok->tokAt(-2), "[,:] private|protected|public %name% ::|<")) {
+            if (!tok->scopeInfo())
+                syntaxError(tok);
             std::string scopeName = tok->scopeInfo()->name;
             std::string qualification;
             Token * qualificationTok = tok;
@@ -1902,7 +1904,7 @@ void TemplateSimplifier::expandTemplate(
         }
 
         if (tok3->str()=="template") {
-            if (tok3->next() && tok3->next()->str()=="<") {
+            if (tok3->next() && tok3->strAt(1)=="<") {
                 std::vector<const Token *> localTypeParametersInDeclaration;
                 getTemplateParametersInDeclaration(tok3->tokAt(2), localTypeParametersInDeclaration);
                 inTemplateDefinition = localTypeParametersInDeclaration.size() == typeParametersInDeclaration.size(); // Partial specialization
@@ -2336,8 +2338,8 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok, bool isTemplate
             break;
         const Token* op = tok->next();
         const Token* after = tok->tokAt(3);
-        const std::string &num1 = op->previous()->str();
-        const std::string &num2 = op->next()->str();
+        const std::string &num1 = op->strAt(-1);
+        const std::string &num2 = op->strAt(1);
         if (Token::Match(before, "* %num% /") && (num2 != "0") && num1 == MathLib::multiply(num2, MathLib::divide(num1, num2))) {
             // Division where result is a whole number
         } else if (!((op->str() == "*" && (isLowerThanMulDiv(before) || before->str() == "*") && isLowerEqualThanMulDiv(after)) || // associative
@@ -2508,7 +2510,7 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, const Token *end, st
                 if ((Token::Match(tok->previous(), "(|&&|%oror%|,") || tok == start) &&
                     (Token::Match(tok->tokAt(3), ")|&&|%oror%|?") || tok->tokAt(3) == end)) {
                     const MathLib::bigint op1(MathLib::toBigNumber(tok->str()));
-                    const std::string &cmp(tok->next()->str());
+                    const std::string &cmp(tok->strAt(1));
                     const MathLib::bigint op2(MathLib::toBigNumber(tok->strAt(2)));
 
                     std::string result;
@@ -2541,11 +2543,11 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, const Token *end, st
             if (tok->str() == "?" &&
                 ((tok->previous()->isNumber() || tok->previous()->isBoolean()) ||
                  Token::Match(tok->tokAt(-3), "( %bool%|%num% )"))) {
-                const int offset = (tok->previous()->str() == ")") ? 2 : 1;
+                const int offset = (tok->strAt(-1) == ")") ? 2 : 1;
 
                 // Find the token ":" then go to the next token
                 Token *colon = skipTernaryOp(tok, end);
-                if (!colon || colon->previous()->str() != ":" || !colon->next())
+                if (!colon || colon->strAt(-1) != ":" || !colon->next())
                     continue;
 
                 //handle the GNU extension: "x ? : y" <-> "x ? x : y"
@@ -2755,7 +2757,7 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, const Token *ba
                  Token::Match(tok->previous(), "[(=,] 1 %oror%"))) {
                 unsigned int par = 0;
                 const Token *tok2 = tok;
-                const bool andAnd = (tok->next()->str() == "&&");
+                const bool andAnd = (tok->strAt(1) == "&&");
                 for (; tok2; tok2 = tok2->next()) {
                     if (tok2->str() == "(" || tok2->str() == "[")
                         ++par;
@@ -2779,7 +2781,7 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, const Token *ba
                      (Token::Match(tok->previous(), "%or% 0 %cop%|;") && isLowerThanXor(tok->next())))) {
                     tok = tok->previous();
                     if (Token::Match(tok->tokAt(-4), "[;{}] %name% = %name% [+-|] 0 ;") &&
-                        tok->strAt(-3) == tok->previous()->str()) {
+                        tok->strAt(-3) == tok->strAt(-1)) {
                         tok = tok->tokAt(-4);
                         tok->deleteNext(5);
                     } else {
@@ -2800,8 +2802,8 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, const Token *ba
                                Token::Match(tok->previous(), "return|case 0 *|&& (")) &&
                               validTokenEnd(bounded, tok, backToken, 2))))) {
                     tok->deleteNext();
-                    if (tok->next()->str() == "(")
-                        eraseTokens(tok, tok->next()->link());
+                    if (tok->strAt(1) == "(")
+                        eraseTokens(tok, tok->linkAt(1));
                     tok->deleteNext();
                     ret = true;
                 } else if (validTokenEnd(bounded, tok, backToken, 4) &&
@@ -2809,8 +2811,8 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, const Token *ba
                             Token::Match(tok->previous(), "return|case 0 && *|& %any% ,|:|;|=|%cop%"))) {
                     tok->deleteNext();
                     tok->deleteNext();
-                    if (tok->next()->str() == "(")
-                        eraseTokens(tok, tok->next()->link());
+                    if (tok->strAt(1) == "(")
+                        eraseTokens(tok, tok->linkAt(1));
                     tok->deleteNext();
                     ret = true;
                 }
@@ -2821,8 +2823,8 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, const Token *ba
                     (Token::Match(tok->previous(), "[=[(,] 1 %oror% %any% ,|]|)|;|=|%cop%") ||
                      Token::Match(tok->previous(), "return|case 1 %oror% %any% ,|:|;|=|%cop%"))) {
                     tok->deleteNext();
-                    if (tok->next()->str() == "(")
-                        eraseTokens(tok, tok->next()->link());
+                    if (tok->strAt(1) == "(")
+                        eraseTokens(tok, tok->linkAt(1));
                     tok->deleteNext();
                     ret = true;
                 } else if (validTokenEnd(bounded, tok, backToken, 4) &&
@@ -2830,8 +2832,8 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, const Token *ba
                             Token::Match(tok->previous(), "return|case 1 %oror% *|& %any% ,|:|;|=|%cop%"))) {
                     tok->deleteNext();
                     tok->deleteNext();
-                    if (tok->next()->str() == "(")
-                        eraseTokens(tok, tok->next()->link());
+                    if (tok->strAt(1) == "(")
+                        eraseTokens(tok, tok->linkAt(1));
                     tok->deleteNext();
                     ret = true;
                 }
@@ -2877,7 +2879,7 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, const Token *ba
                     Token::Match(tok->previous(), "(|&&|%oror%") &&
                     Token::Match(tok->tokAt(3), ")|&&|%oror%|?")) {
                     const MathLib::bigint op1(MathLib::toBigNumber(tok->str()));
-                    const std::string &cmp(tok->next()->str());
+                    const std::string &cmp(tok->strAt(1));
                     const MathLib::bigint op2(MathLib::toBigNumber(tok->strAt(2)));
 
                     std::string result;

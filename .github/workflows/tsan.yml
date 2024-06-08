@@ -34,7 +34,7 @@ jobs:
           key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
 
       - name: Set up Python 3.12
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
           check-latest: true
@@ -64,6 +64,7 @@ jobs:
           python3 -m pip install pip --upgrade
           python3 -m pip install pytest
           python3 -m pip install pytest-timeout
+          python3 -m pip install psutil
 
       - name: CMake
         run: |

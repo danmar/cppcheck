@@ -510,8 +510,17 @@ void CheckOther::checkRedundantAssignment()
                 else
                     start = tok->findExpressionStartEndTokens().second->next();
 
+                const Token * tokenToCheck = tok->astOperand1();
+
+                // Check if we are working with union
+                for (const Token* tempToken = tokenToCheck; Token::simpleMatch(tempToken, ".");) {
+                    tempToken = tempToken->astOperand1();
+                    if (tempToken && tempToken->variable() && tempToken->variable()->type() && tempToken->variable()->type()->isUnionType())
+                        tokenToCheck = tempToken;
+                }
+
                 // Get next assignment..
-                const Token *nextAssign = fwdAnalysis.reassign(tok->astOperand1(), start, scope->bodyEnd);
+                const Token *nextAssign = fwdAnalysis.reassign(tokenToCheck, start, scope->bodyEnd);
 
                 if (!nextAssign)
                     continue;
@@ -1629,6 +1638,9 @@ void CheckOther::checkConstPointer()
             if (p->isMaybeUnused())
                 continue;
         }
+        if (const Function* func = Scope::nestedInFunction(p->scope()))
+            if (func->templateDef)
+                continue;
         if (std::find(nonConstPointers.cbegin(), nonConstPointers.cend(), p) == nonConstPointers.cend()) {
             // const Token *start = getVariableChangedStart(p);
             // const int indirect = p->isArray() ? p->dimensions().size() : 1;
@@ -1886,7 +1898,7 @@ static bool isVoidStmt(const Token *tok)
     const Token *tok2 = tok;
     while (tok2->astOperand1())
         tok2 = tok2->astOperand1();
-    if (Token::simpleMatch(tok2->previous(), ")") && Token::simpleMatch(tok2->previous()->link(), "( void"))
+    if (Token::simpleMatch(tok2->previous(), ")") && Token::simpleMatch(tok2->linkAt(-1), "( void"))
         return true;
     if (Token::simpleMatch(tok2, "( void"))
         return true;
@@ -2529,7 +2541,7 @@ void CheckOther::checkDuplicateExpression()
                     if (isWithoutSideEffects(tok->astOperand1())) {
                         const Token* loopTok = isInLoopCondition(tok);
                         if (!loopTok ||
-                            !findExpressionChanged(tok, tok, loopTok->link()->next()->link(), *mSettings)) {
+                            !findExpressionChanged(tok, tok, loopTok->link()->linkAt(1), *mSettings)) {
                             const bool isEnum = tok->scope()->type == Scope::eEnum;
                             const bool assignment = !isEnum && tok->str() == "=";
                             if (assignment)
@@ -2540,7 +2552,7 @@ void CheckOther::checkDuplicateExpression()
                                     while (parent && parent->astParent()) {
                                         parent = parent->astParent();
                                     }
-                                    if (parent && parent->previous() && parent->previous()->str() == "static_assert") {
+                                    if (parent && parent->previous() && parent->strAt(-1) == "static_assert") {
                                         continue;
                                     }
                                 }
@@ -2903,7 +2915,7 @@ void CheckOther::checkRedundantCopy()
         if (Token::simpleMatch(dot, ".")) {
             const Token* varTok = dot->astOperand1();
             const int indirect = varTok->valueType() ? varTok->valueType()->pointer : 0;
-            if (isVariableChanged(tok, tok->scope()->bodyEnd, varTok->varId(), indirect, /*globalvar*/ false, *mSettings))
+            if (isVariableChanged(tok, tok->scope()->bodyEnd, indirect, varTok->varId(), /*globalvar*/ true, *mSettings))
                 continue;
             if (isTemporary(dot, &mSettings->library, /*unknown*/ true))
                 continue;
@@ -3215,11 +3227,11 @@ void CheckOther::checkInterlockedDecrement()
                 raceAfterInterlockedDecrementError(checkStartTok);
             }
         } else if (Token::Match(tok, "if ( ::| InterlockedDecrement ( & %name%")) {
-            const Token* condEnd = tok->next()->link();
+            const Token* condEnd = tok->linkAt(1);
             const Token* funcTok = tok->tokAt(2);
             const Token* firstAccessTok = funcTok->str() == "::" ? funcTok->tokAt(4) : funcTok->tokAt(3);
-            if (condEnd && condEnd->next() && condEnd->next()->link()) {
-                const Token* ifEndTok = condEnd->next()->link();
+            if (condEnd && condEnd->next() && condEnd->linkAt(1)) {
+                const Token* ifEndTok = condEnd->linkAt(1);
                 if (Token::Match(ifEndTok, "} return %name%")) {
                     const Token* secondAccessTok = ifEndTok->tokAt(2);
                     if (secondAccessTok->str() == firstAccessTok->str()) {

@@ -279,14 +279,14 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
-              "    return tok->next()->next();\n" // Simplification won't make code much shorter/readable
+              "    return tok->next()->next();\n"
               "}");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::next()' followed by 'Token::next()' can be simplified.\n", errout_str());
 
         check("void f() {\n"
-              "    return tok->previous()->previous();\n" // Simplification won't make code much shorter/readable
+              "    return tok->previous()->previous();\n"
               "}");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::previous()' followed by 'Token::previous()' can be simplified.\n", errout_str());
 
         check("void f() {\n"
               "    return tok->tokAt(foo+bar)->tokAt();\n"
@@ -306,12 +306,16 @@ private:
         check("void f() {\n"
               "    return tok->next()->next()->str();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::next()' followed by 'Token::str()' can be simplified.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::next()' followed by 'Token::next()' can be simplified.\n"
+                      "[test.cpp:2]: (style) Call to 'Token::next()' followed by 'Token::str()' can be simplified.\n",
+                      errout_str());
 
         check("void f() {\n"
               "    return tok->previous()->next()->str();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::previous()' followed by 'Token::next()' can be simplified.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::previous()' followed by 'Token::next()' can be simplified.\n"
+                      "[test.cpp:2]: (style) Call to 'Token::next()' followed by 'Token::str()' can be simplified.\n",
+                      errout_str());
 
     }
 
@@ -487,7 +491,7 @@ private:
               "    const Token *tok;\n"
               "    if(tok->previous() && Token::Match(tok->previous()->previous(), \"5str% foobar\")) {};\n"
               "}");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Call to 'Token::previous()' followed by 'Token::previous()' can be simplified.\n", errout_str());
 
         // if a && fn(a) triggers, make sure !a || !fn(a) triggers as well!
         check("void f() {\n"
@@ -521,7 +525,9 @@ private:
               "    const Token *tok;\n"
               "    if(!tok->previous()->previous() || !Token::simpleMatch(tok->previous()->previous(), \"foobar\")) {};\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok->previous()->previous()\", match-function already checks if it is null.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Call to 'Token::previous()' followed by 'Token::previous()' can be simplified.\n"
+                      "[test.cpp:3]: (style) Call to 'Token::previous()' followed by 'Token::previous()' can be simplified.\n"
+                      "[test.cpp:3]: (style) Unnecessary check of \"tok->previous()->previous()\", match-function already checks if it is null.\n", errout_str());
     }
 };
 

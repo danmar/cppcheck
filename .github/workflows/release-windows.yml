@@ -37,7 +37,7 @@ jobs:
 
       - name: Cache PCRE
         id: cache-pcre
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             externals\pcre.h
@@ -133,12 +133,12 @@ jobs:
           echo ProductVersion="%PRODUCTVER%" || exit /b !errorlevel!
           msbuild -m cppcheck.wixproj -p:Platform=x64,ProductVersion=%PRODUCTVER%.${{ github.run_number }} || exit /b !errorlevel!
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: installer
           path: win_installer/Build/
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: deploy
           path: win_installer\files
@@ -162,7 +162,7 @@ jobs:
           del win_installer\files\Qt5Svg.dll || exit /b !errorlevel!
           del win_installer\files\vc_redist.x64.exe || exit /b !errorlevel!
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: portable
           path: win_installer\files

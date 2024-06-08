@@ -45,6 +45,7 @@ struct FileSettings;
 class CheckUnusedFunctions;
 class Tokenizer;
 class FileWithDetails;
+class RemarkComment;
 
 namespace simplecpp { class TokenList; }
 
@@ -254,6 +255,8 @@ private:
     std::ofstream mPlistFile;
 
     std::unique_ptr<CheckUnusedFunctions> mUnusedFunctionsCheck;
+
+    std::vector<RemarkComment> mRemarkComments;
 };
 
 /// @}

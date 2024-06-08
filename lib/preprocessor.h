@@ -60,6 +60,24 @@ struct CPPCHECKLIB Directive {
     Directive(std::string _file, const int _linenr, const std::string &_str);
 };
 
+class CPPCHECKLIB RemarkComment {
+public:
+    RemarkComment(std::string file, unsigned int lineNumber, std::string str)
+        : file(std::move(file))
+        , lineNumber(lineNumber)
+        , str(std::move(str))
+    {}
+
+    /** name of file */
+    std::string file;
+
+    /** line number for the code that the remark comment is about */
+    unsigned int lineNumber;
+
+    /** remark text */
+    std::string str;
+};
+
 /// @addtogroup Core
 /// @{
 
@@ -95,6 +113,8 @@ public:
     std::list<Directive> createDirectives(const simplecpp::TokenList &tokens) const;
 
     std::set<std::string> getConfigs(const simplecpp::TokenList &tokens) const;
+
+    std::vector<RemarkComment> getRemarkComments(const simplecpp::TokenList &tokens) const;
 
     void handleErrors(const simplecpp::OutputList &outputList, bool throwError);
 
@@ -137,6 +157,8 @@ private:
     void error(const std::string &filename, unsigned int linenr, const std::string &msg);
 
     static bool hasErrors(const simplecpp::OutputList &outputList);
+
+    void addRemarkComments(const simplecpp::TokenList &tokens, std::vector<RemarkComment> &remarkComments) const;
 
     const Settings& mSettings;
     ErrorLogger &mErrorLogger;

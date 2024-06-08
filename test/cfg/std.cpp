@@ -5053,3 +5053,20 @@ void assertWithSideEffect_std_prev_next(const std::vector<int>& v, std::vector<i
     // cppcheck-suppress checkLibraryNoReturn
     assert(std::next(it, 1) == v.end());
 }
+
+std::vector<int> containerOutOfBounds_push_back() { // #12775
+    std::vector<int> v;
+    for (int i = 0; i < 4; ++i) {
+        v.push_back(i);
+        (void)v[i];
+    }
+    return v;
+}
+
+template <typename T>
+void constVariablePointer_push_back(std::vector<T*>& d, const std::vector<T*>& s) {
+    for (const auto& e : s) {
+        T* newE = new T(*e);
+        d.push_back(newE);
+    }
+}

@@ -50,6 +50,7 @@ private:
         TEST_CASE(CustomFormat2);
         TEST_CASE(CustomFormatLocations);
         TEST_CASE(ToXmlV2);
+        TEST_CASE(ToXmlV2RemarkComment);
         TEST_CASE(ToXmlV2Locations);
         TEST_CASE(ToXmlV2Encoding);
         TEST_CASE(FromXmlV2);
@@ -62,6 +63,7 @@ private:
         TEST_CASE(DeserializeInvalidInput);
         TEST_CASE(SerializeSanitize);
         TEST_CASE(SerializeFileLocation);
+        TEST_CASE(SerializeAndDeserializeRemark);
 
         TEST_CASE(substituteTemplateFormatStatic);
         TEST_CASE(substituteTemplateLocationStatic);
@@ -237,6 +239,12 @@ private:
         ASSERT_EQUALS(message, msg.toXML());
     }
 
+    void ToXmlV2RemarkComment() const {
+        ErrorMessage msg({}, emptyString, Severity::warning, "", "id", Certainty::normal);
+        msg.remark = "remark";
+        ASSERT_EQUALS("        <error id=\"id\" severity=\"warning\" msg=\"\" verbose=\"\" remark=\"remark\"/>", msg.toXML());
+    }
+
     void ToXmlV2Locations() const {
         std::list<ErrorMessage::FileLocation> locs = { fooCpp5, barCpp8_i };
         ErrorMessage msg(std::move(locs), emptyString, Severity::error, "Programming error.\nVerbose error", "errorId", Certainty::normal);
@@ -329,8 +337,9 @@ private:
                       "5 error"
                       "1 0"
                       "1 0"
+                      "0 "
                       "8 test.cpp"
-                      "12 inconclusive"
+                      "1 1"
                       "17 Programming error"
                       "17 Programming error"
                       "0 ", msg_str);
@@ -373,6 +382,7 @@ private:
                                "5 error"
                                "7 invalid" // cwe
                                "1 0"
+                               "0 "
                                "8 test.cpp"
                                "17 Programming error"
                                "17 Programming error"
@@ -386,6 +396,8 @@ private:
                                "5 error"
                                "1 0"
                                "7 invalid" // hash
+                               "1 0"
+                               "0 "
                                "8 test.cpp"
                                "17 Programming error"
                                "17 Programming error"
@@ -399,6 +411,8 @@ private:
                                "5 error"
                                "5 65536" // max +1
                                "1 0"
+                               "1 0"
+                               "0 "
                                "8 test.cpp"
                                "17 Programming error"
                                "17 Programming error"
@@ -418,7 +432,9 @@ private:
                       "5 error"
                       "1 0"
                       "1 0"
+                      "0 "
                       "3 1.c"
+                      "1 0"
                       "33 Illegal character in \"foo\\001bar\""
                       "33 Illegal character in \"foo\\001bar\""
                       "0 ", msg_str);
@@ -444,7 +460,8 @@ private:
                       "1 0"
                       "1 0"
                       "0 "
-                      "12 inconclusive"
+                      "0 "
+                      "1 1"
                       "17 Programming error"
                       "17 Programming error"
                       "1 "
@@ -457,6 +474,14 @@ private:
         ASSERT_EQUALS(654, msg2.callStack.front().line);
         ASSERT_EQUALS(33, msg2.callStack.front().column);
         ASSERT_EQUALS("abcd:/,", msg2.callStack.front().getinfo());
+    }
+
+    void SerializeAndDeserializeRemark() const {
+        ErrorMessage msg({}, emptyString, Severity::warning, emptyString, "id", Certainty::normal);
+        msg.remark = "some remark";
+        ErrorMessage msg2;
+        ASSERT_NO_THROW(msg2.deserialize(msg.serialize()));
+        ASSERT_EQUALS("some remark", msg2.remark);
     }
 
     void substituteTemplateFormatStatic() const

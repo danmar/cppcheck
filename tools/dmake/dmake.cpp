@@ -376,15 +376,15 @@ static void write_ossfuzz_makefile(std::vector<std::string> libfiles_prio, std::
     fout << '\n';
     fout << "do-fuzz: oss-fuzz-client preprare-samples\n";
     fout << "\tmkdir -p corpus\n";
-    fout << "\t./oss-fuzz-client -only_ascii=1 -timeout=5 -detect_leaks=0 corpus samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout\n";
+    fout << "\t./oss-fuzz-client -only_ascii=1 -timeout=5 -detect_leaks=0 corpus samples ../test/cli/fuzz-crash ../test/cli/fuzz-crash_c ../test/cli/fuzz-timeout\n";
     fout << '\n';
     fout << "dedup-corpus: oss-fuzz-client preprare-samples\n";
     fout << "\tmv corpus corpus_\n";
     fout << "\tmkdir -p corpus\n";
-    fout << "\t./oss-fuzz-client -only_ascii=1 -timeout=5 -detect_leaks=0 corpus corpus_ samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout -merge=1\n";
+    fout << "\t./oss-fuzz-client -only_ascii=1 -timeout=5 -detect_leaks=0 corpus corpus_ samples ../test/cli/fuzz-crash ../test/cli/fuzz-crash_c ../test/cli/fuzz-timeout -merge=1\n";
     fout << '\n';
     fout << "# jobs:\n";
-    fout << "# ./oss-fuzz-client -only_ascii=1 -timeout=5 -detect_leaks=0 corpus samples ../test/cli/fuzz-crash ../test/cli/fuzz-timeout -workers=12 -jobs=9\n";
+    fout << "# ./oss-fuzz-client -only_ascii=1 -timeout=5 -detect_leaks=0 corpus samples ../test/cli/fuzz-crash ../test/cli/fuzz-crash_c ../test/cli/fuzz-timeout -workers=12 -jobs=9\n";
     fout << '\n';
     fout << "# minimize:\n";
     fout << "# ./oss-fuzz-client -only_ascii=1 -timeout=5 -detect_leaks=0 -minimize_crash=1 crash-0123456789abcdef\n";
@@ -472,6 +472,7 @@ int main(int argc, char **argv)
     libfiles_h.emplace_back("tokenrange.h");
     libfiles_h.emplace_back("valueptr.h");
     libfiles_h.emplace_back("version.h");
+    libfiles_h.emplace_back("vf_analyze.h");
     libfiles_h.emplace_back("xml.h");
     std::sort(libfiles_h.begin(), libfiles_h.end());
 

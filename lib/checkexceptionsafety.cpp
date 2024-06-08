@@ -63,13 +63,13 @@ void CheckExceptionSafety::destructors()
             for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
                 // Skip try blocks
                 if (Token::simpleMatch(tok, "try {")) {
-                    tok = tok->next()->link();
+                    tok = tok->linkAt(1);
                 }
 
                 // Skip uncaught exceptions
                 else if (Token::simpleMatch(tok, "if ( ! std :: uncaught_exception ( ) ) {")) {
-                    tok = tok->next()->link(); // end of if ( ... )
-                    tok = tok->next()->link(); // end of { ... }
+                    tok = tok->linkAt(1); // end of if ( ... )
+                    tok = tok->linkAt(1); // end of { ... }
                 }
 
                 // throw found within a destructor
@@ -183,8 +183,8 @@ void CheckExceptionSafety::checkRethrowCopy()
         const unsigned int varid = scope.bodyStart->tokAt(-2)->varId();
         if (varid) {
             for (const Token* tok = scope.bodyStart->next(); tok && tok != scope.bodyEnd; tok = tok->next()) {
-                if (Token::simpleMatch(tok, "catch (") && tok->next()->link() && tok->next()->link()->next()) { // Don't check inner catch - it is handled in another iteration of outer loop.
-                    tok = tok->next()->link()->next()->link();
+                if (Token::simpleMatch(tok, "catch (") && tok->linkAt(1) && tok->linkAt(1)->next()) { // Don't check inner catch - it is handled in another iteration of outer loop.
+                    tok = tok->linkAt(1)->linkAt(1);
                     if (!tok)
                         break;
                 } else if (Token::Match(tok, "%varid% .", varid)) {

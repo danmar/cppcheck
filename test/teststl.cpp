@@ -6738,6 +6738,21 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S {\n" // #12757
+              "    template<class T = int>\n"
+              "    void clear() {}\n"
+              "    template<class T = int>\n"
+              "    std::vector<T> get() const { return {}; }\n"
+              "    std::vector<int> m;\n"
+              "};\n"
+              "template<> void S::clear() { m.clear(); }\n"
+              "template<> std::vector<int> S::get() const {\n"
+              "    for (const auto& i : m) {}\n"
+              "    return {};\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout_str());
     }
 
     void checkMutexes() {

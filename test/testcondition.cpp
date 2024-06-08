@@ -4584,6 +4584,29 @@ private:
               "    return 1;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("namespace S { int s{}; };\n" // #11046
+              "void f(bool b) {\n"
+              "    if (S::s) {\n"
+              "        if (b) {\n"
+              "            if (S::s) {}\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'S::s' is always true\n", errout_str());
+
+        check("void f() {\n" // #10811
+              "    int i = 0;\n"
+              "    if ((i = g(), 1) != 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition '(i=g(),1)!=0' is always true\n", errout_str());
+
+        check("void f(unsigned i) {\n"
+              "    const int a[2] = {};\n"
+              "    const int* q = a + i;\n"
+              "    if (q) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'q' is always true\n", errout_str());
     }
 
     void alwaysTrueSymbolic()
