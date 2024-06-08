@@ -1638,6 +1638,9 @@ void CheckOther::checkConstPointer()
             if (p->isMaybeUnused())
                 continue;
         }
+        if (const Function* func = Scope::nestedInFunction(p->scope()))
+            if (func->templateDef)
+                continue;
         if (std::find(nonConstPointers.cbegin(), nonConstPointers.cend(), p) == nonConstPointers.cend()) {
             // const Token *start = getVariableChangedStart(p);
             // const int indirect = p->isArray() ? p->dimensions().size() : 1;
@@ -2912,7 +2915,7 @@ void CheckOther::checkRedundantCopy()
         if (Token::simpleMatch(dot, ".")) {
             const Token* varTok = dot->astOperand1();
             const int indirect = varTok->valueType() ? varTok->valueType()->pointer : 0;
-            if (isVariableChanged(tok, tok->scope()->bodyEnd, varTok->varId(), indirect, /*globalvar*/ false, *mSettings))
+            if (isVariableChanged(tok, tok->scope()->bodyEnd, indirect, varTok->varId(), /*globalvar*/ true, *mSettings))
                 continue;
             if (isTemporary(dot, &mSettings->library, /*unknown*/ true))
                 continue;

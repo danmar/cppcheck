@@ -1747,6 +1747,12 @@ struct ValueFlowAnalyzer : Analyzer {
                 indirect = vt->pointer;
                 if (vt->type == ValueType::ITERATOR)
                     ++indirect;
+                const Token* tok2 = tok;
+                while (Token::simpleMatch(tok2->astParent(), "[")) {
+                    tok2 = tok2->astParent();
+                    --indirect;
+                }
+                indirect = std::max(indirect, 0);
             }
         }
         for (int i = 0; i <= indirect; ++i)

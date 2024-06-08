@@ -22,7 +22,8 @@ jobs:
 
   build:
     runs-on: ubuntu-22.04 # run on the latest image only
-
+    # FIXME: enable after update
+    if: false
     steps:
       - uses: actions/checkout@v3
 
