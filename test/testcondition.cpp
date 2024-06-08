@@ -4608,7 +4608,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'q' is always true\n", errout_str());
 
-        check("void f(int i) {\n" 
+        check("void f(int i) {\n"
               "    int j = 0;\n"
               "    switch (i) {\n"
               "    case 1:\n"
