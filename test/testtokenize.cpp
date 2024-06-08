@@ -7108,6 +7108,8 @@ private:
         // Ticket #9664
         ASSERT_NO_THROW(tokenizeAndStringify("S s = { .x { 2 }, .y[0] { 3 } };"));
 
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("f(0, .x());"), SYNTAX); // #12823
+
         // Ticket #11134
         ASSERT_NO_THROW(tokenizeAndStringify("struct my_struct { int x; }; "
                                              "std::string s; "
