@@ -324,6 +324,7 @@ void internalError_libraryDirectionConfiguration(char* str) { // #12824
     const char* s = str;
     char* end = str;
     if (1) {
+        // cppcheck-suppress unreadVariable
         unsigned long val = strtoul(&s[1], &end, 10);
     }
 }
