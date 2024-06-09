@@ -5070,3 +5070,8 @@ void constVariablePointer_push_back(std::vector<T*>& d, const std::vector<T*>& s
         d.push_back(newE);
     }
 }
+
+// cppcheck-suppress constParameterReference
+void constParameterReference_push_back(std::vector<std::string>& v, std::string& s) { // #12661
+    v.push_back(s);
+}

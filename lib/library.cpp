@@ -1512,7 +1512,7 @@ Library::ArgumentChecks::Direction Library::getArgDirection(const Token* ftok, i
     const ArgumentChecks* arg = getarg(ftok, argnr);
     if (arg) {
         if (indirect < 0 || indirect >= arg->direction.size())
-            throw InternalError(ftok, "Bad indirect value: " + std::to_string(indirect));
+            return ArgumentChecks::Direction::DIR_UNKNOWN; // TODO: don't generate bad indirect values
         return arg->direction[indirect];
     }
     if (formatstr_function(ftok)) {
