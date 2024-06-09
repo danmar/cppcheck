@@ -320,6 +320,14 @@ void bufferAccessOutOfBounds_libraryDirectionConfiguration(void)
     arr[c] = 'x';
 }
 
+void internalError_libraryDirectionConfiguration(char* str) { // #12824
+    const char* s = str;
+    char* end = str;
+    if (1) {
+        unsigned long val = strtoul(&s[1], &end, 10);
+    }
+}
+
 void arrayIndexOutOfBounds()
 {
     char * pAlloc1 = aligned_alloc(8, 16);
