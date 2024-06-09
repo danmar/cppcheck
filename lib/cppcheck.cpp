@@ -1461,7 +1461,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
     }
 }
 
-void CppCheck::executeAddonsWholeProgram(const std::list<std::pair<std::string, std::size_t>> &files)
+void CppCheck::executeAddonsWholeProgram(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings)
 {
     if (mSettings.addons.empty())
         return;
@@ -1470,6 +1470,15 @@ void CppCheck::executeAddonsWholeProgram(const std::list<std::pair<std::string, 
     for (const auto &f: files) {
         const std::string &dumpFileName = getDumpFileName(mSettings, f.first);
         ctuInfoFiles.push_back(getCtuInfoFileName(dumpFileName));
+    }
+
+    for (const auto &f: fileSettings) { // --project
+        const std::string &dumpFileName = getDumpFileName(mSettings, f.filename);
+        
+        // ignore duplciates
+        auto it = std::find(ctuInfoFiles.begin(), ctuInfoFiles.end(), getCtuInfoFileName(dumpFileName));
+        if (it == ctuInfoFiles.end())
+            ctuInfoFiles.push_back(getCtuInfoFileName(dumpFileName));
     }
 
     try {

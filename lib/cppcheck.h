@@ -192,7 +192,7 @@ private:
     /**
      * Execute addons
      */
-    void executeAddonsWholeProgram(const std::list<std::pair<std::string, std::size_t>> &files);
+    void executeAddonsWholeProgram(const std::list<std::pair<std::string, std::size_t>> &files, const std::list<FileSettings>& fileSettings);
 
 #ifdef HAVE_RULES
     /**
