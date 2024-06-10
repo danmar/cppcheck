@@ -447,6 +447,13 @@ function cppunit_fn {
     fi
 }
 
+# emscripten.cpp
+function emscripten_fn {
+    # TODO: Syntax check via g++ does not work because it can not find a valid emscripten.h
+    # ${CXX} "${CXX_OPT[@]}" ${DIR}emscripten.cpp
+    true
+}
+
 function check_file {
     f=$(basename "$1")
     lib="${f%%.*}"
@@ -465,6 +472,10 @@ function check_file {
             ;;
         cppunit.cpp)
             cppunit_fn
+            "${CPPCHECK}" "${CPPCHECK_OPT[@]}" --library="$lib" "${DIR}""$f"
+            ;;
+        emscripten.cpp)
+            emscripten_fn
             "${CPPCHECK}" "${CPPCHECK_OPT[@]}" --library="$lib" "${DIR}""$f"
             ;;
         gnu.c)
