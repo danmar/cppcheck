@@ -327,7 +327,7 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *
                 if (parent->variable() && parent->variable()->type() && parent->variable()->type()->isUnionType() && parent->varId() == expr->varId()) {
                     while (parent && Token::simpleMatch(parent->astParent(), "."))
                         parent = parent->astParent();
-                    if (parent && parent->valueType() && Token::Match(parent->astParent(), "%assign%") && !Token::Match(parent->astParent()->astParent(), "%assign%") && parent->astParent()->astOperand1() == parent) {
+                    if (parent && parent->valueType() && Token::simpleMatch(parent->astParent(), "=") && !Token::Match(parent->astParent()->astParent(), "%assign%") && parent->astParent()->astOperand1() == parent) {
                         const Token * assignment = parent->astParent()->astOperand2();
                         while (Token::simpleMatch(assignment, ".") && assignment->varId() != expr->varId())
                             assignment = assignment->astOperand1();

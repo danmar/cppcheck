@@ -4535,8 +4535,7 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         // Ticket #10093 "redundantAssignment when using a union"
-        check("#include <stdio.h>\n"
-              "typedef union{\n"
+        check("typedef union{\n"
               "    char as_char[4];\n"
               "    int as_int;\n"
               "} union_t;\n"
@@ -4550,6 +4549,17 @@ private:
               "    u.as_int = 42;\n"
               "    fn(&u.as_char[0], 4);\n"
               "    u.as_int = 0;\n"
+              "}", true, false, false);
+        ASSERT_EQUALS("", errout_str());
+
+        // Ticket #5115 "redundantAssignment when using a union"
+        check("void foo(char *ptr) {\n"
+              "    union {\n"
+              "        char * s8;\n"
+              "        unsigned long long u64;\n"
+              "    } addr;\n"
+              "    addr.s8 = ptr;\n"
+              "    addr.u64 += 8;\n"
               "}", true, false, false);
         ASSERT_EQUALS("", errout_str());
     }
