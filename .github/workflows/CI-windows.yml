@@ -32,7 +32,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Visual Studio environment
         uses: ilammy/msvc-dev-cmd@v1
@@ -84,7 +84,7 @@ jobs:
       PCRE_VERSION: 8.45
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python 3.12.3
         if: matrix.config == 'release'

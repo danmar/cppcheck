@@ -25,7 +25,7 @@ jobs:
     # FIXME: enable after update
     if: false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Download cppcheckpremium
         run: |
