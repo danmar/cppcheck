@@ -172,12 +172,12 @@ private:
 
     /**
      * @brief Check a file using stream
-     * @param filename file name
+     * @param file the file
      * @param cfgname  cfg name
      * @param fileStream stream the file content can be read from
      * @return number of errors found
      */
-    unsigned int checkFile(const std::string& filename, const std::string &cfgname, std::istream* fileStream = nullptr);
+    unsigned int checkFile(const FileWithDetails& file, const std::string &cfgname, std::istream* fileStream = nullptr);
 
     /**
      * @brief Check normal tokens
@@ -189,7 +189,7 @@ private:
      * Execute addons
      */
     void executeAddons(const std::vector<std::string>& files, const std::string& file0);
-    void executeAddons(const std::string &dumpFile, const std::string& file0);
+    void executeAddons(const std::string &dumpFile, const FileWithDetails& file);
 
     /**
      * Execute addons
@@ -205,7 +205,7 @@ private:
     void executeRules(const std::string &tokenlist, const TokenList &list);
 #endif
 
-    unsigned int checkClang(const std::string &path);
+    unsigned int checkClang(const FileWithDetails &file);
 
     /**
      * @brief Errors and warnings are directed here.

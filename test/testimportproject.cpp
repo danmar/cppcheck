@@ -69,7 +69,7 @@ private:
     }
 
     void setDefines() const {
-        FileSettings fs{""};
+        FileSettings fs{"test.cpp"};
 
         ImportProject::fsSetDefines(fs, "A");
         ASSERT_EQUALS("A=1", fs.defines);
@@ -85,7 +85,7 @@ private:
     }
 
     void setIncludePaths1() const {
-        FileSettings fs{""};
+        FileSettings fs{"test.cpp"};
         std::list<std::string> in(1, "../include");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         ImportProject::fsSetIncludePaths(fs, "abc/def/", in, variables);
@@ -94,7 +94,7 @@ private:
     }
 
     void setIncludePaths2() const {
-        FileSettings fs{""};
+        FileSettings fs{"test.cpp"};
         std::list<std::string> in(1, "$(SolutionDir)other");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         variables["SolutionDir"] = "c:/abc/";
@@ -104,7 +104,7 @@ private:
     }
 
     void setIncludePaths3() const { // macro names are case insensitive
-        FileSettings fs{""};
+        FileSettings fs{"test.cpp"};
         std::list<std::string> in(1, "$(SOLUTIONDIR)other");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         variables["SolutionDir"] = "c:/abc/";

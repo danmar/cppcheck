@@ -37,6 +37,7 @@ class Tokenizer;
 class ErrorMessage;
 class ErrorLogger;
 enum class Certainty;
+class FileWithDetails;
 
 /** @brief class for handling suppressions */
 class CPPCHECKLIB SuppressionList {
@@ -227,7 +228,7 @@ public:
      * @brief Returns list of unmatched local (per-file) suppressions.
      * @return list of unmatched suppressions
      */
-    std::list<Suppression> getUnmatchedLocalSuppressions(const std::string &file, const bool unusedFunctionChecking) const;
+    std::list<Suppression> getUnmatchedLocalSuppressions(const FileWithDetails &file, const bool unusedFunctionChecking) const;
 
     /**
      * @brief Returns list of unmatched global (glob pattern) suppressions.
