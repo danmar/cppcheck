@@ -23,13 +23,6 @@ def create_compile_commands():
     with open('proj2/' + COMPILE_COMMANDS_JSON, 'wt') as f:
         f.write(json.dumps(j))
 
-# Run Cppcheck from project path
-def cppcheck_local(args):
-    cwd = os.getcwd()
-    os.chdir('proj2')
-    ret, stdout, stderr = cppcheck(args)
-    os.chdir(cwd)
-    return ret, stdout, stderr
 
 def test_file_filter():
     ret, stdout, _ = cppcheck(['proj2/','--file-filter=proj2/a/*'])
@@ -43,7 +36,7 @@ def test_file_filter():
 
 def test_local_path():
     create_compile_commands()
-    ret, stdout, _ = cppcheck_local(['--project=compile_commands.json'])
+    ret, stdout, _ = cppcheck(['--project=compile_commands.json'], cwd='proj2')
     file1 = os.path.join('a', 'a.c')
     file2 = os.path.join('b', 'b.c')
     assert ret == 0, stdout
@@ -52,13 +45,13 @@ def test_local_path():
 
 def test_local_path_force():
     create_compile_commands()
-    ret, stdout, _ = cppcheck_local(['--project=compile_commands.json', '--force'])
+    ret, stdout, _ = cppcheck(['--project=compile_commands.json', '--force'], cwd='proj2')
     assert ret == 0, stdout
     assert stdout.find('AAA') >= 0
 
 def test_local_path_maxconfigs():
     create_compile_commands()
-    ret, stdout, _ = cppcheck_local(['--project=compile_commands.json', '--max-configs=2'])
+    ret, stdout, _ = cppcheck(['--project=compile_commands.json', '--max-configs=2'], cwd='proj2')
     assert ret == 0, stdout
     assert stdout.find('AAA') >= 0
 
