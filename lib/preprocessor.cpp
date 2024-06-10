@@ -954,14 +954,16 @@ std::size_t Preprocessor::calculateHash(const simplecpp::TokenList &tokens1, con
     for (const simplecpp::Token *tok = tokens1.cfront(); tok; tok = tok->next) {
         if (!tok->comment) {
             hashData += tok->str();
-            hashData += tok->location.line / tok->location.col;
+            hashData += static_cast<char>(tok->location.line);
+            hashData += static_cast<char>(tok->location.col);
         }
     }
     for (std::map<std::string, simplecpp::TokenList *>::const_iterator it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
         for (const simplecpp::Token *tok = it->second->cfront(); tok; tok = tok->next) {
             if (!tok->comment) {
                 hashData += tok->str();
-                hashData += tok->location.line / tok->location.col;
+                hashData += static_cast<char>(tok->location.line);
+                hashData += static_cast<char>(tok->location.col);
             }
         }
     }
