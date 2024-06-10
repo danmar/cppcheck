@@ -5075,3 +5075,14 @@ void constVariablePointer_push_back(std::vector<T*>& d, const std::vector<T*>& s
 void constParameterReference_push_back(std::vector<std::string>& v, std::string& s) { // #12661
     v.push_back(s);
 }
+
+// cppcheck-suppress constParameterReference
+void constParameterReference_assign(std::vector<int>& v, int& r) {
+    v.assign(5, r);
+}
+
+// cppcheck-suppress constParameterReference
+void constParameterReference_insert(std::list<int>& l, int& r) {
+    l.insert(l.end(), r);
+    l.insert(l.end(), 5, r);
+}
