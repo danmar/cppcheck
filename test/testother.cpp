@@ -4552,6 +4552,27 @@ private:
               "    u.as_int = 0;\n"
               "}", true, false, false);
         ASSERT_EQUALS("", errout_str());
+
+        // Ticket #5115 "redundantAssignment when using a union"
+        check("#include <stdio.h>\n"
+              "typedef union{\n"
+              "    char as_char[4];\n"
+              "    int as_int;\n"
+              "} union_t;\n"
+              "void fn(char *data, int len) {\n"
+              "    int i;\n"
+              "    for (i = 0; i < len; i++)\n"
+              "        data[i] = 'a';\n"
+              "}\n"
+              "void foo(char *ptr) {\n"
+              "    union {\n"
+              "        char * s8;\n"
+              "        unsigned long long u64;\n"
+              "    } addr;\n"
+              "    addr.s8 = ptr;\n"
+              "    addr.u64 += 8;\n"
+              "}", true, false, false);
+        ASSERT_EQUALS("", errout_str());
     }
 
     void switchRedundantOperationTest() {
