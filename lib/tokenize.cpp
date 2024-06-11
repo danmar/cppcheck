@@ -116,7 +116,7 @@ static bool isClassStructUnionEnumStart(const Token * tok)
 //---------------------------------------------------------------------------
 
 Tokenizer::Tokenizer(const Settings &settings, ErrorLogger &errorLogger) :
-    list(&settings),
+    list(settings),
     mSettings(settings),
     mErrorLogger(errorLogger),
     mTemplateSimplifier(new TemplateSimplifier(*this))
