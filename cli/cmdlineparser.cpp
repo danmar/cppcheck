@@ -23,7 +23,6 @@
 #include "color.h"
 #include "config.h"
 #include "cppcheck.h"
-#include "cppcheckexecutor.h"
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "filelister.h"
@@ -637,7 +636,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     return Result::Fail;
                 }
                 mSettings.exceptionHandling = true;
-                CppCheckExecutor::setExceptionOutput((exceptionOutfilename == "stderr") ? stderr : stdout);
+                mSettings.exceptionOutput = (exceptionOutfilename == "stderr") ? stderr : stdout;
 #else
                 mLogger.printError("Option --exception-handling is not supported since Cppcheck has not been built with any exception handling enabled.");
                 return Result::Fail;

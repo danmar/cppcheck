@@ -26,6 +26,8 @@
 class CppCheckExecutor;
 class Settings;
 
+void set_seh_output(FILE* f);
+
 int check_wrapper_seh(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(const Settings&) const, const Settings& settings);
 
 #endif
