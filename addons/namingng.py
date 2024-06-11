@@ -36,7 +36,6 @@ import cppcheckdata
 import sys
 import os
 import re
-import argparse
 import json
 
 # Auxiliary class

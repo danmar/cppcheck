@@ -1,7 +1,6 @@
 
 # python -m pytest test-suppress-syntaxError.py
 
-import pytest
 from testutils import cppcheck
 
 def test_j():

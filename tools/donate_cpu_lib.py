@@ -16,7 +16,7 @@ import copy
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.59"
+CLIENT_VERSION = "1.3.60"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -72,6 +72,7 @@ def check_requirements():
             result = False
 
     try:
+        # pylint: disable-next=unused-import - intentional
         import psutil
     except ImportError as e:
         print("Error: {}. Module is required.".format(e))
