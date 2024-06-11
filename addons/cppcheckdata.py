@@ -1293,7 +1293,7 @@ class CppcheckData:
                 if event == 'start':
                     cfg = Configuration(node.get('cfg'))
                     continue
-                elif event == 'end':
+                if event == 'end':
                     cfg.setIdMap(cfg_arguments)
                     yield cfg
                     cfg = None
@@ -1353,7 +1353,7 @@ class CppcheckData:
                 if event == 'start':
                     cfg_function = Function(node, cfg.scopes[-1])
                     continue
-                elif event == 'end':
+                if event == 'end':
                     cfg.functions.append(cfg_function)
                     cfg_function = None
 
@@ -1397,7 +1397,7 @@ class CppcheckData:
                 if event == 'start':
                     cfg_valueflow = ValueFlow(node)
                     continue
-                elif event == 'end':
+                if event == 'end':
                     cfg.valueflow.append(cfg_valueflow)
                     cfg_valueflow = None
 

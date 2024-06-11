@@ -60,7 +60,6 @@ disable=
         consider-using-min-builtin,
         comparison-with-itself,
         too-many-return-statements,
-        no-else-continue,
         inconsistent-return-statements,
         consider-using-in,
         too-many-nested-blocks,

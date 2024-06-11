@@ -462,7 +462,7 @@ def generate_package_diff_statistics(filename: str) -> None:
         if line == 'diff:':
             is_diff = True
             continue
-        elif not is_diff:
+        if not is_diff:
             continue
         if not line.endswith(']'):
             continue
@@ -783,7 +783,7 @@ def timeReport(resultPath: str, show_gt: bool, query_params: dict):
             if datestr is None and line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
                 continue
-            elif pkgs is not None and package_url is None and line.startswith('ftp://'):
+            if pkgs is not None and package_url is None and line.startswith('ftp://'):
                 package_url = line
             if not line.startswith('elapsed-time:'):
                 continue
@@ -883,7 +883,7 @@ def timeReportSlow(resultPath: str) -> str:
             if datestr is None and line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
                 continue
-            elif line.startswith('count:'):
+            if line.startswith('count:'):
                 count_head = line.split()[1]
                 if count_head == 'TO!':
                     # ignore results with timeouts
@@ -1379,13 +1379,13 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             newThread = HttpClientThread(connection, cmd, resultPath, latestResults)
             newThread.start()
             continue
-        elif cmd == 'GetCppcheckVersions\n':
+        if cmd == 'GetCppcheckVersions\n':
             reply = 'head ' + OLD_VERSION
             print_ts('GetCppcheckVersions: ' + reply)
             connection.send(reply.encode('utf-8', 'ignore'))
             connection.close()
             continue
-        elif cmd == 'get\n':
+        if cmd == 'get\n':
             while True:
                 pkg = packages[packageIndex]
                 packageIndex += 1
@@ -1401,7 +1401,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             connection.send(pkg.encode('utf-8', 'ignore'))
             connection.close()
             continue
-        elif cmd.startswith('write\nftp://') or cmd.startswith('write\nhttp://'):
+        if cmd.startswith('write\nftp://') or cmd.startswith('write\nhttp://'):
             t_start = time.perf_counter()
             data = read_data(connection, cmd, pos_nl, max_data_size=1024 * 1024, check_done=True, cmd_name='write')
             if data is None:
@@ -1462,7 +1462,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             generate_package_diff_statistics(filename)
             print_ts('write finished for {} ({} bytes / {}s)'.format(res.group(1), len(data), (time.perf_counter() - t_start)))
             continue
-        elif cmd.startswith('write_info\nftp://') or cmd.startswith('write_info\nhttp://'):
+        if cmd.startswith('write_info\nftp://') or cmd.startswith('write_info\nhttp://'):
             t_start = time.perf_counter()
             data = read_data(connection, cmd, pos_nl, max_data_size=7 * 1024 * 1024, check_done=True, cmd_name='write_info')
             if data is None:
@@ -1501,13 +1501,13 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 f.write(strDateTime() + '\n' + data)
             print_ts('write_info finished for {} ({} bytes / {}s)'.format(res.group(1), len(data), (time.perf_counter() - t_start)))
             continue
-        elif cmd == 'getPackagesCount\n':
+        if cmd == 'getPackagesCount\n':
             packages_count = str(len(packages))
             connection.send(packages_count.encode('utf-8', 'ignore'))
             print_ts('getPackagesCount: ' + packages_count)
             connection.close()
             continue
-        elif cmd.startswith('getPackageIdx'):
+        if cmd.startswith('getPackageIdx'):
             request_idx = abs(int(cmd[len('getPackageIdx:'):]))
             if request_idx < len(packages):
                 pkg = packages[request_idx]
@@ -1517,7 +1517,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 print_ts('getPackageIdx: index {} is out of range'.format(request_idx))
             connection.close()
             continue
-        elif cmd.startswith('write_nodata\nftp://'):
+        if cmd.startswith('write_nodata\nftp://'):
             data = read_data(connection, cmd, pos_nl, max_data_size=8 * 1024, check_done=False, cmd_name='write_nodata')
             if data is None:
                 continue
@@ -1549,17 +1549,17 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                     print_ts('write_nodata:' + url + ' - package not found')
                     break
             continue
+
+        if pos_nl < 0:
+            print_ts('invalid command: "' + firstLine + '"')
         else:
-            if pos_nl < 0:
-                print_ts('invalid command: "' + firstLine + '"')
-            else:
-                lines = cmd.split('\n')
-                s = '\\n'.join(lines[:2])
-                if len(lines) > 2:
-                    s += '...'
-                print_ts('invalid command: "' + s + '"')
-            connection.close()
-            continue
+            lines = cmd.split('\n')
+            s = '\\n'.join(lines[:2])
+            if len(lines) > 2:
+                s += '...'
+            print_ts('invalid command: "' + s + '"')
+        connection.close()
+        continue
 
 
 if __name__ == "__main__":

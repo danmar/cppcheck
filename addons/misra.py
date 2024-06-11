@@ -1692,8 +1692,7 @@ class MisraChecker:
                 if (isHexEscapeSequence(sequence) or isOctalEscapeSequence(sequence) or
                         isSimpleEscapeSequence(sequence)):
                     continue
-                else:
-                    self.reportError(token, 4, 1)
+                self.reportError(token, 4, 1)
 
     def misra_4_2(self, rawTokens):
         for token in rawTokens:
@@ -2809,7 +2808,7 @@ class MisraChecker:
                     while expr.str not in (";", "{", "}"):
                         expr = expr.next
                     continue
-                elif known_value == 0:
+                if known_value == 0:
                     expr = expr.astOperand2
             self.misra_12_4_check_expr(expr)
 
@@ -2832,8 +2831,7 @@ class MisraChecker:
                     if tn and tn.next and tn.next.str == '=':
                         tn = tn.next.next
                         continue
-                    else:
-                        break
+                    break
                 if tn.str == '.' and tn.next and tn.next.isName:
                     tn = tn.next
                     if tn.next and tn.next.str == '=':
@@ -4429,9 +4427,9 @@ class MisraChecker:
 
                 if severity_loc < 2:
                     continue
-                else:
-                    rule.misra_severity = ''
-                    have_severity = True
+
+                rule.misra_severity = ''
+                have_severity = True
 
             if rule is None:
                 continue
