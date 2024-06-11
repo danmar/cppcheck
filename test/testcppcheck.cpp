@@ -102,7 +102,7 @@ private:
 
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(errorLogger, false, {});
-        ASSERT_EQUALS(1, cppcheck.check(file.path()));
+        ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(file.path())));
         // TODO: how to properly disable these warnings?
         errorLogger.ids.erase(std::remove_if(errorLogger.ids.begin(), errorLogger.ids.end(), [](const std::string& id) {
             return id == "logChecker";
@@ -146,7 +146,7 @@ private:
         const char xmldata[] = R"(<def format="2"><markup ext=".cpp" reporterrors="false"/></def>)";
         const Settings s = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
         cppcheck.settings() = s;
-        ASSERT_EQUALS(0, cppcheck.check(file.path()));
+        ASSERT_EQUALS(0, cppcheck.check(FileWithDetails(file.path())));
         // TODO: how to properly disable these warnings?
         errorLogger.ids.erase(std::remove_if(errorLogger.ids.begin(), errorLogger.ids.end(), [](const std::string& id) {
             return id == "logChecker";
@@ -169,8 +169,8 @@ private:
 
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(errorLogger, false, {});
-        ASSERT_EQUALS(1, cppcheck.check(test_file_a.path()));
-        ASSERT_EQUALS(1, cppcheck.check(test_file_b.path()));
+        ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(test_file_a.path())));
+        ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(test_file_b.path())));
         // TODO: how to properly disable these warnings?
         errorLogger.errmsgs.erase(std::remove_if(errorLogger.errmsgs.begin(), errorLogger.errmsgs.end(), [](const ErrorMessage& msg) {
             return msg.id == "logChecker";

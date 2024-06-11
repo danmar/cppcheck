@@ -23,6 +23,7 @@
 #include <iostream>
 
 #include "cppcheck.h"
+#include "filesettings.h"
 #include "version.h"
 
 static void unencode(const char *src, char *dest)
@@ -59,7 +60,7 @@ public:
     }
 
     void run(const char code[]) {
-        cppcheck.check("test.cpp", code);
+        cppcheck.check(FileWithDetails("test.cpp"), code);
     }
 
     void reportOut(const std::string & /*outmsg*/, Color /*c*/) override {}

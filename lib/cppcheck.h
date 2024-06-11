@@ -83,12 +83,12 @@ public:
     /**
      * @brief Check the file.
      * This function checks one given file for errors.
-     * @param path Path to the file to check.
+     * @param file The file to check.
      * @return amount of errors found or 0 if none were found.
      * @note You must set settings before calling this function (by calling
      *  settings()).
      */
-    unsigned int check(const std::string &path);
+    unsigned int check(const FileWithDetails &file);
     unsigned int check(const FileSettings &fs);
 
     /**
@@ -96,13 +96,13 @@ public:
      * This function checks one "virtual" file. The file is not read from
      * the disk but the content is given in @p content. In errors the @p path
      * is used as a filename.
-     * @param path Path to the file to check.
+     * @param file The file to check.
      * @param content File content as a string.
      * @return amount of errors found or 0 if none were found.
      * @note You must set settings before calling this function (by calling
      *  settings()).
      */
-    unsigned int check(const std::string &path, const std::string &content);
+    unsigned int check(const FileWithDetails &file, const std::string &content);
 
     /**
      * @brief Get reference to current settings.

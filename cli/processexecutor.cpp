@@ -286,7 +286,7 @@ unsigned int ProcessExecutor::check()
                         fileChecker.analyseClangTidy(*iFileSettings);
                 } else {
                     // Read file from a file
-                    resultOfCheck = fileChecker.check(iFile->path());
+                    resultOfCheck = fileChecker.check(*iFile);
                     // TODO: call analyseClangTidy()?
                 }
 

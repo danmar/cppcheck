@@ -47,6 +47,7 @@ private:
         TEST_CASE(identify);
         TEST_CASE(identifyWithCppProbe);
         TEST_CASE(is_header);
+        TEST_CASE(simplifyPath);
     }
 
     void removeQuotationMarks() const {
@@ -375,6 +376,49 @@ private:
         ASSERT(Path::isHeader("index.header")==false);
         ASSERT(Path::isHeader("index.htm")==false);
         ASSERT(Path::isHeader("index.html")==false);
+    }
+
+    void simplifyPath() const {
+        ASSERT_EQUALS("file.cpp", Path::simplifyPath("file.cpp"));
+        ASSERT_EQUALS("../file.cpp", Path::simplifyPath("../file.cpp"));
+        ASSERT_EQUALS("file.cpp", Path::simplifyPath("test/../file.cpp"));
+        ASSERT_EQUALS("../file.cpp", Path::simplifyPath("../test/../file.cpp"));
+
+        ASSERT_EQUALS("file.cpp", Path::simplifyPath("./file.cpp"));
+        ASSERT_EQUALS("../file.cpp", Path::simplifyPath("./../file.cpp"));
+        ASSERT_EQUALS("file.cpp", Path::simplifyPath("./test/../file.cpp"));
+        ASSERT_EQUALS("../file.cpp", Path::simplifyPath("./../test/../file.cpp"));
+
+        ASSERT_EQUALS("test/", Path::simplifyPath("test/"));
+        ASSERT_EQUALS("../test/", Path::simplifyPath("../test/"));
+        ASSERT_EQUALS("../", Path::simplifyPath("../test/.."));
+        ASSERT_EQUALS("../", Path::simplifyPath("../test/../"));
+
+        ASSERT_EQUALS("/home/file.cpp", Path::simplifyPath("/home/test/../file.cpp"));
+        ASSERT_EQUALS("/file.cpp", Path::simplifyPath("/home/../test/../file.cpp"));
+
+        ASSERT_EQUALS("C:/home/file.cpp", Path::simplifyPath("C:/home/test/../file.cpp"));
+        ASSERT_EQUALS("C:/file.cpp", Path::simplifyPath("C:/home/../test/../file.cpp"));
+
+        ASSERT_EQUALS("../file.cpp", Path::simplifyPath("..\\file.cpp"));
+        ASSERT_EQUALS("file.cpp", Path::simplifyPath("test\\..\\file.cpp"));
+        ASSERT_EQUALS("../file.cpp", Path::simplifyPath("..\\test\\..\\file.cpp"));
+
+        ASSERT_EQUALS("file.cpp", Path::simplifyPath(".\\file.cpp"));
+        ASSERT_EQUALS("../file.cpp", Path::simplifyPath(".\\..\\file.cpp"));
+        ASSERT_EQUALS("file.cpp", Path::simplifyPath(".\\test\\..\\file.cpp"));
+        ASSERT_EQUALS("../file.cpp", Path::simplifyPath(".\\..\\test\\..\\file.cpp"));
+
+        ASSERT_EQUALS("test/", Path::simplifyPath("test\\"));
+        ASSERT_EQUALS("../test/", Path::simplifyPath("..\\test\\"));
+        ASSERT_EQUALS("../", Path::simplifyPath("..\\test\\.."));
+        ASSERT_EQUALS("../", Path::simplifyPath("..\\test\\..\\"));
+
+        ASSERT_EQUALS("C:/home/file.cpp", Path::simplifyPath("C:\\home\\test\\..\\file.cpp"));
+        ASSERT_EQUALS("C:/file.cpp", Path::simplifyPath("C:\\home\\..\\test\\..\\file.cpp"));
+
+        ASSERT_EQUALS("//home/file.cpp", Path::simplifyPath("\\\\home\\test\\..\\file.cpp"));
+        ASSERT_EQUALS("//file.cpp", Path::simplifyPath("\\\\home\\..\\test\\..\\file.cpp"));
     }
 };
 

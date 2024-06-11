@@ -539,18 +539,18 @@ unsigned int CppCheck::checkClang(const std::string &path)
     return mExitCode;
 }
 
-unsigned int CppCheck::check(const std::string &path)
+unsigned int CppCheck::check(const FileWithDetails &file)
 {
     if (mSettings.clang)
-        return checkClang(Path::simplifyPath(path));
+        return checkClang(file.spath());
 
-    return checkFile(Path::simplifyPath(path), emptyString);
+    return checkFile(file.spath(), emptyString);
 }
 
-unsigned int CppCheck::check(const std::string &path, const std::string &content)
+unsigned int CppCheck::check(const FileWithDetails &file, const std::string &content)
 {
     std::istringstream iss(content);
-    return checkFile(Path::simplifyPath(path), emptyString, &iss);
+    return checkFile(file.spath(), emptyString, &iss);
 }
 
 unsigned int CppCheck::check(const FileSettings &fs)
@@ -578,12 +578,12 @@ unsigned int CppCheck::check(const FileSettings &fs)
     if (mSettings.clang) {
         temp.mSettings.includePaths.insert(temp.mSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
         // TODO: propagate back suppressions
-        const unsigned int returnValue = temp.check(Path::simplifyPath(fs.filename()));
+        const unsigned int returnValue = temp.check(fs.file);
         if (mUnusedFunctionsCheck)
             mUnusedFunctionsCheck->updateFunctionData(*temp.mUnusedFunctionsCheck);
         return returnValue;
     }
-    const unsigned int returnValue = temp.checkFile(Path::simplifyPath(fs.filename()), fs.cfg);
+    const unsigned int returnValue = temp.checkFile(fs.sfilename(), fs.cfg);
     mSettings.supprs.nomsg.addSuppressions(temp.mSettings.supprs.nomsg.getSuppressions());
     if (mUnusedFunctionsCheck)
         mUnusedFunctionsCheck->updateFunctionData(*temp.mUnusedFunctionsCheck);
@@ -612,8 +612,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     const Timer fileTotalTimer(mSettings.showtime == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL, filename);
 
     if (!mSettings.quiet) {
-        std::string fixedpath = Path::simplifyPath(filename);
-        fixedpath = Path::toNativeSeparators(std::move(fixedpath));
+        std::string fixedpath = Path::toNativeSeparators(filename);
         mErrorLogger.reportOut(std::string("Checking ") + fixedpath + ' ' + cfgname + std::string("..."), Color::FgGreen);
 
         if (mSettings.verbose) {
@@ -867,8 +866,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
                 // If only errors are printed, print filename after the check
                 if (!mSettings.quiet && (!mCurrentConfig.empty() || checkCount > 1)) {
-                    std::string fixedpath = Path::simplifyPath(filename);
-                    fixedpath = Path::toNativeSeparators(std::move(fixedpath));
+                    std::string fixedpath = Path::toNativeSeparators(filename);
                     mErrorLogger.reportOut("Checking " + fixedpath + ": " + mCurrentConfig + "...", Color::FgGreen);
                 }
 
@@ -973,7 +971,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             fdump.close();
         }
 
-        executeAddons(dumpFile, Path::simplifyPath(filename));
+        executeAddons(dumpFile, filename);
 
     } catch (const TerminateException &) {
         // Analysis is terminated
