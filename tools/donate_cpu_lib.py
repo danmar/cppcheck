@@ -299,6 +299,7 @@ def __remove_tree(folder_name):
         return
 
     def rmtree_func():
+        # pylint: disable=deprecated-argument - FIXME: onerror was deprecated in Python 3.12
         shutil.rmtree(folder_name, onerror=__handle_remove_readonly)
 
     print('Removing existing temporary data...')
