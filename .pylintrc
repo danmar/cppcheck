@@ -1,5 +1,5 @@
 [MESSAGES CONTROL]
-disable=C,R,
+disable=R,
         # W start
         redefined-builtin,
         broad-exception-caught,
@@ -25,10 +25,28 @@ disable=C,R,
         deprecated-module,
         pointless-string-statement,
         arguments-renamed,
-        duplicate-string-formatting-argument
-enable=trailing-whitespace,
-       mixed-line-endings,
-       literal-comparison
+        duplicate-string-formatting-argument,
+        # C start
+        consider-using-f-string,
+        invalid-name,
+        line-too-long,
+        missing-module-docstring,
+        missing-function-docstring,
+        import-outside-toplevel,
+        missing-class-docstring,
+        superfluous-parens,
+        too-many-lines,
+        trailing-newlines,
+        missing-final-newline,
+        unnecessary-negation,
+        use-implicit-booleaness-not-len,
+        wrong-import-order,
+        use-implicit-booleaness-not-comparison,
+        multiple-imports,
+        consider-using-enumerate,
+        unnecessary-lambda-assignment,
+        consider-using-dict-items,
+        consider-iterating-dictionary
 [REPORTS]
 reports=no
 [TYPECHECK]
