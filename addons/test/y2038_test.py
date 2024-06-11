@@ -81,6 +81,7 @@ def test_3_no_use_time_bits(capsys):
 
 
 def test_4_good(capsys):
+    # pylint: disable-next=unused-variable - FIXME
     is_safe = check_y2038_safe('./addons/test/y2038/y2038-test-4-good.c.dump', quiet=True)
     # assert(is_safe is True) # FIXME: This should be a "good" example returning "True" instead of "False"
     captured = capsys.readouterr()
