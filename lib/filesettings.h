@@ -25,6 +25,7 @@
 
 #include <list>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -37,17 +38,21 @@ public:
 
     FileWithDetails(std::string path, std::size_t size)
         : mPath(std::move(path))
+        , mPathSimplified(Path::simplifyPath(mPath))
         , mSize(size)
-    {}
+    {
+        if (mPath.empty())
+            throw std::runtime_error("empty path specified");
+    }
 
     const std::string& path() const
     {
         return mPath;
     }
 
-    std::string spath() const
+    const std::string& spath() const
     {
-        return Path::simplifyPath(mPath);
+        return mPathSimplified;
     }
 
     std::size_t size() const
@@ -56,6 +61,7 @@ public:
     }
 private:
     std::string mPath;
+    std::string mPathSimplified;
     std::size_t mSize;
 };
 
@@ -75,7 +81,8 @@ struct CPPCHECKLIB FileSettings {
     {
         return file.path();
     }
-    std::string sfilename() const
+    // cppcheck-suppress unusedFunction
+    const std::string& sfilename() const
     {
         return file.spath();
     }

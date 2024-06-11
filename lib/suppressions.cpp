@@ -20,6 +20,7 @@
 
 #include "errorlogger.h"
 #include "errortypes.h"
+#include "filesettings.h"
 #include "path.h"
 #include "utils.h"
 #include "token.h"
@@ -475,9 +476,8 @@ void SuppressionList::dump(std::ostream & out) const
     out << "  </suppressions>" << std::endl;
 }
 
-std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppressions(const std::string &file, const bool unusedFunctionChecking) const
+std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppressions(const FileWithDetails &file, const bool unusedFunctionChecking) const
 {
-    std::string tmpFile = Path::simplifyPath(file);
     std::list<Suppression> result;
     for (const Suppression &s : mSuppressions) {
         if (s.matched || ((s.lineNumber != Suppression::NO_LINE) && !s.checked))
@@ -490,7 +490,7 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppre
             continue;
         if (!unusedFunctionChecking && s.errorId == ID_UNUSEDFUNCTION)
             continue;
-        if (tmpFile.empty() || !s.isLocal() || s.fileName != tmpFile)
+        if (!s.isLocal() || s.fileName != file.spath())
             continue;
         result.push_back(s);
     }
