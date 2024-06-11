@@ -677,7 +677,7 @@ class Function:
         self.argumentId = {}
 
     def __repr__(self):
-        attrs = ["Id", "tokenId", "tokenDefId", "name", "type", "hasVirtualSpecifier", 
+        attrs = ["Id", "tokenId", "tokenDefId", "name", "type", "hasVirtualSpecifier",
                  "isImplicitlyVirtual", "access", "isInlineKeyword", "isStatic", 
                  "isAttributeNoreturn", "overriddenFunction", "nestedIn", "argumentId"]
         return "{}({})".format(
@@ -901,7 +901,7 @@ class Value:
         self.symbolic = IdMap.get(self._symbolicId)
 
     def __repr__(self):
-        attrs = ["intvalue", "tokvalue", "floatvalue", "movedvalue", "uninit", 
+        attrs = ["intvalue", "tokvalue", "floatvalue", "movedvalue", "uninit",
                  "bufferSize", "containerSize", "condition", "valueKind"]
         return "{}({})".format(
             "Value",
@@ -999,7 +999,7 @@ class Suppression:
             return True
         # Other Suppression (Globaly set via suppression file or cli command)
         if ((self.fileName is None or fnmatch(file, self.fileName))
-                and (self.suppressionType is None) 
+                and (self.suppressionType is None)
                 and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
                 and fnmatch(errorId, self.errorId)):
             return True

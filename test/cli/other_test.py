@@ -1463,7 +1463,7 @@ def test_filelist(tmpdir):
     ]
     assert len(expected), len(lines)
     for i in range(1, len(expected)+1):
-        lines.remove('{}/11 files checked 0% done'.format(i, len(expected)))
+        lines.remove('{}/{} files checked 0% done'.format(i, len(expected)))
     assert lines == expected
 
 

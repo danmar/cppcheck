@@ -691,6 +691,8 @@ class MatchCompiler:
         for line in srclines:
             if not modified:
                 line_orig = line
+            else:
+                line_orig = None
 
             linenr += 1
             # Compile Token::Match and Token::simpleMatch

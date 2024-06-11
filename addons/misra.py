@@ -2105,7 +2105,7 @@ class MisraChecker:
                 else:
                     self.insert_in_dict(extern_var_without_def, tok.str, tok)
             else:
-                 self.insert_in_dict(extern_var_without_def, var.nameToken.str, var.nameToken)
+                self.insert_in_dict(extern_var_without_def, var.nameToken.str, var.nameToken)
 
         for var in extern_var_with_def:
             if var not in extern_var_without_def:
