@@ -1,14 +1,11 @@
-
 # python -m pytest premium_test.py
 
-import logging
 import os
 import shutil
 import sys
 import time
-import pytest
 
-from testutils import cppcheck, assert_cppcheck, __lookup_cppcheck_exe
+from testutils import cppcheck, __lookup_cppcheck_exe
 
 PRODUCT_NAME = 'Cppcheck Premium ' + str(time.time())
 
@@ -18,11 +15,11 @@ def copy_cppcheck_premium(tmpdir):
 
     # add minimum cfg/std.cfg
     test_cfg_folder = tmpdir.mkdir('cfg')
-    with open(test_cfg_folder.join('std.cfg'), 'wt') as f:
+    with open(test_cfg_folder.join('std.cfg'), 'w') as f:
         f.write('<?xml version="1.0"?>\n<def format="2"/>')
 
     # add simple cppcheck.cfg
-    with open(tmpdir.join('cppcheck.cfg'), 'wt') as f:
+    with open(tmpdir.join('cppcheck.cfg'), 'w') as f:
         f.write("""
                 {
                     "addons": [],
@@ -41,7 +38,7 @@ def test_misra_c_builtin_style_checks(tmpdir):
         return
 
     test_file = os.path.join(tmpdir, 'test.cpp')
-    with open(test_file, 'wt') as f:
+    with open(test_file, 'w') as f:
         f.write('void foo() { int x; y = 0; }')
 
     exe = copy_cppcheck_premium(tmpdir)

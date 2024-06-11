@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import io
 import os
 import sys
 import re
@@ -189,8 +188,8 @@ class MatchCompiler:
         elif (len(tok) > 2) and (tok[0] == "%"):
             print("unhandled:" + tok)
         elif tok in tokTypes:
-            cond = ' || '.join(['tok->tokType() == Token::{}'.format(tokType) for tokType in tokTypes[tok]])
-            return '(({cond}) && tok->str() == MatchCompiler::makeConstString("{tok}"))'.format(cond=cond, tok=tok)
+            cond = ' || '.join([f'tok->tokType() == Token::{tokType}' for tokType in tokTypes[tok]])
+            return f'(({cond}) && tok->str() == MatchCompiler::makeConstString("{tok}"))'
         return (
             '(tok->str() == MatchCompiler::makeConstString("' + tok + '"))'
         )
@@ -679,11 +678,11 @@ class MatchCompiler:
     def convertFile(self, srcname, destname, line_directive):
         self._reset()
 
-        fin = io.open(srcname, "rt", encoding="utf-8")
+        fin = open(srcname, encoding="utf-8")
         srclines = fin.readlines()
         fin.close()
 
-        code = u''
+        code = ''
 
         modified = False
 
@@ -708,22 +707,22 @@ class MatchCompiler:
             code += line
 
         # Compute matchFunctions
-        strFunctions = u''
+        strFunctions = ''
         for function in self._rawMatchFunctions:
             strFunctions += function
 
-        lineno = u''
+        lineno = ''
         if line_directive:
-            lineno = u'#line 1 "' + srcname + '"\n'
+            lineno = '#line 1 "' + srcname + '"\n'
 
-        header = u'#include "matchcompiler.h"\n'
-        header += u'#include <string>\n'
-        header += u'#include <cstring>\n'
+        header = '#include "matchcompiler.h"\n'
+        header += '#include <string>\n'
+        header += '#include <cstring>\n'
         if len(self._rawMatchFunctions):
-            header += u'#include "errorlogger.h"\n'
-            header += u'#include "token.h"\n'
+            header += '#include "errorlogger.h"\n'
+            header += '#include "token.h"\n'
 
-        fout = io.open(destname, 'wt', encoding="utf-8")
+        fout = open(destname, 'w', encoding="utf-8")
         if modified or len(self._rawMatchFunctions):
             fout.write(header)
             fout.write(strFunctions)

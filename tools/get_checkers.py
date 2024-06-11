@@ -30,20 +30,20 @@ namespace checkers {
     const std::map<std::string, std::string> allCheckers{""" % (datetime.date.today().year,))
 
 for filename in glob.glob(os.path.expanduser('~/cppchecksolutions/cppcheck/lib/*.cpp')):
-    for line in open(filename,'rt'):
+    for line in open(filename):
         res = re.match(r'[ \t]*logChecker\(\s*"([:_a-zA-Z0-9]+)"\s*\);.*', line)
         if res is None:
             continue
         req = ''
         if line.find('//')>0:
             req = line[line.find('//')+2:].strip()
-        print('        {"%s","%s"},' % (res.group(1), req))
+        print('        {{"{}","{}"}},'.format(res.group(1), req))
 print("    };\n")
 
 print('    const std::map<std::string, std::string> premiumCheckers{')
 premium_checkers = []
 for filename in sorted(glob.glob(os.path.expanduser('~/cppchecksolutions/addon/src/*.cpp'))):
-    for line in open(filename,'rt'):
+    for line in open(filename):
         res = re.match(r'[ \t]*logChecker\("([^"]+)"\);.*', line)
         if res is None:
             continue
@@ -51,7 +51,7 @@ for filename in sorted(glob.glob(os.path.expanduser('~/cppchecksolutions/addon/s
             req = line[line.find('//')+2:].strip()
         else:
             req = ''
-        premium_checkers.append('        {"%s","%s"}' % (res.group(1), req))
+        premium_checkers.append('        {{"{}","{}"}}'.format(res.group(1), req))
 print(',\n'.join(sorted(premium_checkers)))
 print('    };')
 

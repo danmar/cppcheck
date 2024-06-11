@@ -41,7 +41,7 @@ def getpackages():
     if not wget('ls-lR.gz'):
         return []
     subprocess.call(['nice', 'gunzip', 'ls-lR.gz'])
-    f = open('ls-lR', 'rt')
+    f = open('ls-lR')
     lines = f.readlines()
     f.close()
     subprocess.call(['rm', 'ls-lR'])
@@ -94,7 +94,7 @@ def removeAll():
                 else:
                     os.remove(filename)
         # pylint: disable=undefined-variable
-        except WindowsError as err:
+        except OSError as err:
             time.sleep(30)
             if count == 0:
                 print('Failed to cleanup files/folders')

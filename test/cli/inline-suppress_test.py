@@ -1,4 +1,3 @@
-
 # python -m pytest test-inline-suppress.py
 
 import json
@@ -21,7 +20,7 @@ def __create_unused_function_compile_commands(tmpdir):
     compdb_path = os.path.join(tmpdir, 'proj-inline-suppress-unusedFunction')
     os.makedirs(compdb_path)
     compile_commands = os.path.join(compdb_path, 'compile_commands.json')
-    with open(compile_commands, 'wt') as f:
+    with open(compile_commands, 'w') as f:
         f.write(json.dumps(j, indent=4))
     return compile_commands
 
@@ -48,7 +47,7 @@ def test2():
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
     assert lines == [
-        '{}3.cpp:4:19: error: Division by zero. [zerodiv]'.format(__proj_inline_suppres_path)
+        f'{__proj_inline_suppres_path}3.cpp:4:19: error: Division by zero. [zerodiv]'
     ]
     assert stdout == ''
     assert ret == 0, stdout
@@ -62,12 +61,12 @@ def test_unmatched_suppression():
         '--enable=information',
         '--disable=missingInclude',
         '--error-exitcode=1',
-        '{}2.c'.format(__proj_inline_suppres_path)
+        f'{__proj_inline_suppres_path}2.c'
     ]
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
     assert lines == [
-        '{}2.c:2:0: information: Unmatched suppression: some_warning_id [unmatchedSuppression]'.format(__proj_inline_suppres_path)
+        f'{__proj_inline_suppres_path}2.c:2:0: information: Unmatched suppression: some_warning_id [unmatchedSuppression]'
     ]
     assert stdout == ''
     assert ret == 1, stdout
@@ -81,12 +80,12 @@ def test_unmatched_suppression_path_with_extra_stuff():
         '--enable=information',
         '--disable=missingInclude',
         '--error-exitcode=1',
-        '{}2.c'.format(__proj_inline_suppres_path)
+        f'{__proj_inline_suppres_path}2.c'
     ]
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
     assert lines == [
-        '{}2.c:2:0: information: Unmatched suppression: some_warning_id [unmatchedSuppression]'.format(__proj_inline_suppres_path)
+        f'{__proj_inline_suppres_path}2.c:2:0: information: Unmatched suppression: some_warning_id [unmatchedSuppression]'
     ]
     assert stdout == ''
     assert ret == 1, stdout
@@ -96,12 +95,12 @@ def test_backwards_compatibility():
     args = [
         '-q',
         '--template=simple',
-        '{}3.cpp'.format(__proj_inline_suppres_path)
+        f'{__proj_inline_suppres_path}3.cpp'
     ]
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
     assert lines == [
-        '{}3.cpp:4:19: error: Division by zero. [zerodiv]'.format(__proj_inline_suppres_path)
+        f'{__proj_inline_suppres_path}3.cpp:4:19: error: Division by zero. [zerodiv]'
     ]
     assert stdout == ''
     assert ret == 0, stdout
@@ -110,7 +109,7 @@ def test_backwards_compatibility():
         '-q',
         '--template=simple',
         '--inline-suppr',
-        '{}3.cpp'.format(__proj_inline_suppres_path)
+        f'{__proj_inline_suppres_path}3.cpp'
     ]
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
@@ -126,7 +125,7 @@ def __test_compile_commands_unused_function(tmpdir, use_j):
         '--template=simple',
         '--enable=all',
         '--error-exitcode=1',
-        '--project={}'.format(compdb_file)
+        f'--project={compdb_file}'
     ]
     if use_j:
         args.append('-j2')
@@ -136,7 +135,7 @@ def __test_compile_commands_unused_function(tmpdir, use_j):
     proj_path_sep = os.path.join(__script_dir, 'proj-inline-suppress-unusedFunction') + os.path.sep
     lines = stderr.splitlines()
     assert lines == [
-        "{}B.cpp:6:0: style: The function 'unusedFunctionTest' is never used. [unusedFunction]".format(proj_path_sep)
+        f"{proj_path_sep}B.cpp:6:0: style: The function 'unusedFunctionTest' is never used. [unusedFunction]"
     ]
     assert stdout == ''
     assert ret == 1, stdout
@@ -159,7 +158,7 @@ def __test_compile_commands_unused_function_suppression(tmpdir, use_j):
         '--enable=all',
         '--inline-suppr',
         '--error-exitcode=1',
-        '--project={}'.format(compdb_file)
+        f'--project={compdb_file}'
     ]
     if use_j:
         args.append('-j2')
@@ -218,10 +217,10 @@ def test_build_dir(tmpdir):
     args = [
         '-q',
         '--template=simple',
-        '--cppcheck-build-dir={}'.format(tmpdir),
+        f'--cppcheck-build-dir={tmpdir}',
         '--enable=all',
         '--inline-suppr',
-        '{}4.c'.format(__proj_inline_suppres_path)
+        f'{__proj_inline_suppres_path}4.c'
     ]
 
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
@@ -241,10 +240,10 @@ def __test_build_dir_unused_template(tmpdir, use_j):
     args = [
         '-q',
         '--template=simple',
-        '--cppcheck-build-dir={}'.format(tmpdir),
+        f'--cppcheck-build-dir={tmpdir}',
         '--enable=all',
         '--inline-suppr',
-        '{}template.cpp'.format(__proj_inline_suppres_path)
+        f'{__proj_inline_suppres_path}template.cpp'
     ]
     if use_j:
         args.append('-j2')
@@ -275,7 +274,7 @@ def test_suppress_unmatched_inline_suppression():  # 11172
         '--disable=missingInclude',
         '--suppress=unmatchedSuppression',
         '--inline-suppr',
-        '{}2.c'.format(__proj_inline_suppres_path)
+        f'{__proj_inline_suppres_path}2.c'
     ]
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()

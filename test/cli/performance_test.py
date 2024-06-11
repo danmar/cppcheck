@@ -1,11 +1,9 @@
-
 # python -m pytest test-other.py
 
 import os
-import sys
 import pytest
 
-from testutils import cppcheck, assert_cppcheck
+from testutils import cppcheck
 
 
 
@@ -14,7 +12,7 @@ def test_slow_array_many_floats(tmpdir):
     # 11649
     # cppcheck valueflow takes a long time when an array has many floats
     filename = os.path.join(tmpdir, 'hang.c')
-    with open(filename, 'wt') as f:
+    with open(filename, 'w') as f:
         f.write("const float f[] = {\n")
         for i in range(20000):
             f.write('    13.6f,\n')
@@ -27,7 +25,7 @@ def test_slow_array_many_strings(tmpdir):
     # 11901
     # cppcheck valueflow takes a long time when analyzing a file with many strings
     filename = os.path.join(tmpdir, 'hang.c')
-    with open(filename, 'wt') as f:
+    with open(filename, 'w') as f:
         f.write("const char *strings[] = {\n")
         for i in range(20000):
             f.write('    "abc",\n')
@@ -39,7 +37,7 @@ def test_slow_array_many_strings(tmpdir):
 def test_slow_long_line(tmpdir):
     # simplecpp #314
     filename = os.path.join(tmpdir, 'hang.c')
-    with open(filename, 'wt') as f:
+    with open(filename, 'w') as f:
         f.write("#define A() static const int a[] = {\\\n")
         for i in range(5000):
             f.write(" -123, 456, -789,\\\n")
@@ -51,7 +49,7 @@ def test_slow_long_line(tmpdir):
 def test_slow_large_constant_expression(tmpdir):
     # 12182
     filename = os.path.join(tmpdir, 'hang.c')
-    with open(filename, 'wt') as f:
+    with open(filename, 'w') as f:
         f.write("""
 #define FLAG1 0
 #define FLAG2 0
@@ -121,7 +119,7 @@ x = SAMPLE_SIZE;
 def test_slow_exprid(tmpdir):
     # 11885
     filename = os.path.join(tmpdir, 'hang.c')
-    with open(filename, 'wt') as f:
+    with open(filename, 'w') as f:
         f.write("""
 int foo(int a, int b)
 {
@@ -150,7 +148,7 @@ int foo(int a, int b)
 def test_slow_initlist_varchanged(tmpdir):
     # #12235
     filename = os.path.join(tmpdir, 'hang.cpp')
-    with open(filename, 'wt') as f:
+    with open(filename, 'w') as f:
         f.write(r"""
                 struct T {
                     int* q;
@@ -191,7 +189,7 @@ def test_slow_initlist_varchanged(tmpdir):
 def test_slow_many_scopes(tmpdir):
     # #12038
     filename = os.path.join(tmpdir, 'hang.cpp')
-    with open(filename, 'wt') as f:
+    with open(filename, 'w') as f:
         f.write(r"""
                 #define BLOCK {\
                     char buf[sizeof("x") + 5 * 3 + 16];\

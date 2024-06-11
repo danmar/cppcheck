@@ -1,4 +1,3 @@
-
 # python -m pytest test-clang-import.py
 
 import os
@@ -131,12 +130,12 @@ def test_ast():
 
 def test_log(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
-    with open(test_file, 'wt'):
+    with open(test_file, 'w'):
         pass
 
     args = ['--clang', test_file]
     out_lines = [
-        'Checking {} ...'.format(test_file).replace('\\', '/'),
+        f'Checking {test_file} ...'.replace('\\', '/'),
     ]
 
     assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
@@ -144,7 +143,7 @@ def test_log(tmpdir):
 
 def test_warning(tmpdir):  # #12424
     test_file = os.path.join(tmpdir, 'test_2')
-    with open(test_file, 'wt') as f:
+    with open(test_file, 'w') as f:
         f.write('''void f() {}''')
 
     exitcode, stdout, stderr = cppcheck(['-q', '--enable=warning', '--clang', test_file])

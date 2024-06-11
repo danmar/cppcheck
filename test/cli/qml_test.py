@@ -1,4 +1,3 @@
-
 # python3 -m pytest test-qml.py
 
 import os
@@ -16,9 +15,9 @@ def test_unused_functions():
     # there are unused functions. But fillSampleData is not unused because that is referenced from main.qml
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [
-        "{}samplemodel.cpp:9:0: style: The function 'rowCount' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}samplemodel.cpp:15:0: style: The function 'data' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}samplemodel.cpp:38:0: style: The function 'roleNames' is never used. [unusedFunction]".format(__project_dir_sep)
+        f"{__project_dir_sep}samplemodel.cpp:9:0: style: The function 'rowCount' is never used. [unusedFunction]",
+        f"{__project_dir_sep}samplemodel.cpp:15:0: style: The function 'data' is never used. [unusedFunction]",
+        f"{__project_dir_sep}samplemodel.cpp:38:0: style: The function 'roleNames' is never used. [unusedFunction]"
     ]
     assert ret == 0, stdout
 
@@ -36,13 +35,13 @@ def test_unused_functions_j():
 def test_unused_functions_builddir(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
-    ret, stdout, stderr = cppcheck(['-q', '--template=simple', '--library=qt', '--enable=unusedFunction', '--cppcheck-build-dir={}'.format(build_dir), __project_dir])
+    ret, stdout, stderr = cppcheck(['-q', '--template=simple', '--library=qt', '--enable=unusedFunction', f'--cppcheck-build-dir={build_dir}', __project_dir])
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [
-        "{}samplemodel.cpp:15:0: style: The function 'data' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}samplemodel.cpp:47:0: style: The function 'fillSampleData' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}samplemodel.cpp:38:0: style: The function 'roleNames' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}samplemodel.cpp:9:0: style: The function 'rowCount' is never used. [unusedFunction]".format(__project_dir_sep),
+        f"{__project_dir_sep}samplemodel.cpp:15:0: style: The function 'data' is never used. [unusedFunction]",
+        f"{__project_dir_sep}samplemodel.cpp:47:0: style: The function 'fillSampleData' is never used. [unusedFunction]",
+        f"{__project_dir_sep}samplemodel.cpp:38:0: style: The function 'roleNames' is never used. [unusedFunction]",
+        f"{__project_dir_sep}samplemodel.cpp:9:0: style: The function 'rowCount' is never used. [unusedFunction]",
     ]
     assert ret == 0, stdout
 
@@ -51,13 +50,13 @@ def test_unused_functions_builddir(tmpdir):
 def test_unused_functions_builddir_j(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
-    ret, stdout, stderr = cppcheck(['-q', '--template=simple', '--library=qt', '--enable=unusedFunction', '-j2', '--cppcheck-build-dir={}'.format(build_dir), __project_dir])
+    ret, stdout, stderr = cppcheck(['-q', '--template=simple', '--library=qt', '--enable=unusedFunction', '-j2', f'--cppcheck-build-dir={build_dir}', __project_dir])
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [
-        "{}samplemodel.cpp:15:0: style: The function 'data' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}samplemodel.cpp:47:0: style: The function 'fillSampleData' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}samplemodel.cpp:38:0: style: The function 'roleNames' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}samplemodel.cpp:9:0: style: The function 'rowCount' is never used. [unusedFunction]".format(__project_dir_sep),
+        f"{__project_dir_sep}samplemodel.cpp:15:0: style: The function 'data' is never used. [unusedFunction]",
+        f"{__project_dir_sep}samplemodel.cpp:47:0: style: The function 'fillSampleData' is never used. [unusedFunction]",
+        f"{__project_dir_sep}samplemodel.cpp:38:0: style: The function 'roleNames' is never used. [unusedFunction]",
+        f"{__project_dir_sep}samplemodel.cpp:9:0: style: The function 'rowCount' is never used. [unusedFunction]",
     ]
     assert ret == 0, stdout
 

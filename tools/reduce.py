@@ -75,11 +75,11 @@ class Reduce:
         else:
             # Something could be wrong, for example the command line for Cppcheck (CMD).
             # Print the output to give a hint how to fix it.
-            print('Error: {}\n{}'.format(comm[0], comm[1]))
+            print(f'Error: {comm[0]}\n{comm[1]}')
         return False
 
     def __writefile(self, filename, filedata):
-        f = open(filename, 'wt')
+        f = open(filename, 'w')
         for line in filedata:
             f.write(line)
         f.close()
@@ -316,9 +316,9 @@ def main():
         sys.exit(1)
     elapsed_time = time.time() - t
     reduce.set_elapsed_time(elapsed_time)
-    print('elapsed_time: {}'.format(elapsed_time))
+    print(f'elapsed_time: {elapsed_time}')
 
-    with open(arg_file, 'rt') as f:
+    with open(arg_file) as f:
         filedata = f.readlines()
 
     reduce.writeorigfile(filedata)
