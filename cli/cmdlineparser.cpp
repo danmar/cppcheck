@@ -897,7 +897,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             // Write results in file
             else if (std::strncmp(argv[i], "--output-file=", 14) == 0)
-                mSettings.outputFile = Path::simplifyPath(Path::fromNativeSeparators(argv[i] + 14));
+                mSettings.outputFile = Path::simplifyPath(argv[i] + 14);
 
             // Experimental: limit execution time for extended valueflow analysis. basic valueflow analysis
             // is always executed.
@@ -933,7 +933,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             // Write results in results.plist
             else if (std::strncmp(argv[i], "--plist-output=", 15) == 0) {
-                mSettings.plistOutput = Path::simplifyPath(Path::fromNativeSeparators(argv[i] + 15));
+                mSettings.plistOutput = Path::simplifyPath(argv[i] + 15);
                 if (mSettings.plistOutput.empty())
                     mSettings.plistOutput = ".";
 
