@@ -12,7 +12,7 @@
 #include <boost/config.hpp>
 #include <boost/math/special_functions/round.hpp>
 #include <boost/endian/conversion.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/smart_ptr/scoped_array.hpp>
 #include <boost/thread/mutex.hpp>
