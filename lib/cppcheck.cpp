@@ -715,7 +715,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
     }
 
     try {
-        TokenList tokenlist{&mSettings, file.lang()};
+        TokenList tokenlist{mSettings, file.lang()};
         tokenlist.appendFileIfNew(file.spath());
         Tokenizer tokenizer(std::move(tokenlist), mSettings, mErrorLogger);
         std::istringstream ast(output2);
@@ -911,7 +911,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             if (mUnusedFunctionsCheck && (mSettings.useSingleJob() || analyzerInformation)) {
                 std::size_t hash = 0;
                 // markup files are special and do not adhere to the enforced language
-                TokenList tokenlist{&mSettings, Standards::Language::C};
+                TokenList tokenlist{mSettings, Standards::Language::C};
                 if (fileStream) {
                     std::vector<std::string> files;
                     simplecpp::TokenList tokens(*fileStream, files, file.spath());
@@ -1055,7 +1055,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                 if (startsWith(dir.str,"#define ") || startsWith(dir.str,"#include "))
                     code += "#line " + std::to_string(dir.linenr) + " \"" + dir.file + "\"\n" + dir.str + '\n';
             }
-            TokenList tokenlist(&mSettings, file.lang());
+            TokenList tokenlist(mSettings, file.lang());
             std::istringstream istr2(code);
             tokenlist.createTokens(istr2); // TODO: check result?
             executeRules("define", tokenlist);
@@ -1133,7 +1133,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             }
 
             try {
-                TokenList tokenlist{&mSettings, file.lang()};
+                TokenList tokenlist{mSettings, file.lang()};
 
                 // Create tokens, skip rest of iteration if failed
                 Timer::run("Tokenizer::createTokens", mSettings.showtime, &s_timerResults, [&]() {

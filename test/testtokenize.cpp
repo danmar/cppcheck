@@ -557,7 +557,7 @@ private:
         Preprocessor preprocessor(settings, *this, Path::identify(tokens1.getFiles()[0], false));
         std::list<Directive> directives = preprocessor.createDirectives(tokens1);
 
-        TokenList tokenlist{&settings, Path::identify(filename, false)};
+        TokenList tokenlist{settings, Path::identify(filename, false)};
         Tokenizer tokenizer(std::move(tokenlist), settings, *this);
         tokenizer.setDirectives(std::move(directives));
 
@@ -865,7 +865,7 @@ private:
         ASSERT_THROW_INTERNAL(tokenizeAndStringify(";template<class T> class X { };",false,Platform::Type::Native,false), SYNTAX);
         ASSERT_THROW_INTERNAL(tokenizeAndStringify("int X<Y>() {};",false,Platform::Type::Native,false), SYNTAX);
         {
-            TokenList tokenlist{&settings1, Standards::Language::C}; // headers are treated as C files
+            TokenList tokenlist{settings1, Standards::Language::C}; // headers are treated as C files
             const char code[] = "void foo(int i) { reinterpret_cast<char>(i) };";
             std::istringstream istr(code);
             tokenlist.appendFileIfNew("test.h");
@@ -3688,7 +3688,7 @@ private:
     }
 
     void simplifyString() {
-        TokenList tokenlist{&settings0, Standards::Language::CPP};
+        TokenList tokenlist{settings0, Standards::Language::CPP};
         Tokenizer tokenizer(std::move(tokenlist), settings0, *this);
         ASSERT_EQUALS("\"abc\"", tokenizer.simplifyString("\"abc\""));
         ASSERT_EQUALS("\"\n\"", tokenizer.simplifyString("\"\\xa\""));
@@ -6137,7 +6137,7 @@ private:
 
     std::string testAst(const char code[], AstStyle style = AstStyle::Simple) {
         // tokenize given code..
-        TokenList tokenlist{&settings0, Standards::Language::CPP};
+        TokenList tokenlist{settings0, Standards::Language::CPP};
         std::istringstream istr(code);
         tokenlist.appendFileIfNew("test.cpp");
         if (!tokenlist.createTokens(istr))

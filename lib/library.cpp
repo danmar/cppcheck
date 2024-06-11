@@ -22,6 +22,7 @@
 #include "errortypes.h"
 #include "mathlib.h"
 #include "path.h"
+#include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenlist.h"
@@ -1055,14 +1056,14 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
     return Error(ErrorCode::OK);
 }
 
-bool Library::isIntArgValid(const Token *ftok, int argnr, const MathLib::bigint argvalue) const
+bool Library::isIntArgValid(const Token *ftok, int argnr, const MathLib::bigint argvalue, const Settings& settings) const
 {
     const ArgumentChecks *ac = getarg(ftok, argnr);
     if (!ac || ac->valid.empty())
         return true;
     if (ac->valid.find('.') != std::string::npos)
-        return isFloatArgValid(ftok, argnr, static_cast<double>(argvalue));
-    TokenList tokenList(nullptr, ftok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
+        return isFloatArgValid(ftok, argnr, static_cast<double>(argvalue), settings);
+    TokenList tokenList(settings, ftok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
     gettokenlistfromvalid(ac->valid, tokenList);
     for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
         if (tok->isNumber() && argvalue == MathLib::toBigNumber(tok))
@@ -1077,12 +1078,12 @@ bool Library::isIntArgValid(const Token *ftok, int argnr, const MathLib::bigint 
     return false;
 }
 
-bool Library::isFloatArgValid(const Token *ftok, int argnr, double argvalue) const
+bool Library::isFloatArgValid(const Token *ftok, int argnr, double argvalue, const Settings& settings) const
 {
     const ArgumentChecks *ac = getarg(ftok, argnr);
     if (!ac || ac->valid.empty())
         return true;
-    TokenList tokenList(nullptr, ftok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
+    TokenList tokenList(settings, ftok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
     gettokenlistfromvalid(ac->valid, tokenList);
     for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%num% : %num%") && argvalue >= MathLib::toDoubleNumber(tok) && argvalue <= MathLib::toDoubleNumber(tok->tokAt(2)))
