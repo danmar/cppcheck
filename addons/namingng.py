@@ -242,7 +242,7 @@ def check_include_guards(conf,cfg,unguarded_include_files):
                 phase = -1
                 continue
             guard_name,guard_column = check_include_guard_name(conf,directive)
-            if guard_name == None:
+            if guard_name is None:
                 phase = -1
                 continue
             pending_ifndef = directive
