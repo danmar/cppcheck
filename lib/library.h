@@ -71,7 +71,7 @@ public:
         std::string reason;
     };
 
-    Error load(const char exename[], const char path[]);
+    Error load(const char exename[], const char path[], bool debug = false);
 
     struct AllocFunc {
         int groupId;

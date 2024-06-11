@@ -33,6 +33,7 @@
 #include <cctype>
 #include <climits>
 #include <cstring>
+#include <iostream>
 #include <list>
 #include <memory>
 #include <sstream>
@@ -65,9 +66,12 @@ static void gettokenlistfromvalid(const std::string& valid, bool cpp, TokenList&
     }
 }
 
-Library::Error Library::load(const char exename[], const char path[])
+Library::Error Library::load(const char exename[], const char path[], bool debug)
 {
+    // TODO: remove handling of multiple libraries at once?
     if (std::strchr(path,',') != nullptr) {
+        if (debug)
+            std::cout << "handling multiple libraries '" + std::string(path) + "'" << std::endl;
         std::string p(path);
         for (;;) {
             const std::string::size_type pos = p.find(',');
@@ -86,15 +90,21 @@ Library::Error Library::load(const char exename[], const char path[])
     std::string absolute_path;
     // open file..
     tinyxml2::XMLDocument doc;
+    if (debug)
+        std::cout << "looking for library '" + std::string(path) + "'" << std::endl;
     tinyxml2::XMLError error = doc.LoadFile(path);
     if (error == tinyxml2::XML_ERROR_FILE_READ_ERROR && Path::getFilenameExtension(path).empty())
+    {
         // Reading file failed, try again...
         error = tinyxml2::XML_ERROR_FILE_NOT_FOUND;
+    }
     if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
         // failed to open file.. is there no extension?
         std::string fullfilename(path);
         if (Path::getFilenameExtension(fullfilename).empty()) {
             fullfilename += ".cfg";
+            if (debug)
+                std::cout << "looking for library '" + std::string(fullfilename) + "'" << std::endl;
             error = doc.LoadFile(fullfilename.c_str());
             if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
                 absolute_path = Path::getAbsoluteFilePath(fullfilename);
@@ -116,6 +126,8 @@ Library::Error Library::load(const char exename[], const char path[])
             cfgfolders.pop_back();
             const char *sep = (!cfgfolder.empty() && endsWith(cfgfolder,'/') ? "" : "/");
             const std::string filename(cfgfolder + sep + fullfilename);
+            if (debug)
+                std::cout << "looking for library '" + std::string(filename) + "'" << std::endl;
             error = doc.LoadFile(filename.c_str());
             if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
                 absolute_path = Path::getAbsoluteFilePath(filename);
@@ -134,10 +146,13 @@ Library::Error Library::load(const char exename[], const char path[])
         return Error(ErrorCode::OK); // ignore duplicates
     }
 
+    if (debug)
+        std::cout << "library not found: '" + std::string(path) + "'" << std::endl;
+
     if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND)
         return Error(ErrorCode::FILE_NOT_FOUND);
 
-    doc.PrintError();
+    doc.PrintError(); // TODO: do not print stray messages
     return Error(ErrorCode::BAD_XML);
 }
 

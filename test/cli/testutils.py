@@ -150,7 +150,7 @@ def __run_subprocess(args, env=None, cwd=None, timeout=None):
 
 
 # Run Cppcheck with args
-def cppcheck(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_exe=None, timeout=None, tty=False):
+def cppcheck_ex(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_exe=None, timeout=None, tty=False):
     exe = cppcheck_exe if cppcheck_exe else __lookup_cppcheck_exe()
     assert exe is not None, 'no cppcheck binary found'
 
@@ -211,6 +211,11 @@ def cppcheck(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_exe
                 stderr = ''
             elif stderr[pos - 1] == '\n':
                 stderr = stderr[:pos]
+    return return_code, stdout, stderr, exe
+
+
+def cppcheck(*args, **kwargs):
+    return_code, stdout, stderr, _ = cppcheck_ex(*args, **kwargs)
     return return_code, stdout, stderr
 
 

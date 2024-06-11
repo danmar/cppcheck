@@ -137,7 +137,7 @@ private:
      * Tries to load a library and prints warning/error messages
      * @return false, if an error occurred (except unknown XML elements)
      */
-    bool tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename);
+    bool tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename, bool debug);
 
     /**
      * @brief Load libraries
