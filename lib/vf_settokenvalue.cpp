@@ -442,8 +442,9 @@ namespace ValueFlow
         }
 
         // Offset of non null pointer is not null also
-        else if (astIsPointer(tok) && Token::Match(parent, "+|-") && value.isIntValue() && value.isImpossible() &&
-                 value.intvalue == 0) {
+        else if (astIsPointer(tok) && Token::Match(parent, "+|-") &&
+                 (parent->astOperand2() == nullptr || !astIsPointer(parent->astOperand2())) &&
+                 value.isIntValue() && value.isImpossible() && value.intvalue == 0) {
             setTokenValue(parent, value, settings);
         }
 
