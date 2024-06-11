@@ -447,6 +447,11 @@ function cppunit_fn {
     fi
 }
 
+# selinux.c
+function selinux_fn {
+    true
+}
+
 function check_file {
     f=$(basename "$1")
     lib="${f%%.*}"
@@ -525,6 +530,10 @@ function check_file {
             ;;
         qt.cpp)
             qt_fn
+            "${CPPCHECK}" "${CPPCHECK_OPT[@]}" --library="$lib" "${DIR}""$f"
+            ;;
+        selinux.c)
+            selinux_fn
             "${CPPCHECK}" "${CPPCHECK_OPT[@]}" --library="$lib" "${DIR}""$f"
             ;;
         sqlite3.c)
