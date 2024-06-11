@@ -64,14 +64,12 @@ if __name__ == "__main__":
 
     try:
         lib.clone_cppcheck(repo_dir, old_repo_dir)
-        pass
     except Exception as e:
         print('Failed to clone Cppcheck repository ({}), retry later'.format(e))
         sys.exit(1)
 
     try:
         lib.checkout_cppcheck_version(repo_dir, 'main', main_dir)
-        pass
     except Exception as e:
         print('Failed to checkout main ({}), retry later'.format(e))
         sys.exit(1)

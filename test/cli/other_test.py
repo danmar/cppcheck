@@ -1030,7 +1030,6 @@ inline void f1()
 }
 """
                 )
-        pass
     test_file_h_2 = os.path.join(tmpdir, 'test2.h')
     with open(test_file_h_2, 'wt') as f:
         f.write("""

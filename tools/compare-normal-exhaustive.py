@@ -68,7 +68,6 @@ if __name__ == "__main__":
         cppcheck_path = os.path.join(work_path, 'cppcheck')
         try:
             lib.clone_cppcheck(cppcheck_path, '')
-            pass
         except Exception as e:
             print('Failed to clone Cppcheck repository ({}), retry later'.format(e))
             sys.exit(1)
