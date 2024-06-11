@@ -90,6 +90,7 @@ def removeAll():
         try:
             for filename in filenames:
                 if os.path.isdir(filename):
+                    # pylint: disable=deprecated-argument - FIXME: onerror was deprecated in Python 3.12
                     shutil.rmtree(filename, onerror=handleRemoveReadonly)
                 else:
                     os.remove(filename)
