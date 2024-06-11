@@ -8,7 +8,6 @@ import glob
 import os
 import sys
 import random
-import subprocess
 
 
 def format_float(a, b=1):

@@ -72,6 +72,7 @@ def check_requirements():
             result = False
 
     try:
+        # pylint: disable-next=unused-import - intentional
         import psutil
     except ImportError as e:
         print("Error: {}. Module is required.".format(e))
