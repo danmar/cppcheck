@@ -61,7 +61,6 @@ disable=
         comparison-with-itself,
         too-many-return-statements,
         no-else-continue,
-        no-else-break,
         inconsistent-return-statements,
         consider-using-in,
         too-many-nested-blocks,

@@ -376,22 +376,22 @@ class InitializerParser:
 
                 self.token = self.token.astParent.astOperand2
                 break
-            else:
-                self.token = self.token.astParent
-                if self.token.str == '{':
-                    if self.root:
-                        self.ed = self.root.getLastValueElement()
-                        self.ed.markAsCurrent()
 
-                        # Cleanup if root is dummy node representing excess levels in initializer
-                        if self.root.name == '<-':
-                            self.root.children[0].parent = self.root.parent
+            self.token = self.token.astParent
+            if self.token.str == '{':
+                if self.root:
+                    self.ed = self.root.getLastValueElement()
+                    self.ed.markAsCurrent()
 
-                        self.root = self.root.parent
+                    # Cleanup if root is dummy node representing excess levels in initializer
+                    if self.root.name == '<-':
+                        self.root.children[0].parent = self.root.parent
 
-                if self.token.astParent is None:
-                    self.token = None
-                    break
+                    self.root = self.root.parent
+
+            if self.token.astParent is None:
+                self.token = None
+                break
 
 def misra_9_x(self, data, rule, rawTokens = None):
 

@@ -2757,10 +2757,10 @@ class MisraChecker:
                     if prev.str == ';':
                         self.reportError(token, 12, 3)
                         break
-                    elif prev.str in ')}]':
-                        prev = prev.link
-                    elif prev.str in '({[':
+                    if prev.str in '({[':
                         break
+                    if prev.str in ')}]':
+                        prev = prev.link
                     prev = prev.previous
 
     def misra_12_4_check_expr(self, expr):

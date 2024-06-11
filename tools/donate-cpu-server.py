@@ -222,9 +222,8 @@ def crashReport(results_path: str, query_params: dict):
                     if OLD_VERSION not in line:
                         # Package results seem to be too old, skip
                         break
-                    else:
-                        # Current package, parse on
-                        continue
+                    # Current package, parse on
+                    continue
                 if datestr is None and line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                     datestr = line
                 elif pkgs is not None and package_url is None and line.startswith('ftp://'):
@@ -323,9 +322,8 @@ def timeoutReport(results_path: str) -> str:
                     if OLD_VERSION not in line:
                         # Package results seem to be too old, skip
                         break
-                    else:
-                        # Current package, parse on
-                        continue
+                    # Current package, parse on
+                    continue
                 if datestr is None and line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                     datestr = line
                 elif line.startswith('count:'):
@@ -611,9 +609,8 @@ def summaryReport(resultsPath: str, name: str, prefix: str, marker: str) -> str:
                 if OLD_VERSION not in line:
                     # Package results seem to be too old, skip
                     break
-                else:
-                    # Current package, parse on
-                    continue
+                # Current package, parse on
+                continue
             if line.startswith(marker):
                 inResults = True
                 continue
@@ -675,9 +672,8 @@ def messageIdReport(resultPath: str, marker: str, messageId: str, query_params: 
                 if OLD_VERSION not in line:
                     # Package results seem to be too old, skip
                     break
-                else:
-                    # Current package, parse on
-                    continue
+                # Current package, parse on
+                continue
             if line.startswith('ftp://'):
                 url = line
                 continue
@@ -782,9 +778,8 @@ def timeReport(resultPath: str, show_gt: bool, query_params: dict):
                 if OLD_VERSION not in line:
                     # Package results seem to be too old, skip
                     break
-                else:
-                    # Current package, parse on
-                    continue
+                # Current package, parse on
+                continue
             if datestr is None and line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
                 continue
@@ -883,9 +878,8 @@ def timeReportSlow(resultPath: str) -> str:
                 if OLD_VERSION not in line:
                     # Package results seem to be too old, skip
                     break
-                else:
-                    # Current package, parse on
-                    continue
+                # Current package, parse on
+                continue
             if datestr is None and line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
                 continue
@@ -971,9 +965,8 @@ def check_library_report(result_path: str, message_id: str) -> str:
                 if OLD_VERSION not in line:
                     # Package results seem to be too old, skip
                     break
-                else:
-                    # Current package, parse on
-                    continue
+                # Current package, parse on
+                continue
             if not in_results:
                 if line.startswith(start_marker):
                     in_results = True
@@ -1037,9 +1030,8 @@ def check_library_function_name(result_path: str, function_name: str, query_para
                 if OLD_VERSION not in line:
                     # Package results seem to be too old, skip
                     break
-                else:
-                    # Current package, parse on
-                    continue
+                # Current package, parse on
+                continue
             if line.startswith('ftp://'):
                 package_url = line
                 continue
