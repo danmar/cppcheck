@@ -264,6 +264,8 @@ private:
         TEST_CASE(testMissingIncludeCheckConfig);
 
         TEST_CASE(limitsDefines);
+
+        TEST_CASE(hashCalculation);
     }
 
     std::string getConfigsStr(const char filedata[], const char *arg = nullptr) {
@@ -282,6 +284,16 @@ private:
         for (const std::string & config : configs)
             ret += config + '\n';
         return ret;
+    }
+
+    std::size_t getHash(const char filedata[]) {
+        Settings settings;
+        Preprocessor preprocessor(settings, *this);
+        std::vector<std::string> files;
+        std::istringstream istr(filedata);
+        simplecpp::TokenList tokens(istr,files);
+        tokens.removeComments();
+        return preprocessor.calculateHash(tokens, "");
     }
 
     void Bug2190219() {
@@ -2509,6 +2521,20 @@ private:
         ASSERT_EQUALS("void f ( long l ) {\n"
                       "if ( l > $2147483647 ) { }\n"
                       "}", actual);
+    }
+
+    void hashCalculation() {
+        // #12383
+        const char code[] = "int a;";
+        const char code2[] = "int  a;"; // extra space
+        const char code3[] = "\n\nint a;"; // extra new line
+
+        ASSERT_EQUALS(getHash(code), getHash(code));
+        ASSERT_EQUALS(getHash(code2), getHash(code2));
+        ASSERT_EQUALS(getHash(code3), getHash(code3));
+        ASSERT(getHash(code) != getHash(code2));
+        ASSERT(getHash(code) != getHash(code3));
+        ASSERT(getHash(code2) != getHash(code3));
     }
 };
 
