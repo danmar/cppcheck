@@ -320,13 +320,13 @@ void CheckNullPointer::nullPointerByDeRefAndCheck()
             if (!printInconclusive && value->isInconclusive())
                 return false;
 
+            if (isPointerUnevaluated(tok))
+                return false;
+
             return true;
         };
         std::vector<const Token *> tokens = findTokensSkipDeadCode(mSettings->library, scope->bodyStart, scope->bodyEnd, pred);
         for (const Token *tok : tokens) {
-            if (isPointerUnevaluated(tok))
-                continue;
-
             const ValueFlow::Value *value = tok->getValue(0);
 
             // Pointer dereference.
