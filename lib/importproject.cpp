@@ -190,7 +190,6 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
 
     const std::vector<std::string> fileFilters =
         settings ? settings->fileFilters : std::vector<std::string>();
-    std::vector<SharedItemsProject> sharedItemsProjects{};
 
     if (endsWith(filename, ".json")) {
         if (importCompileCommands(fin)) {
@@ -204,6 +203,7 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
         }
     } else if (endsWith(filename, ".vcxproj")) {
         std::map<std::string, std::string, cppcheck::stricmp> variables;
+        std::vector<SharedItemsProject> sharedItemsProjects{};
         if (importVcxproj(filename, variables, emptyString, fileFilters, sharedItemsProjects)) {
             setRelativePaths(filename);
             return ImportProject::Type::VS_VCXPROJ;
