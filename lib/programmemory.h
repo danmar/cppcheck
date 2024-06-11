@@ -157,9 +157,9 @@ private:
 struct ProgramMemoryState {
     ProgramMemory state;
     std::map<nonneg int, const Token*> origins;
-    const Settings* settings;
+    const Settings& settings;
 
-    explicit ProgramMemoryState(const Settings* s);
+    explicit ProgramMemoryState(const Settings& s);
 
     void replace(ProgramMemory pm, const Token* origin = nullptr);
 
