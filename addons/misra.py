@@ -601,8 +601,7 @@ def getEssentialType(expr):
                     return e
         if bitsOfEssentialType(e2) >= bitsOfEssentialType(e1):
             return e2
-        else:
-            return e1
+        return e1
 
     elif expr.str == "~":
         e1 = getEssentialType(expr.astOperand1)
@@ -1422,8 +1421,7 @@ class MisraChecker:
     def get_num_significant_naming_chars(self, cfg):
         if cfg.standards and cfg.standards.c == "c89":
             return 31
-        else:
-            return 63
+        return 63
 
     def _save_ctu_summary_typedefs(self, dumpfile, typedef_info):
         if self._ctu_summary_typedefs:
@@ -4088,8 +4086,7 @@ class MisraChecker:
         """Return the list of violations for a normal checker run"""
         if violation_type is None:
             return self.violations.items()
-        else:
-            return self.violations[violation_type]
+        return self.violations[violation_type]
 
     def get_violation_types(self):
         """Return the list of violations for a normal checker run"""

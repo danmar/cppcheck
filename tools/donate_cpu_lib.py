@@ -139,15 +139,15 @@ def checkout_cppcheck_version(repo_path, version, cppcheck_path):
         if not has_changes:
             print('No changes detected')
         return has_changes
-    else:
-        if version != 'main':
-            print('Fetching {}'.format(version))
-            # Since this is a shallow clone, explicitly fetch the remote version tag
-            refspec = 'refs/tags/' + version + ':ref/tags/' + version
-            subprocess.check_call(['git', 'fetch', '--depth=1', 'origin', refspec], cwd=repo_path)
-        print('Adding worktree \'{}\' for {}'.format(cppcheck_path, version))
-        subprocess.check_call(['git', 'worktree', 'add', cppcheck_path,  version], cwd=repo_path)
-        return True
+
+    if version != 'main':
+        print('Fetching {}'.format(version))
+        # Since this is a shallow clone, explicitly fetch the remote version tag
+        refspec = 'refs/tags/' + version + ':ref/tags/' + version
+        subprocess.check_call(['git', 'fetch', '--depth=1', 'origin', refspec], cwd=repo_path)
+    print('Adding worktree \'{}\' for {}'.format(cppcheck_path, version))
+    subprocess.check_call(['git', 'worktree', 'add', cppcheck_path,  version], cwd=repo_path)
+    return True
 
 
 def get_cppcheck_info(cppcheck_path):

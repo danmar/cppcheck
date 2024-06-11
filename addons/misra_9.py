@@ -138,8 +138,7 @@ class ElementDef:
     def getEffectiveLevel(self):
         if self.parent and self.parent.elementType == "array":
             return self.parent.getEffectiveLevel() + 1
-        else:
-            return 0
+        return 0
 
     def setInitialized(self, designated=False, positional=False):
         if designated:
@@ -201,11 +200,10 @@ class ElementDef:
                   self.isOnlyDesignated()) and
                  all([not (child.isDesignated or child.isPositional) or child.isMisra93Compliant() for child in self.children]))
             return result
-        elif self.elementType == 'record':
+        if self.elementType == 'record':
             result = all([child.isMisra93Compliant() for child in self.children])
             return result
-        else:
-            return True
+        return True
 
     def isMisra94Compliant(self):
         return self.numInits <= 1 and all([child.isMisra94Compliant() for child in self.children])

@@ -1593,8 +1593,7 @@ class MatchResult:
     def __getattr__(self, k):
         if k in self._keys:
             return None
-        else:
-            raise AttributeError
+        raise AttributeError
 
 def bind_split(s):
     if '@' in s:

@@ -56,7 +56,6 @@ disable=
         simplifiable-if-statement,
         too-many-locals,
         too-many-arguments,
-        no-else-return,
         too-few-public-methods,
         consider-using-min-builtin,
         comparison-with-itself,
