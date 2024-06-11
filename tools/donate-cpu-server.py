@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.54"
+SERVER_VERSION = "1.3.55"
 
 OLD_VERSION = '2.14.0'
 
@@ -1282,7 +1282,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
     while True:
         # wait for a connection
         print_ts('waiting for a connection')
-        connection, client_address = sock.accept()
+        connection, _ = sock.accept()
         try:
             bytes_received = connection.recv(128)
             cmd = bytes_received.decode('utf-8', 'ignore')

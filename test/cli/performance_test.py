@@ -15,7 +15,7 @@ def test_slow_array_many_floats(tmpdir):
     filename = os.path.join(tmpdir, 'hang.c')
     with open(filename, 'wt') as f:
         f.write("const float f[] = {\n")
-        for i in range(20000):
+        for _ in range(20000):
             f.write('    13.6f,\n')
         f.write("};\n")
     cppcheck([filename]) # should not take more than ~1 second
@@ -28,7 +28,7 @@ def test_slow_array_many_strings(tmpdir):
     filename = os.path.join(tmpdir, 'hang.c')
     with open(filename, 'wt') as f:
         f.write("const char *strings[] = {\n")
-        for i in range(20000):
+        for _ in range(20000):
             f.write('    "abc",\n')
         f.write("};\n")
     cppcheck([filename]) # should not take more than ~1 second
@@ -40,7 +40,7 @@ def test_slow_long_line(tmpdir):
     filename = os.path.join(tmpdir, 'hang.c')
     with open(filename, 'wt') as f:
         f.write("#define A() static const int a[] = {\\\n")
-        for i in range(5000):
+        for _ in range(5000):
             f.write(" -123, 456, -789,\\\n")
         f.write("};\n")
     cppcheck([filename]) # should not take more than ~1 second

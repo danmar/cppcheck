@@ -37,10 +37,8 @@ def detect_make():
 
     for m in make_cmds:
         try:
-            #print('{} --version'.format(m))
             subprocess.check_call([m, '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except OSError as e:
-            #print("'{}' not found ({})".format(m, e))
+        except OSError:
             continue
 
         print("using '{}'".format(m))
