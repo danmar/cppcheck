@@ -1,18 +1,34 @@
 [MESSAGES CONTROL]
-disable=C,R,W
-enable=mixed-indentation,
-       trailing-whitespace,
-       print-statement,
-       literal-comparison,
-       unnecessary-semicolon,
+disable=C,R,
+        # W start
+        redefined-builtin,
+        broad-exception-caught,
+        fixme,
+        bare-except,
+        redefined-outer-name,
+        attribute-defined-outside-init,
+        unspecified-encoding,
+        global-statement,
+        protected-access,
+        redundant-u-string-prefix,
+        broad-exception-raised,
+        subprocess-popen-preexec-fn,
+        format-string-without-interpolation,
+        cell-var-from-loop,
+        logging-not-lazy,
+        unknown-option-value,
+        implicit-str-concat,
+        unused-wildcard-import,
+        pointless-statement,
+        wildcard-import,
+        unused-argument,
+        deprecated-module,
+        pointless-string-statement,
+        arguments-renamed,
+        duplicate-string-formatting-argument
+enable=trailing-whitespace,
        mixed-line-endings,
-       bad-open-mode,
-       redundant-unittest-assert,
-       boolean-datetime,
-       deprecated-method,
-       anomalous-unicode-escape-in-string,
-       anomalous-backslash-in-string,
-       bad-indentation
+       literal-comparison
 [REPORTS]
 reports=no
 [TYPECHECK]
