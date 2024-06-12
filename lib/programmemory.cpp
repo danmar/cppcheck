@@ -1274,13 +1274,14 @@ static void pruneConditions(std::vector<const Token*>& conds,
 
 namespace {
     struct Executor {
-        ProgramMemory* pm = nullptr;
+        ProgramMemory* pm;
         const Settings& settings;
         int fdepth = 4;
         int depth = 10;
 
         Executor(ProgramMemory* pm, const Settings& settings) : pm(pm), settings(settings)
         {
+            assert(pm != nullptr);
         }
 
         static ValueFlow::Value unknown() {
