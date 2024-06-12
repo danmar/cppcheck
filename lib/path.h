@@ -137,21 +137,23 @@ public:
      * @brief Check if the file extension indicates that it's a C/C++ source file.
      * Check if the file has source file extension: *.c;*.cpp;*.cxx;*.c++;*.cc;*.txx
      * @param filename filename to check. path info is optional
+     * @param lang the detected language
      * @return true if the file extension indicates it should be checked
      */
-    static bool acceptFile(const std::string &filename) {
+    static bool acceptFile(const std::string &filename, Standards::Language* lang = nullptr) {
         const std::set<std::string> extra;
-        return acceptFile(filename, extra);
+        return acceptFile(filename, extra, lang);
     }
 
     /**
      * @brief Check if the file extension indicates that it's a C/C++ source file.
      * Check if the file has source file extension: *.c;*.cpp;*.cxx;*.c++;*.cc;*.txx
      * @param path filename to check. path info is optional
-     * @param extra    extra file extensions
+     * @param extra extra file extensions
+     * @param lang the detected language
      * @return true if the file extension indicates it should be checked
      */
-    static bool acceptFile(const std::string &path, const std::set<std::string> &extra);
+    static bool acceptFile(const std::string &path, const std::set<std::string> &extra, Standards::Language* lang = nullptr);
 
     /**
      * @brief Is filename a header based on file extension
