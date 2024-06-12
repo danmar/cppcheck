@@ -2,6 +2,7 @@
 import json
 import os
 import pytest
+import sys
 from testutils import cppcheck, assert_cppcheck
 
 
@@ -509,6 +510,121 @@ def test_project_file_duplicate_2(tmpdir):
     ]
     assert stderr == ''
 
+
+def test_project_file_duplicate_3(tmpdir):
+    test_file_a = os.path.join(tmpdir, 'a.c')
+    with open(test_file_a, 'wt'):
+        pass
+
+    # multiple ways to specify the same file
+    in_file_a = 'a.c'
+    in_file_b = os.path.join('.', 'a.c')
+    in_file_c = os.path.join('dummy', '..', 'a.c')
+    in_file_d = os.path.join(tmpdir, 'a.c')
+    in_file_e = os.path.join(tmpdir, '.', 'a.c')
+    in_file_f = os.path.join(tmpdir, 'dummy', '..', 'a.c')
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+    </paths>
+</project>""".format(in_file_a, in_file_b, in_file_c, in_file_d, in_file_e, in_file_f, tmpdir))
+
+    args = ['--project={}'.format(project_file)]
+    args.append('-j1') # TODO: remove when fixed
+
+    exitcode, stdout, stderr = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    # TODO: only a single file should be checked
+    if sys.platform == 'win32':
+        assert lines == [
+            'Checking {} ...'.format(test_file_a),
+            '1/3 files checked 0% done',
+            'Checking {} ...'.format(test_file_a),
+            '2/3 files checked 0% done',
+            'Checking {} ...'.format(test_file_a),
+            '3/3 files checked 0% done'
+        ]
+    else:
+        assert lines == [
+            'Checking {} ...'.format(test_file_a),
+            '1/2 files checked 0% done',
+            'Checking {} ...'.format(test_file_a),
+            '2/2 files checked 0% done'
+        ]
+    assert stderr == ''
+
+
+@pytest.mark.skipif(sys.platform != 'win32', reason="requires Windows")
+def test_project_file_duplicate_4(tmpdir):
+    test_file_a = os.path.join(tmpdir, 'a.c')
+    with open(test_file_a, 'wt'):
+        pass
+
+    # multiple ways to specify the same file
+    in_file_a = 'a.c'
+    in_file_b = os.path.join('.', 'a.c')
+    in_file_c = os.path.join('dummy', '..', 'a.c')
+    in_file_d = os.path.join(tmpdir, 'a.c')
+    in_file_e = os.path.join(tmpdir, '.', 'a.c')
+    in_file_f = os.path.join(tmpdir, 'dummy', '..', 'a.c')
+
+    args1 = [in_file_a, in_file_b, in_file_c, in_file_d, in_file_e, in_file_f, str(tmpdir)]
+    args2 = []
+    for a in args1:
+        args2.append(a.replace('\\', '/'))
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+        <dir name="{}"/>
+    </paths>
+</project>""".format(in_file_a, in_file_b, in_file_c, in_file_d, in_file_e, in_file_f, tmpdir,
+                     args2[0], args2[1], args2[2], args2[3], args2[4], args2[5], args2[6]))
+
+    args = ['--project={}'.format(project_file)]
+    args.append('-j1') # TODO: remove when fixed
+
+    exitcode, stdout, stderr = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    # TODO: only a single file should be checked
+    assert lines == [
+        'Checking {} ...'.format(test_file_a),
+        '1/3 files checked 0% done',
+        'Checking {} ...'.format(test_file_a),
+        '2/3 files checked 0% done',
+        'Checking {} ...'.format(test_file_a),
+        '3/3 files checked 0% done'
+    ]
+    assert stderr == ''
 
 def test_project_file_ignore(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
