@@ -20,7 +20,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13]
+        os: [ubuntu-22.04, macos-13, macos-15]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -75,7 +75,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13]
+        os: [ubuntu-22.04, macos-13, macos-15]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -155,7 +155,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13]
+        os: [ubuntu-22.04, macos-13, macos-15]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -189,7 +189,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13]
+        os: [ubuntu-22.04, macos-13, macos-15]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -223,7 +223,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13]
+        os: [ubuntu-22.04, macos-13, macos-15]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -247,7 +247,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13]
+        os: [ubuntu-22.04, macos-13, macos-15]
         include:
           - xdist_n: auto
           # FIXME: test_color_tty fails with xdist
@@ -284,15 +284,29 @@ jobs:
         if: contains(matrix.os, 'macos')
         run: |
           # pcre was removed from runner images in November 2022
-          brew install coreutils python3 pcre gnu-sed
+          brew install coreutils pcre gnu-sed
 
-      - name: Install missing Python packages
+      - name: Install missing Python packages on ubuntu
+        if: contains(matrix.os, 'ubuntu')
         run: |
           python3 -m pip install pip --upgrade
           python3 -m pip install pytest
           python3 -m pip install pytest-timeout
           python3 -m pip install pytest-xdist
           python3 -m pip install psutil
+
+      # we need to use -break-system-packages --user because the common approaches do not work.
+      # using pip works but it appears to install the packages into a different Python installation so they are not found later on.
+      # using python3 -m pip without the additional flags fails since the packages are being managed by a different tool (brew) and that lacks some of the packages.
+      # using pipx also does not work.
+      - name: Install missing Python packages on macos
+        if: contains(matrix.os, 'macos')
+        run: |
+          python3 -m pip install --break-system-packages --user pip --upgrade
+          python3 -m pip install --break-system-packages --user pytest
+          python3 -m pip install --break-system-packages --user pytest-timeout
+          python3 -m pip install --break-system-packages --user pytest-xdist
+          python3 -m pip install --break-system-packages --user psutil
 
       - name: Build cppcheck
         run: |
