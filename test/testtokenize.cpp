@@ -101,6 +101,7 @@ private:
         TEST_CASE(simplifyAt);
 
         TEST_CASE(inlineasm);
+        TEST_CASE(simplifyAsm);
         TEST_CASE(simplifyAsm2);  // #4725 (writing asm() around "^{}")
 
         TEST_CASE(ifAddBraces1);
@@ -1012,6 +1013,15 @@ private:
         ASSERT_EQUALS(";\n\nasm ( \"\"mov ax,bx\"\" ) ;", tokenizeAndStringify(";\n\n__asm__ volatile ( \"mov ax,bx\" );"));
 
         ASSERT_EQUALS("void func1 ( ) ;", tokenizeAndStringify("void func1() __asm__(\"...\") __attribute__();"));
+    }
+
+    void simplifyAsm() {
+        // asm label (variable)
+        ASSERT_EQUALS("int * pfoo ; pfoo = NULL ;",
+                      tokenizeAndStringify("int* pfoo asm (\"pmyfoo\") = NULL;"));
+        // asm label (function)
+        ASSERT_EQUALS("void * func ( ) ;",
+                      tokenizeAndStringify("void* func() asm (\"myfunc\");"));
     }
 
     // #4725 - ^{}
