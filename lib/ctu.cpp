@@ -172,7 +172,7 @@ static std::string readAttrString(const tinyxml2::XMLElement *e, const char *att
     const char *value = e->Attribute(attr);
     if (!value && error)
         *error = true;
-    return value ? value : "";
+    return empty_if_null(value);
 }
 
 static long long readAttrInt(const tinyxml2::XMLElement *e, const char *attr, bool *error)
