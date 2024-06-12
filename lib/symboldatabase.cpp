@@ -6076,7 +6076,7 @@ const Scope *SymbolDatabase::findScopeByName(const std::string& name) const
 //---------------------------------------------------------------------------
 
 template<class S, class T, REQUIRES("S must be a Scope class", std::is_convertible<S*, const Scope*> ), REQUIRES("T must be a Type class", std::is_convertible<T*, const Type*> )>
-S* findRecordInNestedListImpl(S& thisScope, const std::string & name, bool isC)
+static S* findRecordInNestedListImpl(S& thisScope, const std::string & name, bool isC)
 {
     for (S* scope: thisScope.nestedList) {
         if (scope->className == name && scope->type != Scope::eFunction)
@@ -6114,7 +6114,7 @@ Scope* Scope::findRecordInNestedList(const std::string & name, bool isC)
 //---------------------------------------------------------------------------
 
 template<class S, class T, REQUIRES("S must be a Scope class", std::is_convertible<S*, const Scope*> ), REQUIRES("T must be a Type class", std::is_convertible<T*, const Type*> )>
-T* findTypeImpl(S& thisScope, const std::string & name)
+static T* findTypeImpl(S& thisScope, const std::string & name)
 {
     auto it = thisScope.definedTypesMap.find(name);
 
