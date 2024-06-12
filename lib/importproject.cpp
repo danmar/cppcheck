@@ -203,7 +203,7 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
         }
     } else if (endsWith(filename, ".vcxproj")) {
         std::map<std::string, std::string, cppcheck::stricmp> variables;
-        std::vector<SharedItemsProject> sharedItemsProjects{};
+        std::vector<SharedItemsProject> sharedItemsProjects;
         if (importVcxproj(filename, variables, emptyString, fileFilters, sharedItemsProjects)) {
             setRelativePaths(filename);
             return ImportProject::Type::VS_VCXPROJ;
@@ -447,7 +447,7 @@ bool ImportProject::importSln(std::istream &istr, const std::string &path, const
     variables["SolutionDir"] = path;
 
     bool found = false;
-    std::vector<SharedItemsProject> sharedItemsProjects{};
+    std::vector<SharedItemsProject> sharedItemsProjects;
     while (std::getline(istr,line)) {
         if (!startsWith(line,"Project("))
             continue;
@@ -794,7 +794,7 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
     // we can only set it globally but in this context it needs to be treated per file
 
     // Include shared items project files
-    std::vector<std::string> sharedItemsIncludePaths{};
+    std::vector<std::string> sharedItemsIncludePaths;
     for (const auto& sharedProject : sharedItemsProjects) {
         for (const auto &file : sharedProject.sourceFiles) {
             std::string pathToFile = Path::simplifyPath(Path::getPathFromFilename(sharedProject.pathToProjectFile) + file);
@@ -873,7 +873,7 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
         return *iterator;
     }
 
-    SharedItemsProject result{};
+    SharedItemsProject result;
     result.pathToProjectFile = filename;
 
     tinyxml2::XMLDocument doc;
