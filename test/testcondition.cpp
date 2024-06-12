@@ -4620,6 +4620,17 @@ private:
               "    if (j != 0) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void f() {\n"
+              "    const char *s1 = foo();\n"
+              "    const char *s2 = bar();\n"
+              "    if (s2 == NULL)\n"
+              "        return;\n"
+              "    size_t len = s2 - s1;\n"
+              "    if (len == 0)\n"
+              "        return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void alwaysTrueSymbolic()
