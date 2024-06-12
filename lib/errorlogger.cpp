@@ -190,7 +190,8 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
     hash = attr ? strToInt<std::size_t>(attr) : 0;
 
     for (const tinyxml2::XMLElement *e = errmsg->FirstChildElement(); e; e = e->NextSiblingElement()) {
-        if (std::strcmp(e->Name(),"location")==0) {
+        const char* name = e->Name();
+        if (std::strcmp(name,"location")==0) {
             const char *strfile = e->Attribute("file");
             const char *strinfo = e->Attribute("info");
             const char *strline = e->Attribute("line");
@@ -201,7 +202,7 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
             const int line = strline ? strToInt<int>(strline) : 0;
             const int column = strcolumn ? strToInt<int>(strcolumn) : 0;
             callStack.emplace_front(file, info, line, column);
-        } else if (std::strcmp(e->Name(),"symbol")==0) {
+        } else if (std::strcmp(name,"symbol")==0) {
             mSymbolNames += e->GetText();
         }
     }

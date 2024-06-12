@@ -450,11 +450,12 @@ void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLo
                 const char* functionName = e2->Attribute("functionName");
                 if (functionName == nullptr)
                     continue;
-                if (std::strcmp(e2->Name(),"functioncall") == 0) {
+                const char* name = e2->Name();
+                if (std::strcmp(name,"functioncall") == 0) {
                     calls.insert(functionName);
                     continue;
                 }
-                if (std::strcmp(e2->Name(),"functiondecl") == 0) {
+                if (std::strcmp(name,"functiondecl") == 0) {
                     const char* lineNumber = e2->Attribute("lineNumber");
                     if (lineNumber) {
                         // cppcheck-suppress templateInstantiation - TODO: fix this - see #11631

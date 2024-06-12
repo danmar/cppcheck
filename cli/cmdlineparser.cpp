@@ -1157,33 +1157,35 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                         Settings::Rule rule;
 
                         for (const tinyxml2::XMLElement *subnode = node->FirstChildElement(); subnode; subnode = subnode->NextSiblingElement()) {
+                            const char * const subname = subnode->Name();
                             const char * const subtext = subnode->GetText();
-                            if (std::strcmp(subnode->Name(), "tokenlist") == 0) {
+                            if (std::strcmp(subname, "tokenlist") == 0) {
                                 rule.tokenlist = empty_if_null(subtext);
                             }
-                            else if (std::strcmp(subnode->Name(), "pattern") == 0) {
+                            else if (std::strcmp(subname, "pattern") == 0) {
                                 rule.pattern = empty_if_null(subtext);
                             }
-                            else if (std::strcmp(subnode->Name(), "message") == 0) {
+                            else if (std::strcmp(subname, "message") == 0) {
                                 for (const tinyxml2::XMLElement *msgnode = subnode->FirstChildElement(); msgnode; msgnode = msgnode->NextSiblingElement()) {
+                                    const char * const msgname = msgnode->Name();
                                     const char * const msgtext = msgnode->GetText();
-                                    if (std::strcmp(msgnode->Name(), "severity") == 0) {
+                                    if (std::strcmp(msgname, "severity") == 0) {
                                         rule.severity = severityFromString(empty_if_null(msgtext));
                                     }
-                                    else if (std::strcmp(msgnode->Name(), "id") == 0) {
+                                    else if (std::strcmp(msgname, "id") == 0) {
                                         rule.id = empty_if_null(msgtext);
                                     }
-                                    else if (std::strcmp(msgnode->Name(), "summary") == 0) {
+                                    else if (std::strcmp(msgname, "summary") == 0) {
                                         rule.summary = empty_if_null(msgtext);
                                     }
                                     else {
-                                        mLogger.printError("unable to load rule-file '" + ruleFile + "' - unknown element '" + msgnode->Name() + "' encountered in 'message'.");
+                                        mLogger.printError("unable to load rule-file '" + ruleFile + "' - unknown element '" + msgname + "' encountered in 'message'.");
                                         return Result::Fail;
                                     }
                                 }
                             }
                             else {
-                                mLogger.printError("unable to load rule-file '" + ruleFile + "' - unknown element '" + subnode->Name() + "' encountered in 'rule'.");
+                                mLogger.printError("unable to load rule-file '" + ruleFile + "' - unknown element '" + subname + "' encountered in 'rule'.");
                                 return Result::Fail;
                             }
                         }
