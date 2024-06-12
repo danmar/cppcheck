@@ -28,23 +28,23 @@
 
 // static functions are omitted from trace
 
-/*static*/ NORETURN void my_assert()
+/*static*/ NORETURN void my_assert() // NOLINT(misc-use-internal-linkage)
 {
     assert(false);
 }
 
-/*static*/ NORETURN void my_abort()
+/*static*/ NORETURN void my_abort() // NOLINT(misc-use-internal-linkage)
 {
     abort();
 }
 
-/*static*/ void my_segv()
+/*static*/ void my_segv() // NOLINT(misc-use-internal-linkage)
 {
     // cppcheck-suppress nullPointer
     ++*(int*)nullptr;
 }
 
-/*static*/ void my_fpe()
+/*static*/ void my_fpe() // NOLINT(misc-use-internal-linkage)
 {
 #if !defined(__APPLE__)
     feenableexcept(FE_ALL_EXCEPT); // TODO: check result
