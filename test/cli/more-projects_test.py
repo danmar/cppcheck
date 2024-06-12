@@ -859,7 +859,7 @@ def test_shared_items_project(tmpdir = ""):
         '--project-configuration=Release|x64',
         '-j1'
     ]
-    
+
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
     lines = stdout.splitlines()
