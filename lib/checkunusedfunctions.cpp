@@ -250,13 +250,15 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
         }
 
         if (funcname) {
+            if (isRecursiveCall(funcname))
+                continue;
             const auto baseName = stripTemplateParameters(funcname->str());
             FunctionUsage &func = mFunctions[baseName];
             const std::string& called_from_file = tokenizer.list.getFiles()[funcname->fileIndex()];
 
             if (func.filename.empty() || func.filename == "+" || func.filename != called_from_file)
                 func.usedOtherFile = true;
-            else if (!isRecursiveCall(funcname))
+            else
                 func.usedSameFile = true;
 
             mFunctionCalls.insert(baseName);
