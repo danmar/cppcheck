@@ -216,10 +216,13 @@ static const std::unordered_set<std::string> header_exts = {
     ".h", ".hpp", ".h++", ".hxx", ".hh"
 };
 
-bool Path::acceptFile(const std::string &path, const std::set<std::string> &extra)
+bool Path::acceptFile(const std::string &path, const std::set<std::string> &extra, Standards::Language* lang)
 {
     bool header = false;
-    return (identify(path, false, &header) != Standards::Language::None && !header) || extra.find(getFilenameExtension(path)) != extra.end();
+    Standards::Language l = identify(path, false, &header);
+    if (lang)
+        *lang = l;
+    return (l != Standards::Language::None && !header) || extra.find(getFilenameExtension(path)) != extra.end();
 }
 
 static bool hasEmacsCppMarker(const char* path)
