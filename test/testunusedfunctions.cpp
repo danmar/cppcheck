@@ -67,6 +67,7 @@ private:
         TEST_CASE(member_function_ternary);
         TEST_CASE(boost);
         TEST_CASE(enumValues);
+        TEST_CASE(recursive);
 
         TEST_CASE(multipleFiles);   // same function name in multiple files
 
@@ -116,7 +117,7 @@ private:
               "    if (f1())\n"
               "    { }\n"
               "}");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'f1' is never used.\n", errout_str());
     }
 
     void return1() {
@@ -124,7 +125,7 @@ private:
               "{\n"
               "    return f1();\n"
               "}");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'f1' is never used.\n", errout_str());
     }
 
     void return2() {
@@ -132,7 +133,7 @@ private:
               "{\n"
               "    return *foo();\n"
               "}");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used.\n", errout_str());
     }
 
     void return3() {
@@ -180,7 +181,7 @@ private:
               "    if (cond) ;\n"
               "    else f1();\n"
               "}");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used.\n", errout_str());
     }
 
     void functionpointer() {
@@ -255,7 +256,7 @@ private:
               "}\n"
               "\n"
               "void h() { g<int>(); h(); }");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) The function 'h' is never used.\n", errout_str());
     }
 
     void template3() { // #4701
@@ -286,7 +287,7 @@ private:
               "        test();\n"
               "    }\n"
               "};");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:11]: (style) The function 'test' is never used.\n", errout_str());
     }
 
     void template5() { // #9220
@@ -538,6 +539,14 @@ private:
               "};\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) The function 'Break' is never used.\n"
                       "[test.cpp:5]: (style) The function 'Break1' is never used.\n",
+                      errout_str());
+    }
+
+    void recursive() {
+        check("void f() {\n" // #8159
+              "    f();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'f' is never used.\n",
                       errout_str());
     }
 

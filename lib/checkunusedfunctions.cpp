@@ -59,6 +59,11 @@ static std::string stripTemplateParameters(const std::string& funcName) {
 // FUNCTION USAGE - Check for unused functions etc
 //---------------------------------------------------------------------------
 
+static bool isRecursiveCall(const Token* ftok)
+{
+    return ftok->function() && ftok->function() == Scope::nestedInFunction(ftok->scope());
+}
+
 void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Settings &settings)
 {
     const char * const FileName = tokenizer.list.getFiles().front().c_str();
@@ -251,7 +256,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
 
             if (func.filename.empty() || func.filename == "+" || func.filename != called_from_file)
                 func.usedOtherFile = true;
-            else
+            else if (!isRecursiveCall(funcname))
                 func.usedSameFile = true;
 
             mFunctionCalls.insert(baseName);
