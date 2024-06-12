@@ -865,7 +865,9 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
 
 ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::string& filename, const std::vector<std::string>& fileFilters, std::vector<SharedItemsProject> &cache)
 {
-    auto isInCacheCheck = [filename](const ImportProject::SharedItemsProject& e) -> bool { return filename == e.pathToProjectFile; };
+    auto isInCacheCheck = [filename](const ImportProject::SharedItemsProject& e) -> bool { 
+        return filename == e.pathToProjectFile; 
+    };
     auto iterator = std::find_if(cache.begin(), cache.end(), isInCacheCheck);
     if (iterator != std::end(cache)) {
         return *iterator;
