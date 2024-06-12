@@ -873,7 +873,7 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
         return *iterator;
     }
 
-    SharedItemsProject result;
+    SharedItemsProject result{};
     result.pathToProjectFile = filename;
 
     tinyxml2::XMLDocument doc;
