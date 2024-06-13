@@ -125,13 +125,6 @@ public:
     static bool isOctalDigit(char c);
 
     static unsigned int encodeMultiChar(const std::string& str);
-
-    /**
-     * \param[in] iCode Code being considered
-     * \param[in] iPos A posision within iCode
-     * \return Whether iCode[iPos] is a C++14 digit separator
-     */
-    static bool isDigitSeparator(const std::string& iCode, std::string::size_type iPos);
 };
 
 MathLib::value operator+(const MathLib::value &v1, const MathLib::value &v2);
