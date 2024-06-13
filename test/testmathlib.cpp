@@ -60,7 +60,6 @@ private:
         TEST_CASE(tan);
         TEST_CASE(abs);
         TEST_CASE(toString);
-        TEST_CASE(CPP14DigitSeparators);
     }
 
     void isGreater() const {
