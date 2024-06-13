@@ -250,6 +250,7 @@ private:
         TEST_CASE(exprid9);
         TEST_CASE(exprid10);
         TEST_CASE(exprid11);
+        TEST_CASE(exprid12);
 
         TEST_CASE(structuredBindings);
     }
@@ -4212,6 +4213,25 @@ private:
                           "4: void S :: f ( ) {\n"
                           "5: std ::@UNIQUE make_unique < int > (@UNIQUE g (@UNIQUE { } ,@6 this ) ) .@UNIQUE release (@UNIQUE ) ;\n"
                           "6: std ::@UNIQUE make_unique < int > (@UNIQUE h (@UNIQUE [ ] ( ) { } ,@6 this ) ) .@UNIQUE release (@UNIQUE ) ;\n"
+                          "7: }\n";
+        ASSERT_EQUALS(exp, tokenizeExpr(code));
+    }
+
+    void exprid12()
+    {
+        const char code[] = "struct S { std::unique_ptr<int> p; };\n" // #12765
+                            "namespace N {\n"
+                            "    struct T { void (*f)(S*); };\n"
+                            "    const T t = {\n"
+                            "        [](S* s) { s->p.release(); }\n"
+                            "    };\n"
+                            "}\n";
+        const char* exp = "1: struct S { std :: unique_ptr < int > p ; } ;\n"
+                          "2: namespace N {\n"
+                          "3: struct T { void ( * f@2 ) ( S * ) ; } ;\n"
+                          "4: const T t@3 = {\n"
+                          "5: [ ] ( S * s@4 ) { s@4 .@UNIQUE p@5 .@UNIQUE release (@UNIQUE ) ; }\n"
+                          "6: } ;\n"
                           "7: }\n";
         ASSERT_EQUALS(exp, tokenizeExpr(code));
     }
