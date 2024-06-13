@@ -54,7 +54,7 @@ public:
      */
     QString getNextFile();
 
-    FileSettings getNextFileSettings();
+    void getNextFileSettings(const FileSettings*& fs);
 
     /**
      * @brief Set list of files to check
@@ -137,6 +137,7 @@ protected:
     QStringList mFiles;
 
     std::list<FileSettings> mFileSettings;
+    std::list<FileSettings>::const_iterator mItNextFileSettings;
 
     /**
      * @brief Max progress
