@@ -280,21 +280,6 @@ static bool isNullablePointer(const Token* tok)
     return false;
 }
 
-static bool isPointerUnevaluated(const Token *tok)
-{
-    if (isUnevaluated(tok))
-        return true;
-
-    while (tok) {
-        if (isUnevaluated(tok->previous()))
-            return true;
-
-        tok = tok->astParent();
-    }
-    return false;
-}
-
-
 void CheckNullPointer::nullPointerByDeRefAndCheck()
 {
     const bool printInconclusive = (mSettings->certainty.isEnabled(Certainty::inconclusive));
@@ -320,12 +305,9 @@ void CheckNullPointer::nullPointerByDeRefAndCheck()
             if (!printInconclusive && value->isInconclusive())
                 return false;
 
-            if (isPointerUnevaluated(tok))
-                return false;
-
             return true;
         };
-        std::vector<const Token *> tokens = findTokensSkipDeadCode(mSettings->library, scope->bodyStart, scope->bodyEnd, pred);
+        std::vector<const Token *> tokens = findTokensSkipDeadAndUnevaluatedCode(mSettings->library, scope->bodyStart, scope->bodyEnd, pred);
         for (const Token *tok : tokens) {
             const ValueFlow::Value *value = tok->getValue(0);
 

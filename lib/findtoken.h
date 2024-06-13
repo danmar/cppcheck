@@ -84,7 +84,8 @@ bool findTokensSkipDeadCodeImpl(const Library& library,
                                 const Token* end,
                                 const Predicate& pred,
                                 Found found,
-                                const Evaluate& evaluate)
+                                const Evaluate& evaluate,
+                                bool skipUnevaluated)
 {
     for (T* tok = start; precedes(tok, end); tok = tok->next()) {
         if (pred(tok)) {
@@ -98,7 +99,7 @@ bool findTokensSkipDeadCodeImpl(const Library& library,
             auto result = evaluate(condTok);
             if (result.empty())
                 continue;
-            if (findTokensSkipDeadCodeImpl(library, tok->next(), tok->linkAt(1), pred, found, evaluate))
+            if (findTokensSkipDeadCodeImpl(library, tok->next(), tok->linkAt(1), pred, found, evaluate, skipUnevaluated))
                 return true;
             T* thenStart = tok->linkAt(1)->next();
             T* elseStart = nullptr;
@@ -108,7 +109,7 @@ bool findTokensSkipDeadCodeImpl(const Library& library,
             int r = result.front();
             if (r == 0) {
                 if (elseStart) {
-                    if (findTokensSkipDeadCodeImpl(library, elseStart, elseStart->link(), pred, found, evaluate))
+                    if (findTokensSkipDeadCodeImpl(library, elseStart, elseStart->link(), pred, found, evaluate, skipUnevaluated))
                         return true;
                     if (isReturnScope(elseStart->link(), library))
                         return true;
@@ -117,7 +118,7 @@ bool findTokensSkipDeadCodeImpl(const Library& library,
                     tok = thenStart->link();
                 }
             } else {
-                if (findTokensSkipDeadCodeImpl(library, thenStart, thenStart->link(), pred, found, evaluate))
+                if (findTokensSkipDeadCodeImpl(library, thenStart, thenStart->link(), pred, found, evaluate, skipUnevaluated))
                     return true;
                 if (isReturnScope(thenStart->link(), library))
                     return true;
@@ -137,7 +138,7 @@ bool findTokensSkipDeadCodeImpl(const Library& library,
                 if (!cond) {
                     next = colon;
                 } else {
-                    if (findTokensSkipDeadCodeImpl(library, tok->astParent()->next(), colon, pred, found, evaluate))
+                    if (findTokensSkipDeadCodeImpl(library, tok->astParent()->next(), colon, pred, found, evaluate, skipUnevaluated))
                         return true;
                     next = nextAfterAstRightmostLeaf(colon);
                 }
@@ -164,6 +165,12 @@ bool findTokensSkipDeadCodeImpl(const Library& library,
             else
                 tok = afterCapture;
         }
+        if (skipUnevaluated && isUnevaluated(tok)) {
+            T *next = tok->linkAt(1);
+            if (!next)
+                continue;
+            tok = next;
+        }
     }
     return false;
 }
@@ -185,7 +192,8 @@ std::vector<T*> findTokensSkipDeadCode(const Library& library,
         result.push_back(tok);
         return false;
     },
-        evaluate);
+        evaluate,
+        false);
     return result;
 }
 
@@ -194,6 +202,35 @@ std::vector<T*> findTokensSkipDeadCode(const Library& library, T* start, const T
 {
     return findTokensSkipDeadCode(library, start, end, pred, &evaluateKnownValues);
 }
+
+template<class T, class Predicate, class Evaluate, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+std::vector<T*> findTokensSkipDeadAndUnevaluatedCode(const Library& library,
+                                       T* start,
+                                       const Token* end,
+                                       const Predicate& pred,
+                                       const Evaluate& evaluate)
+{
+    std::vector<T*> result;
+    (void)findTokensSkipDeadCodeImpl(
+        library,
+        start,
+        end,
+        pred,
+        [&](T* tok) {
+        result.push_back(tok);
+        return false;
+    },
+        evaluate,
+        true);
+    return result;
+}
+
+template<class T, class Predicate, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+std::vector<T*> findTokensSkipDeadAndUnevaluatedCode(const Library& library, T* start, const Token* end, const Predicate& pred)
+{
+    return findTokensSkipDeadAndUnevaluatedCode(library, start, end, pred, &evaluateKnownValues);
+}
+
 
 template<class T, class Predicate, class Evaluate, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
 T* findTokenSkipDeadCode(const Library& library, T* start, const Token* end, const Predicate& pred, const Evaluate& evaluate)
@@ -208,7 +245,8 @@ T* findTokenSkipDeadCode(const Library& library, T* start, const Token* end, con
         result = tok;
         return true;
     },
-        evaluate);
+        evaluate,
+        false);
     return result;
 }
 
