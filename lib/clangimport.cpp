@@ -330,7 +330,7 @@ namespace clangimport {
 
         void dumpAst(int num = 0, int indent = 0) const;
         void createTokens1(TokenList &tokenList) {
-            //dumpAst();
+            //dumpAst(); // TODO: reactivate or remove
             if (!tokenList.back()) {
                 setLocations(tokenList, 0, 1, 1);
                 // FIXME: treat as C++ if no filename (i.e. no lang) is specified for now
@@ -486,6 +486,7 @@ std::string clangimport::AstNode::getTemplateParameters() const
     return templateParameters + ">";
 }
 
+// cppcheck-suppress unusedFunction // only used in comment
 void clangimport::AstNode::dumpAst(int num, int indent) const
 {
     (void)num;
