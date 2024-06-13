@@ -131,7 +131,7 @@ private:
     void return2() {
         check("char * foo()\n"
               "{\n"
-              "    return *foo();\n"
+              "    return foo();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used.\n", errout_str());
     }
