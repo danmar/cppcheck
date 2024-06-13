@@ -10,7 +10,6 @@ from testutils import cppcheck, assert_cppcheck, cppcheck_ex
 
 
 def __remove_std_lookup_log(l : list, exepath):
-    print(l)
     l.remove("looking for library 'std.cfg'")
     l.remove("looking for library '{}/std.cfg'".format(exepath))
     l.remove("looking for library '{}/../cfg/std.cfg'".format(exepath))
@@ -1569,4 +1568,49 @@ def test_lib_lookup_notfound(tmpdir):
         "looking for library '{}/cfg/none.cfg'".format(exepath),
         "library not found: 'none'",
         "cppcheck: Failed to load library configuration file 'none'. File not found"
+    ]
+
+
+def test_lib_lookup_absolute(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt'):
+        pass
+
+    cfg_file = os.path.join(tmpdir, 'test.cfg')
+    with open(cfg_file, 'wt') as f:
+        f.write('''
+<?xml version="1.0"?>
+<def format="2">
+</def>
+        ''')
+
+    exitcode, stdout, _, exe = cppcheck_ex(['--library={}'.format(cfg_file), '--debug-lookup', test_file])
+    exepath = os.path.dirname(exe)
+    if sys.platform == 'win32':
+        exepath = exepath.replace('\\', '/')
+    assert exitcode == 0, stdout
+    lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
+    assert lines == [
+        "looking for library '{}'".format(cfg_file),
+        'Checking {} ...'.format(test_file)
+    ]
+
+
+def test_lib_lookup_absolute_notfound(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt'):
+        pass
+
+    cfg_file = os.path.join(tmpdir, 'test.cfg')
+
+    exitcode, stdout, _, exe = cppcheck_ex(['--library={}'.format(cfg_file), '--debug-lookup', test_file])
+    exepath = os.path.dirname(exe)
+    if sys.platform == 'win32':
+        exepath = exepath.replace('\\', '/')
+    assert exitcode == 1, stdout
+    lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
+    assert lines == [
+        "looking for library '{}'".format(cfg_file),
+        "library not found: '{}'".format(cfg_file),
+        "cppcheck: Failed to load library configuration file '{}'. File not found".format(cfg_file)
     ]
