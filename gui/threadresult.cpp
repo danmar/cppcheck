@@ -76,7 +76,7 @@ void ThreadResult::getNextFileSettings(const FileSettings*& fs)
         return;
     }
     fs = &(*mItNextFileSettings);
-    mItNextFileSettings++;
+    ++mItNextFileSettings;
 }
 
 void ThreadResult::setFiles(const QStringList &files)
