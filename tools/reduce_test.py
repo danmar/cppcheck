@@ -3,8 +3,8 @@ from reduce import Reduce
 
 
 class ReduceTest(Reduce):
+    # pylint: disable-next=super-init-not-called - we do not want the super __init__ to be called
     def __init__(self):
-        # we do not want the super __init__ to be called
         # super().__init__('', '', '')
         pass
 

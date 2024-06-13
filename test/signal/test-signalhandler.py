@@ -31,7 +31,7 @@ def _call_process(arg):
 
 
 def test_assert():
-    exitcode, stdout, stderr = _call_process('assert')
+    _, stdout, stderr = _call_process('assert')
     if sys.platform == "darwin":
         assert stderr.startswith("Assertion failed: (false), function my_assert, file test-signalhandler.cpp, line "), stderr
     else:
@@ -46,7 +46,7 @@ def test_assert():
 
 
 def test_abort():
-    exitcode, stdout, stderr = _call_process('abort')
+    _, stdout, _ = _call_process('abort')
     lines = stdout.splitlines()
     assert lines[0] == 'Internal error: cppcheck received signal SIGABRT - abort or assertion'
     # no stacktrace on MaCos
@@ -57,7 +57,7 @@ def test_abort():
 
 
 def test_segv():
-    exitcode, stdout, stderr = _call_process('segv')
+    _, stdout, stderr = _call_process('segv')
     assert stderr == ''
     lines = stdout.splitlines()
     if sys.platform == "darwin":
@@ -74,7 +74,7 @@ def test_segv():
 # TODO: make this work
 @pytest.mark.skip
 def test_fpe():
-    exitcode, stdout, stderr = _call_process('fpe')
+    _, stdout, stderr = _call_process('fpe')
     assert stderr == ''
     lines = stdout.splitlines()
     assert lines[0].startswith('Internal error: cppcheck received signal SIGFPE - FPE_FLTDIV (at 0x7f'), lines[0]

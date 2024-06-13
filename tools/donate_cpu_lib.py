@@ -37,10 +37,8 @@ def detect_make():
 
     for m in make_cmds:
         try:
-            #print('{} --version'.format(m))
             subprocess.check_call([m, '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except OSError as e:
-            #print("'{}' not found ({})".format(m, e))
+        except OSError:
             continue
 
         print("using '{}'".format(m))
@@ -72,6 +70,7 @@ def check_requirements():
             result = False
 
     try:
+        # pylint: disable-next=unused-import - intentional
         import psutil
     except ImportError as e:
         print("Error: {}. Module is required.".format(e))
@@ -300,6 +299,7 @@ def __remove_tree(folder_name):
         return
 
     def rmtree_func():
+        # pylint: disable=deprecated-argument - FIXME: onerror was deprecated in Python 3.12
         shutil.rmtree(folder_name, onerror=__handle_remove_readonly)
 
     print('Removing existing temporary data...')

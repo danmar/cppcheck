@@ -39,7 +39,7 @@ def test_fuzz_timeout():
     fuzz_timeout_dir = os.path.join(__script_dir, 'fuzz-timeout')
     for f in os.listdir(fuzz_timeout_dir):
         try:
-            ret, stdout, _ = cppcheck(['-q', '--language=c++', '--enable=all', '--inconclusive', f], cwd=fuzz_timeout_dir, timeout=5)
+            cppcheck(['-q', '--language=c++', '--enable=all', '--inconclusive', f], cwd=fuzz_timeout_dir, timeout=5)
         except subprocess.TimeoutExpired:
             failures.append(f)
 

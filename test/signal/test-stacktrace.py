@@ -30,7 +30,7 @@ def _call_process():
 
 
 def test_stack():
-    exitcode, stdout, stderr = _call_process()
+    _, stdout, stderr = _call_process()
     assert stderr == ''
     lines = stdout.splitlines()
     assert lines[0] == 'Callstack:'
