@@ -1677,9 +1677,9 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
         }
     }
 
-    auto exprScopes = functionScopes; // functions + global lambdas
+    auto exprScopes = functionScopes; // functions + global lambdas + namespaces
     std::copy_if(scopeList.front().nestedList.begin(), scopeList.front().nestedList.end(), std::back_inserter(exprScopes), [](const Scope* scope) {
-        return scope && scope->type == Scope::eLambda;
+        return scope && (scope->type == Scope::eLambda || scope->type == Scope::eNamespace);
     });
 
     for (const Scope * scope : exprScopes) {
