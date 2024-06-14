@@ -94,8 +94,6 @@ public:
 
     /** set possible usage for all variables */
     void possibleUsageAll(const std::pair<const Token*, Usage>& functionUsage);
-
-    void print();
 };
 
 
