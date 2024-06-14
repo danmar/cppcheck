@@ -5957,7 +5957,27 @@ void Tokenizer::dump(std::ostream &out) const
         // could result in invalid XML, so run it through toxml().
         outs += "str=\"";
         outs += ErrorLogger::toxml(dir.str);
+        outs +="\">";
+        outs += '\n';
+        for (const simplecpp::Token * tok = dir.startToken; tok && tok != dir.endToken; tok = tok->next) {
+            outs += "        <token ";
+            outs += "column=\"";
+            outs += std::to_string(tok->location.col);
+            outs += "\" ";
+            outs += "str=\"";
+            outs += ErrorLogger::toxml(tok->str());
+            outs +="\"/>";
+            outs += '\n';
+        }
+        outs += "        <token ";
+        outs += "column=\"";
+        outs += std::to_string(dir.endToken->location.col);
+        outs += "\" ";
+        outs += "str=\"";
+        outs += ErrorLogger::toxml(dir.endToken->str());
         outs +="\"/>";
+        outs += '\n';
+        outs += "    </directive>";
         outs += '\n';
     }
     outs += "  </directivelist>";

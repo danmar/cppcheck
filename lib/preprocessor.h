@@ -42,7 +42,7 @@ class SuppressionList;
  * Each preprocessor directive (\#include, \#define, \#undef, \#if, \#ifdef, \#else, \#endif)
  * will be recorded as an instance of this class.
  *
- * file and linenr denote the location where where the directive is defined.
+ * file and linenr denote the location where the directive is defined.
  *
  */
 
@@ -56,8 +56,12 @@ struct CPPCHECKLIB Directive {
     /** the actual directive text */
     std::string str;
 
+    const simplecpp::Token * startToken{nullptr};
+    const simplecpp::Token * endToken{nullptr};
+
     /** record a directive (possibly filtering src) */
     Directive(std::string _file, const int _linenr, const std::string &_str);
+    Directive(std::string _file, const int _linenr, const simplecpp::Token * _startToken);
 };
 
 class CPPCHECKLIB RemarkComment {

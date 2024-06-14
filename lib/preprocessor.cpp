@@ -49,6 +49,12 @@ Directive::Directive(std::string _file, const int _linenr, const std::string &_s
     str(trim(_str))
 {}
 
+Directive::Directive(std::string _file, const int _linenr, const simplecpp::Token * _startToken) :
+    file(std::move(_file)),
+    linenr(_linenr),
+    startToken(_startToken)
+{}
+
 char Preprocessor::macroChar = char(1);
 
 Preprocessor::Preprocessor(const Settings& settings, ErrorLogger &errorLogger) : mSettings(settings), mErrorLogger(errorLogger)
@@ -328,7 +334,7 @@ std::list<Directive> Preprocessor::createDirectives(const simplecpp::TokenList &
                 continue;
             if (tok->next && tok->next->str() == "endfile")
                 continue;
-            Directive directive(tok->location.file(), tok->location.line, emptyString);
+            Directive directive(tok->location.file(), tok->location.line, tok);
             for (const simplecpp::Token *tok2 = tok; tok2 && tok2->location.line == directive.linenr; tok2 = tok2->next) {
                 if (tok2->comment)
                     continue;
@@ -338,6 +344,8 @@ std::list<Directive> Preprocessor::createDirectives(const simplecpp::TokenList &
                     directive.str += "include";
                 else
                     directive.str += tok2->str();
+                if (!tok2->next || tok2->next->location.line != directive.linenr)
+                    directive.endToken = tok2;
             }
             directives.push_back(std::move(directive));
         }
