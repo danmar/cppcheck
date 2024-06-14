@@ -113,7 +113,7 @@ jobs:
       - name: Generate dependencies (corpus)
         run: |
           # make sure the precompiled headers exist
-          make -C cmake.output.notest lib/CMakeFiles/cppcheck-core.dir/cmake_pch.hxx.cxx
+          make -C cmake.output.corpus lib/CMakeFiles/lib_objs.dir/cmake_pch.hxx.cxx
           # make sure auto-generated GUI files exist
           make -C cmake.output.corpus autogen
           make -C cmake.output.corpus gui-build-deps
