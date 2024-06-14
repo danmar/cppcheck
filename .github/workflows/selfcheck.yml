@@ -58,6 +58,7 @@ jobs:
           CC: clang-14
           CXX: clang++-14
 
+      # unusedFunction - start
       - name: CMake
         run: |
           cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=ON -DUSE_QT6=On -DWITH_QCHART=ON -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
@@ -79,8 +80,11 @@ jobs:
         env:
           DISABLE_VALUEFLOW: 1
           UNUSEDFUNCTION_ONLY: 1
+      # unusedFunction - end
 
       # the following steps are duplicated from above since setting up the build node in a parallel step takes longer than the actual steps
+
+      # unusedFunction notest - start
       - name: CMake (no test)
         run: |
           cmake -S . -B cmake.output.notest -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_GUI=ON -DUSE_QT6=On -DWITH_QCHART=ON -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
@@ -100,6 +104,49 @@ jobs:
         env:
           DISABLE_VALUEFLOW: 1
           UNUSEDFUNCTION_ONLY: 1
+      # unusedFunction notest - end
+
+      # unusedFunction notest nogui - start
+      - name: CMake (no test / no gui)
+        run: |
+          cmake -S . -B cmake.output.notest_nogui -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DENABLE_CHECK_INTERNAL=On
+
+      - name: Generate dependencies (no test / no gui)
+        run: |
+          # make sure the precompiled headers exist
+          make -C cmake.output.notest_nogui lib/CMakeFiles/cppcheck-core.dir/cmake_pch.hxx.cxx
+
+      # TODO: find a way to report unmatched suppressions without need to add information checks
+      - name: Self check (unusedFunction / no test / no gui)
+        run: |
+          ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib -D__CPPCHECK__ -D__GNUC__ --enable=unusedFunction --exception-handling -rp=. --project=cmake.output.notest_nogui/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr
+        env:
+          DISABLE_VALUEFLOW: 1
+          UNUSEDFUNCTION_ONLY: 1
+      # unusedFunction notest nogui - end
+
+      # unusedFunction notest nocli - start
+      - name: CMake (no test / no cli)
+        run: |
+          cmake -S . -B cmake.output.notest_nocli -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_CLI=Off -DBUILD_GUI=ON -DUSE_QT6=On -DWITH_QCHART=ON -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
+
+      - name: Generate dependencies (no test / no cli)
+        run: |
+          # make sure the precompiled headers exist
+          make -C cmake.output.notest_nocli lib/CMakeFiles/cppcheck-core.dir/cmake_pch.hxx.cxx
+          # make sure auto-generated GUI files exist
+          make -C cmake.output.notest_nocli autogen
+          make -C cmake.output.notest_nocli gui-build-deps
+
+      # TODO: find a way to report unmatched suppressions without need to add information checks
+      - name: Self check (unusedFunction / no test / no cli)
+        if: false  # TODO: the findings are currently too intrusive
+        run: |
+          ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib --library=qt -D__CPPCHECK__ -D__GNUC__ -DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=68 -DQT_CHARTS_LIB -DQT_MOC_HAS_STRINGDATA --enable=unusedFunction --exception-handling -rp=. --project=cmake.output.notest_nocli/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr
+        env:
+          DISABLE_VALUEFLOW: 1
+          UNUSEDFUNCTION_ONLY: 1
+      # unusedFunction notest nocli - end
 
       - name: Fetch corpus
         run: |
