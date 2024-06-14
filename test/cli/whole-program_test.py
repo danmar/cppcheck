@@ -6,6 +6,9 @@ from testutils import cppcheck
 __script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # TODO: use dedicated addon
+# TODO: test CheckNullPointer
+# TODO: test CheckUninitVar
+# TODO: test CheckBufferOverrun
 
 
 def __create_compile_commands(dir, entries):
@@ -17,7 +20,6 @@ def __create_compile_commands(dir, entries):
             'command': 'gcc -c {}'.format(f),
             'file': f
         }
-        print(obj)
         j.append(obj)
     compile_commands = os.path.join(dir, 'compile_commmands.json')
     with open(compile_commands, 'wt') as f:
@@ -85,3 +87,115 @@ def test_addon_suppress_inline_project(tmpdir):
 @pytest.mark.xfail(strict=True)
 def test_addon_suppress_inline_project_j(tmpdir):
     __test_addon_suppress_inline_project(tmpdir, ['-j2'])
+
+
+def __test_suppress_inline(extra_args):
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=information,style',
+        '--disable=missingInclude',  # TODO: remove
+        '--inline-suppr',
+        '--error-exitcode=1',
+        'whole-program/odr1.cpp',
+        'whole-program/odr2.cpp'
+    ]
+
+    args += extra_args
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    lines = stderr.splitlines()
+    assert lines == []
+    assert stdout == ''
+    assert ret == 0, stdout
+
+
+def test_suppress_inline():
+    __test_suppress_inline(['-j1'])
+
+
+@pytest.mark.xfail(strict=True)
+def test_suppress_inline_j():
+    __test_suppress_inline(['-j2'])
+
+
+@pytest.mark.xfail(strict=True)
+def test_suppress_inline_project(tmpdir):
+    compile_db = __create_compile_commands(tmpdir, [
+        os.path.join(__script_dir, 'whole-program', 'odr1.cpp'),
+        os.path.join(__script_dir, 'whole-program', 'odr2.cpp')
+    ])
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=information,style',
+        '--disable=missingInclude',  # TODO: remove
+        '--inline-suppr',
+        '--error-exitcode=1',
+        '--project={}'.format(compile_db)
+    ]
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    lines = stderr.splitlines()
+    assert lines == []
+    assert stdout == ''
+    assert ret == 0, stdout
+
+
+def __test_checkclass(extra_args):
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=information,style',
+        '--disable=missingInclude',  # TODO: remove
+        '--error-exitcode=1',
+        'whole-program/odr1.cpp',
+        'whole-program/odr2.cpp'
+    ]
+
+    args += extra_args
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    lines = stderr.splitlines()
+    assert lines == [
+        "whole-program{}odr1.cpp:6:1: error: The one definition rule is violated, different classes/structs have the same name 'C' [ctuOneDefinitionRuleViolation]".format(os.path.sep)
+    ]
+    assert stdout == ''
+    assert ret == 1, stdout
+
+
+def test_checkclass():
+    __test_checkclass(['-j1'])
+
+
+@pytest.mark.xfail(strict=True)
+def test_checkclass_j():
+    __test_checkclass(['-j2'])
+
+
+@pytest.mark.xfail(strict=True)
+def test_checkclass_project(tmpdir):
+    odr_file_1 = os.path.join(__script_dir, 'whole-program', 'odr1.cpp')
+
+    compile_db = __create_compile_commands(tmpdir, [
+        odr_file_1,
+        os.path.join(__script_dir, 'whole-program', 'odr2.cpp')
+    ])
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=information,style',
+        '--disable=missingInclude',  # TODO: remove
+        '--error-exitcode=1',
+        '--project={}'.format(compile_db)
+    ]
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    lines = stderr.splitlines()
+    assert lines == [
+        "{}:6:1: error: The one definition rule is violated, different classes/structs have the same name 'C' [ctuOneDefinitionRuleViolation]".format(odr_file_1)
+    ]
+    assert stdout == ''
+    assert ret == 1, stdout
