@@ -205,10 +205,10 @@ std::vector<T*> findTokensSkipDeadCode(const Library& library, T* start, const T
 
 template<class T, class Predicate, class Evaluate, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
 std::vector<T*> findTokensSkipDeadAndUnevaluatedCode(const Library& library,
-                                       T* start,
-                                       const Token* end,
-                                       const Predicate& pred,
-                                       const Evaluate& evaluate)
+                                                     T* start,
+                                                     const Token* end,
+                                                     const Predicate& pred,
+                                                     const Evaluate& evaluate)
 {
     std::vector<T*> result;
     (void)findTokensSkipDeadCodeImpl(
