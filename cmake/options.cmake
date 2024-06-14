@@ -51,6 +51,8 @@ option(ENABLE_CHECK_INTERNAL "Enable internal checks"                           
 option(DISABLE_DMAKE        "Disable run-dmake dependencies"                                OFF)
 option(BUILD_MANPAGE        "Enable man target to build manpage"                            OFF)
 
+option(BUILD_CLI            "Build the cli application"                                     ON)
+
 option(BUILD_GUI            "Build the qt application"                                      OFF)
 option(WITH_QCHART          "Enable QtCharts usage in the GUI"                              OFF)
 option(USE_QT6              "Prefer Qt6 when available"                                     OFF)
