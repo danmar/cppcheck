@@ -1541,7 +1541,7 @@ void CheckOther::checkConstPointer()
             continue;
         pointers.emplace(var);
         const Token* parent = tok->astParent();
-        enum Deref { NONE, DEREF, MEMBER } deref = NONE;
+        enum Deref : std::uint8_t { NONE, DEREF, MEMBER } deref = NONE;
         bool hasIncDec = false;
         if (parent && (parent->isUnaryOp("*") || (hasIncDec = parent->isIncDecOp() && parent->astParent() && parent->astParent()->isUnaryOp("*"))))
             deref = DEREF;

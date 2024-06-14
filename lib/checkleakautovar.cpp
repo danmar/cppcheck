@@ -1134,7 +1134,7 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
             // don't warn if we leave an inner scope
             if (isEndOfScope && var->scope() && tok != var->scope()->bodyEnd)
                 continue;
-            enum class PtrUsage { NONE, DEREF, PTR } used = PtrUsage::NONE;
+            enum class PtrUsage : std::uint8_t { NONE, DEREF, PTR } used = PtrUsage::NONE;
             for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
                 if (tok2->str() == ";")
                     break;

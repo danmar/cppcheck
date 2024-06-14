@@ -26,6 +26,7 @@
 
 #include <climits>
 #include <cstddef>
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -103,7 +104,7 @@ public:
 
     char defaultSign;  // unsigned:'u', signed:'s', unknown:'\0'
 
-    enum Type {
+    enum Type : std::uint8_t {
         Unspecified, // No platform specified
         Native, // whatever system this code was compiled on
         Win32A,

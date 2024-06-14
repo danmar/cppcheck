@@ -31,7 +31,7 @@
 #include <QStringList>
 
 class QWidget;
-enum class Color;
+enum class Color : std::uint8_t;
 
 NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
     QDialog(parent),

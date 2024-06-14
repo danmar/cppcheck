@@ -40,8 +40,8 @@
 
 class options;
 class Tokenizer;
-enum class Certainty;
-enum class Severity;
+enum class Certainty : std::uint8_t;
+enum class Severity : std::uint8_t;
 
 class TestFixture : public ErrorLogger {
 private:

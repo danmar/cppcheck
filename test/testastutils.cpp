@@ -473,7 +473,7 @@ private:
         ASSERT_EQUALS(true, nextAfterAstRightmostLeaf("int * g(int); void f(int a, int b) { int x = g(a + 1)[b]; }", "+", ") ["));
     }
 
-    enum class Result {False, True, Fail};
+    enum class Result : std::uint8_t {False, True, Fail};
 
     template<size_t size>
     Result isUsedAsBool(const char (&code)[size], const char pattern[]) {

@@ -57,7 +57,7 @@
 #include <sys/prctl.h>
 #endif
 
-enum class Color;
+enum class Color : std::uint8_t;
 
 // NOLINTNEXTLINE(misc-unused-using-decls) - required for FD_ZERO
 using std::memset;
@@ -73,7 +73,7 @@ ProcessExecutor::ProcessExecutor(const std::list<FileWithDetails> &files, const 
 namespace {
     class PipeWriter : public ErrorLogger {
     public:
-        enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', CHILD_END='5'};
+        enum PipeSignal : std::uint8_t {REPORT_OUT='1',REPORT_ERROR='2', CHILD_END='5'};
 
         explicit PipeWriter(int pipe) : mWpipe(pipe) {}
 

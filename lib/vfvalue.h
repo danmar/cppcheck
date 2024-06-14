@@ -26,6 +26,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <functional>
 #include <list>
 #include <string>
@@ -41,7 +42,7 @@ namespace ValueFlow
     public:
         using ErrorPathItem = std::pair<const Token *, std::string>;
         using ErrorPath = std::list<ErrorPathItem>;
-        enum class Bound { Upper, Lower, Point };
+        enum class Bound : std::uint8_t { Upper, Lower, Point };
 
         explicit Value(long long val = 0, Bound b = Bound::Point) :
             bound(b),
@@ -195,7 +196,7 @@ namespace ValueFlow
 
         std::string toString() const;
 
-        enum class ValueType {
+        enum class ValueType : std::uint8_t {
             INT,
             TOK,
             FLOAT,
@@ -301,7 +302,7 @@ namespace ValueFlow
         int indirect{};
 
         /** kind of moved  */
-        enum class MoveKind { NonMovedVariable, MovedVariable, ForwardedVariable } moveKind = MoveKind::NonMovedVariable;
+        enum class MoveKind : std::uint8_t { NonMovedVariable, MovedVariable, ForwardedVariable } moveKind = MoveKind::NonMovedVariable;
 
         /** Path id */
         MathLib::bigint path{};
@@ -314,7 +315,7 @@ namespace ValueFlow
         // Set to where a lifetime is captured by value
         const Token* capturetok{};
 
-        enum class LifetimeKind {
+        enum class LifetimeKind : std::uint8_t {
             // Pointer points to a member of lifetime
             Object,
             // A member of object points to the lifetime
@@ -327,7 +328,7 @@ namespace ValueFlow
             Address
         } lifetimeKind = LifetimeKind::Object;
 
-        enum class LifetimeScope { Local, Argument, SubFunction, ThisPointer, ThisValue } lifetimeScope = LifetimeScope::Local;
+        enum class LifetimeScope : std::uint8_t { Local, Argument, SubFunction, ThisPointer, ThisValue } lifetimeScope = LifetimeScope::Local;
 
         static const char* toString(MoveKind moveKind);
         static const char* toString(LifetimeKind lifetimeKind);
@@ -335,7 +336,7 @@ namespace ValueFlow
         static const char* toString(Bound bound);
 
         /** How known is this value */
-        enum class ValueKind {
+        enum class ValueKind : std::uint8_t {
             /** This value is possible, other unlisted values may also be possible */
             Possible,
             /** Only listed values are possible */

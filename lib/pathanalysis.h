@@ -21,6 +21,7 @@
 
 #include "errortypes.h"
 
+#include <cstdint>
 #include <functional>
 #include <list>
 #include <utility>
@@ -30,7 +31,7 @@ class Scope;
 class Token;
 
 struct PathAnalysis {
-    enum class Progress {
+    enum class Progress : std::uint8_t {
         Continue,
         Break
     };

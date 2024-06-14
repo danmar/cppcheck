@@ -23,6 +23,7 @@
 
 #include "config.h"
 
+#include <cstdint>
 #include <set>
 #include <vector>
 
@@ -73,7 +74,7 @@ private:
 
     /** Result of forward analysis */
     struct Result {
-        enum class Type { NONE, READ, WRITE, BREAK, RETURN, BAILOUT } type;
+        enum class Type : std::uint8_t { NONE, READ, WRITE, BREAK, RETURN, BAILOUT } type;
         explicit Result(Type type) : type(type) {}
         Result(Type type, const Token *token) : type(type), token(token) {}
         const Token* token{};
@@ -83,7 +84,7 @@ private:
     Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<nonneg int> &exprVarIds, bool local, bool inInnerClass, int depth=0);
 
     const Settings &mSettings;
-    enum class What { Reassign, UnusedValue, ValueFlow } mWhat = What::Reassign;
+    enum class What : std::uint8_t { Reassign, UnusedValue, ValueFlow } mWhat = What::Reassign;
     std::vector<KnownAndToken> mValueFlow;
     bool mValueFlowKnown = true;
 };

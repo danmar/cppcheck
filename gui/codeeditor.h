@@ -19,6 +19,8 @@
 #ifndef CODEEDITOR_H
 #define CODEEDITOR_H
 
+#include <cstdint>
+
 #include <QObject>
 #include <QPlainTextEdit>
 #include <QRegularExpression>
@@ -51,7 +53,7 @@ protected:
     void highlightBlock(const QString &text) override;
 
 private:
-    enum RuleRole {
+    enum RuleRole : std::uint8_t {
         Keyword = 1,
         Class   = 2,
         Comment = 3,

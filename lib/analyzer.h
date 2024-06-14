@@ -21,6 +21,8 @@
 
 #include "config.h"
 #include "mathlib.h"
+
+#include <cstdint>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -43,7 +45,7 @@ struct Analyzer {
         Action(T f) : mFlag(f) // cppcheck-suppress noExplicitConstructor
         {}
 
-        enum {
+        enum : std::uint16_t {
             None = 0,
             Read = (1 << 0),
             Write = (1 << 1),
@@ -130,7 +132,7 @@ struct Analyzer {
         unsigned int mFlag{};
     };
 
-    enum class Terminate { None, Bail, Escape, Modified, Inconclusive, Conditional };
+    enum class Terminate : std::uint8_t { None, Bail, Escape, Modified, Inconclusive, Conditional };
 
     struct Result {
         explicit Result(Action action = Action::None, Terminate terminate = Terminate::None)
@@ -146,10 +148,10 @@ struct Analyzer {
         }
     };
 
-    enum class Direction { Forward, Reverse };
+    enum class Direction : std::uint8_t { Forward, Reverse };
 
     struct Assume {
-        enum Flags {
+        enum Flags : std::uint8_t {
             None = 0,
             Quiet = (1 << 0),
             Absolute = (1 << 1),
@@ -157,7 +159,7 @@ struct Analyzer {
         };
     };
 
-    enum class Evaluate { Integral, ContainerEmpty };
+    enum class Evaluate : std::uint8_t { Integral, ContainerEmpty };
 
     /// Analyze a token
     virtual Action analyze(const Token* tok, Direction d) const = 0;

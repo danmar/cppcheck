@@ -26,6 +26,7 @@
 #include "platform.h"
 #include "utils.h"
 
+#include <cstdint>
 #include <iosfwd>
 #include <list>
 #include <map>
@@ -51,7 +52,7 @@ class Settings;
  */
 class CPPCHECKLIB WARN_UNUSED ImportProject {
 public:
-    enum class Type {
+    enum class Type : std::uint8_t {
         NONE,
         UNKNOWN,
         MISSING,

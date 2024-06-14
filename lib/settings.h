@@ -42,7 +42,7 @@
 #include <vector>
 #include <unordered_set>
 
-enum class SHOWTIME_MODES;
+enum class SHOWTIME_MODES : std::uint8_t;
 namespace ValueFlow {
     class Value;
 }
@@ -200,7 +200,7 @@ public:
     bool exceptionHandling{};
 #endif
 
-    enum class ExecutorType
+    enum class ExecutorType : std::uint8_t
     {
 #ifdef HAS_THREADING_MODEL_THREAD
         Thread,
@@ -489,7 +489,7 @@ public:
         return jobs == 1;
     }
 
-    enum class CheckLevel {
+    enum class CheckLevel : std::uint8_t {
         normal,
         exhaustive
     };

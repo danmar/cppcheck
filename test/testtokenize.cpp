@@ -5980,7 +5980,7 @@ private:
         ASSERT_EQUALS("a ? ( b < c ) : d > e", tokenizeAndStringify("a ? b < c : d > e"));
     }
 
-    enum class AstStyle {
+    enum class AstStyle : std::uint8_t {
         Simple,
         Z3
     };
