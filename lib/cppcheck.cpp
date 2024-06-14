@@ -868,7 +868,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 if (!mSettings.quiet && (!mCurrentConfig.empty() || checkCount > 1)) {
                     std::string fixedpath = Path::simplifyPath(filename);
                     fixedpath = Path::toNativeSeparators(std::move(fixedpath));
-                    mErrorLogger.reportOut("Checking " + fixedpath + ": " + mCurrentConfig + "...", Color::FgGreen);
+                    mErrorLogger.reportOut("Checking... " + fixedpath + ": " + mCurrentConfig, Color::FgGreen);
                 }
 
                 if (!tokenizer.tokens())
@@ -1480,7 +1480,7 @@ void CppCheck::executeAddonsWholeProgram(const std::list<std::pair<std::string, 
         if (it == ctuInfoFiles.end())
             ctuInfoFiles.push_back(getCtuInfoFileName(dumpFileName));
     }
-
+    mErrorLogger.reportOut("Checking... whole program", Color::FgGreen);
     try {
         executeAddons(ctuInfoFiles, "");
     } catch (const InternalError& e) {
