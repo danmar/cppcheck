@@ -159,7 +159,7 @@ private:
               "{\n"
               "    void (*f)() = cond ? f1 : NULL;\n"
               "}");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'f1' is never used.\n", errout_str());
     }
 
     void callback2() { // #8677
