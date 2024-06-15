@@ -5107,6 +5107,8 @@ void Tokenizer::setVarIdPass2()
                 classnameTokens.push_back(tokStart->next());
                 tokStart = tokStart->tokAt(2);
             }
+            if (!tokStart)
+                syntaxError(tok);
         }
 
         std::string classname;
