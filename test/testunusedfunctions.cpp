@@ -323,7 +323,7 @@ private:
               "};\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) The function 'tf' is never used.\n", errout_str());
 
-        check("struct S {\n"
+        check("struct C {\n"
               "    template<typename T>\n"
               "    void tf(const T&) { }\n"
               "};\n"
@@ -333,7 +333,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout_str());
 
-        check("struct S {\n"
+        check("struct C {\n"
               "    template<typename T>\n"
               "    void tf(const T&) { }\n"
               "};\n"
@@ -586,7 +586,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) The function 'f' is never used.\n", errout_str());
 
         check("void f(void) {}\n"
-              "void (*list[])(void) = {f}");
+              "void (*list[])(void) = {f};");
         ASSERT_EQUALS("", errout_str());
     }
 
