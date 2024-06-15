@@ -524,10 +524,11 @@ private:
     }
 
     void boost() {
-        check("static void _xy(const char *b, const char *e)\n"
-              "{}\n"
-              "parse(line, blanks_p >> ident[&_xy] >> blanks_p >> eol_p).full");
-        ASSERT_EQUALS("", errout_str());
+        check("static void _xy(const char *b, const char *e) {}\n"
+              "void f() {\n"
+              "    parse(line, blanks_p >> ident[&_xy] >> blanks_p >> eol_p).full;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The function 'f' is never used.\n", errout_str());
     }
 
     void enumValues() { // #11486
