@@ -24,6 +24,7 @@
 #include "config.h"
 #include "tokenlist.h"
 
+#include <cstdint>
 #include <iosfwd>
 #include <list>
 #include <map>
@@ -37,7 +38,7 @@ class Token;
 class TemplateSimplifier;
 class ErrorLogger;
 struct Directive;
-enum class Severity;
+enum class Severity : std::uint8_t;
 
 /// @addtogroup Core
 /// @{

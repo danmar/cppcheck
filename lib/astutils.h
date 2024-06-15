@@ -22,6 +22,7 @@
 #define astutilsH
 //---------------------------------------------------------------------------
 
+#include <cstdint>
 #include <functional>
 #include <list>
 #include <stack>
@@ -39,7 +40,7 @@
 
 class Settings;
 
-enum class ChildrenToVisit {
+enum class ChildrenToVisit : std::uint8_t {
     none,
     op1,
     op2,
@@ -436,7 +437,7 @@ bool isConstVarExpression(const Token* tok, const std::function<bool(const Token
 
 bool isLeafDot(const Token* tok);
 
-enum class ExprUsage { None, NotUsed, PassedByReference, Used, Inconclusive };
+enum class ExprUsage : std::uint8_t { None, NotUsed, PassedByReference, Used, Inconclusive };
 
 ExprUsage getExprUsage(const Token* tok, int indirect, const Settings& settings);
 

@@ -47,6 +47,7 @@ private:
         TEST_CASE(identify);
         TEST_CASE(identifyWithCppProbe);
         TEST_CASE(is_header);
+        TEST_CASE(simplifyPath);
     }
 
     void removeQuotationMarks() const {
@@ -316,21 +317,26 @@ private:
             "// -*- c++ -*-",
             "// -*- mode: c++; -*-",
 
-            //"/* -*- C++ -*- */"
+            "/* -*- C++ -*- */",
+            "/* -*- C++ -*-",
 
             "//-*- C++ -*-",
             " //-*- C++ -*-",
             "\t//-*- C++ -*-",
             "\t //-*- C++ -*-",
             " \t//-*- C++ -*-",
+            "//-*- C++ -*- ",
+            "//-*- C++ -*- \n",
             "// -----*- C++ -*-----",
             "// comment-*- C++ -*-comment",
+            "// -*- C++ -*-\n",
             "//-*- C++ -*-\r// comment",
             "//-*- C++ -*-\n// comment",
             "//-*- C++ -*-\r\n// comment",
 
-            //"/* -*-C++-*- */"
-            //"/*-*-C++-*-*/"
+            "/* -*-C++-*- */",
+            "/*-*-C++-*-*/",
+            " /*-*-C++-*-*/",
         };
 
         for (const auto& f : { "cppprobe.h", "cppprobe" }) {
@@ -344,15 +350,26 @@ private:
             "// -*- C++", // no end marker
             "// -*- C++ --*-", // incorrect end marker
             "// -*- C++/-*-", // unexpected character
-            "// comment\n// -*-C", // not on the first line
-            "// comment\r// -*-C", // not on the first line
-            "// comment\r\n// -*-C", // not on the first line
+            "// comment\n// -*- C++ -*-", // not on the first line
+            "// comment\r// -*- C++ -*-", // not on the first line
+            "// comment\r\n// -*- C++ -*-", // not on the first line
             "// -*- C -*-",
             "// -*- Mode: C; -*-",
             "// -*- f90 -*-",
             "// -*- fortran -*-",
             "// -*- c-basic-offset: 2 -*-",
-            "// -*- c-basic-offset:4; indent-tabs-mode:nil -*-"
+            "// -*- c-basic-offset:4; indent-tabs-mode:nil -*-",
+            "// ", // no marker
+            "// -*-", // incomplete marker
+            "/*", // no marker
+            "/**/", // no marker
+            "/*\n*/", // no marker
+            "/* */", // no marker
+            "/* \n*/", // no marker
+            "/* -*-", // incomplete marker
+            "/* \n-*-", // incomplete marker
+            "/* \n-*- C++ -*-", // not on the first line
+            "/* \n-*- C++ -*- */" // not on the first line
         };
 
         for (const auto& m : markers_c) {
@@ -375,6 +392,49 @@ private:
         ASSERT(Path::isHeader("index.header")==false);
         ASSERT(Path::isHeader("index.htm")==false);
         ASSERT(Path::isHeader("index.html")==false);
+    }
+
+    void simplifyPath() const {
+        ASSERT_EQUALS("file.cpp", Path::simplifyPath("file.cpp"));
+        ASSERT_EQUALS("../file.cpp", Path::simplifyPath("../file.cpp"));
+        ASSERT_EQUALS("file.cpp", Path::simplifyPath("test/../file.cpp"));
+        ASSERT_EQUALS("../file.cpp", Path::simplifyPath("../test/../file.cpp"));
+
+        ASSERT_EQUALS("file.cpp", Path::simplifyPath("./file.cpp"));
+        ASSERT_EQUALS("../file.cpp", Path::simplifyPath("./../file.cpp"));
+        ASSERT_EQUALS("file.cpp", Path::simplifyPath("./test/../file.cpp"));
+        ASSERT_EQUALS("../file.cpp", Path::simplifyPath("./../test/../file.cpp"));
+
+        ASSERT_EQUALS("test/", Path::simplifyPath("test/"));
+        ASSERT_EQUALS("../test/", Path::simplifyPath("../test/"));
+        ASSERT_EQUALS("../", Path::simplifyPath("../test/.."));
+        ASSERT_EQUALS("../", Path::simplifyPath("../test/../"));
+
+        ASSERT_EQUALS("/home/file.cpp", Path::simplifyPath("/home/test/../file.cpp"));
+        ASSERT_EQUALS("/file.cpp", Path::simplifyPath("/home/../test/../file.cpp"));
+
+        ASSERT_EQUALS("C:/home/file.cpp", Path::simplifyPath("C:/home/test/../file.cpp"));
+        ASSERT_EQUALS("C:/file.cpp", Path::simplifyPath("C:/home/../test/../file.cpp"));
+
+        ASSERT_EQUALS("../file.cpp", Path::simplifyPath("..\\file.cpp"));
+        ASSERT_EQUALS("file.cpp", Path::simplifyPath("test\\..\\file.cpp"));
+        ASSERT_EQUALS("../file.cpp", Path::simplifyPath("..\\test\\..\\file.cpp"));
+
+        ASSERT_EQUALS("file.cpp", Path::simplifyPath(".\\file.cpp"));
+        ASSERT_EQUALS("../file.cpp", Path::simplifyPath(".\\..\\file.cpp"));
+        ASSERT_EQUALS("file.cpp", Path::simplifyPath(".\\test\\..\\file.cpp"));
+        ASSERT_EQUALS("../file.cpp", Path::simplifyPath(".\\..\\test\\..\\file.cpp"));
+
+        ASSERT_EQUALS("test/", Path::simplifyPath("test\\"));
+        ASSERT_EQUALS("../test/", Path::simplifyPath("..\\test\\"));
+        ASSERT_EQUALS("../", Path::simplifyPath("..\\test\\.."));
+        ASSERT_EQUALS("../", Path::simplifyPath("..\\test\\..\\"));
+
+        ASSERT_EQUALS("C:/home/file.cpp", Path::simplifyPath("C:\\home\\test\\..\\file.cpp"));
+        ASSERT_EQUALS("C:/file.cpp", Path::simplifyPath("C:\\home\\..\\test\\..\\file.cpp"));
+
+        ASSERT_EQUALS("//home/file.cpp", Path::simplifyPath("\\\\home\\test\\..\\file.cpp"));
+        ASSERT_EQUALS("//file.cpp", Path::simplifyPath("\\\\home\\..\\test\\..\\file.cpp"));
     }
 };
 

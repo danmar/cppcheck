@@ -23,6 +23,7 @@
 
 #include "utils.h"
 
+#include <cstdint>
 #include <string>
 
 /// @addtogroup Core
@@ -34,13 +35,13 @@
  * This struct contains all possible standards that cppcheck recognize.
  */
 struct Standards {
-    enum Language { None, C, CPP };
+    enum Language : std::uint8_t { None, C, CPP };
 
     /** C code standard */
-    enum cstd_t { C89, C99, C11, C17, C23, CLatest = C23 } c = CLatest;
+    enum cstd_t : std::uint8_t { C89, C99, C11, C17, C23, CLatest = C23 } c = CLatest;
 
     /** C++ code standard */
-    enum cppstd_t { CPP03, CPP11, CPP14, CPP17, CPP20, CPP23, CPP26, CPPLatest = CPP26 } cpp = CPPLatest;
+    enum cppstd_t : std::uint8_t { CPP03, CPP11, CPP14, CPP17, CPP20, CPP23, CPP26, CPPLatest = CPP26 } cpp = CPPLatest;
 
     /** --std value given on command line */
     std::string stdValue;

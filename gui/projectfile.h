@@ -23,6 +23,7 @@
 #include "suppressions.h"
 
 #include <cstddef>
+#include <cstdint>
 #include <map>
 #include <utility>
 
@@ -53,7 +54,7 @@ public:
         if (this == mActiveProject) mActiveProject = nullptr;
     }
 
-    enum class CheckLevel {
+    enum class CheckLevel : std::uint8_t {
         normal,
         exhaustive
     };

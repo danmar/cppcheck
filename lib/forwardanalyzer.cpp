@@ -45,8 +45,8 @@
 
 namespace {
     struct ForwardTraversal {
-        enum class Progress { Continue, Break, Skip };
-        enum class Terminate { None, Bail, Inconclusive };
+        enum class Progress : std::uint8_t { Continue, Break, Skip };
+        enum class Terminate : std::uint8_t { None, Bail, Inconclusive };
         ForwardTraversal(const ValuePtr<Analyzer>& analyzer, const TokenList& tokenList, ErrorLogger& errorLogger, const Settings& settings)
             : analyzer(analyzer), tokenList(tokenList), errorLogger(errorLogger), settings(settings)
         {}
@@ -336,7 +336,7 @@ namespace {
             return r;
         }
 
-        enum class Status {
+        enum class Status : std::uint8_t {
             None,
             Inconclusive,
         };

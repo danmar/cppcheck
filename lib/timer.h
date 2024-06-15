@@ -22,12 +22,13 @@
 
 #include "config.h"
 
+#include <cstdint>
 #include <ctime>
 #include <map>
 #include <mutex>
 #include <string>
 
-enum class SHOWTIME_MODES {
+enum class SHOWTIME_MODES : std::uint8_t {
     SHOWTIME_NONE,
     SHOWTIME_FILE,
     SHOWTIME_FILE_TOTAL,

@@ -3647,6 +3647,14 @@ private:
               "    switch (signal.signum) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:13]: (style) Parameter 'signal' can be declared as reference to const. However it seems that 'signalEvent' is a callback function, if 'signal' is declared with const you might also need to cast function pointer(s).\n", errout_str());
+
+        check("void f(int* p) {}\n" // 12843
+              "void g(std::map<void(*)(int*), int>&m) {\n"
+              "    m[&f] = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const. "
+                      "However it seems that 'f' is a callback function, if 'p' is declared with const you might also need to cast function pointer(s).\n",
+                      errout_str());
     }
 
     void constPointer() {

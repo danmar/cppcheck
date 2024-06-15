@@ -541,7 +541,7 @@ bool MathLib::isDecimalFloat(const std::string &str)
 {
     if (str.empty())
         return false;
-    enum class State {
+    enum class State : std::uint8_t {
         START, BASE_DIGITS1, LEADING_DECIMAL, TRAILING_DECIMAL, BASE_DIGITS2, E, MANTISSA_PLUSMINUS, MANTISSA_DIGITS, SUFFIX_F, SUFFIX_L, SUFFIX_LITERAL_LEADER, SUFFIX_LITERAL
     } state = State::START;
     std::string::const_iterator it = str.cbegin();
@@ -649,7 +649,7 @@ bool MathLib::isPositive(const std::string &str)
 
 static bool isValidIntegerSuffixIt(std::string::const_iterator it, std::string::const_iterator end, bool supportMicrosoftExtensions=true)
 {
-    enum class Status { START, SUFFIX_U, SUFFIX_UL, SUFFIX_ULL, SUFFIX_UZ, SUFFIX_L, SUFFIX_LU, SUFFIX_LL, SUFFIX_LLU, SUFFIX_I, SUFFIX_I6, SUFFIX_I64, SUFFIX_UI, SUFFIX_UI6, SUFFIX_UI64, SUFFIX_Z, SUFFIX_LITERAL_LEADER, SUFFIX_LITERAL } state = Status::START;
+    enum class Status : std::uint8_t { START, SUFFIX_U, SUFFIX_UL, SUFFIX_ULL, SUFFIX_UZ, SUFFIX_L, SUFFIX_LU, SUFFIX_LL, SUFFIX_LLU, SUFFIX_I, SUFFIX_I6, SUFFIX_I64, SUFFIX_UI, SUFFIX_UI6, SUFFIX_UI64, SUFFIX_Z, SUFFIX_LITERAL_LEADER, SUFFIX_LITERAL } state = Status::START;
     for (; it != end; ++it) {
         switch (state) {
         case Status::START:
@@ -770,7 +770,7 @@ bool MathLib::isValidIntegerSuffix(const std::string& str, bool supportMicrosoft
  **/
 bool MathLib::isOct(const std::string& str)
 {
-    enum class Status {
+    enum class Status : std::uint8_t {
         START, OCTAL_PREFIX, DIGITS
     } state = Status::START;
     if (str.empty())
@@ -805,7 +805,7 @@ bool MathLib::isOct(const std::string& str)
 
 bool MathLib::isIntHex(const std::string& str)
 {
-    enum class Status {
+    enum class Status : std::uint8_t {
         START, HEX_0, HEX_X, DIGIT
     } state = Status::START;
     if (str.empty())
@@ -846,7 +846,7 @@ bool MathLib::isIntHex(const std::string& str)
 
 bool MathLib::isFloatHex(const std::string& str)
 {
-    enum class Status {
+    enum class Status : std::uint8_t {
         START, HEX_0, HEX_X, WHOLE_NUMBER_DIGIT, POINT, FRACTION, EXPONENT_P, EXPONENT_SIGN, EXPONENT_DIGITS, EXPONENT_SUFFIX
     } state = Status::START;
     if (str.empty())
@@ -936,7 +936,7 @@ bool MathLib::isFloatHex(const std::string& str)
  **/
 bool MathLib::isBin(const std::string& str)
 {
-    enum class Status {
+    enum class Status : std::uint8_t {
         START, GNU_BIN_PREFIX_0, GNU_BIN_PREFIX_B, DIGIT
     } state = Status::START;
     if (str.empty())
@@ -977,7 +977,7 @@ bool MathLib::isBin(const std::string& str)
 
 bool MathLib::isDec(const std::string & str)
 {
-    enum class Status {
+    enum class Status : std::uint8_t {
         START, DIGIT
     } state = Status::START;
     if (str.empty())

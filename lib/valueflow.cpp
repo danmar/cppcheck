@@ -2514,7 +2514,7 @@ struct MemberExpressionAnalyzer : SubExpressionAnalyzer {
     }
 };
 
-enum class LifetimeCapture { Undefined, ByValue, ByReference };
+enum class LifetimeCapture : std::uint8_t { Undefined, ByValue, ByReference };
 
 static std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
 {

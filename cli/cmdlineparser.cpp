@@ -553,6 +553,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                      std::strcmp(argv[i], "--debug-normal") == 0)
                 mSettings.debugnormal = true;
 
+            // Show debug warnings for lookup for configuration files
+            else if (std::strcmp(argv[i], "--debug-lookup") == 0)
+                mSettings.debuglookup = true;
+
             // Flag used for various purposes during debugging
             else if (std::strcmp(argv[i], "--debug-simplified") == 0)
                 mSettings.debugSimplified = true;
@@ -897,7 +901,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             // Write results in file
             else if (std::strncmp(argv[i], "--output-file=", 14) == 0)
-                mSettings.outputFile = Path::simplifyPath(Path::fromNativeSeparators(argv[i] + 14));
+                mSettings.outputFile = Path::simplifyPath(argv[i] + 14);
 
             // Experimental: limit execution time for extended valueflow analysis. basic valueflow analysis
             // is always executed.
@@ -933,7 +937,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             // Write results in results.plist
             else if (std::strncmp(argv[i], "--plist-output=", 15) == 0) {
-                mSettings.plistOutput = Path::simplifyPath(Path::fromNativeSeparators(argv[i] + 15));
+                mSettings.plistOutput = Path::simplifyPath(argv[i] + 15);
                 if (mSettings.plistOutput.empty())
                     mSettings.plistOutput = ".";
 
@@ -1810,9 +1814,9 @@ bool CmdLineParser::isCppcheckPremium() const {
     return startsWith(mSettings.cppcheckCfgProductName, "Cppcheck Premium");
 }
 
-bool CmdLineParser::tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename)
+bool CmdLineParser::tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename, bool debug)
 {
-    const Library::Error err = destination.load(basepath.c_str(), filename);
+    const Library::Error err = destination.load(basepath.c_str(), filename, debug);
 
     if (err.errorcode == Library::ErrorCode::UNKNOWN_ELEMENT)
         mLogger.printMessage("Found unknown elements in configuration file '" + std::string(filename) + "': " + err.reason); // TODO: print as errors
@@ -1859,7 +1863,7 @@ bool CmdLineParser::tryLoadLibrary(Library& destination, const std::string& base
 
 bool CmdLineParser::loadLibraries(Settings& settings)
 {
-    if (!tryLoadLibrary(settings.library, settings.exename, "std.cfg")) {
+    if (!tryLoadLibrary(settings.library, settings.exename, "std.cfg", settings.debuglookup)) {
         const std::string msg("Failed to load std.cfg. Your Cppcheck installation is broken, please re-install.");
 #ifdef FILESDIR
         const std::string details("The Cppcheck binary was compiled with FILESDIR set to \""
@@ -1877,7 +1881,7 @@ bool CmdLineParser::loadLibraries(Settings& settings)
 
     bool result = true;
     for (const auto& lib : settings.libraries) {
-        if (!tryLoadLibrary(settings.library, settings.exename, lib.c_str())) {
+        if (!tryLoadLibrary(settings.library, settings.exename, lib.c_str(), settings.debuglookup)) {
             result = false;
         }
     }

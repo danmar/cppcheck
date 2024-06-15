@@ -20,10 +20,12 @@
 #define fileSettingsH
 
 #include "config.h"
+#include "path.h"
 #include "platform.h"
 
 #include <list>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -36,12 +38,21 @@ public:
 
     FileWithDetails(std::string path, std::size_t size)
         : mPath(std::move(path))
+        , mPathSimplified(Path::simplifyPath(mPath))
         , mSize(size)
-    {}
+    {
+        if (mPath.empty())
+            throw std::runtime_error("empty path specified");
+    }
 
     const std::string& path() const
     {
         return mPath;
+    }
+
+    const std::string& spath() const
+    {
+        return mPathSimplified;
     }
 
     std::size_t size() const
@@ -50,6 +61,7 @@ public:
     }
 private:
     std::string mPath;
+    std::string mPathSimplified;
     std::size_t mSize;
 };
 
@@ -68,6 +80,11 @@ struct CPPCHECKLIB FileSettings {
     const std::string& filename() const
     {
         return file.path();
+    }
+    // cppcheck-suppress unusedFunction
+    const std::string& sfilename() const
+    {
+        return file.spath();
     }
     std::string defines;
     // TODO: handle differently

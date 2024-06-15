@@ -26,6 +26,7 @@
 #include "tokenize.h"
 #include "symboldatabase.h"
 
+#include <cstdint>
 #include <list>
 #include <map>
 #include <set>
@@ -299,7 +300,7 @@ private:
     bool hasAllocation(const Function *func, const Scope* scope, const Token *start, const Token *end) const;
     bool hasAllocationInIfScope(const Function *func, const Scope* scope, const Token *ifStatementScopeStart) const;
     static bool hasAssignSelf(const Function *func, const Token *rhs, const Token *&out_ifStatementScopeStart);
-    enum class Bool { TRUE, FALSE, BAILOUT };
+    enum class Bool : std::uint8_t { TRUE, FALSE, BAILOUT };
     static Bool isInverted(const Token *tok, const Token *rhs);
     static const Token * getIfStmtBodyStart(const Token *tok, const Token *rhs);
 
@@ -307,7 +308,7 @@ private:
     bool isMemberVar(const Scope *scope, const Token *tok) const;
     static bool isMemberFunc(const Scope *scope, const Token *tok);
     static bool isConstMemberFunc(const Scope *scope, const Token *tok);
-    enum class MemberAccess { NONE, SELF, MEMBER };
+    enum class MemberAccess : std::uint8_t { NONE, SELF, MEMBER };
     bool checkConstFunc(const Scope *scope, const Function *func, MemberAccess& memberAccessed) const;
 
     // constructors helper function

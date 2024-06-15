@@ -24,6 +24,7 @@
 
 #include "config.h"
 
+#include <cstdint>
 #include <ctime>
 #include <list>
 #include <map>
@@ -77,7 +78,7 @@ public:
         const Token *mParamEnd;
         unsigned int mFlags;
 
-        enum {
+        enum : std::uint16_t {
             fIsClass                 = (1 << 0), // class template
             fIsFunction              = (1 << 1), // function template
             fIsVariable              = (1 << 2), // variable template

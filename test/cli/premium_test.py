@@ -31,8 +31,8 @@ def copy_cppcheck_premium(tmpdir):
                     "safety": false
                 }
                 """.replace('NAME', PRODUCT_NAME))
- 
-    return exe    
+
+    return exe
 
 
 def test_misra_c_builtin_style_checks(tmpdir):

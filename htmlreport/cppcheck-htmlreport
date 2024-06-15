@@ -422,6 +422,7 @@ def git_blame(errors, path, file, blame_options):
     full_path = os.path.join(path, file)
     path, filename = os.path.split(full_path)
 
+    cwd = os.getcwd()
     if path:
         os.chdir(path)
 
@@ -887,11 +888,12 @@ def main() -> None:
                 except KeyError:
                     pass
 
+                cwe_url = ""
                 try:
                     if error['cwe']:
                         cwe_url = "<a href=\"https://cwe.mitre.org/data/definitions/" + error['cwe'] + ".html\">" + error['cwe'] + "</a>"
                 except KeyError:
-                    cwe_url = ""
+                    pass
 
                 if error['severity'] in ['error', 'warning']:
                     message_class = error['severity']

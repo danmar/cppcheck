@@ -138,6 +138,7 @@ if (BUILD_TESTS)
         add_cfg(bsd.c)
         add_cfg(cairo.c)
         add_cfg(cppunit.cpp)
+        add_cfg(emscripten.cpp)
         # TODO: posix needs to specified first or it has a different mmap() config
         # TODO: get rid of posix dependency
         add_cfg(gnu.c ADD_LIBRARY posix)

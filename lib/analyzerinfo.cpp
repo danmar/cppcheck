@@ -53,14 +53,14 @@ void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::
     std::ofstream fout(filesTxt);
     for (const std::string &f : sourcefiles) {
         const std::string afile = getFilename(f);
-        fout << afile << ".a" << (++fileCount[afile]) << "::" << Path::simplifyPath(Path::fromNativeSeparators(f)) << '\n';
+        fout << afile << ".a" << (++fileCount[afile]) << "::" << Path::simplifyPath(f) << '\n';
         if (!userDefines.empty())
-            fout << afile << ".a" << (++fileCount[afile]) << ":" << userDefines << ":" << Path::simplifyPath(Path::fromNativeSeparators(f)) << '\n';
+            fout << afile << ".a" << (++fileCount[afile]) << ":" << userDefines << ":" << Path::simplifyPath(f) << '\n';
     }
 
     for (const FileSettings &fs : fileSettings) {
         const std::string afile = getFilename(fs.filename());
-        fout << afile << ".a" << (++fileCount[afile]) << ":" << fs.cfg << ":" << Path::simplifyPath(Path::fromNativeSeparators(fs.filename())) << std::endl;
+        fout << afile << ".a" << (++fileCount[afile]) << ":" << fs.cfg << ":" << Path::simplifyPath(fs.filename()) << std::endl;
     }
 }
 

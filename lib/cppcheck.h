@@ -29,6 +29,7 @@
 #include "settings.h"
 
 #include <cstddef>
+#include <cstdint>
 #include <fstream>
 #include <functional>
 #include <list>
@@ -40,7 +41,7 @@
 #include <vector>
 
 class TokenList;
-enum class SHOWTIME_MODES;
+enum class SHOWTIME_MODES : std::uint8_t;
 struct FileSettings;
 class CheckUnusedFunctions;
 class Tokenizer;
@@ -83,12 +84,12 @@ public:
     /**
      * @brief Check the file.
      * This function checks one given file for errors.
-     * @param path Path to the file to check.
+     * @param file The file to check.
      * @return amount of errors found or 0 if none were found.
      * @note You must set settings before calling this function (by calling
      *  settings()).
      */
-    unsigned int check(const std::string &path);
+    unsigned int check(const FileWithDetails &file);
     unsigned int check(const FileSettings &fs);
 
     /**
@@ -96,13 +97,13 @@ public:
      * This function checks one "virtual" file. The file is not read from
      * the disk but the content is given in @p content. In errors the @p path
      * is used as a filename.
-     * @param path Path to the file to check.
+     * @param file The file to check.
      * @param content File content as a string.
      * @return amount of errors found or 0 if none were found.
      * @note You must set settings before calling this function (by calling
      *  settings()).
      */
-    unsigned int check(const std::string &path, const std::string &content);
+    unsigned int check(const FileWithDetails &file, const std::string &content);
 
     /**
      * @brief Get reference to current settings.
@@ -172,12 +173,12 @@ private:
 
     /**
      * @brief Check a file using stream
-     * @param filename file name
+     * @param file the file
      * @param cfgname  cfg name
      * @param fileStream stream the file content can be read from
      * @return number of errors found
      */
-    unsigned int checkFile(const std::string& filename, const std::string &cfgname, std::istream* fileStream = nullptr);
+    unsigned int checkFile(const FileWithDetails& file, const std::string &cfgname, std::istream* fileStream = nullptr);
 
     /**
      * @brief Check normal tokens
@@ -189,7 +190,7 @@ private:
      * Execute addons
      */
     void executeAddons(const std::vector<std::string>& files, const std::string& file0);
-    void executeAddons(const std::string &dumpFile, const std::string& file0);
+    void executeAddons(const std::string &dumpFile, const FileWithDetails& file);
 
     /**
      * Execute addons
@@ -205,7 +206,7 @@ private:
     void executeRules(const std::string &tokenlist, const TokenList &list);
 #endif
 
-    unsigned int checkClang(const std::string &path);
+    unsigned int checkClang(const FileWithDetails &file);
 
     /**
      * @brief Errors and warnings are directed here.

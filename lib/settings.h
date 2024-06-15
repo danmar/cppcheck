@@ -42,7 +42,7 @@
 #include <vector>
 #include <unordered_set>
 
-enum class SHOWTIME_MODES;
+enum class SHOWTIME_MODES : std::uint8_t;
 namespace ValueFlow {
     class Value;
 }
@@ -173,6 +173,9 @@ public:
     /** @brief Are we running from DACA script? */
     bool daca{};
 
+    /** @brief Internal: Is --debug-lookup given? */
+    bool debuglookup{};
+
     /** @brief Is --debug-normal given? */
     bool debugnormal{};
 
@@ -197,7 +200,7 @@ public:
     bool exceptionHandling{};
 #endif
 
-    enum class ExecutorType
+    enum class ExecutorType : std::uint8_t
     {
 #ifdef HAS_THREADING_MODEL_THREAD
         Thread,
@@ -486,7 +489,7 @@ public:
         return jobs == 1;
     }
 
-    enum class CheckLevel {
+    enum class CheckLevel : std::uint8_t {
         normal,
         exhaustive
     };

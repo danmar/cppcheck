@@ -731,8 +731,7 @@ std::string ErrorMessage::FileLocation::getOrigFile(bool convert) const
 
 void ErrorMessage::FileLocation::setfile(std::string file)
 {
-    mFileName = Path::fromNativeSeparators(std::move(file));
-    mFileName = Path::simplifyPath(std::move(mFileName));
+    mFileName = Path::simplifyPath(std::move(file));
 }
 
 std::string ErrorMessage::FileLocation::stringify() const

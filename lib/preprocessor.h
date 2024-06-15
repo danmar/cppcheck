@@ -24,6 +24,7 @@
 #include "config.h"
 
 #include <cstddef>
+#include <cstdint>
 #include <istream>
 #include <list>
 #include <map>
@@ -97,7 +98,7 @@ public:
     /**
      * Include file types.
      */
-    enum HeaderTypes {
+    enum HeaderTypes : std::uint8_t {
         UserHeader = 1,
         SystemHeader
     };

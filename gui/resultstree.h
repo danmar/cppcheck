@@ -22,6 +22,8 @@
 
 #include "showtypes.h"
 
+#include <cstdint>
+
 #include <QObject>
 #include <QStandardItemModel>
 #include <QString>
@@ -39,7 +41,7 @@ class ThreadHandler;
 class QContextMenuEvent;
 class QKeyEvent;
 class QSettings;
-enum class Severity;
+enum class Severity : std::uint8_t;
 
 /// @addtogroup GUI
 /// @{

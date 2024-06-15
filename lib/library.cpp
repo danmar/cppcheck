@@ -33,6 +33,7 @@
 #include <cctype>
 #include <climits>
 #include <cstring>
+#include <iostream>
 #include <list>
 #include <memory>
 #include <sstream>
@@ -65,9 +66,12 @@ static void gettokenlistfromvalid(const std::string& valid, bool cpp, TokenList&
     }
 }
 
-Library::Error Library::load(const char exename[], const char path[])
+Library::Error Library::load(const char exename[], const char path[], bool debug)
 {
+    // TODO: remove handling of multiple libraries at once?
     if (std::strchr(path,',') != nullptr) {
+        if (debug)
+            std::cout << "handling multiple libraries '" + std::string(path) + "'" << std::endl;
         std::string p(path);
         for (;;) {
             const std::string::size_type pos = p.find(',');
@@ -83,42 +87,57 @@ Library::Error Library::load(const char exename[], const char path[])
         return Error();
     }
 
+    const bool is_abs_path = Path::isAbsolute(path);
+
     std::string absolute_path;
     // open file..
     tinyxml2::XMLDocument doc;
+    if (debug)
+        std::cout << "looking for library '" + std::string(path) + "'" << std::endl;
     tinyxml2::XMLError error = doc.LoadFile(path);
+    // TODO: do not ignore read errors
     if (error == tinyxml2::XML_ERROR_FILE_READ_ERROR && Path::getFilenameExtension(path).empty())
+    {
         // Reading file failed, try again...
         error = tinyxml2::XML_ERROR_FILE_NOT_FOUND;
+    }
     if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
         // failed to open file.. is there no extension?
         std::string fullfilename(path);
         if (Path::getFilenameExtension(fullfilename).empty()) {
             fullfilename += ".cfg";
+            if (debug)
+                std::cout << "looking for library '" + std::string(fullfilename) + "'" << std::endl;
             error = doc.LoadFile(fullfilename.c_str());
             if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
                 absolute_path = Path::getAbsoluteFilePath(fullfilename);
         }
 
-        std::list<std::string> cfgfolders;
-#ifdef FILESDIR
-        cfgfolders.emplace_back(FILESDIR "/cfg");
-#endif
-        if (exename) {
-            const std::string exepath(Path::fromNativeSeparators(Path::getPathFromFilename(Path::getCurrentExecutablePath(exename))));
-            cfgfolders.push_back(exepath + "cfg");
-            cfgfolders.push_back(exepath + "../cfg");
-            cfgfolders.push_back(exepath);
-        }
+        // only perform further lookups when the given path was not absolute
+        if (!is_abs_path && error == tinyxml2::XML_ERROR_FILE_NOT_FOUND)
+        {
+            std::list<std::string> cfgfolders;
+    #ifdef FILESDIR
+            cfgfolders.emplace_back(FILESDIR "/cfg");
+    #endif
+            if (exename) {
+                const std::string exepath(Path::fromNativeSeparators(Path::getPathFromFilename(Path::getCurrentExecutablePath(exename))));
+                cfgfolders.push_back(exepath + "cfg");
+                cfgfolders.push_back(exepath + "../cfg");
+                cfgfolders.push_back(exepath);
+            }
 
-        while (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND && !cfgfolders.empty()) {
-            const std::string cfgfolder(cfgfolders.back());
-            cfgfolders.pop_back();
-            const char *sep = (!cfgfolder.empty() && endsWith(cfgfolder,'/') ? "" : "/");
-            const std::string filename(cfgfolder + sep + fullfilename);
-            error = doc.LoadFile(filename.c_str());
-            if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
-                absolute_path = Path::getAbsoluteFilePath(filename);
+            while (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND && !cfgfolders.empty()) {
+                const std::string cfgfolder(cfgfolders.back());
+                cfgfolders.pop_back();
+                const char *sep = (!cfgfolder.empty() && endsWith(cfgfolder,'/') ? "" : "/");
+                const std::string filename(cfgfolder + sep + fullfilename);
+                if (debug)
+                    std::cout << "looking for library '" + std::string(filename) + "'" << std::endl;
+                error = doc.LoadFile(filename.c_str());
+                if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
+                    absolute_path = Path::getAbsoluteFilePath(filename);
+            }
         }
     } else
         absolute_path = Path::getAbsoluteFilePath(path);
@@ -134,10 +153,13 @@ Library::Error Library::load(const char exename[], const char path[])
         return Error(ErrorCode::OK); // ignore duplicates
     }
 
+    if (debug)
+        std::cout << "library not found: '" + std::string(path) + "'" << std::endl;
+
     if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND)
         return Error(ErrorCode::FILE_NOT_FOUND);
 
-    doc.PrintError();
+    doc.PrintError(); // TODO: do not print stray messages
     return Error(ErrorCode::BAD_XML);
 }
 

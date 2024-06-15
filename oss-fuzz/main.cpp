@@ -17,6 +17,7 @@
  */
 
 #include "cppcheck.h"
+#include "filesettings.h"
 #include "type2.h"
 
 #ifdef NO_FUZZ
@@ -25,7 +26,7 @@
 #include <sstream>
 #endif
 
-enum class Color;
+enum class Color : std::uint8_t;
 
 class DummyErrorLogger : public ErrorLogger {
 public:
@@ -37,13 +38,14 @@ public:
 };
 
 static DummyErrorLogger s_errorLogger;
+static const FileWithDetails s_file("test.cpp");
 
 static void doCheck(const std::string& code)
 {
     CppCheck cppcheck(s_errorLogger, false, nullptr);
     cppcheck.settings().addEnabled("all");
     cppcheck.settings().certainty.setEnabled(Certainty::inconclusive, true);
-    cppcheck.check("test.cpp", code);
+    cppcheck.check(s_file, code);
 }
 
 #ifndef NO_FUZZ

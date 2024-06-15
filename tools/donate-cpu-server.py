@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.53"
+SERVER_VERSION = "1.3.54"
 
 OLD_VERSION = '2.14.0'
 
@@ -1204,7 +1204,7 @@ class HttpClientThread(Thread):
                 text = check_library_function_name(self.resultPath, var_name, queryParams, nonfunc_id='unknownMacro')
                 httpGetResponse(self.connection, text, 'text/plain')
             else:
-                filename = resultPath + url
+                filename = self.resultPath + url
                 if not os.path.isfile(filename):
                     print_ts('HTTP/1.1 404 Not Found')
                     self.connection.send(b'HTTP/1.1 404 Not Found\r\n\r\n')

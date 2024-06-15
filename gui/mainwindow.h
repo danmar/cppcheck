@@ -22,6 +22,8 @@
 #include "library.h"
 #include "platforms.h"
 
+#include <cstdint>
+
 #include <QFileDialog>
 #include <QMainWindow>
 #include <QObject>
@@ -62,7 +64,7 @@ public:
     /**
      * @brief Maximum number of MRU project items in File-menu.
      */
-    enum { MaxRecentProjects = 5 };
+    enum : std::uint8_t { MaxRecentProjects = 5 };
 
     MainWindow(TranslationHandler* th, QSettings* settings);
     MainWindow(const MainWindow &) = delete;
@@ -392,7 +394,7 @@ private:
      * @param filename filename (no path)
      * @return error code
      */
-    Library::Error loadLibrary(Library &library, const QString &filename);
+    Library::Error loadLibrary(Library &library, const QString &filename, bool debug = false);
 
     /**
      * @brief Tries to load library file, prints message on error

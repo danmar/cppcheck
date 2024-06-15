@@ -282,3 +282,72 @@ def test_suppress_unmatched_inline_suppression():  # 11172
     assert lines == []
     assert stdout == ''
     assert ret == 0, stdout
+
+
+# reporting of inline unusedFunction is deferred
+def __test_unused_function_unmatched(tmpdir, use_j):
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=all',
+        '--inline-suppr',
+        'proj-inline-suppress/unusedFunctionUnmatched.cpp'
+    ]
+
+    if use_j:
+        args.append('-j2')
+    else:
+        args.append('-j1')
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    lines = stderr.splitlines()
+    lines.sort()
+    assert lines == [
+        '{}unusedFunctionUnmatched.cpp:5:0: information: Unmatched suppression: uninitvar [unmatchedSuppression]'.format(__proj_inline_suppres_path),
+        '{}unusedFunctionUnmatched.cpp:5:0: information: Unmatched suppression: unusedFunction [unmatchedSuppression]'.format(__proj_inline_suppres_path)
+    ]
+    assert stdout == ''
+    assert ret == 0, stdout
+
+
+def test_unused_function_unmatched(tmpdir):
+    __test_unused_function_unmatched(tmpdir, False)
+
+
+@pytest.mark.skip  # unusedFunction does not work with -j
+def test_unused_function_unmatched_j(tmpdir):
+    __test_unused_function_unmatched(tmpdir, True)
+
+
+# reporting of inline unusedFunction is deferred
+def __test_unused_function_unmatched_build_dir(tmpdir, extra_args):
+    args = [
+        '-q',
+        '--template=simple',
+        '--cppcheck-build-dir={}'.format(tmpdir),
+        '--enable=all',
+        '--inline-suppr',
+        'proj-inline-suppress/unusedFunctionUnmatched.cpp'
+    ]
+
+    args = args + extra_args
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    lines = stderr.splitlines()
+    lines.sort()
+    print(lines)
+    assert lines == [
+        '{}unusedFunctionUnmatched.cpp:5:0: information: Unmatched suppression: uninitvar [unmatchedSuppression]'.format(__proj_inline_suppres_path),
+        '{}unusedFunctionUnmatched.cpp:5:0: information: Unmatched suppression: unusedFunction [unmatchedSuppression]'.format(__proj_inline_suppres_path)
+    ]
+    assert stdout == ''
+    assert ret == 0, stdout
+
+
+def test_unused_function_unmatched_build_dir(tmpdir):
+    __test_unused_function_unmatched_build_dir(tmpdir, ['-j1'])
+
+
+@pytest.mark.xfail(strict=True)
+def test_unused_function_unmatched_build_dir_j(tmpdir):
+    __test_unused_function_unmatched_build_dir(tmpdir, ['-j2'])

@@ -25,38 +25,44 @@ public:
 
 private:
     void run() override {
-        TEST_CASE(path);
+        TEST_CASE(test);
     }
 
-    void path() const {
+    void test() const {
         {
             const FileWithDetails p{"file.cpp"};
             ASSERT_EQUALS("file.cpp", p.path());
+            ASSERT_EQUALS("file.cpp", p.spath());
             ASSERT_EQUALS(0, p.size());
         }
         {
             const FileWithDetails p{"file.cpp", 123};
             ASSERT_EQUALS("file.cpp", p.path());
+            ASSERT_EQUALS("file.cpp", p.spath());
             ASSERT_EQUALS(123, p.size());
         }
         {
             const FileWithDetails p{"in/file.cpp"};
             ASSERT_EQUALS("in/file.cpp", p.path());
+            ASSERT_EQUALS("in/file.cpp", p.spath());
             ASSERT_EQUALS(0, p.size());
         }
         {
             const FileWithDetails p{"in\\file.cpp"};
             ASSERT_EQUALS("in\\file.cpp", p.path());
+            ASSERT_EQUALS("in/file.cpp", p.spath());
             ASSERT_EQUALS(0, p.size());
         }
         {
             const FileWithDetails p{"in/../file.cpp"};
             ASSERT_EQUALS("in/../file.cpp", p.path());
+            ASSERT_EQUALS("file.cpp", p.spath());
             ASSERT_EQUALS(0, p.size());
         }
         {
             const FileWithDetails p{"in\\..\\file.cpp"};
             ASSERT_EQUALS("in\\..\\file.cpp", p.path());
+            ASSERT_EQUALS("file.cpp", p.spath());
             ASSERT_EQUALS(0, p.size());
         }
     }

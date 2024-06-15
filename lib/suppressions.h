@@ -23,6 +23,7 @@
 #include "config.h"
 
 #include <cstddef>
+#include <cstdint>
 #include <istream>
 #include <list>
 #include <set>
@@ -36,13 +37,14 @@
 class Tokenizer;
 class ErrorMessage;
 class ErrorLogger;
-enum class Certainty;
+enum class Certainty : std::uint8_t;
+class FileWithDetails;
 
 /** @brief class for handling suppressions */
 class CPPCHECKLIB SuppressionList {
 public:
 
-    enum class Type {
+    enum class Type : std::uint8_t {
         unique, file, block, blockBegin, blockEnd, macro
     };
 
@@ -147,7 +149,7 @@ public:
         bool matched{};
         bool checked{}; // for inline suppressions, checked or not
 
-        enum { NO_LINE = -1 };
+        enum : std::int8_t { NO_LINE = -1 };
     };
 
     /**
@@ -227,7 +229,7 @@ public:
      * @brief Returns list of unmatched local (per-file) suppressions.
      * @return list of unmatched suppressions
      */
-    std::list<Suppression> getUnmatchedLocalSuppressions(const std::string &file, const bool unusedFunctionChecking) const;
+    std::list<Suppression> getUnmatchedLocalSuppressions(const FileWithDetails &file, const bool unusedFunctionChecking) const;
 
     /**
      * @brief Returns list of unmatched global (glob pattern) suppressions.

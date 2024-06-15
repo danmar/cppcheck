@@ -28,6 +28,7 @@
 #include "tokenize.h"
 #include "vfvalue.h"
 
+#include <cstdint>
 #include <string>
 
 class Scope;
@@ -224,7 +225,7 @@ private:
 
     void uselessCallsReturnValueError(const Token* tok, const std::string& varname, const std::string& function);
     void uselessCallsSwapError(const Token* tok, const std::string& varname);
-    enum class SubstrErrorType { EMPTY, COPY, PREFIX, PREFIX_CONCAT };
+    enum class SubstrErrorType : std::uint8_t { EMPTY, COPY, PREFIX, PREFIX_CONCAT };
     void uselessCallsSubstrError(const Token* tok, SubstrErrorType type);
     void uselessCallsEmptyError(const Token* tok);
     void uselessCallsRemoveError(const Token* tok, const std::string& function);

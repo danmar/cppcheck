@@ -138,7 +138,7 @@ static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std:
     }
     if (s.find("$(") != std::string::npos)
         return false;
-    s = Path::simplifyPath(Path::fromNativeSeparators(std::move(s)));
+    s = Path::simplifyPath(std::move(s));
     return true;
 }
 
@@ -500,7 +500,7 @@ namespace {
         }
         std::string name;
         std::string configuration;
-        enum { Win32, x64, Unknown } platform = Unknown;
+        enum : std::uint8_t { Win32, x64, Unknown } platform = Unknown;
         std::string platformStr;
     };
 
