@@ -872,7 +872,7 @@ Library::Error MainWindow::loadLibrary(Library &library, const QString &filename
         ret = library.load(nullptr, libpath.toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
-        libpath = filesdir+filename;
+        libpath = filesdir+"/"+filename;
         qDebug().noquote() << "looking for library '" + libpath + "'";
         ret = library.load(nullptr, libpath.toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
