@@ -836,7 +836,7 @@ void MainWindow::addIncludeDirs(const QStringList &includeDirs, Settings &result
     }
 }
 
-Library::Error MainWindow::loadLibrary(Library &library, const QString &filename, bool debug)
+Library::Error MainWindow::loadLibrary(Library &library, const QString &filename)
 {
     Library::Error ret;
 
@@ -844,8 +844,7 @@ Library::Error MainWindow::loadLibrary(Library &library, const QString &filename
     if (mProjectFile) {
         QString path = QFileInfo(mProjectFile->getFilename()).canonicalPath();
         QString libpath = path+"/"+filename;
-        if (debug)
-            std::cout << "looking for library '" + libpath.toStdString() + "'" << std::endl;
+        qDebug().noquote() << "looking for library '" + libpath + "'";
         ret = library.load(nullptr, libpath.toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
@@ -854,14 +853,12 @@ Library::Error MainWindow::loadLibrary(Library &library, const QString &filename
     // Try to load the library from the application folder..
     const QString appPath = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
     QString libpath = appPath+"/"+filename;
-    if (debug)
-        std::cout << "looking for library '" + libpath.toStdString() + "'" << std::endl;
+    qDebug().noquote() << "looking for library '" + libpath + "'";
     ret = library.load(nullptr, libpath.toLatin1());
     if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
         return ret;
     libpath = appPath+"/cfg/"+filename;
-    if (debug)
-        std::cout << "looking for library '" + libpath.toStdString() + "'" << std::endl;
+    qDebug().noquote() << "looking for library '" + libpath + "'";
     ret = library.load(nullptr, libpath.toLatin1());
     if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
         return ret;
@@ -871,14 +868,12 @@ Library::Error MainWindow::loadLibrary(Library &library, const QString &filename
     const QString filesdir = FILESDIR;
     if (!filesdir.isEmpty()) {
         libpath = filesdir+"/cfg/"+filename;
-        if (debug)
-            std::cout << "looking for library '" + libpath.toStdString() + "'" << std::endl;
+        qDebug().noquote() << "looking for library '" + libpath + "'";
         ret = library.load(nullptr, libpath.toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
         libpath = filesdir+filename;
-        if (debug)
-            std::cout << "looking for library '" + libpath.toStdString() + "'" << std::endl;
+        qDebug().noquote() << "looking for library '" + libpath + "'";
         ret = library.load(nullptr, libpath.toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
@@ -889,21 +884,18 @@ Library::Error MainWindow::loadLibrary(Library &library, const QString &filename
     const QString datadir = getDataDir();
     if (!datadir.isEmpty()) {
         libpath = datadir+"/"+filename;
-        if (debug)
-            std::cout << "looking for library '" + libpath.toStdString() + "'" << std::endl;
+        qDebug().noquote() << "looking for library '" + libpath + "'";
         ret = library.load(nullptr, libpath.toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
         libpath = datadir+"/cfg/"+filename;
-        if (debug)
-            std::cout << "looking for library '" + libpath.toStdString() + "'" << std::endl;
+        qDebug().noquote() << "looking for library '" + libpath + "'";
         ret = library.load(nullptr, libpath.toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
     }
 
-    if (debug)
-        std::cout << "library not found: '" + filename.toStdString() + "'" << std::endl;
+    qDebug().noquote() << "library not found: '" + filename + "'";
 
     return ret;
 }
