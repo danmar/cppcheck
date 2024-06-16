@@ -67,6 +67,7 @@ private:
         TEST_CASE(member_function_ternary);
         TEST_CASE(boost);
         TEST_CASE(enumValues);
+        TEST_CASE(recursive);
 
         TEST_CASE(multipleFiles);   // same function name in multiple files
 
@@ -116,7 +117,7 @@ private:
               "    if (f1())\n"
               "    { }\n"
               "}");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'f1' is never used.\n", errout_str());
     }
 
     void return1() {
@@ -124,15 +125,15 @@ private:
               "{\n"
               "    return f1();\n"
               "}");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'f1' is never used.\n", errout_str());
     }
 
     void return2() {
         check("char * foo()\n"
               "{\n"
-              "    return *foo();\n"
+              "    return foo();\n"
               "}");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used.\n", errout_str());
     }
 
     void return3() {
@@ -158,7 +159,7 @@ private:
               "{\n"
               "    void (*f)() = cond ? f1 : NULL;\n"
               "}");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'f1' is never used.\n", errout_str());
     }
 
     void callback2() { // #8677
@@ -180,7 +181,7 @@ private:
               "    if (cond) ;\n"
               "    else f1();\n"
               "}");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'f1' is never used.\n", errout_str());
     }
 
     void functionpointer() {
@@ -255,7 +256,7 @@ private:
               "}\n"
               "\n"
               "void h() { g<int>(); h(); }");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) The function 'h' is never used.\n", errout_str());
     }
 
     void template3() { // #4701
@@ -286,7 +287,7 @@ private:
               "        test();\n"
               "    }\n"
               "};");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:11]: (style) The function 'test' is never used.\n", errout_str());
     }
 
     void template5() { // #9220
@@ -322,7 +323,7 @@ private:
               "};\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) The function 'tf' is never used.\n", errout_str());
 
-        check("struct S {\n"
+        check("struct C {\n"
               "    template<typename T>\n"
               "    void tf(const T&) { }\n"
               "};\n"
@@ -332,7 +333,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout_str());
 
-        check("struct S {\n"
+        check("struct C {\n"
               "    template<typename T>\n"
               "    void tf(const T&) { }\n"
               "};\n"
@@ -523,10 +524,11 @@ private:
     }
 
     void boost() {
-        check("static void _xy(const char *b, const char *e)\n"
-              "{}\n"
-              "parse(line, blanks_p >> ident[&_xy] >> blanks_p >> eol_p).full");
-        ASSERT_EQUALS("", errout_str());
+        check("static void _xy(const char *b, const char *e) {}\n"
+              "void f() {\n"
+              "    parse(line, blanks_p >> ident[&_xy] >> blanks_p >> eol_p).full;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The function 'f' is never used.\n", errout_str());
     }
 
     void enumValues() { // #11486
@@ -538,6 +540,14 @@ private:
               "};\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) The function 'Break' is never used.\n"
                       "[test.cpp:5]: (style) The function 'Break1' is never used.\n",
+                      errout_str());
+    }
+
+    void recursive() {
+        check("void f() {\n" // #8159
+              "    f();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'f' is never used.\n",
                       errout_str());
     }
 
@@ -576,7 +586,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) The function 'f' is never used.\n", errout_str());
 
         check("void f(void) {}\n"
-              "void (*list[])(void) = {f}");
+              "void (*list[])(void) = {f};");
         ASSERT_EQUALS("", errout_str());
     }
 

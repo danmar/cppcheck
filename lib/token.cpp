@@ -1702,6 +1702,7 @@ std::string Token::astStringVerbose() const
     return ret;
 }
 
+// cppcheck-suppress unusedFunction // used in test
 std::string Token::astStringZ3() const
 {
     if (!astOperand1())
