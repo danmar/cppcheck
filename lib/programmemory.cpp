@@ -1767,7 +1767,7 @@ std::vector<ValueFlow::Value> execute(const Scope* scope, ProgramMemory& pm, con
 static std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
                                                         const Settings& settings,
                                                         bool cpp,
-                                                        std::unordered_map<nonneg int, const Token*>* lookupVarId)
+                                                        std::unordered_map<nonneg int, const Token*>& lookupVarId)
 {
     std::shared_ptr<TokenList> tokenList = std::make_shared<TokenList>(&settings);
     {
@@ -1802,8 +1802,7 @@ static std::shared_ptr<Token> createTokenFromExpression(const std::string& retur
             continue;
         nonneg int const id = strToInt<nonneg int>(tok2->str().c_str() + 3);
         tok2->varId(id);
-        if (lookupVarId)
-            (*lookupVarId)[id] = tok2;
+        lookupVarId[id] = tok2;
     }
 
     // Evaluate expression
@@ -1824,7 +1823,7 @@ ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, Va
     if (functions.count(returnValue) == 0) {
 
         std::unordered_map<nonneg int, const Token*> lookupVarId;
-        std::shared_ptr<Token> expr = createTokenFromExpression(returnValue, settings, cpp, &lookupVarId);
+        std::shared_ptr<Token> expr = createTokenFromExpression(returnValue, settings, cpp, lookupVarId);
 
         functions[returnValue] =
             [lookupVarId, expr, settings](const std::unordered_map<nonneg int, ValueFlow::Value>& xargs) {
