@@ -126,32 +126,31 @@ namespace ValueFlow
         return value.isIntValue() || value.isFloatValue();
     }
 
-    static void setTokenValueCast(Token *parent, const ValueType &valueType, const Value &value, const Settings &settings)
+    static void setTokenValueCast(Token *parent, const ValueType &valueType, Value value, const Settings &settings)
     {
         if (valueType.pointer || value.isImpossible())
-            setTokenValue(parent,value,settings);
+            setTokenValue(parent,std::move(value),settings);
         else if (valueType.type == ValueType::Type::CHAR)
-            setTokenValue(parent, castValue(value, valueType.sign, settings.platform.char_bit), settings);
+            setTokenValue(parent, castValue(std::move(value), valueType.sign, settings.platform.char_bit), settings);
         else if (valueType.type == ValueType::Type::SHORT)
-            setTokenValue(parent, castValue(value, valueType.sign, settings.platform.short_bit), settings);
+            setTokenValue(parent, castValue(std::move(value), valueType.sign, settings.platform.short_bit), settings);
         else if (valueType.type == ValueType::Type::INT)
-            setTokenValue(parent, castValue(value, valueType.sign, settings.platform.int_bit), settings);
+            setTokenValue(parent, castValue(std::move(value), valueType.sign, settings.platform.int_bit), settings);
         else if (valueType.type == ValueType::Type::LONG)
-            setTokenValue(parent, castValue(value, valueType.sign, settings.platform.long_bit), settings);
+            setTokenValue(parent, castValue(std::move(value), valueType.sign, settings.platform.long_bit), settings);
         else if (valueType.type == ValueType::Type::LONGLONG)
-            setTokenValue(parent, castValue(value, valueType.sign, settings.platform.long_long_bit), settings);
+            setTokenValue(parent, castValue(std::move(value), valueType.sign, settings.platform.long_long_bit), settings);
         else if (valueType.isFloat() && isNumeric(value)) {
-            Value floatValue = value;
-            floatValue.valueType = Value::ValueType::FLOAT;
             if (value.isIntValue())
-                floatValue.floatValue = static_cast<double>(value.intvalue);
-            setTokenValue(parent, std::move(floatValue), settings);
+                value.floatValue = static_cast<double>(value.intvalue);
+            value.valueType = Value::ValueType::FLOAT;
+            setTokenValue(parent, std::move(value), settings);
         } else if (value.isIntValue()) {
             const long long charMax = settings.platform.signedCharMax();
             const long long charMin = settings.platform.signedCharMin();
             if (charMin <= value.intvalue && value.intvalue <= charMax) {
                 // unknown type, but value is small so there should be no truncation etc
-                setTokenValue(parent,value,settings);
+                setTokenValue(parent,std::move(value),settings);
             }
         }
     }
@@ -382,7 +381,7 @@ namespace ValueFlow
                 && tok->valueType()->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer)
                 >= valueType.getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer))
                 return;
-            setTokenValueCast(parent, valueType, value, settings);
+            setTokenValueCast(parent, valueType, std::move(value), settings);
         }
 
         else if (parent->str() == ":") {
