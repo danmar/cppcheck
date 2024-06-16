@@ -24,8 +24,10 @@
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"
+#include "standards.h"
 #include "symboldatabase.h"
 #include "token.h"
+#include "tokenlist.h"
 #include "utils.h"
 #include "valueflow.h"
 #include "valueptr.h"
@@ -37,6 +39,8 @@
 #include <iterator>
 #include <list>
 #include <memory>
+#include <stack>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -1758,6 +1762,55 @@ std::vector<ValueFlow::Value> execute(const Scope* scope, ProgramMemory& pm, con
 {
     Executor ex{&pm, &settings};
     return ex.execute(scope);
+}
+
+static std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
+                                                        const Settings& settings,
+                                                        bool cpp,
+                                                        std::unordered_map<nonneg int, const Token*>* lookupVarId)
+{
+    std::shared_ptr<TokenList> tokenList = std::make_shared<TokenList>(&settings);
+    {
+        const std::string code = "return " + returnValue + ";";
+        std::istringstream istr(code);
+        if (!tokenList->createTokens(istr, cpp ? Standards::Language::CPP : Standards::Language::C))
+            return nullptr;
+    }
+
+    // TODO: put in a helper?
+    // combine operators, set links, etc..
+    std::stack<Token*> lpar;
+    for (Token* tok2 = tokenList->front(); tok2; tok2 = tok2->next()) {
+        if (Token::Match(tok2, "[!<>=] =")) {
+            tok2->str(tok2->str() + "=");
+            tok2->deleteNext();
+        } else if (tok2->str() == "(")
+            lpar.push(tok2);
+        else if (tok2->str() == ")") {
+            if (lpar.empty())
+                return nullptr;
+            Token::createMutualLinks(lpar.top(), tok2);
+            lpar.pop();
+        }
+    }
+    if (!lpar.empty())
+        return nullptr;
+
+    // set varids
+    for (Token* tok2 = tokenList->front(); tok2; tok2 = tok2->next()) {
+        if (!startsWith(tok2->str(), "arg"))
+            continue;
+        nonneg int const id = strToInt<nonneg int>(tok2->str().c_str() + 3);
+        tok2->varId(id);
+        if (lookupVarId)
+            (*lookupVarId)[id] = tok2;
+    }
+
+    // Evaluate expression
+    tokenList->createAst();
+    Token* expr = tokenList->front()->astOperand1();
+    ValueFlow::valueFlowConstantFoldAST(expr, settings);
+    return {tokenList, expr};
 }
 
 ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, ValueFlow::Value>& args,
