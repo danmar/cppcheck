@@ -2589,7 +2589,7 @@ void CheckOther::checkDuplicateExpression()
                                          followVar,
                                          &errorPath) &&
                         isWithoutSideEffects(tok->astOperand2()))
-                        duplicateExpressionError(tok->astOperand2(), tok->astOperand1()->astOperand2(), tok, errorPath);
+                        duplicateExpressionError(tok->astOperand2(), tok->astOperand1()->astOperand2(), tok, std::move(errorPath));
                     else if (tok->astOperand2() && isConstExpression(tok->astOperand1(), mSettings->library)) {
                         auto checkDuplicate = [&](const Token* exp1, const Token* exp2, const Token* ast1) {
                             if (isSameExpression(true, exp1, exp2, *mSettings, true, true, &errorPath) &&

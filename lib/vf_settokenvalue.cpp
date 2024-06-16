@@ -445,7 +445,7 @@ namespace ValueFlow
         else if (astIsPointer(tok) && Token::Match(parent, "+|-") &&
                  (parent->astOperand2() == nullptr || !astIsPointer(parent->astOperand2())) &&
                  value.isIntValue() && value.isImpossible() && value.intvalue == 0) {
-            setTokenValue(parent, value, settings);
+            setTokenValue(parent, std::move(value), settings);
         }
 
         // Calculations..
