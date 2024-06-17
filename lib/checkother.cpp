@@ -519,6 +519,10 @@ void CheckOther::checkRedundantAssignment()
                         tokenToCheck = tempToken;
                 }
 
+                if (start->hasKnownSymbolicValue(tokenToCheck)) {
+                    redundantAssignmentSameValueError(start, tokenToCheck, tok->astOperand1()->expressionString());
+                }
+
                 // Get next assignment..
                 const Token *nextAssign = fwdAnalysis.reassign(tokenToCheck, start, scope->bodyEnd);
 
@@ -585,6 +589,16 @@ void CheckOther::redundantAssignmentInSwitchError(const Token *tok1, const Token
     reportError(errorPath, Severity::style, "redundantAssignInSwitch",
                 "$symbol:" + var + "\n"
                 "Variable '$symbol' is reassigned a value before the old one has been used. 'break;' missing?", CWE563, Certainty::normal);
+}
+
+void CheckOther::redundantAssignmentSameValueError(const Token *tok1, const Token* tok2, const std::string &var)
+{
+    auto val = tok1->getKnownValue(ValueFlow::Value::ValueType::SYMBOLIC);
+    auto errorPath = val->errorPath;
+    errorPath.emplace_back(tok2, "");
+    reportError(errorPath, Severity::style, "redundantAssignment",
+                "$symbol:" + var + "\n"
+                "Variable '$symbol' is assigned an expression that holds the same value.", CWE563, Certainty::normal);
 }
 
 
