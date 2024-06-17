@@ -56,12 +56,10 @@ struct CPPCHECKLIB Directive {
     /** the actual directive text */
     std::string str;
 
-    const simplecpp::Token * startToken{nullptr};
-    const simplecpp::Token * endToken{nullptr};
+    std::vector<std::pair<std::string, const int>> strTokens;
 
     /** record a directive (possibly filtering src) */
     Directive(std::string _file, const int _linenr, const std::string &_str);
-    Directive(std::string _file, const int _linenr, const simplecpp::Token * _startToken);
 };
 
 class CPPCHECKLIB RemarkComment {
