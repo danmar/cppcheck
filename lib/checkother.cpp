@@ -519,7 +519,7 @@ void CheckOther::checkRedundantAssignment()
                         tokenToCheck = tempToken;
                 }
 
-                if (start->hasKnownSymbolicValue(tokenToCheck) &&  Token::simpleMatch(start->astParent(), "=")) {
+                if (start->hasKnownSymbolicValue(tokenToCheck) && Token::simpleMatch(start->astParent(), "=")) {
                     redundantAssignmentSameValueError(start, tokenToCheck, tok->astOperand1()->expressionString());
                 }
 
