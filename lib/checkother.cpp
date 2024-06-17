@@ -593,7 +593,7 @@ void CheckOther::redundantAssignmentInSwitchError(const Token *tok1, const Token
 
 void CheckOther::redundantAssignmentSameValueError(const Token *tok1, const Token* tok2, const std::string &var)
 {
-    const ValueType::Value* val = tok1->getKnownValue(ValueFlow::Value::ValueType::SYMBOLIC);
+    const ValueFlow::Value* val = tok1->getKnownValue(ValueFlow::Value::ValueType::SYMBOLIC);
     auto errorPath = val->errorPath;
     errorPath.emplace_back(tok2, "");
     reportError(errorPath, Severity::style, "redundantAssignment",
