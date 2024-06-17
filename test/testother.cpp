@@ -10195,6 +10195,15 @@ private:
               "    return a * b * c;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Variable 'a' is assigned an expression that holds the same value.\n", errout_str());
+        
+        check("int main() {\n"
+              "    int a = 0;\n"
+              "    int b = a;\n"
+              "    int c = 1;\n"
+              "    a = b + 1;\n"
+              "    return a * b * c;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void varFuncNullUB() { // #4482
