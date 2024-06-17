@@ -860,6 +860,10 @@ namespace {
                     Token::createMutualLinks(tok3->next(), after->previous());
                 }
             }
+            if (!after) {
+                mReplaceFailed = true;
+                return;
+            }
 
             bool useAfterVarRange = true;
             if (Token::simpleMatch(mRangeAfterVar.first, "[")) {
