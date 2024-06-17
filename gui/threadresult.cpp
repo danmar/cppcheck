@@ -68,15 +68,15 @@ QString ThreadResult::getNextFile()
     return mFiles.takeFirst();
 }
 
-FileSettings ThreadResult::getNextFileSettings()
+void ThreadResult::getNextFileSettings(const FileSettings*& fs)
 {
     std::lock_guard<std::mutex> locker(mutex);
-    if (mFileSettings.empty()) {
-        return FileSettings("");
+    fs = nullptr;
+    if (mItNextFileSettings == mFileSettings.cend()) {
+        return;
     }
-    const FileSettings fs = mFileSettings.front();
-    mFileSettings.pop_front();
-    return fs;
+    fs = &(*mItNextFileSettings);
+    ++mItNextFileSettings;
 }
 
 void ThreadResult::setFiles(const QStringList &files)
@@ -100,6 +100,7 @@ void ThreadResult::setProject(const ImportProject &prj)
     std::lock_guard<std::mutex> locker(mutex);
     mFiles.clear();
     mFileSettings = prj.fileSettings;
+    mItNextFileSettings = mFileSettings.cbegin();
     mProgress = 0;
     mFilesChecked = 0;
     mTotalFiles = prj.fileSettings.size();
@@ -116,6 +117,7 @@ void ThreadResult::clearFiles()
     std::lock_guard<std::mutex> locker(mutex);
     mFiles.clear();
     mFileSettings.clear();
+    mItNextFileSettings = mFileSettings.cend();
     mFilesChecked = 0;
     mTotalFiles = 0;
 }

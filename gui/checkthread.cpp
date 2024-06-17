@@ -132,16 +132,17 @@ void CheckThread::run()
             file = mResult.getNextFile();
     }
 
-    FileSettings fileSettings = mResult.getNextFileSettings();
-    while (!fileSettings.filename().empty() && mState == Running) {
-        file = QString::fromStdString(fileSettings.filename());
+    const FileSettings* fileSettings = nullptr;
+    mResult.getNextFileSettings(fileSettings);
+    while (fileSettings && mState == Running) {
+        file = QString::fromStdString(fileSettings->filename());
         qDebug() << "Checking file" << file;
-        mCppcheck.check(fileSettings);
-        runAddonsAndTools(&fileSettings, QString::fromStdString(fileSettings.filename()));
+        mCppcheck.check(*fileSettings);
+        runAddonsAndTools(fileSettings, QString::fromStdString(fileSettings->filename()));
         emit fileChecked(file);
 
         if (mState == Running)
-            fileSettings = mResult.getNextFileSettings();
+            mResult.getNextFileSettings(fileSettings);
     }
 
     if (mState == Running)
