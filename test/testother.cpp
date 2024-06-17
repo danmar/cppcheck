@@ -214,6 +214,7 @@ private:
         TEST_CASE(redundantVarAssignment_switch_break);
         TEST_CASE(redundantInitialization);
         TEST_CASE(redundantMemWrite);
+        TEST_CASE(redundantAssignmentSameValue);
 
         TEST_CASE(varFuncNullUB);
 
@@ -8029,7 +8030,9 @@ private:
               "    use(i);\n"
               "    i = j;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (style) Variable 'i' is assigned an expression that holds the same value.\n"
+                      "[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n",
+                      errout_str());
 
         check("struct A { int x; int y; };"
               "void use(int);\n"
@@ -8039,7 +8042,9 @@ private:
               "    use(j);\n"
               "    j = i;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (style) Variable 'j' is assigned an expression that holds the same value.\n"
+                      "[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n",
+                      errout_str());
 
         check("struct A { int x; int y; };"
               "void use(int);\n"
@@ -9707,7 +9712,10 @@ private:
               "}\n");
         ASSERT_EQUALS("test.cpp:3:style:Variable 'm[key]' is reassigned a value before the old one has been used.\n"
                       "test.cpp:2:note:m[key] is assigned\n"
-                      "test.cpp:3:note:m[key] is overwritten\n",
+                      "test.cpp:3:note:m[key] is overwritten\n"
+                      "test.cpp:3:style:Variable 'm[key]' is assigned an expression that holds the same value.\n"
+                      "test.cpp:2:note:m[key] is assigned 'value' here.\n"
+                      "test.cpp:3:note:Variable 'm[key]' is assigned an expression that holds the same value.\n",
                       errout_str());
     }
 
@@ -10176,6 +10184,16 @@ private:
               "    strcpy(buf, x);\n"
               "}");
         TODO_ASSERT_EQUALS("error", "", errout_str());
+    }
+
+    void redundantAssignmentSameValue() {
+        check("int main() {\n" // #11642
+              "    int a = 0;\n"
+              "    int b = a;\n"
+              "    int c = 1;\n"
+              "    a = b;\n"
+              "    return a * b * c;\n");
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Passing NULL after the last typed argument to a variadic function leads to undefined behaviour.\n", errout_str());
     }
 
     void varFuncNullUB() { // #4482
