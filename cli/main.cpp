@@ -20,7 +20,7 @@
 /**
  *
  * @mainpage Cppcheck
- * @version 2.14.1
+ * @version 2.14.2
  *
  * @section overview_sec Overview
  * Cppcheck is a simple tool for static analysis of C/C++ code.
