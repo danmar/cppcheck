@@ -10192,8 +10192,9 @@ private:
               "    int b = a;\n"
               "    int c = 1;\n"
               "    a = b;\n"
-              "    return a * b * c;\n");
-        ASSERT_EQUALS("[test.cpp:2]: (portability) Passing NULL after the last typed argument to a variadic function leads to undefined behaviour.\n", errout_str());
+              "    return a * b * c;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Variable 'a' is assigned an expression that holds the same value.\n", errout_str());
     }
 
     void varFuncNullUB() { // #4482
