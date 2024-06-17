@@ -163,7 +163,7 @@ static std::string getRelativeFilename(const simplecpp::Token* tok, const Settin
             }
         }
     }
-    return Path::simplifyPath(relativeFilename);
+    return Path::simplifyPath(std::move(relativeFilename));
 }
 
 static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Settings &settings, SuppressionList &suppressions, std::list<BadInlineSuppression> &bad)

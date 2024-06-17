@@ -1629,7 +1629,7 @@ void CppCheck::reportErr(const ErrorMessage &msg)
 
     if (!remark.empty()) {
         ErrorMessage msg2(msg);
-        msg2.remark = remark;
+        msg2.remark = std::move(remark);
         mErrorLogger.reportErr(msg2);
     } else {
         mErrorLogger.reportErr(msg);
