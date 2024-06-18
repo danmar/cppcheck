@@ -1161,3 +1161,16 @@ void invalidPrintfArgType_StructMember(double d) { // #9672
 BOOL MyEnableWindow(HWND hWnd, BOOL bEnable) {
     return EnableWindow(hWnd, bEnable);
 }
+
+int SEH_filter(unsigned int code, struct _EXCEPTION_POINTERS* ep);
+
+void SEH_knownConditionTrueFalse() { // #8434
+    int r = 0;
+    __try {
+        r = h();
+    }
+    __except (SEH_filter(GetExceptionCode(), GetExceptionInformation())) {
+        r = 1;
+    }
+    if (r == 0) {}
+}
