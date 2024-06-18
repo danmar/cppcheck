@@ -5961,11 +5961,14 @@ void Tokenizer::dump(std::ostream &out) const
         outs += '\n';
         for (const auto & strToken : dir.strTokens) {
             outs += "      <token ";
+            outs += "line=\"";
+            outs += std::to_string(strToken.line);
+            outs += "\" ";
             outs += "column=\"";
-            outs += std::to_string(strToken.second);
+            outs += std::to_string(strToken.column);
             outs += "\" ";
             outs += "str=\"";
-            outs += ErrorLogger::toxml(strToken.first);
+            outs += ErrorLogger::toxml(strToken.tokStr);
             outs +="\"/>";
             outs += '\n';
         }

@@ -56,7 +56,14 @@ struct CPPCHECKLIB Directive {
     /** the actual directive text */
     std::string str;
 
-    std::vector<std::pair<std::string, const int>> strTokens;
+    struct DirectiveToken {
+        explicit DirectiveToken(std::string _str, int _line, int _column);
+        int line;
+        int column;
+        std::string tokStr;
+    };
+
+    std::vector<DirectiveToken> strTokens;
 
     /** record a directive (possibly filtering src) */
     Directive(std::string _file, const int _linenr, const std::string &_str);

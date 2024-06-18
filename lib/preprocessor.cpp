@@ -49,6 +49,12 @@ Directive::Directive(std::string _file, const int _linenr, const std::string &_s
     str(trim(_str))
 {}
 
+Directive::DirectiveToken::DirectiveToken(std::string _str, int _line, int _column) :
+    line(_line),
+    column(_column),
+    tokStr(_str)
+{}
+
 char Preprocessor::macroChar = char(1);
 
 Preprocessor::Preprocessor(const Settings& settings, ErrorLogger &errorLogger) : mSettings(settings), mErrorLogger(errorLogger)
@@ -339,7 +345,7 @@ std::list<Directive> Preprocessor::createDirectives(const simplecpp::TokenList &
                 else
                     directive.str += tok2->str();
 
-                directive.strTokens.push_back(std::make_pair(tok2->str(), tok2->location.col));
+                directive.strTokens.emplace_back(tok2->str(), tok2->location.line, tok2->location.col);
             }
             directives.push_back(std::move(directive));
         }
