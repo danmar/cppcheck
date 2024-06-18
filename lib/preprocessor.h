@@ -57,7 +57,7 @@ struct CPPCHECKLIB Directive {
     std::string str;
 
     struct DirectiveToken {
-        explicit DirectiveToken(const std::string & _str, int _line, int _column);
+        explicit DirectiveToken(std::string _str, int _line, int _column);
         int line;
         int column;
         std::string tokStr;

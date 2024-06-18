@@ -49,10 +49,10 @@ Directive::Directive(std::string _file, const int _linenr, const std::string &_s
     str(trim(_str))
 {}
 
-Directive::DirectiveToken::DirectiveToken(const std::string & _str, int _line, int _column) :
+Directive::DirectiveToken::DirectiveToken(std::string _str, int _line, int _column) :
     line(_line),
     column(_column),
-    tokStr(_str)
+    tokStr(std::move(_str))
 {}
 
 char Preprocessor::macroChar = char(1);
