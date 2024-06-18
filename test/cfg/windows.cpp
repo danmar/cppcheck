@@ -1163,11 +1163,12 @@ BOOL MyEnableWindow(HWND hWnd, BOOL bEnable) {
 }
 
 int SEH_filter(unsigned int code, struct _EXCEPTION_POINTERS* ep);
+int SEH_throwing_func();
 
 void SEH_knownConditionTrueFalse() { // #8434
     int r = 0;
     __try {
-        r = h();
+        r = SEH_throwing_func();
     }
     __except (SEH_filter(GetExceptionCode(), GetExceptionInformation())) {
         r = 1;
