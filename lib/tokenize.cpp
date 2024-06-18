@@ -8681,6 +8681,8 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "%assign% [;)}]") && (!cpp || !Token::simpleMatch(tok->previous(), "operator")))
             syntaxError(tok);
+        if (Token::Match(tok, "; %assign%"))
+            syntaxError(tok);
         if (Token::Match(tok, "%cop%|=|,|[ %or%|%oror%|/|%"))
             syntaxError(tok);
         if (Token::Match(tok, "[;([{] %comp%|%oror%|%or%|%|/"))
