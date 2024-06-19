@@ -5961,9 +5961,6 @@ void Tokenizer::dump(std::ostream &out) const
         outs += '\n';
         for (const auto & strToken : dir.strTokens) {
             outs += "      <token ";
-            outs += "line=\"";
-            outs += std::to_string(strToken.line);
-            outs += "\" ";
             outs += "column=\"";
             outs += std::to_string(strToken.column);
             outs += "\" ";

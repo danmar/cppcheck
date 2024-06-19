@@ -1281,6 +1281,7 @@ class CppcheckData:
         # Iterating <typedef-info>
         iter_typedef_info = False
 
+        # Iterating <directive>
         iter_directive = False
 
         # Use iterable objects to traverse XML tree for dump files incrementally.

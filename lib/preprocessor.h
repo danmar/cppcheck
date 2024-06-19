@@ -57,7 +57,7 @@ struct CPPCHECKLIB Directive {
     std::string str;
 
     struct DirectiveToken {
-        explicit DirectiveToken(std::string _str, int _line, int _column);
+        explicit DirectiveToken(const simplecpp::Token & _tok);
         int line;
         int column;
         std::string tokStr;
@@ -66,6 +66,7 @@ struct CPPCHECKLIB Directive {
     std::vector<DirectiveToken> strTokens;
 
     /** record a directive (possibly filtering src) */
+    Directive(const simplecpp::Location & _loc, const std::string & _str);
     Directive(std::string _file, const int _linenr, const std::string &_str);
 };
 
