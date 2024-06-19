@@ -5959,7 +5959,19 @@ void Tokenizer::dump(std::ostream &out) const
         // could result in invalid XML, so run it through toxml().
         outs += "str=\"";
         outs += ErrorLogger::toxml(dir.str);
-        outs +="\"/>";
+        outs +="\">";
+        outs += '\n';
+        for (const auto & strToken : dir.strTokens) {
+            outs += "      <token ";
+            outs += "column=\"";
+            outs += std::to_string(strToken.column);
+            outs += "\" ";
+            outs += "str=\"";
+            outs += ErrorLogger::toxml(strToken.tokStr);
+            outs +="\"/>";
+            outs += '\n';
+        }
+        outs += "    </directive>";
         outs += '\n';
     }
     outs += "  </directivelist>";
