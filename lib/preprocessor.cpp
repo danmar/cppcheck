@@ -49,10 +49,10 @@ Directive::Directive(const simplecpp::Location & _loc, const std::string _str) :
     str(std::move(_str))
 {}
 
-Directive::Directive(std::string _file, const int _linenr, const std::string & _str) :
+Directive::Directive(std::string _file, const int _linenr, std::string _str) :
     file(std::move(_file)),
     linenr(_linenr),
-    str(_str)
+    str(std::move(_str))
 {}
 
 Directive::DirectiveToken::DirectiveToken(const simplecpp::Token & _tok) :
