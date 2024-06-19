@@ -1565,82 +1565,84 @@ namespace {
     };
     using ExprIdMap = std::map<ExprIdKey, nonneg int>;
     void setParentExprId(Token* tok, ExprIdMap& exprIdMap, nonneg int &id) {
-        if (!tok->astParent() || tok->astParent()->isControlFlowKeyword())
-            return;
-        const Token* op1 = tok->astParent()->astOperand1();
-        if (op1 && op1->exprId() == 0 && !Token::Match(op1, "[{[]"))
-            return;
-        const Token* op2 = tok->astParent()->astOperand2();
-        if (op2 && op2->exprId() == 0 &&
-            !((tok->astParent()->astParent() && tok->astParent()->isAssignmentOp() && tok->astParent()->astParent()->isAssignmentOp()) ||
-              isLambdaCaptureList(op2) ||
-              (op2->str() == "(" && isLambdaCaptureList(op2->astOperand1())) ||
-              Token::simpleMatch(op2, "{ }")))
-            return;
+        for (;;) {
+            if (!tok->astParent() || tok->astParent()->isControlFlowKeyword())
+                break;
+            const Token* op1 = tok->astParent()->astOperand1();
+            if (op1 && op1->exprId() == 0 && !Token::Match(op1, "[{[]"))
+                break;
+            const Token* op2 = tok->astParent()->astOperand2();
+            if (op2 && op2->exprId() == 0 &&
+                !((tok->astParent()->astParent() && tok->astParent()->isAssignmentOp() && tok->astParent()->astParent()->isAssignmentOp()) ||
+                  isLambdaCaptureList(op2) ||
+                  (op2->str() == "(" && isLambdaCaptureList(op2->astOperand1())) ||
+                  Token::simpleMatch(op2, "{ }")))
+                break;
 
-        if (tok->astParent()->isExpandedMacro() || Token::Match(tok->astParent(), "++|--")) {
-            tok->astParent()->exprId(id);
-            ++id;
-            setParentExprId(tok->astParent(), exprIdMap, id);
-            return;
-        }
+            if (tok->astParent()->isExpandedMacro() || Token::Match(tok->astParent(), "++|--")) {
+                tok->astParent()->exprId(id);
+                ++id;
+                tok = tok->astParent();
+                continue;
+            }
 
-        ExprIdKey key;
-        key.parentOp = tok->astParent()->str();
-        key.operand1 = op1 ? op1->exprId() : 0;
-        key.operand2 = op2 ? op2->exprId() : 0;
+            ExprIdKey key;
+            key.parentOp = tok->astParent()->str();
+            key.operand1 = op1 ? op1->exprId() : 0;
+            key.operand2 = op2 ? op2->exprId() : 0;
 
-        if (tok->astParent()->isCast() && tok->astParent()->str() == "(") {
-            const Token* typeStartToken;
-            const Token* typeEndToken;
-            if (tok->astParent()->astOperand2()) {
-                typeStartToken = tok->astParent()->astOperand1();
-                typeEndToken = tok;
+            if (tok->astParent()->isCast() && tok->astParent()->str() == "(") {
+                const Token* typeStartToken;
+                const Token* typeEndToken;
+                if (tok->astParent()->astOperand2()) {
+                    typeStartToken = tok->astParent()->astOperand1();
+                    typeEndToken = tok;
+                } else {
+                    typeStartToken = tok->astParent()->next();
+                    typeEndToken = tok->astParent()->link();
+                }
+                std::string type;
+                for (const Token* t = typeStartToken; t != typeEndToken; t = t->next()) {
+                    type += " " + t->str();
+                }
+                key.parentOp += type;
+            }
+
+            for (const auto& ref: followAllReferences(op1)) {
+                if (ref.token->exprId() != 0) { // cppcheck-suppress useStlAlgorithm
+                    key.operand1 = ref.token->exprId();
+                    break;
+                }
+            }
+            for (const auto& ref: followAllReferences(op2)) {
+                if (ref.token->exprId() != 0) { // cppcheck-suppress useStlAlgorithm
+                    key.operand2 = ref.token->exprId();
+                    break;
+                }
+            }
+
+            if (key.operand1 > key.operand2 && key.operand2 &&
+                Token::Match(tok->astParent(), "%or%|%oror%|+|*|&|&&|^|==|!=")) {
+                // In C++ the order of operands of + might matter
+                if (!tok->isCpp() ||
+                    key.parentOp != "+" ||
+                    !tok->astParent()->valueType() ||
+                    tok->astParent()->valueType()->isIntegral() ||
+                    tok->astParent()->valueType()->isFloat() ||
+                    tok->astParent()->valueType()->pointer > 0)
+                    std::swap(key.operand1, key.operand2);
+            }
+
+            const auto it = exprIdMap.find(key);
+            if (it == exprIdMap.end()) {
+                exprIdMap[key] = id;
+                tok->astParent()->exprId(id);
+                ++id;
             } else {
-                typeStartToken = tok->astParent()->next();
-                typeEndToken = tok->astParent()->link();
+                tok->astParent()->exprId(it->second);
             }
-            std::string type;
-            for (const Token* t = typeStartToken; t != typeEndToken; t = t->next()) {
-                type += " " + t->str();
-            }
-            key.parentOp += type;
+            tok = tok->astParent();
         }
-
-        for (const auto& ref: followAllReferences(op1)) {
-            if (ref.token->exprId() != 0) { // cppcheck-suppress useStlAlgorithm
-                key.operand1 = ref.token->exprId();
-                break;
-            }
-        }
-        for (const auto& ref: followAllReferences(op2)) {
-            if (ref.token->exprId() != 0) { // cppcheck-suppress useStlAlgorithm
-                key.operand2 = ref.token->exprId();
-                break;
-            }
-        }
-
-        if (key.operand1 > key.operand2 && key.operand2 &&
-            Token::Match(tok->astParent(), "%or%|%oror%|+|*|&|&&|^|==|!=")) {
-            // In C++ the order of operands of + might matter
-            if (!tok->isCpp() ||
-                key.parentOp != "+" ||
-                !tok->astParent()->valueType() ||
-                tok->astParent()->valueType()->isIntegral() ||
-                tok->astParent()->valueType()->isFloat() ||
-                tok->astParent()->valueType()->pointer > 0)
-                std::swap(key.operand1, key.operand2);
-        }
-
-        const auto it = exprIdMap.find(key);
-        if (it == exprIdMap.end()) {
-            exprIdMap[key] = id;
-            tok->astParent()->exprId(id);
-            ++id;
-        } else {
-            tok->astParent()->exprId(it->second);
-        }
-        setParentExprId(tok->astParent(), exprIdMap, id);
     }
 }
 
