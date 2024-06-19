@@ -1128,7 +1128,9 @@ void Tokenizer::simplifyTypedef()
     {
         // remove typedefs
         for (auto &t: typedefs) {
-            if (!t.second.replaceFailed()) {
+            if (t.second.replaceFailed()) {
+                syntaxError(t.second.getTypedefToken());
+            } else {
                 const Token* const typedefToken = t.second.getTypedefToken();
                 TypedefInfo typedefInfo;
                 typedefInfo.name = t.second.name();
