@@ -43,10 +43,10 @@ static bool sameline(const simplecpp::Token *tok1, const simplecpp::Token *tok2)
     return tok1 && tok2 && tok1->location.sameline(tok2->location);
 }
 
-Directive::Directive(const simplecpp::Location & _loc, const std::string & _str) :
+Directive::Directive(const simplecpp::Location & _loc, const std::string _str) :
     file(_loc.file()),
     linenr(_loc.line),
-    str(_str)
+    str(std::move(_str))
 {}
 
 Directive::Directive(std::string _file, const int _linenr, const std::string & _str) :
