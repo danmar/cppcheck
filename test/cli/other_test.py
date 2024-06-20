@@ -1138,6 +1138,97 @@ def test_file_duplicate_2(tmpdir):
     assert stderr == ''
 
 
+def test_file_duplicate_3(tmpdir):
+    test_file_a = os.path.join(tmpdir, 'a.c')
+    with open(test_file_a, 'wt'):
+        pass
+
+    # multiple ways to specify the same file
+    in_file_a = 'a.c'
+    in_file_b = os.path.join('.', 'a.c')
+    in_file_c = os.path.join('dummy', '..', 'a.c')
+    in_file_d = os.path.join(tmpdir, 'a.c')
+    in_file_e = os.path.join(tmpdir, '.', 'a.c')
+    in_file_f = os.path.join(tmpdir, 'dummy', '..', 'a.c')
+
+    args = [in_file_a, in_file_b, in_file_c, in_file_d, in_file_e, in_file_f, str(tmpdir)]
+    args.append('-j1') # TODO: remove when fixed
+
+    exitcode, stdout, stderr = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    # TODO: only a single file should be checked
+    if sys.platform == 'win32':
+        assert lines == [
+            'Checking {} ...'.format('a.c'),
+            '1/6 files checked 0% done',
+            'Checking {} ...'.format('a.c'),
+            '2/6 files checked 0% done',
+            'Checking {} ...'.format('a.c'),
+            '3/6 files checked 0% done',
+            'Checking {} ...'.format(test_file_a),
+            '4/6 files checked 0% done',
+            'Checking {} ...'.format(test_file_a),
+            '5/6 files checked 0% done',
+            'Checking {} ...'.format(test_file_a),
+            '6/6 files checked 0% done'
+        ]
+    else:
+        assert lines == [
+            'Checking {} ...'.format('a.c'),
+            '1/4 files checked 0% done',
+            'Checking {} ...'.format('a.c'),
+            '2/4 files checked 0% done',
+            'Checking {} ...'.format(test_file_a),
+            '3/4 files checked 0% done',
+            'Checking {} ...'.format(test_file_a),
+            '4/4 files checked 0% done'
+        ]
+    assert stderr == ''
+
+
+@pytest.mark.skipif(sys.platform != 'win32', reason="requires Windows")
+def test_file_duplicate_4(tmpdir):
+    test_file_a = os.path.join(tmpdir, 'a.c')
+    with open(test_file_a, 'wt'):
+        pass
+
+    # multiple ways to specify the same file
+    in_file_a = 'a.c'
+    in_file_b = os.path.join('.', 'a.c')
+    in_file_c = os.path.join('dummy', '..', 'a.c')
+    in_file_d = os.path.join(tmpdir, 'a.c')
+    in_file_e = os.path.join(tmpdir, '.', 'a.c')
+    in_file_f = os.path.join(tmpdir, 'dummy', '..', 'a.c')
+
+    args1 = [in_file_a, in_file_b, in_file_c, in_file_d, in_file_e, in_file_f, str(tmpdir)]
+    args2 = []
+    for a in args1:
+        args2.append(a.replace('\\', '/'))
+    args = args1 + args2
+    args.append('-j1') # TODO: remove when fixed
+
+    exitcode, stdout, stderr = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    # TODO: only a single file should be checked
+    assert lines == [
+        'Checking {} ...'.format('a.c'),
+        '1/6 files checked 0% done',
+        'Checking {} ...'.format('a.c'),
+        '2/6 files checked 0% done',
+        'Checking {} ...'.format('a.c'),
+        '3/6 files checked 0% done',
+        'Checking {} ...'.format(test_file_a),
+        '4/6 files checked 0% done',
+        'Checking {} ...'.format(test_file_a),
+        '5/6 files checked 0% done',
+        'Checking {} ...'.format(test_file_a),
+        '6/6 files checked 0% done'
+    ]
+    assert stderr == ''
+
+
 def test_file_ignore(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
     with open(test_file, 'wt'):
