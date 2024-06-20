@@ -4838,7 +4838,7 @@ void Tokenizer::setVarIdPass1()
             }
 
             // function declaration inside executable scope? Function declaration is of form: type name "(" args ")"
-            if (scopeStack.top().isExecutable && Token::Match(tok, "%name% [,)[]")) {
+            if (scopeStack.top().isExecutable && !scopeStack.top().isStructInit && Token::Match(tok, "%name% [,)[]")) {
                 bool par = false;
                 const Token* start;
                 Token* end;

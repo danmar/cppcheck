@@ -219,3 +219,22 @@ def test_slow_many_scopes(tmpdir):
                     return EXIT_SUCCESS;
                 }""")
     cppcheck([filename]) # should not take more than ~1 second
+
+@pytest.mark.timeout(20)
+def test_crash_array_in_namespace(tmpdir):
+    # 12847
+    filename = os.path.join(tmpdir, 'hang.cpp')
+    with open(filename, 'wt') as f:
+        f.write(r"""
+                #define ROW A, A, A, A, A, A, A, A,
+                #define ROW8 ROW ROW ROW ROW ROW ROW ROW ROW
+                #define ROW64 ROW8 ROW8 ROW8 ROW8 ROW8 ROW8 ROW8 ROW8
+                #define ROW512 ROW64 ROW64 ROW64 ROW64 ROW64 ROW64 ROW64 ROW64
+                #define ROW4096 ROW512 ROW512 ROW512 ROW512 ROW512 ROW512 ROW512 ROW512
+                namespace N {
+                    static const char A = 'a';
+                    const char a[] = {
+                        ROW4096 ROW4096 ROW4096 ROW4096
+                    };
+                }""")
+    cppcheck([filename]) # should not take more than ~5 seconds
