@@ -377,6 +377,42 @@ private:
     std::istream &istr;
 };
 
+class StdCharBufStream : public simplecpp::TokenList::Stream {
+public:
+    // cppcheck-suppress uninitDerivedMemberVar - we call Stream::init() to initialize the private members
+    StdCharBufStream(const unsigned char* str, std::size_t size)
+        : str(str)
+        , size(size)
+        , pos(0)
+        , lastStatus(0)
+    {
+        init();
+    }
+
+    virtual int get() OVERRIDE {
+        if (pos >= size)
+            return lastStatus = EOF;
+        return str[pos++];
+    }
+    virtual int peek() OVERRIDE {
+        if (pos >= size)
+            return lastStatus = EOF;
+        return str[pos];
+    }
+    virtual void unget() OVERRIDE {
+        --pos;
+    }
+    virtual bool good() OVERRIDE {
+        return lastStatus != EOF;
+    }
+
+private:
+    const unsigned char *str;
+    const std::size_t size;
+    std::size_t pos;
+    int lastStatus;
+};
+
 class FileStream : public simplecpp::TokenList::Stream {
 public:
     // cppcheck-suppress uninitDerivedMemberVar - we call Stream::init() to initialize the private members
@@ -439,6 +475,20 @@ simplecpp::TokenList::TokenList(std::istream &istr, std::vector<std::string> &fi
     : frontToken(nullptr), backToken(nullptr), files(filenames)
 {
     StdIStream stream(istr);
+    readfile(stream,filename,outputList);
+}
+
+simplecpp::TokenList::TokenList(const unsigned char* data, std::size_t size, std::vector<std::string> &filenames, const std::string &filename, OutputList *outputList)
+    : frontToken(nullptr), backToken(nullptr), files(filenames)
+{
+    StdCharBufStream stream(data, size);
+    readfile(stream,filename,outputList);
+}
+
+simplecpp::TokenList::TokenList(const char* data, std::size_t size, std::vector<std::string> &filenames, const std::string &filename, OutputList *outputList)
+        : frontToken(nullptr), backToken(nullptr), files(filenames)
+{
+    StdCharBufStream stream(reinterpret_cast<const unsigned char*>(data), size);
     readfile(stream,filename,outputList);
 }
 
@@ -1447,8 +1497,7 @@ namespace simplecpp {
 
         Macro(const std::string &name, const std::string &value, std::vector<std::string> &f) : nameTokDef(nullptr), files(f), tokenListDefine(f), valueDefinedInCode_(false) {
             const std::string def(name + ' ' + value);
-            std::istringstream istr(def);
-            StdIStream stream(istr);
+            StdCharBufStream stream(reinterpret_cast<const unsigned char*>(def.data()), def.size());
             tokenListDefine.readfile(stream);
             if (!parseDefine(tokenListDefine.cfront()))
                 throw std::runtime_error("bad macro syntax. macroname=" + name + " value=" + value);
