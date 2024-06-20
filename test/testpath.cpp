@@ -464,8 +464,13 @@ private:
         ASSERT_EQUALS(cwd_up, Path::getAbsoluteFilePath(Path::join(cwd, ".\\..\\")));
 
         ASSERT_EQUALS(cwd, Path::getAbsoluteFilePath("."));
+#ifndef _WIN32
         TODO_ASSERT_EQUALS(cwd, "", Path::getAbsoluteFilePath("./"));
         TODO_ASSERT_EQUALS(cwd, "", Path::getAbsoluteFilePath(".\\"));
+#else
+        ASSERT_EQUALS(cwd, Path::getAbsoluteFilePath("./"));
+        ASSERT_EQUALS(cwd, Path::getAbsoluteFilePath(".\\"));
+#endif
 
         ASSERT_EQUALS("", Path::getAbsoluteFilePath(""));
 
@@ -475,6 +480,46 @@ private:
 #else
         ASSERT_EQUALS(Path::toNativeSeparators(Path::join(cwd, "testabspath2.txt")), Path::getAbsoluteFilePath("testabspath2.txt"));
 #endif
+
+#ifdef _WIN32
+        // determine an existing drive letter
+        std::string drive = Path::getCurrentPath().substr(0, 2);
+        ASSERT_EQUALS(drive + "", Path::getAbsoluteFilePath(drive + "\\"));
+        ASSERT_EQUALS(drive + "\\path", Path::getAbsoluteFilePath(drive + "\\path"));
+        ASSERT_EQUALS(drive + "\\path", Path::getAbsoluteFilePath(drive + "\\path\\"));
+        ASSERT_EQUALS(drive + "\\path\\files.txt", Path::getAbsoluteFilePath(drive + "\\path\\files.txt"));
+        ASSERT_EQUALS(drive + "", Path::getAbsoluteFilePath(drive + "//"));
+        ASSERT_EQUALS(drive + "\\path", Path::getAbsoluteFilePath(drive + "//path"));
+        ASSERT_EQUALS(drive + "\\path", Path::getAbsoluteFilePath(drive + "//path/"));
+        ASSERT_EQUALS(drive + "\\path\\files.txt", Path::getAbsoluteFilePath(drive + "//path/files.txt"));
+        ASSERT_EQUALS(drive + "\\path", Path::getAbsoluteFilePath(drive + "\\\\path"));
+        ASSERT_EQUALS(drive + "", Path::getAbsoluteFilePath(drive + "/"));
+        ASSERT_EQUALS(drive + "\\path", Path::getAbsoluteFilePath(drive + "/path"));
+
+        drive[0] = static_cast<char>(toupper(drive[0]));
+        ASSERT_EQUALS(drive + "\\path", Path::getAbsoluteFilePath(drive + "\\path"));
+        ASSERT_EQUALS(drive + "\\path", Path::getAbsoluteFilePath(drive + "/path"));
+
+        drive[0] = static_cast<char>(tolower(drive[0]));
+        ASSERT_EQUALS(drive + "\\path", Path::getAbsoluteFilePath(drive + "\\path"));
+        ASSERT_EQUALS(drive + "\\path", Path::getAbsoluteFilePath(drive + "/path"));
+
+        ASSERT_EQUALS("1:\\path\\files.txt", Path::getAbsoluteFilePath("1:\\path\\files.txt")); // treated as valid drive
+        ASSERT_EQUALS(
+            Path::toNativeSeparators(Path::join(Path::getCurrentPath(), "CC:\\path\\files.txt")),
+            Path::getAbsoluteFilePath("CC:\\path\\files.txt")); // treated as filename
+        ASSERT_EQUALS("1:\\path\\files.txt", Path::getAbsoluteFilePath("1:/path/files.txt")); // treated as valid drive
+        ASSERT_EQUALS(
+            Path::toNativeSeparators(Path::join(Path::getCurrentPath(), "CC:\\path\\files.txt")),
+            Path::getAbsoluteFilePath("CC:/path/files.txt")); // treated as filename
+#endif
+
+#ifndef _WIN32
+        ASSERT_THROW_EQUALS_2(Path::getAbsoluteFilePath("C:\\path\\files.txt"), std::runtime_error, "path 'C:\\path\\files.txt' does not exist");
+#endif
+
+        // TODO: test UNC paths
+        // TODO: test with symlinks
     }
 };
 
