@@ -104,47 +104,6 @@ static bool isVarTokComparison(const Token * tok, const Token ** vartok,
 
 //---------------------------------------------------------------------------
 
-void VarInfo::print()
-{
-    std::cout << "size=" << alloctype.size() << std::endl;
-    for (std::map<int, AllocInfo>::const_iterator it = alloctype.cbegin(); it != alloctype.cend(); ++it) {
-        std::string strusage;
-        const auto use = possibleUsage.find(it->first);
-        if (use != possibleUsage.end())
-            strusage = use->second.first->str();
-
-        std::string status;
-        switch (it->second.status) {
-        case OWNED:
-            status = "owned";
-            break;
-        case DEALLOC:
-            status = "dealloc";
-            break;
-        case ALLOC:
-            status = "alloc";
-            break;
-        case NOALLOC:
-            status = "noalloc";
-            break;
-        case REALLOC:
-            status = "realloc";
-            break;
-        default:
-            status = "?";
-            break;
-        }
-
-        std::cout << "status=" << status << " "
-                  << "alloctype='" << it->second.type << "' "
-                  << "possibleUsage='" << strusage << "' "
-                  << "conditionalAlloc=" << (conditionalAlloc.find(it->first) != conditionalAlloc.end() ? "yes" : "no") << " "
-                  << "referenced=" << (referenced.find(it->first) != referenced.end() ? "yes" : "no") << " "
-                  << "reallocedFrom=" << it->second.reallocedFromType
-                  << std::endl;
-    }
-}
-
 void VarInfo::possibleUsageAll(const std::pair<const Token*, Usage>& functionUsage)
 {
     possibleUsage.clear();
