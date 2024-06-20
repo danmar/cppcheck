@@ -12,7 +12,6 @@ from testutils import cppcheck, assert_cppcheck, cppcheck_ex
 def __remove_std_lookup_log(l : list, exepath):
     l.remove("looking for library 'std.cfg'")
     l.remove("looking for library '{}/std.cfg'".format(exepath))
-    l.remove("looking for library '{}/../cfg/std.cfg'".format(exepath))
     l.remove("looking for library '{}/cfg/std.cfg'".format(exepath))
     return l
 
@@ -1633,7 +1632,6 @@ def test_lib_lookup(tmpdir):
         "looking for library 'gnu'",
         "looking for library 'gnu.cfg'",
         "looking for library '{}/gnu.cfg'".format(exepath),
-        "looking for library '{}/../cfg/gnu.cfg'".format(exepath),
         "looking for library '{}/cfg/gnu.cfg'".format(exepath),
         'Checking {} ...'.format(test_file)
     ]
@@ -1655,7 +1653,6 @@ def test_lib_lookup_notfound(tmpdir):
         "looking for library 'none'",
         "looking for library 'none.cfg'",
         "looking for library '{}/none.cfg'".format(exepath),
-        "looking for library '{}/../cfg/none.cfg'".format(exepath),
         "looking for library '{}/cfg/none.cfg'".format(exepath),
         "library not found: 'none'",
         "cppcheck: Failed to load library configuration file 'none'. File not found"
@@ -1728,7 +1725,6 @@ def test_lib_lookup_nofile(tmpdir):
         "looking for library 'gtk'",
         "looking for library 'gtk.cfg'",
         "looking for library '{}/gtk.cfg'".format(exepath),
-        "looking for library '{}/../cfg/gtk.cfg'".format(exepath),
         "looking for library '{}/cfg/gtk.cfg'".format(exepath),
         'Checking {} ...'.format(test_file)
     ]
