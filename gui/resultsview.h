@@ -52,7 +52,7 @@ class ResultsView : public QWidget {
     Q_OBJECT
 public:
 
-    explicit ResultsView(QWidget * parent = nullptr);
+    explicit ResultsView(QWidget * parent);
     void initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler);
     ResultsView(const ResultsView &) = delete;
     ~ResultsView() override;

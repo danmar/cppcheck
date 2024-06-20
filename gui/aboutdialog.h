@@ -40,7 +40,7 @@ class AboutDialog : public QDialog {
 public:
     AboutDialog(const QString &version,
                 const QString &extraVersion,
-                QWidget *parent = nullptr);
+                QWidget *parent);
 
     ~AboutDialog() override;
 
