@@ -140,8 +140,8 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
     fout << "Critical errors" << std::endl;
     fout << "---------------" << std::endl;
     if (!criticalErrors.empty()) {
-        fout << "There was critical errors (" << criticalErrors << ")" << std::endl;
-        fout << "All checking is skipped for a file with such error" << std::endl;
+        fout << "There were critical errors (" << criticalErrors << ")" << std::endl;
+        fout << "All checking is skipped for a file with such error." << std::endl;
     } else {
         fout << "No critical errors, all files were checked." << std::endl;
         fout << "Important: Analysis is still not guaranteed to be 'complete' it is possible there are false negatives." << std::endl;
