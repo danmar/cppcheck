@@ -112,13 +112,13 @@ jobs:
       # TODO: bail out on warnings with latest GCC
       - name: Set up GCC
         uses: egor-tensin/setup-gcc@v1
-        if: matrix.os == 'ubuntu-22.04'
+        if: false  # matrix.os == 'ubuntu-22.04'
         with:
           version: 13
           platform: x64
 
       - name: Select compiler
-        if: matrix.os == 'ubuntu-22.04'
+        if: false  # matrix.os == 'ubuntu-22.04'
         run: |
           echo "CXX=g++-13" >> $GITHUB_ENV
 
