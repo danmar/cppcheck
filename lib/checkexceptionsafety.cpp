@@ -360,8 +360,8 @@ void CheckExceptionSafety::unhandledExceptionSpecification()
 void CheckExceptionSafety::unhandledExceptionSpecificationError(const Token * const tok1, const Token * const tok2, const std::string & funcname)
 {
     const std::string str1(tok1 ? tok1->str() : "foo");
-    const std::list<const Token*> locationList = { tok1, tok2 };
-    reportError(locationList, Severity::style, "unhandledExceptionSpecification",
+    std::list<const Token*> locationList = { tok1, tok2 };
+    reportError(std::move(locationList), Severity::style, "unhandledExceptionSpecification",
                 "Unhandled exception specification when calling function " + str1 + "().\n"
                 "Unhandled exception specification when calling function " + str1 + "(). "
                 "Either use a try/catch around the function call, or add a exception specification for " + funcname + "() also.", CWE703, Certainty::inconclusive);

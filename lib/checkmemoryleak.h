@@ -82,7 +82,7 @@ private:
      * @param msg text
      * @param cwe cwe number
      */
-    void reportErr(const std::list<const Token *> &callstack, Severity severity, const std::string &id, const std::string &msg, const CWE &cwe) const;
+    void reportErr(std::list<const Token *> callstack, Severity severity, const std::string &id, const std::string &msg, const CWE &cwe) const;
 
 public:
     CheckMemoryLeak() = delete;
