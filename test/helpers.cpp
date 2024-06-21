@@ -117,25 +117,24 @@ ScopedFile::~ScopedFile() {
 // TODO: we should be using the actual Preprocessor implementation
 std::string PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& errorlogger, const std::string &filedata, const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression)
 {
-    std::map<std::string, std::string> cfgcode = getcode(settings, errorlogger, filedata.c_str(), std::set<std::string>{cfg}, filename, inlineSuppression);
+    std::map<std::string, std::string> cfgcode = getcode(settings, errorlogger, filedata.c_str(), filedata.size(), std::set<std::string>{cfg}, filename, inlineSuppression);
     const auto it = cfgcode.find(cfg);
     if (it == cfgcode.end())
         return "";
     return it->second;
 }
 
-std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], const std::string &filename, SuppressionList *inlineSuppression)
+std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::size_t size, const std::string &filename, SuppressionList *inlineSuppression)
 {
-    return getcode(settings, errorlogger, code, {}, filename, inlineSuppression);
+    return getcode(settings, errorlogger, code, size, {}, filename, inlineSuppression);
 }
 
-std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::set<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression)
+std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::size_t size, std::set<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression)
 {
     simplecpp::OutputList outputList;
     std::vector<std::string> files;
 
-    std::istringstream istr(code);
-    simplecpp::TokenList tokens(istr, files, Path::simplifyPath(filename), &outputList);
+    simplecpp::TokenList tokens(code, size, files, Path::simplifyPath(filename), &outputList);
     Preprocessor preprocessor(settings, errorlogger);
     if (inlineSuppression)
         preprocessor.inlineSuppressions(tokens, *inlineSuppression);
@@ -163,15 +162,14 @@ std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& s
     return cfgcode;
 }
 
-void PreprocessorHelper::preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger)
+void PreprocessorHelper::preprocess(const char code[], std::size_t size, std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger)
 {
-    preprocess(code, files, tokenizer, errorlogger, simplecpp::DUI());
+    preprocess(code, size, files, tokenizer, errorlogger, simplecpp::DUI());
 }
 
-void PreprocessorHelper::preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger, const simplecpp::DUI& dui)
+void PreprocessorHelper::preprocess(const char code[], std::size_t size, std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger, const simplecpp::DUI& dui)
 {
-    std::istringstream istr(code);
-    const simplecpp::TokenList tokens1(istr, files, files[0]);
+    const simplecpp::TokenList tokens1(code, size, files, files[0]);
 
     // Preprocess..
     simplecpp::TokenList tokens2(files);
@@ -186,11 +184,10 @@ void PreprocessorHelper::preprocess(const char code[], std::vector<std::string> 
     tokenizer.setDirectives(std::move(directives));
 }
 
-std::vector<RemarkComment> PreprocessorHelper::getRemarkComments(const char code[], ErrorLogger& errorLogger)
+std::vector<RemarkComment> PreprocessorHelper::getRemarkComments(const char code[], std::size_t size, ErrorLogger& errorLogger)
 {
     std::vector<std::string> files{"test.cpp"};
-    std::istringstream istr(code);
-    const simplecpp::TokenList tokens1(istr, files, files[0]);
+    const simplecpp::TokenList tokens1(code, size, files, files[0]);
 
     const Settings settings;
 

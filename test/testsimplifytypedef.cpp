@@ -265,8 +265,8 @@ private:
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
-
-    std::string simplifyTypedefP(const char code[]) {
+    template<size_t size>
+    std::string simplifyTypedefP(const char (&code)[size]) {
         std::vector<std::string> files(1, "test.cpp");
         Tokenizer tokenizer(settings0, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);

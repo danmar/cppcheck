@@ -33,7 +33,6 @@
 #include <list>
 #include <map>
 #include <set>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -48,11 +47,11 @@ public:
     class OurPreprocessor : public Preprocessor {
     public:
 
-        static std::string expandMacros(const char code[], ErrorLogger *errorLogger = nullptr) {
-            std::istringstream istr(code);
+        template<size_t size>
+        static std::string expandMacros(const char (&code)[size], ErrorLogger *errorLogger = nullptr) {
             simplecpp::OutputList outputList;
             std::vector<std::string> files;
-            const simplecpp::TokenList tokens1 = simplecpp::TokenList(istr, files, "file.cpp", &outputList);
+            const simplecpp::TokenList tokens1 = simplecpp::TokenList(code, size-1, files, "file.cpp", &outputList);
             std::map<std::string, simplecpp::TokenList*> filedata;
             simplecpp::TokenList tokens2(files);
             simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI(), &outputList);
@@ -268,7 +267,8 @@ private:
         TEST_CASE(hashCalculation);
     }
 
-    std::string getConfigsStr(const char filedata[], const char *arg = nullptr) {
+    template<size_t size>
+    std::string getConfigsStr(const char (&code)[size], const char *arg = nullptr) {
         Settings settings;
         if (arg && std::strncmp(arg,"-D",2)==0)
             settings.userDefines = arg + 2;
@@ -276,8 +276,7 @@ private:
             settings.userUndefs.insert(arg+2);
         Preprocessor preprocessor(settings, *this);
         std::vector<std::string> files;
-        std::istringstream istr(filedata);
-        simplecpp::TokenList tokens(istr,files);
+        simplecpp::TokenList tokens(code,size-1,files);
         tokens.removeComments();
         const std::set<std::string> configs = preprocessor.getConfigs(tokens);
         std::string ret;
@@ -286,12 +285,12 @@ private:
         return ret;
     }
 
-    std::size_t getHash(const char filedata[]) {
+    template<size_t size>
+    std::size_t getHash(const char (&code)[size]) {
         Settings settings;
         Preprocessor preprocessor(settings, *this);
         std::vector<std::string> files;
-        std::istringstream istr(filedata);
-        simplecpp::TokenList tokens(istr,files);
+        simplecpp::TokenList tokens(code,size-1,files);
         tokens.removeComments();
         return preprocessor.calculateHash(tokens, "");
     }
@@ -444,9 +443,8 @@ private:
                                 "#else\n"
                                 "2\n"
                                 "#endif\n";
-        std::istringstream istr(filedata);
         std::vector<std::string> files;
-        simplecpp::TokenList tokens(istr, files, "test.c");
+        simplecpp::TokenList tokens(filedata, sizeof(filedata), files, "test.c");
 
         // preprocess code with unix32 platform..
         {
@@ -769,7 +767,7 @@ private:
     }
 
     void if_macro_eq_macro() {
-        const char *code = "#define A B\n"
+        const char code[] = "#define A B\n"
                            "#define B 1\n"
                            "#define C 1\n"
                            "#if A == C\n"
@@ -781,7 +779,7 @@ private:
     }
 
     void ticket_3675() {
-        const char* code = "#ifdef YYSTACKSIZE\n"
+        const char code[] = "#ifdef YYSTACKSIZE\n"
                            "#define YYMAXDEPTH YYSTACKSIZE\n"
                            "#else\n"
                            "#define YYSTACKSIZE YYMAXDEPTH\n"
@@ -794,7 +792,7 @@ private:
     }
 
     void ticket_3699() {
-        const char* code = "#define INLINE __forceinline\n"
+        const char code[] = "#define INLINE __forceinline\n"
                            "#define inline __forceinline\n"
                            "#define __forceinline inline\n"
                            "#if !defined(_WIN32)\n"
@@ -807,7 +805,7 @@ private:
     }
 
     void ticket_4922() { // #4922
-        const char* code = "__asm__ \n"
+        const char code[] = "__asm__ \n"
                            "{ int extern __value) 0; (double return (\"\" } extern\n"
                            "__typeof __finite (__finite) __finite __inline \"__GI___finite\");";
         (void)PreprocessorHelper::getcode(settings0, *this, code);
@@ -2229,7 +2227,7 @@ private:
     }
 
     void if_sizeof() { // #4071
-        static const char* code = "#if sizeof(unsigned short) == 2\n"
+        const char code[] = "#if sizeof(unsigned short) == 2\n"
                                   "Fred & Wilma\n"
                                   "#elif sizeof(unsigned short) == 4\n"
                                   "Fred & Wilma\n"

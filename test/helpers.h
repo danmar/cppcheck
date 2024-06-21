@@ -163,16 +163,38 @@ public:
      * @param inlineSuppression the inline suppressions
      */
     static std::string getcode(const Settings& settings, ErrorLogger& errorlogger, const std::string &filedata, const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression = nullptr);
-    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], const std::string &filename = "file.c", SuppressionList *inlineSuppression = nullptr);
+    template<size_t size>
+    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char (&code)[size], const std::string &filename = "file.c", SuppressionList *inlineSuppression = nullptr)
+    {
+        return getcode(settings, errorlogger, code, size-1, filename, inlineSuppression);
+    }
 
-    static void preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger);
-    static void preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger, const simplecpp::DUI& dui);
+    template<size_t size>
+    static void preprocess(const char (&code)[size], std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger)
+    {
+        preprocess(code, size-1, files, tokenizer, errorlogger);
+    }
+    template<size_t size>
+    static void preprocess(const char (&code)[size], std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger, const simplecpp::DUI& dui)
+    {
+        preprocess(code, size-1, files, tokenizer, errorlogger, dui);
+    }
 
     /** get remark comments */
-    static std::vector<RemarkComment> getRemarkComments(const char code[], ErrorLogger& errorLogger);
+    template<size_t size>
+    static std::vector<RemarkComment> getRemarkComments(const char (&code)[size], ErrorLogger& errorLogger)
+    {
+        return getRemarkComments(code, size-1, errorLogger);
+    }
 
 private:
-    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::set<std::string> cfgs, const std::string &filename = "file.c", SuppressionList *inlineSuppression = nullptr);
+    static void preprocess(const char code[], std::size_t size, std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger);
+    static void preprocess(const char code[], std::size_t size, std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger, const simplecpp::DUI& dui);
+
+    static std::vector<RemarkComment> getRemarkComments(const char code[], std::size_t size, ErrorLogger& errorLogger);
+
+    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::size_t size, const std::string &filename = "file.c", SuppressionList *inlineSuppression = nullptr);
+    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::size_t size, std::set<std::string> cfgs, const std::string &filename = "file.c", SuppressionList *inlineSuppression = nullptr);
 };
 
 namespace cppcheck {

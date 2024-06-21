@@ -87,7 +87,8 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], Platform::Type platform = Platform::Type::Native) {
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], Platform::Type platform = Platform::Type::Native) {
         const Settings settings1 = settingsBuilder(settings).platform(platform).build();
 
         std::vector<std::string> files(1, "test.cpp");
