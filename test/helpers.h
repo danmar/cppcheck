@@ -177,10 +177,15 @@ public:
      * @param inlineSuppression the inline suppressions
      */
     static std::string getcode(const Settings& settings, ErrorLogger& errorlogger, const std::string &filedata, const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression = nullptr);
-    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], const std::string &filename = "file.c", SuppressionList *inlineSuppression = nullptr);
+    template<size_t size>
+    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char (&code)[size], const std::string &filename = "file.c", SuppressionList *inlineSuppression = nullptr)
+    {
+        return getcode(settings, errorlogger, code, size-1, filename, inlineSuppression);
+    }
 
 private:
-    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::set<std::string> cfgs, const std::string &filename = "file.c", SuppressionList *inlineSuppression = nullptr);
+    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::size_t size, const std::string &filename = "file.c", SuppressionList *inlineSuppression = nullptr);
+    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::size_t size, std::set<std::string> cfgs, const std::string &filename = "file.c", SuppressionList *inlineSuppression = nullptr);
 };
 
 namespace cppcheck {
@@ -254,18 +259,18 @@ public:
     SimpleTokenizer2(const Settings &settings, ErrorLogger &errorlogger, const char (&code)[size], const std::string& file0)
         : Tokenizer{TokenList{settings, Path::identify(file0, false)}, errorlogger}
     {
-        preprocess(code, mFiles, file0, *this, errorlogger);
+        preprocess(code, size-1, mFiles, file0, *this, errorlogger);
     }
 
     // TODO: get rid of this
-    SimpleTokenizer2(const Settings &settings, ErrorLogger &errorlogger, const char code[], const std::string& file0)
+    SimpleTokenizer2(const Settings &settings, ErrorLogger &errorlogger, const char* code, std::size_t size, const std::string& file0)
         : Tokenizer{TokenList{settings, Path::identify(file0, false)}, errorlogger}
     {
-        preprocess(code, mFiles, file0, *this, errorlogger);
+        preprocess(code, size, mFiles, file0, *this, errorlogger);
     }
 
 private:
-    static void preprocess(const char code[], std::vector<std::string> &files, const std::string& file0, Tokenizer& tokenizer, ErrorLogger& errorlogger);
+    static void preprocess(const char* code, std::size_t size, std::vector<std::string> &files, const std::string& file0, Tokenizer& tokenizer, ErrorLogger& errorlogger);
 
     std::vector<std::string> mFiles;
 };
