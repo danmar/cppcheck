@@ -27,7 +27,6 @@
 #include "tokenlist.h"
 
 #include <cstddef>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -272,8 +271,8 @@ private:
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
-
-    std::string simplifyTypedefP(const char code[]) {
+    template<size_t size>
+    std::string simplifyTypedefP(const char (&code)[size]) {
         std::vector<std::string> files(1, "test.cpp");
         Tokenizer tokenizer(settings0, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
@@ -312,11 +311,11 @@ private:
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
-    std::string dumpTypedefInfo(const char code[]) {
+    template<size_t size>
+    std::string dumpTypedefInfo(const char (&code)[size]) {
         Tokenizer tokenizer(settings1, *this);
 
-        std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "file.c"))
+        if (!tokenizer.list.createTokens(code, size-1, "file.c"))
             return {};
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();

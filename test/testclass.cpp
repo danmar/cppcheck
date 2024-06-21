@@ -8568,7 +8568,8 @@ private:
     }
 
     #define checkUselessOverride(...) checkUselessOverride_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkUselessOverride_(const char* file, int line, const char code[]) {
+    template<size_t size>
+    void checkUselessOverride_(const char* file, int line, const char (&code)[size]) {
         const Settings settings = settingsBuilder().severity(Severity::style).build();
 
         std::vector<std::string> files(1, "test.cpp");

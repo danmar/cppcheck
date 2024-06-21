@@ -525,16 +525,17 @@ private:
         return tokenizer.tokens()->stringifyList(true,true,true,true,false);
     }
 
-    void directiveDump(const char filedata[], std::ostream& ostr) {
-        directiveDump(filedata, "test.c", settingsDefault, ostr);
+    template<size_t size>
+    void directiveDump(const char (&code)[size], std::ostream& ostr) {
+        directiveDump(code, "test.c", settingsDefault, ostr);
     }
 
-    void directiveDump(const char filedata[], const char filename[], const Settings& settings, std::ostream& ostr) {
+    template<size_t size>
+    void directiveDump(const char (&code)[size], const char filename[], const Settings& settings, std::ostream& ostr) {
         Preprocessor preprocessor(settings, *this);
-        std::istringstream istr(filedata);
         simplecpp::OutputList outputList;
         std::vector<std::string> files{filename};
-        const simplecpp::TokenList tokens1(istr, files, filename, &outputList);
+        const simplecpp::TokenList tokens1(code, size-1, files, filename, &outputList);
         std::list<Directive> directives = preprocessor.createDirectives(tokens1);
 
         Tokenizer tokenizer(settings, *this);
@@ -7776,7 +7777,8 @@ private:
     }
 
 #define checkHdrs(...) checkHdrs_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string checkHdrs_(const char* file, int line, const char code[], bool checkHeadersFlag) {
+    template<size_t size>
+    std::string checkHdrs_(const char* file, int line, const char (&code)[size], bool checkHeadersFlag) {
         const Settings settings = settingsBuilder().checkHeaders(checkHeadersFlag).build();
 
         std::vector<std::string> files(1, "test.cpp");
@@ -8285,10 +8287,9 @@ private:
                                 "int PTR4 q4_var RBR4 = 0;\n";
 
         // Preprocess file..
-        std::istringstream fin(raw_code);
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
-        const simplecpp::TokenList tokens1(fin, files, emptyString, &outputList);
+        const simplecpp::TokenList tokens1(raw_code, sizeof(raw_code), files, emptyString, &outputList);
         const std::string filedata = tokens1.stringify();
         const Settings settings;
         const std::string code = PreprocessorHelper::getcode(settings, *this, filedata, emptyString, emptyString);
