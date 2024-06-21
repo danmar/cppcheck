@@ -26,7 +26,6 @@
 #include "tokenlist.h"
 
 #include <cstddef>
-#include <sstream>
 #include <string>
 #include <utility>
 
@@ -289,8 +288,8 @@ private:
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
-
-    std::string simplifyTypedefP(const char code[]) {
+    template<size_t size>
+    std::string simplifyTypedefP(const char (&code)[size]) {
         SimpleTokenizer2 tokenizer(settings0, *this, code, "test.cpp");
 
         // Tokenize..
@@ -331,7 +330,7 @@ private:
     template<size_t size>
     std::string dumpTypedefInfo(const char (&code)[size]) {
         TokenList tokenlist{settings1, Standards::Language::C};
-        if (!TokenListHelper::createTokens(tokenlist, code, "file.c"))
+        if (!TokenListHelper::createTokens(tokenlist, code, size-1, "file.c"))
             return {};
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
