@@ -10,7 +10,7 @@ GUI:
 -
 
 Changed interface:
--
+- '-j0' will now automatically choose a thread count.
 
 Deprecations:
 - Support for Python 2.7 has been deprecated (it went EOL in January 2020) and will be removed in Cppcheck 2.16 - please use Python 3.x instead.
