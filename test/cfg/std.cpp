@@ -5118,3 +5118,13 @@ void constParameterReference_insert(std::list<int>& l, int& r) {
     l.insert(l.end(), r);
     l.insert(l.end(), 5, r);
 }
+
+const char* variableScope_cstr_dummy(const char* q); // #12812
+std::size_t variableScope_cstr(const char* p) {
+    std::string s;
+    if (!p) {
+        s = "abc";
+        p = variableScope_cstr_dummy(s.c_str());
+    }
+    return std::strlen(p);
+}

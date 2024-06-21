@@ -1149,6 +1149,9 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
                     }
                 }
             }
+            const auto yield = astContainerYield(tok);
+            if (yield == Library::Container::Yield::BUFFER || yield == Library::Container::Yield::BUFFER_NT)
+                return false;
         }
     }
 
