@@ -3681,7 +3681,7 @@ void CheckOther::checkShadowVariables()
                 continue;
 
             if (functionScope && functionScope->type == Scope::ScopeType::eFunction && functionScope->function) {
-                const auto argList = functionScope->function->argumentList;
+                const auto & argList = functionScope->function->argumentList;
                 auto it = std::find_if(argList.cbegin(), argList.cend(), [&](const Variable& arg) {
                     return arg.nameToken() && var.name() == arg.name();
                 });
