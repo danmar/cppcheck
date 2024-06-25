@@ -68,22 +68,25 @@ jobs:
           lupdate gui.pro -no-obsolete || exit /b !errorlevel!
           lrelease gui.pro -removeidentical || exit /b !errorlevel!
 
-      - name: Matchcompiler
-        run: python tools\matchcompiler.py --write-dir lib || exit /b !errorlevel!
-
-      - name: Build x64 release GUI
+      - name: Build x64 debug GUI
         run: |
           cd gui || exit /b !errorlevel!
           qmake HAVE_QCHART=yes || exit /b !errorlevel!
-          nmake release || exit /b !errorlevel!
+          nmake debug || exit /b !errorlevel!
         env:
           CL: /MP
 
       - name: Deploy app
         run: |
           windeployqt Build\gui || exit /b !errorlevel!
+          DIR /S
           REM del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
           REM del Build\gui\cppcheck-gui.pdb || exit /b !errorlevel!
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deploy1
+          path: Build\gui
 
       # TODO: build with boost enabled
       - name: Build CLI x64 release configuration using MSBuild
