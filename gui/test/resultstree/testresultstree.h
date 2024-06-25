@@ -23,4 +23,5 @@ class TestResultsTree : public QObject {
 
 private slots:
     void test1() const;
+    void testReportType() const;
 };

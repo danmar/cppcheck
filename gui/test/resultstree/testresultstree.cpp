@@ -33,6 +33,22 @@
 
 #include <QtTest>
 
+class TestReport: public Report {
+public:
+    TestReport(QString format) : Report(QString()), format(format) {}
+    void writeHeader() override { output.clear(); }
+    void writeFooter() override {}
+    void writeError(const ErrorItem &error) override {
+        QString line = format;
+        line.replace("{id}", error.errorId);
+        line.replace("{classification}", error.classification);
+        line.replace("{guideline}", error.guideline);
+        output += (output.isEmpty() ? "" : "\n") + line;
+    }
+    QString format;
+    QString output;
+};
+
 // Mock GUI...
 ProjectFile *ProjectFile::mActiveProject;
 void ProjectFile::addSuppression(const SuppressionList::Suppression & /*unused*/) {}
@@ -102,6 +118,42 @@ void TestResultsTree::test1() const
     QCOMPARE(tree.isRowHidden(0,QModelIndex()), true);  // Added item is hidden
     tree.showResults(ShowTypes::ShowType::ShowInformation, true);
     QCOMPARE(tree.isRowHidden(0,QModelIndex()), false); // Show item
+}
+
+void TestResultsTree::testReportType() const
+{
+    TestReport report("{id},{classification},{guideline}");
+
+    int msgCount = 0;
+    auto createErrorItem = [&msgCount](const Severity severity, const QString& errorId) -> ErrorItem { 
+        ++msgCount;
+        ErrorItem errorItem;
+        errorItem.errorPath << QErrorPathItem(ErrorMessage::FileLocation("file1.c", msgCount, 1));
+        errorItem.severity = severity;
+        errorItem.errorId = errorId;
+        errorItem.summary = "test summary " + QString::number(msgCount);
+        return errorItem;
+    };
+
+    // normal report with 2 errors
+    ResultsTree tree(nullptr);
+    tree.updateSettings(false, false, false, false, false);
+    tree.addErrorItem(createErrorItem(Severity::style, "id1"));
+    tree.addErrorItem(createErrorItem(Severity::style, "unusedVariable")); // Misra C 2.8
+    tree.saveResults(&report);
+    QCOMPARE(report.output, "id1,,\nunusedVariable,,");
+
+    // switch to Misra C report and check that "id1" is not shown
+    tree.setReportType(ReportType::misraC);
+    tree.saveResults(&report);
+    QCOMPARE(report.output, "unusedVariable,Advisory,2.8");
+
+    // add "missingReturn" and check that it is added properly
+    tree.addErrorItem(createErrorItem(Severity::warning, "missingReturn")); // Misra C 17.4
+    tree.saveResults(&report);
+    QCOMPARE(report.output,
+             "unusedVariable,Advisory,2.8\n"
+             "missingReturn,Mandatory,17.4");
 }
 
 QTEST_MAIN(TestResultsTree)

@@ -241,6 +241,8 @@ private slots:
     void replyFinished(QNetworkReply *reply);
 
     void hideInformation();
+
+    void changeReportType();
 private:
 
     bool isCppcheckPremium() const;
@@ -461,6 +463,9 @@ private:
 
     /** @brief GUI actions for selecting language. */
     QActionGroup *mSelectLanguageActions;
+
+    /** @brief GUI actions for selecting report. */
+    QActionGroup *mSelectReportActions;
 
     /**
      * @brief Are we exiting the cppcheck?
