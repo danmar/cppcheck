@@ -910,6 +910,9 @@ namespace {
 
             Token* const tok4 = useAfterVarRange ? insertTokens(after->previous(), mRangeAfterVar)->next() : tok3->next();
 
+            if (tok->next() == tok4)
+                throw InternalError(tok, "Failed to simplify typedef. Is the code valid?");
+
             tok->deleteThis();
 
             // Unsplit variable declarations
@@ -8694,6 +8697,8 @@ void Tokenizer::findGarbageCode() const
             }
         }
         if (Token::Match(tok, "%num%|%bool%|%char%|%str% %num%|%bool%|%char%|%str%") && !Token::Match(tok, "%str% %str%"))
+            syntaxError(tok);
+        if (Token::Match(tok, "%num%|%bool%|%char%|%str% {"))
             syntaxError(tok);
         if (Token::Match(tok, "%assign% typename|class %assign%"))
             syntaxError(tok);
