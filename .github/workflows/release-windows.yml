@@ -89,8 +89,8 @@ jobs:
       - name: Deploy app
         run: |
           windeployqt Build\gui || exit /b !errorlevel!
-          del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
-          del Build\gui\cppcheck-gui.pdb || exit /b !errorlevel!
+          REM del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
+          REM del Build\gui\cppcheck-gui.pdb || exit /b !errorlevel!
 
       # TODO: build with boost enabled
       - name: Build CLI x64 release configuration using MSBuild
