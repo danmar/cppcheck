@@ -2,7 +2,7 @@
 # Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
 name: release-windows
 
-on: [push, pull_request]
+on: push
 
 permissions:
   contents: read
@@ -16,7 +16,6 @@ jobs:
   build:
 
     runs-on: windows-2022
-    if: ${{ github.repository_owner == 'danmar' }}
 
     env:
       # see https://www.pcre.org/original/changelog.txt
