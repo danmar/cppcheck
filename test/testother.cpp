@@ -8030,8 +8030,7 @@ private:
               "    use(i);\n"
               "    i = j;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n",
-                      errout_str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout_str());
 
         check("struct A { int x; int y; };"
               "void use(int);\n"
@@ -8041,8 +8040,7 @@ private:
               "    use(j);\n"
               "    j = i;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n",
-                      errout_str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout_str());
 
         check("struct A { int x; int y; };"
               "void use(int);\n"
