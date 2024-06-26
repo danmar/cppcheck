@@ -16,20 +16,51 @@ A manual is available [online](https://cppcheck.sourceforge.io/manual.pdf).
 
 ## Donate CPU
 
-Cppcheck is a hobby project with limited resources. You can help us by donating CPU (1 core or as many as you like). It is simple:
+Cppcheck is a hobby project with limited resources.
 
- 1. Download (and extract) Cppcheck source code.
- 2. Run:
-    ```
-    cd cppcheck/
-    virtualenv .env
-    .env/bin/pip install -r tools/donate-cpu-requirements.txt
-    .env/bin/python tools/donate-cpu.py
-    ```
+To monitor for stability, performance and regression we are analyzing the available source code of Debian packages with our latest development code
+and compare the results with the latest stable release.
 
-The script will analyse debian source code and upload the results to a cppcheck server. We need these results both to improve Cppcheck and to detect regressions.
+You can help with this by donating CPU time (1 core or as many as you like) and bandwidth.
 
-You can stop the script whenever you like with Ctrl C.
+It is as simple as running a shell script.
+
+You need a Linux (or WSL) shell (MacOS should work as well) with Python 3.x, Git and some common (development) tools (the script will tell you which) installed.
+
+NOTE: This will constantly and fully utilize the specified amount of cores while the script is running. It will also constantly fetch the sources which will be analyzed from a remote server (some of the packages are hundreds of megabytes in size).<br>
+If your resources and bandwidth are limited and/or would inflict certain costs on you (because of high energy prices or since you have to pay based on your data usage) you should probably not contribute. 
+
+```shell
+echo 'Thank you for providing resources and supporting the Cppcheck project!'
+
+# clone the 'main' branch of the official repository if it doesn't exist yet
+if [ ! -d cppcheck ]; then
+  git clone -b main https://github.com/danmar/cppcheck.git
+fi
+
+cd cppcheck
+
+while :
+do
+  # create a virtual environment to install the required Python dependencies (or update it)
+  python -m venv --upgrade --upgrade-deps .env
+  
+  # install or upgrade the Python dependencies
+  .env/bin/pip install -r tools/donate-cpu-requirements.txt --upgrade
+
+  # update to the latest source to make sure we run the latest client
+  git pull
+  
+  # run the client for a limited amount of packages (adjust -j to the amount of cores to use)
+  .env/bin/python tools/donate-cpu.py --max-packages=1000 -j1
+  
+  sleep 1
+done
+```
+
+The bandwidth used can be limited by adding `--bandwidth-limit=` to the script invocation (see `--limit-rate=amount` on https://www.gnu.org/software/wget/manual/html_node/Download-Options.html for possible values).
+
+The script can be stopped at any time with `CTRL+C`.
 
 ## Compiling
 
