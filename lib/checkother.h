@@ -429,7 +429,9 @@ private:
                "- known function argument, suspicious calculation.\n";
     }
 
-    bool diag(const Token* tok) { return !mRedundantAssignmentDiag.emplace(tok).second; }
+    bool diag(const Token* tok) {
+        return !mRedundantAssignmentDiag.emplace(tok).second;
+    }
     std::set<const Token*> mRedundantAssignmentDiag;
 };
 /// @}
