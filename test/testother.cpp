@@ -58,6 +58,7 @@ private:
         TEST_CASE(zeroDiv17); // #9931
         TEST_CASE(zeroDiv18);
         TEST_CASE(zeroDiv19);
+        TEST_CASE(zeroDiv20); // #11175
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -659,6 +660,16 @@ private:
               "        int j = 10 / i;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero.\n", errout_str());
+    }
+
+    void zeroDiv20()
+    {
+        check("uint16_t f(void)\n" // #11175
+              "{\n"
+              "    uint16_t x = 0xFFFFU;\n" // UINT16_MAX=0xFFFF
+              "    return 42/(++x);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Division by zero.\n", errout_str());
     }
 
     void zeroDivCond() {
