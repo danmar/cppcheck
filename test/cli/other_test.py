@@ -1138,6 +1138,97 @@ def test_file_duplicate_2(tmpdir):
     assert stderr == ''
 
 
+def test_file_duplicate_3(tmpdir):
+    test_file_a = os.path.join(tmpdir, 'a.c')
+    with open(test_file_a, 'wt'):
+        pass
+
+    # multiple ways to specify the same file
+    in_file_a = 'a.c'
+    in_file_b = os.path.join('.', 'a.c')
+    in_file_c = os.path.join('dummy', '..', 'a.c')
+    in_file_d = os.path.join(tmpdir, 'a.c')
+    in_file_e = os.path.join(tmpdir, '.', 'a.c')
+    in_file_f = os.path.join(tmpdir, 'dummy', '..', 'a.c')
+
+    args = [in_file_a, in_file_b, in_file_c, in_file_d, in_file_e, in_file_f, str(tmpdir)]
+    args.append('-j1') # TODO: remove when fixed
+
+    exitcode, stdout, stderr = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    # TODO: only a single file should be checked
+    if sys.platform == 'win32':
+        assert lines == [
+            'Checking {} ...'.format('a.c'),
+            '1/6 files checked 0% done',
+            'Checking {} ...'.format('a.c'),
+            '2/6 files checked 0% done',
+            'Checking {} ...'.format('a.c'),
+            '3/6 files checked 0% done',
+            'Checking {} ...'.format(test_file_a),
+            '4/6 files checked 0% done',
+            'Checking {} ...'.format(test_file_a),
+            '5/6 files checked 0% done',
+            'Checking {} ...'.format(test_file_a),
+            '6/6 files checked 0% done'
+        ]
+    else:
+        assert lines == [
+            'Checking {} ...'.format('a.c'),
+            '1/4 files checked 0% done',
+            'Checking {} ...'.format('a.c'),
+            '2/4 files checked 0% done',
+            'Checking {} ...'.format(test_file_a),
+            '3/4 files checked 0% done',
+            'Checking {} ...'.format(test_file_a),
+            '4/4 files checked 0% done'
+        ]
+    assert stderr == ''
+
+
+@pytest.mark.skipif(sys.platform != 'win32', reason="requires Windows")
+def test_file_duplicate_4(tmpdir):
+    test_file_a = os.path.join(tmpdir, 'a.c')
+    with open(test_file_a, 'wt'):
+        pass
+
+    # multiple ways to specify the same file
+    in_file_a = 'a.c'
+    in_file_b = os.path.join('.', 'a.c')
+    in_file_c = os.path.join('dummy', '..', 'a.c')
+    in_file_d = os.path.join(tmpdir, 'a.c')
+    in_file_e = os.path.join(tmpdir, '.', 'a.c')
+    in_file_f = os.path.join(tmpdir, 'dummy', '..', 'a.c')
+
+    args1 = [in_file_a, in_file_b, in_file_c, in_file_d, in_file_e, in_file_f, str(tmpdir)]
+    args2 = []
+    for a in args1:
+        args2.append(a.replace('\\', '/'))
+    args = args1 + args2
+    args.append('-j1') # TODO: remove when fixed
+
+    exitcode, stdout, stderr = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    # TODO: only a single file should be checked
+    assert lines == [
+        'Checking {} ...'.format('a.c'),
+        '1/6 files checked 0% done',
+        'Checking {} ...'.format('a.c'),
+        '2/6 files checked 0% done',
+        'Checking {} ...'.format('a.c'),
+        '3/6 files checked 0% done',
+        'Checking {} ...'.format(test_file_a),
+        '4/6 files checked 0% done',
+        'Checking {} ...'.format(test_file_a),
+        '5/6 files checked 0% done',
+        'Checking {} ...'.format(test_file_a),
+        '6/6 files checked 0% done'
+    ]
+    assert stderr == ''
+
+
 def test_file_ignore(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
     with open(test_file, 'wt'):
@@ -1613,4 +1704,31 @@ def test_lib_lookup_absolute_notfound(tmpdir):
         "looking for library '{}'".format(cfg_file),
         "library not found: '{}'".format(cfg_file),
         "cppcheck: Failed to load library configuration file '{}'. File not found".format(cfg_file)
+    ]
+
+
+def test_lib_lookup_nofile(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt'):
+        pass
+
+    # make sure we do not produce an error when the attempted lookup path is a directory and not a file
+    gtk_dir = os.path.join(tmpdir, 'gtk')
+    os.mkdir(gtk_dir)
+    gtk_cfg_dir = os.path.join(tmpdir, 'gtk.cfg')
+    os.mkdir(gtk_cfg_dir)
+
+    exitcode, stdout, _, exe = cppcheck_ex(['--library=gtk', '--debug-lookup', test_file], cwd=tmpdir)
+    exepath = os.path.dirname(exe)
+    if sys.platform == 'win32':
+        exepath = exepath.replace('\\', '/')
+    assert exitcode == 0, stdout
+    lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
+    assert lines == [
+        "looking for library 'gtk'",
+        "looking for library 'gtk.cfg'",
+        "looking for library '{}/gtk.cfg'".format(exepath),
+        "looking for library '{}/../cfg/gtk.cfg'".format(exepath),
+        "looking for library '{}/cfg/gtk.cfg'".format(exepath),
+        'Checking {} ...'.format(test_file)
     ]

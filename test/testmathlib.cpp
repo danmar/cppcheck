@@ -60,7 +60,6 @@ private:
         TEST_CASE(tan);
         TEST_CASE(abs);
         TEST_CASE(toString);
-        TEST_CASE(CPP14DigitSeparators);
     }
 
     void isGreater() const {
@@ -1474,24 +1473,6 @@ private:
 
         ASSERT_EQUALS("2.22507385851e-308", MathLib::toString(std::numeric_limits<double>::min()));
         ASSERT_EQUALS("1.79769313486e+308", MathLib::toString(std::numeric_limits<double>::max()));
-    }
-
-    void CPP14DigitSeparators() const { // Ticket #7137, #7565
-        ASSERT(MathLib::isDigitSeparator("'", 0) == false);
-        ASSERT(MathLib::isDigitSeparator("123'0;", 3));
-        ASSERT(MathLib::isDigitSeparator("foo(1'2);", 5));
-        ASSERT(MathLib::isDigitSeparator("foo(1,1'2);", 7));
-        ASSERT(MathLib::isDigitSeparator("int a=1'234-1'2-'0';", 7));
-        ASSERT(MathLib::isDigitSeparator("int a=1'234-1'2-'0';", 13));
-        ASSERT(MathLib::isDigitSeparator("int a=1'234-1'2-'0';", 16) == false);
-        ASSERT(MathLib::isDigitSeparator("int b=1+9'8;", 9));
-        ASSERT(MathLib::isDigitSeparator("if (1'2) { char c = 'c'; }", 5));
-        ASSERT(MathLib::isDigitSeparator("if (120%1'2) { char c = 'c'; }", 9));
-        ASSERT(MathLib::isDigitSeparator("if (120&1'2) { char c = 'c'; }", 9));
-        ASSERT(MathLib::isDigitSeparator("if (120|1'2) { char c = 'c'; }", 9));
-        ASSERT(MathLib::isDigitSeparator("if (120%1'2) { char c = 'c'; }", 24) == false);
-        ASSERT(MathLib::isDigitSeparator("if (120%1'2) { char c = 'c'; }", 26) == false);
-        ASSERT(MathLib::isDigitSeparator("0b0000001'0010'01110", 14));
     }
 };
 

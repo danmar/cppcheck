@@ -2685,6 +2685,14 @@ void uninitvar_fpclassify(void)
     (void)std::fpclassify(ld);
 }
 
+void bool_isfinite(float f)
+{
+    // cppcheck-suppress compareBoolExpressionWithInt
+    // cppcheck-suppress compareValueOutOfTypeRangeError
+    // cppcheck-suppress knownConditionTrueFalse
+    if (std::isfinite(f)==123) {}
+}
+
 void uninitvar_isfinite(void)
 {
     float f;
@@ -2698,6 +2706,14 @@ void uninitvar_isfinite(void)
     long double ld;
     // cppcheck-suppress uninitvar
     (void)std::isfinite(ld);
+}
+
+void bool_isgreater(float f1, float f2)
+{
+    // cppcheck-suppress compareBoolExpressionWithInt
+    // cppcheck-suppress compareValueOutOfTypeRangeError
+    // cppcheck-suppress knownConditionTrueFalse
+    if (std::isgreater(f1,f2)==123) {}
 }
 
 void uninitvar_isgreater(void)
@@ -2715,6 +2731,14 @@ void uninitvar_isgreater(void)
     (void)std::isgreater(ld1,ld2);
 }
 
+void bool_isgreaterequal(float f1, float f2)
+{
+    // cppcheck-suppress compareBoolExpressionWithInt
+    // cppcheck-suppress compareValueOutOfTypeRangeError
+    // cppcheck-suppress knownConditionTrueFalse
+    if (std::isgreaterequal(f1, f2)==123) {}
+}
+
 void uninitvar_isgreaterequal(void)
 {
     float f1,f2;
@@ -2728,6 +2752,14 @@ void uninitvar_isgreaterequal(void)
     long double ld1,ld2;
     // cppcheck-suppress uninitvar
     (void)std::isgreaterequal(ld1,ld2);
+}
+
+void bool_isinf(float f)
+{
+    // cppcheck-suppress compareBoolExpressionWithInt
+    // cppcheck-suppress compareValueOutOfTypeRangeError
+    // cppcheck-suppress knownConditionTrueFalse
+    if (std::isinf(f)==123) {}
 }
 
 void uninitvar_isinf(void)
@@ -5085,4 +5117,14 @@ void constParameterReference_assign(std::vector<int>& v, int& r) {
 void constParameterReference_insert(std::list<int>& l, int& r) {
     l.insert(l.end(), r);
     l.insert(l.end(), 5, r);
+}
+
+const char* variableScope_cstr_dummy(const char* q); // #12812
+std::size_t variableScope_cstr(const char* p) {
+    std::string s;
+    if (!p) {
+        s = "abc";
+        p = variableScope_cstr_dummy(s.c_str());
+    }
+    return std::strlen(p);
 }

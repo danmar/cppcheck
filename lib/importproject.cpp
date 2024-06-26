@@ -1324,6 +1324,7 @@ void ImportProject::selectOneVsConfig(Platform::Type platform)
     }
 }
 
+// cppcheck-suppress unusedFunction - used by GUI only
 void ImportProject::selectVsConfigurations(Platform::Type platform, const std::vector<std::string> &configurations)
 {
     for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
@@ -1348,6 +1349,7 @@ void ImportProject::selectVsConfigurations(Platform::Type platform, const std::v
     }
 }
 
+// cppcheck-suppress unusedFunction - used by GUI only
 std::list<std::string> ImportProject::getVSConfigs()
 {
     return std::list<std::string>(mAllVSConfigs.cbegin(), mAllVSConfigs.cend());

@@ -158,6 +158,7 @@ private:
         TEST_CASE(nullpointer_in_typeid);
         TEST_CASE(nullpointer_in_alignof); // #11401
         TEST_CASE(nullpointer_in_for_loop);
+        TEST_CASE(nullpointerDeadCode); // #11311
         TEST_CASE(nullpointerDelete);
         TEST_CASE(nullpointerSubFunction);
         TEST_CASE(nullpointerExit);
@@ -3654,6 +3655,47 @@ private:
               "        else\n"
               "            i++;\n"
               "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void nullpointerDeadCode() {
+        // Ticket #11311
+        check ("void f() {\n"
+               "    if (0)\n"
+               "        *(int *)0 = 1;\n"
+               "    else\n"
+               "         ;\n"
+               "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check ("void f() {\n"
+               "    if (0)\n"
+               "        *(int *)0 = 1;\n"
+               "    else {\n"
+               "        if (0)\n"
+               "            *(int *)0 = 2;\n"
+               "        else\n"
+               "            ;\n"
+               "    }\n"
+               "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check ("void f() {\n"
+               "    while(0)\n"
+               "        *(int*)0 = 1;\n"
+               "    do {\n"
+               "    } while(0);\n"
+               "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check ("int f() {\n"
+               "    return 0 ? *(int*)0 = 1 : 1;\n"
+               "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check ("int f() {\n"
+               "    return 1 ? 1 : *(int*)0 = 1;\n"
+               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 

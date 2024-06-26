@@ -8020,7 +8020,7 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                     ValueFlow::Value value(Token::getStrLength(containerTok->tokAt(2)));
                     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                     value.setKnown();
-                    valueFlowForward(containerTok->next(), containerTok, value, tokenlist, errorLogger, settings);
+                    valueFlowForward(containerTok->next(), containerTok, std::move(value), tokenlist, errorLogger, settings);
                 }
             } else if (Token::Match(tok->previous(), ">|return (|{") && astIsContainer(tok) && getLibraryContainer(tok)->size_templateArgNo < 0) {
                 std::vector<ValueFlow::Value> values;
@@ -8084,7 +8084,7 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                 Token* next = nextAfterAstRightmostLeaf(tok);
                 if (!next)
                     next = tok->next();
-                valueFlowForward(next, containerTok, value, tokenlist, errorLogger, settings);
+                valueFlowForward(next, containerTok, std::move(value), tokenlist, errorLogger, settings);
             }
         }
     }

@@ -43,10 +43,22 @@ static bool sameline(const simplecpp::Token *tok1, const simplecpp::Token *tok2)
     return tok1 && tok2 && tok1->location.sameline(tok2->location);
 }
 
-Directive::Directive(std::string _file, const int _linenr, const std::string &_str) :
+Directive::Directive(const simplecpp::Location & _loc, std::string _str) :
+    file(_loc.file()),
+    linenr(_loc.line),
+    str(std::move(_str))
+{}
+
+Directive::Directive(std::string _file, const int _linenr, std::string _str) :
     file(std::move(_file)),
     linenr(_linenr),
-    str(trim(_str))
+    str(std::move(_str))
+{}
+
+Directive::DirectiveToken::DirectiveToken(const simplecpp::Token & _tok) :
+    line(_tok.location.line),
+    column(_tok.location.col),
+    tokStr(_tok.str())
 {}
 
 char Preprocessor::macroChar = char(1);
@@ -163,7 +175,7 @@ static std::string getRelativeFilename(const simplecpp::Token* tok, const Settin
             }
         }
     }
-    return Path::simplifyPath(relativeFilename);
+    return Path::simplifyPath(std::move(relativeFilename));
 }
 
 static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Settings &settings, SuppressionList &suppressions, std::list<BadInlineSuppression> &bad)
@@ -328,7 +340,7 @@ std::list<Directive> Preprocessor::createDirectives(const simplecpp::TokenList &
                 continue;
             if (tok->next && tok->next->str() == "endfile")
                 continue;
-            Directive directive(tok->location.file(), tok->location.line, emptyString);
+            Directive directive(tok->location, emptyString);
             for (const simplecpp::Token *tok2 = tok; tok2 && tok2->location.line == directive.linenr; tok2 = tok2->next) {
                 if (tok2->comment)
                     continue;
@@ -338,6 +350,8 @@ std::list<Directive> Preprocessor::createDirectives(const simplecpp::TokenList &
                     directive.str += "include";
                 else
                     directive.str += tok2->str();
+
+                directive.strTokens.emplace_back(*tok2);
             }
             directives.push_back(std::move(directive));
         }

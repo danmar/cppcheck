@@ -390,6 +390,7 @@ bool SuppressionList::Suppression::isMatch(const SuppressionList::ErrorMessage &
     return true;
 }
 
+// cppcheck-suppress unusedFunction - used by GUI only
 std::string SuppressionList::Suppression::getText() const
 {
     std::string ret;

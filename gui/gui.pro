@@ -86,6 +86,7 @@ TRANSLATIONS =  cppcheck_de.ts \
                 cppcheck_fr.ts \
                 cppcheck_it.ts \
                 cppcheck_ja.ts \
+                cppcheck_ka.ts \
                 cppcheck_ko.ts \
                 cppcheck_nl.ts \
                 cppcheck_ru.ts \

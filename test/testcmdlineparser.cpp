@@ -268,6 +268,7 @@ private:
         TEST_CASE(xmlverinvalid);
         TEST_CASE(doc);
         TEST_CASE(docExclusive);
+        TEST_CASE(showtimeSummary);
         TEST_CASE(showtimeFile);
         TEST_CASE(showtimeFileTotal);
         TEST_CASE(showtimeTop5);

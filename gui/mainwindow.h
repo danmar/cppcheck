@@ -394,7 +394,7 @@ private:
      * @param filename filename (no path)
      * @return error code
      */
-    Library::Error loadLibrary(Library &library, const QString &filename, bool debug = false);
+    Library::Error loadLibrary(Library &library, const QString &filename);
 
     /**
      * @brief Tries to load library file, prints message on error

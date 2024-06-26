@@ -137,7 +137,7 @@ private:
      * @brief Does one part of the check for nullPointer().
      * Dereferencing a pointer and then checking if it's NULL..
      */
-    void nullPointerByDeRefAndChec();
+    void nullPointerByDeRefAndCheck();
 
     /** undefined null pointer arithmetic */
     void arithmetic();

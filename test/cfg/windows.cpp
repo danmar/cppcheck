@@ -22,6 +22,26 @@
 #include <atlstr.h>
 #include <string>
 
+void invalidHandle_CreateFile(LPCWSTR lpFileName)
+{
+    HANDLE file = CreateFile(lpFileName, GENERIC_READ, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+
+    // INVALID_HANDLE_VALUE is not the same as 0
+    if (file != INVALID_HANDLE_VALUE && file) {}
+
+    // cppcheck-suppress resourceLeak
+}
+
+void invalid_socket()
+{
+    SOCKET sock = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
+
+    // INVALID_SOCKET is not the same as 0
+    if (sock != INVALID_SOCKET && sock) {}
+
+    // cppcheck-suppress resourceLeak
+}
+
 void resourceLeak_OpenThread(const DWORD dwDesiredAccess, const BOOL bInheritHandle, const DWORD dwThreadId)
 {
     HANDLE proc = OpenThread(dwDesiredAccess, bInheritHandle, dwThreadId);
@@ -1160,4 +1180,18 @@ void invalidPrintfArgType_StructMember(double d) { // #9672
 
 BOOL MyEnableWindow(HWND hWnd, BOOL bEnable) {
     return EnableWindow(hWnd, bEnable);
+}
+
+int SEH_filter(unsigned int code, struct _EXCEPTION_POINTERS* ep);
+int SEH_throwing_func();
+
+void SEH_knownConditionTrueFalse() { // #8434
+    int r = 0;
+    __try {
+        r = SEH_throwing_func();
+    }
+    __except (SEH_filter(GetExceptionCode(), GetExceptionInformation())) {
+        r = 1;
+    }
+    if (r == 0) {}
 }

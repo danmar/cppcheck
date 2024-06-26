@@ -1163,6 +1163,9 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
                     }
                 }
             }
+            const auto yield = astContainerYield(tok);
+            if (yield == Library::Container::Yield::BUFFER || yield == Library::Container::Yield::BUFFER_NT)
+                return false;
         }
     }
 
@@ -2603,7 +2606,7 @@ void CheckOther::checkDuplicateExpression()
                                          followVar,
                                          &errorPath) &&
                         isWithoutSideEffects(tok->astOperand2()))
-                        duplicateExpressionError(tok->astOperand2(), tok->astOperand1()->astOperand2(), tok, errorPath);
+                        duplicateExpressionError(tok->astOperand2(), tok->astOperand1()->astOperand2(), tok, std::move(errorPath));
                     else if (tok->astOperand2() && isConstExpression(tok->astOperand1(), mSettings->library)) {
                         auto checkDuplicate = [&](const Token* exp1, const Token* exp2, const Token* ast1) {
                             if (isSameExpression(true, exp1, exp2, *mSettings, true, true, &errorPath) &&
@@ -3692,7 +3695,7 @@ void CheckOther::checkShadowVariables()
                 continue;
 
             if (functionScope && functionScope->type == Scope::ScopeType::eFunction && functionScope->function) {
-                const auto argList = functionScope->function->argumentList;
+                const auto & argList = functionScope->function->argumentList;
                 auto it = std::find_if(argList.cbegin(), argList.cend(), [&](const Variable& arg) {
                     return arg.nameToken() && var.name() == arg.name();
                 });

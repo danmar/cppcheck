@@ -20,6 +20,7 @@
 #define xmlH
 
 #include "config.h"
+#include "path.h"
 
 SUPPRESS_WARNING_CLANG_PUSH("-Wzero-as-null-pointer-constant")
 SUPPRESS_WARNING_CLANG_PUSH("-Wsuggest-destructor-override")
@@ -30,5 +31,13 @@ SUPPRESS_WARNING_CLANG_PUSH("-Winconsistent-missing-destructor-override")
 SUPPRESS_WARNING_CLANG_POP
 SUPPRESS_WARNING_CLANG_POP
 SUPPRESS_WARNING_CLANG_POP
+
+inline static tinyxml2::XMLError xml_LoadFile(tinyxml2::XMLDocument& doc, const char* filename)
+{
+    // tinyxml2 will fail with a misleading XML_ERROR_FILE_READ_ERROR when you try to load a directory as a XML file
+    if (Path::isDirectory(filename))
+        return tinyxml2::XMLError::XML_ERROR_FILE_NOT_FOUND;
+    return doc.LoadFile(filename);
+}
 
 #endif // xmlH
