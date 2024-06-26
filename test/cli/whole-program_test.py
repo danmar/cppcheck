@@ -78,7 +78,6 @@ def __test_addon_suppress_inline_project(tmpdir, extra_args):
     assert ret == 0, stdout
 
 
-@pytest.mark.xfail(strict=True)
 def test_addon_suppress_inline_project(tmpdir):
     __test_addon_suppress_inline_project(tmpdir, ['-j1'])
 
