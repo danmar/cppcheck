@@ -1705,3 +1705,30 @@ def test_lib_lookup_absolute_notfound(tmpdir):
         "library not found: '{}'".format(cfg_file),
         "cppcheck: Failed to load library configuration file '{}'. File not found".format(cfg_file)
     ]
+
+
+def test_lib_lookup_nofile(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt'):
+        pass
+
+    # make sure we do not produce an error when the attempted lookup path is a directory and not a file
+    gtk_dir = os.path.join(tmpdir, 'gtk')
+    os.mkdir(gtk_dir)
+    gtk_cfg_dir = os.path.join(tmpdir, 'gtk.cfg')
+    os.mkdir(gtk_cfg_dir)
+
+    exitcode, stdout, _, exe = cppcheck_ex(['--library=gtk', '--debug-lookup', test_file], cwd=tmpdir)
+    exepath = os.path.dirname(exe)
+    if sys.platform == 'win32':
+        exepath = exepath.replace('\\', '/')
+    assert exitcode == 0, stdout
+    lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
+    assert lines == [
+        "looking for library 'gtk'",
+        "looking for library 'gtk.cfg'",
+        "looking for library '{}/gtk.cfg'".format(exepath),
+        "looking for library '{}/../cfg/gtk.cfg'".format(exepath),
+        "looking for library '{}/cfg/gtk.cfg'".format(exepath),
+        'Checking {} ...'.format(test_file)
+    ]
