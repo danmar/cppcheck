@@ -489,7 +489,8 @@ public:
         return jobs == 1;
     }
 
-    enum class CheckLevel : std::uint8_t {
+    enum class CheckLevel: std::uint8_t {
+        reduced,
         normal,
         exhaustive
     };
