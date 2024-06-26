@@ -27,6 +27,7 @@
 #include "errortypes.h"
 #include "tokenize.h"
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -75,11 +76,11 @@ private:
         checkOther.warningOldStylePointerCast();
         checkOther.invalidPointerCast();
         checkOther.checkCharVariable();
-        checkOther.checkRedundantAssignment();
         checkOther.redundantBitwiseOperationInSwitchError();
         checkOther.checkSuspiciousCaseInSwitch();
         checkOther.checkDuplicateBranch();
         checkOther.checkDuplicateExpression();
+        checkOther.checkRedundantAssignment();
         checkOther.checkUnreachableCode();
         checkOther.checkSuspiciousSemicolon();
         checkOther.checkVariableScope();
@@ -427,6 +428,9 @@ private:
                "- calculating modulo of one.\n"
                "- known function argument, suspicious calculation.\n";
     }
+
+    bool diag(const Token* tok) { return !mRedundantAssignmentDiag.emplace(tok).second; }
+    std::set<const Token*> mRedundantAssignmentDiag;
 };
 /// @}
 //---------------------------------------------------------------------------

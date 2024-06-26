@@ -519,7 +519,7 @@ void CheckOther::checkRedundantAssignment()
                         tokenToCheck = tempToken;
                 }
 
-                if (start->hasKnownSymbolicValue(tokenToCheck) && Token::simpleMatch(start->astParent(), "=")) {
+                if (start->hasKnownSymbolicValue(tokenToCheck) && Token::simpleMatch(start->astParent(), "=") && !diag(tok)) {
                     redundantAssignmentSameValueError(start, tokenToCheck, tok->astOperand1()->expressionString());
                 }
 
@@ -545,8 +545,10 @@ void CheckOther::checkRedundantAssignment()
                     redundantAssignmentInSwitchError(tok, nextAssign, tok->astOperand1()->expressionString());
                 else if (isInitialization)
                     redundantInitializationError(tok, nextAssign, tok->astOperand1()->expressionString(), inconclusive);
-                else
+                else {
+                    diag(nextAssign);
                     redundantAssignmentError(tok, nextAssign, tok->astOperand1()->expressionString(), inconclusive);
+                }
             }
         }
     }
@@ -2499,7 +2501,8 @@ void CheckOther::checkDuplicateExpression()
                         tok->astOperand2()->expressionString() == nextAssign->astOperand2()->expressionString()) {
                         bool differentDomain = false;
                         const Scope * varScope = var1->scope() ? var1->scope() : scope;
-                        for (const Token *assignTok = Token::findsimplematch(var2, ";"); assignTok && assignTok != varScope->bodyEnd; assignTok = assignTok->next()) {
+                        const Token* assignTok = Token::findsimplematch(var2, ";");
+                        for (; assignTok && assignTok != varScope->bodyEnd; assignTok = assignTok->next()) {
                             if (!Token::Match(assignTok, "%assign%|%comp%"))
                                 continue;
                             if (!assignTok->astOperand1())
@@ -2530,8 +2533,10 @@ void CheckOther::checkDuplicateExpression()
                         }
                         if (!differentDomain && !isUniqueExpression(tok->astOperand2()))
                             duplicateAssignExpressionError(var1, var2, false);
-                        else if (mSettings->certainty.isEnabled(Certainty::inconclusive))
+                        else if (mSettings->certainty.isEnabled(Certainty::inconclusive)) {
+                            diag(assignTok);
                             duplicateAssignExpressionError(var1, var2, true);
+                        }
                     }
                 }
             }

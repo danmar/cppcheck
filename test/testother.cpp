@@ -8030,8 +8030,7 @@ private:
               "    use(i);\n"
               "    i = j;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (style) Variable 'i' is assigned an expression that holds the same value.\n"
-                      "[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n",
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n",
                       errout_str());
 
         check("struct A { int x; int y; };"
@@ -8042,8 +8041,7 @@ private:
               "    use(j);\n"
               "    j = i;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (style) Variable 'j' is assigned an expression that holds the same value.\n"
-                      "[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n",
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n",
                       errout_str());
 
         check("struct A { int x; int y; };"
@@ -9712,10 +9710,7 @@ private:
               "}\n");
         ASSERT_EQUALS("test.cpp:3:style:Variable 'm[key]' is reassigned a value before the old one has been used.\n"
                       "test.cpp:2:note:m[key] is assigned\n"
-                      "test.cpp:3:note:m[key] is overwritten\n"
-                      "test.cpp:3:style:Variable 'm[key]' is assigned an expression that holds the same value.\n"
-                      "test.cpp:2:note:m[key] is assigned 'value' here.\n"
-                      "test.cpp:3:note:Variable 'm[key]' is assigned an expression that holds the same value.\n",
+                      "test.cpp:3:note:m[key] is overwritten\n",
                       errout_str());
     }
 
