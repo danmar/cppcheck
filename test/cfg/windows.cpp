@@ -13,6 +13,7 @@
 #include <WinCon.h>
 #include <cstdio>
 #include <direct.h>
+#include <evntrace.h>
 #include <cstdlib>
 #include <ctime>
 #include <memory.h>
@@ -21,6 +22,17 @@
 #include <wchar.h>
 #include <atlstr.h>
 #include <string>
+
+bool UpdateTraceACalled(TRACEHANDLE traceHandle, LPCSTR loggerName, EVENT_TRACE_PROPERTIES* pProperties)
+{
+    // cppcheck-suppress UpdateTraceACalled
+    return UpdateTraceA(traceHandle, loggerName, pProperties) != ERROR_SUCCESS;
+}
+bool UpdateTraceWCalled(TRACEHANDLE traceHandle, LPCWSTR loggerName, EVENT_TRACE_PROPERTIES* pProperties)
+{
+    // cppcheck-suppress UpdateTraceWCalled
+    return UpdateTraceW(traceHandle, loggerName, pProperties) != ERROR_SUCCESS;
+}
 
 void invalidHandle_CreateFile(LPCWSTR lpFileName)
 {
