@@ -1764,11 +1764,14 @@ bool CppCheck::analyseWholeProgram()
     CTU::maxCtuDepth = mSettings.maxCtuDepth;
     // Analyse the tokens
     CTU::FileInfo ctu;
-    for (const Check::FileInfo *fi : mFileInfo) {
-        const auto *fi2 = dynamic_cast<const CTU::FileInfo *>(fi);
-        if (fi2) {
-            ctu.functionCalls.insert(ctu.functionCalls.end(), fi2->functionCalls.cbegin(), fi2->functionCalls.cend());
-            ctu.nestedCalls.insert(ctu.nestedCalls.end(), fi2->nestedCalls.cbegin(), fi2->nestedCalls.cend());
+    if (mSettings.useSingleJob() || !mSettings.buildDir.empty())
+    {
+        for (const Check::FileInfo *fi : mFileInfo) {
+            const auto *fi2 = dynamic_cast<const CTU::FileInfo *>(fi);
+            if (fi2) {
+                ctu.functionCalls.insert(ctu.functionCalls.end(), fi2->functionCalls.cbegin(), fi2->functionCalls.cend());
+                ctu.nestedCalls.insert(ctu.nestedCalls.end(), fi2->nestedCalls.cbegin(), fi2->nestedCalls.cend());
+            }
         }
     }
 
