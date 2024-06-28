@@ -10217,6 +10217,14 @@ private:
               "    return a * b * c;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Redundant initialization for 'b'. The initialized value is overwritten before it is read.\n", errout_str());
+
+        check("int f(int i) {\n" // #12874
+              "    int j = i + 1;\n"
+              "    if (i > 5)\n"
+              "        j = i;\n"
+              "    return j;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void varFuncNullUB() { // #4482
