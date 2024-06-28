@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
+
+execute_process(COMMAND echo "$GITHUB_SHA")
+
 if(MSVC)
     cmake_minimum_required(VERSION 3.13)
 endif()
