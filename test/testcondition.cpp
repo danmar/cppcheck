@@ -4631,6 +4631,26 @@ private:
               "        return;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("int h();\n"
+              "bool g() {\n"
+              "    bool b{};\n"
+              "    try {\n"
+              "        int x = h();\n"
+              "        switch (x) {\n"
+              "        default:\n"
+              "            b = true;\n"
+              "        }\n"
+              "    }\n"
+              "    catch (...) {\n"
+              "        b = false;\n"
+              "    }\n"
+              "    return b;\n"
+              "}\n"
+              "void f() {\n"
+              "    if (g()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void alwaysTrueSymbolic()

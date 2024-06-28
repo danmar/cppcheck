@@ -811,7 +811,7 @@ namespace {
                 } else if (Token::simpleMatch(tok, "switch (")) {
                     if (updateRecursive(tok->next()->astOperand2()) == Progress::Break)
                         return Break();
-                    return Break();
+                    actions |= Analyzer::Action::Write; // bailout for switch scope
                 } else if (Token* callTok = callExpr(tok)) {
                     // TODO: Dont traverse tokens a second time
                     if (start != callTok && tok != callTok && updateRecursive(callTok->astOperand1()) == Progress::Break)
