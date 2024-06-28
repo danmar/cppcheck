@@ -27,6 +27,7 @@
 #include "errortypes.h"
 #include "tokenize.h"
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -75,11 +76,11 @@ private:
         checkOther.warningOldStylePointerCast();
         checkOther.invalidPointerCast();
         checkOther.checkCharVariable();
-        checkOther.checkRedundantAssignment();
         checkOther.redundantBitwiseOperationInSwitchError();
         checkOther.checkSuspiciousCaseInSwitch();
         checkOther.checkDuplicateBranch();
         checkOther.checkDuplicateExpression();
+        checkOther.checkRedundantAssignment();
         checkOther.checkUnreachableCode();
         checkOther.checkSuspiciousSemicolon();
         checkOther.checkVariableScope();
@@ -253,6 +254,7 @@ private:
     void redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive);
     void redundantInitializationError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive);
     void redundantAssignmentInSwitchError(const Token *tok1, const Token *tok2, const std::string &var);
+    void redundantAssignmentSameValueError(const Token *tok1, const Token *tok2, const std::string &var);
     void redundantCopyError(const Token *tok1, const Token* tok2, const std::string& var);
     void redundantBitwiseOperationInSwitchError(const Token *tok, const std::string &varname);
     void suspiciousCaseInSwitchError(const Token* tok, const std::string& operatorString);
@@ -426,6 +428,11 @@ private:
                "- calculating modulo of one.\n"
                "- known function argument, suspicious calculation.\n";
     }
+
+    bool diag(const Token* tok) {
+        return !mRedundantAssignmentDiag.emplace(tok).second;
+    }
+    std::set<const Token*> mRedundantAssignmentDiag;
 };
 /// @}
 //---------------------------------------------------------------------------
