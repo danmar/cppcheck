@@ -596,7 +596,7 @@ void CheckOther::redundantAssignmentInSwitchError(const Token *tok1, const Token
 }
 
 void CheckOther::redundantAssignmentSameValueError(const Token *tok, const ValueFlow::Value* val, const std::string &var)
-{    
+{
     auto errorPath = val->errorPath;
     errorPath.emplace_back(tok, "");
     reportError(errorPath, Severity::style, "redundantAssignment",
