@@ -522,7 +522,7 @@ void CheckOther::checkRedundantAssignment()
                 if (start->hasKnownSymbolicValue(tokenToCheck) && Token::simpleMatch(start->astParent(), "=") && !diag(tok)) {
                     const ValueFlow::Value* val = start->getKnownValue(ValueFlow::Value::ValueType::SYMBOLIC);
                     if (val->intvalue == 0) // no offset
-                        redundantAssignmentSameValueError(tokenToCheck, val->errorPath, tok->astOperand1()->expressionString());
+                        redundantAssignmentSameValueError(tokenToCheck, val, tok->astOperand1()->expressionString());
                 }
 
                 // Get next assignment..
@@ -595,8 +595,9 @@ void CheckOther::redundantAssignmentInSwitchError(const Token *tok1, const Token
                 "Variable '$symbol' is reassigned a value before the old one has been used. 'break;' missing?", CWE563, Certainty::normal);
 }
 
-void CheckOther::redundantAssignmentSameValueError(const Token *tok, ValueFlow::Value::ErrorPath errorPath, const std::string &var)
+void CheckOther::redundantAssignmentSameValueError(const Token *tok, const ValueFlow::Value* val, const std::string &var)
 {    
+    auto errorPath = val->errorPath;
     errorPath.emplace_back(tok, "");
     reportError(errorPath, Severity::style, "redundantAssignment",
                 "$symbol:" + var + "\n"
