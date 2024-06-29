@@ -150,7 +150,7 @@ private:
         TEST_CASE(valueFlowIdempotent);
         TEST_CASE(valueFlowUnsigned);
         TEST_CASE(valueFlowMod);
-        TEST_CASE(valueFlowInc);
+        TEST_CASE(valueFlowIncDec);
         TEST_CASE(valueFlowNotNull);
         TEST_CASE(valueFlowSymbolic);
         TEST_CASE(valueFlowSymbolicIdentity);
@@ -7925,7 +7925,7 @@ private:
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 1));
     }
 
-    void valueFlowInc() {
+    void valueFlowIncDec() {
         const char *code;
         std::list<ValueFlow::Value> values;
 
@@ -7939,6 +7939,24 @@ private:
         values = tokenValues(code, "i ]");
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(0LLU, values.back().intvalue);
+
+        code = "int f() {\n"
+               "    const int a[1] = {};\n"
+               "    unsigned char i = 255;\n"
+               "    return a[++i];\n"
+               "}\n";
+        values = tokenValues(code, "++");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(0LLU, values.back().intvalue);
+
+        code = "int f() {\n"
+               "     const int a[128] = {};\n"
+               "     char b = -128;\n"
+               "     return a[--b];\n"
+               "}\n";
+        values = tokenValues(code, "--");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(127LLU, values.back().intvalue);
     }
 
     void valueFlowNotNull()
