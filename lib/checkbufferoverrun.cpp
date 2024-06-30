@@ -1017,7 +1017,8 @@ bool CheckBufferOverrun::analyseWholeProgram1(const std::map<std::string, std::l
                                     callsMap,
                                     "Using argument ARG",
                                     &functionCall,
-                                    false);
+                                    false,
+                                    mSettings->maxCtuDepth);
     if (locationList.empty())
         return false;
 

@@ -1807,8 +1807,6 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
 bool CppCheck::analyseWholeProgram()
 {
     bool errors = false;
-    // Init CTU
-    CTU::maxCtuDepth = mSettings.maxCtuDepth;
     // Analyse the tokens
     CTU::FileInfo ctu;
     if (mSettings.useSingleJob() || !mSettings.buildDir.empty())
@@ -1880,9 +1878,6 @@ unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const st
             }
         }
     }
-
-    // Set CTU max depth
-    CTU::maxCtuDepth = mSettings.maxCtuDepth;
 
     // Analyse the tokens
     // cppcheck-suppress shadowFunction - TODO: fix this
