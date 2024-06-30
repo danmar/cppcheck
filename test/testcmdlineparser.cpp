@@ -323,6 +323,8 @@ private:
         TEST_CASE(loadAverageNotSupported);
 #endif
         TEST_CASE(maxCtuDepth);
+        TEST_CASE(maxCtuDepth2);
+        TEST_CASE(maxCtuDepthLimit);
         TEST_CASE(maxCtuDepthInvalid);
         TEST_CASE(performanceValueflowMaxTime);
         TEST_CASE(performanceValueflowMaxTimeInvalid);
@@ -2111,9 +2113,24 @@ private:
 
     void maxCtuDepth() {
         REDIRECT;
+        const char * const argv[] = {"cppcheck", "--max-ctu-depth=5", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(5, settings->maxCtuDepth);
+    }
+
+    void maxCtuDepth2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--max-ctu-depth=10", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(10, settings->maxCtuDepth);
+    }
+
+    void maxCtuDepthLimit() {
+        REDIRECT;
         const char * const argv[] = {"cppcheck", "--max-ctu-depth=12", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS(12, settings->maxCtuDepth);
+        ASSERT_EQUALS(10, settings->maxCtuDepth);
+        ASSERT_EQUALS("cppcheck: --max-ctu-depth is being capped at 10. This limitation will be removed in a future Cppcheck version.\n", logger->str());
     }
 
     void maxCtuDepthInvalid() {
