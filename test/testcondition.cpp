@@ -4652,7 +4652,7 @@ private:
               "    if (g()) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
-        
+
         check("int f(int x, int y) {\n" // #11822
               "    if (x) {\n"
               "        switch (y) {\n"
