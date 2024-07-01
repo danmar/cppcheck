@@ -421,11 +421,18 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             return Result::Exit;
         }
 
+        if (std::strcmp(argv[i], "--filesdir") == 0) {
+#ifdef FILESDIR
+            mLogger.printRaw(FILESDIR); // TODO: should not include newline
+#endif
+            return Result::Exit;
+        }
+
         if (std::strcmp(argv[i], "--version") == 0) {
             if (!loadCppcheckCfg())
                 return Result::Fail;
             const std::string version = getVersion();
-            mLogger.printRaw(version);
+            mLogger.printRaw(version); // TODO: should not include newline
             return Result::Exit;
         }
     }
@@ -1688,6 +1695,7 @@ void CmdLineParser::printHelp() const
         "    --file-list=<file>   Specify the files to check in a text file. Add one\n"
         "                         filename per line. When file is '-,' the file list will\n"
         "                         be read from standard input.\n"
+        "    --filesdir           Print the built-in FILESDIR.\n"
         "    -f, --force          Force checking of all configurations in files. If used\n"
         "                         together with '--max-configs=', the last option is the\n"
         "                         one that is effective.\n"
