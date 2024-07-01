@@ -95,7 +95,7 @@ static constexpr int COLUMN_SINCE_DATE            = 10;
 static constexpr int COLUMN_TAGS                  = 11;
 static constexpr int COLUMN_CWE                   = 12;
 
-static QString getGuideline(ReportType reportType, const QMap<QString,QString>& guidelines, const QString& errorId) {
+static QString getGuideline(ReportType reportType, const QMap<QString,QString>& guidelines, const QString& errorId, Severity severity) {
     if (reportType == ReportType::autosar) {
         if (errorId.startsWith("premium-autosar-"))
             return errorId.mid(16);
@@ -107,14 +107,19 @@ static QString getGuideline(ReportType reportType, const QMap<QString,QString>& 
             return errorId.mid(13).toUpper();
     }
     if (errorId.startsWith("premium-"))
-        return getGuideline(reportType, guidelines, errorId.mid(8));
+        return getGuideline(reportType, guidelines, errorId.mid(8), severity);
     if (reportType == ReportType::misraC && (errorId.startsWith("misra-c20") || errorId.startsWith("misra-c-20")))
         return errorId.mid(errorId.lastIndexOf("-") + 1);
     if (reportType == ReportType::misraCpp2008 && errorId.startsWith("misra-cpp-2008-"))
         return errorId.mid(15);
     if (reportType == ReportType::misraCpp2023 && errorId.startsWith("misra-cpp-2023-"))
         return errorId.mid(15);
-    return guidelines.value(errorId);
+    const QString& guideline = guidelines.value(errorId);
+    if (!guideline.isEmpty())
+        return guideline;
+    if (severity == Severity::error || severity == Severity::warning)
+        return guidelines.value("error");
+    return QString();
 }
 
 static QString getClassification(ReportType reportType, const QString& guideline) {
@@ -293,8 +298,10 @@ void ResultsTree::setReportType(ReportType reportType) {
         if (!fileItem)
             continue;
         for (int j = 0; j < fileItem->rowCount(); ++j) {
-            const QString& errorId = fileItem->child(j, COLUMN_ID)->text();
-            const QString& guideline = getGuideline(mReportType, mGuideline, errorId);
+            const auto& data = fileItem->child(j,0)->data().toMap();
+            const QString& errorId = data[ERRORID].toString();
+            Severity severity = ShowTypes::ShowTypeToSeverity(ShowTypes::VariantToShowType(data[SEVERITY]));
+            const QString& guideline = getGuideline(mReportType, mGuideline, errorId, severity);
             const QString& classification = getClassification(mReportType, guideline);
             fileItem->child(j, COLUMN_CERT_LEVEL)->setText(classification);
             fileItem->child(j, COLUMN_CERT_RULE)->setText(guideline);
@@ -397,7 +404,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
         if (mReportType == ReportType::normal)
             showItem = mShowSeverities.isShown(item.severity);
         else {
-            const QString& guideline = getGuideline(mReportType, mGuideline, item.errorId);
+            const QString& guideline = getGuideline(mReportType, mGuideline, item.errorId, item.severity);
             const QString& classification = getClassification(mReportType, guideline);
             showItem = !classification.isEmpty() && mShowSeverities.isShown(getSeverityFromClassification(classification));
         }
@@ -520,7 +527,7 @@ QStandardItem *ResultsTree::addBacktraceFiles(QStandardItem *parent,
     }
 
     QMap<int, QStandardItem*> columns;
-    const QString guideline = getGuideline(mReportType, mGuideline, item.errorId);
+    const QString guideline = getGuideline(mReportType, mGuideline, item.errorId, item.severity);
     const QString classification = getClassification(mReportType, guideline);
     columns[COLUMN_CERT_LEVEL] = createNormalItem(classification);
     columns[COLUMN_CERT_RULE] = createNormalItem(guideline);
