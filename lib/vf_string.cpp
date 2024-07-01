@@ -16,19 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef vfAnalyzeH
-#define vfAnalyzeH
+#include "vf_string.h"
 
-#include "vf_array.h" // IWYU pragma: export
-#include "vf_bitand.h" // IWYU pragma: export
-#include "vf_debug.h" // IWYU pragma: export
-#include "vf_enumvalue.h" // IWYU pragma: export
-#include "vf_globalconstvar.h" // IWYU pragma: export
-#include "vf_globalstaticvar.h" // IWYU pragma: export
-#include "vf_number.h" // IWYU pragma: export
-#include "vf_pointeralias.h" // IWYU pragma: export
-#include "vf_sameexpressions.h" // IWYU pragma: export
-#include "vf_string.h" // IWYU pragma: export
-#include "vf_unknownfunctionreturn.h" // IWYU pragma: export
+#include "token.h"
+#include "tokenlist.h"
+#include "vfvalue.h"
 
-#endif // vfAnalyzeH
+#include "vf_settokenvalue.h"
+
+#include <utility>
+
+namespace ValueFlow
+{
+    void analyzeString(TokenList &tokenlist, const Settings& settings)
+    {
+        for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
+            if (tok->tokType() == Token::eString) {
+                Value strvalue;
+                strvalue.valueType = Value::ValueType::TOK;
+                strvalue.tokvalue = tok;
+                strvalue.setKnown();
+                setTokenValue(tok, std::move(strvalue), settings);
+            }
+        }
+    }
+}
