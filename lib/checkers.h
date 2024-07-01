@@ -36,13 +36,40 @@ namespace checkers {
         int amendment;
     };
 
+    struct CPPCHECKLIB MisraCppInfo {
+        int a;
+        int b;
+        int c;
+        const char* classification;
+    };
+
     extern CPPCHECKLIB const char Req[]; // = "Required";
     extern CPPCHECKLIB const char Adv[]; // = "Advisory";
     extern CPPCHECKLIB const char Man[]; // = "Mandatory";
+    extern CPPCHECKLIB const char Doc[]; // = "Document";
 
     extern CPPCHECKLIB const std::vector<MisraInfo> misraC2012Rules;
+    extern CPPCHECKLIB const std::vector<MisraCppInfo> misraCpp2008Rules;
+    extern CPPCHECKLIB const std::vector<MisraCppInfo> misraCpp2023Rules;
 
     extern CPPCHECKLIB const std::map<std::string, std::string> misraRuleSeverity;
+
+    struct CPPCHECKLIB IdMapping {
+        const char* guideline;
+        const char* cppcheckId;
+    };
+    extern std::vector<IdMapping> idMappingMisraC;
+    extern std::vector<IdMapping> idMappingMisraCpp2008;
+    extern std::vector<IdMapping> idMappingMisraCpp2023;
+
+    struct CPPCHECKLIB Info {
+        const char* guideline;
+        const char* classification;
+        const char* cppcheckIds;
+    };
+    extern std::vector<Info> autosarInfo;
+    extern std::vector<Info> certCInfo;
+    extern std::vector<Info> certCppInfo;
 }
 
 #endif

@@ -20,6 +20,7 @@
 #ifndef RESULTSVIEW_H
 #define RESULTSVIEW_H
 
+#include "common.h"
 #include "report.h"
 #include "showtypes.h"
 
@@ -216,6 +217,8 @@ public:
      * @return Pointer to Showtypes.
      */
     const ShowTypes & getShowTypes() const;
+
+    void setReportType(ReportType reportType);
 
 signals:
 

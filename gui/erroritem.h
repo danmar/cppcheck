@@ -92,6 +92,8 @@ public:
     QList<QErrorPathItem> errorPath;
     QString symbolNames;
     QString remark;
+    QString classification; // misra/cert/etc: classification/level
+    QString guideline; // misra/cert/etc: guideline/rule
 
     // Special GUI properties
     QString sinceDate;

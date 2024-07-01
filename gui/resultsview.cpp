@@ -153,6 +153,10 @@ const ShowTypes & ResultsView::getShowTypes() const
     return mUI->mTree->mShowSeverities;
 }
 
+void ResultsView::setReportType(ReportType reportType) {
+    mUI->mTree->setReportType(reportType);
+}
+
 void ResultsView::progress(int value, const QString& description)
 {
     mUI->mProgress->setValue(value);
