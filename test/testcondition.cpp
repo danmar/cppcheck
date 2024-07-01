@@ -4633,7 +4633,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout_str());
 
-        check("int h();\n"
+        check("int h();\n" // #12858
               "bool g() {\n"
               "    bool b{};\n"
               "    try {\n"
@@ -4651,6 +4651,24 @@ private:
               "void f() {\n"
               "    if (g()) {}\n"
               "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("int f(int x, int y) {\n" // #11822
+              "    if (x) {\n"
+              "        switch (y) {\n"
+              "        case 1:\n"
+              "            return 7;\n"
+              "        }\n"
+              "    }\n"
+              " \n"
+              "    if (y)\n"
+              "        return 8;\n"
+              " \n"
+              "    if (x)\n"
+              "        return 9;\n"
+              " \n"
+              "    return 0;\n"
+              "}");
         ASSERT_EQUALS("", errout_str());
     }
 
