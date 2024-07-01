@@ -4405,6 +4405,10 @@ private:
               "    int var1 = x ? *p : 5;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", errout_str());
+
+        check("void f(int* i = nullptr) { *i = 0; }\n" // #11567
+              "void g() { f(); }\n");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Possible null pointer dereference if the default parameter value is used: i\n", errout_str());
     }
 
     void nullpointer_internal_error() { // ticket #5080
