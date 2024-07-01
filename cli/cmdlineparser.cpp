@@ -422,11 +422,18 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             return Result::Exit;
         }
 
+        if (std::strcmp(argv[i], "--filesdir") == 0) {
+#ifdef FILESDIR
+            mLogger.printRaw(FILESDIR); // TODO: should not include newline
+#endif
+            return Result::Exit;
+        }
+
         if (std::strcmp(argv[i], "--version") == 0) {
             if (!loadCppcheckCfg())
                 return Result::Fail;
             const std::string version = getVersion();
-            mLogger.printRaw(version);
+            mLogger.printRaw(version); // TODO: should not include newline
             return Result::Exit;
         }
     }
