@@ -6669,7 +6669,7 @@ static bool productParams(const Settings& settings, const std::unordered_map<Key
     return !bail;
 }
 
-static void valueFlowInjectParameter(TokenList& tokenlist,
+static void valueFlowInjectParameter(const TokenList& tokenlist,
                                      ErrorLogger& errorLogger,
                                      const Settings& settings,
                                      const Scope* functionScope,
@@ -6848,7 +6848,7 @@ static IteratorRange<Iterator> MakeIteratorRange(Iterator start, Iterator last)
     return {start, last};
 }
 
-static void valueFlowSubFunction(TokenList& tokenlist, SymbolDatabase& symboldatabase,  ErrorLogger& errorLogger, const Settings& settings)
+static void valueFlowSubFunction(const TokenList& tokenlist, SymbolDatabase& symboldatabase,  ErrorLogger& errorLogger, const Settings& settings)
 {
     int id = 0;
     for (const Scope* scope : MakeIteratorRange(symboldatabase.functionScopes.crbegin(), symboldatabase.functionScopes.crend())) {
