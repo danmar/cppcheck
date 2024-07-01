@@ -65,7 +65,7 @@ private:
 
         void printRaw(const std::string &message) override
         {
-            printInternal(message + '\n');
+            printInternal(message + '\n'); // TODO: should not append newline
         }
 
         std::string str()
@@ -440,6 +440,7 @@ private:
         TEST_CASE(debugClangOutput);
         TEST_CASE(debugXmlMultiple);
         TEST_CASE(debugNormalXmlMultiple);
+        TEST_CASE(filesdir);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -2972,6 +2973,17 @@ private:
         const char * const argv[] = {"cppcheck", "--debug-normal", "--xml", "1.cpp", "2.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
         ASSERT_EQUALS("cppcheck: error: printing debug output in XML format does not support multiple input files.\n", logger->str());
+    }
+
+    void filesdir() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--filesdir"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parseFromArgs(argv));
+#ifdef FILESDIR
+        ASSERT_EQUALS(std::string(FILESDIR) + '\n', logger->str());
+#else
+        ASSERT_EQUALS("", logger->str());
+#endif
     }
 
     void ignorepaths1() {
