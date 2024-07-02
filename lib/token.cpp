@@ -1580,7 +1580,7 @@ static std::string stringFromTokenRange(const Token* start, const Token* end)
                     ret += c;
                 else {
                     char str[10];
-                    sprintf(str, "\\x%02x", c);
+                    snprintf(str, sizeof(str), "\\x%02x", c);
                     ret += str;
                 }
             }
