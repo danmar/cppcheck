@@ -42,6 +42,12 @@
 #include <vector>
 #include <unordered_set>
 
+#ifdef HAVE_RULES
+#include "regex.h"
+
+#include <memory>
+#endif
+
 enum class SHOWTIME_MODES : std::uint8_t;
 namespace ValueFlow {
     class Value;
@@ -292,6 +298,7 @@ public:
         std::string id = "rule"; // default id
         std::string summary;
         Severity severity = Severity::style; // default severity
+        std::shared_ptr<const Regex> regex;
     };
 
     /**
