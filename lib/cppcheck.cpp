@@ -581,6 +581,7 @@ unsigned int CppCheck::check(const FileSettings &fs)
     if (mSettings.clang) {
         temp.mSettings.includePaths.insert(temp.mSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
         // TODO: propagate back suppressions
+        // TODO: propagate back mFileInfo
         const unsigned int returnValue = temp.check(fs.file);
         if (mUnusedFunctionsCheck)
             mUnusedFunctionsCheck->updateFunctionData(*temp.mUnusedFunctionsCheck);
@@ -590,6 +591,11 @@ unsigned int CppCheck::check(const FileSettings &fs)
     mSettings.supprs.nomsg.addSuppressions(temp.mSettings.supprs.nomsg.getSuppressions());
     if (mUnusedFunctionsCheck)
         mUnusedFunctionsCheck->updateFunctionData(*temp.mUnusedFunctionsCheck);
+    while (!temp.mFileInfo.empty()) {
+        mFileInfo.push_back(temp.mFileInfo.back());
+        temp.mFileInfo.pop_back();
+    }
+    // TODO: propagate back more data?
     return returnValue;
 }
 
@@ -1764,11 +1770,14 @@ bool CppCheck::analyseWholeProgram()
     CTU::maxCtuDepth = mSettings.maxCtuDepth;
     // Analyse the tokens
     CTU::FileInfo ctu;
-    for (const Check::FileInfo *fi : mFileInfo) {
-        const auto *fi2 = dynamic_cast<const CTU::FileInfo *>(fi);
-        if (fi2) {
-            ctu.functionCalls.insert(ctu.functionCalls.end(), fi2->functionCalls.cbegin(), fi2->functionCalls.cend());
-            ctu.nestedCalls.insert(ctu.nestedCalls.end(), fi2->nestedCalls.cbegin(), fi2->nestedCalls.cend());
+    if (mSettings.useSingleJob() || !mSettings.buildDir.empty())
+    {
+        for (const Check::FileInfo *fi : mFileInfo) {
+            const auto *fi2 = dynamic_cast<const CTU::FileInfo *>(fi);
+            if (fi2) {
+                ctu.functionCalls.insert(ctu.functionCalls.end(), fi2->functionCalls.cbegin(), fi2->functionCalls.cend());
+                ctu.nestedCalls.insert(ctu.nestedCalls.end(), fi2->nestedCalls.cbegin(), fi2->nestedCalls.cend());
+            }
         }
     }
 
