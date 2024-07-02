@@ -1281,7 +1281,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
 
     for (const std::string &p : paths)
         guiProject.pathNames.push_back(p);
-    settings->supprs.nomsg.addSuppressions(std::move(suppressions));
+    settings->supprs.nomsg.addSuppressions(std::move(suppressions)); // TODO: check result
     settings->checkHeaders = temp.checkHeaders;
     settings->checkUnusedTemplates = temp.checkUnusedTemplates;
     settings->maxCtuDepth = temp.maxCtuDepth;

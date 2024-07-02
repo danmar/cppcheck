@@ -96,8 +96,12 @@ private:
         TEST_CASE(suppressLocal);
 
         TEST_CASE(suppressUnmatchedSuppressions);
+        TEST_CASE(addSuppressionDuplicate);
+        TEST_CASE(updateSuppressionState);
 
         TEST_CASE(suppressionsParseXmlFile);
+
+        TEST_CASE(toString);
     }
 
     void suppressionsBadId1() const {
@@ -869,7 +873,7 @@ private:
                        "#define DIV(A,B) A/B\n"
                        "a = DIV(10,1);\n",
                        "");
-        ASSERT_EQUALS("", errout_str()); // <- no unmatched suppression reported for macro suppression
+        ASSERT_EQUALS("[test.cpp:2]: (information) Unmatched suppression: abc\n", errout_str());
     }
 
     void suppressionsSettingsFiles() {
@@ -1517,6 +1521,83 @@ private:
             SuppressionList supprList;
             ASSERT_EQUALS("unknown element 'eid' in suppressions XML 'suppressparsexml.xml', expected id/fileName/lineNumber/symbolName/hash.", supprList.parseXmlFile(file.path().c_str()));
         }
+    }
+
+    void addSuppressionDuplicate() {
+        SuppressionList supprs;
+
+        SuppressionList::Suppression s;
+        s.errorId = "uninitvar";
+
+        ASSERT_EQUALS("", supprs.addSuppression(s));
+        ASSERT_EQUALS("suppression 'uninitvar' already exists", supprs.addSuppression(s));
+    }
+
+    void updateSuppressionState() {
+        {
+            SuppressionList supprs;
+
+            SuppressionList::Suppression s;
+            s.errorId = "uninitVar";
+            ASSERT_EQUALS(false, supprs.updateSuppressionState(s));
+        }
+        {
+            SuppressionList supprs;
+
+            SuppressionList::Suppression s;
+            s.errorId = "uninitVar";
+
+            ASSERT_EQUALS("", supprs.addSuppression(s));
+
+            ASSERT_EQUALS(true, supprs.updateSuppressionState(s));
+
+            const std::list<SuppressionList::Suppression> l = supprs.getUnmatchedGlobalSuppressions(false);
+            ASSERT_EQUALS(1, l.size());
+        }
+        {
+            SuppressionList supprs;
+
+            SuppressionList::Suppression s;
+            s.errorId = "uninitVar";
+            s.matched = false;
+
+            ASSERT_EQUALS("", supprs.addSuppression(s));
+
+            s.matched = true;
+            ASSERT_EQUALS(true, supprs.updateSuppressionState(s));
+
+            const std::list<SuppressionList::Suppression> l = supprs.getUnmatchedGlobalSuppressions(false);
+            ASSERT_EQUALS(0, l.size());
+        }
+    }
+
+    void toString()
+    {
+        {
+            SuppressionList::Suppression s;
+            s.errorId = "unitvar";
+            ASSERT_EQUALS("unitvar", s.toString());
+        }
+        {
+            SuppressionList::Suppression s;
+            s.errorId = "unitvar";
+            s.fileName = "test.cpp";
+            ASSERT_EQUALS("unitvar:test.cpp", s.toString());
+        }
+        {
+            SuppressionList::Suppression s;
+            s.errorId = "unitvar";
+            s.fileName = "test.cpp";
+            s.lineNumber = 12;
+            ASSERT_EQUALS("unitvar:test.cpp:12", s.toString());
+        }
+        {
+            SuppressionList::Suppression s;
+            s.errorId = "unitvar";
+            s.symbolName = "sym";
+            ASSERT_EQUALS("unitvar:sym", s.toString());
+        }
+
     }
 };
 

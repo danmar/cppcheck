@@ -251,10 +251,7 @@ std::string SuppressionList::addSuppression(SuppressionList::Suppression suppres
     auto foundSuppression = std::find_if(mSuppressions.begin(), mSuppressions.end(),
                                          std::bind(&Suppression::isSameParameters, &suppression, std::placeholders::_1));
     if (foundSuppression != mSuppressions.end()) {
-        // Update matched state of existing global suppression
-        if (!suppression.isLocal() && suppression.matched)
-            foundSuppression->matched = suppression.matched;
-        return "";
+        return "suppression '" + suppression.toString() + "' already exists";
     }
 
     // Check that errorId is valid..
@@ -288,6 +285,21 @@ std::string SuppressionList::addSuppressions(std::list<Suppression> suppressions
             return errmsg;
     }
     return "";
+}
+
+bool SuppressionList::updateSuppressionState(const SuppressionList::Suppression& suppression)
+{
+    // Check if suppression is already in list
+    auto foundSuppression = std::find_if(mSuppressions.begin(), mSuppressions.end(),
+                                         std::bind(&Suppression::isSameParameters, &suppression, std::placeholders::_1));
+    if (foundSuppression != mSuppressions.end()) {
+        // Update matched state of existing global suppression
+        if (!suppression.isLocal() && suppression.matched)
+            foundSuppression->matched = suppression.matched;
+        return true;
+    }
+
+    return false;
 }
 
 void SuppressionList::ErrorMessage::setFileName(std::string s)
@@ -477,10 +489,12 @@ void SuppressionList::dump(std::ostream & out) const
     out << "  </suppressions>" << std::endl;
 }
 
-std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppressions(const FileWithDetails &file, const bool unusedFunctionChecking) const
+std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppressions(const FileWithDetails &file, const bool includeUnusedFunction) const
 {
     std::list<Suppression> result;
     for (const Suppression &s : mSuppressions) {
+        if (s.isInline)
+            continue;
         if (s.matched || ((s.lineNumber != Suppression::NO_LINE) && !s.checked))
             continue;
         if (s.type == SuppressionList::Type::macro)
@@ -489,7 +503,7 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppre
             continue;
         if (s.errorId == ID_CHECKERSREPORT)
             continue;
-        if (!unusedFunctionChecking && s.errorId == ID_UNUSEDFUNCTION)
+        if (!includeUnusedFunction && s.errorId == ID_UNUSEDFUNCTION)
             continue;
         if (!s.isLocal() || s.fileName != file.spath())
             continue;
@@ -498,19 +512,42 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppre
     return result;
 }
 
-std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedGlobalSuppressions(const bool unusedFunctionChecking) const
+std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedGlobalSuppressions(const bool includeUnusedFunction) const
 {
     std::list<Suppression> result;
     for (const Suppression &s : mSuppressions) {
+        if (s.isInline)
+            continue;
         if (s.matched || ((s.lineNumber != Suppression::NO_LINE) && !s.checked))
             continue;
         if (s.hash > 0)
             continue;
-        if (!unusedFunctionChecking && s.errorId == ID_UNUSEDFUNCTION)
+        if (!includeUnusedFunction && s.errorId == ID_UNUSEDFUNCTION)
             continue;
         if (s.errorId == ID_CHECKERSREPORT)
             continue;
         if (s.isLocal())
+            continue;
+        result.push_back(s);
+    }
+    return result;
+}
+
+std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedInlineSuppressions(const UnusedFunction unusedFunction) const
+{
+    std::list<SuppressionList::Suppression> result;
+    for (const SuppressionList::Suppression &s : SuppressionList::mSuppressions) {
+        if (!s.isInline)
+            continue;
+        if (!s.checked)
+            continue;
+        if (s.matched)
+            continue;
+        if (s.hash > 0)
+            continue;
+        if (unusedFunction == UnusedFunction::Only && s.errorId != ID_UNUSEDFUNCTION)
+            continue;
+        if (unusedFunction == UnusedFunction::Exclude && s.errorId == ID_UNUSEDFUNCTION)
             continue;
         result.push_back(s);
     }
@@ -577,4 +614,23 @@ bool SuppressionList::reportUnmatchedSuppressions(const std::list<SuppressionLis
         err = true;
     }
     return err;
+}
+
+std::string SuppressionList::Suppression::toString() const
+{
+    std::string s;
+    s+= errorId;
+    if (!fileName.empty()) {
+        s += ':';
+        s += fileName;
+        if (lineNumber != -1) {
+            s += ':';
+            s += std::to_string(lineNumber);
+        }
+    }
+    if (!symbolName.empty()) {
+        s += ':';
+        s += symbolName;
+    }
+    return s;
 }

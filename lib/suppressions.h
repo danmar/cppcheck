@@ -136,6 +136,8 @@ public:
                    thisAndNextLine == other.thisAndNextLine;
         }
 
+        std::string toString() const;
+
         std::string errorId;
         std::string fileName;
         int lineNumber = NO_LINE;
@@ -148,6 +150,7 @@ public:
         bool thisAndNextLine{}; // Special case for backwards compatibility: { // cppcheck-suppress something
         bool matched{};
         bool checked{}; // for inline suppressions, checked or not
+        bool isInline{};
 
         enum : std::int8_t { NO_LINE = -1 };
     };
@@ -197,6 +200,13 @@ public:
     std::string addSuppressions(std::list<Suppression> suppressions);
 
     /**
+     * @brief Updates the state of the given suppression.
+     * @param suppression the suppression to update
+     * @return true if suppression to update was found
+     */
+    bool updateSuppressionState(const SuppressionList::Suppression& suppression);
+
+    /**
      * @brief Returns true if this message should not be shown to the user.
      * @param errmsg error message
      * @param global use global suppressions
@@ -229,13 +239,24 @@ public:
      * @brief Returns list of unmatched local (per-file) suppressions.
      * @return list of unmatched suppressions
      */
-    std::list<Suppression> getUnmatchedLocalSuppressions(const FileWithDetails &file, const bool unusedFunctionChecking) const;
+    std::list<Suppression> getUnmatchedLocalSuppressions(const FileWithDetails &file, const bool includeUnusedFunction) const;
 
     /**
      * @brief Returns list of unmatched global (glob pattern) suppressions.
      * @return list of unmatched suppressions
      */
-    std::list<Suppression> getUnmatchedGlobalSuppressions(const bool unusedFunctionChecking) const;
+    std::list<Suppression> getUnmatchedGlobalSuppressions(const bool includeUnusedFunction) const;
+
+    enum UnusedFunction : std::uint8_t {
+        Exclude,
+        Only
+    };
+
+    /**
+     * @brief Returns list of unmatched inline suppressions.
+     * @return list of unmatched suppressions
+     */
+    std::list<Suppression> getUnmatchedInlineSuppressions(const UnusedFunction unusedFunction) const;
 
     /**
      * @brief Returns list of all suppressions.
