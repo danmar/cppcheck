@@ -21,7 +21,6 @@
 #define cppcheckH
 //---------------------------------------------------------------------------
 
-#include "analyzerinfo.h"
 #include "check.h"
 #include "color.h"
 #include "config.h"
@@ -48,6 +47,7 @@ class CheckUnusedFunctions;
 class Tokenizer;
 class FileWithDetails;
 class RemarkComment;
+class AnalyzerInformation;
 
 namespace simplecpp { class TokenList; }
 
@@ -246,7 +246,7 @@ private:
     /** File info used for whole program analysis */
     std::list<Check::FileInfo*> mFileInfo;
 
-    AnalyzerInformation mAnalyzerInformation;
+    std::unique_ptr<AnalyzerInformation> mAnalyzerInformation;
 
     /** Callback for executing a shell command (exe, args, output) */
     ExecuteCmdFn mExecuteCommand;
