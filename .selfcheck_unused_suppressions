@@ -1,15 +1,8 @@
 # we are not using all methods of their interfaces
 unusedFunction:externals/*/*
 
-# TODO: fix these
-# false positive - # 10660
-unusedFunction:gui/mainwindow.cpp
-unusedFunction:gui/resultstree.cpp
-unusedFunction:gui/codeeditor.*
 # usage is disabled
 unusedFunction:lib/symboldatabase.cpp
-# false positive - #10661
-unusedFunction:oss-fuzz/main.cpp
 
 # Q_OBJECT functions which are not called in our code
 unusedFunction:cmake.output.notest/gui/cppcheck-gui_autogen/*/moc_aboutdialog.cpp
