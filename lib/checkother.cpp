@@ -527,6 +527,9 @@ void CheckOther::checkRedundantAssignment()
 
                 // Get next assignment..
                 const Token *nextAssign = fwdAnalysis.reassign(tokenToCheck, start, scope->bodyEnd);
+                // extra check for union
+                if (nextAssign && tokenToCheck != tok->astOperand1())
+                    nextAssign = fwdAnalysis.reassign(tok->astOperand1(), start, scope->bodyEnd);
 
                 if (!nextAssign)
                     continue;
