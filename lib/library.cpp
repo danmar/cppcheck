@@ -26,7 +26,6 @@
 #include "token.h"
 #include "tokenlist.h"
 #include "utils.h"
-#include "valueflow.h"
 #include "vfvalue.h"
 
 #include <algorithm>
@@ -37,7 +36,6 @@
 #include <list>
 #include <memory>
 #include <sstream>
-#include <stack>
 #include <stdexcept>
 #include <string>
 
@@ -1799,55 +1797,6 @@ bool Library::hasAnyTypeCheck(const std::string& typeName) const
     return std::any_of(mTypeChecks.begin(), mTypeChecks.end(), [&](const std::pair<std::pair<std::string, std::string>, Library::TypeCheck>& tc) {
         return tc.first.second == typeName;
     });
-}
-
-std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
-                                                 const Settings& settings,
-                                                 bool cpp,
-                                                 std::unordered_map<nonneg int, const Token*>* lookupVarId)
-{
-    std::shared_ptr<TokenList> tokenList = std::make_shared<TokenList>(&settings);
-    {
-        const std::string code = "return " + returnValue + ";";
-        std::istringstream istr(code);
-        if (!tokenList->createTokens(istr, cpp ? Standards::Language::CPP : Standards::Language::C))
-            return nullptr;
-    }
-
-    // TODO: put in a helper?
-    // combine operators, set links, etc..
-    std::stack<Token*> lpar;
-    for (Token* tok2 = tokenList->front(); tok2; tok2 = tok2->next()) {
-        if (Token::Match(tok2, "[!<>=] =")) {
-            tok2->str(tok2->str() + "=");
-            tok2->deleteNext();
-        } else if (tok2->str() == "(")
-            lpar.push(tok2);
-        else if (tok2->str() == ")") {
-            if (lpar.empty())
-                return nullptr;
-            Token::createMutualLinks(lpar.top(), tok2);
-            lpar.pop();
-        }
-    }
-    if (!lpar.empty())
-        return nullptr;
-
-    // set varids
-    for (Token* tok2 = tokenList->front(); tok2; tok2 = tok2->next()) {
-        if (!startsWith(tok2->str(), "arg"))
-            continue;
-        nonneg int const id = strToInt<nonneg int>(tok2->str().c_str() + 3);
-        tok2->varId(id);
-        if (lookupVarId)
-            (*lookupVarId)[id] = tok2;
-    }
-
-    // Evaluate expression
-    tokenList->createAst();
-    Token* expr = tokenList->front()->astOperand1();
-    ValueFlow::valueFlowConstantFoldAST(expr, settings);
-    return {tokenList, expr};
 }
 
 const Library::AllocFunc* Library::getAllocFuncInfo(const char name[]) const

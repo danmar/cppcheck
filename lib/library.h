@@ -25,9 +25,9 @@
 #include "mathlib.h"
 #include "standards.h"
 
+#include <array>
 #include <cstdint>
 #include <map>
-#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -36,7 +36,6 @@
 #include <vector>
 
 class Token;
-class Settings;
 enum class Severity : std::uint8_t;
 
 namespace tinyxml2 {
@@ -566,11 +565,6 @@ private:
 };
 
 CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok);
-
-std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
-                                                 const Settings& settings,
-                                                 bool cpp,
-                                                 std::unordered_map<nonneg int, const Token*>* lookupVarId = nullptr);
 
 /// @}
 //---------------------------------------------------------------------------
