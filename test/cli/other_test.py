@@ -829,10 +829,8 @@ def test_showtime_top5_file(tmpdir):
     for i in range(1, 5):
         if lines[i].startswith('valueFlowLifetime'):
             assert lines[i].endswith(' - 2 result(s))')
-        elif lines[i].startswith('valueFlowEnumValue'):
-            assert lines[i].endswith(' - 2 result(s))')
         else:
-            assert lines[i].endswith(' - 1 result(s))')
+            assert lines[i].endswith(' - 2 result(s))')
     assert lines[6].startswith('Overall time:')
     assert stderr == ''
 
