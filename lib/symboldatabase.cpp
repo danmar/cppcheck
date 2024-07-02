@@ -4554,9 +4554,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
 bool Function::isImplicitlyVirtual(bool defaultVal) const
 {
-    if (hasVirtualSpecifier()) //If it has the virtual specifier it's definitely virtual
-        return true;
-    if (hasOverrideSpecifier()) //If it has the override specifier then it's either virtual or not going to compile
+    if (hasVirtualSpecifier() || hasOverrideSpecifier() || hasFinalSpecifier())
         return true;
     bool foundAllBaseClasses = true;
     if (getOverriddenFunction(&foundAllBaseClasses)) //If it overrides a base class's method then it's virtual

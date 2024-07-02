@@ -82,6 +82,7 @@ private:
         TEST_CASE(entrypointsUnix);
 
         TEST_CASE(includes);
+        TEST_CASE(virtualFunc);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -710,6 +711,29 @@ private:
         const std::string processed = PreprocessorHelper::getcode(settings, *this, code, "", "test.cpp");
         check(processed);
         TODO_ASSERT_EQUALS("[test.h:3]: (style) The function 'f' is never used.\n", "[test.cpp:3]: (style) The function 'f' is never used.\n", errout_str());
+    }
+
+    void virtualFunc()
+    {
+        check("struct D : public B {\n" // #10660
+              "    virtual void f() {}\n"
+              "    void g() override {}\n"
+              "    void h() final {}\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("struct B {\n"
+              "    virtual void f() = 0;\n"
+              "    void g();\n"
+              "};\n"
+              "struct D : B {\n"
+              "    void f() override {}\n"
+              "};\n"
+              "int main() {\n"
+              "    D d;\n"
+              "    d.g();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 };
 
