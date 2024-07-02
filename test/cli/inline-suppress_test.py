@@ -306,7 +306,7 @@ def test_duplicate(tmpdir):
     assert ret == 0, stdout
 
 
-# no error as inline suppressions ars handled separately
+# no error as inline suppressions are handled separately
 def __test_duplicate_cmd(tmpdir, extra_args):
     args = [
         '-q',
@@ -339,7 +339,7 @@ def test_duplicate_cmd_j(tmpdir):
     __test_duplicate_cmd(tmpdir, ['-j2'])
 
 
-# no error as inline suppressions ars handled separately
+# no error as inline suppressions are handled separately
 def __test_duplicate_file(tmpdir, extra_args):
     suppr_file = os.path.join(tmpdir, 'suppressions')
     with open(suppr_file, 'wt') as f:
@@ -427,7 +427,6 @@ def __test_unused_function_unmatched_build_dir(tmpdir, extra_args):
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
     lines.sort()
-    print(lines)
     assert lines == [
         '{}unusedFunctionUnmatched.cpp:5:0: information: Unmatched suppression: uninitvar [unmatchedSuppression]'.format(__proj_inline_suppres_path),
         '{}unusedFunctionUnmatched.cpp:5:0: information: Unmatched suppression: unusedFunction [unmatchedSuppression]'.format(__proj_inline_suppres_path)
