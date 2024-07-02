@@ -156,5 +156,29 @@ void TestResultsTree::testReportType() const
              "missingReturn,Mandatory,17.4");
 }
 
+
+void TestResultsTree::testGetGuidelineError() const
+{
+    TestReport report("{id},{classification},{guideline}");
+
+    int msgCount = 0;
+    auto createErrorItem = [&msgCount](const Severity severity, const QString& errorId) -> ErrorItem {
+        ++msgCount;
+        ErrorItem errorItem;
+        errorItem.errorPath << QErrorPathItem(ErrorMessage::FileLocation("file1.c", msgCount, 1));
+        errorItem.severity = severity;
+        errorItem.errorId = errorId;
+        errorItem.summary = "test summary " + QString::number(msgCount);
+        return errorItem;
+    };
+
+    // normal report with 2 errors
+    ResultsTree tree(nullptr);
+    tree.setReportType(ReportType::misraC);
+    tree.addErrorItem(createErrorItem(Severity::error, "id1")); // error severity => guideline 1.3
+    tree.saveResults(&report);
+    QCOMPARE(report.output, "id1,Required,1.3");
+}
+
 QTEST_MAIN(TestResultsTree)
 
