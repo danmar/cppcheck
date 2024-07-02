@@ -530,6 +530,9 @@ private:
         TEST_CASE(throwFunction1);
         TEST_CASE(throwFunction2);
 
+        TEST_CASE(constAttributeFunction);
+        TEST_CASE(pureAttributeFunction);
+
         TEST_CASE(nothrowAttributeFunction);
         TEST_CASE(nothrowDeclspecFunction);
 
@@ -8393,6 +8396,26 @@ private:
         CLASS_FUNC_THROW(func10, fred);
         CLASS_FUNC_THROW(func11, fred);
         CLASS_FUNC_THROW(func12, fred);
+    }
+
+    void constAttributeFunction() {
+        GET_SYMBOL_DB("void func(void) __attribute__((const));");
+        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS(true, db != nullptr); // not null
+
+        const Function* func = findFunctionByName("func", &db->scopeList.front());
+        ASSERT_EQUALS(true, func != nullptr);
+        ASSERT_EQUALS(true, func->isAttributeConst());
+    }
+
+    void pureAttributeFunction() {
+        GET_SYMBOL_DB("void func(void) __attribute__((pure));");
+        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS(true, db != nullptr); // not null
+
+        const Function* func = findFunctionByName("func", &db->scopeList.front());
+        ASSERT_EQUALS(true, func != nullptr);
+        ASSERT_EQUALS(true, func->isAttributePure());
     }
 
     void nothrowAttributeFunction() {
