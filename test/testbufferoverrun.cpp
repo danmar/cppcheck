@@ -75,7 +75,8 @@ private:
     }
 
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkP_(const char* file, int line, const char code[], const char* filename = "test.cpp")
+    template<size_t size>
+    void checkP_(const char* file, int line, const char (&code)[size], const char* filename = "test.cpp")
     {
         const Settings settings = settingsBuilder(settings0).severity(Severity::performance).certainty(Certainty::inconclusive).build();
 

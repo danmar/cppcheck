@@ -275,7 +275,8 @@ private:
     }
 
 #define checkStructMemberUsageP(...) checkStructMemberUsageP_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkStructMemberUsageP_(const char* file, int line, const char code[]) {
+    template<size_t size>
+    void checkStructMemberUsageP_(const char* file, int line, const char (&code)[size]) {
         std::vector<std::string> files(1, "test.cpp");
         Tokenizer tokenizer(settings, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
@@ -289,7 +290,8 @@ private:
     }
 
 #define checkFunctionVariableUsageP(...) checkFunctionVariableUsageP_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkFunctionVariableUsageP_(const char* file, int line, const char code[], const char* filename = "test.cpp") {
+    template<size_t size>
+    void checkFunctionVariableUsageP_(const char* file, int line, const char (&code)[size], const char* filename = "test.cpp") {
         std::vector<std::string> files(1, filename);
         Tokenizer tokenizer(settings, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);

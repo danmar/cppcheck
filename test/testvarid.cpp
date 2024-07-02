@@ -26,7 +26,6 @@
 #include "tokenlist.h"
 
 #include <cstddef>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -273,8 +272,7 @@ private:
     template<size_t size>
     std::string tokenizeHeader_(const char* file, int line, const char (&code)[size], const char filename[]) {
         Tokenizer tokenizer(settings, *this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.list.createTokens(istr, filename), file, line);
+        ASSERT_LOC(tokenizer.list.createTokens(code, size-1, filename), file, line);
         EXPECT_EQ(true, tokenizer.simplifyTokens1(""));
 
         // result..

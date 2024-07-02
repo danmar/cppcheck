@@ -48,7 +48,10 @@ class Tokenizer;
 class FileWithDetails;
 class RemarkComment;
 
-namespace simplecpp { class TokenList; }
+namespace simplecpp {
+    class TokenList;
+    struct Output;
+}
 
 /// @addtogroup Core
 /// @{
@@ -98,12 +101,13 @@ public:
      * the disk but the content is given in @p content. In errors the @p path
      * is used as a filename.
      * @param file The file to check.
-     * @param content File content as a string.
+     * @param data File content as a buffer.
+     * @param size Size of buffer.
      * @return amount of errors found or 0 if none were found.
      * @note You must set settings before calling this function (by calling
      *  settings()).
      */
-    unsigned int check(const FileWithDetails &file, const std::string &content);
+    unsigned int check(const FileWithDetails &file, const uint8_t* data, std::size_t size);
 
     /**
      * @brief Get reference to current settings.
@@ -172,13 +176,36 @@ private:
     void internalError(const std::string &filename, const std::string &msg);
 
     /**
+     * @brief Check a file
+     * @param file the file
+     * @param cfgname  cfg name
+     * @return number of errors found
+     */
+    unsigned int checkFile(const FileWithDetails& file, const std::string &cfgname);
+
+    /**
+     * @brief Check a file using buffer
+     * @param file the file
+     * @param cfgname  cfg name
+     * @param data the data to be read
+     * @param size the size of the data to be read
+     * @return number of errors found
+     */
+    unsigned int checkBuffer(const FileWithDetails& file, const std::string &cfgname, const uint8_t* data, std::size_t size);
+
+    using CreateTokensFn = std::function<void (TokenList&)>;
+    // TODO: should use simplecpp::OutputList
+    using CreateTokenListFn = std::function<simplecpp::TokenList(std::vector<std::string>&, std::list<simplecpp::Output>*)>;
+
+    /**
      * @brief Check a file using stream
      * @param file the file
      * @param cfgname  cfg name
-     * @param fileStream stream the file content can be read from
+     * @param createTokens a function to create the tokens with
+     * @param createTokenList a function to create the TokenList with
      * @return number of errors found
      */
-    unsigned int checkFile(const FileWithDetails& file, const std::string &cfgname, std::istream* fileStream = nullptr);
+    unsigned int checkInternal(const FileWithDetails& file, const std::string &cfgname, const CreateTokensFn& createTokens, const CreateTokenListFn& createTokenList);
 
     /**
      * @brief Check normal tokens

@@ -127,7 +127,8 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], const Settings &settings, const char* filename = "test.cpp") {
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], const Settings &settings, const char* filename = "test.cpp") {
         std::vector<std::string> files(1, filename);
         Tokenizer tokenizer(settings, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
@@ -139,7 +140,8 @@ private:
         runChecks<CheckCondition>(tokenizer, this);
     }
 
-    void check_(const char* file, int line, const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], const char* filename = "test.cpp", bool inconclusive = false) {
         const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive, inconclusive).build();
         check_(file, line, code, settings, filename);
     }

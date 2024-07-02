@@ -700,7 +700,10 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     checkLockDownUI();
     clearResults();
     mUI->mResults->checkingStarted(1);
-    cppcheck.check(FileWithDetails(filename.toStdString()), code.toStdString());
+    {
+        const std::string code_s = code.toStdString();
+        cppcheck.check(FileWithDetails(filename.toStdString()), reinterpret_cast<const std::uint8_t*>(code_s.data()), code_s.size());
+    }
     analysisDone();
 
     // Expand results
