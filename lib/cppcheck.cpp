@@ -413,6 +413,14 @@ static bool reportClangErrors(std::istream &is, const std::function<void(const E
     return false;
 }
 
+std::string CppCheck::getLibraryDumpData() const {
+    std::string out;
+    for (const std::string &s : mSettings.libraries) {
+        out += "  <library lib=\"" + s + "\"/>\n";
+    }
+    return out;
+}
+
 unsigned int CppCheck::checkClang(const FileWithDetails &file)
 {
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mUnusedFunctionsCheck)
@@ -520,6 +528,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
             fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>\n";
             fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>\n";
             fdump << "  </standards>\n";
+            fdump << getLibraryDumpData();
             tokenizer.dump(fdump);
             fdump << "</dump>\n";
             fdump << "</dumps>\n";
@@ -902,6 +911,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>" << std::endl;
                     fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>" << std::endl;
                     fdump << "  </standards>" << std::endl;
+                    fdump << getLibraryDumpData();
                     preprocessor.dump(fdump);
                     tokenizer.dump(fdump);
                     fdump << "</dump>" << std::endl;

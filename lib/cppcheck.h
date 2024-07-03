@@ -162,6 +162,8 @@ public:
      */
     std::string getDumpFileContentsRawTokens(const std::vector<std::string>& files, const simplecpp::TokenList& tokens1) const;
 
+    std::string getLibraryDumpData() const;
+
 private:
 #ifdef HAVE_RULES
     /** Are there "simple" rules */

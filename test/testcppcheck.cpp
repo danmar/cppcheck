@@ -59,6 +59,7 @@ private:
         TEST_CASE(unique_errors);
         TEST_CASE(isPremiumCodingStandardId);
         TEST_CASE(getDumpFileContentsRawTokens);
+        TEST_CASE(getDumpFileContentsLibrary);
     }
 
     void getErrorMessages() const {
@@ -220,6 +221,18 @@ private:
                                      "    <file index=\"0\" name=\"test.cpp\"/>\n"
                                      "  </rawtokens>\n";
         ASSERT_EQUALS(expected, cppcheck.getDumpFileContentsRawTokens(files, tokens1));
+    }
+
+    void getDumpFileContentsLibrary() const {
+        ErrorLogger2 errorLogger;
+        CppCheck cppcheck(errorLogger, false, {});
+        cppcheck.settings().libraries.emplace_back("std.cfg");
+        std::vector<std::string> files{ "/some/path/test.cpp" };
+        const std::string expected1 = "  <library lib=\"std.cfg\"/>\n";
+        ASSERT_EQUALS(expected1, cppcheck.getLibraryDumpData());
+        cppcheck.settings().libraries.emplace_back("posix.cfg");
+        const std::string expected2 = "  <library lib=\"std.cfg\"/>\n  <library lib=\"posix.cfg\"/>\n";
+        ASSERT_EQUALS(expected2, cppcheck.getLibraryDumpData());
     }
 
     // TODO: test suppressions
