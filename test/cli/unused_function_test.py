@@ -42,7 +42,7 @@ def test_unused_functions():
 def test_unused_functions_j():
     ret, stdout, stderr = cppcheck(['-q', '--template=simple', '--enable=unusedFunction', '--inline-suppr', '-j2', __project_dir])
     assert stdout.splitlines() == [
-        "cppcheck: unusedFunction check can't be used with '-j' option. Disabling unusedFunction check."
+        "cppcheck: unusedFunction check requires --cppcheck-build-dir to be active with -j."
     ]
     assert stderr.splitlines() == []
     assert ret == 0, stdout
@@ -70,7 +70,7 @@ def test_unused_functions_project_j():
                                     '--project={}'.format(os.path.join(__project_dir, 'unusedFunction.cppcheck')),
                                     '-j2'])
     assert stdout.splitlines() == [
-        "cppcheck: unusedFunction check can't be used with '-j' option. Disabling unusedFunction check."
+        "cppcheck: unusedFunction check requires --cppcheck-build-dir to be active with -j."
     ]
     assert [] == stderr.splitlines()
     assert ret == 0, stdout
@@ -102,7 +102,7 @@ def test_unused_functions_compdb_j(tmpdir):
                                     '-j2'
                                     ])
     assert stdout.splitlines() == [
-        "cppcheck: unusedFunction check can't be used with '-j' option. Disabling unusedFunction check."
+        "cppcheck: unusedFunction check requires --cppcheck-build-dir to be active with -j."
     ]
     assert stderr.splitlines() == []
     assert ret == 0, stdout

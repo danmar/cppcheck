@@ -26,7 +26,7 @@ def test_unused_functions():
 def test_unused_functions_j():
     ret, stdout, stderr = cppcheck(['-q', '--template=simple', '--library=qt', '--enable=unusedFunction', '-j2', __project_dir])
     assert stdout.splitlines() == [
-        "cppcheck: unusedFunction check can't be used with '-j' option. Disabling unusedFunction check."
+        "cppcheck: unusedFunction check requires --cppcheck-build-dir to be active with -j."
     ]
     assert stderr.splitlines() == []
     assert ret == 0, stdout # TODO: abil out on this
