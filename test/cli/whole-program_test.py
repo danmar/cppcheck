@@ -119,8 +119,7 @@ def test_suppress_inline_j():
     __test_suppress_inline(['-j2'])
 
 
-@pytest.mark.xfail(strict=True)
-def test_suppress_inline_project(tmpdir):
+def __test_suppress_inline_project(tmpdir, extra_args):
     compile_db = __create_compile_commands(tmpdir, [
         os.path.join(__script_dir, 'whole-program', 'odr1.cpp'),
         os.path.join(__script_dir, 'whole-program', 'odr2.cpp')
@@ -136,11 +135,22 @@ def test_suppress_inline_project(tmpdir):
         '--project={}'.format(compile_db)
     ]
 
+    args += extra_args
+
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
     assert lines == []
     assert stdout == ''
     assert ret == 0, stdout
+
+
+def test_suppress_inline_project(tmpdir):
+    __test_suppress_inline_project(tmpdir, ['-j1'])
+
+
+@pytest.mark.xfail(strict=True)
+def test_suppress_inline_project_j(tmpdir):
+    __test_suppress_inline_project(tmpdir, ['-j2'])
 
 
 def __test_checkclass(extra_args):
@@ -174,8 +184,7 @@ def test_checkclass_j():
     __test_checkclass(['-j2'])
 
 
-@pytest.mark.xfail(strict=True)
-def test_checkclass_project(tmpdir):
+def __test_checkclass_project(tmpdir, extra_args):
     odr_file_1 = os.path.join(__script_dir, 'whole-program', 'odr1.cpp')
 
     compile_db = __create_compile_commands(tmpdir, [
@@ -192,6 +201,8 @@ def test_checkclass_project(tmpdir):
         '--project={}'.format(compile_db)
     ]
 
+    args += extra_args
+
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
     assert lines == [
@@ -199,3 +210,12 @@ def test_checkclass_project(tmpdir):
     ]
     assert stdout == ''
     assert ret == 1, stdout
+
+
+def test_checkclass_project(tmpdir):
+    __test_checkclass_project(tmpdir, ['-j1'])
+
+
+@pytest.mark.xfail(strict=True)
+def test_checkclass_project_j(tmpdir):
+    __test_checkclass_project(tmpdir, ['-j2'])
