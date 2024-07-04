@@ -665,7 +665,10 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
     try {
         if (mSettings.library.markupFile(file.spath())) {
-            if (mUnusedFunctionsCheck && (mSettings.useSingleJob() || !mSettings.buildDir.empty())) {
+            if (!mSettings.buildDir.empty())
+                mAnalyzerInformation.reset(new AnalyzerInformation);
+
+            if (mUnusedFunctionsCheck && (mSettings.useSingleJob() || mAnalyzerInformation)) {
                 // this is not a real source file - we just want to tokenize it. treat it as C anyways as the language needs to be determined.
                 Tokenizer tokenizer(mSettings, *this);
                 // enforce the language since markup files are special and do not adhere to the enforced language
@@ -678,7 +681,11 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     tokenizer.list.createTokens(in, file.spath());
                 }
                 mUnusedFunctionsCheck->parseTokens(tokenizer, mSettings);
-                // TODO: set analyzer information
+
+                if (mAnalyzerInformation) {
+                    // TODO: open file so we can set the fileinfo
+                    mAnalyzerInformation->setFileInfo("CheckUnusedFunctions", mUnusedFunctionsCheck->analyzerInfo());
+                }
             }
             return EXIT_SUCCESS;
         }
