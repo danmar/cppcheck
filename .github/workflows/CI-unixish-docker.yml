@@ -32,6 +32,7 @@ jobs:
     env:
       # TODO: figure out why there are cache misses with PCH enabled
       CCACHE_SLOPPINESS: pch_defines,time_macros
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
     container:
       image: ${{ matrix.image }}
