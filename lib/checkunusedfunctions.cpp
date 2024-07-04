@@ -85,6 +85,15 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
             if (func->isExtern())
                 continue;
 
+            bool foundAllBaseClasses{};
+            if (const Function* ofunc = func->getOverriddenFunction(&foundAllBaseClasses)) {
+                if (!foundAllBaseClasses || ofunc->isPure())
+                    continue;
+            }
+            else if (func->isImplicitlyVirtual()) {
+                continue;
+            }
+
             mFunctionDecl.emplace_back(func);
 
             FunctionUsage &usage = mFunctions[stripTemplateParameters(func->name())];
