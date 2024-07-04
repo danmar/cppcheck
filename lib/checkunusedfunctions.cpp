@@ -242,11 +242,11 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
             while (Token::Match(funcname, "%name% :: %name%"))
                 funcname = funcname->tokAt(2);
 
-            if (!Token::Match(funcname, "%name% [(),;]:}>]") || funcname->varId())
+            if (!Token::Match(funcname, "%name% [(),;]:}>]"))
                 continue;
         }
 
-        if (!funcname || funcname->isKeyword() || funcname->isStandardType())
+        if (!funcname || funcname->isKeyword() || funcname->isStandardType() || funcname->varId())
             continue;
 
         // funcname ( => Assert that the end parentheses isn't followed by {
