@@ -246,7 +246,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
                 continue;
         }
 
-        if (!funcname || funcname->isKeyword() || funcname->isStandardType() || funcname->varId())
+        if (!funcname || funcname->isKeyword() || funcname->isStandardType() || funcname->varId() || funcname->enumerator())
             continue;
 
         // funcname ( => Assert that the end parentheses isn't followed by {

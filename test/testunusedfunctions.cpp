@@ -543,6 +543,15 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) The function 'Break' is never used.\n"
                       "[test.cpp:5]: (style) The function 'Break1' is never used.\n",
                       errout_str());
+
+        check("struct S {\n" // #12899
+              "    void f() {}\n"
+              "};\n"
+              "enum E { f };\n"
+              "int main() {\n"
+              "    E e{ f };\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The function 'f' is never used.\n", errout_str());
     }
 
     void recursive() {
