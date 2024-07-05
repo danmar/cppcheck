@@ -4255,6 +4255,10 @@ void SymbolDatabase::printXml(std::ostream &out) const
                         outs += id_string(overriddenFunction);
                         outs += "\"";
                     }
+                    if (function->isAttributeConst())
+                        outs += " isAttributeConst=\"true\"";
+                    if (function->isAttributePure())
+                        outs += " isAttributePure=\"true\"";
                     if (function->argCount() == 0U)
                         outs += "/>\n";
                     else {
