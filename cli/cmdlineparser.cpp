@@ -80,7 +80,7 @@ static bool addFilesToList(const std::string& fileList, std::vector<std::string>
             pathNames.emplace_back(std::move(fileName));
         }
     }
-    
+
     return true;
 }
 
