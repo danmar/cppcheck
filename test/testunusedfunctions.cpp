@@ -83,6 +83,7 @@ private:
 
         TEST_CASE(includes);
         TEST_CASE(virtualFunc);
+        TEST_CASE(parensInit);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -542,6 +543,15 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) The function 'Break' is never used.\n"
                       "[test.cpp:5]: (style) The function 'Break1' is never used.\n",
                       errout_str());
+
+        check("struct S {\n" // #12899
+              "    void f() {}\n"
+              "};\n"
+              "enum E { f };\n"
+              "int main() {\n"
+              "    E e{ f };\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The function 'f' is never used.\n", errout_str());
     }
 
     void recursive() {
@@ -734,6 +744,17 @@ private:
               "    d.g();\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void parensInit()
+    {
+        check("struct S {\n" // #12898
+              "    void url() {}\n"
+              "};\n"
+              "int main() {\n"
+              "    const int url(0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The function 'url' is never used.\n", errout_str());
     }
 };
 
