@@ -72,16 +72,15 @@ static bool addFilesToList(const std::string& fileList, std::vector<std::string>
             return false;
         files = &infile;
     }
-    if (files && *files) {
-        std::string fileName;
+    std::string fileName;
+    // cppcheck-suppress accessMoved - FP
+    while (std::getline(*files, fileName)) { // next line
         // cppcheck-suppress accessMoved - FP
-        while (std::getline(*files, fileName)) { // next line
-            // cppcheck-suppress accessMoved - FP
-            if (!fileName.empty()) {
-                pathNames.emplace_back(std::move(fileName));
-            }
+        if (!fileName.empty()) {
+            pathNames.emplace_back(std::move(fileName));
         }
     }
+    
     return true;
 }
 
