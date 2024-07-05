@@ -84,7 +84,7 @@ private:
         TEST_CASE(includes);
         TEST_CASE(virtualFunc);
         TEST_CASE(parensInit);
-        TEST_CASE(typeInCast;
+        TEST_CASE(typeInCast);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
