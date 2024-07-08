@@ -18,5 +18,9 @@
     </paths>
     <exclude>
         <path name="gui/temp/"/>
+        <path name="gui/test/data"/>
+        <path name="test/cfg/"/>
+        <path name="test/cli/"/>
+        <path name="test/tools/"/>
     </exclude>
 </project>

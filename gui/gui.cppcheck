@@ -11,4 +11,7 @@
     <ignore>
         <path name="temp/"/>
     </ignore>
+    <exclude>
+        <path name="test/data"/>
+    </exclude>
 </project>
