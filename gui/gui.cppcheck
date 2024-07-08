@@ -14,4 +14,7 @@
     <exclude>
         <path name="test/data"/>
     </exclude>
+    <libraries>
+        <library>qt</library>
+    </libraries>
 </project>

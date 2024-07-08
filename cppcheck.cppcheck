@@ -23,4 +23,7 @@
         <path name="test/cli/"/>
         <path name="test/tools/"/>
     </exclude>
+    <libraries>
+      <library>qt</library>
+    </libraries>
 </project>
