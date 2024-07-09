@@ -825,6 +825,8 @@ static T* getCondTokImpl(T* tok)
         return tok->next()->astOperand2()->astOperand2()->astOperand1();
     if (Token::simpleMatch(tok->next()->astOperand2(), ";"))
         return tok->next()->astOperand2()->astOperand1();
+    if (tok->isName() && !tok->isControlFlowKeyword())
+        return nullptr;
     return tok->next()->astOperand2();
 }
 
