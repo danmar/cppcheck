@@ -160,7 +160,7 @@ public:
         Standards standards;
         Severity severity;
     };
-    std::map<std::string, WarnInfo> functionwarn;
+    const std::map<std::string, WarnInfo>& functionwarn() const;
 
     const WarnInfo* getWarnInfo(const Token* ftok) const;
 
@@ -402,7 +402,7 @@ public:
 
     bool isentrypoint(const std::string &func) const;
 
-    std::set<std::string> defines; // to provide some library defines
+    const std::set<std::string>& defines() const; // to provide some library defines
 
     struct SmartPointer {
         std::string name;

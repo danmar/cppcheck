@@ -112,6 +112,9 @@ struct Library::LibraryData
 
     enum class FalseTrueMaybe : std::uint8_t { False, True, Maybe };
 
+    std::map<std::string, WarnInfo> mFunctionwarn;
+    std::set<std::string> mDefines;
+
     std::unordered_map<std::string, Container> mContainers;
     std::unordered_map<std::string, Function> mFunctions;
     std::unordered_map<std::string, SmartPointer> mSmartPointers;
@@ -428,7 +431,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const char *value = node->Attribute("value");
             if (value == nullptr)
                 return Error(ErrorCode::MISSING_ATTRIBUTE, "value");
-            auto result = defines.insert(std::string(name) + " " + value);
+            auto result = mData->mDefines.insert(std::string(name) + " " + value);
             if (!result.second)
                 return Error(ErrorCode::DUPLICATE_DEFINE, name);
         }
@@ -1028,7 +1031,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                 wi.message = message;
             }
 
-            functionwarn[name] = std::move(wi);
+            mData->mFunctionwarn[name] = std::move(wi);
         } else if (functionnodename == "container") {
             const char* const action_ptr = functionnode->Attribute("action");
             Container::Action action = Container::Action::NO_ACTION;
@@ -1463,12 +1466,17 @@ bool Library::matchArguments(const Token *ftok, const std::string &functionName)
     return (firstOptionalArg < 0) ? args == callargs : (callargs >= firstOptionalArg-1 && callargs <= args);
 }
 
+const std::map<std::string, Library::WarnInfo>& Library::functionwarn() const
+{
+    return mData->mFunctionwarn;
+}
+
 const Library::WarnInfo* Library::getWarnInfo(const Token* ftok) const
 {
     if (isNotLibraryFunction(ftok))
         return nullptr;
-    const std::map<std::string, WarnInfo>::const_iterator i = functionwarn.find(getFunctionName(ftok));
-    if (i == functionwarn.cend())
+    const std::map<std::string, WarnInfo>::const_iterator i =  mData->mFunctionwarn.find(getFunctionName(ftok));
+    if (i ==  mData->mFunctionwarn.cend())
         return nullptr;
     return &i->second;
 }
@@ -2026,6 +2034,11 @@ int Library::reflectionArgument(const std::string &token) const
 bool Library::isentrypoint(const std::string &func) const
 {
     return func == "main" || mData->mEntrypoints.find(func) != mData->mEntrypoints.end();
+}
+
+const std::set<std::string>& Library::defines() const
+{
+    return mData->mDefines;
 }
 
 const Library::PodType *Library::podtype(const std::string &name) const
