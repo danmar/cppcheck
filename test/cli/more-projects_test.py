@@ -753,3 +753,93 @@ def test_json_file_ignore_2(tmpdir):
     ]
 
     assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
+
+
+@pytest.mark.xfail(strict=True)
+def test_project_D(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        f.write("""
+#ifndef __GNUC__
+#error "requirement not met"
+#endif
+                """)
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="1">
+  <paths>
+   <dir name="{}"/>
+  </paths>
+</project>
+            """.format(test_file))
+
+    args = [
+        '--project=' + project_file,
+        '--template=simple',
+    ]
+    arg_D = ['-D__GNUC__']
+
+    out_expected = [
+        'Checking {} ...'.format(test_file),
+        'Checking {}: __GNUC__=1...'.format(test_file)
+    ]
+
+    args1 = args + arg_D
+    ret, stdout, stderr = cppcheck(args1)
+    assert stdout.splitlines() == out_expected
+    assert stderr.splitlines() == []
+    assert ret == 0, stdout
+
+    # TODO: -D__GNUC__ is lost
+    args2 = arg_D + args
+    ret, stdout, stderr = cppcheck(args2)
+    assert stdout.splitlines() == out_expected
+    assert stderr.splitlines() == []
+    assert ret == 0, stdout
+
+
+def test_compdb_D(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        f.write("""
+#ifndef __GNUC__
+#error "requirement not met"
+#endif
+                """)
+
+    compile_commands = os.path.join(tmpdir, 'compile_commands.json')
+    compilation_db = [
+        {"directory": str(tmpdir),
+         "command": "c++ -o test.o -c test.cpp",
+         "file": "test.cpp",
+         "output": "test.o"}
+    ]
+    with open(compile_commands, 'wt') as f:
+        f.write(json.dumps(compilation_db))
+
+    args = [
+        '--project=' + compile_commands,
+        '--template=simple',
+        ]
+    arg_D = ['-D__GNUC__']
+
+    out_expected = [
+        'Checking {} ...'.format(test_file),
+        'Checking {}: __GNUC__=1;...'.format(test_file)  # TODO: get rid of extra ;
+    ]
+
+    args1 = args + arg_D
+    ret, stdout, stderr = cppcheck(args1)
+    assert stdout.splitlines() == out_expected
+    assert stderr.splitlines() == []
+    assert ret == 0, stdout
+
+    args2 = arg_D + args
+    ret, stdout, stderr = cppcheck(args2)
+    assert stdout.splitlines() == out_expected
+    assert stderr.splitlines() == []
+    assert ret == 0, stdout
