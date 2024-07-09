@@ -442,14 +442,6 @@ public:
         bool mConstPtr{};
     };
 
-    struct Platform {
-        const PlatformType *platform_type(const std::string &name) const {
-            const std::map<std::string, PlatformType>::const_iterator it = mPlatformTypes.find(name);
-            return (it != mPlatformTypes.end()) ? &(it->second) : nullptr;
-        }
-        std::map<std::string, PlatformType> mPlatformTypes;
-    };
-
     const PlatformType *platform_type(const std::string &name, const std::string & platform) const;
 
     /**
@@ -472,62 +464,6 @@ private:
 
     // load a <function> xml node
     Error loadFunction(const tinyxml2::XMLElement * const node, const std::string &name, std::set<std::string> &unknown_elements);
-
-    class ExportedFunctions {
-    public:
-        void addPrefix(std::string prefix) {
-            mPrefixes.insert(std::move(prefix));
-        }
-        void addSuffix(std::string suffix) {
-            mSuffixes.insert(std::move(suffix));
-        }
-        bool isPrefix(const std::string& prefix) const {
-            return (mPrefixes.find(prefix) != mPrefixes.end());
-        }
-        bool isSuffix(const std::string& suffix) const {
-            return (mSuffixes.find(suffix) != mSuffixes.end());
-        }
-
-    private:
-        std::set<std::string> mPrefixes;
-        std::set<std::string> mSuffixes;
-    };
-    class CodeBlock {
-    public:
-        CodeBlock() = default;
-
-        void setStart(const char* s) {
-            mStart = s;
-        }
-        void setEnd(const char* e) {
-            mEnd = e;
-        }
-        void setOffset(const int o) {
-            mOffset = o;
-        }
-        void addBlock(const char* blockName) {
-            mBlocks.insert(blockName);
-        }
-        const std::string& start() const {
-            return mStart;
-        }
-        const std::string& end() const {
-            return mEnd;
-        }
-        int offset() const {
-            return mOffset;
-        }
-        bool isBlock(const std::string& blockName) const {
-            return mBlocks.find(blockName) != mBlocks.end();
-        }
-
-    private:
-        std::string mStart;
-        std::string mEnd;
-        int mOffset{};
-        std::set<std::string> mBlocks;
-    };
-    enum class FalseTrueMaybe : std::uint8_t { False, True, Maybe };
 
     struct LibraryData;
     std::unique_ptr<LibraryData> mData;

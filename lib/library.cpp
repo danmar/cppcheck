@@ -46,6 +46,72 @@
 
 struct Library::LibraryData
 {
+    struct Platform {
+        const PlatformType *platform_type(const std::string &name) const {
+            const std::map<std::string, PlatformType>::const_iterator it = mPlatformTypes.find(name);
+            return (it != mPlatformTypes.end()) ? &(it->second) : nullptr;
+        }
+        std::map<std::string, PlatformType> mPlatformTypes;
+    };
+
+    class ExportedFunctions {
+    public:
+        void addPrefix(std::string prefix) {
+            mPrefixes.insert(std::move(prefix));
+        }
+        void addSuffix(std::string suffix) {
+            mSuffixes.insert(std::move(suffix));
+        }
+        bool isPrefix(const std::string& prefix) const {
+            return (mPrefixes.find(prefix) != mPrefixes.end());
+        }
+        bool isSuffix(const std::string& suffix) const {
+            return (mSuffixes.find(suffix) != mSuffixes.end());
+        }
+
+    private:
+        std::set<std::string> mPrefixes;
+        std::set<std::string> mSuffixes;
+    };
+
+    class CodeBlock {
+    public:
+        CodeBlock() = default;
+
+        void setStart(const char* s) {
+            mStart = s;
+        }
+        void setEnd(const char* e) {
+            mEnd = e;
+        }
+        void setOffset(const int o) {
+            mOffset = o;
+        }
+        void addBlock(const char* blockName) {
+            mBlocks.insert(blockName);
+        }
+        const std::string& start() const {
+            return mStart;
+        }
+        const std::string& end() const {
+            return mEnd;
+        }
+        int offset() const {
+            return mOffset;
+        }
+        bool isBlock(const std::string& blockName) const {
+            return mBlocks.find(blockName) != mBlocks.end();
+        }
+
+    private:
+        std::string mStart;
+        std::string mEnd;
+        int mOffset{};
+        std::set<std::string> mBlocks;
+    };
+
+    enum class FalseTrueMaybe : std::uint8_t { False, True, Maybe };
+
     std::unordered_map<std::string, Container> mContainers;
     std::unordered_map<std::string, Function> mFunctions;
     std::unordered_map<std::string, SmartPointer> mSmartPointers;
@@ -750,11 +816,11 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
         if (functionnodename == "noreturn") {
             const char * const text = functionnode->GetText();
             if (strcmp(text, "false") == 0)
-                mData->mNoReturn[name] = FalseTrueMaybe::False;
+                mData->mNoReturn[name] = LibraryData::FalseTrueMaybe::False;
             else if (strcmp(text, "maybe") == 0)
-                mData->mNoReturn[name] = FalseTrueMaybe::Maybe;
+                mData->mNoReturn[name] = LibraryData::FalseTrueMaybe::Maybe;
             else
-                mData->mNoReturn[name] = FalseTrueMaybe::True; // Safe
+                mData->mNoReturn[name] = LibraryData::FalseTrueMaybe::True; // Safe
         } else if (functionnodename == "pure")
             func.ispure = true;
         else if (functionnodename == "const") {
@@ -1652,12 +1718,12 @@ bool Library::isnoreturn(const Token *ftok) const
         }
         return false;
     }
-    const std::unordered_map<std::string, FalseTrueMaybe>::const_iterator it = mData->mNoReturn.find(getFunctionName(ftok));
+    const std::unordered_map<std::string, LibraryData::FalseTrueMaybe>::const_iterator it = mData->mNoReturn.find(getFunctionName(ftok));
     if (it == mData->mNoReturn.end())
         return false;
-    if (it->second == FalseTrueMaybe::Maybe)
+    if (it->second == LibraryData::FalseTrueMaybe::Maybe)
         return true;
-    return it->second == FalseTrueMaybe::True;
+    return it->second == LibraryData::FalseTrueMaybe::True;
 }
 
 bool Library::isnotnoreturn(const Token *ftok) const
@@ -1666,12 +1732,12 @@ bool Library::isnotnoreturn(const Token *ftok) const
         return false;
     if (isNotLibraryFunction(ftok))
         return false;
-    const std::unordered_map<std::string, FalseTrueMaybe>::const_iterator it = mData->mNoReturn.find(getFunctionName(ftok));
+    const std::unordered_map<std::string, LibraryData::FalseTrueMaybe>::const_iterator it = mData->mNoReturn.find(getFunctionName(ftok));
     if (it == mData->mNoReturn.end())
         return false;
-    if (it->second == FalseTrueMaybe::Maybe)
+    if (it->second == LibraryData::FalseTrueMaybe::Maybe)
         return false;
-    return it->second == FalseTrueMaybe::False;
+    return it->second == LibraryData::FalseTrueMaybe::False;
 }
 
 bool Library::markupFile(const std::string &path) const
@@ -1693,14 +1759,14 @@ bool Library::reportErrors(const std::string &path) const
 
 bool Library::isexecutableblock(const std::string &file, const std::string &token) const
 {
-    const std::unordered_map<std::string, CodeBlock>::const_iterator it = mData->mExecutableBlocks.find(Path::getFilenameExtensionInLowerCase(file));
+    const std::unordered_map<std::string, LibraryData::CodeBlock>::const_iterator it = mData->mExecutableBlocks.find(Path::getFilenameExtensionInLowerCase(file));
     return (it != mData->mExecutableBlocks.cend() && it->second.isBlock(token));
 }
 
 int Library::blockstartoffset(const std::string &file) const
 {
     int offset = -1;
-    const std::unordered_map<std::string, CodeBlock>::const_iterator map_it
+    const std::unordered_map<std::string, LibraryData::CodeBlock>::const_iterator map_it
         = mData->mExecutableBlocks.find(Path::getFilenameExtensionInLowerCase(file));
 
     if (map_it != mData->mExecutableBlocks.end()) {
@@ -1711,7 +1777,7 @@ int Library::blockstartoffset(const std::string &file) const
 
 const std::string& Library::blockstart(const std::string &file) const
 {
-    const std::unordered_map<std::string, CodeBlock>::const_iterator map_it
+    const std::unordered_map<std::string, LibraryData::CodeBlock>::const_iterator map_it
         = mData->mExecutableBlocks.find(Path::getFilenameExtensionInLowerCase(file));
 
     if (map_it != mData->mExecutableBlocks.end()) {
@@ -1722,7 +1788,7 @@ const std::string& Library::blockstart(const std::string &file) const
 
 const std::string& Library::blockend(const std::string &file) const
 {
-    const std::unordered_map<std::string, CodeBlock>::const_iterator map_it
+    const std::unordered_map<std::string, LibraryData::CodeBlock>::const_iterator map_it
         = mData->mExecutableBlocks.find(Path::getFilenameExtensionInLowerCase(file));
 
     if (map_it != mData->mExecutableBlocks.end()) {
@@ -1934,13 +2000,13 @@ bool Library::isexporter(const std::string &prefix) const
 
 bool Library::isexportedprefix(const std::string &prefix, const std::string &token) const
 {
-    const std::map<std::string, ExportedFunctions>::const_iterator it = mData->mExporters.find(prefix);
+    const std::map<std::string, LibraryData::ExportedFunctions>::const_iterator it = mData->mExporters.find(prefix);
     return (it != mData->mExporters.end() && it->second.isPrefix(token));
 }
 
 bool Library::isexportedsuffix(const std::string &prefix, const std::string &token) const
 {
-    const std::map<std::string, ExportedFunctions>::const_iterator it = mData->mExporters.find(prefix);
+    const std::map<std::string, LibraryData::ExportedFunctions>::const_iterator it = mData->mExporters.find(prefix);
     return (it != mData->mExporters.end() && it->second.isSuffix(token));
 }
 
@@ -1970,7 +2036,7 @@ const Library::PodType *Library::podtype(const std::string &name) const
 
 const Library::PlatformType *Library::platform_type(const std::string &name, const std::string & platform) const
 {
-    const std::map<std::string, Platform>::const_iterator it = mData->mPlatforms.find(platform);
+    const std::map<std::string, LibraryData::Platform>::const_iterator it = mData->mPlatforms.find(platform);
     if (it != mData->mPlatforms.end()) {
         const PlatformType * const type = it->second.platform_type(name);
         if (type)
