@@ -7467,6 +7467,16 @@ private:
 
         code = "void f() { int& a = *&a; }\n"; // #12511
         valueOfTok(code, "=");
+
+        code = "void g(int*);\n" // #12716
+               "void f(int a) {\n"
+               "    do {\n"
+               "        if (a)\n"
+               "            break;\n"
+               "        g((int[256]) { 0 });\n"
+               "    } while (true);\n"
+               "}\n";
+        valueOfTok(code, "0");
     }
 
     void valueFlowHang() {
