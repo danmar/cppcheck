@@ -2175,7 +2175,7 @@ void CheckClass::checkConst()
                 continue;
 
             const bool suggestStatic = memberAccessed != MemberAccess::MEMBER && !func.isOperator();
-            if ((returnsPtrOrRef || func.isConst()) && !suggestStatic)
+            if ((returnsPtrOrRef || func.isConst() || func.hasLvalRefQualifier()) && !suggestStatic)
                 continue;
 
             std::string classname = scope->className;
