@@ -396,8 +396,8 @@ void CheckOther::suspiciousFloatingPointCast()
             const Token* parent = tok->astParent();
             if (!parent || !parent->valueType() || std::find(sourceTypes.begin(), sourceTypes.end(), parent->valueType()->type) == sourceTypes.end())
                 continue;
- 
-            suspiciousFloatingPointCastError(tok);
+
+             suspiciousFloatingPointCastError(tok);
         }
     }
 }
