@@ -124,6 +124,7 @@ private:
         TEST_CASE(suspiciousCase);
         TEST_CASE(suspiciousEqualityComparison);
         TEST_CASE(suspiciousUnaryPlusMinus); // #8004
+        TEST_CASE(suspiciousFloatingPointCast);
 
         TEST_CASE(selfAssignment);
         TEST_CASE(trac1132);
@@ -5592,6 +5593,18 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '+', result is not used.\n"
                       "[test.cpp:3]: (warning, inconclusive) Found suspicious operator '-', result is not used.\n",
                       errout_str());
+    }
+
+    void suspiciousFloatingPointCast() {
+        check("double f(double a, double b, float c) {\n" // #12921
+              "    return a + (float)b + c;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Floating-point cast causes loss of precision.\n", errout_str());
+
+        check("long double f(long double a, long double b, float c) {\n"
+              "    return a + (double)b + c;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Floating-point cast causes loss of precision.\n", errout_str());
     }
 
     void selfAssignment() {
