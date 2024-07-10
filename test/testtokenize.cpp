@@ -373,8 +373,6 @@ private:
 
         TEST_CASE(simplifyEmptyNamespaces);
 
-        TEST_CASE(compileLimits); // #5592 crash: gcc: testsuit: gcc.c-torture/compile/limits-declparen.c
-
         TEST_CASE(prepareTernaryOpForAST);
 
         // AST data
@@ -6922,34 +6920,6 @@ private:
         ASSERT_EQUALS("(return (new (( (:: (:: (:: A B) C) D) true)))", testAst("return new A::B::C::D(true);", AstStyle::Z3));
     }
 
-    void compileLimits() {
-        const char raw_code[] = "#define PTR1 (* (* (* (* (* (* (* (* (* (*\n"
-                                "#define PTR2 PTR1 PTR1 PTR1 PTR1 PTR1 PTR1 PTR1 PTR1 PTR1 PTR1\n"
-                                "#define PTR3 PTR2 PTR2 PTR2 PTR2 PTR2 PTR2 PTR2 PTR2 PTR2 PTR2\n"
-                                "#define PTR4 PTR3 PTR3 PTR3 PTR3 PTR3 PTR3 PTR3 PTR3 PTR3 PTR3\n"
-                                "#define PTR5 PTR4 PTR4 PTR4 PTR4 PTR4 PTR4 PTR4 PTR4 PTR4 PTR4\n"
-                                "#define PTR6 PTR5 PTR5 PTR5 PTR5 PTR5 PTR5 PTR5 PTR5 PTR5 PTR5\n"
-                                "\n"
-                                "#define RBR1 ) ) ) ) ) ) ) ) ) )\n"
-                                "#define RBR2 RBR1 RBR1 RBR1 RBR1 RBR1 RBR1 RBR1 RBR1 RBR1 RBR1\n"
-                                "#define RBR3 RBR2 RBR2 RBR2 RBR2 RBR2 RBR2 RBR2 RBR2 RBR2 RBR2\n"
-                                "#define RBR4 RBR3 RBR3 RBR3 RBR3 RBR3 RBR3 RBR3 RBR3 RBR3 RBR3\n"
-                                "#define RBR5 RBR4 RBR4 RBR4 RBR4 RBR4 RBR4 RBR4 RBR4 RBR4 RBR4\n"
-                                "#define RBR6 RBR5 RBR5 RBR5 RBR5 RBR5 RBR5 RBR5 RBR5 RBR5 RBR5\n"
-                                "\n"
-                                "int PTR4 q4_var RBR4 = 0;\n";
-
-        // Preprocess file..
-        std::istringstream fin(raw_code);
-        simplecpp::OutputList outputList;
-        std::vector<std::string> files;
-        const simplecpp::TokenList tokens1(fin, files, emptyString, &outputList);
-        const std::string filedata = tokens1.stringify();
-        const std::string code = PreprocessorHelper::getcode(settings0, *this, filedata, emptyString, emptyString);
-
-        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code), AST);
-    }
-
 #define isStartOfExecutableScope(offset, code) isStartOfExecutableScope_(offset, code, __FILE__, __LINE__)
     template<size_t size>
     bool isStartOfExecutableScope_(int offset, const char (&code)[size], const char* file, int line) {
@@ -8266,3 +8236,59 @@ private:
 };
 
 REGISTER_TEST(TestTokenizer)
+
+class TestTokenizerCompileLimits : public TestFixture
+{
+public:
+    TestTokenizerCompileLimits() : TestFixture("TestTokenizerCompileLimits") {}
+
+private:
+    void run() override
+    {
+        TEST_CASE(test); // #5592 crash: gcc: testsuit: gcc.c-torture/compile/limits-declparen.c
+    }
+
+#define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tokenizeAndStringify_(const char* file, int linenr, const std::string& code) {
+        const Settings settings;
+
+        // tokenize..
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, linenr);
+
+        if (tokenizer.tokens())
+            return tokenizer.tokens()->stringifyList(false, true, false, true, false, nullptr, nullptr);
+        return "";
+    }
+
+    void test() {
+        const char raw_code[] = "#define PTR1 (* (* (* (* (* (* (* (* (* (*\n"
+                                "#define PTR2 PTR1 PTR1 PTR1 PTR1 PTR1 PTR1 PTR1 PTR1 PTR1 PTR1\n"
+                                "#define PTR3 PTR2 PTR2 PTR2 PTR2 PTR2 PTR2 PTR2 PTR2 PTR2 PTR2\n"
+                                "#define PTR4 PTR3 PTR3 PTR3 PTR3 PTR3 PTR3 PTR3 PTR3 PTR3 PTR3\n"
+                                "#define PTR5 PTR4 PTR4 PTR4 PTR4 PTR4 PTR4 PTR4 PTR4 PTR4 PTR4\n"
+                                "#define PTR6 PTR5 PTR5 PTR5 PTR5 PTR5 PTR5 PTR5 PTR5 PTR5 PTR5\n"
+                                "\n"
+                                "#define RBR1 ) ) ) ) ) ) ) ) ) )\n"
+                                "#define RBR2 RBR1 RBR1 RBR1 RBR1 RBR1 RBR1 RBR1 RBR1 RBR1 RBR1\n"
+                                "#define RBR3 RBR2 RBR2 RBR2 RBR2 RBR2 RBR2 RBR2 RBR2 RBR2 RBR2\n"
+                                "#define RBR4 RBR3 RBR3 RBR3 RBR3 RBR3 RBR3 RBR3 RBR3 RBR3 RBR3\n"
+                                "#define RBR5 RBR4 RBR4 RBR4 RBR4 RBR4 RBR4 RBR4 RBR4 RBR4 RBR4\n"
+                                "#define RBR6 RBR5 RBR5 RBR5 RBR5 RBR5 RBR5 RBR5 RBR5 RBR5 RBR5\n"
+                                "\n"
+                                "int PTR4 q4_var RBR4 = 0;\n";
+
+        // Preprocess file..
+        std::istringstream fin(raw_code);
+        simplecpp::OutputList outputList;
+        std::vector<std::string> files;
+        const simplecpp::TokenList tokens1(fin, files, emptyString, &outputList);
+        const std::string filedata = tokens1.stringify();
+        const Settings settings;
+        const std::string code = PreprocessorHelper::getcode(settings, *this, filedata, emptyString, emptyString);
+
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code), AST);
+    }
+};
+
+REGISTER_TEST(TestTokenizerCompileLimits)
