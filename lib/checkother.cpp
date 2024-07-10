@@ -394,7 +394,20 @@ void CheckOther::suspiciousFloatingPointCast()
                 continue;
 
             const Token* parent = tok->astParent();
-            if (!parent || !parent->valueType() || std::find(sourceTypes.begin(), sourceTypes.end(), parent->valueType()->type) == sourceTypes.end())
+            if (!parent)
+                continue;
+
+            const ValueType* parentVt = parent->valueType();
+            if (!parentVt || parent->str() == "(") {
+                int argn{};
+                if (const Token* ftok = getTokenArgumentFunction(tok, argn)) {
+                    if (ftok->function()) {
+                        if (const Variable* argVar = ftok->function()->getArgumentVar(argn))
+                            parentVt = argVar->valueType();
+                    }
+                }
+            }
+            if (!parentVt || std::find(sourceTypes.begin(), sourceTypes.end(), parentVt->type) == sourceTypes.end())
                 continue;
 
             suspiciousFloatingPointCastError(tok);
