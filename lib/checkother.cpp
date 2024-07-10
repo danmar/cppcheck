@@ -397,7 +397,7 @@ void CheckOther::suspiciousFloatingPointCast()
             if (!parent || !parent->valueType() || std::find(sourceTypes.begin(), sourceTypes.end(), parent->valueType()->type) == sourceTypes.end())
                 continue;
 
-             suspiciousFloatingPointCastError(tok);
+            suspiciousFloatingPointCastError(tok);
         }
     }
 }
