@@ -318,6 +318,7 @@ private:
         c.checkComparisonFunctionIsAlwaysTrueOrFalseError(nullptr, "isless","varName",false);
         c.checkCastIntToCharAndBackError(nullptr, "func_name");
         c.cstyleCastError(nullptr);
+        c.suspiciousFloatingPointCastError(nullptr);
         c.passedByValueError(nullptr, false);
         c.constVariableError(nullptr, nullptr);
         c.constStatementError(nullptr, "type", false);
