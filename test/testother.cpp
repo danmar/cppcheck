@@ -5596,8 +5596,13 @@ private:
     }
 
     void suspiciousFloatingPointCast() {
-        check("double f(double a, double b, float c) {\n" // #12921
+        check("double f(double a, double b, float c) {\n"
               "    return a + (float)b + c;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Floating-point cast causes loss of precision.\n", errout_str());
+
+        check("double f(double a, double b, float c) {\n"
+              "    return a + static_cast<float>(b) + c;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Floating-point cast causes loss of precision.\n", errout_str());
 
@@ -5605,6 +5610,16 @@ private:
               "    return a + (double)b + c;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Floating-point cast causes loss of precision.\n", errout_str());
+
+        check("void g(int, double);\n"
+              "void h(double);\n"
+              "void f(double d) {\n"
+              "    g(1, (float)d);\n"
+              "    h((float)d);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Floating-point cast causes loss of precision.\n"
+                      "[test.cpp:5]: (style) Floating-point cast causes loss of precision.\n",
+                      errout_str());
     }
 
     void selfAssignment() {
