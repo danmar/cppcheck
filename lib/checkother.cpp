@@ -2913,7 +2913,7 @@ void CheckOther::checkRedundantCopy()
 
     for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || var->isReference() || var->isPointer() ||
-            (!var->type() && !var->isStlType()) || // bailout if var is of standard type, if it is a pointer or non-const
+            (!var->type() && !var->isStlType() && !(var->valueType() && var->valueType()->container)) || // bailout if var is of standard type, if it is a pointer or non-const
             (!var->isConst() && isVariableChanged(var, *mSettings)))
             continue;
 
