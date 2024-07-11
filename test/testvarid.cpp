@@ -3279,6 +3279,15 @@ private:
                                "  else x;\n"
                                "  x;\n"
                                "}"));
+
+        ASSERT_EQUALS("1: const char * f ( int * ) ;\n" // #12924
+                      "2: void g ( int i@1 ) {\n"
+                      "3: if ( f ( & i@1 ) [ 0 ] == 'm' ) { }\n"
+                      "4: }\n",
+                      tokenize("const char *f(int*);\n"
+                               "void g(int i) {\n"
+                               "    if (f(&i)[0] == 'm') {}\n"
+                               "}\n", false));
     }
 
     void varid_globalScope() {
