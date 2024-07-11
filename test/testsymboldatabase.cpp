@@ -8887,6 +8887,7 @@ private:
 
         // char
         ASSERT_EQUALS("char", typeOf("'a';", "'a'", true));
+        ASSERT_EQUALS("char", typeOf("'\\\'';", "'\\\''", true));
         ASSERT_EQUALS("signed int", typeOf("'a';", "'a'", false));
         ASSERT_EQUALS("wchar_t", typeOf("L'a';", "L'a'", true));
         ASSERT_EQUALS("wchar_t", typeOf("L'a';", "L'a'", false));
