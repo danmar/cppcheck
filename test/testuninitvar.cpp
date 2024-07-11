@@ -6520,6 +6520,28 @@ private:
                         "    printf(\"%s\", p);\n"
                         "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        valueFlowUninit("std::string f() {\n" // #12922
+                        "    std::string a[2];\n"
+                        "    std::array<std::string, 2> b;\n"
+                        "    return a[1] + b.at(1);\n" // don't warn
+                        "}\n"
+                        "struct S { int i; };\n"
+                        "struct T { int i = 0; };\n"
+                        "int g() {\n"
+                        "    std::array<int, 2> a;\n"
+                        "    std::array<S, 2> b;\n"
+                        "    std::array<T, 2> c;\n" // don't warn
+                        "    return a.at(1) + b.at(1).i + c.at(1).i;\n"
+                        "}\n"
+                        "int h() {\n"
+                        "    std::array<int, 2> a;\n"
+                        "    return a[1];\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:12]: (error) Uninitialized variable: a\n"
+                      "[test.cpp:12]: (error) Uninitialized variable: b\n"
+                      "[test.cpp:16]: (error) Uninitialized variable: a\n",
+                      errout_str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
