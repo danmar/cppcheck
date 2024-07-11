@@ -214,6 +214,7 @@ private:
         TEST_CASE(const_shared_ptr);
         TEST_CASE(constPtrToConstPtr);
         TEST_CASE(constTrailingReturnType);
+        TEST_CASE(constRefQualified);
         TEST_CASE(staticArrayPtrOverload);
         TEST_CASE(qualifiedNameMember); // #10872
 
@@ -7493,6 +7494,16 @@ private:
                    "    int x = 1;\n"
                    "    auto get() -> int & { return x; }\n"
                    "};");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void constRefQualified() { // #12920
+        checkConst("class Fred {\n"
+                   "public:\n"
+                   "    const Data& get() & { return data; }\n"
+                   "private:\n"
+                   "    Data data;\n"
+                   "};\n");
         ASSERT_EQUALS("", errout_str());
     }
 
