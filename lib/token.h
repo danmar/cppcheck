@@ -755,7 +755,7 @@ public:
     }
 
     bool isCMultiChar() const {
-        return (((mTokType ==  eChar) && isPrefixStringCharLiteral(mStr, '\'', emptyString)) &&
+        return (((mTokType ==  eChar) && isPrefixStringCharLiteral(mStr, '\'', emptyString)) && !isPrefixStringCharLiteral(mStr, '\'', "\'\\") &&
                 (mStr.length() > 3));
     }
     /**

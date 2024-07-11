@@ -7422,7 +7422,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
             } else if (tok->isLong()) {
                 valuetype.originalTypeName = "wchar_t";
                 valuetype.type = ValueType::Type::WCHAR_T;
-            } else if ((tok->tokType() == Token::eChar) && ((!tok->isCpp() && tok->isCChar()) || (tok->isCMultiChar() && !isPrefixStringCharLiteral(tok->str(), '\'', "\'\\")))) {
+            } else if ((tok->tokType() == Token::eChar) && ((!tok->isCpp() && tok->isCChar()) || (tok->isCMultiChar()))) {
                 valuetype.type = ValueType::Type::INT;
                 valuetype.sign = ValueType::Sign::SIGNED;
             }

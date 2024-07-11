@@ -355,6 +355,14 @@ private:
         ASSERT_EQUALS(false, tok.isUtf32());
         ASSERT_EQUALS(false, tok.isLong());
         ASSERT_EQUALS(true, tok.isCMultiChar());
+
+        tok.str("'\''");
+        ASSERT_EQUALS(true, tok.isCChar());
+        ASSERT_EQUALS(false, tok.isUtf8());
+        ASSERT_EQUALS(false, tok.isUtf16());
+        ASSERT_EQUALS(false, tok.isUtf32());
+        ASSERT_EQUALS(false, tok.isLong());
+        ASSERT_EQUALS(false, tok.isCMultiChar());
     }
 
     void stringTypes() const {
