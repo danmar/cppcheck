@@ -2999,7 +2999,7 @@ void CheckOther::checkNegativeBitwiseShift()
         // don't warn if lhs is a class. this is an overloaded operator then
         if (tok->isCpp()) {
             const ValueType * lhsType = tok->astOperand1()->valueType();
-            if (!lhsType || !lhsType->isIntegral())
+            if (!lhsType || !lhsType->isIntegral() || lhsType->pointer)
                 continue;
         }
 

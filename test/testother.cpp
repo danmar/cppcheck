@@ -9113,6 +9113,13 @@ private:
                       "[test.cpp:2]: (error) Shifting by a negative value is undefined behaviour\n"
                       "[test.cpp:3]: (portability) Shifting a negative value is technically undefined behaviour\n"
                       "[test.cpp:4]: (portability) Shifting a negative value is technically undefined behaviour\n", errout_str());
+
+        check("void f(int i) {\n" // #12916
+              "    if (i < 0) {\n"
+              "        g(\"abc\" << i);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void incompleteArrayFill() {
