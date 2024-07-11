@@ -9059,7 +9059,9 @@ private:
               "    const std::string w(s->f());\n"
               "    if (w.empty()) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (performance, inconclusive) Use const reference for 's' to avoid unnecessary data copying.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:6]: (performance, inconclusive) Use const reference for 'v' to avoid unnecessary data copying.\n"
+                      "[test.cpp:10]: (performance, inconclusive) Use const reference for 'w' to avoid unnecessary data copying.\n",
+                      errout_str());
     }
 
     void checkNegativeShift() {
