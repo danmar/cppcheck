@@ -1594,6 +1594,8 @@ bool Library::isnoreturn(const Token *ftok) const
 {
     if (ftok->function() && ftok->function()->isAttributeNoreturn())
         return true;
+    if (ftok->variable() && ftok->variable()->nameToken()->isAttributeNoreturn())
+        return true;
     if (isNotLibraryFunction(ftok)) {
         if (Token::simpleMatch(ftok->astParent(), ".")) {
             const Token* contTok = ftok->astParent()->astOperand1();

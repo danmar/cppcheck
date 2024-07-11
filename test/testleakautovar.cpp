@@ -131,6 +131,7 @@ private:
         TEST_CASE(exit1);
         TEST_CASE(exit2);
         TEST_CASE(exit3);
+        TEST_CASE(exit4);
 
         // handling function calls
         TEST_CASE(functioncall1);
@@ -1781,6 +1782,19 @@ private:
               "  }"
               "  free(p);\n"
               "}", true);
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void exit4() {
+        check("void __attribute__((__noreturn__)) (*func_notret)(void);\n"
+              "int main(int argc) {\n"
+              "    void* ptr = malloc(1000);\n"
+              "    if (argc == 1) {\n"
+              "        free(ptr);\n"
+              "        func_notret();\n"
+              "    }\n"
+              "    free(ptr);\n"
+              "}");
         ASSERT_EQUALS("", errout_str());
     }
 
