@@ -7077,6 +7077,15 @@ static bool needsInitialization(const Variable* var)
             return true;
         if (var->valueType()->type == ValueType::Type::ITERATOR)
             return true;
+        if (var->isStlType() && var->isArray()) {
+            if (const Token* ctt = var->valueType()->containerTypeToken) {
+                if (ctt->isStandardType())
+                    return true;
+                const Type* ct = ctt->type();
+                if (ct && ct->needInitialization == Type::NeedInitialization::True)
+                    return true;
+            }
+        }
     }
     return false;
 }
