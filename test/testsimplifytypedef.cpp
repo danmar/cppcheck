@@ -220,6 +220,7 @@ private:
         TEST_CASE(simplifyTypedef153);
         TEST_CASE(simplifyTypedef154);
         TEST_CASE(simplifyTypedef155);
+        TEST_CASE(simplifyTypedef156);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -3621,6 +3622,30 @@ private:
                             "extern \"C\" void f(T* t);\n";
         const char exp[] = "struct S { int i ; } ; "
                            "void f ( struct S * t ) ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void simplifyTypedef156() {
+        const char code[] = "typedef struct S_t {\n" // #12930
+                            "    enum E { E0 };\n"
+                            "    E e;\n"
+                            "} S;\n"
+                            "void f(S s) {\n"
+                            "    switch (s.e) {\n"
+                            "    case S::E0:\n"
+                            "        break;\n"
+                            "    }\n"
+                            "}\n";
+        const char exp[] = "struct S_t { "
+                           "enum E { E0 } ; "
+                           "E e ; "
+                           "} ; "
+                           "void f ( struct S_t s ) { "
+                           "switch ( s . e ) { "
+                           "case S_t :: E0 : ; "
+                           "break ; "
+                           "} "
+                           "}";
         ASSERT_EQUALS(exp, tok(code));
     }
 
