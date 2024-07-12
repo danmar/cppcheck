@@ -340,7 +340,7 @@ std::list<Directive> Preprocessor::createDirectives(const simplecpp::TokenList &
                 continue;
             if (tok->next && tok->next->str() == "endfile")
                 continue;
-            Directive directive(tok->location, emptyString);
+            Directive directive(tok->location, "");
             for (const simplecpp::Token *tok2 = tok; tok2 && tok2->location.line == directive.linenr; tok2 = tok2->next) {
                 if (tok2->comment)
                     continue;
