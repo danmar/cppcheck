@@ -356,7 +356,7 @@ private:
         ASSERT_EQUALS(false, tok.isLong());
         ASSERT_EQUALS(true, tok.isCMultiChar());
 
-        tok.str("'\''");
+        tok.str("'\\''");
         ASSERT_EQUALS(true, tok.isCChar());
         ASSERT_EQUALS(false, tok.isUtf8());
         ASSERT_EQUALS(false, tok.isUtf16());
@@ -364,7 +364,7 @@ private:
         ASSERT_EQUALS(false, tok.isLong());
         ASSERT_EQUALS(false, tok.isCMultiChar());
 
-        tok.str("'\r\n'");
+        tok.str("'\\r\\n'");
         ASSERT_EQUALS(false, tok.isCChar());
         ASSERT_EQUALS(false, tok.isUtf8());
         ASSERT_EQUALS(false, tok.isUtf16());
