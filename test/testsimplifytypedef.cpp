@@ -3672,7 +3672,7 @@ private:
                              "    case U::E0:\n"
                              "        break;\n"
                              "    }\n"
-                            "}\n";
+                             "}\n";
         const char exp3[] = "union U_t { "
                             "int i ; "
                             "enum Anonymous0 { E0 } ; "
