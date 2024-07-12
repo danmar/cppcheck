@@ -1742,7 +1742,6 @@ def test_lib_lookup_multi(tmpdir):
     assert exitcode == 0, stdout
     lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
     assert lines == [
-        "handling multiple libraries 'posix,gnu'",
         "looking for library 'posix'",
         "looking for library 'posix.cfg'",
         "looking for library '{}/posix.cfg'".format(exepath),
