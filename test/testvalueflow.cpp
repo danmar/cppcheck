@@ -6304,7 +6304,7 @@ private:
                "  std::array<int,10> ints;\n" // Array size is 10
                "  ints.front();\n"
                "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 10));
+        ASSERT_EQUALS("values.size():2", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 10)); // uninit value
 
         code = "void f() {\n"
                "  std::string s;\n"
