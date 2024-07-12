@@ -751,11 +751,12 @@ public:
 
     bool isCChar() const {
         return (((mTokType == eString) && isPrefixStringCharLiteral(mStr, '"', emptyString)) ||
-                ((mTokType ==  eChar) && isPrefixStringCharLiteral(mStr, '\'', emptyString) && mStr.length() == 3));
+                ((mTokType ==  eChar) && isPrefixStringCharLiteral(mStr, '\'', emptyString) && mStr.length() == 3) ||
+                ((mTokType ==  eChar) && isPrefixStringCharLiteral(mStr, '\'', emptyString) && mStr.compare(0, 2, "\'\\") == 0 && mStr.length() == 4));
     }
 
     bool isCMultiChar() const {
-        return (((mTokType ==  eChar) && isPrefixStringCharLiteral(mStr, '\'', emptyString)) &&
+        return (((mTokType ==  eChar) && isPrefixStringCharLiteral(mStr, '\'', emptyString)) && (mStr.compare(0, 2, "\'\\") != 0 || mStr.length() > 4) &&
                 (mStr.length() > 3));
     }
     /**
