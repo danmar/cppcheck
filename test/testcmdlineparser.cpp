@@ -2464,14 +2464,14 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--library=posix,,gnu", "file.cpp"};
         ASSERT_EQUALS(false, parser->fillSettingsFromArgs(3, argv));
-        ASSERT_EQUALS("cppcheck: Failed to load library configuration file ''. File not found\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: empty library specified.\n", logger->str());
     }
 
     void libraryMultipleEmpty2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--library=posix,gnu,", "file.cpp"};
         ASSERT_EQUALS(false, parser->fillSettingsFromArgs(3, argv));
-        ASSERT_EQUALS("cppcheck: Failed to load library configuration file ''. File not found\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: empty library specified.\n", logger->str());
     }
 
     void suppressXml() {

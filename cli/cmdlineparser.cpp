@@ -870,9 +870,12 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             // --library
             else if (std::strncmp(argv[i], "--library=", 10) == 0) {
-                // TODO: bail out on empty library
                 std::list<std::string> libs = splitString(argv[i] + 10, ',');
                 for (auto& l : libs) {
+                    if (l.empty()) {
+                        mLogger.printError("empty library specified.");
+                        return Result::Fail;
+                    }
                     mSettings.libraries.emplace_back(std::move(l));
                 }
             }
