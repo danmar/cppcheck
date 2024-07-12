@@ -9047,6 +9047,22 @@ private:
                            "[test.cpp:16] -> [test.cpp:18]: (style) The comparison 'c == m->get()' is always true because 'c' and 'm->get()' represent the same value.\n",
                            errout_str());
 
+        check("struct S {\n" // #12925
+              "    const std::string & f() const { return str; }\n"
+              "    std::string str;\n"
+              "};\n"
+              "void f(const S* s) {\n"
+              "    const std::string v{ s->f() };\n"
+              "    if (v.empty()) {}\n"
+              "}\n"
+              "void g(const S* s) {\n"
+              "    const std::string w(s->f());\n"
+              "    if (w.empty()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (performance, inconclusive) Use const reference for 'v' to avoid unnecessary data copying.\n"
+                      "[test.cpp:10]: (performance, inconclusive) Use const reference for 'w' to avoid unnecessary data copying.\n",
+                      errout_str());
+
         check("struct T {\n"
               "    std::string s;\n"
               "    const std::string& get() const { return s; }\n"
