@@ -42,6 +42,9 @@ const char Settings::SafeChecks::XmlInternalFunctions[] = "internal-functions";
 const char Settings::SafeChecks::XmlExternalVariables[] = "external-variables";
 Settings::Settings() : maxCtuDepth(10) {}
 Platform::Platform() = default;
+Library::Library() = default;
+Library::~Library() = default;
+struct Library::LibraryData {};
 bool ImportProject::sourceFileExists(const std::string & /*file*/) {
     return true;
 }

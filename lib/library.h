@@ -31,7 +31,6 @@
 #include <set>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -53,7 +52,11 @@ class CPPCHECKLIB Library {
     friend struct LibraryHelper; // for testing
 
 public:
-    Library() = default;
+    Library();
+    ~Library();
+
+    Library(const Library& other);
+    Library& operator=(const Library& other);
 
     enum class ErrorCode : std::uint8_t {
         OK,
@@ -155,7 +158,7 @@ public:
         Standards standards;
         Severity severity;
     };
-    std::map<std::string, WarnInfo> functionwarn;
+    const std::map<std::string, WarnInfo>& functionwarn() const;
 
     const WarnInfo* getWarnInfo(const Token* ftok) const;
 
@@ -397,7 +400,7 @@ public:
 
     bool isentrypoint(const std::string &func) const;
 
-    std::set<std::string> defines; // to provide some library defines
+    const std::set<std::string>& defines() const; // to provide some library defines
 
     struct SmartPointer {
         std::string name;
@@ -437,14 +440,6 @@ public:
         bool mConstPtr{};
     };
 
-    struct Platform {
-        const PlatformType *platform_type(const std::string &name) const {
-            const std::map<std::string, PlatformType>::const_iterator it = mPlatformTypes.find(name);
-            return (it != mPlatformTypes.end()) ? &(it->second) : nullptr;
-        }
-        std::map<std::string, PlatformType> mPlatformTypes;
-    };
-
     const PlatformType *platform_type(const std::string &name, const std::string & platform) const;
 
     /**
@@ -468,88 +463,8 @@ private:
     // load a <function> xml node
     Error loadFunction(const tinyxml2::XMLElement * const node, const std::string &name, std::set<std::string> &unknown_elements);
 
-    class ExportedFunctions {
-    public:
-        void addPrefix(std::string prefix) {
-            mPrefixes.insert(std::move(prefix));
-        }
-        void addSuffix(std::string suffix) {
-            mSuffixes.insert(std::move(suffix));
-        }
-        bool isPrefix(const std::string& prefix) const {
-            return (mPrefixes.find(prefix) != mPrefixes.end());
-        }
-        bool isSuffix(const std::string& suffix) const {
-            return (mSuffixes.find(suffix) != mSuffixes.end());
-        }
-
-    private:
-        std::set<std::string> mPrefixes;
-        std::set<std::string> mSuffixes;
-    };
-    class CodeBlock {
-    public:
-        CodeBlock() = default;
-
-        void setStart(const char* s) {
-            mStart = s;
-        }
-        void setEnd(const char* e) {
-            mEnd = e;
-        }
-        void setOffset(const int o) {
-            mOffset = o;
-        }
-        void addBlock(const char* blockName) {
-            mBlocks.insert(blockName);
-        }
-        const std::string& start() const {
-            return mStart;
-        }
-        const std::string& end() const {
-            return mEnd;
-        }
-        int offset() const {
-            return mOffset;
-        }
-        bool isBlock(const std::string& blockName) const {
-            return mBlocks.find(blockName) != mBlocks.end();
-        }
-
-    private:
-        std::string mStart;
-        std::string mEnd;
-        int mOffset{};
-        std::set<std::string> mBlocks;
-    };
-    std::unordered_map<std::string, Container> mContainers;
-    std::unordered_map<std::string, Function> mFunctions;
-    std::unordered_map<std::string, SmartPointer> mSmartPointers;
-    enum class FalseTrueMaybe : std::uint8_t { False, True, Maybe };
-    int mAllocId{};
-    std::set<std::string> mFiles;
-    std::map<std::string, AllocFunc> mAlloc; // allocation functions
-    std::map<std::string, AllocFunc> mDealloc; // deallocation functions
-    std::map<std::string, AllocFunc> mRealloc; // reallocation functions
-    std::unordered_map<std::string, FalseTrueMaybe> mNoReturn; // is function noreturn?
-    std::map<std::string, std::string> mReturnValue;
-    std::map<std::string, std::string> mReturnValueType;
-    std::map<std::string, int> mReturnValueContainer;
-    std::map<std::string, std::vector<MathLib::bigint>> mUnknownReturnValues;
-    std::map<std::string, bool> mReportErrors;
-    std::map<std::string, bool> mProcessAfterCode;
-    std::set<std::string> mMarkupExtensions; // file extensions of markup files
-    std::map<std::string, std::set<std::string>> mKeywords;  // keywords for code in the library
-    std::unordered_map<std::string, CodeBlock> mExecutableBlocks; // keywords for blocks of executable code
-    std::map<std::string, ExportedFunctions> mExporters; // keywords that export variables/functions to libraries (meta-code/macros)
-    std::map<std::string, std::set<std::string>> mImporters;  // keywords that import variables/functions
-    std::map<std::string, int> mReflection; // invocation of reflection
-    std::unordered_map<std::string, PodType> mPodTypes; // pod types
-    std::map<std::string, PlatformType> mPlatformTypes; // platform independent typedefs
-    std::map<std::string, Platform> mPlatforms; // platform dependent typedefs
-    std::map<std::pair<std::string,std::string>, TypeCheck> mTypeChecks;
-    std::unordered_map<std::string, NonOverlappingData> mNonOverlappingData;
-    std::unordered_set<std::string> mEntrypoints;
+    struct LibraryData;
+    std::unique_ptr<LibraryData> mData;
 
     const ArgumentChecks * getarg(const Token *ftok, int argnr) const;
 
