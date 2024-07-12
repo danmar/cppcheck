@@ -244,13 +244,14 @@ private:
 
         Library library;
         ASSERT(LibraryHelper::loadxmldata(library, xmldata, sizeof(xmldata)));
-        ASSERT_EQUALS(0, library.functions().at("foo").argumentChecks.at(1).notuninit);
-        ASSERT_EQUALS(true, library.functions().at("foo").argumentChecks.at(2).notnull);
-        ASSERT_EQUALS(true, library.functions().at("foo").argumentChecks.at(3).formatstr);
-        ASSERT_EQUALS(true, library.functions().at("foo").argumentChecks.at(4).strz);
-        ASSERT_EQUALS(false, library.functions().at("foo").argumentChecks.at(4).optional);
-        ASSERT_EQUALS(true, library.functions().at("foo").argumentChecks.at(5).notbool);
-        ASSERT_EQUALS(true, library.functions().at("foo").argumentChecks.at(5).optional);
+        const auto& foo_fn_args = library.functions().at("foo").argumentChecks;
+        ASSERT_EQUALS(0, foo_fn_args.at(1).notuninit);
+        ASSERT_EQUALS(true, foo_fn_args.at(2).notnull);
+        ASSERT_EQUALS(true, foo_fn_args.at(3).formatstr);
+        ASSERT_EQUALS(true, foo_fn_args.at(4).strz);
+        ASSERT_EQUALS(false, foo_fn_args.at(4).optional);
+        ASSERT_EQUALS(true, foo_fn_args.at(5).notbool);
+        ASSERT_EQUALS(true, foo_fn_args.at(5).optional);
     }
 
     void function_arg_any() const {
@@ -622,7 +623,7 @@ private:
         const Library::WarnInfo* a = library.getWarnInfo(tokenList.front());
         const Library::WarnInfo* b = library.getWarnInfo(tokenList.front()->tokAt(4));
 
-        ASSERT_EQUALS(2, library.functionwarn.size());
+        ASSERT_EQUALS(2, library.functionwarn().size());
         ASSERT(a && b);
         if (a && b) {
             ASSERT_EQUALS("Message", a->message);
@@ -1049,15 +1050,15 @@ private:
     void loadLibCombinations() const {
         {
             const Settings s = settingsBuilder().library("std.cfg").library("gnu.cfg").library("bsd.cfg").build();
-            ASSERT_EQUALS(s.library.defines.empty(), false);
+            ASSERT_EQUALS(s.library.defines().empty(), false);
         }
         {
             const Settings s = settingsBuilder().library("std.cfg").library("microsoft_sal.cfg").build();
-            ASSERT_EQUALS(s.library.defines.empty(), false);
+            ASSERT_EQUALS(s.library.defines().empty(), false);
         }
         {
             const Settings s = settingsBuilder().library("std.cfg").library("windows.cfg").library("mfc.cfg").build();
-            ASSERT_EQUALS(s.library.defines.empty(), false);
+            ASSERT_EQUALS(s.library.defines().empty(), false);
         }
     }
 };

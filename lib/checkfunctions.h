@@ -129,7 +129,7 @@ private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckFunctions c(nullptr, settings, errorLogger);
 
-        for (std::map<std::string, Library::WarnInfo>::const_iterator i = settings->library.functionwarn.cbegin(); i != settings->library.functionwarn.cend(); ++i) {
+        for (std::map<std::string, Library::WarnInfo>::const_iterator i = settings->library.functionwarn().cbegin(); i != settings->library.functionwarn().cend(); ++i) {
             c.reportError(nullptr, Severity::style, i->first+"Called", i->second.message);
         }
 

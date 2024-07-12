@@ -693,7 +693,7 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
     if (!cfg.empty())
         splitcfg(cfg, dui.defines, emptyString);
 
-    for (const std::string &def : mSettings.library.defines) {
+    for (const std::string &def : mSettings.library.defines()) {
         const std::string::size_type pos = def.find_first_of(" (");
         if (pos == std::string::npos) {
             dui.defines.push_back(def);

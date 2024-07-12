@@ -9047,7 +9047,7 @@ private:
                            "[test.cpp:16] -> [test.cpp:18]: (style) The comparison 'c == m->get()' is always true because 'c' and 'm->get()' represent the same value.\n",
                            errout_str());
 
-        check("struct S {\n" // #12927
+        check("struct S {\n" // #12925
               "    const std::string & f() const { return str; }\n"
               "    std::string str;\n"
               "};\n"
@@ -9062,6 +9062,16 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (performance, inconclusive) Use const reference for 'v' to avoid unnecessary data copying.\n"
                       "[test.cpp:10]: (performance, inconclusive) Use const reference for 'w' to avoid unnecessary data copying.\n",
                       errout_str());
+
+        check("struct T {\n"
+              "    std::string s;\n"
+              "    const std::string& get() const { return s; }\n"
+              "};\n"
+              "void f(const T& t) {\n"
+              "    const auto s = t.get();\n"
+              "    if (s.empty()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (performance, inconclusive) Use const reference for 's' to avoid unnecessary data copying.\n", errout_str());
     }
 
     void checkNegativeShift() {

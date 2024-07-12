@@ -4328,7 +4328,7 @@ static bool setVarIdParseDeclaration(Token*& tok, const VariableMap& variableMap
         }
         if (Token::Match(tok3, "= %num%"))
             return false;
-        if (bracket && Token::Match(tok1->previous(), "[(,]") && Token::Match(tok3, "[,)]"))
+        if (bracket && Token::Match(tok1->previous(), "[(,]") && Token::Match(tok3, ",|)|%cop%"))
             return false;
     }
 
