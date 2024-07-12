@@ -184,6 +184,7 @@ static void gettokenlistfromvalid(const std::string& valid, bool cpp, TokenList&
 
 Library::Error Library::load(const char exename[], const char path[], bool debug)
 {
+    // TODO: extract split into helper function
     // TODO: remove handling of multiple libraries at once?
     if (std::strchr(path,',') != nullptr) {
         if (debug)
@@ -193,13 +194,13 @@ Library::Error Library::load(const char exename[], const char path[], bool debug
             const std::string::size_type pos = p.find(',');
             if (pos == std::string::npos)
                 break;
-            const Error &e = load(exename, p.substr(0,pos).c_str());
+            const Error &e = load(exename, p.substr(0,pos).c_str(), debug);
             if (e.errorcode != ErrorCode::OK)
                 return e;
             p = p.substr(pos+1);
         }
         if (!p.empty())
-            return load(exename, p.c_str());
+            return load(exename, p.c_str(), debug);
         return Error();
     }
 

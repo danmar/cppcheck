@@ -364,6 +364,9 @@ private:
         TEST_CASE(signedCharUnsignedChar);
         TEST_CASE(library);
         TEST_CASE(libraryMissing);
+        TEST_CASE(libraryMultiple);
+        TEST_CASE(libraryMultipleEmpty);
+        TEST_CASE(libraryMultipleEmpty2);
         TEST_CASE(suppressXml);
         TEST_CASE(suppressXmlEmpty);
         TEST_CASE(suppressXmlMissing);
@@ -2445,6 +2448,34 @@ private:
         ASSERT_EQUALS(1, settings->libraries.size());
         ASSERT_EQUALS("posix2", *settings->libraries.cbegin());
         ASSERT_EQUALS("cppcheck: Failed to load library configuration file 'posix2'. File not found\n", logger->str());
+    }
+
+    void libraryMultiple() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--library=posix,gnu", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        TODO_ASSERT_EQUALS(2, 1, settings->libraries.size());
+        ASSERT_EQUALS("posix,gnu", *settings->libraries.cbegin());
+        /*
+        ASSERT_EQUALS(2, settings->libraries.size());
+        auto it = settings->libraries.cbegin();
+        ASSERT_EQUALS("posix", *it++);
+        ASSERT_EQUALS("gnu", *it);
+        */
+    }
+
+    void libraryMultipleEmpty() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--library=posix,,gnu", "file.cpp"};
+        ASSERT_EQUALS(false, parser->fillSettingsFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: Failed to load library configuration file 'posix,,gnu'. File not found\n", logger->str());
+    }
+
+    void libraryMultipleEmpty2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--library=posix,gnu,", "file.cpp"};
+        ASSERT_EQUALS(false, parser->fillSettingsFromArgs(3, argv));
+        TODO_ASSERT_EQUALS("cppcheck: Failed to load library configuration file 'posix,gnu,'. File not found\n", "cppcheck: error: could not find or open any of the paths given.\n", logger->str());
     }
 
     void suppressXml() {
