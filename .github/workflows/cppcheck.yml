@@ -1,0 +1,28 @@
+name: Cppcheck Analysis
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  cppcheck:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install Cppcheck
+      run: sudo apt-get install cppcheck -y
+
+    - name: Run Cppcheck
+      run: cppcheck --enable=all --inconclusive --std=c++11 -I . .
