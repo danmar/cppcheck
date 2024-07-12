@@ -80,7 +80,7 @@ public:
     template<size_t size>
     bool tokenize(const char (&code)[size],
                   bool cpp = true,
-                  const std::string &configuration = emptyString)
+                  const std::string &configuration = "")
     {
         std::istringstream istr(code);
         if (!list.createTokens(istr, cpp ? "test.cpp" : "test.c"))
@@ -92,7 +92,7 @@ public:
     // TODO: get rid of this
     bool tokenize(const std::string& code,
                   bool cpp = true,
-                  const std::string &configuration = emptyString)
+                  const std::string &configuration = "")
     {
         std::istringstream istr(code);
         if (!list.createTokens(istr, cpp ? "test.cpp" : "test.c"))
