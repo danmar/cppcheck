@@ -3647,6 +3647,44 @@ private:
                            "} "
                            "}";
         ASSERT_EQUALS(exp, tok(code));
+
+        const char code2[] = "typedef enum E_t { E0 } E;\n"
+                             "void f(E e) {\n"
+                             "    switch (e) {\n"
+                             "    case E::E0:\n"
+                             "        break;\n"
+                             "    }\n"
+                            "}\n";
+        const char exp2[] = "enum E_t { E0 } ; ""void f ( enum E_t e ) { "
+                            "switch ( e ) { "
+                            "case E_t :: E0 : ; "
+                            "break ; "
+                            "} "
+                            "}";
+        ASSERT_EQUALS(exp2, tok(code2));
+
+        const char code3[] = "typedef union U_t {\n"
+                             "    int i;\n"
+                             "    enum { E0 } e;\n"
+                             "} U;\n"
+                             "void f(U u) {\n"
+                             "    switch (u.e) {\n"
+                             "    case U::E0:\n"
+                             "        break;\n"
+                             "    }\n"
+                            "}\n";
+        const char exp3[] = "union U_t { "
+                            "int i ; "
+                            "enum Anonymous0 { E0 } ; "
+                            "enum Anonymous0 e ; "
+                            "} ; "
+                            "void f ( union U_t u ) { "
+                            "switch ( u . e ) { "
+                            "case U_t :: E0 : ; "
+                            "break ; "
+                            "} "
+                            "}";
+        ASSERT_EQUALS(exp3, tok(code3));
     }
 
     void simplifyTypedefFunction1() {
