@@ -3655,7 +3655,8 @@ private:
                              "        break;\n"
                              "    }\n"
                             "}\n";
-        const char exp2[] = "enum E_t { E0 } ; ""void f ( enum E_t e ) { "
+        const char exp2[] = "enum E_t { E0 } ; "
+                            "void f ( enum E_t e ) { "
                             "switch ( e ) { "
                             "case E_t :: E0 : ; "
                             "break ; "
