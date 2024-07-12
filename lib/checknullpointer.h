@@ -88,7 +88,7 @@ private:
     void nullPointerError(const Token *tok) {
         ValueFlow::Value v(0);
         v.setKnown();
-        nullPointerError(tok, emptyString, &v, false);
+        nullPointerError(tok, "", &v, false);
     }
     void nullPointerError(const Token *tok, const std::string &varname, const ValueFlow::Value* value, bool inconclusive);
 

@@ -204,7 +204,7 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
     } else if (endsWith(filename, ".vcxproj")) {
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         std::vector<SharedItemsProject> sharedItemsProjects;
-        if (importVcxproj(filename, variables, emptyString, fileFilters, sharedItemsProjects)) {
+        if (importVcxproj(filename, variables, "", fileFilters, sharedItemsProjects)) {
             setRelativePaths(filename);
             return ImportProject::Type::VS_VCXPROJ;
         }
@@ -462,7 +462,7 @@ bool ImportProject::importSln(std::istream &istr, const std::string &path, const
         if (!Path::isAbsolute(vcxproj))
             vcxproj = path + vcxproj;
         vcxproj = Path::fromNativeSeparators(std::move(vcxproj));
-        if (!importVcxproj(vcxproj, variables, emptyString, fileFilters, sharedItemsProjects)) {
+        if (!importVcxproj(vcxproj, variables, "", fileFilters, sharedItemsProjects)) {
             printError("failed to load '" + vcxproj + "' from Visual Studio solution");
             return false;
         }
@@ -1311,7 +1311,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
                 suppressions.push_back(std::move(s));
             }
         } else if (strcmp(name, CppcheckXml::VSConfigurationElementName) == 0)
-            guiProject.checkVsConfigs = readXmlStringList(node, emptyString, CppcheckXml::VSConfigurationName, nullptr);
+            guiProject.checkVsConfigs = readXmlStringList(node, "", CppcheckXml::VSConfigurationName, nullptr);
         else if (strcmp(name, CppcheckXml::PlatformElementName) == 0)
             guiProject.platform = empty_if_null(node->GetText());
         else if (strcmp(name, CppcheckXml::AnalyzeAllVsConfigsElementName) == 0)
@@ -1319,13 +1319,13 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
         else if (strcmp(name, CppcheckXml::Parser) == 0)
             temp.clang = true;
         else if (strcmp(name, CppcheckXml::AddonsElementName) == 0) {
-            const auto& addons = readXmlStringList(node, emptyString, CppcheckXml::AddonElementName, nullptr);
+            const auto& addons = readXmlStringList(node, "", CppcheckXml::AddonElementName, nullptr);
             temp.addons.insert(addons.cbegin(), addons.cend());
         }
         else if (strcmp(name, CppcheckXml::TagsElementName) == 0)
             node->Attribute(CppcheckXml::TagElementName); // FIXME: Write some warning
         else if (strcmp(name, CppcheckXml::ToolsElementName) == 0) {
-            const std::list<std::string> toolList = readXmlStringList(node, emptyString, CppcheckXml::ToolElementName, nullptr);
+            const std::list<std::string> toolList = readXmlStringList(node, "", CppcheckXml::ToolElementName, nullptr);
             for (const std::string &toolName : toolList) {
                 if (toolName == CppcheckXml::ClangTidy)
                     temp.clangTidy = true;

@@ -10926,7 +10926,7 @@ void Tokenizer::getErrorMessages(ErrorLogger& errorLogger, const Settings& setti
     Tokenizer tokenizer(settings, errorLogger);
     tokenizer.invalidConstFunctionTypeError(nullptr);
     // checkLibraryNoReturn
-    tokenizer.unhandled_macro_class_x_y(nullptr, emptyString, emptyString, emptyString, emptyString);
-    tokenizer.macroWithSemicolonError(nullptr, emptyString);
-    tokenizer.unhandledCharLiteral(nullptr, emptyString);
+    tokenizer.unhandled_macro_class_x_y(nullptr, "", "", "", "");
+    tokenizer.macroWithSemicolonError(nullptr, "");
+    tokenizer.unhandledCharLiteral(nullptr, "");
 }

@@ -339,7 +339,7 @@ static std::string getDumpFileName(const Settings& settings, const std::string& 
         extension = "." + std::to_string(settings.pid) + ".dump";
 
     if (!settings.dump && !settings.buildDir.empty())
-        return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, filename, emptyString) + extension;
+        return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, filename, "") + extension;
     return filename + extension;
 }
 
@@ -658,7 +658,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
         mErrorLogger.reportOut(std::string("Checking ") + file.spath() + " ...", Color::FgGreen);
 
     // TODO: get language from FileWithDetails object
-    const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, file.spath(), emptyString);
+    const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, file.spath(), "");
     const std::string clangcmd = analyzerInfo + ".clang-cmd";
     const std::string clangStderr = analyzerInfo + ".clang-stderr";
     const std::string clangAst = analyzerInfo + ".clang-ast";
@@ -773,13 +773,13 @@ unsigned int CppCheck::check(const FileWithDetails &file)
     if (mSettings.clang)
         return checkClang(file);
 
-    return checkFile(file, emptyString);
+    return checkFile(file, "");
 }
 
 unsigned int CppCheck::check(const FileWithDetails &file, const std::string &content)
 {
     std::istringstream iss(content);
-    return checkFile(file, emptyString, &iss);
+    return checkFile(file, "", &iss);
 }
 
 unsigned int CppCheck::check(const FileSettings &fs)
@@ -1564,7 +1564,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const TokenList &list)
             if (pcreCompileErrorStr) {
                 const std::string msg = "pcre_compile failed: " + std::string(pcreCompileErrorStr);
                 const ErrorMessage errmsg(std::list<ErrorMessage::FileLocation>(),
-                                          emptyString,
+                                          "",
                                           Severity::error,
                                           msg,
                                           "pcre_compile",
@@ -1585,7 +1585,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const TokenList &list)
         if (pcreStudyErrorStr) {
             const std::string msg = "pcre_study failed: " + std::string(pcreStudyErrorStr);
             const ErrorMessage errmsg(std::list<ErrorMessage::FileLocation>(),
-                                      emptyString,
+                                      "",
                                       Severity::error,
                                       msg,
                                       "pcre_study",
@@ -1608,7 +1608,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const TokenList &list)
                 const std::string errorMessage = pcreErrorCodeToString(pcreExecRet);
                 if (!errorMessage.empty()) {
                     const ErrorMessage errmsg(std::list<ErrorMessage::FileLocation>(),
-                                              emptyString,
+                                              "",
                                               Severity::error,
                                               std::string("pcre_exec failed: ") + errorMessage,
                                               "pcre_exec",
@@ -1882,9 +1882,9 @@ void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
     s.addEnabled("all");
 
     CppCheck cppcheck(errorlogger, true, nullptr);
-    cppcheck.purgedConfigurationMessage(emptyString,emptyString);
+    cppcheck.purgedConfigurationMessage("","");
     cppcheck.mTooManyConfigs = true;
-    cppcheck.tooManyConfigsError(emptyString,0U);
+    cppcheck.tooManyConfigsError("",0U);
     // TODO: add functions to get remaining error messages
 
     // call all "getErrorMessages" in all registered Check classes
@@ -1913,7 +1913,7 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
 
     const std::string args = "-quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename() + "\" -- " + allIncludes + allDefines;
     std::string output;
-    if (const int exitcode = mExecuteCommand(exe, split(args), emptyString, output)) {
+    if (const int exitcode = mExecuteCommand(exe, split(args), "", output)) {
         std::cerr << "Failed to execute '" << exe << "' (exitcode: " << std::to_string(exitcode) << ")" << std::endl;
         return;
     }
@@ -1923,7 +1923,7 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
     std::string line;
 
     if (!mSettings.buildDir.empty()) {
-        const std::string analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, fileSettings.filename(), emptyString);
+        const std::string analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, fileSettings.filename(), "");
         std::ofstream fcmd(analyzerInfoFile + ".clang-tidy-cmd");
         fcmd << istr.str();
     }

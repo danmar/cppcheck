@@ -404,7 +404,7 @@ void ProcessExecutor::reportInternalChildErr(const std::string &childname, const
     std::list<ErrorMessage::FileLocation> locations;
     locations.emplace_back(childname, 0, 0);
     const ErrorMessage errmsg(std::move(locations),
-                              emptyString,
+                              "",
                               Severity::error,
                               "Internal error: " + msg,
                               "cppcheckError",
