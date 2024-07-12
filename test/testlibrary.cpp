@@ -803,6 +803,8 @@ private:
                                    "    <type string=\"std-like\"/>\n"
                                    "    <access indexOperator=\"array-like\"/>\n"
                                    "  </container>\n"
+                                   "  <container id=\"E\" startPattern=\"std :: E\"/>\n"
+                                   "  <container id=\"F\" startPattern=\"std :: F\" itEndPattern=\":: iterator\"/>\n"
                                    "</def>";
 
         Library library;
@@ -811,6 +813,8 @@ private:
         const Library::Container& A = library.containers().at("A");
         const Library::Container& B = library.containers().at("B");
         const Library::Container& C = library.containers().at("C");
+        const Library::Container& E = library.containers().at("E");
+        const Library::Container& F = library.containers().at("F");
 
         ASSERT_EQUALS(A.type_templateArgNo, 1);
         ASSERT_EQUALS(A.size_templateArgNo, 4);
@@ -850,6 +854,14 @@ private:
         ASSERT_EQUALS(C.size_templateArgNo, -1);
         ASSERT_EQUALS(C.stdStringLike, true);
         ASSERT_EQUALS(C.arrayLike_indexOp, true);
+
+        ASSERT_EQUALS(E.startPattern, "std :: E");
+        ASSERT_EQUALS(E.endPattern, "");
+        ASSERT_EQUALS(E.itEndPattern, "");
+
+        ASSERT_EQUALS(F.startPattern, "std :: F");
+        ASSERT_EQUALS(F.endPattern, "");
+        ASSERT_EQUALS(F.itEndPattern, ":: iterator");
 
         {
             const SimpleTokenizer var(*this, "std::A<int> a;");
@@ -913,6 +925,68 @@ private:
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             ASSERT(!library.detectContainerOrIterator(var.tokens()));
+        }
+
+        {
+            const SimpleTokenizer var(*this, "std::E e;");
+            ASSERT(library.detectContainer(var.tokens()));
+            ASSERT(!library.detectIterator(var.tokens()));
+            bool isIterator;
+            ASSERT_EQUALS(&E, library.detectContainerOrIterator(var.tokens(), &isIterator));
+            ASSERT(!isIterator);
+            ASSERT(!library.detectContainerOrIterator(var.tokens(), nullptr, true));
+        }
+
+        {
+            const SimpleTokenizer var(*this, "E e;");
+            ASSERT(!library.detectContainer(var.tokens()));
+            ASSERT(!library.detectIterator(var.tokens()));
+            ASSERT(!library.detectContainerOrIterator(var.tokens()));
+            ASSERT_EQUALS(&E, library.detectContainerOrIterator(var.tokens(), nullptr, true));
+        }
+
+        {
+            const SimpleTokenizer var(*this, "std::E::iterator I;");
+            ASSERT(!library.detectContainer(var.tokens()));
+            ASSERT(!library.detectIterator(var.tokens()));
+            ASSERT(!library.detectContainerOrIterator(var.tokens()));
+            ASSERT(!library.detectContainerOrIterator(var.tokens(), nullptr, true));
+        }
+
+        {
+            const SimpleTokenizer var(*this, "std::E::size_type p;");
+            ASSERT(!library.detectContainer(var.tokens()));
+            ASSERT(!library.detectIterator(var.tokens()));
+            ASSERT(!library.detectContainerOrIterator(var.tokens()));
+            ASSERT(!library.detectContainerOrIterator(var.tokens(), nullptr, true));
+        }
+
+        {
+            const SimpleTokenizer var(*this, "std::F f;");
+            ASSERT(library.detectContainer(var.tokens()));
+            ASSERT(!library.detectIterator(var.tokens()));
+            bool isIterator;
+            ASSERT_EQUALS(&F, library.detectContainerOrIterator(var.tokens(), &isIterator));
+            ASSERT(!isIterator);
+        }
+
+        {
+            const SimpleTokenizer var(*this, "std::F::iterator I;");
+            ASSERT(!library.detectContainer(var.tokens()));
+            TODO_ASSERT(library.detectIterator(var.tokens()));
+            bool isIterator;
+            TODO_ASSERT_EQUALS((intptr_t)&F, 0, (intptr_t)library.detectContainerOrIterator(var.tokens(), &isIterator));
+            TODO_ASSERT(isIterator);
+        }
+
+        {
+            const SimpleTokenizer var(*this, "F::iterator I;");
+            ASSERT(!library.detectContainer(var.tokens()));
+            ASSERT(!library.detectIterator(var.tokens()));
+            ASSERT(!library.detectContainerOrIterator(var.tokens()));
+            bool isIterator;
+            TODO_ASSERT_EQUALS((intptr_t)&F, 0, (intptr_t)library.detectContainerOrIterator(var.tokens(), &isIterator, true));
+            TODO_ASSERT(isIterator);
         }
     }
 
