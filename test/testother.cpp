@@ -9046,6 +9046,16 @@ private:
         TODO_ASSERT_EQUALS("",
                            "[test.cpp:16] -> [test.cpp:18]: (style) The comparison 'c == m->get()' is always true because 'c' and 'm->get()' represent the same value.\n",
                            errout_str());
+
+        check("struct T {\n"
+              "    std::string s;\n"
+              "    const std::string& get() const { return s; }\n"
+              "};\n"
+              "void f(const T& t) {\n"
+              "    const auto s = t.get();\n"
+              "    if (s.empty()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (performance, inconclusive) Use const reference for 's' to avoid unnecessary data copying.\n", errout_str());
     }
 
     void checkNegativeShift() {
