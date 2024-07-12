@@ -30,6 +30,7 @@
 #include <functional>
 #include <initializer_list>
 #include <limits>
+#include <list>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -389,5 +390,13 @@ static inline T* empty_if_null(T* p)
 {
     return p ? p : "";
 }
+
+/**
+ * Split string by given sperator.
+ * @param str The string to split
+ * @param sep The seperator
+ * @return The list of seperate strings (including empty ones). The whole input string if no seperator found.
+ */
+CPPCHECKLIB std::list<std::string> splitString(const std::string& str, char sep);
 
 #endif

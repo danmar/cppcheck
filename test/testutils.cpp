@@ -41,6 +41,7 @@ private:
         TEST_CASE(trim);
         TEST_CASE(findAndReplace);
         TEST_CASE(replaceEscapeSequences);
+        TEST_CASE(splitString);
     }
 
     void isValidGlobPattern() const {
@@ -437,6 +438,50 @@ private:
         ASSERT_EQUALS("\t", ::replaceEscapeSequences("\\t"));
         ASSERT_EQUALS("\\", ::replaceEscapeSequences("\\\\"));
         ASSERT_EQUALS("\"", ::replaceEscapeSequences("\\\""));
+    }
+
+    void splitString() const {
+        {
+            const auto l = ::splitString("test", ',');
+            ASSERT_EQUALS(1, l.size());
+            ASSERT_EQUALS("test", *l.cbegin());
+        }
+        {
+            const auto l = ::splitString("test,test", ';');
+            ASSERT_EQUALS(1, l.size());
+            ASSERT_EQUALS("test,test", *l.cbegin());
+        }
+        {
+            const auto l = ::splitString("test,test", ',');
+            ASSERT_EQUALS(2, l.size());
+            auto it = l.cbegin();
+            ASSERT_EQUALS("test", *it++);
+            ASSERT_EQUALS("test", *it);
+        }
+        {
+            const auto l = ::splitString("test,test,", ',');
+            ASSERT_EQUALS(3, l.size());
+            auto it = l.cbegin();
+            ASSERT_EQUALS("test", *it++);
+            ASSERT_EQUALS("test", *it++);
+            ASSERT_EQUALS("", *it);
+        }
+        {
+            const auto l = ::splitString("test,,test", ',');
+            ASSERT_EQUALS(3, l.size());
+            auto it = l.cbegin();
+            ASSERT_EQUALS("test", *it++);
+            ASSERT_EQUALS("", *it++);
+            ASSERT_EQUALS("test", *it);
+        }
+        {
+            const auto l = ::splitString(",test,test", ',');
+            ASSERT_EQUALS(3, l.size());
+            auto it = l.cbegin();
+            ASSERT_EQUALS("", *it++);
+            ASSERT_EQUALS("test", *it++);
+            ASSERT_EQUALS("test", *it);
+        }
     }
 };
 
