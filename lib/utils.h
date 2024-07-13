@@ -390,7 +390,7 @@ CPPCHECKLIB inline std::string replaceEscapeSequences(const std::string &source)
                 if (i + 1 < source.size() && std::isxdigit(source[i+1]))
                     value += source[i++ + 1];
                 if (i + 1 < source.size() && std::isxdigit(source[i+1]))
-                    value += source[i++ + 2];
+                    value += source[i++ + 1];
                 result += static_cast<char>(std::stoi(value, nullptr, 16));
             } else if (source[i+1] == '0') {
                 std::string value;

@@ -40,6 +40,7 @@ private:
         TEST_CASE(startsWith);
         TEST_CASE(trim);
         TEST_CASE(findAndReplace);
+        TEST_CASE(replaceEscapeSequences);
     }
 
     void isValidGlobPattern() const {
@@ -426,6 +427,16 @@ private:
             ::findAndReplace(s, "test", "tset");
             ASSERT_EQUALS("", s);
         }
+    }
+
+    void replaceEscapeSequences() {
+        ASSERT_EQUALS("\x30", ::replaceEscapeSequences("\\x30"));
+        ASSERT_EQUALS("\030", ::replaceEscapeSequences("\\030"));
+        ASSERT_EQUALS("\r", ::replaceEscapeSequences("\\r"));
+        ASSERT_EQUALS("\n", ::replaceEscapeSequences("\\n"));
+        ASSERT_EQUALS("\t", ::replaceEscapeSequences("\\t"));
+        ASSERT_EQUALS("\\", ::replaceEscapeSequences("\\\\"));
+        ASSERT_EQUALS("\"", ::replaceEscapeSequences("\\\""));
     }
 };
 
