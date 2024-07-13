@@ -1149,6 +1149,16 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
     }
 }
 
+static bool isReturnedByRef(const Variable* var, const Function* func)
+{
+    if (!func || !Function::returnsReference(func, true))
+        return false;
+    const std::vector<const Token*> returns = Function::findReturns(func);
+    return std::any_of(returns.begin(), returns.end(), [var](const Token* tok) {
+        return tok->varId() == var->declarationId();
+    });
+}
+
 void CheckUnusedVar::checkFunctionVariableUsage()
 {
     if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->checkLibrary && !mSettings->isPremiumEnabled("unusedVariable"))
@@ -1364,7 +1374,9 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             }
             // variable has been read but not written
             else if (!usage._write && !usage._allocateMemory && var && !var->isStlType() && !isEmptyType(var->type()) &&
-                     !(var->type() && var->type()->needInitialization == Type::NeedInitialization::False))
+                     !(var->type() && var->type()->needInitialization == Type::NeedInitialization::False) &&
+                     !(var->valueType() && var->valueType()->container) &&
+                     !(var->isStatic() && isReturnedByRef(var, scope->function)))
                 unassignedVariableError(usage._var->nameToken(), varname);
             else if (!usage._var->isMaybeUnused() && !usage._modified && !usage._read && var) {
                 const Token* vnt = var->nameToken();

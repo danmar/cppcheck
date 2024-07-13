@@ -5887,6 +5887,16 @@ private:
                               "    return k;\n"
                               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        functionVariableUsage("int& f() {\n" // #12935
+                              "    static int i;\n"
+                              "    return i;\n"
+                              "}\n"
+                              "int* g() {\n"
+                              "    static int j;\n"
+                              "    return &j;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void localvarextern() {
