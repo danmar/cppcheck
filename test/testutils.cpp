@@ -429,7 +429,7 @@ private:
         }
     }
 
-    void replaceEscapeSequences() {
+    void replaceEscapeSequences() const {
         ASSERT_EQUALS("\x30", ::replaceEscapeSequences("\\x30"));
         ASSERT_EQUALS("\030", ::replaceEscapeSequences("\\030"));
         ASSERT_EQUALS("\r", ::replaceEscapeSequences("\\r"));
