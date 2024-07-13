@@ -37,18 +37,18 @@ private:
                                    "<def>\n"
                                    "  <podtype name=\"uint8_t\" sign=\"u\" size=\"1\"/>\n"
                                    "  <memory>\n"
-                                   "    <alloc>malloc</alloc>\n"
-                                   "    <realloc>realloc</realloc>\n"
-                                   "    <dealloc>free</dealloc>\n"
+                                   "    <alloc>malloc,std::malloc</alloc>\n"
+                                   "    <realloc>realloc,std::realloc</realloc>\n"
+                                   "    <dealloc>free,std::free</dealloc>\n"
                                    "  </memory>\n"
                                    "  <resource>\n"
                                    "    <alloc>socket</alloc>\n"
                                    "    <dealloc>close</dealloc>\n"
                                    "  </resource>\n"
                                    "  <resource>\n"
-                                   "    <alloc>fopen</alloc>\n"
-                                   "    <realloc realloc-arg=\"3\">freopen</realloc>\n"
-                                   "    <dealloc>fclose</dealloc>\n"
+                                   "    <alloc>fopen,std::fopen</alloc>\n"
+                                   "    <realloc realloc-arg=\"3\">freopen,std::freopen</realloc>\n"
+                                   "    <dealloc>fclose,std::fclose</dealloc>\n"
                                    "  </resource>\n"
                                    "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
                                    "  <smart-pointer class-name=\"std::unique_ptr\">\n"
@@ -622,16 +622,16 @@ private:
               "}\n", true);
         ASSERT_EQUALS("", errout_str());
 
-        check("struct S {n" // #12890
-              "        int** p;n"
-              "    S() {n"
-              "        p = std::malloc(sizeof(int*));n"
-              "        p[0] = new int;n"
-              "    }n"
-              "    ~S() {n"
-              "        delete p[0];n"
-              "        std::free(p);n"
-              "    }n"
+        check("struct S {\n" // #12890
+              "        int** p;\n"
+              "    S() {\n"
+              "        p = std::malloc(sizeof(int*));\n"
+              "        p[0] = new int;\n"
+              "    }\n"
+              "    ~S() {\n"
+              "        delete p[0];\n"
+              "        std::free(p);\n"
+              "    }\n"
               "};\n", true);
         ASSERT_EQUALS("", errout_str());
     }
