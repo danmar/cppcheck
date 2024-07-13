@@ -364,6 +364,12 @@ CPPCHECKLIB std::string trim(const std::string& s, const std::string& t = " \t")
  */
 CPPCHECKLIB void findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith);
 
+/**
+ * Replace all escape sequences in the given string.
+ * @param source The string that contains escape sequences
+ */
+CPPCHECKLIB std::string replaceEscapeSequences(const std::string &source);
+
 namespace cppcheck
 {
     NORETURN inline void unreachable()
