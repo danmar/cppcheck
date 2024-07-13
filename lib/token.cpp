@@ -729,29 +729,10 @@ nonneg int Token::getStrLength(const Token *tok)
     assert(tok != nullptr);
     assert(tok->mTokType == eString);
 
-    int len = 0;
-    // cppcheck-suppress shadowFunction - TODO: fix this
-    const std::string str(getStringLiteral(tok->str()));
-    std::string::const_iterator it = str.cbegin();
-    const std::string::const_iterator end = str.cend();
+    const std::string s(replaceEscapeSequences(getStringLiteral(tok->str())));
 
-    while (it != end) {
-        if (*it == '\\') {
-            ++it;
-
-            // string ends at '\0'
-            if (*it == '0')
-                return len;
-        }
-
-        if (*it == '\0')
-            return len;
-
-        ++it;
-        ++len;
-    }
-
-    return len;
+    const auto pos = s.find('\0');
+    return pos < s.size() ? pos : s.size();
 }
 
 nonneg int Token::getStrArraySize(const Token *tok)
