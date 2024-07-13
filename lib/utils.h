@@ -368,47 +368,7 @@ CPPCHECKLIB void findAndReplace(std::string &source, const std::string &searchFo
  * Replace all escape sequences in the given string.
  * @param source The string that contains escape sequences
  */
-CPPCHECKLIB inline std::string replaceEscapeSequences(const std::string &source) {
-    std::string result;
-    result.reserve(source.size());
-    for (std::size_t i = 0; i < source.size(); ++i) {
-        if (source[i] != '\\' || i + 1 >= source.size())
-            result += source[i];
-        else {
-            if (source[i+1] == 'n') {
-                result += '\n';
-                ++i;
-            } else if (source[i+1] == 'r') {
-                result += '\r';
-                ++i;
-            } else if (source[i+1] == 't') {
-                result += '\t';
-                ++i;
-            } else if (source[i+1] == 'x') {
-                std::string value = "0";
-                i++;
-                if (i + 1 < source.size() && std::isxdigit(source[i+1]))
-                    value += source[i++ + 1];
-                if (i + 1 < source.size() && std::isxdigit(source[i+1]))
-                    value += source[i++ + 1];
-                result += static_cast<char>(std::stoi(value, nullptr, 16));
-            } else if (source[i+1] == '0') {
-                std::string value;
-                if (i + 1 < source.size() && source[i+1] >= '0' && source[i+1] <= '7')
-                    value += source[i++ + 1];
-                if (i + 1 < source.size() && source[i+1] >= '0' && source[i+1] <= '7')
-                    value += source[i++ + 1];
-                if (i + 1 < source.size() && source[i+1] >= '0' && source[i+1] <= '7')
-                    value += source[i++ + 1];
-                result += static_cast<char>(std::stoi(value, nullptr, 8));
-            } else {
-                result += source[i+1];
-                ++i;
-            }
-        }
-    }
-    return result;
-}
+CPPCHECKLIB std::string replaceEscapeSequences(const std::string &source);
 
 namespace cppcheck
 {
