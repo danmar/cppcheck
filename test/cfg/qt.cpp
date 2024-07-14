@@ -790,3 +790,9 @@ void constVariablePointer_QVector(QVector<int*>& qv, int* p)
 {
     qv.push_back(p); // #12661
 }
+
+const QString& unassignedVariable_static_QString() // #12935
+{
+    static QString qs;
+    return qs;
+}
