@@ -550,7 +550,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                         if (astIsVariableComparison(tok3, "!=", "0", &vartok) &&
                             (notzero.find(vartok->varId()) != notzero.end()))
                             varInfo2.clear();
-                        
+
                         if (std::any_of(varInfo1.alloctype.begin(), varInfo1.alloctype.end(), [&](const std::pair<int, VarInfo::AllocInfo>& info) {
                             if (info.second.status != VarInfo::ALLOC)
                                 return false;
