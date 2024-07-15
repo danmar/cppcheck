@@ -220,6 +220,7 @@ private:
         TEST_CASE(simplifyTypedef153);
         TEST_CASE(simplifyTypedef154);
         TEST_CASE(simplifyTypedef155);
+        TEST_CASE(simplifyTypedef156);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -3622,6 +3623,69 @@ private:
         const char exp[] = "struct S { int i ; } ; "
                            "void f ( struct S * t ) ;";
         ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void simplifyTypedef156() {
+        const char code[] = "typedef struct S_t {\n" // #12930
+                            "    enum E { E0 };\n"
+                            "    E e;\n"
+                            "} S;\n"
+                            "void f(S s) {\n"
+                            "    switch (s.e) {\n"
+                            "    case S::E0:\n"
+                            "        break;\n"
+                            "    }\n"
+                            "}\n";
+        const char exp[] = "struct S_t { "
+                           "enum E { E0 } ; "
+                           "E e ; "
+                           "} ; "
+                           "void f ( struct S_t s ) { "
+                           "switch ( s . e ) { "
+                           "case S_t :: E0 : ; "
+                           "break ; "
+                           "} "
+                           "}";
+        ASSERT_EQUALS(exp, tok(code));
+
+        const char code2[] = "typedef enum E_t { E0 } E;\n"
+                             "void f(E e) {\n"
+                             "    switch (e) {\n"
+                             "    case E::E0:\n"
+                             "        break;\n"
+                             "    }\n"
+                             "}\n";
+        const char exp2[] = "enum E_t { E0 } ; "
+                            "void f ( enum E_t e ) { "
+                            "switch ( e ) { "
+                            "case E_t :: E0 : ; "
+                            "break ; "
+                            "} "
+                            "}";
+        ASSERT_EQUALS(exp2, tok(code2));
+
+        const char code3[] = "typedef union U_t {\n"
+                             "    int i;\n"
+                             "    enum { E0 } e;\n"
+                             "} U;\n"
+                             "void f(U u) {\n"
+                             "    switch (u.e) {\n"
+                             "    case U::E0:\n"
+                             "        break;\n"
+                             "    }\n"
+                             "}\n";
+        const char exp3[] = "union U_t { "
+                            "int i ; "
+                            "enum Anonymous0 { E0 } ; "
+                            "enum Anonymous0 e ; "
+                            "} ; "
+                            "void f ( union U_t u ) { "
+                            "switch ( u . e ) { "
+                            "case U_t :: E0 : ; "
+                            "break ; "
+                            "} "
+                            "}";
+        ASSERT_EQUALS(exp3, tok(code3));
     }
 
     void simplifyTypedefFunction1() {

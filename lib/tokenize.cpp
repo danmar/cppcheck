@@ -792,7 +792,7 @@ namespace {
             }
 
             if (Token::Match(tok, "%name% ::")) {
-                if (Token::Match(mRangeType.first, "const| struct|class %name% %name% ;")) {
+                if (Token::Match(mRangeType.first, "const| struct|class|union|enum %name% %name%|{")) {
                     tok->originalName(tok->str());
                     tok->str(mRangeType.second->strAt(-1));
                 } else {
