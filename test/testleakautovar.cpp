@@ -439,7 +439,7 @@ private:
     }
 
     void assign22() { // #9139
-        const Settings s = settingsBuilder().library("posix.cfg").library("std.cfg").build();
+        const Settings s = settingsBuilder().library("posix.cfg").build();
         check("void f(char tempFileName[256]) {\n"
               "    const int fd = socket(AF_INET, SOCK_PACKET, 0 );\n"
               "}", true, &s);
