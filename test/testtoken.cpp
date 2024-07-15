@@ -109,6 +109,7 @@ private:
         TEST_CASE(findClosingBracket);
         TEST_CASE(findClosingBracket2);
         TEST_CASE(findClosingBracket3);
+        TEST_CASE(findClosingBracket4);
 
         TEST_CASE(expressionString);
 
@@ -1188,6 +1189,16 @@ private:
                                   "void f();\n");
         const Token* const t = Token::findsimplematch(var.tokens(), "<");
         ASSERT(t && Token::simpleMatch(t->findClosingBracket(), ">"));
+    }
+
+    void findClosingBracket4() {
+        const SimpleTokenizer var(*this, // #12923
+                                  "template<template<class E> class T = std::vector, class U = std::vector<int>, class V = void>\n"
+                                  "class C;\n");
+        const Token *const t = Token::findsimplematch(var.tokens(), "<");
+        ASSERT(t);
+        const Token *const closing = t->findClosingBracket();
+        ASSERT(closing && closing == var.tokens()->tokAt(28));
     }
 
     void expressionString() {
