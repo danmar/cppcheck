@@ -5128,3 +5128,13 @@ std::size_t variableScope_cstr(const char* p) {
     }
     return std::strlen(p);
 }
+
+void unusedvar_stringstream(const char* p)
+{
+    // cppcheck-suppress unreadVariable
+    std::istringstream istr(p);
+    // cppcheck-suppress unreadVariable
+    std::ostringstream ostr(p);
+    // cppcheck-suppress unreadVariable
+    std::stringstream sstr(p);
+}
