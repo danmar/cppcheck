@@ -6549,8 +6549,10 @@ private:
                         "    std::array<int, 1> b;\n"
                         "    auto it = b.begin();\n"
                         "    *it = 0;\n"
+                        "    std::array<int, 1> c;\n"
+                        "    return c.front();\n"
                         "}\n");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: c\n", errout_str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
