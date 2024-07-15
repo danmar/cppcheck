@@ -1641,7 +1641,7 @@ void CheckUninitVar::valueFlowUninit()
                     const bool isarray = tok->variable()->isArray();
                     if (isarray && tok->variable()->isMember())
                         continue; // Todo: this is a bailout
-                    if (isarray && tok->variable()->isStlType() && Token::simpleMatch(tok->astParent(), "."))
+                    if (isarray && tok->variable()->isStlType() && Token::simpleMatch(tok->astParent(), ".") && astContainerYield(tok) != Library::Container::Yield::AT_INDEX)
                         continue;
                     const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, *mSettings);
                     uninitderef = deref && v->indirect == 0;
