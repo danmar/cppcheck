@@ -1641,8 +1641,11 @@ void CheckUninitVar::valueFlowUninit()
                     const bool isarray = tok->variable()->isArray();
                     if (isarray && tok->variable()->isMember())
                         continue; // Todo: this is a bailout
-                    if (isarray && tok->variable()->isStlType() && Token::simpleMatch(tok->astParent(), ".") && astContainerYield(tok) != Library::Container::Yield::AT_INDEX)
-                        continue;
+                    if (isarray && tok->variable()->isStlType() && Token::simpleMatch(tok->astParent(), ".")) {
+                        const auto yield = astContainerYield(tok);
+                        if (yield != Library::Container::Yield::AT_INDEX && yield != Library::Container::Yield::ITEM)
+                            continue;
+                    }
                     const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, *mSettings);
                     uninitderef = deref && v->indirect == 0;
                     const bool isleaf = isLeafDot(tok) || uninitderef;
