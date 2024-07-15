@@ -5131,10 +5131,10 @@ std::size_t variableScope_cstr(const char* p) {
 
 void unusedvar_stringstream(const char* p)
 {
-    // cppcheck-suppress unusedvar
+    // cppcheck-suppress unreadVariable
     std::istringstream istr(p);
-    // cppcheck-suppress unusedvar
+    // cppcheck-suppress unreadVariable
     std::ostringstream ostr(p);
-    // cppcheck-suppress unusedvar
+    // cppcheck-suppress unreadVariable
     std::stringstream sstr(p);
 }
