@@ -184,23 +184,8 @@ static void gettokenlistfromvalid(const std::string& valid, bool cpp, TokenList&
 
 Library::Error Library::load(const char exename[], const char path[], bool debug)
 {
-    // TODO: remove handling of multiple libraries at once?
     if (std::strchr(path,',') != nullptr) {
-        if (debug)
-            std::cout << "handling multiple libraries '" + std::string(path) + "'" << std::endl;
-        std::string p(path);
-        for (;;) {
-            const std::string::size_type pos = p.find(',');
-            if (pos == std::string::npos)
-                break;
-            const Error &e = load(exename, p.substr(0,pos).c_str());
-            if (e.errorcode != ErrorCode::OK)
-                return e;
-            p = p.substr(pos+1);
-        }
-        if (!p.empty())
-            return load(exename, p.c_str());
-        return Error();
+        throw std::runtime_error("handling of multiple libraries not supported");
     }
 
     const bool is_abs_path = Path::isAbsolute(path);

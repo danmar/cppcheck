@@ -1728,3 +1728,27 @@ def test_lib_lookup_nofile(tmpdir):
         "looking for library '{}/cfg/gtk.cfg'".format(exepath),
         'Checking {} ...'.format(test_file)
     ]
+
+
+def test_lib_lookup_multi(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt'):
+        pass
+
+    exitcode, stdout, _, exe = cppcheck_ex(['--library=posix,gnu', '--debug-lookup', test_file])
+    exepath = os.path.dirname(exe)
+    if sys.platform == 'win32':
+        exepath = exepath.replace('\\', '/')
+    assert exitcode == 0, stdout
+    lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
+    assert lines == [
+        "looking for library 'posix'",
+        "looking for library 'posix.cfg'",
+        "looking for library '{}/posix.cfg'".format(exepath),
+        "looking for library '{}/cfg/posix.cfg'".format(exepath),
+        "looking for library 'gnu'",
+        "looking for library 'gnu.cfg'",
+        "looking for library '{}/gnu.cfg'".format(exepath),
+        "looking for library '{}/cfg/gnu.cfg'".format(exepath),
+        'Checking {} ...'.format(test_file)
+    ]
