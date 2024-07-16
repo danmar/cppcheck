@@ -3296,6 +3296,8 @@ void CheckClass::checkUselessOverride()
             if (const Token* const call = getSingleFunctionCall(func.functionScope)) {
                 if (call->function() != baseFunc)
                     continue;
+                if (Token::simpleMatch(call->astParent(), "."))
+                    continue;
                 std::vector<const Token*> funcArgs = getArguments(func.tokenDef);
                 std::vector<const Token*> callArgs = getArguments(call);
                 if (funcArgs.size() != callArgs.size() ||
