@@ -5894,6 +5894,14 @@ private:
             const Token* s = Token::findsimplematch(tokenizer.tokens(), "string");
             ASSERT(s && !s->isIncompleteVar());
         }
+        {
+            GET_SYMBOL_DB("void f() {\n" // #12583
+                          "    using namespace N;\n"
+                          "}\n");
+            ASSERT(db && errout_str().empty());
+            const Token* N = Token::findsimplematch(tokenizer.tokens(), "N");
+            ASSERT(N && !N->isIncompleteVar());
+        }
     }
 
     void enum1() {
