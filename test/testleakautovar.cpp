@@ -602,7 +602,7 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         check("struct S {\n" // #12890
-              "        int** p;\n"
+              "    int** p;\n"
               "    S() {\n"
               "        p = std::malloc(sizeof(int*));\n"
               "        p[0] = new int;\n"
