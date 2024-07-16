@@ -8732,6 +8732,16 @@ private:
                              "    virtual void g() { std::cout << \"Derived\\n\"; }\n"
                              "};\n");
         ASSERT_EQUALS("", errout_str());
+
+        checkUselessOverride("struct B {\n" // #12946
+                             "    virtual int f() { return i; }\n"
+                             "    int i;\n"
+                             "};\n"
+                             "struct D : B {\n"
+                             "    int f() override { return b.f(); }\n"
+                             "    B b;\n"
+                             "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
 #define checkUnsafeClassRefMember(code) checkUnsafeClassRefMember_(code, __FILE__, __LINE__)
