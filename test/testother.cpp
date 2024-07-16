@@ -3638,7 +3638,7 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'r' can be declared as reference to const\n", errout_str());
 
         check("std::iostream& get();\n" // #12940
-              "std::iostream & Fun() {\n"
+              "std::iostream& Fun() {\n"
               "    auto lam = []() -> std::iostream& {\n"
               "        std::iostream& ios = get();\n"
               "        return ios;\n"
