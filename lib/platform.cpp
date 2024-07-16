@@ -150,7 +150,7 @@ bool Platform::set(Type t)
     return false;
 }
 
-bool Platform::set(const std::string& platformstr, std::string& errstr, const std::vector<std::string>& paths, bool verbose)
+bool Platform::set(const std::string& platformstr, std::string& errstr, const std::vector<std::string>& paths, bool debug)
 {
     if (platformstr == "win32A")
         set(Type::Win32A);
@@ -173,9 +173,9 @@ bool Platform::set(const std::string& platformstr, std::string& errstr, const st
     else {
         bool found = false;
         for (const std::string& path : paths) {
-            if (verbose)
+            if (debug)
                 std::cout << "looking for platform '" + platformstr + "' in '" + path + "'" << std::endl;
-            if (loadFromFile(path.c_str(), platformstr, verbose)) {
+            if (loadFromFile(path.c_str(), platformstr, debug)) {
                 found = true;
                 break;
             }
@@ -189,7 +189,7 @@ bool Platform::set(const std::string& platformstr, std::string& errstr, const st
     return true;
 }
 
-bool Platform::loadFromFile(const char exename[], const std::string &filename, bool verbose)
+bool Platform::loadFromFile(const char exename[], const std::string &filename, bool debug)
 {
     // TODO: only append .xml if missing
     // TODO: use native separators
@@ -216,15 +216,15 @@ bool Platform::loadFromFile(const char exename[], const std::string &filename, b
     tinyxml2::XMLDocument doc;
     bool success = false;
     for (const std::string & f : filenames) {
-        if (verbose)
+        if (debug)
             std::cout << "try to load platform file '" << f << "' ... ";
         if (doc.LoadFile(f.c_str()) == tinyxml2::XML_SUCCESS) {
-            if (verbose)
+            if (debug)
                 std::cout << "Success" << std::endl;
             success = true;
             break;
         }
-        if (verbose)
+        if (debug)
             std::cout << doc.ErrorStr() << std::endl;
     }
     if (!success)

@@ -395,6 +395,12 @@ private:
         TEST_CASE(cppHeaderProbe2);
         TEST_CASE(noCppHeaderProbe);
         TEST_CASE(noCppHeaderProbe2);
+        TEST_CASE(debugLookup);
+        TEST_CASE(debugLookupAll);
+        TEST_CASE(debugLookupAddon);
+        TEST_CASE(debugLookupConfig);
+        TEST_CASE(debugLookupLibrary);
+        TEST_CASE(debugLookupPlatform);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -2668,6 +2674,51 @@ private:
         const char * const argv[] = {"cppcheck", "--cpp-header-probe", "--no-cpp-header-probe", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS(false, settings->cppHeaderProbe);
+    }
+
+    void debugLookup() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-lookup", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings->debuglookup);
+        GET_REDIRECT_OUTPUT; // ignore config lookup output
+    }
+
+    void debugLookupAll() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-lookup=all", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings->debuglookup);
+        GET_REDIRECT_OUTPUT; // ignore config lookup output
+    }
+
+    void debugLookupAddon() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-lookup=addon", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings->debuglookupAddon);
+    }
+
+    void debugLookupConfig() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-lookup=config", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings->debuglookupConfig);
+        GET_REDIRECT_OUTPUT; // ignore config lookup output
+    }
+
+    void debugLookupLibrary() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-lookup=library", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings->debuglookupLibrary);
+    }
+
+    void debugLookupPlatform() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-lookup=platform", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings->debuglookupPlatform);
     }
 
     void ignorepaths1() {
