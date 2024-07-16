@@ -3636,6 +3636,16 @@ private:
               "    g(r[0] * 2);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'r' can be declared as reference to const\n", errout_str());
+
+        check("std::iostream& get();\n" // #12940
+              "std::iostream & Fun() {\n"
+              "    auto lam = []() -> std::iostream& {\n"
+              "        std::iostream& ios = get();\n"
+              "        return ios;\n"
+              "    };\n"
+              "    return lam();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void constParameterCallback() {
