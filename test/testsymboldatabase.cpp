@@ -451,6 +451,7 @@ private:
         TEST_CASE(enum15);
         TEST_CASE(enum16);
         TEST_CASE(enum17);
+        TEST_CASE(enum18);
 
         TEST_CASE(sizeOfType);
 
@@ -6441,6 +6442,25 @@ private:
                           "        if (e == S::E::E0) {}\n"
                           "    }\n"
                           "};\n");
+            ASSERT(db != nullptr);
+            auto it = db->scopeList.begin();
+            std::advance(it, 2);
+            const Enumerator* E0 = it->findEnumerator("E0");
+            ASSERT(E0 && E0->value_known && E0->value == 0);
+            const Token* const e = Token::findsimplematch(tokenizer.tokens(), "E0 )");
+            ASSERT(e && e->enumerator());
+            ASSERT_EQUALS(E0, e->enumerator());
+        }
+    }
+
+    void enum18() {
+        {
+            GET_SYMBOL_DB("namespace {\n"
+                          "    enum { E0 };\n"
+                          "}\n"
+                          "void f() {\n"
+                          "    if (0 > E0) {}\n"
+                          "}\n");
             ASSERT(db != nullptr);
             auto it = db->scopeList.begin();
             std::advance(it, 2);
