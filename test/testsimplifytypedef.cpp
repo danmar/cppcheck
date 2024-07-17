@@ -3686,6 +3686,19 @@ private:
                             "} "
                             "}";
         ASSERT_EQUALS(exp3, tok(code3));
+
+        const char code4[] = "struct A { static const int i = 1; };\n" // #12947
+                             "typedef A B;\n"
+                             "int f() {\n"
+                             "    return B::i;\n"
+                             "}\n";
+        const char exp4[] = "struct A { "
+                            "static const int i = 1 ; "
+                            "} ; "
+                            "int f ( ) { "
+                            "return A :: i ; "
+                            "}";
+        ASSERT_EQUALS(exp4, tok(code4));
     }
 
     void simplifyTypedefFunction1() {
