@@ -33,29 +33,7 @@ private:
     Settings settings;
 
     void run() override {
-        constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                                   "<def>\n"
-                                   "  <podtype name=\"uint8_t\" sign=\"u\" size=\"1\"/>\n"
-                                   "  <memory>\n"
-                                   "    <alloc>malloc</alloc>\n"
-                                   "    <realloc>realloc</realloc>\n"
-                                   "    <dealloc>free</dealloc>\n"
-                                   "  </memory>\n"
-                                   "  <resource>\n"
-                                   "    <alloc>socket</alloc>\n"
-                                   "    <dealloc>close</dealloc>\n"
-                                   "  </resource>\n"
-                                   "  <resource>\n"
-                                   "    <alloc>fopen</alloc>\n"
-                                   "    <realloc realloc-arg=\"3\">freopen</realloc>\n"
-                                   "    <dealloc>fclose</dealloc>\n"
-                                   "  </resource>\n"
-                                   "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
-                                   "  <smart-pointer class-name=\"std::unique_ptr\">\n"
-                                   "    <unique/>\n"
-                                   "  </smart-pointer>\n"
-                                   "</def>";
-        settings = settingsBuilder(settings).libraryxml(xmldata, sizeof(xmldata)).build();
+        settings = settingsBuilder(settings).library("std.cfg").build();
 
         // Assign
         TEST_CASE(assign1);
@@ -462,9 +440,10 @@ private:
     }
 
     void assign22() { // #9139
+        const Settings s = settingsBuilder().library("posix.cfg").build();
         check("void f(char tempFileName[256]) {\n"
               "    const int fd = socket(AF_INET, SOCK_PACKET, 0 );\n"
-              "}", true);
+              "}", true, &s);
         ASSERT_EQUALS("[test.cpp:3]: (error) Resource leak: fd\n", errout_str());
 
         check("void f() {\n"
@@ -622,6 +601,19 @@ private:
               "    delete[] li.front().m_p;\n"
               "}\n", true);
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S {\n" // #12890
+              "    int** p;\n"
+              "    S() {\n"
+              "        p = std::malloc(sizeof(int*));\n"
+              "        p[0] = new int;\n"
+              "    }\n"
+              "    ~S() {\n"
+              "        delete p[0];\n"
+              "        std::free(p);\n"
+              "    }\n"
+              "};\n", true);
+        ASSERT_EQUALS("", errout_str());
     }
 
     void assign26() {
@@ -652,7 +644,7 @@ private:
         check("void f() {\n"
               "    std::string *str = new std::string;"
               "}", true);
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Memory leak: str\n", "", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Memory leak: str\n", errout_str());
 
         check("class TestType {\n" // #9028
               "public:\n"
