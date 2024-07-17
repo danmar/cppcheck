@@ -856,9 +856,7 @@ private:
                            "}";
 
         ASSERT_EQUALS(exp, tok(code));
-        ASSERT_EQUALS("[test.cpp:7]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable NS1\n"
-                      "[test.cpp:11]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable NS2\n",
-                      errout_str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void simplifyUsing9381() {

@@ -4788,7 +4788,6 @@ void stdbind_helper(int a)
 
 void stdbind()
 {
-    // cppcheck-suppress valueFlowBailoutIncompleteVar
     using namespace std::placeholders;
 
     // TODO cppcheck-suppress ignoredReturnValue #9369
