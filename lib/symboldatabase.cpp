@@ -5319,6 +5319,17 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
 
                 if (enumerator && !(enumerator->scope && enumerator->scope->enumClass))
                     return enumerator;
+
+                if (tok->isCpp() && (*s)->type == Scope::eNamespace && Token::simpleMatch((*s)->classDef, "namespace {")) {
+                    for (const Scope* nested : (*s)->nestedList) {
+                        if (nested->type != Scope::eEnum)
+                            continue;
+                        enumerator = nested->findEnumerator(tokStr);
+
+                        if (enumerator && !(enumerator->scope && enumerator->scope->enumClass))
+                            return enumerator;
+                    }
+                }
             }
         }
     }
