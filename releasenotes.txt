@@ -1,7 +1,7 @@
 Release Notes for Cppcheck 2.15
 
 New checks:
--
+- suspiciousFloatingPointCast flags unnecessary floating point casts that cause loss of precision
 
 Improved checking:
 -

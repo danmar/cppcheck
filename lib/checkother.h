@@ -74,6 +74,7 @@ private:
 
         // Checks
         checkOther.warningOldStylePointerCast();
+        checkOther.suspiciousFloatingPointCast();
         checkOther.invalidPointerCast();
         checkOther.checkCharVariable();
         checkOther.redundantBitwiseOperationInSwitchError();
@@ -124,6 +125,8 @@ private:
 
     /** @brief Are there C-style pointer casts in a c++ file? */
     void warningOldStylePointerCast();
+
+    void suspiciousFloatingPointCast();
 
     /** @brief Check for pointer casts to a type with an incompatible binary data representation */
     void invalidPointerCast();
@@ -241,6 +244,7 @@ private:
     void clarifyCalculationError(const Token *tok, const std::string &op);
     void clarifyStatementError(const Token* tok);
     void cstyleCastError(const Token *tok, bool isPtr = true);
+    void suspiciousFloatingPointCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive, bool toIsInt);
     void passedByValueError(const Variable* var, bool inconclusive, bool isRangeBasedFor = false);
     void constVariableError(const Variable *var, const Function *function);
@@ -314,6 +318,7 @@ private:
         c.checkComparisonFunctionIsAlwaysTrueOrFalseError(nullptr, "isless","varName",false);
         c.checkCastIntToCharAndBackError(nullptr, "func_name");
         c.cstyleCastError(nullptr);
+        c.suspiciousFloatingPointCastError(nullptr);
         c.passedByValueError(nullptr, false);
         c.constVariableError(nullptr, nullptr);
         c.constStatementError(nullptr, "type", false);

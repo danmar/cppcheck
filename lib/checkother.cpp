@@ -365,6 +365,63 @@ void CheckOther::cstyleCastError(const Token *tok, bool isPtr)
                 "which kind of cast is expected.", CWE398, Certainty::normal);
 }
 
+void CheckOther::suspiciousFloatingPointCast()
+{
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("suspiciousFloatingPointCast"))
+        return;
+
+    logChecker("CheckOther::suspiciousFloatingPointCast"); // style
+
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope * scope : symbolDatabase->functionScopes) {
+        const Token* tok = scope->bodyStart;
+        if (scope->function && scope->function->isConstructor())
+            tok = scope->classDef;
+        for (; tok && tok != scope->bodyEnd; tok = tok->next()) {
+
+            if (!tok->isCast())
+                continue;
+
+            const ValueType* vt = tok->valueType();
+            if (!vt || vt->pointer || vt->reference != Reference::None || (vt->type != ValueType::FLOAT && vt->type != ValueType::DOUBLE))
+                continue;
+
+            using VTT = std::vector<ValueType::Type>;
+            const VTT sourceTypes = vt->type == ValueType::FLOAT ? VTT{ ValueType::DOUBLE, ValueType::LONGDOUBLE } : VTT{ ValueType::LONGDOUBLE };
+
+            const Token* source = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
+            if (!source || !source->valueType() || std::find(sourceTypes.begin(), sourceTypes.end(), source->valueType()->type) == sourceTypes.end())
+                continue;
+
+            const Token* parent = tok->astParent();
+            if (!parent)
+                continue;
+
+            const ValueType* parentVt = parent->valueType();
+            if (!parentVt || parent->str() == "(") {
+                int argn{};
+                if (const Token* ftok = getTokenArgumentFunction(tok, argn)) {
+                    if (ftok->function()) {
+                        if (const Variable* argVar = ftok->function()->getArgumentVar(argn))
+                            parentVt = argVar->valueType();
+                    }
+                }
+            }
+            if (!parentVt || std::find(sourceTypes.begin(), sourceTypes.end(), parentVt->type) == sourceTypes.end())
+                continue;
+
+            suspiciousFloatingPointCastError(tok);
+        }
+    }
+}
+
+void CheckOther::suspiciousFloatingPointCastError(const Token* tok)
+{
+    reportError(tok, Severity::style, "suspiciousFloatingPointCast",
+                "Floating-point cast causes loss of precision.\n"
+                "If this cast is not intentional, remove it to avoid loss of precision", CWE398, Certainty::normal);
+}
+
 //---------------------------------------------------------------------------
 // float* f; double* d = (double*)f; <-- Pointer cast to a type with an incompatible binary data representation
 //---------------------------------------------------------------------------
