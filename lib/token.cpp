@@ -897,7 +897,7 @@ const Token * Token::findClosingBracket() const
         }
         // save named template parameter
         else if (templateParameter && depth == 1 && Token::Match(closing, "[,=]") &&
-                 closing->previous()->isName() && !Token::Match(closing->previous(), "class|typename|."))
+                 closing->previous()->isName() && !Token::Match(closing->previous(), "class|typename|.") && !Token::Match(closing->tokAt(-2), "=|::"))
             templateParameters.insert(closing->strAt(-1));
     }
 
