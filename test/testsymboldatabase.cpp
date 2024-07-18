@@ -6470,6 +6470,60 @@ private:
             ASSERT(e && e->enumerator());
             ASSERT_EQUALS(E0, e->enumerator());
         }
+        {
+            GET_SYMBOL_DB("namespace ns {\n"
+                          "    enum { V1 };\n"
+                          "    struct C1 {\n"
+                          "        enum { V2 };\n"
+                          "    };\n"
+                          "}\n"
+                          "using namespace ns;\n"
+                          "void f() {\n"
+                          "    if (0 > V1) {}\n"
+                          "    if (0 > C1::V2) {}\n"
+                          "}\n");
+            ASSERT(db != nullptr);
+            auto it = db->scopeList.begin();
+            std::advance(it, 2);
+            const Enumerator* V1 = it->findEnumerator("V1");
+            ASSERT(V1 && V1->value_known && V1->value == 0);
+            const Token* const e1 = Token::findsimplematch(tokenizer.tokens(), "V1 )");
+            ASSERT(e1 && e1->enumerator());
+            ASSERT_EQUALS(V1, e1->enumerator());
+            std::advance(it, 2);
+            const Enumerator* V2 = it->findEnumerator("V2");
+            ASSERT(V2 && V2->value_known && V2->value == 0);
+            const Token* const e2 = Token::findsimplematch(tokenizer.tokens(), "V2 )");
+            ASSERT(e2 && e2->enumerator());
+            ASSERT_EQUALS(V2, e2->enumerator());
+        }
+        {
+            GET_SYMBOL_DB("namespace ns {\n"
+                          "    enum { V1 };\n"
+                          "    struct C1 {\n"
+                          "        enum { V2 };\n"
+                          "    };\n"
+                          "}\n"
+                          "void f() {\n"
+                          "    using namespace ns;\n"
+                          "    if (0 > V1) {}\n"
+                          "    if (0 > C1::V2) {}\n"
+                          "}\n");
+            ASSERT(db != nullptr);
+            auto it = db->scopeList.begin();
+            std::advance(it, 2);
+            const Enumerator* V1 = it->findEnumerator("V1");
+            ASSERT(V1 && V1->value_known && V1->value == 0);
+            const Token* const e1 = Token::findsimplematch(tokenizer.tokens(), "V1 )");
+            ASSERT(e1 && e1->enumerator());
+            ASSERT_EQUALS(V1, e1->enumerator());
+            std::advance(it, 2);
+            const Enumerator* V2 = it->findEnumerator("V2");
+            ASSERT(V2 && V2->value_known && V2->value == 0);
+            const Token* const e2 = Token::findsimplematch(tokenizer.tokens(), "V2 )");
+            ASSERT(e2 && e2->enumerator());
+            ASSERT_EQUALS(V2, e2->enumerator());
+        }
     }
 
     void sizeOfType() {
