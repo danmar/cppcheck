@@ -6471,7 +6471,7 @@ private:
             ASSERT_EQUALS(E0, e->enumerator());
         }
         {
-            GET_SYMBOL_DB("namespace ns {\n"
+            GET_SYMBOL_DB("namespace ns {\n" // #12114
                           "    enum { V1 };\n"
                           "    struct C1 {\n"
                           "        enum { V2 };\n"
