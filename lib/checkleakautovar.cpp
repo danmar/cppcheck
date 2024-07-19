@@ -555,7 +555,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                             if (info.second.status != VarInfo::ALLOC)
                                 return false;
                             const Token* ret = getReturnValueFromOutparamAlloc(info.second.allocTok, *mSettings);
-                            return ret && ret->varId() && ret->varId() == vartok->varId();
+                            return ret && vartok && ret->varId() && ret->varId() == vartok->varId();
                         })) {
                             varInfo1.clear();
                         }
