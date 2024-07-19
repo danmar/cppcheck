@@ -526,6 +526,15 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                         if (astIsVariableComparison(tok3, "!=", "0", &vartok) &&
                             (notzero.find(vartok->varId()) != notzero.end()))
                             varInfo2.clear();
+                        
+                        if (std::any_of(varInfo1.alloctype.begin(), varInfo1.alloctype.end(), [&](const std::pair<int, VarInfo::AllocInfo>& info) {
+                            if (info.second.status != VarInfo::ALLOC)
+                                return false;
+                            const Token* ret = getReturnValueFromOutparamAlloc(info.second.allocTok, *mSettings);
+                            return ret && vartok && ret->varId() && ret->varId() == vartok->varId();
+                        })) {
+                            varInfo1.clear();
+                        }
                     } else if (isVarTokComparison(tok3, &vartok, alloc_failed_conds)) {
                         varInfo1.reallocToAlloc(vartok->varId());
                         varInfo1.erase(vartok->varId());
