@@ -67,10 +67,12 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         return No;
     if (tok2->str() == "::")
         tok2 = tok2->next();
+    while (Token::Match(tok2, "%name% :: %type%"))
+        tok2 = tok2->tokAt(2);
     if (!tok2->isName())
         return No;
 
-    if (!Token::Match(tok2, "%name% ::|. %type%")) {
+    if (!Token::Match(tok2, "%name% . %type%")) {
         // Using realloc..
         AllocType reallocType = getReallocationType(tok2, varid);
         if (reallocType != No)
@@ -124,7 +126,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         }
     }
 
-    while (Token::Match(tok2,"%name% ::|. %type%"))
+    while (Token::Match(tok2,"%name% . %type%"))
         tok2 = tok2->tokAt(2);
 
     // User function
