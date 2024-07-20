@@ -583,7 +583,7 @@ void validCode(int * pIntPtr, QString & qstrArg, double d)
     Q_UNUSED(d)
     if (QFile::exists("test")) {}
 
-    if (pIntPtr != Q_NULLPTR) {
+    if (pIntPtr != nullptr) {
         *pIntPtr = 5;
     }
 
@@ -627,11 +627,11 @@ void ignoredReturnValue()
 
 void nullPointer(int * pIntPtr)
 {
-    int * pNullPtr = Q_NULLPTR;
+    int * pNullPtr = nullptr;
     // cppcheck-suppress nullPointer
     *pNullPtr = 1;
 
-    if (pIntPtr != Q_NULLPTR) {
+    if (pIntPtr != nullptr) {
         *pIntPtr = 2;
     } else {
         // cppcheck-suppress nullPointerRedundantCheck
