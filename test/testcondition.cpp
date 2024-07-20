@@ -4609,6 +4609,12 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'q' is always true\n", errout_str());
 
+        check("void f() {\n" // #12786
+              "    const int b[2] = {};\n"
+              "    if (b) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'b' is always true\n", errout_str());
+
         check("void f(int i) {\n"
               "    int j = 0;\n"
               "    switch (i) {\n"
