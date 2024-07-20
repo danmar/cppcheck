@@ -342,7 +342,9 @@ void StdLogger::writeCheckersReport()
             what = std::to_string(activeCheckers) + "/" + std::to_string(totalCheckers);
         else
             what = "There was critical errors";
-        msg.setmsg("Active checkers: " + what + " (use --checkers-report=<filename> to see details)");
+        if (mSettings.checkersReportFilename.empty())
+            what += " (use --checkers-report=<filename> to see details)";
+        msg.setmsg("Active checkers: " + what);
 
         reportErr(msg);
     }

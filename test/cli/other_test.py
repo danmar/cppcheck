@@ -1752,3 +1752,14 @@ def test_lib_lookup_multi(tmpdir):
         "looking for library '{}/cfg/gnu.cfg'".format(exepath),
         'Checking {} ...'.format(test_file)
     ]
+
+
+def test_checkers_report(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write('x=1;')
+    checkers_report = os.path.join(tmpdir, 'r.txt')
+    exitcode, stdout, stderr, exe = cppcheck_ex(['--enable=all', '--checkers-report=' + checkers_report, test_file], remove_checkers_report=False)
+    assert exitcode == 0, stdout
+    assert 'Active checkers:' in stderr
+    assert '--checkers-report' not in stderr
