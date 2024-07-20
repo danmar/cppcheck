@@ -169,6 +169,7 @@ private:
         TEST_CASE(array_index_73); // #11530
         TEST_CASE(array_index_74); // #11088
         TEST_CASE(array_index_75);
+        TEST_CASE(array_index_76);
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1989,6 +1990,26 @@ private:
               "        buf[i--] = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'buf[10]' accessed at index 10, which is out of bounds.\n", errout_str());
+    }
+
+    // #12592
+    void array_index_76()
+    {
+        check("void cb0(void*, int i) {\n"
+              "    const char s[] = \"\";\n"
+              "    (void)s[i];\n"
+              "}\n"
+              "void cb1(int i, void*) {\n"
+              "    const char s[] = \"\";\n"
+              "    (void)s[i];\n"
+              "}\n"
+              "void f() {\n"
+              "    cb0(nullptr, 1);\n"
+              "    cb1(1, nullptr);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 's[1]' accessed at index 1, which is out of bounds.\n"
+                      "[test.cpp:7]: (error) Array 's[1]' accessed at index 1, which is out of bounds.\n",
+                      errout_str());
     }
 
     void array_index_multidim() {
