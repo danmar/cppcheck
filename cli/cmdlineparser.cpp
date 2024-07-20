@@ -1411,9 +1411,12 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     else if ((def || mSettings.preprocessOnly) && !maxconfigs)
         mSettings.maxConfigs = 1U;
 
-    if (mSettings.checks.isEnabled(Checks::unusedFunction) && mSettings.jobs > 1 && mSettings.buildDir.empty()) {
-        // TODO: bail out
-        mLogger.printMessage("unusedFunction check can't be used with '-j' option. Disabling unusedFunction check.");
+    if (mSettings.jobs > 1 && mSettings.buildDir.empty()) {
+        // TODO: bail out instead?
+        if (mSettings.checks.isEnabled(Checks::unusedFunction))
+            mLogger.printMessage("unusedFunction check requires --cppcheck-build-dir to be active with -j.");
+        // TODO: enable
+        //mLogger.printMessage("whole program analysis requires --cppcheck-build-dir to be active with -j.");
     }
 
     if (!mPathNames.empty() && project.projectType != ImportProject::Type::NONE) {
