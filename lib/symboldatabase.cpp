@@ -5190,6 +5190,22 @@ static const Scope* findEnumScopeInBase(const Scope* scope, const std::string& t
     return nullptr;
 }
 
+static const Enumerator* findEnumeratorInUsingList(const Scope* scope, const std::string& name)
+{
+    for (const auto& u : scope->usingList) {
+        if (!u.scope)
+            continue;
+        for (const Scope* nested : u.scope->nestedList) {
+            if (nested->type != Scope::eEnum)
+                continue;
+            const Enumerator* e = nested->findEnumerator(name);
+            if (e && !(e->scope && e->scope->enumClass))
+                return e;
+        }
+    }
+    return nullptr;
+}
+
 const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<std::string>& tokensThatAreNotEnumeratorValues) const
 {
     if (tok->isKeyword())
@@ -5268,6 +5284,8 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
             }
         }
         const Enumerator * enumerator = scope->findEnumerator(tokStr);
+        if (!enumerator)
+            enumerator = findEnumeratorInUsingList(scope, tokStr);
 
         if (enumerator && !(enumerator->scope && enumerator->scope->enumClass))
             return enumerator;
@@ -5310,6 +5328,8 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
                 scope = scope->nestedIn;
 
             enumerator = scope->findEnumerator(tokStr);
+            if (!enumerator)
+                enumerator = findEnumeratorInUsingList(scope, tokStr);
 
             if (enumerator && !(enumerator->scope && enumerator->scope->enumClass))
                 return enumerator;
@@ -5319,6 +5339,17 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
 
                 if (enumerator && !(enumerator->scope && enumerator->scope->enumClass))
                     return enumerator;
+
+                if (tok->isCpp() && (*s)->type == Scope::eNamespace && Token::simpleMatch((*s)->classDef, "namespace {")) {
+                    for (const Scope* nested : (*s)->nestedList) {
+                        if (nested->type != Scope::eEnum)
+                            continue;
+                        enumerator = nested->findEnumerator(tokStr);
+
+                        if (enumerator && !(enumerator->scope && enumerator->scope->enumClass))
+                            return enumerator;
+                    }
+                }
             }
         }
     }
@@ -6095,6 +6126,14 @@ S* findRecordInNestedListImpl(S& thisScope, const std::string & name, bool isC)
             if (nestedScope)
                 return nestedScope;
         }
+    }
+
+    for (const auto& u : thisScope.usingList) {
+        if (!u.scope)
+            continue;
+        S* nestedScope = const_cast<S*>(u.scope)->findRecordInNestedList(name, false);
+        if (nestedScope)
+            return nestedScope;
     }
 
     T * nested_type = thisScope.findType(name);
