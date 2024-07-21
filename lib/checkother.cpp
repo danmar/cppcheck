@@ -37,6 +37,7 @@
 
 #include <algorithm> // find_if()
 #include <cctype>
+#include <cstdint>
 #include <list>
 #include <map>
 #include <set>

@@ -23,6 +23,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QList>
+#include <QMap>
 #include <QSettings>
 #include <QStringList>
 #include <QVariant>

@@ -24,10 +24,12 @@
 
 #include "ui_newsuppressiondialog.h"
 
+#include <cstdint>
 #include <string>
 
 #include <QComboBox>
 #include <QLineEdit>
+#include <QString>
 #include <QStringList>
 
 class QWidget;

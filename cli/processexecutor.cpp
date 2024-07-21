@@ -34,6 +34,7 @@
 #include <cassert>
 #include <cerrno>
 #include <csignal>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>

@@ -24,7 +24,6 @@
 #include <QDialog>
 #include <QList>
 #include <QObject>
-#include <QString>
 
 class QWidget;
 namespace Ui {

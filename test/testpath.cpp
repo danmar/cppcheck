@@ -21,6 +21,7 @@
 #include "helpers.h"
 #include "standards.h"
 
+#include <list>
 #include <set>
 #include <string>
 #include <vector>

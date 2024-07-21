@@ -20,6 +20,7 @@
 #define helpersH
 
 #include "config.h"
+#include "library.h"
 #include "preprocessor.h"
 #include "settings.h"
 #include "standards.h"
@@ -39,6 +40,9 @@ class SuppressionList;
 class ErrorLogger;
 namespace simplecpp {
     struct DUI;
+}
+namespace tinyxml2 {
+    class XMLDocument;
 }
 
 // TODO: make Tokenizer private

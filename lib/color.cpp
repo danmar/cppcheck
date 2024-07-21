@@ -18,7 +18,6 @@
 
 #include "color.h"
 
-#include <cstddef>
 #include <cstdlib>
 #include <sstream>
 #include <iostream>

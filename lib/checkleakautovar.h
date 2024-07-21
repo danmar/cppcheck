@@ -31,6 +31,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 
 class ErrorLogger;
 class Settings;

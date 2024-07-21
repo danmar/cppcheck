@@ -32,6 +32,7 @@
 #include "token.h"
 
 #include <cctype>
+#include <cstdint>
 #include <exception>
 #include <functional>
 #include <utility>

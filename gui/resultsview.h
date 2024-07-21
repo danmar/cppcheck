@@ -20,7 +20,6 @@
 #ifndef RESULTSVIEW_H
 #define RESULTSVIEW_H
 
-#include "common.h"
 #include "report.h"
 #include "showtypes.h"
 
@@ -38,6 +37,7 @@ class QPrinter;
 class QSettings;
 class CheckStatistics;
 class QPoint;
+enum class ReportType : std::uint8_t;
 namespace Ui {
     class ResultsView;
 }

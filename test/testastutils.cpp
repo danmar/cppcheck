@@ -24,6 +24,7 @@
 #include "token.h"
 #include "tokenlist.h"
 
+#include <cstdint>
 #include <cstring>
 
 class TestAstUtils : public TestFixture {

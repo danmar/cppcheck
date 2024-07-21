@@ -22,7 +22,6 @@
 
 #include <QChar>
 #include <QColor>
-#include <QCryptographicHash>
 #include <QFont>
 #include <QFontMetrics>
 #include <QKeySequence>
@@ -31,7 +30,6 @@
 #include <QPainter>
 #include <QPaintEvent>
 #include <QRect>
-#include <QRectF>
 #include <QRegularExpressionMatchIterator>
 #include <QShortcut>
 #include <QTextBlock>

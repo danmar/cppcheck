@@ -24,7 +24,6 @@
 #include "color.h"
 #include "config.h"
 #include "errorlogger.h"
-#include "library.h"
 #include "platform.h"
 #include "settings.h"
 #include "standards.h"

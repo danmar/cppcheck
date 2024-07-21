@@ -22,9 +22,9 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueflow.h"
+#include "vfvalue.h"
 
 #include <list>
-#include <memory>
 #include <vector>
 
 namespace ValueFlow

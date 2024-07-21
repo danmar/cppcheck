@@ -20,6 +20,8 @@
 
 #include <QColorDialog>
 #include <QDialog>
+#include <QObject>
+#include <QString>
 #include <QVariant>
 
 class QWidget;
