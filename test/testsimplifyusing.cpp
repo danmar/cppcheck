@@ -765,6 +765,7 @@ private:
                             "    void g() {\n"
                             "        B::f();\n"
                             "    }\n"
+                            "    B b;\n"
                             "};\n";
         const char expected[] = "struct B { "
                                 "B ( ) ; "
@@ -775,6 +776,7 @@ private:
                                 "void g ( ) { "
                                 "B :: f ( ) ; "
                                 "} "
+                                "B b ; "
                                 "} ;";
         ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
         ASSERT_EQUALS("", errout_str());
