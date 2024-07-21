@@ -863,7 +863,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             //Add a new mapping
             signalMapper.setMapping(start, defaultApplicationIndex);
 
-            connect(&signalMapper, QOverload<int>::of(&QSignalMapper::mapped),
+            connect(&signalMapper, &QSignalMapper::mappedInt,
                     this, &ResultsTree::context);
         }
 
