@@ -1,5 +1,3 @@
-import cppcheckdata
-
 # Holds information about an array, struct or union's element definition.
 class ElementDef:
     def __init__(self, elementType, name, valueType, dimensions = None):

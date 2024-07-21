@@ -149,7 +149,7 @@ def do_man_dir(directory):
     if os.path.isfile(directory):
         return do_man_page(directory)
 
-    for path, directories, files in os.walk(directory):
+    for path, _, files in os.walk(directory):
         for file in files:
             dprint(2, 'calling do_man_page(%s)' % (
                 os.path.join(path, file)))

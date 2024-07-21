@@ -57,7 +57,6 @@ id_Y2038 = {
     'timeval',
     'utimbuf',
     'itimerspec',
-    'stat',
     'clnt_ops',
     'elf_prstatus',
     'itimerval',

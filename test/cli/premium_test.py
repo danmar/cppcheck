@@ -1,14 +1,12 @@
 
 # python -m pytest premium_test.py
 
-import logging
 import os
 import shutil
 import sys
 import time
-import pytest
 
-from testutils import cppcheck, assert_cppcheck, __lookup_cppcheck_exe
+from testutils import cppcheck, __lookup_cppcheck_exe
 
 PRODUCT_NAME = 'Cppcheck Premium ' + str(time.time())
 

@@ -7,11 +7,9 @@
 # Command in cppcheck directory:
 # PYTHONPATH=./addons python3 -m pytest addons/test/test-misra.py
 
-import os
 import pytest
 import re
 import sys
-import tempfile
 
 from .util import dump_create, dump_remove, convert_json_output
 

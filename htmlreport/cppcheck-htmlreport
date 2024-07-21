@@ -647,7 +647,7 @@ def main() -> None:
                            '-M --> not including moving of lines and returns original author of the line')
 
     # Parse options and make sure that we have an output directory set.
-    options, args = parser.parse_args()
+    options, _ = parser.parse_args()
 
     try:
         sys.argv[1]

@@ -635,7 +635,6 @@ def bitsOfEssentialType(ty):
 
 def get_function_pointer_type(tok):
     ret = ''
-    par = 0
     while tok and (tok.isName or tok.str == '*'):
         ret += ' ' + tok.str
         tok = tok.next
@@ -3965,7 +3964,7 @@ class MisraChecker:
 
             # Calling dangerous function
             if token.str in ('asctime', 'ctime', 'gmtime', 'localtime', 'localeconv', 'getenv', 'setlocale', 'strerror'):
-                name, args = cppcheckdata.get_function_call_name_args(token)
+                name, _ = cppcheckdata.get_function_call_name_args(token)
                 if name and name == token.str:
                     # make assigned pointers invalid
                     for varId in assigned.get(name, ()):
@@ -4039,7 +4038,7 @@ class MisraChecker:
         errno_is_set = False
         for token in cfg.tokenlist:
             if token.str == '(' and not simpleMatch(token.link, ') {'):
-                name, args = cppcheckdata.get_function_call_name_args(token.previous)
+                name, _ = cppcheckdata.get_function_call_name_args(token.previous)
                 if name is None:
                     continue
                 errno_is_set = is_errno_setting_function(name)
@@ -4057,7 +4056,7 @@ class MisraChecker:
         last_function_call = None
         for token in cfg.tokenlist:
             if token.isName and token.next and token.next.str == '(' and not simpleMatch(token.next.link, ') {'):
-                name, args = cppcheckdata.get_function_call_name_args(token)
+                name, _ = cppcheckdata.get_function_call_name_args(token)
                 last_function_call = name
             if token.str == '}':
                 last_function_call = None
@@ -4351,7 +4350,6 @@ class MisraChecker:
         num1 = 0
         num2 = 0
         appendixA = False
-        ruleText = False
         expect_more = False
 
         Rule_pattern = re.compile(r'^Rule ([0-9]+).([0-9]+)')

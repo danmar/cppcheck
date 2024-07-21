@@ -4,7 +4,6 @@
 import os
 import re
 import tempfile
-import pytest
 import glob
 
 from testutils import create_gui_project_file, cppcheck

@@ -978,22 +978,22 @@ class Suppression:
     def isMatch(self, file, line, message, errorId):
         # Line Suppression
         if ((self.fileName is None or fnmatch(file, self.fileName))
-                and (self.suppressionType == None) # Verify use of default suppression type (None = unique)
-                and (self.lineNumber != None and int(line) == int(self.lineNumber))
+                and (self.suppressionType is None) # Verify use of default suppression type (None = unique)
+                and (self.lineNumber is not None and int(line) == int(self.lineNumber))
                 and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
                 and fnmatch(errorId, self.errorId)):
             return True
         # File Suppression
         if ((self.fileName is None or fnmatch(file, self.fileName))
-                and (self.suppressionType != None and self.suppressionType == "file") # Verify use of file (global) suppression type
+                and (self.suppressionType is not None and self.suppressionType == "file") # Verify use of file (global) suppression type
                 and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
                 and fnmatch(errorId, self.errorId)):
             return True
         # Block Suppression Mode
         if ((self.fileName is None or fnmatch(file, self.fileName))
-                and (self.suppressionType != None and self.suppressionType == "block") # Type for Block suppression
-                and (self.lineBegin != None and int(line) > int(self.lineBegin)) # Code Match is between the Block suppression
-                and (self.lineEnd != None and int(line) < int(self.lineEnd)) # Code Match is between the Block suppression
+                and (self.suppressionType is not None and self.suppressionType == "block") # Type for Block suppression
+                and (self.lineBegin is not None and int(line) > int(self.lineBegin)) # Code Match is between the Block suppression
+                and (self.lineEnd is not None and int(line) < int(self.lineEnd)) # Code Match is between the Block suppression
                 and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
                 and fnmatch(errorId, self.errorId)):
             return True
