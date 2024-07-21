@@ -42,7 +42,6 @@ disable=
         use-implicit-booleaness-not-len,
         wrong-import-order,
         use-implicit-booleaness-not-comparison,
-        multiple-imports,
         consider-using-enumerate,
         unnecessary-lambda-assignment,
         consider-using-dict-items,
