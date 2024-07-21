@@ -59,7 +59,7 @@ def man_search(manpage):
             MANPAGE = open(manpage, 'r')
     except OSError as filename:
         print('cannot open %s' % filename, file=sys.stderr)
-        return None, None
+        return  # None, None
 
     vprint(1, '%s opened' % (manpage))
 
@@ -147,7 +147,8 @@ def do_man_dir(directory):
     """Recursively process a directory of man-pages."""
     dprint(1, 'do_man_dir(%s)' % (directory))
     if os.path.isfile(directory):
-        return do_man_page(directory)
+        do_man_page(directory)
+        return
 
     for path, _, files in os.walk(directory):
         for file in files:

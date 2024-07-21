@@ -57,7 +57,6 @@ disable=
         too-few-public-methods,
         consider-using-min-builtin,
         too-many-return-statements,
-        inconsistent-return-statements,
         consider-using-in,
         too-many-nested-blocks,
         too-many-public-methods,
