@@ -50,7 +50,6 @@ disable=
         consider-using-with,
         too-many-statements,
         too-many-branches,
-        simplifiable-if-statement,
         too-many-locals,
         too-many-arguments,
         too-few-public-methods,
