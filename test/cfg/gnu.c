@@ -28,6 +28,9 @@
 #ifdef __gnu_linux__
 #include <error.h>
 #endif
+#ifdef _GNU_SOURCE
+#include <unistd.h>
+#endif
 #include <getopt.h>
 #include <netdb.h>
 
@@ -38,6 +41,34 @@ void unreachableCode_error(void) // #11197
     // cppcheck-suppress unusedVariable
     // TODO cppcheck-suppress unreachableCode
     int i;
+}
+#endif
+
+#ifdef _GNU_SOURCE
+void leakReturnValNotUsed_get_current_dir_name(void)
+{
+    // cppcheck-suppress leakReturnValNotUsed
+    get_current_dir_name();
+}
+
+void memleak_get_current_dir_name0(void)
+{
+    const char *const name = get_current_dir_name();
+    if (name)
+    {
+        // cppcheck-suppress memleak
+        return;
+    }
+}
+
+void memleak_get_current_dir_name1(void)
+{
+    const char *const name = get_current_dir_name();
+    if (name)
+    {
+        free(name);
+        return;
+    }
 }
 #endif
 
