@@ -840,12 +840,9 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
         //Create a new context menu
         QMenu menu(this);
 
-        //Store all applications in a list
-        QList<QAction*> actions;
-
         //Create a signal mapper so we don't have to store data to class
         //member variables
-        auto *signalMapper = new QSignalMapper(this);
+        QSignalMapper signalMapper;
 
         if (mContextItem && mApplications->getApplicationCount() > 0 && mContextItem->parent()) {
             //Create an action for the application
@@ -857,20 +854,17 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             if (multipleSelection)
                 start->setDisabled(true);
 
-            //Add it to our list so we can disconnect later on
-            actions << start;
-
             //Add it to context menu
             menu.addAction(start);
 
             //Connect the signal to signal mapper
-            connect(start, SIGNAL(triggered()), signalMapper, SLOT(map()));
+            connect(start, &QAction::triggered, &signalMapper, QOverload<>::of(&QSignalMapper::map));
 
             //Add a new mapping
-            signalMapper->setMapping(start, defaultApplicationIndex);
+            signalMapper.setMapping(start, defaultApplicationIndex);
 
-            connect(signalMapper, SIGNAL(mapped(int)),
-                    this, SLOT(context(int)));
+            connect(&signalMapper, QOverload<int>::of(&QSignalMapper::mapped),
+                    this, &ResultsTree::context);
         }
 
         // Add popup menuitems
@@ -914,11 +908,11 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addSeparator();
             menu.addAction(opencontainingfolder);
 
-            connect(recheckAction, SIGNAL(triggered()), this, SLOT(recheckAction()));
-            connect(copyAction, SIGNAL(triggered()), this, SLOT(copyAction()));
-            connect(hide, SIGNAL(triggered()), this, SLOT(hideResult()));
-            connect(hideallid, SIGNAL(triggered()), this, SLOT(hideAllIdResult()));
-            connect(opencontainingfolder, SIGNAL(triggered()), this, SLOT(openContainingFolder()));
+            connect(recheckAction, &QAction::triggered, this, &ResultsTree::recheckSelectedFiles);
+            connect(copyAction, &QAction::triggered, this, &ResultsTree::copy);
+            connect(hide, &QAction::triggered, this, &ResultsTree::hideResult);
+            connect(hideallid, &QAction::triggered, this, &ResultsTree::hideAllIdResult);
+            connect(opencontainingfolder, &QAction::triggered, this, &ResultsTree::openContainingFolder);
 
             const ProjectFile *currentProject = ProjectFile::getActiveProject();
             if (currentProject && !currentProject->getTags().isEmpty()) {
@@ -947,17 +941,6 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
         index = indexAt(e->pos());
         if (index.isValid()) {
             mContextItem = mModel.itemFromIndex(index);
-            if (mContextItem && mApplications->getApplicationCount() > 0 && mContextItem->parent()) {
-                //Disconnect all signals
-                for (const QAction* action : actions) {
-                    disconnect(action, SIGNAL(triggered()), signalMapper, SLOT(map()));
-                }
-
-                disconnect(signalMapper, SIGNAL(mapped(int)),
-                           this, SLOT(context(int)));
-                //And remove the signal mapper
-                delete signalMapper;
-            }
         }
     }
 }
@@ -1129,8 +1112,8 @@ void ResultsTree::copy()
         return;
 
     QString text;
-    for (QModelIndex index : mSelectionModel->selectedRows()) {
-        QStandardItem *item = mModel.itemFromIndex(index);
+    for (const QModelIndex& index : mSelectionModel->selectedRows()) {
+        const QStandardItem *item = mModel.itemFromIndex(index);
         if (!item->parent()) {
             text += item->text() + '\n';
             continue;
@@ -1141,10 +1124,10 @@ void ResultsTree::copy()
         if (!data.contains("id"))
             continue;
         QString inconclusive = data[INCONCLUSIVE].toBool() ? ",inconclusive" : "";
-        text += '[' + data[FILENAME].toString() + ':' + QString::number(data[LINE].toInt())
-                + "] ("
+        text += data[FILENAME].toString() + ':' + QString::number(data[LINE].toInt()) + ':' + QString::number(data[COLUMN].toInt())
+                + ": "
                 + QString::fromStdString(severityToString(ShowTypes::ShowTypeToSeverity((ShowTypes::ShowType)data[SEVERITY].toInt()))) + inconclusive
-                + ") "
+                + ": "
                 + data[MESSAGE].toString()
                 + " ["
                 + data[ERRORID].toString()
