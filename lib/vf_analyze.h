@@ -20,15 +20,23 @@
 #define vfAnalyzeH
 
 #include "vf_array.h" // IWYU pragma: export
+#include "vf_arraybool.h" // IWYU pragma: export
+#include "vf_arrayelement.h" // IWYU pragma: export
 #include "vf_bitand.h" // IWYU pragma: export
 #include "vf_debug.h" // IWYU pragma: export
 #include "vf_enumvalue.h" // IWYU pragma: export
+#include "vf_functionreturn.h" // IWYU pragma: export
 #include "vf_globalconstvar.h" // IWYU pragma: export
 #include "vf_globalstaticvar.h" // IWYU pragma: export
+#include "vf_impossiblevalues.h" // IWYU pragma: export
+#include "vf_iteratorinfer.h" // IWYU pragma: export
+#include "vf_iterators.h" // IWYU pragma: export
 #include "vf_number.h" // IWYU pragma: export
 #include "vf_pointeralias.h" // IWYU pragma: export
+#include "vf_rightshift.h" // IWYU pragma: export
 #include "vf_sameexpressions.h" // IWYU pragma: export
 #include "vf_string.h" // IWYU pragma: export
+#include "vf_symbolicinfer.h" // IWYU pragma: export
 #include "vf_unknownfunctionreturn.h" // IWYU pragma: export
 
 #endif // vfAnalyzeH
