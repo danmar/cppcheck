@@ -21,6 +21,7 @@
 #include "cppcheck.h"
 #include "errortypes.h"
 #include "helpers.h"
+#include "library.h"
 #include "options.h"
 #include "redirect.h"
 

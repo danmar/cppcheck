@@ -25,6 +25,8 @@
 #include "symboldatabase.h"
 #include "vfvalue.h"
 
+#include <cstddef>
+#include <list>
 #include <string>
 
 class Token;

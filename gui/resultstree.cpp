@@ -34,6 +34,7 @@
 #include "xmlreportv2.h"
 
 #include <utility>
+#include <vector>
 
 #include <QAction>
 #include <QApplication>
@@ -53,6 +54,7 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QModelIndex>
+#include <QObject>
 #include <QProcess>
 #include <QSet>
 #include <QSettings>

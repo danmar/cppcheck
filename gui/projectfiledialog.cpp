@@ -48,6 +48,7 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QMap>
+#include <QObject>
 #include <QPushButton>
 #include <QRadioButton>
 #include <QRegularExpression>

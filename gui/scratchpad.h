@@ -21,7 +21,6 @@
 
 #include <QDialog>
 #include <QObject>
-#include <QString>
 
 class MainWindow;
 namespace Ui {

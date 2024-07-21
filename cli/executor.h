@@ -24,7 +24,6 @@
 #include <mutex>
 #include <string>
 #include <unordered_set>
-#include <utility>
 
 class Settings;
 class ErrorLogger;

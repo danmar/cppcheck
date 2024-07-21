@@ -24,7 +24,6 @@
 #include <QList>
 #include <QMap>
 #include <QPair>
-#include <QSet>
 #include <QString>
 #include <QStringList>
 

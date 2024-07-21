@@ -29,7 +29,7 @@
 #include <algorithm>
 #include <list>
 #include <string>
-
+#include <vector>
 
 class TestCppcheck : public TestFixture {
 public:

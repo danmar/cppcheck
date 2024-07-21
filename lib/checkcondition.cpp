@@ -35,6 +35,7 @@
 #include "checkother.h" // comparisonNonZeroExpressionLessThanZero and testIfNonZeroExpressionIsPositive
 
 #include <algorithm>
+#include <cstdint>
 #include <limits>
 #include <list>
 #include <set>

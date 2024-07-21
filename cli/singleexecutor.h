@@ -21,10 +21,7 @@
 
 #include "executor.h"
 
-#include <cstddef>
 #include <list>
-#include <string>
-#include <utility>
 
 class ErrorLogger;
 class Settings;

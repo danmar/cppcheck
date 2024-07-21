@@ -19,7 +19,6 @@
 #include "codeeditorstyle.h"
 
 #include <QSettings>
-#include <QStringList>
 #include <QVariant>
 
 CodeEditorStyle::CodeEditorStyle(

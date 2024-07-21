@@ -28,6 +28,7 @@
 #include "utils.h"
 #include "vfvalue.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstdint>
 #include <cstddef>
@@ -37,6 +38,7 @@
 #include <ostream>
 #include <set>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 

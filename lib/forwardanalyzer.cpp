@@ -35,6 +35,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdio>
+#include <cstdint>
 #include <functional>
 #include <list>
 #include <string>

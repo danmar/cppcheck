@@ -31,13 +31,11 @@
 #include "utils.h"
 
 #include <algorithm>
-#include <cstddef>
 #include <fstream>
 #include <iterator>
 #include <list>
 #include <set>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include <QByteArray>

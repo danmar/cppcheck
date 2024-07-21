@@ -23,6 +23,8 @@
 #include "helpers.h"
 #include "settings.h"
 
+#include <cstddef>
+
 class TestAssert : public TestFixture {
 public:
     TestAssert() : TestFixture("TestAssert") {}

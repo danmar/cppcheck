@@ -28,6 +28,7 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
+#include <cstdint>
 #include <cstring>
 #include <list>
 #include <set>

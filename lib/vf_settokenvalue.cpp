@@ -38,7 +38,6 @@
 #include <cstddef>
 #include <functional>
 #include <list>
-#include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
