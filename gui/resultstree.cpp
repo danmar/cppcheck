@@ -863,8 +863,8 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             //Add a new mapping
             signalMapper.setMapping(start, defaultApplicationIndex);
 
-            connect(&signalMapper, &QSignalMapper::mappedInt,
-                    this, &ResultsTree::context);
+            connect(&signalMapper, SIGNAL(mapped(int)),
+                    this, SLOT(context(int)));
         }
 
         // Add popup menuitems
