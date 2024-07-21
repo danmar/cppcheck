@@ -38,7 +38,6 @@ disable=
         too-many-lines,
         trailing-newlines,
         missing-final-newline,
-        unnecessary-negation,
         use-implicit-booleaness-not-len,
         wrong-import-order,
         use-implicit-booleaness-not-comparison,

@@ -205,7 +205,7 @@ for entry in versions:
         if args.perf:
             if out == "timeout":
                 data_str = "0.0" # TODO: how to handle these properly?
-            elif not ec == 0:
+            elif ec != 0:
                 continue # skip errors
             else:
                 data_str = '{}'.format((end - start) / 1000.0 / 1000.0 / 1000.0)
