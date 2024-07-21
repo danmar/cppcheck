@@ -2447,11 +2447,11 @@ static bool isMutableExpression(const Token* tok)
         return false;
     if (Token::simpleMatch(tok, "[ ]"))
         return false;
-    if (Token::Match(tok->previous(), "%name% (") && tok->previous()->isKeyword())
+    if (tok->previous() && tok->previous()->isKeyword() && Token::Match(tok->previous(), "%name% ("))
         return false;
-    if (Token::Match(tok, "<|>") && tok->link())
+    if (tok->link() && Token::Match(tok, "<|>"))
         return false;
-    if (Token::simpleMatch(tok, "[") && tok->astOperand1())
+    if (tok->astOperand1() && Token::simpleMatch(tok, "["))
         return isMutableExpression(tok->astOperand1());
     if (const Variable* var = tok->variable()) {
         if (var->nameToken() == tok)
