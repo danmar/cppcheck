@@ -56,7 +56,6 @@ disable=
         too-many-arguments,
         too-few-public-methods,
         consider-using-min-builtin,
-        comparison-with-itself,
         too-many-return-statements,
         inconsistent-return-statements,
         consider-using-in,
