@@ -801,7 +801,8 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable* const vari
 
         // Struct member is allocated => check if it is also properly deallocated..
         else if ((assignToks = isMemberAssignment(tok2, variable->declarationId())).first && assignToks.first->varId()) {
-            if (getAllocationType(assignToks.second, assignToks.first->varId()) == AllocType::No)
+            const AllocType allocType = getAllocationType(assignToks.second, assignToks.first->varId());
+            if (allocType == AllocType::No)
                 continue;
 
             if (variable->isArgument() && variable->valueType() && variable->valueType()->type == ValueType::UNKNOWN_TYPE && assignToks.first->astParent()) {
@@ -823,7 +824,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable* const vari
 
                 else if (tok3->str() == "}") {
                     if (indentlevel3 == 0) {
-                        memoryLeak(tok3, variable->name() + "." + tok2->strAt(2), Malloc);
+                        memoryLeak(tok3, variable->name() + "." + tok2->strAt(2), allocType);
                         break;
                     }
                     --indentlevel3;
@@ -854,7 +855,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable* const vari
                 // Deallocating the struct..
                 else if (Token::Match(tok3, "%name% ( %varid% )", structid) && mSettings->library.getDeallocFuncInfo(tok3)) {
                     if (indentlevel2 == 0)
-                        memoryLeak(tok3, variable->name() + "." + tok2->strAt(2), Malloc);
+                        memoryLeak(tok3, variable->name() + "." + tok2->strAt(2), allocType);
                     break;
                 }
 
@@ -903,7 +904,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable* const vari
                         !Token::Match(tok3, "return & %varid%", structid) &&
                         !(Token::Match(tok3, "return %varid% . %var%", structid) && tok3->tokAt(3)->varId() == structmemberid) &&
                         !(Token::Match(tok3, "return %name% (") && tok3->astOperand1() && deallocInFunction(tok3->astOperand1(), structid))) {
-                        memoryLeak(tok3, variable->name() + "." + tok2->strAt(2), Malloc);
+                        memoryLeak(tok3, variable->name() + "." + tok2->strAt(2), allocType);
                     }
                     break;
                 }

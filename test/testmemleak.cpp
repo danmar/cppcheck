@@ -1859,9 +1859,9 @@ private:
               "    ((s).b) = open(\"xx.log\", O_RDONLY);\n"
               "    (&s)->c = open(\"xx.log\", O_RDONLY);\n"
               "}\n", false);
-        ASSERT_EQUALS("[test.c:7]: (error) Memory leak: s.a\n"
-                      "[test.c:7]: (error) Memory leak: s.b\n"
-                      "[test.c:7]: (error) Memory leak: s.c\n",
+        ASSERT_EQUALS("[test.c:7]: (error) Resource leak: s.a\n"
+                      "[test.c:7]: (error) Resource leak: s.b\n"
+                      "[test.c:7]: (error) Resource leak: s.c\n",
                       errout_str());
 
         check("struct S { int *p, *q; };\n" // #7705
@@ -2084,11 +2084,11 @@ private:
                              "}";
 
         check(code1, true);
-        ASSERT_EQUALS("[test.cpp:12]: (error) Memory leak: a.f\n"
+        ASSERT_EQUALS("[test.cpp:12]: (error) Resource leak: a.f\n"
                       "[test.cpp:12]: (error) Memory leak: a.c\n"
                       "[test.cpp:12]: (error) Memory leak: a.m\n", errout_str());
         check(code1, false);
-        ASSERT_EQUALS("[test.c:12]: (error) Memory leak: a.f\n"
+        ASSERT_EQUALS("[test.c:12]: (error) Resource leak: a.f\n"
                       "[test.c:12]: (error) Memory leak: a.m\n", errout_str());
 
         // Test OK case
@@ -2120,7 +2120,7 @@ private:
         check(code3, true);
         ASSERT_EQUALS("", errout_str());
         check(code3, false);
-        ASSERT_EQUALS("[test.c:4]: (error) Memory leak: a.f\n", errout_str());
+        ASSERT_EQUALS("[test.c:4]: (error) Resource leak: a.f\n", errout_str());
 
         // Test struct with destructor
         const char code4[] = "struct A {\n"
