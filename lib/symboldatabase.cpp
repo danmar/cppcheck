@@ -6129,7 +6129,7 @@ S* findRecordInNestedListImpl(S& thisScope, const std::string & name, bool isC)
     }
 
     for (const auto& u : thisScope.usingList) {
-        if (!u.scope)
+        if (!u.scope || u.scope == &thisScope)
             continue;
         S* nestedScope = const_cast<S*>(u.scope)->findRecordInNestedList(name, false);
         if (nestedScope)
