@@ -293,8 +293,10 @@ std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
         return !model->match(value);
     };
     lhsValues.remove_if(notMatch);
+    if (lhsValues.empty())
+        return result;
     rhsValues.remove_if(notMatch);
-    if (lhsValues.empty() || rhsValues.empty())
+    if (rhsValues.empty())
         return result;
 
     Interval lhs = Interval::fromValues(lhsValues);
