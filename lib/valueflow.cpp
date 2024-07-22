@@ -294,18 +294,18 @@ static void parseCompareEachInt(
                 value1.clear();
         }
         for (const ValueFlow::Value& v1 : value1) {
-            ValueFlow::Value true_value = v1;
-            ValueFlow::Value false_value = v1;
             if (isSaturated(v1.intvalue) || astIsFloat(tok->astOperand2(), /*unknown*/ false))
                 continue;
+            ValueFlow::Value true_value = v1;
+            ValueFlow::Value false_value = v1;
             setConditionalValues(tok, true, v1.intvalue, true_value, false_value);
             each(tok->astOperand2(), std::move(true_value), std::move(false_value));
         }
         for (const ValueFlow::Value& v2 : value2) {
-            ValueFlow::Value true_value = v2;
-            ValueFlow::Value false_value = v2;
             if (isSaturated(v2.intvalue) || astIsFloat(tok->astOperand1(), /*unknown*/ false))
                 continue;
+            ValueFlow::Value true_value = v2;
+            ValueFlow::Value false_value = v2;
             setConditionalValues(tok, false, v2.intvalue, true_value, false_value);
             each(tok->astOperand1(), std::move(true_value), std::move(false_value));
         }
