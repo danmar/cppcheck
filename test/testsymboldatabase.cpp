@@ -422,6 +422,7 @@ private:
         TEST_CASE(symboldatabase103);
         TEST_CASE(symboldatabase104);
         TEST_CASE(symboldatabase105);
+        TEST_CASE(symboldatabase106);
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -5577,6 +5578,18 @@ private:
             ASSERT_EQUALS("", errout_str());
             const Token* const c = Token::findsimplematch(tokenizer.tokens(), "clear (");
             ASSERT(!c->type());
+        }
+    }
+
+    void symboldatabase106() {
+        {
+            GET_SYMBOL_DB_DBG("namespace N {\n" // #12958 - don't crash
+                              "    namespace O {\n"
+                              "        using namespace N::O;\n"
+                              "    }\n"
+                              "}\n");
+            ASSERT(db != nullptr);
+            ASSERT_EQUALS("", errout_str());
         }
     }
 
