@@ -1323,7 +1323,7 @@ static bool isLargeContainer(const Variable* var, const Settings* settings)
     const ValueType vtElem = ValueType::parseDecl(vt->containerTypeToken, *settings);
     const auto elemSize = std::max<std::size_t>(ValueFlow::getSizeOf(vtElem, *settings), 1);
     const auto arraySize = var->dimension(0) * elemSize;
-    return  arraySize > maxByValueSize;
+    return arraySize > maxByValueSize;
 }
 
 void CheckOther::checkPassByReference()
@@ -1336,7 +1336,7 @@ void CheckOther::checkPassByReference()
     const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Variable* var : symbolDatabase->variableList()) {
-        if (!var || !var->isClass() || var->isPointer() || var->isArray() || var->isReference() || var->isEnumType())
+        if (!var || !var->isClass() || var->isPointer() || (var->isArray() && !var->isStlType()) || var->isReference() || var->isEnumType())
             continue;
 
         const bool isRangeBasedFor = astIsRangeBasedForDecl(var->nameToken());
