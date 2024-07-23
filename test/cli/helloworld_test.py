@@ -31,38 +31,67 @@ def getVsConfigs(stdout, filename):
     return ' '.join(ret)
 
 def test_relative_path():
-    ret, stdout, stderr = cppcheck(['--template=cppcheck1', 'helloworld'])
+    args = [
+        '--template=cppcheck1',
+        'helloworld'
+    ]
+    ret, stdout, stderr = cppcheck(args)
     filename = os.path.join('helloworld', 'main.c')
     assert ret == 0, stdout
     assert stderr == '[%s:5]: (error) Division by zero.\n' % filename
 
 
 def test_local_path():
-    ret, stdout, stderr = cppcheck(['--template=cppcheck1', '.'], cwd='helloworld')
+    args = [
+        '--template=cppcheck1',
+        '.'
+    ]
+    ret, stdout, stderr = cppcheck(args, cwd='helloworld')
     assert ret == 0, stdout
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
 
 def test_absolute_path():
     prjpath = getAbsoluteProjectPath()
-    ret, stdout, stderr = cppcheck(['--template=cppcheck1', prjpath])
+    args = [
+        '--template=cppcheck1',
+        prjpath
+    ]
+    ret, stdout, stderr = cppcheck(args)
     filename = os.path.join(prjpath, 'main.c')
     assert ret == 0, stdout
     assert stderr == '[%s:5]: (error) Division by zero.\n' % filename
 
 def test_addon_local_path():
-    ret, stdout, stderr = cppcheck(['--addon=misra', '--enable=style', '--template=cppcheck1', '.'], cwd='helloworld')
+    args = [
+        '--addon=misra',
+        '--enable=style',
+        '--template=cppcheck1',
+        '.'
+    ]
+    ret, stdout, stderr = cppcheck(args, cwd='helloworld')
     assert ret == 0, stdout
     assert stderr == ('[main.c:5]: (error) Division by zero.\n'
                       '[main.c:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n')
 
 def test_addon_local_path_not_enable():
-    ret, stdout, stderr = cppcheck(['--addon=misra', '--template=cppcheck1', '.'], cwd='helloworld')
+    args = [
+        '--addon=misra',
+        '--template=cppcheck1',
+        '.'
+    ]
+    ret, stdout, stderr = cppcheck(args, cwd='helloworld')
     assert ret == 0, stdout
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
 
 def test_addon_absolute_path():
     prjpath = getAbsoluteProjectPath()
-    ret, stdout, stderr = cppcheck(['--addon=misra', '--enable=style', '--template=cppcheck1', prjpath])
+    args = [
+        '--addon=misra',
+        '--enable=style',
+        '--template=cppcheck1',
+        prjpath
+    ]
+    ret, stdout, stderr = cppcheck(args)
     filename = os.path.join(prjpath, 'main.c')
     assert ret == 0, stdout
     assert stderr == ('[%s:5]: (error) Division by zero.\n'
@@ -70,7 +99,13 @@ def test_addon_absolute_path():
 
 def test_addon_relative_path():
     prjpath = getRelativeProjectPath()
-    ret, stdout, stderr = cppcheck(['--addon=misra', '--enable=style', '--template=cppcheck1', prjpath])
+    args = [
+        '--addon=misra',
+        '--enable=style',
+        '--template=cppcheck1',
+        prjpath
+    ]
+    ret, stdout, stderr = cppcheck(args)
     filename = os.path.join(prjpath, 'main.c')
     assert ret == 0, stdout
     assert stdout == ('Checking %s ...\n'
@@ -81,7 +116,12 @@ def test_addon_relative_path():
 def test_addon_with_gui_project():
     project_file = 'helloworld/test.cppcheck'
     create_gui_project_file(project_file, paths=['.'], addon='misra')
-    ret, stdout, stderr = cppcheck(['--template=cppcheck1', '--enable=style', '--project=' + project_file])
+    args = [
+        '--template=cppcheck1',
+        '--enable=style',
+        '--project=' + project_file
+    ]
+    ret, stdout, stderr = cppcheck(args)
     filename = os.path.join('helloworld', 'main.c')
     assert ret == 0, stdout
     assert stdout == 'Checking %s ...\n' % filename
@@ -90,25 +130,43 @@ def test_addon_with_gui_project():
 
 def test_basepath_relative_path():
     prjpath = getRelativeProjectPath()
-    ret, stdout, stderr = cppcheck([prjpath, '--template=cppcheck1', '-rp=' + prjpath])
+    args = [
+        prjpath,
+        '--template=cppcheck1',
+        '-rp=' + prjpath
+    ]
+    ret, stdout, stderr = cppcheck(args)
     assert ret == 0, stdout
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
 
 def test_basepath_absolute_path():
     prjpath = getAbsoluteProjectPath()
-    ret, stdout, stderr = cppcheck(['--template=cppcheck1', prjpath, '-rp=' + prjpath])
+    args = [
+        '--template=cppcheck1',
+        prjpath,
+        '-rp=' + prjpath
+    ]
+    ret, stdout, stderr = cppcheck(args)
     assert ret == 0, stdout
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
 
 def test_vs_project_local_path():
-    ret, stdout, stderr = cppcheck(['--template=cppcheck1', '--project=helloworld.vcxproj'], cwd='helloworld')
+    args = [
+        '--template=cppcheck1',
+        '--project=helloworld.vcxproj'
+    ]
+    ret, stdout, stderr = cppcheck(args, cwd='helloworld')
     assert ret == 0, stdout
     assert getVsConfigs(stdout, 'main.c') == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
 
 def test_vs_project_relative_path():
     prjpath = getRelativeProjectPath()
-    ret, stdout, stderr = cppcheck(['--template=cppcheck1', '--project=' + os.path.join(prjpath, 'helloworld.vcxproj')])
+    args = [
+        '--template=cppcheck1',
+        '--project=' + os.path.join(prjpath, 'helloworld.vcxproj')
+    ]
+    ret, stdout, stderr = cppcheck(args)
     filename = os.path.join(prjpath, 'main.c')
     assert ret == 0, stdout
     assert getVsConfigs(stdout, filename) == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
@@ -116,21 +174,35 @@ def test_vs_project_relative_path():
 
 def test_vs_project_absolute_path():
     prjpath = getAbsoluteProjectPath()
-    ret, stdout, stderr = cppcheck(['--template=cppcheck1', '--project=' + os.path.join(prjpath, 'helloworld.vcxproj')])
+    args = [
+        '--template=cppcheck1',
+        '--project=' + os.path.join(prjpath, 'helloworld.vcxproj')
+    ]
+    ret, stdout, stderr = cppcheck(args)
     filename = os.path.join(prjpath, 'main.c')
     assert ret == 0, stdout
     assert getVsConfigs(stdout, filename) == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
     assert stderr == '[%s:5]: (error) Division by zero.\n' % filename
 
 def test_cppcheck_project_local_path():
-    ret, stdout, stderr = cppcheck(['--template=cppcheck1', '--platform=win64', '--project=helloworld.cppcheck'], cwd='helloworld')
+    args = [
+        '--template=cppcheck1',
+        '--platform=win64',
+        '--project=helloworld.cppcheck'
+    ]
+    ret, stdout, stderr = cppcheck(args, cwd='helloworld')
     assert ret == 0, stdout
     assert getVsConfigs(stdout, 'main.c') == 'Debug|x64'
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
 
 def test_cppcheck_project_relative_path():
     prjpath = getRelativeProjectPath()
-    ret, stdout, stderr = cppcheck(['--template=cppcheck1', '--platform=win64', '--project=' + os.path.join(prjpath, 'helloworld.cppcheck')])
+    args = [
+        '--template=cppcheck1',
+        '--platform=win64',
+        '--project=' + os.path.join(prjpath, 'helloworld.cppcheck')
+    ]
+    ret, stdout, stderr = cppcheck(args)
     filename = os.path.join(prjpath, 'main.c')
     assert ret == 0, stdout
     assert getVsConfigs(stdout, filename) == 'Debug|x64'
@@ -138,7 +210,12 @@ def test_cppcheck_project_relative_path():
 
 def test_cppcheck_project_absolute_path():
     prjpath = getAbsoluteProjectPath()
-    ret, stdout, stderr = cppcheck(['--template=cppcheck1', '--platform=win64', '--project=' + os.path.join(prjpath, 'helloworld.cppcheck')])
+    args = [
+        '--template=cppcheck1',
+        '--platform=win64',
+        '--project=' + os.path.join(prjpath, 'helloworld.cppcheck')
+    ]
+    ret, stdout, stderr = cppcheck(args)
     filename = os.path.join(prjpath, 'main.c')
     assert ret == 0, stdout
     assert getVsConfigs(stdout, filename) == 'Debug|x64'
@@ -146,12 +223,20 @@ def test_cppcheck_project_absolute_path():
 
 def test_suppress_command_line():
     prjpath = getRelativeProjectPath()
-    ret, stdout, stderr = cppcheck(['--suppress=zerodiv:' + os.path.join(prjpath, 'main.c'), prjpath])
+    args = [
+        '--suppress=zerodiv:' + os.path.join(prjpath, 'main.c'),
+        prjpath
+    ]
+    ret, stdout, stderr = cppcheck(args)
     assert ret == 0, stdout
     assert stderr == ''
 
     prjpath = getAbsoluteProjectPath()
-    ret, stdout, stderr = cppcheck(['--suppress=zerodiv:' + os.path.join(prjpath, 'main.c'), prjpath])
+    args = [
+        '--suppress=zerodiv:' + os.path.join(prjpath, 'main.c'),
+        prjpath
+    ]
+    ret, stdout, stderr = cppcheck(args)
     assert ret == 0, stdout
     assert stderr == ''
 
@@ -161,20 +246,33 @@ def test_suppress_project():
                             paths=['.'],
                             suppressions=[{'fileName':'main.c', 'id':'zerodiv'}])
 
+    args = [
+        '--project=' + project_file
+    ]
+
     # Relative path
-    ret, stdout, stderr = cppcheck(['--project=' + project_file])
+    ret, stdout, stderr = cppcheck(args)
     assert ret == 0, stdout
     assert stderr == ''
 
+    args = [
+        '--project=' + os.path.join(os.getcwd(), 'helloworld', 'test.cppcheck')
+    ]
+
     # Absolute path
-    ret, stdout, stderr = cppcheck(['--project=' + os.path.join(os.getcwd(), 'helloworld', 'test.cppcheck')])
+    ret, stdout, stderr = cppcheck(args)
     assert ret == 0, stdout
     assert stderr == ''
 
 
 def test_exclude():
     prjpath = getRelativeProjectPath()
-    ret, stdout, _ = cppcheck(['-i' + prjpath, '--platform=win64', '--project=' + os.path.join(prjpath, 'helloworld.cppcheck')])
+    args = [
+        '-i' + prjpath,
+        '--platform=win64',
+        '--project=' + os.path.join(prjpath, 'helloworld.cppcheck')
+    ]
+    ret, stdout, _ = cppcheck(args)
     assert ret == 1
     lines = stdout.splitlines()
     assert lines == [
@@ -185,10 +283,14 @@ def test_exclude():
 
 def test_build_dir_dump_output():
     with tempfile.TemporaryDirectory() as tempdir:
-        args = f'--cppcheck-build-dir={tempdir} --addon=misra helloworld'
+        args = [
+            f'--cppcheck-build-dir={tempdir}',
+            '--addon=misra',
+            'helloworld'
+        ]
 
-        cppcheck(args.split())
-        cppcheck(args.split())
+        cppcheck(args)
+        cppcheck(args)
 
         filename = f'{tempdir}/main.a1.*.dump'
         filelist = glob.glob(filename)
@@ -198,17 +300,22 @@ def test_build_dir_dump_output():
 def test_checkers_report():
     with tempfile.TemporaryDirectory() as tempdir:
         filename = os.path.join(tempdir, '1.txt')
-        args = f'--checkers-report={filename} helloworld'
+        args = [
+            f'--checkers-report={filename}',
+            'helloworld'
+        ]
 
-        cppcheck(args.split())
+        cppcheck(args)
 
         with open(filename, 'rt') as f:
             data = f.read()
             assert 'No   CheckAutoVariables::assignFunctionArg' in data
             assert 'Yes  CheckAutoVariables::autoVariables' in data
 
-        args = '--enable=style ' + args
-        cppcheck(args.split())
+        args += [
+            '--enable=style'
+        ]
+        cppcheck(args)
         with open(filename, 'rt') as f:
             data = f.read()
             # checker has been activated by --enable=style
@@ -216,7 +323,12 @@ def test_checkers_report():
 
 
 def test_missing_include_system():  # #11283
-    args = ['--enable=missingInclude', '--suppress=zerodiv', '--template=simple', 'helloworld']
+    args = [
+        '--enable=missingInclude',
+        '--suppress=zerodiv',
+        '--template=simple',
+        'helloworld'
+    ]
 
     _, _, stderr = cppcheck(args)
     assert stderr.replace('\\', '/') == 'helloworld/main.c:1:0: information: Include file: <stdio.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n'
