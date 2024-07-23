@@ -3,7 +3,6 @@
 
 import os
 import re
-import tempfile
 import glob
 
 from testutils import create_gui_project_file, cppcheck
@@ -271,45 +270,43 @@ def test_exclude():
     ]
 
 
-def test_build_dir_dump_output():
-    with tempfile.TemporaryDirectory() as tempdir:
-        args = [
-            f'--cppcheck-build-dir={tempdir}',
-            '--addon=misra',
-            'helloworld'
-        ]
+def test_build_dir_dump_output(tmpdir):
+    args = [
+        f'--cppcheck-build-dir={tmpdir}',
+        '--addon=misra',
+        'helloworld'
+    ]
 
-        cppcheck(args)
-        cppcheck(args)
+    cppcheck(args)
+    cppcheck(args)
 
-        filename = f'{tempdir}/main.a1.*.dump'
-        filelist = glob.glob(filename)
-        assert(len(filelist) == 0)
+    filename = f'{tmpdir}/main.a1.*.dump'
+    filelist = glob.glob(filename)
+    assert(len(filelist) == 0)
 
 
-def test_checkers_report():
-    with tempfile.TemporaryDirectory() as tempdir:
-        filename = os.path.join(tempdir, '1.txt')
-        args = [
-            f'--checkers-report={filename}',
-            'helloworld'
-        ]
+def test_checkers_report(tmpdir):
+    filename = os.path.join(tmpdir, '1.txt')
+    args = [
+        f'--checkers-report={filename}',
+        'helloworld'
+    ]
 
-        cppcheck(args, cwd=__script_dir)
+    cppcheck(args, cwd=__script_dir)
 
-        with open(filename, 'rt') as f:
-            data = f.read()
-            assert 'No   CheckAutoVariables::assignFunctionArg' in data
-            assert 'Yes  CheckAutoVariables::autoVariables' in data
+    with open(filename, 'rt') as f:
+        data = f.read()
+        assert 'No   CheckAutoVariables::assignFunctionArg' in data
+        assert 'Yes  CheckAutoVariables::autoVariables' in data
 
-        args += [
-            '--enable=style'
-        ]
-        cppcheck(args, cwd=__script_dir)
-        with open(filename, 'rt') as f:
-            data = f.read()
-            # checker has been activated by --enable=style
-            assert 'Yes  CheckAutoVariables::assignFunctionArg' in data
+    args += [
+        '--enable=style'
+    ]
+    cppcheck(args, cwd=__script_dir)
+    with open(filename, 'rt') as f:
+        data = f.read()
+        # checker has been activated by --enable=style
+        assert 'Yes  CheckAutoVariables::assignFunctionArg' in data
 
 
 def test_missing_include_system():  # #11283
