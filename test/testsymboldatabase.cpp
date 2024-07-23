@@ -4980,40 +4980,58 @@ private:
     }
 
     void symboldatabase75() {
-        GET_SYMBOL_DB("template <typename T>\n"
-                      "class optional {\n"
-                      "  auto     value() & -> T &;\n"
-                      "  auto     value() && -> T &&;\n"
-                      "  auto     value() const& -> T const &;\n"
-                      "};\n"
-                      "template <typename T>\n"
-                      "auto optional<T>::value() & -> T & {}\n"
-                      "template <typename T>\n"
-                      "auto optional<T>::value() && -> T && {}\n"
-                      "template <typename T>\n"
-                      "auto optional<T>::value() const & -> T const & {}\n"
-                      "optional<int> i;");
+        {
+            GET_SYMBOL_DB("template <typename T>\n"
+                          "class optional {\n"
+                          "  auto     value() & -> T &;\n"
+                          "  auto     value() && -> T &&;\n"
+                          "  auto     value() const& -> T const &;\n"
+                          "};\n"
+                          "template <typename T>\n"
+                          "auto optional<T>::value() & -> T & {}\n"
+                          "template <typename T>\n"
+                          "auto optional<T>::value() && -> T && {}\n"
+                          "template <typename T>\n"
+                          "auto optional<T>::value() const & -> T const & {}\n"
+                          "optional<int> i;");
+            
+            ASSERT_EQUALS(5, db->scopeList.size());
+            ASSERT_EQUALS(3, db->functionScopes.size());
+            
+            const Scope *f = db->functionScopes[0];
+            ASSERT(f->function->hasBody());
+            ASSERT(!f->function->isConst());
+            ASSERT(f->function->hasTrailingReturnType());
+            ASSERT(f->function->hasLvalRefQualifier());
+            
+            f = db->functionScopes[1];
+            ASSERT(f->function->hasBody());
+            ASSERT(!f->function->isConst());
+            ASSERT(f->function->hasTrailingReturnType());
+            ASSERT(f->function->hasRvalRefQualifier());
+            
+            f = db->functionScopes[2];
+            ASSERT(f->function->hasBody());
+            ASSERT(f->function->isConst());
+            ASSERT(f->function->hasTrailingReturnType());
+            ASSERT(f->function->hasLvalRefQualifier());
+        }
+        {
+            GET_SYMBOL_DB("struct S {\n" // #12962
+                          "    auto bar() const noexcept -> std::string const& { return m; }\n"
+                          "    std::string m;\n"
+                          "};\n");
 
-        ASSERT_EQUALS(5, db->scopeList.size());
-        ASSERT_EQUALS(3, db->functionScopes.size());
+            ASSERT_EQUALS(3, db->scopeList.size());
+            ASSERT_EQUALS(1, db->functionScopes.size());
 
-        const Scope *f = db->functionScopes[0];
-        ASSERT(f->function->hasBody());
-        ASSERT(!f->function->isConst());
-        ASSERT(f->function->hasTrailingReturnType());
-        ASSERT(f->function->hasLvalRefQualifier());
-
-        f = db->functionScopes[1];
-        ASSERT(f->function->hasBody());
-        ASSERT(!f->function->isConst());
-        ASSERT(f->function->hasTrailingReturnType());
-        ASSERT(f->function->hasRvalRefQualifier());
-
-        f = db->functionScopes[2];
-        ASSERT(f->function->hasBody());
-        ASSERT(f->function->isConst());
-        ASSERT(f->function->hasTrailingReturnType());
-        ASSERT(f->function->hasLvalRefQualifier());
+            const Scope* f = db->functionScopes[0];
+            ASSERT(f->function->hasBody());
+            ASSERT(f->function->isConst());
+            ASSERT(f->function->hasTrailingReturnType());
+            ASSERT(f->function->isNoExcept());
+            ASSERT(Function::returnsReference(f->function));
+        }
     }
 
     void symboldatabase76() { // #9056
