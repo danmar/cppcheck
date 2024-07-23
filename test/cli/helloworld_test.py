@@ -221,7 +221,7 @@ def test_cppcheck_project_absolute_path():
     assert getVsConfigs(stdout, filename) == 'Debug|x64'
     assert stderr == '[%s:5]: (error) Division by zero.\n' % filename
 
-def test_suppress_command_line():
+def test_suppress_command_line_related():
     prjpath = getRelativeProjectPath()
     args = [
         '--suppress=zerodiv:' + os.path.join(prjpath, 'main.c'),
@@ -231,6 +231,7 @@ def test_suppress_command_line():
     assert ret == 0, stdout
     assert stderr == ''
 
+def test_suppress_command_line_absolute():
     prjpath = getAbsoluteProjectPath()
     args = [
         '--suppress=zerodiv:' + os.path.join(prjpath, 'main.c'),
@@ -240,7 +241,7 @@ def test_suppress_command_line():
     assert ret == 0, stdout
     assert stderr == ''
 
-def test_suppress_project():
+def test_suppress_project_relative():
     project_file = os.path.join('helloworld', 'test.cppcheck')
     create_gui_project_file(project_file,
                             paths=['.'],
@@ -250,20 +251,24 @@ def test_suppress_project():
         '--project=' + project_file
     ]
 
-    # Relative path
     ret, stdout, stderr = cppcheck(args)
     assert ret == 0, stdout
     assert stderr == ''
+
+
+def test_suppress_project_absolute():
+    project_file = os.path.join('helloworld', 'test.cppcheck')
+    create_gui_project_file(project_file,
+                            paths=['.'],
+                            suppressions=[{'fileName':'main.c', 'id':'zerodiv'}])
 
     args = [
         '--project=' + os.path.join(os.getcwd(), 'helloworld', 'test.cppcheck')
     ]
 
-    # Absolute path
     ret, stdout, stderr = cppcheck(args)
     assert ret == 0, stdout
     assert stderr == ''
-
 
 def test_exclude():
     prjpath = getRelativeProjectPath()
