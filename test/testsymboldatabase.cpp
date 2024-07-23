@@ -4994,22 +4994,22 @@ private:
                           "template <typename T>\n"
                           "auto optional<T>::value() const & -> T const & {}\n"
                           "optional<int> i;");
-            
+
             ASSERT_EQUALS(5, db->scopeList.size());
             ASSERT_EQUALS(3, db->functionScopes.size());
-            
+
             const Scope *f = db->functionScopes[0];
             ASSERT(f->function->hasBody());
             ASSERT(!f->function->isConst());
             ASSERT(f->function->hasTrailingReturnType());
             ASSERT(f->function->hasLvalRefQualifier());
-            
+
             f = db->functionScopes[1];
             ASSERT(f->function->hasBody());
             ASSERT(!f->function->isConst());
             ASSERT(f->function->hasTrailingReturnType());
             ASSERT(f->function->hasRvalRefQualifier());
-            
+
             f = db->functionScopes[2];
             ASSERT(f->function->hasBody());
             ASSERT(f->function->isConst());
