@@ -8,13 +8,6 @@ import glob
 
 from testutils import create_gui_project_file, cppcheck
 
-# Run Cppcheck from project path
-def cppcheck_local(args):
-    cwd = os.getcwd()
-    os.chdir('helloworld')
-    ret, stdout, stderr = cppcheck(args)
-    os.chdir(cwd)
-    return ret, stdout, stderr
 
 def getRelativeProjectPath():
     return 'helloworld'
@@ -45,7 +38,7 @@ def test_relative_path():
 
 
 def test_local_path():
-    ret, stdout, stderr = cppcheck_local(['--template=cppcheck1', '.'])
+    ret, stdout, stderr = cppcheck(['--template=cppcheck1', '.'], cwd='helloworld')
     assert ret == 0, stdout
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
 
@@ -57,13 +50,13 @@ def test_absolute_path():
     assert stderr == '[%s:5]: (error) Division by zero.\n' % filename
 
 def test_addon_local_path():
-    ret, stdout, stderr = cppcheck_local(['--addon=misra', '--enable=style', '--template=cppcheck1', '.'])
+    ret, stdout, stderr = cppcheck(['--addon=misra', '--enable=style', '--template=cppcheck1', '.'], cwd='helloworld')
     assert ret == 0, stdout
     assert stderr == ('[main.c:5]: (error) Division by zero.\n'
                       '[main.c:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n')
 
 def test_addon_local_path_not_enable():
-    ret, stdout, stderr = cppcheck_local(['--addon=misra', '--template=cppcheck1', '.'])
+    ret, stdout, stderr = cppcheck(['--addon=misra', '--template=cppcheck1', '.'], cwd='helloworld')
     assert ret == 0, stdout
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
 
@@ -108,7 +101,7 @@ def test_basepath_absolute_path():
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
 
 def test_vs_project_local_path():
-    ret, stdout, stderr = cppcheck_local(['--template=cppcheck1', '--project=helloworld.vcxproj'])
+    ret, stdout, stderr = cppcheck(['--template=cppcheck1', '--project=helloworld.vcxproj'], cwd='helloworld')
     assert ret == 0, stdout
     assert getVsConfigs(stdout, 'main.c') == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
@@ -130,7 +123,7 @@ def test_vs_project_absolute_path():
     assert stderr == '[%s:5]: (error) Division by zero.\n' % filename
 
 def test_cppcheck_project_local_path():
-    ret, stdout, stderr = cppcheck_local(['--template=cppcheck1', '--platform=win64', '--project=helloworld.cppcheck'])
+    ret, stdout, stderr = cppcheck(['--template=cppcheck1', '--platform=win64', '--project=helloworld.cppcheck'], cwd='helloworld')
     assert ret == 0, stdout
     assert getVsConfigs(stdout, 'main.c') == 'Debug|x64'
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
