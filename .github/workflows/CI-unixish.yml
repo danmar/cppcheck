@@ -382,7 +382,6 @@ jobs:
       - name: Install missing Python packages (macos)
         if: matrix.os == 'macos-14'
         run: |
-          brew install pipx
           pipx install pytest
           pipx install pytest-timeout
           pipx install psutil
