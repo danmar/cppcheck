@@ -5137,3 +5137,25 @@ void unusedvar_stringstream(const char* p)
     // cppcheck-suppress unreadVariable
     std::stringstream sstr(p);
 }
+
+int passedByValue_std_array1(std::array<int, 2> a)
+{
+    return a[0] + a[1];
+}
+
+// cppcheck-suppress passedByValue
+int passedByValue_std_array2(std::array<int, 200> a)
+{
+    return a[0] + a[1];
+}
+
+int passedByValue_std_bitset1(std::bitset<4> bs) // #12961
+{
+    return bs.size();
+}
+
+// cppcheck-suppress passedByValue
+int passedByValue_std_bitset2(std::bitset<256> bs)
+{
+    return bs.size();
+}
