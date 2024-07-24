@@ -5609,6 +5609,20 @@ private:
             ASSERT(db != nullptr);
             ASSERT_EQUALS("", errout_str());
         }
+        {
+            GET_SYMBOL_DB_DBG("namespace N {\n"
+                              "    struct S {};\n"
+                              "}\n"
+                              "namespace O {\n"
+                              "    using namespace N;\n"
+                              "}\n"
+                              "namespace N {\n"
+                              "    using namespace O;\n"
+                              "    struct T {};\n"
+                              "}\n");
+            ASSERT(db != nullptr);
+            ASSERT_EQUALS("", errout_str());
+        }
     }
 
     void createSymbolDatabaseFindAllScopes1() {
