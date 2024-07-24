@@ -372,11 +372,20 @@ jobs:
           brew install coreutils python3 pcre gnu-sed
 
       - name: Install missing Python packages
+        if: matrix.os == 'macos-12' || matrix.os == 'macos-13'
         run: |
           python3 -m pip install pip --upgrade
           python3 -m pip install pytest
           python3 -m pip install pytest-timeout
           python3 -m pip install psutil
+
+      - name: Install missing Python packages (macos)
+        if: matrix.os == 'macos-14'
+        run: |
+          brew install pipx
+          pipx install pytest
+          pipx install pytest-timeout
+          pipx install psutil
 
       - name: Build cppcheck
         run: |
