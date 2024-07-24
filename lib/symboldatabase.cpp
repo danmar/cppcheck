@@ -6123,7 +6123,7 @@ const Scope *SymbolDatabase::findScopeByName(const std::string& name) const
 //---------------------------------------------------------------------------
 
 template<class S, class T, REQUIRES("S must be a Scope class", std::is_convertible<S*, const Scope*> ), REQUIRES("T must be a Type class", std::is_convertible<T*, const Type*> )>
-S* findRecordInNestedListImpl(S& thisScope, const std::string & name, bool isC)
+S* findRecordInNestedListImpl(S& thisScope, const std::string& name, bool isC, std::set<const Scope*>& visited)
 {
     for (S* scope: thisScope.nestedList) {
         if (scope->className == name && scope->type != Scope::eFunction)
@@ -6136,9 +6136,10 @@ S* findRecordInNestedListImpl(S& thisScope, const std::string & name, bool isC)
     }
 
     for (const auto& u : thisScope.usingList) {
-        if (!u.scope || u.scope == &thisScope)
+        if (!u.scope || u.scope == &thisScope || visited.find(u.scope) != visited.end())
             continue;
-        S* nestedScope = const_cast<S*>(u.scope)->findRecordInNestedList(name, false);
+        visited.emplace(u.scope);
+        S* nestedScope = findRecordInNestedListImpl<S, T>(const_cast<S&>(*u.scope), name, false, visited);
         if (nestedScope)
             return nestedScope;
     }
@@ -6158,12 +6159,14 @@ S* findRecordInNestedListImpl(S& thisScope, const std::string & name, bool isC)
 
 const Scope* Scope::findRecordInNestedList(const std::string & name, bool isC) const
 {
-    return findRecordInNestedListImpl<const Scope, const Type>(*this, name, isC);
+    std::set<const Scope*> visited;
+    return findRecordInNestedListImpl<const Scope, const Type>(*this, name, isC, visited);
 }
 
 Scope* Scope::findRecordInNestedList(const std::string & name, bool isC)
 {
-    return findRecordInNestedListImpl<Scope, Type>(*this, name, isC);
+    std::set<const Scope*> visited;
+    return findRecordInNestedListImpl<Scope, Type>(*this, name, isC, visited);
 }
 
 //---------------------------------------------------------------------------
