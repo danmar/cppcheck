@@ -2497,6 +2497,13 @@ static bool isOperator(const Token *tokenDef)
     return name.size() > 8 && startsWith(name,"operator") && std::strchr("+-*/%&|~^<>!=[(", name[8]);
 }
 
+static bool isTrailingReturnType(const Token* tok)
+{
+    while (tok && tok->isKeyword())
+        tok = tok->next();
+    return Token::Match(tok, "&|&&| .");
+}
+
 Function::Function(const Token *tok,
                    const Scope *scope,
                    const Token *tokDef,
@@ -2540,7 +2547,7 @@ Function::Function(const Token *tok,
     if (!isConstructor() && !isDestructor()) {
         // @todo auto type deduction should be checked
         // @todo attributes and exception specification can also precede trailing return type
-        if (Token::Match(argDef->link()->next(), "const|volatile| &|&&| .")) { // Trailing return type
+        if (isTrailingReturnType(argDef->link()->next())) { // Trailing return type
             hasTrailingReturnType(true);
             if (argDef->link()->strAt(1) == ".")
                 retDef = argDef->link()->tokAt(2);
