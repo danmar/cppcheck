@@ -1820,7 +1820,7 @@ ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, Va
                                          bool cpp)
 {
     thread_local static std::unordered_map<std::string,
-                                           std::function<ValueFlow::Value(const std::unordered_map<nonneg int, ValueFlow::Value>& arg)>>
+                                           std::function<ValueFlow::Value(const std::unordered_map<nonneg int, ValueFlow::Value>&, const Settings&)>>
     functions = {};
     if (functions.count(returnValue) == 0) {
 
@@ -1828,7 +1828,7 @@ ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, Va
         std::shared_ptr<Token> expr = createTokenFromExpression(returnValue, settings, cpp, lookupVarId);
 
         functions[returnValue] =
-            [lookupVarId, expr, settings](const std::unordered_map<nonneg int, ValueFlow::Value>& xargs) {
+            [lookupVarId, expr](const std::unordered_map<nonneg int, ValueFlow::Value>& xargs, const Settings& settings) {
             if (!expr)
                 return ValueFlow::Value::unknown();
             ProgramMemory pm{};
@@ -1840,7 +1840,7 @@ ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, Va
             return execute(expr.get(), pm, settings);
         };
     }
-    return functions.at(returnValue)(args);
+    return functions.at(returnValue)(args, settings);
 }
 
 void execute(const Token* expr,
