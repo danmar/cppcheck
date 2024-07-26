@@ -505,9 +505,11 @@ void ProgramMemoryState::removeModifiedVars(const Token* tok)
 {
     const ProgramMemory& pm = state;
     auto eval = [&](const Token* cond) -> std::vector<MathLib::bigint> {
-        if (conditionIsTrue(cond, pm, *settings))
+        ProgramMemory pm2 = pm;
+        auto result = execute(cond, pm2, *settings);
+        if (isTrue(result))
             return {1};
-        if (conditionIsFalse(cond, pm, *settings))
+        if (isFalse(result))
             return {0};
         return {};
     };
