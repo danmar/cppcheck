@@ -166,6 +166,7 @@ SOURCES += $${PWD}/valueflow.cpp \
            $${PWD}/token.cpp \
            $${PWD}/tokenlist.cpp \
            $${PWD}/utils.cpp \
+           $${PWD}/valueflowanalyzer.cpp \
            $${PWD}/vf_array.cpp \
            $${PWD}/vf_arraybool.cpp \
            $${PWD}/vf_arrayelement.cpp \

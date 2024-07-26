@@ -79,7 +79,6 @@
 
 #include "analyzer.h"
 #include "astutils.h"
-#include "calculate.h"
 #include "checkuninitvar.h"
 #include "config.h"
 #include "errorlogger.h"
@@ -127,7 +126,6 @@
 #include <set>
 #include <sstream>
 #include <string>
-#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
