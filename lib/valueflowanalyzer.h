@@ -75,20 +75,6 @@ struct ValueFlowAnalyzer : Analyzer {
         return settings;
     }
 
-    // Returns Action::Match if its an exact match, return Action::Read if it partially matches the lifetime
-    Action analyzeLifetime(const Token* tok) const
-    {
-        if (!tok)
-            return Action::None;
-        if (match(tok))
-            return Action::Match;
-        if (Token::simpleMatch(tok, ".") && analyzeLifetime(tok->astOperand1()) != Action::None)
-            return Action::Read;
-        if (astIsRHS(tok) && Token::simpleMatch(tok->astParent(), "."))
-            return analyzeLifetime(tok->astParent());
-        return Action::None;
-    }
-
     struct ConditionState {
         bool dependent = true;
         bool unknown = true;
@@ -97,27 +83,6 @@ struct ValueFlowAnalyzer : Analyzer {
             return unknown && dependent;
         }
     };
-
-    std::unordered_map<nonneg int, const Token*> getSymbols(const Token* tok) const
-    {
-        std::unordered_map<nonneg int, const Token*> result;
-        if (!tok)
-            return result;
-        for (const ValueFlow::Value& v : tok->values()) {
-            if (!v.isSymbolicValue())
-                continue;
-            if (v.isImpossible())
-                continue;
-            if (!v.tokvalue)
-                continue;
-            if (v.tokvalue->exprId() == 0)
-                continue;
-            if (match(v.tokvalue))
-                continue;
-            result[v.tokvalue->exprId()] = v.tokvalue;
-        }
-        return result;
-    }
 
     ConditionState analyzeCondition(const Token* tok, int depth = 20) const
     {
@@ -274,96 +239,6 @@ struct ValueFlowAnalyzer : Analyzer {
         return Action::None;
     }
 
-    Action isGlobalModified(const Token* tok) const
-    {
-        if (tok->function()) {
-            if (!tok->function()->isConstexpr() && !isConstFunctionCall(tok, getSettings().library))
-                return Action::Invalid;
-        } else if (getSettings().library.getFunction(tok)) {
-            // Assume library function doesn't modify user-global variables
-            return Action::None;
-        } else if (Token::simpleMatch(tok->astParent(), ".") && astIsContainer(tok->astParent()->astOperand1())) {
-            // Assume container member function doesn't modify user-global variables
-            return Action::None;
-        } else if (tok->tokType() == Token::eType && astIsPrimitive(tok->next())) {
-            // Function cast does not modify global variables
-            return Action::None;
-        } else if (!tok->isKeyword() && Token::Match(tok, "%name% (")) {
-            return Action::Invalid;
-        }
-        return Action::None;
-    }
-
-    static const std::string& invertAssign(const std::string& assign)
-    {
-        static std::unordered_map<std::string, std::string> lookup = {{"=", "="},
-            {"+=", "-="},
-            {"-=", "+="},
-            {"*=", "/="},
-            {"/=", "*="},
-            {"<<=", ">>="},
-            {">>=", "<<="},
-            {"^=", "^="}};
-        auto it = lookup.find(assign);
-        if (it == lookup.end()) {
-            return emptyString;
-        }
-        return it->second;
-    }
-
-    static const std::string& getAssign(const Token* tok, Direction d)
-    {
-        if (d == Direction::Forward)
-            return tok->str();
-        return invertAssign(tok->str());
-    }
-
-    template<class T, class U>
-    static void assignValueIfMutable(T& x, const U& y)
-    {
-        x = y;
-    }
-
-    template<class T, class U>
-    static void assignValueIfMutable(const T& /*unused*/, const U& /*unused*/)
-    {}
-
-    static std::string removeAssign(const std::string& assign) {
-        return std::string{assign.cbegin(), assign.cend() - 1};
-    }
-
-    template<class T, class U>
-    static T calculateAssign(const std::string& assign, const T& x, const U& y, bool* error = nullptr)
-    {
-        if (assign.empty() || assign.back() != '=') {
-            if (error)
-                *error = true;
-            return T{};
-        }
-        if (assign == "=")
-            return y;
-        return calculate<T, T>(removeAssign(assign), x, y, error);
-    }
-
-    template<class Value, REQUIRES("Value must ValueFlow::Value", std::is_convertible<Value&, const ValueFlow::Value&> )>
-    static bool evalAssignment(Value& lhsValue, const std::string& assign, const ValueFlow::Value& rhsValue)
-    {
-        bool error = false;
-        if (lhsValue.isSymbolicValue() && rhsValue.isIntValue()) {
-            if (assign != "+=" && assign != "-=")
-                return false;
-            assignValueIfMutable(lhsValue.intvalue, calculateAssign(assign, lhsValue.intvalue, rhsValue.intvalue, &error));
-        } else if (lhsValue.isIntValue() && rhsValue.isIntValue()) {
-            assignValueIfMutable(lhsValue.intvalue, calculateAssign(assign, lhsValue.intvalue, rhsValue.intvalue, &error));
-        } else if (lhsValue.isFloatValue() && rhsValue.isIntValue()) {
-            assignValueIfMutable(lhsValue.floatValue,
-                                 calculateAssign(assign, lhsValue.floatValue, rhsValue.intvalue, &error));
-        } else {
-            return false;
-        }
-        return !error;
-    }
-
     virtual Action isWritable(const Token* tok, Direction d) const {
         const ValueFlow::Value* value = getValue(tok);
         if (!value)
@@ -467,6 +342,137 @@ struct ValueFlowAnalyzer : Analyzer {
 
     virtual bool useSymbolicValues() const {
         return true;
+    }
+
+    virtual void internalUpdate(Token* /*tok*/, const ValueFlow::Value& /*v*/, Direction /*d*/)
+    {
+        assert(false && "Internal update unimplemented.");
+    }
+
+private:
+    // Returns Action::Match if its an exact match, return Action::Read if it partially matches the lifetime
+    Action analyzeLifetime(const Token* tok) const
+    {
+        if (!tok)
+            return Action::None;
+        if (match(tok))
+            return Action::Match;
+        if (Token::simpleMatch(tok, ".") && analyzeLifetime(tok->astOperand1()) != Action::None)
+            return Action::Read;
+        if (astIsRHS(tok) && Token::simpleMatch(tok->astParent(), "."))
+            return analyzeLifetime(tok->astParent());
+        return Action::None;
+    }
+
+    std::unordered_map<nonneg int, const Token*> getSymbols(const Token* tok) const
+    {
+        std::unordered_map<nonneg int, const Token*> result;
+        if (!tok)
+            return result;
+        for (const ValueFlow::Value& v : tok->values()) {
+            if (!v.isSymbolicValue())
+                continue;
+            if (v.isImpossible())
+                continue;
+            if (!v.tokvalue)
+                continue;
+            if (v.tokvalue->exprId() == 0)
+                continue;
+            if (match(v.tokvalue))
+                continue;
+            result[v.tokvalue->exprId()] = v.tokvalue;
+        }
+        return result;
+    }
+
+    Action isGlobalModified(const Token* tok) const
+    {
+        if (tok->function()) {
+            if (!tok->function()->isConstexpr() && !isConstFunctionCall(tok, getSettings().library))
+                return Action::Invalid;
+        } else if (getSettings().library.getFunction(tok)) {
+            // Assume library function doesn't modify user-global variables
+            return Action::None;
+        } else if (Token::simpleMatch(tok->astParent(), ".") && astIsContainer(tok->astParent()->astOperand1())) {
+            // Assume container member function doesn't modify user-global variables
+            return Action::None;
+        } else if (tok->tokType() == Token::eType && astIsPrimitive(tok->next())) {
+            // Function cast does not modify global variables
+            return Action::None;
+        } else if (!tok->isKeyword() && Token::Match(tok, "%name% (")) {
+            return Action::Invalid;
+        }
+        return Action::None;
+    }
+
+    static const std::string& invertAssign(const std::string& assign)
+    {
+        static std::unordered_map<std::string, std::string> lookup = {{"=", "="},
+            {"+=", "-="},
+            {"-=", "+="},
+            {"*=", "/="},
+            {"/=", "*="},
+            {"<<=", ">>="},
+            {">>=", "<<="},
+            {"^=", "^="}};
+        auto it = lookup.find(assign);
+        if (it == lookup.end()) {
+            return emptyString;
+        }
+        return it->second;
+    }
+
+    static const std::string& getAssign(const Token* tok, Direction d)
+    {
+        if (d == Direction::Forward)
+            return tok->str();
+        return invertAssign(tok->str());
+    }
+
+    template<class T, class U>
+    static void assignValueIfMutable(T& x, const U& y)
+    {
+        x = y;
+    }
+
+    template<class T, class U>
+    static void assignValueIfMutable(const T& /*unused*/, const U& /*unused*/)
+    {}
+
+    static std::string removeAssign(const std::string& assign) {
+        return std::string{assign.cbegin(), assign.cend() - 1};
+    }
+
+    template<class T, class U>
+    static T calculateAssign(const std::string& assign, const T& x, const U& y, bool* error = nullptr)
+    {
+        if (assign.empty() || assign.back() != '=') {
+            if (error)
+                *error = true;
+            return T{};
+        }
+        if (assign == "=")
+            return y;
+        return calculate<T, T>(removeAssign(assign), x, y, error);
+    }
+
+    template<class Value, REQUIRES("Value must ValueFlow::Value", std::is_convertible<Value&, const ValueFlow::Value&> )>
+    static bool evalAssignment(Value& lhsValue, const std::string& assign, const ValueFlow::Value& rhsValue)
+    {
+        bool error = false;
+        if (lhsValue.isSymbolicValue() && rhsValue.isIntValue()) {
+            if (assign != "+=" && assign != "-=")
+                return false;
+            assignValueIfMutable(lhsValue.intvalue, calculateAssign(assign, lhsValue.intvalue, rhsValue.intvalue, &error));
+        } else if (lhsValue.isIntValue() && rhsValue.isIntValue()) {
+            assignValueIfMutable(lhsValue.intvalue, calculateAssign(assign, lhsValue.intvalue, rhsValue.intvalue, &error));
+        } else if (lhsValue.isFloatValue() && rhsValue.isIntValue()) {
+            assignValueIfMutable(lhsValue.floatValue,
+                                 calculateAssign(assign, lhsValue.floatValue, rhsValue.intvalue, &error));
+        } else {
+            return false;
+        }
+        return !error;
     }
 
     const Token* findMatch(const Token* tok) const
@@ -648,6 +654,7 @@ struct ValueFlowAnalyzer : Analyzer {
         }
         return result;
     }
+
     std::vector<MathLib::bigint> evaluateInt(const Token* tok) const
     {
         return evaluateInt(tok, [&] {
@@ -721,11 +728,6 @@ struct ValueFlowAnalyzer : Analyzer {
         // Update program state
         pms.removeModifiedVars(tok);
         pms.addState(tok, getProgramState());
-    }
-
-    virtual void internalUpdate(Token* /*tok*/, const ValueFlow::Value& /*v*/, Direction /*d*/)
-    {
-        assert(false && "Internal update unimplemented.");
     }
 
     void update(Token* tok, Action a, Direction d) override {
