@@ -188,6 +188,7 @@
     <ClInclude Include="tokenrange.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="valueflow.h" />
+    <ClInclude Include="valueflowanalyzer.h" />
     <ClInclude Include="valueptr.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="vf_analyze.h" />

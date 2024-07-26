@@ -77,6 +77,7 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/tokenrange.h \
            $${PWD}/utils.h \
            $${PWD}/valueflow.h \
+           $${PWD}/valueflowanalyzer.h \
            $${PWD}/valueptr.h \
            $${PWD}/version.h \
            $${PWD}/vf_analyze.h \
