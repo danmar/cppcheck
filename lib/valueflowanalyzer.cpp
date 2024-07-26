@@ -152,11 +152,11 @@ Analyzer::Action ValueFlowAnalyzer::isModified(const Token* tok) const
             return read;
     }
     bool inconclusive = false;
-    if (isVariableChangedByFunctionCall(tok, getIndirect(tok), getSettings(), &inconclusive))
+    if (isVariableChangedByFunctionCall(tok, getIndirect(tok), settings, &inconclusive))
         return read | Action::Invalid;
     if (inconclusive)
         return read | Action::Inconclusive;
-    if (isVariableChanged(tok, getIndirect(tok), getSettings())) {
+    if (isVariableChanged(tok, getIndirect(tok), settings)) {
         if (Token::Match(tok->astParent(), "*|[|.|++|--"))
             return read | Action::Invalid;
         // Check if its assigned to the same value
@@ -192,14 +192,14 @@ Analyzer::Action ValueFlowAnalyzer::isAliasModified(const Token* tok, int indire
         }
     }
     for (int i = 0; i <= indirect; ++i)
-        if (isVariableChanged(tok, i, getSettings()))
+        if (isVariableChanged(tok, i, settings))
             return Action::Invalid;
     return Action::None;
 }
 
 Analyzer::Action ValueFlowAnalyzer::isThisModified(const Token* tok) const
 {
-    if (isThisChanged(tok, 0, getSettings()))
+    if (isThisChanged(tok, 0, settings))
         return Action::Invalid;
     return Action::None;
 }
@@ -420,9 +420,9 @@ std::unordered_map<nonneg int, const Token*> ValueFlowAnalyzer::getSymbols(const
 Analyzer::Action ValueFlowAnalyzer::isGlobalModified(const Token* tok) const
 {
     if (tok->function()) {
-        if (!tok->function()->isConstexpr() && !isConstFunctionCall(tok, getSettings().library))
+        if (!tok->function()->isConstexpr() && !isConstFunctionCall(tok, settings.library))
             return Action::Invalid;
-    } else if (getSettings().library.getFunction(tok)) {
+    } else if (settings.library.getFunction(tok)) {
         // Assume library function doesn't modify user-global variables
         return Action::None;
     } else if (Token::simpleMatch(tok->astParent(), ".") && astIsContainer(tok->astParent()->astOperand1())) {
@@ -712,7 +712,7 @@ void ValueFlowAnalyzer::update(Token* tok, Action a, Direction d)
         internalUpdate(tok, *value, d);
     // Read first when moving forward
     if (d == Direction::Forward && a.isRead())
-        setTokenValue(tok, *value, getSettings());
+        setTokenValue(tok, *value, settings);
     if (a.isInconclusive())
         (void)lowerToInconclusive();
     if (a.isWrite() && tok->astParent()) {
@@ -720,5 +720,5 @@ void ValueFlowAnalyzer::update(Token* tok, Action a, Direction d)
     }
     // Read last when moving in reverse
     if (d == Direction::Reverse && a.isRead())
-        setTokenValue(tok, *value, getSettings());
+        setTokenValue(tok, *value, settings);
 }
