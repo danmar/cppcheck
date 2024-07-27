@@ -16,18 +16,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef vfValueFlowAnalyzer
-#define vfValueFlowAnalyzer
+#include "vf_analyzers.h"
 
 #include "analyzer.h"
 #include "astutils.h"
+#include "calculate.h"
+#include "config.h"
+#include "library.h"
+#include "mathlib.h"
 #include "programmemory.h"
+#include "smallvector.h"
 #include "settings.h"
+#include "symboldatabase.h"
 #include "token.h"
+#include "utils.h"
+#include "vfvalue.h"
 #include "valueptr.h"
+#include "valueflow.h"
 
 #include "vf_common.h"
 #include "vf_settokenvalue.h"
+
+#include <algorithm>
+#include <cassert>
+#include <cstddef>
+#include <functional>
+#include <initializer_list>
+#include <iterator>
+#include <list>
+#include <set>
+#include <type_traits>
 
 struct ValueFlowAnalyzer : Analyzer {
     const Settings& settings;
@@ -761,4 +779,796 @@ private:
     }
 };
 
-#endif // vfValueFlowAnalyzer
+static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, const Settings& settings, int depth = 20);
+
+static bool bifurcateVariableChanged(const Variable* var,
+                                     const std::set<nonneg int>& varids,
+                                     const Token* start,
+                                     const Token* end,
+                                     const Settings& settings,
+                                     int depth = 20)
+{
+    bool result = false;
+    const Token* tok = start;
+    while ((tok = findVariableChanged(
+                tok->next(), end, var->isPointer(), var->declarationId(), var->isGlobal(), settings))) {
+        if (Token::Match(tok->astParent(), "%assign%")) {
+            if (!bifurcate(tok->astParent()->astOperand2(), varids, settings, depth - 1))
+                return true;
+        } else {
+            result = true;
+        }
+    }
+    return result;
+}
+
+static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, const Settings& settings, int depth)
+{
+    if (depth < 0)
+        return false;
+    if (!tok)
+        return true;
+    if (tok->hasKnownIntValue())
+        return true;
+    if (tok->isConstOp())
+        return bifurcate(tok->astOperand1(), varids, settings, depth) && bifurcate(tok->astOperand2(), varids, settings, depth);
+    if (tok->varId() != 0) {
+        if (varids.count(tok->varId()) > 0)
+            return true;
+        const Variable* var = tok->variable();
+        if (!var)
+            return false;
+        const Token* start = var->declEndToken();
+        if (!start)
+            return false;
+        if (start->strAt(-1) == ")" || start->strAt(-1) == "}")
+            return false;
+        if (Token::Match(start, "; %varid% =", var->declarationId()))
+            start = start->tokAt(2);
+        if (var->isConst() || !bifurcateVariableChanged(var, varids, start, tok, settings, depth))
+            return var->isArgument() || bifurcate(start->astOperand2(), varids, settings, depth - 1);
+        return false;
+    }
+    return false;
+}
+
+// Check if its an alias of the variable or is being aliased to this variable
+template<typename V>
+static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, const V& values, bool* inconclusive = nullptr)
+{
+    if (tok->varId() == varid)
+        return false;
+    if (tok->varId() == 0)
+        return false;
+    if (isAliasOf(tok, varid, inconclusive))
+        return true;
+    if (var && !var->isPointer())
+        return false;
+    // Search through non value aliases
+    return std::any_of(values.begin(), values.end(), [&](const ValueFlow::Value& val) {
+        if (!val.isNonValue())
+            return false;
+        if (val.isInconclusive())
+            return false;
+        if (val.isLifetimeValue() && !val.isLocalLifetimeValue())
+            return false;
+        if (val.isLifetimeValue() && val.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
+            return false;
+        if (!Token::Match(val.tokvalue, ".|&|*|%var%"))
+            return false;
+        return astHasVar(val.tokvalue, tok->varId());
+    });
+}
+
+struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
+    class SelectValueFromVarIdMapRange {
+        using M = std::unordered_map<nonneg int, ValueFlow::Value>;
+
+        struct Iterator {
+            using iterator_category = std::forward_iterator_tag;
+            using value_type = const ValueFlow::Value;
+            using pointer = value_type *;
+            using reference = value_type &;
+            using difference_type = std::ptrdiff_t;
+
+            explicit Iterator(const M::const_iterator & it)
+                : mIt(it) {}
+
+            reference operator*() const {
+                return mIt->second;
+            }
+
+            pointer operator->() const {
+                return &mIt->second;
+            }
+
+            Iterator &operator++() {
+                // cppcheck-suppress postfixOperator - forward iterator needs to perform post-increment
+                mIt++;
+                return *this;
+            }
+
+            friend bool operator==(const Iterator &a, const Iterator &b) {
+                return a.mIt == b.mIt;
+            }
+
+            friend bool operator!=(const Iterator &a, const Iterator &b) {
+                return a.mIt != b.mIt;
+            }
+
+        private:
+            M::const_iterator mIt;
+        };
+
+    public:
+        explicit SelectValueFromVarIdMapRange(const M *m)
+            : mMap(m) {}
+
+        Iterator begin() const {
+            return Iterator(mMap->begin());
+        }
+        Iterator end() const {
+            return Iterator(mMap->end());
+        }
+
+    private:
+        const M *mMap;
+    };
+
+    std::unordered_map<nonneg int, ValueFlow::Value> values;
+    std::unordered_map<nonneg int, const Variable*> vars;
+
+    MultiValueFlowAnalyzer(const std::unordered_map<const Variable*, ValueFlow::Value>& args, const Settings& set)
+        : ValueFlowAnalyzer(set) {
+        for (const auto& p:args) {
+            values[p.first->declarationId()] = p.second;
+            vars[p.first->declarationId()] = p.first;
+        }
+    }
+
+    virtual const std::unordered_map<nonneg int, const Variable*>& getVars() const {
+        return vars;
+    }
+
+    const ValueFlow::Value* getValue(const Token* tok) const override {
+        if (tok->varId() == 0)
+            return nullptr;
+        auto it = values.find(tok->varId());
+        if (it == values.end())
+            return nullptr;
+        return &it->second;
+    }
+    ValueFlow::Value* getValue(const Token* tok) override {
+        if (tok->varId() == 0)
+            return nullptr;
+        auto it = values.find(tok->varId());
+        if (it == values.end())
+            return nullptr;
+        return &it->second;
+    }
+
+    void makeConditional() override {
+        for (auto&& p:values) {
+            p.second.conditional = true;
+        }
+    }
+
+    void addErrorPath(const Token* tok, const std::string& s) override {
+        for (auto&& p:values) {
+            p.second.errorPath.emplace_back(tok, s);
+        }
+    }
+
+    bool isAlias(const Token* tok, bool& inconclusive) const override {
+        const auto range = SelectValueFromVarIdMapRange(&values);
+
+        for (const auto& p:getVars()) {
+            nonneg int const varid = p.first;
+            const Variable* var = p.second;
+            if (tok->varId() == varid)
+                return true;
+            if (isAliasOf(var, tok, varid, range, &inconclusive))
+                return true;
+        }
+        return false;
+    }
+
+    bool lowerToPossible() override {
+        for (auto&& p:values) {
+            if (p.second.isImpossible())
+                return false;
+            p.second.changeKnownToPossible();
+        }
+        return true;
+    }
+    bool lowerToInconclusive() override {
+        for (auto&& p:values) {
+            if (p.second.isImpossible())
+                return false;
+            p.second.setInconclusive();
+        }
+        return true;
+    }
+
+    bool isConditional() const override {
+        for (auto&& p:values) {
+            if (p.second.conditional)
+                return true;
+            if (p.second.condition)
+                return !p.second.isImpossible();
+        }
+        return false;
+    }
+
+    bool stopOnCondition(const Token* condTok) const override {
+        if (isConditional())
+            return true;
+        if (!condTok->hasKnownIntValue() && values.count(condTok->varId()) == 0) {
+            const auto& values_ = condTok->values();
+            return std::any_of(values_.cbegin(), values_.cend(), [](const ValueFlow::Value& v) {
+                return v.isSymbolicValue() && Token::Match(v.tokvalue, "%oror%|&&");
+            });
+        }
+        return false;
+    }
+
+    bool updateScope(const Token* endBlock, bool /*modified*/) const override {
+        const Scope* scope = endBlock->scope();
+        if (!scope)
+            return false;
+        if (scope->type == Scope::eLambda) {
+            return std::all_of(values.cbegin(), values.cend(), [](const std::pair<nonneg int, ValueFlow::Value>& p) {
+                return p.second.isLifetimeValue();
+            });
+        }
+        if (scope->type == Scope::eIf || scope->type == Scope::eElse || scope->type == Scope::eWhile ||
+            scope->type == Scope::eFor) {
+            auto pred = [](const ValueFlow::Value& value) {
+                if (value.isKnown())
+                    return true;
+                if (value.isImpossible())
+                    return true;
+                if (value.isLifetimeValue())
+                    return true;
+                return false;
+            };
+            if (std::all_of(values.cbegin(), values.cend(), std::bind(pred, std::bind(SelectMapValues{}, std::placeholders::_1))))
+                return true;
+            if (isConditional())
+                return false;
+            const Token* condTok = getCondTokFromEnd(endBlock);
+            std::set<nonneg int> varids;
+            std::transform(getVars().cbegin(), getVars().cend(), std::inserter(varids, varids.begin()), SelectMapKeys{});
+            return bifurcate(condTok, varids, getSettings());
+        }
+
+        return false;
+    }
+
+    bool match(const Token* tok) const override {
+        return values.count(tok->varId()) > 0;
+    }
+
+    ProgramState getProgramState() const override {
+        ProgramState ps;
+        for (const auto& p : values) {
+            const Variable* var = vars.at(p.first);
+            if (!var)
+                continue;
+            ps[var->nameToken()] = p.second;
+        }
+        return ps;
+    }
+};
+
+ValuePtr<Analyzer> makeMultiValueFlowAnalyzer(const std::unordered_map<const Variable*, ValueFlow::Value>& args, const Settings& settings)
+{
+    return MultiValueFlowAnalyzer{args, settings};
+}
+
+struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
+    std::unordered_map<nonneg int, const Variable*> varids;
+    std::unordered_map<nonneg int, const Variable*> aliases;
+    ValueFlow::Value value;
+
+    SingleValueFlowAnalyzer(ValueFlow::Value v, const Settings& s) : ValueFlowAnalyzer(s), value(std::move(v)) {}
+
+    const std::unordered_map<nonneg int, const Variable*>& getVars() const {
+        return varids;
+    }
+
+    const std::unordered_map<nonneg int, const Variable*>& getAliasedVars() const {
+        return aliases;
+    }
+
+    const ValueFlow::Value* getValue(const Token* /*tok*/) const override {
+        return &value;
+    }
+    ValueFlow::Value* getValue(const Token* /*tok*/) override {
+        return &value;
+    }
+
+    void makeConditional() override {
+        value.conditional = true;
+    }
+
+    bool useSymbolicValues() const override
+    {
+        if (value.isUninitValue())
+            return false;
+        if (value.isLifetimeValue())
+            return false;
+        return true;
+    }
+
+    void addErrorPath(const Token* tok, const std::string& s) override {
+        value.errorPath.emplace_back(tok, s);
+    }
+
+    template<class T>
+    struct SingleRange {
+        T* x;
+        T* begin() const {
+            return x;
+        }
+        T* end() const {
+            return x+1;
+        }
+    };
+
+    template<class T>
+    static SingleRange<T> MakeSingleRange(T& x)
+    {
+        return {&x};
+    }
+
+    bool isAlias(const Token* tok, bool& inconclusive) const override {
+        if (value.isLifetimeValue())
+            return false;
+        for (const auto& m: {
+            std::ref(getVars()), std::ref(getAliasedVars())
+        }) {
+            for (const auto& p:m.get()) {
+                nonneg int const varid = p.first;
+                const Variable* var = p.second;
+                if (tok->varId() == varid)
+                    return true;
+                if (isAliasOf(var, tok, varid, MakeSingleRange(value), &inconclusive))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    bool isGlobal() const override {
+        const auto& vars = getVars();
+        return std::any_of(vars.cbegin(), vars.cend(), [] (const std::pair<nonneg int, const Variable*>& p) {
+            const Variable* var = p.second;
+            return !var->isLocal() && !var->isArgument() && !var->isConst();
+        });
+    }
+
+    bool lowerToPossible() override {
+        if (value.isImpossible())
+            return false;
+        value.changeKnownToPossible();
+        return true;
+    }
+    bool lowerToInconclusive() override {
+        if (value.isImpossible())
+            return false;
+        value.setInconclusive();
+        return true;
+    }
+
+    bool isConditional() const override {
+        if (value.conditional)
+            return true;
+        if (value.condition)
+            return !value.isKnown() && !value.isImpossible();
+        return false;
+    }
+
+    bool stopOnCondition(const Token* condTok) const override
+    {
+        if (value.isNonValue())
+            return false;
+        if (value.isImpossible())
+            return false;
+        if (isConditional() && !value.isKnown() && !value.isImpossible())
+            return true;
+        if (value.isSymbolicValue())
+            return false;
+        ConditionState cs = analyzeCondition(condTok);
+        return cs.isUnknownDependent();
+    }
+
+    bool updateScope(const Token* endBlock, bool /*modified*/) const override {
+        const Scope* scope = endBlock->scope();
+        if (!scope)
+            return false;
+        if (scope->type == Scope::eLambda)
+            return value.isLifetimeValue();
+        if (scope->type == Scope::eIf || scope->type == Scope::eElse || scope->type == Scope::eWhile ||
+            scope->type == Scope::eFor) {
+            if (value.isKnown() || value.isImpossible())
+                return true;
+            if (value.isLifetimeValue())
+                return true;
+            if (isConditional())
+                return false;
+            const Token* condTok = getCondTokFromEnd(endBlock);
+            std::set<nonneg int> varids2;
+            std::transform(getVars().cbegin(), getVars().cend(), std::inserter(varids2, varids2.begin()), SelectMapKeys{});
+            return bifurcate(condTok, varids2, getSettings());
+        }
+
+        return false;
+    }
+
+    ValuePtr<Analyzer> reanalyze(Token* tok, const std::string& msg) const override {
+        ValueFlow::Value newValue = value;
+        newValue.errorPath.emplace_back(tok, msg);
+        return makeAnalyzer(tok, std::move(newValue), settings);
+    }
+};
+
+struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
+    const Token* expr;
+    bool local = true;
+    bool unknown{};
+    bool dependOnThis{};
+    bool uniqueExprId{};
+
+    ExpressionAnalyzer(const Token* e, ValueFlow::Value val, const Settings& s)
+        : SingleValueFlowAnalyzer(std::move(val), s),
+        expr(e)
+    {
+
+        assert(e && e->exprId() != 0 && "Not a valid expression");
+        dependOnThis = exprDependsOnThis(expr);
+        setupExprVarIds(expr);
+        if (value.isSymbolicValue()) {
+            dependOnThis |= exprDependsOnThis(value.tokvalue);
+            setupExprVarIds(value.tokvalue);
+        }
+        uniqueExprId =
+            expr->isUniqueExprId() && (Token::Match(expr, "%cop%") || !isVariableChanged(expr, 0, s));
+    }
+
+    static bool nonLocal(const Variable* var, bool deref) {
+        return !var || (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) ||
+               var->isStatic() || var->isReference() || var->isExtern();
+    }
+
+    void setupExprVarIds(const Token* start, int depth = 0) {
+        if (depth > settings.vfOptions.maxExprVarIdDepth) {
+            // TODO: add bailout message
+            return;
+        }
+        visitAstNodes(start, [&](const Token* tok) {
+            const bool top = depth == 0 && tok == start;
+            const bool ispointer = astIsPointer(tok) || astIsSmartPointer(tok) || astIsIterator(tok);
+            if (!top || !ispointer || value.indirect != 0) {
+                for (const ValueFlow::Value& v : tok->values()) {
+                    if (!(v.isLocalLifetimeValue() || (ispointer && v.isSymbolicValue() && v.isKnown())))
+                        continue;
+                    if (!v.tokvalue)
+                        continue;
+                    if (v.tokvalue == tok)
+                        continue;
+                    setupExprVarIds(v.tokvalue, depth + 1);
+                }
+            }
+            if (depth == 0 && tok->isIncompleteVar()) {
+                // TODO: Treat incomplete var as global, but we need to update
+                // the alias variables to just expr ids instead of requiring
+                // Variable
+                unknown = true;
+                return ChildrenToVisit::none;
+            }
+            if (tok->varId() > 0) {
+                varids[tok->varId()] = tok->variable();
+                if (!Token::simpleMatch(tok->previous(), ".")) {
+                    const Variable* var = tok->variable();
+                    if (var && var->isReference() && var->isLocal() && Token::Match(var->nameToken(), "%var% [=(]") &&
+                        !isGlobalData(var->nameToken()->next()->astOperand2()))
+                        return ChildrenToVisit::none;
+                    const bool deref = tok->astParent() &&
+                                       (tok->astParent()->isUnaryOp("*") ||
+                                        (tok->astParent()->str() == "[" && tok == tok->astParent()->astOperand1()));
+                    local &= !nonLocal(tok->variable(), deref);
+                }
+            }
+            return ChildrenToVisit::op1_and_op2;
+        });
+    }
+
+    virtual bool skipUniqueExprIds() const {
+        return true;
+    }
+
+    bool invalid() const override {
+        if (skipUniqueExprIds() && uniqueExprId)
+            return true;
+        return unknown;
+    }
+
+    ProgramState getProgramState() const override {
+        ProgramState ps;
+        ps[expr] = value;
+        return ps;
+    }
+
+    bool match(const Token* tok) const override {
+        return tok->exprId() == expr->exprId();
+    }
+
+    bool dependsOnThis() const override {
+        return dependOnThis;
+    }
+
+    bool isGlobal() const override {
+        return !local;
+    }
+
+    bool isVariable() const override {
+        return expr->varId() > 0;
+    }
+
+    Action isAliasModified(const Token* tok, int indirect) const override {
+        if (value.isSymbolicValue() && tok->exprId() == value.tokvalue->exprId())
+            indirect = 0;
+        return SingleValueFlowAnalyzer::isAliasModified(tok, indirect);
+    }
+};
+
+struct SameExpressionAnalyzer : ExpressionAnalyzer {
+    SameExpressionAnalyzer(const Token* e, ValueFlow::Value val, const Settings& s)
+        : ExpressionAnalyzer(e, std::move(val), s)
+    {}
+
+    bool skipUniqueExprIds() const override {
+        return false;
+    }
+
+    bool match(const Token* tok) const override
+    {
+        return isSameExpression(true, expr, tok, getSettings(), true, true);
+    }
+};
+
+ValuePtr<Analyzer> makeSameExpressionAnalyzer(const Token* e, ValueFlow::Value val, const Settings& s)
+{
+    return SameExpressionAnalyzer{e, std::move(val), s};
+}
+
+struct OppositeExpressionAnalyzer : ExpressionAnalyzer {
+    bool isNot{};
+
+    OppositeExpressionAnalyzer(bool pIsNot, const Token* e, ValueFlow::Value val, const Settings& s)
+        : ExpressionAnalyzer(e, std::move(val), s), isNot(pIsNot)
+    {}
+
+    bool skipUniqueExprIds() const override {
+        return false;
+    }
+
+    bool match(const Token* tok) const override {
+        return isOppositeCond(isNot, expr, tok, getSettings(), true, true);
+    }
+};
+
+ValuePtr<Analyzer> makeOppositeExpressionAnalyzer(bool pIsNot, const Token* e, ValueFlow::Value val, const Settings& s)
+{
+    return OppositeExpressionAnalyzer{pIsNot, e, std::move(val), s};
+}
+
+struct SubExpressionAnalyzer : ExpressionAnalyzer {
+    using PartialReadContainer = std::vector<std::pair<Token *, ValueFlow::Value>>;
+    // A shared_ptr is used so partial reads can be captured even after forking
+    std::shared_ptr<PartialReadContainer> partialReads;
+
+    SubExpressionAnalyzer(const Token* e, ValueFlow::Value val, const Settings& s)
+        : ExpressionAnalyzer(e, std::move(val), s), partialReads(std::make_shared<PartialReadContainer>())
+    {}
+
+    SubExpressionAnalyzer(const Token* e, ValueFlow::Value val, const std::shared_ptr<PartialReadContainer>& p, const Settings& s)
+        : ExpressionAnalyzer(e, std::move(val), s), partialReads(p)
+    {}
+
+    virtual bool submatch(const Token* tok, bool exact = true) const = 0;
+
+    bool isAlias(const Token* tok, bool& inconclusive) const override
+    {
+        if (tok->exprId() == expr->exprId() && tok->astParent() && submatch(tok->astParent(), false))
+            return false;
+        return ExpressionAnalyzer::isAlias(tok, inconclusive);
+    }
+
+    bool match(const Token* tok) const override
+    {
+        return tok->astOperand1() && tok->astOperand1()->exprId() == expr->exprId() && submatch(tok);
+    }
+    bool internalMatch(const Token* tok) const override
+    {
+        return tok->exprId() == expr->exprId() && !(astIsLHS(tok) && submatch(tok->astParent(), false));
+    }
+    void internalUpdate(Token* tok, const ValueFlow::Value& v, Direction /*d*/) override
+    {
+        partialReads->emplace_back(tok, v);
+    }
+
+    // No reanalysis for subexpression
+    ValuePtr<Analyzer> reanalyze(Token* /*tok*/, const std::string& /*msg*/) const override {
+        return {};
+    }
+};
+
+struct MemberExpressionAnalyzer : SubExpressionAnalyzer {
+    std::string varname;
+
+    MemberExpressionAnalyzer(std::string varname, const Token* e, ValueFlow::Value val, const std::shared_ptr<PartialReadContainer>& p, const Settings& s)
+        : SubExpressionAnalyzer(e, std::move(val), p, s), varname(std::move(varname))
+    {}
+
+    bool submatch(const Token* tok, bool exact) const override
+    {
+        if (!Token::Match(tok, ". %var%"))
+            return false;
+        if (!exact)
+            return true;
+        return tok->strAt(1) == varname;
+    }
+};
+
+ValuePtr<Analyzer> makeMemberExpressionAnalyzer(std::string varname, const Token* e, ValueFlow::Value val, const std::shared_ptr<PartialReadContainer>& p, const Settings& s)
+{
+    return MemberExpressionAnalyzer{std::move(varname), e, val, p, s};
+}
+
+struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
+    ContainerExpressionAnalyzer(const Token* expr, ValueFlow::Value val, const Settings& s)
+        : ExpressionAnalyzer(expr, std::move(val), s)
+    {}
+
+    bool match(const Token* tok) const override {
+        return tok->exprId() == expr->exprId() || (astIsIterator(tok) && isAliasOf(tok, expr->exprId()));
+    }
+
+    Action isWritable(const Token* tok, Direction /*d*/) const override
+    {
+        if (astIsIterator(tok))
+            return Action::None;
+        if (!getValue(tok))
+            return Action::None;
+        if (!tok->valueType())
+            return Action::None;
+        if (!astIsContainer(tok))
+            return Action::None;
+        const Token* parent = tok->astParent();
+        const Library::Container* container = getLibraryContainer(tok);
+
+        if (container->stdStringLike && Token::simpleMatch(parent, "+=") && astIsLHS(tok) && parent->astOperand2()) {
+            const Token* rhs = parent->astOperand2();
+            if (rhs->tokType() == Token::eString)
+                return Action::Read | Action::Write | Action::Incremental;
+            const Library::Container* rhsContainer = getLibraryContainer(rhs);
+            if (rhsContainer && rhsContainer->stdStringLike) {
+                if (std::any_of(rhs->values().cbegin(), rhs->values().cend(), [&](const ValueFlow::Value &rhsval) {
+                    return rhsval.isKnown() && rhsval.isContainerSizeValue();
+                }))
+                    return Action::Read | Action::Write | Action::Incremental;
+            }
+        } else if (astIsLHS(tok) && Token::Match(tok->astParent(), ". %name% (")) {
+            const Library::Container::Action action = container->getAction(tok->astParent()->strAt(1));
+            if (action == Library::Container::Action::PUSH || action == Library::Container::Action::POP || action == Library::Container::Action::APPEND) { // TODO: handle more actions?
+                std::vector<const Token*> args = getArguments(tok->tokAt(3));
+                if (args.size() < 2 || action == Library::Container::Action::APPEND)
+                    return Action::Read | Action::Write | Action::Incremental;
+            }
+        }
+        return Action::None;
+    }
+
+    void writeValue(ValueFlow::Value* val, const Token* tok, Direction d) const override {
+        if (!val)
+            return;
+        if (!tok->astParent())
+            return;
+        if (!tok->valueType())
+            return;
+        if (!astIsContainer(tok))
+            return;
+        const Token* parent = tok->astParent();
+        const Library::Container* container = getLibraryContainer(tok);
+        int n = 0;
+
+        if (container->stdStringLike && Token::simpleMatch(parent, "+=") && parent->astOperand2()) {
+            const Token* rhs = parent->astOperand2();
+            const Library::Container* rhsContainer = getLibraryContainer(rhs);
+            if (rhs->tokType() == Token::eString)
+                n = Token::getStrLength(rhs);
+            else if (rhsContainer && rhsContainer->stdStringLike) {
+                auto it = std::find_if(rhs->values().begin(), rhs->values().end(), [&](const ValueFlow::Value& rhsval) {
+                    return rhsval.isKnown() && rhsval.isContainerSizeValue();
+                });
+                if (it != rhs->values().end())
+                    n = it->intvalue;
+            }
+        } else if (astIsLHS(tok) && Token::Match(tok->astParent(), ". %name% (")) {
+            const Library::Container::Action action = container->getAction(tok->astParent()->strAt(1));
+            switch (action) {
+            case Library::Container::Action::PUSH:
+                n = 1;
+                break;
+            case Library::Container::Action::POP:
+                n = -1;
+                break;
+            case Library::Container::Action::APPEND: {
+                std::vector<const Token*> args = getArguments(tok->astParent()->tokAt(2));
+                if (args.size() == 1) // TODO: handle overloads
+                    n = valueFlowGetStrLength(tok->astParent()->tokAt(3));
+                if (n == 0) // TODO: handle known empty append
+                    val->setPossible();
+                break;
+            }
+            default:
+                break;
+            }
+        }
+        if (d == Direction::Reverse)
+            val->intvalue -= n;
+        else
+            val->intvalue += n;
+    }
+
+    int getIndirect(const Token* tok) const override
+    {
+        if (tok->valueType()) {
+            return tok->valueType()->pointer;
+        }
+        return ValueFlowAnalyzer::getIndirect(tok);
+    }
+
+    Action isModified(const Token* tok) const override {
+        Action read = Action::Read;
+        // An iterator won't change the container size
+        if (astIsIterator(tok))
+            return read;
+        if (Token::Match(tok->astParent(), "%assign%") && astIsLHS(tok))
+            return Action::Invalid;
+        if (isLikelyStreamRead(tok->astParent()))
+            return Action::Invalid;
+        if (astIsContainer(tok) && ValueFlow::isContainerSizeChanged(tok, getIndirect(tok), getSettings()))
+            return read | Action::Invalid;
+        return read;
+    }
+};
+
+static const Token* solveExprValue(const Token* expr, ValueFlow::Value& value)
+{
+    return ValueFlow::solveExprValue(
+        expr,
+        [](const Token* tok) -> std::vector<MathLib::bigint> {
+        if (tok->hasKnownIntValue())
+            return {tok->values().front().intvalue};
+        return {};
+    },
+        value);
+}
+
+ValuePtr<Analyzer> makeAnalyzer(const Token* exprTok, ValueFlow::Value value, const Settings& settings)
+{
+    if (value.isContainerSizeValue())
+        return ContainerExpressionAnalyzer(exprTok, std::move(value), settings);
+    const Token* expr = solveExprValue(exprTok, value);
+    return ExpressionAnalyzer(expr, std::move(value), settings);
+}
+
+ValuePtr<Analyzer> makeReverseAnalyzer(const Token* exprTok, ValueFlow::Value value, const Settings& settings)
+{
+    if (value.isContainerSizeValue())
+        return ContainerExpressionAnalyzer(exprTok, std::move(value), settings);
+    return ExpressionAnalyzer(exprTok, std::move(value), settings);
+}

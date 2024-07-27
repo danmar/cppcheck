@@ -87,6 +87,7 @@
     <ClCompile Include="token.cpp" />
     <ClCompile Include="tokenlist.cpp" />
     <ClCompile Include="utils.cpp" />
+    <ClCompile Include="vf_analyzers.cpp" />
     <ClCompile Include="vf_array.cpp" />
     <ClCompile Include="vf_arraybool.cpp" />
     <ClCompile Include="vf_arrayelement.cpp" />
@@ -188,10 +189,10 @@
     <ClInclude Include="tokenrange.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="valueflow.h" />
-    <ClInclude Include="valueflowanalyzer.h" />
     <ClInclude Include="valueptr.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="vf_analyze.h" />
+    <ClInclude Include="vf_analyzers.h" />
     <ClInclude Include="vf_array.h" />
     <ClInclude Include="vf_arraybool.h" />
     <ClInclude Include="vf_arrayelement.h" />

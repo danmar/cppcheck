@@ -472,7 +472,6 @@ int main(int argc, char **argv)
     libfiles_h.emplace_back("sourcelocation.h");
     libfiles_h.emplace_back("standards.h");
     libfiles_h.emplace_back("tokenrange.h");
-    libfiles_h.emplace_back("valueflowanalyzer.h");
     libfiles_h.emplace_back("valueptr.h");
     libfiles_h.emplace_back("version.h");
     libfiles_h.emplace_back("vf_analyze.h");
