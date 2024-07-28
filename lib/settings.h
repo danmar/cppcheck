@@ -184,6 +184,9 @@ public:
     /** @brief Is --debug-clang-output given? */
     bool debugClangOutput{};
 
+    /** @brief Is --debug-ignore given? */
+    bool debugignore{};
+
     /** @brief Internal: Is --debug-lookup or --debug-lookup=all given? */
     bool debuglookup{};
 

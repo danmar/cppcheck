@@ -42,7 +42,7 @@
 #include "json.h"
 
 // TODO: align the exclusion logic with PathMatch
-void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
+void ImportProject::ignorePaths(const std::vector<std::string> &ipaths, bool debug)
 {
     for (auto it = fileSettings.cbegin(); it != fileSettings.cend();) {
         bool ignore = false;
@@ -63,8 +63,11 @@ void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
                 }
             }
         }
-        if (ignore)
+        if (ignore) {
+            if (debug)
+                std::cout << "ignored path: " << it->filename() << std::endl;
             it = fileSettings.erase(it);
+        }
         else
             ++it;
     }

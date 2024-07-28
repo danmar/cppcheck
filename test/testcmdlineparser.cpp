@@ -440,6 +440,7 @@ private:
         TEST_CASE(debugClangOutput);
         TEST_CASE(debugXmlMultiple);
         TEST_CASE(debugNormalXmlMultiple);
+        TEST_CASE(debugIgnore);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -2972,6 +2973,13 @@ private:
         const char * const argv[] = {"cppcheck", "--debug-normal", "--xml", "1.cpp", "2.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
         ASSERT_EQUALS("cppcheck: error: printing debug output in XML format does not support multiple input files.\n", logger->str());
+    }
+
+    void debugIgnore() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-ignore", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, settings->debugignore);
     }
 
     void ignorepaths1() {
