@@ -41,9 +41,10 @@ public:
      * @param path root path
      * @param extra Extra file extensions
      * @param ignored ignored paths
+     * @param debug log if path was ignored
      * @return On success, an empty string is returned. On error, a error message is returned.
      */
-    static std::string recursiveAddFiles(std::list<FileWithDetails> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored);
+    static std::string recursiveAddFiles(std::list<FileWithDetails> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored, bool debug = false);
 
     /**
      * @brief (Recursively) add source files to a map.
@@ -55,9 +56,10 @@ public:
      * @param extra Extra file extensions
      * @param recursive Enable recursion
      * @param ignored ignored paths
+     * @param debug log when a path was ignored
      * @return On success, an empty string is returned. On error, a error message is returned.
      */
-    static std::string addFiles(std::list<FileWithDetails> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored);
+    static std::string addFiles(std::list<FileWithDetails> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored, bool debug = false);
 };
 
 /// @}

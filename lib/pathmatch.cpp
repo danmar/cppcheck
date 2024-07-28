@@ -22,6 +22,7 @@
 #include "utils.h"
 
 #include <cstddef>
+#include <iostream>
 #include <utility>
 
 PathMatch::PathMatch(std::vector<std::string> paths, bool caseSensitive)
