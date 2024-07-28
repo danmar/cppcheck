@@ -27,12 +27,14 @@
 PathMatch::PathMatch(std::vector<std::string> paths, bool caseSensitive)
     : mPaths(std::move(paths)), mCaseSensitive(caseSensitive)
 {
-    if (!mCaseSensitive)
+    for (std::string& p : mPaths)
     {
-        for (std::string& p : mPaths)
+        p = Path::fromNativeSeparators(p);
+        if (!mCaseSensitive)
             strTolower(p);
     }
-    mWorkingDirectory.push_back(Path::getCurrentPath());
+    // TODO: also make lowercase?
+    mWorkingDirectory.push_back(Path::fromNativeSeparators(Path::getCurrentPath()));
 }
 
 bool PathMatch::match(const std::string &path) const

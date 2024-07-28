@@ -95,7 +95,7 @@ private:
 
     void onemasksamepathdifferentslash() const {
         const PathMatch srcMatcher2{std::vector<std::string>(1, "src\\")};
-        TODO_ASSERT(srcMatcher2.match("src/"));
+        ASSERT(srcMatcher2.match("src/"));
     }
 
     void onemasksamepathdifferentcase() const {

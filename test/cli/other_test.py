@@ -1839,8 +1839,6 @@ def __write_gui_project(tmpdir, test_file, ignore):
     return project_file
 
 
-# TODO: mismatching slashes do not match
-@pytest.mark.xfail(strict=True)
 def test_ignore_project(tmpdir):
     os.mkdir(os.path.join(tmpdir, 'src'))
     test_file = os.path.join(tmpdir, 'src', 'test.cpp')
