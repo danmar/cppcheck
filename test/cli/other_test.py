@@ -1813,6 +1813,24 @@ def test_ignore(tmpdir):
     assert stdout.splitlines() == lines_exp
 
     args = [
+        '-isrc/',
+        test_file
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    args = [
+        '-isrc\\',
+        test_file
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    args = [
         '-i{}'.format(test_file),
         test_file
     ]
@@ -1899,6 +1917,24 @@ def test_ignore_project(tmpdir):
     assert exitcode == 1, stdout
     assert stdout.splitlines() == lines_exp
 
+    project_file = __write_gui_project(tmpdir, test_file, 'src/')
+    args = [
+        '--project={}'.format(project_file)
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    project_file = __write_gui_project(tmpdir, test_file, 'src\\')
+    args = [
+        '--project={}'.format(project_file)
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
     project_file = __write_gui_project(tmpdir, test_file, test_file)
     args = [
         '--project={}'.format(project_file)
@@ -1970,6 +2006,26 @@ def test_ignore_project_2(tmpdir):
     project_file = __write_compdb(tmpdir, test_file)
     args = [
         '-isrc\\test.cpp',
+        '--project={}'.format(project_file)
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    project_file = __write_compdb(tmpdir, test_file)
+    args = [
+        '-isrc/',
+        '--project={}'.format(project_file)
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    project_file = __write_compdb(tmpdir, test_file)
+    args = [
+        '-isrc\\',
         '--project={}'.format(project_file)
     ]
 
