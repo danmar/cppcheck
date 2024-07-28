@@ -35,11 +35,11 @@ public:
 
     /**
      * The constructor.
-     * @param excludedPaths List of masks.
+     * @param paths List of masks.
      * @param caseSensitive Match the case of the characters when
      *   matching paths?
      */
-    explicit PathMatch(std::vector<std::string> excludedPaths, bool caseSensitive = true);
+    explicit PathMatch(std::vector<std::string> paths, bool caseSensitive = true);
 
     /**
      * @brief Match path against list of masks.
@@ -58,7 +58,7 @@ protected:
     static std::string removeFilename(const std::string &path);
 
 private:
-    std::vector<std::string> mExcludedPaths;
+    std::vector<std::string> mPaths;
     bool mCaseSensitive;
     std::vector<std::string> mWorkingDirectory;
 };
