@@ -57,7 +57,9 @@ std::size_t ExprIdToken::Hash::operator()(ExprIdToken etok) const
 }
 
 void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
-    mValues[expr] = value;
+    copyOnWrite();
+
+    (*mValues)[expr] = value;
     ValueFlow::Value subvalue = value;
     const Token* subexpr = solveExprValue(
         expr,
@@ -71,12 +73,12 @@ void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
     },
         subvalue);
     if (subexpr)
-        mValues[subexpr] = std::move(subvalue);
+        (*mValues)[subexpr] = std::move(subvalue);
 }
 const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossible) const
 {
-    const ProgramMemory::Map::const_iterator it = mValues.find(exprid);
-    const bool found = it != mValues.cend() && (impossible || !it->second.isImpossible());
+    const ProgramMemory::Map::const_iterator it = mValues->find(exprid);
+    const bool found = it != mValues->cend() && (impossible || !it->second.isImpossible());
     if (found)
         return &it->second;
     return nullptr;
@@ -147,26 +149,33 @@ void ProgramMemory::setContainerSizeValue(const Token* expr, MathLib::bigint val
 }
 
 void ProgramMemory::setUnknown(const Token* expr) {
-    mValues[expr].valueType = ValueFlow::Value::ValueType::UNINIT;
+    copyOnWrite();
+
+    (*mValues)[expr].valueType = ValueFlow::Value::ValueType::UNINIT;
 }
 
 bool ProgramMemory::hasValue(nonneg int exprid)
 {
-    return mValues.find(exprid) != mValues.end();
+    return mValues->find(exprid) != mValues->end();
 }
 
 const ValueFlow::Value& ProgramMemory::at(nonneg int exprid) const {
-    return mValues.at(exprid);
+    return mValues->at(exprid);
 }
 ValueFlow::Value& ProgramMemory::at(nonneg int exprid) {
-    return mValues.at(exprid);
+    copyOnWrite();
+
+    return mValues->at(exprid);
 }
 
 void ProgramMemory::erase_if(const std::function<bool(const ExprIdToken&)>& pred)
 {
-    for (auto it = mValues.begin(); it != mValues.end();) {
+    // TODO: how to delay until we actuallly modify?
+    copyOnWrite();
+
+    for (auto it = mValues->begin(); it != mValues->end();) {
         if (pred(it->first))
-            it = mValues.erase(it);
+            it = mValues->erase(it);
         else
             ++it;
     }
@@ -179,25 +188,39 @@ void ProgramMemory::swap(ProgramMemory &pm)
 
 void ProgramMemory::clear()
 {
-    mValues.clear();
+    copyOnWrite();
+
+    mValues->clear();
 }
 
 bool ProgramMemory::empty() const
 {
-    return mValues.empty();
+    return mValues->empty();
 }
 
 void ProgramMemory::replace(ProgramMemory pm)
 {
-    for (auto&& p : pm.mValues) {
-        mValues[p.first] = std::move(p.second);
+    copyOnWrite();
+
+    for (auto&& p : (*pm.mValues)) {
+        (*mValues)[p.first] = std::move(p.second);
     }
 }
 
 void ProgramMemory::insert(const ProgramMemory &pm)
 {
+    copyOnWrite();
+
     for (auto&& p : pm)
-        mValues.insert(p);
+        mValues->insert(p);
+}
+
+void ProgramMemory::copyOnWrite()
+{
+    if (mValues.use_count() == 1)
+        return;
+
+    mValues = std::shared_ptr<Map>(new Map(*mValues));
 }
 
 static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings& settings);
