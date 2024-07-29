@@ -221,7 +221,7 @@ void ProgramMemory::copyOnWrite()
     if (mValues.use_count() == 1)
         return;
 
-    mValues = std::shared_ptr<Map>(new Map(*mValues));
+    mValues = std::make_shared<Map>(*mValues);
 }
 
 static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings& settings);
