@@ -170,6 +170,9 @@ ValueFlow::Value& ProgramMemory::at(nonneg int exprid) {
 
 void ProgramMemory::erase_if(const std::function<bool(const ExprIdToken&)>& pred)
 {
+    if (mValues->empty())
+        return;
+
     // TODO: how to delay until we actuallly modify?
     copyOnWrite();
 
@@ -188,6 +191,9 @@ void ProgramMemory::swap(ProgramMemory &pm)
 
 void ProgramMemory::clear()
 {
+    if (mValues->empty())
+        return;
+
     copyOnWrite();
 
     mValues->clear();
@@ -200,6 +206,9 @@ bool ProgramMemory::empty() const
 
 void ProgramMemory::replace(ProgramMemory pm)
 {
+    if (pm.empty())
+        return;
+
     copyOnWrite();
 
     for (auto&& p : (*pm.mValues)) {
@@ -209,6 +218,9 @@ void ProgramMemory::replace(ProgramMemory pm)
 
 void ProgramMemory::insert(const ProgramMemory &pm)
 {
+    if (pm.empty())
+        return;
+
     copyOnWrite();
 
     for (auto&& p : pm)
