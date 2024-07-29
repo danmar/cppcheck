@@ -204,6 +204,7 @@ bool ProgramMemory::empty() const
     return mValues->empty();
 }
 
+// NOLINTNEXTLINE(performance-unnecessary-value-param) - technically correct but we are moving the given values
 void ProgramMemory::replace(ProgramMemory pm)
 {
     if (pm.empty())
