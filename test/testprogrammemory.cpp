@@ -31,7 +31,7 @@ private:
         TEST_CASE(copyOnWrite);
     }
 
-    void copyOnWrite() {
+    void copyOnWrite() const {
         SimpleTokenList tokenlist("1+1;");
         Token* tok = tokenlist.front();
         const nonneg int id = 123;
