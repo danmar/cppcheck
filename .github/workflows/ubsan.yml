@@ -126,11 +126,12 @@ jobs:
       # TODO: only fail the step on sanitizer issues - since we use processes it will only fail the underlying process which will result in an cppcheckError
       - name: Self check
         run: |
-          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5_summary -D__GNUC__ --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=gnu --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings --check-level=exhaustive"
+          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5_summary -D__GNUC__ --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=gnu --inconclusive --enable=style,performance,portability,warning,missingInclude --exception-handling --debug-warnings --check-level=exhaustive"
           cppcheck_options="-D__CPPCHECK__ -DCHECK_INTERNAL -DHAVE_RULES --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2"
           ec=0
           ./cmake.output/bin/cppcheck $selfcheck_options externals/simplecpp || ec=1
-          ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options --addon=naming.json cli lib || ec=1
+          ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options --addon=naming.json cli || ec=1
+          ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options --addon=naming.json --enable=internal lib || ec=1
           ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options -DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=68 -DQT_CHARTS_LIB -DQT_MOC_HAS_STRINGDATA --library=qt --addon=naming.json -Icmake.output/gui -Igui gui/*.cpp cmake.output/gui/*.cpp || ec=1
           ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options -Icli test/*.cpp tools/*.cpp || ec=1
           ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options -DQ_MOC_OUTPUT_REVISION=68 -DQT_CHARTS_LIB -DQT_MOC_HAS_STRINGDATA --library=qt -Icmake.output/tools/triage -Igui tools/triage/*.cpp cmake.output/tools/triage/*.cpp || ec=1
