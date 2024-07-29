@@ -216,17 +216,6 @@ void ProgramMemory::replace(ProgramMemory pm)
     }
 }
 
-void ProgramMemory::insert(const ProgramMemory &pm)
-{
-    if (pm.empty())
-        return;
-
-    copyOnWrite();
-
-    for (auto&& p : pm)
-        mValues->insert(p);
-}
-
 void ProgramMemory::copyOnWrite()
 {
     if (mValues.use_count() == 1)
@@ -481,14 +470,6 @@ static ProgramMemory getInitialProgramState(const Token* tok,
 ProgramMemoryState::ProgramMemoryState(const Settings* s) : settings(s)
 {
     assert(settings != nullptr);
-}
-
-void ProgramMemoryState::insert(const ProgramMemory &pm, const Token* origin)
-{
-    if (origin)
-        for (auto&& p : pm)
-            origins.insert(std::make_pair(p.first.getExpressionId(), origin));
-    state.insert(pm);
 }
 
 void ProgramMemoryState::replace(ProgramMemory pm, const Token* origin)

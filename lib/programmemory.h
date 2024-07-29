@@ -132,8 +132,6 @@ struct CPPCHECKLIB ProgramMemory {
 
     void replace(ProgramMemory pm);
 
-    void insert(const ProgramMemory &pm);
-
     Map::iterator begin() {
         copyOnWrite();
 
@@ -175,7 +173,6 @@ struct ProgramMemoryState {
 
     explicit ProgramMemoryState(const Settings* s);
 
-    void insert(const ProgramMemory &pm, const Token* origin = nullptr);
     void replace(ProgramMemory pm, const Token* origin = nullptr);
 
     void addState(const Token* tok, const ProgramMemory::Map& vars);
