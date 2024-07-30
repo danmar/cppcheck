@@ -411,6 +411,7 @@ QChartView *createChart(const QString &statsFile, const QString &tool)
         s->attachAxis(axisY);
         if (const auto *ls = dynamic_cast<const QLineSeries*>(s)) {
             for (QPointF p : ls->points()) {
+                // cppcheck-suppress useStlAlgorithm - this would reduce the readability of the code
                 maxY = std::max(p.y(), maxY);
             }
         }
