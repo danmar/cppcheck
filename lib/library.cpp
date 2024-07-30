@@ -1438,8 +1438,7 @@ bool Library::matchArguments(const Token *ftok, const std::string &functionName)
     int args = 0;
     int firstOptionalArg = -1;
     for (const std::pair<const int, Library::ArgumentChecks> & argCheck : it->second.argumentChecks) {
-        if (argCheck.first > args)
-            args = argCheck.first;
+        args = std::max(argCheck.first, args);
         if (argCheck.second.optional && (firstOptionalArg == -1 || firstOptionalArg > argCheck.first))
             firstOptionalArg = argCheck.first;
 

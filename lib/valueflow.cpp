@@ -2556,7 +2556,7 @@ struct LifetimeStore {
                const TokenList& tokenlist,
                ErrorLogger& errorLogger,
                const Settings& settings,
-               Predicate pred,
+               const Predicate& pred,
                SourceLocation loc = SourceLocation::current())
     {
         if (!argtok)
@@ -2615,7 +2615,7 @@ struct LifetimeStore {
                const TokenList& tokenlist,
                ErrorLogger& errorLogger,
                const Settings& settings,
-               Predicate pred,
+               const Predicate& pred,
                SourceLocation loc = SourceLocation::current())
     {
         if (!argtok)
@@ -6117,31 +6117,11 @@ static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue,
     });
 }
 
-template<class Iterator>
-struct IteratorRange
-{
-    Iterator mBegin;
-    Iterator mEnd;
-
-    Iterator begin() const {
-        return mBegin;
-    }
-
-    Iterator end() const {
-        return mEnd;
-    }
-};
-
-template<class Iterator>
-static IteratorRange<Iterator> MakeIteratorRange(Iterator start, Iterator last)
-{
-    return {start, last};
-}
-
 static void valueFlowSubFunction(const TokenList& tokenlist, SymbolDatabase& symboldatabase,  ErrorLogger& errorLogger, const Settings& settings)
 {
     int id = 0;
-    for (const Scope* scope : MakeIteratorRange(symboldatabase.functionScopes.crbegin(), symboldatabase.functionScopes.crend())) {
+    for (auto it = symboldatabase.functionScopes.crbegin(); it != symboldatabase.functionScopes.crend(); ++it) {
+        const Scope* scope = *it;
         const Function* function = scope->function;
         if (!function)
             continue;

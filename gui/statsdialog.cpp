@@ -22,6 +22,8 @@
 #include "projectfile.h"
 #include "showtypes.h"
 
+#include <algorithm>
+
 #include "ui_statsdialog.h"
 
 #include <QApplication>
@@ -409,8 +411,8 @@ QChartView *createChart(const QString &statsFile, const QString &tool)
         s->attachAxis(axisY);
         if (const auto *ls = dynamic_cast<const QLineSeries*>(s)) {
             for (QPointF p : ls->points()) {
-                if (p.y() > maxY)
-                    maxY = p.y();
+                // cppcheck-suppress useStlAlgorithm - this would reduce the readability of the code
+                maxY = std::max(p.y(), maxY);
             }
         }
     }

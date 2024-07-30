@@ -2030,6 +2030,7 @@ static bool removeContradiction(std::list<ValueFlow::Value>& values)
 using ValueIterator = std::list<ValueFlow::Value>::iterator;
 
 template<class Iterator>
+// NOLINTNEXTLINE(performance-unnecessary-value-param) - false positive
 static ValueIterator removeAdjacentValues(std::list<ValueFlow::Value>& values, ValueIterator x, Iterator start, Iterator last)
 {
     if (!isAdjacent(*x, **start))

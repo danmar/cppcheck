@@ -1200,9 +1200,7 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
     result.standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
     result.enforcedLang = (Standards::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
 
-    if (result.jobs <= 1) {
-        result.jobs = 1;
-    }
+    result.jobs = std::max(result.jobs, 1u);
 
     Settings::terminate(false);
 
@@ -2169,7 +2167,7 @@ static int getVersion(const QString& nameWithVersion) {
             break;
         if (c == ' ') {
             if (ret > 0 && dot == 1 && nameWithVersion.endsWith(" dev"))
-                return ret * 1000000 + v * 1000 + 500;
+                return (ret * 1000000) + (v * 1000) + 500;
             dot = ret = v = 0;
         }
         else if (c == '.') {

@@ -50,7 +50,7 @@
 
 // TODO: __USE_DYNAMIC_STACK_SIZE is dependent on the features.h include and not a built-in compiler define, so it might be problematic to depend on it
 #ifdef __USE_DYNAMIC_STACK_SIZE
-static constexpr size_t MYSTACKSIZE = 16*1024+32768; // wild guess about a reasonable buffer
+static constexpr size_t MYSTACKSIZE = (16*1024)+32768; // wild guess about a reasonable buffer
 #else
 static constexpr size_t MYSTACKSIZE = 16*1024+SIGSTKSZ; // wild guess about a reasonable buffer
 #endif
