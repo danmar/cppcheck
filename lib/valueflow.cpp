@@ -6120,8 +6120,8 @@ static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue,
 static void valueFlowSubFunction(const TokenList& tokenlist, SymbolDatabase& symboldatabase,  ErrorLogger& errorLogger, const Settings& settings)
 {
     int id = 0;
-    for (auto I = symboldatabase.functionScopes.crbegin(); I != symboldatabase.functionScopes.crend(); ++I) {
-        const Scope* scope = *I;
+    for (auto it = symboldatabase.functionScopes.crbegin(); it != symboldatabase.functionScopes.crend(); ++it) {
+        const Scope* scope = *it;
         const Function* function = scope->function;
         if (!function)
             continue;
