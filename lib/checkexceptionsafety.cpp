@@ -71,9 +71,8 @@ void CheckExceptionSafety::destructors()
                     tok = tok->linkAt(1); // end of if ( ... )
                     tok = tok->linkAt(1); // end of { ... }
                 }
-
                 // throw found within a destructor
-                else if (tok->str() == "throw") {
+                else if (tok->str() == "throw" && function->isNoExcept()) {
                     destructorsError(tok, scope->className);
                     break;
                 }
@@ -296,8 +295,7 @@ void CheckExceptionSafety::nothrowThrows()
             continue;
 
         // check noexcept and noexcept(true) functions
-        if (function->isNoExcept() &&
-            (!function->noexceptArg || function->noexceptArg->str() == "true")) {
+        if (function->isNoExcept()) {
             const Token *throws = functionThrows(function);
             if (throws)
                 noexceptThrowError(throws);

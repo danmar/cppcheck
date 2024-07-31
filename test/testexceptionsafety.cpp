@@ -76,7 +76,8 @@ private:
               "        throw e;\n"
               "    }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Class x is not safe, destructor throws exception\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Class x is not safe, destructor throws exception\n"
+                      "[test.cpp:3]: (error) Exception thrown in function declared not to throw exceptions.\n", errout_str());
 
         check("class x {\n"
               "    ~x();\n"
@@ -84,7 +85,8 @@ private:
               "x::~x() {\n"
               "    throw e;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Class x is not safe, destructor throws exception\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Class x is not safe, destructor throws exception\n"
+                      "[test.cpp:5]: (error) Exception thrown in function declared not to throw exceptions.\n", errout_str());
 
         // #3858 - throwing exception in try block in destructor.
         check("class x {\n"
@@ -102,6 +104,15 @@ private:
               "        if(!std::uncaught_exception()) {\n"
               "            throw e;\n"
               "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Exception thrown in function declared not to throw exceptions.\n", errout_str());
+
+        // #11031 should not warn when noexcept false
+        check("class A {\n"
+              "public:\n"
+              "    ~A() noexcept(false) {\n"
+              "        throw 30;\n"
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout_str());
