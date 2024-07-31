@@ -22,6 +22,7 @@
 #include <QDialog>
 #include <QObject>
 #include <QString>
+#include <memory>
 
 class QWidget;
 namespace Ui {
@@ -42,10 +43,10 @@ public:
                 const QString &extraVersion,
                 QWidget *parent = nullptr);
 
-    ~AboutDialog() override;
+    ~AboutDialog() override = default;
 
 private:
-    Ui::About* mUI;
+    std::unique_ptr<Ui::About> mUI;
 };
 /// @}
 #endif // ABOUT_DIALOG_H

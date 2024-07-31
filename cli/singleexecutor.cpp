@@ -49,9 +49,9 @@ unsigned int SingleExecutor::check()
     std::size_t processedsize = 0;
     unsigned int c = 0;
 
-    for (std::list<FileWithDetails>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
-        result += mCppcheck.check(*i);
-        processedsize += i->size();
+    for (const auto& file : mFiles) {
+        result += mCppcheck.check(file);
+        processedsize += file.size();
         ++c;
         if (!mSettings.quiet)
             reportStatus(c, mFiles.size(), processedsize, totalfilesize);

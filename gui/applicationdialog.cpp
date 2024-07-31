@@ -35,7 +35,7 @@ ApplicationDialog::ApplicationDialog(const QString &title,
                                      Application &app,
                                      QWidget *parent) :
     QDialog(parent),
-    mUI(new Ui::ApplicationDialog),
+    mUI(std::make_unique<Ui::ApplicationDialog>()),
     mApplication(app)
 {
     mUI->setupUi(this);
@@ -48,12 +48,6 @@ ApplicationDialog::ApplicationDialog(const QString &title,
     mUI->mParameters->setText(app.getParameters());
     setWindowTitle(title);
     adjustSize();
-}
-
-
-ApplicationDialog::~ApplicationDialog()
-{
-    delete mUI;
 }
 
 void ApplicationDialog::browse()

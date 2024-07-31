@@ -25,7 +25,7 @@
 
 AboutDialog::AboutDialog(const QString &version, const QString &extraVersion, QWidget *parent)
     : QDialog(parent)
-    , mUI(new Ui::About)
+    , mUI(std::make_unique<Ui::About>())
 {
     mUI->setupUi(this);
 
@@ -39,9 +39,4 @@ AboutDialog::AboutDialog(const QString &version, const QString &extraVersion, QW
     QString url = "<a href=\"https://cppcheck.sourceforge.io/\">https://cppcheck.sourceforge.io/</a>";
     mUI->mHomepage->setText(mUI->mHomepage->text().arg(url));
     connect(mUI->mButtons, &QDialogButtonBox::accepted, this, &AboutDialog::accept);
-}
-
-AboutDialog::~AboutDialog()
-{
-    delete mUI;
 }
