@@ -132,18 +132,6 @@ struct CPPCHECKLIB ProgramMemory {
 
     void replace(ProgramMemory pm);
 
-    Map::iterator begin() {
-        copyOnWrite();
-
-        return mValues->begin();
-    }
-
-    Map::iterator end() {
-        copyOnWrite();
-
-        return mValues->end();
-    }
-
     Map::const_iterator begin() const {
         return mValues->cbegin();
     }
