@@ -42,6 +42,7 @@ private:
         TEST_CASE(findAndReplace);
         TEST_CASE(replaceEscapeSequences);
         TEST_CASE(splitString);
+        TEST_CASE(as_const);
     }
 
     void isValidGlobPattern() const {
@@ -481,6 +482,40 @@ private:
             ASSERT_EQUALS("", *it++);
             ASSERT_EQUALS("test", *it++);
             ASSERT_EQUALS("test", *it);
+        }
+    }
+
+    void as_const() const {
+        struct C {
+            bool written = false;
+            void f() {
+                written = true;
+            }
+            // cppcheck-suppress functionStatic - needs to be const
+            void f() const {}
+        };
+
+        {
+            C c;
+            c.f();
+            ASSERT(c.written);
+        }
+        {
+            C c;
+            utils::as_const(c).f();
+            ASSERT(!c.written);
+        }
+        {
+            C c;
+            C* cp = &c;
+            cp->f();
+            ASSERT(c.written);
+        }
+        {
+            C c;
+            C* cp = &c;
+            utils::as_const(cp)->f(); // (correctly) calls non-const version
+            ASSERT(c.written);
         }
     }
 };
