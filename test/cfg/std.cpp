@@ -5159,3 +5159,11 @@ int passedByValue_std_bitset2(std::bitset<256> bs)
 {
     return bs.size();
 }
+
+struct S_std_as_const { // #12974
+    // cppcheck-suppress functionConst
+    void f() {
+        for (const auto& i : std::as_const(l)) {}
+    }
+    std::list<int> l;
+};
