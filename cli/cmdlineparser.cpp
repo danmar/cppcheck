@@ -741,6 +741,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     path = Path::fromNativeSeparators(std::move(path));
                     path = Path::simplifyPath(std::move(path));
 
+                    // TODO: this only works when it exists
                     if (Path::isDirectory(path)) {
                         // If directory name doesn't end with / or \, add it
                         if (!endsWith(path, '/'))

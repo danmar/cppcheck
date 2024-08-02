@@ -24,13 +24,17 @@
 #include <cstddef>
 #include <utility>
 
-PathMatch::PathMatch(std::vector<std::string> excludedPaths, bool caseSensitive)
-    : mExcludedPaths(std::move(excludedPaths)), mCaseSensitive(caseSensitive)
+PathMatch::PathMatch(std::vector<std::string> paths, bool caseSensitive)
+    : mPaths(std::move(paths)), mCaseSensitive(caseSensitive)
 {
-    if (!mCaseSensitive)
-        for (std::string& excludedPath : mExcludedPaths)
-            strTolower(excludedPath);
-    mWorkingDirectory.push_back(Path::getCurrentPath());
+    for (std::string& p : mPaths)
+    {
+        p = Path::fromNativeSeparators(p);
+        if (!mCaseSensitive)
+            strTolower(p);
+    }
+    // TODO: also make lowercase?
+    mWorkingDirectory.push_back(Path::fromNativeSeparators(Path::getCurrentPath()));
 }
 
 bool PathMatch::match(const std::string &path) const
@@ -38,41 +42,42 @@ bool PathMatch::match(const std::string &path) const
     if (path.empty())
         return false;
 
-    // TODO: align the exclusion logic with ImportProject::ignorePaths()
-    for (std::vector<std::string>::const_iterator i = mExcludedPaths.cbegin(); i != mExcludedPaths.cend(); ++i) {
-        const std::string excludedPath((!Path::isAbsolute(path) && Path::isAbsolute(*i)) ? Path::getRelativePath(*i, mWorkingDirectory) : *i);
+    std::string findpath = Path::fromNativeSeparators(path);
+    if (!mCaseSensitive)
+        strTolower(findpath);
 
-        std::string findpath = Path::fromNativeSeparators(path);
-        if (!mCaseSensitive)
-            strTolower(findpath);
+    const bool is_absolute = Path::isAbsolute(path);
+
+    // TODO: align the match logic with ImportProject::ignorePaths()
+    for (std::vector<std::string>::const_iterator i = mPaths.cbegin(); i != mPaths.cend(); ++i) {
+        const std::string pathToMatch((!is_absolute && Path::isAbsolute(*i)) ? Path::getRelativePath(*i, mWorkingDirectory) : *i);
 
         // Filtering directory name
-        if (endsWith(excludedPath,'/')) {
+        if (endsWith(pathToMatch,'/')) {
             if (!endsWith(findpath,'/'))
                 findpath = removeFilename(findpath);
 
-            if (excludedPath.length() > findpath.length())
+            if (pathToMatch.length() > findpath.length())
                 continue;
             // Match relative paths starting with mask
             // -isrc matches src/foo.cpp
-            if (findpath.compare(0, excludedPath.size(), excludedPath) == 0)
+            if (findpath.compare(0, pathToMatch.size(), pathToMatch) == 0)
                 return true;
             // Match only full directory name in middle or end of the path
             // -isrc matches myproject/src/ but does not match
             // myproject/srcfiles/ or myproject/mysrc/
-            if (findpath.find("/" + excludedPath) != std::string::npos)
+            if (findpath.find("/" + pathToMatch) != std::string::npos)
                 return true;
         }
         // Filtering filename
         else {
-            if (excludedPath.length() > findpath.length())
+            if (pathToMatch.length() > findpath.length())
                 continue;
             // Check if path ends with mask
             // -ifoo.cpp matches (./)foo.c, src/foo.cpp and proj/src/foo.cpp
             // -isrc/file.cpp matches src/foo.cpp and proj/src/foo.cpp
-            if (findpath.compare(findpath.size() - excludedPath.size(), findpath.size(), excludedPath) == 0)
+            if (findpath.compare(findpath.size() - pathToMatch.size(), findpath.size(), pathToMatch) == 0)
                 return true;
-
         }
     }
     return false;
