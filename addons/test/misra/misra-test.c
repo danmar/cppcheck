@@ -401,6 +401,8 @@ uint8_t misra_8_4_pressure = 101u; //8.4
 int32_t misra_8_4_ext_val2;
 int32_t misra_8_4_ext_val2 = 3; // compliant
 int32_t misra_8_4_ext_val4; //8.4
+// #12978
+const stError_t * m8_4_pubTestPointer; //compliant
 
 static int32_t misra_8_8 = 123;
 extern int32_t misra_8_8; // 8.8

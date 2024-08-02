@@ -2099,7 +2099,7 @@ class MisraChecker:
                 continue
             tok = var.nameToken
             if tok.next.str == ";":
-                if tok.next.isSplittedVarDeclEq or (tok.valueType and tok.valueType.type == "record"):
+                if tok.next.isSplittedVarDeclEq:
                     self.insert_in_dict(extern_var_with_def, tok.str, tok)
                 else:
                     self.insert_in_dict(extern_var_without_def, tok.str, tok)
