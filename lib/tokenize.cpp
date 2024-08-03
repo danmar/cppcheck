@@ -9257,22 +9257,7 @@ void Tokenizer::simplifyAttribute()
                 }
 
                 else if (Token::Match(attr, "[(,] unused|__unused__|used|__used__ [,)]")) {
-                    Token *vartok = nullptr;
-                    Token *after = getTokenAfterAttributes(tok, true);
-
-                    // check if after variable name
-                    if (Token::Match(after, ";|=")) {
-                        Token *prev = tok->previous();
-                        while (Token::simpleMatch(prev, "]"))
-                            prev = prev->link()->previous();
-                        if (Token::Match(prev, "%type%"))
-                            vartok = prev;
-                    }
-
-                    // check if before variable name
-                    else if (Token::Match(after, "%type%"))
-                        vartok = after;
-
+                    Token *vartok = getVariableTokenAfterAttributes(tok);
                     if (vartok) {
                         const std::string &attribute(attr->strAt(1));
                         if (attribute.find("unused") != std::string::npos)
