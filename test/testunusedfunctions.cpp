@@ -85,6 +85,7 @@ private:
         TEST_CASE(virtualFunc);
         TEST_CASE(parensInit);
         TEST_CASE(typeInCast);
+        TEST_CASE(attributeCleanup);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -768,6 +769,15 @@ private:
               "    Type t2{ (Type)t };\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) The function 'Type' is never used.\n", errout_str());
+    }
+
+    void attributeCleanup()
+    {
+        check("void clean(void *ptr) {}\n"
+              "int main() {\n"
+              "    void * __attribute__((cleanup(clean))) p;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 };
 

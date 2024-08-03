@@ -221,6 +221,13 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
             }
         }
 
+        if (tok->hasAttributeCleanup()) {
+            const std::string& funcname = tok->getAttributeCleanup();
+            mFunctions[funcname].usedOtherFile = true;
+            mFunctionCalls.insert(funcname);
+            continue;
+        }
+
         const Token *funcname = nullptr;
 
         if (doMarkup)

@@ -9146,6 +9146,26 @@ static Token* getTokenAfterAttributes(Token* tok, bool gccattr) {
     return after;
 }
 
+static Token* getVariableTokenAfterAttributes(Token* tok) {
+    Token *vartok = nullptr;
+    Token *after = getTokenAfterAttributes(tok, true);
+
+    // check if after variable name
+    if (Token::Match(after, ";|=")) {
+        Token *prev = tok->previous();
+        while (Token::simpleMatch(prev, "]"))
+            prev = prev->link()->previous();
+        if (Token::Match(prev, "%type%"))
+            vartok = prev;
+    }
+
+    // check if before variable name
+    else if (Token::Match(after, "%type%"))
+        vartok = after;
+
+    return vartok;
+}
+
 Token* Tokenizer::getAttributeFuncTok(Token* tok, bool gccattr) const {
     if (!Token::Match(tok, "%name% ("))
         return nullptr;
@@ -9284,6 +9304,14 @@ void Tokenizer::simplifyAttribute()
 
                 else if (functok && Token::simpleMatch(attr, "( __visibility__ ( \"default\" ) )"))
                     functok->isAttributeExport(true);
+
+                else if (Token::Match(attr, "[(,] cleanup ( %name% )")) {
+                    Token *vartok = getVariableTokenAfterAttributes(tok);
+                    if (vartok) {
+                        const std::string& funcname = attr->strAt(3);
+                        vartok->addAttributeCleanup(funcname);
+                    }
+                }
             }
 
             Token::eraseTokens(tok, tok->linkAt(1)->next());
