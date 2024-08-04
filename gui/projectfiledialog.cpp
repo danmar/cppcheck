@@ -411,8 +411,6 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     mUI->mMisraCppVersion->setEnabled(mUI->mMisraCpp->isChecked());
     connect(mUI->mMisraCpp, &QCheckBox::toggled, mUI->mMisraCppVersion, &QComboBox::setEnabled);
 
-    QStringList c = projectFile->getCodingStandards();
-
     mUI->mCertC2016->setChecked(mPremium && projectFile->getCodingStandards().contains(CODING_STANDARD_CERT_C));
     mUI->mCertCpp2016->setChecked(mPremium && projectFile->getCodingStandards().contains(CODING_STANDARD_CERT_CPP));
     mUI->mAutosar->setChecked(mPremium && projectFile->getCodingStandards().contains(CODING_STANDARD_AUTOSAR));
