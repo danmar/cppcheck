@@ -22,8 +22,6 @@ jobs:
 
   build:
     runs-on: ubuntu-22.04 # run on the latest image only
-    # FIXME: enable after update
-    if: false
     steps:
       - uses: actions/checkout@v4
 
@@ -31,9 +29,11 @@ jobs:
         run: |
           premium_version=${{ inputs.premium_version }}
           if [ -z $premium_version ]; then
-            premium_version=24.2.0
+            premium_version=devdrop-20240804
+            wget https://files.cppchecksolutions.com/devdrop/cppcheckpremium-$premium_version-amd64.tar.gz -O cppcheckpremium.tar.gz
+          else
+            wget https://files.cppchecksolutions.com/$premium_version/ubuntu-22.04/cppcheckpremium-$premium_version-amd64.tar.gz -O cppcheckpremium.tar.gz
           fi
-          wget https://files.cppchecksolutions.com/$premium_version/ubuntu-22.04/cppcheckpremium-$premium_version-amd64.tar.gz -O cppcheckpremium.tar.gz
           tar xvzf cppcheckpremium.tar.gz
           mv cppcheckpremium-$premium_version cppcheckpremium
 
@@ -48,4 +48,4 @@ jobs:
       - name: Check
         run: |
           cppcheckpremium/premiumaddon --check-loc-license cppcheck.lic > cppcheck-premium-loc
-          cppcheckpremium/cppcheck -j$(nproc) -D__GNUC__ -D__CPPCHECK__ --suppressions-list=cppcheckpremium-suppressions --platform=unix64 --enable=style --premium=misra-c++-2008 --premium=cert-c++-2016 --inline-suppr --error-exitcode=1 lib
+          cppcheckpremium/cppcheck -j$(nproc) -D__GNUC__ -D__CPPCHECK__ --suppressions-list=cppcheckpremium-suppressions --platform=unix64 --enable=style --premium=misra-c++-2023 --premium=cert-c++-2016 --inline-suppr --error-exitcode=1 lib

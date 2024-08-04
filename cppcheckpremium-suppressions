@@ -1,18 +1,33 @@
 
-# False positives
-premium-misra-cpp-2008-5-17-1
-premium-misra-cpp-2008-5-0-6
-premium-misra-cpp-2008-7-2-1
-premium-misra-cpp-2008-3-3-2
-
 # open source warnings are handled by the selfcheck.yml
 noExplicitConstructor
 postfixOperator
 shadowFunction
 useStlAlgorithm
+normalCheckLevelMaxBranches
+
+###########################################################################################################################
+# Cert C++
+###########################################################################################################################
+
+# False positives for initializations
+premium-cert-exp45-c
+# False positives when casting to uintptr
+premium-cert-int36-c
+
+# too picky
+premium-cert-arr30-c
+premium-cert-int32-c
+premium-cert-str34-c
+
+# we intentionally pass structs
+premium-cert-dcl39-c-*
 
 # we need to declare reserved identifier _CRTDBG_MAP_ALLOC
 premium-cert-dcl51-cpp
+
+# we don't want to check the return values of fclose/sprintf/etc
+premium-cert-err33-c
 
 # TODO: Is there unsafe allocations, in case of exceptions) in cppcheck
 # we have global objects
@@ -30,199 +45,136 @@ premium-cert-err62-cpp
 # TODO: Can we reduce some const_cast?
 premium-cert-exp55-cpp
 
-# sometimes a void function does not have side effects
-premium-misra-cpp-2008-0-1-8
 
-# unused arguments, misra rules are too strict
-premium-misra-cpp-2008-0-1-11
-premium-misra-cpp-2008-0-1-12
+###########################################################################################################################
+# Misra C++ 2023
+###########################################################################################################################
 
-# we sometimes don't care about return value from functions
-premium-misra-cpp-2008-0-1-7
+# There are false positives
+premium-misra-cpp-2023-6.7.2
+premium-misra-cpp-2023-7.0.3
+premium-misra-cpp-2023-8.2.5
+premium-misra-cpp-2023-8.18.2
+premium-misra-cpp-2023-21.6.2
 
-# c++11
-premium-misra-cpp-2008-1-0-1
+# TODO check if these should be suppressed or not
+premium-misra-cpp-2023-0.2.1
+premium-misra-cpp-2023-0.2.2
+premium-misra-cpp-2023-10.0.1
+premium-misra-cpp-2023-10.2.1
+premium-misra-cpp-2023-10.2.2
+premium-misra-cpp-2023-11.6.3
+premium-misra-cpp-2023-13.1.2
+premium-misra-cpp-2023-13.3.1
+premium-misra-cpp-2023-13.3.2
+premium-misra-cpp-2023-13.3.3
+premium-misra-cpp-2023-15.0.2
+premium-misra-cpp-2023-15.1.2
+premium-misra-cpp-2023-15.1.3
+premium-misra-cpp-2023-18.1.1
+premium-misra-cpp-2023-18.3.2
+premium-misra-cpp-2023-18.4.1
+premium-misra-cpp-2023-19.0.3
+premium-misra-cpp-2023-19.1.3
+premium-misra-cpp-2023-19.3.1
+premium-misra-cpp-2023-19.6.1
+premium-misra-cpp-2023-21.2.1
+premium-misra-cpp-2023-21.2.2
+premium-misra-cpp-2023-21.2.3
+premium-misra-cpp-2023-23.11.1
+premium-misra-cpp-2023-26.3.1
+premium-misra-cpp-2023-28.6.1
+premium-misra-cpp-2023-30.0.1
+premium-misra-cpp-2023-5.13.2
+premium-misra-cpp-2023-5.13.4
+premium-misra-cpp-2023-6.0.3
+premium-misra-cpp-2023-6.2.4
+premium-misra-cpp-2023-6.4.2
+premium-misra-cpp-2023-6.5.1
+premium-misra-cpp-2023-6.8.3
+premium-misra-cpp-2023-6.9.2
+premium-misra-cpp-2023-7.0.1
+premium-misra-cpp-2023-7.0.4
+premium-misra-cpp-2023-7.0.6
+premium-misra-cpp-2023-7.11.2
+premium-misra-cpp-2023-7.11.3
+premium-misra-cpp-2023-8.0.1
+premium-misra-cpp-2023-8.1.1
+premium-misra-cpp-2023-8.19.1
+premium-misra-cpp-2023-8.2.11
+premium-misra-cpp-2023-8.2.6
+premium-misra-cpp-2023-8.2.7
+premium-misra-cpp-2023-8.2.8
+premium-misra-cpp-2023-9.5.1
+premium-misra-cpp-2023-9.5.2
+premium-misra-cpp-2023-9.6.4
 
-# TODO: can we prevent commented out code?
-premium-misra-cpp-2008-2-7-2
-premium-misra-cpp-2008-2-7-3
 
-# NA
-premium-misra-cpp-2008-2-10-1
+# ignored function return value (emplace etc)
+premium-misra-cpp-2023-0.1.2
 
-# objects of a class often has the lowercase name of the class.
-premium-misra-cpp-2008-2-10-4
+# we comment out code by intention in some cases
+premium-misra-cpp-2023-5.7.2
 
-# no suffix on numeric literals
-premium-misra-cpp-2008-2-13-3
+# TODO should we use this rule?
+premium-misra-cpp-2023-5.10.1
 
-# flag |= ..
-premium-misra-cpp-2008-4-5-1
+# Internal linkage using "static" keyword
+premium-misra-cpp-2023-6.5.2
 
-# Token/Variable flags are enum constants and we use those in bitwise operations by intention.
-premium-misra-cpp-2008-4-5-2
+# we use local static variables by intention
+premium-misra-cpp-2023-6.7.1
 
-# intentional addition of char to string: const std::string end(':' + cfg + ':' + Path::simplifyPath(sourcefile));
-premium-misra-cpp-2008-4-5-3
+# FIXME enforce proper ref qualifications
+premium-misra-cpp-2023-6.8.4
 
-# too strict operator precedence warnings
-premium-misra-cpp-2008-5-0-2
+# we convert integer to bool by intention
+premium-misra-cpp-2023-7.0.2
 
-# we are less strict about signedness. what bug is there here: unsigned int col = 0
-premium-misra-cpp-2008-5-0-4
+# TODO should we use this rule?
+premium-misra-cpp-2023-8.1.2
 
-# intentional integral-to-float conversion
-premium-misra-cpp-2008-5-0-5
+# we call functions etc by intention in && || RHS
+premium-misra-cpp-2023-8.14.1
 
-# intentional addition of char literal: c = 'a' + (temp - 10);
-premium-misra-cpp-2008-5-0-11
+# we use c-style casts by intention
+premium-misra-cpp-2023-8.2.2
 
-# conversion of char-to-int is intentional sometimes
-premium-misra-cpp-2008-5-0-12
+# we use const_cast by intention
+premium-misra-cpp-2023-8.2.3
 
-# pointer-to-bool conversion in condition
-premium-misra-cpp-2008-5-0-13
+# we use recursion by intention
+premium-misra-cpp-2023-8.2.10
 
-# pointer-to-bool conversion is common
-premium-misra-cpp-2008-5-0-14
+# we leave out {} sometimes
+premium-misra-cpp-2023-9.3.1
 
-# pointer arithmetic is not uncommon in cppcheck code
-premium-misra-cpp-2008-5-0-15
+# we leave out "else" by intention
+premium-misra-cpp-2023-9.4.1
 
-# it's only a problem if signed expression is negative
-premium-misra-cpp-2008-5-0-21
+# we use arrays by intention
+premium-misra-cpp-2023-11.3.1
 
-# Intentional safe operands of &&: return !stdValue.empty() && str == getCPP();
-premium-misra-cpp-2008-5-2-1
+# we dont initialize variables directly by intention
+premium-misra-cpp-2023-11.6.1
 
-# const_cast performs intentional const casting
-premium-misra-cpp-2008-5-2-5
+# we use unions by intention
+premium-misra-cpp-2023-12.3.1
 
-# safe code: const char *next = static_cast<const char*>(std::memchr(pattern, ' ', pattern_len));
-premium-misra-cpp-2008-5-2-8
+# we sometimes use both public/private data members by intention
+premium-misra-cpp-2023-14.1.1
 
-# we intentionally cast pointer to integer when creating id for dumpfile
-premium-misra-cpp-2008-5-2-9
+# TODO should we use this rule?
+premium-misra-cpp-2023-15.0.1
 
-# we intentionally mix increment with other operators in expressions
-premium-misra-cpp-2008-5-2-10
+# TODO: should we use this rule?
+premium-misra-cpp-2023-16.6.1
 
-# intentional array-to-pointer decay
-premium-misra-cpp-2008-5-2-12
+# TODO: should we use this rule?
+premium-misra-cpp-2023-17.8.1
 
-# we write !pointer by intention
-premium-misra-cpp-2008-5-3-1
+# Dynamic memory usage in std::string etc
+premium-misra-cpp-2023-21.6.1
 
-# side effects in conditional code is intentional
-premium-misra-cpp-2008-5-14-1
-
-# intentional use of comma operator in variable declarations
-premium-misra-cpp-2008-5-18-1
-
-# nested assignments are intentional
-premium-misra-cpp-2008-6-2-1
-
-# for (;;)
-premium-misra-cpp-2008-6-2-3
-
-# we don't always use braces for single statement loop/switch bodies
-premium-misra-cpp-2008-6-3-1
-
-# we don't always use braces for single statement if/else
-premium-misra-cpp-2008-6-4-1
-
-# we do not require a final else
-premium-misra-cpp-2008-6-4-2
-
-# return in case
-premium-misra-cpp-2008-6-4-5
-
-# it's not a bug to not put default at the end of a switch body
-premium-misra-cpp-2008-6-4-6
-
-# looping linked list => not well formed for loop
-premium-misra-cpp-2008-6-5-1
-premium-misra-cpp-2008-6-5-2
-premium-misra-cpp-2008-6-5-3
-premium-misra-cpp-2008-6-5-4
-premium-misra-cpp-2008-6-5-5
-premium-misra-cpp-2008-6-5-6
-
-# we like early returns
-premium-misra-cpp-2008-6-6-3
-premium-misra-cpp-2008-6-6-4
-premium-misra-cpp-2008-6-6-5
-
-# we have local functions by intention
-premium-misra-cpp-2008-7-3-1
-
-# intentional: return reference from method to non-const reference parameter
-premium-misra-cpp-2008-7-5-3
-
-# intentional declaration of multiple variables
-premium-misra-cpp-2008-8-0-1
-
-# we intentionally don't use & before function names
-premium-misra-cpp-2008-8-4-4
-
-# cppcheck does not care about this enumerator rule
-premium-misra-cpp-2008-8-5-3
-
-# TODO Fix these
-premium-misra-cpp-2008-9-3-1
-
-# returning non-const pointer/reference from method that is non-const
-premium-misra-cpp-2008-9-3-2
-
-# we use unions by intention sometimes
-premium-misra-cpp-2008-9-5-1
-
-# overridden methods is safe
-premium-misra-cpp-2008-10-3-1
-
-# use override/final
-premium-misra-cpp-2008-10-3-2
-
-# some classes have public members by intention
-premium-misra-cpp-2008-11-0-1
-
-# intentional: clang-tidy warns for redundant base class initializations
-premium-misra-cpp-2008-12-1-2
-
-# rule should not apply to deleted copy assignment operator
-premium-misra-cpp-2008-12-8-2
-
-# TODO: this can be fixed by refactoring the code.
-premium-misra-cpp-2008-14-6-2
-
-# function specializations: TODO check if we should refactor
-premium-misra-cpp-2008-14-8-2
-
-# we throw a pointer by intention
-premium-misra-cpp-2008-15-0-2
-premium-misra-cpp-2008-15-3-5
-
-# we use preprocessor when it makes sense
-premium-misra-cpp-2008-16-0-1
-premium-misra-cpp-2008-16-0-7
-premium-misra-cpp-2008-16-2-1
-premium-misra-cpp-2008-16-2-2
-premium-misra-cpp-2008-16-3-2
-
-# TODO do we need to catch string conversion errors (using atoi)?
-premium-misra-cpp-2008-18-0-2
-
-# what standard alternative is there for std::getenv
-premium-misra-cpp-2008-18-0-3
-
-# <ctime> is used by intention
-premium-misra-cpp-2008-18-0-4
-
-# code is safe. we use std::strcmp by intention
-premium-misra-cpp-2008-18-0-5
-
-# we do avoid using new/delete
-premium-misra-cpp-2008-18-4-1
-
-# <cstdio> is used by intention
-premium-misra-cpp-2008-27-0-1
+# we use <cctype> by intention
+premium-misra-cpp-2023-24.5.1
