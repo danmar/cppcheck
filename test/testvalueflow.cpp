@@ -6919,6 +6919,13 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 9U, 1));
+
+        code = "int f() {\n" // #12987
+               "    std::string s{\"0\"};\n"
+               "    auto x = s.size();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 1));
     }
 
     void valueFlowContainerElement()
