@@ -4917,6 +4917,16 @@ void stdspan()
     #endif
 }
 
+void std::span<const int> returnDanglingLifetime_std_span0() {
+    static int a[10]{};
+    return a;
+}
+
+std::span<const int> returnDanglingLifetime_std_span1() {
+    static std::vector<int> v;
+    return v;
+}
+
 void beginEnd()
 {
     std::vector<int> v;
