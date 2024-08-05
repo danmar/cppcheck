@@ -4870,11 +4870,12 @@ void string_substr(std::string s)
     s.substr(1, 3);
 }
 
-void stdspan()
-{
 #ifndef __cpp_lib_span
 #warning "This compiler does not support std::span"
 #else
+void stdspan()
+{
+
     std::vector<int> vec{1,2,3,4};
     std::span spn{vec};
     // cppcheck-suppress unreadVariable
@@ -4914,7 +4915,6 @@ void stdspan()
     spn3.first<1>();
     spn3.last<1>();
     spn3.subspan<1, 1>();
-    #endif
 }
 
 std::span<const int> returnDanglingLifetime_std_span0() {
@@ -4926,6 +4926,7 @@ std::span<const int> returnDanglingLifetime_std_span1() {
     static std::vector<int> v;
     return v;
 }
+#endif
 
 void beginEnd()
 {
