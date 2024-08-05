@@ -4990,9 +4990,9 @@ void smartPtr_get2(std::vector<std::unique_ptr<int>>& v)
 }
 
 bool smartPtr_get3(size_t n, size_t i) { // #12748
-	std::unique_ptr<int[]> buf = std::make_unique<int[]>(n);
-	const int* p = buf.get() + i;
-	return p != nullptr;
+    std::unique_ptr<int[]> buf = std::make_unique<int[]>(n);
+    const int* p = buf.get() + i;
+    return p != nullptr;
 }
 
 void smartPtr_reset()
@@ -5104,7 +5104,7 @@ std::vector<int> containerOutOfBounds_push_back() { // #12775
     return v;
 }
 
-template <typename T>
+template<typename T>
 void constVariablePointer_push_back(std::vector<T*>& d, const std::vector<T*>& s) {
     for (const auto& e : s) {
         T* newE = new T(*e);
