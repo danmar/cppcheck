@@ -3047,7 +3047,7 @@ private:
               "}\n");
         ASSERT_EQUALS(
             "[test.cpp:4] -> [test.cpp:4] -> [test.cpp:6]: (error) Using object that points to local variable 'v' that is out of scope.\n",
-        errout_str());
+            errout_str());
 
         check("std::span<const int> f() {\n" // #12966
               "    int a[10]{};\n"
