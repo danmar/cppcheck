@@ -2403,6 +2403,10 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
             return true;
         }
 
+        if (const Library::Function* fLib = mSettings->library.getFunction(funcTok))
+            if (fLib->isconst || fLib->ispure)
+                return true;
+
         // Member variable given as parameter to unknown function
         const Token *lpar = funcTok->next();
         if (Token::simpleMatch(lpar, "( ) ("))

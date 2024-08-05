@@ -399,4 +399,12 @@ static inline T* empty_if_null(T* p)
  */
 CPPCHECKLIB std::list<std::string> splitString(const std::string& str, char sep);
 
+namespace utils {
+    template<class T>
+    constexpr typename std::add_const<T>::type & as_const(T& t) noexcept
+    {
+        return t;
+    }
+}
+
 #endif

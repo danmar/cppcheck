@@ -1762,3 +1762,283 @@ def test_checkers_report(tmpdir):
     assert exitcode == 0, stdout
     assert 'Active checkers:' in stderr
     assert '--checkers-report' not in stderr
+
+
+def test_ignore(tmpdir):
+    os.mkdir(os.path.join(tmpdir, 'src'))
+    test_file = os.path.join(tmpdir, 'src', 'test.cpp')
+    with open(test_file, 'wt'):
+        pass
+
+    lines_exp = [
+        'cppcheck: error: could not find or open any of the paths given.',
+        'cppcheck: Maybe all paths were ignored?'
+    ]
+
+    args = [
+        '-itest.cpp',
+        test_file
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    # make sure it also matches when specified after the file
+    args = [
+        test_file,
+        '-itest.cpp'
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    args = [
+        '-isrc/test.cpp',
+        test_file
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    args = [
+        '-isrc\\test.cpp',
+        test_file
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    args = [
+        '-isrc/',
+        test_file
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    args = [
+        '-isrc\\',
+        test_file
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    args = [
+        '-i{}'.format(test_file),
+        test_file
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+
+def __write_gui_project(tmpdir, test_file, ignore):
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+        """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+<paths>
+<dir name="{}"/>
+</paths>
+<ignore>
+<path name="{}"/>
+</ignore>
+</project>""".format(test_file, ignore))
+
+    return project_file
+
+
+def test_ignore_project(tmpdir):
+    os.mkdir(os.path.join(tmpdir, 'src'))
+    test_file = os.path.join(tmpdir, 'src', 'test.cpp')
+    with open(test_file, 'wt'):
+        pass
+
+    lines_exp = [
+        'cppcheck: error: could not find or open any of the paths given.',
+        'cppcheck: Maybe all paths were ignored?'
+    ]
+
+    project_file = __write_gui_project(tmpdir, test_file, 'test.cpp')
+    args = [
+        '--project={}'.format(project_file)
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    # make sure -i works when specified before project
+    project_file = __write_gui_project(tmpdir, test_file, 'test2.cpp')
+    args = [
+        '-itest.cpp',
+        '--project={}'.format(project_file)
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    # make sure -i works when specified after project
+    project_file = __write_gui_project(tmpdir, test_file, 'test2.cpp')
+    args = [
+        '--project={}'.format(project_file),
+        '-itest.cpp'
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    project_file = __write_gui_project(tmpdir, test_file, 'src/test.cpp')
+    args = [
+        '--project={}'.format(project_file)
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    project_file = __write_gui_project(tmpdir, test_file, 'src\\test.cpp')
+    args = [
+        '--project={}'.format(project_file)
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    project_file = __write_gui_project(tmpdir, test_file, 'src/')
+    args = [
+        '--project={}'.format(project_file)
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    project_file = __write_gui_project(tmpdir, test_file, 'src\\')
+    args = [
+        '--project={}'.format(project_file)
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    project_file = __write_gui_project(tmpdir, test_file, test_file)
+    args = [
+        '--project={}'.format(project_file)
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+
+def __write_compdb(tmpdir, test_file):
+    compile_commands = os.path.join(tmpdir, 'compile_commands.json')
+    j = [
+        {
+            'directory': os.path.dirname(test_file),
+            'file': test_file,
+            'command': 'gcc -c {}'.format(test_file)
+        }
+    ]
+    with open(compile_commands, 'wt') as f:
+        f.write(json.dumps(j))
+    return compile_commands
+
+
+# TODO: -i appears to be ignored
+@pytest.mark.xfail(strict=True)
+def test_ignore_project_2(tmpdir):
+    os.mkdir(os.path.join(tmpdir, 'src'))
+    test_file = os.path.join(tmpdir, 'src', 'test.cpp')
+    with open(test_file, 'wt'):
+        pass
+
+    lines_exp = [
+        'cppcheck: error: could not find or open any of the paths given.',
+        'cppcheck: Maybe all paths were ignored?'
+    ]
+
+    project_file = __write_compdb(tmpdir, test_file)
+    args = [
+        '-itest.cpp',
+        '--project={}'.format(project_file)
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    # make sure it also matches when specified after project
+    project_file = __write_compdb(tmpdir, test_file)
+    args = [
+        '--project={}'.format(project_file),
+        '-itest.cpp'
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    project_file = __write_compdb(tmpdir, test_file)
+    args = [
+        '-isrc/test.cpp',
+        '--project={}'.format(project_file)
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    project_file = __write_compdb(tmpdir, test_file)
+    args = [
+        '-isrc\\test.cpp',
+        '--project={}'.format(project_file)
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    project_file = __write_compdb(tmpdir, test_file)
+    args = [
+        '-isrc/',
+        '--project={}'.format(project_file)
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    project_file = __write_compdb(tmpdir, test_file)
+    args = [
+        '-isrc\\',
+        '--project={}'.format(project_file)
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp
+
+    project_file = __write_compdb(tmpdir, test_file)
+    args = [
+        '-i{}'.format(test_file),
+        '--project={}'.format(project_file)
+    ]
+
+    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == lines_exp

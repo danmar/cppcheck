@@ -3048,6 +3048,14 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:4] -> [test.cpp:4] -> [test.cpp:6]: (error) Using object that points to local variable 'v' that is out of scope.\n",
             errout_str());
+
+        check("std::span<const int> f() {\n" // #12966
+              "    int a[10]{};\n"
+              "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning pointer to local variable 'a' that will be invalid when returning.\n",
+            errout_str());
     }
 
     void danglingLifetimeUniquePtr()

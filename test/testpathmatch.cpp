@@ -41,6 +41,7 @@ private:
         TEST_CASE(emptymaskpath3);
         TEST_CASE(onemaskemptypath);
         TEST_CASE(onemasksamepath);
+        TEST_CASE(onemasksamepathdifferentslash);
         TEST_CASE(onemasksamepathdifferentcase);
         TEST_CASE(onemasksamepathwithfile);
         TEST_CASE(onemaskshorterpath);
@@ -80,6 +81,7 @@ private:
 
     void emptymaskpath3() const {
         ASSERT(!emptyMatcher.match("/home/user/code/src/"));
+        ASSERT(!emptyMatcher.match("d:/home/user/code/src/"));
     }
 
     // Test PathMatch containing "src/"
@@ -89,6 +91,11 @@ private:
 
     void onemasksamepath() const {
         ASSERT(srcMatcher.match("src/"));
+    }
+
+    void onemasksamepathdifferentslash() const {
+        const PathMatch srcMatcher2{std::vector<std::string>(1, "src\\")};
+        ASSERT(srcMatcher2.match("src/"));
     }
 
     void onemasksamepathdifferentcase() const {
@@ -128,6 +135,7 @@ private:
 
     void onemasklongerpath1() const {
         ASSERT(srcMatcher.match("/tmp/src/"));
+        ASSERT(srcMatcher.match("d:/tmp/src/"));
     }
 
     void onemasklongerpath2() const {

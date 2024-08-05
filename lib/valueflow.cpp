@@ -3278,7 +3278,7 @@ static bool isDecayedPointer(const Token *tok)
         return true;
     if (!Token::simpleMatch(tok->astParent(), "return"))
         return false;
-    return astIsPointer(tok->astParent());
+    return astIsPointer(tok->astParent()) || astIsContainerView(tok->astParent());
 }
 
 static bool isConvertedToView(const Token* tok, const Settings& settings)
@@ -6909,7 +6909,8 @@ static std::vector<ValueFlow::Value> getContainerSizeFromConstructorArgs(const s
         }
     } else if (container->stdStringLike) {
         if (astIsPointer(args[0])) {
-            // TODO: Try to read size of string literal { "abc" }
+            if (args.size() == 1 && args[0]->tokType() == Token::Type::eString)
+                return {makeContainerSizeValue(Token::getStrLength(args[0]), known)};
             if (args.size() == 2 && astIsIntegral(args[1], false)) // { char*, count }
                 return {makeContainerSizeValue(args[1], known)};
         } else if (astIsContainer(args[0])) {
