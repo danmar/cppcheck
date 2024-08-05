@@ -3278,7 +3278,7 @@ static bool isDecayedPointer(const Token *tok)
         return true;
     if (!Token::simpleMatch(tok->astParent(), "return"))
         return false;
-    return astIsPointer(tok->astParent());
+    return astIsPointer(tok->astParent()) || astIsContainerView(tok->astParent());
 }
 
 static bool isConvertedToView(const Token* tok, const Settings& settings)
