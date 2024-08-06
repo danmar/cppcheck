@@ -180,5 +180,21 @@ void TestResultsTree::testGetGuidelineError() const
     QCOMPARE(report.output, "id1,Required,1.3");
 }
 
+void TestResultsTree::dontCrashWhenClearing() const {
+    auto createErrorItem = [](const Severity severity, const QString& errorId) -> ErrorItem {
+        ErrorItem errorItem;
+        errorItem.errorPath << QErrorPathItem(ErrorMessage::FileLocation("file1.c", 1, 1));
+        errorItem.severity = severity;
+        errorItem.errorId = errorId;
+        errorItem.summary = "test summary";
+        return errorItem;
+    };
+
+    // normal report with 2 errors
+    ResultsTree tree(nullptr);
+    tree.addErrorItem(createErrorItem(Severity::error, "id1"));
+    tree.clear(); // this should not crash
+}
+
 QTEST_MAIN(TestResultsTree)
 

@@ -25,4 +25,5 @@ private slots:
     void test1() const;
     void testReportType() const;
     void testGetGuidelineError() const;
+    void dontCrashWhenClearing() const;
 };
