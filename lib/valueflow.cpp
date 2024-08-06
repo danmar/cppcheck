@@ -7124,14 +7124,15 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                 }
                 for (const ValueFlow::Value& value : values)
                     setTokenValue(tok, value, settings);
-            } else if (Token::Match(tok, "%name%|;|{|}|> %var% = {") && Token::simpleMatch(tok->linkAt(3), "} ;")) {
+            } else if (Token::Match(tok, "%name%|;|{|}|> %var% =") && Token::Match(tok->tokAt(2)->astOperand2(), "[({]") &&
+                       (tok->tokAt(3) == tok->tokAt(2)->astOperand2() || settings.library.detectContainer(tok->tokAt(3)))) {
                 Token* containerTok = tok->next();
                 if (containerTok->exprId() == 0)
                     continue;
                 if (astIsContainer(containerTok) && containerTok->valueType()->container->size_templateArgNo < 0) {
-                    std::vector<ValueFlow::Value> values =
-                        getInitListSize(tok->tokAt(3), containerTok->valueType(), settings);
-                    valueFlowContainerSetTokValue(tokenlist, errorLogger, settings, containerTok, tok->tokAt(3));
+                    Token* rhs = tok->tokAt(2)->astOperand2();
+                    std::vector<ValueFlow::Value> values = getInitListSize(rhs, containerTok->valueType(), settings);
+                    valueFlowContainerSetTokValue(tokenlist, errorLogger, settings, containerTok, rhs);
                     for (const ValueFlow::Value& value : values)
                         valueFlowForward(containerTok->next(), containerTok, value, tokenlist, errorLogger, settings);
                 }
