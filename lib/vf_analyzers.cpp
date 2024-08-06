@@ -1424,7 +1424,7 @@ struct MemberExpressionAnalyzer : SubExpressionAnalyzer {
 
 ValuePtr<Analyzer> makeMemberExpressionAnalyzer(std::string varname, const Token* e, ValueFlow::Value val, const std::shared_ptr<PartialReadContainer>& p, const Settings& s)
 {
-    return MemberExpressionAnalyzer{std::move(varname), e, val, p, s};
+    return MemberExpressionAnalyzer{std::move(varname), e, std::move(val), p, s};
 }
 
 struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
