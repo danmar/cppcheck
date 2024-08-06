@@ -81,7 +81,7 @@ public:
         swap(mClone, rhs.mClone);
     }
 
-    ValuePtr<T>& operator=(ValuePtr rhs) {
+    ValuePtr<T>& operator=(ValuePtr rhs) & {
         swap(rhs);
         return *this;
     }

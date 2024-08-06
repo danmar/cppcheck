@@ -2252,7 +2252,7 @@ Variable::~Variable()
     delete mValueType;
 }
 
-Variable& Variable::operator=(const Variable &var)
+Variable& Variable::operator=(const Variable &var) &
 {
     if (this == &var)
         return *this;

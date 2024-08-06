@@ -74,7 +74,7 @@ public:
     ImportProject() = default;
     virtual ~ImportProject() = default;
     ImportProject(const ImportProject&) = default;
-    ImportProject& operator=(const ImportProject&) = default;
+    ImportProject& operator=(const ImportProject&) & = default;
 
     void selectOneVsConfig(Platform::Type platform);
     void selectVsConfigurations(Platform::Type platform, const std::vector<std::string> &configurations);
