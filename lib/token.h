@@ -133,6 +133,8 @@ struct TokenImpl {
             mAttributeAlignas->push_back(a);
     }
 
+    std::string mAttributeCleanup;
+
     // For memoization, to speed up parsing of huge arrays #8897
     enum class Cpp11init : std::uint8_t { UNKNOWN, CPP11INIT, NOINIT } mCpp11init = Cpp11init::UNKNOWN;
 
@@ -564,6 +566,15 @@ public:
     }
     void addAttributeAlignas(const std::string& a) {
         mImpl->addAttributeAlignas(a);
+    }
+    void addAttributeCleanup(const std::string& funcname) {
+        mImpl->mAttributeCleanup = funcname;
+    }
+    const std::string& getAttributeCleanup() const {
+        return mImpl->mAttributeCleanup;
+    }
+    bool hasAttributeCleanup() const {
+        return !mImpl->mAttributeCleanup.empty();
     }
     void setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value) {
         mImpl->setCppcheckAttribute(type, value);
