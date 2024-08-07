@@ -1356,12 +1356,12 @@ public:
     const Type* findType(const Token* startTok, const Scope* startScope, bool lookOutside = false) const;
     Type* findType(const Token* startTok, Scope* startScope, bool lookOutside = false)
     {
-        return const_cast<Type*>(this->findType(startTok, const_cast<const Scope*>(startScope), lookOutside));
+        return const_cast<Type*>(this->findType(startTok, static_cast<const Scope*>(startScope), lookOutside));
     }
 
     const Scope *findScope(const Token *tok, const Scope *startScope) const;
     Scope *findScope(const Token *tok, Scope *startScope) {
-        return const_cast<Scope *>(this->findScope(tok, const_cast<const Scope *>(startScope)));
+        return const_cast<Scope *>(this->findScope(tok, static_cast<const Scope *>(startScope)));
     }
 
     // cppcheck-suppress unusedFunction
