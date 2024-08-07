@@ -6084,9 +6084,23 @@ private:
                       errout_str());
     }
 
-    void knownConditionCast() { // #9976
-        check("void f(int i) {\n"
+    void knownConditionCast() {
+        check("void f(int i) {\n" // #9976
               "    if (i < 0 || (unsigned)i > 5) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("struct B {\n" // #12941
+              "    virtual void f();\n"
+              "};\n"
+              "struct One : public B {};\n"
+              "struct Two : public B {};\n"
+              "void g(const B& b) {\n"
+              "    const Two* two = nullptr;\n"
+              "    const One* one = dynamic_cast<const One*>(&b);\n"
+              "    if (one == nullptr)\n"
+              "        two = dynamic_cast<const Two*>(&b);\n"
+              "    if (two) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
