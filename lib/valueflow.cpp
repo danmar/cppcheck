@@ -7179,7 +7179,7 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                 const Token* tok2 = tok->astOperand2();
                 bool haveString = false;
                 MathLib::bigint size = 0;
-                while (Token::simpleMatch(tok2, "+")) {
+                while (Token::simpleMatch(tok2, "+") && tok2->astOperand2()) {
                     size += valueFlowGetStrLength(tok2->astOperand2());
                     haveString = haveString || astIsContainerString(tok2->astOperand2());
                     tok2 = tok2->astOperand1();
