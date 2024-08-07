@@ -6942,6 +6942,13 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
+
+        code = "std::string f() {\n" // #12993
+               "    std::string a[1];\n"
+               "    a->clear();\n"
+               "    return a[0];\n"
+               "}\n";
+        ASSERT(!isKnownContainerSizeValue(tokenValues(code, "a [ 0"), 0).empty());
     }
 
     void valueFlowContainerElement()
