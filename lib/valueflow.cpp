@@ -7158,7 +7158,7 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                     value.setImpossible();
                     valueFlowForward(tok->linkAt(2), containerTok, std::move(value), tokenlist, errorLogger, settings);
                 }
-            } else if (Token::simpleMatch(tok, "+=") && astIsContainer(tok->astOperand1())) {
+            } else if (tok->str() == "+=" && astIsContainer(tok->astOperand1())) {
                 const Token* containerTok = tok->astOperand1();
                 const Token* valueTok = tok->astOperand2();
                 MathLib::bigint size = valueFlowGetStrLength(valueTok);
@@ -7172,6 +7172,27 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                 if (!next)
                     next = tok->next();
                 valueFlowForward(next, containerTok, std::move(value), tokenlist, errorLogger, settings);
+            } else if (tok->str() == "+" && Token::simpleMatch(tok->astParent(), "=")) { // TODO: handle multiple +
+                const Token* op1 = tok->astOperand1();
+                const Token* op2 = tok->astOperand2();
+                
+                const bool op1Str = astIsContainerString(op1);
+                const bool op2Str = astIsContainerString(op2);
+                if (!op1Str && !op2Str)
+                    continue;
+
+                const MathLib::bigint size1 = valueFlowGetStrLength(op1), size2 = valueFlowGetStrLength(op2);
+                const MathLib::bigint size = std::max(size1, size2);
+                if (size == 0)
+                    continue;
+                ValueFlow::Value value(size - 1);
+                value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+                value.bound = ValueFlow::Value::Bound::Upper;
+                value.setImpossible();
+                Token* next = nextAfterAstRightmostLeaf(tok);
+                if (!next)
+                    next = tok->next();
+                valueFlowForward(next, tok->astParent()->astOperand1(), std::move(value), tokenlist, errorLogger, settings);
             }
         }
     }
