@@ -7094,6 +7094,20 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
         }
     }
 
+    auto forwardImpossibleContainerSize = [&](MathLib::bigint size, Token* opTok, const Token* exprTok) -> void {
+        if (size == 0)
+            return;
+
+        ValueFlow::Value value(size - 1);
+        value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+        value.bound = ValueFlow::Value::Bound::Upper;
+        value.setImpossible();
+        Token* next = nextAfterAstRightmostLeaf(opTok);
+        if (!next)
+            next = opTok->next();
+        valueFlowForward(next, exprTok, std::move(value), tokenlist, errorLogger, settings);
+    };
+
     // after assignment
     for (const Scope *functionScope : symboldatabase.functionScopes) {
         for (auto* tok = const_cast<Token*>(functionScope->bodyStart); tok != functionScope->bodyEnd; tok = tok->next()) {
@@ -7161,42 +7175,22 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                     value.setImpossible();
                     valueFlowForward(tok->linkAt(2), containerTok, std::move(value), tokenlist, errorLogger, settings);
                 }
+
             } else if (tok->str() == "+=" && astIsContainer(tok->astOperand1())) {
                 const Token* containerTok = tok->astOperand1();
                 const Token* valueTok = tok->astOperand2();
-                MathLib::bigint size = valueFlowGetStrLength(valueTok);
-                if (size == 0)
-                    continue;
-                ValueFlow::Value value(size - 1);
-                value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
-                value.bound = ValueFlow::Value::Bound::Upper;
-                value.setImpossible();
-                Token* next = nextAfterAstRightmostLeaf(tok);
-                if (!next)
-                    next = tok->next();
-                valueFlowForward(next, containerTok, std::move(value), tokenlist, errorLogger, settings);
-            } else if (tok->str() == "=" && Token::simpleMatch(tok->astOperand2(), "+")) {
+                const MathLib::bigint size = valueFlowGetStrLength(valueTok);
+                forwardImpossibleContainerSize(size, tok, containerTok);
+
+            } else if (tok->str() == "=" && Token::simpleMatch(tok->astOperand2(), "+") && astIsContainerString(tok)) {
                 const Token* tok2 = tok->astOperand2();
-                bool haveString = false;
                 MathLib::bigint size = 0;
                 while (Token::simpleMatch(tok2, "+") && tok2->astOperand2()) {
                     size += valueFlowGetStrLength(tok2->astOperand2());
-                    haveString = haveString || astIsContainerString(tok2->astOperand2());
                     tok2 = tok2->astOperand1();
                 }
                 size += valueFlowGetStrLength(tok2);
-                haveString = haveString || astIsContainerString(tok2);
-                if (size == 0 || !haveString)
-                    continue;
-
-                ValueFlow::Value value(size - 1);
-                value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
-                value.bound = ValueFlow::Value::Bound::Upper;
-                value.setImpossible();
-                Token* next = nextAfterAstRightmostLeaf(tok);
-                if (!next)
-                    next = tok->next();
-                valueFlowForward(next, tok->astOperand1(), std::move(value), tokenlist, errorLogger, settings);
+                forwardImpossibleContainerSize(size, tok, tok->astOperand1());
             }
         }
     }
