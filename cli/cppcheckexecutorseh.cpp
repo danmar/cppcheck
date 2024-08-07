@@ -78,7 +78,7 @@ namespace {
             );
         CONTEXT context = *(ex->ContextRecord);
         STACKFRAME64 stack= {0};
-        stack.AddrPC.Mode = AddrModeFlat;
+        stack.AddrPC.Mode    = AddrModeFlat;
         stack.AddrStack.Mode = AddrModeFlat;
         stack.AddrFrame.Mode = AddrModeFlat;
 #if defined(_M_IX86)
