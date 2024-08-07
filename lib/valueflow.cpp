@@ -7094,7 +7094,7 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
         }
     }
 
-    auto forwardImpossibleContainerSize = [&](MathLib::bigint size, Token* opTok, const Token* exprTok) -> void {
+    auto forwardMinimumContainerSize = [&](MathLib::bigint size, Token* opTok, const Token* exprTok) -> void {
         if (size == 0)
             return;
 
@@ -7180,7 +7180,7 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                 const Token* containerTok = tok->astOperand1();
                 const Token* valueTok = tok->astOperand2();
                 const MathLib::bigint size = valueFlowGetStrLength(valueTok);
-                forwardImpossibleContainerSize(size, tok, containerTok);
+                forwardMinimumContainerSize(size, tok, containerTok);
 
             } else if (tok->str() == "=" && Token::simpleMatch(tok->astOperand2(), "+") && astIsContainerString(tok)) {
                 const Token* tok2 = tok->astOperand2();
@@ -7190,7 +7190,7 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                     tok2 = tok2->astOperand1();
                 }
                 size += valueFlowGetStrLength(tok2);
-                forwardImpossibleContainerSize(size, tok, tok->astOperand1());
+                forwardMinimumContainerSize(size, tok, tok->astOperand1());
             }
         }
     }
