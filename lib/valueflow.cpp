@@ -7178,7 +7178,7 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
             } else if (tok->str() == "+" && Token::simpleMatch(tok->astParent(), "=")) { // TODO: handle multiple +
                 const Token* op1 = tok->astOperand1();
                 const Token* op2 = tok->astOperand2();
-                
+
                 const bool op1Str = astIsContainerString(op1);
                 const bool op2Str = astIsContainerString(op2);
                 if (!op1Str && !op2Str)
