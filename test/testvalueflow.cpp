@@ -6968,11 +6968,23 @@ private:
                "}";
         ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "c ."), 2));
 
+        code = "void f(const std::string& a) {\n"
+               "    std::string b = a + \"123\" + \"456\";\n"
+               "    if (b.empty()) {}\n"
+               "}";
+        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "b ."), 5));
+
+        code = "void f(const std::string& a) {\n"
+               "    std::string b = \"123\" + a + \"456\";\n"
+               "    if (b.empty()) {}\n"
+               "}";
+        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "b ."), 5));
+
         code = "void f(const std::string& a, const std::string& b) {\n"
                "    std::string c = \"123\" + a + b;\n"
                "    if (c.empty()) {}\n"
                "}";
-        TODO_ASSERT_EQUALS("", "values.size():0", isImpossibleContainerSizeValue(tokenValues(code, "c ."), 2));
+        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "c ."), 2));
     }
 
     void valueFlowContainerElement()
