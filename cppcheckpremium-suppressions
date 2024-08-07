@@ -10,6 +10,8 @@ normalCheckLevelMaxBranches
 # Cert C++
 ###########################################################################################################################
 
+# False positives for (a?b:c)&=true;
+premium-cert-exp35-c
 # False positives for initializations
 premium-cert-exp45-c
 # False positives when casting to uintptr
