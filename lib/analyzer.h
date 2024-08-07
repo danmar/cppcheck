@@ -36,7 +36,7 @@ struct Analyzer {
 
         Action() = default;
         Action(const Action&) = default;
-        Action& operator=(const Action& rhs) = default;
+        Action& operator=(const Action& rhs) & = default;
 
         template<class T,
                  REQUIRES("T must be convertible to unsigned int", std::is_convertible<T, unsigned int> ),

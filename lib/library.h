@@ -57,7 +57,7 @@ public:
     ~Library();
 
     Library(const Library& other);
-    Library& operator=(const Library& other);
+    Library& operator=(const Library& other) &;
 
     enum class ErrorCode : std::uint8_t {
         OK,

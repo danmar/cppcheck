@@ -236,7 +236,7 @@ public:
 
     ~Variable();
 
-    Variable &operator=(const Variable &var);
+    Variable &operator=(const Variable &var) &;
 
     /**
      * Get name token.
