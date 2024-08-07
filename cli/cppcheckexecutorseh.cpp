@@ -78,20 +78,23 @@ namespace {
             );
         CONTEXT context = *(ex->ContextRecord);
         STACKFRAME64 stack= {0};
-#ifdef _M_IX86
+        stack.AddrPC.Mode = AddrModeFlat;
+        stack.AddrStack.Mode = AddrModeFlat;
+        stack.AddrFrame.Mode = AddrModeFlat;
+#if defined(_M_IX86)
         stack.AddrPC.Offset    = context.Eip;
-        stack.AddrPC.Mode      = AddrModeFlat;
         stack.AddrStack.Offset = context.Esp;
-        stack.AddrStack.Mode   = AddrModeFlat;
         stack.AddrFrame.Offset = context.Ebp;
-        stack.AddrFrame.Mode   = AddrModeFlat;
-#else
+#elif defined(_M_AMD64)
         stack.AddrPC.Offset    = context.Rip;
-        stack.AddrPC.Mode      = AddrModeFlat;
         stack.AddrStack.Offset = context.Rsp;
-        stack.AddrStack.Mode   = AddrModeFlat;
         stack.AddrFrame.Offset = context.Rsp;
-        stack.AddrFrame.Mode   = AddrModeFlat;
+#elif defined(_M_ARM64)
+        stack.AddrPC.Offset    = context.Pc;
+        stack.AddrStack.Offset = context.Sp;
+        stack.AddrFrame.Offset = context.Fp;
+#else
+#error Platform not supported!
 #endif
         IMAGEHLP_SYMBOL64_EXT symbol;
         symbol.SizeOfStruct  = sizeof(IMAGEHLP_SYMBOL64);
@@ -101,10 +104,12 @@ namespace {
         for (ULONG frame = 0; ; frame++) {
             BOOL result = pStackWalk64
                           (
-#ifdef _M_IX86
+#if defined(_M_IX86)
                 IMAGE_FILE_MACHINE_I386,
-#else
+#elif defined(_M_AMD64)
                 IMAGE_FILE_MACHINE_AMD64,
+#elif defined(_M_ARM64)
+                IMAGE_FILE_MACHINE_ARM64,
 #endif
                 hProcess,
                 hThread,
