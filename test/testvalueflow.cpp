@@ -6943,6 +6943,13 @@ private:
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
 
+        code = "std::string f() {\n" // #12993
+               "    std::string a[1];\n"
+               "    a->clear();\n"
+               "    return a[0];\n"
+               "}\n";
+        ASSERT(!isKnownContainerSizeValue(tokenValues(code, "a [ 0"), 0).empty());
+
         code = "void f(const std::string& a) {\n" // #12994
                "    std::string b = a + \"123\";\n"
                "    if (b.empty()) {}\n"

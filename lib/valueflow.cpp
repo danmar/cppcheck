@@ -7141,6 +7141,8 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                 const Token* containerTok = tok->astOperand1();
                 if (containerTok->exprId() == 0)
                     continue;
+                if (containerTok->variable() && containerTok->variable()->isArray())
+                    continue;
                 const Library::Container::Action action = containerTok->valueType()->container->getAction(tok->strAt(1));
                 if (action == Library::Container::Action::CLEAR) {
                     ValueFlow::Value value(0);
