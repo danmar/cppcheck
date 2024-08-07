@@ -4870,11 +4870,12 @@ void string_substr(std::string s)
     s.substr(1, 3);
 }
 
-void stdspan()
-{
 #ifndef __cpp_lib_span
 #warning "This compiler does not support std::span"
 #else
+void stdspan()
+{
+
     std::vector<int> vec{1,2,3,4};
     std::span spn{vec};
     // cppcheck-suppress unreadVariable
@@ -4914,8 +4915,18 @@ void stdspan()
     spn3.first<1>();
     spn3.last<1>();
     spn3.subspan<1, 1>();
-    #endif
 }
+
+std::span<const int> returnDanglingLifetime_std_span0() {
+    static int a[10]{};
+    return a;
+}
+
+std::span<const int> returnDanglingLifetime_std_span1() {
+    static std::vector<int> v;
+    return v;
+}
+#endif
 
 void beginEnd()
 {
@@ -4980,9 +4991,9 @@ void smartPtr_get2(std::vector<std::unique_ptr<int>>& v)
 }
 
 bool smartPtr_get3(size_t n, size_t i) { // #12748
-	std::unique_ptr<int[]> buf = std::make_unique<int[]>(n);
-	const int* p = buf.get() + i;
-	return p != nullptr;
+    std::unique_ptr<int[]> buf = std::make_unique<int[]>(n);
+    const int* p = buf.get() + i;
+    return p != nullptr;
 }
 
 void smartPtr_reset()
@@ -5094,7 +5105,7 @@ std::vector<int> containerOutOfBounds_push_back() { // #12775
     return v;
 }
 
-template <typename T>
+template<typename T>
 void constVariablePointer_push_back(std::vector<T*>& d, const std::vector<T*>& s) {
     for (const auto& e : s) {
         T* newE = new T(*e);

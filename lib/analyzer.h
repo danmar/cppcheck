@@ -1,4 +1,4 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2023 Cppcheck team.
  *
@@ -36,7 +36,7 @@ struct Analyzer {
 
         Action() = default;
         Action(const Action&) = default;
-        Action& operator=(const Action& rhs) = default;
+        Action& operator=(const Action& rhs) & = default;
 
         template<class T,
                  REQUIRES("T must be convertible to unsigned int", std::is_convertible<T, unsigned int> ),

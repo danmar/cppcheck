@@ -2437,7 +2437,14 @@ static bool isArray(const Token* tok)
     return false;
 }
 
-static bool isMutableExpression(const Token* tok)
+static inline
+// limit it to CLang as compiling with GCC might fail with
+// error: inlining failed in call to always_inline 'bool isMutableExpression(const Token*)': function not considered for inlining
+// error: inlining failed in call to ‘always_inline’ ‘bool isMutableExpression(const Token*)’: recursive inlining
+#if defined(__clang__)
+__attribute__((always_inline))
+#endif
+bool isMutableExpression(const Token* tok)
 {
     if (!tok)
         return false;

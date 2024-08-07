@@ -153,7 +153,7 @@ Library::Library(const Library& other)
     : mData(new LibraryData(*other.mData))
 {}
 
-Library& Library::operator=(const Library& other)
+Library& Library::operator=(const Library& other) &
 {
     mData.reset(new LibraryData(*other.mData));
     return *this;

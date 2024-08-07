@@ -1,4 +1,4 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2024 Cppcheck team.
  *
@@ -57,7 +57,7 @@ public:
     ~Library();
 
     Library(const Library& other);
-    Library& operator=(const Library& other);
+    Library& operator=(const Library& other) &;
 
     enum class ErrorCode : std::uint8_t {
         OK,

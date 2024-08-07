@@ -1572,8 +1572,11 @@ namespace {
 
                 return unknown();
             } else if (expr->str() == "(" && expr->isCast()) {
-                if (Token::simpleMatch(expr->previous(), ">") && expr->linkAt(-1))
-                    return execute(expr->astOperand2());
+                if (expr->astOperand2()) {
+                    if (expr->astOperand1()->str() != "dynamic_cast")
+                        return execute(expr->astOperand2());
+                    return unknown();
+                }
                 return execute(expr->astOperand1());
             }
             if (expr->exprId() > 0 && pm->hasValue(expr->exprId())) {

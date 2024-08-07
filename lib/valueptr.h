@@ -1,4 +1,4 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2023 Cppcheck team.
  *
@@ -81,7 +81,7 @@ public:
         swap(mClone, rhs.mClone);
     }
 
-    ValuePtr<T>& operator=(ValuePtr rhs) {
+    ValuePtr<T>& operator=(ValuePtr rhs) & {
         swap(rhs);
         return *this;
     }
