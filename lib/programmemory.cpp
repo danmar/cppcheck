@@ -173,14 +173,27 @@ void ProgramMemory::erase_if(const std::function<bool(const ExprIdToken&)>& pred
     if (mValues->empty())
         return;
 
-    // TODO: how to delay until we actuallly modify?
-    copyOnWrite();
+    if (mValues.use_count() == 1)
+    {
+        // we are the only user so can use it directly
+        for (auto it = mValues->begin(); it != mValues->end();) {
+            if (pred(it->first))
+                it = mValues->erase(it);
+            else
+                ++it;
+        }
+    }
+    else
+    {
+        const auto values = mValues;
 
-    for (auto it = mValues->begin(); it != mValues->end();) {
-        if (pred(it->first))
-            it = mValues->erase(it);
-        else
-            ++it;
+        for (auto it = values->begin(); it != values->end(); ++it) {
+            if (!pred(it->first))
+                continue;
+
+            copyOnWrite();
+            mValues->erase(it->first);
+        }
     }
 }
 
