@@ -135,7 +135,6 @@ To be evaluated (need to remove exclusion).
 `cppcoreguidelines-avoid-const-or-ref-data-members`<br/>
 `cppcoreguidelines-macro-usage`<br/>
 `cppcoreguidelines-pro-type-member-init`<br/>
-`cppcoreguidelines-pro-type-static-cast-downcast`<br/>
 `cppcoreguidelines-prefer-member-initializer`<br/>
 `cppcoreguidelines-misleading-capture-default-by-value`<br/>
 `bugprone-argument-comment.CommentBoolLiterals`<br/>
