@@ -87,7 +87,7 @@ CppcheckLibraryData::Function *LibraryDialog::currentFunction()
     QList<QListWidgetItem *> selitems = mUi->functions->selectedItems();
     if (selitems.count() != 1)
         return nullptr;
-    return static_cast<FunctionListItem *>(selitems.first())->function;
+    return dynamic_cast<FunctionListItem *>(selitems.first())->function;
 }
 
 void LibraryDialog::openCfg()
