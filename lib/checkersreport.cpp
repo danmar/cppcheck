@@ -141,11 +141,15 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
     fout << "Critical errors" << std::endl;
     fout << "---------------" << std::endl;
     if (!criticalErrors.empty()) {
-        fout << "There was critical errors (" << criticalErrors << ")" << std::endl;
-        fout << "All checking is skipped for a file with such error" << std::endl;
+        fout << "There were critical errors (" << criticalErrors << ")." << std::endl;
+        fout << "These cause the analysis of the file to end prematurely." << std::endl;
     } else {
-        fout << "No critical errors, all files were checked." << std::endl;
-        fout << "Important: Analysis is still not guaranteed to be 'complete' it is possible there are false negatives." << std::endl;
+        fout << "No critical errors encountered." << std::endl;
+        // TODO: mention "information" and "debug" as source for indications of bailouts
+        // TODO: still rephrase this - this message does not provides confidence in the results
+        // TODO: document what a bailout is and why it is done - mention it in the upcoming security/tuning guide
+        // TODO: make bailouts a seperate group - need to differentiate between user bailouts (missing data like configuration/includes) and internal bailouts (e.g. limitations of ValueFlow)
+        fout << "Note: There might still have been non-critical bailouts which might lead to false negatives." << std::endl;
     }
 
     fout << std::endl << std::endl;
