@@ -45,6 +45,7 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/errortypes.h \
            $${PWD}/filesettings.h \
            $${PWD}/findtoken.h \
+           $${PWD}/findtoken.h \
            $${PWD}/forwardanalyzer.h \
            $${PWD}/fwdanalysis.h \
            $${PWD}/importproject.h \
@@ -143,6 +144,7 @@ SOURCES += $${PWD}/valueflow.cpp \
            $${PWD}/ctu.cpp \
            $${PWD}/errorlogger.cpp \
            $${PWD}/errortypes.cpp \
+           $${PWD}/findtoken.cpp \
            $${PWD}/forwardanalyzer.cpp \
            $${PWD}/fwdanalysis.cpp \
            $${PWD}/importproject.cpp \
