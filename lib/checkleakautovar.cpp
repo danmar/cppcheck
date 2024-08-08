@@ -1153,7 +1153,7 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
                 const Token* const ifStart = ifEnd->link();
                 const Token* const alloc = it->second.allocTok;
                 if (precedes(ifStart, alloc) && succeeds(ifEnd, alloc)) { // allocation and check in if
-                    if (Token::Match(outparamFunc->next()->astParent(), "%comp%"))
+                    if (outparamFunc->next()->astParent() == ifStart || Token::Match(outparamFunc->next()->astParent(), "%comp%"))
                         continue;
                 } else { // allocation result assigned to variable
                     const Token* const retAssign = outparamFunc->next()->astParent();
