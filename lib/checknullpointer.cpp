@@ -452,18 +452,18 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     if (!mSettings->isEnabled(value, inconclusive) && !mSettings->isPremiumEnabled("nullPointer"))
         return;
 
-    const ErrorPath errorPath = getErrorPath(tok, value, "Null pointer dereference");
+    ErrorPath errorPath = getErrorPath(tok, value, "Null pointer dereference");
 
     if (value->condition) {
-        reportError(errorPath, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
+        reportError(std::move(errorPath), Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
     } else if (value->defaultArg) {
-        reportError(errorPath, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
+        reportError(std::move(errorPath), Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
     } else {
         std::string errmsg = std::string(value->isKnown() ? "Null" : "Possible null") + " pointer dereference";
         if (!varname.empty())
             errmsg = "$symbol:" + varname + '\n' + errmsg + ": $symbol";
 
-        reportError(errorPath,
+        reportError(std::move(errorPath),
                     value->isKnown() ? Severity::error : Severity::warning,
                     "nullPointer",
                     errmsg,
@@ -528,8 +528,8 @@ void CheckNullPointer::pointerArithmeticError(const Token* tok, const ValueFlow:
     } else {
         errmsg = "Pointer " + arithmetic + " with NULL pointer.";
     }
-    const ErrorPath errorPath = getErrorPath(tok, value, "Null pointer " + arithmetic);
-    reportError(errorPath,
+    ErrorPath errorPath = getErrorPath(tok, value, "Null pointer " + arithmetic);
+    reportError(std::move(errorPath),
                 Severity::error,
                 "nullPointerArithmetic",
                 errmsg,
@@ -547,8 +547,8 @@ void CheckNullPointer::redundantConditionWarning(const Token* tok, const ValueFl
     } else {
         errmsg = ValueFlow::eitherTheConditionIsRedundant(condition) + " or there is pointer arithmetic with NULL pointer.";
     }
-    const ErrorPath errorPath = getErrorPath(tok, value, "Null pointer " + arithmetic);
-    reportError(errorPath,
+    ErrorPath errorPath = getErrorPath(tok, value, "Null pointer " + arithmetic);
+    reportError(std::move(errorPath),
                 Severity::warning,
                 "nullPointerArithmeticRedundantCheck",
                 errmsg,
@@ -630,7 +630,7 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
                 if (warning == 1 && !settings.severity.isEnabled(Severity::warning))
                     break;
 
-                const std::list<ErrorMessage::FileLocation> &locationList =
+                std::list<ErrorMessage::FileLocation> locationList =
                     CTU::FileInfo::getErrorPath(CTU::FileInfo::InvalidValueType::null,
                                                 unsafeUsage,
                                                 callsMap,
@@ -640,7 +640,7 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
                 if (locationList.empty())
                     continue;
 
-                const ErrorMessage errmsg(locationList,
+                const ErrorMessage errmsg(std::move(locationList),
                                           emptyString,
                                           warning ? Severity::warning : Severity::error,
                                           "Null pointer dereference: " + unsafeUsage.myArgumentName,

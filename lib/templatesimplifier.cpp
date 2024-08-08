@@ -1173,8 +1173,8 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
                 // check for end
                 if (!it->end) {
                     if (mSettings.debugwarnings && mSettings.severity.isEnabled(Severity::debug)) {
-                        const std::list<const Token*> locationList(1, it->eq);
-                        const ErrorMessage errmsg(locationList, &mTokenizer.list,
+                        std::list<const Token*> locationList(1, it->eq);
+                        const ErrorMessage errmsg(std::move(locationList), &mTokenizer.list,
                                                   Severity::debug,
                                                   "noparamend",
                                                   "TemplateSimplifier couldn't find end of template parameter.",
@@ -3084,8 +3084,8 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                     std::list<std::string> typeStringsUsedInTemplateInstantiation;
                     const std::string typeForNewName = templateDeclaration.name() + "<" + getNewName(instantiation.token(), typeStringsUsedInTemplateInstantiation) + ">";
 
-                    const std::list<const Token *> callstack(1, instantiation.token());
-                    const ErrorMessage errmsg(callstack,
+                    std::list<const Token *> callstack(1, instantiation.token());
+                    const ErrorMessage errmsg(std::move(callstack),
                                               &mTokenizer.list,
                                               Severity::information,
                                               "templateRecursion",
@@ -3975,8 +3975,8 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
 
     if (passCount == passCountMax) {
         if (mSettings.debugwarnings) {
-            const std::list<const Token*> locationList(1, mTokenList.front());
-            const ErrorMessage errmsg(locationList, &mTokenizer.list,
+            std::list<const Token*> locationList(1, mTokenList.front());
+            const ErrorMessage errmsg(std::move(locationList), &mTokenizer.list,
                                       Severity::debug,
                                       "debug",
                                       "TemplateSimplifier: pass count limit hit before simplifications were finished.",

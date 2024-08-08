@@ -292,9 +292,9 @@ void CheckMemoryLeak::reportErr(const Token *tok, Severity severity, const std::
     reportErr(callstack, severity, id, msg, cwe);
 }
 
-void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Severity severity, const std::string &id, const std::string &msg, const CWE &cwe) const
+void CheckMemoryLeak::reportErr(std::list<const Token *> callstack, Severity severity, const std::string &id, const std::string &msg, const CWE &cwe) const
 {
-    const ErrorMessage errmsg(callstack, mTokenizer_ ? &mTokenizer_->list : nullptr, severity, id, msg, cwe, Certainty::normal);
+    const ErrorMessage errmsg(std::move(callstack), mTokenizer_ ? &mTokenizer_->list : nullptr, severity, id, msg, cwe, Certainty::normal);
     if (mErrorLogger_)
         mErrorLogger_->reportErr(errmsg);
     else

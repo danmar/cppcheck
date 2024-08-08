@@ -127,11 +127,11 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
     hash = 0; // calculateWarningHash(list, hashWarning.str());
 }
 
-ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty)
+ErrorMessage::ErrorMessage(ErrorPath errorPath, const TokenList *tokenList, Severity severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty)
     : id(id), severity(severity), cwe(cwe.id), certainty(certainty)
 {
     // Format callstack
-    for (const ErrorPathItem& e: errorPath) {
+    for (ErrorPathItem& e: errorPath) {
         const Token *tok = e.first;
         // --errorlist can provide null values here
         if (!tok)

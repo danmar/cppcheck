@@ -694,7 +694,7 @@ void CheckAutoVariables::errorReturnDanglingLifetime(const Token *tok, const Val
     ErrorPath errorPath = val ? val->errorPath : ErrorPath();
     std::string msg = "Returning " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "returnDanglingLifetime", msg + " that will be invalid when returning.", CWE562, inconclusive ? Certainty::inconclusive : Certainty::normal);
+    reportError(std::move(errorPath), Severity::error, "returnDanglingLifetime", msg + " that will be invalid when returning.", CWE562, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 void CheckAutoVariables::errorInvalidLifetime(const Token *tok, const ValueFlow::Value* val)
@@ -703,7 +703,7 @@ void CheckAutoVariables::errorInvalidLifetime(const Token *tok, const ValueFlow:
     ErrorPath errorPath = val ? val->errorPath : ErrorPath();
     std::string msg = "Using " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "invalidLifetime", msg + " that is out of scope.", CWE562, inconclusive ? Certainty::inconclusive : Certainty::normal);
+    reportError(std::move(errorPath), Severity::error, "invalidLifetime", msg + " that is out of scope.", CWE562, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 void CheckAutoVariables::errorDanglingTemporaryLifetime(const Token* tok, const ValueFlow::Value* val, const Token* tempTok)
@@ -713,7 +713,7 @@ void CheckAutoVariables::errorDanglingTemporaryLifetime(const Token* tok, const 
     std::string msg = "Using " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tempTok, "Temporary created here.");
     errorPath.emplace_back(tok, "");
-    reportError(errorPath,
+    reportError(std::move(errorPath),
                 Severity::error,
                 "danglingTemporaryLifetime",
                 msg + " that is a temporary.",
@@ -728,21 +728,21 @@ void CheckAutoVariables::errorDanglngLifetime(const Token *tok, const ValueFlow:
     std::string tokName = tok ? tok->expressionString() : "x";
     std::string msg = "Non-local variable '" + tokName + "' will use " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "danglingLifetime", msg + ".", CWE562, inconclusive ? Certainty::inconclusive : Certainty::normal);
+    reportError(std::move(errorPath), Severity::error, "danglingLifetime", msg + ".", CWE562, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 void CheckAutoVariables::errorDanglingTempReference(const Token* tok, ErrorPath errorPath, bool inconclusive)
 {
     errorPath.emplace_back(tok, "");
     reportError(
-        errorPath, Severity::error, "danglingTempReference", "Using reference to dangling temporary.", CWE562, inconclusive ? Certainty::inconclusive : Certainty::normal);
+        std::move(errorPath), Severity::error, "danglingTempReference", "Using reference to dangling temporary.", CWE562, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 void CheckAutoVariables::errorReturnReference(const Token* tok, ErrorPath errorPath, bool inconclusive)
 {
     errorPath.emplace_back(tok, "");
     reportError(
-        errorPath, Severity::error, "returnReference", "Reference to local variable returned.", CWE562, inconclusive ? Certainty::inconclusive : Certainty::normal);
+        std::move(errorPath), Severity::error, "returnReference", "Reference to local variable returned.", CWE562, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 void CheckAutoVariables::errorDanglingReference(const Token *tok, const Variable *var, ErrorPath errorPath)
@@ -751,14 +751,14 @@ void CheckAutoVariables::errorDanglingReference(const Token *tok, const Variable
     std::string varName = var ? var->name() : "y";
     std::string msg = "Non-local reference variable '" + tokName + "' to local variable '" + varName + "'";
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "danglingReference", msg, CWE562, Certainty::normal);
+    reportError(std::move(errorPath), Severity::error, "danglingReference", msg, CWE562, Certainty::normal);
 }
 
 void CheckAutoVariables::errorReturnTempReference(const Token* tok, ErrorPath errorPath, bool inconclusive)
 {
     errorPath.emplace_back(tok, "");
     reportError(
-        errorPath, Severity::error, "returnTempReference", "Reference to temporary returned.", CWE562, inconclusive ? Certainty::inconclusive : Certainty::normal);
+        std::move(errorPath), Severity::error, "returnTempReference", "Reference to temporary returned.", CWE562, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 void CheckAutoVariables::errorInvalidDeallocation(const Token *tok, const ValueFlow::Value *val)

@@ -619,30 +619,30 @@ void CheckOther::checkRedundantAssignment()
 
 void CheckOther::redundantCopyError(const Token *tok1, const Token* tok2, const std::string& var)
 {
-    const std::list<const Token *> callstack = { tok1, tok2 };
-    reportError(callstack, Severity::performance, "redundantCopy",
+    std::list<const Token *> callstack = { tok1, tok2 };
+    reportError(std::move(callstack), Severity::performance, "redundantCopy",
                 "$symbol:" + var + "\n"
                 "Buffer '$symbol' is being written before its old content has been used.", CWE563, Certainty::normal);
 }
 
 void CheckOther::redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive)
 {
-    const ErrorPath errorPath = { ErrorPathItem(tok1, var + " is assigned"), ErrorPathItem(tok2, var + " is overwritten") };
+    ErrorPath errorPath = { ErrorPathItem(tok1, var + " is assigned"), ErrorPathItem(tok2, var + " is overwritten") };
     if (inconclusive)
-        reportError(errorPath, Severity::style, "redundantAssignment",
+        reportError(std::move(errorPath), Severity::style, "redundantAssignment",
                     "$symbol:" + var + "\n"
                     "Variable '$symbol' is reassigned a value before the old one has been used if variable is no semaphore variable.\n"
                     "Variable '$symbol' is reassigned a value before the old one has been used. Make sure that this variable is not used like a semaphore in a threading environment before simplifying this code.", CWE563, Certainty::inconclusive);
     else
-        reportError(errorPath, Severity::style, "redundantAssignment",
+        reportError(std::move(errorPath), Severity::style, "redundantAssignment",
                     "$symbol:" + var + "\n"
                     "Variable '$symbol' is reassigned a value before the old one has been used.", CWE563, Certainty::normal);
 }
 
 void CheckOther::redundantInitializationError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive)
 {
-    const ErrorPath errorPath = { ErrorPathItem(tok1, var + " is initialized"), ErrorPathItem(tok2, var + " is overwritten") };
-    reportError(errorPath, Severity::style, "redundantInitialization",
+    ErrorPath errorPath = { ErrorPathItem(tok1, var + " is initialized"), ErrorPathItem(tok2, var + " is overwritten") };
+    reportError(std::move(errorPath), Severity::style, "redundantInitialization",
                 "$symbol:" + var + "\nRedundant initialization for '$symbol'. The initialized value is overwritten before it is read.",
                 CWE563,
                 inconclusive ? Certainty::inconclusive : Certainty::normal);
@@ -650,8 +650,8 @@ void CheckOther::redundantInitializationError(const Token *tok1, const Token* to
 
 void CheckOther::redundantAssignmentInSwitchError(const Token *tok1, const Token* tok2, const std::string &var)
 {
-    const ErrorPath errorPath = { ErrorPathItem(tok1, "$symbol is assigned"), ErrorPathItem(tok2, "$symbol is overwritten") };
-    reportError(errorPath, Severity::style, "redundantAssignInSwitch",
+    ErrorPath errorPath = { ErrorPathItem(tok1, "$symbol is assigned"), ErrorPathItem(tok2, "$symbol is overwritten") };
+    reportError(std::move(errorPath), Severity::style, "redundantAssignInSwitch",
                 "$symbol:" + var + "\n"
                 "Variable '$symbol' is reassigned a value before the old one has been used. 'break;' missing?", CWE563, Certainty::normal);
 }
@@ -1788,7 +1788,7 @@ void CheckOther::constVariableError(const Variable *var, const Function *functio
         id += "Pointer";
     }
 
-    reportError(errorPath, Severity::style, id.c_str(), message, CWE398, Certainty::normal);
+    reportError(std::move(errorPath), Severity::style, id.c_str(), message, CWE398, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------
@@ -2169,7 +2169,7 @@ void CheckOther::zerodivError(const Token *tok, const ValueFlow::Value *value)
         return;
     }
 
-    const ErrorPath errorPath = getErrorPath(tok, value, "Division by zero");
+    ErrorPath errorPath = getErrorPath(tok, value, "Division by zero");
 
     std::ostringstream errmsg;
     if (value->condition) {
@@ -2179,7 +2179,7 @@ void CheckOther::zerodivError(const Token *tok, const ValueFlow::Value *value)
     } else
         errmsg << "Division by zero.";
 
-    reportError(errorPath,
+    reportError(std::move(errorPath),
                 value->errorSeverity() ? Severity::error : Severity::warning,
                 value->condition ? "zerodivcond" : "zerodiv",
                 errmsg.str(), CWE369, value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
@@ -2402,7 +2402,7 @@ void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2, Erro
     errors.emplace_back(tok2, "");
     errors.emplace_back(tok1, "");
 
-    reportError(errors, Severity::style, "duplicateBranch", "Found duplicate branches for 'if' and 'else'.\n"
+    reportError(std::move(errors), Severity::style, "duplicateBranch", "Found duplicate branches for 'if' and 'else'.\n"
                 "Finding the same code in an 'if' and related 'else' branch is suspicious and "
                 "might indicate a cut and paste or logic error. Please examine this code "
                 "carefully to determine if it is correct.", CWE398, Certainty::inconclusive);
@@ -2729,7 +2729,7 @@ void CheckOther::oppositeExpressionError(const Token *opTok, ErrorPath errors)
 
     const std::string& op = opTok ? opTok->str() : "&&";
 
-    reportError(errors, Severity::style, "oppositeExpression", "Opposite expression on both sides of \'" + op + "\'.\n"
+    reportError(std::move(errors), Severity::style, "oppositeExpression", "Opposite expression on both sides of \'" + op + "\'.\n"
                 "Finding the opposite expression on both sides of an operator is suspicious and might "
                 "indicate a cut and paste or logic error. Please examine this code carefully to "
                 "determine if it is correct.", CWE398, Certainty::normal);
@@ -2757,7 +2757,7 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
     if (expr1 != expr2 && !Token::Match(tok1, "%num%|NULL|nullptr") && !Token::Match(tok2, "%num%|NULL|nullptr"))
         msg += " because '" + expr1 + "' and '" + expr2 + "' represent the same value";
 
-    reportError(errors, Severity::style, id, msg +
+    reportError(std::move(errors), Severity::style, id, msg +
                 (std::string(".\nFinding the same expression ") + (hasMultipleExpr ? "more than once in a condition" : "on both sides of an operator")) +
                 " is suspicious and might indicate a cut and paste or logic error. Please examine this code carefully to "
                 "determine if it is correct.", CWE398, Certainty::normal);
@@ -2780,7 +2780,7 @@ void CheckOther::duplicateAssignExpressionError(const Token *tok1, const Token *
 void CheckOther::duplicateExpressionTernaryError(const Token *tok, ErrorPath errors)
 {
     errors.emplace_back(tok, "");
-    reportError(errors, Severity::style, "duplicateExpressionTernary", "Same expression in both branches of ternary operator.\n"
+    reportError(std::move(errors), Severity::style, "duplicateExpressionTernary", "Same expression in both branches of ternary operator.\n"
                 "Finding the same expression in both branches of ternary operator is suspicious as "
                 "the same code is executed regardless of the condition.", CWE398, Certainty::normal);
 }
@@ -3617,8 +3617,8 @@ void CheckOther::accessMovedError(const Token *tok, const std::string &varname, 
         return;
     }
     const std::string errmsg("$symbol:" + varname + "\nAccess of " + kindString + " variable '$symbol'.");
-    const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
-    reportError(errorPath, Severity::warning, errorId, errmsg, CWE672, inconclusive ? Certainty::inconclusive : Certainty::normal);
+    ErrorPath errorPath = getErrorPath(tok, value, errmsg);
+    reportError(std::move(errorPath), Severity::warning, errorId, errmsg, CWE672, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 
@@ -3710,7 +3710,7 @@ void CheckOther::funcArgNamesDifferent(const std::string & functionName, nonneg 
                                        const Token* declaration, const Token* definition)
 {
     std::list<const Token *> tokens = { declaration,definition };
-    reportError(tokens, Severity::style, "funcArgNamesDifferent",
+    reportError(std::move(tokens), Severity::style, "funcArgNamesDifferent",
                 "$symbol:" + functionName + "\n"
                 "Function '$symbol' argument " + std::to_string(index + 1) + " names different: declaration '" +
                 (declaration ? declaration->str() : std::string("A")) + "' definition '" +
@@ -3741,7 +3741,7 @@ void CheckOther::funcArgOrderDifferent(const std::string & functionName,
             msg += definitions[i]->str();
     }
     msg += "'";
-    reportError(tokens, Severity::warning, "funcArgOrderDifferent", msg, CWE683, Certainty::normal);
+    reportError(std::move(tokens), Severity::warning, "funcArgOrderDifferent", msg, CWE683, Certainty::normal);
 }
 
 static const Token *findShadowed(const Scope *scope, const Variable& var, int linenr)
@@ -3819,7 +3819,7 @@ void CheckOther::shadowError(const Token *var, const Token *shadowed, const std:
     const std::string Type = char(std::toupper(type[0])) + type.substr(1);
     const std::string id = "shadow" + Type;
     const std::string message = "$symbol:" + varname + "\nLocal variable \'$symbol\' shadows outer " + type;
-    reportError(errorPath, Severity::style, id.c_str(), message, CWE398, Certainty::normal);
+    reportError(std::move(errorPath), Severity::style, id.c_str(), message, CWE398, Certainty::normal);
 }
 
 static bool isVariableExpression(const Token* tok)
@@ -3946,8 +3946,8 @@ void CheckOther::knownArgumentError(const Token *tok, const Token *ftok, const V
         errmsg += "Constant literal calculation disable/hide variable expression '" + varexpr + "'.";
     }
 
-    const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
-    reportError(errorPath, Severity::style, id, errmsg, CWE570, Certainty::normal);
+    ErrorPath errorPath = getErrorPath(tok, value, errmsg);
+    reportError(std::move(errorPath), Severity::style, id, errmsg, CWE570, Certainty::normal);
 }
 
 void CheckOther::checkKnownPointerToBool()
@@ -4047,7 +4047,7 @@ void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *
     }
     errorPath.emplace_back(tok, "");
     reportError(
-        errorPath, Severity::error, id, verb + " pointers that point to different objects", CWE570, Certainty::normal);
+        std::move(errorPath), Severity::error, id, verb + " pointers that point to different objects", CWE570, Certainty::normal);
 }
 
 void CheckOther::checkModuloOfOne()
