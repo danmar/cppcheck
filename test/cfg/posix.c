@@ -1057,6 +1057,15 @@ void memleak_getaddrinfo_if() // #12506
     }
 }
 
+void memleak_getaddrinfo_if2() // #12996
+{
+    struct addrinfo *addrs = NULL;
+    if (getaddrinfo("a", "b", NULL, &addrs)) {
+        return -1;
+    }
+    freeaddrinfo(addrs);
+}
+
 void memleak_mmap(int fd)
 {
     // cppcheck-suppress [unusedAllocatedMemory, unreadVariable, constVariablePointer]
