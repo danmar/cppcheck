@@ -843,3 +843,15 @@ def test_compdb_D(tmpdir):
     assert stdout.splitlines() == out_expected
     assert stderr.splitlines() == []
     assert ret == 0, stdout
+
+
+def test_shared_items_project(tmpdir):
+    solutionDir = os.path.join(os.getcwd(), 'shared-items-project')
+    solutionFile = f"{solutionDir}/Solution.sln"
+    
+    args = ['--project={}'.format(solutionFile), "-j1"]
+
+    # TODO: 
+    # - Assert "shared-items-project\Main\MainFile.Cpp"
+    # - Assert "shared-items-project\Shared\TestClass.Cpp"
+
