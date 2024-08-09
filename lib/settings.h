@@ -102,7 +102,7 @@ private:
 public:
     Settings();
 
-    static std::string loadCppcheckCfg(Settings& settings, Suppressions& suppressions);
+    static std::string loadCppcheckCfg(Settings& settings, Suppressions& suppressions, bool debug = false);
 
     static std::pair<std::string, std::string> getNameAndVersion(const std::string& productName);
 
@@ -174,8 +174,20 @@ public:
     /** @brief Are we running from DACA script? */
     bool daca{};
 
-    /** @brief Internal: Is --debug-lookup given? */
+    /** @brief Internal: Is --debug-lookup or --debug-lookup=all given? */
     bool debuglookup{};
+
+    /** @brief Internal: Is --debug-lookup=addon given? */
+    bool debuglookupAddon{};
+
+    /** @brief Internal: Is --debug-lookup=config given? */
+    bool debuglookupConfig{};
+
+    /** @brief Internal: Is --debug-lookup=library given? */
+    bool debuglookupLibrary{};
+
+    /** @brief Internal: Is --debug-lookup=platform given? */
+    bool debuglookupPlatform{};
 
     /** @brief Is --debug-normal given? */
     bool debugnormal{};

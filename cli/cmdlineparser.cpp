@@ -556,6 +556,25 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             else if (std::strcmp(argv[i], "--debug-lookup") == 0)
                 mSettings.debuglookup = true;
 
+            else if (std::strncmp(argv[i], "--debug-lookup=", 15) == 0) {
+                const std::string lookup = argv[i] + 15;
+                if (lookup == "all")
+                    mSettings.debuglookup = true;
+                else if (lookup == "addon")
+                    mSettings.debuglookupAddon = true;
+                else if (lookup == "config")
+                    mSettings.debuglookupConfig = true;
+                else if (lookup == "library")
+                    mSettings.debuglookupLibrary = true;
+                else if (lookup == "platform")
+                    mSettings.debuglookupPlatform = true;
+                else
+                {
+                    mLogger.printError("unknown lookup '" + lookup + "'");
+                    return Result::Fail;
+                }
+            }
+
             // Flag used for various purposes during debugging
             else if (std::strcmp(argv[i], "--debug-simplified") == 0)
                 mSettings.debugSimplified = true;
@@ -928,7 +947,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
                 std::string errstr;
                 const std::vector<std::string> paths = {argv[0]};
-                if (!mSettings.platform.set(platform, errstr, paths)) {
+                if (!mSettings.platform.set(platform, errstr, paths, mSettings.debuglookup || mSettings.debuglookupPlatform)) {
                     mLogger.printError(errstr);
                     return Result::Fail;
                 }
@@ -1022,7 +1041,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     if (!platform.empty()) {
                         std::string errstr;
                         const std::vector<std::string> paths = {projectFile, argv[0]};
-                        if (!mSettings.platform.set(platform, errstr, paths)) {
+                        if (!mSettings.platform.set(platform, errstr, paths, mSettings.debuglookup || mSettings.debuglookupPlatform)) {
                             mLogger.printError(errstr);
                             return Result::Fail;
                         }
@@ -1820,7 +1839,7 @@ std::string CmdLineParser::getVersion() const {
 
 bool CmdLineParser::isCppcheckPremium() const {
     if (mSettings.cppcheckCfgProductName.empty())
-        Settings::loadCppcheckCfg(mSettings, mSettings.supprs);
+        Settings::loadCppcheckCfg(mSettings, mSettings.supprs, mSettings.debuglookup || mSettings.debuglookupConfig);
     return startsWith(mSettings.cppcheckCfgProductName, "Cppcheck Premium");
 }
 
@@ -1873,7 +1892,7 @@ bool CmdLineParser::tryLoadLibrary(Library& destination, const std::string& base
 
 bool CmdLineParser::loadLibraries(Settings& settings)
 {
-    if (!tryLoadLibrary(settings.library, settings.exename, "std.cfg", settings.debuglookup)) {
+    if (!tryLoadLibrary(settings.library, settings.exename, "std.cfg", settings.debuglookup || settings.debuglookupLibrary)) {
         const std::string msg("Failed to load std.cfg. Your Cppcheck installation is broken, please re-install.");
 #ifdef FILESDIR
         const std::string details("The Cppcheck binary was compiled with FILESDIR set to \""
@@ -1891,7 +1910,7 @@ bool CmdLineParser::loadLibraries(Settings& settings)
 
     bool result = true;
     for (const auto& lib : settings.libraries) {
-        if (!tryLoadLibrary(settings.library, settings.exename, lib.c_str(), settings.debuglookup)) {
+        if (!tryLoadLibrary(settings.library, settings.exename, lib.c_str(), settings.debuglookup || settings.debuglookupLibrary)) {
             result = false;
         }
     }
@@ -1903,7 +1922,7 @@ bool CmdLineParser::loadAddons(Settings& settings)
     bool result = true;
     for (const std::string &addon: settings.addons) {
         AddonInfo addonInfo;
-        const std::string failedToGetAddonInfo = addonInfo.getAddonInfo(addon, settings.exename);
+        const std::string failedToGetAddonInfo = addonInfo.getAddonInfo(addon, settings.exename, settings.debuglookup || settings.debuglookupAddon);
         if (!failedToGetAddonInfo.empty()) {
             mLogger.printRaw(failedToGetAddonInfo); // TODO: do not print as raw
             result = false;
@@ -1916,7 +1935,7 @@ bool CmdLineParser::loadAddons(Settings& settings)
 
 bool CmdLineParser::loadCppcheckCfg()
 {
-    const std::string cfgErr = Settings::loadCppcheckCfg(mSettings, mSuppressions);
+    const std::string cfgErr = Settings::loadCppcheckCfg(mSettings, mSuppressions, mSettings.debuglookup || mSettings.debuglookupConfig);
     if (!cfgErr.empty()) {
         mLogger.printError("could not load cppcheck.cfg - " + cfgErr);
         return false;

@@ -62,21 +62,32 @@ Settings::Settings()
     pid = getPid();
 }
 
-std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppressions)
+std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppressions, bool debug)
 {
     // TODO: this always needs to be run *after* the Settings has been filled
     static const std::string cfgFilename = "cppcheck.cfg";
     std::string fileName;
 #ifdef FILESDIR
-    if (Path::isFile(Path::join(FILESDIR, cfgFilename)))
-        fileName = Path::join(FILESDIR, cfgFilename);
+    {
+        const std::string filesdirCfg = Path::join(FILESDIR, cfgFilename);
+        if (debug)
+            std::cout << "looking for '" << filesdirCfg << "'" << std::endl;
+        if (Path::isFile(filesdirCfg))
+            fileName = filesdirCfg;
+    }
 #endif
     // cppcheck-suppress knownConditionTrueFalse
     if (fileName.empty()) {
         // TODO: make sure that exename is set
         fileName = Path::getPathFromFilename(settings.exename) + cfgFilename;
+        if (debug)
+            std::cout << "looking for '" << fileName << "'" << std::endl;
         if (!Path::isFile(fileName))
+        {
+            if (debug)
+                std::cout << "no configuration found" << std::endl;
             return "";
+        }
     }
 
     std::ifstream fin(fileName);
