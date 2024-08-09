@@ -637,7 +637,9 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
         findAndReplace(result, replaceFrom, replaceWith);
         pos1 = result.find("{inconclusive:", pos1);
     }
-    findAndReplace(result, "{severity}", severityToString(severity));
+    std::string sseverity = coloredSeverityToString(severity);
+    replaceColors(sseverity);
+    findAndReplace(result, "{severity}", sseverity);
     findAndReplace(result, "{cwe}", std::to_string(cwe.id));
     findAndReplace(result, "{message}", verbose ? mVerboseMessage : mShortMessage);
     findAndReplace(result, "{remark}", remark);
