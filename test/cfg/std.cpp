@@ -5178,3 +5178,30 @@ struct S_std_as_const { // #12974
     }
     std::list<int> l;
 };
+
+void containerOutOfBounds_std_string(std::string &var) { // #11403 
+    std::string s0{"x"};
+    // cppcheck-suppress containerOutOfBounds
+    var+= s0[2];
+
+    std::string s1{ R"(x)" };
+    // cppcheck-suppress containerOutOfBounds
+    var+= s1[2];
+
+    std::string s2 = R"--(XYZ)--";
+    // cppcheck-suppress containerOutOfBounds
+    var+= s2[3];
+
+    std::string s3 = {R"--(XYZ)--"};
+    // cppcheck-suppress containerOutOfBounds
+    var+= s3[3];
+
+    const char *x = R"--(XYZ)--";
+    std::string s4(x);
+    // TODO cppcheck-suppress containerOutOfBounds
+    var+= s4[3];
+
+    std::string s5{x};
+    // TODO cppcheck-suppress containerOutOfBounds
+    var+= s5[3];
+}
