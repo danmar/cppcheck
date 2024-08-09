@@ -755,7 +755,6 @@ def test_json_file_ignore_2(tmpdir):
     assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
 
 
-<<<<<<< HEAD
 @pytest.mark.xfail(strict=True)
 def test_project_D(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
