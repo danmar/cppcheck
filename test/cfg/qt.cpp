@@ -211,6 +211,12 @@ bool QString7(QString s, const QString& l) {
     return l.startsWith(s);
 }
 
+void QString_split(const char* name) { // #12998
+    // cppcheck-suppress valueFlowBailoutIncompleteVar // FIXME
+    QStringList qsl = QString(name).split(';', Qt::SkipEmptyParts);
+    if (qsl.isEmpty()) {}
+}
+
 namespace NTestStd // #12355
 {
     using namespace std;
