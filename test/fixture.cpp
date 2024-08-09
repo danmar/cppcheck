@@ -239,7 +239,7 @@ bool TestFixture::assertEquals(const char * const filename, const unsigned int l
     if (expected != actual) {
         return assertEquals(filename, linenr, std::to_string(expected), std::to_string(actual), msg);
     }
-    return expected == actual;
+    return true;
 }
 
 bool TestFixture::assertEqualsDouble(const char * const filename, const unsigned int linenr, const double expected, const double actual, const double tolerance, const std::string &msg) const
