@@ -6579,6 +6579,7 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
                     n = valueFlowGetStrLength(tok->astParent()->tokAt(3));
                 if (n == 0) // TODO: handle known empty append
                     val->setPossible();
+                break;
             }
             default:
                 break;
