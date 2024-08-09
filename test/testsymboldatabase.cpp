@@ -6579,7 +6579,7 @@ private:
                       "    int i = abc[ARRAY_SIZE(cats)];\n"
                       "}");
         const Token *e = Token::findsimplematch(tokenizer.tokens(), "e abc");
-        db->sizeOfType(e);  // <- don't crash
+        (void)db->sizeOfType(e);  // <- don't crash
     }
 
     void isImplicitlyVirtual() {

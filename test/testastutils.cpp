@@ -231,10 +231,10 @@ private:
 
     void isVariableChangedTest() {
         // #8211 - no lhs for >> , do not crash
-        isVariableChanged("void f() {\n"
-                          "  int b;\n"
-                          "  if (b) { (int)((INTOF(8))result >> b); }\n"
-                          "}", "if", "}");
+        (void)isVariableChanged("void f() {\n"
+                                "  int b;\n"
+                                "  if (b) { (int)((INTOF(8))result >> b); }\n"
+                                "}", "if", "}");
         // #9235
         ASSERT_EQUALS(false,
                       isVariableChanged("void f() {\n"

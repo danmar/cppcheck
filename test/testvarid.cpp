@@ -877,7 +877,7 @@ private:
     void varid36() { // ticket #2980 (segmentation fault)
         const char code[] ="#elif A\n"
                             "A,a<b<x0\n";
-        tokenize(code);
+        (void)tokenize(code);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1035,7 +1035,7 @@ private:
 
     void varid54() { // hang
         // Original source code: libgc
-        tokenize("STATIC ptr_t GC_approx_sp(void) { word sp; sp = (word)&sp; return((ptr_t)sp); }");
+        (void)tokenize("STATIC ptr_t GC_approx_sp(void) { word sp; sp = (word)&sp; return((ptr_t)sp); }");
     }
 
     void varid55() { // Ticket #5868
@@ -1416,7 +1416,7 @@ private:
                             "  return clear_extent_bit(tree, start, end, EXTENT_DIRTY | EXTENT_DELALLOC | "
                             "                          EXTENT_DO_ACCOUNTING, 0, 0, NULL, mask);\n"
                             "}";
-        tokenize(code, false);
+        ASSERT_NO_THROW(tokenize(code, false));
     }
 
     void varid_cpp_keywords_in_c_code3() { // #12120

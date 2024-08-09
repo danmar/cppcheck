@@ -120,8 +120,8 @@ private:
         TokensFrontBack tokensFrontBack(list);
         auto *token = new Token(tokensFrontBack);
         token->str("1");
-        token->insertToken("2");
-        token->next()->insertToken("3");
+        (void)token->insertToken("2");
+        (void)token->next()->insertToken("3");
         Token *last = token->tokAt(2);
         ASSERT_EQUALS(token->str(), "1");
         ASSERT_EQUALS(token->strAt(1), "2");
@@ -549,7 +549,7 @@ private:
         TokensFrontBack listEnds(list);
         Token ** const tokensBack = &(listEnds.back);
         Token tok(listEnds);
-        tok.insertToken("aba");
+        (void)tok.insertToken("aba");
         ASSERT_EQUALS(true, *tokensBack == tok.next());
         tok.deleteNext();
         ASSERT_EQUALS(true, *tokensBack == &tok);
@@ -560,7 +560,7 @@ private:
         Token ** const tokensFront = &(listEnds.front);
         Token tok(listEnds);
 
-        tok.insertToken("aba");
+        (void)tok.insertToken("aba");
 
         ASSERT_EQUALS(true, *tokensFront == tok.previous());
         tok.deletePrevious();
