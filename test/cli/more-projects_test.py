@@ -849,8 +849,6 @@ def test_shared_items_project(tmpdir = ""):
     # tmpdir is unused
     solutionDir = os.path.join(os.getcwd(), 'shared-items-project')
     solutionFile = os.path.join(solutionDir, 'Solution.sln')
-    codeMainFile = os.path.join(solutionDir, 'Main', 'MainFile.cpp')
-    codeSharedFile = os.path.join(solutionDir, 'Shared', 'TestClass.cpp')
 
     args = [
         '--platform=win64',
