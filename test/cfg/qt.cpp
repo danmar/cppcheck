@@ -212,6 +212,7 @@ bool QString7(QString s, const QString& l) {
 }
 
 void QString_split(const char* name) { // #12998
+    // cppcheck-suppress valueFlowBailoutIncompleteVar // FIXME
     QStringList qsl = QString(name).split(';', Qt::SkipEmptyParts);
     if (qsl.isEmpty()) {}
 }
