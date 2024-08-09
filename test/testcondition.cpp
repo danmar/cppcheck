@@ -124,6 +124,7 @@ private:
         TEST_CASE(knownConditionIncrementLoop); // #9808
         TEST_CASE(knownConditionAfterBailout); // #12526
         TEST_CASE(knownConditionIncDecOperator);
+        TEST_CASE(knownConditionFloating);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -5770,6 +5771,14 @@ private:
               "    if (other.mPA.cols > 0 && other.mPA.rows > 0)\n"
               "        ;\n"
               "}");
+        ASSERT_EQUALS("", errout_str());
+
+        check("void foo() {\n" // #11202
+              "    float f = 0x1.4p+3;\n"
+              "    if (f > 10.0) {}\n"
+              "    if (f < 10.0) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("", "[test.cpp:2] -> [test.cpp:3] -> [test.cpp:4]: (style) The if condition is the same as the previous if condition\n", errout_str());
     }
 
     void checkInvalidTestForOverflow() {
@@ -6228,6 +6237,125 @@ private:
             "    }\n"
             "}\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void knownConditionFloating() {
+        check("void foo() {\n"   // #11199
+              "    float f = 1.0;\n"
+              "    if (f > 1.0f) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'f>1.0f' is always false\n", "", errout_str());
+
+        check("void foo() {\n"     // #11199
+              "    float f = 1.0;\n"
+              "    if (f > 1.0L) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'f>1.0L' is always false\n", "", errout_str());
+
+        check("void foo() {\n"   // #11199
+              "    float f = 1.0f;\n"
+              "    if (f > 1.0) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'f>1.0' is always false\n", "", errout_str());
+
+        check("void foo() {\n"     // #11199
+              "    float f = 1.0f;\n"
+              "    if (f > 1.0L) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'f>1.0L' is always false\n", "", errout_str());
+
+        check("void foo() {\n"     // #11199
+              "    float f = 1.0L;\n"
+              "    if (f > 1.0) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'f>1.0' is always false\n", "", errout_str());
+
+        check("void foo() {\n"     // #11199
+              "    float f = 1.0L;\n"
+              "    if (f > 1.0f) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'f>1.0f' is always false\n", "", errout_str());
+
+        check("void foo() {\n"   // #11201
+              "    float f = 0x1.4p+3;\n" // hex fraction 1.4 (decimal 1.25) scaled by 2^3, that is 10.0
+              "    if (f > 9.9) {}\n"
+              "    if (f < 9.9) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Condition 'f>9.9' is always true\n"
+            "[test.cpp:4]: (style) Condition 'f<9.9' is always false\n",
+            "",
+            errout_str());
+
+        check("void foo() {\n" // #12330
+              "    double d = 1.0;\n"
+              "    if (d < 0.0) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'd<0.0' is always false\n", "", errout_str());
+
+        check("void foo() {\n"     // #12330
+              "    long double ld = 1.0;\n"
+              "    if (ld < 0.0) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'ld<0.0' is always false\n", "", errout_str());
+
+        check("void foo() {\n"     // #12330
+              "    float f = 1.0;\n"
+              "    if (f < 0.0) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'f<0.0' is always false\n", "", errout_str());
+
+        check("void foo() {\n"     // #12774
+              "    float f = 1.0f;\n"
+              "    if (f > 1.01f) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Condition 'f>1.01f' is always false\n",
+            "",
+            errout_str());
+
+        check("void foo() {\n"     // #12774
+              "    float f = 1.0;\n"
+              "    if (f > 1.01) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Condition 'f>1.01' is always false\n",
+            "",
+            errout_str());
+
+        check("void foo() {\n"
+              "    float f = 1.0f;\n"
+              "    if (f > 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Condition 'f>1' is always false\n",
+            errout_str());
+
+        check("void foo() {\n" // #13508
+              "    float f = 1.0f;\n"
+              "    if (f > 1.00f) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Condition 'f>1.00f' is always false\n",
+            "",
+            errout_str());
+
+        check("void foo() {\n"
+              "    float f = 1.0;\n"
+              "    if (f > 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Condition 'f>1' is always false\n",
+            errout_str());
+
+        check("void foo() {\n"// #13508
+              "    float f = 1.0;\n"
+              "    if (f > 1.00) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Condition 'f>1.00' is always false\n",
+            "",
+            errout_str());
     }
 };
 
