@@ -141,7 +141,6 @@ To be evaluated (need to remove exclusion).
 `cert-err33-c`<br/>
 `google-readability-namespace-comments`<br/>
 `cppcoreguidelines-special-member-functions`<br/>
-`bugprone-unused-return-value`<br/>
 
 To be evaluated (need to enable explicitly).
 
