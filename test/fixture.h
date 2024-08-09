@@ -66,9 +66,9 @@ protected:
     virtual void prepareTestInternal() {}
     void teardownTest();
     virtual void teardownTestInternal() {}
-    std::string getLocationStr(const char * const filename, const unsigned int linenr) const;
+    std::string getLocationStr(const char * filename, unsigned int linenr) const;
 
-    bool assert_(const char * const filename, const unsigned int linenr, const bool condition) const;
+    bool assert_(const char * filename, unsigned int linenr, bool condition) const;
 
     template<typename T>
     bool assertEquals(const char* const filename, const unsigned int linenr, const T& expected, const T& actual, const std::string& msg = emptyString) const {
@@ -92,25 +92,25 @@ protected:
 
     //Helper function to be called when an assertEquals assertion fails.
     //Writes the appropriate failure message to errmsg and increments fails_counter
-    void assertEqualsFailed(const char* const filename, const unsigned int linenr, const std::string& expected, const std::string& actual, const std::string& msg) const;
+    void assertEqualsFailed(const char* filename, unsigned int linenr, const std::string& expected, const std::string& actual, const std::string& msg) const;
 
-    bool assertEquals(const char * const filename, const unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;
-    void assertEqualsWithoutLineNumbers(const char * const filename, const unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;
-    bool assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg = emptyString) const;
-    bool assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const char actual[], const std::string &msg = emptyString) const;
-    bool assertEquals(const char * const filename, const unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg = emptyString) const;
-    bool assertEquals(const char * const filename, const unsigned int linenr, const long long expected, const long long actual, const std::string &msg = emptyString) const;
-    void assertEqualsDouble(const char * const filename, const unsigned int linenr, const double expected, const double actual, const double tolerance, const std::string &msg = emptyString) const;
+    bool assertEquals(const char * filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;
+    void assertEqualsWithoutLineNumbers(const char * filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;
+    bool assertEquals(const char * filename, unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg = emptyString) const;
+    bool assertEquals(const char * filename, unsigned int linenr, const char expected[], const char actual[], const std::string &msg = emptyString) const;
+    bool assertEquals(const char * filename, unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg = emptyString) const;
+    bool assertEquals(const char * filename, unsigned int linenr, long long expected, long long actual, const std::string &msg = emptyString) const;
+    void assertEqualsDouble(const char * filename, unsigned int linenr, double expected, double actual, double tolerance, const std::string &msg = emptyString) const;
 
-    void todoAssertEquals(const char * const filename, const unsigned int linenr, const std::string &wanted,
+    void todoAssertEquals(const char * filename, unsigned int linenr, const std::string &wanted,
                           const std::string &current, const std::string &actual) const;
-    void todoAssertEquals(const char * const filename, const unsigned int linenr, const char wanted[],
+    void todoAssertEquals(const char * filename, unsigned int linenr, const char wanted[],
                           const char current[], const std::string &actual) const;
-    void todoAssertEquals(const char * const filename, const unsigned int linenr, const long long wanted,
-                          const long long current, const long long actual) const;
-    void assertThrow(const char * const filename, const unsigned int linenr) const;
-    void assertThrowFail(const char * const filename, const unsigned int linenr) const;
-    void assertNoThrowFail(const char * const filename, const unsigned int linenr) const;
+    void todoAssertEquals(const char * filename, unsigned int linenr, long long wanted,
+                          long long current, long long actual) const;
+    void assertThrow(const char * filename, unsigned int linenr) const;
+    void assertThrowFail(const char * filename, unsigned int linenr) const;
+    void assertNoThrowFail(const char * filename, unsigned int linenr) const;
     static std::string deleteLineNumber(const std::string &message);
 
     void setVerbose(bool v) {
@@ -278,7 +278,7 @@ public:
     static void printHelp();
     const std::string classname;
 
-    explicit TestFixture(const char * const _name);
+    explicit TestFixture(const char * _name);
 
     static std::size_t runTests(const options& args);
 };

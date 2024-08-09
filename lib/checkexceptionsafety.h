@@ -90,13 +90,13 @@ private:
     void rethrowNoCurrentException();
 
     /** Don't throw exceptions in destructors */
-    void destructorsError(const Token * const tok, const std::string &className);
-    void deallocThrowError(const Token * const tok, const std::string &varname);
-    void rethrowCopyError(const Token * const tok, const std::string &varname);
+    void destructorsError(const Token * tok, const std::string &className);
+    void deallocThrowError(const Token * tok, const std::string &varname);
+    void rethrowCopyError(const Token * tok, const std::string &varname);
     void catchExceptionByValueError(const Token *tok);
-    void noexceptThrowError(const Token * const tok);
+    void noexceptThrowError(const Token * tok);
     /** Missing exception specification */
-    void unhandledExceptionSpecificationError(const Token * const tok1, const Token * const tok2, const std::string & funcname);
+    void unhandledExceptionSpecificationError(const Token * tok1, const Token * tok2, const std::string & funcname);
     /** Rethrow without currently handled exception */
     void rethrowNoCurrentExceptionError(const Token *tok);
 

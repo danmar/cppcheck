@@ -99,11 +99,11 @@ private:
         bool isCPP{};
     };
 
-    void checkFormatString(const Token * const tok,
-                           const Token * const formatStringTok,
-                           const Token *       argListTok,
-                           const bool scan,
-                           const bool scanf_s);
+    void checkFormatString(const Token * tok,
+                           const Token * formatStringTok,
+                           const Token * argListTok,
+                           bool scan,
+                           bool scanf_s);
 
     // Reporting errors..
     void coutCerrMisusageError(const Token* tok, const std::string& streamName);

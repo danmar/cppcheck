@@ -288,7 +288,7 @@ private:
     /** Is local variable allocated with malloc? */
     bool isMalloc(const Variable *variable) const;
 
-    void checkStructVariable(const Variable* const variable) const;
+    void checkStructVariable(const Variable*  variable) const;
 
     void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/) const override {}
 

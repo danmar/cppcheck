@@ -117,7 +117,7 @@ private:
     void invalidFunctionArgStrError(const Token *tok, const std::string &functionName, nonneg int argnr);
     void ignoredReturnValueError(const Token* tok, const std::string& function);
     void ignoredReturnErrorCode(const Token* tok, const std::string& function);
-    void mathfunctionCallWarning(const Token *tok, const nonneg int numParam = 1);
+    void mathfunctionCallWarning(const Token *tok, nonneg int numParam = 1);
     void mathfunctionCallWarning(const Token *tok, const std::string& oldexp, const std::string& newexp);
     void memsetZeroBytesError(const Token *tok);
     void memsetFloatError(const Token *tok, const std::string &var_value);

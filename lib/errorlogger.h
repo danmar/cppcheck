@@ -135,7 +135,7 @@ public:
                  const CWE &cwe,
                  Certainty certainty);
     ErrorMessage();
-    explicit ErrorMessage(const tinyxml2::XMLElement * const errmsg);
+    explicit ErrorMessage(const tinyxml2::XMLElement * errmsg);
 
     /**
      * Format the error message in XML format

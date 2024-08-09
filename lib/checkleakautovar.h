@@ -124,7 +124,7 @@ private:
     void check();
 
     /** check for leaks in a function scope */
-    bool checkScope(const Token * const startToken,
+    bool checkScope(const Token * startToken,
                     VarInfo &varInfo,
                     std::set<int> notzero,
                     nonneg int recursiveCount);
@@ -134,7 +134,7 @@ private:
      * @param varInfo Variable info
      * @return next token to process (if no other checks needed for this token). NULL if other checks could be performed.
      */
-    const Token * checkTokenInsideExpression(const Token * const tok, VarInfo &varInfo, bool inFuncCall = false);
+    const Token * checkTokenInsideExpression(const Token * tok, VarInfo &varInfo, bool inFuncCall = false);
 
     /** parse function call */
     void functionCall(const Token *tokName, const Token *tokOpeningPar, VarInfo &varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af);
@@ -146,7 +146,7 @@ private:
     void changeAllocStatusIfRealloc(std::map<int, VarInfo::AllocInfo> &alloctype, const Token *fTok, const Token *retTok) const;
 
     /** return. either "return" or end of variable scope is seen */
-    void ret(const Token *tok, VarInfo &varInfo, const bool isEndOfScope = false);
+    void ret(const Token *tok, VarInfo &varInfo, bool isEndOfScope = false);
 
     /** if variable is allocated then there is a leak */
     void leakIfAllocated(const Token *vartok, const VarInfo &varInfo);

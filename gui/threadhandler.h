@@ -57,7 +57,7 @@ public:
      * @brief Set the number of threads to use
      * @param count The number of threads to use
      */
-    void setThreadCount(const int count);
+    void setThreadCount(int count);
 
     /**
      * @brief Initialize the threads (connect all signals to resultsview's slots)

@@ -65,8 +65,8 @@ public:
      * @param index Index of the application whose name to get
      * @return Name of the application
      */
-    const Application& getApplication(const int index) const;
-    Application& getApplication(const int index);
+    const Application& getApplication(int index) const;
+    Application& getApplication(int index);
 
     /**
      * @brief Return the default application.
@@ -88,13 +88,13 @@ public:
      *
      * @param index Index of the application to remove.
      */
-    void removeApplication(const int index);
+    void removeApplication(int index);
 
     /**
      * @brief Set application as default application.
      * @param index Index of the application to make the default one
      */
-    void setDefault(const int index);
+    void setDefault(int index);
 
     /**
      * @brief Remove all applications from this list and copy all applications from

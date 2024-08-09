@@ -92,11 +92,11 @@ private:
     void check();
     void checkScope(const Scope* scope, const std::set<std::string> &arrayTypeDefs);
     void checkStruct(const Token *tok, const Variable &structvar);
-    bool checkScopeForVariable(const Token *tok, const Variable& var, bool* const possibleInit, bool* const noreturn, Alloc* const alloc, const std::string &membervar, std::map<nonneg int, VariableValue>& variableValue);
-    const Token* checkExpr(const Token* tok, const Variable& var, const Alloc alloc, bool known, bool* bailout = nullptr) const;
+    bool checkScopeForVariable(const Token *tok, const Variable& var, bool* possibleInit, bool* noreturn, Alloc* alloc, const std::string &membervar, std::map<nonneg int, VariableValue>& variableValue);
+    const Token* checkExpr(const Token* tok, const Variable& var, Alloc alloc, bool known, bool* bailout = nullptr) const;
     bool checkIfForWhileHead(const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, Alloc alloc, const std::string &membervar);
-    bool checkLoopBody(const Token *tok, const Variable& var, const Alloc alloc, const std::string &membervar, const bool suppressErrors);
-    const Token* checkLoopBodyRecursive(const Token *start, const Variable& var, const Alloc alloc, const std::string &membervar, bool &bailout) const;
+    bool checkLoopBody(const Token *tok, const Variable& var, Alloc alloc, const std::string &membervar, bool suppressErrors);
+    const Token* checkLoopBodyRecursive(const Token *start, const Variable& var, Alloc alloc, const std::string &membervar, bool &bailout) const;
     void checkRhs(const Token *tok, const Variable &var, Alloc alloc, nonneg int number_of_if, const std::string &membervar);
     static int isFunctionParUsage(const Token *vartok, const Library &library, bool pointer, Alloc alloc, int indirect = 0);
     int isFunctionParUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect = 0) const;

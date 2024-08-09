@@ -80,12 +80,12 @@ private:
     void assignIf();
 
     /** parse scopes recursively */
-    bool assignIfParseScope(const Token * const assignTok,
-                            const Token * const startTok,
-                            const nonneg int varid,
-                            const bool islocal,
-                            const char bitop,
-                            const MathLib::bigint num);
+    bool assignIfParseScope(const Token * assignTok,
+                            const Token * startTok,
+                            nonneg int varid,
+                            bool islocal,
+                            char bitop,
+                            MathLib::bigint num);
 
     /** check bitmask using | instead of & */
     void checkBadBitmaskCheck();
@@ -133,9 +133,9 @@ private:
     std::set<const Token*> mCondDiags;
     bool diag(const Token* tok, bool insert=true);
     bool isAliased(const std::set<int> &vars) const;
-    bool isOverlappingCond(const Token * const cond1, const Token * const cond2, bool pure) const;
+    bool isOverlappingCond(const Token * cond1, const Token * cond2, bool pure) const;
     void assignIfError(const Token *tok1, const Token *tok2, const std::string &condition, bool result);
-    void mismatchingBitAndError(const Token *tok1, const MathLib::bigint num1, const Token *tok2, const MathLib::bigint num2);
+    void mismatchingBitAndError(const Token *tok1, MathLib::bigint num1, const Token *tok2, MathLib::bigint num2);
     void badBitmaskCheckError(const Token *tok, bool isNoOp = false);
     void comparisonError(const Token *tok,
                          const std::string &bitop,

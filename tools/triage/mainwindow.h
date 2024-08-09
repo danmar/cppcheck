@@ -62,7 +62,7 @@ private:
     bool runProcess(const QString &programName, const QStringList & arguments);
     bool wget(const QString &url);
     bool unpackArchive(const QString &archiveName);
-    void showSrcFile(const QString &fileName, const QString &url, const int lineNumber);
+    void showSrcFile(const QString &fileName, const QString &url, int lineNumber);
 
     QStringList mAllErrors;
     QFileSystemModel mFSmodel;
