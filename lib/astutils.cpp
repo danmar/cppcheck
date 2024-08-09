@@ -2670,6 +2670,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings &settings,
             const Library::Container::Action action = c->getAction(ftok->str());
             if (contains({Library::Container::Action::INSERT,
                           Library::Container::Action::ERASE,
+                          Library::Container::Action::APPEND,
                           Library::Container::Action::CHANGE,
                           Library::Container::Action::CHANGE_CONTENT,
                           Library::Container::Action::CHANGE_INTERNAL,

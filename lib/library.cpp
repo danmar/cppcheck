@@ -297,6 +297,8 @@ Library::Container::Action Library::Container::actionFrom(const std::string& act
         return Container::Action::INSERT;
     if (actionName == "erase")
         return Container::Action::ERASE;
+    if (actionName == "append")
+        return Container::Action::APPEND;
     if (actionName == "change-content")
         return Container::Action::CHANGE_CONTENT;
     if (actionName == "change-internal")

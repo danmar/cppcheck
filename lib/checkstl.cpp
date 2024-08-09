@@ -73,6 +73,7 @@ static bool containerAppendsElement(const Library::Container* container, const T
     if (Token::Match(parent, ". %name% (")) {
         const Library::Container::Action action = container->getAction(parent->strAt(1));
         if (contains({Library::Container::Action::INSERT,
+                      Library::Container::Action::APPEND,
                       Library::Container::Action::CHANGE,
                       Library::Container::Action::CHANGE_INTERNAL,
                       Library::Container::Action::PUSH,

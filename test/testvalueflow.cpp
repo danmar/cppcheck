@@ -6985,6 +6985,13 @@ private:
                "    if (c.empty()) {}\n"
                "}";
         ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "c ."), 2));
+
+        code = "void f(const std::string& a) {\n"
+               "    std::string s;\n"
+               "    s.append(a);\n"
+               "    if (s.empty()) {}\n"
+               "}";
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "s . empty"), 0));
     }
 
     void valueFlowContainerElement()

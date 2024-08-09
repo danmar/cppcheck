@@ -193,6 +193,7 @@ public:
             FIND_CONST,
             INSERT,
             ERASE,
+            APPEND,
             CHANGE_CONTENT,
             CHANGE,
             CHANGE_INTERNAL,
