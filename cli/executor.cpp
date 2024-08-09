@@ -34,7 +34,7 @@ Executor::Executor(const std::list<FileWithDetails> &files, const std::list<File
     : mFiles(files), mFileSettings(fileSettings), mSettings(settings), mSuppressions(suppressions), mErrorLogger(errorLogger)
 {
     // the two inputs may only be used exclusively
-    assert(!(!files.empty() && !fileSettings.empty()));
+    assert(files.empty() || fileSettings.empty());
 }
 
 // TODO: this logic is duplicated in CppCheck::reportErr()

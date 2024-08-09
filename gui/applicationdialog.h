@@ -22,6 +22,7 @@
 #include <QDialog>
 #include <QObject>
 #include <QString>
+#include <memory>
 
 class QWidget;
 class Application;
@@ -51,7 +52,7 @@ public:
     ApplicationDialog(const QString &title,
                       Application &app,
                       QWidget *parent = nullptr);
-    ~ApplicationDialog() override;
+    ~ApplicationDialog() override = default;
 
 protected slots:
 
@@ -69,7 +70,7 @@ protected:
      * @brief UI from the Qt designer
      *
      */
-    Ui::ApplicationDialog* mUI;
+    std::unique_ptr<Ui::ApplicationDialog> mUI;
 
 private:
 
