@@ -1044,6 +1044,7 @@ struct ValueFlowAnalyzer : Analyzer {
             if (astIsContainer(tok) && value->isLifetimeValue() &&
                 contains({Library::Container::Action::PUSH,
                           Library::Container::Action::INSERT,
+                          Library::Container::Action::APPEND,
                           Library::Container::Action::CHANGE_INTERNAL},
                          astContainerAction(tok)))
                 return read;
@@ -6492,6 +6493,8 @@ static bool isContainerSizeChangedByFunction(const Token* tok,
     return (isChanged || inconclusive);
 }
 
+static MathLib::bigint valueFlowGetStrLength(const Token* tok);
+
 struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
     ContainerExpressionAnalyzer(const Token* expr, ValueFlow::Value val, const Settings& s)
         : ExpressionAnalyzer(expr, std::move(val), s)
@@ -6527,9 +6530,9 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
             }
         } else if (astIsLHS(tok) && Token::Match(tok->astParent(), ". %name% (")) {
             const Library::Container::Action action = container->getAction(tok->astParent()->strAt(1));
-            if (action == Library::Container::Action::PUSH || action == Library::Container::Action::POP) {
+            if (action == Library::Container::Action::PUSH || action == Library::Container::Action::POP || action == Library::Container::Action::APPEND) { // TODO: handle more actions?
                 std::vector<const Token*> args = getArguments(tok->tokAt(3));
-                if (args.size() < 2)
+                if (args.size() < 2 || action == Library::Container::Action::APPEND)
                     return Action::Read | Action::Write | Action::Incremental;
             }
         }
@@ -6563,10 +6566,23 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
             }
         } else if (astIsLHS(tok) && Token::Match(tok->astParent(), ". %name% (")) {
             const Library::Container::Action action = container->getAction(tok->astParent()->strAt(1));
-            if (action == Library::Container::Action::PUSH)
+            switch (action) {
+            case Library::Container::Action::PUSH:
                 n = 1;
-            if (action == Library::Container::Action::POP)
+                break;
+            case Library::Container::Action::POP:
                 n = -1;
+                break;
+            case Library::Container::Action::APPEND: {
+                std::vector<const Token*> args = getArguments(tok->astParent()->tokAt(2));
+                if (args.size() == 1) // TODO: handle overloads
+                    n = valueFlowGetStrLength(tok->astParent()->tokAt(3));
+                if (n == 0) // TODO: handle known empty append
+                    val->setPossible();
+            }
+            default:
+                break;
+            }
         }
         if (d == Direction::Reverse)
             val->intvalue -= n;
@@ -6712,6 +6728,7 @@ bool ValueFlow::isContainerSizeChanged(const Token* tok, int indirect, const Set
     case Library::Container::Action::CHANGE:
     case Library::Container::Action::INSERT:
     case Library::Container::Action::ERASE:
+    case Library::Container::Action::APPEND:
         return true;
     case Library::Container::Action::NO_ACTION:
         // Is this an unknown member function call?
@@ -7002,7 +7019,7 @@ static const Scope* getFunctionScope(const Scope* scope) {
     return scope;
 }
 
-static MathLib::bigint valueFlowGetStrLength(const Token* tok)
+MathLib::bigint valueFlowGetStrLength(const Token* tok)
 {
     if (tok->tokType() == Token::eString)
         return Token::getStrLength(tok);
@@ -7175,6 +7192,7 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                     value.setImpossible();
                     valueFlowForward(tok->linkAt(2), containerTok, std::move(value), tokenlist, errorLogger, settings);
                 }
+                // TODO: handle more actions?
 
             } else if (tok->str() == "+=" && astIsContainer(tok->astOperand1())) {
                 const Token* containerTok = tok->astOperand1();

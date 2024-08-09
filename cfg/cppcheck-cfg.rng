@@ -709,6 +709,7 @@
       <value>find-const</value>
       <value>insert</value>
       <value>erase</value>
+      <value>append</value>
       <value>change-content</value>
       <value>change-internal</value>
       <value>change</value>
