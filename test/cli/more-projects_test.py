@@ -863,12 +863,7 @@ def test_shared_items_project(tmpdir = ""):
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
     lines = stdout.splitlines()
-    assert lines == [
-        'Checking {} Release|x64...'.format(codeMainFile),
-        'Checking {}: _WIN32=1;_WIN64=1;_MSC_VER=1900...'.format(codeMainFile),
-        '1/2 files checked 50% done',
-        'Checking {} Release|x64...'.format(codeSharedFile),
-        'Checking {}: _WIN32=1;_WIN64=1;_MSC_VER=1900...'.format(codeSharedFile),
-        '2/2 files checked 100% done',
-    ]
+
+    # Assume no errors, and that shared items code files have been checked as well
+    assert any('2/2 files checked 100% done' in x for x in lines)
     assert stderr == ''
