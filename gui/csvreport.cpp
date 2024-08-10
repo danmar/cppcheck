@@ -42,11 +42,7 @@ bool CsvReport::create()
 void CsvReport::writeHeader()
 {
     // Added 5 columns to the header.
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
     mTxtWriter << "File, Line, Severity, Id, Summary" << Qt::endl;
-#else
-    mTxtWriter << "File, Line, Severity, Id, Summary" << endl;
-#endif
 }
 
 void CsvReport::writeFooter()
@@ -64,9 +60,5 @@ void CsvReport::writeError(const ErrorItem &error)
     const QString file = QDir::toNativeSeparators(error.errorPath.back().file);
     QString line = QString("%1,%2,").arg(file).arg(error.errorPath.back().line);
     line += QString("%1,%2,%3").arg(GuiSeverity::toString(error.severity)).arg(error.errorId).arg(error.summary);
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
     mTxtWriter << line << Qt::endl;
-#else
-    mTxtWriter << line << endl;
-#endif
 }

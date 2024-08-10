@@ -541,11 +541,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setClangAnalyzer(mUI->mToolClangAnalyzer->isChecked());
     projectFile->setClangTidy(mUI->mToolClangTidy->isChecked());
     projectFile->setLicenseFile(mUI->mEditLicenseFile->text());
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
     projectFile->setTags(mUI->mEditTags->text().split(";", Qt::SkipEmptyParts));
-#else
-    projectFile->setTags(mUI->mEditTags->text().split(";", QString::SkipEmptyParts));
-#endif
 }
 
 void ProjectFileDialog::ok()
@@ -718,21 +714,13 @@ QStringList ProjectFileDialog::getIncludePaths() const
 
 QStringList ProjectFileDialog::getDefines() const
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
     return mUI->mEditDefines->text().trimmed().split(QRegularExpression("\\s*;\\s*"), Qt::SkipEmptyParts);
-#else
-    return mUI->mEditDefines->text().trimmed().split(QRegularExpression("\\s*;\\s*"), QString::SkipEmptyParts);
-#endif
 }
 
 QStringList ProjectFileDialog::getUndefines() const
 {
     const QString undefine = mUI->mEditUndefines->text().trimmed();
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
     QStringList undefines = undefine.split(QRegularExpression("\\s*;\\s*"), Qt::SkipEmptyParts);
-#else
-    QStringList undefines = undefine.split(QRegularExpression("\\s*;\\s*"), QString::SkipEmptyParts);
-#endif
     undefines.removeDuplicates();
     return undefines;
 }

@@ -77,9 +77,5 @@ void TxtReport::writeError(const ErrorItem &error)
     line += temp.arg(GuiSeverity::toString(error.severity));
     line += error.summary;
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
     mTxtWriter << line << Qt::endl;
-#else
-    mTxtWriter << line << endl;
-#endif
 }

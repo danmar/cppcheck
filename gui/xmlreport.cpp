@@ -25,10 +25,6 @@
 #include <QXmlStreamAttributes>
 #include <QXmlStreamReader>
 
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-#include <QStringRef>
-#endif
-
 static constexpr char ResultElementName[] = "results";
 static constexpr char VersionAttribute[] = "version";
 

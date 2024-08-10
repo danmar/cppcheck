@@ -16,4 +16,5 @@ Deprecations:
 -
 
 Other:
+- Removed deprecated support for builds with Qt5.
 -

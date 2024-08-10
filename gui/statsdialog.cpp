@@ -63,10 +63,6 @@
 #include <QTextStream>
 #include <QValueAxis>
 
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-QT_CHARTS_USE_NAMESPACE
-#endif
-
 static QLineSeries *numberOfReports(const QString &fileName, const QString &severity);
 static QChartView *createChart(const QString &statsFile, const QString &tool);
 #endif
