@@ -23,10 +23,12 @@
 #include <QFile>
 #include <QIODevice>
 #include <QList>
-#include <QPair>
 #include <QStringList>
 #include <QTextStream>
 #include <QtTest>
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 5, 0))
+#include <QtLogging>
+#endif
 
 const QString TestCppcheckLibraryData::TempCfgFile = "./tmp.cfg";
 

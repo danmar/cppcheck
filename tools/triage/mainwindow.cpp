@@ -58,6 +58,9 @@
 #include <QTextStream>
 #include <QTreeView>
 #include <QtCore>
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 5, 0))
+#include <QtLogging>
+#endif
 
 class QWidget;
 
