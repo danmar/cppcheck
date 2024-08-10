@@ -7157,7 +7157,10 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                 for (const ValueFlow::Value& value : values)
                     setTokenValue(tok, value, settings);
             } else if (Token::Match(tok, "%name%|;|{|}|> %var% =") && Token::Match(tok->tokAt(2)->astOperand2(), "[({]") &&
-                       (tok->tokAt(3) == tok->tokAt(2)->astOperand2() || settings.library.detectContainer(tok->tokAt(3)))) {
+                       // init list
+                       ((tok->tokAt(2) == tok->tokAt(2)->astOperand2()->astParent() && !tok->tokAt(2)->astOperand2()->astOperand2() && tok->tokAt(2)->astOperand2()->str() == "{") ||
+                        // constructor
+                        (!Token::simpleMatch(tok->tokAt(2)->astOperand2()->astOperand1(), ".") && settings.library.detectContainer(tok->tokAt(3))))) {
                 Token* containerTok = tok->next();
                 if (containerTok->exprId() == 0)
                     continue;
