@@ -50,10 +50,6 @@
 #include <QTextStream>
 #include <QVariant>
 
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-#include <QCharRef>
-#endif
-
 static QString unquote(QString s) {
     if (s.startsWith("\""))
         s = s.mid(1, s.size() - 2);
@@ -248,11 +244,7 @@ void CheckThread::runAddonsAndTools(const FileSettings *fileSettings, const QStr
                 process.start(clangCmd(),args2);
                 process.waitForFinished();
                 const QByteArray &ba = process.readAllStandardOutput();
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
                 const quint16 chksum = qChecksum(QByteArrayView(ba));
-#else
-                const quint16 chksum = qChecksum(ba.data(), ba.length());
-#endif
 
                 QFile f1(analyzerInfoFile + '.' + addon + "-E");
                 if (f1.open(QIODevice::ReadOnly | QIODevice::Text)) {
