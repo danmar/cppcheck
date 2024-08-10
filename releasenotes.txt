@@ -18,4 +18,5 @@ Deprecations:
 
 Other:
 - Removed deperecated support for builds via qmake.
+- Removed deprecated support for builds with Qt5.
 -

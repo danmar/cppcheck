@@ -33,10 +33,6 @@ class QPushButton;
 class QWidget;
 class QString;
 
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-class QStringList;
-#endif
-
 class StyleEditDialog : public QDialog {
     Q_OBJECT
 public:
