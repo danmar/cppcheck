@@ -32,6 +32,9 @@
 #include <QXmlStreamAttributes>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 5, 0))
+#include <QtLogging>
+#endif
 
 static const QString ResultElementName = "results";
 static const QString CppcheckElementName = "cppcheck";
