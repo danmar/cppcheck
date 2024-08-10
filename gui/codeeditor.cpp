@@ -284,13 +284,8 @@ CodeEditor::CodeEditor(QWidget *parent) :
     setObjectName("CodeEditor");
     setStyleSheet(generateStyleString());
 
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
     auto *copyText = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_C),this);
     auto *allText = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_A),this);
-#else
-    const auto *copyText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C),this);
-    const auto *allText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A),this);
-#endif
 
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
@@ -367,11 +362,7 @@ int CodeEditor::lineNumberAreaWidth()
         ++digits;
     }
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     const int space = 3 + (fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits);
-#else
-    const int space = 3 + (fontMetrics().width(QLatin1Char('9')) * digits);
-#endif
     return space;
 }
 
