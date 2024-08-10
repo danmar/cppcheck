@@ -43,6 +43,7 @@
 #include <string>
 #include <utility>
 
+#include <QList>
 #include <QModelIndex>
 #include <QString>
 #include <QtTest>
