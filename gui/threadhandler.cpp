@@ -36,6 +36,9 @@
 #include <QSettings>
 #include <QTextStream>
 #include <QVariant>
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 5, 0))
+#include <QtLogging>
+#endif
 
 ThreadHandler::ThreadHandler(QObject *parent) :
     QObject(parent)
