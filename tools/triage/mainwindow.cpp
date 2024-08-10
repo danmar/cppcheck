@@ -58,6 +58,7 @@
 #include <QTextStream>
 #include <QTreeView>
 #include <QtCore>
+#include <QtLogging>
 
 class QWidget;
 

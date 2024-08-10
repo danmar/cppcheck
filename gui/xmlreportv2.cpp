@@ -32,6 +32,7 @@
 #include <QXmlStreamAttributes>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
+#include <QtLogging>
 
 static const QString ResultElementName = "results";
 static const QString CppcheckElementName = "cppcheck";
