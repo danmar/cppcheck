@@ -223,9 +223,6 @@ premium-misra-cpp-2023-18.1.1
 # TODO do not throw token pointer?
 premium-misra-cpp-2023-18.3.2:lib/tokenize.cpp
 
-# TODO use noexcept
-premium-misra-cpp-2023-18.4.1
-
 # in smallvector we intentionally put a constant above some preprocessor includes
 premium-misra-cpp-2023-19.0.3:lib/smallvector.h
 

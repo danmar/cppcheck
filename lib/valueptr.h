@@ -75,7 +75,7 @@ public:
         return get();
     }
 
-    void swap(ValuePtr& rhs) {
+    void swap(ValuePtr& rhs) NOEXCEPT {
         using std::swap;
         swap(mPtr, rhs.mPtr);
         swap(mClone, rhs.mClone);

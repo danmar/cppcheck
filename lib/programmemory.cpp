@@ -184,7 +184,7 @@ void ProgramMemory::erase_if(const std::function<bool(const ExprIdToken&)>& pred
     }
 }
 
-void ProgramMemory::swap(ProgramMemory &pm)
+void ProgramMemory::swap(ProgramMemory &pm) NOEXCEPT
 {
     mValues.swap(pm.mValues);
 }
