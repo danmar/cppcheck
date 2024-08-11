@@ -322,7 +322,7 @@ static inline std::string id_string_i(std::uintptr_t l)
     while (l != 0)
     {
         char c;
-        const uintptr_t temp = l % 16; // get the remainder
+        const std::uintptr_t temp = l % 16; // get the remainder
         if (temp < 10) {
             // 0-9
             c = '0' + temp;
@@ -340,7 +340,7 @@ static inline std::string id_string_i(std::uintptr_t l)
 
 static inline std::string id_string(const void* p)
 {
-    return id_string_i(reinterpret_cast<uintptr_t>(p));
+    return id_string_i(reinterpret_cast<std::uintptr_t>(p));
 }
 
 static inline const char* bool_to_string(bool b)
