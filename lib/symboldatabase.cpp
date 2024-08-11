@@ -1690,8 +1690,6 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
     });
 
     for (const Scope * scope : exprScopes) {
-        std::unordered_map<std::string, std::vector<Token*>> exprs;
-
         std::unordered_map<std::string, nonneg int> unknownIds;
         // Assign IDs to incomplete vars which are part of an expression
         // Such variables should be assumed global
