@@ -76,7 +76,7 @@ public:
         referenced.erase(varid);
     }
 
-    void swap(VarInfo &other) {
+    void swap(VarInfo &other) NOEXCEPT {
         alloctype.swap(other.alloctype);
         possibleUsage.swap(other.possibleUsage);
         conditionalAlloc.swap(other.conditionalAlloc);

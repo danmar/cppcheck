@@ -124,7 +124,7 @@ struct CPPCHECKLIB ProgramMemory {
 
     void erase_if(const std::function<bool(const ExprIdToken&)>& pred);
 
-    void swap(ProgramMemory &pm);
+    void swap(ProgramMemory &pm) NOEXCEPT;
 
     void clear();
 
