@@ -1267,15 +1267,9 @@ private:
 
     void VariableValueType6() {
         GET_SYMBOL_DB("struct Data{};\n"
-                      "void foo(std::shared_ptr<C>* p) { std::unique_ptr<Data> data = std::unique_ptr<Data>(new Data); }");
+                      "void foo() { std::unique_ptr<Data> data = std::unique_ptr<Data>(new Data); }");
 
-        const Token * check{nullptr};
-        for (const Token * tok = tokenizer.tokens(); tok; tok = tok->next()) {
-            if (Token::Match(tok, "> ( new")) {
-                check = tok->next();
-                break;
-            }
-        }
+        const Token* check = Token::findsimplematch(tokenizer.tokens(), "( new");
         ASSERT(check);
         ASSERT(check->valueType());
         ASSERT(check->valueType()->smartPointerTypeToken);
