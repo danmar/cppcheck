@@ -221,6 +221,7 @@ private:
         TEST_CASE(VariableValueType3);
         TEST_CASE(VariableValueType4); // smart pointer type
         TEST_CASE(VariableValueType5); // smart pointer type
+        TEST_CASE(VariableValueType6); // smart pointer type
         TEST_CASE(VariableValueTypeReferences);
         TEST_CASE(VariableValueTypeTemplate);
 
@@ -1262,6 +1263,22 @@ private:
         ASSERT(p->valueType());
         ASSERT(p->valueType()->smartPointerTypeToken);
         ASSERT(p->valueType()->pointer == 1);
+    }
+
+    void VariableValueType6() {
+        GET_SYMBOL_DB("struct Data{};\n"
+                      "void foo(std::shared_ptr<C>* p) { std::unique_ptr<Data> data = std::unique_ptr<Data>(new Data); }");
+
+        const Token * check{nullptr};
+        for (const Token * tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (Token::Match(tok, "> ( new")) {
+                check = tok->next();
+                break;
+            }
+        }
+        ASSERT(check);
+        ASSERT(check->valueType());
+        ASSERT(check->valueType()->smartPointerTypeToken);
     }
 
     void VariableValueTypeReferences() {
