@@ -6552,7 +6552,6 @@ private:
                               "    auto a2 = std::unique_ptr<A>(new A());\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'a' is assigned a value that is never used.\n"
-                      "[test.cpp:8]: (style) Variable 'a2' is assigned a value that is never used.\n"
                       "[test.cpp:8]: (style) Variable 'a2' is assigned a value that is never used.\n", // duplicate
                       errout_str());
 

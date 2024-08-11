@@ -7303,9 +7303,9 @@ static const Token* parsedecl(const Token* type,
                 type = type->next();
             }
             break;
-        } else if (!valuetype->typeScope && (type->str() == "struct" || type->str() == "enum"))
+        } else if (!valuetype->typeScope && (type->str() == "struct" || type->str() == "enum") && valuetype->type != ValueType::Type::SMART_POINTER)
             valuetype->type = type->str() == "struct" ? ValueType::Type::RECORD : ValueType::Type::NONSTD;
-        else if (!valuetype->typeScope && type->type() && type->type()->classScope) {
+        else if (!valuetype->typeScope && type->type() && type->type()->classScope && valuetype->type != ValueType::Type::SMART_POINTER) {
             if (type->type()->classScope->type == Scope::ScopeType::eEnum) {
                 valuetype->sign = ValueType::Sign::SIGNED;
                 valuetype->type = getEnumType(type->type()->classScope, settings.platform);
