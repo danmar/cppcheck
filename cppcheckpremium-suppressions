@@ -127,7 +127,7 @@ premium-misra-cpp-2023-7.11.3
 # too picky about operator precedence.
 premium-misra-cpp-2023-8.0.1
 
-# TODO use std::uintptr_t
+# TODO review lambda captures
 premium-misra-cpp-2023-8.1.1
 
 # TODO should we use this rule?
@@ -138,9 +138,6 @@ premium-misra-cpp-2023-8.2.6
 
 # intentional pointer to int conversion in lib/utils.h to output dump files
 premium-misra-cpp-2023-8.2.7:lib/utils.h
-
-# TODO: use std::uintptr_t
-premium-misra-cpp-2023-8.2.8
 
 # TODO check ellipsis usage
 premium-misra-cpp-2023-8.2.11
