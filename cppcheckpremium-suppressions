@@ -70,9 +70,6 @@ premium-misra-cpp-2023-8.2.7:lib/checkclass.cpp
 # ignored function return value (emplace etc)
 premium-misra-cpp-2023-0.1.2
 
-# TODO there is unused map
-premium-misra-cpp-2023-0.2.1:lib/symboldatabase.cpp
-
 # TODO use named function arguments
 premium-misra-cpp-2023-0.2.2
 
