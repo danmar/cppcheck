@@ -6574,6 +6574,10 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
                 n = -1;
                 break;
             case Library::Container::Action::APPEND: {
+                if (!container->stdStringLike) {
+                    val->setPossible(); // TODO: use appendee's size
+                    break;
+                }
                 std::vector<const Token*> args = getArguments(tok->astParent()->tokAt(2));
                 if (args.size() == 1) // TODO: handle overloads
                     n = valueFlowGetStrLength(tok->astParent()->tokAt(3));
