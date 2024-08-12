@@ -1267,7 +1267,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (hasLambdaOrInline) {
                 if (!op1Var || !lambdaOrInlineStart)
                     continue;
-                if (precedes(lambdaOrInlineStart, op1Var->nameToken()))
+                if (precedes(op1Var->nameToken(), lambdaOrInlineStart))
                     continue;
             }
 
