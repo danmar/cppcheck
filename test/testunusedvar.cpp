@@ -6979,7 +6979,14 @@ private:
                               "  int x = 0;\n"
                               "  std::for_each(ints.begin(), ints.end(), [&x](int i){ x += i; });\n"
                               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'x' is assigned a value that is never used.\n", "", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'x' is assigned a value that is never used.\n", errout_str());
+
+        functionVariableUsage("int f(const std::vector<int>& v) {\n"
+                              "    auto it = std::find_if(v.begin(), v.end(), [&](int i) { return i > 0 && i < 7; });\n"
+                              "    std::unordered_map<std::string, std::vector<int*>> exprs;\n"
+                              "    return *it;\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: exprs\n", errout_str());
     }
 
     void namespaces() { // #7557
