@@ -323,6 +323,13 @@ QList<int>::iterator QList3()
     return it;
 }
 
+void QList4() // #13001
+{
+    QList<int> ql;
+    ql.append(QList<int>>());
+    if (ql.isEmpty()) {}
+}
+
 void QLinkedList1()
 {
     // cppcheck-suppress unreadVariable
