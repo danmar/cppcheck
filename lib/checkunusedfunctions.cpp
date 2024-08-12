@@ -35,7 +35,10 @@
 #include <cctype>
 #include <cstring>
 #include <fstream>
+#include <iosfwd>
+#include <istream>
 #include <map>
+#include <ostream>
 #include <sstream>
 #include <tuple>
 #include <utility>

@@ -35,6 +35,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <exception>
+#include <iosfwd>
 #include <limits>
 #include <utility>
 #include <vector>

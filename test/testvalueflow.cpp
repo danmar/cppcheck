@@ -33,7 +33,9 @@
 #include <cstdint>
 #include <cstring>
 #include <functional>
+#include <iosfwd>
 #include <list>
+#include <ostream>
 #include <set>
 #include <sstream>
 #include <string>

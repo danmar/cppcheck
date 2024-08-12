@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <cctype>
 #include <iostream>
+#include <ostream>
 #include <stdexcept>
 #include <utility>
 

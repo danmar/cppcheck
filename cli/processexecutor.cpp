@@ -41,9 +41,11 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <iosfwd>
 #include <iostream>
 #include <list>
 #include <map>
+#include <ostream>
 #include <sstream>
 #include <sys/select.h>
 #include <sys/time.h>

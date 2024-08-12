@@ -39,8 +39,10 @@
 #include <cctype>
 #include <cstddef>
 #include <cstdint>
+#include <iosfwd>
 #include <list>
 #include <map>
+#include <ostream>
 #include <set>
 #include <sstream>
 #include <utility>

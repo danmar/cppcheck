@@ -23,6 +23,7 @@
 #include "fixture.h"
 
 #include <cstdint>
+#include <iosfwd>
 #include <list>
 #include <sstream>
 #include <string>

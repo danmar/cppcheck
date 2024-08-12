@@ -22,6 +22,7 @@
 #include "utils.h"
 
 #include <fstream>
+#include <iosfwd>
 #include <iostream>
 #include <string>
 

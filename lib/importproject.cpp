@@ -30,8 +30,11 @@
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <ios>
 #include <iostream>
+#include <istream>
 #include <iterator>
+#include <ostream>
 #include <sstream>
 #include <stack>
 #include <unordered_set>

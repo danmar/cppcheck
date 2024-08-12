@@ -30,9 +30,11 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <iosfwd>
 #include <iterator>
 #include <limits>
 #include <list>
+#include <ostream>
 #include <set>
 #include <sstream>
 #include <stdexcept>

@@ -28,6 +28,7 @@
 #include <cstdint>
 #include <fstream>
 #include <functional>
+#include <iosfwd>
 #include <list>
 #include <memory>
 #include <string>

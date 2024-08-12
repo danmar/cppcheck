@@ -30,6 +30,7 @@
 #include "threadexecutor.h"
 
 #include <cstring>
+#include <iosfwd>
 #include <list>
 #include <map>
 #include <memory>
