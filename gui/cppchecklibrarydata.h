@@ -19,6 +19,8 @@
 #ifndef CPPCHECKLIBRARYDATA_H
 #define CPPCHECKLIBRARYDATA_H
 
+#include "config.h"
+
 #include <cstdint>
 
 #include <QList>
@@ -227,7 +229,7 @@ public:
         entrypoints.clear();
     }
 
-    void swap(CppcheckLibraryData &other) {
+    void swap(CppcheckLibraryData &other) NOEXCEPT {
         containers.swap(other.containers);
         defines.swap(other.defines);
         undefines.swap(other.undefines);
