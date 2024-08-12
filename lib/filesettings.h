@@ -45,12 +45,21 @@ public:
             throw std::runtime_error("empty path specified");
     }
 
-    const std::string& path() const
+    const std::string& path() const &
     {
         return mPath;
     }
 
-    const std::string& spath() const
+    const std::string& path() &&
+    {
+        return mPath;
+    }
+
+    const std::string& spath() const &
+    {
+        return mPathSimplified;
+    }
+    const std::string& spath() &&
     {
         return mPathSimplified;
     }

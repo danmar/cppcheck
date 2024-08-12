@@ -50,7 +50,10 @@ class CPPCHECKLIB TemplateSimplifier {
 public:
     explicit TemplateSimplifier(Tokenizer &tokenizer);
 
-    const std::string& dump() const {
+    const std::string& dump() const & {
+        return mDump;
+    }
+    const std::string& dump() && {
         return mDump;
     }
 
@@ -169,13 +172,22 @@ public:
         void token(Token * token) {
             mToken = token;
         }
-        const std::string & scope() const {
+        const std::string & scope() const & {
             return mScope;
         }
-        const std::string & name() const {
+        const std::string & scope() && {
+            return mScope;
+        }
+        const std::string & name() const & {
             return mName;
         }
-        const std::string & fullName() const {
+        const std::string & name() && {
+            return mName;
+        }
+        const std::string & fullName() const & {
+            return mFullName;
+        }
+        const std::string & fullName() && {
             return mFullName;
         }
         const Token * nameToken() const {

@@ -88,10 +88,16 @@ struct Library::LibraryData
         void addBlock(const char* blockName) {
             mBlocks.insert(blockName);
         }
-        const std::string& start() const {
+        const std::string& start() const & {
             return mStart;
         }
-        const std::string& end() const {
+        const std::string& start() && {
+            return mStart;
+        }
+        const std::string& end() const & {
+            return mEnd;
+        }
+        const std::string& end() && {
             return mEnd;
         }
         int offset() const {

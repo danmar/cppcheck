@@ -85,7 +85,10 @@ public:
     virtual void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const = 0;
 
     /** class name, used to generate documentation */
-    const std::string& name() const {
+    const std::string& name() const & {
+        return mName;
+    }
+    const std::string& name() && {
         return mName;
     }
 

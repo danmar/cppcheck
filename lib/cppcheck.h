@@ -110,7 +110,7 @@ public:
      * @brief Get reference to current settings.
      * @return a reference to current settings
      */
-    Settings &settings();
+    Settings &settings()&;
 
     /**
      * @brief Returns current version number as a string.

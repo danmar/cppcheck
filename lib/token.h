@@ -203,7 +203,10 @@ public:
      */
     void concatStr(std::string const& b);
 
-    const std::string &str() const {
+    const std::string &str() const & {
+        return mStr;
+    }
+    const std::string &str() && {
         return mStr;
     }
 

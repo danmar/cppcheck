@@ -92,7 +92,11 @@ public:
         int line; // negative value means "no line"
         unsigned int column;
 
-        const std::string& getinfo() const {
+        const std::string& getinfo() const & {
+            return mInfo;
+        }
+
+        const std::string& getinfo() && {
             return mInfo;
         }
 
@@ -181,18 +185,30 @@ public:
     void setmsg(const std::string &msg);
 
     /** Short message (single line short message) */
-    const std::string &shortMessage() const {
+    const std::string &shortMessage() const & {
+        return mShortMessage;
+    }
+
+    const std::string &shortMessage() && {
         return mShortMessage;
     }
 
     /** Verbose message (may be the same as the short message) */
     // cppcheck-suppress unusedFunction - used by GUI only
-    const std::string &verboseMessage() const {
+    const std::string &verboseMessage() const & {
+        return mVerboseMessage;
+    }
+
+    const std::string &verboseMessage() && {
         return mVerboseMessage;
     }
 
     /** Symbol names */
-    const std::string &symbolNames() const {
+    const std::string &symbolNames() const & {
+        return mSymbolNames;
+    }
+
+    const std::string &symbolNames() && {
         return mSymbolNames;
     }
 

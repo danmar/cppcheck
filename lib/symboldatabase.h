@@ -534,7 +534,10 @@ public:
      * Get array dimensions.
      * @return array dimensions vector
      */
-    const std::vector<Dimension> &dimensions() const {
+    const std::vector<Dimension> &dimensions() const& {
+        return mDimensions;
+    }
+    const std::vector<Dimension> &dimensions() && {
         return mDimensions;
     }
 
@@ -1373,7 +1376,10 @@ public:
         return mVariableList.at(varId);
     }
 
-    const std::vector<const Variable *> & variableList() const {
+    const std::vector<const Variable *> & variableList() const& {
+        return mVariableList;
+    }
+    const std::vector<const Variable *> & variableList() && {
         return mVariableList;
     }
 

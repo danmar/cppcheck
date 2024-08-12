@@ -52,7 +52,10 @@ public:
         std::size_t hash;
         std::string errorId;
         void setFileName(std::string s);
-        const std::string &getFileName() const {
+        const std::string &getFileName() const& {
+            return mFileName;
+        }
+        const std::string &getFileName() && {
             return mFileName;
         }
         int lineNumber;
@@ -241,7 +244,8 @@ public:
      * @brief Returns list of all suppressions.
      * @return list of suppressions
      */
-    const std::list<Suppression> &getSuppressions() const;
+    const std::list<Suppression> &getSuppressions() const&;
+    const std::list<Suppression> &getSuppressions() &&;
 
     /**
      * @brief Marks Inline Suppressions as checked if source line is in the token stream
