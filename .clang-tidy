@@ -56,7 +56,6 @@ Checks: >
         -performance-avoid-endl,
         -performance-inefficient-string-concatenation,
         -performance-no-automatic-move,
-        -performance-noexcept-swap,
         -portability-simd-intrinsics,
         -portability-std-allocator-const,
         -readability-avoid-const-params-in-decls,
