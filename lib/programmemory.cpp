@@ -36,6 +36,7 @@
 #include <cassert>
 #include <cmath>
 #include <functional>
+#include <iosfwd>
 #include <iterator>
 #include <list>
 #include <memory>

@@ -26,7 +26,7 @@
 #include "tokenize.h"
 
 #include <cstdint>
-#include <ostream>
+#include <iosfwd>
 #include <string>
 
 class Function;

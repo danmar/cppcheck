@@ -28,6 +28,8 @@
 #include "tokenlist.h"
 
 #include <cstddef>
+#include <iosfwd>
+#include <istream>
 #include <map>
 #include <set>
 #include <stdexcept>

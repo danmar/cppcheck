@@ -21,10 +21,12 @@
 #include <ctime>
 #include <exception>
 #include <fstream>
+#include <istream>
 #include <iostream>
 #include <limits>
 #include <list>
 #include <map>
+#include <ostream>
 #include <set>
 #include <sstream>
 #include <stack>

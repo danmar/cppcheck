@@ -34,6 +34,10 @@
 #include <cstring>
 #include <fstream>
 #include <iomanip>
+#include <ios>
+#include <iosfwd>
+#include <istream>
+#include <ostream>
 #include <sstream>
 #include <string>
 #include <unordered_map>

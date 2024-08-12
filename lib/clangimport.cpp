@@ -33,10 +33,12 @@
 #include <cctype>
 #include <cstring>
 #include <iostream>
+#include <istream>
 #include <iterator>
 #include <list>
 #include <map>
 #include <memory>
+#include <ostream>
 #include <set>
 #include <sstream>
 #include <stack>

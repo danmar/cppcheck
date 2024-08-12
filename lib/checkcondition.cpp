@@ -36,8 +36,11 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <ios>
+#include <iosfwd>
 #include <limits>
 #include <list>
+#include <ostream>
 #include <set>
 #include <sstream>
 #include <utility>

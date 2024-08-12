@@ -24,7 +24,7 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <istream>
+#include <iosfwd>
 #include <list>
 #include <set>
 #include <string>

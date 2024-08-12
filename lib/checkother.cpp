@@ -38,8 +38,10 @@
 #include <algorithm> // find_if()
 #include <cctype>
 #include <cstdint>
+#include <iosfwd>
 #include <list>
 #include <map>
+#include <ostream>
 #include <set>
 #include <sstream>
 #include <utility>

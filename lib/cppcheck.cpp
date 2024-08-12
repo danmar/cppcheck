@@ -51,7 +51,9 @@
 #include <exception> // IWYU pragma: keep
 #include <fstream>
 #include <iostream> // <- TEMPORARY
+#include <istream>
 #include <new>
+#include <ostream>
 #include <set>
 #include <sstream>
 #include <stdexcept>

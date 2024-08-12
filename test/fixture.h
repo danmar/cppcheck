@@ -30,6 +30,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <iosfwd>
 #include <list>
 #include <sstream>
 #include <stdexcept>

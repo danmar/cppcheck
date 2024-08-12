@@ -22,6 +22,7 @@
 #include "fixture.h"
 #include "redirect.h"
 
+#include <iosfwd>
 #include <list>
 #include <map>
 #include <sstream>

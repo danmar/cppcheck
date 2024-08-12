@@ -23,7 +23,9 @@
 #include "settings.h"
 
 #include <algorithm>
+#include <iosfwd>
 #include <map>
+#include <ostream>
 #include <sstream>
 #include <unordered_set>
 #include <vector>
