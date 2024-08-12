@@ -1183,8 +1183,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
     for (const Scope * scope : symbolDatabase->functionScopes) {
         // Bailout when there are lambdas or inline functions
         // TODO: Handle lambdas and inline functions properly
-        if (scope->hasInlineOrLambdaFunction())
-            continue;
+        const Token* lambdaOrInlineStart{};
+        const bool hasLambdaOrInline = scope->hasInlineOrLambdaFunction(&lambdaOrInlineStart);
 
         for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (findLambdaEndToken(tok))
@@ -1264,6 +1264,13 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             const Variable *op1Var = op1tok ? op1tok->variable() : nullptr;
             if (!op1Var && Token::Match(tok, "(|{") && tok->previous() && tok->previous()->variable())
                 op1Var = tok->previous()->variable();
+            if (hasLambdaOrInline) {
+                if (!op1Var || !lambdaOrInlineStart)
+                    continue;
+                if (precedes(lambdaOrInlineStart, op1Var->nameToken()))
+                    continue;
+            }
+
             std::string bailoutTypeName;
             if (op1Var) {
                 if (op1Var->isReference() && op1Var->nameToken() != tok->astOperand1())
