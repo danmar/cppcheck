@@ -326,7 +326,7 @@ QList<int>::iterator QList3()
 void QList4() // #13001
 {
     QList<int> ql;
-    ql.append(QList<int>>());
+    ql.append(QList<int>());
     if (ql.isEmpty()) {}
 }
 
