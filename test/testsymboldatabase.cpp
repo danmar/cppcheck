@@ -596,6 +596,7 @@ private:
 
         TEST_CASE(incomplete_type); // #9255 (infinite recursion)
         TEST_CASE(exprIds);
+        TEST_CASE(testValuetypeOriginalName);
     }
 
     void array() {
@@ -10819,6 +10820,34 @@ private:
                                 "    return x + y;\n"
                                 "}\n";
             ASSERT_EQUALS(true, testExprIdNotEqual(code, "(", 3U, "(", 4U));
+        }
+    }
+
+    void testValuetypeOriginalName() {
+        {
+            GET_SYMBOL_DB("typedef void ( *fp16 )( int16_t n );\n"
+                          "typedef void ( *fp32 )( int32_t n );\n"
+                          "void R_11_1 ( void ) {\n"
+                          "   fp16 fp1 = NULL;\n"
+                          "   fp32 fp2 = ( fp32) fp1;\n"
+                          "}\n");
+            const Token* tok = Token::findsimplematch(tokenizer.tokens(), "( void * ) fp1");
+            ASSERT_EQUALS(tok->isCast(), true);
+            ASSERT(tok->valueType());
+            ASSERT(tok->valueType()->originalTypeName == "fp32");
+            ASSERT(tok->valueType()->pointer == 1);
+            ASSERT(tok->valueType()->constness == 0);
+        }
+
+        {
+            GET_SYMBOL_DB("typedef void ( *fp16 )( int16_t n );\n"
+                          "fp16 fp3 = ( fp16 ) 0x8000;");
+            const Token* tok = Token::findsimplematch(tokenizer.tokens(), "( void * ) 0x8000");
+            ASSERT_EQUALS(tok->isCast(), true);
+            ASSERT(tok->valueType());
+            ASSERT(tok->valueType()->originalTypeName == "fp16");
+            ASSERT(tok->valueType()->pointer == 1);
+            ASSERT(tok->valueType()->constness == 0);
         }
     }
 };

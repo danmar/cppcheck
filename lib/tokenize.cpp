@@ -781,7 +781,8 @@ namespace {
             const bool isFunctionPointer = Token::Match(mNameToken, "%name% )");
             if (isFunctionPointer && isCast(tok->previous())) {
                 tok->insertToken("*");
-                insertTokens(tok, std::pair<Token*, Token*>(mRangeType.first, mNameToken->linkAt(1)));
+                Token* const tok_1 = insertTokens(tok, std::pair<Token*, Token*>(mRangeType.first, mNameToken->linkAt(1)));
+                tok_1->originalName(tok->str());
                 tok->deleteThis();
                 return;
             }
@@ -1041,8 +1042,8 @@ namespace {
 
     private:
         static bool isCast(const Token* tok) {
-            if (Token::Match(tok, "( %name% ) (|%name%"))
-                return !tok->tokAt(2)->isKeyword();
+            if (Token::Match(tok, "( %name% ) (|%name%|%num%"))
+                return !tok->tokAt(3)->isKeyword();
             if (Token::Match(tok, "< %name% > (") && tok->previous() && endsWith(tok->strAt(-1), "_cast", 5))
                 return true;
             return false;
