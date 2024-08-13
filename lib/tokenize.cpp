@@ -1040,6 +1040,10 @@ namespace {
             return mEndToken;
         }
 
+        Token* nameToken() const {
+            return mNameToken;
+        }
+
     private:
         static bool isCast(const Token* tok) {
             if (Token::Match(tok, "( %name% ) (|%name%|%num%"))
@@ -1145,6 +1149,7 @@ void Tokenizer::simplifyTypedef()
                 typedefInfo.lineNumber = typedefToken->linenr();
                 typedefInfo.column = typedefToken->column();
                 typedefInfo.used = t.second.isUsed();
+                typedefInfo.isFunctionPointer = Token::Match(t.second.nameToken(), "%name% ) (");
                 mTypedefInfo.push_back(std::move(typedefInfo));
 
                 t.second.removeDeclaration();
@@ -1645,6 +1650,7 @@ void Tokenizer::simplifyTypedefCpp()
         typedefInfo.lineNumber = typeName->linenr();
         typedefInfo.column = typeName->column();
         typedefInfo.used = false;
+        typedefInfo.isFunctionPointer = Token::Match(typeName, "%name% ) (");
         mTypedefInfo.push_back(std::move(typedefInfo));
 
         while (!done) {
@@ -6192,6 +6198,10 @@ std::string Tokenizer::dumpTypedefInfo() const
 
         outs += " used=\"";
         outs += std::to_string(typedefInfo.used?1:0);
+        outs += "\"";
+
+        outs += " isFunctionPointer=\"";
+        outs += std::to_string(typedefInfo.isFunctionPointer);
         outs += "\"";
 
         outs += "/>";

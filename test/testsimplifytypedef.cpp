@@ -243,6 +243,8 @@ private:
         TEST_CASE(simplifyTypedefOriginalName);
 
         TEST_CASE(typedefInfo1);
+
+        TEST_CASE(typedefInfo2);
     }
 
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
@@ -4402,9 +4404,22 @@ private:
     void typedefInfo1() {
         const std::string xml = dumpTypedefInfo("typedef int A;\nA x;");
         ASSERT_EQUALS("  <typedef-info>\n"
-                      "    <info name=\"A\" file=\"file.c\" line=\"1\" column=\"1\" used=\"1\"/>\n"
+                      "    <info name=\"A\" file=\"file.c\" line=\"1\" column=\"1\" used=\"1\" isFunctionPointer=\"0\"/>\n"
                       "  </typedef-info>\n",
                       xml);
+    }
+
+    void typedefInfo2() {
+        const std::string xml = dumpTypedefInfo("typedef signed short int16_t;\n"
+                                                "typedef void ( *fp16 )( int16_t n );\n"
+                                                "void R_11_1 ( void ){\n"
+                                                "   typedef fp16 ( *pfp16 ) ( void );\n"
+                                                "}\n");
+        ASSERT_EQUALS("  <typedef-info>\n"
+                      "    <info name=\"fp16\" file=\"file.c\" line=\"2\" column=\"1\" used=\"1\" isFunctionPointer=\"1\"/>\n"
+                      "    <info name=\"int16_t\" file=\"file.c\" line=\"1\" column=\"1\" used=\"1\" isFunctionPointer=\"0\"/>\n"
+                      "    <info name=\"pfp16\" file=\"file.c\" line=\"4\" column=\"20\" used=\"0\" isFunctionPointer=\"1\"/>\n"
+                      "  </typedef-info>\n",xml);
     }
 };
 
