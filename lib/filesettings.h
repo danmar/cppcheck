@@ -50,7 +50,7 @@ public:
         return mPath;
     }
 
-    const std::string& path() &&
+    std::string path() &&
     {
         return mPath;
     }
@@ -59,7 +59,7 @@ public:
     {
         return mPathSimplified;
     }
-    const std::string& spath() &&
+    std::string spath() &&
     {
         return mPathSimplified;
     }

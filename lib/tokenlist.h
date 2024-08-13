@@ -142,7 +142,7 @@ public:
     const std::vector<std::string>& getFiles() const & {
         return mFiles;
     }
-    const std::vector<std::string>& getFiles() && {
+    std::vector<std::string> getFiles() && {
         return mFiles;
     }
 

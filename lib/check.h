@@ -88,7 +88,7 @@ public:
     const std::string& name() const & {
         return mName;
     }
-    const std::string& name() && {
+    std::string name() && {
         return mName;
     }
 

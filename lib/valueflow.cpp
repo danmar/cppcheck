@@ -1532,14 +1532,14 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
     const std::unordered_map<nonneg int, const Variable*>& getVars() const & {
         return varids;
     }
-    const std::unordered_map<nonneg int, const Variable*>& getVars() && {
+    std::unordered_map<nonneg int, const Variable*> getVars() && {
         return varids;
     }
 
     const std::unordered_map<nonneg int, const Variable*>& getAliasedVars() const & {
         return aliases;
     }
-    const std::unordered_map<nonneg int, const Variable*>& getAliasedVars() && {
+    std::unordered_map<nonneg int, const Variable*> getAliasedVars() && {
         return aliases;
     }
 

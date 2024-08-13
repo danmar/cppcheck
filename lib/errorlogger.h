@@ -96,7 +96,7 @@ public:
             return mInfo;
         }
 
-        const std::string& getinfo() && {
+        std::string getinfo() && {
             return mInfo;
         }
 
@@ -189,7 +189,7 @@ public:
         return mShortMessage;
     }
 
-    const std::string &shortMessage() && {
+    std::string shortMessage() && {
         return mShortMessage;
     }
 
@@ -199,7 +199,7 @@ public:
         return mVerboseMessage;
     }
 
-    const std::string &verboseMessage() && {
+    std::string verboseMessage() && {
         return mVerboseMessage;
     }
 
@@ -208,7 +208,7 @@ public:
         return mSymbolNames;
     }
 
-    const std::string &symbolNames() && {
+    std::string symbolNames() && {
         return mSymbolNames;
     }
 

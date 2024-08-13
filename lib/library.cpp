@@ -91,13 +91,13 @@ struct Library::LibraryData
         const std::string& start() const & {
             return mStart;
         }
-        const std::string& start() && {
+        std::string start() && {
             return mStart;
         }
         const std::string& end() const & {
             return mEnd;
         }
-        const std::string& end() && {
+        std::string end() && {
             return mEnd;
         }
         int offset() const {

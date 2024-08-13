@@ -522,7 +522,7 @@ const std::list<SuppressionList::Suppression> &SuppressionList::getSuppressions(
     return mSuppressions;
 }
 
-const std::list<SuppressionList::Suppression> &SuppressionList::getSuppressions() &&
+std::list<SuppressionList::Suppression> SuppressionList::getSuppressions() &&
 {
     return mSuppressions;
 }

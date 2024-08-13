@@ -150,7 +150,7 @@ public:
     const std::map<nonneg int, VariableUsage> &varUsage() const & {
         return mVarUsage;
     }
-    const std::map<nonneg int, VariableUsage> &varUsage() && {
+    std::map<nonneg int, VariableUsage> varUsage() && {
         return mVarUsage;
     }
     void addVar(const Variable *var, VariableType type, bool write_);

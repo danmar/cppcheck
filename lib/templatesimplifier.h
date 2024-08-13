@@ -53,7 +53,7 @@ public:
     const std::string& dump() const & {
         return mDump;
     }
-    const std::string& dump() && {
+    std::string dump() && {
         return mDump;
     }
 
@@ -175,19 +175,19 @@ public:
         const std::string & scope() const & {
             return mScope;
         }
-        const std::string & scope() && {
+        std::string scope() && {
             return mScope;
         }
         const std::string & name() const & {
             return mName;
         }
-        const std::string & name() && {
+        std::string name() && {
             return mName;
         }
         const std::string & fullName() const & {
             return mFullName;
         }
-        const std::string & fullName() && {
+        std::string fullName() && {
             return mFullName;
         }
         const Token * nameToken() const {

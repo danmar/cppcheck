@@ -537,7 +537,7 @@ public:
     const std::vector<Dimension> &dimensions() const& {
         return mDimensions;
     }
-    const std::vector<Dimension> &dimensions() && {
+    std::vector<Dimension> dimensions() && {
         return mDimensions;
     }
 
@@ -1379,9 +1379,7 @@ public:
     const std::vector<const Variable *> & variableList() const& {
         return mVariableList;
     }
-    const std::vector<const Variable *> & variableList() && {
-        return mVariableList;
-    }
+    std::vector<const Variable *> variableList() &&; // Unimplemented by intention; Not safe to use this on temporary object
 
     /**
      * @brief output a debug message

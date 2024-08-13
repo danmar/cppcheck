@@ -206,7 +206,7 @@ public:
     const std::string &str() const & {
         return mStr;
     }
-    const std::string &str() && {
+    std::string str() && {
         return mStr;
     }
 

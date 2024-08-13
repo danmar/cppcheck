@@ -55,7 +55,7 @@ public:
         const std::string &getFileName() const& {
             return mFileName;
         }
-        const std::string &getFileName() && {
+        std::string getFileName() && {
             return mFileName;
         }
         int lineNumber;
@@ -245,7 +245,7 @@ public:
      * @return list of suppressions
      */
     const std::list<Suppression> &getSuppressions() const&;
-    const std::list<Suppression> &getSuppressions() &&;
+    std::list<Suppression> getSuppressions() &&;
 
     /**
      * @brief Marks Inline Suppressions as checked if source line is in the token stream
