@@ -3345,6 +3345,9 @@ void CheckClass::checkReturnByReference()
             if (const Library::Container* container = mSettings->library.detectContainer(func.retDef))
                 if (container->view)
                     continue;
+            if (!func.isConst() && func.hasRvalRefQualifier())
+                // this method could be used by temporary objects, return by value can be dangerous
+                continue;
             if (const Variable* var = getSingleReturnVar(func.functionScope)) {
                 if (!var->valueType())
                     continue;

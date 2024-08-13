@@ -9045,6 +9045,13 @@ private:
                                "};\n"
                                "U<std::string> u;\n");
         ASSERT_EQUALS("", errout_str());
+
+        checkReturnByReference("struct S {\n" // #13011
+                               "    std::string s;\n"
+                               "    const std::string& foo() const & { return s; }\n"
+                               "    std::string foo() && { return s; }\n" // <- used for temporary objects
+                               "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 };
 
