@@ -43,6 +43,10 @@ jobs:
       # we need to stay at v3 for now because Node 20 does not support the older distros
       # /__e/node20/bin/node: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by /__e/node20/bin/node)
       - uses: actions/checkout@v3
+        if: matrix.image == 'ubuntu:16.04' || matrix.image == 'ubuntu:18.04'
+
+      - uses: actions/checkout@v4
+        if: matrix.image != 'ubuntu:16.04' && matrix.image != 'ubuntu:18.04'
 
       - name: Install missing software on ubuntu
         if: contains(matrix.image, 'ubuntu')
@@ -57,11 +61,20 @@ jobs:
 
       # needs to be called after the package installation since
       # - it doesn't call "apt-get update"
-      # - it doesn't support centos
       #
-      # needs to be to fixated on 1.2.11 so it works with older images - see https://github.com/hendrikmuhs/ccache-action/issues/178
+      # needs to be to fixated on 1.2.11 so it works with older images - see https://github.com/hendrikmuhs/ccache-action/issues/178.
+      # using the older version will cause a two minute hang in its post-run step.
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2.11
+        if: matrix.image == 'ubuntu:16.04' || matrix.image == 'ubuntu:18.04'
+        with:
+          key: ${{ github.workflow }}-${{ matrix.image }}
+
+      # needs to be called after the package installation since
+      # - it doesn't call "apt-get update"
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        if: matrix.image != 'ubuntu:16.04' && matrix.image != 'ubuntu:18.04'
         with:
           key: ${{ github.workflow }}-${{ matrix.image }}
 
@@ -109,6 +122,10 @@ jobs:
       # we need to stay at v3 for now because Node 20 does not support the older distros
       # /__e/node20/bin/node: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by /__e/node20/bin/node)
       - uses: actions/checkout@v3
+        if: matrix.image == 'ubuntu:16.04' || matrix.image == 'ubuntu:18.04'
+
+      - uses: actions/checkout@v4
+        if: matrix.image != 'ubuntu:16.04' && matrix.image != 'ubuntu:18.04'
 
       - name: Install missing software on ubuntu
         if: contains(matrix.image, 'ubuntu')
@@ -118,24 +135,31 @@ jobs:
 
       # needs to be called after the package installation since
       # - it doesn't call "apt-get update"
-      # - it doesn't support centos
       #
-      # needs to be to fixated on 1.2.11 so it works with older images - see https://github.com/hendrikmuhs/ccache-action/issues/178
+      # needs to be to fixated on 1.2.11 so it works with older images - see https://github.com/hendrikmuhs/ccache-action/issues/178.
+      # using the older version will cause a two minute hang in its post-run step.
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2.11
+        if: matrix.image == 'ubuntu:16.04' || matrix.image == 'ubuntu:18.04'
+        with:
+          key: ${{ github.workflow }}-${{ matrix.image }}
+
+      # needs to be called after the package installation since
+      # - it doesn't call "apt-get update"
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        if: matrix.image != 'ubuntu:16.04' && matrix.image != 'ubuntu:18.04'
         with:
           key: ${{ github.workflow }}-${{ matrix.image }}
 
       - name: Build cppcheck
         run: |
-          # "/usr/lib64" for centos / "/usr/lib" for ubuntu
-          export PATH="/usr/lib64/ccache:/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           make -j$(nproc) HAVE_RULES=yes CXXFLAGS="-w"
 
       - name: Build test
         run: |
-          # "/usr/lib64" for centos / "/usr/lib" for ubuntu
-          export PATH="/usr/lib64/ccache:/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           make -j$(nproc) testrunner HAVE_RULES=yes CXXFLAGS="-w"
 
       - name: Run test

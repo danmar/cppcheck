@@ -31,7 +31,7 @@ jobs:
           sudo apt-get install libboost-container-dev
 
       - name: ccache
-        uses: hendrikmuhs/ccache-action@v1.2.11
+        uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: ${{ github.workflow }}-${{ runner.os }}
 
