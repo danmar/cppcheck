@@ -27,7 +27,7 @@
 #include <cstddef>
 #include <list>
 
-class TestMemleak : private TestFixture {
+class TestMemleak : public TestFixture {
 public:
     TestMemleak() : TestFixture("TestMemleak") {}
 

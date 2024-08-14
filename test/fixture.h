@@ -283,6 +283,18 @@ public:
     static std::size_t runTests(const options& args);
 };
 
+class TestInstance {
+public:
+    explicit TestInstance(const char * _name);
+    virtual ~TestInstance() = default;
+
+    virtual TestFixture* create() = 0;
+
+    const std::string classname;
+protected:
+    std::unique_ptr<TestFixture> impl;
+};
+
 // TODO: most asserts do not actually assert i.e. do not return
 #define TEST_CASE( NAME )  do { if (prepareTest(#NAME)) { setVerbose(false); try { NAME(); teardownTest(); } catch (...) { assertNoThrowFail(__FILE__, __LINE__); } } } while (false)
 #define ASSERT( CONDITION )  if (!assert_(__FILE__, __LINE__, (CONDITION))) return
@@ -306,7 +318,7 @@ public:
 #define TODO_ASSERT( CONDITION ) do { const bool condition=(CONDITION); todoAssertEquals(__FILE__, __LINE__, true, false, condition); } while (false)
 #define TODO_ASSERT_EQUALS( WANTED, CURRENT, ACTUAL ) todoAssertEquals(__FILE__, __LINE__, WANTED, CURRENT, ACTUAL)
 #define EXPECT_EQ( EXPECTED, ACTUAL ) assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
-#define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance_ ## CLASSNAME; }
+#define REGISTER_TEST( CLASSNAME ) namespace { class CLASSNAME ## Instance : public TestInstance { public: CLASSNAME ## Instance() : TestInstance(#CLASSNAME) {} TestFixture* create() override { impl.reset(new CLASSNAME); return impl.get(); } }; CLASSNAME ## Instance instance_ ## CLASSNAME; }
 
 #define PLATFORM( P, T ) do { std::string errstr; assertEquals(__FILE__, __LINE__, true, P.set(Platform::toString(T), errstr, {exename}), errstr); } while (false)
 
