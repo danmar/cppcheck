@@ -65,6 +65,7 @@ jobs:
           python3 -m pip install pip --upgrade
           python3 -m pip install pytest
           python3 -m pip install pytest-timeout
+          python3 -m pip install pytest-xdist
           python3 -m pip install psutil
 
       # TODO: disable all warnings
@@ -100,13 +101,13 @@ jobs:
         run: |
           pwd=$(pwd)
           cd test/cli
-          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv
+          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv -n auto
 
       - name: Run test/cli (-j2)
         run: |
           pwd=$(pwd)
           cd test/cli
-          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv
+          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv -n auto
         env:
           TEST_CPPCHECK_INJECT_J: 2
 
@@ -115,7 +116,7 @@ jobs:
         run: |
           pwd=$(pwd)
           cd test/cli
-          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv
+          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv -n auto
         env:
           TEST_CPPCHECK_INJECT_CLANG: clang
 

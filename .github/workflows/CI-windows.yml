@@ -133,6 +133,7 @@ jobs:
           python -m pip install pytest || exit /b !errorlevel!
           python -m pip install pytest-custom_exit_code || exit /b !errorlevel!
           python -m pip install pytest-timeout || exit /b !errorlevel!
+          python -m pip install pytest-xdist || exit /b !errorlevel!
           python -m pip install psutil || exit /b !errorlevel!
 
       - name: Run CMake
@@ -172,13 +173,13 @@ jobs:
         if: matrix.config == 'release'
         run: |
           cd test/cli || exit /b !errorlevel!
-          python -m pytest -Werror --strict-markers -vv || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv -n auto || exit /b !errorlevel!
 
       - name: Run test/cli (-j2)
         if: matrix.config == 'release'
         run: |
           cd test/cli || exit /b !errorlevel!
-          python -m pytest -Werror --strict-markers -vv || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv -n auto || exit /b !errorlevel!
         env:
           TEST_CPPCHECK_INJECT_J: 2
 
@@ -187,7 +188,7 @@ jobs:
         if: false # matrix.config == 'release'
         run: |
           cd test/cli || exit /b !errorlevel!
-          python -m pytest -Werror --strict-markers -vv || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv -n auto || exit /b !errorlevel!
         env:
           TEST_CPPCHECK_INJECT_CLANG: clang
 
