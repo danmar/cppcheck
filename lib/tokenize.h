@@ -627,6 +627,17 @@ public:
 
     void setDirectives(std::list<Directive> directives);
 
+    struct TypedefInfo {
+        std::string name;
+        std::string filename;
+        int lineNumber;
+        int column;
+        bool used;
+    };
+    std::vector<TypedefInfo> getTypedefInfo() {
+        return mTypedefInfo;
+    }
+
 private:
     const Token *processFunc(const Token *tok2, bool inOperator) const;
     Token *processFunc(Token *tok2, bool inOperator);
@@ -660,13 +671,6 @@ private:
     /** sizeof information for known types */
     std::map<std::string, int> mTypeSize;
 
-    struct TypedefInfo {
-        std::string name;
-        std::string filename;
-        int lineNumber;
-        int column;
-        bool used;
-    };
     std::vector<TypedefInfo> mTypedefInfo;
 
     std::list<Directive> mDirectives;

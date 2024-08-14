@@ -241,6 +241,8 @@ private:
         TEST_CASE(simplifyTypedefMacro);
 
         TEST_CASE(simplifyTypedefOriginalName);
+
+        TEST_CASE(typedefInfo1);
     }
 
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
@@ -305,6 +307,22 @@ private:
             return "";
         }
         return tokenizer.tokens()->stringifyList(nullptr, false);
+    }
+
+    std::vector<Tokenizer::TypedefInfo> getTypedefInfo(const char code[]) {
+        Tokenizer tokenizer(settings1, *this);
+
+        std::istringstream istr(code);
+        if (!tokenizer.list.createTokens(istr, "file.c"))
+            return {};
+        tokenizer.createLinks();
+        tokenizer.simplifyTypedef();
+        try {
+            tokenizer.validate();
+        } catch (const InternalError&) {
+            return {};
+        }
+        return tokenizer.getTypedefInfo();
     }
 
     void c1() {
@@ -4379,6 +4397,12 @@ private:
         // Search for the simplified * token -> function pointer gets "(*" tokens infront of it
         token = Token::findsimplematch(endOfTypeDef, "*", tokenizer.list.back());
         ASSERT_EQUALS("rFunctionPointer_fp", token->originalName());
+    }
+
+    void typedefInfo1() {
+        const auto& t = getTypedefInfo("typedef int A;\nA x;");
+        ASSERT_EQUALS(1, t.size());
+        ASSERT_EQUALS("A", t[0].name);
     }
 };
 
