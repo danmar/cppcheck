@@ -84,13 +84,16 @@ endif()
 
 find_package(Threads REQUIRED)
 
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.30")
+    # avoid legacy warning about Boost lookup in CMake
+    cmake_policy(SET CMP0167 NEW)
+endif()
+
+# we are only using the header-only "container" component so we can unconditionally search for it
 if(USE_BOOST)
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.30")
-        # avoid legacy warning about Boost lookup in CMake
-        cmake_policy(SET CMP0167 NEW)
-    endif()
-    # we are using the header-only "container" component
-    find_package(Boost QUIET)
+    find_package(Boost REQUIRED)
+else()
+    find_package(Boost)
 endif()
 
 find_program(LIBXML2_XMLLINT_EXECUTABLE xmllint)
