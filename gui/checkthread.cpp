@@ -54,6 +54,12 @@
 #include <QCharRef>
 #endif
 
+static QString unquote(QString s) {
+    if (s.startsWith("\""))
+        s = s.mid(1, s.size() - 2);
+    return s;
+}
+
 // NOLINTNEXTLINE(performance-unnecessary-value-param) - used as callback so we need to preserve the signature
 int CheckThread::executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output) // cppcheck-suppress passedByValue
 {
@@ -64,7 +70,24 @@ int CheckThread::executeCommand(std::string exe, std::vector<std::string> args, 
         args2 << QString::fromStdString(arg);
 
     QProcess process;
-    process.start(QString::fromStdString(exe), args2);
+
+    QString e = unquote(QString::fromStdString(exe));
+
+    if (e.toLower().replace("\\", "/").endsWith("/python.exe") && !args.empty()) {
+        const QString path = e.left(e.size()-11);
+        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+        env.insert("PYTHONPATH", path + "/Lib/site-packages");
+        env.insert("PYTHONHOME", path);
+        process.setProcessEnvironment(env);
+
+        const QString pythonScript = unquote(args2[0]);
+        if (pythonScript.endsWith(".py")) {
+            const QString path2 = pythonScript.left(QString(pythonScript).replace('\\', '/').lastIndexOf("/"));
+            process.setWorkingDirectory(path2);
+        }
+    }
+
+    process.start(e, args2);
     process.waitForFinished();
 
     if (redirect == "2>&1") {
