@@ -41,12 +41,12 @@
  **/
 namespace {
     struct CompareFixtures {
-        bool operator()(const TestFixture* lhs, const TestFixture* rhs) const {
+        bool operator()(const TestInstance* lhs, const TestInstance* rhs) const {
             return lhs->classname < rhs->classname;
         }
     };
 }
-using TestSet = std::set<TestFixture*, CompareFixtures>;
+using TestSet = std::set<TestInstance*, CompareFixtures>;
 namespace {
     class TestRegistry {
         TestSet _tests;
@@ -57,7 +57,7 @@ namespace {
             return testreg;
         }
 
-        void addTest(TestFixture *t) {
+        void addTest(TestInstance *t) {
             _tests.insert(t);
         }
 
@@ -67,7 +67,11 @@ namespace {
     };
 }
 
-
+TestInstance::TestInstance(const char * _name)
+    : classname(_name)
+{
+    TestRegistry::theInstance().addTest(this);
+}
 
 
 /**
@@ -83,9 +87,7 @@ std::size_t TestFixture::succeeded_todos_counter = 0;
 
 TestFixture::TestFixture(const char * const _name)
     : classname(_name)
-{
-    TestRegistry::theInstance().addTest(this);
-}
+{}
 
 
 bool TestFixture::prepareTest(const char testname[])
@@ -389,10 +391,11 @@ std::size_t TestFixture::runTests(const options& args)
             classname.erase(classname.find("::"));
         }
 
-        for (TestFixture * test : TestRegistry::theInstance().tests()) {
+        for (TestInstance * test : TestRegistry::theInstance().tests()) {
             if (classname.empty() || test->classname == classname) {
-                test->processOptions(args);
-                test->run(testname);
+                TestFixture* fixture = test->create();
+                fixture->processOptions(args);
+                fixture->run(testname);
             }
         }
     }
