@@ -92,6 +92,7 @@ jobs:
           python -m pip install 'pylint<=3.3.0'
           python -m pip install unittest2
           python -m pip install pytest
+          python -m pip install pytest-xdist
           python -m pip install pygments
           python -m pip install requests
           python -m pip install psutil
@@ -139,14 +140,14 @@ jobs:
       - name: test addons
         if: matrix.python-version == '3.9' || matrix.python-version == '3.10'
         run: |
-          python -m pytest --strict-markers -vv addons/test
+          python -m pytest --strict-markers -vv -n auto addons/test
         env:
           PYTHONPATH: ./addons
 
       - name: test addons
         if: matrix.python-version != '3.9' && matrix.python-version != '3.10'
         run: |
-          python -m pytest -Werror --strict-markers -vv addons/test
+          python -m pytest -Werror --strict-markers -vv -n auto addons/test
         env:
           PYTHONPATH: ./addons
 

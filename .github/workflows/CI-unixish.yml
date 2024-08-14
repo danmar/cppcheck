@@ -262,6 +262,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04, ubuntu-22.04, macos-13]
+        include:
+          - xdist_n: auto
+          # FIXME: test_color_tty fails with xdist
+          - os: macos-13
+            xdist_n: '1'
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -300,6 +305,7 @@ jobs:
           python3 -m pip install pip --upgrade
           python3 -m pip install pytest
           python3 -m pip install pytest-timeout
+          python3 -m pip install pytest-xdist
           python3 -m pip install psutil
 
       - name: Build cppcheck
@@ -323,7 +329,7 @@ jobs:
 
       - name: Run test/cli
         run: |
-          python3 -m pytest -Werror --strict-markers -vv test/cli
+          python3 -m pytest -Werror --strict-markers -vv -n ${{ matrix.xdist_n }} test/cli
 
       # TODO: use the step below instead
       # do not use pushd in this step since we go below the working directory
@@ -332,7 +338,7 @@ jobs:
           cd ..
           ln -s cppcheck 'cpp check'
           cd 'cpp check/test/cli'
-          python3 -m pytest -Werror --strict-markers -vv
+          python3 -m pytest -Werror --strict-markers -vv -n ${{ matrix.xdist_n }}
 
       # FIXME: proj2_test.py fails because of the relative path cleanups in ImportProject::setRelativePaths()
       # It fails because the application path used as base path has its symlink resolved by getcwd().
@@ -340,18 +346,18 @@ jobs:
         if: false
         run: |
           ln -s . 'cpp check'
-          python3 -m pytest -Werror --strict-markers -vv 'cpp check/test/cli'
+          python3 -m pytest -Werror --strict-markers -vv -n ${{ matrix.xdist_n }} 'cpp check/test/cli'
 
       - name: Run test/cli (-j2)
         run: |
-          python3 -m pytest -Werror --strict-markers -vv test/cli
+          python3 -m pytest -Werror --strict-markers -vv -n ${{ matrix.xdist_n }} test/cli
         env:
           TEST_CPPCHECK_INJECT_J: 2
 
       - name: Run test/cli (--clang)
         if: false
         run: |
-          python3 -m pytest -Werror --strict-markers -vv test/cli
+          python3 -m pytest -Werror --strict-markers -vv -n ${{ matrix.xdist_n }} test/cli
         env:
           TEST_CPPCHECK_INJECT_CLANG: clang
 
