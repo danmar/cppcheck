@@ -371,11 +371,13 @@ std::string Path::getAbsoluteFilePath(const std::string& filePath)
 #elif defined(__linux__) || defined(__sun) || defined(__hpux) || defined(__GNUC__) || defined(__CPPCHECK__)
     // simplify the path since any non-existent part has to exist even if discarded by ".."
     std::string spath = Path::simplifyPath(filePath);
-    // TODO: assert if path exists?
     char * absolute = realpath(spath.c_str(), nullptr);
     if (absolute)
         absolute_path = absolute;
     free(absolute);
+    // only throw on realpath() fialure to resolve a path when the given one was non-existent
+    if (!spath.empty() && absolute_path.empty() && !exists(spath))
+        throw std::runtime_error("path '" + filePath + "' does not exist");
 #else
 #error Platform absolute path function needed
 #endif
@@ -417,6 +419,12 @@ bool Path::isFile(const std::string &path)
 bool Path::isDirectory(const std::string &path)
 {
     return file_type(path) == S_IFDIR;
+}
+
+bool Path::exists(const std::string &path)
+{
+    const auto type = file_type(path);
+    return type == S_IFREG || type == S_IFDIR;
 }
 
 std::string Path::join(const std::string& path1, const std::string& path2) {
