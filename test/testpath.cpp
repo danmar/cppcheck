@@ -50,6 +50,7 @@ private:
         TEST_CASE(is_header);
         TEST_CASE(simplifyPath);
         TEST_CASE(getAbsolutePath);
+        TEST_CASE(exists);
     }
 
     void removeQuotationMarks() const {
@@ -476,7 +477,7 @@ private:
 
 #ifndef _WIN32
         // the underlying realpath() call only returns something if the path actually exists
-        ASSERT_EQUALS("", Path::getAbsoluteFilePath("testabspath2.txt"));
+        ASSERT_THROW_EQUALS_2(Path::getAbsoluteFilePath("testabspath2.txt"), std::runtime_error, "path 'testabspath2.txt' does not exist");
 #else
         ASSERT_EQUALS(Path::toNativeSeparators(Path::join(cwd, "testabspath2.txt")), Path::getAbsoluteFilePath("testabspath2.txt"));
 #endif
@@ -520,6 +521,18 @@ private:
 
         // TODO: test UNC paths
         // TODO: test with symlinks
+    }
+
+    void exists() const {
+        ScopedFile file("testpath.txt", "", "testpath");
+        ScopedFile file2("testpath2.txt", "");
+        ASSERT_EQUALS(true, Path::exists("testpath"));
+        ASSERT_EQUALS(true, Path::exists("testpath/testpath.txt"));
+        ASSERT_EQUALS(true, Path::exists("testpath2.txt"));
+
+        ASSERT_EQUALS(false, Path::exists("testpath2"));
+        ASSERT_EQUALS(false, Path::exists("testpath/testpath2.txt"));
+        ASSERT_EQUALS(false, Path::exists("testpath.txt"));
     }
 };
 
