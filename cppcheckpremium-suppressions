@@ -59,8 +59,6 @@ premium-misra-cpp-2023-6.8.3
 premium-misra-cpp-2023-7.0.3
 premium-misra-cpp-2023-8.2.5
 premium-misra-cpp-2023-8.18.2
-premium-misra-cpp-2023-13.1.2
-premium-misra-cpp-2023-13.3.1
 premium-misra-cpp-2023-21.6.2
 # False positives: #13004
 premium-misra-cpp-2023-8.2.7:lib/valueflow.cpp
