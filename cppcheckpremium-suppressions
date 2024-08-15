@@ -55,13 +55,7 @@ premium-cert-exp55-cpp
 # There are false positives
 premium-misra-cpp-2023-6.5.1:lib/symboldatabase.cpp
 premium-misra-cpp-2023-6.7.2
-premium-misra-cpp-2023-6.8.3
-premium-misra-cpp-2023-7.0.3
-premium-misra-cpp-2023-8.2.5
 premium-misra-cpp-2023-8.18.2
-premium-misra-cpp-2023-13.1.2
-premium-misra-cpp-2023-13.3.1
-premium-misra-cpp-2023-21.6.2
 # False positives: #13004
 premium-misra-cpp-2023-8.2.7:lib/valueflow.cpp
 premium-misra-cpp-2023-8.2.7:lib/checkclass.cpp
@@ -100,6 +94,9 @@ premium-misra-cpp-2023-6.5.2
 # we use local static variables by intention
 premium-misra-cpp-2023-6.7.1
 
+# Could write good warnings but also has a warning about safe code
+premium-misra-cpp-2023-6.8.3
+
 # FIXME enforce proper ref qualifications
 premium-misra-cpp-2023-6.8.4
 
@@ -111,6 +108,9 @@ premium-misra-cpp-2023-7.0.1
 
 # we convert integer to bool by intention
 premium-misra-cpp-2023-7.0.2
+
+# Misra C++ is too pedantic about using character values
+premium-misra-cpp-2023-7.0.3
 
 # signed integer expression in bitwise rhs by intention
 premium-misra-cpp-2023-7.0.4
@@ -246,6 +246,9 @@ premium-misra-cpp-2023-21.2.3
 
 # Dynamic memory usage in std::string etc
 premium-misra-cpp-2023-21.6.1
+
+# We use new/delete by intention sometimes
+premium-misra-cpp-2023-21.6.2
 
 # TODO use std::make_unique when we require C++14
 premium-misra-cpp-2023-23.11.1
