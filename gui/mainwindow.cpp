@@ -1462,7 +1462,7 @@ void MainWindow::enableCheckButtons(bool enable)
     mUI->mActionAnalyzeFiles->setEnabled(enable);
 
     if (mProjectFile) {
-        mUI->mActionReanalyzeModified->setEnabled(false);
+        mUI->mActionReanalyzeModified->setEnabled(enable);
         mUI->mActionReanalyzeAll->setEnabled(enable);
     } else if (!enable || mThread->hasPreviousFiles()) {
         mUI->mActionReanalyzeModified->setEnabled(enable);
