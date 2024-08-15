@@ -6158,41 +6158,49 @@ void Tokenizer::dump(std::ostream &out) const
     if (list.front())
         list.front()->printValueFlow(true, out);
 
-    if (!mTypedefInfo.empty()) {
-        outs += "  <typedef-info>";
-        outs += '\n';
-        for (const TypedefInfo &typedefInfo: mTypedefInfo) {
-            outs += "    <info";
+    outs += dumpTypedefInfo();
 
-            outs += " name=\"";
-            outs += typedefInfo.name;
-            outs += "\"";
-
-            outs += " file=\"";
-            outs += ErrorLogger::toxml(typedefInfo.filename);
-            outs += "\"";
-
-            outs += " line=\"";
-            outs += std::to_string(typedefInfo.lineNumber);
-            outs += "\"";
-
-            outs += " column=\"";
-            outs += std::to_string(typedefInfo.column);
-            outs += "\"";
-
-            outs += " used=\"";
-            outs += std::to_string(typedefInfo.used?1:0);
-            outs += "\"";
-
-            outs += "/>";
-            outs += '\n';
-        }
-        outs += "  </typedef-info>";
-        outs += '\n';
-    }
     outs += mTemplateSimplifier->dump();
 
     out << outs;
+}
+
+std::string Tokenizer::dumpTypedefInfo() const
+{
+    if (mTypedefInfo.empty())
+        return "";
+    std::string outs = "  <typedef-info>";
+    outs += '\n';
+    for (const TypedefInfo &typedefInfo: mTypedefInfo) {
+        outs += "    <info";
+
+        outs += " name=\"";
+        outs += typedefInfo.name;
+        outs += "\"";
+
+        outs += " file=\"";
+        outs += ErrorLogger::toxml(typedefInfo.filename);
+        outs += "\"";
+
+        outs += " line=\"";
+        outs += std::to_string(typedefInfo.lineNumber);
+        outs += "\"";
+
+        outs += " column=\"";
+        outs += std::to_string(typedefInfo.column);
+        outs += "\"";
+
+        outs += " used=\"";
+        outs += std::to_string(typedefInfo.used?1:0);
+        outs += "\"";
+
+        outs += "/>";
+        outs += '\n';
+    }
+    outs += "  </typedef-info>";
+    outs += '\n';
+
+    return outs;
 }
 
 void Tokenizer::simplifyHeadersAndUnusedTemplates()

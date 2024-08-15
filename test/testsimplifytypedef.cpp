@@ -309,7 +309,7 @@ private:
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
-    std::vector<Tokenizer::TypedefInfo> getTypedefInfo(const char code[]) {
+    std::string dumpTypedefInfo(const char code[]) {
         Tokenizer tokenizer(settings1, *this);
 
         std::istringstream istr(code);
@@ -322,7 +322,7 @@ private:
         } catch (const InternalError&) {
             return {};
         }
-        return tokenizer.getTypedefInfo();
+        return tokenizer.dumpTypedefInfo();
     }
 
     void c1() {
@@ -4400,9 +4400,11 @@ private:
     }
 
     void typedefInfo1() {
-        const auto& t = getTypedefInfo("typedef int A;\nA x;");
-        ASSERT_EQUALS(1, t.size());
-        ASSERT_EQUALS("A", t[0].name);
+        const std::string xml = dumpTypedefInfo("typedef int A;\nA x;");
+        ASSERT_EQUALS("  <typedef-info>\n"
+                      "    <info name=\"A\" file=\"file.c\" line=\"1\" column=\"1\" used=\"1\"/>\n"
+                      "  </typedef-info>\n",
+                      xml);
     }
 };
 

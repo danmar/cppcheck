@@ -33,10 +33,12 @@
 
 #include <QtTest>
 
-class TestReport: public Report {
+class TestReport : public Report {
 public:
     TestReport(QString format) : Report(QString()), format(format) {}
-    void writeHeader() override { output.clear(); }
+    void writeHeader() override {
+        output.clear();
+    }
     void writeFooter() override {}
     void writeError(const ErrorItem &error) override {
         QString line = format;
@@ -125,7 +127,7 @@ void TestResultsTree::testReportType() const
     TestReport report("{id},{classification},{guideline}");
 
     int msgCount = 0;
-    auto createErrorItem = [&msgCount](const Severity severity, const QString& errorId) -> ErrorItem { 
+    auto createErrorItem = [&msgCount](const Severity severity, const QString& errorId) -> ErrorItem {
         ++msgCount;
         ErrorItem errorItem;
         errorItem.errorPath << QErrorPathItem(ErrorMessage::FileLocation("file1.c", msgCount, 1));
