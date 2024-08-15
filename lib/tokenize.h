@@ -627,6 +627,7 @@ public:
 
     void setDirectives(std::list<Directive> directives);
 
+    std::string dumpTypedefInfo() const;
 private:
     const Token *processFunc(const Token *tok2, bool inOperator) const;
     Token *processFunc(Token *tok2, bool inOperator);
