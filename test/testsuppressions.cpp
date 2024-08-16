@@ -245,7 +245,7 @@ private:
         if (suppression == "unusedFunction")
             settings.checks.setEnabled(Checks::unusedFunction, true);
         if (!suppression.empty()) {
-            EXPECT_EQ("", settings.supprs.nomsg.addSuppressionLine(suppression));
+            ASSERT_EQUALS("", settings.supprs.nomsg.addSuppressionLine(suppression));
         }
 
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
@@ -288,7 +288,7 @@ private:
                                             $.inlineSuppressions = true);
         settings.severity.enable(Severity::information);
         if (!suppression.empty()) {
-            EXPECT_EQ("", settings.supprs.nomsg.addSuppressionLine(suppression));
+            ASSERT_EQUALS("", settings.supprs.nomsg.addSuppressionLine(suppression));
         }
 
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
@@ -332,7 +332,7 @@ private:
                                             $.inlineSuppressions = true);
         settings.severity.enable(Severity::information);
         if (!suppression.empty()) {
-            EXPECT_EQ("", settings.supprs.nomsg.addSuppressionLine(suppression));
+            ASSERT_EQUALS("", settings.supprs.nomsg.addSuppressionLine(suppression));
         }
 
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;

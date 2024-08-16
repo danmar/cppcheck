@@ -295,11 +295,11 @@ protected:
     std::unique_ptr<TestFixture> impl;
 };
 
-// TODO: the asserts do not actually assert i.e. do stop executing the test
 #define TEST_CASE( NAME ) do { if (prepareTest(#NAME)) { setVerbose(false); try { NAME(); teardownTest(); } catch (...) { assertNoThrowFail(__FILE__, __LINE__); } } } while (false)
+
+// TODO: the asserts do not actually assert i.e. do stop executing the test
 #define ASSERT( CONDITION ) assert_(__FILE__, __LINE__, (CONDITION))
 #define ASSERT_LOC( CONDITION, FILE_, LINE_ ) assert_(FILE_, LINE_, (CONDITION))
-#define CHECK_EQUALS( EXPECTED, ACTUAL ) assertEquals(__FILE__, __LINE__, (EXPECTED), (ACTUAL))
 // *INDENT-OFF*
 #define ASSERT_EQUALS( EXPECTED, ACTUAL ) do { try { assertEquals(__FILE__, __LINE__, (EXPECTED), (ACTUAL)); } catch (...) { assertNoThrowFail(__FILE__, __LINE__); } } while (false)
 // *INDENT-ON*
@@ -317,7 +317,7 @@ protected:
 #define TODO_ASSERT_THROW( CMD, EXCEPTION ) do { try { (void)(CMD); } catch (const EXCEPTION&) {} catch (...) { assertThrow(__FILE__, __LINE__); } } while (false)
 #define TODO_ASSERT( CONDITION ) do { const bool condition=(CONDITION); todoAssertEquals(__FILE__, __LINE__, true, false, condition); } while (false)
 #define TODO_ASSERT_EQUALS( WANTED, CURRENT, ACTUAL ) todoAssertEquals(__FILE__, __LINE__, WANTED, CURRENT, ACTUAL)
-#define EXPECT_EQ( EXPECTED, ACTUAL ) assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
+
 #define REGISTER_TEST( CLASSNAME ) namespace { class CLASSNAME ## Instance : public TestInstance { public: CLASSNAME ## Instance() : TestInstance(#CLASSNAME) {} TestFixture* create() override { impl.reset(new CLASSNAME); return impl.get(); } }; CLASSNAME ## Instance instance_ ## CLASSNAME; }
 
 #define PLATFORM( P, T ) do { std::string errstr; assertEquals(__FILE__, __LINE__, true, P.set(Platform::toString(T), errstr, {exename}), errstr); } while (false)
