@@ -900,7 +900,7 @@ const Token * Token::findClosingBracket() const
 Token * Token::findClosingBracket()
 {
     // return value of const function
-    return const_cast<Token*>(const_cast<const Token*>(this)->findClosingBracket());
+    return const_cast<Token*>(static_cast<const Token*>(this)->findClosingBracket());
 }
 
 const Token * Token::findOpeningBracket() const
@@ -932,7 +932,7 @@ const Token * Token::findOpeningBracket() const
 Token * Token::findOpeningBracket()
 {
     // return value of const function
-    return const_cast<Token*>(const_cast<const Token*>(this)->findOpeningBracket());
+    return const_cast<Token*>(static_cast<const Token*>(this)->findOpeningBracket());
 }
 
 //---------------------------------------------------------------------------
