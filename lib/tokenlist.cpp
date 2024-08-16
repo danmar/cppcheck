@@ -581,7 +581,7 @@ static Token * findCppTypeInitPar(Token *tok)
 }
 
 // X{} X<Y>{} etc
-static bool iscpp11init_impl(const Token * const tok);
+static bool iscpp11init_impl(const Token * tok);
 static bool iscpp11init(const Token * const tok)
 {
     if (tok->isCpp11init() == TokenImpl::Cpp11init::UNKNOWN)

@@ -69,7 +69,7 @@ struct CPPCHECKLIB Directive {
 
     /** record a directive (possibly filtering src) */
     Directive(const simplecpp::Location & _loc, std::string _str);
-    Directive(std::string _file, const int _linenr, std::string _str);
+    Directive(std::string _file, int _linenr, std::string _str);
 };
 
 class CPPCHECKLIB RemarkComment {
@@ -138,7 +138,7 @@ public:
 
     simplecpp::TokenList preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool throwError = false);
 
-    std::string getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, const bool writeLocations);
+    std::string getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool writeLocations);
 
     /**
      * Calculate HASH. Using toolinfo, tokens1, filedata.

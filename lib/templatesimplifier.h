@@ -270,7 +270,7 @@ public:
      * @param patternAfter pattern that must match the tokens after the ">"
      * @return match => true
      */
-    static bool instantiateMatch(const Token *instance, const std::size_t numberOfArguments, bool variadic, const char patternAfter[]);
+    static bool instantiateMatch(const Token *instance, std::size_t numberOfArguments, bool variadic, const char patternAfter[]);
 
     /**
      * Match template declaration/instantiation
@@ -308,7 +308,7 @@ public:
      * Simplify templates
      * @param maxtime time when the simplification should be stopped
      */
-    void simplifyTemplates(const std::time_t maxtime);
+    void simplifyTemplates(std::time_t maxtime);
 
     /**
      * Simplify constant calculations such as "1+2" => "3"
@@ -396,7 +396,7 @@ private:
     bool simplifyTemplateInstantiations(
         const TokenAndName &templateDeclaration,
         const std::list<const Token *> &specializations,
-        const std::time_t maxtime,
+        std::time_t maxtime,
         std::set<std::string> &expandedtemplates);
 
     /**

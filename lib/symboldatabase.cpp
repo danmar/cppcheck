@@ -6514,7 +6514,7 @@ nonneg int SymbolDatabase::sizeOfType(const Token *type) const
 }
 
 static const Token* parsedecl(const Token* type,
-                              ValueType* const valuetype,
+                              ValueType* valuetype,
                               ValueType::Sign defaultSignedness,
                               const Settings& settings,
                               SourceLocation loc = SourceLocation::current());

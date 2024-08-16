@@ -57,7 +57,6 @@ Checks: >
         -performance-no-automatic-move,
         -portability-simd-intrinsics,
         -portability-std-allocator-const,
-        -readability-avoid-const-params-in-decls,
         -readability-avoid-nested-conditional-operator,
         -readability-braces-around-statements,
         -readability-container-data-pointer,
