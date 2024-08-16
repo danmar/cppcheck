@@ -68,7 +68,8 @@ if (BUILD_TESTS)
         include(ProcessorCount)
         ProcessorCount(N)
         set(CTEST_PARALLEL_LEVEL ${N} CACHE STRING "CTest parallel level")
-        set(CTEST_TIMEOUT 90 CACHE STRING "CTest timeout")
+        # the macos-* runners are sporadically much slower than other runners so chose a high timeout
+        set(CTEST_TIMEOUT 130 CACHE STRING "CTest timeout")
         add_custom_target(check ${CMAKE_CTEST_COMMAND} --output-on-failure -j ${CTEST_PARALLEL_LEVEL} -C ${CMAKE_CFG_INTDIR} --timeout ${CTEST_TIMEOUT}
                 DEPENDS testrunner cppcheck)
 
