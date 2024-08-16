@@ -266,7 +266,7 @@ private:
      * @param checkLibrary Flag to indicate if the library should be checked.
      * @param checkConfiguration Flag to indicate if the configuration should be checked.
      */
-    void analyzeProject(const ProjectFile *projectFile, const QStringList& recheckFiles, const bool checkLibrary = false, const bool checkConfiguration = false);
+    void analyzeProject(const ProjectFile *projectFile, const QStringList& recheckFiles, bool checkLibrary = false, bool checkConfiguration = false);
 
     /**
      * @brief Set current language
