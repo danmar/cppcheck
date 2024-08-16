@@ -669,6 +669,8 @@ void Settings::setMisraRuleTexts(const std::string& data)
         std::string text = line.substr(pos + 1);
         if (id.empty() || text.empty())
             continue;
+        if (text[text.size() -1] == '\r')
+            text.erase(text.size() -1);
         mMisraRuleTexts[id] = std::move(text);
     }
 }
