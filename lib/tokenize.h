@@ -667,6 +667,7 @@ private:
         int lineNumber;
         int column;
         bool used;
+        bool isFunctionPointer;
     };
     std::vector<TypedefInfo> mTypedefInfo;
 
