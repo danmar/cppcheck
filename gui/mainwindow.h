@@ -262,10 +262,11 @@ private:
     /**
      * @brief Analyze the project.
      * @param projectFile Pointer to the project to analyze.
+     * @param recheckFiles files to recheck, empty => check all files
      * @param checkLibrary Flag to indicate if the library should be checked.
      * @param checkConfiguration Flag to indicate if the configuration should be checked.
      */
-    void analyzeProject(const ProjectFile *projectFile, bool checkLibrary = false, bool checkConfiguration = false);
+    void analyzeProject(const ProjectFile *projectFile, const QStringList& recheckFiles, bool checkLibrary = false, bool checkConfiguration = false);
 
     /**
      * @brief Set current language

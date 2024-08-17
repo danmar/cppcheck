@@ -1306,7 +1306,7 @@ void MainWindow::reAnalyzeModified()
 void MainWindow::reAnalyzeAll()
 {
     if (mProjectFile)
-        analyzeProject(mProjectFile);
+        analyzeProject(mProjectFile, QStringList());
     else
         reAnalyze(true);
 }
@@ -1314,13 +1314,13 @@ void MainWindow::reAnalyzeAll()
 void MainWindow::checkLibrary()
 {
     if (mProjectFile)
-        analyzeProject(mProjectFile, true);
+        analyzeProject(mProjectFile, QStringList(), true);
 }
 
 void MainWindow::checkConfiguration()
 {
     if (mProjectFile)
-        analyzeProject(mProjectFile, false, true);
+        analyzeProject(mProjectFile, QStringList(), false, true);
 }
 
 void MainWindow::reAnalyzeSelected(const QStringList& files)
@@ -1329,6 +1329,16 @@ void MainWindow::reAnalyzeSelected(const QStringList& files)
         return;
     if (mThread->isChecking())
         return;
+
+    if (mProjectFile) {
+        // Clear details, statistics and progress
+        mUI->mResults->clear(false);
+        for (int i = 0; i < files.size(); ++i)
+            mUI->mResults->clearRecheckFile(files[i]);
+
+        analyzeProject(mProjectFile, files);
+        return;
+    }
 
     const QPair<bool, Settings> checkSettingsPair = getCppcheckSettings();
     if (!checkSettingsPair.first)
@@ -1795,7 +1805,7 @@ void MainWindow::loadProjectFile(const QString &filePath)
     mProjectFile = new ProjectFile(filePath, this);
     mProjectFile->setActiveProject();
     if (!loadLastResults())
-        analyzeProject(mProjectFile);
+        analyzeProject(mProjectFile, QStringList());
 }
 
 QString MainWindow::getLastResults() const
@@ -1812,6 +1822,7 @@ bool MainWindow::loadLastResults()
         return false;
     if (!QFileInfo::exists(lastResults))
         return false;
+    mUI->mResults->clear(true);
     mUI->mResults->readErrorsXml(lastResults);
     mUI->mResults->setCheckDirectory(mSettings->value(SETTINGS_LAST_CHECK_PATH,QString()).toString());
     mUI->mActionViewStats->setEnabled(true);
@@ -1819,7 +1830,7 @@ bool MainWindow::loadLastResults()
     return true;
 }
 
-void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool checkLibrary, const bool checkConfiguration)
+void MainWindow::analyzeProject(const ProjectFile *projectFile, const QStringList& recheckFiles, const bool checkLibrary, const bool checkConfiguration)
 {
     Settings::terminate(false);
 
@@ -1921,7 +1932,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
         return;
     }
 
-    QStringList paths = projectFile->getCheckPaths();
+    QStringList paths = recheckFiles.isEmpty() ? projectFile->getCheckPaths() : recheckFiles;
 
     // If paths not given then check the root path (which may be the project
     // file's location, see above). This is to keep the compatibility with
@@ -1962,7 +1973,7 @@ void MainWindow::newProjectFile()
     ProjectFileDialog dlg(mProjectFile, isCppcheckPremium(), this);
     if (dlg.exec() == QDialog::Accepted) {
         addProjectMRU(filepath);
-        analyzeProject(mProjectFile);
+        analyzeProject(mProjectFile, QStringList());
     } else {
         closeProjectFile();
     }
@@ -1993,7 +2004,7 @@ void MainWindow::editProjectFile()
     ProjectFileDialog dlg(mProjectFile, isCppcheckPremium(), this);
     if (dlg.exec() == QDialog::Accepted) {
         mProjectFile->write();
-        analyzeProject(mProjectFile);
+        analyzeProject(mProjectFile, QStringList());
     }
 }
 
