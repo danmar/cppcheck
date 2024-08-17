@@ -1363,7 +1363,7 @@ private:
                             "`-CXXConstructorDecl 0x5603791b5600 parent 0x560379197110 prev 0x5603791974b8 <line:3:1, col:55> col:47 b 'void (A<type-parameter-0-0, type-parameter-0-1> &)'\n"
                             "  |-ParmVarDecl 0x5603791b5570 <col:49, col:51> col:52 'A<type-parameter-0-0, type-parameter-0-1> &'\n"
                             "  `-CompoundStmt 0x5603791b5700 <col:54, col:55>\n";
-        parse(clang); // don't crash
+        (void)parse(clang); // don't crash
     }
 };
 

@@ -216,9 +216,9 @@ std::string TestFixture::deleteLineNumber(const std::string &message)
     return result;
 }
 
-void TestFixture::assertEqualsWithoutLineNumbers(const char * const filename, const unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg) const
+bool TestFixture::assertEqualsWithoutLineNumbers(const char * const filename, const unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg) const
 {
-    assertEquals(filename, linenr, deleteLineNumber(expected), deleteLineNumber(actual), msg);
+    return assertEquals(filename, linenr, deleteLineNumber(expected), deleteLineNumber(actual), msg);
 }
 
 bool TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg) const
@@ -237,20 +237,21 @@ bool TestFixture::assertEquals(const char * const filename, const unsigned int l
 bool TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const long long expected, const long long actual, const std::string &msg) const
 {
     if (expected != actual) {
-        assertEquals(filename, linenr, std::to_string(expected), std::to_string(actual), msg);
+        return assertEquals(filename, linenr, std::to_string(expected), std::to_string(actual), msg);
     }
-    return expected == actual;
+    return true;
 }
 
-void TestFixture::assertEqualsDouble(const char * const filename, const unsigned int linenr, const double expected, const double actual, const double tolerance, const std::string &msg) const
+bool TestFixture::assertEqualsDouble(const char * const filename, const unsigned int linenr, const double expected, const double actual, const double tolerance, const std::string &msg) const
 {
     if (expected < (actual - tolerance) || expected > (actual + tolerance)) {
         std::ostringstream ostr1;
         ostr1 << expected;
         std::ostringstream ostr2;
         ostr2 << actual;
-        assertEquals(filename, linenr, ostr1.str(), ostr2.str(), msg);
+        return assertEquals(filename, linenr, ostr1.str(), ostr2.str(), msg);
     }
+    return false;
 }
 
 void TestFixture::todoAssertEquals(const char * const filename, const unsigned int linenr,
@@ -264,7 +265,7 @@ void TestFixture::todoAssertEquals(const char * const filename, const unsigned i
 
         ++succeeded_todos_counter;
     } else {
-        assertEquals(filename, linenr, current, actual);
+        (void)assertEquals(filename, linenr, current, actual);
         ++todos_counter;
     }
 }

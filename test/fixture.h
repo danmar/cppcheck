@@ -95,12 +95,12 @@ protected:
     void assertEqualsFailed(const char* filename, unsigned int linenr, const std::string& expected, const std::string& actual, const std::string& msg) const;
 
     bool assertEquals(const char * filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;
-    void assertEqualsWithoutLineNumbers(const char * filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;
+    bool assertEqualsWithoutLineNumbers(const char * filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;
     bool assertEquals(const char * filename, unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg = emptyString) const;
     bool assertEquals(const char * filename, unsigned int linenr, const char expected[], const char actual[], const std::string &msg = emptyString) const;
     bool assertEquals(const char * filename, unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg = emptyString) const;
     bool assertEquals(const char * filename, unsigned int linenr, long long expected, long long actual, const std::string &msg = emptyString) const;
-    void assertEqualsDouble(const char * filename, unsigned int linenr, double expected, double actual, double tolerance, const std::string &msg = emptyString) const;
+    bool assertEqualsDouble(const char * filename, unsigned int linenr, double expected, double actual, double tolerance, const std::string &msg = emptyString) const;
 
     void todoAssertEquals(const char * filename, unsigned int linenr, const std::string &wanted,
                           const std::string &current, const std::string &actual) const;
@@ -296,30 +296,30 @@ protected:
 };
 
 // TODO: most asserts do not actually assert i.e. do not return
-#define TEST_CASE( NAME )  do { if (prepareTest(#NAME)) { setVerbose(false); try { NAME(); teardownTest(); } catch (...) { assertNoThrowFail(__FILE__, __LINE__); } } } while (false)
-#define ASSERT( CONDITION )  if (!assert_(__FILE__, __LINE__, (CONDITION))) return
-#define ASSERT_LOC( CONDITION, FILE_, LINE_ )  assert_(FILE_, LINE_, (CONDITION))
-#define CHECK_EQUALS( EXPECTED, ACTUAL )  assertEquals(__FILE__, __LINE__, (EXPECTED), (ACTUAL))
+#define TEST_CASE( NAME ) do { if (prepareTest(#NAME)) { setVerbose(false); try { NAME(); teardownTest(); } catch (...) { assertNoThrowFail(__FILE__, __LINE__); } } } while (false)
+#define ASSERT( CONDITION ) if (!assert_(__FILE__, __LINE__, (CONDITION))) return
+#define ASSERT_LOC( CONDITION, FILE_, LINE_ ) (void)assert_(FILE_, LINE_, (CONDITION))
+#define CHECK_EQUALS( EXPECTED, ACTUAL ) (void)assertEquals(__FILE__, __LINE__, (EXPECTED), (ACTUAL))
 // *INDENT-OFF*
 #define ASSERT_EQUALS( EXPECTED, ACTUAL ) do { try { if (!assertEquals(__FILE__, __LINE__, (EXPECTED), (ACTUAL))) return; } catch (...) { assertNoThrowFail(__FILE__, __LINE__); } } while (false)
 // *INDENT-ON*
-#define ASSERT_EQUALS_WITHOUT_LINENUMBERS( EXPECTED, ACTUAL )  assertEqualsWithoutLineNumbers(__FILE__, __LINE__, EXPECTED, ACTUAL)
-#define ASSERT_EQUALS_DOUBLE( EXPECTED, ACTUAL, TOLERANCE )  assertEqualsDouble(__FILE__, __LINE__, EXPECTED, ACTUAL, TOLERANCE)
-#define ASSERT_EQUALS_LOC_MSG( EXPECTED, ACTUAL, MSG, FILE_, LINE_ )  assertEquals(FILE_, LINE_, EXPECTED, ACTUAL, MSG)
-#define ASSERT_EQUALS_MSG( EXPECTED, ACTUAL, MSG )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL, MSG)
-#define ASSERT_EQUALS_ENUM( EXPECTED, ACTUAL )  if (!assertEqualsEnum(__FILE__, __LINE__, (EXPECTED), (ACTUAL))) return
-#define ASSERT_THROW( CMD, EXCEPTION ) do { try { CMD; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&) {} catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
-#define ASSERT_THROW_EQUALS( CMD, EXCEPTION, EXPECTED ) do { try { CMD; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&e) { assertEquals(__FILE__, __LINE__, EXPECTED, e.errorMessage); } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
-#define ASSERT_THROW_EQUALS_2( CMD, EXCEPTION, EXPECTED ) do { try { CMD; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&e) { assertEquals(__FILE__, __LINE__, EXPECTED, e.what()); } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
-#define ASSERT_THROW_INTERNAL( CMD, TYPE ) do { try { CMD; assertThrowFail(__FILE__, __LINE__); } catch (const InternalError& e) { assertEqualsEnum(__FILE__, __LINE__, InternalError::TYPE, e.type); } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
-#define ASSERT_THROW_INTERNAL_EQUALS( CMD, TYPE, EXPECTED ) do { try { CMD; assertThrowFail(__FILE__, __LINE__); } catch (const InternalError& e) { assertEqualsEnum(__FILE__, __LINE__, InternalError::TYPE, e.type); assertEquals(__FILE__, __LINE__, EXPECTED, e.errorMessage); } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
-#define ASSERT_NO_THROW( CMD ) do { try { CMD; } catch (...) { assertNoThrowFail(__FILE__, __LINE__); } } while (false)
-#define TODO_ASSERT_THROW( CMD, EXCEPTION ) do { try { CMD; } catch (const EXCEPTION&) {} catch (...) { assertThrow(__FILE__, __LINE__); } } while (false)
+#define ASSERT_EQUALS_WITHOUT_LINENUMBERS( EXPECTED, ACTUAL ) (void)assertEqualsWithoutLineNumbers(__FILE__, __LINE__, EXPECTED, ACTUAL)
+#define ASSERT_EQUALS_DOUBLE( EXPECTED, ACTUAL, TOLERANCE ) (void)assertEqualsDouble(__FILE__, __LINE__, EXPECTED, ACTUAL, TOLERANCE)
+#define ASSERT_EQUALS_LOC_MSG( EXPECTED, ACTUAL, MSG, FILE_, LINE_ ) (void)assertEquals(FILE_, LINE_, EXPECTED, ACTUAL, MSG)
+#define ASSERT_EQUALS_MSG( EXPECTED, ACTUAL, MSG ) (void)assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL, MSG)
+#define ASSERT_EQUALS_ENUM( EXPECTED, ACTUAL ) if (!assertEqualsEnum(__FILE__, __LINE__, (EXPECTED), (ACTUAL))) return
+#define ASSERT_THROW( CMD, EXCEPTION ) do { try { (void)(CMD); assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&) {} catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
+#define ASSERT_THROW_EQUALS( CMD, EXCEPTION, EXPECTED ) do { try { (void)(CMD); assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&e) { (void)assertEquals(__FILE__, __LINE__, EXPECTED, e.errorMessage); } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
+#define ASSERT_THROW_EQUALS_2( CMD, EXCEPTION, EXPECTED ) do { try { (void)(CMD); assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&e) { (void)assertEquals(__FILE__, __LINE__, EXPECTED, e.what()); } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
+#define ASSERT_THROW_INTERNAL( CMD, TYPE ) do { try { (void)(CMD); assertThrowFail(__FILE__, __LINE__); } catch (const InternalError& e) { (void)assertEqualsEnum(__FILE__, __LINE__, InternalError::TYPE, e.type); } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
+#define ASSERT_THROW_INTERNAL_EQUALS( CMD, TYPE, EXPECTED ) do { try { (void)(CMD); assertThrowFail(__FILE__, __LINE__); } catch (const InternalError& e) { (void)assertEqualsEnum(__FILE__, __LINE__, InternalError::TYPE, e.type); (void)assertEquals(__FILE__, __LINE__, EXPECTED, e.errorMessage); } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
+#define ASSERT_NO_THROW( CMD ) do { try { (void)(CMD); } catch (...) { assertNoThrowFail(__FILE__, __LINE__); } } while (false)
+#define TODO_ASSERT_THROW( CMD, EXCEPTION ) do { try { (void)(CMD); } catch (const EXCEPTION&) {} catch (...) { assertThrow(__FILE__, __LINE__); } } while (false)
 #define TODO_ASSERT( CONDITION ) do { const bool condition=(CONDITION); todoAssertEquals(__FILE__, __LINE__, true, false, condition); } while (false)
 #define TODO_ASSERT_EQUALS( WANTED, CURRENT, ACTUAL ) todoAssertEquals(__FILE__, __LINE__, WANTED, CURRENT, ACTUAL)
-#define EXPECT_EQ( EXPECTED, ACTUAL ) assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
+#define EXPECT_EQ( EXPECTED, ACTUAL ) (void)assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define REGISTER_TEST( CLASSNAME ) namespace { class CLASSNAME ## Instance : public TestInstance { public: CLASSNAME ## Instance() : TestInstance(#CLASSNAME) {} TestFixture* create() override { impl.reset(new CLASSNAME); return impl.get(); } }; CLASSNAME ## Instance instance_ ## CLASSNAME; }
 
-#define PLATFORM( P, T ) do { std::string errstr; assertEquals(__FILE__, __LINE__, true, P.set(Platform::toString(T), errstr, {exename}), errstr); } while (false)
+#define PLATFORM( P, T ) do { std::string errstr; (void)assertEquals(__FILE__, __LINE__, true, P.set(Platform::toString(T), errstr, {exename}), errstr); } while (false)
 
 #endif // fixtureH

@@ -171,7 +171,7 @@ private:
 
         TokenList tokenlist(&settings);
         std::istringstream istr(s);
-        tokenlist.createTokens(istr, Standards::Language::C);
+        ASSERT(tokenlist.createTokens(istr, Standards::Language::C));
         // TODO: put this logic in TokenList
         // generate links
         {

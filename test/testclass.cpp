@@ -8933,7 +8933,7 @@ private:
         }
 
         // Check code..
-        check.analyseWholeProgram(nullptr, fileInfo, settingsDefault, *this);
+        check.analyseWholeProgram(nullptr, fileInfo, settingsDefault, *this); // TODO: check result
 
         while (!fileInfo.empty()) {
             delete fileInfo.back();
