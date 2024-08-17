@@ -1006,11 +1006,13 @@ QString MainWindow::loadAddon(Settings &settings, const QString &filesDir, const
         const QString misraFile = fromNativePath(mSettings->value(SETTINGS_MISRA_FILE).toString());
         if (!misraFile.isEmpty()) {
             QString arg;
+            picojson::array arr;
             if (misraFile.endsWith(".pdf", Qt::CaseInsensitive))
                 arg = "--misra-pdf=" + misraFile;
             else
                 arg = "--rule-texts=" + misraFile;
-            obj["args"] = picojson::value(arg.toStdString());
+            arr.emplace_back(arg.toStdString());
+            obj["args"] = picojson::value(arr);
         }
     }
 
