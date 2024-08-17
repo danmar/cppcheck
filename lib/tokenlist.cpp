@@ -475,7 +475,7 @@ static Token* skipDecl(Token* tok, std::vector<Token*>* inner = nullptr)
                 vartok = vartok->link();
             else
                 return tok;
-        } else if (Token::Match(vartok, "%var% [:=(]")) {
+        } else if (Token::Match(vartok, "%var% [:=({]")) {
             return vartok;
         } else if (Token::Match(vartok, "decltype|typeof (") && !isDecltypeFuncParam(tok->linkAt(1))) {
             if (inner)
@@ -1622,7 +1622,7 @@ static Token * createAstAtToken(Token *tok)
             while (tok2 && tok2 != endPar && tok2->str() != ";") {
                 if (tok2->str() == "<" && tok2->link()) {
                     tok2 = tok2->link();
-                } else if (Token::Match(tok2, "%name% )| %op%|(|[|.|:|::") || Token::Match(tok2->previous(), "[(;{}] %cop%|(")) {
+                } else if (Token::Match(tok2, "%name% )| %op%|(|[|{|.|:|::") || Token::Match(tok2->previous(), "[(;{}] %cop%|(")) {
                     init1 = tok2;
                     AST_state state1(cpp);
                     compileExpression(tok2, state1);
