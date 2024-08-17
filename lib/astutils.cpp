@@ -738,6 +738,8 @@ std::vector<ValueType> getParentValueTypes(const Token* tok, const Settings& set
                         continue;
                     nameTok = var->nameToken();
                     result.push_back(*var->valueType());
+                    if (var->isArray())
+                        result.back().pointer += var->dimensions().size();
                 }
                 if (result.size() == 1 && nameTok && parent) {
                     *parent = nameTok;
