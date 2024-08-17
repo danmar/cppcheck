@@ -12404,6 +12404,13 @@ private:
               "    if (!ptr || !ptr()) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void g(bool b[2]);\n" // #12822
+              "void f() {\n"
+              "    bool b[2] = {};\n"
+              "    g(b);\n"
+              "}");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void iterateByValue() {
