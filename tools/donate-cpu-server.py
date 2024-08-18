@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.55"
+SERVER_VERSION = "1.3.56"
 
 OLD_VERSION = '2.14.0'
 
@@ -1334,7 +1334,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             continue
         elif cmd.startswith('write\nftp://') or cmd.startswith('write\nhttp://'):
             t_start = time.perf_counter()
-            data = read_data(connection, cmd, pos_nl, max_data_size=2.5 * 1024 * 1024, check_done=True, cmd_name='write')
+            data = read_data(connection, cmd, pos_nl, max_data_size=10 * 1024 * 1024, check_done=True, cmd_name='write')
             if data is None:
                 continue
 
