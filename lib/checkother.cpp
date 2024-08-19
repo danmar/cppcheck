@@ -1609,6 +1609,7 @@ void CheckOther::checkConstPointer()
 {
     if (!mSettings->severity.isEnabled(Severity::style) &&
         !mSettings->isPremiumEnabled("constParameter") &&
+        !mSettings->isPremiumEnabled("constParameterPointer") &&
         !mSettings->isPremiumEnabled("constParameterReference") &&
         !mSettings->isPremiumEnabled("constPointer"))
         return;

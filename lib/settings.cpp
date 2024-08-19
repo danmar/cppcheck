@@ -316,7 +316,36 @@ void Settings::setCheckLevel(CheckLevel level)
     }
 }
 
-// TODO: auto generate these tables
+// These tables are auto generated from Cppcheck Premium script
+
+static const std::set<std::string> cweCheckers{
+    "StlMissingComparison",
+    "assignBoolToPointer",
+    "autovarInvalidDeallocation",
+    "deallocuse",
+    "derefInvalidIterator",
+    "doubleFree",
+    "funcArgOrderDifferent",
+    "globalLockGuard",
+    "ignoredReturnValue",
+    "invalidTestForOverflow",
+    "invalidscanf",
+    "leakNoVarFunctionCall",
+    "leakReturnValNotUsed",
+    "localMutex",
+    "multiCondition",
+    "raceAfterInterlockedDecrement",
+    "resourceLeak",
+    "rethrowNoCurrentException",
+    "signConversion",
+    "signedCharArrayIndex",
+    "stlIfStrFind",
+    "unhandledExceptionSpecification",
+    "unknownEvaluationOrder",
+    "useClosedFile",
+    "varFuncNullUB",
+    "virtualDestructor"
+};
 
 static const std::set<std::string> autosarCheckers{
     "accessMoved",
