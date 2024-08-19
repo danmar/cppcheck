@@ -241,6 +241,17 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
         fout << std::endl << std::endl;
         fout << "Misra C " << misra << std::endl;
         fout << "------------" << std::endl;
+        for (const checkers::MisraInfo& info: checkers::misraC2012Directives) {
+            const std::string directive = "Dir " + std::to_string(info.a) + "." + std::to_string(info.b);
+            const bool active = isMisraRuleActive(mActiveCheckers, directive);
+            fout << (active ? "Yes  " : "No   ") << "Misra C " << misra << ": " << directive;
+            std::string extra;
+            if (misra == 2012 && info.amendment >= 1)
+                extra = " amendment:" + std::to_string(info.amendment);
+            if (!extra.empty())
+                fout << std::string(10 - directive.size(), ' ') << extra;
+            fout << '\n';
+        }
         for (const checkers::MisraInfo& info: checkers::misraC2012Rules) {
             const std::string rule = std::to_string(info.a) + "." + std::to_string(info.b);
             const bool active = isMisraRuleActive(mActiveCheckers, rule);
@@ -254,7 +265,7 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
             if (!active && !reqs.empty())
                 extra += " require:" + reqs.substr(1);
             if (!extra.empty())
-                fout << std::string(7 - rule.size(), ' ') << extra;
+                fout << std::string(10 - rule.size(), ' ') << extra;
             fout << '\n';
         }
     }

@@ -836,6 +836,31 @@ namespace checkers {
     const char Man[] = "Mandatory";
     const char Doc[] = "Document";
 
+    const std::vector<MisraInfo> misraC2012Directives =
+    {
+        {1,1,Req,0},
+        {2,1,Req,0},
+        {3,1,Req,0},
+        {4,1,Req,0},
+        {4,2,Adv,0},
+        {4,3,Req,0},
+        {4,4,Adv,0},
+        {4,5,Adv,0},
+        {4,6,Adv,3},
+        {4,7,Req,0},
+        {4,8,Adv,0},
+        {4,9,Adv,3},
+        {4,10,Req,0},
+        {4,11,Req,3},
+        {4,12,Req,0},
+        {4,13,Adv,0},
+        {4,14,Req,2},
+        {4,15,Req,3},
+        {5,1,Req,4},
+        {5,2,Req,4},
+        {5,3,Req,4},
+    };
+
     const std::vector<MisraInfo> misraC2012Rules =
     {
         {1,1,Req,0},
