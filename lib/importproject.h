@@ -103,7 +103,7 @@ protected:
 
 private:
     struct SharedItemsProject {
-        bool successFull;
+        bool successful;
         std::string pathToProjectFile;
         std::vector<std::string> includePaths;
         std::vector<std::string> sourceFiles;

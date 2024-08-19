@@ -769,9 +769,9 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                             // unless the string starts with $(SolutionDir)
                             std::string pathToSharedItemsFile;
                             if (std::string(projectAttribute).rfind("$(SolutionDir)", 0) == 0) {
-                                pathToSharedItemsFile = std::string(projectAttribute);
+                                pathToSharedItemsFile = projectAttribute;
                             } else {
-                                pathToSharedItemsFile = variables["ProjectDir"] + std::string(projectAttribute);
+                                pathToSharedItemsFile = variables["ProjectDir"] + projectAttribute;
                             }
                             if (!simplifyPathWithVariables(pathToSharedItemsFile, variables)) {
                                 printError("Could not simplify path to referenced shared items project");
@@ -779,7 +779,7 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                             }
 
                             SharedItemsProject toAdd = importVcxitems(pathToSharedItemsFile, fileFilters, cache);
-                            if (!toAdd.successFull) {
+                            if (!toAdd.successful) {
                                 printError("Could not load shared items project \"" + pathToSharedItemsFile + "\" from original path \"" + std::string(projectAttribute) + "\".");
                                 return false;
                             }
@@ -868,7 +868,7 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
     auto isInCacheCheck = [filename](const ImportProject::SharedItemsProject& e) -> bool {
         return filename == e.pathToProjectFile;
     };
-    auto iterator = std::find_if(cache.begin(), cache.end(), isInCacheCheck);
+    const auto iterator = std::find_if(cache.begin(), cache.end(), isInCacheCheck);
     if (iterator != std::end(cache)) {
         return *iterator;
     }
@@ -920,7 +920,7 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
         }
     }
 
-    result.successFull = true;
+    result.successful = true;
     cache.emplace_back(result);
     return result;
 }
