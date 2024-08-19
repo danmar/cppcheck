@@ -48,6 +48,7 @@ namespace checkers {
     extern CPPCHECKLIB const char Man[]; // = "Mandatory";
     extern CPPCHECKLIB const char Doc[]; // = "Document";
 
+    extern CPPCHECKLIB const std::vector<MisraInfo> misraC2012Directives;
     extern CPPCHECKLIB const std::vector<MisraInfo> misraC2012Rules;
     extern CPPCHECKLIB const std::vector<MisraCppInfo> misraCpp2008Rules;
     extern CPPCHECKLIB const std::vector<MisraCppInfo> misraCpp2023Rules;
