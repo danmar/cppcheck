@@ -316,7 +316,7 @@ void Settings::setCheckLevel(CheckLevel level)
     }
 }
 
-// TODO: auto generate these tables
+// These tables are auto generated from Cppcheck Premium script
 
 static const std::set<std::string> autosarCheckers{
     "accessMoved",
