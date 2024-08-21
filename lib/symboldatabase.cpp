@@ -7166,6 +7166,8 @@ static const Token* parsedecl(const Token* type,
            !type->variable() && !type->function()) {
         bool isIterator = false;
         if (type->str() == "(") {
+            if (!Token::simpleMatch(type, "( *"))
+                break;
             if (Token::Match(type->link(), ") const| {"))
                 break;
             if (par)
