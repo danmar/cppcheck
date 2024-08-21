@@ -153,7 +153,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         return endInitList.top().second == scope;
     };
 
-    bool inIfCondition = false;
+    std::stack<const Token*> inIfCondition;
 
     auto addLambda = [this, &scope](const Token* tok, const Token* lambdaEndToken) -> const Token* {
         const Token* lambdaStartToken = lambdaEndToken->link();
@@ -735,7 +735,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 else if (scope->type == Scope::eCatch)
                     scope->checkVariable(tok->tokAt(2), AccessControl::Throw, mSettings); // check for variable declaration and add it to new scope if found
                 tok = tok->next();
-                inIfCondition = true;
+                inIfCondition.push(tok->link()->next());
             } else if (Token::Match(tok, "%var% {")) {
                 endInitList.emplace(tok->linkAt(1), scope);
                 tok = tok->next();
@@ -744,8 +744,8 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             } else if (tok->str() == "{") {
                 if (inInitList()) {
                     endInitList.emplace(tok->link(), scope);
-                } else if (inIfCondition) {
-                    inIfCondition = false;
+                } else if (!inIfCondition.empty() && tok == inIfCondition.top()) {
+                    inIfCondition.pop();
                 } else if (isExecutableScope(tok)) {
                     scopeList.emplace_back(this, tok, scope, Scope::eUnconditional, tok);
                     scope->nestedList.push_back(&scopeList.back());
