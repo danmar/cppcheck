@@ -735,6 +735,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 else if (scope->type == Scope::eCatch)
                     scope->checkVariable(tok->tokAt(2), AccessControl::Throw, mSettings); // check for variable declaration and add it to new scope if found
                 tok = tok->next();
+                inIfCondition = true;
             } else if (Token::Match(tok, "%var% {")) {
                 endInitList.emplace(tok->linkAt(1), scope);
                 tok = tok->next();
