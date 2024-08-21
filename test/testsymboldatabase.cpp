@@ -433,6 +433,7 @@ private:
         TEST_CASE(createSymbolDatabaseFindAllScopes6);
         TEST_CASE(createSymbolDatabaseFindAllScopes7);
         TEST_CASE(createSymbolDatabaseFindAllScopes8); // #12761
+        TEST_CASE(createSymbolDatabaseFindAllScopes9);
 
         TEST_CASE(createSymbolDatabaseIncompleteVars);
 
@@ -5847,6 +5848,15 @@ private:
         ASSERT(myst1);
         ASSERT(myst2);
         ASSERT(myst1->scope() != myst2->scope());
+    }
+
+    void createSymbolDatabaseFindAllScopes9() // #12943
+    {
+        GET_SYMBOL_DB("void f(int n) {\n"
+                      "    if ([](int i) { return i == 2; }(n)) {}\n"
+                      "}\n");
+        ASSERT(db && db->scopeList.size() == 4);
+        ASSERT_EQUALS(db->scopeList.back().type, Scope::eLambda);
     }
 
     void createSymbolDatabaseIncompleteVars()
