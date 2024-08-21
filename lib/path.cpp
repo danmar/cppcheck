@@ -164,7 +164,8 @@ std::string Path::getCurrentExecutablePath(const char* fallback)
 #else // Linux
         "/proc/self/exe";
 #endif
-    success = (readlink(procPath, buf, sizeof(buf)) != -1);
+    // readlink does not null-terminate the string if the buffer is too small, therefore write bufsize - 1
+    success = (readlink(procPath, buf, sizeof(buf) - 1) != -1);
 #endif
     return success ? std::string(buf) : std::string(fallback);
 }
