@@ -873,7 +873,7 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
         return *iterator;
     }
 
-    SharedItemsProject result{};
+    SharedItemsProject result;
     result.pathToProjectFile = filename;
 
     tinyxml2::XMLDocument doc;
@@ -910,7 +910,7 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
         } else if (std::strcmp(node->Name(), "ItemDefinitionGroup") == 0) {
             ItemDefinitionGroup temp(node, "");
             for (const auto& includePath : toStringList(temp.additionalIncludePaths)) {
-                if (includePath == std::string("%(AdditionalIncludeDirectories)"))
+                if (includePath == "%(AdditionalIncludeDirectories)")
                     continue;
 
                 std::string toAdd(includePath);
