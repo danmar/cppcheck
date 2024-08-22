@@ -41,8 +41,8 @@ jobs:
         run: |
           echo cppcheck > cppcheck.lic
           echo 241231 >> cppcheck.lic
-          echo 80000 >> cppcheck.lic
-          echo 53b72a908d7aeeee >> cppcheck.lic
+          echo 100000 >> cppcheck.lic
+          echo ca9b55281c52e097 >> cppcheck.lic
           echo path:lib >> cppcheck.lic
 
       - name: Check
