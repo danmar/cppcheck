@@ -56,8 +56,6 @@ premium-cert-exp55-cpp
 premium-misra-cpp-2023-6.5.1:lib/symboldatabase.cpp
 premium-misra-cpp-2023-6.7.2
 premium-misra-cpp-2023-8.18.2
-# False positives: #13004
-premium-misra-cpp-2023-8.2.7:lib/valueflow.cpp
 premium-misra-cpp-2023-8.2.7:lib/checkclass.cpp
 
 
