@@ -76,8 +76,8 @@ SymbolDatabase::SymbolDatabase(Tokenizer& tokenizer, const Settings& settings, E
     createSymbolDatabaseVariableSymbolTable();
     createSymbolDatabaseSetScopePointers();
     createSymbolDatabaseSetVariablePointers();
-    setValueTypeInTokenList(false);
     createSymbolDatabaseSetTypePointers();
+    setValueTypeInTokenList(false);
     createSymbolDatabaseSetFunctionPointers(true);
     createSymbolDatabaseSetSmartPointerType();
     setValueTypeInTokenList(false);
