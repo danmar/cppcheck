@@ -3821,7 +3821,8 @@ static void valueFlowConditionExpressions(const TokenList &tokenlist, const Symb
                 continue;
             if (!isConstExpression(condTok, settings.library))
                 continue;
-            const bool is1 = (condTok->isComparisonOp() || condTok->tokType() == Token::eLogicalOp || astIsBool(condTok));
+            const bool isOp = condTok->isComparisonOp() || condTok->tokType() == Token::eLogicalOp;
+            const bool is1 = isOp || astIsBool(condTok);
 
             Token* startTok = blockTok;
             // Inner condition
@@ -3848,7 +3849,7 @@ static void valueFlowConditionExpressions(const TokenList &tokenlist, const Symb
                     valueFlowGenericForward(startTok, startTok->link(), a1, tokenlist, errorLogger, settings);
 
                     if (is1) {
-                        OppositeExpressionAnalyzer a2(true, condTok2, makeConditionValue(1, condTok2, false, false, settings), settings);
+                        OppositeExpressionAnalyzer a2(true, condTok2, makeConditionValue(isOp, condTok2, false, false, settings), settings);
                         valueFlowGenericForward(startTok, startTok->link(), a2, tokenlist, errorLogger, settings);
                     }
                 }
