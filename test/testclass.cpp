@@ -185,6 +185,7 @@ private:
         TEST_CASE(const91);
         TEST_CASE(const92);
         TEST_CASE(const93);
+        TEST_CASE(const94);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -6689,6 +6690,19 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Technically the member function 'S::f' can be const.\n"
                       "[test.cpp:5]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
                       errout_str());
+    }
+
+    void const94() { // #7459
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    A() : tickFunction(&A::nop) {}\n"
+                   "    void tick() { (this->*tickFunction)(); }\n"
+                   "private:\n"
+                   "    typedef void (A::* Fn)();\n"
+                   "    Fn tickFunction;\n"
+                   "    void nop() {}\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void const_handleDefaultParameters() {
