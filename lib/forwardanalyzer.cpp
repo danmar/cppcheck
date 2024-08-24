@@ -480,7 +480,7 @@ namespace {
             if (!checkThen && !checkElse && !isDoWhile && stopOnCondition(condTok) && stopUpdates())
                 return Break(Analyzer::Terminate::Conditional);
             // condition is false, we don't enter the loop
-            if (checkElse)
+            if (checkElse && !isDoWhile)
                 return Progress::Continue;
             if (checkThen || isDoWhile) {
                 // Since we are re-entering the loop then assume the condition is true to update the state
