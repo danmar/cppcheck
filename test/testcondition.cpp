@@ -5108,6 +5108,22 @@ private:
               "    if ((128 + i < 255 ? 128 + i : 255) > 0) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S {\n" // #12727
+              "    bool f() const {\n"
+              "        return g() > 0;\n"
+              "    }\n"
+              "    std::size_t g() const {\n"
+              "        return 5 - h();\n"
+              "    }\n"
+              "    std::size_t h() const {\n"
+              "        if (x > 7)\n"
+              "            return 5;\n"
+              "        return (5 + x) % 5;\n"
+              "    }\n"
+              "    std::size_t x;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void alwaysTrueContainer() {
