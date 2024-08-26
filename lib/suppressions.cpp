@@ -85,10 +85,16 @@ std::string SuppressionList::parseFile(std::istream &istr)
         if (line.empty())
             continue;
 
-        // Skip comments
-        if (line.length() > 1 && line[0] == '#')
+        std::string::size_type pos = 0;
+        while (pos < line.size() && std::isspace(line[pos]))
+            ++pos;
+        if (pos == line.size())
             continue;
-        if (line.length() >= 2 && line[0] == '/' && line[1] == '/')
+
+        // Skip comments
+        if (line[pos] == '#')
+            continue;
+        if (pos < line.size() - 1 && line[pos] == '/' && line[pos + 1] == '/')
             continue;
 
         const std::string errmsg(addSuppressionLine(line));
