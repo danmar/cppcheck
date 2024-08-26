@@ -967,6 +967,12 @@ private:
         SuppressionList suppressions6;
         ASSERT_EQUALS("", suppressions6.parseFile(file6));
         ASSERT_EQUALS(true, suppressions6.isSuppressed(errorMessage("abc", "test.cpp", 123)));
+
+        std::istringstream file7(" // comment\n" // #11450
+                                 "abc");
+        SuppressionList suppressions7;
+        ASSERT_EQUALS("", suppressions7.parseFile(file7));
+        ASSERT_EQUALS(true, suppressions7.isSuppressed(errorMessage("abc", "test.cpp", 123)));
     }
 
     void inlinesuppress() const {
