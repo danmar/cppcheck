@@ -1259,10 +1259,20 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 const std::string std = argv[i] + 6;
                 // TODO: print error when standard is unknown
                 if (std::strncmp(std.c_str(), "c++", 3) == 0) {
-                    mSettings.standards.cpp = Standards::getCPP(std);
+                    const Standards::cppstd_t cppstd = Standards::getCPP(std);
+                    if (cppstd == Standards::CPPInvalid) {
+                        mLogger.printError("unknown --std value '" + std + "'");
+                        return Result::Fail;
+                    }
+                    mSettings.standards.cpp = cppstd;
                 }
                 else if (std::strncmp(std.c_str(), "c", 1) == 0) {
-                    mSettings.standards.c = Standards::getC(std);
+                    const Standards::cstd_t cstd = Standards::getC(std);
+                    if (cstd == Standards::CInvalid) {
+                        mLogger.printError("unknown --std value '" + std + "'");
+                        return Result::Fail;
+                    }
+                    mSettings.standards.c = cstd;
                 }
                 else {
                     mLogger.printError("unknown --std value '" + std + "'");

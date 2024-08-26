@@ -38,10 +38,10 @@ struct Standards {
     enum Language : std::uint8_t { None, C, CPP };
 
     /** C code standard */
-    enum cstd_t : std::uint8_t { C89, C99, C11, C17, C23, CLatest = C23 } c = CLatest;
+    enum cstd_t : std::uint8_t { C89, C99, C11, C17, C23, CLatest = C23, CInvalid } c = CLatest;
 
     /** C++ code standard */
-    enum cppstd_t : std::uint8_t { CPP03, CPP11, CPP14, CPP17, CPP20, CPP23, CPP26, CPPLatest = CPP26 } cpp = CPPLatest;
+    enum cppstd_t : std::uint8_t { CPP03, CPP11, CPP14, CPP17, CPP20, CPP23, CPP26, CPPLatest = CPP26, CPPInvalid } cpp = CPPLatest;
 
     /** --std value given on command line */
     std::string stdValue;
@@ -64,6 +64,8 @@ struct Standards {
             return "c17";
         case C23:
             return "c23";
+        case CInvalid:
+            return "";
         }
         return "";
     }
@@ -83,7 +85,7 @@ struct Standards {
         if (std == "c23") {
             return Standards::C23;
         }
-        return Standards::CLatest;
+        return Standards::CInvalid;
     }
     bool setCPP(std::string str) {
         stdValue = str;
@@ -110,6 +112,8 @@ struct Standards {
             return "c++23";
         case CPP26:
             return "c++26";
+        case CPPInvalid:
+            return "";
         }
         return "";
     }
@@ -135,7 +139,7 @@ struct Standards {
         if (std == "c++26") {
             return Standards::CPP26;
         }
-        return Standards::CPPLatest;
+        return Standards::CPPInvalid;
     }
 };
 
