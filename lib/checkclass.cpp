@@ -2111,6 +2111,8 @@ void CheckClass::checkConst()
             // don't warn for friend/static/virtual functions
             if (func.isFriend() || func.isStatic() || func.hasVirtualSpecifier())
                 continue;
+            if (func.functionPointerUsage)
+                continue;
 
             // don't suggest const when returning non-const pointer/reference, but still suggest static
             auto isPointerOrReference = [this](const Token* start, const Token* end) -> bool {
