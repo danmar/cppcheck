@@ -1369,8 +1369,8 @@ private:
     void stdunknown2() {
         REDIRECT;
         const char *const argv[] = {"cppcheck", "--std=cplusplus11", "file.cpp"};
-        TODO_ASSERT_EQUALS(static_cast<int>(CmdLineParser::Result::Fail), static_cast<int>(CmdLineParser::Result::Success), static_cast<int>(parser->parseFromArgs(3, argv)));
-        TODO_ASSERT_EQUALS("cppcheck: error: unknown --std value 'cplusplus11'\n", "", logger->str());
+        ASSERT_EQUALS(static_cast<int>(CmdLineParser::Result::Fail), static_cast<int>(parser->parseFromArgs(3, argv)));
+        ASSERT_EQUALS("cppcheck: error: unknown --std value 'cplusplus11'\n", logger->str());
     }
 
     void platformWin64() {
