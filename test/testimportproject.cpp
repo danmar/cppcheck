@@ -62,6 +62,7 @@ private:
         TEST_CASE(importCompileCommands9);
         TEST_CASE(importCompileCommands10); // #10887: include path with space
         TEST_CASE(importCompileCommands11); // include path order
+        TEST_CASE(importCompileCommands12); // #13040: "directory" is parent directory, relative include paths
         TEST_CASE(importCompileCommandsArgumentsSection); // Handle arguments section
         TEST_CASE(importCompileCommandsNoCommandSection); // gracefully handles malformed json
         TEST_CASE(importCppcheckGuiProject);
@@ -317,6 +318,23 @@ private:
         const FileSettings &fs = importer.fileSettings.front();
         ASSERT_EQUALS("/x/def/", fs.includePaths.front());
         ASSERT_EQUALS("/x/abc/", fs.includePaths.back());
+    }
+
+    void importCompileCommands12() const { // #13040
+        REDIRECT;
+        constexpr char json[] =
+            R"([{
+               "file": "/x/src/1.c" ,
+               "directory": "/x",
+               "command": "cc -c -I. src/1.c"
+            }])";
+        std::istringstream istr(json);
+        TestImporter importer;
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
+        ASSERT_EQUALS(1, importer.fileSettings.size());
+        const FileSettings &fs = importer.fileSettings.front();
+        ASSERT_EQUALS(1, fs.includePaths.size());
+        ASSERT_EQUALS("/x/", fs.includePaths.front());
     }
 
     void importCompileCommandsArgumentsSection() const {

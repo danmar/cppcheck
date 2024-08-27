@@ -164,7 +164,7 @@ void ImportProject::fsSetIncludePaths(FileSettings& fs, const std::string &basep
         }
 
         if (endsWith(s,'/')) // this is a temporary hack, simplifyPath can crash if path ends with '/'
-            s.erase(s.size() - 1U); // TODO: Use std::string::pop_back() as soon as travis supports it
+            s.pop_back();
 
         if (s.find("$(") == std::string::npos) {
             s = Path::simplifyPath(basepath + s);
@@ -174,7 +174,7 @@ void ImportProject::fsSetIncludePaths(FileSettings& fs, const std::string &basep
         }
         if (s.empty())
             continue;
-        fs.includePaths.push_back(s + '/');
+        fs.includePaths.push_back(s.back() == '/' ? s : (s + '/'));
     }
 }
 
