@@ -315,7 +315,7 @@ bool ImportProject::fsParseCommand(FileSettings& fs, const std::string& command)
             (void)Standards::getCPP(fs.standard, unknown_std);
             if (unknown_std) (void)Standards::getC(fs.standard, unknown_std);
             if (unknown_std) {
-                printError("unkown --std value '" + fs.standard + "'");
+                printError("unknown --std value '" + fs.standard + "'");
                 return false;
             }
         } else if (F == 'i' && fval == "system") {
