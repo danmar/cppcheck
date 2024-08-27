@@ -289,7 +289,7 @@ bool ImportProject::fsParseCommand(FileSettings& fs, const std::string& command)
             while (pos < command.size() && command[pos] == ' ')
                 ++pos;
         }
-        const std::string fval = readUntil(command, &pos, " =:");
+        const std::string fval = readUntil(command, &pos, " =");
         if (F=='D') {
             std::string defval = readUntil(command, &pos, " ");
             defs += fval;
@@ -309,8 +309,12 @@ bool ImportProject::fsParseCommand(FileSettings& fs, const std::string& command)
             if (std::find(fs.includePaths.cbegin(), fs.includePaths.cend(), i) == fs.includePaths.cend())
                 fs.includePaths.push_back(std::move(i));
         } else if (F=='s' && startsWith(fval,"td")) {
-            ++pos;
-            fs.standard = readUntil(command, &pos, " ");
+            if (command[pos] == '=') {
+                ++pos;
+                fs.standard = readUntil(command, &pos, " ");
+            } else {
+                fs.standard = fval.substr(3);
+            }
             bool unknown_std = false;
             (void)Standards::getCPP(fs.standard, unknown_std);
             if (unknown_std) (void)Standards::getC(fs.standard, unknown_std);
