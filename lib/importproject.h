@@ -100,9 +100,18 @@ protected:
     bool importCompileCommands(std::istream &istr);
     bool importCppcheckGuiProject(std::istream &istr, Settings *settings);
     virtual bool sourceFileExists(const std::string &file);
+
 private:
+    struct SharedItemsProject {
+        bool successful = false;
+        std::string pathToProjectFile;
+        std::vector<std::string> includePaths;
+        std::vector<std::string> sourceFiles;
+    };
+
     bool importSln(std::istream &istr, const std::string &path, const std::vector<std::string> &fileFilters);
-    bool importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters);
+    static SharedItemsProject importVcxitems(const std::string &filename, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
+    bool importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
     bool importBcb6Prj(const std::string &projectFilename);
 
     static void printError(const std::string &message);
