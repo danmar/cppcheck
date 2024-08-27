@@ -268,7 +268,7 @@ static std::string unescape(const std::string &in)
     return out;
 }
 
-void ImportProject::fsParseCommand(FileSettings& fs, const std::string& command)
+bool ImportProject::fsParseCommand(FileSettings& fs, const std::string& command)
 {
     std::string defs;
 
@@ -311,6 +311,13 @@ void ImportProject::fsParseCommand(FileSettings& fs, const std::string& command)
         } else if (F=='s' && startsWith(fval,"td")) {
             ++pos;
             fs.standard = readUntil(command, &pos, " ");
+            bool unknown_std = false;
+            (void)Standards::getCPP(fs.standard, unknown_std);
+            if (unknown_std) (void)Standards::getC(fs.standard, unknown_std);
+            if (unknown_std) {
+                printError("unkown --std value '" + fs.standard + "'");
+                return false;
+            }
         } else if (F == 'i' && fval == "system") {
             ++pos;
             std::string isystem = readUntil(command, &pos, " ");
@@ -339,6 +346,7 @@ void ImportProject::fsParseCommand(FileSettings& fs, const std::string& command)
         }
     }
     fsSetDefines(fs, std::move(defs));
+    return true;
 }
 
 bool ImportProject::importCompileCommands(std::istream &istr)
@@ -416,7 +424,8 @@ bool ImportProject::importCompileCommands(std::istream &istr)
             return false;
         }
         FileSettings fs{std::move(path)};
-        fsParseCommand(fs, command); // read settings; -D, -I, -U, -std, -m*, -f*
+        // read settings; -D, -I, -U, -std, -m*, -f*
+        if (!fsParseCommand(fs, command)) return false;
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         fsSetIncludePaths(fs, directory, fs.includePaths, variables);
         fileSettings.push_back(std::move(fs));

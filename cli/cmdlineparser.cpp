@@ -1257,23 +1257,17 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             // --std
             else if (std::strncmp(argv[i], "--std=", 6) == 0) {
                 const std::string std = argv[i] + 6;
+                bool unknown = false;
                 if (std::strncmp(std.c_str(), "c++", 3) == 0) {
-                    const Standards::cppstd_t cppstd = Standards::getCPP(std);
-                    if (cppstd == Standards::CPPInvalid) {
-                        mLogger.printError("unknown --std value '" + std + "'");
-                        return Result::Fail;
-                    }
-                    mSettings.standards.cpp = cppstd;
+                    mSettings.standards.cpp = Standards::getCPP(std, unknown);
                 }
                 else if (std::strncmp(std.c_str(), "c", 1) == 0) {
-                    const Standards::cstd_t cstd = Standards::getC(std);
-                    if (cstd == Standards::CInvalid) {
-                        mLogger.printError("unknown --std value '" + std + "'");
-                        return Result::Fail;
-                    }
-                    mSettings.standards.c = cstd;
+                    mSettings.standards.c = Standards::getC(std, unknown);
                 }
                 else {
+                    unknown = true;
+                }
+                if (unknown) {
                     mLogger.printError("unknown --std value '" + std + "'");
                     return Result::Fail;
                 }

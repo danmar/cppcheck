@@ -38,10 +38,10 @@ struct Standards {
     enum Language : std::uint8_t { None, C, CPP };
 
     /** C code standard */
-    enum cstd_t : std::uint8_t { C89, C99, C11, C17, C23, CLatest = C23, CInvalid } c = CLatest;
+    enum cstd_t : std::uint8_t { C89, C99, C11, C17, C23, CLatest = C23 } c = CLatest;
 
     /** C++ code standard */
-    enum cppstd_t : std::uint8_t { CPP03, CPP11, CPP14, CPP17, CPP20, CPP23, CPP26, CPPLatest = CPP26, CPPInvalid } cpp = CPPLatest;
+    enum cppstd_t : std::uint8_t { CPP03, CPP11, CPP14, CPP17, CPP20, CPP23, CPP26, CPPLatest = CPP26 } cpp = CPPLatest;
 
     /** --std value given on command line */
     std::string stdValue;
@@ -64,12 +64,15 @@ struct Standards {
             return "c17";
         case C23:
             return "c23";
-        case CInvalid:
-            return "";
         }
         return "";
     }
     static cstd_t getC(const std::string &std) {
+        bool _unused;
+        return getC(std, _unused);
+    }
+    static cstd_t getC(const std::string &std, bool &unknown) {
+        unknown = false;
         if (std == "c89") {
             return Standards::C89;
         }
@@ -85,7 +88,8 @@ struct Standards {
         if (std == "c23") {
             return Standards::C23;
         }
-        return Standards::CInvalid;
+        unknown = true;
+        return Standards::CLatest;
     }
     bool setCPP(std::string str) {
         stdValue = str;
@@ -112,12 +116,15 @@ struct Standards {
             return "c++23";
         case CPP26:
             return "c++26";
-        case CPPInvalid:
-            return "";
         }
         return "";
     }
     static cppstd_t getCPP(const std::string &std) {
+        bool _unused;
+        return getCPP(std, _unused);
+    }
+    static cppstd_t getCPP(const std::string &std, bool &unknown) {
+        unknown = false;
         if (std == "c++03") {
             return Standards::CPP03;
         }
@@ -139,7 +146,8 @@ struct Standards {
         if (std == "c++26") {
             return Standards::CPP26;
         }
-        return Standards::CPPInvalid;
+        unknown = true;
+        return Standards::CPPLatest;
     }
 };
 
