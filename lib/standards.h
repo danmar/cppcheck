@@ -149,6 +149,33 @@ struct Standards {
         unknown = true;
         return Standards::CPPLatest;
     }
+    static cppstd_t getGnuCPP(const std::string &std, bool &unknown) {
+        // treat gnu++XX as c++XX
+        unknown = false;
+        if (std == "gnu++03") {
+            return Standards::CPP03;
+        }
+        if (std == "gnu++11") {
+            return Standards::CPP11;
+        }
+        if (std == "gnu++14") {
+            return Standards::CPP14;
+        }
+        if (std == "gnu++17") {
+            return Standards::CPP17;
+        }
+        if (std == "gnu++20") {
+            return Standards::CPP20;
+        }
+        if (std == "gnu++23") {
+            return Standards::CPP23;
+        }
+        if (std == "gnu++26") {
+            return Standards::CPP26;
+        }
+        unknown = true;
+        return Standards::CPPLatest;
+    }
 };
 
 /// @}

@@ -319,8 +319,12 @@ bool ImportProject::fsParseCommand(FileSettings& fs, const std::string& command)
             (void)Standards::getCPP(fs.standard, unknown_std);
             if (unknown_std) (void)Standards::getC(fs.standard, unknown_std);
             if (unknown_std) {
-                printError("unknown --std value '" + fs.standard + "'");
-                return false;
+                const Standards::cppstd_t gnustd = Standards::getGnuCPP(fs.standard, unknown_std);
+                if (unknown_std) {
+                    printError("unknown --std value '" + fs.standard + "'");
+                    return false;
+                }
+                fs.standard = Standards::getCPP(gnustd);
             }
         } else if (F == 'i' && fval == "system") {
             ++pos;
