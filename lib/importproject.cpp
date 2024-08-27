@@ -289,7 +289,7 @@ bool ImportProject::fsParseCommand(FileSettings& fs, const std::string& command)
             while (pos < command.size() && command[pos] == ' ')
                 ++pos;
         }
-        const std::string fval = readUntil(command, &pos, " =");
+        const std::string fval = readUntil(command, &pos, " =:");
         if (F=='D') {
             std::string defval = readUntil(command, &pos, " ");
             defs += fval;
