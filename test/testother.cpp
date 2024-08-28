@@ -2332,7 +2332,7 @@ private:
               "    char a[20];\n"
               "};\n");
         ASSERT_EQUALS("", errout_str());
-        
+
         check("void f(const std::vector<int> v[2]);\n" // #13052
               "int g(const std::array<std::vector<int>, 2> a) { return a[0][0]; }\n");
         ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'a' should be passed by const reference.\n", errout_str());
