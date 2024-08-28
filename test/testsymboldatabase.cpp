@@ -678,7 +678,8 @@ private:
         ASSERT_EQUALS(1U, (*it)->dimensions().size());
         ASSERT_EQUALS(4U, (*it)->dimension(0));
         const ValueType* vt = (*it)->valueType();
-        ASSERT(vt && vt->container);
+        ASSERT(vt);
+        ASSERT(vt->container);
         ASSERT_EQUALS(vt->pointer, 0);
         const Token* tok = (*it)->nameToken();
         ASSERT(tok && (vt = tok->valueType()));
@@ -1904,7 +1905,8 @@ private:
         ASSERT(function && function->functionScope == scope && scope->function == function && function->nestedIn == db->findScopeByName("Fred"));
         ASSERT(function && function->retDef == functionToken->previous());
 
-        ASSERT(db && db->findScopeByName("Fred") && db->findScopeByName("Fred")->definedType->getFunction("func") == function);
+        ASSERT(db);
+        ASSERT(db->findScopeByName("Fred") && db->findScopeByName("Fred")->definedType->getFunction("func") == function);
     }
 
 
@@ -1930,7 +1932,8 @@ private:
         ASSERT(function && function->functionScope == scope && scope->function == function && function->nestedIn == db->findScopeByName("Fred"));
         ASSERT(function && function->retDef == functionToken->tokAt(4));
 
-        ASSERT(db && db->findScopeByName("Fred") && db->findScopeByName("Fred")->definedType->getFunction("func") == function);
+        ASSERT(db);
+        ASSERT(db->findScopeByName("Fred") && db->findScopeByName("Fred")->definedType->getFunction("func") == function);
     }
 
     void hasMissingInlineClassFunction() {
@@ -1974,7 +1977,8 @@ private:
         ASSERT(function && function->functionScope == scope && scope->function == function && function->nestedIn == db->findScopeByName("Fred"));
         ASSERT(function && function->retDef == functionToken->tokAt(-2));
 
-        ASSERT(db && db->findScopeByName("Fred") && db->findScopeByName("Fred")->definedType->getFunction("operator=") == function);
+        ASSERT(db);
+        ASSERT(db->findScopeByName("Fred") && db->findScopeByName("Fred")->definedType->getFunction("operator=") == function);
     }
 
     void hasClassFunction() {
