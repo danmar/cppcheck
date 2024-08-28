@@ -697,14 +697,14 @@ static void writeFunction(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData
     }
     if (!function.notOverlappingDataArgs.isEmpty()) {
         xmlWriter.writeStartElement("not-overlapping-data");
-        foreach (const QString& value, function.notOverlappingDataArgs) {
+        for (const QString& value : function.notOverlappingDataArgs) {
             xmlWriter.writeAttribute(function.notOverlappingDataArgs.key(value), value);
         }
         xmlWriter.writeEndElement();
     }
     if (!function.containerAttributes.isEmpty()) {
         xmlWriter.writeStartElement("container");
-        foreach (const QString& value, function.containerAttributes) {
+        for (const QString& value : function.containerAttributes) {
             xmlWriter.writeAttribute(function.containerAttributes.key(value), value);
         }
         xmlWriter.writeEndElement();
