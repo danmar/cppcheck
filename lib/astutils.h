@@ -389,8 +389,6 @@ bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive = nullptr)
 
 bool isAliasOf(const Token* tok, const Token* expr, int* indirect = nullptr, bool* inconclusive = nullptr);
 
-bool isAliased(const Variable *var);
-
 const Token* getArgumentStart(const Token* ftok);
 
 /** Determines the number of arguments - if token is a function call or macro
