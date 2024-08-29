@@ -26,7 +26,7 @@ def copy_cppcheck_premium(tmpdir):
                     "addons": [],
                     "productName": "NAME",
                     "about": "NAME",
-                    "safety": false
+                    "safety": true
                 }
                 """.replace('NAME', PRODUCT_NAME))
 
@@ -43,7 +43,13 @@ def test_misra_c_builtin_style_checks(tmpdir):
         f.write('void foo() { int x; y = 0; }')
 
     exe = copy_cppcheck_premium(tmpdir)
-    _, stdout, stderr = cppcheck(['--premium=autosar', test_file], cppcheck_exe=exe)
-    assert '' in stdout
-    assert '[unusedVariable]' in stderr
 
+    exitcode, _, stderr = cppcheck(['--premium=autosar', '--xml', test_file], cppcheck_exe=exe)
+    assert exitcode == 0
+    assert 'id="unusedVariable"' in stderr
+    assert 'id="checkersReport"' in stderr
+
+    exitcode, _, stderr = cppcheck(['--premium=autosar', '--premium=safety-off', '--xml', test_file], cppcheck_exe=exe)
+    assert exitcode == 0
+    assert 'id="unusedVariable"' in stderr
+    assert 'id="checkersReport"' not in stderr
