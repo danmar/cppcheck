@@ -509,7 +509,7 @@ void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
         programMemoryParseCondition(pm, tok, nullptr, *settings, b);
     const Token* origin = tok;
     const Token* top = tok->astTop();
-    if (top && Token::Match(top->previous(), "for|while|if (") && !Token::simpleMatch(tok->astParent(), "?")) {
+    if (Token::Match(top->previous(), "for|while|if (") && !Token::simpleMatch(tok->astParent(), "?")) {
         origin = top->link()->next();
         if (!b && origin->link()) {
             origin = origin->link();
@@ -1727,8 +1727,6 @@ namespace {
                 return {unknown()};
             for (const Token* tok = scope->bodyStart->next(); precedes(tok, scope->bodyEnd); tok = tok->next()) {
                 const Token* top = tok->astTop();
-                if (!top)
-                    return {unknown()};
 
                 if (Token::simpleMatch(top, "return") && top->astOperand1())
                     return {execute(top->astOperand1())};

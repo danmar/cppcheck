@@ -2307,8 +2307,6 @@ static const Token * getSingleExpressionInBlock(const Token * tok)
     if (!tok)
         return nullptr;
     const Token * top = tok->astTop();
-    if (!top)
-        return nullptr;
     const Token * nextExpression = nextAfterAstRightmostLeaf(top);
     if (!Token::simpleMatch(nextExpression, "; }"))
         return nullptr;

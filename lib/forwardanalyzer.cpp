@@ -585,7 +585,7 @@ namespace {
                     return Break(Analyzer::Terminate::Bail);
                 } else if (tok->str() == ";" && tok->astParent()) {
                     Token* top = tok->astTop();
-                    if (top && Token::Match(top->previous(), "for|while (") && Token::simpleMatch(top->link(), ") {")) {
+                    if (Token::Match(top->previous(), "for|while (") && Token::simpleMatch(top->link(), ") {")) {
                         Token* endCond = top->link();
                         Token* endBlock = endCond->linkAt(1);
                         Token* condTok = getCondTok(top);

@@ -635,7 +635,7 @@ static bool isConditionKnown(const Token* tok, bool then)
     while (parent && (parent->str() == op || parent->str() == "!" || parent->isCast()))
         parent = parent->astParent();
     const Token* top = tok->astTop();
-    if (top && Token::Match(top->previous(), "if|while|for ("))
+    if (Token::Match(top->previous(), "if|while|for ("))
         return parent == top || Token::simpleMatch(parent, ";");
     return parent && parent->str() != op;
 }
@@ -2372,7 +2372,7 @@ const Token* ValueFlow::getEndOfExprScope(const Token* tok, const Scope* default
                     end = varEnd;
 
                 const Token* top = var->nameToken()->astTop();
-                if (top && Token::simpleMatch(top->tokAt(-1), "if (")) { // variable declared in if (...)
+                if (Token::simpleMatch(top->tokAt(-1), "if (")) { // variable declared in if (...)
                     const Token* elseTok = top->link()->linkAt(1);
                     if (Token::simpleMatch(elseTok, "} else {") && tok->scope()->isNestedIn(elseTok->tokAt(2)->scope()))
                         end = tok->scope()->bodyEnd;
@@ -4751,8 +4751,6 @@ struct ConditionHandler {
                     continue;
 
                 const Token* top = tok->astTop();
-                if (!top)
-                    continue;
 
                 if (!Token::Match(top->previous(), "if|while|for (") && !Token::Match(tok->astParent(), "&&|%oror%|?|!"))
                     continue;
@@ -4927,8 +4925,6 @@ struct ConditionHandler {
                         const Settings& settings,
                         const std::set<const Scope*>& skippedFunctions) const {
         traverseCondition(symboldatabase, settings, skippedFunctions, [&](const Condition& cond, Token* condTok, const Scope* scope) {
-            Token* top = condTok->astTop();
-
             const MathLib::bigint path = cond.getPath();
             const bool allowKnown = path == 0;
 
@@ -5003,8 +4999,7 @@ struct ConditionHandler {
                 }
             }
 
-            if (!top)
-                return;
+            Token* top = condTok->astTop();
 
             if (top->previous()->isExpandedMacro()) {
                 for (std::list<ValueFlow::Value>* values : {&thenValues, &elseValues}) {
