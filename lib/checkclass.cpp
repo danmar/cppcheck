@@ -3327,8 +3327,14 @@ static const Variable* getSingleReturnVar(const Scope* scope) {
     if (!start->astOperand1() || start->str() != "return")
         return nullptr;
     const Token* tok = start->astOperand1();
-    if (tok->str() == ".")
+    if (tok->str() == ".") {
+        const Token* top = tok->astOperand1();
+        while (Token::Match(top, "[[.]"))
+            top = top->astOperand1();
+        if (!Token::Match(top, "%var%"))
+            return nullptr;
         tok = tok->astOperand2();
+    }
     return tok->variable();
 }
 
