@@ -9066,6 +9066,23 @@ private:
                                "    std::string foo() && { return s; }\n" // <- used for temporary objects
                                "};\n");
         ASSERT_EQUALS("", errout_str());
+
+        checkReturnByReference("struct S1 {\n" // #13056
+                               "    std::string str;\n"
+                               "    struct T { std::string strT; } mT;\n"
+                               "};\n"
+                               "struct S2 {\n"
+                               "    std::string get1() const {\n"
+                               "        return mS1->str;\n"
+                               "    }\n"
+                               "    std::string get2() const {\n"
+                               "        return mS1->mT.strT;\n"
+                               "    }\n"
+                               "    S1* mS1;\n"
+                               "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (performance) Function 'get1()' should return member 'str' by const reference.\n"
+                      "[test.cpp:9]: (performance) Function 'get2()' should return member 'strT' by const reference.\n",
+                      errout_str());
     }
 };
 
