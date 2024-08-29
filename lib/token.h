@@ -795,7 +795,7 @@ public:
         setFlag(fIsTemplateArg, value);
     }
 
-    std::string getMacroName() const {
+    const std::string& getMacroName() const {
         return mImpl->mMacroName;
     }
     void setMacroName(std::string name) {

@@ -3326,7 +3326,10 @@ static const Variable* getSingleReturnVar(const Scope* scope) {
         return nullptr;
     if (!start->astOperand1() || start->str() != "return")
         return nullptr;
-    return start->astOperand1()->variable();
+    const Token* tok = start->astOperand1();
+    if (tok->str() == ".")
+        tok = tok->astOperand2();
+    return tok->variable();
 }
 
 void CheckClass::checkReturnByReference()
