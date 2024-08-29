@@ -3017,6 +3017,8 @@ static void valueFlowLifetimeFunction(Token *tok, const TokenList &tokenlist, Er
         // TODO: Propagate lifetimes with library functions
         if (settings.library.getFunction(tok->previous()))
             return;
+        if (Token::simpleMatch(tok->astParent(), "."))
+            return;
         // Assume constructing the valueType
         valueFlowLifetimeConstructor(tok->next(), tokenlist, errorLogger, settings);
         valueFlowForwardLifetime(tok->next(), tokenlist, errorLogger, settings);
