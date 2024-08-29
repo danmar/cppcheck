@@ -79,7 +79,7 @@ if (BUILD_TESTS)
             if (${NAME} IN_LIST SKIP_TESTS)
             elseif(TEST ${NAME})
             else()
-                add_test(NAME ${NAME} COMMAND testrunner ${NAME} WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+                add_test(NAME ${NAME} COMMAND $<TARGET_FILE:testrunner> ${NAME} WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
             endif()
         endfunction()
 
