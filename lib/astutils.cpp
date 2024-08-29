@@ -1094,18 +1094,6 @@ static bool isAliased(const Token *startTok, const Token *endTok, nonneg int var
     return false;
 }
 
-bool isAliased(const Variable *var)
-{
-    if (!var)
-        return false;
-    if (!var->scope())
-        return false;
-    const Token *start = var->declEndToken();
-    if (!start)
-        return false;
-    return isAliased(start, var->scope()->bodyEnd, var->declarationId());
-}
-
 bool exprDependsOnThis(const Token* expr, bool onVar, nonneg int depth)
 {
     if (!expr)

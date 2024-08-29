@@ -156,8 +156,6 @@ public:
 
     bool isPremiumCodingStandardId(const std::string& id) const;
 
-    std::string getAddonMessage(const std::string& id, const std::string& text) const;
-
     /**
      * @brief Get dumpfile <rawtokens> contents, this is only public for testing purposes
      */
