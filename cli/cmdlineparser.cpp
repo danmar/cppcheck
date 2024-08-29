@@ -994,10 +994,13 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     "misra-c++-2023",
                     "misra-cpp-2023",
                     "bughunting",
-                    "safety"};
+                    "safety",
+                    "safety-off"};
 
                 if (std::strcmp(argv[i], "--premium=safety") == 0)
                     mSettings.safety = true;
+                if (std::strcmp(argv[i], "--premium=safety-off") == 0)
+                    mSettings.safety = false;
                 if (!mSettings.premiumArgs.empty())
                     mSettings.premiumArgs += " ";
                 const std::string p(argv[i] + 10);
@@ -1683,7 +1686,8 @@ void CmdLineParser::printHelp() const
             "                         Other:\n"
             "                          * bughunting        Soundy analysis\n"
             "                          * cert-c-int-precision=BITS  Integer precision to use in Cert C analysis.\n"
-            "                          * safety            Safe mode\n";
+            "                          * safety            Turn on safety certified behavior (ON by default)\n"
+            "                          * safety-off        Turn off safety certified behavior\n";
     }
 
     oss <<
@@ -1935,6 +1939,8 @@ bool CmdLineParser::loadAddons(Settings& settings)
 
 bool CmdLineParser::loadCppcheckCfg()
 {
+    if (!mSettings.cppcheckCfgProductName.empty())
+        return true;
     const std::string cfgErr = Settings::loadCppcheckCfg(mSettings, mSuppressions, mSettings.debuglookup || mSettings.debuglookupConfig);
     if (!cfgErr.empty()) {
         mLogger.printError("could not load cppcheck.cfg - " + cfgErr);
