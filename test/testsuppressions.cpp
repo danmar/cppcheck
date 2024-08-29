@@ -314,12 +314,12 @@ private:
             fileSettings.emplace_back("test.cpp", Standards::Language::CPP, strlen(code));
         }
 
-        /*const*/ auto settings = dinit(Settings,
-                                        $.jobs = 2,
-                                            $.quiet = true,
-                                            $.inlineSuppressions = true);
-        settings.severity.enable(Severity::information);
-        settings.templateFormat = templateFormat;
+        const auto settings = dinit(Settings,
+                                    $.jobs = 2,
+                                        $.quiet = true,
+                                        $.inlineSuppressions = true,
+                                        $.severity.enable (Severity::information),
+                                        $.templateFormat = templateFormat);
 
         Suppressions supprs;
         if (!suppression.empty()) {
