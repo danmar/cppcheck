@@ -1372,7 +1372,7 @@ void CheckOther::checkPassByReference()
             continue;
 
         const bool isConst = var->isConst();
-        if (isConst) {
+        if (isConst && !var->isArray()) {
             passedByValueError(var, inconclusive, isRangeBasedFor);
             continue;
         }
