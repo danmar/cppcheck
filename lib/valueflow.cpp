@@ -7086,7 +7086,7 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                 !Token::Match(nameToken, "%name% ("))
                 continue;
         }
-        if (nameToken->astTop() && Token::Match(nameToken->astTop()->previous(), "for|while"))
+        if (Token::Match(nameToken->astTop()->previous(), "for|while"))
             known = !isVariableChanged(var, settings);
         std::vector<ValueFlow::Value> values{ValueFlow::Value{size}};
         values.back().valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;

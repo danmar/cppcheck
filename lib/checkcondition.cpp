@@ -834,8 +834,6 @@ static std::string innerSmtString(const Token * tok)
 {
     if (!tok)
         return "if";
-    if (!tok->astTop())
-        return "if";
     const Token * top = tok->astTop();
     if (top->str() == "(" && top->astOperand1())
         return top->astOperand1()->str();
