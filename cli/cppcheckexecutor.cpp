@@ -311,7 +311,7 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
         stdLogger.reportErr(ErrorMessage::getXMLFooter());
     }
 
-    if (settings.safety && (stdLogger.hasCriticalErrors() || returnValue != 0))
+    if (settings.safety && stdLogger.hasCriticalErrors())
         return EXIT_FAILURE;
 
     if (returnValue)
