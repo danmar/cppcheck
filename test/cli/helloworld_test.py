@@ -13,7 +13,7 @@ __proj_dir = os.path.join(__script_dir, 'helloworld')
 
 # Get Visual Studio configurations checking a file
 # Checking {file} {config}...
-def getVsConfigs(stdout, filename):
+def __getVsConfigs(stdout, filename):
     ret = []
     for line in stdout.split('\n'):
         if not line.startswith('Checking %s ' % filename):
@@ -148,7 +148,7 @@ def test_vs_project_local_path():
     ]
     ret, stdout, stderr = cppcheck(args, cwd=__proj_dir)
     assert ret == 0, stdout
-    assert getVsConfigs(stdout, 'main.c') == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
+    assert __getVsConfigs(stdout, 'main.c') == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
 
 def test_vs_project_relative_path():
@@ -159,7 +159,7 @@ def test_vs_project_relative_path():
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     filename = os.path.join(__proj_dir, 'main.c')
     assert ret == 0, stdout
-    assert getVsConfigs(stdout, filename) == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
+    assert __getVsConfigs(stdout, filename) == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
     assert stderr == '[%s:5]: (error) Division by zero.\n' % filename
 
 def test_vs_project_absolute_path():
@@ -170,7 +170,7 @@ def test_vs_project_absolute_path():
     ret, stdout, stderr = cppcheck(args)
     filename = os.path.join(__proj_dir, 'main.c')
     assert ret == 0, stdout
-    assert getVsConfigs(stdout, filename) == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
+    assert __getVsConfigs(stdout, filename) == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
     assert stderr == '[%s:5]: (error) Division by zero.\n' % filename
 
 def test_cppcheck_project_local_path():
@@ -181,7 +181,7 @@ def test_cppcheck_project_local_path():
     ]
     ret, stdout, stderr = cppcheck(args, cwd=__proj_dir)
     assert ret == 0, stdout
-    assert getVsConfigs(stdout, 'main.c') == 'Debug|x64'
+    assert __getVsConfigs(stdout, 'main.c') == 'Debug|x64'
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
 
 def test_cppcheck_project_relative_path():
@@ -193,7 +193,7 @@ def test_cppcheck_project_relative_path():
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     filename = os.path.join('helloworld', 'main.c')
     assert ret == 0, stdout
-    assert getVsConfigs(stdout, filename) == 'Debug|x64'
+    assert __getVsConfigs(stdout, filename) == 'Debug|x64'
     assert stderr == '[%s:5]: (error) Division by zero.\n' % filename
 
 def test_cppcheck_project_absolute_path():
@@ -205,7 +205,7 @@ def test_cppcheck_project_absolute_path():
     ret, stdout, stderr = cppcheck(args)
     filename = os.path.join(__proj_dir, 'main.c')
     assert ret == 0, stdout
-    assert getVsConfigs(stdout, filename) == 'Debug|x64'
+    assert __getVsConfigs(stdout, filename) == 'Debug|x64'
     assert stderr == '[%s:5]: (error) Division by zero.\n' % filename
 
 def test_suppress_command_line_related():

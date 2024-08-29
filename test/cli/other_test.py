@@ -86,10 +86,10 @@ def test_preprocessor_error(tmpdir):
     assert exitcode != 0
 
 
-ANSI_BOLD = "\x1b[1m"
-ANSI_FG_RED = "\x1b[31m"
-ANSI_FG_DEFAULT = "\x1b[39m"
-ANSI_FG_RESET = "\x1b[0m"
+__ANSI_BOLD = "\x1b[1m"
+__ANSI_FG_RED = "\x1b[31m"
+__ANSI_FG_DEFAULT = "\x1b[39m"
+__ANSI_FG_RESET = "\x1b[0m"
 
 
 @pytest.mark.parametrize("env,color_expected", [({"CLICOLOR_FORCE":"1"}, True), ({"NO_COLOR": "1", "CLICOLOR_FORCE":"1"}, False)])
@@ -101,10 +101,10 @@ def test_color_non_tty(tmpdir, env, color_expected):
 
     assert exitcode == 0
     assert stderr
-    assert (ANSI_BOLD in stderr) == color_expected
-    assert (ANSI_FG_RED in stderr)  == color_expected
-    assert (ANSI_FG_DEFAULT in stderr) == color_expected
-    assert (ANSI_FG_RESET in stderr) == color_expected
+    assert (__ANSI_BOLD in stderr) == color_expected
+    assert (__ANSI_FG_RED in stderr) == color_expected
+    assert (__ANSI_FG_DEFAULT in stderr) == color_expected
+    assert (__ANSI_FG_RESET in stderr) == color_expected
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="TTY not supported in Windows")
@@ -117,10 +117,10 @@ def test_color_tty(tmpdir, env, color_expected):
 
     assert exitcode == 0
     assert stderr
-    assert (ANSI_BOLD in stderr) == color_expected
-    assert (ANSI_FG_RED in stderr) == color_expected
-    assert (ANSI_FG_DEFAULT in stderr) == color_expected
-    assert (ANSI_FG_RESET in stderr) == color_expected
+    assert (__ANSI_BOLD in stderr) == color_expected
+    assert (__ANSI_FG_RED in stderr) == color_expected
+    assert (__ANSI_FG_DEFAULT in stderr) == color_expected
+    assert (__ANSI_FG_RESET in stderr) == color_expected
 
 
 def test_invalid_library(tmpdir):
