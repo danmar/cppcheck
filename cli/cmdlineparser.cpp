@@ -1264,7 +1264,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 else if (std::strncmp(std.c_str(), "c", 1) == 0) {
                     mSettings.standards.c = Standards::getC(std);
                 }
-                else {
+                if (!validateStandard(std)) {
                     mLogger.printError("unknown --std value '" + std + "'");
                     return Result::Fail;
                 }
@@ -1943,3 +1943,18 @@ bool CmdLineParser::loadCppcheckCfg()
     return true;
 }
 
+bool CmdLineParser::validateStandard(const std::string &std)
+{
+        return std == "c++03"
+            || std == "c++11"
+            || std == "c++14"
+            || std == "c++17"
+            || std == "c++20"
+            || std == "c++23"
+            || std == "c++26"
+            || std == "c89"
+            || std == "c99"
+            || std == "c11"
+            || std == "c17"
+            || std == "c23";
+}

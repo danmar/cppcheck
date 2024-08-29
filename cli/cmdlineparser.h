@@ -156,6 +156,8 @@ private:
 
     bool loadCppcheckCfg();
 
+    static bool validateStandard(const std::string &std);
+
     CmdLineLogger &mLogger;
 
     std::vector<std::string> mPathNames;
