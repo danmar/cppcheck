@@ -163,6 +163,7 @@
     <ClInclude Include="json.h" />
     <ClInclude Include="keywords.h" />
     <ClInclude Include="library.h" />
+    <ClInclude Include="matchcompiler.h" />
     <ClInclude Include="mathlib.h" />
     <ClInclude Include="path.h" />
     <ClInclude Include="pathanalysis.h" />
@@ -174,6 +175,7 @@
     <ClInclude Include="reverseanalyzer.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="smallvector.h" />
+    <ClInclude Include="sourcelocation.h" />
     <ClInclude Include="standards.h" />
     <ClInclude Include="summaries.h" />
     <ClInclude Include="suppressions.h" />

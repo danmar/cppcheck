@@ -466,8 +466,10 @@ int main(int argc, char **argv)
     libfiles_h.emplace_back("filesettings.h");
     libfiles_h.emplace_back("findtoken.h");
     libfiles_h.emplace_back("json.h");
+    libfiles_h.emplace_back("matchcompiler.h");
     libfiles_h.emplace_back("precompiled.h");
     libfiles_h.emplace_back("smallvector.h");
+    libfiles_h.emplace_back("sourcelocation.h");
     libfiles_h.emplace_back("standards.h");
     libfiles_h.emplace_back("tokenrange.h");
     libfiles_h.emplace_back("valueptr.h");

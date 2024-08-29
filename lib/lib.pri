@@ -52,6 +52,7 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/json.h \
            $${PWD}/keywords.h \
            $${PWD}/library.h \
+           $${PWD}/matchcompiler.h \
            $${PWD}/mathlib.h \
            $${PWD}/path.h \
            $${PWD}/pathanalysis.h \
@@ -63,6 +64,7 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/reverseanalyzer.h \
            $${PWD}/settings.h \
            $${PWD}/smallvector.h \
+           $${PWD}/sourcelocation.h \
            $${PWD}/standards.h \
            $${PWD}/summaries.h \
            $${PWD}/suppressions.h \
