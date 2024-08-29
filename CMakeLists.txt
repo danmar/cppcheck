@@ -69,6 +69,12 @@ if(LIBXML2_XMLLINT_EXECUTABLE)
     add_custom_target(validateRules ${LIBXML2_XMLLINT_EXECUTABLE} --noout ${CMAKE_SOURCE_DIR}/rules/*.xml)
 endif()
 
+# TODO: add the following Makefile features:
+# - "man/cppcheck.1" target
+# - "tags" target
+# - Cygwin handling
+# - MinGW handling
+
 if(BUILD_TESTS)
     enable_testing()
 endif()

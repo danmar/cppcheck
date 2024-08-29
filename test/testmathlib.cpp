@@ -690,6 +690,7 @@ private:
         //ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1.0LL"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.0LL");
 
         // verify: string --> double --> string conversion
+        // TODO: add L, min/max
         ASSERT_EQUALS("1.0",  MathLib::toString(MathLib::toDoubleNumber("1.0f")));
         ASSERT_EQUALS("1.0",  MathLib::toString(MathLib::toDoubleNumber("1.0")));
         ASSERT_EQUALS("0.0",  MathLib::toString(MathLib::toDoubleNumber("0.0f")));

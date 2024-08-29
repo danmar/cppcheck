@@ -5476,7 +5476,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
 
     runner.run_once({
         VFA(valueFlowDynamicBufferSize(tokenlist, symboldatabase, errorLogger, settings)),
-        VFA(analyzeDebug(tokenlist, errorLogger, settings)),
+        VFA(analyzeDebug(tokenlist, errorLogger, settings)), // TODO: add option to print it after each step/iteration
     });
 }
 

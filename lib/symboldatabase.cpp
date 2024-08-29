@@ -2320,7 +2320,6 @@ void Variable::evaluate(const Settings& settings)
 
     const Library & lib = settings.library;
 
-    // TODO: ValueType::parseDecl() is also performing a container lookup
     bool isContainer = false;
     if (mNameToken)
         setFlag(fIsArray, arrayDimensions(settings, isContainer));

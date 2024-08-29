@@ -58,6 +58,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # TODO: bailout on error
       - name: Restore Cppcheck
         uses: actions/cache@v4
         with:
