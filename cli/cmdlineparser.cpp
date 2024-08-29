@@ -994,13 +994,14 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     "misra-c++-2023",
                     "misra-cpp-2023",
                     "bughunting",
-                    "safety",
-                    "safety-off"};
+                    "safety"};
 
+                if (std::strcmp(argv[i], "--premium=safety-off") == 0) {
+                    mSettings.safety = false;
+                    continue;
+                }
                 if (std::strcmp(argv[i], "--premium=safety") == 0)
                     mSettings.safety = true;
-                if (std::strcmp(argv[i], "--premium=safety-off") == 0)
-                    mSettings.safety = false;
                 if (!mSettings.premiumArgs.empty())
                     mSettings.premiumArgs += " ";
                 const std::string p(argv[i] + 10);
