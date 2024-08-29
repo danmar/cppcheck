@@ -121,6 +121,16 @@
 #  define DEPRECATED
 #endif
 
+// TODO: GCC apparently also supports this but there is no documentation on it
+// returns_nonnull
+#if __has_cpp_attribute (gnu::returns_nonnull)
+#  define RET_NONNULL [[gnu::returns_nonnull]]
+#elif (defined(__clang__) && ((__clang_major__ > 3) || ((__clang_major__ == 3) && (__clang_minor__ >= 7))))
+#  define RET_NONNULL __attribute__((returns_nonnull))
+#else
+#  define RET_NONNULL
+#endif
+
 #define REQUIRES(msg, ...) class=typename std::enable_if<__VA_ARGS__::value>::type
 
 #include <string>
