@@ -31,17 +31,17 @@
 
 namespace ValueFlow
 {
-    static Library::Container::Yield findIteratorYield(Token* tok, const Token** ftok, const Settings &settings)
+    static Library::Container::Yield findIteratorYield(Token* tok, const Token*& ftok, const Settings &settings)
     {
-        auto yield = astContainerYield(tok, ftok);
-        if (ftok && *ftok)
+        auto yield = astContainerYield(tok, &ftok);
+        if (ftok)
             return yield;
 
         if (!tok->astParent())
             return yield;
 
         //begin/end free functions
-        return astFunctionYield(tok->astParent()->previous(), settings, ftok);
+        return astFunctionYield(tok->astParent()->previous(), settings, &ftok);
     }
 
     void analyzeIterators(TokenList &tokenlist, const Settings &settings)
@@ -53,18 +53,18 @@ namespace ValueFlow
                 continue;
             if (!astIsContainer(tok))
                 continue;
-            Token* ftok = nullptr;
-            const Library::Container::Yield yield = findIteratorYield(tok, const_cast<const Token**>(&ftok), settings);
-            if (ftok) {
-                Value v(0);
-                v.setKnown();
-                if (yield == Library::Container::Yield::START_ITERATOR) {
-                    v.valueType = Value::ValueType::ITERATOR_START;
-                    setTokenValue(ftok->next(), std::move(v), settings);
-                } else if (yield == Library::Container::Yield::END_ITERATOR) {
-                    v.valueType = Value::ValueType::ITERATOR_END;
-                    setTokenValue(ftok->next(), std::move(v), settings);
-                }
+            const Token* ftok = nullptr;
+            const Library::Container::Yield yield = findIteratorYield(tok, ftok, settings);
+            if (!ftok)
+                continue;
+            Value v(0);
+            v.setKnown();
+            if (yield == Library::Container::Yield::START_ITERATOR) {
+                v.valueType = Value::ValueType::ITERATOR_START;
+                setTokenValue(const_cast<Token*>(ftok)->next(), std::move(v), settings);
+            } else if (yield == Library::Container::Yield::END_ITERATOR) {
+                v.valueType = Value::ValueType::ITERATOR_END;
+                setTokenValue(const_cast<Token*>(ftok)->next(), std::move(v), settings);
             }
         }
     }
