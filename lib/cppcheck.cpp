@@ -554,14 +554,9 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
 static ErrorMessage makeError(const std::string &filename, int line, unsigned int column, const std::string &msg, const std::string &id)
 {
     const ErrorMessage::FileLocation loc1(filename, line, column);
-    std::list<ErrorMessage::FileLocation> callstack(1, loc1);
+    const std::list<ErrorMessage::FileLocation> callstack(1, loc1);
 
-    return ErrorMessage(callstack,
-                        emptyString,
-                        Severity::error,
-                        msg,
-                        id,
-                        Certainty::normal);
+    return ErrorMessage(callstack, emptyString, Severity::error, msg, id, Certainty::normal);
 }
 
 unsigned int CppCheck::check(const FileWithDetails &file)
@@ -634,8 +629,6 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mUnusedFunctionsCheck)
         mUnusedFunctionsCheck.reset(new CheckUnusedFunctions());
 
-    FilesDeleter filesDeleter;
-
     if (Settings::terminated())
         return mExitCode;
 
@@ -700,18 +693,18 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             std::string locfile = Path::fromNativeSeparators(output.location.file());
             if (mSettings.relativePaths)
                 locfile = Path::getRelativePath(locfile, mSettings.basePaths);
-            if(output.type == simplecpp::Output::Type::FILE_NOT_FOUND){
+            if (output.type == simplecpp::Output::Type::FILE_NOT_FOUND) {
                 const std::string fixedpath = Path::toNativeSeparators(file.path());
-                const std::string errorMsg("File " + fixedpath + " does not exists. Skipping file.");
+                const std::string errorMsg("File " + fixedpath + " does not exist. Skipping file.");
 
                 reportErr(ErrorMessage(std::list<ErrorMessage::FileLocation> (),
-                        emptyString,
-                        Severity::error,
-                        errorMsg,
-                        "fileNotFound",
-                        Certainty::normal));
+                                       emptyString,
+                                       Severity::error,
+                                       errorMsg,
+                                       "fileNotFound",
+                                       Certainty::normal));
             }
-            else{
+            else {
                 reportErr(makeError(file.path(), output.location.line, output.location.col, output.msg, "syntaxError"));
             }
             return mExitCode;
@@ -773,7 +766,6 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                 return mExitCode;  // known results => no need to reanalyze file
             }
         }
-
         FilesDeleter filesDeleter;
 
         // write dump file xml prolog
@@ -1038,21 +1030,6 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
         printTimerResults(mSettings.showtime);
 
     return mExitCode;
-}
-
-static ErrorMessage makeError(const std::string &filename, const std::string &msg, const std::string &id)
-{
-    const std::string fullmsg("Bailing out from analysis: " + msg);
-
-    const ErrorMessage::FileLocation loc1(filename, 0, 0);
-    std::list<ErrorMessage::FileLocation> callstack(1, loc1);
-
-    return ErrorMessage(callstack,
-                        emptyString,
-                        Severity::error,
-                        fullmsg,
-                        id,
-                        Certainty::normal);
 }
 
 // TODO: replace with ErrorMessage::fromInternalError()

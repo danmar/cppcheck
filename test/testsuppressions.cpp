@@ -1225,13 +1225,13 @@ private:
         settings.relativePaths = true;
         settings.basePaths.emplace_back("/somewhere");
         ScopedFile file("test.cpp",
-            "struct Point\n"
-            "{\n"
-            "    // cppcheck-suppress unusedStructMember\n"
-            "    int x;\n"
-            "    // cppcheck-suppress unusedStructMember\n"
-            "    int y;\n"
-            "};");
+                        "struct Point\n"
+                        "{\n"
+                        "    // cppcheck-suppress unusedStructMember\n"
+                        "    int x;\n"
+                        "    // cppcheck-suppress unusedStructMember\n"
+                        "    int y;\n"
+                        "};");
         FileSettings fs{file.path()};
         ASSERT_EQUALS(0, cppCheck.check(fs));
         ASSERT_EQUALS("", errout_str());
