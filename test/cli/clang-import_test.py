@@ -192,22 +192,18 @@ def test_cmd_enforce_cpp(tmp_path):  # #13128
     __test_cmd(tmp_path, 'test.c',['-x', 'c++'], '-x c++')
 
 
-@pytest.mark.xfail(strict=True)
 def test_cmd_std_c(tmp_path):  # #13129
     __test_cmd(tmp_path, 'test.cpp',['--std=c89', '--std=c++14'], '-x c++ -std=c++14')
 
 
-@pytest.mark.xfail(strict=True)
 def test_cmd_std_cpp(tmp_path):  # #13129
     __test_cmd(tmp_path, 'test.c',['--std=c89', '--std=c++14'], '-x c -std=c89')
 
 
-@pytest.mark.xfail(strict=True)
 def test_cmd_std_c_enforce(tmp_path):  # #13128/#13129
     __test_cmd(tmp_path, 'test.cpp',['--language=c', '--std=c89', '--std=c++14'], '-x c -std=c89')
 
 
-@pytest.mark.xfail(strict=True)
 def test_cmd_std_cpp_enforce(tmp_path):  # #13128/#13129
     __test_cmd(tmp_path, 'test.c',['--language=c++', '--std=c89', '--std=c++14'], '-x c++ -std=c++14')
 

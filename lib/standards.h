@@ -44,16 +44,27 @@ struct Standards {
     enum cppstd_t : std::uint8_t { CPP03, CPP11, CPP14, CPP17, CPP20, CPP23, CPP26, CPPLatest = CPP26 } cpp = CPPLatest;
 
     /** --std value given on command line */
-    std::string stdValue;
+    std::string stdValueC;
+
+    /** --std value given on command line */
+    std::string stdValueCPP;
 
     bool setC(std::string str) {
-        stdValue = str;
-        strTolower(str);
-        c = getC(str);
-        return !stdValue.empty() && str == getC();
+        if (str.empty())
+            return false;
+        const cstd_t c_new = getC(str);
+        const bool b = (str == getC(c_new));
+        if (b) {
+            c = c_new;
+            stdValueC = std::move(str);
+        }
+        return b;
     }
     std::string getC() const {
-        switch (c) {
+        return getC(c);
+    }
+    static std::string getC(cstd_t c_std) {
+        switch (c_std) {
         case C89:
             return "c89";
         case C99:
@@ -86,10 +97,15 @@ struct Standards {
         return Standards::CLatest;
     }
     bool setCPP(std::string str) {
-        stdValue = str;
-        strTolower(str);
-        cpp = getCPP(str);
-        return !stdValue.empty() && str == getCPP();
+        if (str.empty())
+            return false;
+        const cppstd_t cpp_new = getCPP(str);
+        const bool b = (str == getCPP(cpp_new));
+        if (b) {
+            cpp = cpp_new;
+            stdValueCPP = std::move(str);
+        }
+        return b;
     }
     std::string getCPP() const {
         return getCPP(cpp);
@@ -136,6 +152,9 @@ struct Standards {
             return Standards::CPP26;
         }
         return Standards::CPPLatest;
+    }
+    bool setStd(const std::string& str) {
+        return setC(str) || setCPP(str);
     }
 };
 

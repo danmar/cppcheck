@@ -449,9 +449,10 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
 #endif
 
     std::string flags(langOpt + " ");
-    // TODO: does not apply C standard
-    if (isCpp && !mSettings.standards.stdValue.empty())
-        flags += "-std=" + mSettings.standards.stdValue + " ";
+    if (isCpp && !mSettings.standards.stdValueCPP.empty())
+        flags += "-std=" + mSettings.standards.stdValueCPP + " ";
+    if (!isCpp && !mSettings.standards.stdValueC.empty())
+        flags += "-std=" + mSettings.standards.stdValueC + " ";
 
     for (const std::string &i: mSettings.includePaths)
         flags += "-I" + i + " ";
