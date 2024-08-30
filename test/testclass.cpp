@@ -9083,6 +9083,23 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (performance) Function 'get1()' should return member 'str' by const reference.\n"
                       "[test.cpp:9]: (performance) Function 'get2()' should return member 'strT' by const reference.\n",
                       errout_str());
+
+        checkReturnByReference("struct S { std::string str; };\n" // #13059
+                               "struct T {\n"
+                               "    S temp() const;\n"
+                               "    S s[1];\n"
+                               "};\n"
+                               "struct U {\n"
+                               "    std::string get1() const {\n"
+                               "        return t.temp().str;\n"
+                               "    }\n"
+                               "    std::string get2() const {\n"
+                               "        return t.s[0].str;\n"
+                               "    }\n"
+                               "    T t;\n"
+                               "};\n");
+        ASSERT_EQUALS("[test.cpp:10]: (performance) Function 'get2()' should return member 'str' by const reference.\n",
+                      errout_str());
     }
 };
 
