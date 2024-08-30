@@ -1257,14 +1257,23 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             // --std
             else if (std::strncmp(argv[i], "--std=", 6) == 0) {
                 const std::string std = argv[i] + 6;
-                // TODO: print error when standard is unknown
+                bool unknown = false;
                 if (std::strncmp(std.c_str(), "c++", 3) == 0) {
                     mSettings.standards.cpp = Standards::getCPP(std);
+                    if (mSettings.standards.getCPP() != std) {
+                        unknown = true;
+                    }
                 }
                 else if (std::strncmp(std.c_str(), "c", 1) == 0) {
                     mSettings.standards.c = Standards::getC(std);
+                    if (mSettings.standards.getC() != std) {
+                        unknown = true;
+                    }
                 }
-                if (!validateStandard(std)) {
+                else {
+                    unknown = true;
+                }
+                if (unknown) {
                     mLogger.printError("unknown --std value '" + std + "'");
                     return Result::Fail;
                 }
@@ -1943,18 +1952,3 @@ bool CmdLineParser::loadCppcheckCfg()
     return true;
 }
 
-bool CmdLineParser::validateStandard(const std::string &std)
-{
-        return std == "c++03"
-            || std == "c++11"
-            || std == "c++14"
-            || std == "c++17"
-            || std == "c++20"
-            || std == "c++23"
-            || std == "c++26"
-            || std == "c89"
-            || std == "c99"
-            || std == "c11"
-            || std == "c17"
-            || std == "c23";
-}
