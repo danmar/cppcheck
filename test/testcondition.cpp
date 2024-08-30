@@ -4893,6 +4893,15 @@ private:
               "      }\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void f(bool a, bool b) {\n" // #12937
+              "    bool c = !a && b;\n"
+              "    if (a) {}\n"
+              "    else {\n"
+              "        if (c) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void alwaysTrueInfer() {
