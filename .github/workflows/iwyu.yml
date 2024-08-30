@@ -2,10 +2,7 @@
 # Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
 name: include-what-you-use
 
-on:
-  schedule:
-    - cron: '0 0 * * 0'
-  workflow_dispatch:
+on: [push, pull_request]
 
 permissions:
   contents: read
@@ -16,6 +13,13 @@ jobs:
     strategy:
       matrix:
         image: ["fedora:latest"] # "opensuse/tumbleweed:latest" / "fedora:latest" / "debian:unstable" / "archlinux:latest"
+        stdlib: [libstdc++, libc++]
+        include:
+          - stdlib: libstdc++
+            use_libcxx: Off
+          - stdlib: libc++
+            use_libcxx: On
+      fail-fast: false
 
     runs-on: ubuntu-22.04
     if: ${{ github.repository_owner == 'danmar' }}
@@ -57,7 +61,7 @@ jobs:
       - name: Install missing software on Fedora
         if: contains(matrix.image, 'fedora')
         run: |
-          dnf install -y cmake clang pcre-devel
+          dnf install -y cmake clang libcxx-devel pcre-devel
           dnf install -y libglvnd-devel  # fixes missing dependency for Qt in CMake
           dnf install -y p7zip-plugins  # required as fallback for py7zr in Qt installation
           dnf install -y iwyu
@@ -87,7 +91,7 @@ jobs:
 
       - name: Prepare CMake
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off -DEXTERNALS_AS_SYSTEM=On
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off -DEXTERNALS_AS_SYSTEM=On -DUSE_LIBCXX=${{ matrix.use_libcxx }}
         env:
           CC: clang
           CXX: clang++
@@ -111,21 +115,31 @@ jobs:
         run: |
           PWD=$(pwd)
           # -isystem/usr/lib/clang/17/include
-          iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --max_line_length=1024 -Xiwyu --comment_style=long -Xiwyu --quoted_includes_first -Xiwyu --update_comments > iwyu.log
+          iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --max_line_length=1024 -Xiwyu --comment_style=long -Xiwyu --quoted_includes_first -Xiwyu --update_comments -stdlib=${{ matrix.stdlib }} > iwyu.log
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
-          name: Compilation Database
+          name: Compilation Database (${{ matrix.stdlib }})
           path: ./cmake.output/compile_commands.json
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
-          name: Logs (include-what-you-use)
+          name: Logs (include-what-you-use - ${{ matrix.stdlib }})
           path: ./*.log
 
   clang-include-cleaner:
+
+    strategy:
+      matrix:
+        stdlib: [libstdc++, libc++]
+        include:
+          - stdlib: libstdc++
+            use_libcxx: Off
+          - stdlib: libc++
+            use_libcxx: On
+      fail-fast: false
 
     runs-on: ubuntu-22.04
     if: ${{ github.repository_owner == 'danmar' }}
@@ -148,7 +162,7 @@ jobs:
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
           sudo ./llvm.sh 19
-          sudo apt-get install -y clang-tools-19
+          sudo apt-get install -y clang-tools-19 libc++-19
 
       - name: Install Qt ${{ env.QT_VERSION }}
         uses: jurplel/install-qt-action@v3
@@ -160,7 +174,7 @@ jobs:
 
       - name: Prepare CMake
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off -DEXTERNALS_AS_SYSTEM=On
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off -DEXTERNALS_AS_SYSTEM=On -DUSE_LIBCXX=${{ matrix.use_libcxx }}
         env:
           CC: clang-19
           CXX: clang++-19
@@ -180,9 +194,10 @@ jobs:
       - name: clang-include-cleaner
         run: |
           # TODO: run multi-threaded
-          find $PWD/cli $PWD/lib $PWD/test $PWD/gui -maxdepth 1 -name "*.cpp" | xargs -t -n 1 clang-include-cleaner-19 --print=changes --extra-arg=-w -p cmake.output > clang-include-cleaner.log 2>&1
+          find $PWD/cli $PWD/lib $PWD/test $PWD/gui -maxdepth 1 -name "*.cpp" | xargs -t -n 1 clang-include-cleaner-19 --print=changes --extra-arg=-w --extra-arg=-stdlib=${{ matrix.stdlib }} -p cmake.output > clang-include-cleaner.log 2>&1
 
       - uses: actions/upload-artifact@v4
+        if: success() || failure()
         with:
-          name: Logs (clang-include-cleaner)
+          name: Logs (clang-include-cleaner - ${{ matrix.stdlib }})
           path: ./*.log
