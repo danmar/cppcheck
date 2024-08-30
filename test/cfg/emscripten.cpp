@@ -13,14 +13,14 @@
 void em_asm_test()
 {
     // inline some JavaScript
-    EM_ASM(alert('hello'););
-    MAIN_THREAD_EM_ASM(alert('hello main thread'););
+    EM_ASM(alert('hello'); );
+    MAIN_THREAD_EM_ASM(alert('hello main thread'); );
 
     // pass parameters to JavaScript
     EM_ASM(
-        {
-            console.log('I received: ' + [$0, $1]);
-        },
+    {
+        console.log('I received: ' + [$0, $1]);
+    },
         100, 35.5);
 
     // pass a string to JavaScript
@@ -73,16 +73,16 @@ void main_thread_em_asm_ptr_test()
     // cppcheck-suppress leakReturnValNotUsed
     MAIN_THREAD_EM_ASM_PTR(
         return stringToNewUTF8("Hello");
-    );
+        );
 }
 
 EM_JS(void, two_alerts, (), {
-        alert('hai');
-        alert('bai');
-    });
+    alert('hai');
+    alert('bai');
+});
 EM_JS(void, take_args, (int x, float y), {
     console.log('I received: ' + [x, y]);
- });
+});
 
 void em_js_test()
 {

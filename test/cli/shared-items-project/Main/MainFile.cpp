@@ -2,6 +2,6 @@
 
 int main(void)
 {
-	Shared::TestClass test{};
-	return 0;
+    Shared::TestClass test{};
+    return 0;
 }

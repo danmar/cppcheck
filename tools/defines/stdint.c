@@ -2,7 +2,7 @@
 #include "stdio.h"
 
 #define PRINT_DEF(d, f) \
-    fprintf(stdout, ";"#d"=%"#f, d)
+    fprintf(stdout, ";"#d "=%"#f, d)
 
 #define PRINT_DEF_N(d1, d2, f) \
     do { \
@@ -40,5 +40,5 @@ int main(void)
     PRINT_DEF(WINT_MIN, d);
     PRINT_DEF(WINT_MAX, d);
 
-   return 0;
+    return 0;
 }
