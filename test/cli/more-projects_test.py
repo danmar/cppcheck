@@ -865,7 +865,6 @@ def test_shared_items_project(tmpdir = ""):
     assert any('2/2 files checked 100% done' in x for x in lines)
     assert stderr == ''
 
-import shutil
 
 def test_project_missing_files(tmpdir):
     filename = os.path.join(tmpdir, 'main.c')
