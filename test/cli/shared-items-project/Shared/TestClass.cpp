@@ -2,10 +2,8 @@
 
 using namespace Shared;
 
-TestClass::TestClass() 
-{
-}
+TestClass::TestClass()
+{}
 
-TestClass::~TestClass() 
-{
-}
+TestClass::~TestClass()
+{}

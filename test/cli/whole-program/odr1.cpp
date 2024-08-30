@@ -6,7 +6,9 @@
 class C : public Base
 {
 public:
-    void f() override { std::cout << "1"; }
+    void f() override {
+        std::cout << "1";
+    }
 };
 
 Base *c1_create()

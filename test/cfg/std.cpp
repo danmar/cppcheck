@@ -5179,7 +5179,7 @@ struct S_std_as_const { // #12974
     std::list<int> l;
 };
 
-void containerOutOfBounds_std_string(std::string &var) { // #11403 
+void containerOutOfBounds_std_string(std::string &var) { // #11403
     std::string s0{"x"};
     // cppcheck-suppress containerOutOfBounds
     var+= s0[2];

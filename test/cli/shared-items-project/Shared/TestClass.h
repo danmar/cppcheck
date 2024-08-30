@@ -4,7 +4,7 @@ namespace Shared
 {
     class TestClass
     {
-      public:
+    public:
         explicit TestClass();
         virtual ~TestClass();
     };
