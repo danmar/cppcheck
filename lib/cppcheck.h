@@ -172,9 +172,6 @@ private:
     /** @brief There has been an internal error => Report information message */
     void internalError(const std::string &filename, const std::string &msg);
 
-    /** @brief File is missing => Report information message */
-    void fileNotFoundError(const std::string &filename, const std::string &msg);
-
     /**
      * @brief Check a file using stream
      * @param file the file

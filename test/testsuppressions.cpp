@@ -1190,9 +1190,10 @@ private:
         ASSERT_EQUALS("", settings.supprs.nomsg.addSuppressionLine("uninitvar"));
         settings.exitCode = 1;
 
-        const char code[] = "int f() { int a; return a; }";
-        ASSERT_EQUALS(0, cppCheck.check("test.c", code)); // <- no unsuppressed error is seen
-        ASSERT_EQUALS("[test.c:1]: (error) Uninitialized variable: a\n", errout.str()); // <- report error so ThreadExecutor can suppress it and make sure the global suppression is matched.
+        ScopedFile file("test.c", "int f() { int a; return a; }");
+        FileSettings fs{file.path()};
+        ASSERT_EQUALS(0, cppCheck.check(fs)); // <- no unsuppressed error is seen
+        ASSERT_EQUALS("[test.c:1]: (error) Uninitialized variable: a\n", errout_str()); // <- report error so ThreadExecutor can suppress it and make sure the global suppression is matched.
     }
 
     void inlinesuppress_unusedFunction() const { // #4210, #4946 - wrong report of "unmatchedSuppression" for "unusedFunction"
@@ -1223,16 +1224,17 @@ private:
         settings.inlineSuppressions = true;
         settings.relativePaths = true;
         settings.basePaths.emplace_back("/somewhere");
-        const char code[] =
+        ScopedFile file("test.cpp",
             "struct Point\n"
             "{\n"
             "    // cppcheck-suppress unusedStructMember\n"
             "    int x;\n"
             "    // cppcheck-suppress unusedStructMember\n"
             "    int y;\n"
-            "};";
-        ASSERT_EQUALS(0, cppCheck.check("/somewhere/test.cpp", code));
-        ASSERT_EQUALS("",errout.str());
+            "};");
+        FileSettings fs{file.path()};
+        ASSERT_EQUALS(0, cppCheck.check(fs));
+        ASSERT_EQUALS("", errout_str());
     }
 
     void suppressingSyntaxErrorsInternal(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) { // syntaxErrors should be suppressible (#7076)

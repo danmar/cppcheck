@@ -117,7 +117,7 @@ private:
     {
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(errorLogger, false, {});
-        ASSERT_EQUALS(1, cppcheck.check("NotAFile"));
+        ASSERT_EQUALS(1, cppcheck.check(FileWithDetails("NotAFile")));
 
         ASSERT_EQUALS(1, errorLogger.ids.size());
         ASSERT_EQUALS("fileNotFound", *errorLogger.ids.cbegin());
