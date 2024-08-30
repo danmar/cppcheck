@@ -1,7 +1,7 @@
 lessThan(QT_MAJOR_VERSION, 5): error(requires >= Qt 5 (You used: $$QT_VERSION))
 greaterThan(QT_MAJOR_VERSION, 5): error(Qt 6 is not supported via qmake - please use CMake instead)
 
-message("Building the GUI via qmake is deprecated and will be removed in a future release. Please use CMake instead.")
+message("Building the GUI via qmake is deprecated and will be removed in Cppcheck 2.16. Please use CMake instead.")
 
 TEMPLATE = app
 TARGET = cppcheck-gui
