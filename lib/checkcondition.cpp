@@ -88,7 +88,7 @@ bool CheckCondition::isAliased(const std::set<int> &vars) const
 
 void CheckCondition::assignIf()
 {
-    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("assignIf"))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("assignIfError"))
         return;
 
     logChecker("CheckCondition::assignIf"); // style
@@ -1920,7 +1920,7 @@ void CheckCondition::assignmentInCondition(const Token *eq)
 
 void CheckCondition::checkCompareValueOutOfTypeRange()
 {
-    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("compareValueOutOfTypeRange"))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("compareValueOutOfTypeRangeError"))
         return;
 
     if (mSettings->platform.type == Platform::Type::Native ||

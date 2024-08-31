@@ -1611,7 +1611,7 @@ void CheckOther::checkConstPointer()
         !mSettings->isPremiumEnabled("constParameter") &&
         !mSettings->isPremiumEnabled("constParameterPointer") &&
         !mSettings->isPremiumEnabled("constParameterReference") &&
-        !mSettings->isPremiumEnabled("constPointer"))
+        !mSettings->isPremiumEnabled("constVariablePointer"))
         return;
 
     logChecker("CheckOther::checkConstPointer"); // style

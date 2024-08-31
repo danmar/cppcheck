@@ -168,7 +168,7 @@ void CheckExceptionSafety::deallocThrowError(const Token * const tok, const std:
 //---------------------------------------------------------------------------
 void CheckExceptionSafety::checkRethrowCopy()
 {
-    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("rethrowcopy"))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("exceptRethrowCopy"))
         return;
 
     logChecker("CheckExceptionSafety::checkRethrowCopy"); // style
@@ -212,7 +212,7 @@ void CheckExceptionSafety::rethrowCopyError(const Token * const tok, const std::
 //---------------------------------------------------------------------------
 void CheckExceptionSafety::checkCatchExceptionByValue()
 {
-    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("catchexceptionbyvalue"))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("catchExceptionByValue"))
         return;
 
     logChecker("CheckExceptionSafety::checkCatchExceptionByValue"); // style
@@ -328,7 +328,7 @@ void CheckExceptionSafety::noexceptThrowError(const Token * const tok)
 void CheckExceptionSafety::unhandledExceptionSpecification()
 {
     if ((!mSettings->severity.isEnabled(Severity::style) || !mSettings->certainty.isEnabled(Certainty::inconclusive)) &&
-        !mSettings->isPremiumEnabled("unhandledexceptionspecification"))
+        !mSettings->isPremiumEnabled("unhandledExceptionSpecification"))
         return;
 
     logChecker("CheckExceptionSafety::unhandledExceptionSpecification"); // style,inconclusive
