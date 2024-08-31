@@ -225,6 +225,12 @@ private:
         TEST_CASE(stdcpp11);
         TEST_CASE(stdunknown1);
         TEST_CASE(stdunknown2);
+        TEST_CASE(stdoverwrite1);
+        TEST_CASE(stdoverwrite2);
+        TEST_CASE(stdoverwrite3);
+        TEST_CASE(stdoverwrite4);
+        TEST_CASE(stdmulti1);
+        TEST_CASE(stdmulti2);
         TEST_CASE(platformWin64);
         TEST_CASE(platformWin32A);
         TEST_CASE(platformWin32W);
@@ -1371,6 +1377,54 @@ private:
         const char *const argv[] = {"cppcheck", "--std=cplusplus11", "file.cpp"};
         ASSERT_EQUALS(static_cast<int>(CmdLineParser::Result::Fail), static_cast<int>(parser->parseFromArgs(3, argv)));
         ASSERT_EQUALS("cppcheck: error: unknown --std value 'cplusplus11'\n", logger->str());
+    }
+
+    void stdoverwrite1() {
+        REDIRECT;
+        const char *const argv[] = {"cppcheck", "--std=c++11", "--std=c++23", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(Standards::CPP23, settings->standards.cpp);
+        ASSERT_EQUALS_ENUM(Standards::CLatest, settings->standards.c);
+    }
+
+    void stdoverwrite2() {
+        REDIRECT;
+        const char *const argv[] = {"cppcheck", "--std=c99", "--std=c11", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(Standards::C11, settings->standards.c);
+        ASSERT_EQUALS_ENUM(Standards::CPPLatest, settings->standards.cpp);
+    }
+
+    void stdoverwrite3() {
+        REDIRECT;
+        const char *const argv[] = {"cppcheck", "--std=c99", "--std=c++11", "--std=c11", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(5, argv));
+        ASSERT_EQUALS_ENUM(Standards::C11, settings->standards.c);
+        ASSERT_EQUALS_ENUM(Standards::CPP11, settings->standards.cpp);
+    }
+
+    void stdoverwrite4() {
+        REDIRECT;
+        const char *const argv[] = {"cppcheck", "--std=c++11", "--std=c99", "--std=c++23", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(5, argv));
+        ASSERT_EQUALS_ENUM(Standards::CPP23, settings->standards.cpp);
+        ASSERT_EQUALS_ENUM(Standards::C99, settings->standards.c);
+    }
+
+    void stdmulti1() {
+        REDIRECT;
+        const char *const argv[] = {"cppcheck", "--std=c99", "--std=c++11", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(Standards::C99, settings->standards.c);
+        ASSERT_EQUALS_ENUM(Standards::CPP11, settings->standards.cpp);
+    }
+
+    void stdmulti2() {
+        REDIRECT;
+        const char *const argv[] = {"cppcheck", "--std=c++20", "--std=c11", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(Standards::C11, settings->standards.c);
+        ASSERT_EQUALS_ENUM(Standards::CPP20, settings->standards.cpp);
     }
 
     void platformWin64() {

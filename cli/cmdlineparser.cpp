@@ -1257,7 +1257,12 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             // --std
             else if (std::strncmp(argv[i], "--std=", 6) == 0) {
                 const std::string std = argv[i] + 6;
-                if (!mSettings.standards.setC(std) && !mSettings.standards.setCPP(std)) {
+                Standards tmp;
+                if (tmp.setC(std)) {
+                    mSettings.standards.c = tmp.c;
+                } else if (tmp.setCPP(std)) {
+                    mSettings.standards.cpp = tmp.cpp;
+                } else {
                     mLogger.printError("unknown --std value '" + std + "'");
                     return Result::Fail;
                 }
