@@ -79,6 +79,7 @@
           <Directory Id='CfgsFolder' Name='cfg'>
             <Component Id='MandatoryCfgs' Guid='$(var.mandatoryCfgsGUID)'>
               <File Id='std.cfg' Name='std.cfg' Source='$(var.CfgsDir)\std.cfg' />
+              <File Id='posix.cfg' Name='posix.cfg' Source='$(var.CfgsDir)\posix.cfg' />
               <File Id='windows.cfg' Name='windows.cfg' Source='$(var.CfgsDir)\windows.cfg' />
             </Component>
             <Component Id='OptionalCfgs' Guid='$(var.optionalCfgsGUID)'>
@@ -114,18 +115,20 @@
               <File Id='openmp.cfg' Name='openmp.cfg' Source='$(var.CfgsDir)\openmp.cfg' />
               <File Id='openssl.cfg' Name='openssl.cfg' Source='$(var.CfgsDir)\openssl.cfg' />
               <File Id='pcre.cfg' Name='pcre.cfg' Source='$(var.CfgsDir)\pcre.cfg' />
-              <File Id='posix.cfg' Name='posix.cfg' Source='$(var.CfgsDir)\posix.cfg' />
+              <File Id='protobuf.cfg' Name='protobuf.cfg' Source='$(var.CfgsDir)\protobuf.cfg' />
               <File Id='python.cfg' Name='python.cfg' Source='$(var.CfgsDir)\python.cfg' />
               <File Id='qt.cfg' Name='qt.cfg' Source='$(var.CfgsDir)\qt.cfg' />
               <File Id='ruby.cfg' Name='ruby.cfg' Source='$(var.CfgsDir)\ruby.cfg' />
               <File Id='sdl.cfg' Name='sdl.cfg' Source='$(var.CfgsDir)\sdl.cfg' />
+              <File Id='selinux.cfg' Name='selinux.cfg' Source='$(var.CfgsDir)\selinux.cfg' />
               <File Id='sfml.cfg' Name='sfml.cfg' Source='$(var.CfgsDir)\sfml.cfg' />
               <File Id='sqlite3.cfg' Name='sqlite3.cfg' Source='$(var.CfgsDir)\sqlite3.cfg' />
               <File Id='tinyxml2.cfg' Name='tinyxml2.cfg' Source='$(var.CfgsDir)\tinyxml2.cfg' />
               <File Id='vcl.cfg' Name='vcl.cfg' Source='$(var.CfgsDir)\vcl.cfg' />
-              <File Id='wxwidgets.cfg' Name='wxwidgets.cfg' Source='$(var.CfgsDir)\wxwidgets.cfg' />
               <File Id='wxsqlite3.cfg' Name='wxsqlite3.cfg' Source='$(var.CfgsDir)\wxsqlite3.cfg' />
               <File Id='wxsvg.cfg' Name='wxsvg.cfg' Source='$(var.CfgsDir)\wxsvg.cfg' />
+              <File Id='wxwidgets.cfg' Name='wxwidgets.cfg' Source='$(var.CfgsDir)\wxwidgets.cfg' />
+              <File Id='zephyr.cfg' Name='zephyr.cfg' Source='$(var.CfgsDir)\zephyr.cfg' />
               <File Id='zlib.cfg' Name='zlib.cfg' Source='$(var.CfgsDir)\zlib.cfg' />
             </Component>
           </Directory>
