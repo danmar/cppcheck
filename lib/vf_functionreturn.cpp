@@ -129,10 +129,10 @@ namespace ValueFlow
             if (programMemory.empty() && !arguments.empty())
                 continue;
             std::vector<Value> values = execute(function->functionScope, programMemory, settings);
-            for (const Value& v : values) {
+            for (Value& v : values) {
                 if (v.isUninitValue())
                     continue;
-                setFunctionReturnValue(function, tok, v, settings);
+                setFunctionReturnValue(function, tok, std::move(v), settings);
             }
         }
     }
