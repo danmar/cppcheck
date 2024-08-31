@@ -51,9 +51,11 @@ namespace ValueFlow
             result = {tok->values().front().intvalue};
         } else if (!Token::Match(tok, "-|%|&|^") && tok->isConstOp() && tok->astOperand1() && tok->astOperand2()) {
             std::vector<MathLib::bigint> op1 = minUnsignedValue(tok->astOperand1(), depth - 1);
-            std::vector<MathLib::bigint> op2 = minUnsignedValue(tok->astOperand2(), depth - 1);
-            if (!op1.empty() && !op2.empty()) {
-                result = calculate<std::vector<MathLib::bigint>>(tok->str(), op1.front(), op2.front());
+            if (!op1.empty()) {
+                std::vector<MathLib::bigint> op2 = minUnsignedValue(tok->astOperand2(), depth - 1);
+                if (!op2.empty()) {
+                    result = calculate<std::vector<MathLib::bigint>>(tok->str(), op1.front(), op2.front());
+                }
             }
         }
         if (result.empty() && astIsUnsigned(tok))
@@ -120,7 +122,6 @@ namespace ValueFlow
                     flipped = true;
                 else if (!std::equal(tokens.cbegin(), tokens.cend(), branches.cbegin(), &isSameToken))
                     continue;
-                const bool isMin = Token::Match(condTok, "<|<=") ^ flipped;
                 std::vector<Value> values;
                 for (const Token* tok2 : tokens) {
                     if (tok2->hasKnownIntValue()) {
@@ -140,6 +141,7 @@ namespace ValueFlow
                         });
                     }
                 }
+                const bool isMin = Token::Match(condTok, "<|<=") ^ flipped;
                 for (Value& value : values) {
                     value.setImpossible();
                     if (isMin) {
