@@ -7,6 +7,7 @@ on:
     branches:
       - 'main'
       - 'releases/**'
+      - '2.*'
     tags:
       - '2.*'
   pull_request:
