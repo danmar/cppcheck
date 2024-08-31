@@ -97,7 +97,7 @@ cmake --build . --config RelWithDebInfo
 
 ### qmake
 
-NOTE: This has been deprecated and will be removed in a future version. Please use CMake instead.
+NOTE: This has been deprecated and will be removed in Cppcheck 2.16. Please use CMake instead.
 
 You can use the gui/gui.pro file to build the GUI.
 
