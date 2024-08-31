@@ -992,9 +992,11 @@ static std::vector<MathLib::bigint> minUnsignedValue(const Token* tok, int depth
         result = {tok->values().front().intvalue};
     } else if (!Token::Match(tok, "-|%|&|^") && tok->isConstOp() && tok->astOperand1() && tok->astOperand2()) {
         std::vector<MathLib::bigint> op1 = minUnsignedValue(tok->astOperand1(), depth - 1);
-        std::vector<MathLib::bigint> op2 = minUnsignedValue(tok->astOperand2(), depth - 1);
-        if (!op1.empty() && !op2.empty()) {
-            result = calculate<std::vector<MathLib::bigint>>(tok->str(), op1.front(), op2.front());
+        if (!op1.empty()) {
+            std::vector<MathLib::bigint> op2 = minUnsignedValue(tok->astOperand2(), depth - 1);
+            if (!op2.empty()) {
+                result = calculate<std::vector<MathLib::bigint>>(tok->str(), op1.front(), op2.front());
+            }
         }
     }
     if (result.empty() && astIsUnsigned(tok))
