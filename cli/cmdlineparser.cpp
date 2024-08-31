@@ -369,6 +369,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
     ImportProject project;
 
+    bool inputAsFilter = false;
     bool executorAuto = true;
     int8_t logMissingInclude{0};
 
@@ -711,6 +712,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                         mLogger.printError("Failed: --file-filter=-");
                         return Result::Fail;
                     }
+                } if (std::strcmp(filter, "+") == 0) {
+                    inputAsFilter = true;
                 } else {
                     mSettings.fileFilters.emplace_back(filter);
                 }
@@ -1441,9 +1444,15 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         //mLogger.printMessage("whole program analysis requires --cppcheck-build-dir to be active with -j.");
     }
 
-    if (!mPathNames.empty() && project.projectType != ImportProject::Type::NONE) {
+    if (!inputAsFilter && !mPathNames.empty() && project.projectType != ImportProject::Type::NONE) {
         mLogger.printError("--project cannot be used in conjunction with source files.");
         return Result::Fail;
+    }
+
+    if (inputAsFilter) {
+        // these will not be resolved and be used literally
+        mSettings.fileFilters.insert(mSettings.fileFilters.cend(), mPathNames.cbegin(), mPathNames.cend());
+        mPathNames.clear();
     }
 
     // Print error only if we have "real" command and expect files
