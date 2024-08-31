@@ -1063,7 +1063,6 @@ static void valueFlowImpossibleValues(TokenList& tokenList, const Settings& sett
                 flipped = true;
             else if (!std::equal(tokens.cbegin(), tokens.cend(), branches.cbegin(), &isSameToken))
                 continue;
-            const bool isMin = Token::Match(condTok, "<|<=") ^ flipped;
             std::vector<ValueFlow::Value> values;
             for (const Token* tok2 : tokens) {
                 if (tok2->hasKnownIntValue()) {
@@ -1083,6 +1082,7 @@ static void valueFlowImpossibleValues(TokenList& tokenList, const Settings& sett
                     });
                 }
             }
+            const bool isMin = Token::Match(condTok, "<|<=") ^ flipped;
             for (ValueFlow::Value& value : values) {
                 value.setImpossible();
                 if (isMin) {
