@@ -306,22 +306,23 @@ namespace ValueFlow
                 value.valueType = Value::ValueType::INT;
                 setTokenValue(next, std::move(value), settings);
             } else if (yields == Library::Container::Yield::EMPTY) {
-                Value v(value);
-                v.valueType = Value::ValueType::INT;
-                v.bound = Value::Bound::Point;
+                const Value::Bound bound = value.bound;
+                const long long intvalue = value.intvalue;
+                value.valueType = Value::ValueType::INT;
+                value.bound = Value::Bound::Point;
                 if (value.isImpossible()) {
-                    if (value.intvalue == 0)
-                        v.setKnown();
-                    else if ((value.bound == Value::Bound::Upper && value.intvalue > 0) ||
-                             (value.bound == Value::Bound::Lower && value.intvalue < 0)) {
-                        v.intvalue = 0;
-                        v.setKnown();
+                    if (intvalue == 0)
+                        value.setKnown();
+                    else if ((bound == Value::Bound::Upper && intvalue > 0) ||
+                             (bound == Value::Bound::Lower && intvalue < 0)) {
+                        value.intvalue = 0;
+                        value.setKnown();
                     } else
-                        v.setPossible();
+                        value.setPossible();
                 } else {
-                    v.intvalue = !v.intvalue;
+                    value.intvalue = !value.intvalue;
                 }
-                setTokenValue(next, std::move(v), settings);
+                setTokenValue(next, std::move(value), settings);
             }
             return;
         }
@@ -420,11 +421,10 @@ namespace ValueFlow
                 if (ret)
                     return;
 
-                Value v(std::move(value));
-                v.conditional = true;
-                v.changeKnownToPossible();
+                value.conditional = true;
+                value.changeKnownToPossible();
 
-                setTokenValue(parent, std::move(v), settings);
+                setTokenValue(parent, std::move(value), settings);
             }
         }
 
@@ -712,15 +712,13 @@ namespace ValueFlow
             std::vector<const Token*> args = getArguments(value.tokvalue);
             if (const Library::Function* f = settings.library.getFunction(parent->previous())) {
                 if (f->containerYield == Library::Container::Yield::SIZE) {
-                    Value v(std::move(value));
-                    v.valueType = Value::ValueType::INT;
-                    v.intvalue = args.size();
-                    setTokenValue(parent, std::move(v), settings);
+                    value.valueType = Value::ValueType::INT;
+                    value.intvalue = args.size();
+                    setTokenValue(parent, std::move(value), settings);
                 } else if (f->containerYield == Library::Container::Yield::EMPTY) {
-                    Value v(std::move(value));
-                    v.intvalue = args.empty();
-                    v.valueType = Value::ValueType::INT;
-                    setTokenValue(parent, std::move(v), settings);
+                    value.intvalue = args.empty();
+                    value.valueType = Value::ValueType::INT;
+                    setTokenValue(parent, std::move(value), settings);
                 }
             }
         }
