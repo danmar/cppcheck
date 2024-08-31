@@ -59,7 +59,7 @@ std::size_t ExprIdToken::Hash::operator()(ExprIdToken etok) const
 void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
     copyOnWrite();
 
-    (*mValues)[expr] = value;
+    (*mValues)[expr] = value; // copy
     ValueFlow::Value subvalue = value;
     const Token* subexpr = solveExprValue(
         expr,
