@@ -6239,12 +6239,14 @@ static void valueFlowIterators(TokenList& tokenlist, const Settings& settings)
         const Library::Container::Yield yield = findIteratorYield(tok, ftok, settings);
         if (!ftok)
             continue;
-        ValueFlow::Value v(0);
-        v.setKnown();
         if (yield == Library::Container::Yield::START_ITERATOR) {
+            ValueFlow::Value v(0);
+            v.setKnown();
             v.valueType = ValueFlow::Value::ValueType::ITERATOR_START;
             setTokenValue(const_cast<Token*>(ftok)->next(), std::move(v), settings);
         } else if (yield == Library::Container::Yield::END_ITERATOR) {
+            ValueFlow::Value v(0);
+            v.setKnown();
             v.valueType = ValueFlow::Value::ValueType::ITERATOR_END;
             setTokenValue(const_cast<Token*>(ftok)->next(), std::move(v), settings);
         }
