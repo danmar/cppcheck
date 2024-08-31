@@ -856,23 +856,22 @@ static void valueFlowSameExpressions(TokenList& tokenlist, const Settings& setti
         if (!astIsIntegral(tok->astOperand1(), false) && !astIsIntegral(tok->astOperand2(), false))
             continue;
 
-        ValueFlow::Value val;
+        long long val;
 
         if (Token::Match(tok, "==|>=|<=|/")) {
-            val = ValueFlow::Value(1);
-            val.setKnown();
+            val = 1;
         }
-
-        if (Token::Match(tok, "!=|>|<|%|-")) {
-            val = ValueFlow::Value(0);
-            val.setKnown();
+        else if (Token::Match(tok, "!=|>|<|%|-")) {
+            val = 0;
         }
-
-        if (!val.isKnown())
+        else
             continue;
 
-        if (isSameExpression(false, tok->astOperand1(), tok->astOperand2(), settings, true, true, &val.errorPath)) {
-            setTokenValue(tok, std::move(val), settings);
+        ValueFlow::Value value(val);
+        value.setKnown();
+
+        if (isSameExpression(false, tok->astOperand1(), tok->astOperand2(), settings, true, true, &value.errorPath)) {
+            setTokenValue(tok, std::move(value), settings);
         }
     }
 }
