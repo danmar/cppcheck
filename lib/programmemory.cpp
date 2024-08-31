@@ -1707,9 +1707,10 @@ namespace {
                     continue;
                 if (value.tokvalue->exprId() > 0 && !pm->hasValue(value.tokvalue->exprId()))
                     continue;
-                ValueFlow::Value v2 = utils::as_const(*pm).at(value.tokvalue->exprId());
-                if (!v2.isIntValue() && value.intvalue != 0)
+                const ValueFlow::Value& v_ref = utils::as_const(*pm).at(value.tokvalue->exprId());
+                if (!v_ref.isIntValue() && value.intvalue != 0)
                     continue;
+                ValueFlow::Value v2 = v_ref;
                 v2.intvalue += value.intvalue;
                 return v2;
             }
