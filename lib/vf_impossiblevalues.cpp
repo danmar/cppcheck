@@ -120,7 +120,6 @@ namespace ValueFlow
                     flipped = true;
                 else if (!std::equal(tokens.cbegin(), tokens.cend(), branches.cbegin(), &isSameToken))
                     continue;
-                const bool isMin = Token::Match(condTok, "<|<=") ^ flipped;
                 std::vector<Value> values;
                 for (const Token* tok2 : tokens) {
                     if (tok2->hasKnownIntValue()) {
@@ -140,6 +139,7 @@ namespace ValueFlow
                         });
                     }
                 }
+                const bool isMin = Token::Match(condTok, "<|<=") ^ flipped;
                 for (Value& value : values) {
                     value.setImpossible();
                     if (isMin) {
