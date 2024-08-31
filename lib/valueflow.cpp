@@ -6759,8 +6759,8 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
             continue;
         }
 
-        for (const ValueFlow::Value& value : values) {
-            valueFlowForward(nameToken->next(), var->nameToken(), value, tokenlist, errorLogger, settings);
+        for (ValueFlow::Value& value : values) {
+            valueFlowForward(nameToken->next(), var->nameToken(), std::move(value), tokenlist, errorLogger, settings);
         }
     }
 
@@ -6806,8 +6806,8 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                     const Token* constructorArgs = tok;
                     values = getContainerSizeFromConstructor(constructorArgs, tok->valueType(), settings, true);
                 }
-                for (const ValueFlow::Value& value : values)
-                    setTokenValue(tok, value, settings);
+                for (ValueFlow::Value& value : values)
+                    setTokenValue(tok, std::move(value), settings);
             } else if (Token::Match(tok, ";|{|} %var% =") && Token::Match(tok->tokAt(2)->astOperand2(), "[({]") &&
                        // init list
                        ((tok->tokAt(2) == tok->tokAt(2)->astOperand2()->astParent() && !tok->tokAt(2)->astOperand2()->astOperand2() && tok->tokAt(2)->astOperand2()->str() == "{") ||
