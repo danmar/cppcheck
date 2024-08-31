@@ -1070,7 +1070,7 @@ static void valueFlowImpossibleValues(TokenList& tokenList, const Settings& sett
                     ValueFlow::Value symValue{};
                     symValue.valueType = ValueFlow::Value::ValueType::SYMBOLIC;
                     symValue.tokvalue = tok2;
-                    values.push_back(symValue);
+                    values.push_back(std::move(symValue));
                     std::copy_if(tok2->values().cbegin(),
                                  tok2->values().cend(),
                                  std::back_inserter(values),
