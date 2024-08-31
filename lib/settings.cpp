@@ -448,8 +448,6 @@ static const std::set<std::string> certCppCheckers{
 };
 
 static const std::set<std::string> misrac2012Checkers{
-    "alwaysFalse",
-    "alwaysTrue",
     "argumentSize",
     "autovarInvalidDeallocation",
     "bufferAccessOutOfBounds",
@@ -492,8 +490,6 @@ static const std::set<std::string> misrac2012Checkers{
 };
 
 static const std::set<std::string> misrac2023Checkers{
-    "alwaysFalse",
-    "alwaysTrue",
     "argumentSize",
     "autovarInvalidDeallocation",
     "bufferAccessOutOfBounds",
