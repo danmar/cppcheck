@@ -46,6 +46,7 @@ private:
         TEST_CASE(ErrorMessageVerbose);
         TEST_CASE(ErrorMessageVerboseLocations);
         TEST_CASE(ErrorMessageFromInternalError);
+        TEST_CASE(ErrorMessageColorized);
         TEST_CASE(CustomFormat);
         TEST_CASE(CustomFormat2);
         TEST_CASE(CustomFormatLocations);
@@ -191,6 +192,34 @@ private:
             ASSERT_EQUALS("[file.cpp:0]: (error) msg: message", msg.toString(false));
             ASSERT_EQUALS("[file.cpp:0]: (error) msg: message: details", msg.toString(true));
         }
+    }
+
+    void ErrorMessageColorized() const {
+        const bool oDisableColors = gDisableColors;
+        gDisableColors = false;
+        setenv("CLICOLOR_FORCE", "1", 1);
+        std::list<ErrorMessage::FileLocation> locs = { };
+        {
+            ErrorMessage msg(std::move(locs), emptyString, Severity::error, "Programming error.\nVerbose error", "errorId",
+                             Certainty::normal);
+            ASSERT_EQUALS("{bold} \x1b[31merror: Programming error.", msg.toString(false, "{bold} {severity}: {message}"));
+        }
+        {
+            ErrorMessage msg(std::move(locs), emptyString, Severity::warning, "Programming warning.\nVerbose warning", "errorId",
+                             Certainty::normal);
+            ASSERT_EQUALS("{bold} \x1b[35mwarning: Programming warning.", msg.toString(false, "{bold} {severity}: {message}"));
+        }
+        {
+            ErrorMessage msg(std::move(locs), emptyString, Severity::style, "Style.\nVerbose style", "errorId", Certainty::normal);
+            ASSERT_EQUALS("{bold} \x1b[1mstyle: Style.", msg.toString(false, "{bold} {severity}: {message}"));
+        }
+        {
+            ErrorMessage msg(std::move(locs), emptyString, Severity::information, "Programming information.\nProgramming information",
+                             "errorId", Certainty::normal);
+            ASSERT_EQUALS("{bold} \x1b[32minformation: Programming information.", msg.toString(false, "{bold} {severity}: {message}"));
+        }
+        setenv("CLICOLOR_FORCE", "", 1);
+        gDisableColors = oDisableColors;
     }
 
     void CustomFormat() const {
