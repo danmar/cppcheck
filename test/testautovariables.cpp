@@ -3504,6 +3504,13 @@ private:
               "    return par;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S { int* (*ptr)(const int*); };\n" // #13057
+              "int* f(S* s) {\n"
+              "    int x = 0;\n"
+              "    return s->ptr(&x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void danglingLifetimeUserConstructor()
