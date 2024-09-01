@@ -39,6 +39,7 @@
 #include "vfvalue.h"
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cctype>
 #include <cstdlib>
@@ -7443,13 +7444,13 @@ void Tokenizer::simplifyStaticConst()
 {
     // This function will simplify the token list so that the qualifiers "extern", "static"
     // and "const" appear in the same order as in the array below.
-    const std::string qualifiers[] = {"extern", "static", "const"};
+    static const std::array<std::string, 3> qualifiers = {"extern", "static", "const"};
 
     // Move 'const' before all other qualifiers and types and then
     // move 'static' before all other qualifiers and types, ...
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         bool continue2 = false;
-        for (std::size_t i = 0; i < sizeof(qualifiers)/sizeof(qualifiers[0]); i++) {
+        for (std::size_t i = 0; i < qualifiers.size(); i++) {
 
             // Keep searching for a qualifier
             if (!tok->next() || tok->strAt(1) != qualifiers[i])
