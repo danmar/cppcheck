@@ -1236,9 +1236,9 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
             if (Token::Match(tok2, "(|{|["))
                 tok2 = tok2->link();
             else if (Token::Match(tok2, "%type% <") && (tok2->strAt(2) == ">" || templateParameters(tok2->next()))) {
-                const std::list<TokenAndName>::iterator ti = std::find_if(mTemplateInstantiations.begin(),
-                                                                          mTemplateInstantiations.end(),
-                                                                          FindToken(tok2));
+                const std::list<TokenAndName>::const_iterator ti = std::find_if(mTemplateInstantiations.cbegin(),
+                                                                                mTemplateInstantiations.cend(),
+                                                                                FindToken(tok2));
                 if (ti != mTemplateInstantiations.end())
                     mTemplateInstantiations.erase(ti);
                 ++indentlevel;
@@ -1255,9 +1255,9 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
             continue;
 
         // don't strip args from uninstantiated templates
-        const std::list<TokenAndName>::iterator ti2 = std::find_if(mTemplateInstantiations.begin(),
-                                                                   mTemplateInstantiations.end(),
-                                                                   FindName(declaration.name()));
+        const std::list<TokenAndName>::const_iterator ti2 = std::find_if(mTemplateInstantiations.cbegin(),
+                                                                         mTemplateInstantiations.cend(),
+                                                                         FindName(declaration.name()));
 
         if (ti2 == mTemplateInstantiations.end())
             continue;
@@ -1272,7 +1272,7 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
 
 void TemplateSimplifier::simplifyTemplateAliases()
 {
-    for (std::list<TokenAndName>::iterator it1 = mTemplateDeclarations.begin(); it1 != mTemplateDeclarations.end();) {
+    for (std::list<TokenAndName>::const_iterator it1 = mTemplateDeclarations.cbegin(); it1 != mTemplateDeclarations.cend();) {
         const TokenAndName &aliasDeclaration = *it1;
 
         if (!aliasDeclaration.isAlias()) {
@@ -1289,7 +1289,7 @@ void TemplateSimplifier::simplifyTemplateAliases()
 
         // Look for alias usages..
         bool found = false;
-        for (std::list<TokenAndName>::iterator it2 = mTemplateInstantiations.begin(); it2 != mTemplateInstantiations.end();) {
+        for (std::list<TokenAndName>::const_iterator it2 = mTemplateInstantiations.cbegin(); it2 != mTemplateInstantiations.cend();) {
             const TokenAndName &aliasUsage = *it2;
             if (!aliasUsage.token() || aliasUsage.fullName() != aliasDeclaration.fullName()) {
                 ++it2;
@@ -1849,9 +1849,9 @@ void TemplateSimplifier::expandTemplate(
                     if (Token::Match(start, "[|{|(")) {
                         links[start->link()] = dst->previous();
                     } else if (Token::Match(start, "]|}|)")) {
-                        std::map<const Token *, Token *>::iterator link = links.find(start);
+                        std::map<const Token *, Token *>::const_iterator link = links.find(start);
                         // make sure link is valid
-                        if (link != links.end()) {
+                        if (link != links.cend()) {
                             Token::createMutualLinks(link->second, dst->previous());
                             links.erase(start);
                         }
@@ -3389,8 +3389,8 @@ void TemplateSimplifier::replaceTemplateUsage(
         // Foo < int >  =>  Foo<int>
         for (const Token *tok = nameTok1->next(); tok != tok2; tok = tok->next()) {
             if (tok->isName() && tok->templateSimplifierPointers() && !tok->templateSimplifierPointers()->empty()) {
-                std::list<TokenAndName>::iterator ti;
-                for (ti = mTemplateInstantiations.begin(); ti != mTemplateInstantiations.end();) {
+                std::list<TokenAndName>::const_iterator ti;
+                for (ti = mTemplateInstantiations.cbegin(); ti != mTemplateInstantiations.cend();) {
                     if (ti->token() == tok) {
                         ti = mTemplateInstantiations.erase(ti);
                         break;

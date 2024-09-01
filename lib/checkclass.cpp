@@ -1298,7 +1298,7 @@ void CheckClass::privateFunctions()
         // Bailout for overridden virtual functions of base classes
         if (!scope->definedType->derivedFrom.empty()) {
             // Check virtual functions
-            for (std::list<const Function*>::iterator it = privateFuncs.begin(); it != privateFuncs.end();) {
+            for (std::list<const Function*>::const_iterator it = privateFuncs.cbegin(); it != privateFuncs.cend();) {
                 if ((*it)->isImplicitlyVirtual(true)) // Give true as default value to be returned if we don't see all base classes
                     it = privateFuncs.erase(it);
                 else
@@ -2026,8 +2026,8 @@ void CheckClass::virtualDestructor()
                         if (baseDestructor->access == AccessControl::Public) {
                             virtualDestructorError(baseDestructor->token, derivedFrom->name(), derivedClass->str(), false);
                             // check for duplicate error and remove it if found
-                            const std::list<const Function *>::iterator found = find(inconclusiveErrors.begin(), inconclusiveErrors.end(), baseDestructor);
-                            if (found != inconclusiveErrors.end())
+                            const std::list<const Function *>::const_iterator found = std::find(inconclusiveErrors.cbegin(), inconclusiveErrors.cend(), baseDestructor);
+                            if (found != inconclusiveErrors.cend())
                                 inconclusiveErrors.erase(found);
                         }
                     }
