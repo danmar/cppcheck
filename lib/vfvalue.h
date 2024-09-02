@@ -298,12 +298,12 @@ namespace ValueFlow
 
         ErrorPath errorPath;
 
-        ErrorPath debugPath;
+        ErrorPath debugPath; // TODO: make lighter by default
 
         /** For calculated values - varId that calculated value depends on */
         nonneg int varId{};
 
-        int indirect{};
+        int indirect{}; // TODO: can we reduce the size?
 
         /** Path id */
         MathLib::bigint path{};
