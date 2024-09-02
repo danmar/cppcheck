@@ -264,7 +264,22 @@ namespace ValueFlow
         /** The value bound  */
         Bound bound = Bound::Point;
 
-        long long : 48; // padding
+        /** value relies on safe checking */
+        bool safe{};
+
+        /** Conditional value */
+        bool conditional{};
+
+        /** Value is is from an expanded macro */
+        bool macro{};
+
+        /** Is this value passed as default parameter to the function? */
+        bool defaultArg{};
+
+        /** kind of moved  */
+        enum class MoveKind : std::uint8_t { NonMovedVariable, MovedVariable, ForwardedVariable } moveKind = MoveKind::NonMovedVariable;
+
+        enum class LifetimeScope : std::uint8_t { Local, Argument, SubFunction, ThisPointer, ThisValue } lifetimeScope = LifetimeScope::Local;
 
         /** int value (or sometimes bool value?) */
         long long intvalue{};
@@ -288,32 +303,7 @@ namespace ValueFlow
         /** For calculated values - varId that calculated value depends on */
         nonneg int varId{};
 
-        enum class UnknownFunctionReturn : uint8_t {
-            no,             // not unknown function return
-            outOfMemory,    // out of memory
-            outOfResources, // out of resource
-            other           // other
-        };
-        UnknownFunctionReturn unknownFunctionReturn{UnknownFunctionReturn::no};
-
-        /** value relies on safe checking */
-        bool safe{};
-
-        /** Conditional value */
-        bool conditional{};
-
-        /** Value is is from an expanded macro */
-        bool macro{};
-
-        /** Is this value passed as default parameter to the function? */
-        bool defaultArg{};
-
-        int8_t indirect{};
-
-        /** kind of moved  */
-        enum class MoveKind : std::uint8_t { NonMovedVariable, MovedVariable, ForwardedVariable } moveKind = MoveKind::NonMovedVariable;
-
-        long long : 40; // padding
+        int indirect{};
 
         /** Path id */
         MathLib::bigint path{};
@@ -339,8 +329,6 @@ namespace ValueFlow
             Address
         } lifetimeKind = LifetimeKind::Object;
 
-        enum class LifetimeScope : std::uint8_t { Local, Argument, SubFunction, ThisPointer, ThisValue } lifetimeScope = LifetimeScope::Local;
-
         RET_NONNULL static const char* toString(MoveKind moveKind);
         RET_NONNULL static const char* toString(LifetimeKind lifetimeKind);
         RET_NONNULL static const char* toString(LifetimeScope lifetimeScope);
@@ -357,6 +345,14 @@ namespace ValueFlow
             /** Listed values are impossible */
             Impossible
         } valueKind = ValueKind::Possible;
+
+        enum class UnknownFunctionReturn : std::uint8_t {
+            no,             // not unknown function return
+            outOfMemory,    // out of memory
+            outOfResources, // out of resource
+            other           // other
+        };
+        UnknownFunctionReturn unknownFunctionReturn{UnknownFunctionReturn::no};
 
         void setKnown() {
             valueKind = ValueKind::Known;
