@@ -46,18 +46,16 @@
 
 namespace ValueFlow
 {
-    static Library::Container::Yield getContainerYield(Token* tok, const Settings& settings, Token** parent = nullptr)
+    static Library::Container::Yield getContainerYield(Token* tok, const Settings& settings, Token*& parent)
     {
         if (Token::Match(tok, ". %name% (") && tok->astParent() == tok->tokAt(2) && tok->astOperand1() &&
             tok->astOperand1()->valueType()) {
             const Library::Container* c = getLibraryContainer(tok->astOperand1());
-            if (parent)
-                *parent = tok->astParent();
+            parent = tok->astParent();
             return c ? c->getYield(tok->strAt(1)) : Library::Container::Yield::NO_YIELD;
         }
         if (Token::Match(tok->previous(), "%name% (")) {
-            if (parent)
-                *parent = tok;
+            parent = tok;
             if (const Library::Function* f = settings.library.getFunction(tok->previous())) {
                 return f->containerYield;
             }
@@ -302,7 +300,7 @@ namespace ValueFlow
                 }
             }
             Token* next = nullptr;
-            const Library::Container::Yield yields = getContainerYield(parent, settings, &next);
+            const Library::Container::Yield yields = getContainerYield(parent, settings, next);
             if (yields == Library::Container::Yield::SIZE) {
                 Value v(value);
                 v.valueType = Value::ValueType::INT;
