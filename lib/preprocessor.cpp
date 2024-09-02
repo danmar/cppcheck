@@ -735,6 +735,7 @@ bool Preprocessor::hasErrors(const simplecpp::Output &output)
     case simplecpp::Output::UNHANDLED_CHAR_ERROR:
     case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
     case simplecpp::Output::FILE_NOT_FOUND:
+    case simplecpp::Output::DUI_ERROR:
         return true;
     case simplecpp::Output::WARNING:
     case simplecpp::Output::MISSING_HEADER:
@@ -875,6 +876,7 @@ void Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool sh
             break;
         case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
         case simplecpp::Output::FILE_NOT_FOUND:
+        case simplecpp::Output::DUI_ERROR:
             error(emptyString, 0, out.msg);
             break;
         }
