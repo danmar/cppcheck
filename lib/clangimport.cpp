@@ -682,7 +682,7 @@ Scope *clangimport::AstNode::createScope(TokenList &tokenList, Scope::ScopeType 
                 const_cast<Token *>(vartok)->variable(replaceVar[vartok->variable()]);
         }
         std::list<Variable> &varlist = const_cast<Scope *>(def->scope())->varlist;
-        for (std::list<Variable>::iterator var = varlist.begin(); var != varlist.end();) {
+        for (std::list<Variable>::const_iterator var = varlist.cbegin(); var != varlist.cend();) {
             if (replaceVar.find(&(*var)) != replaceVar.end())
                 var = varlist.erase(var);
             else
