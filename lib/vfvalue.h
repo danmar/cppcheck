@@ -22,13 +22,13 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "errortypes.h"
 #include "mathlib.h"
 
 #include <cassert>
 #include <cmath>
 #include <cstdint>
 #include <functional>
-#include <list>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -40,8 +40,6 @@ namespace ValueFlow
 {
     class CPPCHECKLIB Value {
     public:
-        using ErrorPathItem = std::pair<const Token *, std::string>;
-        using ErrorPath = std::list<ErrorPathItem>;
         enum class Bound : std::uint8_t { Upper, Lower, Point };
 
         explicit Value(long long val = 0, Bound b = Bound::Point) :

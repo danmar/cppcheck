@@ -73,17 +73,17 @@ namespace ValueFlow {
 
     struct LifetimeToken {
         const Token* token{};
-        Value::ErrorPath errorPath;
+        ErrorPath errorPath;
         bool addressOf{};
         bool inconclusive{};
 
         LifetimeToken() = default;
 
-        LifetimeToken(const Token* token, Value::ErrorPath errorPath)
+        LifetimeToken(const Token* token, ErrorPath errorPath)
             : token(token), errorPath(std::move(errorPath))
         {}
 
-        LifetimeToken(const Token* token, bool addressOf, Value::ErrorPath errorPath)
+        LifetimeToken(const Token* token, bool addressOf, ErrorPath errorPath)
             : token(token), errorPath(std::move(errorPath)), addressOf(addressOf)
         {}
 
@@ -112,17 +112,17 @@ namespace ValueFlow {
     std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                                                  const Settings& settings,
                                                  bool escape = false,
-                                                 Value::ErrorPath errorPath = Value::ErrorPath{});
+                                                 ErrorPath errorPath = ErrorPath{});
 
     bool hasLifetimeToken(const Token* tok, const Token* lifetime, const Settings& settings);
 
-    const Variable* getLifetimeVariable(const Token* tok, Value::ErrorPath& errorPath, const Settings& settings, bool* addressOf = nullptr);
+    const Variable* getLifetimeVariable(const Token* tok, ErrorPath& errorPath, const Settings& settings, bool* addressOf = nullptr);
 
     const Variable* getLifetimeVariable(const Token* tok, const Settings& settings);
 
     bool isLifetimeBorrowed(const Token *tok, const Settings &settings);
 
-    std::string lifetimeMessage(const Token *tok, const Value *val, Value::ErrorPath &errorPath);
+    std::string lifetimeMessage(const Token *tok, const Value *val, ErrorPath &errorPath);
 
     CPPCHECKLIB Value getLifetimeObjValue(const Token *tok, bool inconclusive = false);
 

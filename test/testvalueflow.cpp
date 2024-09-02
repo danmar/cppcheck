@@ -371,7 +371,7 @@ private:
 
             std::ostringstream ostr;
             for (const ValueFlow::Value &v : tok->values()) {
-                for (const ValueFlow::Value::ErrorPathItem &ep : v.errorPath) {
+                for (const ErrorPathItem &ep : v.errorPath) {
                     const Token *eptok = ep.first;
                     const std::string &msg = ep.second;
                     ostr << eptok->linenr() << ',' << msg << '\n';
