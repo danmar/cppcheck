@@ -21,7 +21,7 @@ permissions:
 jobs:
 
   build:
-    runs-on: ubuntu-22.04 # run on the latest image only
+    runs-on: ubuntu-24.04 # run on the latest image only
     steps:
       - uses: actions/checkout@v4
 
@@ -29,10 +29,11 @@ jobs:
         run: |
           premium_version=${{ inputs.premium_version }}
           if [ -z $premium_version ]; then
-            premium_version=devdrop-20240815
-            wget https://files.cppchecksolutions.com/devdrop/cppcheckpremium-$premium_version-amd64.tar.gz -O cppcheckpremium.tar.gz
+            premium_version=24.9.0
+            #wget https://files.cppchecksolutions.com/devdrop/cppcheckpremium-$premium_version-amd64.tar.gz -O cppcheckpremium.tar.gz
+            wget https://files.cppchecksolutions.com/$premium_version/ubuntu-24.04/cppcheckpremium-$premium_version-amd64.tar.gz -O cppcheckpremium.tar.gz
           else
-            wget https://files.cppchecksolutions.com/$premium_version/ubuntu-22.04/cppcheckpremium-$premium_version-amd64.tar.gz -O cppcheckpremium.tar.gz
+            wget https://files.cppchecksolutions.com/$premium_version/ubuntu-24.04/cppcheckpremium-$premium_version-amd64.tar.gz -O cppcheckpremium.tar.gz
           fi
           tar xvzf cppcheckpremium.tar.gz
           mv cppcheckpremium-$premium_version cppcheckpremium
