@@ -1972,7 +1972,7 @@ ValueFlow::Value ValueFlow::getLifetimeObjValue(const Token *tok, bool inconclus
 template<class Predicate>
 static std::vector<ValueFlow::LifetimeToken> getLifetimeTokens(const Token* tok,
                                                                bool escape,
-                                                               ValueFlow::Value::ErrorPath errorPath,
+                                                               ErrorPath errorPath,
                                                                Predicate pred,
                                                                const Settings& settings,
                                                                int depth = 20)
@@ -2120,7 +2120,7 @@ static std::vector<ValueFlow::LifetimeToken> getLifetimeTokens(const Token* tok,
     return {{tok, std::move(errorPath)}};
 }
 
-std::vector<ValueFlow::LifetimeToken> ValueFlow::getLifetimeTokens(const Token* tok, const Settings& settings, bool escape, ValueFlow::Value::ErrorPath errorPath)
+std::vector<ValueFlow::LifetimeToken> ValueFlow::getLifetimeTokens(const Token* tok, const Settings& settings, bool escape, ErrorPath errorPath)
 {
     return getLifetimeTokens(tok, escape, std::move(errorPath), [](const Token*) {
         return false;
@@ -2130,14 +2130,14 @@ std::vector<ValueFlow::LifetimeToken> ValueFlow::getLifetimeTokens(const Token* 
 bool ValueFlow::hasLifetimeToken(const Token* tok, const Token* lifetime, const Settings& settings)
 {
     bool result = false;
-    getLifetimeTokens(tok, false, ValueFlow::Value::ErrorPath{}, [&](const Token* tok2) {
+    getLifetimeTokens(tok, false, ErrorPath{}, [&](const Token* tok2) {
         result = tok2->exprId() == lifetime->exprId();
         return result;
     }, settings);
     return result;
 }
 
-static const Token* getLifetimeToken(const Token* tok, ValueFlow::Value::ErrorPath& errorPath, const Settings& settings, bool* addressOf = nullptr)
+static const Token* getLifetimeToken(const Token* tok, ErrorPath& errorPath, const Settings& settings, bool* addressOf = nullptr)
 {
     std::vector<ValueFlow::LifetimeToken> lts = ValueFlow::getLifetimeTokens(tok, settings);
     if (lts.size() != 1)
@@ -2150,7 +2150,7 @@ static const Token* getLifetimeToken(const Token* tok, ValueFlow::Value::ErrorPa
     return lts.front().token;
 }
 
-const Variable* ValueFlow::getLifetimeVariable(const Token* tok, ValueFlow::Value::ErrorPath& errorPath, const Settings& settings, bool* addressOf)
+const Variable* ValueFlow::getLifetimeVariable(const Token* tok, ErrorPath& errorPath, const Settings& settings, bool* addressOf)
 {
     const Token* tok2 = getLifetimeToken(tok, errorPath, settings, addressOf);
     if (tok2 && tok2->variable())
@@ -2160,7 +2160,7 @@ const Variable* ValueFlow::getLifetimeVariable(const Token* tok, ValueFlow::Valu
 
 const Variable* ValueFlow::getLifetimeVariable(const Token* tok, const Settings& settings)
 {
-    ValueFlow::Value::ErrorPath errorPath;
+    ErrorPath errorPath;
     return getLifetimeVariable(tok, errorPath, settings, nullptr);
 }
 
