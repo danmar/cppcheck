@@ -86,7 +86,7 @@ public:
     void reallocToAlloc(nonneg int varid) {
         const AllocInfo& alloc = alloctype[varid];
         if (alloc.reallocedFromType >= 0) {
-            const std::map<int, VarInfo::AllocInfo>::iterator it = alloctype.find(alloc.reallocedFromType);
+            const auto it = alloctype.find(alloc.reallocedFromType);
             if (it != alloctype.end() && it->second.status == REALLOC) {
                 it->second.status = ALLOC;
             }
