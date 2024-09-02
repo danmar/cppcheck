@@ -24,7 +24,7 @@ options::options(int argc, const char* const argv[])
     ,mDryRun(mWhichTests.count("-d") != 0)
     ,mExe(argv[0])
 {
-    for (std::set<std::string>::const_iterator it = mWhichTests.cbegin(); it != mWhichTests.cend();) {
+    for (auto it = mWhichTests.cbegin(); it != mWhichTests.cend();) {
         if (!it->empty() && (((*it)[0] == '-') || (it->find("::") != std::string::npos && mWhichTests.count(it->substr(0, it->find("::"))))))
             it = mWhichTests.erase(it);
         else

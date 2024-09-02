@@ -44,7 +44,7 @@
 // TODO: align the exclusion logic with PathMatch
 void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
 {
-    for (std::list<FileSettings>::const_iterator it = fileSettings.cbegin(); it != fileSettings.cend();) {
+    for (auto it = fileSettings.cbegin(); it != fileSettings.cend();) {
         bool ignore = false;
         for (std::string i : ipaths) {
             if (it->filename().size() > i.size() && it->filename().compare(0,i.size(),i)==0) {
@@ -72,7 +72,7 @@ void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
 
 void ImportProject::ignoreOtherConfigs(const std::string &cfg)
 {
-    for (std::list<FileSettings>::const_iterator it = fileSettings.cbegin(); it != fileSettings.cend();) {
+    for (auto it = fileSettings.cbegin(); it != fileSettings.cend();) {
         if (it->cfg != cfg)
             it = fileSettings.erase(it);
         else
@@ -123,7 +123,7 @@ static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std:
         if (expanded.find(var) != expanded.end())
             break;
         expanded.insert(var);
-        std::map<std::string, std::string, cppcheck::stricmp>::const_iterator it1 = variables.find(var);
+        auto it1 = utils::as_const(variables).find(var);
         // variable was not found within defined variables
         if (it1 == variables.end()) {
             const char *envValue = std::getenv(var.c_str());
@@ -1033,7 +1033,7 @@ bool ImportProject::importBcb6Prj(const std::string &projectFilename)
             { "-tWV","-WV" }
         };
 
-        for (std::map<std::string, std::string>::const_iterator i = synonyms.cbegin(); i != synonyms.cend(); ++i) {
+        for (auto i = synonyms.cbegin(); i != synonyms.cend(); ++i) {
             if (cflags.erase(i->first) > 0) {
                 cflags.insert(i->second);
             }
@@ -1419,7 +1419,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
 void ImportProject::selectOneVsConfig(Platform::Type platform)
 {
     std::set<std::string> filenames;
-    for (std::list<FileSettings>::const_iterator it = fileSettings.cbegin(); it != fileSettings.cend();) {
+    for (auto it = fileSettings.cbegin(); it != fileSettings.cend();) {
         if (it->cfg.empty()) {
             ++it;
             continue;
@@ -1446,7 +1446,7 @@ void ImportProject::selectOneVsConfig(Platform::Type platform)
 // cppcheck-suppress unusedFunction - used by GUI only
 void ImportProject::selectVsConfigurations(Platform::Type platform, const std::vector<std::string> &configurations)
 {
-    for (std::list<FileSettings>::const_iterator it = fileSettings.cbegin(); it != fileSettings.cend();) {
+    for (auto it = fileSettings.cbegin(); it != fileSettings.cend();) {
         if (it->cfg.empty()) {
             ++it;
             continue;

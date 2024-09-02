@@ -815,8 +815,7 @@ private:
         std::vector<std::string> other_ops;
         append_vector(other_ops, extendedOps);
 
-        std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.cend();
-        for (other_op = other_ops.cbegin(); other_op != other_ops_end; ++other_op) {
+        for (auto other_op = other_ops.cbegin(); other_op != other_ops.cend(); ++other_op) {
             ASSERT_EQUALS_MSG(false, MatchCheck(*other_op, "%op%"), "Failing other operator: " + *other_op);
         }
     }
@@ -837,16 +836,14 @@ private:
         append_vector(other_ops, extendedOps);
         append_vector(other_ops, assignmentOps);
 
-        std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.cend();
-        for (other_op = other_ops.cbegin(); other_op != other_ops_end; ++other_op) {
+        for (auto other_op = other_ops.cbegin(); other_op != other_ops.cend(); ++other_op) {
             ASSERT_EQUALS_MSG(false, MatchCheck(*other_op, "%cop%"), "Failing other operator: " + *other_op);
         }
     }
 
 
     void isArithmeticalOp() const {
-        std::vector<std::string>::const_iterator test_op, test_ops_end = arithmeticalOps.cend();
-        for (test_op = arithmeticalOps.cbegin(); test_op != test_ops_end; ++test_op) {
+        for (auto test_op = arithmeticalOps.cbegin(); test_op != arithmeticalOps.cend(); ++test_op) {
             TokensFrontBack tokensFrontBack(list);
             Token tok(tokensFrontBack);
             tok.str(*test_op);
@@ -861,8 +858,7 @@ private:
         append_vector(other_ops, extendedOps);
         append_vector(other_ops, assignmentOps);
 
-        std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.cend();
-        for (other_op = other_ops.cbegin(); other_op != other_ops_end; ++other_op) {
+        for (auto other_op = other_ops.cbegin(); other_op != other_ops.cend(); ++other_op) {
             TokensFrontBack tokensFrontBack(list);
             Token tok(tokensFrontBack);
             tok.str(*other_op);
@@ -878,8 +874,7 @@ private:
         append_vector(test_ops, logicalOps);
         append_vector(test_ops, assignmentOps);
 
-        std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.cend();
-        for (test_op = test_ops.cbegin(); test_op != test_ops_end; ++test_op) {
+        for (auto test_op = test_ops.cbegin(); test_op != test_ops.cend(); ++test_op) {
             TokensFrontBack tokensFrontBack(list);
             Token tok(tokensFrontBack);
             tok.str(*test_op);
@@ -890,8 +885,7 @@ private:
         std::vector<std::string> other_ops;
         append_vector(other_ops, extendedOps);
 
-        std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.cend();
-        for (other_op = other_ops.cbegin(); other_op != other_ops_end; ++other_op) {
+        for (auto other_op = other_ops.cbegin(); other_op != other_ops.cend(); ++other_op) {
             TokensFrontBack tokensFrontBack(list);
             Token tok(tokensFrontBack);
             tok.str(*other_op);
@@ -906,8 +900,7 @@ private:
         append_vector(test_ops, comparisonOps);
         append_vector(test_ops, logicalOps);
 
-        std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.cend();
-        for (test_op = test_ops.cbegin(); test_op != test_ops_end; ++test_op) {
+        for (auto test_op = test_ops.cbegin(); test_op != test_ops.cend(); ++test_op) {
             TokensFrontBack tokensFrontBack(list);
             Token tok(tokensFrontBack);
             tok.str(*test_op);
@@ -919,8 +912,7 @@ private:
         append_vector(other_ops, extendedOps);
         append_vector(other_ops, assignmentOps);
 
-        std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.cend();
-        for (other_op = other_ops.cbegin(); other_op != other_ops_end; ++other_op) {
+        for (auto other_op = other_ops.cbegin(); other_op != other_ops.cend(); ++other_op) {
             TokensFrontBack tokensFrontBack(list);
             Token tok(tokensFrontBack);
             tok.str(*other_op);
@@ -936,8 +928,7 @@ private:
         append_vector(test_ops, logicalOps);
         append_vector(test_ops, extendedOps);
 
-        std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.cend();
-        for (test_op = test_ops.cbegin(); test_op != test_ops_end; ++test_op) {
+        for (auto test_op = test_ops.cbegin(); test_op != test_ops.cend(); ++test_op) {
             TokensFrontBack tokensFrontBack(list);
             Token tok(tokensFrontBack);
             tok.str(*test_op);
@@ -945,8 +936,7 @@ private:
         }
 
         // Negative test against assignment operators
-        std::vector<std::string>::const_iterator other_op, other_ops_end = assignmentOps.cend();
-        for (other_op = assignmentOps.cbegin(); other_op != other_ops_end; ++other_op) {
+        for (auto other_op = assignmentOps.cbegin(); other_op != assignmentOps.cend(); ++other_op) {
             TokensFrontBack tokensFrontBack(list);
             Token tok(tokensFrontBack);
             tok.str(*other_op);
@@ -955,8 +945,7 @@ private:
     }
 
     void isAssignmentOp() const {
-        std::vector<std::string>::const_iterator test_op, test_ops_end = assignmentOps.cend();
-        for (test_op = assignmentOps.cbegin(); test_op != test_ops_end; ++test_op) {
+        for (auto test_op = assignmentOps.cbegin(); test_op != assignmentOps.cend(); ++test_op) {
             TokensFrontBack tokensFrontBack(list);
             Token tok(tokensFrontBack);
             tok.str(*test_op);
@@ -971,8 +960,7 @@ private:
         append_vector(other_ops, logicalOps);
         append_vector(other_ops, extendedOps);
 
-        std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.cend();
-        for (other_op = other_ops.cbegin(); other_op != other_ops_end; ++other_op) {
+        for (auto other_op = other_ops.cbegin(); other_op != other_ops.cend(); ++other_op) {
             TokensFrontBack tokensFrontBack(list);
             Token tok(tokensFrontBack);
             tok.str(*other_op);
@@ -981,26 +969,25 @@ private:
     }
 
     void operators() const {
-        std::vector<std::string>::const_iterator test_op;
-        for (test_op = extendedOps.cbegin(); test_op != extendedOps.cend(); ++test_op) {
+        for (auto test_op = extendedOps.cbegin(); test_op != extendedOps.cend(); ++test_op) {
             TokensFrontBack tokensFrontBack(list);
             Token tok(tokensFrontBack);
             tok.str(*test_op);
             ASSERT_EQUALS(Token::eExtendedOp, tok.tokType());
         }
-        for (test_op = logicalOps.cbegin(); test_op != logicalOps.cend(); ++test_op) {
+        for (auto test_op = logicalOps.cbegin(); test_op != logicalOps.cend(); ++test_op) {
             TokensFrontBack tokensFrontBack(list);
             Token tok(tokensFrontBack);
             tok.str(*test_op);
             ASSERT_EQUALS(Token::eLogicalOp, tok.tokType());
         }
-        for (test_op = bitOps.cbegin(); test_op != bitOps.cend(); ++test_op) {
+        for (auto test_op = bitOps.cbegin(); test_op != bitOps.cend(); ++test_op) {
             TokensFrontBack tokensFrontBack(list);
             Token tok(tokensFrontBack);
             tok.str(*test_op);
             ASSERT_EQUALS(Token::eBitOp, tok.tokType());
         }
-        for (test_op = comparisonOps.cbegin(); test_op != comparisonOps.cend(); ++test_op) {
+        for (auto test_op = comparisonOps.cbegin(); test_op != comparisonOps.cend(); ++test_op) {
             TokensFrontBack tokensFrontBack(list);
             Token tok(tokensFrontBack);
             tok.str(*test_op);
@@ -1045,8 +1032,7 @@ private:
         standard_types.emplace_back("double");
         standard_types.emplace_back("size_t");
 
-        std::vector<std::string>::const_iterator test_op, test_ops_end = standard_types.cend();
-        for (test_op = standard_types.cbegin(); test_op != test_ops_end; ++test_op) {
+        for (auto test_op = standard_types.cbegin(); test_op != standard_types.cend(); ++test_op) {
             TokensFrontBack tokensFrontBack(list);
             Token tok(tokensFrontBack);
             tok.str(*test_op);

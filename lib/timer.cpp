@@ -60,7 +60,7 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
     std::cout << std::endl;
 
     size_t ordinal = 1; // maybe it would be nice to have an ordinal in output later!
-    for (std::vector<dataElementType>::const_iterator iter=data.cbegin(); iter!=data.cend(); ++iter) {
+    for (auto iter=data.cbegin(); iter!=data.cend(); ++iter) {
         const double sec = iter->second.seconds();
         const double secAverage = sec / (double)(iter->second.mNumberOfResults);
         bool hasParent = false;

@@ -28,6 +28,7 @@
 #include "settings.h"
 #include "suppressions.h"
 #include "timer.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <numeric>
@@ -242,8 +243,8 @@ unsigned int ProcessExecutor::check()
     std::map<pid_t, std::string> childFile;
     std::map<int, std::string> pipeFile;
     std::size_t processedsize = 0;
-    std::list<FileWithDetails>::const_iterator iFile = mFiles.cbegin();
-    std::list<FileSettings>::const_iterator iFileSettings = mFileSettings.cbegin();
+    auto iFile = mFiles.cbegin();
+    auto iFileSettings = mFileSettings.cbegin();
     for (;;) {
         // Start a new child
         const size_t nchildren = childFile.size();
@@ -310,7 +311,7 @@ unsigned int ProcessExecutor::check()
         if (!rpipes.empty()) {
             fd_set rfds;
             FD_ZERO(&rfds);
-            for (std::list<int>::const_iterator rp = rpipes.cbegin(); rp != rpipes.cend(); ++rp)
+            for (auto rp = rpipes.cbegin(); rp != rpipes.cend(); ++rp)
                 FD_SET(*rp, &rfds);
             timeval tv; // for every second polling of load average condition
             tv.tv_sec = 1;
@@ -318,11 +319,11 @@ unsigned int ProcessExecutor::check()
             const int r = select(*std::max_element(rpipes.cbegin(), rpipes.cend()) + 1, &rfds, nullptr, nullptr, &tv);
 
             if (r > 0) {
-                std::list<int>::const_iterator rp = rpipes.cbegin();
+                auto rp = rpipes.cbegin();
                 while (rp != rpipes.cend()) {
                     if (FD_ISSET(*rp, &rfds)) {
                         std::string name;
-                        const std::map<int, std::string>::const_iterator p = pipeFile.find(*rp);
+                        const auto p = utils::as_const(pipeFile).find(*rp);
                         if (p != pipeFile.cend()) {
                             name = p->second;
                         }
@@ -358,7 +359,7 @@ unsigned int ProcessExecutor::check()
             const pid_t child = waitpid(0, &stat, WNOHANG);
             if (child > 0) {
                 std::string childname;
-                const std::map<pid_t, std::string>::const_iterator c = childFile.find(child);
+                const auto c = utils::as_const(childFile).find(child);
                 if (c != childFile.cend()) {
                     childname = c->second;
                     childFile.erase(c);
