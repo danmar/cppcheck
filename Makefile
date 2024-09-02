@@ -40,7 +40,7 @@ ifndef CPPFLAGS
 endif
 
 ifdef FILESDIR
-    CPPFLAGS+=-DFILESDIR=\"$(FILESDIR)\"
+    override CPPFLAGS+=-DFILESDIR=\"$(FILESDIR)\"
 endif
 
 RDYNAMIC=-rdynamic
