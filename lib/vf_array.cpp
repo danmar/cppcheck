@@ -39,7 +39,7 @@ namespace ValueFlow
         for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
             if (tok->varId() > 0) {
                 // array
-                const std::map<nonneg int, const Token *>::const_iterator it = constantArrays.find(tok->varId());
+                const auto it = utils::as_const(constantArrays).find(tok->varId());
                 if (it != constantArrays.end()) {
                     Value value;
                     value.valueType = Value::ValueType::TOK;

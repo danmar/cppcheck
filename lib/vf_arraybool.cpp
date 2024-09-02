@@ -58,7 +58,7 @@ namespace ValueFlow
                 continue;
             const Variable *var = nullptr;
             bool known = false;
-            const std::list<Value>::const_iterator val =
+            const auto val =
                 std::find_if(tok->values().cbegin(), tok->values().cend(), std::mem_fn(&Value::isTokValue));
             if (val == tok->values().end()) {
                 var = tok->variable();
