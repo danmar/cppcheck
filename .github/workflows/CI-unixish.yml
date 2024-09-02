@@ -462,6 +462,7 @@ jobs:
       # TODO: move to scriptcheck.yml so these are tested with all Python versions?
       - name: Test addons
         run: |
+          set -x
           ./cppcheck --error-exitcode=1 --inline-suppr --addon=threadsafety addons/test/threadsafety
           ./cppcheck --error-exitcode=1 --inline-suppr --addon=threadsafety --std=c++03 addons/test/threadsafety
           ./cppcheck --error-exitcode=1 --inline-suppr --addon=misra addons/test/misra/crash*.c
