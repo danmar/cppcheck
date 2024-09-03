@@ -611,10 +611,8 @@ namespace {
                 } else if (!tok->variable() && (Token::Match(tok, "%name% :") || tok->str() == "case")) {
                     if (!analyzer->lowerToPossible())
                         return Break(Analyzer::Terminate::Bail);
-                } else if (tok->link() && tok->str() == "}") {
+                } else if (tok->link() && tok->str() == "}" && tok == tok->scope()->bodyEnd) { // might be an init list
                     const Scope* scope = tok->scope();
-                    if (!scope)
-                        return Break();
                     if (contains({Scope::eDo, Scope::eFor, Scope::eWhile, Scope::eIf, Scope::eElse, Scope::eSwitch}, scope->type)) {
                         const bool inElse = scope->type == Scope::eElse;
                         const bool inDoWhile = scope->type == Scope::eDo;
