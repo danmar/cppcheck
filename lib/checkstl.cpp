@@ -1613,22 +1613,8 @@ static const Token* skipLocalVars(const Token* const tok)
     if (Token::simpleMatch(tok, "{"))
         return skipLocalVars(tok->next());
 
-    const Token *top = tok->astTop();
-    if (!top) {
-        const Token *semi = Token::findsimplematch(tok, ";");
-        if (!semi)
-            return tok;
-        if (!Token::Match(semi->previous(), "%var% ;"))
-            return tok;
-        const Token *varTok = semi->previous();
-        const Variable *var = varTok->variable();
-        if (!var)
-            return tok;
-        if (var->nameToken() != varTok)
-            return tok;
-        return skipLocalVars(semi->next());
-    }
     if (tok->isAssignmentOp()) {
+        const Token *top = tok->astTop();
         const Token *varTok = top->astOperand1();
         const Variable *var = varTok->variable();
         if (!var)

@@ -919,9 +919,9 @@ public:
      * @param prepend Insert the new token before this token when it's not
      * the first one on the tokens list.
      */
-    Token* insertToken(const std::string& tokenStr, const std::string& originalNameStr = emptyString, const std::string& macroNameStr = emptyString, bool prepend = false);
+    RET_NONNULL Token* insertToken(const std::string& tokenStr, const std::string& originalNameStr = emptyString, const std::string& macroNameStr = emptyString, bool prepend = false);
 
-    Token* insertTokenBefore(const std::string& tokenStr, const std::string& originalNameStr = emptyString, const std::string& macroNameStr = emptyString)
+    RET_NONNULL Token* insertTokenBefore(const std::string& tokenStr, const std::string& originalNameStr = emptyString, const std::string& macroNameStr = emptyString)
     {
         return insertToken(tokenStr, originalNameStr, macroNameStr, true);
     }
@@ -1224,7 +1224,7 @@ public:
     /**
      * @return the first token of the next argument. Does only work on argument
      * lists. Requires that Tokenizer::createLinks2() has been called before.
-     * Returns 0, if there is no next argument.
+     * Returns nullptr, if there is no next argument.
      */
     const Token* nextArgument() const;
     Token *nextArgument();
@@ -1232,14 +1232,14 @@ public:
     /**
      * @return the first token of the next argument. Does only work on argument
      * lists. Should be used only before Tokenizer::createLinks2() was called.
-     * Returns 0, if there is no next argument.
+     * Returns nullptr, if there is no next argument.
      */
     const Token* nextArgumentBeforeCreateLinks2() const;
 
     /**
      * @return the first token of the next template argument. Does only work on template argument
      * lists. Requires that Tokenizer::createLinks2() has been called before.
-     * Returns 0, if there is no next argument.
+     * Returns nullptr, if there is no next argument.
      */
     const Token* nextTemplateArgument() const;
 
@@ -1477,14 +1477,14 @@ public:
         return nullptr;
 
     }
-    Token *astTop() {
+    RET_NONNULL Token *astTop() {
         Token *ret = this;
         while (ret->mImpl->mAstParent)
             ret = ret->mImpl->mAstParent;
         return ret;
     }
 
-    const Token *astTop() const {
+    RET_NONNULL const Token *astTop() const {
         const Token *ret = this;
         while (ret->mImpl->mAstParent)
             ret = ret->mImpl->mAstParent;

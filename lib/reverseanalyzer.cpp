@@ -295,7 +295,7 @@ namespace {
                     if (!condTok)
                         break;
                     Analyzer::Action condAction = analyzeRecursive(condTok);
-                    const bool inLoop = condTok->astTop() && Token::Match(condTok->astTop()->previous(), "for|while (");
+                    const bool inLoop = Token::Match(condTok->astTop()->previous(), "for|while (");
                     // Evaluate condition of for and while loops first
                     if (inLoop) {
                         if (Token::findmatch(tok->link(), "goto|break", tok))

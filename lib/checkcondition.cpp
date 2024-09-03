@@ -834,8 +834,6 @@ static std::string innerSmtString(const Token * tok)
 {
     if (!tok)
         return "if";
-    if (!tok->astTop())
-        return "if";
     const Token * top = tok->astTop();
     if (top->str() == "(" && top->astOperand1())
         return top->astOperand1()->str();
@@ -1119,7 +1117,7 @@ static std::string conditionString(const Token * tok)
 
 static bool isIfConstexpr(const Token* tok) {
     const Token* const top = tok->astTop();
-    return top && Token::simpleMatch(top->astOperand1(), "if") && top->astOperand1()->isConstexpr();
+    return Token::simpleMatch(top->astOperand1(), "if") && top->astOperand1()->isConstexpr();
 }
 
 void CheckCondition::checkIncorrectLogicOperator()
