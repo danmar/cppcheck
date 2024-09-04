@@ -4231,7 +4231,7 @@ private:
                       "[test.cpp:4]: (style) Variable 'b' can be declared as const array\n",
                       errout_str());
         
-        check("int f(int i, int j) {\n"
+        check("int f(int i, int j) {\n" // #13069
               "    int a[3][4] = {\n"
               "        { 2,  2, -1, -1 },\n"
               "        { 2, -1,  2, -1 },\n"
