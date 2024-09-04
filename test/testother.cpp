@@ -4196,7 +4196,6 @@ private:
     }
 
     void constArray() {
-      
         check("void f(std::array<int, 2>& a) {\n"
               "    if (a[0]) {}\n"
               "}\n"
@@ -4204,20 +4203,20 @@ private:
               "    a.fill(0);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'a' can be declared as const array\n", errout_str());
-        
+
         check("int f() {\n"
               "    static int i[1] = {};\n"
               "    return i[0];\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared as const array\n", errout_str());
-        
+
         check("int f() {\n"
               "    static int i[] = { 0 };\n"
               "    int j = i[0] + 1;\n"
               "    return j;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared as const array\n", errout_str());
-        
+
         check("void f(int i) {\n"
               "    const char *tmp;\n"
               "    char* a[] = { \"a\", \"aa\" };\n"
@@ -4230,7 +4229,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' can be declared as const array\n"
                       "[test.cpp:4]: (style) Variable 'b' can be declared as const array\n",
                       errout_str());
-        
+
         check("int f(int i, int j) {\n" // #13069
               "    int a[3][4] = {\n"
               "        { 2,  2, -1, -1 },\n"
