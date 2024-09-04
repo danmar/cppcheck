@@ -114,6 +114,7 @@ private:
         TEST_CASE(constVariable);
         TEST_CASE(constParameterCallback);
         TEST_CASE(constPointer);
+        TEST_CASE(constArray);
 
         TEST_CASE(switchRedundantAssignmentTest);
         TEST_CASE(switchRedundantOperationTest);
@@ -3394,14 +3395,6 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout_str());
 
-        check("void f(std::array<int, 2>& a) {\n"
-              "    if (a[0]) {}\n"
-              "}\n"
-              "void g(std::array<int, 2>& a) {\n"
-              "    a.fill(0);\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'a' can be declared as const array\n", errout_str());
-
         // #11682
         check("struct b {\n"
               "    void mutate();\n"
@@ -3823,19 +3816,6 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout_str());
 
-        check("int f() {\n"
-              "    static int i[1] = {};\n"
-              "    return i[0];\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared as const array\n", errout_str());
-
-        check("int f() {\n"
-              "    static int i[] = { 0 };\n"
-              "    int j = i[0] + 1;\n"
-              "    return j;\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared as const array\n", errout_str());
-
         // #10471
         check("void f(std::array<int, 1> const& i) {\n"
               "    if (i[0] == 0) {}\n"
@@ -3912,19 +3892,6 @@ private:
               "};\n"
               "S<int*> s;\n");
         ASSERT_EQUALS("", errout_str());
-
-        check("void f(int i) {\n"
-              "    const char *tmp;\n"
-              "    char* a[] = { \"a\", \"aa\" };\n"
-              "    static char* b[] = { \"b\", \"bb\" };\n"
-              "    tmp = a[i];\n"
-              "    printf(\"%s\", tmp);\n"
-              "    tmp = b[i];\n"
-              "    printf(\"%s\", tmp);\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' can be declared as const array\n"
-                      "[test.cpp:4]: (style) Variable 'b' can be declared as const array\n",
-                      errout_str());
 
         check("typedef void* HWND;\n" // #11084
               "void f(const HWND h) {\n"
@@ -4225,6 +4192,54 @@ private:
               "    (void)s->i;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 's' can be declared as pointer to const\n",
+                      errout_str());
+    }
+
+    void constArray() {
+      
+        check("void f(std::array<int, 2>& a) {\n"
+              "    if (a[0]) {}\n"
+              "}\n"
+              "void g(std::array<int, 2>& a) {\n"
+              "    a.fill(0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'a' can be declared as const array\n", errout_str());
+        
+        check("int f() {\n"
+              "    static int i[1] = {};\n"
+              "    return i[0];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared as const array\n", errout_str());
+        
+        check("int f() {\n"
+              "    static int i[] = { 0 };\n"
+              "    int j = i[0] + 1;\n"
+              "    return j;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared as const array\n", errout_str());
+        
+        check("void f(int i) {\n"
+              "    const char *tmp;\n"
+              "    char* a[] = { \"a\", \"aa\" };\n"
+              "    static char* b[] = { \"b\", \"bb\" };\n"
+              "    tmp = a[i];\n"
+              "    printf(\"%s\", tmp);\n"
+              "    tmp = b[i];\n"
+              "    printf(\"%s\", tmp);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' can be declared as const array\n"
+                      "[test.cpp:4]: (style) Variable 'b' can be declared as const array\n",
+                      errout_str());
+        
+        check("int f(int i, int j) {\n"
+              "    int a[3][4] = {\n"
+              "        { 2,  2, -1, -1 },\n"
+              "        { 2, -1,  2, -1 },\n"
+              "        { 2, -1, -1,  2 },\n"
+              "    };\n"
+              "    return a[j][i];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'a' can be declared as const array\n",
                       errout_str());
     }
 
