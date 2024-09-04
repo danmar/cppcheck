@@ -2533,7 +2533,7 @@ private:
                       "4: } ;\n",
                       tokenize(code11));
 
-        const char code12[] = "template<typename... T>\n"
+        const char code12[] = "template<typename... T>\n" // # 13070
                               "    struct S1 : T... {\n"
                               "    constexpr S1(const T& ... p) : T{ p } {}\n"
                               "};\n"
