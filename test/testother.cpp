@@ -4198,7 +4198,7 @@ private:
               "    a[b[i]] = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'b' can be declared as pointer to const\n",
-            errout_str());
+                      errout_str());
     }
 
     void constArray() {
