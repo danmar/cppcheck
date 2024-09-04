@@ -1658,6 +1658,8 @@ void CheckOther::checkConstPointer()
             continue;
         if (deref != NONE) {
             const Token* gparent = parent->astParent();
+            while (Token::simpleMatch(gparent, "[") && parent->str() == gparent->str())
+                gparent = gparent->astParent();
             if (deref == MEMBER) {
                 if (!gparent)
                     continue;
