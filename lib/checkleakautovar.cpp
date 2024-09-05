@@ -675,7 +675,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 tok = tok->next();
             while (Token::Match(tok, "%name% ::|."))
                 tok = tok->tokAt(2);
-            while (tok->next()->str() == ",") {
+            while (tok->next() && tok->next()->str() == ",") {
                 tok = tok->tokAt(2);
                 while (Token::Match(tok, "%name% ::|."))
                     tok = tok->tokAt(2);
