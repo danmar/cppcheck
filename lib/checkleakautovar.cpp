@@ -675,6 +675,11 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 tok = tok->next();
             while (Token::Match(tok, "%name% ::|."))
                 tok = tok->tokAt(2);
+            while (tok->next()->str() == ",") {
+                tok = tok->tokAt(2);
+                while (Token::Match(tok, "%name% ::|."))
+                    tok = tok->tokAt(2);
+            }
             const bool isnull = tok->hasKnownIntValue() && tok->values().front().intvalue == 0;
             if (!isnull && tok->varId() && tok->strAt(1) != "[") {
                 const VarInfo::AllocInfo allocation(arrayDelete ? NEW_ARRAY : NEW, VarInfo::DEALLOC, delTok);

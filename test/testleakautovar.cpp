@@ -105,6 +105,7 @@ private:
         TEST_CASE(doublefree14); // #9708
         TEST_CASE(doublefree15);
         TEST_CASE(doublefree16);
+        TEST_CASE(doublefree17); // #8109
 
         // exit
         TEST_CASE(exit1);
@@ -1736,6 +1737,32 @@ private:
               "        r;\n"
               "    })) {}\n"
               "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void doublefree17() { // #8109
+        check("#include <stddef.h>\n"
+              "struct my_allocator_t\n"
+              "{\n"
+              "  char buff[100];\n"
+              "};\n"
+              "my_allocator_t a;\n"
+              "void* operator new (const size_t p_size, my_allocator_t& p_allocator)\n"
+              "{\n"
+              "  return p_allocator.buff;\n"
+              "}\n"
+              "void operator delete (void* p_ptr, my_allocator_t& p_allocator)\n"
+              "{\n"
+              "  (void) p_ptr;\n"
+              "  (void) p_allocator;\n"
+              "}\n"
+              "int test1()\n"
+              "{\n"
+              "  int* x = new (a) int;\n"
+              "  int* y = new (a) int;\n"
+              "  delete (a, x);\n"
+              "  delete (a, y);\n"
+              "}\n", true);
         ASSERT_EQUALS("", errout_str());
     }
 
