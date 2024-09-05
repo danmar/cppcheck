@@ -56,6 +56,8 @@
 #include <utility>
 
 #ifdef HAVE_RULES
+#include "regex.h"
+
 // xml is used for rules
 #include "xml.h"
 #endif
@@ -1133,6 +1135,13 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     return Result::Fail;
                 }
 
+                auto regex = std::make_shared<Regex>(rule.pattern);
+                const std::string regex_err = regex->compile();
+                if (!regex_err.empty()) {
+                    mLogger.printError("failed to compile rule pattern '" + rule.pattern + "' (" + regex_err + ").");
+                    return Result::Fail;
+                }
+                rule.regex = std::move(regex);
                 mSettings.rules.emplace_back(std::move(rule));
 #else
                 mLogger.printError("Option --rule cannot be used as Cppcheck has not been built with rules support.");
@@ -1207,6 +1216,14 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                             mLogger.printError("unable to load rule-file '" + ruleFile + "' - a rule is using the unsupported tokenlist '" + rule.tokenlist + "'.");
                             return Result::Fail;
                         }
+
+                        auto regex = std::make_shared<Regex>(rule.pattern);
+                        const std::string regex_err = regex->compile();
+                        if (!regex_err.empty()) {
+                            mLogger.printError("unable to load rule-file '" + ruleFile + "' - pattern '" + rule.pattern + "' failed to compile (" + regex_err + ").");
+                            return Result::Fail;
+                        }
+                        rule.regex = std::move(regex);
 
                         if (rule.severity == Severity::none) {
                             mLogger.printError("unable to load rule-file '" + ruleFile + "' - a rule has an invalid severity.");
