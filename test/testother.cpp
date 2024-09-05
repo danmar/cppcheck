@@ -4193,6 +4193,12 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 's' can be declared as pointer to const\n",
                       errout_str());
+
+        check("void f(int* a, int* b, int i) {\n" // #13072
+              "    a[b[i]] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'b' can be declared as pointer to const\n",
+                      errout_str());
     }
 
     void constArray() {
