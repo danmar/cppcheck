@@ -128,27 +128,21 @@ static QString getGuideline(ReportType reportType, const QMap<QString,QString>& 
 static QString getClassification(ReportType reportType, const QString& guideline) {
     if (guideline.isEmpty())
         return QString();
-    if (reportType == ReportType::autosar) {
-        for (const checkers::Info& autosarInfo: checkers::autosarInfo) {
+    auto getFromInfo = [](const std::vector<checkers::Info>& info, const QString& guideline) -> QString {
+        for (const checkers::Info& i: info) {
             // cppcheck-suppress useStlAlgorithm
-            if (guideline.compare(autosarInfo.guideline, Qt::CaseInsensitive))
-                return autosarInfo.classification;
+            if (guideline.compare(i.guideline, Qt::CaseInsensitive) == 0)
+                return i.classification;
         }
-    }
-    else if (reportType == ReportType::certC || reportType == ReportType::certCpp) {
-        if (guideline.endsWith("-CPP")) {
-            for (const checkers::Info& info: checkers::certCppInfo) {
-                // cppcheck-suppress useStlAlgorithm
-                if (guideline.compare(info.guideline, Qt::CaseInsensitive))
-                    return info.classification;
-            }
-        } else if (guideline.endsWith("-C")) {
-            for (const checkers::Info& info: checkers::certCInfo) {
-                // cppcheck-suppress useStlAlgorithm
-                if (guideline.compare(info.guideline, Qt::CaseInsensitive))
-                    return info.classification;
-            }
-        }
+        return QString();
+    };
+    if (reportType == ReportType::autosar)
+        return getFromInfo(checkers::autosarInfo, guideline);
+    if (reportType == ReportType::certC || reportType == ReportType::certCpp) {
+        if (guideline.endsWith("-CPP"))
+            return getFromInfo(checkers::certCppInfo, guideline);
+        if (guideline.endsWith("-C"))
+            return getFromInfo(checkers::certCInfo, guideline);
     }
     else if (reportType == ReportType::misraC) {
         QStringList list = guideline.split(".");
@@ -268,26 +262,25 @@ void ResultsTree::keyPressEvent(QKeyEvent *event)
 void ResultsTree::setReportType(ReportType reportType) {
     mReportType = reportType;
 
+    auto readInfo = [this](const std::vector<checkers::Info>& info) {
+        for (const auto& i: info)
+            for (const QString& cppcheckId: QString(i.cppcheckIds).split(","))
+                mGuideline[cppcheckId] = QString(i.guideline).toUpper();
+    };
+
     auto readIdMapping = [this](const std::vector<checkers::IdMapping>& idMapping) {
         for (const auto& i: idMapping)
             for (const QString& cppcheckId: QString(i.cppcheckId).split(","))
                 mGuideline[cppcheckId] = i.guideline;
     };
 
-    if (reportType == ReportType::autosar) {
-        for (const auto& a: checkers::autosarInfo) {
-            mGuideline[a.cppcheckIds] = QString(a.guideline).toUpper();
-        }
-    }
-    else if (reportType == ReportType::certC) {
-        for (const auto& a: checkers::certCInfo)
-            mGuideline[a.cppcheckIds] = QString(a.guideline).toUpper();
-    }
+    if (reportType == ReportType::autosar)
+        readInfo(checkers::autosarInfo);
+    else if (reportType == ReportType::certC)
+        readInfo(checkers::certCInfo);
     else if (reportType == ReportType::certCpp) {
-        for (const auto& a: checkers::certCInfo)
-            mGuideline[a.cppcheckIds] = QString(a.guideline).toUpper();
-        for (const auto& a: checkers::certCppInfo)
-            mGuideline[a.cppcheckIds] = QString(a.guideline).toUpper();
+        readInfo(checkers::certCInfo);
+        readInfo(checkers::certCppInfo);
     }
     else if (reportType == ReportType::misraC)
         readIdMapping(checkers::idMappingMisraC);
