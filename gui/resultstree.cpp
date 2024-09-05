@@ -136,10 +136,9 @@ static QString getClassification(ReportType reportType, const QString& guideline
         }
         return QString();
     };
-    if (reportType == ReportType::autosar) {
+    if (reportType == ReportType::autosar)
         return getFromInfo(checkers::autosarInfo, guideline);
-    }
-    else if (reportType == ReportType::certC || reportType == ReportType::certCpp) {
+    if (reportType == ReportType::certC || reportType == ReportType::certCpp) {
         if (guideline.endsWith("-CPP"))
             return getFromInfo(checkers::certCppInfo, guideline);
         else if (guideline.endsWith("-C"))
