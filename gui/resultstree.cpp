@@ -141,7 +141,7 @@ static QString getClassification(ReportType reportType, const QString& guideline
     if (reportType == ReportType::certC || reportType == ReportType::certCpp) {
         if (guideline.endsWith("-CPP"))
             return getFromInfo(checkers::certCppInfo, guideline);
-        else if (guideline.endsWith("-C"))
+        if (guideline.endsWith("-C"))
             return getFromInfo(checkers::certCInfo, guideline);
     }
     else if (reportType == ReportType::misraC) {
