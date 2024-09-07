@@ -18,6 +18,7 @@
 
 #include "vf_common.h"
 
+#include "astutils.h"
 #include "mathlib.h"
 #include "path.h"
 #include "platform.h"
@@ -403,5 +404,20 @@ namespace ValueFlow
             return !v.isIteratorValue();
         });
         return values;
+    }
+
+    MathLib::bigint valueFlowGetStrLength(const Token* tok)
+    {
+        if (tok->tokType() == Token::eString)
+            return Token::getStrLength(tok);
+        if (astIsGenericChar(tok) || tok->tokType() == Token::eChar)
+            return 1;
+        if (const Value* v = tok->getKnownValue(Value::ValueType::CONTAINER_SIZE))
+            return v->intvalue;
+        if (const Value* v = tok->getKnownValue(Value::ValueType::TOK)) {
+            if (v->tokvalue != tok)
+                return valueFlowGetStrLength(v->tokvalue);
+        }
+        return 0;
     }
 }

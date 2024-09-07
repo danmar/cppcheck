@@ -80,6 +80,7 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/valueptr.h \
            $${PWD}/version.h \
            $${PWD}/vf_analyze.h \
+           $${PWD}/vf_analyzers.h \
            $${PWD}/vf_array.h \
            $${PWD}/vf_arraybool.h \
            $${PWD}/vf_arrayelement.h \
@@ -167,6 +168,7 @@ SOURCES += $${PWD}/valueflow.cpp \
            $${PWD}/token.cpp \
            $${PWD}/tokenlist.cpp \
            $${PWD}/utils.cpp \
+           $${PWD}/vf_analyzers.cpp \
            $${PWD}/vf_array.cpp \
            $${PWD}/vf_arraybool.cpp \
            $${PWD}/vf_arrayelement.cpp \
