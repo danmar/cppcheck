@@ -254,7 +254,7 @@ void CheckString::strPlusCharError(const Token *tok)
 static bool isMacroUsage(const Token* tok)
 {
     if (const Token* parent = tok->astParent()) {
-        while (parent && parent->isCast())
+        while (parent && (parent->isCast() || parent->str() == "&&"))
             parent = parent->astParent();
         if (!parent)
             return false;

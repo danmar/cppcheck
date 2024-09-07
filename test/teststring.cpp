@@ -802,6 +802,12 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Conversion of string literal \"test.C\" to bool always evaluates to true.\n", errout_str());
+
+        check("#define MACRO(C) if(!(C)) { error(__FILE__, __LINE__, __FUNCTION__, #C); return; }\n" // #13067
+              "void f() {\n"
+              "    MACRO(false && \"abc\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void deadStrcmp() {
