@@ -71,6 +71,7 @@ private:
         TEST_CASE(simplifyUsing29);
         TEST_CASE(simplifyUsing30);
         TEST_CASE(simplifyUsing31);
+        TEST_CASE(simplifyUsing32);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -778,6 +779,16 @@ private:
                                 "} "
                                 "B b ; "
                                 "} ;";
+        ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void simplifyUsing32() { // #11430
+        const char code[] = "using T = int*;\n"
+                            "T f() { return T{}; }\n"
+                            "T g() { return T(malloc(4)); }\n";
+        const char expected[] = "int * f ( ) { return ( int * ) 0 ; } "
+                                "int * g ( ) { return ( int * ) ( malloc ( 4 ) ) ; }";
         ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
         ASSERT_EQUALS("", errout_str());
     }

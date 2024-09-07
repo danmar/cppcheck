@@ -1985,6 +1985,19 @@ private:
                                  "  r = 0;\n"
                                  "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) C-style reference casting\n", errout_str());
+
+        // #11430
+        checkOldStylePointerCast("struct B {\n"
+                                 "    float* data() const;\n"
+                                 "};\n"
+                                 "namespace N {\n"
+                                 "    bool f(float* v);\n"
+                                 "}\n"
+                                 "bool g(B& b) {\n"
+                                 "    using float_ptr = float*;\n"
+                                 "    return N::f(float_ptr(b.data()));\n"
+                                 "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
 #define checkInvalidPointerCast(...) checkInvalidPointerCast_(__FILE__, __LINE__, __VA_ARGS__)

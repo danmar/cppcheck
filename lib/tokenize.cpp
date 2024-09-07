@@ -3331,13 +3331,27 @@ bool Tokenizer::simplifyUsing()
                         }
                     }
 
-                    // Is this a "T()" expression where T is a pointer type?
-                    if (Token::Match(tok1, "%name% ( )") && !pointers.empty()) {
-                        Token* tok2 = tok1->linkAt(1);
-                        tok1->deleteThis();
-                        TokenList::copyTokens(tok1, start, usingEnd->previous());
-                        tok2->insertToken("0");
-                        after = tok2->next();
+                    // Is this a "T(...)" expression where T is a pointer type?
+                    if (Token::Match(tok1, "%name% [({]") && !pointers.empty()) {
+                        tok1->tokAt(1)->str("(");
+                        tok1->linkAt(1)->str(")");
+                        if (tok1->linkAt(1) == tok1->tokAt(2)) { // T() or T{}
+                            Token* tok2 = tok1->linkAt(1);
+                            tok1->deleteThis();
+                            TokenList::copyTokens(tok1, start, usingEnd->previous());
+                            tok2->insertToken("0");
+                            after = tok2->next();
+                        }
+                        else { // functional-style cast
+                            Token* tok2 = tok1->linkAt(1);
+                            tok1->originalName(tok1->str());
+                            tok1->isSimplifiedTypedef(true);
+                            tok1->str("(");
+                            Token* tok3 = TokenList::copyTokens(tok1, start, usingEnd->previous());
+                            tok3->insertToken(")");
+                            Token::createMutualLinks(tok1, tok3->next());
+                            after = tok2->next();
+                        }
                     }
                     else { // just replace simple type aliases
                         TokenList::copyTokens(tok1, start, usingEnd->previous());
