@@ -29,6 +29,7 @@
 #include "vf_globalconstvar.h" // IWYU pragma: export
 #include "vf_globalstaticvar.h" // IWYU pragma: export
 #include "vf_impossiblevalues.h" // IWYU pragma: export
+#include "vf_infercondition.h" // IWYU pragma: export
 #include "vf_iteratorinfer.h" // IWYU pragma: export
 #include "vf_iterators.h" // IWYU pragma: export
 #include "vf_number.h" // IWYU pragma: export
