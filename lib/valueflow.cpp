@@ -5513,21 +5513,6 @@ static const Scope* getFunctionScope(const Scope* scope) {
     return scope;
 }
 
-MathLib::bigint valueFlowGetStrLength(const Token* tok)
-{
-    if (tok->tokType() == Token::eString)
-        return Token::getStrLength(tok);
-    if (astIsGenericChar(tok) || tok->tokType() == Token::eChar)
-        return 1;
-    if (const ValueFlow::Value* v = tok->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
-        return v->intvalue;
-    if (const ValueFlow::Value* v = tok->getKnownValue(ValueFlow::Value::ValueType::TOK)) {
-        if (v->tokvalue != tok)
-            return valueFlowGetStrLength(v->tokvalue);
-    }
-    return 0;
-}
-
 static void valueFlowContainerSize(const TokenList& tokenlist,
                                    const SymbolDatabase& symboldatabase,
                                    ErrorLogger& errorLogger,
@@ -5694,17 +5679,17 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
             } else if (tok->str() == "+=" && astIsContainer(tok->astOperand1())) {
                 const Token* containerTok = tok->astOperand1();
                 const Token* valueTok = tok->astOperand2();
-                const MathLib::bigint size = valueFlowGetStrLength(valueTok);
+                const MathLib::bigint size = ValueFlow::valueFlowGetStrLength(valueTok);
                 forwardMinimumContainerSize(size, tok, containerTok);
 
             } else if (tok->str() == "=" && Token::simpleMatch(tok->astOperand2(), "+") && astIsContainerString(tok)) {
                 const Token* tok2 = tok->astOperand2();
                 MathLib::bigint size = 0;
                 while (Token::simpleMatch(tok2, "+") && tok2->astOperand2()) {
-                    size += valueFlowGetStrLength(tok2->astOperand2());
+                    size += ValueFlow::valueFlowGetStrLength(tok2->astOperand2());
                     tok2 = tok2->astOperand1();
                 }
-                size += valueFlowGetStrLength(tok2);
+                size += ValueFlow::valueFlowGetStrLength(tok2);
                 forwardMinimumContainerSize(size, tok, tok->astOperand1());
             }
         }

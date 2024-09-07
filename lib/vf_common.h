@@ -53,6 +53,8 @@ namespace ValueFlow
                            SourceLocation local = SourceLocation::current());
 
     std::list<Value> getIteratorValues(std::list<Value> values, const Value::ValueKind* kind = nullptr);
+
+    MathLib::bigint valueFlowGetStrLength(const Token* tok);
 }
 
 #endif // vfCommonH
