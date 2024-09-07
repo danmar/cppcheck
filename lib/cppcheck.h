@@ -145,11 +145,8 @@ public:
     /** Analyze all files using clang-tidy */
     void analyseClangTidy(const FileSettings &fileSettings);
 
-    /** analyse whole program use .analyzeinfo files */
-    unsigned int analyseWholeProgram(const std::string &buildDir, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings);
-
-    /** Remove *.ctu-info files */
-    void removeCtuInfoFiles(const std::list<FileWithDetails>& files, const std::list<FileSettings>& fileSettings); // cppcheck-suppress functionConst // has side effects
+    /** analyse whole program use .analyzeinfo files or ctuinfo string */
+    unsigned int analyseWholeProgram(const std::string &buildDir, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const std::string& ctuInfo);
 
     static void resetTimerResults();
     static void printTimerResults(SHOWTIME_MODES mode);
@@ -196,7 +193,7 @@ private:
     /**
      * Execute addons
      */
-    void executeAddonsWholeProgram(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings);
+    void executeAddonsWholeProgram(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const std::string& ctuInfo);
 
 #ifdef HAVE_RULES
     /**

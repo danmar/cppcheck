@@ -38,6 +38,8 @@ def convert_json_output(raw_json_strings):
     """Convert raw stdout/stderr cppcheck JSON output to python dict."""
     json_output = {}
     for line in raw_json_strings:
+        if line.startswith('{"summary":'):
+            continue
         try:
             json_line = json.loads(line)
             #  json_output[json_line['errorId']] = json_line

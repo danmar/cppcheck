@@ -1688,11 +1688,14 @@ def reportError(location, severity, message, addon, errorId, extra='', columnOve
         EXIT_CODE = 1
 
 def reportSummary(dumpfile, summary_type, summary_data):
-    # dumpfile ends with ".dump"
-    ctu_info_file = dumpfile[:-4] + "ctu-info"
-    with open(ctu_info_file, 'at') as f:
-        msg = {'summary': summary_type, 'data': summary_data}
-        f.write(json.dumps(msg) + '\n')
+    msg = {'summary': summary_type, 'data': summary_data}
+    if '--cli' in sys.argv:
+        sys.stdout.write(json.dumps(msg) + '\n')
+    else:
+        # dumpfile ends with ".dump"
+        ctu_info_file = dumpfile[:-4] + "ctu-info"
+        with open(ctu_info_file, 'at') as f:
+            f.write(json.dumps(msg) + '\n')
 
 
 def get_path_premium_addon():

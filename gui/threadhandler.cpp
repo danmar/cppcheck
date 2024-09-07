@@ -52,6 +52,7 @@ void ThreadHandler::clearFiles()
     mLastFiles.clear();
     mResults.clearFiles();
     mAnalyseWholeProgram = false;
+    mCtuInfo.clear();
     mAddonsAndTools.clear();
     mSuppressions.clear();
 }
@@ -101,6 +102,8 @@ void ThreadHandler::check(const Settings &settings)
         if (!addonsAndTools.contains(s))
             addonsAndTools << s;
     }
+
+    mCtuInfo.clear();
 
     for (int i = 0; i < mRunningThreadCount; i++) {
         mThreads[i]->setAddonsAndTools(addonsAndTools);
@@ -164,8 +167,9 @@ void ThreadHandler::removeThreads()
 void ThreadHandler::threadDone()
 {
     if (mRunningThreadCount == 1 && mAnalyseWholeProgram) {
-        mThreads[0]->analyseWholeProgram(mLastFiles);
+        mThreads[0]->analyseWholeProgram(mLastFiles, mCtuInfo);
         mAnalyseWholeProgram = false;
+        mCtuInfo.clear();
         return;
     }
 
@@ -187,6 +191,7 @@ void ThreadHandler::stop()
 {
     mCheckStartTime = QDateTime();
     mAnalyseWholeProgram = false;
+    mCtuInfo.clear();
     for (CheckThread* thread : mThreads) {
         thread->stop();
     }

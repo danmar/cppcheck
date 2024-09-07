@@ -1,6 +1,8 @@
+import glob
 import os
 import pytest
 import json
+import shutil
 from testutils import cppcheck
 
 __script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -210,6 +212,61 @@ def test_suppress_inline_project_builddir_j(tmpdir):
     os.mkdir(build_dir)
     __test_suppress_inline_project(tmpdir, ['-j2', '--cppcheck-build-dir={}'.format(build_dir)])
 
+@pytest.mark.parametrize("builddir", (False,True))
+def test_addon_rerun(tmpdir, builddir):
+    """Rerun analysis and ensure that misra CTU works; with and without build dir"""
+    args = [
+        '--addon=misra',
+        '--enable=style',
+        '--template={id}',
+        'whole-program']
+    if builddir:
+        args.append('--cppcheck-build-dir=' + str(tmpdir))
+    _, _, stderr = cppcheck(args, cwd=__script_dir)
+    assert 'misra-c2012-5.8' in stderr
+    _, _, stderr = cppcheck(args, cwd=__script_dir)
+    assert 'misra-c2012-5.8' in stderr
+
+def test_addon_builddir_use_ctuinfo(tmpdir):
+    """Test that ctu-info files are used when builddir is used"""
+    args = [
+        '--cppcheck-build-dir=' + str(tmpdir),
+        '--addon=misra',
+        '--enable=style',
+        '--template={id}',
+        'whole-program']
+    _, _, stderr = cppcheck(args, cwd=__script_dir)
+    assert 'misra-c2012-5.8' in stderr
+    with open(os.path.join(tmpdir, 'whole1.a1.ctu-info'), 'wt'):
+        pass
+    with open(os.path.join(tmpdir, 'whole2.a1.ctu-info'), 'wt'):
+        pass
+    _, _, stderr = cppcheck(args, cwd=__script_dir)
+    assert 'misra-c2012-5.8' not in stderr
+
+@pytest.mark.parametrize("builddir", (False,True))
+def test_addon_rerun(tmpdir, builddir):
+    """Test that there are no artifacts left after analysis"""
+    shutil.copyfile(os.path.join(__script_dir, 'whole-program', 'whole1.c'), os.path.join(tmpdir, 'whole1.c'))
+    shutil.copyfile(os.path.join(__script_dir, 'whole-program', 'whole2.c'), os.path.join(tmpdir, 'whole2.c'))
+    build_dir = os.path.join(tmpdir, 'b1')
+    os.mkdir(build_dir)
+    args = [
+        '--addon=misra',
+        '--enable=style',
+        '--template={id}',
+        str(tmpdir)]
+    if builddir:
+        args.append('--cppcheck-build-dir=' + build_dir)
+    _, _, stderr = cppcheck(args, cwd=__script_dir)
+    assert 'misra-c2012-5.8' in stderr
+    files = []
+    for f in glob.glob(str(tmpdir) + '/*'):
+        if os.path.isfile(f):
+            files.append(os.path.basename(f))
+    files.sort()
+    assert ' '.join(files) == 'whole1.c whole2.c'
+
 
 def __test_checkclass(extra_args):
     args = [
@@ -289,3 +346,4 @@ def test_checkclass_project_builddir(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
     __test_checkclass_project(tmpdir, ['-j1', '--cppcheck-build-dir={}'.format(build_dir)])
+

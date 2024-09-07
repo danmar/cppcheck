@@ -129,6 +129,10 @@ namespace {
             return !mCriticalErrors.empty();
         }
 
+        const std::string& getCtuInfo() const {
+            return mCtuInfo;
+        }
+
     private:
         /**
          * Information about progress is directed here. This should be
@@ -170,9 +174,14 @@ namespace {
         std::set<std::string> mActiveCheckers;
 
         /**
-         * True if there are critical errors
+         * List of critical errors
          */
         std::string mCriticalErrors;
+
+        /**
+         * CTU information
+         */
+        std::string mCtuInfo;
     };
 }
 
@@ -292,7 +301,7 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
 #endif
     }
 
-    returnValue |= cppcheck.analyseWholeProgram(settings.buildDir, mFiles, mFileSettings);
+    returnValue |= cppcheck.analyseWholeProgram(settings.buildDir, mFiles, mFileSettings, stdLogger.getCtuInfo());
 
     if (settings.severity.isEnabled(Severity::information) || settings.checkConfiguration) {
         const bool err = reportSuppressions(settings, suppressions, settings.checks.isEnabled(Checks::unusedFunction), mFiles, mFileSettings, stdLogger);
@@ -427,6 +436,11 @@ void StdLogger::reportErr(const ErrorMessage &msg)
     if (msg.severity == Severity::internal && (msg.id == "logChecker" || endsWith(msg.id, "-logChecker"))) {
         const std::string& checker = msg.shortMessage();
         mActiveCheckers.emplace(checker);
+        return;
+    }
+
+    if (msg.severity == Severity::internal && msg.id == "ctuinfo") {
+        mCtuInfo += msg.shortMessage() + "\n";
         return;
     }
 
