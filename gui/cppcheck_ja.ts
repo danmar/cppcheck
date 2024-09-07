@@ -817,7 +817,7 @@ Parameters: -l(line) (file)</translation>
         <location filename="mainwindow.ui" line="164"/>
         <location filename="mainwindow.ui" line="969"/>
         <source>Report</source>
-        <translation type="unfinished"></translation>
+        <translation>レポート</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="208"/>
@@ -1058,37 +1058,37 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="mainwindow.ui" line="977"/>
         <source>Normal</source>
-        <translation type="unfinished">ノーマル</translation>
+        <translation>ノーマル</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="985"/>
         <source>Misra C</source>
-        <translation type="unfinished">MISRA C</translation>
+        <translation>MISRA C</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="993"/>
         <source>Misra C++ 2008</source>
-        <translation type="unfinished">MISRA C++ 2008</translation>
+        <translation>MISRA C++ 2008</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="1001"/>
         <source>Cert C</source>
-        <translation type="unfinished">CERT C</translation>
+        <translation>CERT C</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="1009"/>
         <source>Cert C++</source>
-        <translation type="unfinished">Cert C++</translation>
+        <translation>Cert C++</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="1017"/>
         <source>Misra C++ 2023</source>
-        <translation type="unfinished">MISRA C++ 2023</translation>
+        <translation>MISRA C++ 2023</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="1025"/>
         <source>Autosar</source>
-        <translation type="unfinished">AUTOSAR</translation>
+        <translation>AUTOSAR</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="443"/>
@@ -1427,57 +1427,57 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     <message>
         <location filename="mainwindow.cpp" line="2267"/>
         <source>Show Mandatory</source>
-        <translation type="unfinished"></translation>
+        <translation>必須を表示</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="2268"/>
         <source>Show Required</source>
-        <translation type="unfinished"></translation>
+        <translation>要求を表示</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="2269"/>
         <source>Show Advisory</source>
-        <translation type="unfinished"></translation>
+        <translation>推奨を表示</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="2270"/>
         <source>Show Document</source>
-        <translation type="unfinished"></translation>
+        <translation>ドキュメントを表示</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="2287"/>
         <source>Show L1</source>
-        <translation type="unfinished"></translation>
+        <translation>L1を表示</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="2288"/>
         <source>Show L2</source>
-        <translation type="unfinished"></translation>
+        <translation>L2を表示</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="2289"/>
         <source>Show L3</source>
-        <translation type="unfinished"></translation>
+        <translation>L3を表示</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="2296"/>
         <source>Show style</source>
-        <translation type="unfinished"></translation>
+        <translation>スタイルを表示</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="2297"/>
         <source>Show portability</source>
-        <translation type="unfinished"></translation>
+        <translation>移植可能性を表示</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="2298"/>
         <source>Show performance</source>
-        <translation type="unfinished"></translation>
+        <translation>パフォーマンスを表示</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="2299"/>
         <source>Show information</source>
-        <translation type="unfinished"></translation>
+        <translation>情報を表示</translation>
     </message>
     <message>
         <source>Failed to import &apos;%1&apos;, analysis is stopped</source>
@@ -1823,7 +1823,7 @@ Options:
     <message>
         <location filename="projectfile.ui" line="752"/>
         <source>Enable inline suppressions</source>
-        <translation type="unfinished">inline抑制を有効にする</translation>
+        <translation>inline抑制を有効にする</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="820"/>
@@ -1844,12 +1844,12 @@ Options:
     <message>
         <location filename="projectfile.ui" line="883"/>
         <source>Misra C++</source>
-        <translation type="unfinished"></translation>
+        <translation>MISRA C++</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="891"/>
         <source>2008</source>
-        <translation type="unfinished">2008</translation>
+        <translation>2008</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="940"/>
@@ -2255,67 +2255,67 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="233"/>
         <source>File</source>
-        <translation type="unfinished">ファイル</translation>
+        <translation>ファイル</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="234"/>
         <source>Line</source>
-        <translation type="unfinished">行</translation>
+        <translation>行</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="235"/>
         <source>Severity</source>
-        <translation type="unfinished">警告の種別</translation>
+        <translation>警告の種別</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="236"/>
         <source>Classification</source>
-        <translation type="unfinished"></translation>
+        <translation>分類</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="237"/>
         <source>Level</source>
-        <translation type="unfinished"></translation>
+        <translation>レベル</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="238"/>
         <source>Inconclusive</source>
-        <translation type="unfinished">結論のでない</translation>
+        <translation>結論のでない</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="239"/>
         <source>Summary</source>
-        <translation type="unfinished">要約</translation>
+        <translation>要約</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="240"/>
         <source>Id</source>
-        <translation type="unfinished"></translation>
+        <translation>Id</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="241"/>
         <source>Guideline</source>
-        <translation type="unfinished"></translation>
+        <translation>ガイドライン</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="242"/>
         <source>Rule</source>
-        <translation type="unfinished"></translation>
+        <translation>ルール</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="243"/>
         <source>Since date</source>
-        <translation type="unfinished">日付</translation>
+        <translation>日付</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="244"/>
         <source>Tags</source>
-        <translation type="unfinished"></translation>
+        <translation>タグ</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="245"/>
         <source>CWE</source>
-        <translation type="unfinished"></translation>
+        <translation>CWE</translation>
     </message>
 </context>
 <context>
