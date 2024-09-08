@@ -57,6 +57,9 @@
 #ifdef __cpp_lib_span
 #include <span>
 #endif
+#ifdef __cpp_lib_format
+#include <format>
+#endif
 
 #if __cplusplus <= 201402L
 void unreachableCode_std_unexpected(int &x)
@@ -5178,6 +5181,14 @@ struct S_std_as_const { // #12974
     }
     std::list<int> l;
 };
+
+#if __cpp_lib_format
+void unreadVariable_std_format_error(char * c)
+{
+    // cppcheck-suppress unreadVariable
+    std::format_error x(c);
+}
+#endif
 
 void containerOutOfBounds_std_string(std::string &var) { // #11403
     std::string s0{"x"};
