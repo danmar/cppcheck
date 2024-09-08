@@ -753,8 +753,8 @@ namespace {
 
             mUsed = true;
 
-            // Special handling for T() when T is a pointer
-            if (Token::Match(tok, "%name% ( )")) {
+            // Special handling for T(...) when T is a pointer
+            if (Token::Match(tok, "%name% [({]") && !Token::simpleMatch(tok->linkAt(1), ") (")) {
                 bool pointerType = false;
                 for (const Token* type = mRangeType.first; type != mRangeType.second; type = type->next()) {
                     if (type->str() == "*" || type->str() == "&") {
@@ -769,10 +769,23 @@ namespace {
                     }
                 }
                 if (pointerType) {
-                    tok->deleteThis();
-                    tok->next()->insertToken("0");
-                    Token* tok2 = insertTokens(tok, mRangeType);
-                    insertTokens(tok2, mRangeTypeQualifiers);
+                    tok->tokAt(1)->str("(");
+                    tok->linkAt(1)->str(")");
+                    if (tok->linkAt(1) == tok->tokAt(2)) { // T() or T{}
+                        tok->deleteThis();
+                        tok->next()->insertToken("0");
+                        Token* tok2 = insertTokens(tok, mRangeType);
+                        insertTokens(tok2, mRangeTypeQualifiers);
+                    }
+                    else { // functional-style cast
+                        tok->originalName(tok->str());
+                        tok->isSimplifiedTypedef(true);
+                        tok->str("(");
+                        Token* tok2 = insertTokens(tok, mRangeType);
+                        tok2 = insertTokens(tok2, mRangeTypeQualifiers);
+                        Token* tok3 = tok2->insertToken(")");
+                        Token::createMutualLinks(tok, tok3);
+                    }
                     return;
                 }
             }
@@ -3332,7 +3345,7 @@ bool Tokenizer::simplifyUsing()
                     }
 
                     // Is this a "T(...)" expression where T is a pointer type?
-                    if (Token::Match(tok1, "%name% [({]") && !pointers.empty()) {
+                    if (Token::Match(tok1, "%name% [({]") && !pointers.empty() && !Token::simpleMatch(tok1->linkAt(1), ") (")) {
                         tok1->tokAt(1)->str("(");
                         tok1->linkAt(1)->str(")");
                         if (tok1->linkAt(1) == tok1->tokAt(2)) { // T() or T{}

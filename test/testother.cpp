@@ -1767,11 +1767,11 @@ private:
                       errout_str());
     }
 
-#define checkOldStylePointerCast(code) checkOldStylePointerCast_(code, __FILE__, __LINE__)
+#define checkOldStylePointerCast(...) checkOldStylePointerCast_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    void checkOldStylePointerCast_(const char (&code)[size], const char* file, int line) {
-        // #5560 - set c++03
-        const Settings settings = settingsBuilder().severity(Severity::style).cpp(Standards::CPP03).build();
+    void checkOldStylePointerCast_(const char* file, int line, const char(&code)[size], Standards::cppstd_t std = Standards::CPPLatest) {
+
+        const Settings settings = settingsBuilder().severity(Severity::style).cpp(std).build();
 
         // Tokenize..
         SimpleTokenizer tokenizerCpp(settings, *this);
@@ -1892,7 +1892,7 @@ private:
                                  "{ virtual G* createGui(S*, C*) const = 0; };\n"
                                  "\n"
                                  "class MS : public M\n"
-                                 "{ virtual void addController(C*) override {} };");
+                                 "{ virtual void addController(C*) override {} };", Standards::CPP03);
         ASSERT_EQUALS("", errout_str());
 
         // #6164
@@ -1997,7 +1997,7 @@ private:
                                  "    using float_ptr = float*;\n"
                                  "    return N::f(float_ptr(b.data()));\n"
                                  "}\n");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:9]: (style) C-style pointer casting\n", errout_str());
     }
 
 #define checkInvalidPointerCast(...) checkInvalidPointerCast_(__FILE__, __LINE__, __VA_ARGS__)

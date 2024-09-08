@@ -3382,6 +3382,11 @@ private:
         const char code2[] = "typedef int* T;\n"
                              "void f(T = T()){}\n";
         ASSERT_EQUALS("void f ( int * = ( int * ) 0 ) { }", tok(code2));
+
+        // #11430
+        const char code3[] = "typedef char* T;\n"
+                             "T f() { return T(\"abc\"); }\n";
+        ASSERT_EQUALS("char * f ( ) { return ( char * ) ( \"abc\" ) ; }", tok(code3));
     }
 
     void simplifyTypedef143() { // #11506

@@ -315,8 +315,6 @@ void CheckOther::warningOldStylePointerCast()
             // Old style pointer casting..
             if (tok->str() != "(")
                 continue;
-            if (tok->isSimplifiedTypedef())
-                continue;
             const Token* castTok = tok->next();
             while (Token::Match(castTok, "const|volatile|class|struct|union|%type%|::")) {
                 castTok = castTok->next();
