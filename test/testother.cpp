@@ -1769,7 +1769,7 @@ private:
 
 #define checkOldStylePointerCast(...) checkOldStylePointerCast_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    void checkOldStylePointerCast_(const char* file, int line, const char(&code)[size], Standards::cppstd_t std = Standards::CPPLatest) {
+    void checkOldStylePointerCast_(const char* file, int line, const char (&code)[size], Standards::cppstd_t std = Standards::CPPLatest) {
 
         const Settings settings = settingsBuilder().severity(Severity::style).cpp(std).build();
 
