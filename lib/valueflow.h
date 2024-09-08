@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "errortypes.h"
 #include "mathlib.h"
 #include "vfvalue.h"
 
