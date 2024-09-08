@@ -2020,6 +2020,10 @@ void TokenList::simplifyPlatformTypes()
                 tok->deleteThis();
             }
             tok->originalName(tok->str());
+            const bool isFunctionalPtrCast = (platformtype->mConstPtr || platformtype->mPointer || platformtype->mPtrPtr) &&
+                                             Token::Match(tok, "%name% [({]") && !Token::simpleMatch(tok->linkAt(1), ") (");
+            Token* start = isFunctionalPtrCast ? tok->tokAt(1) : nullptr;
+            Token* end = isFunctionalPtrCast ? tok->linkAt(1) : nullptr;
             Token *typeToken;
             if (platformtype->mConstPtr) {
                 tok->str("const");
@@ -2049,6 +2053,17 @@ void TokenList::simplifyPlatformTypes()
                 typeToken->isUnsigned(true);
             if (platformtype->mLong)
                 typeToken->isLong(true);
+
+            if (isFunctionalPtrCast) {
+                start->str("(");
+                end->str(")");
+                if (end == start->tokAt(1))
+                    end->insertTokenBefore("0");
+                end = start->insertTokenBefore(")");
+                start = tok->insertTokenBefore("(");
+                start->isSimplifiedTypedef(true);
+                Token::createMutualLinks(start, end);
+            }
         }
     }
 }

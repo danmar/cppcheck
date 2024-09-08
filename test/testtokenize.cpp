@@ -5731,6 +5731,12 @@ private:
                                 "} "
                                 "unsigned char tbyte ;";
         ASSERT_EQUALS(expected, tokenizeAndStringifyWindows(code, true, Platform::Type::Win32A));
+
+        const char code2[] = "LPCTSTR f(void* p) { return LPCTSTR(p); }\n" // #11430
+                             "LPCTSTR g() { return LPCTSTR{}; }";
+        const char expected2[] = "const char * f ( void * p ) { return ( const char * ) ( p ) ; }\n"
+                                 "const char * g ( ) { return ( const char * ) ( 0 ) ; }";
+        ASSERT_EQUALS(expected2, tokenizeAndStringifyWindows(code2, true, Platform::Type::Win32A));
     }
 
     void platformWin32W() {
