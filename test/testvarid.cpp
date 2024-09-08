@@ -2532,6 +2532,26 @@ private:
                       "3: int a@2 ; int & b@3 ;\n"
                       "4: } ;\n",
                       tokenize(code11));
+
+        const char code12[] = "template<typename... T>\n" // # 13070
+                              "    struct S1 : T... {\n"
+                              "    constexpr S1(const T& ... p) : T{ p } {}\n"
+                              "};\n"
+                              "namespace p { struct S2 {}; }\n"
+                              "struct S3 {\n"
+                              "    S3() {}\n"
+                              "    bool f(p::S2& c);\n"
+                              "};\n";
+        ASSERT_EQUALS("1: template < typename ... T >\n"
+                      "2: struct S1 : T ... {\n"
+                      "3: constexpr S1 ( const T & ... p@1 ) : T { p@1 } { }\n"
+                      "4: } ;\n"
+                      "5: namespace p { struct S2 { } ; }\n"
+                      "6: struct S3 {\n"
+                      "7: S3 ( ) { }\n"
+                      "8: bool f ( p :: S2 & c@2 ) ;\n"
+                      "9: } ;\n",
+                      tokenize(code12));
     }
 
     void varid_initListWithBaseTemplate() {
