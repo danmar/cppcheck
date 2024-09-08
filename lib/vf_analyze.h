@@ -37,6 +37,7 @@
 #include "vf_rightshift.h" // IWYU pragma: export
 #include "vf_sameexpressions.h" // IWYU pragma: export
 #include "vf_string.h" // IWYU pragma: export
+#include "vf_switchvariable.h" // IWYU pragma: export
 #include "vf_symbolicinfer.h" // IWYU pragma: export
 #include "vf_unknownfunctionreturn.h" // IWYU pragma: export
 
