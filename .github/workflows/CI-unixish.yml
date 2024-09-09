@@ -179,3 +179,7 @@ jobs:
         run: |
           warnings="-pedantic -Wall -Wextra -Wcast-qual -Wno-deprecated-declarations -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wundef -Wno-shadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar"
           g++ $warnings -c -Ilib -Iexternals/tinyxml2 democlient/democlient.cpp
+
+      - name: Check diff
+        run: |
+          git diff --exit-code
