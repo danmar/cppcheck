@@ -3360,12 +3360,14 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
     macros.insert(std::make_pair("__TIME__", Macro("__TIME__", getTimeDefine(&ltime), dummy)));
 
     if (!dui.std.empty()) {
-        std::string std_def = simplecpp::getCStdString(dui.std);
-        if (!std_def.empty()) {
-            macros.insert(std::make_pair("__STDC_VERSION__", Macro("__STDC_VERSION__", std_def, dummy)));
+        const cstd_t c_std = simplecpp::getCStd(dui.std);
+        if (c_std != CUnknown) {
+            const std::string std_def = simplecpp::getCStdString(c_std);
+            if (!std_def.empty())
+                macros.insert(std::make_pair("__STDC_VERSION__", Macro("__STDC_VERSION__", std_def, dummy)));
         } else {
-            std_def = simplecpp::getCppStdString(dui.std);
-            if (std_def.empty()) {
+            const cppstd_t cpp_std = simplecpp::getCppStd(dui.std);
+            if (cpp_std == CPPUnknown) {
                 if (outputList) {
                     simplecpp::Output err(files);
                     err.type = Output::DUI_ERROR;
@@ -3375,7 +3377,9 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                 output.clear();
                 return;
             }
-            macros.insert(std::make_pair("__cplusplus", Macro("__cplusplus", std_def, dummy)));
+            const std::string std_def = simplecpp::getCppStdString(cpp_std);
+            if (!std_def.empty())
+                macros.insert(std::make_pair("__cplusplus", Macro("__cplusplus", std_def, dummy)));
         }
     }
 
@@ -3786,54 +3790,103 @@ void simplecpp::cleanup(std::map<std::string, TokenList*> &filedata)
     filedata.clear();
 }
 
+simplecpp::cstd_t simplecpp::getCStd(const std::string &std)
+{
+    if (std == "c90" || std == "c89" || std == "iso9899:1990" || std == "iso9899:199409" || std == "gnu90" || std == "gnu89")
+        return C89;
+    if (std == "c99" || std == "c9x" || std == "iso9899:1999" || std == "iso9899:199x" || std == "gnu99"|| std == "gnu9x")
+        return C99;
+    if (std == "c11" || std == "c1x" || std == "iso9899:2011" || std == "gnu11" || std == "gnu1x")
+        return C11;
+    if (std == "c17" || std == "c18" || std == "iso9899:2017" || std == "iso9899:2018" || std == "gnu17"|| std == "gnu18")
+        return C17;
+    if (std == "c23" || std == "gnu23" || std == "c2x" || std == "gnu2x")
+        return C23;
+    return CUnknown;
+}
+
+std::string simplecpp::getCStdString(cstd_t std)
+{
+    switch (std)
+    {
+        case C89:
+            // __STDC_VERSION__ is not set for C90 although the macro was added in the 1994 amendments
+            return "";
+        case C99:
+            return "199901L";
+        case C11:
+            return "201112L";
+        case C17:
+            return "201710L";
+        case C23:
+            // supported by GCC 9+ and Clang 9+
+            // Clang 9, 10, 11, 12, 13 return "201710L"
+            // Clang 14, 15, 16, 17 return "202000L"
+            // Clang 9, 10, 11, 12, 13, 14, 15, 16, 17 do not support "c23" and "gnu23"
+            return "202311L";
+        case CUnknown:
+            return "";
+    }
+    return "";
+}
+
 std::string simplecpp::getCStdString(const std::string &std)
 {
-    if (std == "c90" || std == "c89" || std == "iso9899:1990" || std == "iso9899:199409" || std == "gnu90" || std == "gnu89") {
-        // __STDC_VERSION__ is not set for C90 although the macro was added in the 1994 amendments
-        return "";
-    }
-    if (std == "c99" || std == "c9x" || std == "iso9899:1999" || std == "iso9899:199x" || std == "gnu99"|| std == "gnu9x")
-        return "199901L";
-    if (std == "c11" || std == "c1x" || std == "iso9899:2011" || std == "gnu11" || std == "gnu1x")
-        return "201112L";
-    if (std == "c17" || std == "c18" || std == "iso9899:2017" || std == "iso9899:2018" || std == "gnu17"|| std == "gnu18")
-        return "201710L";
-    if (std == "c23" || std == "gnu23" || std == "c2x" || std == "gnu2x") {
-        // supported by GCC 9+ and Clang 9+
-        // Clang 9, 10, 11, 12, 13 return "201710L"
-        // Clang 14, 15, 16, 17 return "202000L"
-        // Clang 9, 10, 11, 12, 13, 14, 15, 16, 17 do not support "c23" and "gnu23"
-        return "202311L";
+    return getCStdString(getCStd(std));
+}
+
+simplecpp::cppstd_t simplecpp::getCppStd(const std::string &std)
+{
+    if (std == "c++98" || std == "c++03" || std == "gnu++98" || std == "gnu++03")
+        return CPP03;
+    if (std == "c++11" || std == "gnu++11" || std == "c++0x" || std == "gnu++0x")
+        return CPP11;
+    if (std == "c++14" || std == "c++1y" || std == "gnu++14" || std == "gnu++1y")
+        return CPP14;
+    if (std == "c++17" || std == "c++1z" || std == "gnu++17" || std == "gnu++1z")
+        return CPP17;
+    if (std == "c++20" || std == "c++2a" || std == "gnu++20" || std == "gnu++2a")
+        return CPP20;
+    if (std == "c++23" || std == "c++2b" || std == "gnu++23" || std == "gnu++2b")
+        return CPP23;
+    if (std == "c++26" || std == "c++2c" || std == "gnu++26" || std == "gnu++2c")
+        return CPP26;
+    return CPPUnknown;
+}
+
+std::string simplecpp::getCppStdString(cppstd_t std)
+{
+    switch (std)
+    {
+        case CPP03:
+            return "199711L";
+        case CPP11:
+            return "201103L";
+        case CPP14:
+            return "201402L";
+        case CPP17:
+            return "201703L";
+        case CPP20:
+            // GCC 10 returns "201703L" - correct in 11+
+            return "202002L";
+        case CPP23:
+            // supported by GCC 11+ and Clang 12+
+            // GCC 11, 12, 13 return "202100L"
+            // Clang 12, 13, 14, 15, 16 do not support "c++23" and "gnu++23" and return "202101L"
+            // Clang 17, 18 return "202302L"
+            return "202302L";
+        case CPP26:
+            // supported by Clang 17+
+            return "202400L";
+        case CPPUnknown:
+            return "";
     }
     return "";
 }
 
 std::string simplecpp::getCppStdString(const std::string &std)
 {
-    if (std == "c++98" || std == "c++03" || std == "gnu++98" || std == "gnu++03")
-        return "199711L";
-    if (std == "c++11" || std == "gnu++11" || std == "c++0x" || std == "gnu++0x")
-        return "201103L";
-    if (std == "c++14" || std == "c++1y" || std == "gnu++14" || std == "gnu++1y")
-        return "201402L";
-    if (std == "c++17" || std == "c++1z" || std == "gnu++17" || std == "gnu++1z")
-        return "201703L";
-    if (std == "c++20" || std == "c++2a" || std == "gnu++20" || std == "gnu++2a") {
-        // GCC 10 returns "201703L" - correct in 11+
-        return "202002L";
-    }
-    if (std == "c++23" || std == "c++2b" || std == "gnu++23" || std == "gnu++2b") {
-        // supported by GCC 11+ and Clang 12+
-        // GCC 11, 12, 13 return "202100L"
-        // Clang 12, 13, 14, 15, 16 do not support "c++23" and "gnu++23" and return "202101L"
-        // Clang 17, 18 return "202302L"
-        return "202302L";
-    }
-    if (std == "c++26" || std == "c++2c" || std == "gnu++26" || std == "gnu++2c") {
-        // supported by Clang 17+
-        return "202400L";
-    }
-    return "";
+    return getCppStdString(getCppStd(std));
 }
 
 #if (__cplusplus < 201103L) && !defined(__APPLE__)

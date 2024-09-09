@@ -39,6 +39,11 @@
 #endif
 
 namespace simplecpp {
+    /** C code standard */
+    enum cstd_t { CUnknown=-1, C89, C99, C11, C17, C23 };
+
+    /** C++ code standard */
+    enum cppstd_t { CPPUnknown=-1, CPP03, CPP11, CPP14, CPP17, CPP20, CPP23, CPP26 };
 
     typedef std::string TokenString;
     class Macro;
@@ -368,11 +373,19 @@ namespace simplecpp {
     /** Convert Cygwin path to Windows path */
     SIMPLECPP_LIB std::string convertCygwinToWindowsPath(const std::string &cygwinPath);
 
+    /** Returns the C version a given standard */
+    SIMPLECPP_LIB cstd_t getCStd(const std::string &std);
+
+    /** Returns the C++ version a given standard */
+    SIMPLECPP_LIB cppstd_t getCppStd(const std::string &std);
+
     /** Returns the __STDC_VERSION__ value for a given standard */
     SIMPLECPP_LIB std::string getCStdString(const std::string &std);
+    SIMPLECPP_LIB std::string getCStdString(cstd_t std);
 
     /** Returns the __cplusplus value for a given standard */
     SIMPLECPP_LIB std::string getCppStdString(const std::string &std);
+    SIMPLECPP_LIB std::string getCppStdString(cppstd_t std);
 }
 
 #if defined(_MSC_VER)
