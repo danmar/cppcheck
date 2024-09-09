@@ -191,7 +191,9 @@ private:
             Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
             tokenList.createAst();
 
-            ASSERT(!library.isNotLibraryFunction(tokenList.front()));
+            const Library::Function* func = nullptr;
+            ASSERT(!library.isNotLibraryFunction(tokenList.front(), &func));
+            ASSERT(func);
         }
         {
             TokenList tokenList(&settings);
@@ -200,7 +202,9 @@ private:
             Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
             tokenList.createAst();
 
-            ASSERT(!library.isNotLibraryFunction(tokenList.front()));
+            const Library::Function* func = nullptr;
+            ASSERT(!library.isNotLibraryFunction(tokenList.front(), &func));
+            ASSERT(func);
         }
         {
             TokenList tokenList(&settings);

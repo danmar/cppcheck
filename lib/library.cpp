@@ -1414,7 +1414,7 @@ Library::Container::Yield Library::getContainerYield(const Token* const cond)
 }
 
 // returns true if ftok is not a library function
-bool Library::isNotLibraryFunction(const Token *ftok) const
+bool Library::isNotLibraryFunction(const Token *ftok, const Function **func) const
 {
     if (ftok->isKeyword() || ftok->isStandardType())
         return true;
@@ -1426,10 +1426,10 @@ bool Library::isNotLibraryFunction(const Token *ftok) const
     if (ftok->varId())
         return true;
 
-    return !matchArguments(ftok, getFunctionName(ftok));
+    return !matchArguments(ftok, getFunctionName(ftok), func);
 }
 
-bool Library::matchArguments(const Token *ftok, const std::string &functionName) const
+bool Library::matchArguments(const Token *ftok, const std::string &functionName, const Function **func) const
 {
     if (functionName.empty())
         return false;
@@ -1444,10 +1444,17 @@ bool Library::matchArguments(const Token *ftok, const std::string &functionName)
         if (argCheck.second.optional && (firstOptionalArg == -1 || firstOptionalArg > argCheck.first))
             firstOptionalArg = argCheck.first;
 
-        if (argCheck.second.formatstr || argCheck.second.variadic)
-            return args <= callargs;
+        if (argCheck.second.formatstr || argCheck.second.variadic) {
+            const bool b = args <= callargs;
+            if (b && func)
+                *func = &it->second;
+            return b;
+        }
     }
-    return (firstOptionalArg < 0) ? args == callargs : (callargs >= firstOptionalArg-1 && callargs <= args);
+    const bool b = (firstOptionalArg < 0) ? args == callargs : (callargs >= firstOptionalArg-1 && callargs <= args);
+    if (b && func)
+        *func = &it->second;
+    return b;
 }
 
 const std::map<std::string, Library::WarnInfo>& Library::functionwarn() const
