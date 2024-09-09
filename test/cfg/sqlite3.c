@@ -54,6 +54,12 @@ void resourceLeak_sqlite3_open_v2(const char* Filename, int Flags, int Timeout, 
     // cppcheck-suppress resourceLeak
 }
 
+void nullPointer_sqlite3_open_v2(const char* filename, int flags) { // #13078
+    sqlite3* handle;
+    sqlite3_open_v2(filename, &handle, flags, NULL);
+    sqlite3_close_v2(handle);
+}
+
 void ignoredReturnValue(const char * buf)
 {
     // cppcheck-suppress leakReturnValNotUsed
