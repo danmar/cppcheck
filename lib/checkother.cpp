@@ -1645,8 +1645,9 @@ void CheckOther::checkConstPointer()
         pointers.emplace(var);
         const Token* parent = tok->astParent();
         enum Deref : std::uint8_t { NONE, DEREF, MEMBER } deref = NONE;
-        bool hasIncDec = false;
-        if (parent && (parent->isUnaryOp("*") || (hasIncDec = parent->isIncDecOp() && parent->astParent() && parent->astParent()->isUnaryOp("*"))))
+        bool hasIncDecPlus = false;
+        if (parent && (parent->isUnaryOp("*") || (((hasIncDecPlus = parent->isIncDecOp()) || (hasIncDecPlus = parent->str() == "+")) &&
+                                                  parent->astParent() && parent->astParent()->isUnaryOp("*"))))
             deref = DEREF;
         else if (Token::simpleMatch(parent, "[") && parent->astOperand1() == tok && tok != nameTok)
             deref = DEREF;
@@ -1672,7 +1673,7 @@ void CheckOther::checkConstPointer()
             }
             if (Token::Match(gparent, "%cop%") && !gparent->isUnaryOp("&") && !gparent->isUnaryOp("*"))
                 continue;
-            if (hasIncDec) {
+            if (hasIncDecPlus) {
                 parent = gparent;
                 gparent = gparent ? gparent->astParent() : nullptr;
             }
