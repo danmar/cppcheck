@@ -363,6 +363,34 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
         while (Token::Match(ftok, "%name% :: %name%"))
             ftok = ftok->tokAt(2);
 
+        // memcpy / memmove
+        if (Token::Match(varTok, "memcpy|memmove")) {
+            const std::vector<const Token*> args = getArguments(varTok);
+            // too few args for memcpy / memmove call
+            if (args.size() < 3)
+                continue;
+            const Token *dst = args[0];
+            const Token *src = args[1];
+
+            // check that arguments are pointers
+            bool dstIsPtr = dst->isVariable() && dst->variable()->isPointer();
+            if (!dstIsPtr && dst->str() == "&") {
+                dst = dst->astOperand1();
+                dstIsPtr = true;
+            }
+            bool srcIsPtr = src->isVariable() && src->variable()->isPointer();
+            if (!srcIsPtr && src->str() == "&") {
+                src = src->astOperand1();
+                srcIsPtr = true;
+            }
+            if (!dstIsPtr || !srcIsPtr) {
+                continue;
+            }
+
+            // TODO: check that dst and src are pointers to pointers
+            // TODO: move ownership from src to dst
+        }
+
         auto isAssignment = [](const Token* varTok) -> const Token* {
             if (varTok->varId()) {
                 const Token* top = varTok;
