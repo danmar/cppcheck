@@ -163,9 +163,11 @@ public:
 
     const WarnInfo* getWarnInfo(const Token* ftok) const;
 
+    struct Function;
+
     // returns true if ftok is not a library function
-    bool isNotLibraryFunction(const Token *ftok) const;
-    bool matchArguments(const Token *ftok, const std::string &functionName) const;
+    bool isNotLibraryFunction(const Token *ftok, const Function **func = nullptr) const;
+    bool matchArguments(const Token *ftok, const std::string &functionName, const Function **func = nullptr) const;
 
     enum class UseRetValType : std::uint8_t { NONE, DEFAULT, ERROR_CODE };
     UseRetValType getUseRetValType(const Token* ftok) const;
