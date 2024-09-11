@@ -4334,11 +4334,7 @@ private:
                            "if ( g != ( void * ) p ) { } "
                            "}",
                            tok(code,false));
-        ASSERT_EQUALS("[test.cpp:4]: (debug) valueflow.cpp:3929:(valueFlow) bailout: valueFlowAfterCondition: bailing in conditional block\n"
-                      "[test.cpp:5]: (debug) valueflow.cpp:3929:(valueFlow) bailout: valueFlowAfterCondition: bailing in conditional block\n"
-                      "[test.cpp:4]: (debug) valueflow.cpp:3929:(valueFlow) bailout: valueFlowAfterCondition: bailing in conditional block\n"
-                      "[test.cpp:5]: (debug) valueflow.cpp:3929:(valueFlow) bailout: valueFlowAfterCondition: bailing in conditional block\n",
-                      errout_str());
+        ignore_errout(); // we are not interested in the output
     }
 
     void simplifyTypedefStruct() {
