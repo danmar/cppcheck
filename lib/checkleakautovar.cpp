@@ -372,23 +372,43 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
             const Token *dst = args[0];
             const Token *src = args[1];
 
-            // check that arguments are pointers
-            bool dstIsPtr = dst->isVariable() && dst->variable()->isPointer();
-            if (!dstIsPtr && dst->str() == "&") {
+            // check that dst arg is pointer to pointer
+            int dstIndirectionLevel = 0;
+            while (dst->str() == "*") {
                 dst = dst->astOperand1();
-                dstIsPtr = true;
+                dstIndirectionLevel--;
             }
-            bool srcIsPtr = src->isVariable() && src->variable()->isPointer();
-            if (!srcIsPtr && src->str() == "&") {
-                src = src->astOperand1();
-                srcIsPtr = true;
+            if (dst->str() == "&") {
+                dst = dst->astOperand1();
+                dstIndirectionLevel++;
             }
-            if (!dstIsPtr || !srcIsPtr) {
+            if (!dst->isVariable())
                 continue;
+            if (dstIndirectionLevel + dst->variable()->valueType()->pointer != 2)
+                continue;
+
+            // check that src arg is pointer to pointer
+            int srcIndirectionLevel = 0;
+            while (src->str() == "*") {
+                src = src->astOperand1();
+                srcIndirectionLevel--;
+            }
+            if (src->str() == "&") {
+                src = src->astOperand1();
+                srcIndirectionLevel++;
+            }
+            if (!src->isVariable())
+                continue;
+            if (srcIndirectionLevel + src->variable()->valueType()->pointer != 2)
+                continue;
+
+            if (!dst->variable()->isArgument()) {
+                varInfo.alloctype[dst->varId()].status = VarInfo::AllocStatus::ALLOC;
             }
 
-            // TODO: check that dst and src are pointers to pointers
-            // TODO: move ownership from src to dst
+            // no multivariable checking currently (see assignment below)
+            // treat source pointer as unallocated
+            varInfo.erase(src->varId());
         }
 
         auto isAssignment = [](const Token* varTok) -> const Token* {
