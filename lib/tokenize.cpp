@@ -2619,6 +2619,12 @@ namespace {
                         scopeInfo = scopeInfo->addChild(ScopeInfo3::MemberFunction, scope, tok, tok->link());
                         added = true;
                     }
+                    // inline member function
+                    else if ((scopeInfo->type == ScopeInfo3::Record || scopeInfo->type == ScopeInfo3::Namespace) && tok1 && Token::Match(tok1->tokAt(-1), "%name% (")) {
+                        const std::string scope = scopeInfo->name + "::" + tok1->strAt(-1);
+                        scopeInfo = scopeInfo->addChild(ScopeInfo3::MemberFunction, scope, tok, tok->link());
+                        added = true;
+                    }
                 }
 
                 if (!added)
