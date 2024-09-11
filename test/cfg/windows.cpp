@@ -823,7 +823,7 @@ void invalidFunctionArg()
     CloseHandle(hMutex);
 
     //Incorrect: 2. parameter to LoadLibraryEx() must be NULL
-    // TODO cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress [invalidFunctionArg, cstyleCast]
     HINSTANCE hInstLib = LoadLibraryEx(L"My.dll", HANDLE(1), 0);
     FreeLibrary(hInstLib);
 
