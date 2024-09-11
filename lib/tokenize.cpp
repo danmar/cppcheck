@@ -2151,9 +2151,6 @@ void Tokenizer::simplifyTypedefCpp()
 
                         tok2 = TokenList::copyTokens(tok2, argStart, argEnd);
                         if (inTemplate) {
-                            if (!tok2)
-                                syntaxError(nullptr);
-
                             tok2 = tok2->next();
                         }
 
