@@ -1103,8 +1103,8 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 
     if (mSettings.useSingleJob() || !mSettings.buildDir.empty()) {
         // Analyse the tokens..
-
-        if (CTU::FileInfo * const fi1 = CTU::getFileInfo(tokenizer)) {
+        {
+            CTU::FileInfo * const fi1 = CTU::getFileInfo(tokenizer);
             if (!mSettings.buildDir.empty())
                 mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
             if (mSettings.useSingleJob())
