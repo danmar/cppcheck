@@ -808,6 +808,12 @@ private:
               "    MACRO(false && \"abc\");\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("#define strequ(s1,s2) ((void *)s1 && (void *)s2 && strcmp(s1, s2) == 0)\n" // #13093
+              "void f(const char* p) {\n"
+              "    if (strequ(p, \"ALL\")) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void deadStrcmp() {
