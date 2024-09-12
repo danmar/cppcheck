@@ -783,14 +783,32 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
-    void simplifyUsing32() { // #11430
-        const char code[] = "using T = int*;\n"
+    void simplifyUsing32() {
+        const char code[] = "using T = int*;\n" // #11430
                             "T f() { return T{}; }\n"
                             "T g() { return T(malloc(4)); }\n";
         const char expected[] = "int * f ( ) { return ( int * ) 0 ; } "
                                 "int * g ( ) { return ( int * ) ( malloc ( 4 ) ) ; }";
         ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
         ASSERT_EQUALS("", errout_str());
+
+        const char code2[] = "struct S {\n" // #13095
+                             "    using reference_type = int&;\n"
+                             "    reference_type get();\n"
+                             "    int i;\n"
+                             "};\n"
+                             "auto S::get() -> reference_type {\n"
+                             "    return i;\n"
+                             "}\n";
+        const char expected2[] = "struct S { "
+                                 "int & get ( ) ; "
+                                 "int i ; "
+                                 "} ; "
+                                 "auto S :: get ( ) . int & { return i ; }";
+        ASSERT_EQUALS(expected2, tok(code2, Platform::Type::Native, /*debugwarnings*/ true));
+        TODO_ASSERT_EQUALS("",
+                           "[test.cpp:6]: (debug) auto token with no type.\n"
+                           "", errout_str());
     }
 
     void simplifyUsing8970() {
