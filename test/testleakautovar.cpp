@@ -637,21 +637,23 @@ private:
     }
 
     void memcpyWithPtr1() { // #11542
+        const Settings s = settingsBuilder().library("std.cfg").library("posix.cfg").build();
         check("#include <string.h>\n"
               "void f(char** old, char* value) {\n"
               "    char *str = strdup(value);\n"
               "    memcpy(old, &str, sizeof(char*));\n"
-              "}\n");
+              "}\n", &s);
         ASSERT_EQUALS("", errout_str());
     }
 
     void memcpyWithPtr2() {
+        const Settings s = settingsBuilder().library("std.cfg").library("posix.cfg").build();
         check("#include <string.h>\n"
               "void f(char* value) {\n"
               "    char *old = NULL;\n"
               "    char *str = strdup(value);\n"
               "    memcpy(&old, &str, sizeof(char*));\n"
-              "}\n");
+              "}\n", &s);
         // TODO: make this fail
         ASSERT_EQUALS("", errout_str());
     }
