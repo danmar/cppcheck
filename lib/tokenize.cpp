@@ -752,9 +752,10 @@ namespace {
                 return;
 
             mUsed = true;
+            const bool isFunctionPointer = Token::Match(mNameToken, "%name% )");
 
             // Special handling for T(...) when T is a pointer
-            if (Token::Match(tok, "%name% [({]") && !Token::simpleMatch(tok->linkAt(1), ") (")) {
+            if (Token::Match(tok, "%name% [({]") && !isFunctionPointer) {
                 bool pointerType = false;
                 for (const Token* type = mRangeType.first; type != mRangeType.second; type = type->next()) {
                     if (type->str() == "*" || type->str() == "&") {
@@ -791,7 +792,6 @@ namespace {
             }
 
             // Special handling of function pointer cast
-            const bool isFunctionPointer = Token::Match(mNameToken, "%name% )");
             if (isFunctionPointer && isCast(tok->previous())) {
                 tok->insertToken("*");
                 Token* const tok_1 = insertTokens(tok, std::pair<Token*, Token*>(mRangeType.first, mNameToken->linkAt(1)));

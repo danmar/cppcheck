@@ -233,6 +233,7 @@ private:
         TEST_CASE(simplifyTypedefFunction8);
         TEST_CASE(simplifyTypedefFunction9);
         TEST_CASE(simplifyTypedefFunction10); // #5191
+        TEST_CASE(simplifyTypedefFunction11);
 
         TEST_CASE(simplifyTypedefStruct); // #12081 - volatile struct
 
@@ -4313,6 +4314,27 @@ private:
                       "Format_E1 ( * * t1 ) ( ) ; "
                       "MySpace :: Format_E2 ( * * t2 ) ( ) ;",
                       tok(code,false));
+    }
+
+    void simplifyTypedefFunction11() {
+        const char code[] = "typedef void (*func_t) (int);\n"
+                            "void g(int);\n"
+                            "void f(void* p) {\n"
+                            "    if (g != func_t(p)) {}\n"
+                            "    if (g != (func_t)p) {}\n"
+                            "}\n";
+        TODO_ASSERT_EQUALS("void g ( int ) ; "
+                           "void f ( void * p ) { "
+                           "if ( g != ( void ( * ) ( int ) ) ( p ) ) { } "
+                           "if ( g != ( void ( * ) ( int ) ) p ) { } "
+                           "}",
+                           "void g ( int ) ; "
+                           "void f ( void * p ) { "
+                           "if ( g != void * ( p ) ) { } "
+                           "if ( g != ( void * ) p ) { } "
+                           "}",
+                           tok(code,false));
+        ignore_errout(); // we are not interested in the output
     }
 
     void simplifyTypedefStruct() {
