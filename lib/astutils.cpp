@@ -38,6 +38,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstring>
 #include <functional>
 #include <initializer_list>
 #include <iterator>
@@ -113,7 +114,7 @@ static void astFlattenCopy(T* tok, const char* op, OuputIterator out, nonneg int
     --depth;
     if (!tok || depth < 0)
         return;
-    if (tok->str() == op) {
+    if (strcmp(tok->str().c_str(), op) == 0) {
         astFlattenCopy(tok->astOperand1(), op, out, depth);
         astFlattenCopy(tok->astOperand2(), op, out, depth);
     } else {
