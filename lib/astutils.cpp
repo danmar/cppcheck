@@ -142,7 +142,7 @@ nonneg int astCount(const Token* tok, const char* op, int depth)
     --depth;
     if (!tok || depth < 0)
         return 0;
-    if (tok->str() == op)
+    if (strcmp(tok->str().c_str(), op) == 0)
         return astCount(tok->astOperand1(), op, depth) + astCount(tok->astOperand2(), op, depth);
     return 1;
 }
