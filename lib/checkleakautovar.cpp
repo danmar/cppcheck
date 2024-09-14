@@ -671,9 +671,10 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 tok = tok->tokAt(3);
             else
                 tok = tok->next();
-            if (tok->str() == "(")
+            bool startparen;
+            if ((startparen = (tok->str() == "(")))
                 tok = tok->next();
-            while (Token::Match(tok, "%name% ::|."))
+            while (Token::Match(tok, "%name% ::|.") || (startparen && Token::Match(tok, "%name% ,")))
                 tok = tok->tokAt(2);
             const bool isnull = tok->hasKnownIntValue() && tok->values().front().intvalue == 0;
             if (!isnull && tok->varId() && tok->strAt(1) != "[") {
