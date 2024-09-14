@@ -2235,16 +2235,12 @@ bool Token::addValue(const ValueFlow::Value &value)
         std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& x) {
         return x.isKnown() && sameValueType(x, value) && !x.equalValue(value);
     }))
-        return false;
-
-    // assert(value.isKnown() || !mImpl->mValues || std::none_of(mImpl->mValues->begin(), mImpl->mValues->end(),
-    // [&](const ValueFlow::Value& x) {
-    //     return x.isKnown() && sameValueType(x, value);
-    // }));
+        return false; // TODO: add bailout message
 
     if (mImpl->mValues) {
         // Don't handle more than 10 values for performance reasons
         // TODO: add setting?
+        // TODO: add bailout message
         if (mImpl->mValues->size() >= 10U)
             return false;
 
