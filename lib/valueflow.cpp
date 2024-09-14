@@ -986,7 +986,7 @@ static std::vector<MathLib::bigint> minUnsignedValue(const Token* tok, int depth
     if (!tok)
         return result;
     if (depth < 0)
-        return result;
+        return result; // TODO: add bailout message
     if (tok->hasKnownIntValue()) {
         result = {tok->values().front().intvalue};
     } else if (!Token::Match(tok, "-|%|&|^") && tok->isConstOp() && tok->astOperand1() && tok->astOperand2()) {
@@ -1489,7 +1489,7 @@ static std::vector<ValueFlow::LifetimeToken> getLifetimeTokens(const Token* tok,
     if (pred(tok))
         return {{tok, std::move(errorPath)}};
     if (depth < 0)
-        return {{tok, std::move(errorPath)}};
+        return {{tok, std::move(errorPath)}}; // TODO: add bailout message
     if (var && var->declarationId() == tok->varId()) {
         if (var->isReference() || var->isRValueReference()) {
             const Token * const varDeclEndToken = var->declEndToken();
@@ -2281,7 +2281,7 @@ private:
 static bool hasBorrowingVariables(const std::list<Variable>& vars, const std::vector<const Token*>& args, int depth = 10)
 {
     if (depth < 0)
-        return true;
+        return true; // TODO: add bailout message
     return std::any_of(vars.cbegin(), vars.cend(), [&](const Variable& var) {
         if (const ValueType* vt = var.valueType()) {
             if (vt->pointer > 0 &&
@@ -3541,7 +3541,7 @@ static void valueFlowSymbolic(const TokenList& tokenlist, const SymbolDatabase& 
 static const Token* isStrlenOf(const Token* tok, const Token* expr, int depth = 10)
 {
     if (depth < 0)
-        return nullptr;
+        return nullptr; // TODO: add bailout message
     if (!tok)
         return nullptr;
     if (!expr)
@@ -6010,6 +6010,7 @@ static bool isContainerSizeChangedByFunction(const Token* tok,
                 // Argument not used
                 if (!arg->nameToken())
                     return false;
+                // TODO: add bailout message
                 if (depth > 0)
                     return isContainerSizeChanged(arg->nameToken(),
                                                   scope->bodyStart,
