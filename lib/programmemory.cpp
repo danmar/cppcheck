@@ -1365,7 +1365,7 @@ namespace {
 
             nonneg int n = astCount(expr, expr->str().c_str());
             if (n > 50)
-                return unknown();
+                return unknown(); // TODO: add bailout message
             std::vector<const Token*> conditions1 = flattenConditions(expr);
             if (conditions1.empty())
                 return unknown();
@@ -1382,7 +1382,7 @@ namespace {
             }
             if (condValues.size() == conditions1.size() && allNegated)
                 return negatedValue;
-            if (n > 4)
+            if (n > 4) // TODO: add bailout message
                 return unknown();
             if (!sortConditions(conditions1))
                 return unknown();
@@ -1623,6 +1623,7 @@ namespace {
                         return execute(tok);
                     });
                     if (f) {
+                        // TODO: add bailout message
                         if (fdepth >= 0 && !f->isImplicitlyVirtual()) {
                             ProgramMemory functionState;
                             for (std::size_t i = 0; i < args.size(); ++i) {
@@ -1711,7 +1712,7 @@ namespace {
                     depth++;
                 }};
             if (depth < 0)
-                return unknown();
+                return unknown(); // TODO: add bailout message
             ValueFlow::Value v = unknown();
             if (updateValue(v, executeImpl(expr)))
                 return v;
