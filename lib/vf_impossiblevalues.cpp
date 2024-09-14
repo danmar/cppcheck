@@ -45,8 +45,10 @@ namespace ValueFlow
         std::vector<MathLib::bigint> result;
         if (!tok)
             return result;
-        if (depth < 0)
+        if (depth < 0) {
+            // TODO: add bailout message
             return result;
+        }
         if (tok->hasKnownIntValue()) {
             result = {tok->values().front().intvalue};
         } else if (!Token::Match(tok, "-|%|&|^") && tok->isConstOp() && tok->astOperand1() && tok->astOperand2()) {

@@ -40,8 +40,10 @@ namespace ValueFlow
 {
     static const Token* isStrlenOf(const Token* tok, const Token* expr, int depth = 10)
     {
-        if (depth < 0)
+        if (depth < 0) {
+            // TODO: add bailout message
             return nullptr;
+        }
         if (!tok)
             return nullptr;
         if (!expr)
