@@ -1218,7 +1218,7 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
                 // braced initializer
                 if (Token::Match(scope->bodyStart->tokAt(-1), "="))
                     return false;
-                if (Token::Match(scope->bodyStart->tokAt(-2), "%name%|auto %name%"))
+                if (Token::Match(scope->bodyStart->tokAt(-2), "%name% %name%"))
                     return false;
                 if (Token::Match(scope->bodyStart->tokAt(-4), "( struct %name% )"))
                     return false;
