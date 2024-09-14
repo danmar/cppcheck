@@ -1216,7 +1216,7 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
                     return false; // simplified if/for/switch init statement
 
                 // braced initializer
-                if (scope->bodyStart && Token::Match(scope->bodyStart->tokAt(-1), "="))
+                if (scope->bodyStart && Token::simpleMatch(scope->bodyStart->tokAt(-1), "="))
                     return false;
                 if (scope->bodyStart && Token::Match(scope->bodyStart->tokAt(-2), "%name% %name%"))
                     return false;
