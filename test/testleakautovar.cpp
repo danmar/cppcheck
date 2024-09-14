@@ -88,6 +88,7 @@ private:
         TEST_CASE(deallocuse13);
         TEST_CASE(deallocuse14);
         TEST_CASE(deallocuse15);
+        TEST_CASE(deallocuse16); // #8109: delete with comma operator
 
         TEST_CASE(doublefree1);
         TEST_CASE(doublefree2);
@@ -105,6 +106,7 @@ private:
         TEST_CASE(doublefree14); // #9708
         TEST_CASE(doublefree15);
         TEST_CASE(doublefree16);
+        TEST_CASE(doublefree17); // #8109: delete with comma operator
 
         // exit
         TEST_CASE(exit1);
@@ -1062,6 +1064,16 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
+    void deallocuse16() {
+        check("void f() {\n"
+              "    int *a = nullptr;\n"
+              "    int *c = new int;\n"
+              "    delete (a, c);\n"
+              "    *c = 10;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Dereferencing 'c' after it is deallocated / released\n", errout_str());
+    }
+
     void doublefree1() {  // #3895
         check("void f(char *p) {\n"
               "    if (x)\n"
@@ -1737,6 +1749,17 @@ private:
               "    })) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void doublefree17() {
+        check("void f() {\n"
+              "    int *a = nullptr;\n"
+              "    int *b = nullptr;\n"
+              "    int *c = new int;\n"
+              "    delete (a, c);\n"
+              "    delete (b, c);\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6]: (error) Memory pointed to by 'c' is freed twice.\n", errout_str());
     }
 
     void exit1() {
