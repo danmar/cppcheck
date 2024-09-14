@@ -1216,11 +1216,11 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
                     return false; // simplified if/for/switch init statement
 
                 // braced initializer
-                if (Token::Match(scope->bodyStart->tokAt(-1), "="))
+                if (scope->bodyStart && Token::Match(scope->bodyStart->tokAt(-1), "="))
                     return false;
-                if (Token::Match(scope->bodyStart->tokAt(-2), "%name% %name%"))
+                if (scope->bodyStart && Token::Match(scope->bodyStart->tokAt(-2), "%name% %name%"))
                     return false;
-                if (Token::Match(scope->bodyStart->tokAt(-4), "( struct %name% )"))
+                if (scope->bodyStart && Token::Match(scope->bodyStart->tokAt(-4), "( struct %name% )"))
                     return false;
             }
             if (var->isArrayOrPointer()) {
