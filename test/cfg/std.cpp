@@ -40,6 +40,7 @@
 #include <iostream>
 #include <istream>
 #include <iterator>
+#include <list>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -5189,6 +5190,23 @@ void unreadVariable_std_format_error(char * c)
     std::format_error x(c);
 }
 #endif
+
+void eraseIteratorOutOfBounds_std_list1()
+{
+    std::list<int> a;
+    std::list<int>::iterator p = a.begin();
+    // cppcheck-suppress eraseIteratorOutOfBounds
+    a.erase(p);
+}
+int eraseIteratorOutOfBounds_std_list2()
+{
+    std::list<int> a;
+    std::list<int>::iterator p = a.begin();
+    std::list<int>::iterator q = p;
+    // cppcheck-suppress eraseIteratorOutOfBounds
+    a.erase(q);
+    return *q;
+}
 
 void containerOutOfBounds_std_string(std::string &var) { // #11403
     std::string s0{"x"};
