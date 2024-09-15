@@ -1564,7 +1564,7 @@ void CheckUnusedVar::checkStructMemberUsage()
                     if (lhs->isVariable() && rhs->isVariable()) {
                         const Type *ltype = lhs->variable()->type();
                         const Type *rtype = rhs->variable()->type();
-                        if (ltype->name() == scope.className && rtype->name() == scope.className) {
+                        if (ltype && rtype && ltype->name() == scope.className && rtype->name() == scope.className) {
                             use = true;
                             break;
                         }
