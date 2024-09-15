@@ -1534,6 +1534,19 @@ void CheckUnusedVar::checkStructMemberUsage()
         if (bailout)
             continue;
 
+        // check if class/struct has default equality operator
+        bool has_default_eq = true;
+        for (const Function &f : scope.functionList) {
+            if (f.isOperator() && f.name() == "operator==") {
+                if (f.isDefault()) {
+                    has_default_eq = true;
+                    break;
+                }
+                has_default_eq = false;
+                break;
+            }
+        }
+
         for (const Variable &var : scope.varlist) {
             // only warn for variables without side effects
             if (!var.typeStartToken()->isStandardType() && !var.isPointer() && !astIsContainer(var.nameToken()) && !isRecordTypeWithoutSideEffects(var.type()))
@@ -1544,6 +1557,19 @@ void CheckUnusedVar::checkStructMemberUsage()
             // Check if the struct member variable is used anywhere in the file
             bool use = false;
             for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+                // Check if default equality is used
+                if (Token::Match(tok, "==") && has_default_eq) {
+                    const Token *lhs = tok->astOperand1();
+                    const Token *rhs = tok->astOperand2();
+                    if (lhs->isVariable() && rhs->isVariable()) {
+                        const Type *ltype = lhs->variable()->type();
+                        const Type *rtype = rhs->variable()->type();
+                        if (ltype->name() == scope.className && rtype->name() == scope.className) {
+                            use = true;
+                            break;
+                        }
+                    }
+                }
                 if (Token::Match(tok, ". %name%") && !tok->next()->variable() && !tok->next()->function() && tok->strAt(1) == var.name()) {
                     // not known => assume variable is used
                     use = true;
