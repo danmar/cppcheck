@@ -1310,6 +1310,8 @@ const std::unordered_map<std::string, Library::Container>& Library::containers()
 
 const Library::Container* Library::detectContainerInternal(const Token* const typeStart, DetectContainer detect, bool* isIterator, bool withoutStd) const
 {
+    if (!typeStart)
+        return nullptr;
     const Token* firstLinkedTok = nullptr;
     for (const Token* tok = typeStart; tok && !tok->varId(); tok = tok->next()) {
         if (!tok->link())
