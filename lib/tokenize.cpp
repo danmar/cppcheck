@@ -755,7 +755,7 @@ namespace {
             const bool isFunctionPointer = Token::Match(mNameToken, "%name% )");
 
             // Special handling for T(...) when T is a pointer
-            if (Token::Match(tok, "%name% [({]") && !isFunctionPointer) {
+            if (Token::Match(tok, "%name% [({]") && !isFunctionPointer && !Token::simpleMatch(tok->linkAt(1), ") (")) {
                 bool pointerType = false;
                 for (const Token* type = mRangeType.first; type != mRangeType.second; type = type->next()) {
                     if (type->str() == "*" || type->str() == "&") {
