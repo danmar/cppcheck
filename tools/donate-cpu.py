@@ -247,8 +247,8 @@ while True:
             cppcheck_head_info = lib.get_cppcheck_info(tree_path)
             capture_callstack = True
 
-            def get_client_version_head():
-                cmd = 'python3' + ' ' + os.path.join(tree_path, 'tools', 'donate-cpu.py') + ' ' + '--version'
+            def get_client_version_head(path):
+                cmd = 'python3' + ' ' + os.path.join(path, 'tools', 'donate-cpu.py') + ' ' + '--version'
                 p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, universal_newlines=True)
                 try:
                     comm = p.communicate()
@@ -256,7 +256,7 @@ while True:
                 except:
                     return None
 
-            client_version_head = get_client_version_head()
+            client_version_head = get_client_version_head(tree_path)
         c, errout, info, t, cppcheck_options, timing_info = lib.scan_package(tree_path, source_path, libraries, capture_callstack)
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:

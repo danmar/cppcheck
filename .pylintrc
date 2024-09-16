@@ -12,7 +12,6 @@ disable=
         protected-access,
         broad-exception-raised,
         subprocess-popen-preexec-fn,
-        cell-var-from-loop,
         logging-not-lazy,
         unknown-option-value,
         unused-wildcard-import,
