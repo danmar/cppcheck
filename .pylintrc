@@ -15,7 +15,6 @@ disable=
         cell-var-from-loop,
         logging-not-lazy,
         unknown-option-value,
-        implicit-str-concat,
         unused-wildcard-import,
         wildcard-import,
         unused-argument,
