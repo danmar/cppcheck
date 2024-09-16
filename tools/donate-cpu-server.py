@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.57"
+SERVER_VERSION = "1.3.58"
 
 OLD_VERSION = '2.15.0'
 
@@ -127,6 +127,8 @@ def overviewReport() -> str:
     html += '<a href="head-syntaxError">syntaxError</a><br>\n'
     html += '<a href="head-DacaWrongData">DacaWrongData</a><br>\n'
     html += '<a href="head-dacaWrongSplitTemplateRightAngleBrackets">dacaWrongSplitTemplateRightAngleBrackets</a><br>\n'
+    html += '<br>\n'
+    html += '<a href="clients.html">clients</a><br>\n'
     html += '<br>\n'
     html += 'version ' + SERVER_VERSION + '\n'
     html += '</body></html>'
@@ -1070,6 +1072,79 @@ def check_library_function_name(result_path: str, function_name: str, query_para
     return ''.join(output_lines_list)
 
 
+def clientsReport(results_path: str):
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>Clients report</title></head><body>\n'
+    html += '<h1>Clients report</h1>\n'
+    current_year = datetime.date.today().year
+    # TODO: use full profiles?
+    # TODO: add jobs
+    platforms = {}
+    py_versions = {}
+    client_versions = {}
+    compilers = {}
+    for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
+        if not os.path.isfile(filename) or filename.endswith('.diff'):
+            continue
+        with open(filename, 'rt') as file_:
+            datestr = None
+            platform = None
+            py_version = None
+            client_version = None
+            compiler = None
+            for line in file_:
+                line = line.strip()
+                if line.startswith('cppcheck: '):
+                    if OLD_VERSION not in line:
+                        # Package results seem to be too old, skip
+                        break
+                    if not datestr:
+                        break
+
+                    dt = dateTimeFromStr(datestr)
+
+                    if platform and not platform in platforms or dt < dateTimeFromStr(platforms[platform]):
+                        platforms[platform] = datestr
+                    if py_version and not py_version in py_versions or dt < dateTimeFromStr(py_versions[py_version]):
+                        py_versions[py_version] = datestr
+                    if client_version and not client_version in client_versions or dt < dateTimeFromStr(client_versions[client_version]):
+                        client_versions[client_version] = datestr
+                    if compiler and not compiler in compilers or dt < dateTimeFromStr(compilers[compiler]):
+                        compilers[compiler] = datestr
+                    break #  stop processing
+
+                if datestr is None and line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+                    datestr = line
+                elif line.startswith('platform:'):
+                    platform = line.split(' ', 1)[1]
+                elif line.startswith('python:'):
+                    py_version = line.split(' ',1 )[1]
+                elif line.startswith('client-version:'):
+                    client_version = line.split(' ', 1)[1]
+                elif line.startswith('compiler:'):
+                    compiler = line.split(' ', 1)[1]
+
+    html += '<pre>\n'
+    html += 'Client versions:\n'
+    for clv in client_versions:
+        html += clv + ' - ' + client_versions[clv] + '\n'
+    html += '\n'
+    html += 'Python versions:\n'
+    for pyv in py_versions:
+        html += pyv + ' - ' + py_versions[pyv] + '\n'
+    html += '\n'
+    html += 'Platforms:\n'
+    for pl in platforms:
+        html += pl + ' - ' + platforms[pl] + '\n'
+    html += '\n'
+    html += 'Compilers:\n'
+    for cmp in compilers:
+        html += cmp + ' - ' + compilers[cmp] + '\n'
+    html += '</pre>\n'
+    html += '</body></html>\n'
+    return html
+
+
 def sendAll(connection: socket.socket, text: str) -> None:
     data = text.encode('utf-8', 'ignore')
     while data:
@@ -1203,6 +1278,9 @@ class HttpClientThread(Thread):
                 var_name = url[len('/unknown_macro-'):]
                 text = check_library_function_name(self.resultPath, var_name, queryParams, nonfunc_id='unknownMacro')
                 httpGetResponse(self.connection, text, 'text/plain')
+            elif url.startswith('/clients.html'):
+                text = clientsReport(self.resultPath)
+                httpGetResponse(self.connection, text, 'text/html')
             else:
                 filename = self.resultPath + url
                 if not os.path.isfile(filename):
