@@ -88,10 +88,9 @@ class Reduce:
         return False
 
     def __writefile(self, filename, filedata):
-        f = open(filename, 'wt')
-        for line in filedata:
-            f.write(line)
-        f.close()
+        with open(filename, 'wt') as f:
+            for line in filedata:
+                f.write(line)
 
     def replaceandrun(self, what, filedata, i, line):
         print(what + ' ' + str(i + 1) + '/' + str(len(filedata)) + '..')

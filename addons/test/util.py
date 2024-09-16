@@ -21,12 +21,12 @@ def find_cppcheck_binary():
 def dump_create(fpath, *argv):
     cppcheck_binary = find_cppcheck_binary()
     cmd = [cppcheck_binary, "--dump", "-DDUMMY", "--quiet", fpath] + list(argv)
-    p = subprocess.Popen(cmd)
-    p.communicate()
-    if p.returncode != 0:
-        raise OSError("cppcheck returns error code: %d" % p.returncode)
-    p = subprocess.Popen(["sync"])
-    p.communicate()
+    with subprocess.Popen(cmd) as p:
+        p.communicate()
+        if p.returncode != 0:
+            raise OSError("cppcheck returns error code: %d" % p.returncode)
+    with subprocess.Popen(["sync"]) as p:
+        p.communicate()
 
 
 def dump_remove(fpath):

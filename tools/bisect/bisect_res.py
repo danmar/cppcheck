@@ -8,18 +8,18 @@ def run(cppcheck_path, options):
     cmd = options.split()
     cmd.insert(0, cppcheck_path)
     print('running {}'.format(cppcheck_path))
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-    stdout, stderr = p.communicate()
-    # only 0 and 1 are well-defined in this case
-    if p.returncode > 1:
-        print('error')
-        return None, None, None
-    # signals are reported as negative exitcode (e.g. SIGSEGV -> -11)
-    if p.returncode < 0:
-        print('crash')
+    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True) as p:
+        stdout, stderr = p.communicate()
+        # only 0 and 1 are well-defined in this case
+        if p.returncode > 1:
+            print('error')
+            return None, None, None
+        # signals are reported as negative exitcode (e.g. SIGSEGV -> -11)
+        if p.returncode < 0:
+            print('crash')
+            return p.returncode, stderr, stdout
+        print('done')
         return p.returncode, stderr, stdout
-    print('done')
-    return p.returncode, stderr, stdout
 
 
 # TODO: check arguments

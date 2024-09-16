@@ -23,11 +23,11 @@ def __call_process(arg):
     exe = __lookup_cppcheck_exe('test-signalhandler')
     if exe is None:
         raise Exception('executable not found')
-    p = subprocess.Popen([exe, arg], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    comm = p.communicate()
-    stdout = comm[0].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
-    stderr = comm[1].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
-    return p.returncode, stdout, stderr
+    with subprocess.Popen([exe, arg], stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p:
+        comm = p.communicate()
+        stdout = comm[0].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
+        stderr = comm[1].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
+        return p.returncode, stdout, stderr
 
 
 def test_assert():

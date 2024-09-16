@@ -679,9 +679,8 @@ class MatchCompiler:
     def convertFile(self, srcname, destname, line_directive):
         self._reset()
 
-        fin = io.open(srcname, "rt", encoding="utf-8")
-        srclines = fin.readlines()
-        fin.close()
+        with io.open(srcname, "rt", encoding="utf-8") as fin:
+            srclines = fin.readlines()
 
         code = ''
 
@@ -723,13 +722,12 @@ class MatchCompiler:
             header += '#include "errorlogger.h"\n'
             header += '#include "token.h"\n'
 
-        fout = io.open(destname, 'wt', encoding="utf-8")
-        if modified or len(self._rawMatchFunctions):
-            fout.write(header)
-            fout.write(strFunctions)
-        fout.write(lineno)
-        fout.write(code)
-        fout.close()
+        with io.open(destname, 'wt', encoding="utf-8") as fout:
+            if modified or len(self._rawMatchFunctions):
+                fout.write(header)
+                fout.write(strFunctions)
+            fout.write(lineno)
+            fout.write(code)
 
 
 def main():

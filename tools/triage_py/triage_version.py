@@ -28,12 +28,12 @@ args = parser.parse_args()
 
 def sort_commit_hashes(commits):
     git_cmd = 'git rev-list --abbrev-commit --topo-order --no-walk=sorted --reverse ' + ' '.join(commits)
-    p = subprocess.Popen(git_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=git_repo, universal_newlines=True)
-    stdout, stderr = p.communicate()
-    if p.returncode != 0:
-        print('error: sorting commit hashes failed')
-        print(stderr)
-        sys.exit(1)
+    with subprocess.Popen(git_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=git_repo, universal_newlines=True) as p:
+        stdout, stderr = p.communicate()
+        if p.returncode != 0:
+            print('error: sorting commit hashes failed')
+            print(stderr)
+            sys.exit(1)
     return stdout.splitlines()
 
 verbose = args.verbose
@@ -131,7 +131,8 @@ for entry in versions:
     else:
         # get version string
         version_cmd = exe + ' ' + '--version'
-        version = subprocess.Popen(version_cmd.split(), stdout=subprocess.PIPE, universal_newlines=True).stdout.read().strip()
+        with subprocess.Popen(version_cmd.split(), stdout=subprocess.PIPE, universal_newlines=True) as p:
+            version = p.stdout.read().strip()
         # sanitize version
         version = version.replace('Cppcheck ', '').replace(' dev', '')
 
