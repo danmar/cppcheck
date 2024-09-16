@@ -74,7 +74,10 @@ private:
         TEST_CASE(memsetInvalid2ndParam);
 
         // missing "return"
-        TEST_CASE(checkMissingReturn);
+        TEST_CASE(checkMissingReturn1);
+        TEST_CASE(checkMissingReturn2); // #11798
+        TEST_CASE(checkMissingReturn3);
+        TEST_CASE(checkMissingReturn4);
 
         // std::move for locar variable
         TEST_CASE(returnLocalStdMove1);
@@ -1556,7 +1559,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (portability) The 2nd memset() argument '1.0f+i' is a float, its representation is implementation defined.\n", errout_str());
     }
 
-    void checkMissingReturn() {
+    void checkMissingReturn1() {
         check("int f() {}");
         ASSERT_EQUALS("[test.cpp:1]: (error) Found an exit path from function with non-void return type that has missing return statement\n", errout_str());
 
@@ -1762,6 +1765,59 @@ private:
         check("struct S { [[noreturn]] void f(); };\n"
               "int g(S& s) { s.f(); }\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void checkMissingReturn2() { // #11798
+        check("int f(bool const a) {\n"
+              "      switch (a) {\n"
+              "      case true:\n"
+              "            return 1;\n"
+              "      case false:\n"
+              "            return 2;\n"
+              "      }\n"
+              "}\n"
+              "int _tmain(int argc, _TCHAR* argv[])\n"
+              "{\n"
+              "      auto const b= f(true);\n"
+              "      auto const c= f(false);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void checkMissingReturn3() {
+        check("enum Enum {\n"
+              "    A,\n"
+              "    B,\n"
+              "    C,\n"
+              "};\n"
+              "int f(Enum e) {\n"
+              "    switch (e) {\n"
+              "    case A:\n"
+              "          return 1;\n"
+              "    case B:\n"
+              "          return 2;\n"
+              "    case C:\n"
+              "          return 2;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void checkMissingReturn4() {
+        check("enum Enum {\n"
+              "    A,\n"
+              "    B,\n"
+              "    C,\n"
+              "};\n"
+              "int f(Enum e) {\n"
+              "    switch (e) {\n"
+              "    case A:\n"
+              "          return 1;\n"
+              "    case B:\n"
+              "          return 2;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Found an exit path from function with non-void return type that has missing return statement\n", errout_str());
     }
 
     // NRVO check

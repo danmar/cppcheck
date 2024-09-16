@@ -380,7 +380,7 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
                     else if (switchToken->str() == "{" && (switchToken->scope()->isLoopScope() || switchToken->scope()->type == Scope::ScopeType::eSwitch))
                         switchToken = switchToken->link();
                 }
-                if (!hasDefault)
+                if (!isExhaustiveSwitch(tok->link()) && !hasDefault)
                     return tok->link();
             } else if (tok->scope()->type == Scope::ScopeType::eIf) {
                 const Token *condition = tok->scope()->classDef->next()->astOperand2();

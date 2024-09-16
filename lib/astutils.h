@@ -445,4 +445,6 @@ bool isGlobalData(const Token *expr);
 
 bool isUnevaluated(const Token *tok);
 
+bool isExhaustiveSwitch(const Token *startbrace);
+
 #endif // astutilsH
