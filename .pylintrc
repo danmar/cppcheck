@@ -64,7 +64,6 @@ disable=
         too-many-nested-blocks,
         too-many-public-methods,
         consider-using-sys-exit,
-        use-dict-literal,
         chained-comparison,
         too-many-instance-attributes,
         consider-using-join,

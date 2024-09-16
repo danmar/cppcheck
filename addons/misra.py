@@ -1371,13 +1371,13 @@ class MisraChecker:
         self.verify_actual = []
 
         # List of formatted violation messages
-        self.violations = dict()
+        self.violations = {}
 
         # if --rule-texts is specified this dictionary
         # is loaded with descriptions of each rule
         # by rule number (in hundreds).
         # ie rule 1.2 becomes 102
-        self.ruleTexts = dict()
+        self.ruleTexts = {}
         self.ruleText_filename = None
 
         # Dictionary of dictionaries for rules to suppress
@@ -1388,13 +1388,13 @@ class MisraChecker:
         # or an item of None which indicates suppress rule for the entire file.
         # The line and symbol name tuple may have None as either of its elements but
         # should not be None for both.
-        self.suppressedRules = dict()
+        self.suppressedRules = {}
 
         # Prefix to ignore when matching suppression files.
         self.filePrefix = None
 
         # Number of all violations suppressed per rule
-        self.suppressionStats = dict()
+        self.suppressionStats = {}
 
         self.stdversion = stdversion
 
@@ -4127,7 +4127,7 @@ class MisraChecker:
             ruleItemList = []
             ruleItemList.append(line_symbol)
 
-            fileDict = dict()
+            fileDict = {}
             fileDict[normalized_filename] = ruleItemList
 
             self.suppressedRules[ruleNum] = fileDict
