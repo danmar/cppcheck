@@ -13,7 +13,6 @@ disable=
         redundant-u-string-prefix,
         broad-exception-raised,
         subprocess-popen-preexec-fn,
-        format-string-without-interpolation,
         cell-var-from-loop,
         logging-not-lazy,
         unknown-option-value,

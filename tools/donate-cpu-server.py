@@ -1585,7 +1585,7 @@ if __name__ == "__main__":
 
         print_ts('packages_nodata: {}'.format(len(packages_nodata)))
 
-        print_ts('removing packages with no files to process'.format(len(packages_nodata)))
+        print_ts('removing packages with no files to process')
         packages_nodata_clean = []
         for pkg_n in packages_nodata:
             if pkg_n in packages:
