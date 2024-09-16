@@ -1547,7 +1547,30 @@ void CheckUnusedVar::checkStructMemberUsage()
             }
         }
 
+        // check if default equality is used
+        bool default_eq_used = false;
+        if (has_default_eq) {
+            for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+                if (Token::simpleMatch(tok, "==")) {
+                    const Token *lhs = tok->astOperand1();
+                    const Token *rhs = tok->astOperand2();
+                    if (lhs->isVariable() && rhs->isVariable()) {
+                        const Type *ltype = lhs->variable()->type();
+                        const Type *rtype = rhs->variable()->type();
+                        if (ltype && rtype && ltype->name() == scope.className && rtype->name() == scope.className) {
+                            default_eq_used = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
         for (const Variable &var : scope.varlist) {
+            if (!var.isStatic() && default_eq_used) {
+                continue;
+            }
+
             // only warn for variables without side effects
             if (!var.typeStartToken()->isStandardType() && !var.isPointer() && !astIsContainer(var.nameToken()) && !isRecordTypeWithoutSideEffects(var.type()))
                 continue;
@@ -1557,19 +1580,6 @@ void CheckUnusedVar::checkStructMemberUsage()
             // Check if the struct member variable is used anywhere in the file
             bool use = false;
             for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-                // Check if default equality is used
-                if (Token::simpleMatch(tok, "==") && has_default_eq) {
-                    const Token *lhs = tok->astOperand1();
-                    const Token *rhs = tok->astOperand2();
-                    if (lhs->isVariable() && rhs->isVariable()) {
-                        const Type *ltype = lhs->variable()->type();
-                        const Type *rtype = rhs->variable()->type();
-                        if (ltype && rtype && ltype->name() == scope.className && rtype->name() == scope.className) {
-                            use = true;
-                            break;
-                        }
-                    }
-                }
                 if (Token::Match(tok, ". %name%") && !tok->next()->variable() && !tok->next()->function() && tok->strAt(1) == var.name()) {
                     // not known => assume variable is used
                     use = true;
