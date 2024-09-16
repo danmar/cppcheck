@@ -3388,6 +3388,17 @@ private:
         const char code3[] = "typedef char* T;\n"
                              "T f() { return T(\"abc\"); }\n";
         ASSERT_EQUALS("char * f ( ) { return ( char * ) ( \"abc\" ) ; }", tok(code3));
+
+        const char code4[] = "typedef struct _a *A;\n" // #13104
+                             "typedef struct _b* B;\n"
+                             "typedef A(get_t)(B);\n"
+                             "extern get_t* get;\n"
+                             "A f() {\n"
+                             "    return get(0);\n"
+                             "}\n";
+        ASSERT_EQUALS("extern struct _a * ( * get ) ( struct _b * ) ; "
+                      "struct _a * f ( ) { return get ( 0 ) ; }",
+                      tok(code4));
     }
 
     void simplifyTypedef143() { // #11506
