@@ -17,7 +17,6 @@ disable=
         unknown-option-value,
         implicit-str-concat,
         unused-wildcard-import,
-        pointless-statement,
         wildcard-import,
         unused-argument,
         deprecated-module,
