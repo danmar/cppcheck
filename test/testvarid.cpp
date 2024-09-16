@@ -275,7 +275,7 @@ private:
         Tokenizer tokenizer(settings, *this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.list.createTokens(istr, filename), file, line);
-        EXPECT_EQ(true, tokenizer.simplifyTokens1(""));
+        ASSERT_EQUALS(true, tokenizer.simplifyTokens1(""));
 
         // result..
         Token::stringifyOptions options = Token::stringifyOptions::forDebugVarId();
