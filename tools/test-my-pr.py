@@ -144,7 +144,7 @@ if __name__ == "__main__":
             print("No files to process")
             continue
 
-        results_to_diff = list()
+        results_to_diff = []
 
         main_crashed = False
         your_crashed = False

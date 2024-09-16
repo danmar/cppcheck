@@ -1367,8 +1367,8 @@ class MisraChecker:
         self.settings = settings
 
         # Test validation rules lists
-        self.verify_expected = list()
-        self.verify_actual = list()
+        self.verify_expected = []
+        self.verify_actual = []
 
         # List of formatted violation messages
         self.violations = dict()
@@ -1588,7 +1588,7 @@ class MisraChecker:
         self._save_ctu_summary_tagnames(dumpfile, cfg)
 
     def misra_2_5(self, dumpfile, cfg):
-        used_macros = list()
+        used_macros = []
         for m in cfg.macro_usage:
             used_macros.append(m.name)
         summary = []
@@ -1606,7 +1606,7 @@ class MisraChecker:
             if len(func.argument) == 0:
                 continue
             # Setup list of function parameters
-            func_param_list = list()
+            func_param_list = []
             for arg in func.argument:
                 func_arg = func.argument[arg]
                 if func_arg.typeStartToken and func_arg.typeStartToken.str == '...':
@@ -4124,7 +4124,7 @@ class MisraChecker:
 
         # If the rule is not in the dict already then add it
         if ruleNum not in self.suppressedRules:
-            ruleItemList = list()
+            ruleItemList = []
             ruleItemList.append(line_symbol)
 
             fileDict = dict()
@@ -4143,7 +4143,7 @@ class MisraChecker:
 
         # If the filename is not in the dict already add it
         if normalized_filename not in fileDict:
-            ruleItemList = list()
+            ruleItemList = []
             ruleItemList.append(line_symbol)
 
             fileDict[normalized_filename] = ruleItemList
@@ -4247,7 +4247,7 @@ class MisraChecker:
         Print out rules in suppression list sorted by Rule Number
         """
         print("Suppressed Rules List:")
-        outlist = list()
+        outlist = []
 
         for ruleNum in self.suppressedRules:
             fileDict = self.suppressedRules[ruleNum]

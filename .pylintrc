@@ -52,7 +52,6 @@ disable=
         consider-using-with,
         too-many-statements,
         too-many-branches,
-        use-list-literal,
         simplifiable-if-statement,
         too-many-locals,
         too-many-arguments,
