@@ -10,7 +10,6 @@ disable=
         unspecified-encoding,
         global-statement,
         protected-access,
-        redundant-u-string-prefix,
         broad-exception-raised,
         subprocess-popen-preexec-fn,
         cell-var-from-loop,

@@ -683,7 +683,7 @@ class MatchCompiler:
         srclines = fin.readlines()
         fin.close()
 
-        code = u''
+        code = ''
 
         modified = False
 
@@ -712,16 +712,16 @@ class MatchCompiler:
         # Compute matchFunctions
         strFunctions = ''.join(self._rawMatchFunctions)
 
-        lineno = u''
+        lineno = ''
         if line_directive:
-            lineno = u'#line 1 "' + srcname + '"\n'
+            lineno = '#line 1 "' + srcname + '"\n'
 
-        header = u'#include "matchcompiler.h"\n'
-        header += u'#include <string>\n'
-        header += u'#include <cstring>\n'
+        header = '#include "matchcompiler.h"\n'
+        header += '#include <string>\n'
+        header += '#include <cstring>\n'
         if len(self._rawMatchFunctions):
-            header += u'#include "errorlogger.h"\n'
-            header += u'#include "token.h"\n'
+            header += '#include "errorlogger.h"\n'
+            header += '#include "token.h"\n'
 
         fout = io.open(destname, 'wt', encoding="utf-8")
         if modified or len(self._rawMatchFunctions):
