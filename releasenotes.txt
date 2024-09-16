@@ -13,6 +13,7 @@ Changed interface:
 -
 
 Deprecations:
+- The previously deprecated support for Python 2.7 has been removed. please use Python 3 instead.
 -
 
 Other:

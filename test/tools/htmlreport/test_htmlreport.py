@@ -8,11 +8,7 @@ import subprocess
 import sys
 import tempfile
 
-if sys.version_info < (2, 7):
-    # For TestCase.assertIn().
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 TEST_TOOLS_DIR = os.path.abspath(os.path.dirname(__file__))
 ROOT_DIR = os.path.split(os.path.dirname(os.path.dirname(TEST_TOOLS_DIR)))[0]
