@@ -273,35 +273,36 @@ bool astIsContainerString(const Token* tok)
     return container->stdStringLike;
 }
 
-static const Token* getContainerFunction(const Token* tok)
+static std::pair<const Token*, const Library::Container*> getContainerFunction(const Token* tok, const Settings* settings)
 {
-    if (!tok || !tok->valueType() || !tok->valueType()->container)
-        return nullptr;
+    const Library::Container* cont{};
+    if (!tok || !tok->valueType() || (!tok->valueType()->container && (!settings || !(cont = settings->library.detectContainerOrIterator(tok->valueType()->smartPointerTypeToken)))))
+        return {};
     const Token* parent = tok->astParent();
     if (Token::Match(parent, ". %name% (") && astIsLHS(tok)) {
-        return parent->next();
+        return { parent->next(), cont ? cont : tok->valueType()->container };
     }
-    return nullptr;
+    return {};
 }
 
-Library::Container::Action astContainerAction(const Token* tok, const Token** ftok)
+Library::Container::Action astContainerAction(const Token* tok, const Token** ftok, const Settings* settings)
 {
-    const Token* ftok2 = getContainerFunction(tok);
+    const auto ftokCont = getContainerFunction(tok, settings);
     if (ftok)
-        *ftok = ftok2;
-    if (!ftok2)
+        *ftok = ftokCont.first;
+    if (!ftokCont.first)
         return Library::Container::Action::NO_ACTION;
-    return tok->valueType()->container->getAction(ftok2->str());
+    return ftokCont.second->getAction(ftokCont.first->str());
 }
 
-Library::Container::Yield astContainerYield(const Token* tok, const Token** ftok)
+Library::Container::Yield astContainerYield(const Token* tok, const Token** ftok, const Settings* settings)
 {
-    const Token* ftok2 = getContainerFunction(tok);
+    const auto ftokCont = getContainerFunction(tok, settings);
     if (ftok)
-        *ftok = ftok2;
-    if (!ftok2)
+        *ftok = ftokCont.first;
+    if (!ftokCont.first)
         return Library::Container::Yield::NO_YIELD;
-    return tok->valueType()->container->getYield(ftok2->str());
+    return ftokCont.second->getYield(ftokCont.first->str());
 }
 
 Library::Container::Yield astFunctionYield(const Token* tok, const Settings& settings, const Token** ftok)
