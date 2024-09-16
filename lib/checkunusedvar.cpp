@@ -1558,7 +1558,7 @@ void CheckUnusedVar::checkStructMemberUsage()
             bool use = false;
             for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
                 // Check if default equality is used
-                if (Token::Match(tok, "==") && has_default_eq) {
+                if (Token::simpleMatch(tok, "==") && has_default_eq) {
                     const Token *lhs = tok->astOperand1();
                     const Token *rhs = tok->astOperand2();
                     if (lhs->isVariable() && rhs->isVariable()) {
