@@ -173,8 +173,7 @@ class Reduce:
                 i1 = i
                 i2 = i + chunksize
                 i = i2
-                if i2 > len(lines):
-                    i2 = len(lines)
+                i2 = min(i2, len(lines))
 
                 filedata2 = list(filedata)
                 for line in lines[i1:i2]:

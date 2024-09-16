@@ -49,7 +49,6 @@ disable=
         too-many-locals,
         too-many-arguments,
         too-few-public-methods,
-        consider-using-min-builtin,
         too-many-return-statements,
         consider-using-in,
         too-many-nested-blocks,
