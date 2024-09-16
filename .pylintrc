@@ -61,7 +61,6 @@ disable=
         consider-using-sys-exit,
         chained-comparison,
         too-many-instance-attributes,
-        consider-using-join,
         too-many-boolean-expressions,
         useless-object-inheritance,
         use-a-generator,

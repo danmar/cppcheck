@@ -710,9 +710,7 @@ class MatchCompiler:
             code += line
 
         # Compute matchFunctions
-        strFunctions = u''
-        for function in self._rawMatchFunctions:
-            strFunctions += function
+        strFunctions = ''.join(self._rawMatchFunctions)
 
         lineno = u''
         if line_directive:
