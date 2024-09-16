@@ -3687,7 +3687,7 @@ static std::set<std::string> getSwitchExprs(const Token *startbrace, bool &hasDe
             const Token *exprtok = tok->astOperand1();
             if (!exprtok)
                 continue;
-            while (Token::Match(tok, "%name% :: "))
+            while (Token::Match(tok, "%name% ::"))
                 tok = tok->tokAt(2);
             exprs.insert(exprtok->str());
             continue;
