@@ -14,8 +14,8 @@ CPPCHECK = os.path.expanduser('~/cppcheck/cppcheck')
 def run_cppcheck(cppcheck_parameters:str, clang:str):
     cmd = '{} {} {} --debug --verbose'.format(CPPCHECK, cppcheck_parameters, clang)
     #print(cmd)
-    p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    comm = p.communicate()
+    with subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p:
+        comm = p.communicate()
     return comm[0].decode('utf-8', 'ignore')
 
 
