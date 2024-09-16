@@ -38,17 +38,10 @@ class Reduce:
         print('FILE=' + self.__file)
 
     def __communicate(self, p, timeout=None, **kwargs):
-        if sys.version_info[0] < 3:
-            return p.communicate(**kwargs)
-        else:
-            return p.communicate(timeout=timeout)
+        return p.communicate(timeout=timeout)
 
     def runtool(self, filedata=None):
-        if sys.version_info[0] < 3:
-            class TimeoutExpired(Exception):
-                pass
-        else:
-            TimeoutExpired = subprocess.TimeoutExpired
+        TimeoutExpired = subprocess.TimeoutExpired
 
         timeout = None
         if self.__elapsed_time:
