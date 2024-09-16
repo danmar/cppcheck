@@ -42,7 +42,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 if(CMAKE_VERSION VERSION_EQUAL "3.12" OR CMAKE_VERSION VERSION_GREATER "3.12")
     find_package(Python COMPONENTS Interpreter)
-    if(NOT Python_Interpreter_FOUND)
+    if(NOT Python_Interpreter_FOUND AND NOT USE_MATCHCOMPILER_OPT STREQUAL "Off")
         message(WARNING "No python interpreter found - disabling matchcompiler.")
         set(USE_MATCHCOMPILER_OPT "Off")
     endif()
