@@ -5153,6 +5153,14 @@ void unusedvar_stringstream(const char* p)
     std::stringstream sstr(p);
 }
 
+void unusedvar_stdcomplex()
+{
+    // cppcheck-suppress unusedVariable
+	std::complex<double> z1;
+    // cppcheck-suppress unreadVariable
+	std::complex<double> z2(0.0, 0.0);
+}
+
 int passedByValue_std_array1(std::array<int, 2> a)
 {
     return a[0] + a[1];
