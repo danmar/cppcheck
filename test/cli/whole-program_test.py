@@ -11,13 +11,15 @@ __script_dir = os.path.dirname(os.path.abspath(__file__))
 # TODO: test CheckBufferOverrun
 
 
-def __create_compile_commands(dir, entries):
+def __create_compile_commands(dir, filePaths, definesList=[[None]]):
     j = []
-    for e in entries:
-        f = os.path.basename(e)
+    for i, fp in enumerate(filePaths):
+        f = os.path.basename(fp)
+
+        defines = definesList[i] if len(definesList) > i else [None]
         obj = {
-            'directory': os.path.dirname(os.path.abspath(e)),
-            'command': 'gcc -c {}'.format(f),
+            'directory': os.path.dirname(os.path.abspath(fp)),
+            'command': 'gcc -c {} {}'.format(f, ' '.join('-D{}'.format(define) for define in defines) if defines is not None else ''),
             'file': f
         }
         j.append(obj)
@@ -295,3 +297,86 @@ def test_checkclass_project_builddir(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
     __test_checkclass_project(tmpdir, ['-j1', '--cppcheck-build-dir={}'.format(build_dir)])
+
+def test_unused_A_B():
+    args = [
+        '-q',
+        '--addon=misra',
+        '--template=simple',
+        '--enable=all',
+        '--error-exitcode=1',
+        'whole-program/configs_unused.c'
+    ]
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    lines = stderr.splitlines()
+    assert lines == [
+        "whole-program/configs_unused.c:3:9: style: struct member 'X::x' is never used. [unusedStructMember]",
+        "whole-program/configs_unused.c:2:1: style: misra violation (use --rule-texts=<file> to get proper output) [misra-c2012-2.3]",
+    ]
+    # assert stdout == ''
+    assert ret == 1, stdout
+
+def test_unused_with_project_A_and_B(tmpdir):
+    # A and B config
+    configs_unused_file = os.path.join(__script_dir, 'whole-program', 'configs_unused.c')
+    compile_db = __create_compile_commands(tmpdir, [configs_unused_file],
+        [["A", "B"]]
+    )
+    args = [
+        '-q',
+        '--addon=misra',
+        '--template=simple',
+        '--enable=all',
+        '--error-exitcode=1',
+        '--project={}'.format(compile_db)
+    ]
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    lines = stderr.splitlines()
+    assert lines == [
+    ]
+    assert stdout == ''
+    assert ret == 0, stdout
+
+
+def test_unused_with_project_A_or_B(tmpdir):
+    # A or B configs
+    configs_unused_file = os.path.join(__script_dir, 'whole-program', 'configs_unused.c')
+    compile_db = __create_compile_commands(tmpdir, [configs_unused_file, configs_unused_file],
+        [["A"], ["B"]]
+    )
+    args = [
+        '-q',
+        '--addon=misra',
+        '--template=simple',
+        '--enable=all',
+        '--error-exitcode=1',
+        '--project={}'.format(compile_db)
+    ]
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    lines = stderr.splitlines()
+    assert lines == [
+    ]
+    assert stdout == ''
+    assert ret == 0, stdout
+
+def test_unused_with_project_B_or_A(tmpdir):
+    # A or B configs
+    configs_unused_file = os.path.join(__script_dir, 'whole-program', 'configs_unused.c')
+    compile_db = __create_compile_commands(tmpdir, [configs_unused_file, configs_unused_file],
+        [["B"], ["A"]]
+    )
+    args = [
+        '-q',
+        '--addon=misra',
+        '--template=simple',
+        '--enable=all',
+        '--error-exitcode=1',
+        '--project={}'.format(compile_db)
+    ]
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    lines = stderr.splitlines()
+    assert lines == [
+    ]
+    assert stdout == ''
+    assert ret == 0, stdout
