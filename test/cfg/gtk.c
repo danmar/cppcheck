@@ -7,9 +7,9 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
-#include <stdlib.h>
-#include <gtk/gtk.h>
+#include <stdio.h>
 #include <glib.h>
+#include <glib/gtypes.h>
 #include <glib/gi18n.h>
 
 
