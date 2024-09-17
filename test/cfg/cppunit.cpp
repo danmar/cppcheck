@@ -8,6 +8,10 @@
 
 // cppcheck-suppress-file valueFlowBailout
 
+#include <string>
+
+#include <cppunit/Exception.h>
+#include <cppunit/Portability.h>
 #include <cppunit/TestAssert.h>
 
 void cppunit_assert_equal(int x, double y)
