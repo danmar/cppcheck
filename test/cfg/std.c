@@ -2989,13 +2989,6 @@ void uninitvar_mktime(void)
     struct tm *tp;
     // cppcheck-suppress uninitvar
     (void)mktime(tp);
-
-    /* mkxtime() is still a draft: https://www.open-std.org/jtc1/sc22/wg14/www/docs/n793.htm */
-#if 0
-    struct tmx *tpx;
-    // cppcheck-suppress uninitvar
-    (void)mkxtime(tpx);
-#endif
 }
 
 void uninitvar_modf(void)
@@ -3698,13 +3691,6 @@ void uninitvar_strftime(void)
     const struct tm *p;
     // cppcheck-suppress uninitvar
     (void)strftime(s,max,fmt,p);
-
-    /* strfxtime() is still a draft: https://www.open-std.org/jtc1/sc22/wg14/www/docs/n793.htm */
-#if 0
-    const struct tmx *px;
-    // cppcheck-suppress uninitvar
-    (void)strfxtime(s,max,fmt,px);
-#endif
 }
 
 void uninitvar_strlen(const char *str)
@@ -4542,17 +4528,6 @@ int nullPointer_mtx_timedlock( mtx_t *restrict mutex, const struct timespec *res
     // cppcheck-suppress nullPointer
     (void) mtx_timedlock(mutex, NULL);
     return mtx_timedlock(mutex, time_point);
-}
-#endif
-
-/* zonetime() appears to be part of (or a comment to) draft N2620 which no longer exists */
-#if 0
-void uninitvar_zonetime(void)
-{
-    const time_t *tp;
-    int zone;
-    // cppcheck-suppress uninitvar
-    (void)zonetime(tp,zone);
 }
 #endif
 
