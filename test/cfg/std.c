@@ -32,6 +32,10 @@
 #include <float.h>
 #include <stdarg.h>
 #include <sys/types.h>
+#include <assert.h>
+#include <alloca.h>
+#include <locale.h>
+#include <signal.h>
 
 size_t invalidFunctionArgStr_wcslen(void)
 {
@@ -205,8 +209,10 @@ void bufferAccessOutOfBounds(void)
     // cppcheck-suppress bufferAccessOutOfBounds
     // TODO cppcheck-suppress redundantCopy
     strcpy(a, "abcde");
+#ifdef __STDC_LIB_EXT1__
     // cppcheck-suppress bufferAccessOutOfBounds
     strcpy_s(a, 10, "abcdefghij");
+#endif
     // TODO cppcheck-suppress redundantCopy
     // cppcheck-suppress terminateStrncpy
     strncpy(a,"abcde",5);
@@ -218,6 +224,7 @@ void bufferAccessOutOfBounds(void)
     strncpy(a,"a",6);
     // TODO cppcheck-suppress redundantCopy
     strncpy(a,"abcdefgh",4);
+#ifdef __STDC_LIB_EXT1__
     // valid call
     strncpy_s(a,5,"abcd",5);
     // string will be truncated, error is returned, but no buffer overflow
@@ -231,6 +238,7 @@ void bufferAccessOutOfBounds(void)
     strncat_s(a,10,"1",2);
     // TODO cppcheck-suppress bufferAccessOutOfBounds
     strncat_s(a,5,"1",5);
+#endif
     fread(a,1,5,stdin);
     // cppcheck-suppress bufferAccessOutOfBounds
     fread(a,1,6,stdin);
@@ -426,8 +434,10 @@ void nullpointer(int value)
     frexp(1.0,0);
     // cppcheck-suppress nullPointer
     fsetpos(0,0);
+#ifdef _WIN32 // not available on non-Windows compilers
     // cppcheck-suppress nullPointer
     itoa(123,0,10);
+#endif
     putchar(0);
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress nullPointer
@@ -473,24 +483,30 @@ void nullpointer(int value)
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress nullPointer
     wcscmp(0,0);
+#ifdef __STDC_LIB_EXT1__
     // cppcheck-suppress nullPointer
     strcpy_s(0,1,1);
     // cppcheck-suppress nullPointer
     strcpy_s(1,1,0);
+#endif
     // cppcheck-suppress nullPointer
     strncpy(0,0,1);
+#ifdef __STDC_LIB_EXT1__
     // cppcheck-suppress nullPointer
     strncpy_s(0,1,1,1);
     // cppcheck-suppress nullPointer
     strncpy_s(1,1,0,1);
+#endif
     // cppcheck-suppress nullPointer
     wcsncpy(0,0,1);
     // cppcheck-suppress nullPointer
     strncat(0,0,1);
+#ifdef __STDC_LIB_EXT1__
     // cppcheck-suppress nullPointer
     strncat_s(0,1,1,1);
     // cppcheck-suppress nullPointer
     strncat_s(1,1,0,1);
+#endif
     // cppcheck-suppress nullPointer
     wcsncat(0,0,1);
     // cppcheck-suppress ignoredReturnValue
@@ -933,6 +949,7 @@ void uninitvar_asctime(void)
     (void)asctime(tm);
 }
 
+#ifdef __STDC_LIB_EXT1__
 void uninitvar_asctime_s(void)
 {
     const struct tm *tm;
@@ -941,6 +958,7 @@ void uninitvar_asctime_s(void)
     // cppcheck-suppress asctime_sCalled
     asctime_s(buf, sizeof(buf), tm);
 }
+#endif
 
 void uninitvar_assert(void)
 {
@@ -2097,6 +2115,8 @@ void uninitvar_getenv(void)
     (void)getenv(name);
 }
 
+#if defined(_WIN32) || (__STDC_VERSION__ < 201112L)
+// since glibc 2.16 gets() is no longer available starting when >= C11
 void uninitvar_gets(void)
 {
     char *buffer;
@@ -2104,6 +2124,7 @@ void uninitvar_gets(void)
     // cppcheck-suppress uninitvar
     (void)gets(buffer);
 }
+#endif
 
 void uninitvar_gmtime(void)
 {
@@ -2969,9 +2990,12 @@ void uninitvar_mktime(void)
     // cppcheck-suppress uninitvar
     (void)mktime(tp);
 
+    /* mkxtime() is still a draft: https://www.open-std.org/jtc1/sc22/wg14/www/docs/n793.htm */
+#if 0
     struct tmx *tpx;
     // cppcheck-suppress uninitvar
     (void)mkxtime(tpx);
+#endif
 }
 
 void uninitvar_modf(void)
@@ -3097,6 +3121,8 @@ void uninitvar_vprintf(const char *Format, va_list Arg)
     (void)vprintf(Format,arg2);
 }
 
+#if defined(_WIN32) || (__STDC_VERSION__ < 199901L)
+// strdup() is POSIX since glibc 2.10 - it is also not available on Linux compiler starting with C99
 void memleak_strdup (const char *s) // #9328
 {
     const char *s1 = strdup(s);
@@ -3104,6 +3130,7 @@ void memleak_strdup (const char *s) // #9328
     free(s);     // s1 is not freed
     // cppcheck-suppress memleak
 }
+#endif
 
 void uninitvar_vwprintf(const wchar_t *Format, va_list Arg)
 {
@@ -3608,6 +3635,7 @@ void uninitvar_strcpy(char *d, const char *s)
     (void)strcpy(d,s);
 }
 
+#ifdef __STDC_LIB_EXT1__
 void uninitvar_strcpy_s(char * strDest, ssize_t s, const char *source)
 {
     char *strUninit1;
@@ -3624,6 +3652,7 @@ void uninitvar_strcpy_s(char * strDest, ssize_t s, const char *source)
     // No warning is expected
     (void)strcpy_s(strDest, s, source);
 }
+#endif
 
 void uninitvar_wcscpy(wchar_t *d, const wchar_t*s)
 {
@@ -3670,9 +3699,12 @@ void uninitvar_strftime(void)
     // cppcheck-suppress uninitvar
     (void)strftime(s,max,fmt,p);
 
+    /* strfxtime() is still a draft: https://www.open-std.org/jtc1/sc22/wg14/www/docs/n793.htm */
+#if 0
     const struct tmx *px;
     // cppcheck-suppress uninitvar
     (void)strfxtime(s,max,fmt,px);
+#endif
 }
 
 void uninitvar_strlen(const char *str)
@@ -3715,6 +3747,7 @@ void uninitvar_strncpy(char * dest, const char * src, size_t num)
     (void)strncpy(dest,src,num);
 }
 
+#ifdef __STDC_LIB_EXT1__
 void uninitvar_strncpy_s(char *Ct, size_t N1, const char *S, size_t N2)
 {
     char dest[42];
@@ -3737,6 +3770,7 @@ void uninitvar_strncpy_s(char *Ct, size_t N1, const char *S, size_t N2)
     (void)strncpy_s(Ct,N1,S,N2);
     (void)strncpy_s(dest,N1,S,N2);
 }
+#endif
 
 void uninitvar_strpbrk(void)
 {
@@ -3784,6 +3818,7 @@ void nullPointer_strncpy(char *d, const char *s, size_t n)
     (void)strncpy(d,s,n);
 }
 
+#ifdef __STDC_LIB_EXT1__
 // errno_t strcat_s(char *restrict dest, rsize_t destsz, const char *restrict src); // since C11
 void uninitvar_strcat_s(char *Ct, size_t N, const char *S)
 {
@@ -3845,6 +3880,7 @@ void uninitvar_strncat_s(char *Ct, size_t N1, const char *S, size_t N2)
     // no warning is expected for
     (void)strncat_s(Ct,N1,S,N2);
 }
+#endif
 
 void uninitvar_wcsncat(wchar_t *Ct, const wchar_t *S, size_t N)
 {
@@ -4509,6 +4545,8 @@ int nullPointer_mtx_timedlock( mtx_t *restrict mutex, const struct timespec *res
 }
 #endif
 
+/* zonetime() appears to be part of (or a comment to) draft N2620 which no longer exists */
+#if 0
 void uninitvar_zonetime(void)
 {
     const time_t *tp;
@@ -4516,7 +4554,10 @@ void uninitvar_zonetime(void)
     // cppcheck-suppress uninitvar
     (void)zonetime(tp,zone);
 }
+#endif
 
+#ifdef _WIN32
+/* itoa() is not ANSI-C and not implemented by all compilers */
 void uninitvar_itoa(void)
 {
     int value;
@@ -4525,6 +4566,7 @@ void uninitvar_itoa(void)
     // cppcheck-suppress uninitvar
     (void)itoa(value,str,base);
 }
+#endif
 
 #ifdef __STD_UTF_16__
 void uninitvar_c16rtomb(void)
@@ -4700,9 +4742,11 @@ bool invalidFunctionArgBool_isxdigit(bool b, int c)
 
 void invalidFunctionArg(char c)
 {
+#ifdef __STDC_LIB_EXT1__
     // cppcheck-suppress asctime_sCalled
     // cppcheck-suppress invalidFunctionArg
     asctime_s(1, 24, 1);
+#endif
 
     /* cppcheck-suppress invalidFunctionArg */
     (void)isalnum(256);
@@ -4830,8 +4874,10 @@ void invalidFunctionArg(char c)
     (void)toupper(0);
     (void)toupper(255);
 
+#ifdef __STDC_LIB_EXT1__
     /* cppcheck-suppress invalidFunctionArg */
     (void)strcpy_s(1,0,"a");
+#endif
 }
 
 void invalidFunctionArgString(char c)
@@ -4871,6 +4917,7 @@ void nullPointer_asctime(void)
     (void)asctime(0);
 }
 
+#ifdef __STDC_LIB_EXT1__
 void nullPointer_asctime_s(void)
 {
     const struct tm *tm = 0;
@@ -4882,6 +4929,7 @@ void nullPointer_asctime_s(void)
     // cppcheck-suppress nullPointer
     asctime_s(1, 26, tm);
 }
+#endif
 
 void nullPointer_fegetenv(void)
 {
