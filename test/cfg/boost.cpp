@@ -18,6 +18,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/lock_guard.hpp>
 #include <boost/test/unit_test.hpp>
+#include <boost/core/scoped_enum.hpp>
 
 BOOST_FORCEINLINE void boost_forceinline_test()
 {}
