@@ -78,6 +78,7 @@ private:
         TEST_CASE(checkMissingReturn2); // #11798
         TEST_CASE(checkMissingReturn3);
         TEST_CASE(checkMissingReturn4);
+        TEST_CASE(checkMissingReturn5);
 
         // std::move for locar variable
         TEST_CASE(returnLocalStdMove1);
@@ -1818,6 +1819,30 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (error) Found an exit path from function with non-void return type that has missing return statement\n", errout_str());
+    }
+
+    void checkMissingReturn5() {
+        check("enum Enum {\n"
+              "    A,\n"
+              "    B,\n"
+              "    C,\n"
+              "};\n"
+              "int f(Enum e, bool b) {\n"
+              "    switch (e) {\n"
+              "    case A:\n"
+              "          return 1;\n"
+              "    case B:\n"
+              "          return 2;\n"
+              "    case C:\n"
+              "          switch (b) {\n"
+              "          case true:\n"
+              "              return 3;\n"
+              "          case false:\n"
+              "              return 4;\n"
+              "          }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     // NRVO check
