@@ -63,16 +63,24 @@ function get_pkg_config_cflags {
     echo "$PKGCONFIG"
 }
 
+function cc_syntax {
+    ${CC} "${CC_OPT[@]}" "$@"
+}
+
+function cxx_syntax {
+    ${CXX} "${CXX_OPT[@]}" "$@"
+}
+
 # posix.c
 function posix_fn {
     echo "POSIX assumed to be present, checking syntax with ${CC} now."
-    ${CC} "${CC_OPT[@]}" ${DIR}posix.c
+    cc_syntax ${DIR}posix.c
 }
 
 # gnu.c
 function gnu_fn {
     echo "GNU assumed to be present, checking syntax with ${CC} now."
-    ${CC} "${CC_OPT[@]}" ${DIR}gnu.c
+    cc_syntax ${DIR}gnu.c
 }
 
 # qt.cpp
@@ -92,7 +100,7 @@ function qt_fn {
                 exit_if_strict
             else
                 echo "Qt found and working, checking syntax with ${CXX} now."
-                ${CXX} "${CXX_OPT[@]}" ${QTCONFIG} ${DIR}qt.cpp
+                cxx_syntax ${QTCONFIG} ${DIR}qt.cpp
             fi
         else
             echo "Qt not present, skipping syntax check with ${CXX}."
@@ -110,19 +118,19 @@ function bsd_fn {
 # std.c
 function std_c_fn {
     echo "C standard library assumed to be present, checking syntax with ${CC} now."
-    ${CC} "${CC_OPT[@]}" "${DIR}"std.c
+    cc_syntax "${DIR}"std.c
 }
 
 # std.cpp
 function std_cpp_fn {
     echo "C++ standard library assumed to be present, checking syntax with ${CXX} now."
-    ${CXX} "${CXX_OPT[@]}" "${DIR}"std.cpp
+    cxx_syntax "${DIR}"std.cpp
 }
 
 # windows.cpp
 function windows_fn {
     # TODO: Syntax check via g++ does not work because it can not find a valid windows.h
-    #${CXX} "${CXX_OPT[@]}" ${DIR}windows.cpp
+    #cxx_syntax ${DIR}windows.cpp
     true
 }
 
@@ -153,7 +161,7 @@ function wxwidgets_fn {
             exit_if_strict
         else
             echo "wxWidgets found, checking syntax with ${CXX} now."
-            ${CXX} "${CXX_OPT[@]}" ${WXCONFIG} -Wno-deprecated-declarations "${DIR}"wxwidgets.cpp
+            cxx_syntax ${WXCONFIG} -Wno-deprecated-declarations "${DIR}"wxwidgets.cpp
         fi
     fi
 }
@@ -172,14 +180,14 @@ function gtk_fn {
             GTKCHECK_RETURNCODE=$?
             set -e
             if [ $GTKCHECK_RETURNCODE -ne 0 ]; then
-                echo "GTK+ not completely present or not working, skipping syntax check with ${CXX}."
+                echo "GTK+ not completely present or not working, skipping syntax check with ${CC}."
                 exit_if_strict
             else
-                echo "GTK+ found and working, checking syntax with ${CXX} now."
-                ${CC} "${CC_OPT[@]}" ${GTKCONFIG} "${DIR}"gtk.c
+                echo "GTK+ found and working, checking syntax with ${CC} now."
+                cc_syntax ${GTKCONFIG} "${DIR}"gtk.c
             fi
         else
-            echo "GTK+ not present, skipping syntax check with ${CXX}."
+            echo "GTK+ not present, skipping syntax check with ${CC}."
             exit_if_strict
         fi
     fi
@@ -197,7 +205,7 @@ function boost_fn {
         exit_if_strict
     else
         echo "Boost found and working, checking syntax with ${CXX} now."
-        ${CXX} "${CXX_OPT[@]}" "${DIR}"boost.cpp
+        cxx_syntax "${DIR}"boost.cpp
     fi
 }
 
@@ -216,7 +224,7 @@ function sqlite3_fn {
                 exit_if_strict
             else
                 echo "SQLite3 found and working, checking syntax with ${CC} now."
-                ${CC} "${CC_OPT[@]}" ${SQLITE3CONFIG} "${DIR}"sqlite3.c
+                cc_syntax ${SQLITE3CONFIG} "${DIR}"sqlite3.c
             fi
         else
             echo "SQLite3 not present, skipping syntax check with ${CC}."
@@ -230,7 +238,7 @@ function openmp_fn {
     # MacOS compiler has no OpenMP by default
     if ! command -v sw_vers; then
       echo "OpenMP assumed to be present, checking syntax with ${CC} now."
-      ${CC} "${CC_OPT[@]}" -fopenmp ${DIR}openmp.c
+      cc_syntax -fopenmp ${DIR}openmp.c
     fi
 }
 
@@ -249,7 +257,7 @@ function python_fn {
                 exit_if_strict
             else
                 echo "Python 3 found and working, checking syntax with ${CC} now."
-                ${CC} "${CC_OPT[@]}" ${PYTHON3CONFIG} "${DIR}"python.c
+                cc_syntax ${PYTHON3CONFIG} "${DIR}"python.c
             fi
         else
             echo "Python 3 not present, skipping syntax check with ${CC}."
@@ -273,7 +281,7 @@ function lua_fn {
                 exit_if_strict
             else
                 echo "Lua found and working, checking syntax with ${CC} now."
-                ${CC} "${CC_OPT[@]}" ${LUACONFIG} "${DIR}"lua.c
+                cc_syntax ${LUACONFIG} "${DIR}"lua.c
             fi
         else
             echo "Lua not present, skipping syntax check with ${CC}."
@@ -297,7 +305,7 @@ function libcurl_fn {
                 exit_if_strict
             else
                 echo "libcurl found and working, checking syntax with ${CC} now."
-                ${CC} "${CC_OPT[@]}" ${LIBCURLCONFIG} "${DIR}"libcurl.c
+                cc_syntax ${LIBCURLCONFIG} "${DIR}"libcurl.c
             fi
         else
             echo "libcurl not present, skipping syntax check with ${CC}."
@@ -321,7 +329,7 @@ function cairo_fn {
                 exit_if_strict
             else
                 echo "cairo found and working, checking syntax with ${CC} now."
-                ${CC} "${CC_OPT[@]}" ${CAIROCONFIG} "${DIR}"cairo.c
+                cc_syntax ${CAIROCONFIG} "${DIR}"cairo.c
             fi
         else
             echo "cairo not present, skipping syntax check with ${CC}."
@@ -354,7 +362,7 @@ function kde_fn {
         else
             # TODO: get rid of the error enabling/disabling?
             set +e
-            echo -e "#include <KDE/KGlobal>\n" | ${CXX} "${CXX_OPT[@]}" -I${KDECONFIG} ${KDEQTCONFIG} -x c++ -
+            echo -e "#include <KDE/KGlobal>\n" | ${CXX} "${CXX_OPT[@]}" -isystem${KDECONFIG} ${KDEQTCONFIG} -x c++ -
             KDECHECK_RETURNCODE=$?
             set -e
             if [ $KDECHECK_RETURNCODE -ne 0 ]; then
@@ -362,7 +370,7 @@ function kde_fn {
                 exit_if_strict
             else
                 echo "KDE found, checking syntax with ${CXX} now."
-                ${CXX} "${CXX_OPT[@]}" -I${KDECONFIG} ${KDEQTCONFIG} "${DIR}"kde.cpp
+                cxx_syntax -isystem${KDECONFIG} ${KDEQTCONFIG} "${DIR}"kde.cpp
             fi
         fi
     fi
@@ -383,7 +391,7 @@ function libsigcpp_fn {
                 exit_if_strict
             else
                 echo "libsigc++ found and working, checking syntax with ${CXX} now."
-                ${CXX} "${CXX_OPT[@]}" ${LIBSIGCPPCONFIG} "${DIR}"libsigc++.cpp
+                cxx_syntax ${LIBSIGCPPCONFIG} "${DIR}"libsigc++.cpp
             fi
         else
             echo "libsigc++ not present, skipping syntax check with ${CXX}."
@@ -407,7 +415,7 @@ function openssl_fn {
                 exit_if_strict
             else
                 echo "OpenSSL found and working, checking syntax with ${CC} now."
-                ${CC} "${CC_OPT[@]}" ${OPENSSLCONFIG} "${DIR}"openssl.c
+                cc_syntax ${OPENSSLCONFIG} "${DIR}"openssl.c
             fi
         else
             echo "OpenSSL not present, skipping syntax check with ${CC}."
@@ -431,7 +439,7 @@ function opencv2_fn {
                 exit_if_strict
             else
                 echo "OpenCV found and working, checking syntax with ${CXX} now."
-                ${CXX} "${CXX_OPT[@]}" ${OPENCVCONFIG} "${DIR}"opencv2.cpp
+                cxx_syntax ${OPENCVCONFIG} "${DIR}"opencv2.cpp
             fi
         else
             echo "OpenCV not present, skipping syntax check with ${CXX}."
@@ -448,7 +456,7 @@ function cppunit_fn {
             exit_if_strict
         else
             echo "cppunit found, checking syntax with ${CXX} now."
-            ${CXX} "${CXX_OPT[@]}" -Wno-deprecated-declarations "${DIR}"cppunit.cpp
+            cxx_syntax -Wno-deprecated-declarations "${DIR}"cppunit.cpp
         fi
     fi
 }
@@ -456,7 +464,7 @@ function cppunit_fn {
 # emscripten.cpp
 function emscripten_fn {
     # TODO: Syntax check via g++ does not work because it can not find a valid emscripten.h
-    # ${CXX} "${CXX_OPT[@]}" ${DIR}emscripten.cpp
+    # cxx_syntax ${DIR}emscripten.cpp
     true
 }
 
