@@ -10,6 +10,7 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h> // should be the first include
 #include <stdio.h>
+#include <stdlib.h>
 
 void validCode(PyObject * pPyObjArg)
 {
