@@ -172,7 +172,7 @@ static std::string readAttrString(const tinyxml2::XMLElement *e, const char *att
     const char *value = e->Attribute(attr);
     if (!value && error)
         *error = true;
-    return value ? value : "";
+    return empty_if_null(value);
 }
 
 static long long readAttrInt(const tinyxml2::XMLElement *e, const char *attr, bool *error)
@@ -232,11 +232,12 @@ bool CTU::FileInfo::NestedCall::loadFromXml(const tinyxml2::XMLElement *xmlEleme
 void CTU::FileInfo::loadFromXml(const tinyxml2::XMLElement *xmlElement)
 {
     for (const tinyxml2::XMLElement *e = xmlElement->FirstChildElement(); e; e = e->NextSiblingElement()) {
-        if (std::strcmp(e->Name(), "function-call") == 0) {
+        const char* name = e->Name();
+        if (std::strcmp(name, "function-call") == 0) {
             FunctionCall functionCall;
             if (functionCall.loadFromXml(e))
                 functionCalls.push_back(std::move(functionCall));
-        } else if (std::strcmp(e->Name(), "nested-call") == 0) {
+        } else if (std::strcmp(name, "nested-call") == 0) {
             NestedCall nestedCall;
             if (nestedCall.loadFromXml(e))
                 nestedCalls.push_back(std::move(nestedCall));

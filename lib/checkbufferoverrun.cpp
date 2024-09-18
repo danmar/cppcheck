@@ -966,9 +966,10 @@ Check::FileInfo * CheckBufferOverrun::loadFileInfoFromXml(const tinyxml2::XMLEle
 
     auto *fileInfo = new MyFileInfo;
     for (const tinyxml2::XMLElement *e = xmlElement->FirstChildElement(); e; e = e->NextSiblingElement()) {
-        if (e->Name() == arrayIndex)
+        const char* name = e->Name();
+        if (name == arrayIndex)
             fileInfo->unsafeArrayIndex = CTU::loadUnsafeUsageListFromXml(e);
-        else if (e->Name() == pointerArith)
+        else if (name == pointerArith)
             fileInfo->unsafePointerArith = CTU::loadUnsafeUsageListFromXml(e);
     }
 

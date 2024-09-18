@@ -123,19 +123,20 @@ std::string SuppressionList::parseXmlFile(const char *filename)
 
         Suppression s;
         for (const tinyxml2::XMLElement * e2 = e->FirstChildElement(); e2; e2 = e2->NextSiblingElement()) {
-            const char *text = e2->GetText() ? e2->GetText() : "";
-            if (std::strcmp(e2->Name(), "id") == 0)
+            const char *name = e2->Name();
+            const char *text = empty_if_null(e2->GetText());
+            if (std::strcmp(name, "id") == 0)
                 s.errorId = text;
-            else if (std::strcmp(e2->Name(), "fileName") == 0)
+            else if (std::strcmp(name, "fileName") == 0)
                 s.fileName = text;
-            else if (std::strcmp(e2->Name(), "lineNumber") == 0)
+            else if (std::strcmp(name, "lineNumber") == 0)
                 s.lineNumber = strToInt<int>(text);
-            else if (std::strcmp(e2->Name(), "symbolName") == 0)
+            else if (std::strcmp(name, "symbolName") == 0)
                 s.symbolName = text;
-            else if (*text && std::strcmp(e2->Name(), "hash") == 0)
+            else if (*text && std::strcmp(name, "hash") == 0)
                 s.hash = strToInt<std::size_t>(text);
             else
-                return std::string("unknown element '") + e2->Name() + "' in suppressions XML '" + filename + "', expected id/fileName/lineNumber/symbolName/hash.";
+                return std::string("unknown element '") + name + "' in suppressions XML '" + filename + "', expected id/fileName/lineNumber/symbolName/hash.";
         }
 
         const std::string err = addSuppression(std::move(s));

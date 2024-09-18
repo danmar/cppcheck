@@ -386,9 +386,15 @@ namespace cppcheck
 }
 
 template<typename T>
+static inline T* default_if_null(T* p, T* def)
+{
+    return p ? p : def;
+}
+
+template<typename T>
 static inline T* empty_if_null(T* p)
 {
-    return p ? p : "";
+    return default_if_null(p, "");
 }
 
 /**
