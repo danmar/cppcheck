@@ -599,7 +599,7 @@ int main(int argc, char **argv)
 
     // explicit files dir..
     fout << "ifdef FILESDIR\n"
-         << "    CPPFLAGS+=-DFILESDIR=\\\"$(FILESDIR)\\\"\n"
+         << "    override CPPFLAGS+=-DFILESDIR=\\\"$(FILESDIR)\\\"\n"
          << "endif\n\n";
 
     // enable backtrac
