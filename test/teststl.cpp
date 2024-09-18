@@ -6308,6 +6308,15 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout_str());
+
+        check("void f(std::vector<int>& v) {\n" // #13108
+              "    auto it = unknown(v);\n"
+              "    auto w = std::vector<int>{ it, v.end() };\n"
+              "    v.erase(it, v.end());\n"
+              "    for (const auto& i : w) {}\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout_str());
     }
 
     void invalidContainerLoop() {
