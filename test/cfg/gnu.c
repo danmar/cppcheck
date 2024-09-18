@@ -7,7 +7,7 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
-// cppcheck-suppress-file valueFlowBailout
+// cppcheck-suppress-file [valueFlowBailout,purgedConfiguration]
 
 #define _GNU_SOURCE
 
@@ -23,7 +23,7 @@
 #include <sys/mman.h>
 #include <sys/sem.h>
 #include <wchar.h>
-#if !defined(__CYGWIN__) && !(defined(__APPLE__) && defined(__MACH__))
+#if !defined(__CYGWIN__) && !defined(__APPLE__)
 #include <sys/epoll.h>
 #endif
 #include <strings.h>
@@ -492,7 +492,7 @@ void leakReturnValNotUsed()
         return;
 }
 
-#if !defined(__CYGWIN__) && !(defined(__APPLE__) && defined(__MACH__))
+#if !defined(__CYGWIN__) && !defined(__APPLE__)
 int nullPointer_epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)
 {
     // no warning is expected

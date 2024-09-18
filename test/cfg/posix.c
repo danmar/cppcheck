@@ -7,7 +7,7 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
-// cppcheck-suppress-file [valueFlowBailout,purgedConfiguration]
+// cppcheck-suppress-file [valueFlowBailout]
 
 #define _BSD_SOURCE
 #define _XOPEN_SOURCE // wcwidth
@@ -39,7 +39,7 @@
 #if defined(__APPLE__)
 #include <xlocale.h>
 #endif
-#if !(defined(__APPLE__) && defined(__MACH__))
+#if !defined(__APPLE__)
 #include <mqueue.h>
 #endif
 #include <stdlib.h>
@@ -49,7 +49,7 @@
 #include <utime.h>
 
 
-#if !(defined(__APPLE__) && defined(__MACH__))
+#if !defined(__APPLE__)
 void nullPointer_mq_timedsend(mqd_t mqdes, const char* msg_ptr, size_t msg_len, unsigned msg_prio, const struct timespec* abs_timeout) {
     // cppcheck-suppress nullPointer
     (void) mq_timedsend(mqdes, NULL, msg_len, msg_prio, abs_timeout);
@@ -171,7 +171,7 @@ int nullPointer_getopt(int argc, char* const argv[], const char* optstring)
     return getopt(argc, argv, optstring);
 }
 
-#if !(defined(__APPLE__) && defined(__MACH__))
+#if !defined(__APPLE__)
 int invalidFunctionArgStr_mq_send(mqd_t mqdes, const char *msg_ptr, size_t msg_len, unsigned msg_prio)
 {
     // No warning is expected for:
