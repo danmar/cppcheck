@@ -2552,6 +2552,30 @@ private:
                       "8: bool f ( p :: S2 & c@2 ) ;\n"
                       "9: } ;\n",
                       tokenize(code12));
+
+        const char code13[] = "template <typename... T>\n" // #13088
+                              "struct B {};\n"
+                              "template <typename... T>\n"
+                              "struct D : B<T>... {\n"
+                              "    template <typename... P>\n"
+                              "    D(P&&... p) : B<T>(std::forward<P>(p))... {}\n"
+                              "};\n"
+                              "template <typename... T>\n"
+                              "struct S {\n"
+                              "    D<T...> d;\n"
+                              "};\n";
+        ASSERT_EQUALS("1: template < typename ... T >\n"
+                      "2: struct B { } ;\n"
+                      "3: template < typename ... T >\n"
+                      "4: struct D : B < T > ... {\n"
+                      "5: template < typename ... P >\n"
+                      "6: D ( P && ... p@1 ) : B < T > ( std :: forward < P > ( p@1 ) ) ... { }\n"
+                      "7: } ;\n"
+                      "8: template < typename ... T >\n"
+                      "9: struct S {\n"
+                      "10: D < T ... > d@2 ;\n"
+                      "11: } ;\n",
+                      tokenize(code13));
     }
 
     void varid_initListWithBaseTemplate() {
