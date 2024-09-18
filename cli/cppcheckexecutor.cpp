@@ -46,8 +46,10 @@
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <ctime>
 #include <fstream>
+#include <iosfwd>
 #include <iostream>
 #include <list>
+#include <ostream>
 #include <set>
 #include <sstream>
 #include <unordered_set>

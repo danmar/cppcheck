@@ -37,8 +37,10 @@
 #include <algorithm>
 #include <cstdlib>
 #include <functional>
+#include <iosfwd>
 #include <iterator>
 #include <numeric> // std::accumulate
+#include <ostream>
 #include <sstream>
 #include <utility>
 

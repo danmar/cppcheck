@@ -21,6 +21,8 @@
 #include "errortypes.h"
 #include "token.h"
 
+#include <iosfwd>
+#include <ostream>
 #include <sstream>
 #include <string>
 

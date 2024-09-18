@@ -26,8 +26,12 @@
 #include <cstdint>
 #include <cstdlib>
 #include <exception>
+#include <ios>
+#include <iosfwd>
+#include <istream>
 #include <limits>
 #include <locale>
+#include <ostream>
 #include <sstream>
 #include <stdexcept>
 #include <numeric>

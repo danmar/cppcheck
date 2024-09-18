@@ -33,6 +33,7 @@
 #include <list>
 #include <numeric>
 #include <mutex>
+#include <ostream>
 #include <string>
 #include <system_error>
 #include <utility>

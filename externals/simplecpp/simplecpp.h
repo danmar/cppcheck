@@ -8,7 +8,7 @@
 
 #include <cctype>
 #include <cstring>
-#include <istream>
+#include <iosfwd>
 #include <list>
 #include <map>
 #include <set>

@@ -34,6 +34,7 @@
 #include <climits>
 #include <cstddef>
 #include <exception>
+#include <iosfwd>
 #include <limits>
 #include <sstream>
 #include <utility>

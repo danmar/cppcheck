@@ -22,6 +22,8 @@
 #include "utils.h"
 
 #include <fstream>
+#include <iosfwd>
+#include <istream>
 #include <string>
 #include <vector>
 

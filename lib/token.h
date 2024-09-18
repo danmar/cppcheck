@@ -35,7 +35,7 @@
 #include <functional>
 #include <list>
 #include <memory>
-#include <ostream>
+#include <iosfwd>
 #include <set>
 #include <string>
 #include <type_traits>

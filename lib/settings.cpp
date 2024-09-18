@@ -24,6 +24,8 @@
 
 #include <cctype>
 #include <fstream>
+#include <iosfwd>
+#include <istream>
 #include <sstream>
 #include <utility>
 

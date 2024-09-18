@@ -33,8 +33,10 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <iosfwd>
 #include <iterator>
 #include <list>
+#include <ostream>
 #include <sstream>
 #include <utility>
 #include <vector>

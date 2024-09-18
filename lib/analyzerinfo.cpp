@@ -24,6 +24,9 @@
 #include "utils.h"
 
 #include <cstring>
+#include <ios>
+#include <istream>
+#include <ostream>
 #include <map>
 
 #include "xml.h"
