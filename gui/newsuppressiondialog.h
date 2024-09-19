@@ -33,7 +33,7 @@ class NewSuppressionDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit NewSuppressionDialog(QWidget *parent = nullptr);
+    explicit NewSuppressionDialog(QWidget *parent);
     NewSuppressionDialog(const NewSuppressionDialog &) = delete;
     ~NewSuppressionDialog() override;
     NewSuppressionDialog &operator=(const NewSuppressionDialog &) = delete;

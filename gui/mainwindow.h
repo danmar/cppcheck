@@ -74,7 +74,7 @@ public:
     /**
      * List of checked platforms.
      */
-    Platforms mPlatforms;
+    Platforms mPlatforms{nullptr}; // TODO: pass parent?
 
     /**
      * @brief Analyze given code

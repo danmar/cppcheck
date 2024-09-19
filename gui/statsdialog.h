@@ -40,7 +40,7 @@ namespace Ui {
 class StatsDialog : public QDialog {
     Q_OBJECT
 public:
-    explicit StatsDialog(QWidget *parent = nullptr);
+    explicit StatsDialog(QWidget *parent);
     ~StatsDialog() override;
 
     /**
