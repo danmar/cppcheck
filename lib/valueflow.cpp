@@ -1971,7 +1971,7 @@ static void valueFlowLifetimeConstructor(Token* tok, const TokenList& tokenlist,
             if (args.size() == 1 && vt.container->view && astIsContainerOwned(args.front())) {
                 LifetimeStore{args.front(), "Passed to container view.", ValueFlow::Value::LifetimeKind::SubObject}
                 .byRef(tok, tokenlist, errorLogger, settings);
-            } else if (args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1])) {
+            } else if (args.size() == 2 && (astIsIterator(args[0]) || astIsIterator(args[1]))) {
                 LifetimeStore::forEach(
                     tokenlist,
                     errorLogger,
