@@ -303,7 +303,9 @@ namespace ValueFlow
         /** For calculated values - varId that calculated value depends on */
         nonneg int varId{};
 
-        int indirect{}; // TODO: can we reduce the size?
+        std::uint8_t indirect{};
+
+        long long : 24; // padding
 
         /** Path id */
         MathLib::bigint path{};
