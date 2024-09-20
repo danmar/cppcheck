@@ -50,7 +50,7 @@
 #include <ctime>
 #include <exception> // IWYU pragma: keep
 #include <fstream>
-#include <iostream> // <- TEMPORARY
+#include <iostream>
 #include <new>
 #include <set>
 #include <sstream>
@@ -516,7 +516,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
                              mSettings,
                              &s_timerResults);
         if (mSettings.debugnormal)
-            tokenizer.printDebugOutput(1);
+            tokenizer.printDebugOutput(1, std::cout);
         checkNormalTokens(tokenizer);
 
         // create dumpfile

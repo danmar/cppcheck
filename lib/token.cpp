@@ -36,7 +36,6 @@
 #include <cstdio>
 #include <cstring>
 #include <functional>
-#include <iostream>
 #include <iterator>
 #include <map>
 #include <set>
@@ -1178,27 +1177,27 @@ void Token::createMutualLinks(Token *begin, Token *end)
     end->link(begin);
 }
 
-void Token::printOut(const char *title) const
+void Token::printOut(std::ostream& out, const char *title) const
 {
     if (title && title[0])
-        std::cout << "\n### " << title << " ###\n";
-    std::cout << stringifyList(stringifyOptions::forPrintOut(), nullptr, nullptr) << std::endl;
+        out << "\n### " << title << " ###\n";
+    out << stringifyList(stringifyOptions::forPrintOut(), nullptr, nullptr) << std::endl;
 }
 
-void Token::printOut(const char *title, const std::vector<std::string> &fileNames) const
+void Token::printOut(std::ostream& out, const char *title, const std::vector<std::string> &fileNames) const
 {
     if (title && title[0])
-        std::cout << "\n### " << title << " ###\n";
-    std::cout << stringifyList(stringifyOptions::forPrintOut(), &fileNames, nullptr) << std::endl;
+        out << "\n### " << title << " ###\n";
+    out << stringifyList(stringifyOptions::forPrintOut(), &fileNames, nullptr) << std::endl;
 }
 
 // cppcheck-suppress unusedFunction - used for debugging
-void Token::printLines(int lines) const
+void Token::printLines(std::ostream& out, int lines) const
 {
     const Token *end = this;
     while (end && end->linenr() < lines + linenr())
         end = end->next();
-    std::cout << stringifyList(stringifyOptions::forDebugExprId(), nullptr, end) << std::endl;
+    out << stringifyList(stringifyOptions::forDebugExprId(), nullptr, end) << std::endl;
 }
 
 std::string Token::stringify(const stringifyOptions& options) const

@@ -571,7 +571,7 @@ public:
      * 1=1st simplifications
      * 2=2nd simplifications
      */
-    void printDebugOutput(int simplification) const;
+    void printDebugOutput(int simplification, std::ostream &out) const;
 
     void dump(std::ostream &out) const;
 
