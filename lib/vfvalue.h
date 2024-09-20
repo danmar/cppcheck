@@ -45,6 +45,10 @@ namespace ValueFlow
 
         explicit Value(long long val = 0, Bound b = Bound::Point) :
             bound(b),
+            safe(false),
+            conditional(false),
+            macro(false),
+            defaultArg(false),
             intvalue(val),
             varvalue(val),
             wideintvalue(val)
@@ -265,21 +269,25 @@ namespace ValueFlow
         Bound bound = Bound::Point;
 
         /** value relies on safe checking */
-        bool safe{};
+        bool safe : 1;
 
         /** Conditional value */
-        bool conditional{};
+        bool conditional : 1;
 
         /** Value is is from an expanded macro */
-        bool macro{};
+        bool macro : 1;
 
         /** Is this value passed as default parameter to the function? */
-        bool defaultArg{};
+        bool defaultArg : 1;
+
+        long long : 4; // padding
 
         /** kind of moved  */
         enum class MoveKind : std::uint8_t { NonMovedVariable, MovedVariable, ForwardedVariable } moveKind = MoveKind::NonMovedVariable;
 
         enum class LifetimeScope : std::uint8_t { Local, Argument, SubFunction, ThisPointer, ThisValue } lifetimeScope = LifetimeScope::Local;
+
+        long long : 24; // padding
 
         /** int value (or sometimes bool value?) */
         long long intvalue{};

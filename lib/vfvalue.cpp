@@ -27,6 +27,10 @@
 namespace ValueFlow {
     Value::Value(const Token *c, long long val, Bound b)
         : bound(b),
+        safe(false),
+        conditional(false),
+        macro(false),
+        defaultArg(false),
         intvalue(val),
         varvalue(val),
         condition(c) {
