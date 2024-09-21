@@ -28,6 +28,19 @@ if(BUILD_GUI)
         find_package(Qt5 COMPONENTS ${qt_components} REQUIRED)
         set(QT_VERSION "${Qt5Core_VERSION_STRING}")
     endif()
+
+    if(BUILD_ONLINE_HELP)
+        find_program(QHELPGENERATOR qhelpgenerator)
+        if(NOT QHELPGENERATOR)
+            # TODO: how to properly get the Qt binary folder?
+            # piggy-back off Qt::qmake for now as it should be in the same folder as the binary we are looking for
+            get_target_property(_qmake_executable Qt::qmake IMPORTED_LOCATION)
+            get_filename_component(_qt_bin_dir ${_qmake_executable} DIRECTORY)
+            message(STATUS "qhelpgenerator not found in PATH - trying ${_qt_bin_dir}")
+            # cannot be mandatory since qhelpgenerator is missing from the official qttools Linux package - https://bugreports.qt.io/browse/QTBUG-116168
+            find_program(QHELPGENERATOR qhelpgenerator HINTS ${_qt_bin_dir} REQUIRED)
+        endif()
+    endif()
 endif()
 
 if(HAVE_RULES)
