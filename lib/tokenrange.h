@@ -47,7 +47,7 @@ public:
         T* mt;
         TokenIterator() : mt(nullptr) {}
         explicit TokenIterator(T* t) : mt(t) {}
-        TokenIterator& operator++() {
+        TokenIterator& operator++() & {
             mt = mt->next();
             return *this;
         }
