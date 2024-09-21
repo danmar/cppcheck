@@ -74,7 +74,8 @@ disable=
         consider-using-join,
         too-many-boolean-expressions,
         useless-object-inheritance,
-        use-a-generator
+        use-a-generator,
+        too-many-positional-arguments
 [REPORTS]
 reports=no
 [TYPECHECK]
