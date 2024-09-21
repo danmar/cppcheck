@@ -203,9 +203,10 @@ public:
      */
     void concatStr(std::string const& b);
 
-    const std::string &str() const {
+    const std::string &str() const& {
         return mStr;
     }
+    std::string str() && = delete;
 
     /**
      * Unlink and delete the next 'count' tokens.

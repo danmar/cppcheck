@@ -79,7 +79,7 @@ private:
         return tokenizer.tokenize(code, cpp) ? tokenizer.getSymbolDatabase() : nullptr;
     }
 
-    static const Token* findToken(Tokenizer& tokenizer, const std::string& expr, unsigned int exprline)
+    static const Token* findToken(const Tokenizer& tokenizer, const std::string& expr, unsigned int exprline)
     {
         for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (Token::simpleMatch(tok, expr.c_str(), expr.size()) && tok->linenr() == exprline) {

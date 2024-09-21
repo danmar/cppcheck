@@ -30,9 +30,9 @@ jobs:
         run: |
           premium_version=${{ inputs.premium_version }}
           if [ -z $premium_version ]; then
-            premium_version=24.9.0.1
-            #wget https://files.cppchecksolutions.com/devdrop/cppcheckpremium-$premium_version-amd64.tar.gz -O cppcheckpremium.tar.gz
-            wget https://files.cppchecksolutions.com/$premium_version/ubuntu-24.04/cppcheckpremium-$premium_version-amd64.tar.gz -O cppcheckpremium.tar.gz
+            premium_version=devdrop-20241121
+            wget https://files.cppchecksolutions.com/devdrop/cppcheckpremium-$premium_version-amd64.tar.gz -O cppcheckpremium.tar.gz
+            #wget https://files.cppchecksolutions.com/$premium_version/ubuntu-24.04/cppcheckpremium-$premium_version-amd64.tar.gz -O cppcheckpremium.tar.gz
           else
             wget https://files.cppchecksolutions.com/$premium_version/ubuntu-24.04/cppcheckpremium-$premium_version-amd64.tar.gz -O cppcheckpremium.tar.gz
           fi

@@ -289,13 +289,15 @@ public:
      * Get name string.
      * @return name string
      */
-    const std::string &name() const {
+    const std::string &name() const & {
         // name may not exist for function arguments
         if (mNameToken)
             return mNameToken->str();
 
         return emptyString;
     }
+
+    std::string name() && = delete;
 
     /**
      * Get declaration ID (varId used for variable in its declaration).
@@ -540,9 +542,10 @@ public:
      * Get array dimensions.
      * @return array dimensions vector
      */
-    const std::vector<Dimension> &dimensions() const {
+    const std::vector<Dimension> &dimensions() const & {
         return mDimensions;
     }
+    std::vector<Dimension> dimensions() && = delete;
 
     /**
      * Get array dimension length.
@@ -759,9 +762,10 @@ public:
     Function(const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef);
     Function(const Token *tokenDef, const std::string &clangType);
 
-    const std::string &name() const {
+    const std::string &name() const & {
         return tokenDef->str();
     }
+    std::string name() && = delete;
 
     std::string fullName() const;
 
@@ -1146,7 +1150,7 @@ public:
      * @brief find if name is in nested list
      * @param name name of nested scope
      */
-    Scope *findInNestedListRecursive(const std::string & name);
+    Scope *findInNestedListRecursive(const std::string & name) &;
 
     void addVariable(const Token *token_, const Token *start_,
                      const Token *end_, AccessControl access_, const Type *type_,
@@ -1369,13 +1373,16 @@ public:
         return varid < mVariableList.size();
     }
 
-    const Variable *getVariableFromVarId(nonneg int varId) const {
+    const Variable *getVariableFromVarId(nonneg int varId) const & {
         return mVariableList.at(varId);
     }
 
-    const std::vector<const Variable *> & variableList() const {
+    Variable getVariableFromVarId(nonneg int varId) && = delete;
+
+    const std::vector<const Variable *> & variableList() const & {
         return mVariableList;
     }
+    std::vector<const Variable *> variableList() && = delete;
 
     /**
      * @brief output a debug message

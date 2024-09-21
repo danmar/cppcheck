@@ -524,7 +524,7 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedGlobalSuppr
     return result;
 }
 
-const std::list<SuppressionList::Suppression> &SuppressionList::getSuppressions() const
+const std::list<SuppressionList::Suppression> &SuppressionList::getSuppressions() const &
 {
     return mSuppressions;
 }

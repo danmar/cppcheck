@@ -159,7 +159,8 @@ public:
         Standards standards;
         Severity severity;
     };
-    const std::map<std::string, WarnInfo>& functionwarn() const;
+    const std::map<std::string, WarnInfo>& functionwarn() const &;
+    std::map<std::string, WarnInfo> functionwarn() && = delete;
 
     const WarnInfo* getWarnInfo(const Token* ftok) const;
 
@@ -258,7 +259,8 @@ public:
         static Yield yieldFrom(const std::string& yieldName);
         static Action actionFrom(const std::string& actionName);
     };
-    const std::unordered_map<std::string, Container>& containers() const;
+    const std::unordered_map<std::string, Container>& containers() const &;
+    std::unordered_map<std::string, Container> containers() && = delete;
     const Container* detectContainer(const Token* typeStart) const;
     const Container* detectIterator(const Token* typeStart) const;
     const Container* detectContainerOrIterator(const Token* typeStart, bool* isIterator = nullptr, bool withoutStd = false) const;
@@ -319,7 +321,8 @@ public:
     };
 
     const Function *getFunction(const Token *ftok) const;
-    const std::unordered_map<std::string, Function>& functions() const;
+    const std::unordered_map<std::string, Function>& functions() const &;
+    std::unordered_map<std::string, Function> functions() && = delete;
     bool isUse(const std::string& functionName) const;
     bool isLeakIgnore(const std::string& functionName) const;
     bool isFunctionConst(const std::string& functionName, bool pure) const;
@@ -369,7 +372,8 @@ public:
 
     bool processMarkupAfterCode(const std::string &path) const;
 
-    const std::set<std::string> &markupExtensions() const;
+    const std::set<std::string> &markupExtensions() const &;
+    std::set<std::string> markupExtensions() && = delete;
 
     bool reportErrors(const std::string &path) const;
 
@@ -404,14 +408,16 @@ public:
 
     bool isentrypoint(const std::string &func) const;
 
-    const std::set<std::string>& defines() const; // to provide some library defines
+    const std::set<std::string>& defines() const &; // to provide some library defines
+    std::set<std::string> defines() && = delete; // to provide some library defines
 
     struct SmartPointer {
         std::string name;
         bool unique = false;
     };
 
-    const std::unordered_map<std::string, SmartPointer>& smartPointers() const;
+    const std::unordered_map<std::string, SmartPointer>& smartPointers() const &;
+    std::unordered_map<std::string, SmartPointer> smartPointers() && = delete;
     bool isSmartPointer(const Token *tok) const;
     const SmartPointer* detectSmartPointer(const Token* tok, bool withoutStd = false) const;
 

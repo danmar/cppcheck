@@ -88,12 +88,14 @@ struct Library::LibraryData
         void addBlock(const char* blockName) {
             mBlocks.insert(blockName);
         }
-        const std::string& start() const {
+        const std::string& start() const & {
             return mStart;
         }
-        const std::string& end() const {
+        std::string start() && = delete;
+        const std::string& end() const & {
             return mEnd;
         }
+        std::string end() && = delete;
         int offset() const {
             return mOffset;
         }
@@ -1307,7 +1309,7 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
 }
 
 // cppcheck-suppress unusedFunction - used in tests only
-const std::unordered_map<std::string, Library::Container>& Library::containers() const
+const std::unordered_map<std::string, Library::Container>& Library::containers() const &
 {
     return mData->mContainers;
 }
@@ -1461,7 +1463,7 @@ bool Library::matchArguments(const Token *ftok, const std::string &functionName,
     return b;
 }
 
-const std::map<std::string, Library::WarnInfo>& Library::functionwarn() const
+const std::map<std::string, Library::WarnInfo>& Library::functionwarn() const &
 {
     return mData->mFunctionwarn;
 }
@@ -1666,7 +1668,7 @@ bool Library::ignorefunction(const std::string& functionName) const
         return it->second.ignore;
     return false;
 }
-const std::unordered_map<std::string, Library::Function>& Library::functions() const
+const std::unordered_map<std::string, Library::Function>& Library::functions() const &
 {
     return mData->mFunctions;
 }
@@ -1865,7 +1867,7 @@ const Token* Library::getContainerFromAction(const Token* tok, Library::Containe
     return nullptr;
 }
 
-const std::unordered_map<std::string, Library::SmartPointer>& Library::smartPointers() const
+const std::unordered_map<std::string, Library::SmartPointer>& Library::smartPointers() const &
 {
     return mData->mSmartPointers;
 }
@@ -1944,7 +1946,7 @@ int Library::deallocId(const char name[]) const
     return af ? af->groupId : 0;
 }
 
-const std::set<std::string> &Library::markupExtensions() const
+const std::set<std::string> &Library::markupExtensions() const &
 {
     return mData->mMarkupExtensions;
 }
@@ -1984,7 +1986,7 @@ bool Library::isentrypoint(const std::string &func) const
     return func == "main" || mData->mEntrypoints.find(func) != mData->mEntrypoints.end();
 }
 
-const std::set<std::string>& Library::defines() const
+const std::set<std::string>& Library::defines() const &
 {
     return mData->mDefines;
 }

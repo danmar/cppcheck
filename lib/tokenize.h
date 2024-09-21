@@ -590,13 +590,10 @@ public:
      */
     TokenList list;
     // Implement tokens() as a wrapper for convenience when using the TokenList
-    const Token* tokens() const {
+    const Token* tokens() const & {
         return list.front();
     }
-
-    Token* tokens() {
-        return list.front();
-    }
+    Token* tokens() && = delete;
 
     /**
      * Helper function to check whether number is one (1 or 0.1E+1 or 1E+0) or not?

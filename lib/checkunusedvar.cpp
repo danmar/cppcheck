@@ -147,9 +147,10 @@ public:
     void clear() {
         mVarUsage.clear();
     }
-    const std::map<nonneg int, VariableUsage> &varUsage() const {
+    const std::map<nonneg int, VariableUsage> &varUsage() const & {
         return mVarUsage;
     }
+    std::map<nonneg int, VariableUsage> varUsage() && = delete;
     void addVar(const Variable *var, VariableType type, bool write_);
     void allocateMemory(nonneg int varid, const Token* tok);
     void read(nonneg int varid, const Token* tok);

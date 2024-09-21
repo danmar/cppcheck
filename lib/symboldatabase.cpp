@@ -6232,7 +6232,7 @@ Type* Scope::findType(const std::string& name)
 
 //---------------------------------------------------------------------------
 
-Scope *Scope::findInNestedListRecursive(const std::string & name)
+Scope *Scope::findInNestedListRecursive(const std::string & name) &
 {
     auto it = std::find_if(nestedList.cbegin(), nestedList.cend(), [&](const Scope* s) {
         return s->className == name;
