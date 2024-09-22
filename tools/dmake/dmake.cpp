@@ -414,6 +414,7 @@ static void write_ossfuzz_makefile(std::vector<std::string> libfiles_prio, std::
     fout << "\t$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -DNO_FUZZ -c -o $@ main.cpp\n";
 }
 
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, char **argv)
 {
     const bool release(argc >= 2 && std::string(argv[1]) == "--release");
