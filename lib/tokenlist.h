@@ -214,7 +214,7 @@ public:
     }
 
 private:
-    bool createTokensInternal(std::istream &code, const std::string& file0);
+    bool createTokensInternal(const std::string& file0);
     bool createTokensInternal(const uint8_t* data, std::size_t size, const std::string& file0);
 
     /** Token list */
