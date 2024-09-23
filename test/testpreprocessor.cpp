@@ -266,6 +266,8 @@ private:
         TEST_CASE(limitsDefines);
 
         TEST_CASE(hashCalculation);
+
+        TEST_CASE(standard);
     }
 
     std::string getConfigsStr(const char filedata[], const char *arg = nullptr) {
@@ -2535,6 +2537,49 @@ private:
         ASSERT(getHash(code) != getHash(code2));
         ASSERT(getHash(code) != getHash(code3));
         ASSERT(getHash(code2) != getHash(code3));
+    }
+
+    void standard() {
+        std::vector<std::string> files = {"test.cpp"};
+
+        const char code[] = "int a;";
+        // TODO: this bypasses the standard determined from the settings - the parameter should not be exposed
+        simplecpp::DUI dui;
+
+        {
+            Tokenizer tokenizer(settingsDefault, *this);
+            dui.std = "c89";
+            PreprocessorHelper::preprocess(code, files, tokenizer, *this, dui);
+            ASSERT(tokenizer.list.front());
+        }
+
+        {
+            Tokenizer tokenizer(settingsDefault, *this);
+            dui.std = "gnu23";
+            PreprocessorHelper::preprocess(code, files, tokenizer, *this, dui);
+            ASSERT(tokenizer.list.front());
+        }
+
+        {
+            Tokenizer tokenizer(settingsDefault, *this);
+            dui.std = "c++98";
+            PreprocessorHelper::preprocess(code, files, tokenizer, *this, dui);
+            ASSERT(tokenizer.list.front());
+        }
+
+        {
+            Tokenizer tokenizer(settingsDefault, *this);
+            dui.std = "gnu++26";
+            PreprocessorHelper::preprocess(code, files, tokenizer, *this, dui);
+            ASSERT(tokenizer.list.front());
+        }
+
+        {
+            Tokenizer tokenizer(settingsDefault, *this);
+            dui.std = "gnu77";
+            PreprocessorHelper::preprocess(code, files, tokenizer, *this, dui);
+            ASSERT(!tokenizer.list.front()); // nothing is tokenized when an unknown standard is provided
+        }
     }
 };
 

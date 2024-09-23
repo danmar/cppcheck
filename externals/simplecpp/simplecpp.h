@@ -1,4 +1,4 @@
-/*
+/* -*- C++ -*-
  * simplecpp - A simple and high-fidelity C/C++ preprocessor library
  * Copyright (C) 2016-2023 simplecpp team
  */
@@ -8,7 +8,7 @@
 
 #include <cctype>
 #include <cstring>
-#include <istream>
+#include <iosfwd>
 #include <list>
 #include <map>
 #include <set>
@@ -39,6 +39,11 @@
 #endif
 
 namespace simplecpp {
+    /** C code standard */
+    enum cstd_t { CUnknown=-1, C89, C99, C11, C17, C23 };
+
+    /** C++ code standard */
+    enum cppstd_t { CPPUnknown=-1, CPP03, CPP11, CPP14, CPP17, CPP20, CPP23, CPP26 };
 
     typedef std::string TokenString;
     class Macro;
@@ -181,7 +186,8 @@ namespace simplecpp {
             PORTABILITY_BACKSLASH,
             UNHANDLED_CHAR_ERROR,
             EXPLICIT_INCLUDE_NOT_FOUND,
-            FILE_NOT_FOUND
+            FILE_NOT_FOUND,
+            DUI_ERROR
         } type;
         explicit Output(const std::vector<std::string>& files, Type type, const std::string& msg) : type(type), location(files), msg(msg) {}
         Location location;
@@ -198,6 +204,10 @@ namespace simplecpp {
         explicit TokenList(std::vector<std::string> &filenames);
         /** generates a token list from the given std::istream parameter */
         TokenList(std::istream &istr, std::vector<std::string> &filenames, const std::string &filename=std::string(), OutputList *outputList = nullptr);
+        /** generates a token list from the given buffer */
+        TokenList(const unsigned char* data, std::size_t size, std::vector<std::string> &filenames, const std::string &filename=std::string(), OutputList *outputList = nullptr);
+        /** generates a token list from the given buffer */
+        TokenList(const char* data, std::size_t size, std::vector<std::string> &filenames, const std::string &filename=std::string(), OutputList *outputList = nullptr);
         /** generates a token list from the given filename parameter */
         TokenList(const std::string &filename, std::vector<std::string> &filenames, OutputList *outputList = nullptr);
         TokenList(const TokenList &other);
@@ -363,11 +373,19 @@ namespace simplecpp {
     /** Convert Cygwin path to Windows path */
     SIMPLECPP_LIB std::string convertCygwinToWindowsPath(const std::string &cygwinPath);
 
+    /** Returns the C version a given standard */
+    SIMPLECPP_LIB cstd_t getCStd(const std::string &std);
+
+    /** Returns the C++ version a given standard */
+    SIMPLECPP_LIB cppstd_t getCppStd(const std::string &std);
+
     /** Returns the __STDC_VERSION__ value for a given standard */
     SIMPLECPP_LIB std::string getCStdString(const std::string &std);
+    SIMPLECPP_LIB std::string getCStdString(cstd_t std);
 
     /** Returns the __cplusplus value for a given standard */
     SIMPLECPP_LIB std::string getCppStdString(const std::string &std);
+    SIMPLECPP_LIB std::string getCppStdString(cppstd_t std);
 }
 
 #if defined(_MSC_VER)

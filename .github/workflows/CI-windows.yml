@@ -194,6 +194,7 @@ jobs:
       - name: Test addons
         if: matrix.config == 'release'
         run: |
+          echo on
           .\cppcheck --addon=threadsafety addons\test\threadsafety || exit /b !errorlevel!
           .\cppcheck --addon=threadsafety --std=c++03 addons\test\threadsafety || exit /b !errorlevel!
           .\cppcheck --addon=misra --enable=style --inline-suppr --enable=information --error-exitcode=1 addons\test\misra\misra-ctu-*-test.c || exit /b !errorlevel!

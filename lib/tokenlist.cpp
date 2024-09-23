@@ -375,6 +375,8 @@ bool TokenList::createTokensInternal(std::istream &code, const std::string& file
 // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
 void TokenList::createTokens(simplecpp::TokenList&& tokenList)
 {
+    // TODO: what to do if the list has been filled already? clear mTokensFrontBack?
+
     // tokenList.cfront() might be NULL if the file contained nothing to tokenize so we need to check the files instead
     if (!tokenList.getFiles().empty()) {
         // this is a copy
