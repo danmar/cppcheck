@@ -4831,7 +4831,7 @@ static void addToErrorPath(ValueFlow::Value& value, const ValueFlow::Value& from
 }
 
 static std::vector<Token*> findAllUsages(const Variable* var,
-                                         Token* start, // cppcheck-suppress constParameterPointer // FP
+                                         Token* start,
                                          const Library& library)
 {
     // std::vector<Token*> result;
