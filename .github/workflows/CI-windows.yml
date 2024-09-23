@@ -78,6 +78,8 @@ jobs:
           del build\bin\Release\cppcheck-gui.ilk || exit /b !errorlevel!
           del build\bin\Release\cppcheck-gui.pdb || exit /b !errorlevel!
 
+      # TODO: run GUI tests
+
   build:
     strategy:
       matrix:
