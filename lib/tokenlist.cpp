@@ -328,10 +328,10 @@ bool TokenList::createTokens(const uint8_t* data, size_t size)
 
 //---------------------------------------------------------------------------
 
-bool TokenList::createTokensInternal(std::istream &code, const std::string& file0)
+bool TokenList::createTokensInternal(const std::string& file0)
 {
     simplecpp::OutputList outputList;
-    simplecpp::TokenList tokens(code, mFiles, file0, &outputList);
+    simplecpp::TokenList tokens(file0, mFiles, &outputList);
 
     createTokens(std::move(tokens));
 
