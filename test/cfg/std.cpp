@@ -713,6 +713,12 @@ size_t bufferAccessOutOfBounds_wcsrtombs(char * dest, const wchar_t ** src, size
     return std::wcsrtombs(dest,src,len,ps);
 }
 
+void deallocuse_wcrtomb(char *buff) { // #13119
+    free(buff);
+    // cppcheck-suppress deallocuse
+    wcrtomb(buff, L'x', nullptr);
+}
+
 void invalidFunctionArg_std_string_substr(const std::string &str, std::size_t pos, std::size_t len) {
     // cppcheck-suppress invalidFunctionArg
     (void)str.substr(-1,len);

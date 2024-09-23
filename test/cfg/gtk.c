@@ -29,6 +29,7 @@ void validCode(int argInt, GHashTableIter * hash_table_iter, GHashTable * hash_t
     gpointer gpt = g_malloc(4);
     printf("%p", gpt);
     g_free(gpt);
+    // cppcheck-suppress deallocuse
     g_assert(gpt);
     if (!gpt) {
         // cppcheck-suppress checkLibraryNoReturn
