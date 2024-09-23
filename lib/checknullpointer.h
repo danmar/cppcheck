@@ -67,7 +67,7 @@ public:
      */
     bool isPointerDeRef(const Token *tok, bool &unknown) const;
 
-    static bool isPointerDeRef(const Token *tok, bool &unknown, const Settings &settings);
+    static bool isPointerDeRef(const Token *tok, bool &unknown, const Settings &settings, bool checkNullArg = true);
 
 private:
     /**
@@ -78,7 +78,7 @@ private:
      */
     static void parseFunctionCall(const Token &tok,
                                   std::list<const Token *> &var,
-                                  const Library &library);
+                                  const Library &library, bool checkNullArg = true);
 
     /** @brief This constructor is used when running checks. */
     CheckNullPointer(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
