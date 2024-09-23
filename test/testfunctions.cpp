@@ -2049,6 +2049,17 @@ private:
               "    void resize(size_t n) { std::vector<T>::resize(n); }\n"
               "};\n", true, &s);
         ASSERT_EQUALS("", errout_str());
+
+        check("struct P {\n" // #13105
+              "    bool g(int i) const;\n"
+              "    std::shared_ptr<std::map<int, int>> m;\n"
+              "};\n"
+              "bool P::g(int i) const {\n"
+              "    auto it = m->find(i);\n"
+              "    const bool b = it != m->end();\n"
+              "    return b;\n"
+              "}\n", true, &s);
+        TODO_ASSERT_EQUALS("", "[test.cpp:6]: (debug) auto token with no type.\n", errout_str());
     }
 
     void checkUseStandardLibrary1() {
