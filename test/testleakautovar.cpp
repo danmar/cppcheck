@@ -1122,7 +1122,9 @@ private:
             "  printf(\"Freed memory at location %x\", p);\n"
             "  free(p);\n"
             "}");
-        ASSERT_EQUALS("[test.c:2] -> [test.c:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout_str());
+        ASSERT_EQUALS("[test.c:3]: (error) Dereferencing 'p' after it is deallocated / released\n"
+                      "[test.c:2] -> [test.c:4]: (error) Memory pointed to by 'p' is freed twice.\n",
+                      errout_str());
 
         check(
             "void foo(FILE *p) {\n"
