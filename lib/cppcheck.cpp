@@ -626,8 +626,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 {
     return checkInternal(file, cfgname,
                          [&file](TokenList& list) {
-        std::ifstream in(file.spath());
-        list.createTokens(in, file.spath());
+        list.createTokens(file.spath());
     },
                          [&file](std::vector<std::string>& files, simplecpp::OutputList* outputList) {
         return simplecpp::TokenList{file.spath(), files, outputList};

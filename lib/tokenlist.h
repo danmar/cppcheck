@@ -102,10 +102,9 @@ public:
      * - multiline strings are not handled.
      * - UTF in the code are not handled.
      * - comments are not handled.
-     * @param code input stream for code
      * @param file0 source file name
      */
-    bool createTokens(std::istream &code, const std::string& file0);
+    bool createTokens(const std::string& file0);
     bool createTokens(const uint8_t* data, size_t size, const std::string& file0);
     bool createTokens(const char* data, size_t size, const std::string& file0) {
         return createTokens(reinterpret_cast<const uint8_t*>(data), size, file0);
@@ -219,7 +218,7 @@ public:
 private:
     void determineCppC();
 
-    bool createTokensInternal(std::istream &code, const std::string& file0);
+    bool createTokensInternal(const std::string& file0);
     bool createTokensInternal(const uint8_t* data, std::size_t size, const std::string& file0);
 
     /** Token list */

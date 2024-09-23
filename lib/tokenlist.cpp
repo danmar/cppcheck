@@ -335,13 +335,13 @@ void TokenList::insertTokens(Token *dest, const Token *src, nonneg int n)
 // Tokenize - tokenizes a given file.
 //---------------------------------------------------------------------------
 
-bool TokenList::createTokens(std::istream &code, const std::string& file0)
+bool TokenList::createTokens(const std::string& file0)
 {
     ASSERT_LANG(!file0.empty());
 
     appendFileIfNew(file0);
 
-    return createTokensInternal(code, file0);
+    return createTokensInternal(file0);
 }
 
 //---------------------------------------------------------------------------
@@ -371,10 +371,10 @@ bool TokenList::createTokens(const uint8_t* data, size_t size, Standards::Langua
 
 //---------------------------------------------------------------------------
 
-bool TokenList::createTokensInternal(std::istream &code, const std::string& file0)
+bool TokenList::createTokensInternal(const std::string& file0)
 {
     simplecpp::OutputList outputList;
-    simplecpp::TokenList tokens(code, mFiles, file0, &outputList);
+    simplecpp::TokenList tokens(file0, mFiles, &outputList);
 
     createTokens(std::move(tokens));
 
