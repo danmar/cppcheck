@@ -66,11 +66,12 @@ jobs:
 
       - name: Generate dependencies
         run: |
+          # make sure auto-generated GUI files exist
+          make -C cmake.output autogen
           # make sure the precompiled headers exist
           make -C cmake.output lib/CMakeFiles/cppcheck-core.dir/cmake_pch.hxx.cxx
           make -C cmake.output test/CMakeFiles/testrunner.dir/cmake_pch.hxx.cxx
-          # make sure auto-generated GUI files exist
-          make -C cmake.output autogen
+          # make sure the auto-generated GUI dependencies exist
           make -C cmake.output gui-build-deps
 
       # TODO: find a way to report unmatched suppressions without need to add information checks
@@ -92,10 +93,11 @@ jobs:
 
       - name: Generate dependencies (no test)
         run: |
-          # make sure the precompiled headers exist
-          make -C cmake.output.notest lib/CMakeFiles/cppcheck-core.dir/cmake_pch.hxx.cxx
           # make sure auto-generated GUI files exist
           make -C cmake.output.notest autogen
+          # make sure the precompiled headers exist
+          make -C cmake.output.notest lib/CMakeFiles/cppcheck-core.dir/cmake_pch.hxx.cxx
+          # make sure the auto-generated GUI dependencies exist
           make -C cmake.output.notest gui-build-deps
 
       # TODO: find a way to report unmatched suppressions without need to add information checks
@@ -133,10 +135,11 @@ jobs:
 
       - name: Generate dependencies (no test / no cli)
         run: |
-          # make sure the precompiled headers exist
-          make -C cmake.output.notest_nocli lib/CMakeFiles/cppcheck-core.dir/cmake_pch.hxx.cxx
           # make sure auto-generated GUI files exist
           make -C cmake.output.notest_nocli autogen
+          # make sure the precompiled headers exist
+          make -C cmake.output.notest_nocli lib/CMakeFiles/cppcheck-core.dir/cmake_pch.hxx.cxx
+          # make sure the auto-generated GUI dependencies exist
           make -C cmake.output.notest_nocli gui-build-deps
 
       # TODO: find a way to report unmatched suppressions without need to add information checks
@@ -160,10 +163,11 @@ jobs:
 
       - name: Generate dependencies (corpus)
         run: |
-          # make sure the precompiled headers exist
-          make -C cmake.output.corpus lib/CMakeFiles/lib_objs.dir/cmake_pch.hxx.cxx
           # make sure auto-generated GUI files exist
           make -C cmake.output.corpus autogen
+          # make sure the precompiled headers exist
+          make -C cmake.output.corpus lib/CMakeFiles/lib_objs.dir/cmake_pch.hxx.cxx
+          # make sure the auto-generated GUI dependencies exist
           make -C cmake.output.corpus gui-build-deps
 
       # TODO: find a way to report unmatched suppressions without need to add information checks

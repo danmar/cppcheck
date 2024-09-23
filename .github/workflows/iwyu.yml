@@ -96,13 +96,13 @@ jobs:
       # /__w/cppcheck/Qt/6.7.0/gcc_64/libexec/rcc: error while loading shared libraries: libglib-2.0.so.0: cannot open shared object file: No such file or directory
       - name: Prepare CMake dependencies
         run: |
+          # make sure the auto-generated GUI sources exist
+          make -C cmake.output autogen
           # make sure the precompiled headers exist
           #make -C cmake.output/cli cmake_pch.hxx.pch
           #make -C cmake.output/gui cmake_pch.hxx.pch
           #make -C cmake.output/lib cmake_pch.hxx.pch
           #make -C cmake.output/test cmake_pch.hxx.pch
-          # make sure the auto-generated GUI sources exist
-          make -C cmake.output autogen
           # make sure the auto-generated GUI dependencies exist
           make -C cmake.output gui-build-deps
           make -C cmake.output triage-build-ui-deps
@@ -167,13 +167,13 @@ jobs:
 
       - name: Prepare CMake dependencies
         run: |
+          # make sure the auto-generated GUI sources exist
+          make -C cmake.output autogen
           # make sure the precompiled headers exist
           #make -C cmake.output/cli cmake_pch.hxx.pch
           #make -C cmake.output/gui cmake_pch.hxx.pch
           #make -C cmake.output/lib cmake_pch.hxx.pch
           #make -C cmake.output/test cmake_pch.hxx.pch
-          # make sure the auto-generated GUI sources exist
-          make -C cmake.output autogen
           # make sure the auto-generated GUI dependencies exist
           make -C cmake.output gui-build-deps
 
