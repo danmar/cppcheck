@@ -62,8 +62,9 @@ static bool checkNullpointerFunctionCallPlausibility(const Function* func, unsig
  * @param tok first token
  * @param var variables that the function read / write.
  * @param library --library files data
+ * @param checkNullArg perform isnullargbad check for each argument?
  */
-void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token *> &var, const Library &library)
+void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token *> &var, const Library &library, bool checkNullArg)
 {
     if (Token::Match(&tok, "%name% ( )") || !tok.tokAt(2))
         return;
@@ -72,7 +73,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
 
     for (int argnr = 1; argnr <= args.size(); ++argnr) {
         const Token *param = args[argnr - 1];
-        if (library.isnullargbad(&tok, argnr) && checkNullpointerFunctionCallPlausibility(tok.function(), argnr))
+        if ((!checkNullArg || library.isnullargbad(&tok, argnr)) && checkNullpointerFunctionCallPlausibility(tok.function(), argnr))
             var.push_back(param);
         else if (tok.function()) {
             const Variable* argVar = tok.function()->getArgumentVar(argnr-1);
@@ -150,7 +151,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown) const
     return isPointerDeRef(tok, unknown, *mSettings);
 }
 
-bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Settings &settings)
+bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Settings &settings, bool checkNullArg)
 {
     unknown = false;
 
@@ -164,7 +165,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
         }
         if (ftok && ftok->previous()) {
             std::list<const Token *> varlist;
-            parseFunctionCall(*ftok->previous(), varlist, settings.library);
+            parseFunctionCall(*ftok->previous(), varlist, settings.library, checkNullArg);
             if (std::find(varlist.cbegin(), varlist.cend(), tok) != varlist.cend()) {
                 return true;
             }
