@@ -430,8 +430,11 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
         mErrorLogger.reportOut(std::string("Checking ") + file.spath() + " ...", Color::FgGreen);
 
     // TODO: get language from FileWithDetails object
-    // TODO: this ignores the configured language
-    const bool isCpp = Path::identify(file.spath(), mSettings.cppHeaderProbe) == Standards::Language::CPP;
+    bool isCpp;
+    if (mSettings.enforcedLang != Standards::None)
+        isCpp = (mSettings.enforcedLang == Standards::CPP);
+    else
+        isCpp = Path::identify(file.spath(), mSettings.cppHeaderProbe) == Standards::Language::CPP;
     const std::string langOpt = isCpp ? "-x c++" : "-x c";
     const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, file.spath(), emptyString);
     const std::string clangcmd = analyzerInfo + ".clang-cmd";
