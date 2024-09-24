@@ -825,7 +825,8 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
         const std::map<int, VarInfo::AllocInfo>::const_iterator var = varInfo.alloctype.find(tok->varId());
         if (var != varInfo.alloctype.end()) {
             bool unknown = false;
-            if (var->second.status == VarInfo::DEALLOC && CheckNullPointer::isPointerDeRef(tok, unknown, *mSettings, /*checkNullArg*/ false) && !unknown) {
+            if (var->second.status == VarInfo::DEALLOC && !Library::isresource(var->second.type) &&
+                CheckNullPointer::isPointerDeRef(tok, unknown, *mSettings, /*checkNullArg*/ false) && !unknown) {
                 deallocUseError(tok, tok->str());
             } else if (Token::simpleMatch(tok->tokAt(-2), "= &")) {
                 varInfo.erase(tok->varId());
@@ -930,8 +931,10 @@ void CheckLeakAutoVar::changeAllocStatus(VarInfo &varInfo, const VarInfo::AllocI
             var->second.allocTok = allocation.allocTok;
         }
     } else if (allocation.status != VarInfo::NOALLOC && allocation.status != VarInfo::OWNED && !Token::simpleMatch(tok->astTop(), "return")) {
-        alloctype[arg->varId()].status = VarInfo::DEALLOC;
-        alloctype[arg->varId()].allocTok = tok;
+        auto& allocInfo = alloctype[arg->varId()];
+        allocInfo.status = VarInfo::DEALLOC;
+        allocInfo.allocTok = tok;
+        allocInfo.type = allocation.type;
     }
 }
 
