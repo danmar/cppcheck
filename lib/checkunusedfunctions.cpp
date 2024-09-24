@@ -240,10 +240,6 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
             funcname = tok->next();
             while (Token::Match(funcname, "%name% :: %name%"))
                 funcname = funcname->tokAt(2);
-        } else if (Token::Match(tok, "& %name%") && tok->scope()->isLocal()) {
-            funcname = tok->next();
-            while (Token::Match(funcname, "%name% :: %name%"))
-                funcname = funcname->tokAt(2);
         } else if (tok->scope()->type != Scope::ScopeType::eEnum && (Token::Match(tok, "[;{}.,()[=+-/|!?:]") || Token::Match(tok, "return|throw"))) {
             funcname = tok->next();
             if (funcname && funcname->str() == "&")
@@ -253,7 +249,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
             while (Token::Match(funcname, "%name% :: %name%"))
                 funcname = funcname->tokAt(2);
 
-            if (!Token::Match(funcname, "%name% [(),;]:}>]"))
+            if (!Token::Match(funcname, "%name% [(),;]:}<>]"))
                 continue;
         }
 
