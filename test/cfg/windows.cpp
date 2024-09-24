@@ -2,7 +2,7 @@
 // Test library configuration for windows.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=windows --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/windows.cpp
+// $ cppcheck --check-library --library=windows --enable=style,information --inconclusive --error-exitcode=1 --inline-suppr test/cfg/windows.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //

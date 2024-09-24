@@ -2,7 +2,7 @@
 // Test library configuration for qt.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=qt --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/qt.cpp
+// $ cppcheck --check-library --library=qt --enable=style,information --inconclusive --error-exitcode=1 --inline-suppr test/cfg/qt.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //

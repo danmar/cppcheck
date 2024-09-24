@@ -60,7 +60,6 @@ def test_unmatched_suppression():
         '--template=simple',
         '--inline-suppr',
         '--enable=information',
-        '--disable=missingInclude',
         '--error-exitcode=1',
         '{}2.c'.format(__proj_inline_suppres_path)
     ]
@@ -79,7 +78,6 @@ def test_unmatched_suppression_path_with_extra_stuff():
         '--template=simple',
         '--inline-suppr',
         '--enable=information',
-        '--disable=missingInclude',
         '--error-exitcode=1',
         '{}2.c'.format(__proj_inline_suppres_path)
     ]
@@ -186,7 +184,6 @@ def test_unmatched_suppression_ifdef():
         '-q',
         '--template=simple',
         '--enable=information',
-        '--disable=missingInclude',
         '--inline-suppr',
         '-DNO_ZERO_DIV',
         'trac5704/trac5704a.c'
@@ -203,7 +200,6 @@ def test_unmatched_suppression_ifdef_0():
         '-q',
         '--template=simple',
         '--enable=information',
-        '--disable=missingInclude',
         '--inline-suppr',
         'trac5704/trac5704b.c'
     ]
@@ -272,7 +268,6 @@ def test_suppress_unmatched_inline_suppression():  # 11172
         '-q',
         '--template=simple',
         '--enable=information',
-        '--disable=missingInclude',
         '--suppress=unmatchedSuppression',
         '--inline-suppr',
         '{}2.c'.format(__proj_inline_suppres_path)

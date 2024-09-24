@@ -2,7 +2,7 @@
 // Test library configuration for std.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=std --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/std.cpp
+// $ cppcheck --check-library --library=std --enable=style,information --inconclusive --error-exitcode=1 --inline-suppr test/cfg/std.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //

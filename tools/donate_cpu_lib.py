@@ -444,7 +444,7 @@ def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True, 
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
     options = '{} --inconclusive --enable={} --inline-suppr --template=daca2'.format(libs, enable)
     if 'information' in enable:
-        # TODO: remove missingInclude disabling when it no longer is implied by --enable=information
+        # TODO: remove missingInclude disabling after 2.16 has been released
         options += ' --disable=missingInclude --suppress=unmatchedSuppression'
     if check_level:
         options += ' --check-level=' + check_level

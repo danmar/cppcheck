@@ -370,7 +370,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     ImportProject project;
 
     bool executorAuto = true;
-    int8_t logMissingInclude{0};
 
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
@@ -593,9 +592,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     mLogger.printError(errmsg);
                     return Result::Fail;
                 }
-                if (std::string(argv[i] + 10).find("missingInclude") != std::string::npos) {
-                    --logMissingInclude;
-                }
             }
 
             // dump cppcheck data
@@ -614,13 +610,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     mSettings.addEnabled("warning");
                     mSettings.addEnabled("performance");
                     mSettings.addEnabled("portability");
-                }
-                if (enable_arg.find("information") != std::string::npos && logMissingInclude == 0) {
-                    ++logMissingInclude;
-                    mSettings.addEnabled("missingInclude");
-                }
-                if (enable_arg.find("missingInclude") != std::string::npos) {
-                    --logMissingInclude;
                 }
             }
 
@@ -1405,9 +1394,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             mPathNames.emplace_back(Path::fromNativeSeparators(Path::removeQuotationMarks(argv[i])));
         }
     }
-
-    if (logMissingInclude == 1)
-        mLogger.printMessage("'--enable=information' will no longer implicitly enable 'missingInclude' starting with 2.16. Please enable it explicitly if you require it.");
 
     if (!loadCppcheckCfg())
         return Result::Fail;
