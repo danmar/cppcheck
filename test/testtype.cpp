@@ -76,12 +76,12 @@ private:
 
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    void checkP_(const char* file, int line, const char (&code)[size], const Settings& settings, const char filename[] = "test.cpp", const simplecpp::DUI& dui = simplecpp::DUI()) {
+    void checkP_(const char* file, int line, const char (&code)[size], const Settings& settings, const char filename[] = "test.cpp") {
         const Settings settings1 = settingsBuilder(settings).severity(Severity::warning).severity(Severity::portability).build();
 
         std::vector<std::string> files(1, filename);
         Tokenizer tokenizer(settings1, *this);
-        PreprocessorHelper::preprocess(code, files, tokenizer, *this, dui);
+        PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
@@ -501,13 +501,9 @@ private:
     }
 
     void integerOverflow() { // #11794
-        // TODO: needs to use preprocessing production code
-        simplecpp::DUI dui;
-        dui.std = "c++11";
-        // this is set by the production code via cppcheck::Platform::getLimitDefines()
-        dui.defines.emplace_back("INT_MIN=-2147483648");
-        dui.defines.emplace_back("INT32_MAX=2147483647");
-        dui.defines.emplace_back("int32_t=int");
+        // std.cfg for int32_t
+        // Platform::Unix32 for INT_MIN=-2147483648 and INT32_MAX=2147483647
+        const Settings s = settingsBuilder().library("std.cfg").cpp(Standards::CPP11).platform(Platform::Unix32).build();
 
         checkP("int fun(int x)\n"
                "{\n"
@@ -517,14 +513,14 @@ private:
                "int f()\n"
                "{\n"
                "    fun(INT_MIN);\n"
-               "}", settingsDefault, "test.cpp", dui);
+               "}", s, "test.cpp");
         ASSERT_EQUALS("[test.cpp:3]: (error) Signed integer overflow for expression '-x'.\n", errout_str());
 
         checkP("void f() {\n" // #8399
                "    int32_t i = INT32_MAX;\n"
                "    i << 1;\n"
                "    i << 2;\n"
-               "}", settingsDefault, "test.cpp", dui);
+               "}", s, "test.cpp");
         ASSERT_EQUALS("[test.cpp:4]: (error) Signed integer overflow for expression 'i<<2'.\n", errout_str());
     }
 };
