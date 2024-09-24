@@ -238,6 +238,17 @@ private:
               "    return 0\n"
               "}");
         ASSERT_EQUALS("", errout_str());
+
+        check("template <class T> void f()\n" // #13117
+              "{\n"
+              "    return 1;\n"
+              "}\n"
+              "int main(void)\n"
+              "{\n"
+              "    auto *ptr = &f;\n"
+              "    return ptr();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void template1() {
