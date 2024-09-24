@@ -239,13 +239,13 @@ private:
               "}");
         ASSERT_EQUALS("", errout_str());
 
-        check("template <class T> void f()\n" // #13117
+        check("template <class T> T f()\n" // #13117
               "{\n"
-              "    return 1;\n"
+              "    return T(1);\n"
               "}\n"
               "int main(void)\n"
               "{\n"
-              "    auto *ptr = &f;\n"
+              "    auto *ptr = &f<int>;\n"
               "    return ptr();\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
