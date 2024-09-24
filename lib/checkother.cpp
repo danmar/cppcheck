@@ -1225,6 +1225,14 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
                         if (!ret.empty() && ret.back() == '*')
                             return false;
                     }
+                    if (ftok->function()) {
+                        for (int argi = 0; argi < ftok->function()->argCount(); argi++) { // other pointer passed to function?
+                            if (argi == argn) // skip the arg we're checking
+                                continue;
+                            if (ftok->function()->getArgumentVar(argi)->isPointer())
+                                return false;
+                        }
+                    }
                 }
             }
             const auto yield = astContainerYield(tok);
