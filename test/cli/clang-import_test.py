@@ -138,3 +138,93 @@ def test_warning(tmpdir):  # #12424
     assert exitcode == 0, stderr # do not assert
     assert stdout == ''
     assert stderr == ''
+
+
+def __test_cmd(tmp_path, file_name, extra_args, stdout_exp_1):
+    test_file = tmp_path / file_name
+    with open(test_file, 'wt') as f:
+        f.write('')
+
+    args = [
+        '--enable=information',
+        '--disable=missingInclude',  # TODO: remove
+        '--verbose',
+        '--clang',
+        file_name
+    ]
+
+    args += extra_args
+
+    if stdout_exp_1:
+        stdout_exp_1 += ' '
+
+    exitcode, stdout, stderr = cppcheck(args, cwd=tmp_path)
+    assert exitcode == 0, stderr if not stdout else stdout
+    assert stderr == ''
+    assert stdout.splitlines() == [
+        'Checking {} ...'.format(file_name),
+        'clang -fsyntax-only -Xclang -ast-dump -fno-color-diagnostics {}{}'.format(stdout_exp_1, file_name)
+    ]
+
+
+def test_cmd_c(tmp_path):
+    __test_cmd(tmp_path, 'test.c', [], '-x c')
+
+
+def test_cmd_cpp(tmp_path):
+    __test_cmd(tmp_path, 'test.cpp', [], '-x c++')
+
+
+def test_cmd_inc(tmp_path):
+    inc_path = tmp_path / 'inc'
+    os.makedirs(inc_path)
+    __test_cmd(tmp_path, 'test.cpp',['-Iinc'], '-x c++ -Iinc/')
+
+
+def test_cmd_def(tmp_path):
+    __test_cmd(tmp_path, 'test.cpp',['-DDEF'], '-x c++ -DDEF=1')
+
+
+@pytest.mark.xfail(strict=True)
+def test_cmd_enforce_c(tmp_path):  # #13128
+    __test_cmd(tmp_path, 'test.cpp',['-x', 'c'], '-x c')
+
+
+@pytest.mark.xfail(strict=True)
+def test_cmd_enforce_cpp(tmp_path):  # #13128
+    __test_cmd(tmp_path, 'test.c',['-x', 'c++'], '-x c++')
+
+
+@pytest.mark.xfail(strict=True)
+def test_cmd_std_c(tmp_path):  # #13129
+    __test_cmd(tmp_path, 'test.cpp',['--std=c89', '--std=c++14'], '-x c++ -std=c++14')
+
+
+@pytest.mark.xfail(strict=True)
+def test_cmd_std_cpp(tmp_path):  # #13129
+    __test_cmd(tmp_path, 'test.c',['--std=c89', '--std=c++14'], '-x c -std=c89')
+
+
+@pytest.mark.xfail(strict=True)
+def test_cmd_std_c_enforce(tmp_path):  # #13128/#13129
+    __test_cmd(tmp_path, 'test.cpp',['--language=c', '--std=c89', '--std=c++14'], '-x c -std=c89')
+
+
+@pytest.mark.xfail(strict=True)
+def test_cmd_std_cpp_enforce(tmp_path):  # #13128/#13129
+    __test_cmd(tmp_path, 'test.c',['--language=c++', '--std=c89', '--std=c++14'], '-x c++ -std=c++14')
+
+
+@pytest.mark.xfail(strict=True)
+def test_cmd_std_c_enforce_alias(tmp_path):  # #13128/#13129/#13130
+    __test_cmd(tmp_path, 'test.c',['--language=c++', '--std=gnu99', '--std=gnu++11'], '-x c -std=gnu99')
+
+
+@pytest.mark.xfail(strict=True)
+def test_cmd_std_c_enforce_alias_2(tmp_path):  # #13128/#13129/#13130
+    __test_cmd(tmp_path, 'test.c',['--language=c++', '--std=iso9899:1999', '--std=gnu++11'], '-x c -std=iso9899:1999')
+
+
+@pytest.mark.xfail(strict=True)
+def test_cmd_std_cpp_enforce_alias(tmp_path):  # #13128/#13129/#13130
+    __test_cmd(tmp_path, 'test.c',['--language=c++', '--std=gnu99', '--std=gnu++11'], '-x c++ -std=gnu++11')
