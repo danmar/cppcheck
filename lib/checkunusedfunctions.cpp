@@ -240,7 +240,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
             funcname = tok->next();
             while (Token::Match(funcname, "%name% :: %name%"))
                 funcname = funcname->tokAt(2);
-        } else if (Token::Match(tok, "& %name%") && tok->scope() && tok->scope()->isLocal()) {
+        } else if (Token::Match(tok, "& %name%") && tok->scope()->isLocal()) {
             funcname = tok->next();
             while (Token::Match(funcname, "%name% :: %name%"))
                 funcname = funcname->tokAt(2);
