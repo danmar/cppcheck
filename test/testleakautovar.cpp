@@ -3334,6 +3334,7 @@ private:
 
     void run() override {
         TEST_CASE(memleak_getline);
+        TEST_CASE(deallocuse_fdopen);
     }
 
     void memleak_getline() {
@@ -3341,6 +3342,21 @@ private:
               "    std::string str;\n"
               "    if (getline(is, str, 'x').good()) {};\n"
               "    if (!getline(is, str, 'x').good()) {};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void deallocuse_fdopen() {
+        check("struct FileCloser {\n" // #13126
+              "    void operator()(std::FILE * ptr) const {\n"
+              "        std::fclose(ptr);\n"
+              "    }\n"
+              "};\n"
+              "void f(char* fileName) {\n"
+              "    std::unique_ptr<std::FILE, FileCloser> out;\n"
+              "    int fd = mkstemps(fileName, 4);\n"
+              "    if (fd != -1)\n"
+              "        out.reset(fdopen(fd, \"w\"));\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
