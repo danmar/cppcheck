@@ -1060,6 +1060,15 @@ private:
               "    return fclose(fd) == 0;\n"
               "}\n", /*cpp*/ true);
         ASSERT_EQUALS("", errout_str());
+
+        check("int f(const char* fileName) {\n" // #13136
+              "    FILE* h = fopen(fileName, \"rb\");\n"
+              "    if (fseek(h, 0L, SEEK_END) == -1)\n"
+              "        fclose(h);\n"
+              "    int i = ftell(h);\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.c:5]: (error) Dereferencing 'h' after it is deallocated / released\n", errout_str());
     }
 
     void doublefree1() {  // #3895
