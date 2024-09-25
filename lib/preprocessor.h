@@ -123,7 +123,7 @@ public:
 
     void removeComments();
 
-    void setPlatformInfo(simplecpp::TokenList *tokens) const;
+    static void setPlatformInfo(simplecpp::TokenList *tokens, const Settings& settings);
 
     simplecpp::TokenList preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool throwError = false);
 

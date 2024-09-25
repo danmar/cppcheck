@@ -785,24 +785,24 @@ void Preprocessor::removeComments()
     }
 }
 
-void Preprocessor::setPlatformInfo(simplecpp::TokenList *tokens) const
+void Preprocessor::setPlatformInfo(simplecpp::TokenList *tokens, const Settings& settings)
 {
-    tokens->sizeOfType["bool"]          = mSettings.platform.sizeof_bool;
-    tokens->sizeOfType["short"]         = mSettings.platform.sizeof_short;
-    tokens->sizeOfType["int"]           = mSettings.platform.sizeof_int;
-    tokens->sizeOfType["long"]          = mSettings.platform.sizeof_long;
-    tokens->sizeOfType["long long"]     = mSettings.platform.sizeof_long_long;
-    tokens->sizeOfType["float"]         = mSettings.platform.sizeof_float;
-    tokens->sizeOfType["double"]        = mSettings.platform.sizeof_double;
-    tokens->sizeOfType["long double"]   = mSettings.platform.sizeof_long_double;
-    tokens->sizeOfType["bool *"]        = mSettings.platform.sizeof_pointer;
-    tokens->sizeOfType["short *"]       = mSettings.platform.sizeof_pointer;
-    tokens->sizeOfType["int *"]         = mSettings.platform.sizeof_pointer;
-    tokens->sizeOfType["long *"]        = mSettings.platform.sizeof_pointer;
-    tokens->sizeOfType["long long *"]   = mSettings.platform.sizeof_pointer;
-    tokens->sizeOfType["float *"]       = mSettings.platform.sizeof_pointer;
-    tokens->sizeOfType["double *"]      = mSettings.platform.sizeof_pointer;
-    tokens->sizeOfType["long double *"] = mSettings.platform.sizeof_pointer;
+    tokens->sizeOfType["bool"]          = settings.platform.sizeof_bool;
+    tokens->sizeOfType["short"]         = settings.platform.sizeof_short;
+    tokens->sizeOfType["int"]           = settings.platform.sizeof_int;
+    tokens->sizeOfType["long"]          = settings.platform.sizeof_long;
+    tokens->sizeOfType["long long"]     = settings.platform.sizeof_long_long;
+    tokens->sizeOfType["float"]         = settings.platform.sizeof_float;
+    tokens->sizeOfType["double"]        = settings.platform.sizeof_double;
+    tokens->sizeOfType["long double"]   = settings.platform.sizeof_long_double;
+    tokens->sizeOfType["bool *"]        = settings.platform.sizeof_pointer;
+    tokens->sizeOfType["short *"]       = settings.platform.sizeof_pointer;
+    tokens->sizeOfType["int *"]         = settings.platform.sizeof_pointer;
+    tokens->sizeOfType["long *"]        = settings.platform.sizeof_pointer;
+    tokens->sizeOfType["long long *"]   = settings.platform.sizeof_pointer;
+    tokens->sizeOfType["float *"]       = settings.platform.sizeof_pointer;
+    tokens->sizeOfType["double *"]      = settings.platform.sizeof_pointer;
+    tokens->sizeOfType["long double *"] = settings.platform.sizeof_pointer;
 }
 
 simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool throwError)
