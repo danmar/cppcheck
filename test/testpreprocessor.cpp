@@ -453,7 +453,7 @@ private:
         // preprocess code with unix32 platform..
         {
             const Settings settings = settingsBuilder().platform(Platform::Type::Unix32).build();
-            Preprocessor::setPlatformInfo(&tokens, settings);
+            Preprocessor::setPlatformInfo(tokens, settings);
             Preprocessor preprocessor(settings, *this);
             ASSERT_EQUALS("\n1", preprocessor.getcode(tokens, "", files, false));
         }
@@ -461,7 +461,7 @@ private:
         // preprocess code with unix64 platform..
         {
             const Settings settings = settingsBuilder().platform(Platform::Type::Unix64).build();
-            Preprocessor::setPlatformInfo(&tokens, settings);
+            Preprocessor::setPlatformInfo(tokens, settings);
             Preprocessor preprocessor(settings, *this);
             ASSERT_EQUALS("\n\n\n2", preprocessor.getcode(tokens, "", files, false));
         }
