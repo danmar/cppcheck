@@ -825,7 +825,7 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
         const std::map<int, VarInfo::AllocInfo>::const_iterator var = varInfo.alloctype.find(tok->varId());
         if (var != varInfo.alloctype.end()) {
             bool unknown = false;
-            if (var->second.status == VarInfo::DEALLOC && !Library::isresource(var->second.type) &&
+            if (var->second.status == VarInfo::DEALLOC && tok->valueType() && tok->valueType()->pointer &&
                 CheckNullPointer::isPointerDeRef(tok, unknown, *mSettings, /*checkNullArg*/ false) && !unknown) {
                 deallocUseError(tok, tok->str());
             } else if (Token::simpleMatch(tok->tokAt(-2), "= &")) {
