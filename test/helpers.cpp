@@ -139,9 +139,8 @@ std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& s
     Preprocessor preprocessor(settings, errorlogger);
     if (inlineSuppression)
         preprocessor.inlineSuppressions(tokens, *inlineSuppression);
-    tokens.removeComments();
+    preprocessor.removeComments(tokens);
     preprocessor.simplifyPragmaAsm(tokens);
-    preprocessor.removeComments();
 
     preprocessor.reportOutput(outputList, true);
 

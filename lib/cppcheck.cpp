@@ -734,8 +734,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             mSettings.supprs.nomsg.dump(oss);
             dumpProlog += oss.str();
         }
-        tokens1.removeComments();
-        preprocessor.removeComments();
+        preprocessor.removeComments(tokens1);
 
         if (!mSettings.buildDir.empty()) {
             // Get toolinfo

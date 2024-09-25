@@ -777,8 +777,9 @@ bool Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<
     return !hasErrors(outputList);
 }
 
-void Preprocessor::removeComments()
+void Preprocessor::removeComments(simplecpp::TokenList &tokens)
 {
+    tokens.removeComments();
     for (std::pair<const std::string, simplecpp::TokenList*>& tokenList : mTokenLists) {
         if (tokenList.second)
             tokenList.second->removeComments();
