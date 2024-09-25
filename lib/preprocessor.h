@@ -138,7 +138,7 @@ public:
      */
     std::size_t calculateHash(const simplecpp::TokenList &tokens1, const std::string &toolinfo) const;
 
-    void simplifyPragmaAsm(simplecpp::TokenList *tokenList) const;
+    void simplifyPragmaAsm(simplecpp::TokenList &tokenList) const;
 
     static void getErrorMessages(ErrorLogger &errorLogger, const Settings &settings);
 
@@ -154,7 +154,7 @@ private:
 
     void reportOutput(const simplecpp::OutputList &outputList, bool showerror);
 
-    static void simplifyPragmaAsmPrivate(simplecpp::TokenList *tokenList);
+    static void simplifyPragmaAsmPrivate(simplecpp::TokenList &tokenList);
 
     /**
      * Include file types.

@@ -775,7 +775,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
         // Get directives
         std::list<Directive> directives = preprocessor.createDirectives(tokens1);
-        preprocessor.simplifyPragmaAsm(&tokens1);
+        preprocessor.simplifyPragmaAsm(tokens1);
 
         Preprocessor::setPlatformInfo(&tokens1, mSettings);
 

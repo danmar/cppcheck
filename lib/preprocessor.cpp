@@ -986,18 +986,18 @@ std::size_t Preprocessor::calculateHash(const simplecpp::TokenList &tokens1, con
     return (std::hash<std::string>{})(hashData);
 }
 
-void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList *tokenList) const
+void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList &tokenList) const
 {
     Preprocessor::simplifyPragmaAsmPrivate(tokenList);
     for (const std::pair<const std::string, simplecpp::TokenList*>& list : mTokenLists) {
-        Preprocessor::simplifyPragmaAsmPrivate(list.second);
+        Preprocessor::simplifyPragmaAsmPrivate(*list.second);
     }
 }
 
-void Preprocessor::simplifyPragmaAsmPrivate(simplecpp::TokenList *tokenList)
+void Preprocessor::simplifyPragmaAsmPrivate(simplecpp::TokenList &tokenList)
 {
     // assembler code..
-    for (simplecpp::Token *tok = tokenList->front(); tok; tok = tok->next) {
+    for (simplecpp::Token *tok = tokenList.front(); tok; tok = tok->next) {
         if (tok->op != '#')
             continue;
         if (sameline(tok, tok->previousSkipComments()))
@@ -1032,7 +1032,7 @@ void Preprocessor::simplifyPragmaAsmPrivate(simplecpp::TokenList *tokenList)
         const_cast<simplecpp::Token *>(tok3)->setstr(")");
         const_cast<simplecpp::Token *>(tok4)->setstr(";");
         while (tok4->next != endasm)
-            tokenList->deleteToken(tok4->next);
+            tokenList.deleteToken(tok4->next);
     }
 }
 

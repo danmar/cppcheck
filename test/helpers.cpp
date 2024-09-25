@@ -140,7 +140,7 @@ std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& s
     if (inlineSuppression)
         preprocessor.inlineSuppressions(tokens, *inlineSuppression);
     tokens.removeComments();
-    preprocessor.simplifyPragmaAsm(&tokens);
+    preprocessor.simplifyPragmaAsm(tokens);
     preprocessor.removeComments();
 
     preprocessor.reportOutput(outputList, true);
