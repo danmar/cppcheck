@@ -17,4 +17,5 @@ Deprecations:
 -
 
 Other:
+- "missingInclude" is no longer implicitly enabled with "information" - you need to enable it explicitly now.
 -

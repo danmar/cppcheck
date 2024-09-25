@@ -147,7 +147,6 @@ def __test_cmd(tmp_path, file_name, extra_args, stdout_exp_1):
 
     args = [
         '--enable=information',
-        '--disable=missingInclude',  # TODO: remove
         '--verbose',
         '--clang',
         file_name

@@ -1,7 +1,7 @@
 // Test library configuration for cppunit.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=cppunit --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/cppunit.cpp
+// $ cppcheck --check-library --library=cppunit --enable=style,information --inconclusive --error-exitcode=1 --inline-suppr test/cfg/cppunit.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //

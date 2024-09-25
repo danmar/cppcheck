@@ -2,7 +2,7 @@
 // Test library configuration for selinux.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=selinux --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/selinux.c
+// $ cppcheck --check-library --library=selinux --enable=style,information --inconclusive --error-exitcode=1 --inline-suppr test/cfg/selinux.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //

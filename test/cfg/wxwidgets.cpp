@@ -2,7 +2,7 @@
 // Test library configuration for wxwidgets.cfg
 //
 // Usage:
-// $ ./cppcheck --check-library --library=wxwidgets --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/wxwidgets.cpp
+// $ ./cppcheck --check-library --library=wxwidgets --enable=style,information --inconclusive --error-exitcode=1 --inline-suppr test/cfg/wxwidgets.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //

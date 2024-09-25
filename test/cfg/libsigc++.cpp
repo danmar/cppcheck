@@ -2,7 +2,7 @@
 // Test library configuration for libsigc++.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=libsigc++ --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/libsigc++.cpp
+// $ cppcheck --check-library --library=libsigc++ --enable=style,information --inconclusive --error-exitcode=1 --inline-suppr test/cfg/libsigc++.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //

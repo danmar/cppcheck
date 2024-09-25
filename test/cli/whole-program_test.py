@@ -33,7 +33,6 @@ def __test_addon_suppress_inline(extra_args):
         '--addon=misra',
         '--template=simple',
         '--enable=information,style',
-        '--disable=missingInclude',  # TODO: remove
         '--inline-suppr',
         '--error-exitcode=1',
         'whole-program/whole1.c',
@@ -83,7 +82,6 @@ def __test_addon_suppress_inline_project(tmpdir, extra_args):
         '--addon=misra',
         '--template=simple',
         '--enable=information,style',
-        '--disable=missingInclude',  # TODO: remove
         '--inline-suppr',
         '--error-exitcode=1',
         '--project={}'.format(compile_db)
@@ -126,7 +124,6 @@ def __test_suppress_inline(extra_args):
         '-q',
         '--template=simple',
         '--enable=information,style',
-        '--disable=missingInclude',  # TODO: remove
         '--inline-suppr',
         '--error-exitcode=1',
         'whole-program/odr1.cpp',
@@ -177,7 +174,6 @@ def __test_suppress_inline_project(tmpdir, extra_args):
         '-q',
         '--template=simple',
         '--enable=information,style',
-        '--disable=missingInclude',  # TODO: remove
         '--inline-suppr',
         '--error-exitcode=1',
         '--project={}'.format(compile_db)
@@ -220,7 +216,6 @@ def __test_checkclass(extra_args):
         '-q',
         '--template=simple',
         '--enable=information,style',
-        '--disable=missingInclude',  # TODO: remove
         '--error-exitcode=1',
         'whole-program/odr1.cpp',
         'whole-program/odr2.cpp'
@@ -265,7 +260,6 @@ def __test_checkclass_project(tmpdir, extra_args):
         '-q',
         '--template=simple',
         '--enable=information,style',
-        '--disable=missingInclude',  # TODO: remove
         '--error-exitcode=1',
         '--project={}'.format(compile_db)
     ]

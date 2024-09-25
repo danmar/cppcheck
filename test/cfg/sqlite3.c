@@ -2,7 +2,7 @@
 // Test library configuration for sqlite3.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=sqlite3 --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/sqlite3.c
+// $ cppcheck --check-library --library=sqlite3 --enable=style,information --inconclusive --error-exitcode=1 --inline-suppr test/cfg/sqlite3.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //

@@ -35,7 +35,6 @@ CPPCHECK_OPT=(
     "--force"
     "--check-level=exhaustive"
     "--error-exitcode=-1"
-    "--disable=missingInclude"
     "--inline-suppr"
     "--template=\"{file}:{line}:{severity}:{id}:{message}\""
     "--debug-warnings"

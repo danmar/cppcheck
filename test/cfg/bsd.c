@@ -1,7 +1,7 @@
 // Test library configuration for bsd.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=bsd --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/bsd.c
+// $ cppcheck --check-library --library=bsd --enable=style,information --inconclusive --error-exitcode=1 --inline-suppr test/cfg/bsd.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //

@@ -2,7 +2,7 @@
 // Test library configuration for emscripten.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=emscripten --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/emscripten.cpp
+// $ cppcheck --check-library --library=emscripten --enable=style,information --inconclusive --error-exitcode=1 --inline-suppr test/cfg/emscripten.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //

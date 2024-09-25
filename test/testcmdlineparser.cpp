@@ -876,8 +876,7 @@ private:
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->severity.isEnabled(Severity::error));
         ASSERT(settings->severity.isEnabled(Severity::information));
-        ASSERT(settings->checks.isEnabled(Checks::missingInclude));
-        ASSERT_EQUALS("cppcheck: '--enable=information' will no longer implicitly enable 'missingInclude' starting with 2.16. Please enable it explicitly if you require it.\n", logger->str());
+        ASSERT(!settings->checks.isEnabled(Checks::missingInclude));
     }
 
     void enabledUnusedFunction() {

@@ -2,7 +2,7 @@
 // Test library configuration for openssl.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=openssl --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/openssl.c
+// $ cppcheck --check-library --library=openssl --enable=style,information --inconclusive --error-exitcode=1 --inline-suppr test/cfg/openssl.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //

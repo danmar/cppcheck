@@ -2,7 +2,7 @@
 // Test library configuration for gtk.cfg
 //
 // Usage:
-// $ cppcheck --check-library --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr --library=gtk test/cfg/gtk.c
+// $ cppcheck --check-library --enable=style,information --inconclusive --error-exitcode=1 --inline-suppr --library=gtk test/cfg/gtk.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
