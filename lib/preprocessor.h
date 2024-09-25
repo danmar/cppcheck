@@ -105,15 +105,6 @@ class CPPCHECKLIB WARN_UNUSED Preprocessor {
     friend class TestUnusedVar;
 
 public:
-
-    /**
-     * Include file types.
-     */
-    enum HeaderTypes : std::uint8_t {
-        UserHeader = 1,
-        SystemHeader
-    };
-
     /** character that is inserted in expanded macros */
     static char macroChar;
 
@@ -127,8 +118,6 @@ public:
     std::set<std::string> getConfigs(const simplecpp::TokenList &tokens) const;
 
     std::vector<RemarkComment> getRemarkComments(const simplecpp::TokenList &tokens) const;
-
-    void handleErrors(const simplecpp::OutputList &outputList, bool throwError);
 
     bool loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files);
 
@@ -158,12 +147,22 @@ public:
      */
     void dump(std::ostream &out) const;
 
-    void reportOutput(const simplecpp::OutputList &outputList, bool showerror);
-
     static bool hasErrors(const simplecpp::Output &output);
 
 private:
+    void handleErrors(const simplecpp::OutputList &outputList, bool throwError);
+
+    void reportOutput(const simplecpp::OutputList &outputList, bool showerror);
+
     static void simplifyPragmaAsmPrivate(simplecpp::TokenList *tokenList);
+
+    /**
+     * Include file types.
+     */
+    enum HeaderTypes : std::uint8_t {
+        UserHeader = 1,
+        SystemHeader
+    };
 
     void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType);
     void error(const std::string &filename, unsigned int linenr, const std::string &msg);
