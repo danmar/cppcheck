@@ -105,15 +105,6 @@ class CPPCHECKLIB WARN_UNUSED Preprocessor {
     friend class TestUnusedVar;
 
 public:
-
-    /**
-     * Include file types.
-     */
-    enum HeaderTypes : std::uint8_t {
-        UserHeader = 1,
-        SystemHeader
-    };
-
     /** character that is inserted in expanded macros */
     static char macroChar;
 
@@ -128,13 +119,11 @@ public:
 
     std::vector<RemarkComment> getRemarkComments(const simplecpp::TokenList &tokens) const;
 
-    void handleErrors(const simplecpp::OutputList &outputList, bool throwError);
-
     bool loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files);
 
-    void removeComments();
+    void removeComments(simplecpp::TokenList &tokens);
 
-    void setPlatformInfo(simplecpp::TokenList *tokens) const;
+    static void setPlatformInfo(simplecpp::TokenList &tokens, const Settings& settings);
 
     simplecpp::TokenList preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool throwError = false);
 
@@ -149,7 +138,7 @@ public:
      */
     std::size_t calculateHash(const simplecpp::TokenList &tokens1, const std::string &toolinfo) const;
 
-    void simplifyPragmaAsm(simplecpp::TokenList *tokenList) const;
+    void simplifyPragmaAsm(simplecpp::TokenList &tokenList) const;
 
     static void getErrorMessages(ErrorLogger &errorLogger, const Settings &settings);
 
@@ -158,12 +147,22 @@ public:
      */
     void dump(std::ostream &out) const;
 
-    void reportOutput(const simplecpp::OutputList &outputList, bool showerror);
-
     static bool hasErrors(const simplecpp::Output &output);
 
 private:
-    static void simplifyPragmaAsmPrivate(simplecpp::TokenList *tokenList);
+    void handleErrors(const simplecpp::OutputList &outputList, bool throwError);
+
+    void reportOutput(const simplecpp::OutputList &outputList, bool showerror);
+
+    static void simplifyPragmaAsmPrivate(simplecpp::TokenList &tokenList);
+
+    /**
+     * Include file types.
+     */
+    enum HeaderTypes : std::uint8_t {
+        UserHeader = 1,
+        SystemHeader
+    };
 
     void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType);
     void error(const std::string &filename, unsigned int linenr, const std::string &msg);

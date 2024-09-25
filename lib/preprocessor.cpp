@@ -777,32 +777,33 @@ bool Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<
     return !hasErrors(outputList);
 }
 
-void Preprocessor::removeComments()
+void Preprocessor::removeComments(simplecpp::TokenList &tokens)
 {
+    tokens.removeComments();
     for (std::pair<const std::string, simplecpp::TokenList*>& tokenList : mTokenLists) {
         if (tokenList.second)
             tokenList.second->removeComments();
     }
 }
 
-void Preprocessor::setPlatformInfo(simplecpp::TokenList *tokens) const
+void Preprocessor::setPlatformInfo(simplecpp::TokenList &tokens, const Settings& settings)
 {
-    tokens->sizeOfType["bool"]          = mSettings.platform.sizeof_bool;
-    tokens->sizeOfType["short"]         = mSettings.platform.sizeof_short;
-    tokens->sizeOfType["int"]           = mSettings.platform.sizeof_int;
-    tokens->sizeOfType["long"]          = mSettings.platform.sizeof_long;
-    tokens->sizeOfType["long long"]     = mSettings.platform.sizeof_long_long;
-    tokens->sizeOfType["float"]         = mSettings.platform.sizeof_float;
-    tokens->sizeOfType["double"]        = mSettings.platform.sizeof_double;
-    tokens->sizeOfType["long double"]   = mSettings.platform.sizeof_long_double;
-    tokens->sizeOfType["bool *"]        = mSettings.platform.sizeof_pointer;
-    tokens->sizeOfType["short *"]       = mSettings.platform.sizeof_pointer;
-    tokens->sizeOfType["int *"]         = mSettings.platform.sizeof_pointer;
-    tokens->sizeOfType["long *"]        = mSettings.platform.sizeof_pointer;
-    tokens->sizeOfType["long long *"]   = mSettings.platform.sizeof_pointer;
-    tokens->sizeOfType["float *"]       = mSettings.platform.sizeof_pointer;
-    tokens->sizeOfType["double *"]      = mSettings.platform.sizeof_pointer;
-    tokens->sizeOfType["long double *"] = mSettings.platform.sizeof_pointer;
+    tokens.sizeOfType["bool"]          = settings.platform.sizeof_bool;
+    tokens.sizeOfType["short"]         = settings.platform.sizeof_short;
+    tokens.sizeOfType["int"]           = settings.platform.sizeof_int;
+    tokens.sizeOfType["long"]          = settings.platform.sizeof_long;
+    tokens.sizeOfType["long long"]     = settings.platform.sizeof_long_long;
+    tokens.sizeOfType["float"]         = settings.platform.sizeof_float;
+    tokens.sizeOfType["double"]        = settings.platform.sizeof_double;
+    tokens.sizeOfType["long double"]   = settings.platform.sizeof_long_double;
+    tokens.sizeOfType["bool *"]        = settings.platform.sizeof_pointer;
+    tokens.sizeOfType["short *"]       = settings.platform.sizeof_pointer;
+    tokens.sizeOfType["int *"]         = settings.platform.sizeof_pointer;
+    tokens.sizeOfType["long *"]        = settings.platform.sizeof_pointer;
+    tokens.sizeOfType["long long *"]   = settings.platform.sizeof_pointer;
+    tokens.sizeOfType["float *"]       = settings.platform.sizeof_pointer;
+    tokens.sizeOfType["double *"]      = settings.platform.sizeof_pointer;
+    tokens.sizeOfType["long double *"] = settings.platform.sizeof_pointer;
 }
 
 simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool throwError)
@@ -986,18 +987,18 @@ std::size_t Preprocessor::calculateHash(const simplecpp::TokenList &tokens1, con
     return (std::hash<std::string>{})(hashData);
 }
 
-void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList *tokenList) const
+void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList &tokenList) const
 {
     Preprocessor::simplifyPragmaAsmPrivate(tokenList);
     for (const std::pair<const std::string, simplecpp::TokenList*>& list : mTokenLists) {
-        Preprocessor::simplifyPragmaAsmPrivate(list.second);
+        Preprocessor::simplifyPragmaAsmPrivate(*list.second);
     }
 }
 
-void Preprocessor::simplifyPragmaAsmPrivate(simplecpp::TokenList *tokenList)
+void Preprocessor::simplifyPragmaAsmPrivate(simplecpp::TokenList &tokenList)
 {
     // assembler code..
-    for (simplecpp::Token *tok = tokenList->front(); tok; tok = tok->next) {
+    for (simplecpp::Token *tok = tokenList.front(); tok; tok = tok->next) {
         if (tok->op != '#')
             continue;
         if (sameline(tok, tok->previousSkipComments()))
@@ -1032,7 +1033,7 @@ void Preprocessor::simplifyPragmaAsmPrivate(simplecpp::TokenList *tokenList)
         const_cast<simplecpp::Token *>(tok3)->setstr(")");
         const_cast<simplecpp::Token *>(tok4)->setstr(";");
         while (tok4->next != endasm)
-            tokenList->deleteToken(tok4->next);
+            tokenList.deleteToken(tok4->next);
     }
 }
 
