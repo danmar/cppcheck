@@ -185,12 +185,10 @@ def test_cmd_def(tmp_path):
     __test_cmd(tmp_path, 'test.cpp',['-DDEF'], '-x c++ -DDEF=1')
 
 
-@pytest.mark.xfail(strict=True)
 def test_cmd_enforce_c(tmp_path):  # #13128
     __test_cmd(tmp_path, 'test.cpp',['-x', 'c'], '-x c')
 
 
-@pytest.mark.xfail(strict=True)
 def test_cmd_enforce_cpp(tmp_path):  # #13128
     __test_cmd(tmp_path, 'test.c',['-x', 'c++'], '-x c++')
 
