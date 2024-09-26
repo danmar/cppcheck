@@ -35,7 +35,6 @@
 #include <list>
 #include <map>
 #include <set>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -48,11 +47,11 @@ public:
     TestPreprocessor() : TestFixture("TestPreprocessor") {}
 
 private:
-    std::string expandMacros(const char code[]) {
-        std::istringstream istr(code);
+    template<size_t size>
+    std::string expandMacros(const char (&code)[size]) {
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
-        const simplecpp::TokenList tokens1 = simplecpp::TokenList(istr, files, "file.cpp", &outputList);
+        const simplecpp::TokenList tokens1 = simplecpp::TokenList(code, size-1, files, "file.cpp", &outputList);
         const Settings settings;
         Preprocessor p(settings, *this);
         simplecpp::TokenList tokens2 = p.preprocess(tokens1, "", files, true);
@@ -60,11 +59,11 @@ private:
         return tokens2.stringify();
     }
 
-    std::vector<RemarkComment> getRemarkComments(const char code[])
+    template<size_t size>
+    std::vector<RemarkComment> getRemarkComments(const char (&code)[size])
     {
         std::vector<std::string> files{"test.cpp"};
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
+        const simplecpp::TokenList tokens1(code, size-1, files, files[0]);
 
         const Settings settings;
 
@@ -274,7 +273,8 @@ private:
         TEST_CASE(standard);
     }
 
-    std::string getConfigsStr(const char filedata[], const char *arg = nullptr) {
+    template<size_t size>
+    std::string getConfigsStr(const char (&code)[size], const char *arg = nullptr) {
         Settings settings;
         if (arg && std::strncmp(arg,"-D",2)==0)
             settings.userDefines = arg + 2;
@@ -282,8 +282,7 @@ private:
             settings.userUndefs.insert(arg+2);
         Preprocessor preprocessor(settings, *this);
         std::vector<std::string> files;
-        std::istringstream istr(filedata);
-        simplecpp::TokenList tokens(istr,files);
+        simplecpp::TokenList tokens(code, size-1,files);
         tokens.removeComments();
         const std::set<std::string> configs = preprocessor.getConfigs(tokens);
         std::string ret;
@@ -292,12 +291,12 @@ private:
         return ret;
     }
 
-    std::size_t getHash(const char filedata[]) {
+    template<size_t size>
+    std::size_t getHash(const char (&code)[size]) {
         Settings settings;
         Preprocessor preprocessor(settings, *this);
         std::vector<std::string> files;
-        std::istringstream istr(filedata);
-        simplecpp::TokenList tokens(istr,files);
+        simplecpp::TokenList tokens(code,size-1,files);
         tokens.removeComments();
         return preprocessor.calculateHash(tokens, "");
     }
@@ -450,9 +449,8 @@ private:
                                 "#else\n"
                                 "2\n"
                                 "#endif\n";
-        std::istringstream istr(filedata);
         std::vector<std::string> files;
-        simplecpp::TokenList tokens(istr, files, "test.c");
+        simplecpp::TokenList tokens(filedata, sizeof(filedata), files, "test.c");
 
         // preprocess code with unix32 platform..
         {
@@ -775,14 +773,14 @@ private:
     }
 
     void if_macro_eq_macro() {
-        const char *code = "#define A B\n"
-                           "#define B 1\n"
-                           "#define C 1\n"
-                           "#if A == C\n"
-                           "Wilma\n"
-                           "#else\n"
-                           "Betty\n"
-                           "#endif\n";
+        const char code[] = "#define A B\n"
+                            "#define B 1\n"
+                            "#define C 1\n"
+                            "#if A == C\n"
+                            "Wilma\n"
+                            "#else\n"
+                            "Betty\n"
+                            "#endif\n";
         ASSERT_EQUALS("\n", getConfigsStr(code));
     }
 
