@@ -1587,7 +1587,8 @@ namespace {
                 !((tok->astParent()->astParent() && tok->astParent()->isAssignmentOp() && tok->astParent()->astParent()->isAssignmentOp()) ||
                   isLambdaCaptureList(op2) ||
                   (op2->str() == "(" && isLambdaCaptureList(op2->astOperand1())) ||
-                  Token::simpleMatch(op2, "{ }")))
+                  Token::simpleMatch(op2, "{ }") ||
+                  (Token::simpleMatch(tok->astParent(), "[") && op2->str() == "{")))
                 break;
 
             if (tok->astParent()->isExpandedMacro() || Token::Match(tok->astParent(), "++|--")) {

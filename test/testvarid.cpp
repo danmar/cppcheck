@@ -4223,6 +4223,14 @@ private:
                                  "4: h (@UNIQUE g (@UNIQUE { } ) .@UNIQUE get (@UNIQUE ) ) ;\n"
                                  "5: }\n";
         ASSERT_EQUALS(expected4, tokenizeExpr(code4));
+
+        const char code5[] = "int* g(std::map<int, std::unique_ptr<int>>& m) {\n"
+                             "    return m[{0}].get();\n"
+                             "}\n";
+        const char expected5[] = "1: int * g ( std :: map < int , std :: unique_ptr < int > > & m ) {\n"
+                                 "2: return m@1 [@UNIQUE { 0 } ] .@UNIQUE get (@UNIQUE ) ;\n"
+                                 "3: }\n";
+        ASSERT_EQUALS(expected5, tokenizeExpr(code5));
     }
 
     void exprid9()
