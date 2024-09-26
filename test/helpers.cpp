@@ -164,9 +164,23 @@ std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& s
 
 void PreprocessorHelper::preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger)
 {
-    preprocess(code, files, tokenizer, errorlogger, simplecpp::DUI());
+    // TODO: make sure the given Tokenizer has not been used yet
+
+    // TODO: get rid of stream
+    std::istringstream istr(code);
+    const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+    Preprocessor preprocessor(tokenizer.getSettings(), errorlogger);
+    simplecpp::TokenList tokens2 = preprocessor.preprocess(tokens1, "", files, true);
+
+    // Tokenizer..
+    tokenizer.list.createTokens(std::move(tokens2));
+
+    std::list<Directive> directives = preprocessor.createDirectives(tokens1);
+    tokenizer.setDirectives(std::move(directives));
 }
 
+// TODO: get rid of this
 void PreprocessorHelper::preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger, const simplecpp::DUI& dui)
 {
     // TODO: make sure the given Tokenizer has not been used yet
