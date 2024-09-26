@@ -35,7 +35,6 @@
 #include <list>
 #include <map>
 #include <set>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -50,18 +49,19 @@ public:
     TestPreprocessor() : TestFixture("TestPreprocessor") {}
 
 private:
-    std::string expandMacros(const char code[], ErrorLogger &errorLogger) const {
-        std::istringstream istr(code);
+    template<size_t size>
+    std::string expandMacros(const char (&code)[size], ErrorLogger &errorLogger) const {
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
-        const simplecpp::TokenList tokens1 = simplecpp::TokenList(istr, files, "file.cpp", &outputList);
+        const simplecpp::TokenList tokens1 = simplecpp::TokenList(code, size-1, files, "file.cpp", &outputList);
         Preprocessor p(settingsDefault, errorLogger, Path::identify(tokens1.getFiles()[0], false));
         simplecpp::TokenList tokens2 = p.preprocess(tokens1, "", files, true);
         p.reportOutput(outputList, true);
         return tokens2.stringify();
     }
 
-    static void preprocess(const char code[], std::vector<std::string> &files, const std::string& file0, TokenList& tokenlist, const simplecpp::DUI& dui)
+    template<size_t size>
+    static void preprocess(const char (&code)[size], std::vector<std::string> &files, const std::string& file0, TokenList& tokenlist, const simplecpp::DUI& dui)
     {
         if (!files.empty())
             throw std::runtime_error("file list not empty");
@@ -69,8 +69,7 @@ private:
         if (tokenlist.front())
             throw std::runtime_error("token list not empty");
 
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, file0);
+        const simplecpp::TokenList tokens1(code, size-1, files, file0);
 
         // Preprocess..
         simplecpp::TokenList tokens2(files);
@@ -82,11 +81,11 @@ private:
         tokenlist.createTokens(std::move(tokens2));
     }
 
-    std::vector<RemarkComment> getRemarkComments(const char code[], ErrorLogger& errorLogger) const
+    template<size_t size>
+    std::vector<RemarkComment> getRemarkComments(const char (&code)[size], ErrorLogger& errorLogger) const
     {
         std::vector<std::string> files;
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, "test.cpp");
+        const simplecpp::TokenList tokens1(code, size-1, files, "test.cpp");
 
         const Preprocessor preprocessor(settingsDefault, errorLogger, Path::identify(tokens1.getFiles()[0], false));
         return preprocessor.getRemarkComments(tokens1);
@@ -301,16 +300,16 @@ private:
         TEST_CASE(standard);
     }
 
-    std::string getConfigsStr(const char filedata[], const char *arg = nullptr) {
+    template<size_t size>
+    std::string getConfigsStr(const char (&code)[size], const char *arg = nullptr) {
         Settings settings;
         if (arg && std::strncmp(arg,"-D",2)==0)
             settings.userDefines = arg + 2;
         if (arg && std::strncmp(arg,"-U",2)==0)
             settings.userUndefs.insert(arg+2);
         std::vector<std::string> files;
-        std::istringstream istr(filedata);
         // TODO: this adds an empty filename
-        simplecpp::TokenList tokens(istr,files);
+        simplecpp::TokenList tokens(code, size-1,files);
         tokens.removeComments();
         Preprocessor preprocessor(settings, *this, Standards::Language::C); // TODO: do we need to consider #file?
         const std::set<std::string> configs = preprocessor.getConfigs(tokens);
@@ -320,11 +319,11 @@ private:
         return ret;
     }
 
-    std::size_t getHash(const char filedata[]) {
+    template<size_t size>
+    std::size_t getHash(const char (&code)[size]) {
         std::vector<std::string> files;
-        std::istringstream istr(filedata);
         // TODO: this adds an empty filename
-        simplecpp::TokenList tokens(istr,files);
+        simplecpp::TokenList tokens(code,size-1,files);
         tokens.removeComments();
         Preprocessor preprocessor(settingsDefault, *this, Standards::Language::C); // TODO: do we need to consider #file?
         return preprocessor.calculateHash(tokens, "");
@@ -478,9 +477,8 @@ private:
                                 "#else\n"
                                 "2\n"
                                 "#endif\n";
-        std::istringstream istr(filedata);
         std::vector<std::string> files;
-        simplecpp::TokenList tokens(istr, files, "test.c");
+        simplecpp::TokenList tokens(filedata, sizeof(filedata), files, "test.c");
 
         // preprocess code with unix32 platform..
         {
@@ -803,14 +801,14 @@ private:
     }
 
     void if_macro_eq_macro() {
-        const char *code = "#define A B\n"
-                           "#define B 1\n"
-                           "#define C 1\n"
-                           "#if A == C\n"
-                           "Wilma\n"
-                           "#else\n"
-                           "Betty\n"
-                           "#endif\n";
+        const char code[] = "#define A B\n"
+                            "#define B 1\n"
+                            "#define C 1\n"
+                            "#if A == C\n"
+                            "Wilma\n"
+                            "#else\n"
+                            "Betty\n"
+                            "#endif\n";
         ASSERT_EQUALS("\n", getConfigsStr(code));
     }
 
