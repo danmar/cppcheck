@@ -105,10 +105,12 @@
     <ClCompile Include="vf_iterators.cpp" />
     <ClCompile Include="vf_number.cpp" />
     <ClCompile Include="vf_pointeralias.cpp" />
+    <ClCompile Include="vf_reverse.cpp" />
     <ClCompile Include="vf_rightshift.cpp" />
     <ClCompile Include="vf_sameexpressions.cpp" />
     <ClCompile Include="vf_settokenvalue.cpp" />
     <ClCompile Include="vf_string.cpp" />
+    <ClCompile Include="vf_switchvariable.cpp" />
     <ClCompile Include="vf_symbolicinfer.cpp" />
     <ClCompile Include="vf_unknownfunctionreturn.cpp" />
     <ClCompile Include="vfvalue.cpp" />
@@ -211,10 +213,12 @@
     <ClInclude Include="vf_iterators.h" />
     <ClInclude Include="vf_number.h" />
     <ClInclude Include="vf_pointeralias.h" />
+    <ClInclude Include="vf_reverse.h" />
     <ClInclude Include="vf_rightshift.h" />
     <ClInclude Include="vf_sameexpressions.h" />
     <ClInclude Include="vf_settokenvalue.h" />
     <ClInclude Include="vf_string.h" />
+    <ClInclude Include="vf_switchvariable.h" />
     <ClInclude Include="vf_symbolicinfer.h" />
     <ClInclude Include="vf_unknownfunctionreturn.h" />
     <ClInclude Include="vfvalue.h" />
