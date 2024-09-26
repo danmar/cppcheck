@@ -38,6 +38,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstring>
 #include <functional>
 #include <initializer_list>
 #include <iterator>
@@ -107,6 +108,21 @@ static int getArgumentPos(const Token* ftok, const Token* tokToFind){
     return findArgumentPos(startTok, tokToFind);
 }
 
+template<class T, class OuputIterator, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+static void astFlattenCopy(T* tok, const char* op, OuputIterator out, nonneg int depth = 100)
+{
+    --depth;
+    if (!tok || depth < 0)
+        return;
+    if (strcmp(tok->str().c_str(), op) == 0) {
+        astFlattenCopy(tok->astOperand1(), op, out, depth);
+        astFlattenCopy(tok->astOperand2(), op, out, depth);
+    } else {
+        *out = tok;
+        ++out;
+    }
+}
+
 std::vector<const Token*> astFlatten(const Token* tok, const char* op)
 {
     std::vector<const Token*> result;
@@ -126,7 +142,7 @@ nonneg int astCount(const Token* tok, const char* op, int depth)
     --depth;
     if (!tok || depth < 0)
         return 0;
-    if (tok->str() == op)
+    if (strcmp(tok->str().c_str(), op) == 0)
         return astCount(tok->astOperand1(), op, depth) + astCount(tok->astOperand2(), op, depth);
     return 1;
 }
