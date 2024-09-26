@@ -60,6 +60,18 @@ private:
         return tokens2.stringify();
     }
 
+    static std::vector<RemarkComment> getRemarkComments(const char code[], ErrorLogger& errorLogger)
+    {
+        std::vector<std::string> files{"test.cpp"};
+        std::istringstream istr(code);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        const Settings settings;
+
+        const Preprocessor preprocessor(settings, errorLogger);
+        return preprocessor.getRemarkComments(tokens1);
+    }
+
     const Settings settings0 = settingsBuilder().severity(Severity::information).build();
 
     void run() override {
@@ -1917,7 +1929,7 @@ private:
     void remarkComment1() {
         const char code[] = "// REMARK: assignment with 1\n"
                             "x=1;\n";
-        const auto remarkComments = PreprocessorHelper::getRemarkComments(code, *this);
+        const auto remarkComments = getRemarkComments(code, *this);
         ASSERT_EQUALS(1, remarkComments.size());
         ASSERT_EQUALS(2, remarkComments[0].lineNumber);
         ASSERT_EQUALS("assignment with 1", remarkComments[0].str);
@@ -1925,7 +1937,7 @@ private:
 
     void remarkComment2() {
         const char code[] = "x=1; ///REMARK assignment with 1\n";
-        const auto remarkComments = PreprocessorHelper::getRemarkComments(code, *this);
+        const auto remarkComments = getRemarkComments(code, *this);
         ASSERT_EQUALS(1, remarkComments.size());
         ASSERT_EQUALS(1, remarkComments[0].lineNumber);
         ASSERT_EQUALS("assignment with 1", remarkComments[0].str);
@@ -1934,7 +1946,7 @@ private:
     void remarkComment3() {
         const char code[] = "/**   REMARK: assignment with 1 */\n"
                             "x=1;\n";
-        const auto remarkComments = PreprocessorHelper::getRemarkComments(code, *this);
+        const auto remarkComments = getRemarkComments(code, *this);
         ASSERT_EQUALS(1, remarkComments.size());
         ASSERT_EQUALS(2, remarkComments[0].lineNumber);
         ASSERT_EQUALS("assignment with 1 ", remarkComments[0].str);
