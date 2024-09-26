@@ -5698,7 +5698,7 @@ static bool hasMatchingConstructor(const Scope* classScope, const ValueType* arg
     });
 }
 
-const Function* Scope::findFunction(const Token *tok, bool requireConst) const
+const Function* Scope::findFunction(const Token *tok, bool requireConst, Reference ref) const
 {
     const bool isCall = Token::Match(tok->next(), "(|{");
 
@@ -5713,6 +5713,8 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
         auto range = scope->functionMap.equal_range(tok->str());
         for (std::multimap<std::string, const Function *>::const_iterator it = range.first; it != range.second; ++it) {
             const Function *func = it->second;
+            if (ref == Reference::LValue && func->hasRvalRefQualifier())
+                continue;
             if (!isCall || args == func->argCount() ||
                 (func->isVariadic() && args >= (func->minArgCount() - 1)) ||
                 (args < func->argCount() && args >= func->minArgCount())) {
@@ -6066,7 +6068,7 @@ const Function* SymbolDatabase::findFunction(const Token* const tok) const
     else if (Token::Match(tok->tokAt(-2), "!!this .")) {
         const Token* tok1 = tok->previous()->astOperand1();
         if (tok1 && tok1->valueType() && tok1->valueType()->typeScope)
-            return tok1->valueType()->typeScope->findFunction(tok, tok1->valueType()->constness == 1);
+            return tok1->valueType()->typeScope->findFunction(tok, tok1->valueType()->constness == 1, tok1->valueType()->reference);
         if (tok1 && Token::Match(tok1->previous(), "%name% (") && tok1->previous()->function() &&
             tok1->previous()->function()->retDef) {
             ValueType vt = ValueType::parseDecl(tok1->previous()->function()->retDef, mSettings);

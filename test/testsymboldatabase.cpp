@@ -519,6 +519,7 @@ private:
         TEST_CASE(findFunction53);
         TEST_CASE(findFunction54);
         TEST_CASE(findFunction55); // #31004
+        TEST_CASE(findFunctionRef1);
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -8327,6 +8328,25 @@ private:
         const Token* f = Token::findsimplematch(tokenizer.tokens(), "f ( args [ 0 ] )");
         ASSERT(f && f->function());
         ASSERT(Token::simpleMatch(f->function()->tokenDef, "f ( const Token * ptr ) ;"));
+    }
+
+    void findFunctionRef1() {
+        GET_SYMBOL_DB("struct X {\n"
+                      "    const std::vector<int> getInts() const & { return mInts; }\n"
+                      "    std::vector<int> getInts() && { return mInts; }\n"
+                      "    std::vector<int> mInts;\n"
+                      "}\n"
+                      "\n"
+                      "void foo(X &x) {\n"
+                      "    x.getInts();\n"
+                      "}\n");
+        const Token* x = Token::findsimplematch(tokenizer.tokens(), "x . getInts ( ) ;");
+        ASSERT(x);
+        const Token* f = x->tokAt(2);
+        ASSERT(f);
+        ASSERT(f->function());
+        ASSERT(f->function()->tokenDef);
+        ASSERT_EQUALS(2, f->function()->tokenDef->linenr());
     }
 
     void findFunctionContainer() {

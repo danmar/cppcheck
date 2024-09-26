@@ -49,6 +49,12 @@ class SymbolDatabase;
 class Tokenizer;
 class ValueType;
 
+enum class Reference : std::uint8_t {
+    None,
+    LValue,
+    RValue
+};
+
 /**
  * @brief Access control enumerations.
  */
@@ -1128,7 +1134,7 @@ public:
      * @param requireConst if const refers to a const variable only const methods should be matched
      * @return pointer to function if found or NULL if not found
      */
-    const Function *findFunction(const Token *tok, bool requireConst=false) const;
+    const Function *findFunction(const Token *tok, bool requireConst=false, Reference ref=Reference::None) const;
 
     const Scope *findRecordInNestedList(const std::string & name, bool isC = false) const;
     Scope *findRecordInNestedList(const std::string & name, bool isC = false);
@@ -1197,12 +1203,6 @@ private:
 
     /** @brief initialize varlist */
     void getVariableList(const Settings& settings, const Token *start, const Token *end);
-};
-
-enum class Reference : std::uint8_t {
-    None,
-    LValue,
-    RValue
 };
 
 /** Value type */
