@@ -113,6 +113,7 @@
     <ClCompile Include="vf_string.cpp" />
     <ClCompile Include="vf_switchvariable.cpp" />
     <ClCompile Include="vf_symbolicinfer.cpp" />
+    <ClCompile Include="vf_symbolicoperators.cpp" />
     <ClCompile Include="vf_unknownfunctionreturn.cpp" />
     <ClCompile Include="vfvalue.cpp" />
   </ItemGroup>
@@ -222,6 +223,7 @@
     <ClInclude Include="vf_string.h" />
     <ClInclude Include="vf_switchvariable.h" />
     <ClInclude Include="vf_symbolicinfer.h" />
+    <ClInclude Include="vf_symbolicoperators.h" />
     <ClInclude Include="vf_unknownfunctionreturn.h" />
     <ClInclude Include="vfvalue.h" />
     <ClInclude Include="xml.h" />

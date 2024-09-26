@@ -106,6 +106,7 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/vf_string.h \
            $${PWD}/vf_switchvariable.h \
            $${PWD}/vf_symbolicinfer.h \
+           $${PWD}/vf_symbolicoperators.h \
            $${PWD}/vf_unknownfunctionreturn.h \
            $${PWD}/vfvalue.h \
            $${PWD}/xml.h
@@ -198,5 +199,6 @@ SOURCES += $${PWD}/valueflow.cpp \
            $${PWD}/vf_string.cpp \
            $${PWD}/vf_switchvariable.cpp \
            $${PWD}/vf_symbolicinfer.cpp \
+           $${PWD}/vf_symbolicoperators.cpp \
            $${PWD}/vf_unknownfunctionreturn.cpp \
            $${PWD}/vfvalue.cpp

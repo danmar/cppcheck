@@ -59,6 +59,10 @@ namespace ValueFlow
     bool isBreakOrContinueScope(const Token* endToken);
 
     const Scope* getLoopScope(const Token* tok);
+
+    void setSymbolic(Value& value, const Token* tok);
+
+    Value makeSymbolic(const Token* tok, MathLib::bigint delta = 0);
 }
 
 #endif // vfCommonH
