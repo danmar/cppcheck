@@ -245,7 +245,7 @@ def test_addon_builddir_use_ctuinfo(tmp_path):
     assert 'misra-c2012-5.8' not in stderr
 
 @pytest.mark.parametrize("builddir", (False,True))
-def test_addon_rerun(tmp_path, builddir):
+def test_addon_no_artifacts(tmp_path, builddir):
     """Test that there are no artifacts left after analysis"""
     shutil.copyfile(os.path.join(__script_dir, 'whole-program', 'whole1.c'), tmp_path / 'whole1.c')
     shutil.copyfile(os.path.join(__script_dir, 'whole-program', 'whole2.c'), tmp_path / 'whole2.c')
