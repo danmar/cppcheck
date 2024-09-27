@@ -8281,8 +8281,15 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
     if (pvt && funcVar->isArray() && !(funcVar->isStlType() && Token::simpleMatch(funcVar->typeStartToken(), "std :: array"))) { // std::array doesn't decay to a pointer
         vt = *pvt;
         if (vt.pointer == 0) // don't bump array of pointers
-            ++vt.pointer;
+            vt.pointer = funcVar->dimensions().size();
         pvt = &vt;
+    }
+    ValueType cvt;
+    if (call && callVar && callVar->isArray() && !(callVar->isStlType() && Token::simpleMatch(callVar->typeStartToken(), "std :: array"))) {
+        cvt = *call;
+        if (cvt.pointer == 0) // don't bump array of pointers
+            cvt.pointer = callVar->dimensions().size();
+        call = &cvt;
     }
     const ValueType::MatchResult res = ValueType::matchParameter(call, pvt);
     if (callVar && ((res == ValueType::MatchResult::SAME && call->container) || res == ValueType::MatchResult::UNKNOWN)) {
