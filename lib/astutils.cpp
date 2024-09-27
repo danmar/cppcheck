@@ -3672,18 +3672,13 @@ static std::set<std::string> getSwitchExprs(const Token *startbrace, bool &hasDe
     if (!endbrace)
         return {};
 
-    int braces = 0;
     hasDefault = false;
     for (const Token *tok = startbrace->next(); tok && tok != endbrace; tok = tok->next()) {
         if (Token::simpleMatch(tok, "{")) {
-            braces++;
+            tok = tok->link();
             continue;
         }
-        if (Token::simpleMatch(tok, "}")) {
-            braces--;
-            continue;
-        }
-        if (Token::simpleMatch(tok, "case") && braces == 0) {
+        if (Token::simpleMatch(tok, "case")) {
             const Token *exprtok = tok->astOperand1();
             if (!exprtok)
                 continue;
@@ -3692,7 +3687,7 @@ static std::set<std::string> getSwitchExprs(const Token *startbrace, bool &hasDe
             exprs.insert(exprtok->str());
             continue;
         }
-        if (Token::simpleMatch(tok, "default") && braces == 0) {
+        if (Token::simpleMatch(tok, "default")) {
             hasDefault = true;
             continue;
         }
