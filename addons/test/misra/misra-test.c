@@ -1231,7 +1231,34 @@ static void misra_14_1(void) {
   } while ( a < 10.0f );  // no-warning
 
 }
+//13143
+static bool misra_14_1_is_increasing (const double* const x, const size_t n)
+{
+    double last = -INFINITY;
+    size_t i = ((size_t) 0);
+    while ((i < n) && isfinite(x[i]) && (x[i] > last)) { //no-warning for 14_1
+       last = x[i];
+       i++;
+    }
+    return i == n;
+}
 
+static void misra_14_1_compliant1_foo(float x){
+    int i = 0;
+    while(i < x){ // 10.4
+        i += x + x; // 10.3 10.4 no-warning for 14_1
+    }
+}
+
+static void misra_14_1_compliant2_foo(void){
+    int i = 0;
+    float f = 0f;
+    while (f < 10 && i < 10) { //10.4 12.1
+        float f = 0f;
+        f = f + i; // 10.3 10.4 no warning for 14_1
+        i++;
+    }
+}
 static void misra_14_2_init_value(int32_t *var) {
     *var = 0;
 }
