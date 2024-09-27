@@ -894,7 +894,7 @@ void simplecpp::TokenList::readfile(Stream &stream, const std::string &filename,
 
             if (newlines > 0 ) {
                 const Token * const llTok = lastLineTok();
-                if (llTok && llTok->op == '#' && llTok->next && llTok->next->str() == "define" && llTok->next->next) {
+                if (llTok && llTok->op == '#' && llTok->next && ((llTok->next->str() == "define") || (llTok->next->str() == "pragma")) && llTok->next->next) {
                     multiline += newlines;
                     location.adjust(s);
                     continue;
