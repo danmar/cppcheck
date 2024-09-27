@@ -1446,15 +1446,13 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
             ErrorMessage errmsg;
 
             if (obj.count("summary") > 0) {
-                if (obj.count("data") > 0) {
-                    if (!mSettings.buildDir.empty()) {
-                        ctuInfo += res.serialize() + "\n";
-                    } else {
-                        errmsg.severity = Severity::internal;
-                        errmsg.id = "ctuinfo";
-                        errmsg.setmsg(res.serialize());
-                        reportErr(errmsg);
-                    }
+                if (!mSettings.buildDir.empty()) {
+                    ctuInfo += res.serialize() + "\n";
+                } else {
+                    errmsg.severity = Severity::internal;
+                    errmsg.id = "ctuinfo";
+                    errmsg.setmsg(res.serialize());
+                    reportErr(errmsg);
                 }
                 continue;
             }
