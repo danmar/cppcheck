@@ -6992,6 +6992,14 @@ private:
                "    if (s.empty()) {}\n"
                "}";
         ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "s . empty"), 0));
+
+        code = "int f(const std::string& str) {\n"
+               "    std::istringstream iss(str);\n"
+               "    std::vector<std::string> v{ std::istream_iterator<std::string>(iss), {} };\n"
+               "    auto x = v.size();\n"
+               "    return x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 5U, 2));
     }
 
     void valueFlowContainerElement()

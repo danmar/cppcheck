@@ -5277,6 +5277,8 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
                 initList = true;
             else if (args.size() == 1 && valueFlowIsSameContainerType(vt, tok->astOperand2(), settings))
                 initList = false; // copy ctor
+            else if (args.size() == 2 && (!args[0]->valueType() || !args[1]->valueType())) // might be unknown iterators
+                initList = false;
         }
     }
     if (!initList)
