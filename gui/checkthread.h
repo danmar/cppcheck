@@ -62,7 +62,7 @@ public:
      * @param files    All files
      * @param ctuInfo  Ctu info for addons
      */
-    void analyseWholeProgram(const QStringList &files, const QString& ctuInfo);
+    void analyseWholeProgram(const QStringList &files, const std::string& ctuInfo);
 
     void setAddonsAndTools(const QStringList &addonsAndTools) {
         mAddonsAndTools = addonsAndTools;
@@ -144,7 +144,7 @@ private:
 
     QStringList mFiles;
     bool mAnalyseWholeProgram{};
-    QString mCtuInfo;
+    std::string mCtuInfo;
     QStringList mAddonsAndTools;
     QStringList mClangIncludePaths;
     QList<SuppressionList::Suppression> mSuppressions;
