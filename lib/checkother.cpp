@@ -1226,11 +1226,13 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
                             return false;
                     }
                     if (ftok->function()) {
-                        for (int argi = 0; argi < ftok->function()->argCount(); argi++) { // other pointer passed to function?
-                            if (argi == argn) // skip the arg we're checking
-                                continue;
-                            if (ftok->function()->getArgumentVar(argi)->isPointer())
+                        const std::vector<const Token *> argtoks = getArguments(ftok);
+                        int argi = 0;
+                        for (const auto &argtok : argtoks) {
+                            // if theres is another reference argument, assume it depends on the current argument
+                            if (argi != argn && (Token::simpleMatch(argtok, "&") || ftok->function()->getArgumentVar(argi)->isReference()))
                                 return false;
+                            argi++;
                         }
                     }
                 }

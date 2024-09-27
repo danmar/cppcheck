@@ -103,6 +103,7 @@ private:
         TEST_CASE(varScope38);
         TEST_CASE(varScope39);
         TEST_CASE(varScope40);
+        TEST_CASE(varScope41);      // #11845
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1765,6 +1766,41 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) The scope of the variable 'x' can be reduced.\n"
                       "[test.cpp:5]: (style) The scope of the variable 'y' can be reduced.\n",
                       errout_str());
+    }
+
+    void varScope41() {    // #11845
+        check("void get_errmsg(const char **msg, char *buf, size_t bufsiz, int err);\n"
+              "void test(int err)\n"
+              "{\n"
+              "    const char *msg = \"Success\";\n"
+              "    char buf[42];\n"
+              "    if (err != 0)\n"
+              "        get_errmsg(&msg, buf, sizeof(buf), err);\n"
+              "    printf(\"%d: %s\\n\", err, msg);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("void get_errmsg(const char *&msg, char *buf, size_t bufsiz, int err);\n"
+              "void test(int err)\n"
+              "{\n"
+              "    const char *msg = \"Success\";\n"
+              "    char buf[42];\n"
+              "    if (err != 0)\n"
+              "        get_errmsg(msg, buf, sizeof(buf), err);\n"
+              "    printf(\"%d: %s\\n\", err, msg);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("void get_errmsg(char *buf, size_t bufsiz, int err);\n"
+              "void test(int err)\n"
+              "{\n"
+              "    const char *msg = \"Success\";\n"
+              "    char buf[42];\n"
+              "    if (err != 0)\n"
+              "        get_errmsg(buf, sizeof(buf), err);\n"
+              "    printf(\"%d: %s\\n\", err, msg);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) The scope of the variable 'buf' can be reduced.\n", errout_str());
     }
 
 #define checkOldStylePointerCast(...) checkOldStylePointerCast_(__FILE__, __LINE__, __VA_ARGS__)
