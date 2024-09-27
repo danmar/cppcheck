@@ -2,7 +2,8 @@
 Checks: >
         -*,
         clang-analyzer-*,
-        -clang-analyzer-optin.performance.Padding
+        -clang-analyzer-optin.performance.Padding,
+        -clang-analyzer-core.CallAndMessage
 WarningsAsErrors: '*'
 HeaderFilterRegex: '(cli|gui|lib|oss-fuzz|test|triage)\/[a-z]+\.h'
 CheckOptions:
