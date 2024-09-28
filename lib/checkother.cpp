@@ -1135,6 +1135,32 @@ void CheckOther::checkVariableScope()
     }
 }
 
+// used to check if an argument to a function might depend on another argument
+static bool mayDependOn(const ValueType *other, const ValueType *original)
+{
+    if (!other || !original)
+        return false;
+
+    // other must be pointer
+    if (!other->pointer)
+        return false;
+
+    // must be same underlying type
+    if (other->type != original->type)
+        return false;
+
+    const int otherPtr = other->pointer + (other->reference == Reference::LValue ? 1 : 0);
+    const int originalPtr = original->pointer + (original->reference == Reference::LValue ? 1 : 0);
+
+    if (otherPtr == originalPtr) {
+        // if other is not const than original may be copied to other
+        return !other->isConst(otherPtr);
+    }
+
+    // other may be reassigned to original
+    return otherPtr == originalPtr + 1;
+}
+
 bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& used) const
 {
     const Scope* scope = tok->next()->scope();
@@ -1229,8 +1255,7 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
                         const std::vector<const Token *> argtoks = getArguments(ftok);
                         int argi = 0;
                         for (const auto &argtok : argtoks) {
-                            // if theres is another reference argument, assume it depends on the current argument
-                            if (argi != argn && (argtok->isUnaryOp("&") || ftok->function()->getArgumentVar(argi)->isReference()))
+                            if (argi != argn && mayDependOn(argtok->valueType(), tok->valueType()))
                                 return false;
                             argi++;
                         }
