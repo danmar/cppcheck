@@ -1230,7 +1230,7 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
                         int argi = 0;
                         for (const auto &argtok : argtoks) {
                             // if theres is another reference argument, assume it depends on the current argument
-                            if (argi != argn && (Token::simpleMatch(argtok, "&") || ftok->function()->getArgumentVar(argi)->isReference()))
+                            if (argi != argn && (argtok->isUnaryOp("&") || ftok->function()->getArgumentVar(argi)->isReference()))
                                 return false;
                             argi++;
                         }
