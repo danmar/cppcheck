@@ -104,6 +104,7 @@ private:
         TEST_CASE(varScope39);
         TEST_CASE(varScope40);
         TEST_CASE(varScope41);      // #11845
+        TEST_CASE(varScope42);
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1780,17 +1781,6 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout_str());
 
-        check("void get_errmsg(const char *&msg, char *buf, size_t bufsiz, int err);\n"
-              "void test(int err)\n"
-              "{\n"
-              "    const char *msg = \"Success\";\n"
-              "    char buf[42];\n"
-              "    if (err != 0)\n"
-              "        get_errmsg(msg, buf, sizeof(buf), err);\n"
-              "    printf(\"%d: %s\\n\", err, msg);\n"
-              "}\n");
-        ASSERT_EQUALS("", errout_str());
-
         check("void get_errmsg(char *buf, size_t bufsiz, int err);\n"
               "void test(int err)\n"
               "{\n"
@@ -1801,6 +1791,48 @@ private:
               "    printf(\"%d: %s\\n\", err, msg);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) The scope of the variable 'buf' can be reduced.\n", errout_str());
+    }
+
+    void varScope42() {
+        check("void f(const char **, char *);\n"
+              "void g(int e) {\n"
+              "    const char *msg = \"Something\";\n"
+              "    char buf[42];\n"
+              "    if (e != 0)\n"
+              "        f(&msg, buf);\n"
+              "    printf(\"result: %s\\n\", msg);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("void f(char *, char *);\n"
+              "void g(int e) {\n"
+              "    char msg [42] = \"Something\";\n"
+              "    char buf[42];\n"
+              "    if (e != 0)\n"
+              "        f(msg, buf);\n"
+              "    printf(\"result: %s\\n\", msg);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("void f(const char *, char *);\n"
+              "void g(int e) {\n"
+              "    const char *msg = \"Something\";\n"
+              "    char buf[42];\n"
+              "    if (e != 0)\n"
+              "        f(msg, buf);\n"
+              "    printf(\"result: %s\\n\", msg);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The scope of the variable 'buf' can be reduced.\n", errout_str());
+
+        check("void f(int **, char *);\n"
+              "void g(int e) {\n"
+              "    int *msg = calloc(0, sizeof(*msg));\n"
+              "    char buf[42];\n"
+              "    if (e != 0)\n"
+              "        f(&msg, buf);\n"
+              "    printf(\"result: %d\\n\", *msg);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The scope of the variable 'buf' can be reduced.\n", errout_str());
     }
 
 #define checkOldStylePointerCast(...) checkOldStylePointerCast_(__FILE__, __LINE__, __VA_ARGS__)
