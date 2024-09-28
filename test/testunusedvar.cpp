@@ -1967,49 +1967,38 @@ private:
 
     void structmember26() { // #10305
         checkStructMemberUsage("struct S {\n"
-                               "    const int* p{};\n"
+                               "    int p;\n"
                                "};\n"
-                               "struct C {\n"
-                               "    int i{};\n"
-                               "    S f() const {\n"
-                               "        return S{ &i };\n"
-                               "    }\n"
-                               "};\n");
+                               "S f() const {\n"
+                               "    return S{ 0 };\n"
+                               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
     void structmember27() {
         checkStructMemberUsage("struct S {\n"
-                               "    const int* p{};\n"
-                               "    static int* q;\n"
-                               "    const int* r{};\n"
+                               "    int p;\n"
+                               "    static int q;\n"
+                               "    int r;\n"
                                "};\n"
-                               "struct C {\n"
-                               "    int i{};\n"
-                               "    int j{};\n"
-                               "    S f() const {\n"
-                               "        return S{ &i, &j };\n"
-                               "    }\n"
-                               "};\n"
-                               "int *S::q = 0;\n");
+                               "S f() const {\n"
+                               "    return S{ 0, 0 };\n"
+                               "}\n"
+                               "int S::q = 0;\n");
         ASSERT_EQUALS("", errout_str());
     }
 
     void structmember28() {
         checkStructMemberUsage("struct S {\n"
-                               "    const int* p{};\n"
-                               "    static int* q;\n"
-                               "    const int* r{};\n"
-                               "    const int* s{};"
+                               "    int p;\n"
+                               "    static int q;\n"
+                               "    int r;\n"
+                               "    int s;"
                                "};\n"
-                               "struct C {\n"
-                               "    int i{};\n"
-                               "    int j{};\n"
-                               "    S f() const {\n"
-                               "        return S{ &i, &j };\n"
-                               "    }\n"
-                               "};\n"
-                               "int *S::q = 0;\n");
+                               "S f() const {\n"
+                               "    return S{ 0, 0 };\n"
+                               "}\n"
+                               "int S::q = 0;\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) struct member 'S::s' is never used.\n", errout_str());
     }
 

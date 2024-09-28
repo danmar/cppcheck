@@ -1535,11 +1535,11 @@ void CheckUnusedVar::checkStructMemberUsage()
             continue;
 
         // Keep track of number of non-static members encountered so far
-        int nummembs = 0;
+        int memberCount = 0;
 
         for (const Variable &var : scope.varlist) {
             if (!var.isStatic()) {
-                nummembs++;
+                memberCount++;
             }
 
             // only warn for variables without side effects
@@ -1551,18 +1551,18 @@ void CheckUnusedVar::checkStructMemberUsage()
             // Check if the struct member variable is used anywhere in the file
             bool use = false;
             for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-                if (Token::Match(tok, "%name% {") && !Token::Match(tok->previous(), "class|struct") && tok->str() == scope.className && tok->linkAt(1)) {
+                if (Token::Match(tok, "%name% {") && !Token::Match(tok->previous(), "class|struct") && tok->str() == scope.className) {
                     const Token *inner = tok->next()->astOperand2();
                     // Find number of initialized members in braced initalizer
-                    int initmembs = 0;
+                    int initializedMemberCount = 0;
                     while (inner) {
-                        initmembs++;
+                        initializedMemberCount++;
                         if (!inner->isInitComma()) {
                             break;
                         }
                         inner = inner->astOperand1();
                     }
-                    if (initmembs >= nummembs) {
+                    if (initializedMemberCount >= memberCount) {
                         use = true;
                         break;
                     }
