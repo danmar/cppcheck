@@ -1535,39 +1535,41 @@ void CheckUnusedVar::checkStructMemberUsage()
             continue;
 
         // check if class/struct has default equality operator
-        bool has_default_eq = true;
+        bool hasDefaultEq = true;
         for (const Function &f : scope.functionList) {
             if (f.isOperator() && f.name() == "operator==") {
                 if (f.isDefault()) {
-                    has_default_eq = true;
+                    hasDefaultEq = true;
                     break;
                 }
-                has_default_eq = false;
+                hasDefaultEq = false;
                 break;
             }
         }
 
         // check if default equality is used
-        bool default_eq_used = false;
-        if (has_default_eq) {
+        bool defaultEqUsed = false;
+        if (hasDefaultEq) {
             for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
                 if (Token::simpleMatch(tok, "==")) {
                     const Token *lhs = tok->astOperand1();
                     const Token *rhs = tok->astOperand2();
-                    if (lhs->isVariable() && rhs->isVariable()) {
-                        const Type *ltype = lhs->variable()->type();
-                        const Type *rtype = rhs->variable()->type();
-                        if (ltype && rtype && ltype->name() == scope.className && rtype->name() == scope.className) {
-                            default_eq_used = true;
-                            break;
-                        }
+                    if (!lhs || !rhs)
+                        continue;
+                    const ValueType *lValueType = lhs->valueType();
+                    const ValueType *rValueType = rhs->valueType();
+                    if (!lValueType || !rValueType)
+                        continue;
+                    if (lValueType->typeScope == &scope && rValueType->typeScope == &scope) {
+                        defaultEqUsed = true;
+                        break;
                     }
                 }
             }
         }
 
         for (const Variable &var : scope.varlist) {
-            if (!var.isStatic() && default_eq_used) {
+            if (!var.isStatic() && defaultEqUsed) {
                 continue;
             }
 
