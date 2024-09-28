@@ -519,7 +519,7 @@ def createRecordChildrenDefs(ed, var):
                     child = getElementDef(variable.nameToken)
                     ed1.addChild(child)
                 child_dict[scopes.bodyStart] = ed1
-    sorted_keys = sorted(list(child_dict.keys()), key=lambda k: "%s %s %s" % (k.file, k.linenr, k.column))
+    sorted_keys = sorted(list(child_dict.keys()), key=lambda k: (k.file, k.linenr, k.column))
     for _key in sorted_keys:
         ed.addChild(child_dict[_key])
 
