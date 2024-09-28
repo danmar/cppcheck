@@ -2008,50 +2008,38 @@ private:
     }
 
     void structMemberDefaultEq1() { // #12177
-        checkStructMemberUsageP("struct S\n"
-                                "{\n"
-                                "    bool operator==(const S&) const = default;\n"
-                                "    int i{0};\n"
-                                "};\n"
-                                "void f()\n"
-                                "{\n"
-                                "    S s;\n"
-                                "    S s1;\n"
-                                "    if (s == s1) {}\n"
-                                "}\n");
+        checkStructMemberUsage("struct S {\n"
+                               "    bool operator==(const S&) const = default;\n"
+                               "    int i{0};\n"
+                               "};\n"
+                               "bool f(S s1, S s2) {\n"
+                               "    return s1 == s2;\n"
+                               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
     void structMemberDefaultEq2() {
-        checkStructMemberUsageP("struct S\n"
-                                "{\n"
-                                "    int i{0};\n"
-                                "};\n"
-                                "void f()\n"
-                                "{\n"
-                                "    S s;\n"
-                                "    S s1;\n"
-                                "    if (s == s1) {}\n"
-                                "}\n");
+        checkStructMemberUsage("struct S {\n"
+                               "    int i{0};\n"
+                               "};\n"
+                               "bool f(S s1, S s2) {\n"
+                               "    return s1 == s2;\n"
+                               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
     void structMemberDefaultEq3() {
-        checkStructMemberUsageP("struct S\n"
-                                "{\n"
-                                "    bool operator==(const S&s) const {\n"
-                                "        return this->i == s.i;\n"
-                                "    }\n"
-                                "    int i{0};\n"
-                                "    int j{0};\n"
-                                "};\n"
-                                "void f()\n"
-                                "{\n"
-                                "    S s;\n"
-                                "    S s1;\n"
-                                "    if (s == s1) {}\n"
-                                "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (style) struct member 'S::j' is never used.\n", errout_str());
+        checkStructMemberUsage("struct S {\n"
+                               "    bool operator==(const S&s) const {\n"
+                               "        return this->i == s.i;\n"
+                               "    }\n"
+                               "    int i{0};\n"
+                               "    int j{0};\n"
+                               "};\n"
+                               "bool f(S s1, S s2) {\n"
+                               "    return s1 == s2;\n"
+                               "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) struct member 'S::j' is never used.\n", errout_str());
     }
 
 
