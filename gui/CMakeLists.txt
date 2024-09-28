@@ -71,6 +71,12 @@ CheckOptions:
         target_compile_options_safe(cppcheck-gui -Wno-redundant-parens)
     endif()
 
+    if (QHELPGENERATOR)
+        # TODO: generate in CMAKE_BINARY_DIR folder
+        add_custom_target(online-help.qhc ${QHELPGENERATOR} ${CMAKE_CURRENT_SOURCE_DIR}/help/online-help.qhcp -o ${CMAKE_CURRENT_SOURCE_DIR}/help/online-help.qhc)
+        add_dependencies(cppcheck-gui online-help.qhc)
+    endif()
+
     install(TARGETS cppcheck-gui RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR} COMPONENT applications)
     install(FILES ${qms} DESTINATION ${CMAKE_INSTALL_FULL_BINDIR} COMPONENT applications)
 
