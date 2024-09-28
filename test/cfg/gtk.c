@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <gtk/gtk.h>
 #include <glib.h>
+#include <glib/gi18n.h>
 
 
 void validCode(int argInt, GHashTableIter * hash_table_iter, GHashTable * hash_table)

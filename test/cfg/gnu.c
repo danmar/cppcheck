@@ -7,7 +7,9 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
-// cppcheck-suppress-file valueFlowBailout
+// cppcheck-suppress-file [valueFlowBailout,purgedConfiguration]
+
+#define _GNU_SOURCE
 
 #include <string.h>
 #include <stdlib.h>
@@ -21,18 +23,19 @@
 #include <sys/mman.h>
 #include <sys/sem.h>
 #include <wchar.h>
-#if !defined(__CYGWIN__) && !(defined(__APPLE__) && defined(__MACH__))
+#if !defined(__CYGWIN__) && !defined(__APPLE__)
 #include <sys/epoll.h>
 #endif
 #include <strings.h>
 #ifdef __gnu_linux__
 #include <error.h>
 #endif
-#ifdef _GNU_SOURCE
 #include <unistd.h>
-#endif
 #include <getopt.h>
 #include <netdb.h>
+#if !defined(__APPLE__)
+#include <byteswap.h>
+#endif
 
 #ifdef __gnu_linux__
 void unreachableCode_error(void) // #11197
@@ -44,7 +47,6 @@ void unreachableCode_error(void) // #11197
 }
 #endif
 
-#ifdef _GNU_SOURCE
 void leakReturnValNotUsed_get_current_dir_name(void)
 {
     // cppcheck-suppress leakReturnValNotUsed
@@ -70,7 +72,6 @@ void memleak_get_current_dir_name1(void)
         return;
     }
 }
-#endif
 
 int nullPointer_gethostbyname2_r(const char* name, int af, struct hostent* ret, const char* buf, size_t buflen, struct hostent** result, const int* h_errnop)
 {
@@ -332,6 +333,7 @@ void valid_code(int argInt1, va_list valist_arg, const int * parg)
     // cppcheck-suppress unreadVariable
     i64_2 = __builtin_bswap64(i64_1++);
 
+#if !defined(__APPLE__)
     // cppcheck-suppress zerodiv
     // cppcheck-suppress unreadVariable
     i16_1 /= bswap_16(0x1234) - 0x3412;
@@ -341,6 +343,7 @@ void valid_code(int argInt1, va_list valist_arg, const int * parg)
     // cppcheck-suppress zerodiv
     // cppcheck-suppress unreadVariable
     i64_1 /= bswap_64(0x023456789abcde0f) - 0x0fdebc9a78563402;
+#endif
 }
 
 void ignoreleak(void)
@@ -489,7 +492,7 @@ void leakReturnValNotUsed()
         return;
 }
 
-#if !defined(__CYGWIN__) && !(defined(__APPLE__) && defined(__MACH__))
+#if !defined(__CYGWIN__) && !defined(__APPLE__)
 int nullPointer_epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)
 {
     // no warning is expected

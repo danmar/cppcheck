@@ -7,9 +7,10 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
-// cppcheck-suppress-file [valueFlowBailout,purgedConfiguration]
+// cppcheck-suppress-file [valueFlowBailout]
 
 #define _BSD_SOURCE
+#define _XOPEN_SOURCE // wcwidth
 
 #include <aio.h>
 #include <stdio.h> // <- FILE
@@ -38,15 +39,17 @@
 #if defined(__APPLE__)
 #include <xlocale.h>
 #endif
-#if !(defined(__APPLE__) && defined(__MACH__))
+#if !defined(__APPLE__)
 #include <mqueue.h>
 #endif
 #include <stdlib.h>
 #include <unistd.h>
 #include <wchar.h>
+#include <sys/stat.h>
+#include <utime.h>
 
 
-#if !(defined(__APPLE__) && defined(__MACH__))
+#if !defined(__APPLE__)
 void nullPointer_mq_timedsend(mqd_t mqdes, const char* msg_ptr, size_t msg_len, unsigned msg_prio, const struct timespec* abs_timeout) {
     // cppcheck-suppress nullPointer
     (void) mq_timedsend(mqdes, NULL, msg_len, msg_prio, abs_timeout);
@@ -144,6 +147,7 @@ void nullPointer_pthread_attr_setstack(const pthread_attr_t *attr) {
     (void) pthread_attr_setstack(NULL, (void*) 1, 0);
 }
 
+#ifndef __linux__
 void nullPointer_setkey(const char *key)
 {
     // cppcheck-suppress nullPointer
@@ -156,6 +160,7 @@ void nullPointer_encrypt(const char block[64], int edflag)
     encrypt(NULL, edflag);
     encrypt(block, edflag);
 }
+#endif
 
 int nullPointer_getopt(int argc, char* const argv[], const char* optstring)
 {
@@ -166,7 +171,7 @@ int nullPointer_getopt(int argc, char* const argv[], const char* optstring)
     return getopt(argc, argv, optstring);
 }
 
-#if !(defined(__APPLE__) && defined(__MACH__))
+#if !defined(__APPLE__)
 int invalidFunctionArgStr_mq_send(mqd_t mqdes, const char *msg_ptr, size_t msg_len, unsigned msg_prio)
 {
     // No warning is expected for:
@@ -532,7 +537,7 @@ int nullPointer_aio_suspend(const struct aiocb *const aiocb_list[], int nitems, 
     return aio_suspend(aiocb_list, nitems, timeout);
 }
 
-#ifdef __linux__
+#if !defined(__linux__) && !defined(__APPLE__)
 // Note: Since glibc 2.28, this function symbol is no longer available to newly linked applications.
 void invalidFunctionArg_llseek(int fd, loff_t offset, int origin)
 {
@@ -563,7 +568,6 @@ void invalidFunctionArg_llseek(int fd, loff_t offset, int origin)
     // cppcheck-suppress llseekCalled
     (void)llseek(fd, offset, SEEK_END);
 }
-#endif
 
 void invalidFunctionArg_lseek64(int fd, off_t offset, int origin)
 {
@@ -584,6 +588,7 @@ void invalidFunctionArg_lseek64(int fd, off_t offset, int origin)
     (void)lseek64(fd, offset, SEEK_CUR);
     (void)lseek64(fd, offset, SEEK_END);
 }
+#endif
 
 void invalidFunctionArg_lseek(int fd, off_t offset, int origin)
 {
@@ -1328,7 +1333,7 @@ void uninitvar(int fd)
     // cppcheck-suppress utimeCalled
     utime(filename1, times);
     // cppcheck-suppress constVariable
-    struct timeval times1[2];
+    struct utimbuf times1[2];
     // cppcheck-suppress uninitvar
     // cppcheck-suppress utimeCalled
     utime(filename2, times1);
