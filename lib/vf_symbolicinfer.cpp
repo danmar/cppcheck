@@ -35,10 +35,10 @@
 namespace ValueFlow
 {
     struct SymbolicInferModel : InferModel {
-        const Token* expr;
         explicit SymbolicInferModel(const Token* tok) : expr(tok) {
             assert(expr->exprId() != 0);
         }
+    private:
         bool match(const Value& value) const override
         {
             return value.isSymbolicValue() && value.tokvalue && value.tokvalue->exprId() == expr->exprId();
@@ -51,6 +51,7 @@ namespace ValueFlow
             result.setKnown();
             return result;
         }
+        const Token* expr;
     };
 
     void valueFlowSymbolicInfer(const SymbolDatabase& symboldatabase, const Settings& settings)
