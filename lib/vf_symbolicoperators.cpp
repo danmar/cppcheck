@@ -86,7 +86,7 @@ namespace ValueFlow
                         continue;
 
                     Value v = makeSymbolic(arg);
-                    v.errorPath = c.errorPath;
+                    v.errorPath = std::move(c.errorPath);
                     v.errorPath.emplace_back(tok, "Passed to " + tok->str());
                     if (c.intvalue == 0)
                         v.setImpossible();
