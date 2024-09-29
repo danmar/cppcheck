@@ -25,13 +25,13 @@
 #include <QDialog>
 #include <QFont>
 #include <QObject>
-#include <QString>
 
 class CodeEditor;
 class SelectColorButton;
 class SelectFontWeightCombo;
 class QPushButton;
 class QWidget;
+class QString;
 
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 class QStringList;

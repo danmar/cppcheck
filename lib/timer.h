@@ -28,6 +28,7 @@
 #include <map>
 #include <mutex>
 #include <string>
+#include <utility>
 
 enum class SHOWTIME_MODES : std::uint8_t {
     SHOWTIME_NONE,

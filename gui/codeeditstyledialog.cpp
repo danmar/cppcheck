@@ -27,6 +27,7 @@
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
+#include <QString>
 #include <QStringList>
 #include <QVBoxLayout>
 #include <QtGlobal>

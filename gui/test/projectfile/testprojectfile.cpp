@@ -26,7 +26,6 @@
 
 #include <string>
 
-#include <QDir>
 #include <QFile>
 #include <QIODevice>
 #include <QList>

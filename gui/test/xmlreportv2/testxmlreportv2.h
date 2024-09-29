@@ -17,7 +17,6 @@
  */
 
 #include <QObject>
-#include <QString>
 
 class TestXmlReportV2 : public QObject {
     Q_OBJECT

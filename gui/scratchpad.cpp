@@ -25,6 +25,7 @@
 
 #include <QLineEdit>
 #include <QPushButton>
+#include <QString>
 
 ScratchPad::ScratchPad(MainWindow& mainWindow)
     : QDialog(&mainWindow)

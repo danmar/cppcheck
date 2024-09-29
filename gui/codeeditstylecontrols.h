@@ -27,7 +27,6 @@
 #include <QFont>
 #include <QObject>
 #include <QPushButton>
-#include <QString>
 
 class QWidget;
 

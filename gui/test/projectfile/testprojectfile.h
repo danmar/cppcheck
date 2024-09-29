@@ -17,7 +17,6 @@
  */
 
 #include <QObject>
-#include <QString>
 
 class TestProjectFile : public QObject {
     Q_OBJECT

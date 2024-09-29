@@ -23,8 +23,6 @@
 #include "helpers.h"
 #include "suppressions.h"
 
-
-
 class TestSettings : public TestFixture {
 public:
     TestSettings() : TestFixture("TestSettings") {}

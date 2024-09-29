@@ -28,6 +28,7 @@
 #include <QHelpContentWidget>
 #include <QHelpIndexWidget>
 #include <QMessageBox>
+#include <QString>
 #include <QStringList>
 #include <QUrl>
 #include <QVBoxLayout>
