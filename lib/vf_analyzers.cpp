@@ -107,8 +107,10 @@ struct ValueFlowAnalyzer : Analyzer {
         ConditionState result;
         if (!tok)
             return result;
-        if (depth < 0)
+        if (depth < 0)  {
+            // TODO: add bailout message
             return result;
+        }
         depth--;
         if (analyze(tok, Direction::Forward).isRead()) {
             result.dependent = true;
@@ -804,8 +806,10 @@ static bool bifurcateVariableChanged(const Variable* var,
 
 static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, const Settings& settings, int depth)
 {
-    if (depth < 0)
+    if (depth < 0) {
+        // TODO: add bailout message
         return false;
+    }
     if (!tok)
         return true;
     if (tok->hasKnownIntValue())
