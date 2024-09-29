@@ -53,6 +53,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
+#include <variant>
 #include <vector>
 #include <version>
 #ifdef __cpp_lib_span
@@ -2634,6 +2635,12 @@ void uninitvar_llround(void)
     long double ld;
     // cppcheck-suppress uninitvar
     (void)std::llroundl(ld);
+}
+
+void unusedScopedObject_std_monostate(void)
+{
+    // cppcheck-suppress unusedScopedObject
+    std::monostate{};
 }
 
 void uninitvar_srand(void)
