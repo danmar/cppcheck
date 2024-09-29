@@ -3898,10 +3898,10 @@ static void valueFlowSymbolicOperators(const SymbolDatabase& symboldatabase, con
 }
 
 struct SymbolicInferModel : InferModel {
-    const Token* expr;
     explicit SymbolicInferModel(const Token* tok) : expr(tok) {
         assert(expr->exprId() != 0);
     }
+private:
     bool match(const ValueFlow::Value& value) const override
     {
         return value.isSymbolicValue() && value.tokvalue && value.tokvalue->exprId() == expr->exprId();
@@ -3914,6 +3914,7 @@ struct SymbolicInferModel : InferModel {
         result.setKnown();
         return result;
     }
+    const Token* expr;
 };
 
 static void valueFlowSymbolicInfer(const SymbolDatabase& symboldatabase, const Settings& settings)
