@@ -3332,7 +3332,6 @@ static void valueFlowConditionExpressions(const TokenList& tokenlist,
             Token* parenTok = tok->next();
             if (!Token::simpleMatch(parenTok->link(), ") {"))
                 continue;
-            Token* blockTok = parenTok->link()->tokAt(1);
             const Token* condTok = parenTok->astOperand2();
             if (condTok->exprId() == 0)
                 continue;
@@ -3343,6 +3342,7 @@ static void valueFlowConditionExpressions(const TokenList& tokenlist,
             const bool isOp = condTok->isComparisonOp() || condTok->tokType() == Token::eLogicalOp;
             const bool is1 = isOp || astIsBool(condTok);
 
+            Token* blockTok = parenTok->link()->tokAt(1);
             Token* startTok = blockTok;
             // Inner condition
             {
