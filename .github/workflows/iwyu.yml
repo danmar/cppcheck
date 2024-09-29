@@ -35,6 +35,7 @@ jobs:
           apt-get update
           apt-get install -y cmake clang make libpcre3-dev
           apt-get install -y libgl-dev  # fixes missing dependency for Qt in CMake
+          apt-get install -y libcups2-dev  # required for Qt6PrintSupport in CMake since Qt 6.7.3
           apt-get install -y iwyu
 
       - name: Install missing software on archlinux
