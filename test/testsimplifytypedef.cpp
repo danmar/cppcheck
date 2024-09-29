@@ -1154,7 +1154,7 @@ private:
             "}";
 
         ASSERT_EQUALS(expected, tok(code, false));
-        ASSERT_EQUALS("[test.cpp:4]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable value\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4]: (debug) analyzeConditionExpressions bailout: Skipping function due to incomplete variable value\n", errout_str());
     }
 
     void simplifyTypedef28() {
@@ -2014,7 +2014,7 @@ private:
                                 "( ( int * * * ) global [ 6 ] ) ( \"assoc\" , \"eggdrop\" , 106 , 0 ) ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code));
-        ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable global\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3]: (debug) analyzeConditionExpressions bailout: Skipping function due to incomplete variable global\n", errout_str());
     }
 
     void simplifyTypedef68() { // ticket #2355

@@ -2037,7 +2037,7 @@ private:
                                 "a [ x ] = 0 ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-        ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cin\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3]: (debug) analyzeConditionExpressions bailout: Skipping function due to incomplete variable cin\n", errout_str());
     }
 
     void simplifyKnownVariables36() {
@@ -2160,7 +2160,7 @@ private:
                                 "return x ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, true));
-        ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cin\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3]: (debug) analyzeConditionExpressions bailout: Skipping function due to incomplete variable cin\n", errout_str());
     }
 
     void simplifyKnownVariables47() {
@@ -2174,7 +2174,7 @@ private:
                                 "cin >> std :: hex >> x ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, true));
-        ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cin\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3]: (debug) analyzeConditionExpressions bailout: Skipping function due to incomplete variable cin\n", errout_str());
     }
 
     void simplifyKnownVariables48() {
@@ -2204,7 +2204,7 @@ private:
                                 "}\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, false));
-        ASSERT_EQUALS("[test.c:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n", errout_str());
+        ASSERT_EQUALS("[test.c:2]: (debug) analyzeConditionExpressions bailout: Skipping function due to incomplete variable x\n", errout_str());
     }
 
     void simplifyKnownVariables50() { // #4066
@@ -2227,7 +2227,7 @@ private:
                                 "return & x7 ;\n"
                                 "}";
             ASSERT_EQUALS(code, tokenizeAndStringify(code, true));
-            ASSERT_EQUALS("[test.cpp:5]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y\n", errout_str());
+            ASSERT_EQUALS("[test.cpp:5]: (debug) analyzeConditionExpressions bailout: Skipping function due to incomplete variable y\n", errout_str());
         }
         {
             //don't simplify '&x'!
@@ -2248,7 +2248,7 @@ private:
                                 "return & x7 ;\n"
                                 "}";
             ASSERT_EQUALS(code, tokenizeAndStringify(code, true));
-            ASSERT_EQUALS("[test.cpp:5]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y\n", errout_str());
+            ASSERT_EQUALS("[test.cpp:5]: (debug) analyzeConditionExpressions bailout: Skipping function due to incomplete variable y\n", errout_str());
         }
     }
 
@@ -2268,7 +2268,7 @@ private:
     void simplifyKnownVariables56() { // ticket #5301 - >>
         ASSERT_EQUALS("void f ( ) { int a ; a = 0 ; int b ; b = 0 ; * p >> a >> b ; return a / b ; }",
                       tokenizeAndStringify("void f() { int a=0,b=0; *p>>a>>b; return a/b; }", true));
-        ASSERT_EQUALS("[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable p\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (debug) analyzeConditionExpressions bailout: Skipping function due to incomplete variable p\n", errout_str());
     }
 
     void simplifyKnownVariables58() { // #5268
@@ -2348,7 +2348,7 @@ private:
                                 "return i ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-        ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n", filter_valueflow(errout_str()));
+        ASSERT_EQUALS("[test.cpp:3]: (debug) analyzeConditionExpressions bailout: Skipping function due to incomplete variable x\n", filter_valueflow(errout_str()));
     }
 
     void simplifyKnownVariablesBailOutAssign2() {
@@ -2362,7 +2362,7 @@ private:
                                 "nr = ( last = list . prev ) . nr ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-        ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable nr\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3]: (debug) analyzeConditionExpressions bailout: Skipping function due to incomplete variable nr\n", errout_str());
     }
 
     void simplifyKnownVariablesBailOutFor1() {
@@ -2423,7 +2423,7 @@ private:
                             "    return a;\n"
                             "}\n";
         (void)tokenizeAndStringify(code,true);
-        ASSERT_EQUALS("[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n", filter_valueflow(errout_str()));     // no debug warnings
+        ASSERT_EQUALS("[test.cpp:3]: (debug) analyzeConditionExpressions bailout: Skipping function due to incomplete variable x\n", filter_valueflow(errout_str()));     // no debug warnings
     }
 
     void simplifyKnownVariablesBailOutSwitchBreak() {
