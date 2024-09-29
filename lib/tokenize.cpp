@@ -8731,10 +8731,13 @@ void Tokenizer::findGarbageCode() const
         }
         if (Token::Match(tok, "%num%|%bool%|%char%|%str% %num%|%bool%|%char%|%str%") && !Token::Match(tok, "%str% %str%"))
             syntaxError(tok);
-        if (Token::Match(tok, "%num%|%bool%|%char%|%str% {") &&
-            !(tok->tokType() == Token::Type::eString && Token::simpleMatch(tok->tokAt(-1), "extern")) &&
-            !(tok->tokType() == Token::Type::eBoolean && cpp && Token::simpleMatch(tok->tokAt(-1), "requires")))
+        if (Token::Match(tok, "%num%|%bool%|%char%|%str% {|(")) {
+            if (tok->strAt(1) == "(")
+                syntaxError(tok);
+            else if (!(tok->tokType() == Token::Type::eString && Token::simpleMatch(tok->tokAt(-1), "extern")) &&
+                     !(tok->tokType() == Token::Type::eBoolean && cpp && Token::simpleMatch(tok->tokAt(-1), "requires")))
             syntaxError(tok);
+        }
         if (Token::Match(tok, "%assign% typename|class %assign%"))
             syntaxError(tok);
         if (Token::Match(tok, "%assign% [;)}]") && (!cpp || !Token::simpleMatch(tok->previous(), "operator")))
