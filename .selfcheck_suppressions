@@ -6,6 +6,7 @@ varid0:gui/projectfile.cpp
 naming-privateMemberVariable:gui/test/cppchecklibrarydata/testcppchecklibrarydata.h
 symbolDatabaseWarning:*/moc_*.cpp
 simplifyUsing:*/moc_*.cpp
+checkLibraryNoReturn
 
 # warnings in Qt generated code we cannot fix
 funcArgNamesDifferent:*/moc_*.cpp
@@ -16,6 +17,13 @@ functionStatic:*/ui_fileview.h
 valueFlowBailout
 valueFlowBailoutIncompleteVar
 autoNoType
+
+# --check-library suppressions for Qt functions
+checkLibraryFunction:gui/*.cpp
+checkLibraryFunction:gui/*.h
+checkLibraryFunction:gui/temp/ui_*.h
+checkLibraryFunction:tools/triage/*.cpp
+checkLibraryFunction:tools/triage/temp/ui_*.h
 
 naming-varname:externals/simplecpp/simplecpp.h
 naming-privateMemberVariable:externals/simplecpp/simplecpp.h
