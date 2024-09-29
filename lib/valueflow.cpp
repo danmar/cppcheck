@@ -3364,6 +3364,8 @@ static void valueFlowConditionExpressions(const TokenList& tokenlist,
             }
 
             std::vector<const Token*> conds = getConditions(condTok, "||");
+            if (conds.empty())
+                continue;
 
             // Check else block
             if (Token::simpleMatch(startTok->link(), "} else {")) {
