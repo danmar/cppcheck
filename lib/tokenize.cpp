@@ -8736,7 +8736,7 @@ void Tokenizer::findGarbageCode() const
                 syntaxError(tok);
             else if (!(tok->tokType() == Token::Type::eString && Token::simpleMatch(tok->tokAt(-1), "extern")) &&
                      !(tok->tokType() == Token::Type::eBoolean && cpp && Token::simpleMatch(tok->tokAt(-1), "requires")))
-            syntaxError(tok);
+                syntaxError(tok);
         }
         if (Token::Match(tok, "%assign% typename|class %assign%"))
             syntaxError(tok);
