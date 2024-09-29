@@ -91,6 +91,7 @@
     <ClCompile Include="testsimplifyusing.cpp" />
     <ClCompile Include="testsingleexecutor.cpp" />
     <ClCompile Include="testsizeof.cpp" />
+    <ClCompile Include="teststandards.cpp" />
     <ClCompile Include="teststl.cpp" />
     <ClCompile Include="teststring.cpp" />
     <ClCompile Include="testsummaries.cpp" />

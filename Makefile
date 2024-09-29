@@ -347,6 +347,7 @@ TESTOBJ =     test/fixture.o \
               test/testsimplifyusing.o \
               test/testsingleexecutor.o \
               test/testsizeof.o \
+              test/teststandards.o \
               test/teststl.o \
               test/teststring.o \
               test/testsummaries.o \
@@ -942,6 +943,9 @@ test/testsingleexecutor.o: test/testsingleexecutor.cpp cli/executor.h cli/single
 
 test/testsizeof.o: test/testsizeof.cpp externals/simplecpp/simplecpp.h lib/addoninfo.h lib/check.h lib/checksizeof.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/preprocessor.h lib/settings.h lib/standards.h lib/suppressions.h lib/tokenize.h lib/tokenlist.h lib/utils.h test/fixture.h test/helpers.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testsizeof.cpp
+
+test/teststandards.o: test/teststandards.cpp lib/addoninfo.h lib/check.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/utils.h test/fixture.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/teststandards.cpp
 
 test/teststl.o: test/teststl.cpp externals/simplecpp/simplecpp.h lib/addoninfo.h lib/check.h lib/checkstl.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/preprocessor.h lib/settings.h lib/standards.h lib/suppressions.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/vfvalue.h test/fixture.h test/helpers.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/teststl.cpp
