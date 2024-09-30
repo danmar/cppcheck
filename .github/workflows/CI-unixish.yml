@@ -86,8 +86,6 @@ jobs:
         os: [macos-13, macos-14]
         include:
           - use_qt6: On
-          - os: ubuntu-20.04
-            use_qt6: Off
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
