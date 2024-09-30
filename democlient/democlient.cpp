@@ -68,7 +68,7 @@ public:
 
     template<std::size_t size>
     void run(const char (&code)[size]) {
-        cppcheck.check(FileWithDetails("test.cpp", Standards::Language::CPP, 0), reinterpret_cast<const uint8_t*>(code), size-1);
+        cppcheck.checkBuffer(FileWithDetails("test.cpp", Standards::Language::CPP, 0), reinterpret_cast<const uint8_t*>(code), size-1);
     }
 
     void reportOut(const std::string & /*outmsg*/, Color /*c*/) override {}

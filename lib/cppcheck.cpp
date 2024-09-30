@@ -799,7 +799,7 @@ unsigned int CppCheck::check(const FileWithDetails &file)
     return returnValue;
 }
 
-unsigned int CppCheck::check(const FileWithDetails &file, const uint8_t* data, std::size_t size)
+unsigned int CppCheck::checkBuffer(const FileWithDetails &file, const uint8_t* data, std::size_t size)
 {
     return checkBuffer(file, "", 0, data, size);
 }
@@ -1077,7 +1077,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
                     code += "#line " + std::to_string(dir.linenr) + " \"" + dir.file + "\"\n" + dir.str + '\n';
             }
             TokenList tokenlist(mSettings, file.lang());
-            tokenlist.createTokens(code.data(), code.size()); // TODO: check result?
+            tokenlist.createTokensFromBuffer(code.data(), code.size()); // TODO: check result?
             executeRules("define", tokenlist);
         }
 #endif
