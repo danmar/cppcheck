@@ -7633,7 +7633,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                     ValueType valuetype;
                     TokenList tokenList(&mSettings);
                     const std::string str(typestr+";");
-                    tokenList.createTokens(str.data(), str.size(), tok->isCpp() ? Standards::Language::CPP : Standards::Language::C); // TODO: check result?
+                    tokenList.createTokensFromBuffer(str.data(), str.size(), tok->isCpp() ? Standards::Language::CPP : Standards::Language::C); // TODO: check result?
                     tokenList.simplifyStdType();
                     if (parsedecl(tokenList.front(), &valuetype, mDefaultSignedness, mSettings)) {
                         valuetype.originalTypeName = typestr;
@@ -7723,7 +7723,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 }
                 TokenList tokenList(&mSettings);
                 const std::string str(typestr+";");
-                if (tokenList.createTokens(str.data(), str.size(), tok->isCpp() ? Standards::Language::CPP : Standards::Language::C)) {
+                if (tokenList.createTokensFromBuffer(str.data(), str.size(), tok->isCpp() ? Standards::Language::CPP : Standards::Language::C)) {
                     ValueType vt;
                     tokenList.simplifyPlatformTypes();
                     tokenList.simplifyStdType();

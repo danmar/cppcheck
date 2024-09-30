@@ -82,7 +82,7 @@ public:
                   bool cpp = true,
                   const std::string &configuration = emptyString)
     {
-        if (!list.createTokens(code, size-1, cpp ? "test.cpp" : "test.c"))
+        if (!list.createTokensFromBuffer(code, size-1, cpp ? "test.cpp" : "test.c"))
             return false;
 
         return simplifyTokens1(configuration);
@@ -93,7 +93,7 @@ public:
                   bool cpp = true,
                   const std::string &configuration = emptyString)
     {
-        if (!list.createTokens(code.c_str(), code.size(), cpp ? "test.cpp" : "test.c"))
+        if (!list.createTokensFromBuffer(code.c_str(), code.size(), cpp ? "test.cpp" : "test.c"))
             return false;
 
         return simplifyTokens1(configuration);
@@ -110,7 +110,7 @@ public:
     template<size_t size>
     explicit SimpleTokenList(const char (&code)[size], Standards::Language lang = Standards::Language::CPP)
     {
-        if (!list.createTokens(code, size-1, lang))
+        if (!list.createTokensFromBuffer(code, size-1, lang))
             throw std::runtime_error("creating tokens failed");
     }
 

@@ -1004,7 +1004,7 @@ static bool isNotEqual(std::pair<const Token*, const Token*> x, std::pair<const 
 static bool isNotEqual(std::pair<const Token*, const Token*> x, const std::string& y, bool cpp)
 {
     TokenList tokenList(nullptr);
-    tokenList.createTokens(y.data(), y.size(), cpp ? Standards::Language::CPP : Standards::Language::C); // TODO: check result?
+    tokenList.createTokensFromBuffer(y.data(), y.size(), cpp ? Standards::Language::CPP : Standards::Language::C); // TODO: check result?
     return isNotEqual(x, std::make_pair(tokenList.front(), tokenList.back()));
 }
 static bool isNotEqual(std::pair<const Token*, const Token*> x, const ValueType* y, bool cpp)

@@ -104,22 +104,27 @@ public:
      * - comments are not handled.
      * @param file0 source file name
      */
-    bool createTokens(const std::string& file0);
-    bool createTokens(const uint8_t* data, size_t size, const std::string& file0);
-    bool createTokens(const char* data, size_t size, const std::string& file0) {
-        return createTokens(reinterpret_cast<const uint8_t*>(data), size, file0);
+    bool createTokensFromFile(const std::string& file0);
+
+    bool createTokensFromString(const std::string& data, const std::string& file0) {
+        return createTokensFromBuffer(data.data(), data.size(), file0);
+    }
+
+    bool createTokensFromBuffer(const uint8_t* data, size_t size, const std::string& file0);
+    bool createTokensFromBuffer(const char* data, size_t size, const std::string& file0) {
+        return createTokensFromBuffer(reinterpret_cast<const uint8_t*>(data), size, file0);
     }
     template<size_t size>
-    bool createTokens(const char (&data)[size], const std::string& file0) {
-        return createTokens(reinterpret_cast<const uint8_t*>(data), size-1, file0);
+    bool createTokensFromString(const char (&data)[size], const std::string& file0) {
+        return createTokensFromBuffer(reinterpret_cast<const uint8_t*>(data), size-1, file0);
     }
-    bool createTokens(const uint8_t* data, size_t size, Standards::Language lang);
-    bool createTokens(const char* data, size_t size, Standards::Language lang) {
-        return createTokens(reinterpret_cast<const uint8_t*>(data), size, lang);
+    bool createTokensFromBuffer(const uint8_t* data, size_t size, Standards::Language lang);
+    bool createTokensFromBuffer(const char* data, size_t size, Standards::Language lang) {
+        return createTokensFromBuffer(reinterpret_cast<const uint8_t*>(data), size, lang);
     }
     template<size_t size>
-    bool createTokens(const char (&data)[size], Standards::Language lang) {
-        return createTokens(reinterpret_cast<const uint8_t*>(data), size-1, lang);
+    bool createTokensFromString(const char (&data)[size], Standards::Language lang) {
+        return createTokensFromBuffer(reinterpret_cast<const uint8_t*>(data), size-1, lang);
     }
 
     void createTokens(simplecpp::TokenList&& tokenList);
@@ -218,8 +223,8 @@ public:
 private:
     void determineCppC();
 
-    bool createTokensInternal(const std::string& file0);
-    bool createTokensInternal(const uint8_t* data, std::size_t size, const std::string& file0);
+    bool createTokensFromFileInternal(const std::string& file0);
+    bool createTokensFromBufferInternal(const uint8_t* data, std::size_t size, const std::string& file0);
 
     /** Token list */
     TokensFrontBack mTokensFrontBack;

@@ -563,7 +563,7 @@ unsigned int CppCheck::check(const FileWithDetails &file)
     return checkFile(file, emptyString);
 }
 
-unsigned int CppCheck::check(const FileWithDetails &file, const uint8_t* data, std::size_t size)
+unsigned int CppCheck::checkBuffer(const FileWithDetails &file, const uint8_t* data, std::size_t size)
 {
     return checkBuffer(file, emptyString, data, size);
 }
@@ -615,7 +615,7 @@ unsigned int CppCheck::checkBuffer(const FileWithDetails &file, const std::strin
 {
     return checkInternal(file, cfgname,
                          [&file, data, size](TokenList& list) {
-        list.createTokens(data, size, file.spath());
+        list.createTokensFromBuffer(data, size, file.spath());
     },
                          [&file, data, size](std::vector<std::string>& files, simplecpp::OutputList* outputList) {
         return simplecpp::TokenList{data, size, files, file.spath(), outputList};
@@ -626,7 +626,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 {
     return checkInternal(file, cfgname,
                          [&file](TokenList& list) {
-        list.createTokens(file.spath());
+        list.createTokensFromFile(file.spath());
     },
                          [&file](std::vector<std::string>& files, simplecpp::OutputList* outputList) {
         return simplecpp::TokenList{file.spath(), files, outputList};
@@ -813,7 +813,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
             }
             TokenList tokenlist(&mSettings);
             // TODO: asserts when file has unknown extension
-            tokenlist.createTokens(code.data(), code.size(), Path::identify(*files.begin(), false)); // TODO: check result?
+            tokenlist.createTokensFromBuffer(code.data(), code.size(), Path::identify(*files.begin(), false)); // TODO: check result?
             executeRules("define", tokenlist);
         }
 #endif

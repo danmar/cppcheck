@@ -1791,7 +1791,7 @@ static std::shared_ptr<Token> createTokenFromExpression(const std::string& retur
     std::shared_ptr<TokenList> tokenList = std::make_shared<TokenList>(&settings);
     {
         const std::string code = "return " + returnValue + ";";
-        if (!tokenList->createTokens(code.data(), code.size(), cpp ? Standards::Language::CPP : Standards::Language::C))
+        if (!tokenList->createTokensFromBuffer(code.data(), code.size(), cpp ? Standards::Language::CPP : Standards::Language::C))
             return nullptr;
     }
 

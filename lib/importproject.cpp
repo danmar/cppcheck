@@ -574,7 +574,7 @@ namespace {
             // TODO: improve evaluation
             const Settings s;
             TokenList tokenlist(&s);
-            tokenlist.createTokens(c.data(), c.size(), Standards::Language::C); // TODO: check result
+            tokenlist.createTokensFromBuffer(c.data(), c.size(), Standards::Language::C); // TODO: check result
             // TODO: put in a helper
             // generate links
             {

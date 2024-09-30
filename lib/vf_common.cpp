@@ -99,7 +99,7 @@ namespace ValueFlow
     {
         TokenList typeTokens(&settings);
         const std::string str(typestr+";");
-        if (!typeTokens.createTokens(str.data(), str.size(), cpp ? Standards::Language::CPP : Standards::Language::C))
+        if (!typeTokens.createTokensFromBuffer(str.data(), str.size(), cpp ? Standards::Language::CPP : Standards::Language::C))
             return false;
         typeTokens.simplifyPlatformTypes();
         typeTokens.simplifyStdType();

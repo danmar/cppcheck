@@ -8940,7 +8940,7 @@ private:
         for (const std::string& c: code) {
             Tokenizer tokenizer(settingsDefault, *this);
             const std::string filename = std::to_string(fileInfo.size()) + ".cpp";
-            ASSERT(tokenizer.list.createTokens(c.data(), c.size(), filename));
+            ASSERT(tokenizer.list.createTokensFromBuffer(c.data(), c.size(), filename));
             ASSERT(tokenizer.simplifyTokens1(""));
             fileInfo.push_back(check.getFileInfo(tokenizer, settingsDefault));
         }

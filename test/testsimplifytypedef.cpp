@@ -263,7 +263,7 @@ private:
     std::string simplifyTypedef(const char (&data)[size]) {
         Tokenizer tokenizer(settings1, *this);
 
-        if (!tokenizer.list.createTokens(data, size-1, Standards::Language::CPP))
+        if (!tokenizer.list.createTokensFromBuffer(data, size-1, Standards::Language::CPP))
             return "";
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
@@ -299,7 +299,7 @@ private:
     std::string simplifyTypedefC(const char (&data)[size]) {
         Tokenizer tokenizer(settings1, *this);
 
-        if (!tokenizer.list.createTokens(data, size-1, "file.c"))
+        if (!tokenizer.list.createTokensFromBuffer(data, size-1, "file.c"))
             return "";
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
@@ -315,7 +315,7 @@ private:
     std::string dumpTypedefInfo(const char (&code)[size]) {
         Tokenizer tokenizer(settings1, *this);
 
-        if (!tokenizer.list.createTokens(code, size-1, "file.c"))
+        if (!tokenizer.list.createTokensFromBuffer(code, size-1, "file.c"))
             return {};
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
@@ -4402,7 +4402,7 @@ private:
                             "void test(rFunctionPointer_fp functionPointer);";
 
         Tokenizer tokenizer(settings1, *this);
-        ASSERT(tokenizer.list.createTokens(code, "file.c"));
+        ASSERT(tokenizer.list.createTokensFromString(code, "file.c"));
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 

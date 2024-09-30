@@ -702,7 +702,7 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     mUI->mResults->checkingStarted(1);
     {
         const std::string code_s = code.toStdString();
-        cppcheck.check(FileWithDetails(filename.toStdString()), reinterpret_cast<const std::uint8_t*>(code_s.data()), code_s.size());
+        cppcheck.checkBuffer(FileWithDetails(filename.toStdString()), reinterpret_cast<const std::uint8_t*>(code_s.data()), code_s.size());
     }
     analysisDone();
 

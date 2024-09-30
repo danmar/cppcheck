@@ -5306,7 +5306,7 @@ private:
     unsigned int templateParameters(const char (&data)[size]) {
         Tokenizer tokenizer(settings, *this);
 
-        if (!tokenizer.list.createTokens(data, size-1, "test.cpp"))
+        if (!tokenizer.list.createTokensFromBuffer(data, size-1, "test.cpp"))
             return false;
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
@@ -5374,7 +5374,7 @@ private:
     int templateNamePositionHelper(const char (&data)[size], unsigned offset = 0) {
         Tokenizer tokenizer(settings, *this);
 
-        if (!tokenizer.list.createTokens(data, size-1, "test.cpp"))
+        if (!tokenizer.list.createTokensFromBuffer(data, size-1, "test.cpp"))
             return false;
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
@@ -5445,7 +5445,7 @@ private:
     bool findTemplateDeclarationEndHelper(const char (&data)[size], const char pattern[], unsigned offset = 0) {
         Tokenizer tokenizer(settings, *this);
 
-        if (!tokenizer.list.createTokens(data, size-1, "test.cpp"))
+        if (!tokenizer.list.createTokensFromBuffer(data, size-1, "test.cpp"))
             return false;
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
@@ -5475,7 +5475,7 @@ private:
     bool getTemplateParametersInDeclarationHelper(const char (&data)[size], const std::vector<std::string> & params) {
         Tokenizer tokenizer(settings, *this);
 
-        if (!tokenizer.list.createTokens(data, size-1, "test.cpp"))
+        if (!tokenizer.list.createTokensFromBuffer(data, size-1, "test.cpp"))
             return false;
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);

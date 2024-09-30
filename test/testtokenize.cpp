@@ -834,7 +834,7 @@ private:
         {
             Tokenizer tokenizer(settings1, *this);
             const char code[] = "void foo(int i) { reinterpret_cast<char>(i) };";
-            ASSERT(tokenizer.list.createTokens(code, "test.h"));
+            ASSERT(tokenizer.list.createTokensFromString(code, "test.h"));
             ASSERT_THROW_INTERNAL(tokenizer.simplifyTokens1(""), SYNTAX);
         }
     }
@@ -5997,7 +5997,7 @@ private:
     std::string testAst(const char (&data)[size], AstStyle style = AstStyle::Simple) {
         // tokenize given code..
         Tokenizer tokenizer(settings0, *this);
-        if (!tokenizer.list.createTokens(data, size-1,"test.cpp"))
+        if (!tokenizer.list.createTokensFromBuffer(data, size-1,"test.cpp"))
             return "ERROR";
 
         tokenizer.combineStringAndCharLiterals();

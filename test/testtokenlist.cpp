@@ -125,7 +125,7 @@ private:
             const char code2[] = "_Generic"; // C11 keyword
             const Settings s = settingsBuilder().c(Standards::C89).build();
             TokenList tokenlist(&s);
-            ASSERT(tokenlist.createTokens(code2, "a.c"));
+            ASSERT(tokenlist.createTokensFromString(code2, "a.c"));
             ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
         }
 
@@ -145,7 +145,7 @@ private:
             const char code2[] = "noexcept"; // C++11 keyword
             const Settings s = settingsBuilder().cpp(Standards::CPP03).build();
             TokenList tokenlist(&s);
-            ASSERT(tokenlist.createTokens(code2, "a.cpp"));
+            ASSERT(tokenlist.createTokensFromString(code2, "a.cpp"));
             ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
         }
     }
@@ -166,7 +166,7 @@ private:
         const char code[] = "('Release|x64' == 'Release|x64');";
 
         TokenList tokenlist(&settings);
-        ASSERT(tokenlist.createTokens(code, Standards::Language::C));
+        ASSERT(tokenlist.createTokensFromString(code, Standards::Language::C));
         // TODO: put this logic in TokenList
         // generate links
         {

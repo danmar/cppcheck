@@ -272,7 +272,7 @@ private:
     template<size_t size>
     std::string tokenizeHeader_(const char* file, int line, const char (&code)[size], const char filename[]) {
         Tokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.list.createTokens(code, size-1, filename), file, line);
+        ASSERT_LOC(tokenizer.list.createTokensFromBuffer(code, size-1, filename), file, line);
         ASSERT_EQUALS(true, tokenizer.simplifyTokens1(""));
 
         // result..

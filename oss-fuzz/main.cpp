@@ -45,7 +45,7 @@ static void doCheck(const uint8_t *data, size_t dataSize)
     CppCheck cppcheck(s_errorLogger, false, nullptr);
     cppcheck.settings().addEnabled("all");
     cppcheck.settings().certainty.setEnabled(Certainty::inconclusive, true);
-    cppcheck.check(s_file, data, dataSize);
+    cppcheck.checkBuffer(s_file, data, dataSize);
 }
 
 #ifndef NO_FUZZ

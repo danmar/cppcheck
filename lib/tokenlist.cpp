@@ -335,29 +335,29 @@ void TokenList::insertTokens(Token *dest, const Token *src, nonneg int n)
 // Tokenize - tokenizes a given file.
 //---------------------------------------------------------------------------
 
-bool TokenList::createTokens(const std::string& file0)
+bool TokenList::createTokensFromFile(const std::string& file0)
 {
     ASSERT_LANG(!file0.empty());
 
     appendFileIfNew(file0);
 
-    return createTokensInternal(file0);
+    return createTokensFromFileInternal(file0);
 }
 
 //---------------------------------------------------------------------------
 
-bool TokenList::createTokens(const uint8_t* data, size_t size, const std::string& file0)
+bool TokenList::createTokensFromBuffer(const uint8_t* data, size_t size, const std::string& file0)
 {
     ASSERT_LANG(!file0.empty());
 
     appendFileIfNew(file0);
 
-    return createTokensInternal(data, size, file0);
+    return createTokensFromBufferInternal(data, size, file0);
 }
 
 //---------------------------------------------------------------------------
 
-bool TokenList::createTokens(const uint8_t* data, size_t size, Standards::Language lang)
+bool TokenList::createTokensFromBuffer(const uint8_t* data, size_t size, Standards::Language lang)
 {
     ASSERT_LANG(lang != Standards::Language::None);
     if (mLang == Standards::Language::None) {
@@ -366,12 +366,12 @@ bool TokenList::createTokens(const uint8_t* data, size_t size, Standards::Langua
         ASSERT_LANG(lang == mLang);
     }
 
-    return createTokensInternal(data, size, "");
+    return createTokensFromBufferInternal(data, size, "");
 }
 
 //---------------------------------------------------------------------------
 
-bool TokenList::createTokensInternal(const std::string& file0)
+bool TokenList::createTokensFromFileInternal(const std::string& file0)
 {
     simplecpp::OutputList outputList;
     simplecpp::TokenList tokens(file0, mFiles, &outputList);
@@ -383,7 +383,7 @@ bool TokenList::createTokensInternal(const std::string& file0)
 
 //---------------------------------------------------------------------------
 
-bool TokenList::createTokensInternal(const uint8_t* data, size_t size, const std::string& file0)
+bool TokenList::createTokensFromBufferInternal(const uint8_t* data, size_t size, const std::string& file0)
 {
     simplecpp::OutputList outputList;
     simplecpp::TokenList tokens(data, size, mFiles, file0, &outputList);

@@ -108,7 +108,11 @@ public:
      * @note You must set settings before calling this function (by calling
      *  settings()).
      */
-    unsigned int check(const FileWithDetails &file, const uint8_t* data, std::size_t size);
+    unsigned int checkBuffer(const FileWithDetails &file, const uint8_t* data, std::size_t size);
+
+    unsigned int checkString(const FileWithDetails &file, const std::string& data) {
+        return checkBuffer(file, reinterpret_cast<const uint8_t*>(data.data()), data.size());
+    }
 
     /**
      * @brief Get reference to current settings.

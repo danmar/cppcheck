@@ -583,7 +583,7 @@ private:
             const std::string fname = "test" + std::to_string(i) + ".cpp";
 
             Tokenizer tokenizer(settings, *this);
-            ASSERT(tokenizer.list.createTokens(code, fname));
+            ASSERT(tokenizer.list.createTokensFromString(code, fname));
             ASSERT(tokenizer.simplifyTokens1(""));
 
             c.parseTokens(tokenizer, settings);
