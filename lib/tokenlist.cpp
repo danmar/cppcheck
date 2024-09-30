@@ -321,14 +321,14 @@ void TokenList::insertTokens(Token *dest, const Token *src, nonneg int n)
 
 //---------------------------------------------------------------------------
 
-bool TokenList::createTokens(const uint8_t* data, size_t size)
+bool TokenList::createTokensFromBuffer(const uint8_t* data, size_t size)
 {
-    return createTokensInternal(data, size, mFiles.empty() ? "" : *mFiles.cbegin());
+    return createTokensFromBufferInternal(data, size, mFiles.empty() ? "" : *mFiles.cbegin());
 }
 
 //---------------------------------------------------------------------------
 
-bool TokenList::createTokensInternal(const std::string& file0)
+bool TokenList::createTokensFromFileInternal(const std::string& file0)
 {
     simplecpp::OutputList outputList;
     simplecpp::TokenList tokens(file0, mFiles, &outputList);
@@ -340,7 +340,7 @@ bool TokenList::createTokensInternal(const std::string& file0)
 
 //---------------------------------------------------------------------------
 
-bool TokenList::createTokensInternal(const uint8_t* data, size_t size, const std::string& file0)
+bool TokenList::createTokensFromBufferInternal(const uint8_t* data, size_t size, const std::string& file0)
 {
     simplecpp::OutputList outputList;
     simplecpp::TokenList tokens(data, size, mFiles, file0, &outputList);

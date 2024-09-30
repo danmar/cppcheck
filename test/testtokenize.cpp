@@ -912,7 +912,7 @@ private:
             TokenList tokenlist{settings1, Standards::Language::C}; // headers are treated as C files
             const char code[] = "void foo(int i) { reinterpret_cast<char>(i) };";
             tokenlist.appendFileIfNew("test.h");
-            ASSERT(tokenlist.createTokens(code));
+            ASSERT(tokenlist.createTokensFromString(code));
             Tokenizer tokenizer(std::move(tokenlist), *this);
             ASSERT_THROW_INTERNAL(tokenizer.simplifyTokens1(""), SYNTAX);
         }
@@ -6209,7 +6209,7 @@ private:
         // tokenize given code..
         TokenList tokenlist{settings0, Standards::Language::CPP};
         tokenlist.appendFileIfNew("test.cpp");
-        if (!tokenlist.createTokens(data, size-1))
+        if (!tokenlist.createTokensFromBuffer(data, size-1))
             return "ERROR";
 
         Tokenizer tokenizer(std::move(tokenlist), *this);

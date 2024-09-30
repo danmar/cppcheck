@@ -5443,7 +5443,7 @@ private:
     unsigned int templateParameters(const char (&data)[size]) {
         TokenList tokenlist{settings, Standards::Language::CPP};
         tokenlist.appendFileIfNew("test.cpp");
-        if (!tokenlist.createTokens(data, size-1))
+        if (!tokenlist.createTokensFromBuffer(data, size-1))
             return false;
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
@@ -5513,7 +5513,7 @@ private:
         TokenList tokenlist{settings, Standards::Language::CPP};
 
         tokenlist.appendFileIfNew("test.cpp");
-        if (!tokenlist.createTokens(data, size-1))
+        if (!tokenlist.createTokensFromBuffer(data, size-1))
             return false;
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
@@ -5584,7 +5584,7 @@ private:
     template<size_t size>
     bool findTemplateDeclarationEndHelper(const char (&data)[size], const char pattern[], unsigned offset = 0) {
         TokenList tokenlist{settings, Standards::Language::CPP};
-        if (!TokenListHelper::createTokens(tokenlist, data, size-1, "test.cpp"))
+        if (!TokenListHelper::createTokensFromBuffer(tokenlist, data, size-1, "test.cpp"))
             return false;
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
@@ -5615,7 +5615,7 @@ private:
     bool getTemplateParametersInDeclarationHelper(const char (&data)[size], const std::vector<std::string> & params) {
         TokenList tokenlist{settings, Standards::Language::CPP};
 
-        if (!TokenListHelper::createTokens(tokenlist, data, size-1, "test.cpp"))
+        if (!TokenListHelper::createTokensFromBuffer(tokenlist, data, size-1, "test.cpp"))
             return false;
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();

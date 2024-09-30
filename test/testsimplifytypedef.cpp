@@ -279,7 +279,7 @@ private:
     template<size_t size>
     std::string simplifyTypedef(const char (&data)[size]) {
         TokenList tokenlist{settings1, Standards::Language::CPP};
-        if (!tokenlist.createTokens(data, size-1))
+        if (!tokenlist.createTokensFromBuffer(data, size-1))
             return "";
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
@@ -314,7 +314,7 @@ private:
     std::string simplifyTypedefC(const char (&data)[size]) {
         TokenList tokenlist{settings1, Standards::Language::C};
 
-        if (!TokenListHelper::createTokens(tokenlist, data, size-1, "file.c"))
+        if (!TokenListHelper::createTokensFromBuffer(tokenlist, data, size-1, "file.c"))
             return "";
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
@@ -330,7 +330,7 @@ private:
     template<size_t size>
     std::string dumpTypedefInfo(const char (&code)[size]) {
         TokenList tokenlist{settings1, Standards::Language::C};
-        if (!TokenListHelper::createTokens(tokenlist, code, size-1, "file.c"))
+        if (!TokenListHelper::createTokensFromBuffer(tokenlist, code, size-1, "file.c"))
             return {};
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
@@ -4457,7 +4457,7 @@ private:
                             "void test(rFunctionPointer_fp functionPointer);";
 
         TokenList tokenlist{settings1, Standards::Language::C};
-        ASSERT(TokenListHelper::createTokens(tokenlist, code, "file.c"));
+        ASSERT(TokenListHelper::createTokensFromString(tokenlist, code, "file.c"));
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
@@ -4499,7 +4499,7 @@ private:
                             "}";
 
         TokenList tokenlist{settings1, Standards::Language::C};
-        ASSERT(TokenListHelper::createTokens(tokenlist, code, "file.c"));
+        ASSERT(TokenListHelper::createTokensFromString(tokenlist, code, "file.c"));
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
@@ -4517,7 +4517,7 @@ private:
                             "}";
 
         TokenList tokenlist{settings1, Standards::Language::C};
-        ASSERT(TokenListHelper::createTokens(tokenlist, code, "file.c"));
+        ASSERT(TokenListHelper::createTokensFromString(tokenlist, code, "file.c"));
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();

@@ -90,7 +90,7 @@ private:
         if (list.front())
             throw std::runtime_error("token list is not empty");
         list.appendFileIfNew(filename);
-        if (!list.createTokens(code, size))
+        if (!list.createTokensFromBuffer(code, size))
             return false;
 
         return simplifyTokens1("");
@@ -107,7 +107,7 @@ public:
     explicit SimpleTokenList(const char (&code)[size], Standards::Language lang = Standards::Language::CPP)
         : list{settings, lang}
     {
-        if (!list.createTokens(code, size-1))
+        if (!list.createTokensFromBuffer(code, size-1))
             throw std::runtime_error("creating tokens failed");
     }
 
@@ -116,7 +116,7 @@ public:
         : list{settings, lang}
     {
         list.appendFileIfNew(file0);
-        if (!list.createTokens(code, size-1))
+        if (!list.createTokensFromBuffer(code, size-1))
             throw std::runtime_error("creating tokens failed");
     }
 
@@ -278,17 +278,17 @@ private:
 struct TokenListHelper
 {
     template<size_t size>
-    static bool createTokens(TokenList& tokenlist, const char (&code)[size], const std::string& file)
+    static bool createTokensFromString(TokenList& tokenlist, const char (&code)[size], const std::string& file)
     {
-        return createTokens(tokenlist, code, size-1, file);
+        return createTokensFromBuffer(tokenlist, code, size-1, file);
     }
 
-    static bool createTokens(TokenList& tokenlist, const char* data, size_t size, const std::string& file)
+    static bool createTokensFromBuffer(TokenList& tokenlist, const char* data, size_t size, const std::string& file)
     {
         if (tokenlist.front())
             throw std::runtime_error("token list is not empty");
         tokenlist.appendFileIfNew(file);
-        return tokenlist.createTokens(data, size);
+        return tokenlist.createTokensFromBuffer(data, size);
     }
 };
 

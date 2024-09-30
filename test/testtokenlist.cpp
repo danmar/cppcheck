@@ -125,7 +125,7 @@ private:
             const Settings s = settingsBuilder().c(Standards::C89).build();
             TokenList tokenlist(s, Standards::Language::C);
             tokenlist.appendFileIfNew("a.c");
-            ASSERT(tokenlist.createTokens(code2));
+            ASSERT(tokenlist.createTokensFromString(code2));
             ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
         }
 
@@ -146,7 +146,7 @@ private:
             const Settings s = settingsBuilder().cpp(Standards::CPP03).build();
             TokenList tokenlist(s, Standards::Language::CPP);
             tokenlist.appendFileIfNew("a.cpp");
-            ASSERT(tokenlist.createTokens(code2));
+            ASSERT(tokenlist.createTokensFromString(code2));
             ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
         }
     }
@@ -167,7 +167,7 @@ private:
         const char code[] = "('Release|x64' == 'Release|x64');";
 
         TokenList tokenlist(settingsDefault, Standards::Language::C);
-        ASSERT(tokenlist.createTokens(code));
+        ASSERT(tokenlist.createTokensFromString(code));
         // TODO: put this logic in TokenList
         // generate links
         {
