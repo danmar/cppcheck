@@ -562,7 +562,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     errorReturnReference(tok, lt.errorPath, lt.inconclusive);
                     break;
                 }
-                if (isDeadTemporary(lt.token, nullptr, &mSettings->library)) {
+                if (isDeadTemporary(lt.token, nullptr, &mSettings->library) && lt.token->variable() && lt.token->variable()->isReference()) {
                     errorReturnTempReference(tok, lt.errorPath, lt.inconclusive);
                     break;
                 }
