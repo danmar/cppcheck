@@ -390,6 +390,7 @@ std::vector<MathLib::bigint> getMaxValue(const ValuePtr<InferModel>& model, cons
 
 namespace {
     struct IntegralInferModel : InferModel {
+    private:
         bool match(const ValueFlow::Value& value) const override {
             return value.isIntValue();
         }
@@ -410,10 +411,10 @@ ValuePtr<InferModel> makeIntegralInferModel()
 
 namespace {
     struct SymbolicInferModel : InferModel {
-        const Token* expr;
         explicit SymbolicInferModel(const Token* tok) : expr(tok) {
             assert(expr->exprId() != 0);
         }
+    private:
         bool match(const ValueFlow::Value& value) const override
         {
             return value.isSymbolicValue() && value.tokvalue && value.tokvalue->exprId() == expr->exprId();
@@ -426,6 +427,7 @@ namespace {
             result.setKnown();
             return result;
         }
+        const Token* expr;
     };
 }
 
@@ -436,6 +438,7 @@ ValuePtr<InferModel> makeSymbolicInferModel(const Token* token)
 
 namespace {
     struct IteratorInferModel : InferModel {
+    private:
         virtual ValueFlow::Value::ValueType getType() const = 0;
         bool match(const ValueFlow::Value& value) const override {
             return value.valueType == getType();
@@ -450,12 +453,14 @@ namespace {
     };
 
     struct EndIteratorInferModel : IteratorInferModel {
+    private:
         ValueFlow::Value::ValueType getType() const override {
             return ValueFlow::Value::ValueType::ITERATOR_END;
         }
     };
 
     struct StartIteratorInferModel : IteratorInferModel {
+    private:
         ValueFlow::Value::ValueType getType() const override {
             return ValueFlow::Value::ValueType::ITERATOR_END;
         }
