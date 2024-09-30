@@ -3665,40 +3665,37 @@ bool isUnevaluated(const Token *tok)
     return Token::Match(tok, "alignof|_Alignof|_alignof|__alignof|__alignof__|decltype|offsetof|sizeof|typeid|typeof|__typeof__ (");
 }
 
-static std::set<std::string> getSwitchExprs(const Token *startbrace, bool &hasDefault)
+static std::set<MathLib::bigint> getSwitchValues(const Token *startbrace, bool &hasDefault)
 {
-    std::set<std::string> exprs;
+    std::set<MathLib::bigint> values;
     const Token *endbrace = startbrace->link();
     if (!endbrace)
         return {};
 
     hasDefault = false;
     for (const Token *tok = startbrace->next(); tok && tok != endbrace; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "{")) {
+        if (Token::simpleMatch(tok, "{") && tok->scope()->type == Scope::ScopeType::eSwitch) {
             tok = tok->link();
-            continue;
-        }
-        if (Token::simpleMatch(tok, "case")) {
-            const Token *exprtok = tok->astOperand1();
-            if (!exprtok)
-                continue;
-            while (Token::Match(tok, "%name% ::"))
-                tok = tok->tokAt(2);
-            exprs.insert(exprtok->str());
             continue;
         }
         if (Token::simpleMatch(tok, "default")) {
             hasDefault = true;
+            break;
+        }
+        if (Token::simpleMatch(tok, "case")) {
+            const Token *valueTok = tok->astOperand1();
+            if (valueTok->hasKnownIntValue())
+                values.insert(valueTok->getKnownIntValue());
             continue;
         }
     }
 
-    return exprs;
+    return values;
 }
 
 bool isExhaustiveSwitch(const Token *startbrace)
 {
-    if (!startbrace)
+    if (!startbrace || !Token::simpleMatch(startbrace->previous(), ") {") || startbrace->scope()->type != Scope::ScopeType::eSwitch)
         return false;
     const Token *rpar = startbrace->previous();
     if (!rpar)
@@ -3706,39 +3703,33 @@ bool isExhaustiveSwitch(const Token *startbrace)
     const Token *lpar = rpar->link();
     if (!lpar)
         return false;
-    const Token *vartok = lpar->next();
-    // bail out on more complex expression than just a variable
-    if (!vartok || vartok->next() != rpar || !vartok->isVariable())
-        return false;
+
+    const Token *condition = lpar->astOperand2();
 
     bool hasDefault{};
-    std::set<std::string> caseExprs = getSwitchExprs(startbrace, hasDefault);
+    std::set<MathLib::bigint> switchValues = getSwitchValues(startbrace, hasDefault);
 
     if (hasDefault)
         return true;
 
-    if (vartok->variable()->getTypeName() == "bool") {
-        const auto &trueCase = caseExprs.find("true");
-        const auto &falseCase = caseExprs.find("false");
-        return trueCase != caseExprs.end() && falseCase != caseExprs.end();
+    if (condition->valueType()->type == ValueType::Type::BOOL) {
+        const auto trueCase = switchValues.find(1);
+        const auto falseCase = switchValues.find(0);
+        return trueCase != switchValues.end() && falseCase != switchValues.end();
     }
 
-    const Type *type = vartok->variable()->type();
-    if (type && type->isEnumType()) {
-        const Scope *classScope = vartok->variable()->type()->classScope;
-        std::set<std::string> enumNames;
-        for (const Token *tok = classScope->bodyStart->next(); tok && tok != classScope->bodyEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "%name%"))
-                continue;
-            enumNames.insert(tok->str());
-            while (tok && !Token::Match(tok, ",|}"))
-                tok = tok->next();
-            if (Token::simpleMatch(tok, "}"))
-                break;
+    if (condition->valueType()->isEnum()) {
+        const Scope *typeScope = condition->valueType()->typeScope;
+        const std::vector<Enumerator> &enumList = typeScope->enumeratorList;
+        std::set<MathLib::bigint> declValues;
+        for (const auto &e : enumList) {
+            if (e.value_known)
+                declValues.insert(e.value);
         }
-        for (const std::string &name : caseExprs)
-            enumNames.erase(name);
-        return enumNames.empty();
+        for (const auto v : switchValues) {
+            declValues.erase(v);
+        }
+        return declValues.empty();
     }
 
     return false;
