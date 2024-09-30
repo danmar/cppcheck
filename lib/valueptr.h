@@ -54,24 +54,27 @@ public:
     }
     ValuePtr(ValuePtr&& rhs) NOEXCEPT : mPtr(std::move(rhs.mPtr)), mClone(std::move(rhs.mClone)) {}
 
-    T* get() NOEXCEPT {
+    T* get() && = delete;
+    T* get() & NOEXCEPT {
         return mPtr.get();
     }
-    const T* get() const NOEXCEPT {
+    const T* get() const & NOEXCEPT {
         return mPtr.get();
     }
 
-    T& operator*() {
+    T& operator*() && = delete;
+    T& operator*() & {
         return *get();
     }
-    const T& operator*() const {
+    const T& operator*() const & {
         return *get();
     }
 
-    T* operator->() NOEXCEPT {
+    T* operator->() && = delete;
+    T* operator->() & NOEXCEPT {
         return get();
     }
-    const T* operator->() const NOEXCEPT {
+    const T* operator->() const & NOEXCEPT {
         return get();
     }
 

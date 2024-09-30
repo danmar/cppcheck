@@ -289,13 +289,15 @@ public:
      * Get name string.
      * @return name string
      */
-    const std::string &name() const {
+    const std::string &name() const & {
         // name may not exist for function arguments
         if (mNameToken)
             return mNameToken->str();
 
         return emptyString;
     }
+
+    std::string name() && = delete;
 
     /**
      * Get declaration ID (varId used for variable in its declaration).
@@ -1372,9 +1374,11 @@ public:
         return varid < mVariableList.size();
     }
 
-    const Variable *getVariableFromVarId(nonneg int varId) const {
+    const Variable *getVariableFromVarId(nonneg int varId) const & {
         return mVariableList.at(varId);
     }
+
+    Variable getVariableFromVarId(nonneg int varId) && = delete;
 
     const std::vector<const Variable *> & variableList() const & {
         return mVariableList;
