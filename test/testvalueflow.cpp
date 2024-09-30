@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
 #include "mathlib.h"

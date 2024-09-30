@@ -26,6 +26,8 @@
 #include "preprocessor.h"
 #include "settings.h"
 #include "suppressions.h"
+#include "tokenize.h"
+#include "tokenlist.h"
 #include "fixture.h"
 #include "helpers.h"
 

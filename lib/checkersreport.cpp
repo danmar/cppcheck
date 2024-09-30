@@ -23,6 +23,7 @@
 #include "settings.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <map>
 #include <sstream>
 #include <unordered_set>

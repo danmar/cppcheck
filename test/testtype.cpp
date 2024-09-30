@@ -26,11 +26,8 @@
 #include "tokenize.h"
 
 #include <cstddef>
-#include <list>
 #include <string>
 #include <vector>
-
-#include <simplecpp.h>
 
 class TestType : public TestFixture {
 public:

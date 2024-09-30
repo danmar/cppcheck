@@ -31,6 +31,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <list>
+#include <memory>
 #include <sstream>
 #include <stdexcept>
 #include <string>

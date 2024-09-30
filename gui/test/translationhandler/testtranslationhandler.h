@@ -17,7 +17,6 @@
  */
 
 #include <QObject>
-#include <QString>
 
 class TestTranslationHandler : public QObject {
     Q_OBJECT
