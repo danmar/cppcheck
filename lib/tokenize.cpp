@@ -698,7 +698,7 @@ namespace {
                     mRangeAfterVar.second = mEndToken;
                     return;
                 }
-                if (Token::Match(type, "%name% ( !!(") && Token::simpleMatch(type->linkAt(1), ") ;") && !type->isStandardType()) {
+                if (type != start && Token::Match(type, "%name% ( !!(") && Token::simpleMatch(type->linkAt(1), ") ;") && !type->isStandardType()) {
                     mNameToken = type;
                     mEndToken = type->linkAt(1)->next();
                     mRangeType.first = start;
