@@ -183,6 +183,7 @@ namespace CppcheckXml {
     static constexpr char CodingStandardsElementName[] = "coding-standards";
     static constexpr char CodingStandardElementName[] = "coding-standard";
     static constexpr char CertIntPrecisionElementName[] = "cert-c-int-precision";
+    static constexpr char LicenseFileElementName[] = "license-file";
     static constexpr char ProjectNameElementName[] = "project-name";
 }
 

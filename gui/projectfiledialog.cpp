@@ -119,6 +119,8 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, bool premium, QWi
     setWindowTitle(title);
     loadSettings();
 
+    mUI->premiumLicense->setVisible(premium);
+
     // Checkboxes for the libraries..
     const QString applicationFilePath = QCoreApplication::applicationFilePath();
     const QString appPath = QFileInfo(applicationFilePath).canonicalPath();
@@ -245,6 +247,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, bool premium, QWi
     connect(mUI->mListSuppressions, &QListWidget::doubleClicked, this, &ProjectFileDialog::editSuppression);
     connect(mUI->mBtnBrowseMisraFile, &QPushButton::clicked, this, &ProjectFileDialog::browseMisraFile);
     connect(mUI->mChkAllVsConfigs, &QCheckBox::clicked, this, &ProjectFileDialog::checkAllVSConfigs);
+    connect(mUI->mBtnBrowseLicense, &QPushButton::clicked, this, &ProjectFileDialog::browseLicenseFile);
     loadFromProjectFile(projectFile);
 }
 
@@ -435,6 +438,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
         mUI->mToolClangTidy->setEnabled(false);
     }
     mUI->mEditTags->setText(projectFile->getTags().join(';'));
+    mUI->mEditLicenseFile->setText(projectFile->getLicenseFile());
     updatePathsAndDefines();
 }
 
@@ -512,6 +516,8 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setBughunting(mUI->mBughunting->isChecked());
     projectFile->setClangAnalyzer(mUI->mToolClangAnalyzer->isChecked());
     projectFile->setClangTidy(mUI->mToolClangTidy->isChecked());
+    if (mPremium)
+        projectFile->setLicenseFile(mUI->mEditLicenseFile->text());
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
     projectFile->setTags(mUI->mEditTags->text().split(";", Qt::SkipEmptyParts));
 #else
@@ -948,4 +954,17 @@ void ProjectFileDialog::browseMisraFile()
         mUI->mMisraC->setEnabled(true);
         updateAddonCheckBox(mUI->mMisraC, nullptr, getDataDir(), ADDON_MISRA);
     }
+}
+
+void ProjectFileDialog::browseLicenseFile()
+{
+    const QFileInfo inf(mProjectFile->getFilename());
+    const QString rootpath = inf.absolutePath();
+
+    const QString fileName = QFileDialog::getOpenFileName(this, tr("Select license file"), rootpath, tr("License file (%1)").arg("*.lic"));
+    if (fileName.isEmpty())
+        return;
+
+    const QDir dir(rootpath);
+    mUI->mEditLicenseFile->setText(dir.relativeFilePath(fileName));
 }

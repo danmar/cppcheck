@@ -90,6 +90,7 @@ void ProjectFile::clear()
     mBughunting = false;
     mCertIntPrecision = 0;
     mCodingStandards.clear();
+    mPremiumLicenseFile.clear();
 }
 
 bool ProjectFile::read(const QString &filename)
@@ -225,6 +226,8 @@ bool ProjectFile::read(const QString &filename)
                 readStringList(mCodingStandards, xmlReader, CppcheckXml::CodingStandardElementName);
             if (xmlReader.name() == QString(CppcheckXml::CertIntPrecisionElementName))
                 mCertIntPrecision = readInt(xmlReader, 0);
+            if (xmlReader.name() == QString(CppcheckXml::LicenseFileElementName))
+                mPremiumLicenseFile = readString(xmlReader);
             if (xmlReader.name() == QString(CppcheckXml::ProjectNameElementName))
                 mProjectName = readString(xmlReader);
 
@@ -1033,6 +1036,12 @@ bool ProjectFile::write(const QString &filename)
     if (!mProjectName.isEmpty()) {
         xmlWriter.writeStartElement(CppcheckXml::ProjectNameElementName);
         xmlWriter.writeCharacters(mProjectName);
+        xmlWriter.writeEndElement();
+    }
+
+    if (!mPremiumLicenseFile.isEmpty()) {
+        xmlWriter.writeStartElement(CppcheckXml::LicenseFileElementName);
+        xmlWriter.writeCharacters(mPremiumLicenseFile);
         xmlWriter.writeEndElement();
     }
 

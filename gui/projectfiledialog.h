@@ -172,7 +172,7 @@ private:
      */
     void setSuppressions(const QList<SuppressionList::Suppression> &suppressions);
 
-protected slots:
+private slots:
 
     /** ok button pressed, save changes and accept */
     void ok();
@@ -278,6 +278,9 @@ protected slots:
      */
     void checkAllVSConfigs();
 
+    /** @brief Browse for Cppcheck Premium license file */
+    void browseLicenseFile();
+
 protected:
 
     /**
@@ -319,15 +322,15 @@ protected:
 private:
     static QStringList getProjectConfigs(const QString &fileName);
 
-    Ui::ProjectFile *mUI;
+    Ui::ProjectFile * const mUI;
 
     /**
      * @brief Projectfile path.
      */
-    ProjectFile *mProjectFile;
+    ProjectFile * const mProjectFile;
 
     /** Is this Cppcheck Premium? */
-    bool mPremium;
+    const bool mPremium;
 
     QString getExistingDirectory(const QString &caption, bool trailingSlash);
 
