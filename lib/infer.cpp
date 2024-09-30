@@ -409,6 +409,32 @@ ValuePtr<InferModel> makeIntegralInferModel()
     return IntegralInferModel{};
 }
 
+namespace {
+    struct SymbolicInferModel : InferModel {
+        const Token* expr;
+        explicit SymbolicInferModel(const Token* tok) : expr(tok) {
+            assert(expr->exprId() != 0);
+        }
+        bool match(const ValueFlow::Value& value) const override
+        {
+            return value.isSymbolicValue() && value.tokvalue && value.tokvalue->exprId() == expr->exprId();
+        }
+        ValueFlow::Value yield(MathLib::bigint value) const override
+        {
+            ValueFlow::Value result(value);
+            result.valueType = ValueFlow::Value::ValueType::SYMBOLIC;
+            result.tokvalue = expr;
+            result.setKnown();
+            return result;
+        }
+    };
+}
+
+ValuePtr<InferModel> makeSymbolicInferModel(const Token* token)
+{
+    return SymbolicInferModel{token};
+}
+
 ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val)
 {
     if (!varTok)
