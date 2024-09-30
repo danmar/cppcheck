@@ -3670,7 +3670,7 @@ static std::set<MathLib::bigint> getSwitchValues(const Token *startbrace, bool &
     std::set<MathLib::bigint> values;
     const Token *endbrace = startbrace->link();
     if (!endbrace)
-        return {};
+        return values;
 
     hasDefault = false;
     for (const Token *tok = startbrace->next(); tok && tok != endbrace; tok = tok->next()) {
@@ -3705,6 +3705,8 @@ bool isExhaustiveSwitch(const Token *startbrace)
         return false;
 
     const Token *condition = lpar->astOperand2();
+    if (!condition->valueType())
+        return false;
 
     bool hasDefault{};
     std::set<MathLib::bigint> switchValues = getSwitchValues(startbrace, hasDefault);
