@@ -5113,32 +5113,6 @@ struct SimpleConditionHandler : ConditionHandler {
     }
 };
 
-struct IteratorInferModel : InferModel {
-    virtual ValueFlow::Value::ValueType getType() const = 0;
-    bool match(const ValueFlow::Value& value) const override {
-        return value.valueType == getType();
-    }
-    ValueFlow::Value yield(MathLib::bigint value) const override
-    {
-        ValueFlow::Value result(value);
-        result.valueType = getType();
-        result.setKnown();
-        return result;
-    }
-};
-
-struct EndIteratorInferModel : IteratorInferModel {
-    ValueFlow::Value::ValueType getType() const override {
-        return ValueFlow::Value::ValueType::ITERATOR_END;
-    }
-};
-
-struct StartIteratorInferModel : IteratorInferModel {
-    ValueFlow::Value::ValueType getType() const override {
-        return ValueFlow::Value::ValueType::ITERATOR_END;
-    }
-};
-
 static bool isIntegralOnlyOperator(const Token* tok) {
     return Token::Match(tok, "%|<<|>>|&|^|~|%or%");
 }
@@ -5174,8 +5148,8 @@ static void valueFlowInferCondition(TokenList& tokenlist, const Settings& settin
             continue;
         if (Token::Match(tok, "%comp%|-") && tok->astOperand1() && tok->astOperand2()) {
             if (astIsIterator(tok->astOperand1()) || astIsIterator(tok->astOperand2())) {
-                static const std::array<ValuePtr<InferModel>, 2> iteratorModels = {EndIteratorInferModel{},
-                                                                                   StartIteratorInferModel{}};
+                static const std::array<ValuePtr<InferModel>, 2> iteratorModels = {makeEndIteratorInferModel(),
+                                                                                   makeStartIteratorInferModel()};
                 for (const ValuePtr<InferModel>& model : iteratorModels) {
                     std::vector<ValueFlow::Value> result =
                         infer(model, tok->str(), tok->astOperand1()->values(), tok->astOperand2()->values());

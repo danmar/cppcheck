@@ -435,6 +435,44 @@ ValuePtr<InferModel> makeSymbolicInferModel(const Token* token)
     return SymbolicInferModel{token};
 }
 
+namespace {
+    struct IteratorInferModel : InferModel {
+        virtual ValueFlow::Value::ValueType getType() const = 0;
+        bool match(const ValueFlow::Value& value) const override {
+            return value.valueType == getType();
+        }
+        ValueFlow::Value yield(MathLib::bigint value) const override
+        {
+            ValueFlow::Value result(value);
+            result.valueType = getType();
+            result.setKnown();
+            return result;
+        }
+    };
+
+    struct EndIteratorInferModel : IteratorInferModel {
+        ValueFlow::Value::ValueType getType() const override {
+            return ValueFlow::Value::ValueType::ITERATOR_END;
+        }
+    };
+
+    struct StartIteratorInferModel : IteratorInferModel {
+        ValueFlow::Value::ValueType getType() const override {
+            return ValueFlow::Value::ValueType::ITERATOR_END;
+        }
+    };
+}
+
+ValuePtr<InferModel> makeEndIteratorInferModel()
+{
+    return EndIteratorInferModel{};
+}
+
+ValuePtr<InferModel> makeStartIteratorInferModel()
+{
+    return StartIteratorInferModel{};
+}
+
 ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val)
 {
     if (!varTok)
