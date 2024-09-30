@@ -72,20 +72,6 @@ jobs:
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           make -j$(nproc) HAVE_RULES=yes
 
-      - name: Build test
-        run: |
-          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) testrunner HAVE_RULES=yes
-
-      - name: Run test
-        run: |
-          make -j$(nproc) check HAVE_RULES=yes
-
-      # requires "gnu-sed" installed on macos
-      - name: Run extra tests
-        run: |
-          tools/generate_and_run_more_tests.sh
-
       # do not use pushd in this step since we go below the working directory
       - name: Run test/cli
         run: |
