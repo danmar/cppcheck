@@ -3698,11 +3698,7 @@ bool isExhaustiveSwitch(const Token *startbrace)
     if (!startbrace || !Token::simpleMatch(startbrace->previous(), ") {") || startbrace->scope()->type != Scope::ScopeType::eSwitch)
         return false;
     const Token *rpar = startbrace->previous();
-    if (!rpar)
-        return false;
     const Token *lpar = rpar->link();
-    if (!lpar)
-        return false;
 
     const Token *condition = lpar->astOperand2();
     if (!condition->valueType())
@@ -3714,24 +3710,18 @@ bool isExhaustiveSwitch(const Token *startbrace)
     if (hasDefault)
         return true;
 
-    if (condition->valueType()->type == ValueType::Type::BOOL) {
-        const auto trueCase = switchValues.find(1);
-        const auto falseCase = switchValues.find(0);
-        return trueCase != switchValues.end() && falseCase != switchValues.end();
-    }
+    if (condition->valueType()->type == ValueType::Type::BOOL)
+        return switchValues.count(0) && switchValues.count(1);
 
     if (condition->valueType()->isEnum()) {
         const Scope *typeScope = condition->valueType()->typeScope;
         const std::vector<Enumerator> &enumList = typeScope->enumeratorList;
-        std::set<MathLib::bigint> declValues;
+        std::size_t usedValues = 0;
         for (const auto &e : enumList) {
-            if (e.value_known)
-                declValues.insert(e.value);
+            if (e.value_known && switchValues.count(e.value))
+                usedValues++;
         }
-        for (const auto v : switchValues) {
-            declValues.erase(v);
-        }
-        return declValues.empty();
+        return enumList.size() == usedValues;
     }
 
     return false;
