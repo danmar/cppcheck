@@ -708,7 +708,7 @@ $(libcppdir)/vf_globalstaticvar.o: lib/vf_globalstaticvar.cpp lib/astutils.h lib
 $(libcppdir)/vf_impossiblevalues.o: lib/vf_impossiblevalues.cpp lib/astutils.h lib/calculate.h lib/config.h lib/errortypes.h lib/library.h lib/mathlib.h lib/smallvector.h lib/sourcelocation.h lib/standards.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenlist.h lib/utils.h lib/vf_impossiblevalues.h lib/vf_settokenvalue.h lib/vfvalue.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/vf_impossiblevalues.cpp
 
-$(libcppdir)/vf_infercondition.o: lib/vf_infercondition.cpp lib/astutils.h lib/config.h lib/errortypes.h lib/infer.h lib/library.h lib/mathlib.h lib/smallvector.h lib/sourcelocation.h lib/standards.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenlist.h lib/utils.h lib/valueflow.h lib/valueptr.h lib/vf_infercondition.h lib/vf_settokenvalue.h lib/vfvalue.h
+$(libcppdir)/vf_infercondition.o: lib/vf_infercondition.cpp lib/astutils.h lib/config.h lib/errortypes.h lib/infer.h lib/library.h lib/mathlib.h lib/smallvector.h lib/sourcelocation.h lib/standards.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenlist.h lib/utils.h lib/valueptr.h lib/vf_infercondition.h lib/vf_settokenvalue.h lib/vfvalue.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/vf_infercondition.cpp
 
 $(libcppdir)/vf_iteratorinfer.o: lib/vf_iteratorinfer.cpp lib/config.h lib/errortypes.h lib/library.h lib/mathlib.h lib/sourcelocation.h lib/standards.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenlist.h lib/utils.h lib/vf_common.h lib/vf_iteratorinfer.h lib/vf_settokenvalue.h lib/vfvalue.h

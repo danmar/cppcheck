@@ -20,10 +20,8 @@
 
 #include "astutils.h"
 #include "infer.h"
-#include "mathlib.h"
 #include "token.h"
 #include "tokenlist.h"
-#include "valueflow.h"
 #include "valueptr.h"
 #include "vfvalue.h"
 
@@ -36,32 +34,6 @@
 
 namespace ValueFlow
 {
-    struct IteratorInferModel : InferModel {
-        virtual Value::ValueType getType() const = 0;
-        bool match(const Value& value) const override {
-            return value.valueType == getType();
-        }
-        Value yield(MathLib::bigint value) const override
-        {
-            Value result(value);
-            result.valueType = getType();
-            result.setKnown();
-            return result;
-        }
-    };
-
-    struct EndIteratorInferModel : IteratorInferModel {
-        Value::ValueType getType() const override {
-            return Value::ValueType::ITERATOR_END;
-        }
-    };
-
-    struct StartIteratorInferModel : IteratorInferModel {
-        Value::ValueType getType() const override {
-            return Value::ValueType::ITERATOR_END;
-        }
-    };
-
     static bool isIntegralOnlyOperator(const Token* tok) {
         return Token::Match(tok, "%|<<|>>|&|^|~|%or%");
     }
@@ -97,8 +69,8 @@ namespace ValueFlow
                 continue;
             if (Token::Match(tok, "%comp%|-") && tok->astOperand1() && tok->astOperand2()) {
                 if (astIsIterator(tok->astOperand1()) || astIsIterator(tok->astOperand2())) {
-                    static const std::array<ValuePtr<InferModel>, 2> iteratorModels = {EndIteratorInferModel{},
-                                                                                       StartIteratorInferModel{}};
+                    static const std::array<ValuePtr<InferModel>, 2> iteratorModels = {makeEndIteratorInferModel(),
+                                                                                       makeStartIteratorInferModel()};
                     for (const ValuePtr<InferModel>& model : iteratorModels) {
                         std::vector<Value> result =
                             infer(model, tok->str(), tok->astOperand1()->values(), tok->astOperand2()->values());
