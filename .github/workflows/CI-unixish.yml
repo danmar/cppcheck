@@ -20,7 +20,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-13, macos-14]
+        os: [macos-13]
         include:
           - use_qt6: On
           - os: ubuntu-20.04
@@ -83,7 +83,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-13, macos-14]
+        os: [macos-13]
         include:
           - use_qt6: On
       fail-fast: false # Prefer quick result
@@ -163,7 +163,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-13, macos-14]
+        os: [macos-13]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -195,7 +195,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-13, macos-14]
+        os: [macos-13]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -227,7 +227,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-13, macos-14]
+        os: [macos-13]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -249,7 +249,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-13, macos-14]
+        os: [macos-13]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
