@@ -1731,8 +1731,11 @@ bool Library::isnotnoreturn(const Token *ftok) const
 {
     if (ftok->function() && ftok->function()->isAttributeNoreturn())
         return false;
-    if (isNotLibraryFunction(ftok))
+    if (isNotLibraryFunction(ftok)) {
+        if (hasAnyTypeCheck(getFunctionName(ftok)))
+            return true;
         return false;
+    }
     const std::unordered_map<std::string, LibraryData::FalseTrueMaybe>::const_iterator it = mData->mNoReturn.find(getFunctionName(ftok));
     if (it == mData->mNoReturn.end())
         return false;
