@@ -346,7 +346,7 @@ private:
         SUPPRESS;
         const Settings settingsOld = settings;
         const char xmldata[] = R"(<def format="2"><markup ext=".cpp" reporterrors="false"/></def>)";
-        settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+        settings = settingsBuilder().libraryxml(xmldata).build();
         check(1, 0,
               "int main()\n"
               "{\n"

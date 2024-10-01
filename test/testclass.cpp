@@ -3447,7 +3447,7 @@ private:
                                    "  <podtype name=\"std::uint8_t\" sign=\"u\" size=\"1\"/>\n"
                                    "  <podtype name=\"std::atomic_bool\"/>\n"
                                    "</def>";
-        const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+        const Settings settings = settingsBuilder().libraryxml(xmldata).build();
 
         checkNoMemset("class A {\n"
                       "    std::array<int, 10> ints;\n"
