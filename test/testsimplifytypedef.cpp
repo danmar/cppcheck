@@ -3353,8 +3353,8 @@ private:
                                 "    struct S { enum E { E0 }; };\n"
                                 "}\n"
                                 "typedef N::S T;\n"
-                                "enum class E { a = T::E0; };\n";
-            ASSERT_EQUALS("namespace N { struct S { enum E { E0 } ; } ; } enum class E { a = N :: S :: E0 ; } ;", tok(code));
+                                "enum class E { a = T::E0 };\n";
+            ASSERT_EQUALS("namespace N { struct S { enum E { E0 } ; } ; } enum class E { a = N :: S :: E0 } ;", tok(code));
         }
         { // #11494
             const char code[] = "typedef struct S {} KEY;\n"
