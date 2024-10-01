@@ -1409,6 +1409,9 @@ public:
     void clangSetVariables(const std::vector<const Variable *> &variableList);
     void createSymbolDatabaseExprIds();
 
+    /* returns the opening { if tok points to enum */
+    static const Token* isEnumDefinition(const Token* tok);
+
 private:
     friend class Scope;
     friend class Function;
