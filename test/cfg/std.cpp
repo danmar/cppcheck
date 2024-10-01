@@ -2643,6 +2643,12 @@ void unusedScopedObject_std_monostate(void)
     std::monostate{};
 }
 
+void unusedScopedObject_std_logic_error()
+{
+    // cppcheck-suppress unusedScopedObject
+    std::logic_error("abc");
+}
+
 void uninitvar_srand(void)
 {
     unsigned int seed;
