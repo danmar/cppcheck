@@ -119,6 +119,8 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, bool premium, QWi
     setWindowTitle(title);
     loadSettings();
 
+    mUI->premiumLicense->setVisible(premium);
+
     // Checkboxes for the libraries..
     const QString applicationFilePath = QCoreApplication::applicationFilePath();
     const QString appPath = QFileInfo(applicationFilePath).canonicalPath();
@@ -245,6 +247,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, bool premium, QWi
     connect(mUI->mListSuppressions, &QListWidget::doubleClicked, this, &ProjectFileDialog::editSuppression);
     connect(mUI->mBtnBrowseMisraFile, &QPushButton::clicked, this, &ProjectFileDialog::browseMisraFile);
     connect(mUI->mChkAllVsConfigs, &QCheckBox::clicked, this, &ProjectFileDialog::checkAllVSConfigs);
+    connect(mUI->mBtnBrowseLicense, &QPushButton::clicked, this, &ProjectFileDialog::browseLicenseFile);
     loadFromProjectFile(projectFile);
 }
 
@@ -435,6 +438,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
         mUI->mToolClangTidy->setEnabled(false);
     }
     mUI->mEditTags->setText(projectFile->getTags().join(';'));
+    mUI->mEditLicenseFile->setText(projectFile->getLicenseFile());
     updatePathsAndDefines();
 }
 
@@ -512,6 +516,8 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setBughunting(mUI->mBughunting->isChecked());
     projectFile->setClangAnalyzer(mUI->mToolClangAnalyzer->isChecked());
     projectFile->setClangTidy(mUI->mToolClangTidy->isChecked());
+    if (mPremium)
+        projectFile->setLicenseFile(mUI->mEditLicenseFile->text());
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
     projectFile->setTags(mUI->mEditTags->text().split(";", Qt::SkipEmptyParts));
 #else
@@ -529,17 +535,17 @@ void ProjectFileDialog::ok()
 QString ProjectFileDialog::getExistingDirectory(const QString &caption, bool trailingSlash)
 {
     const QFileInfo inf(mProjectFile->getFilename());
-    const QString rootpath = inf.absolutePath();
+    const QString projectPath = inf.absolutePath();
     QString selectedDir = QFileDialog::getExistingDirectory(this,
                                                             caption,
-                                                            rootpath);
+                                                            projectPath);
 
     if (selectedDir.isEmpty())
         return QString();
 
     // Check if the path is relative to project file's path and if so
     // make it a relative path instead of absolute path.
-    const QDir dir(rootpath);
+    const QDir dir(projectPath);
     const QString relpath(dir.relativeFilePath(selectedDir));
     if (!relpath.startsWith("../.."))
         selectedDir = relpath;
@@ -948,4 +954,17 @@ void ProjectFileDialog::browseMisraFile()
         mUI->mMisraC->setEnabled(true);
         updateAddonCheckBox(mUI->mMisraC, nullptr, getDataDir(), ADDON_MISRA);
     }
+}
+
+void ProjectFileDialog::browseLicenseFile()
+{
+    const QFileInfo inf(mProjectFile->getFilename());
+    const QString projectPath = inf.absolutePath();
+
+    const QString fileName = QFileDialog::getOpenFileName(this, tr("Select license file"), projectPath, tr("License file (%1)").arg("*.lic"));
+    if (fileName.isEmpty())
+        return;
+
+    const QDir dir(projectPath);
+    mUI->mEditLicenseFile->setText(dir.relativeFilePath(fileName));
 }

@@ -1837,6 +1837,30 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const QStringLis
     QFileInfo inf(projectFile->getFilename());
     const QString& rootpath = projectFile->getRootPath();
 
+    if (isCppcheckPremium() && !projectFile->getLicenseFile().isEmpty()) {
+        if (rootpath.isEmpty() || rootpath == ".")
+            QDir::setCurrent(inf.absolutePath());
+        else if (QDir(rootpath).isAbsolute())
+            QDir::setCurrent(rootpath);
+        else
+            QDir::setCurrent(inf.absolutePath() + "/" + rootpath);
+
+        QString licenseFile = projectFile->getLicenseFile();
+        if (!QFileInfo(licenseFile).isAbsolute() && !rootpath.isEmpty())
+            licenseFile = inf.absolutePath() + "/" + licenseFile;
+
+#ifdef Q_OS_WIN
+        const QString premiumaddon = QCoreApplication::applicationDirPath() + "/premiumaddon.exe";
+#else
+        const QString premiumaddon = QCoreApplication::applicationDirPath() + "/premiumaddon";
+#endif
+        const std::vector<std::string> args{"--check-loc-license", licenseFile.toStdString()};
+        std::string output;
+        CheckThread::executeCommand(premiumaddon.toStdString(), args, "", output);
+        std::ofstream fout(inf.absolutePath().toStdString() + "/cppcheck-premium-loc");
+        fout << output;
+    }
+
     QDir::setCurrent(inf.absolutePath());
 
     mThread->setAddonsAndTools(projectFile->getAddonsAndTools());

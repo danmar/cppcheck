@@ -396,6 +396,13 @@ public:
         return mCertIntPrecision;
     }
 
+    /** Cppcheck Premium: License file */
+    void setLicenseFile(const QString& licenseFile) {
+        mPremiumLicenseFile = licenseFile;
+    }
+    const QString& getLicenseFile() const {
+        return mPremiumLicenseFile;
+    }
 
     /**
      * @brief Write project file (to disk).
@@ -625,6 +632,9 @@ private:
      * @brief List of coding standards, checked by Cppcheck Premium.
      */
     QStringList mCodingStandards;
+
+    /** @brief Cppcheck Premium: license file */
+    QString mPremiumLicenseFile;
 
     /** @brief Project name, used when generating compliance report */
     QString mProjectName;
