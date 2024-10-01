@@ -5284,7 +5284,7 @@ private:
                                    "    <arg nr=\"1\"/>\n"
                                    "  </function>\n"
                                    "</def>";
-        /*const*/ Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+        /*const*/ Settings settings = settingsBuilder().libraryxml(xmldata).build();
 
         check("void foo() {\n"
               "    exit(0);\n"
@@ -7180,7 +7180,7 @@ private:
                                    "    <arg nr=\"2\"/>\n"
                                    "  </function>\n"
                                    "</def>";
-        /*const*/ Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+        /*const*/ Settings settings = settingsBuilder().libraryxml(xmldata).build();
 
         check("void foo() {\n"
               "    if (x() || x()) {}\n"
