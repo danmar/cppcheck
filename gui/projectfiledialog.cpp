@@ -535,17 +535,17 @@ void ProjectFileDialog::ok()
 QString ProjectFileDialog::getExistingDirectory(const QString &caption, bool trailingSlash)
 {
     const QFileInfo inf(mProjectFile->getFilename());
-    const QString rootpath = inf.absolutePath();
+    const QString projectPath = inf.absolutePath();
     QString selectedDir = QFileDialog::getExistingDirectory(this,
                                                             caption,
-                                                            rootpath);
+                                                            projectPath);
 
     if (selectedDir.isEmpty())
         return QString();
 
     // Check if the path is relative to project file's path and if so
     // make it a relative path instead of absolute path.
-    const QDir dir(rootpath);
+    const QDir dir(projectPath);
     const QString relpath(dir.relativeFilePath(selectedDir));
     if (!relpath.startsWith("../.."))
         selectedDir = relpath;
@@ -959,12 +959,12 @@ void ProjectFileDialog::browseMisraFile()
 void ProjectFileDialog::browseLicenseFile()
 {
     const QFileInfo inf(mProjectFile->getFilename());
-    const QString rootpath = inf.absolutePath();
+    const QString projectPath = inf.absolutePath();
 
-    const QString fileName = QFileDialog::getOpenFileName(this, tr("Select license file"), rootpath, tr("License file (%1)").arg("*.lic"));
+    const QString fileName = QFileDialog::getOpenFileName(this, tr("Select license file"), projectPath, tr("License file (%1)").arg("*.lic"));
     if (fileName.isEmpty())
         return;
 
-    const QDir dir(rootpath);
+    const QDir dir(projectPath);
     mUI->mEditLicenseFile->setText(dir.relativeFilePath(fileName));
 }
