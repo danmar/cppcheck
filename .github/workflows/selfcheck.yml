@@ -21,15 +21,10 @@ jobs:
     runs-on: ubuntu-22.04
 
     env:
-      QT_VERSION: 6.7.2
+      QT_VERSION: 6.7.3
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install missing software
-        run: |
-          sudo apt-get update
-          sudo apt-get install libboost-container-dev
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -39,7 +34,10 @@ jobs:
       - name: Install missing software
         run: |
           sudo apt-get update
-          sudo apt-get install clang-14 valgrind
+          sudo apt-get install clang-14
+          sudo apt-get install libboost-container-dev
+          sudo apt-get install valgrind
+          sudo apt-get install -y libcups2-dev  # required for Qt6PrintSupport in CMake since Qt 6.7.3
 
       - name: Install Qt ${{ env.QT_VERSION }}
         uses: jurplel/install-qt-action@v3
