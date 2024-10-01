@@ -3890,7 +3890,7 @@ private:
                             "};\n";
         const char expected[] = "1: const int eStart@1 = 6 ;\n"
                                 "2: enum myEnum {\n"
-                                "3: A = f ( x , eStart@1 , y ) ;\n"
+                                "3: A = f ( x , eStart@1 , y )\n"
                                 "4: } ;\n";
         const char current[] = "1: const int eStart@1 = 6 ;\n"
                                "2: enum myEnum {\n"
