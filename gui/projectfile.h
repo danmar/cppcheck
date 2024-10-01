@@ -400,7 +400,7 @@ public:
     void setLicenseFile(const QString& licenseFile) {
         mPremiumLicenseFile = licenseFile;
     }
-    QString getLicenseFile() const {
+    const QString& getLicenseFile() const {
         return mPremiumLicenseFile;
     }
 
