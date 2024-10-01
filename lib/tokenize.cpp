@@ -8610,7 +8610,7 @@ void Tokenizer::findGarbageCode() const
         }
         if (tok->str() == "enum") {
             if (Token::Match(tok->next(), ": %num%| {"))
-                syntaxError(tok->tokAt(3), "Unexpected token '" + tok->strAt(3) + "'");
+                syntaxError(tok->tokAt(2), "Unexpected token '" + tok->strAt(2) + "'");
             if (const Token* start = SymbolDatabase::isEnumDefinition(tok)) {
                 for (const Token* tok2 = start->next(); tok2 && tok2 != start->link(); tok2 = tok2->next()) {
                     if (Token::Match(tok2, "[;{}]"))
