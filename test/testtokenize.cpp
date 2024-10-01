@@ -7132,6 +7132,7 @@ private:
 
         ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("enum : { };"), SYNTAX, "syntax error: Unexpected token '{'");
         ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("enum : 3 { };"), SYNTAX, "syntax error: Unexpected token '3'");
+        ASSERT_NO_THROW(tokenizeAndStringify("enum { E = int{} };"));
 
         ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("int a() { b((c)return 0) }"), SYNTAX, "syntax error");
         ASSERT_THROW_EQUALS(tokenizeAndStringify("int f() { MACRO(x) return 0; }"),
