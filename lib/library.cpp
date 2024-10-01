@@ -1278,6 +1278,8 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
         return false;
 
     const Token *funcname = end->linkAt(-2)->previous();
+    if (funcname->isCpp() && funcname->astTop()->str() == "throw")
+        return true;
     const Token *start = funcname;
     if (Token::Match(funcname->tokAt(-3),"( * %name% )")) {
         funcname = funcname->previous();
@@ -1731,11 +1733,8 @@ bool Library::isnotnoreturn(const Token *ftok) const
 {
     if (ftok->function() && ftok->function()->isAttributeNoreturn())
         return false;
-    if (isNotLibraryFunction(ftok)) {
-        if (hasAnyTypeCheck(getFunctionName(ftok)))
-            return true;
-        return false;
-    }
+    if (isNotLibraryFunction(ftok))
+        return hasAnyTypeCheck(getFunctionName(ftok));
     const std::unordered_map<std::string, LibraryData::FalseTrueMaybe>::const_iterator it = mData->mNoReturn.find(getFunctionName(ftok));
     if (it == mData->mNoReturn.end())
         return false;
