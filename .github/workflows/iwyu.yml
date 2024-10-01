@@ -111,6 +111,13 @@ jobs:
           # -isystem/usr/lib/clang/17/include
           iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --max_line_length=1024 -Xiwyu --comment_style=long -Xiwyu --quoted_includes_first -Xiwyu --update_comments > iwyu.log
 
+      - name: test/cfg
+        run: |
+          ./test/cfg/runtests.sh > iwyu_cfg.log
+        env:
+          IWYU: include-what-you-use
+          STRICT: 1
+
       - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
