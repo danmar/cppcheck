@@ -144,6 +144,7 @@ private:
         TEST_CASE(showtime_summary);
         TEST_CASE(showtime_file_total);
         TEST_CASE(suppress_error_library);
+        TEST_CASE(unique_errors);
 #endif // !WIN32
     }
 
