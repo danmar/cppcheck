@@ -3702,7 +3702,7 @@ bool isExhaustiveSwitch(const Token *startbrace)
 
     const Token *condition = lpar->astOperand2();
     if (!condition->valueType())
-        return false;
+        return true;
 
     bool hasDefault{};
     const std::set<MathLib::bigint> switchValues = getSwitchValues(startbrace, hasDefault);
