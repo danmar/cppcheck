@@ -123,18 +123,18 @@ static bool isExecutableScope(const Token* tok)
     return false;
 }
 
-static bool isEnumDefinition(const Token* tok)
+const Token* SymbolDatabase::isEnumDefinition(const Token* tok)
 {
-    if (!Token::Match(tok, "enum class| %name% {|:"))
-        return false;
+    if (!Token::Match(tok, "enum class| %name%| {|:"))
+        return nullptr;
     while (!Token::Match(tok, "[{:]"))
         tok = tok->next();
     if (tok->str() == "{")
-        return true;
+        return tok;
     tok = tok->next(); // skip ':'
     while (Token::Match(tok, "%name%|::"))
         tok = tok->next();
-    return Token::simpleMatch(tok, "{");
+    return Token::simpleMatch(tok, "{") ? tok : nullptr;
 }
 
 void SymbolDatabase::createSymbolDatabaseFindAllScopes()
