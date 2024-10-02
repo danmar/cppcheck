@@ -3704,7 +3704,7 @@ bool isExhaustiveSwitch(const Token *startbrace)
     if (!condition->valueType())
         return true;
 
-    bool hasDefault{};
+    bool hasDefault = false;
     const std::set<MathLib::bigint> switchValues = getSwitchValues(startbrace, hasDefault);
 
     if (hasDefault)
@@ -3716,7 +3716,7 @@ bool isExhaustiveSwitch(const Token *startbrace)
     if (condition->valueType()->isEnum()) {
         const Scope *typeScope = condition->valueType()->typeScope;
         const std::vector<Enumerator> &enumList = typeScope->enumeratorList;
-        const std::size_t usedValues = std::count_if(enumList.begin(), enumList.end(), [&](const Enumerator &e) {
+        const std::size_t usedValues = std::count_if(enumList.cbegin(), enumList.cend(), [&](const Enumerator &e) {
             return e.value_known && switchValues.count(e.value);
         });
         return enumList.size() == usedValues;
