@@ -1158,7 +1158,7 @@ static bool mayDependOn(const ValueType *other, const ValueType *original)
     }
 
     // other may be reassigned to original
-    return otherPtr == originalPtr + 1;
+    return otherPtr > originalPtr;
 }
 
 bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& used) const
