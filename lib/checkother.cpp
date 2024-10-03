@@ -1150,7 +1150,7 @@ static bool mayDependOn(const ValueType *other, const ValueType *original)
         return false;
 
     const int otherPtr = other->pointer + (other->reference == Reference::LValue ? 1 : 0);
-    const int originalPtr = original->pointer + (original->reference == Reference::LValue ? 1 : 0);
+    const int originalPtr = original->pointer;
 
     if (otherPtr == originalPtr) {
         // if other is not const than original may be copied to other
