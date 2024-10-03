@@ -3714,12 +3714,10 @@ bool isExhaustiveSwitch(const Token *startbrace)
         return switchValues.count(0) && switchValues.count(1);
 
     if (condition->valueType()->isEnum()) {
-        const Scope *typeScope = condition->valueType()->typeScope;
-        const std::vector<Enumerator> &enumList = typeScope->enumeratorList;
-        const std::size_t usedValues = std::count_if(enumList.cbegin(), enumList.cend(), [&](const Enumerator &e) {
-            return e.value_known && switchValues.count(e.value);
+        const std::vector<Enumerator> &enumList = condition->valueType()->typeScope->enumeratorList;
+        return std::all_of(enumList.cbegin(), enumList.cend(), [&](const Enumerator &e) {
+            return !e.value_known || switchValues.count(e.value);
         });
-        return enumList.size() == usedValues;
     }
 
     return false;
