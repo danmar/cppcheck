@@ -1833,6 +1833,16 @@ private:
               "    printf(\"result: %d\\n\", *msg);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) The scope of the variable 'buf' can be reduced.\n", errout_str());
+
+        check("void f(const char *&, const char *&);\n"
+              "void g(int e) {\n"
+              "    const char *msg = \"Something\";\n"
+              "    char *buf = malloc(42);\n"
+              "    if (e != 0)\n"
+              "        f(msg, buf);\n"
+              "    printf(\"result: %d\\n\", msg);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
 #define checkOldStylePointerCast(...) checkOldStylePointerCast_(__FILE__, __LINE__, __VA_ARGS__)
