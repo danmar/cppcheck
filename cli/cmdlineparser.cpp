@@ -970,7 +970,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             }
 
             // Special Cppcheck Premium options
-            else if (std::strncmp(argv[i], "--premium=", 10) == 0 && isCppcheckPremium()) {
+            else if ((std::strncmp(argv[i], "--premium=", 10) == 0 || std::strncmp(argv[i], "--premium-", 10) == 0) && isCppcheckPremium()) {
+                // valid options --premium=..
                 const std::set<std::string> valid{
                     "autosar",
                     "cert-c-2016",
@@ -984,6 +985,11 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     "misra-cpp-2023",
                     "bughunting",
                     "safety"};
+                // valid options --premium-..=
+                const std::set<std::string> valid2{
+                    "cert-c-int-precision",
+                    "license-file"
+                };
 
                 if (std::strcmp(argv[i], "--premium=safety-off") == 0) {
                     mSettings.safety = false;
@@ -994,8 +1000,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 if (!mSettings.premiumArgs.empty())
                     mSettings.premiumArgs += " ";
                 const std::string p(argv[i] + 10);
-                if (!valid.count(p) && !startsWith(p, "cert-c-int-precision=")) {
-                    mLogger.printError("invalid --premium option '" + p + "'.");
+                const std::string p2(p.find("=") != std::string::npos ? p.substr(0, p.find('=')) : "");
+                if (!valid.count(p) && !valid2.count(p2)) {
+                    mLogger.printError("invalid --premium option '" + (p2.empty() ? p : p2) + "'.");
                     return Result::Fail;
                 }
                 mSettings.premiumArgs += "--" + p;
