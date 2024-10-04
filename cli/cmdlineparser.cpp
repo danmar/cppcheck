@@ -1000,7 +1000,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 if (!mSettings.premiumArgs.empty())
                     mSettings.premiumArgs += " ";
                 const std::string p(argv[i] + 10);
-                const std::string p2(p.find("=") != std::string::npos ? p.substr(0, p.find('=')) : "");
+                const std::string p2(p.find('=') != std::string::npos ? p.substr(0, p.find('=')) : "");
                 if (!valid.count(p) && !valid2.count(p2)) {
                     mLogger.printError("invalid --premium option '" + (p2.empty() ? p : p2) + "'.");
                     return Result::Fail;
