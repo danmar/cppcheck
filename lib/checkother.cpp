@@ -1258,6 +1258,9 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
                             if (&other != argvar && mayDependOn(other.valueType(), argvar->valueType()))
                                 return false;
                         }
+                        if (!std::all_of(argvars.cbegin(), argvars.cend(), [&](const Variable &other) {
+                            return &other == argvar || !mayDependOn(other.valueType(), argvar->valueType());
+                        })) return false;
                     }
                 }
             }
