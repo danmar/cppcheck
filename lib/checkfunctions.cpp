@@ -359,8 +359,6 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
                     return nullptr;
             }
             if (tok->scope()->type == Scope::ScopeType::eSwitch) {
-                // find reachable break / !default
-                bool hasDefault = false;
                 bool reachable = false;
                 for (const Token *switchToken = tok->link()->next(); switchToken != tok; switchToken = switchToken->next()) {
                     if (reachable && Token::simpleMatch(switchToken, "break ;")) {
@@ -375,12 +373,10 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
                         reachable = false;
                     if (Token::Match(switchToken, "case|default"))
                         reachable = true;
-                    if (Token::simpleMatch(switchToken, "default :"))
-                        hasDefault = true;
                     else if (switchToken->str() == "{" && (switchToken->scope()->isLoopScope() || switchToken->scope()->type == Scope::ScopeType::eSwitch))
                         switchToken = switchToken->link();
                 }
-                if (!hasDefault)
+                if (!isExhaustiveSwitch(tok->link()))
                     return tok->link();
             } else if (tok->scope()->type == Scope::ScopeType::eIf) {
                 const Token *condition = tok->scope()->classDef->next()->astOperand2();
