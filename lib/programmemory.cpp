@@ -1526,13 +1526,13 @@ namespace {
                 if (expr->isComparisonOp() && (r.isUninitValue() || r.isImpossible())) {
                     if (rhs.isIntValue() && !expr->astOperand1()->values().empty()) {
                         std::vector<ValueFlow::Value> result =
-                            infer(ValueFlow::makeIntegralInferModel(), expr->str(), expr->astOperand1()->values(), {std::move(rhs)});
+                            infer(makeIntegralInferModel(), expr->str(), expr->astOperand1()->values(), {std::move(rhs)});
                         if (!result.empty() && result.front().isKnown())
                             return std::move(result.front());
                     }
                     if (lhs.isIntValue() && !expr->astOperand2()->values().empty()) {
                         std::vector<ValueFlow::Value> result =
-                            infer(ValueFlow::makeIntegralInferModel(), expr->str(), {std::move(lhs)}, expr->astOperand2()->values());
+                            infer(makeIntegralInferModel(), expr->str(), {std::move(lhs)}, expr->astOperand2()->values());
                         if (!result.empty() && result.front().isKnown())
                             return std::move(result.front());
                     }

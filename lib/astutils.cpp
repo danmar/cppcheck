@@ -959,7 +959,7 @@ bool extractForLoopValues(const Token *forToken,
     const Token *incExpr  = forToken->next()->astOperand2()->astOperand2()->astOperand2();
     if (!initExpr || !initExpr->isBinaryOp() || initExpr->str() != "=" || !Token::Match(initExpr->astOperand1(), "%var%"))
         return false;
-    std::vector<MathLib::bigint> minInitValue = getMinValue(ValueFlow::makeIntegralInferModel(), initExpr->astOperand2()->values());
+    std::vector<MathLib::bigint> minInitValue = getMinValue(makeIntegralInferModel(), initExpr->astOperand2()->values());
     if (minInitValue.empty()) {
         const ValueFlow::Value* v = initExpr->astOperand2()->getMinValue(true);
         if (v)
