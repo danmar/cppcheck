@@ -830,6 +830,7 @@ def isFloatCounterInWhileLoop(whileToken):
     lpar = whileToken.next
     rpar = lpar.link
     counterTokens = findCounterTokens(lpar.astOperand2)
+    tok_varid = tuple(tok.varId for tok in counterTokens if tok.varId)
     whileBodyStart = None
     if simpleMatch(rpar, ') {'):
         whileBodyStart = rpar.next
@@ -840,13 +841,21 @@ def isFloatCounterInWhileLoop(whileToken):
     token = whileBodyStart
     while token != whileBodyStart.link:
         token = token.next
-        for counterToken in counterTokens:
-            if not counterToken.valueType or not counterToken.valueType.isFloat():
-                continue
-            if token.isAssignmentOp and token.astOperand1.str == counterToken.str:
+        if not token.varId:
+            continue
+        if token.varId not in tok_varid:
+            continue
+        if not token.astParent or not token.valueType or not token.valueType.isFloat():
+            continue
+        parent = token.astParent
+        if parent.str in ('++', '--'):
+            return True
+        while parent:
+            if parent.isAssignmentOp and parent.str != "=" and parent.astOperand1 == token:
                 return True
-            if token.str == counterToken.str and token.astParent and token.astParent.str in ('++', '--'):
+            if parent.str == "=" and parent.astOperand1.str == token.str and parent.astOperand1 != token:
                 return True
+            parent = parent.astParent
     return False
 
 
