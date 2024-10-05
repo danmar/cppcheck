@@ -10,7 +10,7 @@ GUI:
 -
 
 Changed interface:
--
+- '-j0' will now automatically choose a thread count.
 
 Deprecations:
 - The previously deprecated support for Python 2.7 has been removed. please use Python 3 instead.
