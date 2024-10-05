@@ -17,7 +17,7 @@ def test_missing_project(project_ext):
     assert "" == stderr
 
 
-def _test_project_error(tmpdir, ext, content, expected):
+def __test_project_error(tmpdir, ext, content, expected):
     project_file = os.path.join(tmpdir, "file.{}".format(ext))
 
     with open(project_file, 'w') as f:
@@ -38,7 +38,7 @@ def _test_project_error(tmpdir, ext, content, expected):
     ("cppcheck", "Cppcheck GUI project file is not a valid XML - XML_ERROR_EMPTY_DOCUMENT")
 ])
 def test_empty_project(tmpdir, project_ext, expected):
-    _test_project_error(tmpdir, project_ext, None, expected)
+    __test_project_error(tmpdir, project_ext, None, expected)
 
 
 def test_json_entry_file_not_found(tmpdir):
@@ -53,7 +53,7 @@ def test_json_entry_file_not_found(tmpdir):
     if sys.platform == "win32":
         expected = expected.replace('\\', '/')
 
-    _test_project_error(tmpdir, "json", json.dumps(compilation_db), expected)
+    __test_project_error(tmpdir, "json", json.dumps(compilation_db), expected)
 
 
 def test_json_no_arguments(tmpdir):
@@ -65,7 +65,7 @@ def test_json_no_arguments(tmpdir):
 
     expected = "no 'arguments' or 'command' field found in compilation database entry"
 
-    _test_project_error(tmpdir, "json", json.dumps(compilation_db), expected)
+    __test_project_error(tmpdir, "json", json.dumps(compilation_db), expected)
 
 
 def test_json_invalid_arguments(tmpdir):
@@ -78,7 +78,7 @@ def test_json_invalid_arguments(tmpdir):
 
     expected = "'arguments' field in compilation database entry is not a JSON array"
 
-    _test_project_error(tmpdir, "json", json.dumps(compilation_db), expected)
+    __test_project_error(tmpdir, "json", json.dumps(compilation_db), expected)
 
 
 def test_sln_invalid_file(tmpdir):
@@ -86,7 +86,7 @@ def test_sln_invalid_file(tmpdir):
 
     expected = "Visual Studio solution file header not found"
 
-    _test_project_error(tmpdir, "sln", content, expected)
+    __test_project_error(tmpdir, "sln", content, expected)
 
 
 def test_sln_no_header(tmpdir):
@@ -95,7 +95,7 @@ def test_sln_no_header(tmpdir):
 
     expected = "Visual Studio solution file header not found"
 
-    _test_project_error(tmpdir, "sln", content, expected)
+    __test_project_error(tmpdir, "sln", content, expected)
 
 
 def test_sln_no_projects(tmpdir):
@@ -104,7 +104,7 @@ def test_sln_no_projects(tmpdir):
 
     expected = "no projects found in Visual Studio solution file"
 
-    _test_project_error(tmpdir, "sln", content, expected)
+    __test_project_error(tmpdir, "sln", content, expected)
 
 
 def test_sln_project_file_not_found(tmpdir):
@@ -124,7 +124,7 @@ def test_sln_project_file_not_found(tmpdir):
     if sys.platform == "win32":
         expected = expected.replace('\\', '/')
 
-    _test_project_error(tmpdir, "sln", content, expected)
+    __test_project_error(tmpdir, "sln", content, expected)
 
 
 def test_vcxproj_no_xml_root(tmpdir):
@@ -132,7 +132,7 @@ def test_vcxproj_no_xml_root(tmpdir):
 
     expected = "Visual Studio project file has no XML root node"
 
-    _test_project_error(tmpdir, "vcxproj", content, expected)
+    __test_project_error(tmpdir, "vcxproj", content, expected)
 
 
 def test_bpr_no_xml_root(tmpdir):
@@ -140,7 +140,7 @@ def test_bpr_no_xml_root(tmpdir):
 
     expected = "Borland project file has no XML root node"
 
-    _test_project_error(tmpdir, "bpr", content, expected)
+    __test_project_error(tmpdir, "bpr", content, expected)
 
 
 def test_cppcheck_no_xml_root(tmpdir):
@@ -148,4 +148,4 @@ def test_cppcheck_no_xml_root(tmpdir):
 
     expected = "Cppcheck GUI project file has no XML root node"
 
-    _test_project_error(tmpdir, "cppcheck", content, expected)
+    __test_project_error(tmpdir, "cppcheck", content, expected)
