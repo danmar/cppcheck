@@ -505,6 +505,11 @@ jobs:
 
     runs-on: ubuntu-22.04 # run on the latest image only
 
+    permissions:
+        # required by upload-sarif action
+        # https://docs.github.com/en/code-security/code-scanning/integrating-with-code-scanning/uploading-a-sarif-file-to-github
+        security-events: write
+
     steps:
       - uses: actions/checkout@v4
 
@@ -549,7 +554,11 @@ jobs:
           if [ $ec -eq 1 ]; then
             exit $ec
           fi
-          
+
+          # test sarif output
+          ./cppcheck --enable=style --error-exitcode=0 --platform=unix64 --inconclusive samples/incorrectLogicOperator/bad.c --output-file=samples.sarif --output-format=sarif
+          cat samples.sarif
+
           # self check simplecpp
           ./cppcheck $selfcheck_options externals/simplecpp || ec=1
           # self check lib/cli
@@ -564,3 +573,12 @@ jobs:
           # triage
           ./cppcheck $selfcheck_options $cppcheck_options -DQ_MOC_OUTPUT_REVISION=68 -DQT_CHARTS_LIB --library=qt -Icmake.output/tools/triage -Igui tools/triage/*.cpp cmake.output/tools/triage || ec=1
           exit $ec
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          # Path to SARIF file relative to the root of the repository
+          sarif_file: samples.sarif
+          # Optional category for the results
+          # Used to differentiate multiple results for one commit
+          category: samples

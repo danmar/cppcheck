@@ -917,6 +917,20 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             else if (std::strncmp(argv[i], "--output-file=", 14) == 0)
                 mSettings.outputFile = Path::simplifyPath(argv[i] + 14);
 
+            else if (std::strncmp(argv[i], "--output-format=", 16) == 0) {
+                const std::string format = argv[i] + 16;
+                if (format == "sarif")
+                    mSettings.outputFormat = Settings::OutputFormat::sarif;
+                else if (format == "xml")
+                    mSettings.outputFormat = Settings::OutputFormat::xml;
+                else {
+                    mLogger.printError("argument to '--output-format=' must be 'sarif' or 'xml'.");
+                    return Result::Fail;
+                }
+                mSettings.xml = (mSettings.outputFormat == Settings::OutputFormat::xml);
+            }
+
+
             // Experimental: limit execution time for extended valueflow analysis. basic valueflow analysis
             // is always executed.
             else if (std::strncmp(argv[i], "--performance-valueflow-max-time=", 33) == 0) {
@@ -951,6 +965,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             // Write results in results.plist
             else if (std::strncmp(argv[i], "--plist-output=", 15) == 0) {
+                mSettings.outputFormat = Settings::OutputFormat::plist;
                 mSettings.plistOutput = Path::simplifyPath(argv[i] + 15);
                 if (mSettings.plistOutput.empty())
                     mSettings.plistOutput = ".";
@@ -1362,12 +1377,11 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             else if (std::strcmp(argv[i], "-v") == 0 || std::strcmp(argv[i], "--verbose") == 0)
                 mSettings.verbose = true;
 
-            else if (std::strcmp(argv[i], "--sarif") == 0)
-                mSettings.sarif = true;
-
             // Write results in results.xml
-            else if (std::strcmp(argv[i], "--xml") == 0)
+            else if (std::strcmp(argv[i], "--xml") == 0) {
                 mSettings.xml = true;
+                mSettings.outputFormat = Settings::OutputFormat::xml;
+            }
 
             // Define the XML file version (and enable XML output)
             else if (std::strncmp(argv[i], "--xml-version=", 14) == 0) {
@@ -1383,6 +1397,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.xml_version = tmp;
                 // Enable also XML if version is set
                 mSettings.xml = true;
+                mSettings.outputFormat = Settings::OutputFormat::xml;
             }
 
             else {

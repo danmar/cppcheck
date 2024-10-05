@@ -28,13 +28,11 @@
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "filesettings.h"
+#include "json.h"
 #include "settings.h"
 #include "singleexecutor.h"
 #include "suppressions.h"
 #include "utils.h"
-
-#define PICOJSON_USE_INT64
-#include "../externals/picojson/picojson.h"
 
 #if defined(HAS_THREADING_MODEL_THREAD)
 #include "threadexecutor.h"
@@ -90,13 +88,13 @@ namespace {
                     picojson::object shortDescription;
                     shortDescription["text"] = picojson::value(finding.shortMessage());
                     rule["shortDescription"] = picojson::value(shortDescription);
-                    ret.push_back(picojson::value(rule));
+                    ret.emplace_back(rule);
                 }
             }
             return ret;
         }
 
-        picojson::array serializeLocations(const ErrorMessage& finding) const {
+        static picojson::array serializeLocations(const ErrorMessage& finding) {
             picojson::array ret;
             for (const auto& location : finding.callStack) {
                 picojson::object physicalLocation;
@@ -109,7 +107,7 @@ namespace {
                 physicalLocation["region"] = picojson::value(region);
                 picojson::object loc;
                 loc["physicalLocation"] = picojson::value(physicalLocation);
-                ret.push_back(picojson::value(loc));
+                ret.emplace_back(loc);
             }
             return ret;
         }
@@ -125,12 +123,12 @@ namespace {
                 message["text"] = picojson::value(finding.shortMessage());
                 res["message"] = picojson::value(message);
                 res["ruleId"] = picojson::value(finding.id);
-                results.push_back(picojson::value(res));
+                results.emplace_back(res);
             }
             return results;
         }
 
-        picojson::value serializeRuns(std::string productName, std::string version) const {
+        picojson::value serializeRuns(const std::string& productName, const std::string& version) const {
             picojson::object driver;
             driver["name"] = picojson::value(productName);
             driver["version"] = picojson::value(version);
@@ -216,8 +214,8 @@ namespace {
         }
 
         ~StdLogger() override {
-            if (mSettings.sarif) {
-                std::cerr << mSarifReport.serialize(mSettings.cppcheckCfgProductName);
+            if (mSettings.outputFormat == Settings::OutputFormat::sarif) {
+                reportErr(mSarifReport.serialize(mSettings.cppcheckCfgProductName));
             }
             delete mErrorOutput;
         }
@@ -564,7 +562,7 @@ void StdLogger::reportErr(const ErrorMessage &msg)
     if (!mShownErrors.insert(msg.toString(mSettings.verbose)).second)
         return;
 
-    if (mSettings.sarif)
+    if (mSettings.outputFormat == Settings::OutputFormat::sarif)
         mSarifReport.addFinding(msg);
     else if (mSettings.xml)
         reportErr(msg.toXML());
