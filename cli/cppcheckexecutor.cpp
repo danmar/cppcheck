@@ -33,6 +33,9 @@
 #include "suppressions.h"
 #include "utils.h"
 
+#define PICOJSON_USE_INT64
+#include "../externals/picojson/picojson.h"
+
 #if defined(HAS_THREADING_MODEL_THREAD)
 #include "threadexecutor.h"
 #endif
@@ -71,6 +74,115 @@
 #endif
 
 namespace {
+    class SarifReport {
+    public:
+        void addFinding(ErrorMessage msg) {
+            mFindings.push_back(std::move(msg));
+        }
+
+        picojson::array serializeRules() const {
+            picojson::array ret;
+            std::set<std::string> ruleIds;
+            for (const auto& finding : mFindings) {
+                if (ruleIds.insert(finding.id).second) {
+                    picojson::object rule;
+                    rule["id"] = picojson::value(finding.id);
+                    picojson::object shortDescription;
+                    shortDescription["text"] = picojson::value(finding.shortMessage());
+                    rule["shortDescription"] = picojson::value(shortDescription);
+                    ret.push_back(picojson::value(rule));
+                }
+            }
+            return ret;
+        }
+
+        picojson::array serializeLocations(const ErrorMessage& finding) const {
+            picojson::array ret;
+            for (const auto& location : finding.callStack) {
+                picojson::object physicalLocation;
+                picojson::object artifactLocation;
+                artifactLocation["uri"] = picojson::value(location.getOrigFile(false));
+                physicalLocation["artifactLocation"] = picojson::value(artifactLocation);
+                picojson::object region;
+                region["startLine"] = picojson::value(static_cast<int64_t>(location.line));
+                region["startColumn"] = picojson::value(static_cast<int64_t>(location.column));
+                physicalLocation["region"] = picojson::value(region);
+                picojson::object loc;
+                loc["physicalLocation"] = picojson::value(physicalLocation);
+                ret.push_back(picojson::value(loc));
+            }
+            return ret;
+        }
+
+        picojson::array serializeResults() const {
+            picojson::array results;
+            for (const auto& finding : mFindings) {
+                picojson::object res;
+                res["level"] = picojson::value(sarifLevel(finding.severity));
+                if (!finding.callStack.empty())
+                    res["locations"] = picojson::value(serializeLocations(finding));
+                picojson::object message;
+                message["text"] = picojson::value(finding.shortMessage());
+                res["message"] = picojson::value(message);
+                res["ruleId"] = picojson::value(finding.id);
+                results.push_back(picojson::value(res));
+            }
+            return results;
+        }
+
+        picojson::value serializeRuns(std::string productName, std::string version) const {
+            picojson::object driver;
+            driver["name"] = picojson::value(productName);
+            driver["version"] = picojson::value(version);
+            driver["informationUri"] = picojson::value("https://cppcheck.sourceforge.io");
+            driver["rules"] = picojson::value(serializeRules());
+            picojson::object tool;
+            tool["driver"] = picojson::value(driver);
+            picojson::object run;
+            run["tool"] = picojson::value(tool);
+            run["results"] = picojson::value(serializeResults());
+            picojson::array runs{picojson::value(run)};
+            return picojson::value(runs);
+        }
+
+        std::string serialize(std::string productName) const {
+            const auto nameAndVersion = Settings::getNameAndVersion(productName);
+            productName = nameAndVersion.first;
+            const std::string version = nameAndVersion.first.empty() ? CppCheck::version() : nameAndVersion.second;
+
+            picojson::object doc;
+            doc["version"] = picojson::value("2.1.0");
+            doc["$schema"] = picojson::value("https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json");
+            doc["runs"] = serializeRuns(productName, version);
+
+            return picojson::value(doc).serialize(true);
+        }
+    private:
+
+
+        static std::string sarifLevel(Severity severity) {
+            switch (severity) {
+            case Severity::error:
+                return "error";
+            case Severity::warning:
+            case Severity::style:
+            case Severity::portability:
+            case Severity::performance:
+                return "warning";
+            case Severity::information:
+            case Severity::internal:
+            case Severity::debug:
+            case Severity::none:
+                return "note";
+            }
+            return "note";
+        }
+
+
+
+        std::vector<ErrorMessage> mFindings;
+    };
+
     class CmdLineLoggerStd : public CmdLineLogger
     {
     public:
@@ -104,6 +216,9 @@ namespace {
         }
 
         ~StdLogger() override {
+            if (mSettings.sarif) {
+                std::cerr << mSarifReport.serialize(mSettings.cppcheckCfgProductName);
+            }
             delete mErrorOutput;
         }
 
@@ -173,6 +288,8 @@ namespace {
          * True if there are critical errors
          */
         std::string mCriticalErrors;
+
+        SarifReport mSarifReport;
     };
 }
 
@@ -447,7 +564,9 @@ void StdLogger::reportErr(const ErrorMessage &msg)
     if (!mShownErrors.insert(msg.toString(mSettings.verbose)).second)
         return;
 
-    if (mSettings.xml)
+    if (mSettings.sarif)
+        mSarifReport.addFinding(msg);
+    else if (mSettings.xml)
         reportErr(msg.toXML());
     else
         reportErr(msg.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation));

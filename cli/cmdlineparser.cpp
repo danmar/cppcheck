@@ -1362,6 +1362,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             else if (std::strcmp(argv[i], "-v") == 0 || std::strcmp(argv[i], "--verbose") == 0)
                 mSettings.verbose = true;
 
+            else if (std::strcmp(argv[i], "--sarif") == 0)
+                mSettings.sarif = true;
+
             // Write results in results.xml
             else if (std::strcmp(argv[i], "--xml") == 0)
                 mSettings.xml = true;

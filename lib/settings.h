@@ -441,6 +441,9 @@ public:
     /** @brief Is --verbose given? */
     bool verbose{};
 
+    /** @brief write SARIF results (--sarif) */
+    bool sarif{};
+
     /** @brief write XML results (--xml) */
     bool xml{};
 
