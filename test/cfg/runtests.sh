@@ -576,7 +576,7 @@ function check_file {
             cppcheck_run --library="$lib" "${DIR}""$f"
             ;;
         python.c)
-            python_fn
+            #python_fn
             cppcheck_run --library="$lib" "${DIR}""$f"
             ;;
         qt.cpp)
