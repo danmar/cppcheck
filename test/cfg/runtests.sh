@@ -107,10 +107,19 @@ function gnu_fn {
 # qt.cpp
 function qt_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
-        QTCONFIG=$(get_pkg_config_cflags Qt5Core Qt5Test Qt5Gui)
-        if [ -n "$QTCONFIG" ]; then
+        # TODO: check syntax with Qt5 and Qt6?
+        QTCONFIG=$(get_pkg_config_cflags Qt6Core Qt6Test Qt6Gui)
+        if [ -z "$QTCONFIG" ]; then
+          QTCONFIG=$(get_pkg_config_cflags Qt5Core Qt5Test Qt5Gui)
+          if [ -n "$QTCONFIG" ]; then
             QTBUILDCONFIG=$(pkg-config --variable=qt_config Qt5Core Qt5Test Qt5Gui)
             [[ $QTBUILDCONFIG =~ (^|[[:space:]])reduce_relocations($|[[:space:]]) ]] && QTCONFIG="${QTCONFIG} -fPIC"
+          fi
+        else
+          QTBUILDCONFIG=$(pkg-config --variable=qt_config Qt6Core Qt6Test Qt6Gui)
+          QTCONFIG="${QTCONFIG} -fPIC"
+        fi
+        if [ -n "$QTCONFIG" ]; then
             # TODO: get rid of the error enabling/disabling?
             set +e
             echo -e "#include <QString>" | ${CXX} "${CXX_OPT[@]}" ${QTCONFIG} -x c++ -
