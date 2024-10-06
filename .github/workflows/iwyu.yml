@@ -59,7 +59,7 @@ jobs:
           dnf install -y libglvnd-devel  # fixes missing dependency for Qt in CMake
           dnf install -y p7zip-plugins  # required as fallback for py7zr in Qt installation
           dnf install -y cups-devel  # required for Qt6PrintSupport in CMake since Qt 6.7.3
-          dnf install -y cairo-devel gtk3-devel libcurl-devel openssl-devel lua-devel  # for strict cfg checks
+          dnf install -y cairo-devel gtk3-devel libcurl-devel lua-devel openssl-devel python3-devel  # for strict cfg checks
           dnf install -y iwyu
           ln -s iwyu_tool.py /usr/bin/iwyu_tool
 
