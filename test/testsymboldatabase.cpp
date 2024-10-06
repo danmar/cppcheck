@@ -1840,7 +1840,14 @@ private:
         // three elements: varId 0 also counts via a fake-entry
         ASSERT(v && db->variableList().size() == 3);
 
-        ASSERT_THROW(db->getVariableFromVarId(3), std::out_of_range);
+        // TODO: we should provide our own error message
+#ifdef _MSC_VER
+        ASSERT_THROW_EQUALS_2(db->getVariableFromVarId(3), std::out_of_range, "invalid vector subscript");
+#elif !defined(_LIBCPP_VERSION)
+        ASSERT_THROW_EQUALS_2(db->getVariableFromVarId(3), std::out_of_range, "vector::_M_range_check: __n (which is 3) >= this->size() (which is 3)");
+#else
+        ASSERT_THROW_EQUALS_2(db->getVariableFromVarId(3), std::out_of_range, "vector");
+#endif
     }
 
     void hasRegularFunction() {
