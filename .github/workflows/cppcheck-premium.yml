@@ -10,7 +10,6 @@ on:
       - '2.*'
     tags:
       - '2.*'
-  pull_request:
   workflow_dispatch:
     inputs:
       premium_version:
