@@ -273,7 +273,10 @@ function python_fn {
 # lua.c
 function lua_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
-        LUACONFIG=$(get_pkg_config_cflags lua-5.3)
+        LUACONFIG=$(get_pkg_config_cflags lua)
+        if [ -z "$LUACONFIG" ]; then
+            LUACONFIG=$(get_pkg_config_cflags lua-5.3)
+        fi
         if [ -n "$LUACONFIG" ]; then
             # TODO: get rid of the error enabling/disabling?
             set +e
