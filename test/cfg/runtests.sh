@@ -125,7 +125,7 @@ function qt_fn {
                 exit_if_strict
             else
                 echo "Qt found and working, checking syntax with ${CXX} now."
-                cxx_syntax ${QTCONFIG} ${DIR}qt.cpp
+                cxx_syntax ${QTCONFIG} -fPIC ${DIR}qt.cpp
             fi
         else
             echo "Qt not present, skipping syntax check with ${CXX}."
