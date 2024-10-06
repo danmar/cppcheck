@@ -786,6 +786,10 @@ namespace {
                         tok2 = insertTokens(tok2, mRangeTypeQualifiers);
                         Token* tok3 = tok2->insertToken(")");
                         Token::createMutualLinks(tok, tok3);
+                        tok->insertTokenBefore("(");
+                        tok3 = tok3->linkAt(1);
+                        tok3 = tok3->insertToken(")");
+                        Token::createMutualLinks(tok->tokAt(-1), tok3);
                     }
                     return;
                 }
