@@ -1487,6 +1487,9 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
 
 void CppCheck::executeAddonsWholeProgram(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings)
 {
+    if (!mSettings.quiet)
+        mErrorLogger.reportOut("Analyzing whole program...", Color::FgGreen);
+
     if (mSettings.addons.empty())
         return;
 
