@@ -46,7 +46,7 @@ CXX_OPT=("-fsyntax-only" "-w" "-std=c++2a")
 CC=gcc
 CC_OPT=("-fsyntax-only" "-w" "-Wno-implicit-function-declaration" "-std=c11") # TODO: remove -Wno-implicit-function-declaration when warnings are fixed on MacOS
 
-IWYU_OPTS=("-Xiwyu" "--no_fwd_decls")
+IWYU_OPTS=("-Xiwyu" "--no_fwd_decls")  #  "-Xiwyu" "--update_comments"
 
 function get_pkg_config_cflags {
     # TODO: get rid of the error enabling/disabling?
