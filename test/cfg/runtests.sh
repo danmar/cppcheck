@@ -201,7 +201,7 @@ function gtk_fn {
 function boost_fn {
     # TODO: get rid of the error enabling/disabling?
     set +e
-    echo -e "#include <boost/config.hpp>" | ${CXX} "${CXX_OPT[@]}"  -x c++ -
+    echo -e "#include <boost/config.hpp>" | ${CXX} "${CXX_OPT[@]}" -x c++ -
     BOOSTCHECK_RETURNCODE=$?
     set -e
     if [ ${BOOSTCHECK_RETURNCODE} -ne 0 ]; then
