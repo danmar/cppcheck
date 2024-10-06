@@ -145,8 +145,10 @@ namespace {
 
         std::string serialize(std::string productName) const {
             const auto nameAndVersion = Settings::getNameAndVersion(productName);
-            productName = nameAndVersion.first;
-            const std::string version = nameAndVersion.first.empty() ? CppCheck::version() : nameAndVersion.second;
+            productName = nameAndVersion.first.empty() ? "Cppcheck" : nameAndVersion.first;
+            std::string version = nameAndVersion.first.empty() ? CppCheck::version() : nameAndVersion.second;
+            if (version.find(" ") != std::string::npos)
+                version.erase(version.find(" "), std::string::npos);
 
             picojson::object doc;
             doc["version"] = picojson::value("2.1.0");
