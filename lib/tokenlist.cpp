@@ -35,6 +35,7 @@
 #include <cstdint>
 #include <exception>
 #include <functional>
+#include <iostream>
 #include <utility>
 #include <set>
 #include <stack>
@@ -1808,7 +1809,7 @@ void TokenList::validateAst(bool print) const
 {
     OnException oe{[&] {
             if (print)
-                mTokensFrontBack.front->printOut();
+                mTokensFrontBack.front->printOut(std::cout);
         }};
     // Check for some known issues in AST to avoid crash/hang later on
     std::set<const Token*> safeAstTokens;    // list of "safe" AST tokens without endless recursion

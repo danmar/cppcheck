@@ -973,7 +973,7 @@ public:
      * @param title Title for the printout or use default parameter or 0
      * for no title.
      */
-    void printOut(const char *title = nullptr) const;
+    void printOut(std::ostream& out, const char *title = nullptr) const;
 
     /**
      * For debugging purposes, prints token and all tokens
@@ -983,12 +983,12 @@ public:
      * @param fileNames Prints out file name instead of file index.
      * File index should match the index of the string in this vector.
      */
-    void printOut(const char *title, const std::vector<std::string> &fileNames) const;
+    void printOut(std::ostream& out, const char *title, const std::vector<std::string> &fileNames) const;
 
     /**
      * print out tokens - used for debugging
      */
-    void printLines(int lines=5) const;
+    void printLines(std::ostream& out, int lines=5) const;
 
     /**
      * Replace token replaceThis with tokens between start and end,
