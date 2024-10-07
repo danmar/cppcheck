@@ -1136,6 +1136,32 @@ void CheckOther::checkVariableScope()
     }
 }
 
+// used to check if an argument to a function might depend on another argument
+static bool mayDependOn(const ValueType *other, const ValueType *original)
+{
+    if (!other || !original)
+        return false;
+
+    // other must be pointer
+    if (!other->pointer)
+        return false;
+
+    // must be same underlying type
+    if (other->type != original->type)
+        return false;
+
+    const int otherPtr = other->pointer + (other->reference == Reference::LValue ? 1 : 0);
+    const int originalPtr = original->pointer;
+
+    if (otherPtr == originalPtr) {
+        // if other is not const than original may be copied to other
+        return !other->isConst(otherPtr);
+    }
+
+    // other may be reassigned to original
+    return otherPtr > originalPtr;
+}
+
 bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& used) const
 {
     const Scope* scope = tok->next()->scope();
@@ -1225,6 +1251,13 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
                         const std::string ret = mSettings->library.returnValueType(ftok); // assume that var is returned
                         if (!ret.empty() && ret.back() == '*')
                             return false;
+                    }
+                    if (ftok->function()) {
+                        const std::list<Variable> &argvars = ftok->function()->argumentList;
+                        const Variable *argvar = ftok->function()->getArgumentVar(argn);
+                        if (!std::all_of(argvars.cbegin(), argvars.cend(), [&](const Variable &other) {
+                            return &other == argvar || !mayDependOn(other.valueType(), argvar->valueType());
+                        })) return false;
                     }
                 }
             }
