@@ -1254,10 +1254,6 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
                     if (ftok->function()) {
                         const std::list<Variable> &argvars = ftok->function()->argumentList;
                         const Variable *argvar = ftok->function()->getArgumentVar(argn);
-                        for (const Variable & other : argvars) {
-                            if (&other != argvar && mayDependOn(other.valueType(), argvar->valueType()))
-                                return false;
-                        }
                         if (!std::all_of(argvars.cbegin(), argvars.cend(), [&](const Variable &other) {
                             return &other == argvar || !mayDependOn(other.valueType(), argvar->valueType());
                         })) return false;
