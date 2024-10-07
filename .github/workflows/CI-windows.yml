@@ -191,6 +191,14 @@ jobs:
         env:
           TEST_CPPCHECK_INJECT_CLANG: clang
 
+      - name: Run test/cli (--cppcheck-build-dir)
+        if: matrix.config == 'release'
+        run: |
+          cd test/cli || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv || exit /b !errorlevel!
+        env:
+          TEST_CPPCHECK_INJECT_BUILDDIR: injected
+
       - name: Test addons
         if: matrix.config == 'release'
         run: |
