@@ -745,7 +745,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
                 if (!path.empty()) {
                     path = Path::removeQuotationMarks(std::move(path));
-                    path = Path::fromNativeSeparators(std::move(path));
                     path = Path::simplifyPath(std::move(path));
 
                     // TODO: this only works when it exists
