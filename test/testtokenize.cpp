@@ -7039,6 +7039,10 @@ private:
                                                    "    return std::string{ g() + \"abc\" MACRO \"def\" };\n"
                                                    "}\n", /*expand*/ true, Platform::Type::Native, true), UNKNOWN_MACRO);
 
+        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify("static void handle_toggle(void (*proc) PROTO_XT_CALLBACK_ARGS, int var) {}\n"), // #13198
+                                     UNKNOWN_MACRO,
+                                     "There is an unknown macro here somewhere. Configuration is required. If PROTO_XT_CALLBACK_ARGS is a macro then please configure it.");
+
         ignore_errout();
     }
 
