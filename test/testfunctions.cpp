@@ -79,6 +79,7 @@ private:
         TEST_CASE(checkMissingReturn3);
         TEST_CASE(checkMissingReturn4);
         TEST_CASE(checkMissingReturn5);
+        TEST_CASE(checkMissingReturn6); // #13180
 
         // std::move for locar variable
         TEST_CASE(returnLocalStdMove1);
@@ -1777,7 +1778,7 @@ private:
               "            return 2;\n"
               "      }\n"
               "}\n"
-              "int _tmain(int argc, _TCHAR* argv[])\n"
+              "int main(int argc, char* argv[])\n"
               "{\n"
               "      auto const b= f(true);\n"
               "      auto const c= f(false);\n"
@@ -1843,6 +1844,14 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void checkMissingReturn6() {// #13180
+        check("int foo(void)\n"
+              "{\n"
+              "    i = readData();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Found an exit path from function with non-void return type that has missing return statement\n", errout_str());
     }
 
     // NRVO check
