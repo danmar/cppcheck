@@ -338,7 +338,7 @@ $(libcppdir)/reverseanalyzer.o: ../lib/reverseanalyzer.cpp ../lib/addoninfo.h ..
 $(libcppdir)/settings.o: ../lib/settings.cpp ../externals/picojson/picojson.h ../lib/addoninfo.h ../lib/config.h ../lib/errortypes.h ../lib/json.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/settings.h ../lib/standards.h ../lib/summaries.h ../lib/suppressions.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/settings.cpp
 
-$(libcppdir)/standards.o: ../lib/standards.cpp ../lib/config.h ../lib/standards.h
+$(libcppdir)/standards.o: ../lib/standards.cpp ../externals/simplecpp/simplecpp.h ../lib/config.h ../lib/standards.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/standards.cpp
 
 $(libcppdir)/summaries.o: ../lib/summaries.cpp ../lib/addoninfo.h ../lib/analyzerinfo.h ../lib/config.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/settings.h ../lib/sourcelocation.h ../lib/standards.h ../lib/summaries.h ../lib/suppressions.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/vfvalue.h

@@ -215,16 +215,13 @@ def test_cmd_std_cpp_enforce(tmp_path):  # #13128/#13129
     __test_cmd(tmp_path, 'test.c',['--language=c++', '--std=c89', '--std=c++14'], '-x c++ -std=c++14')
 
 
-@pytest.mark.xfail(strict=True)
 def test_cmd_std_c_enforce_alias(tmp_path):  # #13128/#13129/#13130
-    __test_cmd(tmp_path, 'test.c',['--language=c++', '--std=gnu99', '--std=gnu++11'], '-x c -std=gnu99')
+    __test_cmd(tmp_path, 'test.c',['--language=c', '--std=gnu99', '--std=gnu++11'], '-x c -std=gnu99')
 
 
-@pytest.mark.xfail(strict=True)
 def test_cmd_std_c_enforce_alias_2(tmp_path):  # #13128/#13129/#13130
-    __test_cmd(tmp_path, 'test.c',['--language=c++', '--std=iso9899:1999', '--std=gnu++11'], '-x c -std=iso9899:1999')
+    __test_cmd(tmp_path, 'test.c',['--language=c', '--std=iso9899:1999', '--std=gnu++11'], '-x c -std=iso9899:1999')
 
 
-@pytest.mark.xfail(strict=True)
 def test_cmd_std_cpp_enforce_alias(tmp_path):  # #13128/#13129/#13130
     __test_cmd(tmp_path, 'test.c',['--language=c++', '--std=gnu99', '--std=gnu++11'], '-x c++ -std=gnu++11')
