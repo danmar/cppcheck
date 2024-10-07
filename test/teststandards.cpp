@@ -26,8 +26,8 @@ public:
 private:
     void run() override {
         TEST_CASE(set);
-        TEST_CASE(setAlias1);
-        TEST_CASE(setAlias2);
+        TEST_CASE(setCPPAlias);
+        TEST_CASE(setCAlias);
         TEST_CASE(getC);
         TEST_CASE(getCPP);
         TEST_CASE(setStd);
@@ -89,20 +89,20 @@ private:
         ASSERT_EQUALS("c++23", stds.stdValueCPP);
     }
 
-    void setAlias1() const {
+    void setCPPAlias() const {
         Standards stds;
-        TODO_ASSERT_EQUALS(true, false, stds.setCPP("gnu++11"));
+        ASSERT_EQUALS(true, stds.setCPP("gnu++11"));
         ASSERT_EQUALS_ENUM(Standards::CLatest, stds.c);
         ASSERT_EQUALS("", stds.stdValueC);
-        TODO_ASSERT_EQUALS_ENUM(Standards::CPP11, Standards::CPPLatest, stds.cpp);
-        TODO_ASSERT_EQUALS("gnu++11", "", stds.stdValueCPP);
+        ASSERT_EQUALS_ENUM(Standards::CPP11, stds.cpp);
+        ASSERT_EQUALS("gnu++11", stds.stdValueCPP);
     }
 
-    void setAlias2() const {
+    void setCAlias() const {
         Standards stds;
-        TODO_ASSERT_EQUALS(true, false, stds.setC("gnu17"));
-        TODO_ASSERT_EQUALS_ENUM(Standards::C17, Standards::CLatest, stds.c);
-        TODO_ASSERT_EQUALS("gnu17", "", stds.stdValueC);
+        ASSERT_EQUALS(true, stds.setC("gnu17"));
+        ASSERT_EQUALS_ENUM(Standards::C17, stds.c);
+        ASSERT_EQUALS("gnu17", stds.stdValueC);
         ASSERT_EQUALS_ENUM(Standards::CPPLatest, stds.cpp);
         ASSERT_EQUALS("", stds.stdValueCPP);
     }
@@ -110,8 +110,8 @@ private:
     void getC() const {
         ASSERT_EQUALS_ENUM(Standards::C99, Standards::getC("c99"));
         ASSERT_EQUALS_ENUM(Standards::C11, Standards::getC("c11"));
-        TODO_ASSERT_EQUALS_ENUM(Standards::C17, Standards::CLatest, Standards::getC("gnu17"));
-        TODO_ASSERT_EQUALS_ENUM(Standards::C11, Standards::CLatest, Standards::getC("iso9899:2011"));
+        ASSERT_EQUALS_ENUM(Standards::C17, Standards::getC("gnu17"));
+        ASSERT_EQUALS_ENUM(Standards::C11, Standards::getC("iso9899:2011"));
 
         ASSERT_EQUALS_ENUM(Standards::CLatest, Standards::getC(""));
         ASSERT_EQUALS_ENUM(Standards::CLatest, Standards::getC("c77"));
@@ -121,7 +121,7 @@ private:
     void getCPP() const {
         ASSERT_EQUALS_ENUM(Standards::CPP11, Standards::getCPP("c++11"));
         ASSERT_EQUALS_ENUM(Standards::CPP23, Standards::getCPP("c++23"));
-        TODO_ASSERT_EQUALS_ENUM(Standards::CPP23, Standards::CPPLatest, Standards::getCPP("gnu++23"));
+        ASSERT_EQUALS_ENUM(Standards::CPP23, Standards::getCPP("gnu++23"));
 
         ASSERT_EQUALS_ENUM(Standards::CPPLatest, Standards::getCPP(""));
         ASSERT_EQUALS_ENUM(Standards::CPPLatest, Standards::getCPP("c++77"));
@@ -132,9 +132,9 @@ private:
         Standards stds;
         ASSERT(stds.setStd("c11"));
         ASSERT(stds.setStd("c++11"));
-        TODO_ASSERT(stds.setStd("gnu11"));
-        TODO_ASSERT(stds.setStd("gnu++17"));
-        TODO_ASSERT(stds.setStd("iso9899:2011"));
+        ASSERT(stds.setStd("gnu11"));
+        ASSERT(stds.setStd("gnu++17"));
+        ASSERT(stds.setStd("iso9899:2011"));
 
         ASSERT(!stds.setStd("C++11"));
         ASSERT(!stds.setStd("Gnu++11"));
