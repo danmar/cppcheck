@@ -6903,6 +6903,7 @@ private:
         ASSERT_EQUALS("12+case", testAst("case 1+2:"));
         ASSERT_EQUALS("xyz:?case", testAst("case (x?y:z):"));
         ASSERT_EQUALS("switchx( 1case y++ 2case", testAst("switch(x){case 1:{++y;break;case 2:break;}}"));
+        ASSERT_EQUALS("switchi( 12<<~case 0return", testAst("switch (i) { case ~(1 << 2) : return 0; }")); // #13197
     }
 
     void astrefqualifier() {
