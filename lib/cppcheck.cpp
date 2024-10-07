@@ -139,7 +139,7 @@ static std::string getDumpFileName(const Settings& settings, const std::string& 
         return settings.dumpFile;
 
     std::string extension;
-    if (settings.dump)
+    if (settings.dump || !settings.buildDir.empty())
         extension = ".dump";
     else
         extension = "." + std::to_string(settings.pid) + ".dump";
@@ -167,7 +167,7 @@ static void createDumpFile(const Settings& settings,
     if (!fdump.is_open())
         return;
 
-    {
+    if (!settings.buildDir.empty()) {
         std::ofstream fout(getCtuInfoFileName(dumpFile));
     }
 
@@ -1419,8 +1419,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
     std::string fileList;
 
     if (files.size() >= 2 || endsWith(files[0], ".ctu-info")) {
-        fileList = Path::getPathFromFilename(files[0]) + FILELIST + std::to_string(mSettings.pid);
-        filesDeleter.addFile(fileList);
+        fileList = Path::getPathFromFilename(files[0]) + FILELIST;
         std::ofstream fout(fileList);
         for (const std::string& f: files)
             fout << f << std::endl;
@@ -1428,6 +1427,8 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
 
     // ensure all addons have already been resolved - TODO: remove when settings are const after creation
     assert(mSettings.addonInfos.size() == mSettings.addons.size());
+
+    std::string ctuInfo;
 
     for (const AddonInfo &addonInfo : mSettings.addonInfos) {
         if (addonInfo.name != "misra" && !addonInfo.ctu && endsWith(files.back(), ".ctu-info"))
@@ -1444,6 +1445,18 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
             picojson::object obj = res.get<picojson::object>();
 
             ErrorMessage errmsg;
+
+            if (obj.count("summary") > 0) {
+                if (!mSettings.buildDir.empty()) {
+                    ctuInfo += res.serialize() + "\n";
+                } else {
+                    errmsg.severity = Severity::internal;
+                    errmsg.id = "ctuinfo";
+                    errmsg.setmsg(res.serialize());
+                    reportErr(errmsg);
+                }
+                continue;
+            }
 
             if (obj.count("file") > 0) {
                 std::string fileName = obj["file"].get<std::string>();
@@ -1483,12 +1496,29 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
             reportErr(errmsg);
         }
     }
+
+    if (!mSettings.buildDir.empty() && fileList.empty()) {
+        const std::string& ctuInfoFile = getCtuInfoFileName(files[0]);
+        std::ofstream fout(ctuInfoFile);
+        fout << ctuInfo;
+    }
 }
 
-void CppCheck::executeAddonsWholeProgram(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings)
+void CppCheck::executeAddonsWholeProgram(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const std::string& ctuInfo)
 {
     if (mSettings.addons.empty())
         return;
+
+    if (mSettings.buildDir.empty()) {
+        const std::string fileName = std::to_string(mSettings.pid) + ".ctu-info";
+        FilesDeleter filesDeleter;
+        filesDeleter.addFile(fileName);
+        std::ofstream fout(fileName);
+        fout << ctuInfo;
+        fout.close();
+        executeAddons({fileName}, "");
+        return;
+    }
 
     std::vector<std::string> ctuInfoFiles;
     for (const auto &f: files) {
@@ -1506,11 +1536,6 @@ void CppCheck::executeAddonsWholeProgram(const std::list<FileWithDetails> &files
     } catch (const InternalError& e) {
         const ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, "", "Bailing out from analysis: Whole program analysis failed");
         reportErr(errmsg);
-    }
-
-    if (mSettings.buildDir.empty()) {
-        for (const std::string &f: ctuInfoFiles)
-            std::remove(f.c_str());
     }
 }
 
@@ -1807,13 +1832,9 @@ bool CppCheck::analyseWholeProgram()
     return errors && (mExitCode > 0);
 }
 
-unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings)
+unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const std::string& ctuInfo)
 {
-    executeAddonsWholeProgram(files, fileSettings);
-    if (buildDir.empty()) {
-        removeCtuInfoFiles(files, fileSettings);
-        return mExitCode;
-    }
+    executeAddonsWholeProgram(files, fileSettings, ctuInfo);
     if (mSettings.checks.isEnabled(Checks::unusedFunction))
         CheckUnusedFunctions::analyseWholeProgram(mSettings, *this, buildDir);
     std::list<Check::FileInfo*> fileInfoList;
@@ -1875,22 +1896,6 @@ unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const st
         delete fi;
 
     return mExitCode;
-}
-
-void CppCheck::removeCtuInfoFiles(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings)
-{
-    if (mSettings.buildDir.empty()) {
-        for (const auto& f: files) {
-            const std::string &dumpFileName = getDumpFileName(mSettings, f.path());
-            const std::string &ctuInfoFileName = getCtuInfoFileName(dumpFileName);
-            std::remove(ctuInfoFileName.c_str());
-        }
-        for (const auto& fs: fileSettings) {
-            const std::string &dumpFileName = getDumpFileName(mSettings, fs.filename());
-            const std::string &ctuInfoFileName = getCtuInfoFileName(dumpFileName);
-            std::remove(ctuInfoFileName.c_str());
-        }
-    }
 }
 
 // cppcheck-suppress unusedFunction - only used in tests

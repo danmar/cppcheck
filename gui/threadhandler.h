@@ -257,6 +257,7 @@ protected:
     int mRunningThreadCount{};
 
     bool mAnalyseWholeProgram{};
+    std::string mCtuInfo;
 
     QStringList mAddonsAndTools;
     QList<SuppressionList::Suppression> mSuppressions;

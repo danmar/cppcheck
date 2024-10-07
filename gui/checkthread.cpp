@@ -117,10 +117,11 @@ void CheckThread::check(const Settings &settings)
     start();
 }
 
-void CheckThread::analyseWholeProgram(const QStringList &files)
+void CheckThread::analyseWholeProgram(const QStringList &files, const std::string& ctuInfo)
 {
     mFiles = files;
     mAnalyseWholeProgram = true;
+    mCtuInfo = ctuInfo;
     start();
 }
 
@@ -131,12 +132,14 @@ void CheckThread::run()
 
     if (!mFiles.isEmpty() || mAnalyseWholeProgram) {
         mAnalyseWholeProgram = false;
+        std::string ctuInfo;
+        ctuInfo.swap(mCtuInfo);
         qDebug() << "Whole program analysis";
         std::list<FileWithDetails> files2;
         std::transform(mFiles.cbegin(), mFiles.cend(), std::back_inserter(files2), [&](const QString& file) {
             return FileWithDetails{file.toStdString(), 0};
         });
-        mCppcheck.analyseWholeProgram(mCppcheck.settings().buildDir, files2, {});
+        mCppcheck.analyseWholeProgram(mCppcheck.settings().buildDir, files2, {}, ctuInfo);
         mFiles.clear();
         emit done();
         return;

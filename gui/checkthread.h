@@ -60,8 +60,9 @@ public:
     /**
      * @brief Run whole program analysis
      * @param files    All files
+     * @param ctuInfo  Ctu info for addons
      */
-    void analyseWholeProgram(const QStringList &files);
+    void analyseWholeProgram(const QStringList &files, const std::string& ctuInfo);
 
     void setAddonsAndTools(const QStringList &addonsAndTools) {
         mAddonsAndTools = addonsAndTools;
@@ -143,6 +144,7 @@ private:
 
     QStringList mFiles;
     bool mAnalyseWholeProgram{};
+    std::string mCtuInfo;
     QStringList mAddonsAndTools;
     QStringList mClangIncludePaths;
     QList<SuppressionList::Suppression> mSuppressions;
