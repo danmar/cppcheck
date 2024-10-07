@@ -60,7 +60,7 @@ int main(int argc, const char * const argv[])
     if (argc != 2)
         return 1;
 
-    register_signal_handler();
+    register_signal_handler(stdout);
 
     if (strcmp(argv[1], "assert") == 0)
         my_assert();

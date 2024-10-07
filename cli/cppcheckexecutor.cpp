@@ -188,13 +188,6 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         return EXIT_SUCCESS;
     }
 
-    #if defined(USE_WINDOWS_SEH)
-        set_seh_output(settings.exceptionOutput);
-    #endif
-    #if defined(USE_UNIX_SIGNAL_HANDLING)
-        set_signal_handler_output(settings.exceptionOutput);
-    #endif
-
     settings.loadSummaries();
 
     mFiles = parser.getFiles();
@@ -214,7 +207,7 @@ int CppCheckExecutor::check_wrapper(const Settings& settings)
         return check_wrapper_seh(*this, &CppCheckExecutor::check_internal, settings);
 #elif defined(USE_UNIX_SIGNAL_HANDLING)
     if (settings.exceptionHandling)
-        register_signal_handler();
+        register_signal_handler(settings.exceptionOutput);
 #endif
     return check_internal(settings);
 }

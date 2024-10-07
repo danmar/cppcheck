@@ -252,13 +252,6 @@ namespace {
     }
 }
 
-static FILE* sehOutput = stdout;
-
-void set_seh_output(FILE* f)
-{
-    sehOutput = f;
-}
-
 /**
  * Signal/SEH handling
  * Has to be clean for using with SEH on windows, i.e. no construction of C++ object instances is allowed!
@@ -267,7 +260,7 @@ void set_seh_output(FILE* f)
  */
 int check_wrapper_seh(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(const Settings&) const, const Settings& settings)
 {
-    FILE *outputFile = sehOutput;
+    FILE * const outputFile = settings.exceptionOutput;
     __try {
         return (&executor->*f)(settings);
     } __except (filterException(outputFile, GetExceptionCode(), GetExceptionInformation())) {
