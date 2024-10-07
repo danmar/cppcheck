@@ -10,7 +10,6 @@ on:
       - '2.*'
     tags:
       - '2.*'
-  pull_request:
 
 permissions:
   contents: read

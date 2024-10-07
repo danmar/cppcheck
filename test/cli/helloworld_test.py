@@ -4,6 +4,7 @@
 import os
 import re
 import glob
+import json
 
 from testutils import create_gui_project_file, cppcheck
 
@@ -319,3 +320,17 @@ def test_missing_include_system():  # #11283
 
     _, _, stderr = cppcheck(args, cwd=__script_dir)
     assert stderr.replace('\\', '/') == 'helloworld/main.c:1:0: information: Include file: <stdio.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n'
+
+
+def test_sarif():
+    args = [
+        '--output-format=sarif',
+        'helloworld'
+    ]
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    assert ret == 0, stdout
+    res = json.loads(stderr)
+    assert res['version'] == '2.1.0'
+    assert res['runs'][0]['results'][0]['locations'][0]['physicalLocation']['artifactLocation']['uri'] == 'helloworld/main.c'
+    assert res['runs'][0]['results'][0]['ruleId'] == 'zerodiv'
+    assert res['runs'][0]['results'][0]['message']['text'] == 'Division by zero.'
