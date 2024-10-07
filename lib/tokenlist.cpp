@@ -1892,6 +1892,11 @@ void TokenList::validateAst(bool print) const
                                     "' doesn't have two operands.",
                                     InternalError::AST);
         }
+        if (tok->str() == "case" && !tok->astOperand1()) {
+            throw InternalError(tok,
+                                "Syntax Error: AST broken, 'case' doesn't have an operand.",
+                                InternalError::AST);
+        }
 
         // Check member access
         if (Token::Match(tok, "%var% .")) {
