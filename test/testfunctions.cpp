@@ -1778,7 +1778,7 @@ private:
               "            return 2;\n"
               "      }\n"
               "}\n"
-              "int _tmain(int argc, _TCHAR* argv[])\n"
+              "int main(int argc, char* argv[])\n"
               "{\n"
               "      auto const b= f(true);\n"
               "      auto const c= f(false);\n"
