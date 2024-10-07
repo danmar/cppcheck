@@ -45,12 +45,20 @@ public:
             throw std::runtime_error("empty path specified");
     }
 
-    const std::string& path() const
+    const std::string& path() const &
+    {
+        return mPath;
+    }
+    std::string path() &&
     {
         return mPath;
     }
 
-    const std::string& spath() const
+    const std::string& spath() const &
+    {
+        return mPathSimplified;
+    }
+    std::string spath() &&
     {
         return mPathSimplified;
     }
@@ -77,12 +85,22 @@ struct CPPCHECKLIB FileSettings {
 
     std::string cfg;
     FileWithDetails file;
-    const std::string& filename() const
+    const std::string& filename() const &
+    {
+        // cppcheck-suppress returnTempReference
+        return file.path();
+    }
+    std::string filename() &&
     {
         return file.path();
     }
     // cppcheck-suppress unusedFunction
-    const std::string& sfilename() const
+    const std::string& sfilename() const &
+    {
+        // cppcheck-suppress returnTempReference
+        return file.spath();
+    }
+    std::string sfilename() &&
     {
         return file.spath();
     }

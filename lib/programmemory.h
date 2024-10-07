@@ -84,9 +84,10 @@ struct ExprIdToken {
         return !(lhs < rhs);
     }
 
-    const Token& operator*() const NOEXCEPT {
+    const Token& operator*() const&  NOEXCEPT {
         return *tok;
     }
+    Token operator*() && NOEXCEPT;
 
     const Token* operator->() const NOEXCEPT {
         return tok;

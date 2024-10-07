@@ -98,7 +98,7 @@ premium-misra-cpp-2023-6.7.1
 premium-misra-cpp-2023-6.8.3
 
 # FIXME enforce proper ref qualifications
-premium-misra-cpp-2023-6.8.4
+# premium-misra-cpp-2023-6.8.4
 
 # We intentionally use the standard integer types
 premium-misra-cpp-2023-6.9.2

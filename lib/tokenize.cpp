@@ -2538,7 +2538,7 @@ namespace {
             return false;
         }
 
-        ScopeInfo3 * findScope(const ScopeInfo3 * scope) {
+        ScopeInfo3 * findScope(const ScopeInfo3 * scope) & {
             if (scope->bodyStart == bodyStart)
                 return this;
             for (auto & child : children) {
@@ -4182,7 +4182,7 @@ namespace {
         const std::unordered_map<std::string, nonneg int>& map(bool global) const {
             return global ? mVariableId_global : mVariableId;
         }
-        nonneg int& getVarId() {
+        nonneg int& getVarId() & {
             return mVarId;
         }
     };
