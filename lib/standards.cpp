@@ -20,14 +20,34 @@
 
 #include <utility>
 
+#include <simplecpp.h>
+
+static Standards::cstd_t mapC(simplecpp::cstd_t cstd) {
+    switch (cstd)
+    {
+    case simplecpp::C89:
+        return Standards::C89;
+    case simplecpp::C99:
+        return Standards::C99;
+    case simplecpp::C11:
+        return Standards::C11;
+    case simplecpp::C17:
+        return Standards::C17;
+    case simplecpp::C23:
+        return Standards::C23;
+    case simplecpp::CUnknown:
+        return Standards::CLatest;
+    }
+}
+
 bool Standards::setC(std::string str)
 {
     if (str.empty())
         return false;
-    const cstd_t c_new = getC(str);
-    const bool b = (str == getC(c_new));
+    const simplecpp::cstd_t c_new = simplecpp::getCStd(str);
+    const bool b = (c_new != simplecpp::CUnknown);
     if (b) {
-        c = c_new;
+        c = mapC(c_new);
         stdValueC = std::move(str);
     }
     return b;
@@ -57,32 +77,39 @@ std::string Standards::getC(cstd_t c_std)
 
 Standards::cstd_t Standards::getC(const std::string &std)
 {
-    if (std == "c89") {
-        return Standards::C89;
+    return mapC(simplecpp::getCStd(std));
+}
+
+static Standards::cppstd_t mapCPP(simplecpp::cppstd_t cppstd) {
+    switch (cppstd)
+    {
+    case simplecpp::CPP03:
+        return Standards::CPP03;
+    case simplecpp::CPP11:
+        return Standards::CPP11;
+    case simplecpp::CPP14:
+        return Standards::CPP14;
+    case simplecpp::CPP17:
+        return Standards::CPP17;
+    case simplecpp::CPP20:
+        return Standards::CPP20;
+    case simplecpp::CPP23:
+        return Standards::CPP23;
+    case simplecpp::CPP26:
+        return Standards::CPP26;
+    case simplecpp::CPPUnknown:
+        return Standards::CPPLatest;
     }
-    if (std == "c99") {
-        return Standards::C99;
-    }
-    if (std == "c11") {
-        return Standards::C11;
-    }
-    if (std == "c17") {
-        return Standards::C17;
-    }
-    if (std == "c23") {
-        return Standards::C23;
-    }
-    return Standards::CLatest;
 }
 
 bool Standards::setCPP(std::string str)
 {
     if (str.empty())
         return false;
-    const cppstd_t cpp_new = getCPP(str);
-    const bool b = (str == getCPP(cpp_new));
+    const simplecpp::cppstd_t cpp_new = simplecpp::getCppStd(str);
+    const bool b = (cpp_new != simplecpp::CPPUnknown);
     if (b) {
-        cpp = cpp_new;
+        cpp = mapCPP(cpp_new);
         stdValueCPP = std::move(str);
     }
     return b;
@@ -116,28 +143,7 @@ std::string Standards::getCPP(cppstd_t std)
 
 Standards::cppstd_t Standards::getCPP(const std::string &std)
 {
-    if (std == "c++03") {
-        return Standards::CPP03;
-    }
-    if (std == "c++11") {
-        return Standards::CPP11;
-    }
-    if (std == "c++14") {
-        return Standards::CPP14;
-    }
-    if (std == "c++17") {
-        return Standards::CPP17;
-    }
-    if (std == "c++20") {
-        return Standards::CPP20;
-    }
-    if (std == "c++23") {
-        return Standards::CPP23;
-    }
-    if (std == "c++26") {
-        return Standards::CPP26;
-    }
-    return Standards::CPPLatest;
+    return mapCPP(simplecpp::getCppStd(std));
 }
 
 bool Standards::setStd(const std::string& str)
