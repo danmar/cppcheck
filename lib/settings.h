@@ -211,6 +211,8 @@ public:
 #if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
     /** @brief Is --exception-handling given */
     bool exceptionHandling{};
+
+    FILE* exceptionOutput = stdout;
 #endif
 
     enum class ExecutorType : std::uint8_t

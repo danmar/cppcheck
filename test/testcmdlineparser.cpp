@@ -19,7 +19,6 @@
 #include "cmdlinelogger.h"
 #include "cmdlineparser.h"
 #include "config.h"
-#include "cppcheckexecutor.h"
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "helpers.h"
@@ -1911,28 +1910,25 @@ private:
     void exceptionhandling() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--exception-handling", "file.cpp"};
-        CppCheckExecutor::setExceptionOutput(stderr);
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->exceptionHandling);
-        ASSERT_EQUALS(stderr, CppCheckExecutor::getExceptionOutput());
+        ASSERT_EQUALS(stdout, settings->exceptionOutput);
     }
 
     void exceptionhandling2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--exception-handling=stderr", "file.cpp"};
-        CppCheckExecutor::setExceptionOutput(stdout);
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->exceptionHandling);
-        ASSERT_EQUALS(stderr, CppCheckExecutor::getExceptionOutput());
+        ASSERT_EQUALS(stderr, settings->exceptionOutput);
     }
 
     void exceptionhandling3() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--exception-handling=stdout", "file.cpp"};
-        CppCheckExecutor::setExceptionOutput(stderr);
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->exceptionHandling);
-        ASSERT_EQUALS(stdout, CppCheckExecutor::getExceptionOutput());
+        ASSERT_EQUALS(stdout, settings->exceptionOutput);
     }
 
     void exceptionhandlingInvalid() {

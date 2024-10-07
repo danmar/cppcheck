@@ -19,10 +19,8 @@
 #ifndef CPPCHECKEXECUTOR_H
 #define CPPCHECKEXECUTOR_H
 
-#include "config.h"
 #include "filesettings.h"
 
-#include <cstdio>
 #include <list>
 #include <string>
 #include <vector>
@@ -62,15 +60,6 @@ public:
      */
     int check(int argc, const char* const argv[]);
 
-    /**
-     * @param exceptionOutput Output file
-     */
-    static void setExceptionOutput(FILE* exceptionOutput);
-    /**
-     * @return file name to be used for output from exception handler. Has to be either "stdout" or "stderr".
-     */
-    static FILE* getExceptionOutput();
-
 private:
 
     /**
@@ -108,13 +97,6 @@ protected:
     std::list<FileWithDetails> mFiles;
 
     std::list<FileSettings> mFileSettings;
-
-#if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
-    /**
-     * Output file name for exception handler
-     */
-    static FILE* mExceptionOutput;
-#endif
 };
 
 #endif // CPPCHECKEXECUTOR_H

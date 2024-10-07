@@ -260,7 +260,7 @@ namespace {
  */
 int check_wrapper_seh(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(const Settings&) const, const Settings& settings)
 {
-    FILE *outputFile = CppCheckExecutor::getExceptionOutput();
+    FILE * const outputFile = settings.exceptionOutput;
     __try {
         return (&executor->*f)(settings);
     } __except (filterException(outputFile, GetExceptionCode(), GetExceptionInformation())) {

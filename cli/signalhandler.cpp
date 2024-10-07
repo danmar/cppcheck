@@ -56,12 +56,7 @@ static constexpr size_t MYSTACKSIZE = 16*1024+SIGSTKSZ; // wild guess about a re
 #endif
 static char mytstack[MYSTACKSIZE]= {0}; // alternative stack for signal handler
 static bool bStackBelowHeap=false; // lame attempt to locate heap vs. stack address space. See CppCheckExecutor::check_wrapper()
-static FILE* signalOutput = stdout;
-
-void set_signal_handler_output(FILE* f)
-{
-    signalOutput = f;
-}
+static FILE* signalOutput = stdout; // TODO: get rid of this
 
 /**
  * \param[in] ptr address to be examined.
@@ -299,9 +294,9 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
     }
 }
 
-void register_signal_handler()
+void register_signal_handler(FILE * const output)
 {
-    FILE * const output = signalOutput;
+    signalOutput = output;
 
     // determine stack vs. heap
     char stackVariable;

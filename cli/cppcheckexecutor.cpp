@@ -176,12 +176,6 @@ namespace {
     };
 }
 
-// TODO: do not directly write to stdout
-
-#if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
-/*static*/ FILE* CppCheckExecutor::mExceptionOutput = stdout;
-#endif
-
 int CppCheckExecutor::check(int argc, const char* const argv[])
 {
     Settings settings;
@@ -213,7 +207,7 @@ int CppCheckExecutor::check_wrapper(const Settings& settings)
         return check_wrapper_seh(*this, &CppCheckExecutor::check_internal, settings);
 #elif defined(USE_UNIX_SIGNAL_HANDLING)
     if (settings.exceptionHandling)
-        register_signal_handler();
+        register_signal_handler(settings.exceptionOutput);
 #endif
     return check_internal(settings);
 }
@@ -452,22 +446,6 @@ void StdLogger::reportErr(const ErrorMessage &msg)
     else
         reportErr(msg.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation));
 }
-
-#if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
-void CppCheckExecutor::setExceptionOutput(FILE* exceptionOutput)
-{
-    mExceptionOutput = exceptionOutput;
-#if defined(USE_UNIX_SIGNAL_HANDLING)
-    set_signal_handler_output(mExceptionOutput);
-#endif
-}
-
-// cppcheck-suppress unusedFunction - only used by USE_WINDOWS_SEH code
-FILE* CppCheckExecutor::getExceptionOutput()
-{
-    return mExceptionOutput;
-}
-#endif
 
 /**
  * Execute a shell command and read the output from it. Returns true if command terminated successfully.
