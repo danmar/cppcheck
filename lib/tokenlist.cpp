@@ -913,7 +913,7 @@ static bool isPrefixUnary(const Token* tok, bool cpp)
         }
     }
     if (!tok->previous()
-        || ((Token::Match(tok->previous(), "(|[|{|%op%|;|?|:|,|.|return|::") || (cpp && tok->strAt(-1) == "throw"))
+        || ((Token::Match(tok->previous(), "(|[|{|%op%|;|?|:|,|.|case|return|::") || (cpp && tok->strAt(-1) == "throw"))
             && (tok->previous()->tokType() != Token::eIncDecOp || tok->tokType() == Token::eIncDecOp)))
         return true;
 
@@ -1892,6 +1892,11 @@ void TokenList::validateAst(bool print) const
                                     "Syntax Error: AST broken, '" + tok->strAt(-1) +
                                     "' doesn't have two operands.",
                                     InternalError::AST);
+        }
+        if (tok->str() == "case" && !tok->astOperand1()) {
+            throw InternalError(tok,
+                                "Syntax Error: AST broken, 'case' doesn't have an operand.",
+                                InternalError::AST);
         }
 
         // Check member access
