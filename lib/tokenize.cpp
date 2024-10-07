@@ -8470,7 +8470,10 @@ void Tokenizer::reportUnknownMacros() const
                 continue;
             if (startsWith(tok->strAt(1), "__")) // attribute/annotation
                 continue;
-            unknownMacroError(tok->next());
+            if (tok->next()->isStandardType() && !tok->linkAt(2)->next()->isStandardType())
+                unknownMacroError(tok->linkAt(2)->next());
+            else
+                unknownMacroError(tok->next());
         }
     }
 
