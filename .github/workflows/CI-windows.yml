@@ -27,7 +27,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-2019, windows-2022]
-        qt_ver: [5.15.2, 6.7.3]
+        qt_ver: [5.15.2, 6.8.0]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
