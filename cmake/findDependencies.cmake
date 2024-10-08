@@ -14,15 +14,6 @@ if(BUILD_GUI)
             message(WARNING "'Qt6Core_VERSION' is not set - using 6.0.0 as fallback")
             set(QT_VERSION "6.0.0")
         endif()
-        if(MSVC)
-            # disable Visual Studio C++ memory leak detection since it causes compiler errors with Qt 6
-            # D:\a\cppcheck\Qt\6.2.4\msvc2019_64\include\QtCore/qhash.h(179,15): warning C4003: not enough arguments for function-like macro invocation 'free' [D:\a\cppcheck\cppcheck\build\gui\cppcheck-gui.vcxproj]
-            # D:\a\cppcheck\Qt\6.2.4\msvc2019_64\include\QtCore/qhash.h(179,15): error C2059: syntax error: ',' [D:\a\cppcheck\cppcheck\build\gui\cppcheck-gui.vcxproj]
-            # this is supposed to be fixed according to the following tickets but it still happens
-            # https://bugreports.qt.io/browse/QTBUG-40575
-            # https://bugreports.qt.io/browse/QTBUG-86395
-            set(DISABLE_CRTDBG_MAP_ALLOC ON)
-        endif()
     else()
         message(WARNING "Building with Qt5 is deprecated (it went EOL in May 2023) and will be removed in a future release - please use Qt6 instead")
         find_package(Qt5 COMPONENTS ${qt_components} REQUIRED)
