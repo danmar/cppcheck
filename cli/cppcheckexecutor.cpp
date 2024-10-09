@@ -212,7 +212,7 @@ namespace {
             return "high";
         }
 
-        std::string getHash(const ErrorMessage& errmsg) const {
+        static std::string getHash(const ErrorMessage& errmsg) {
             const std::string s = errmsg.toString(false, "{file}:{line}:{column}: {message} {id} {code}", "{file}:{line}:{column} {info} {code}");
             std::ostringstream os;
             //std::cout << s << std::endl;
