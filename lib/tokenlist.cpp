@@ -267,12 +267,14 @@ Token *TokenList::copyTokens(Token *dest, const Token *first, const Token *last,
     std::stack<Token *> links;
     Token *tok2 = dest;
     int linenr = dest->linenr();
+    int column = dest->next() ? dest->next()->column() : dest->column() + dest->str().length() + 1;
     const int commonFileIndex = dest->fileIndex();
     for (const Token *tok = first; tok != last->next(); tok = tok->next()) {
         tok2->insertToken(tok->str());
         tok2 = tok2->next();
         tok2->fileIndex(commonFileIndex);
         tok2->linenr(linenr);
+        tok2->column(column);
         tok2->tokType(tok->tokType());
         tok2->flags(tok->flags());
         tok2->varId(tok->varId());
@@ -292,6 +294,9 @@ Token *TokenList::copyTokens(Token *dest, const Token *first, const Token *last,
 
             links.pop();
         }
+
+        column += tok->next() ? tok->next()->column() - tok->column() : tok->str().length() + 1;
+
         if (!one_line && tok->next())
             linenr += tok->next()->linenr() - tok->linenr();
     }
