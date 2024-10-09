@@ -157,7 +157,7 @@ namespace {
         picojson::value serializeRuns(const std::string& productName, const std::string& version) const {
             picojson::object driver;
             driver["name"] = picojson::value(productName);
-            driver["version"] = picojson::value(version);
+            driver["semanticVersion"] = picojson::value(version);
             driver["informationUri"] = picojson::value("https://cppcheck.sourceforge.io");
             driver["rules"] = picojson::value(serializeRules());
             picojson::object tool;
