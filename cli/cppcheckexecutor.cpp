@@ -109,7 +109,7 @@ namespace {
                         securitySeverity = 9.9; // We see undefined behavior
                     //else if (finding.severity == Severity::warning)
                     //    securitySeverity = 5.1; // We see potential undefined behavior
-                    if (securitySeverity > 0) {
+                    if (securitySeverity > 0.5) {
                         properties["security-severity"] = picojson::value(securitySeverity);
                         const picojson::array tags{picojson::value("security")};
                         properties["tags"] = picojson::value(tags);
