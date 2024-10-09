@@ -119,7 +119,7 @@ namespace {
             for (const auto& location : finding.callStack) {
                 picojson::object physicalLocation;
                 picojson::object artifactLocation;
-                artifactLocation["uri"] = picojson::value(location.getOrigFile(false));
+                artifactLocation["uri"] = picojson::value(location.getfile(false));
                 physicalLocation["artifactLocation"] = picojson::value(artifactLocation);
                 picojson::object region;
                 region["startLine"] = picojson::value(static_cast<int64_t>(location.line));
