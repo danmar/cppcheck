@@ -104,6 +104,16 @@ namespace {
                     picojson::object properties;
                     properties["precision"] = picojson::value(sarifPrecision(finding));
                     properties["problem.severity"] = picojson::value(sarifSeverity(finding));
+                    double securitySeverity = 0;
+                    if (finding.severity == Severity::error && !ErrorLogger::isCriticalErrorId(finding.id))
+                        securitySeverity = 9.9; // We see undefined behavior
+                    //else if (finding.severity == Severity::warning)
+                    //    securitySeverity = 5.1; // We see potential undefined behavior
+                    if (securitySeverity > 0) {
+                        properties["security-severity"] = picojson::value(securitySeverity);
+                        const picojson::array tags{picojson::value("security")};
+                        properties["tags"] = picojson::value(tags);
+                    }
                     rule["properties"] = picojson::value(properties);
 
                     ret.emplace_back(rule);
@@ -145,10 +155,6 @@ namespace {
                 message["text"] = picojson::value(finding.shortMessage());
                 res["message"] = picojson::value(message);
                 res["ruleId"] = picojson::value(finding.id);
-                // partialFingerprints.hash
-                picojson::object partialFingerprints;
-                partialFingerprints["hash"] = picojson::value(getHash(finding));
-                res["partialFingerprints"] = picojson::value(partialFingerprints);
                 results.emplace_back(res);
             }
             return results;
@@ -206,16 +212,8 @@ namespace {
 
         static std::string sarifPrecision(const ErrorMessage& errmsg) {
             if (errmsg.certainty == Certainty::inconclusive)
-                return "normal";
+                return "medium";
             return "high";
-        }
-
-        static std::string getHash(const ErrorMessage& errmsg) {
-            const std::string s = errmsg.toString(false, "{file}:{line}:{column}: {message} {id} {code}", "{file}:{line}:{column} {info} {code}");
-            std::ostringstream os;
-            //std::cout << s << std::endl;
-            os << std::hex << std::hash<std::string> {}(s);
-            return os.str();
         }
 
         std::vector<ErrorMessage> mFindings;

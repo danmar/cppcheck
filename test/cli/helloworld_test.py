@@ -333,4 +333,9 @@ def test_sarif():
     assert res['version'] == '2.1.0'
     assert res['runs'][0]['results'][0]['locations'][0]['physicalLocation']['artifactLocation']['uri'] == 'helloworld/main.c'
     assert res['runs'][0]['results'][0]['ruleId'] == 'zerodiv'
-    assert res['runs'][0]['results'][0]['message']['text'] == 'Division by zero.'
+    assert res['runs'][0]['tool']['driver']['rules'][0]['id'] == 'zerodiv'
+    assert res['runs'][0]['tool']['driver']['rules'][0]['properties']['precision'] == 'high'
+    assert res['runs'][0]['tool']['driver']['rules'][0]['properties']['problem.severity'] == 'warning'
+    assert res['runs'][0]['tool']['driver']['rules'][0]['properties']['security-severity'] > 9.5
+    assert 'security' in res['runs'][0]['tool']['driver']['rules'][0]['properties']['tags']
+    assert re.match(r'[0-9]+(.[0-9]+)+', res['runs'][0]['tool']['driver']['semanticVersion'])
