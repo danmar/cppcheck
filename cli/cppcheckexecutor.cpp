@@ -103,9 +103,7 @@ namespace {
                     // rule.properties.precision, rule.properties.problem.severity
                     picojson::object properties;
                     properties["precision"] = picojson::value(sarifPrecision(finding));
-                    picojson::object properties_problem;
-                    properties_problem["severity"] = picojson::value(sarifSeverity(finding));
-                    properties["problem"] = picojson::value(properties_problem);
+                    properties["problem.severity"] = picojson::value(sarifSeverity(finding));
                     rule["properties"] = picojson::value(properties);
 
                     ret.emplace_back(rule);
