@@ -2780,7 +2780,7 @@ private:
                "        if (s == TYPE_2) {}\n"
                "        else if (s == TYPE_3) {}\n"
                "    }\n"
-              "}");
+               "}");
         ASSERT_EQUALS("", errout_str());
     }
 
