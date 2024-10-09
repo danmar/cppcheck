@@ -82,12 +82,32 @@ namespace {
             picojson::array ret;
             std::set<std::string> ruleIds;
             for (const auto& finding : mFindings) {
+                // github only supports findings with locations
+                if (finding.callStack.empty())
+                    continue;
                 if (ruleIds.insert(finding.id).second) {
                     picojson::object rule;
                     rule["id"] = picojson::value(finding.id);
+                    // rule.shortDescription.text
                     picojson::object shortDescription;
                     shortDescription["text"] = picojson::value(finding.shortMessage());
                     rule["shortDescription"] = picojson::value(shortDescription);
+                    // rule.fullDescription.text
+                    picojson::object fullDescription;
+                    fullDescription["text"] = picojson::value(finding.verboseMessage());
+                    rule["fullDescription"] = picojson::value(fullDescription);
+                    // rule.help.text
+                    picojson::object help;
+                    help["text"] = picojson::value(finding.verboseMessage()); // FIXME provide proper help text
+                    rule["help"] = picojson::value(help);
+                    // rule.properties.precision, rule.properties.problem.severity
+                    picojson::object properties;
+                    properties["precision"] = picojson::value(sarifPrecision(finding));
+                    picojson::object properties_problem;
+                    properties_problem["severity"] = picojson::value(sarifSeverity(finding));
+                    properties["problem"] = picojson::value(properties_problem);
+                    rule["properties"] = picojson::value(properties);
+
                     ret.emplace_back(rule);
                 }
             }
@@ -104,6 +124,8 @@ namespace {
                 picojson::object region;
                 region["startLine"] = picojson::value(static_cast<int64_t>(location.line));
                 region["startColumn"] = picojson::value(static_cast<int64_t>(location.column));
+                region["endLine"] = region["startLine"];
+                region["endColumn"] = region["startColumn"];
                 physicalLocation["region"] = picojson::value(region);
                 picojson::object loc;
                 loc["physicalLocation"] = picojson::value(physicalLocation);
@@ -115,14 +137,20 @@ namespace {
         picojson::array serializeResults() const {
             picojson::array results;
             for (const auto& finding : mFindings) {
+                // github only supports findings with locations
+                if (finding.callStack.empty())
+                    continue;
                 picojson::object res;
-                res["level"] = picojson::value(sarifLevel(finding.severity));
-                if (!finding.callStack.empty())
-                    res["locations"] = picojson::value(serializeLocations(finding));
+                res["level"] = picojson::value(sarifSeverity(finding));
+                res["locations"] = picojson::value(serializeLocations(finding));
                 picojson::object message;
                 message["text"] = picojson::value(finding.shortMessage());
                 res["message"] = picojson::value(message);
                 res["ruleId"] = picojson::value(finding.id);
+                // partialFingerprints.hash
+                picojson::object partialFingerprints;
+                partialFingerprints["hash"] = picojson::value(getHash(finding));
+                res["partialFingerprints"] = picojson::value(partialFingerprints);
                 results.emplace_back(res);
             }
             return results;
@@ -159,11 +187,11 @@ namespace {
         }
     private:
 
-
-        static std::string sarifLevel(Severity severity) {
-            switch (severity) {
-            case Severity::error:
+        static std::string sarifSeverity(const ErrorMessage& errmsg) {
+            if (ErrorLogger::isCriticalErrorId(errmsg.id))
                 return "error";
+            switch (errmsg.severity) {
+            case Severity::error:
             case Severity::warning:
             case Severity::style:
             case Severity::portability:
@@ -178,7 +206,19 @@ namespace {
             return "note";
         }
 
+        static std::string sarifPrecision(const ErrorMessage& errmsg) {
+            if (errmsg.certainty == Certainty::inconclusive)
+                return "normal";
+            return "high";
+        }
 
+        std::string getHash(const ErrorMessage& errmsg) const {
+            const std::string s = errmsg.toString(false, "{file}:{line}:{column}: {message} {id} {code}", "{file}:{line}:{column} {info} {code}");
+            std::ostringstream os;
+            //std::cout << s << std::endl;
+            os << std::hex << std::hash<std::string> {}(s);
+            return os.str();
+        }
 
         std::vector<ErrorMessage> mFindings;
     };
