@@ -1073,6 +1073,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             // --project-configuration
             else if (std::strncmp(argv[i], "--project-configuration=", 24) == 0) {
                 mVSConfig = argv[i] + 24;
+                // TODO: provide error when this does nothing
                 if (!mVSConfig.empty() && (project.projectType == ImportProject::Type::VS_SLN || project.projectType == ImportProject::Type::VS_VCXPROJ))
                     project.ignoreOtherConfigs(mVSConfig);
             }

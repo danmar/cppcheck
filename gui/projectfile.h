@@ -224,6 +224,7 @@ public:
     QStringList getAddonsAndTools() const;
 
     bool getClangAnalyzer() const {
+        // TODO
         return false; //mClangAnalyzer;
     }
 
