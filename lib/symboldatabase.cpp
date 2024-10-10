@@ -7568,7 +7568,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
             else if (tok->previous() && tok->previous()->function() && tok->previous()->function()->isConstructor()) {
                 ValueType valuetype;
                 valuetype.type = ValueType::RECORD;
-                valuetype.typeScope = tok->previous()->function()->token->scope();
+                valuetype.typeScope = tok->previous()->function()->tokenDef->scope();
                 setValueType(tok, valuetype);
             }
 
