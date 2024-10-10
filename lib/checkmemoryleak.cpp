@@ -824,7 +824,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable* const vari
 
                 else if (tok3->str() == "}") {
                     if (indentlevel3 == 0) {
-                        memoryLeak(tok3, variable->name() + "." + tok2->strAt(2), allocType);
+                        memoryLeak(tok3, variable->name() + "." + assignToks.first->str(), allocType);
                         break;
                     }
                     --indentlevel3;
