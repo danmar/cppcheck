@@ -21,6 +21,7 @@
 #include <QDebug>
 #include <QList>
 #include <QSet>
+#include <QtLogging>
 
 CheckStatistics::CheckStatistics(QObject *parent)
     : QObject(parent)

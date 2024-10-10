@@ -35,6 +35,7 @@
 #include <QSettings>
 #include <QTextStream>
 #include <QVariant>
+#include <QtLogging>
 
 ThreadHandler::ThreadHandler(QObject *parent) :
     QObject(parent)

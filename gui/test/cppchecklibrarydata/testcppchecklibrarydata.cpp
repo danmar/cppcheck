@@ -27,6 +27,7 @@
 #include <QStringList>
 #include <QTextStream>
 #include <QtTest>
+#include <QtLogging>
 
 const QString TestCppcheckLibraryData::TempCfgFile = "./tmp.cfg";
 

@@ -2,13 +2,7 @@
 # Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
 name: release-windows
 
-on:
-  push:
-    tags:
-      - '2.*'
-  schedule:
-    - cron:  '0 0 * * *'
-  workflow_dispatch:
+on: [push, pull_request]
 
 permissions:
   contents: read
@@ -27,7 +21,7 @@ jobs:
     env:
       # see https://www.pcre.org/original/changelog.txt
       PCRE_VERSION: 8.45
-      QT_VERSION: 5.15.2
+      QT_VERSION: 6.7.2
 
     steps:
       - uses: actions/checkout@v4
@@ -76,6 +70,7 @@ jobs:
           lrelease gui.pro -removeidentical || exit /b !errorlevel!
 
       - name: Build x64 release GUI
+        if: false
         run: |
           ; TODO: enable rules?
           ; specify Release build so matchcompiler is used
