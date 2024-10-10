@@ -1544,8 +1544,14 @@ bool isUsedAsBool(const Token* const tok, const Settings& settings)
 }
 
 bool compareTokenFlags(const Token* tok1, const Token* tok2, bool macro) {
-    if (macro && (tok1->isExpandedMacro() || tok2->isExpandedMacro() || tok1->isTemplateArg() || tok2->isTemplateArg()))
-        return false;
+    if (macro) {
+        if (tok1->isExpandedMacro() != tok2->isExpandedMacro())
+            return false;
+        if (tok1->isExpandedMacro() && tok1->getMacroName() != tok2->getMacroName())
+            return false;
+        if (tok1->isTemplateArg() || tok2->isTemplateArg())
+            return false;
+    }
     if (tok1->isComplex() != tok2->isComplex())
         return false;
     if (tok1->isLong() != tok2->isLong())

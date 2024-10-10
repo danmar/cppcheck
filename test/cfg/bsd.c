@@ -32,10 +32,13 @@ void nullPointer_setlinebuf(FILE *stream)
 // #9323, #9331
 void verify_timercmp(struct timeval t)
 {
+    // cppcheck-suppress duplicateExpression
     (void)timercmp(&t, &t, <);
+    // cppcheck-suppress duplicateExpression
     (void)timercmp(&t, &t, <=);
     (void)timercmp(&t, &t, ==);
     (void)timercmp(&t, &t, !=);
+    // cppcheck-suppress duplicateExpression
     (void)timercmp(&t, &t, >=);
     (void)timercmp(&t, &t, >);
 }
