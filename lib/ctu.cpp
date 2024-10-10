@@ -55,8 +55,6 @@ static constexpr char ATTR_MY_ARGNR[] = "my-argnr";
 static constexpr char ATTR_MY_ARGNAME[] = "my-argname";
 static constexpr char ATTR_VALUE[] = "value";
 
-int CTU::maxCtuDepth = 2;
-
 std::string CTU::getFunctionId(const Tokenizer &tokenizer, const Function *function)
 {
     return tokenizer.list.file(function->tokenDef) + ':' + std::to_string(function->tokenDef->linenr()) + ':' + std::to_string(function->tokenDef->column());
@@ -502,10 +500,11 @@ static bool findPath(const std::string &callId,
                      const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap,
                      const CTU::FileInfo::CallBase *path[10],
                      int index,
-                     bool warning)
+                     bool warning,
+                     int maxCtuDepth)
 {
-    if (index >= CTU::maxCtuDepth || index >= 10)
-        return false;
+    if (index >= maxCtuDepth)
+        return false; // TODO: add bailout message?
 
     const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>>::const_iterator it = callsMap.find(callId);
     if (it == callsMap.end())
@@ -543,7 +542,7 @@ static bool findPath(const std::string &callId,
         if (!nestedCall)
             continue;
 
-        if (findPath(nestedCall->myId, nestedCall->myArgNr, unsafeValue, invalidValue, callsMap, path, index + 1, warning)) {
+        if (findPath(nestedCall->myId, nestedCall->myArgNr, unsafeValue, invalidValue, callsMap, path, index + 1, warning, maxCtuDepth)) {
             path[index] = nestedCall;
             return true;
         }
@@ -557,13 +556,14 @@ std::list<ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(InvalidValueTy
                                                                   const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap,
                                                                   const char info[],
                                                                   const FunctionCall ** const functionCallPtr,
-                                                                  bool warning)
+                                                                  bool warning,
+                                                                  int maxCtuDepth)
 {
     std::list<ErrorMessage::FileLocation> locationList;
 
     const CTU::FileInfo::CallBase *path[10] = {nullptr};
 
-    if (!findPath(unsafeUsage.myId, unsafeUsage.myArgNr, unsafeUsage.value, invalidValue, callsMap, path, 0, warning))
+    if (!findPath(unsafeUsage.myId, unsafeUsage.myArgNr, unsafeUsage.value, invalidValue, callsMap, path, 0, warning, maxCtuDepth))
         return locationList;
 
     const std::string value1 = (invalidValue == InvalidValueType::null) ? "null" : "uninitialized";

@@ -135,10 +135,9 @@ namespace CTU {
                                                                   const std::map<std::string, std::list<const CallBase *>> &callsMap,
                                                                   const char info[],
                                                                   const FunctionCall ** functionCallPtr,
-                                                                  bool warning);
+                                                                  bool warning,
+                                                                  int maxCtuDepth);
     };
-
-    extern int maxCtuDepth;
 
     CPPCHECKLIB std::string toString(const std::list<FileInfo::UnsafeUsage> &unsafeUsage);
 
