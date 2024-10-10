@@ -64,6 +64,9 @@ private:
         TEST_CASE(assign25);
         TEST_CASE(assign26);
 
+        TEST_CASE(memcpyWithPtr1); // #11542
+        TEST_CASE(memcpyWithPtr2);
+
         TEST_CASE(isAutoDealloc);
 
         TEST_CASE(realloc1);
@@ -630,6 +633,26 @@ private:
               "    int* p = (int*)malloc(10);\n"
               "    x = p != nullptr ? p : nullptr;\n"
               "}", true);
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void memcpyWithPtr1() { // #11542
+        check("#include <string.h>\n"
+              "void f(char** old, char* value) {\n"
+              "    char *str = strdup(value);\n"
+              "    memcpy(old, &str, sizeof(char*));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void memcpyWithPtr2() {
+        check("#include <string.h>\n"
+              "void f(char* value) {\n"
+              "    char *old = NULL;\n"
+              "    char *str = strdup(value);\n"
+              "    memcpy(&old, &str, sizeof(char*));\n"
+              "}\n");
+        // TODO: make this fail
         ASSERT_EQUALS("", errout_str());
     }
 
