@@ -601,8 +601,7 @@ def getEssentialType(expr):
                     return e
         if bitsOfEssentialType(e2) >= bitsOfEssentialType(e1):
             return e2
-        else:
-            return e1
+        return e1
 
     elif expr.str == "~":
         e1 = getEssentialType(expr.astOperand1)
@@ -1422,8 +1421,7 @@ class MisraChecker:
     def get_num_significant_naming_chars(self, cfg):
         if cfg.standards and cfg.standards.c == "c89":
             return 31
-        else:
-            return 63
+        return 63
 
     def _save_ctu_summary_typedefs(self, dumpfile, typedef_info):
         if self._ctu_summary_typedefs:
@@ -1694,8 +1692,7 @@ class MisraChecker:
                 if (isHexEscapeSequence(sequence) or isOctalEscapeSequence(sequence) or
                         isSimpleEscapeSequence(sequence)):
                     continue
-                else:
-                    self.reportError(token, 4, 1)
+                self.reportError(token, 4, 1)
 
     def misra_4_2(self, rawTokens):
         for token in rawTokens:
@@ -2759,10 +2756,10 @@ class MisraChecker:
                     if prev.str == ';':
                         self.reportError(token, 12, 3)
                         break
-                    elif prev.str in ')}]':
-                        prev = prev.link
-                    elif prev.str in '({[':
+                    if prev.str in '({[':
                         break
+                    if prev.str in ')}]':
+                        prev = prev.link
                     prev = prev.previous
 
     def misra_12_4_check_expr(self, expr):
@@ -2811,7 +2808,7 @@ class MisraChecker:
                     while expr.str not in (";", "{", "}"):
                         expr = expr.next
                     continue
-                elif known_value == 0:
+                if known_value == 0:
                     expr = expr.astOperand2
             self.misra_12_4_check_expr(expr)
 
@@ -2834,8 +2831,7 @@ class MisraChecker:
                     if tn and tn.next and tn.next.str == '=':
                         tn = tn.next.next
                         continue
-                    else:
-                        break
+                    break
                 if tn.str == '.' and tn.next and tn.next.isName:
                     tn = tn.next
                     if tn.next and tn.next.str == '=':
@@ -4088,8 +4084,7 @@ class MisraChecker:
         """Return the list of violations for a normal checker run"""
         if violation_type is None:
             return self.violations.items()
-        else:
-            return self.violations[violation_type]
+        return self.violations[violation_type]
 
     def get_violation_types(self):
         """Return the list of violations for a normal checker run"""
@@ -4432,9 +4427,9 @@ class MisraChecker:
 
                 if severity_loc < 2:
                     continue
-                else:
-                    rule.misra_severity = ''
-                    have_severity = True
+
+                rule.misra_severity = ''
+                have_severity = True
 
             if rule is None:
                 continue

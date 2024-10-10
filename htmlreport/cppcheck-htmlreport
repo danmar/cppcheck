@@ -750,9 +750,7 @@ def main() -> None:
             with io.open(source_filename, 'r', encoding=options.source_encoding) as input_file:
                 content = input_file.read()
         except IOError:
-            if error['id'] == 'unmatchedSuppression':
-                continue  # file not found, bail out
-            else:
+            if error['id'] != 'unmatchedSuppression':
                 sys.stderr.write("ERROR: Source file '%s' not found.\n" %
                                  source_filename)
             continue
