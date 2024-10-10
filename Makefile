@@ -438,16 +438,6 @@ ifdef FILESDIR
 	  rm -rf ${DESTDIR}${FILESDIR}; \
 	fi
 endif
-ifdef CFGDIR 
-	@if test -d ${DESTDIR}${CFGDIR}; then \
-	  files="`cd cfg 2>/dev/null && ls`"; \
-	  if test -n "$$files"; then \
-	    echo '(' cd ${DESTDIR}${CFGDIR} '&&' rm -f $$files ')'; \
-	    ( cd ${DESTDIR}${CFGDIR} && rm -f $$files ); \
-	  fi; \
-	fi
-endif
-
 # Validation of library files:
 ConfigFiles := $(wildcard cfg/*.cfg)
 ConfigFilesCHECKED := $(patsubst %.cfg,%.checked,$(ConfigFiles))

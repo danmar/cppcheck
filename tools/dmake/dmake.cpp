@@ -822,15 +822,6 @@ int main(int argc, char **argv)
     fout << "\t  rm -rf ${DESTDIR}${FILESDIR}; \\\n";
     fout << "\tfi\n";
     fout << "endif\n";
-    fout << "ifdef CFGDIR \n";
-    fout << "\t@if test -d ${DESTDIR}${CFGDIR}; then \\\n";
-    fout << "\t  files=\"`cd cfg 2>/dev/null && ls`\"; \\\n";
-    fout << "\t  if test -n \"$$files\"; then \\\n";
-    fout << "\t    echo '(' cd ${DESTDIR}${CFGDIR} '&&' rm -f $$files ')'; \\\n";
-    fout << "\t    ( cd ${DESTDIR}${CFGDIR} && rm -f $$files ); \\\n";
-    fout << "\t  fi; \\\n";
-    fout << "\tfi\n";
-    fout << "endif\n\n";
     fout << "# Validation of library files:\n";
     fout << "ConfigFiles := $(wildcard cfg/*.cfg)\n";
     fout << "ConfigFilesCHECKED := $(patsubst %.cfg,%.checked,$(ConfigFiles))\n";
