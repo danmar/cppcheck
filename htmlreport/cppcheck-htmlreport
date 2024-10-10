@@ -447,7 +447,7 @@ def git_blame(errors, path, file, blame_options):
     blame_data = []
     line_from = 0
     line_to = 0
-    blame_info = dict()
+    blame_info = {}
 
     for line_str in result.splitlines():
         field, _, value = line_str.partition(' ')

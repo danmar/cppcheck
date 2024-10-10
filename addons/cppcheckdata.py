@@ -588,14 +588,14 @@ class Scope:
         self.bodyEnd = None
         self.nestedInId = element.get('nestedIn')
         self.nestedIn = None
-        self.nestedList = list()
+        self.nestedList = []
         self.type = element.get('type')
         self.definedType = element.get('definedType')
         self.isExecutable = (self.type in ('Function', 'If', 'Else', 'For', 'While', 'Do',
                                            'Switch', 'Try', 'Catch', 'Unconditional', 'Lambda'))
 
-        self.varlistId = list()
-        self.varlist = list()
+        self.varlistId = []
+        self.varlist = []
 
     def __repr__(self):
         attrs = ["Id", "className", "functionId", "bodyStartId", "bodyEndId",
