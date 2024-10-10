@@ -1,6 +1,5 @@
 moc_*.cpp
 moc_*.h
 ui_*.h
-.qmake.stash
 Makefile
 triage
