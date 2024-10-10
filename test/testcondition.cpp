@@ -2774,7 +2774,7 @@ private:
         checkP("#define TYPE_1 \"a\"\n" // #13202
                "#define TYPE_2 \"b\"\n"
                "#define TYPE_3 \"c\"\n"
-               "void f(const std::string & s) {\n"
+               "void f(const std::string& s) {\n"
                "    if (s == TYPE_1) {}\n"
                "    else if (s == TYPE_2 || s == TYPE_3) {\n"
                "        if (s == TYPE_2) {}\n"

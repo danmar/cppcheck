@@ -7074,6 +7074,13 @@ private:
                "    if (X == Y) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Same expression on both sides of '=='.\n", errout_str());
+
+        checkP("#define X 1\n"
+               "#define Y X\n"
+               "void f() {\n"
+               "    if (X == Y) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void duplicateExpression6() {  // #4639

@@ -1019,7 +1019,7 @@ void uninitvar_towupper(_locale_t l)
 void oppositeInnerCondition_SUCCEEDED_FAILED(HRESULT hr)
 {
     if (SUCCEEDED(hr)) {
-        // cppcheck-suppress oppositeInnerCondition
+        // TODO ticket #8596 cppcheck-suppress oppositeInnerCondition
         if (FAILED(hr)) {}
     }
 }
