@@ -23,7 +23,6 @@ Compiling
     While building the command line tool, PCRE is optional. It is used if you build with rules.
 
     There are multiple compilation choices:
-      * qmake - cross platform build tool
       * cmake - cross platform build tool
       * Windows: Visual Studio
       * Windows: Qt Creator + mingw
@@ -47,13 +46,6 @@ Compiling
 
         For release builds it is recommended that you use:
         -DUSE_MATCHCOMPILER=ON
-
-    qmake
-    =====
-        You can use the gui/gui.pro file to build the GUI.
-            cd gui
-            qmake
-            make
 
     Visual Studio
     =============

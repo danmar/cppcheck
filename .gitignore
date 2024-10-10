@@ -50,41 +50,12 @@ ipch/
 *.pbxuser
 build/
 
-# GUI build folders
-/gui/debug/
-/gui/release/
-/gui/temp/
-/triage/temp
-
 # Other (generated) GUI files
-/gui/*.qm
-/gui/cppcheck-gui
-/gui/cppcheck-gui.exe
-/gui/gui.sln
-/gui/gui.vcproj
 /gui/help/online-help.qch
 /gui/help/online-help.qhc
-/gui/Makefile
-/gui/Makefile.debug
-/gui/Makefile.release
-/gui/qrc_gui.cpp
-/gui/test/Makefile
-/gui/test/*/Makefile
-/gui/test/*/*/Makefile
-/gui/test/benchmark/simple/benchmark-simple
-/gui/test/cppchecklibrarydata/qrc_resources.cpp
-/gui/test/cppchecklibrarydata/test-cppchecklibrarydata
-/gui/test/filelist/test-filelist
-/gui/test/projectfile/test-projectfile
-/gui/test/translationhandler/test-translationhandler
-/gui/test/xmlreportv2/test-xmlreportv2
 
 # Doxygen output folder
 doxyoutput/
-
-# qmake generated
-htmlreport/.tox/
-htmlreport/MANIFEST
 
 # Backup files and stuff from patches
 *.rej
@@ -123,9 +94,6 @@ stage
 .clangd/
 .cache/
 compile_commands.json
-
-# qmake
-.qmake.stash
 
 #vs code
 /.vscode

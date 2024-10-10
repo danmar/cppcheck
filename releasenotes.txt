@@ -16,4 +16,5 @@ Deprecations:
 -
 
 Other:
+- Removed deperecated support for builds via qmake.
 -
