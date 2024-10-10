@@ -103,7 +103,6 @@ namespace {
                     // rule.properties.precision, rule.properties.problem.severity
                     picojson::object properties;
                     properties["precision"] = picojson::value(sarifPrecision(finding));
-                    properties["problem.severity"] = picojson::value(sarifSeverity(finding));
                     double securitySeverity = 0;
                     if (finding.severity == Severity::error && !ErrorLogger::isCriticalErrorId(finding.id))
                         securitySeverity = 9.9; // We see undefined behavior
