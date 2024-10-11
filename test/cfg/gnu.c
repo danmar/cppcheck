@@ -23,6 +23,7 @@
 #include <sys/mman.h>
 #include <sys/sem.h>
 #include <wchar.h>
+#include <execinfo.h>
 #if !defined(__CYGWIN__) && !defined(__APPLE__)
 #include <sys/epoll.h>
 #endif
@@ -46,6 +47,15 @@ void unreachableCode_error(void) // #11197
     int i;
 }
 #endif
+
+
+int deallocuse_backtrace(int size) {
+    void **buffer = (void **)malloc(sizeof(void *) * size);
+    free(buffer);
+    // cppcheck-suppress deallocuse
+    int numEntries = backtrace(buffer, size);
+    return numEntries;
+}
 
 void leakReturnValNotUsed_get_current_dir_name(void)
 {
