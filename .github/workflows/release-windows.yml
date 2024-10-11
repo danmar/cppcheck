@@ -103,11 +103,20 @@ jobs:
           name: bin
           path: bin
 
-      - name: Compile misra.py executable
+      - name: Install missing Python packages
         run: |
           pip install -U pyinstaller || exit /b !errorlevel!
+
+      - name: Compile misra.py executable
+        run: |
           cd addons || exit /b !errorlevel!
           pyinstaller --hidden-import xml --hidden-import xml.etree --hidden-import xml.etree.ElementTree misra.py || exit /b !errorlevel!
+          del *.spec || exit /b !errorlevel!
+
+      - name: Compile cppcheck-htmlreport executable
+        run: |
+          cd htmlreport || exit /b !errorlevel!
+          pyinstaller cppcheck-htmlreport || exit /b !errorlevel!
           del *.spec || exit /b !errorlevel!
 
       - name: Collect files
@@ -131,6 +140,7 @@ jobs:
           del win_installer\files\platforms\*.rng || exit /b !errorlevel!
           del win_installer\files\translations\*.qm || exit /b !errorlevel!
           move build\gui\*.qm win_installer\files\translations || exit /b !errorlevel!
+          copy htmlreport\dist\cppcheck-htmlreport\*.* win_installer\files || exit /b !errorlevel!
           :: copy libcrypto-3-x64.dll and libssl-3-x64.dll
           copy %RUNNER_WORKSPACE%\Qt\Tools\OpenSSLv3\Win_x64\bin\lib*.dll win_installer\files || exit /b !errorlevel!
 
