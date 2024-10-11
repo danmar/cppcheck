@@ -40,6 +40,7 @@ void verify_timercmp(struct timeval t)
     (void)timercmp(&t, &t, !=);
     // cppcheck-suppress duplicateExpression
     (void)timercmp(&t, &t, >=);
+    // cppcheck-suppress duplicateExpression
     (void)timercmp(&t, &t, >);
 }
 
