@@ -36,6 +36,7 @@
 #include <cstdio>
 #include <cstring>
 #include <functional>
+#include <iostream>
 #include <iterator>
 #include <map>
 #include <set>
@@ -1175,6 +1176,11 @@ void Token::createMutualLinks(Token *begin, Token *end)
     assert(begin != end);
     begin->link(end);
     end->link(begin);
+}
+
+void Token::printOut() const
+{
+    printOut(std::cout, "");
 }
 
 void Token::printOut(std::ostream& out, const char *title) const

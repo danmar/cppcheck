@@ -2,6 +2,8 @@
 # python -m pytest test-other.py
 
 import os
+import sys
+
 import pytest
 
 from testutils import cppcheck
@@ -219,6 +221,7 @@ def test_slow_many_scopes(tmpdir):
                 }""")
     cppcheck([filename]) # should not take more than ~1 second
 
+@pytest.mark.skipif(sys.platform == 'darwin', reason='GitHub macOS runners are too slow')
 @pytest.mark.timeout(20)
 def test_crash_array_in_namespace(tmpdir):
     # 12847

@@ -447,7 +447,7 @@ def git_blame(errors, path, file, blame_options):
     blame_data = []
     line_from = 0
     line_to = 0
-    blame_info = dict()
+    blame_info = {}
 
     for line_str in result.splitlines():
         field, _, value = line_str.partition(' ')
@@ -750,9 +750,7 @@ def main() -> None:
             with io.open(source_filename, 'r', encoding=options.source_encoding) as input_file:
                 content = input_file.read()
         except IOError:
-            if error['id'] == 'unmatchedSuppression':
-                continue  # file not found, bail out
-            else:
+            if error['id'] != 'unmatchedSuppression':
                 sys.stderr.write("ERROR: Source file '%s' not found.\n" %
                                  source_filename)
             continue

@@ -601,8 +601,7 @@ def getEssentialType(expr):
                     return e
         if bitsOfEssentialType(e2) >= bitsOfEssentialType(e1):
             return e2
-        else:
-            return e1
+        return e1
 
     elif expr.str == "~":
         e1 = getEssentialType(expr.astOperand1)
@@ -1368,17 +1367,17 @@ class MisraChecker:
         self.settings = settings
 
         # Test validation rules lists
-        self.verify_expected = list()
-        self.verify_actual = list()
+        self.verify_expected = []
+        self.verify_actual = []
 
         # List of formatted violation messages
-        self.violations = dict()
+        self.violations = {}
 
         # if --rule-texts is specified this dictionary
         # is loaded with descriptions of each rule
         # by rule number (in hundreds).
         # ie rule 1.2 becomes 102
-        self.ruleTexts = dict()
+        self.ruleTexts = {}
         self.ruleText_filename = None
 
         # Dictionary of dictionaries for rules to suppress
@@ -1389,13 +1388,13 @@ class MisraChecker:
         # or an item of None which indicates suppress rule for the entire file.
         # The line and symbol name tuple may have None as either of its elements but
         # should not be None for both.
-        self.suppressedRules = dict()
+        self.suppressedRules = {}
 
         # Prefix to ignore when matching suppression files.
         self.filePrefix = None
 
         # Number of all violations suppressed per rule
-        self.suppressionStats = dict()
+        self.suppressionStats = {}
 
         self.stdversion = stdversion
 
@@ -1422,8 +1421,7 @@ class MisraChecker:
     def get_num_significant_naming_chars(self, cfg):
         if cfg.standards and cfg.standards.c == "c89":
             return 31
-        else:
-            return 63
+        return 63
 
     def _save_ctu_summary_typedefs(self, dumpfile, typedef_info):
         if self._ctu_summary_typedefs:
@@ -1590,7 +1588,7 @@ class MisraChecker:
         self._save_ctu_summary_tagnames(dumpfile, cfg)
 
     def misra_2_5(self, dumpfile, cfg):
-        used_macros = list()
+        used_macros = []
         for m in cfg.macro_usage:
             used_macros.append(m.name)
         summary = []
@@ -1608,7 +1606,7 @@ class MisraChecker:
             if len(func.argument) == 0:
                 continue
             # Setup list of function parameters
-            func_param_list = list()
+            func_param_list = []
             for arg in func.argument:
                 func_arg = func.argument[arg]
                 if func_arg.typeStartToken and func_arg.typeStartToken.str == '...':
@@ -1694,8 +1692,7 @@ class MisraChecker:
                 if (isHexEscapeSequence(sequence) or isOctalEscapeSequence(sequence) or
                         isSimpleEscapeSequence(sequence)):
                     continue
-                else:
-                    self.reportError(token, 4, 1)
+                self.reportError(token, 4, 1)
 
     def misra_4_2(self, rawTokens):
         for token in rawTokens:
@@ -2759,10 +2756,10 @@ class MisraChecker:
                     if prev.str == ';':
                         self.reportError(token, 12, 3)
                         break
-                    elif prev.str in ')}]':
-                        prev = prev.link
-                    elif prev.str in '({[':
+                    if prev.str in '({[':
                         break
+                    if prev.str in ')}]':
+                        prev = prev.link
                     prev = prev.previous
 
     def misra_12_4_check_expr(self, expr):
@@ -2811,7 +2808,7 @@ class MisraChecker:
                     while expr.str not in (";", "{", "}"):
                         expr = expr.next
                     continue
-                elif known_value == 0:
+                if known_value == 0:
                     expr = expr.astOperand2
             self.misra_12_4_check_expr(expr)
 
@@ -2834,8 +2831,7 @@ class MisraChecker:
                     if tn and tn.next and tn.next.str == '=':
                         tn = tn.next.next
                         continue
-                    else:
-                        break
+                    break
                 if tn.str == '.' and tn.next and tn.next.isName:
                     tn = tn.next
                     if tn.next and tn.next.str == '=':
@@ -4088,8 +4084,7 @@ class MisraChecker:
         """Return the list of violations for a normal checker run"""
         if violation_type is None:
             return self.violations.items()
-        else:
-            return self.violations[violation_type]
+        return self.violations[violation_type]
 
     def get_violation_types(self):
         """Return the list of violations for a normal checker run"""
@@ -4129,10 +4124,10 @@ class MisraChecker:
 
         # If the rule is not in the dict already then add it
         if ruleNum not in self.suppressedRules:
-            ruleItemList = list()
+            ruleItemList = []
             ruleItemList.append(line_symbol)
 
-            fileDict = dict()
+            fileDict = {}
             fileDict[normalized_filename] = ruleItemList
 
             self.suppressedRules[ruleNum] = fileDict
@@ -4148,7 +4143,7 @@ class MisraChecker:
 
         # If the filename is not in the dict already add it
         if normalized_filename not in fileDict:
-            ruleItemList = list()
+            ruleItemList = []
             ruleItemList.append(line_symbol)
 
             fileDict[normalized_filename] = ruleItemList
@@ -4252,7 +4247,7 @@ class MisraChecker:
         Print out rules in suppression list sorted by Rule Number
         """
         print("Suppressed Rules List:")
-        outlist = list()
+        outlist = []
 
         for ruleNum in self.suppressedRules:
             fileDict = self.suppressedRules[ruleNum]
@@ -4432,9 +4427,9 @@ class MisraChecker:
 
                 if severity_loc < 2:
                     continue
-                else:
-                    rule.misra_severity = ''
-                    have_severity = True
+
+                rule.misra_severity = ''
+                have_severity = True
 
             if rule is None:
                 continue

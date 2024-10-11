@@ -2,7 +2,7 @@ import subprocess
 import os
 import sys
 
-def _lookup_cppcheck_exe(exe_name):
+def __lookup_cppcheck_exe(exe_name):
     # path the script is located in
     script_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -18,8 +18,8 @@ def _lookup_cppcheck_exe(exe_name):
 
     return None
 
-def _call_process():
-    exe = _lookup_cppcheck_exe('test-stacktrace')
+def __call_process():
+    exe = __lookup_cppcheck_exe('test-stacktrace')
     if exe is None:
         raise Exception('executable not found')
     p = subprocess.Popen([exe], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -30,7 +30,7 @@ def _call_process():
 
 
 def test_stack():
-    _, stdout, stderr = _call_process()
+    _, stdout, stderr = __call_process()
     assert stderr == ''
     lines = stdout.splitlines()
     assert lines[0] == 'Callstack:'

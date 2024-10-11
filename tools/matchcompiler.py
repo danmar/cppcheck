@@ -158,35 +158,35 @@ class MatchCompiler:
     def _compileCmd(tok):
         if tok == '%any%':
             return 'true'
-        elif tok == '%assign%':
+        if tok == '%assign%':
             return 'tok->isAssignmentOp()'
-        elif tok == '%bool%':
+        if tok == '%bool%':
             return 'tok->isBoolean()'
-        elif tok == '%char%':
+        if tok == '%char%':
             return '(tok->tokType() == Token::eChar)'
-        elif tok == '%comp%':
+        if tok == '%comp%':
             return 'tok->isComparisonOp()'
-        elif tok == '%num%':
+        if tok == '%num%':
             return 'tok->isNumber()'
-        elif tok == '%cop%':
+        if tok == '%cop%':
             return 'tok->isConstOp()'
-        elif tok == '%op%':
+        if tok == '%op%':
             return 'tok->isOp()'
-        elif tok == '%or%':
+        if tok == '%or%':
             return '(tok->tokType() == Token::eBitOp && tok->str() == MatchCompiler::makeConstString("|") )'
-        elif tok == '%oror%':
+        if tok == '%oror%':
             return '(tok->tokType() == Token::eLogicalOp && tok->str() == MatchCompiler::makeConstString("||"))'
-        elif tok == '%str%':
+        if tok == '%str%':
             return '(tok->tokType() == Token::eString)'
-        elif tok == '%type%':
+        if tok == '%type%':
             return '(tok->isName() && tok->varId() == 0U)'
-        elif tok == '%name%':
+        if tok == '%name%':
             return 'tok->isName()'
-        elif tok == '%var%':
+        if tok == '%var%':
             return '(tok->varId() != 0)'
-        elif tok == '%varid%':
+        if tok == '%varid%':
             return '(tok->isName() && tok->varId() == varid)'
-        elif (len(tok) > 2) and (tok[0] == "%"):
+        if (len(tok) > 2) and (tok[0] == "%"):
             print("unhandled:" + tok)
         elif tok in tokTypes:
             cond = ' || '.join(['tok->tokType() == Token::{}'.format(tokType) for tokType in tokTypes[tok]])
