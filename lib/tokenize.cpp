@@ -1528,6 +1528,11 @@ void Tokenizer::simplifyTypedefCpp()
             argEnd = tokOffset->linkAt(1);
             if (!argEnd)
                 syntaxError(argStart);
+            const Token* tok2 = argEnd->next();
+            while (tok2 && (tok2->isKeyword() || tok2->str() == ")"))
+                tok2 = tok2->next();
+            if (!Token::simpleMatch(tok2, ";"))
+                syntaxError(tok2);
 
             tok = argEnd->next();
             Token *spec = tok;
