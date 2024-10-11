@@ -2840,7 +2840,7 @@ private:
                "    return x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 123));
-        
+
         code = "bool f() {\n" // #13208
                "    struct S {\n"
                "        bool b = true;\n"
