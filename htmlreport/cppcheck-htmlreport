@@ -3,10 +3,10 @@
 from __future__ import unicode_literals
 
 from datetime import date
+import argparse
 import io
 import locale
 import operator
-import optparse
 import os
 import re
 import sys
@@ -626,38 +626,38 @@ class CppCheckHandler(XmlContentHandler):
 
 def main() -> None:
     # Configure all the options this little utility is using.
-    parser = optparse.OptionParser()
-    parser.add_option('--title', dest='title',
-                      help='The title of the project.',
-                      default='[project name]')
-    parser.add_option('--file', dest='file', action="append",
-                      help='The cppcheck xml output file to read defects '
-                           'from. You can combine results from several '
-                           'xml reports i.e. "--file file1.xml --file file2.xml ..". '
-                           'Default is reading from stdin.')
-    parser.add_option('--checkers-report-file', dest='checkers_report',
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--title', dest='title',
+                        help='The title of the project.',
+                        default='[project name]')
+    parser.add_argument('--file', dest='file', action="append",
+                        help='The cppcheck xml output file to read defects '
+                             'from. You can combine results from several '
+                             'xml reports i.e. "--file file1.xml --file file2.xml ..". '
+                             'Default is reading from stdin.')
+    parser.add_argument('--checkers-report-file', dest='checkers_report',
                       help='The cppcheck checkers report file as produced '
                            'with the "--checkers-report" option of cppcheck.')
-    parser.add_option('--report-dir', dest='report_dir',
-                      help='The directory where the HTML report content is '
-                           'written.')
-    parser.add_option('--source-dir', dest='source_dir',
-                      help='Base directory where source code files can be '
-                           'found.')
-    parser.add_option('--add-author-information', dest='add_author_information',
-                      help='Blame information to include. '
-                           'Adds specified author information. '
-                           'Specify as comma-separated list of either "name", "email", "date" or "n","e","d". '
-                           'Default: "n,e,d"')
-    parser.add_option('--source-encoding', dest='source_encoding',
+    parser.add_argument('--report-dir', dest='report_dir',
+                         help='The directory where the HTML report content is '
+                              'written.')
+    parser.add_argument('--source-dir', dest='source_dir',
+                         help='Base directory where source code files can be '
+                              'found.')
+    parser.add_argument('--add-author-information', dest='add_author_information',
+                        help='Blame information to include. '
+                             'Adds specified author information. '
+                             'Specify as comma-separated list of either "name", "email", "date" or "n","e","d". '
+                             'Default: "n,e,d"')
+    parser.add_argument('--source-encoding', dest='source_encoding',
                       help='Encoding of source code.', default='utf-8')
-    parser.add_option('--blame-options', dest='blame_options',
-                      help='[-w, -M] blame options which you can use to get author and author mail  '
-                           '-w --> not including white spaces and returns original author of the line  '
-                           '-M --> not including moving of lines and returns original author of the line')
+    parser.add_argument('--blame-options', dest='blame_options',
+                        help='[-w, -M] blame options which you can use to get author and author mail  '
+                             '-w --> not including white spaces and returns original author of the line  '
+                             '-M --> not including moving of lines and returns original author of the line')
 
     # Parse options and make sure that we have an output directory set.
-    options, _ = parser.parse_args()
+    options = parser.parse_args()
 
     try:
         sys.argv[1]
