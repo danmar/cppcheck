@@ -3022,6 +3022,11 @@ static void valueFlowAfterAssign(TokenList &tokenlist,
             continue;
         std::unordered_map<nonneg int, std::unordered_set<nonneg int>> backAssigns;
         for (auto* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+            if (!tok->scope()->isExecutable()) {
+                tok = const_cast<Token*>(tok->scope()->bodyEnd); // skip local type definition
+                continue;
+            }
+
             // Assignment
             bool isInit = false;
             if (tok->str() != "=" && !(isInit = isVariableInit(tok)))
