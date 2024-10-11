@@ -181,54 +181,53 @@ def trimname(name):
 
 def writeHtmlFile(nodes, functionName, filename, errorsOnly):
     """Write html file for a function name"""
-    fout = open(filename, 'w')
-    fout.write('<html>\n')
-    fout.write('<head>\n')
-    fout.write('  <style type="text/css">\n')
-    fout.write('  body { font-size: 0.8em }\n')
-    fout.write(
-        '  th { background-color: #A3C159; text-transform: uppercase }\n')
-    fout.write('  td { background-color: white; vertical-align: text-top }\n')
-    fout.write('  pre { background-color: #EEEEEE }\n')
-    fout.write('  </style>\n')
-    fout.write('</head>\n')
-    fout.write('<body>\n')
-
-    fout.write('<a href="index.htm">Home</a> -- ')
-    if errorsOnly:
-        fout.write('<a href="all-' + functionName + '.htm">All test cases</a>')
-    else:
+    with open(filename, 'w') as fout:
+        fout.write('<html>\n')
+        fout.write('<head>\n')
+        fout.write('  <style type="text/css">\n')
+        fout.write('  body { font-size: 0.8em }\n')
         fout.write(
-            '<a href="errors-' + functionName + '.htm">Error test cases</a>')
-    fout.write('<br><br>')
+            '  th { background-color: #A3C159; text-transform: uppercase }\n')
+        fout.write('  td { background-color: white; vertical-align: text-top }\n')
+        fout.write('  pre { background-color: #EEEEEE }\n')
+        fout.write('  </style>\n')
+        fout.write('</head>\n')
+        fout.write('<body>\n')
 
-    testclass = None
-    num = 0
-    for node in nodes:
-        if errorsOnly and node['expected'] == '':
-            continue
-        if trimname(node['functionName']) == functionName:
-            num = num + 1
-
-            if not testclass:
-                testclass = node['testclass']
-                fout.write(
-                    '<h1>' + node['testclass'] + '::' + functionName + '</h1>')
-                fout.write('<table border="0" cellspacing="0">\n')
-                fout.write(
-                    '  <tr><th>Nr</th><th>Code</th><th>Expected</th></tr>\n')
-
-            fout.write('  <tr><td>' + str(num) + '</td>')
-            fout.write('<td><pre>' + strtoxml(
-                node['code']).replace('\\n', '\n') + '</pre></td>')
+        fout.write('<a href="index.htm">Home</a> -- ')
+        if errorsOnly:
+            fout.write('<a href="all-' + functionName + '.htm">All test cases</a>')
+        else:
             fout.write(
-                '<td>' + strtoxml(node['expected']).replace('\\n', '<br>') + '</td>')
-            fout.write('</tr>\n')
+                '<a href="errors-' + functionName + '.htm">Error test cases</a>')
+        fout.write('<br><br>')
 
-    if testclass is not None:
-        fout.write('</table>\n')
-    fout.write('</body></html>\n')
-    fout.close()
+        testclass = None
+        num = 0
+        for node in nodes:
+            if errorsOnly and node['expected'] == '':
+                continue
+            if trimname(node['functionName']) == functionName:
+                num = num + 1
+
+                if not testclass:
+                    testclass = node['testclass']
+                    fout.write(
+                        '<h1>' + node['testclass'] + '::' + functionName + '</h1>')
+                    fout.write('<table border="0" cellspacing="0">\n')
+                    fout.write(
+                        '  <tr><th>Nr</th><th>Code</th><th>Expected</th></tr>\n')
+
+                fout.write('  <tr><td>' + str(num) + '</td>')
+                fout.write('<td><pre>' + strtoxml(
+                    node['code']).replace('\\n', '\n') + '</pre></td>')
+                fout.write(
+                    '<td>' + strtoxml(node['expected']).replace('\\n', '<br>') + '</td>')
+                fout.write('</tr>\n')
+
+        if testclass is not None:
+            fout.write('</table>\n')
+        fout.write('</body></html>\n')
 
 
 if len(sys.argv) <= 1 or '--help' in sys.argv:
@@ -286,55 +285,54 @@ if filename is not None:
             htmldir += '/'
         if not os.path.exists(htmldir):
             os.mkdir(htmldir)
-        findex = open(htmldir + 'index.htm', 'w')
-        findex.write('<html>\n')
-        findex.write('<head>\n')
-        findex.write('  <style type="text/css">\n')
-        findex.write('  table { font-size: 0.8em }\n')
-        findex.write(
-            '  th { background-color: #A3C159; text-transform: uppercase }\n')
-        findex.write(
-            '  td { background-color: #F0FFE0; vertical-align: text-top }\n')
-        findex.write('  A:link { text-decoration: none }\n')
-        findex.write('  A:visited { text-decoration: none }\n')
-        findex.write('  A:active { text-decoration: none }\n')
-        findex.write('  A:hover { text-decoration: underline; color: blue }\n')
-        findex.write('  </style>\n')
-        findex.write('</head>\n')
-        findex.write('<body>\n')
-        findex.write('<h1>' + filename + '</h1>\n')
+        with open(htmldir + 'index.htm', 'w') as findex:
+            findex.write('<html>\n')
+            findex.write('<head>\n')
+            findex.write('  <style type="text/css">\n')
+            findex.write('  table { font-size: 0.8em }\n')
+            findex.write(
+                '  th { background-color: #A3C159; text-transform: uppercase }\n')
+            findex.write(
+                '  td { background-color: #F0FFE0; vertical-align: text-top }\n')
+            findex.write('  A:link { text-decoration: none }\n')
+            findex.write('  A:visited { text-decoration: none }\n')
+            findex.write('  A:active { text-decoration: none }\n')
+            findex.write('  A:hover { text-decoration: underline; color: blue }\n')
+            findex.write('  </style>\n')
+            findex.write('</head>\n')
+            findex.write('<body>\n')
+            findex.write('<h1>' + filename + '</h1>\n')
 
-        functionNames = []
-        for node in e.nodes:
-            functionname = trimname(node['functionName'])
-            if functionname not in functionNames:
-                functionNames.append(functionname)
-        functionNames.sort()
-
-        findex.write('<table border="0" cellspacing="0">\n')
-        findex.write('  <tr><th>Name</th><th>Errors</th><th>All</th></tr>\n')
-        for functionname in functionNames:
-            findex.write('  <tr><td>' + functionname + '</td>')
-            numall = 0
-            numerr = 0
+            functionNames = []
             for node in e.nodes:
-                if trimname(node['functionName']) == functionname:
-                    numall = numall + 1
-                    if node['expected'] != '':
-                        numerr = numerr + 1
-            if numerr == 0:
-                findex.write('<td><div align="right">0</div></td>')
-            else:
-                findex.write('<td><a href="errors-' + functionname +
-                             '.htm"><div align="right">' + str(numerr) + '</div></a></td>')
-            findex.write('<td><a href="all-' + functionname +
-                         '.htm"><div align="right">' + str(numall) + '</div></a></td>')
-            findex.write('</tr>\n')
+                functionname = trimname(node['functionName'])
+                if functionname not in functionNames:
+                    functionNames.append(functionname)
+            functionNames.sort()
 
-        findex.write('</table>\n')
+            findex.write('<table border="0" cellspacing="0">\n')
+            findex.write('  <tr><th>Name</th><th>Errors</th><th>All</th></tr>\n')
+            for functionname in functionNames:
+                findex.write('  <tr><td>' + functionname + '</td>')
+                numall = 0
+                numerr = 0
+                for node in e.nodes:
+                    if trimname(node['functionName']) == functionname:
+                        numall = numall + 1
+                        if node['expected'] != '':
+                            numerr = numerr + 1
+                if numerr == 0:
+                    findex.write('<td><div align="right">0</div></td>')
+                else:
+                    findex.write('<td><a href="errors-' + functionname +
+                                 '.htm"><div align="right">' + str(numerr) + '</div></a></td>')
+                findex.write('<td><a href="all-' + functionname +
+                             '.htm"><div align="right">' + str(numall) + '</div></a></td>')
+                findex.write('</tr>\n')
 
-        findex.write('</body></html>')
-        findex.close()
+            findex.write('</table>\n')
+
+            findex.write('</body></html>')
 
         # create files for each functionName
         for functionName in functionNames:
