@@ -149,3 +149,5 @@ compile_commands.json
 # pyinstaller output
 /addons/dist
 /addons/misra.spec
+/htmlreport/cppcheck-htmlreport.spec
+/htmlreport/dist
