@@ -104,15 +104,9 @@ jobs:
 
       - name: Collect files
         run: |
+          @echo on
           move build\bin\Release win_installer\files || exit /b !errorlevel!
-          mkdir win_installer\files\addons || exit /b !errorlevel!
-          copy addons\*.* win_installer\files\addons || exit /b !errorlevel!
           copy addons\dist\misra\*.* win_installer\files\addons || exit /b !errorlevel!
-          mkdir win_installer\files\cfg || exit /b !errorlevel!
-          copy cfg\*.cfg win_installer\files\cfg || exit /b !errorlevel!
-          :: "platforms" is a folder used by Qt as well so it already exists
-          :: mkdir win_installer\files\platforms || exit /b !errorlevel!
-          copy platforms\*.xml win_installer\files\platforms || exit /b !errorlevel!
           copy bin\cppcheck.exe win_installer\files || exit /b !errorlevel!
           copy bin\cppcheck-core.dll win_installer\files || exit /b !errorlevel!
           mkdir win_installer\files\help || exit /b !errorlevel!
@@ -129,7 +123,7 @@ jobs:
           for /f "tokens=4 delims= " %%a in ('find "ProductVersion" productInfo.wxi') do set PRODUCTVER=%%a
           REM Remove double quotes
           set PRODUCTVER=%PRODUCTVER:"=%
-          echo ProductVersion="%PRODUCTVER%" || exit /b !errorlevel!
+          @echo ProductVersion="%PRODUCTVER%" || exit /b !errorlevel!
           msbuild -m cppcheck.wixproj -p:Platform=x64,ProductVersion=%PRODUCTVER%.${{ github.run_number }} || exit /b !errorlevel!
 
       - uses: actions/upload-artifact@v4
