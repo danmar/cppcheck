@@ -679,8 +679,7 @@ private:
     }
 
     void garbageCode48() { // #6712 (segmentation fault)
-        (void)checkCode(" { d\" ) d ...\" } int main ( ) { ( ) catch ( A a ) { { } catch ( ) \"\" } }");
-        ignore_errout(); // we do not care about the output
+        ASSERT_THROW_INTERNAL(checkCode(" { d\" ) d ...\" } int main ( ) { ( ) catch ( A a ) { { } catch ( ) \"\" } }"), SYNTAX);
     }
 
     void garbageCode49() { // #6715
