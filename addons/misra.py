@@ -1292,7 +1292,7 @@ def remove_file_prefix(file_path, prefix):
     return result
 
 
-class Rule(object):
+class Rule():
     """Class to keep rule text and metadata"""
 
     MISRA_SEVERITY_LEVELS = ['Required', 'Mandatory', 'Advisory']
@@ -1326,7 +1326,7 @@ class Rule(object):
         return "%d.%d (%s)" % (self.num1, self.num2, self.misra_severity)
 
 
-class MisraSettings(object):
+class MisraSettings():
     """Hold settings for misra.py script."""
 
     __slots__ = ["verify", "quiet", "show_summary"]

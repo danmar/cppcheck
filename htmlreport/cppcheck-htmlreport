@@ -382,8 +382,8 @@ HTML_FOOTER = """
 HTML_ERROR = "<span class=\"error2\">&lt;--- %s</span>\n"
 HTML_INCONCLUSIVE = "<span class=\"inconclusive2\">&lt;--- %s</span>\n"
 
-HTML_EXPANDABLE_ERROR = "<div class=\"verbose expandable\"><span class=\"error2\">&lt;--- %s <span class=\"marker\">[+]</span></span><div class=\"content\">%s</div></div>\n"""
-HTML_EXPANDABLE_INCONCLUSIVE = "<div class=\"verbose expandable\"><span class=\"inconclusive2\">&lt;--- %s <span class=\"marker\">[+]</span></span><div class=\"content\">%s</div></div>\n"""
+HTML_EXPANDABLE_ERROR = "<div class=\"verbose expandable\"><span class=\"error2\">&lt;--- %s <span class=\"marker\">[+]</span></span><div class=\"content\">%s</div></div>\n"
+HTML_EXPANDABLE_INCONCLUSIVE = "<div class=\"verbose expandable\"><span class=\"inconclusive2\">&lt;--- %s <span class=\"marker\">[+]</span></span><div class=\"content\">%s</div></div>\n"
 
 # escape() and unescape() takes care of &, < and >.
 html_escape_table = {

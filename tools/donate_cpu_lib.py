@@ -16,7 +16,7 @@ import copy
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.62"
+CLIENT_VERSION = "1.3.63"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -80,6 +80,7 @@ def check_requirements():
 
 
 # Try and retry with exponential backoff if an exception is raised
+# pylint: disable-next=inconsistent-return-statements
 def try_retry(fun, fargs=(), max_tries=5, sleep_duration=5.0, sleep_factor=2.0):
     for i in range(max_tries):
         try:
@@ -93,6 +94,7 @@ def try_retry(fun, fargs=(), max_tries=5, sleep_duration=5.0, sleep_factor=2.0):
                 print("Trying {} again in {} seconds".format(fun.__name__, sleep_duration))
                 time.sleep(sleep_duration)
                 sleep_duration *= sleep_factor
+                # do not return - re-try
             else:
                 print("Maximum number of tries reached for {}".format(fun.__name__))
                 raise e

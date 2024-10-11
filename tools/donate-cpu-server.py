@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.59"
+SERVER_VERSION = "1.3.60"
 
 OLD_VERSION = '2.15.0'
 
@@ -1585,7 +1585,7 @@ if __name__ == "__main__":
 
         print_ts('packages_nodata: {}'.format(len(packages_nodata)))
 
-        print_ts('removing packages with no files to process'.format(len(packages_nodata)))
+        print_ts('removing packages with no files to process')
         packages_nodata_clean = []
         for pkg_n in packages_nodata:
             if pkg_n in packages:

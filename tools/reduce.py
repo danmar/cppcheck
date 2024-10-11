@@ -173,8 +173,7 @@ class Reduce:
                 i1 = i
                 i2 = i + chunksize
                 i = i2
-                if i2 > len(lines):
-                    i2 = len(lines)
+                i2 = min(i2, len(lines))
 
                 filedata2 = list(filedata)
                 for line in lines[i1:i2]:
@@ -259,10 +258,7 @@ class Reduce:
             elif stmt and '{' in strippedline and strippedline.find('}') == len(strippedline) - 1:
                 self.replaceandrun('remove line', filedata, i, '')
 
-            if strippedline[-1] in ';{}':
-                stmt = True
-            else:
-                stmt = False
+            stmt = strippedline[-1] in ';{}'
 
     def set_elapsed_time(self, elapsed_time):
         self.__elapsed_time = elapsed_time

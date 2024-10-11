@@ -532,6 +532,7 @@ class Token:
         for i, t in enumerate(tl):
             if i == n:
                 return t
+        return None
 
     def linkAt(self, n):
         token = self.tokAt(n)
