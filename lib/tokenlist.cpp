@@ -1885,6 +1885,10 @@ void TokenList::validateAst(bool print) const
                 throw InternalError(tok, "Syntax Error: AST broken, binary operator '" + tok->str() + "' doesn't have two operands.", InternalError::AST);
         }
 
+        if (Token::Match(tok, "++|--") && !tok->astOperand1()) {
+            throw InternalError(tok, "Syntax Error: AST broken, operator '" + tok->str() + "' doesn't have an operand.", InternalError::AST);
+        }
+
         // Check control blocks and asserts
         if (Token::Match(tok->previous(), "if|while|for|switch|assert|ASSERT (")) {
             if (!tok->astOperand1() || !tok->astOperand2())
