@@ -1,0 +1,566 @@
+# Syntax reference https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+name: CI-unixish
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'releases/**'
+      - '2.*'
+    tags:
+      - '2.*'
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build_cmake_tinyxml2:
+
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, macos-13]
+        include:
+          - use_qt6: On
+          - os: ubuntu-20.04
+            use_qt6: Off
+      fail-fast: false # Prefer quick result
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      # TODO: figure out why there are cache misses with PCH enabled
+      CCACHE_SLOPPINESS: pch_defines,time_macros
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
+
+      - name: Install missing software on ubuntu
+        if: contains(matrix.os, 'ubuntu') && matrix.use_qt6 == 'Off'
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxml2-utils libtinyxml2-dev qtbase5-dev qttools5-dev libqt5charts5-dev qtchooser
+
+      - name: Install missing software on ubuntu
+        if: contains(matrix.os, 'ubuntu') && matrix.use_qt6 == 'On'
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxml2-utils libtinyxml2-dev
+          # qt6-tools-dev-tools for lprodump
+          # qt6-l10n-tools for lupdate
+          sudo apt-get install qt6-base-dev libqt6charts6-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools libglx-dev libgl1-mesa-dev
+
+      # coreutils contains "nproc"
+      - name: Install missing software on macos
+        if: contains(matrix.os, 'macos')
+        run: |
+          # pcre was removed from runner images in November 2022
+          brew install coreutils qt@6 tinyxml2 pcre
+
+      - name: CMake build on ubuntu (with GUI / system tinyxml2)
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=${{ matrix.use_qt6 }} -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --build cmake.output.tinyxml2 -- -j$(nproc)
+
+      - name: CMake build on macos (with GUI / system tinyxml2)
+        if: contains(matrix.os, 'macos')
+        run: |
+          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt6_DIR=$(brew --prefix qt@6)/lib/cmake/Qt6
+          cmake --build cmake.output.tinyxml2 -- -j$(nproc)
+
+      - name: Run CMake test (system tinyxml2)
+        run: |
+          cmake --build cmake.output.tinyxml2 --target check -- -j$(nproc)
+
+  build_cmake:
+
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, macos-13]
+        include:
+          - use_qt6: On
+          - os: ubuntu-20.04
+            use_qt6: Off
+      fail-fast: false # Prefer quick result
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      # TODO: figure out why there are cache misses with PCH enabled
+      CCACHE_SLOPPINESS: pch_defines,time_macros
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
+
+      - name: Install missing software on ubuntu
+        if: contains(matrix.os, 'ubuntu') && matrix.use_qt6 == 'Off'
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxml2-utils qtbase5-dev qttools5-dev libqt5charts5-dev qtchooser
+
+      # TODO: move latest compiler to separate step
+      # TODO: bail out on warnings with latest GCC
+      - name: Set up GCC
+        uses: egor-tensin/setup-gcc@v1
+        if: false  # matrix.os == 'ubuntu-22.04'
+        with:
+          version: 13
+          platform: x64
+
+      - name: Select compiler
+        if: false  # matrix.os == 'ubuntu-22.04'
+        run: |
+          echo "CXX=g++-13" >> $GITHUB_ENV
+
+      - name: Install missing software on ubuntu
+        if: contains(matrix.os, 'ubuntu') && matrix.use_qt6 == 'On'
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxml2-utils
+          # qt6-tools-dev-tools for lprodump
+          # qt6-l10n-tools for lupdate
+          sudo apt-get install qt6-base-dev libqt6charts6-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools libglx-dev libgl1-mesa-dev
+
+      # coreutils contains "nproc"
+      - name: Install missing software on macos
+        if: contains(matrix.os, 'macos')
+        run: |
+          # pcre was removed from runner images in November 2022
+          brew install coreutils qt@6 pcre
+
+      - name: CMake build on ubuntu (with GUI)
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=${{ matrix.use_qt6 }} -DWITH_QCHART=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --build cmake.output -- -j$(nproc)
+
+      - name: CMake build on macos (with GUI)
+        if: contains(matrix.os, 'macos')
+        run: |
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt6_DIR=$(brew --prefix qt@6)/lib/cmake/Qt6
+          cmake --build cmake.output -- -j$(nproc)
+
+      - name: Run CMake test
+        run: |
+          cmake --build cmake.output --target check -- -j$(nproc)
+
+      - name: Run CTest
+        run: |
+          pushd cmake.output
+          ctest --output-on-failure -j$(nproc)
+
+  build_uchar:
+
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, macos-13]
+      fail-fast: false # Prefer quick result
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
+
+      # coreutils contains "nproc"
+      - name: Install missing software on macos
+        if: contains(matrix.os, 'macos')
+        run: |
+          brew install coreutils
+
+      - name: Build with Unsigned char
+        run: |
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          make -j$(nproc) CXXFLAGS=-funsigned-char testrunner
+
+      - name: Test with Unsigned char
+        run: |
+          ./testrunner TestSymbolDatabase
+
+  build_mathlib:
+
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, macos-13]
+      fail-fast: false # Prefer quick result
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
+
+      # coreutils contains "nproc"
+      - name: Install missing software on macos
+        if: contains(matrix.os, 'macos')
+        run: |
+          brew install coreutils
+
+      - name: Build with TEST_MATHLIB_VALUE
+        run: |
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          make -j$(nproc) CPPFLAGS=-DTEST_MATHLIB_VALUE all
+
+      - name: Test with TEST_MATHLIB_VALUE
+        run: |
+          make -j$(nproc) CPPFLAGS=-DTEST_MATHLIB_VALUE check
+
+  check_nonneg:
+
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, macos-13]
+      fail-fast: false # Prefer quick result
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # coreutils contains "g++" (default is "c++") and "nproc"
+      - name: Install missing software on macos
+        if: contains(matrix.os, 'macos')
+        run: |
+          brew install coreutils
+
+      - name: Check syntax with NONNEG
+        run: |
+          ls lib/*.cpp | xargs -n 1 -P $(nproc) g++ -fsyntax-only -std=c++0x -Ilib -Iexternals -Iexternals/picojson -Iexternals/simplecpp -Iexternals/tinyxml2 -DNONNEG
+
+  build_qmake:
+
+    strategy:
+      matrix:
+        # no longer build with qmake on MacOS as brew might lack pre-built Qt5 packages causing the step to run for hours
+        os: [ubuntu-20.04, ubuntu-22.04]
+      fail-fast: false # Prefer quick result
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install missing software on ubuntu
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install qtbase5-dev qttools5-dev libqt5charts5-dev qtchooser
+
+      # coreutils contains "nproc"
+      - name: Install missing software on macos
+        if: contains(matrix.os, 'macos')
+        run: |
+          brew install coreutils qt@5
+          # expose qmake
+          brew link qt@5 --force
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
+
+      - name: Build GUI
+        run: |
+          export PATH="$(brew --prefix)/opt/ccache/libexec:/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          pushd gui
+          qmake CONFIG+=debug  CONFIG+=ccache HAVE_QCHART=yes
+          make -j$(nproc)
+
+      # TODO: binaries are in a different location on macos
+      - name: Build and Run GUI tests
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          export PATH="$(brew --prefix)/opt/ccache/libexec:/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          pushd gui/test/cppchecklibrarydata
+          qmake CONFIG+=debug CONFIG+=ccache
+          make -j$(nproc)
+          ./test-cppchecklibrarydata
+          popd
+          pushd gui/test/filelist
+          qmake CONFIG+=debug CONFIG+=ccache
+          make -j$(nproc)
+          ./test-filelist
+          popd
+          pushd gui/test/projectfile
+          qmake CONFIG+=debug CONFIG+=ccache
+          make -j$(nproc)
+          ./test-projectfile
+          popd
+          pushd gui/test/resultstree
+          qmake CONFIG+=debug CONFIG+=ccache
+          make -j$(nproc)
+          export QT_QPA_PLATFORM=offscreen
+          ./test-resultstree
+          popd
+          pushd gui/test/translationhandler
+          qmake CONFIG+=debug CONFIG+=ccache
+          make -j$(nproc)
+          # TODO: requires X session because of QApplication dependency in translationhandler.cpp
+          #./test-translationhandler
+          popd
+          pushd gui/test/xmlreportv2
+          qmake CONFIG+=debug CONFIG+=ccache
+          make -j$(nproc)
+          ./test-xmlreportv2
+
+      - name: Generate Qt help file
+        run: |
+          pushd gui/help
+          qhelpgenerator online-help.qhcp -o online-help.qhc
+
+      - name: Build triage
+        run: |
+          export PATH="$(brew --prefix)/opt/ccache/libexec:/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          pushd tools/triage
+          qmake CONFIG+=debug CONFIG+=ccache
+          make -j$(nproc)
+
+  build:
+
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, macos-13]
+      fail-fast: false # Prefer quick result
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
+
+      - name: Install missing software on ubuntu
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxml2-utils
+
+      # packages for strict cfg checks
+      - name: Install missing software on ubuntu 22.04 (cfg)
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          sudo apt-get install libcairo2-dev libcurl4-openssl-dev liblua5.3-dev libssl-dev libsqlite3-dev libcppunit-dev libsigc++-2.0-dev libgtk-3-dev libboost-all-dev libselinux-dev libwxgtk3.0-gtk3-dev xmlstarlet qtbase5-dev
+
+      # coreutils contains "nproc"
+      - name: Install missing software on macos
+        if: contains(matrix.os, 'macos')
+        run: |
+          # pcre was removed from runner images in November 2022
+          brew install coreutils python3 pcre gnu-sed
+
+      - name: Install missing Python packages
+        run: |
+          python3 -m pip install pip --upgrade
+          python3 -m pip install pytest
+          python3 -m pip install pytest-timeout
+          python3 -m pip install psutil
+
+      - name: Build cppcheck
+        run: |
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          make -j$(nproc) HAVE_RULES=yes
+
+      - name: Build test
+        run: |
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          make -j$(nproc) testrunner HAVE_RULES=yes
+
+      - name: Run test
+        run: |
+          make -j$(nproc) check HAVE_RULES=yes
+
+      # requires "gnu-sed" installed on macos
+      - name: Run extra tests
+        run: |
+          tools/generate_and_run_more_tests.sh
+
+      # do not use pushd in this step since we go below the working directory
+      - name: Run test/cli
+        run: |
+          cd test/cli
+          python3 -m pytest -Werror --strict-markers -vv
+          cd ../../..
+          ln -s cppcheck 'cpp check'
+          cd 'cpp check/test/cli'
+          python3 -m pytest -Werror --strict-markers -vv
+
+      # do not use pushd in this step since we go below the working directory
+      - name: Run test/cli (-j2)
+        run: |
+          cd test/cli
+          python3 -m pytest -Werror --strict-markers -vv
+        env:
+          TEST_CPPCHECK_INJECT_J: 2
+
+      # do not use pushd in this step since we go below the working directory
+      - name: Run test/cli (--clang)
+        if: false
+        run: |
+          cd test/cli
+          python3 -m pytest -Werror --strict-markers -vv
+        env:
+          TEST_CPPCHECK_INJECT_CLANG: clang
+
+      - name: Run cfg tests
+        if: matrix.os != 'ubuntu-22.04'
+        run: |
+          make -j$(nproc) checkcfg
+
+      - name: Run cfg tests (strict)
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          make -j$(nproc) checkcfg
+        env:
+          STRICT: 1
+
+      - name: Run --dump test
+        run: |
+          ./cppcheck test/testpreprocessor.cpp --dump
+          xmllint --noout test/testpreprocessor.cpp.dump
+
+      - name: Validate
+        run: |
+          make -j$(nproc) checkCWEEntries validateXML
+
+      - name: Test Signalhandler
+        run: |
+          cmake -S . -B cmake.output.signal -G "Unix Makefiles" -DBUILD_TESTS=On
+          cmake --build cmake.output.signal --target test-signalhandler -- -j$(nproc)
+          cp cmake.output.signal/bin/test-s* .
+          python3 -m pytest -Werror --strict-markers -vv test/signal/test-signalhandler.py
+
+      # no unix backtrace support on MacOs
+      - name: Test Stacktrace
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          cmake -S . -B cmake.output.signal -G "Unix Makefiles" -DBUILD_TESTS=On
+          cmake --build cmake.output.signal --target test-stacktrace -- -j$(nproc)
+          cp cmake.output.signal/bin/test-s* .
+          python3 -m pytest -Werror --strict-markers -vv test/signal/test-stacktrace.py
+
+      # TODO: move to scriptcheck.yml so these are tested with all Python versions?
+      - name: Test addons
+        run: |
+          set -x
+          ./cppcheck --error-exitcode=1 --inline-suppr --addon=threadsafety addons/test/threadsafety
+          ./cppcheck --error-exitcode=1 --inline-suppr --addon=threadsafety --std=c++03 addons/test/threadsafety
+          ./cppcheck --error-exitcode=1 --inline-suppr --addon=misra addons/test/misra/crash*.c
+          ./cppcheck --error-exitcode=1 --inline-suppr --addon=misra --enable=information addons/test/misra/config*.c
+
+          ./cppcheck --addon=misra --enable=style --inline-suppr --enable=information --error-exitcode=1 addons/test/misra/misra-ctu-*-test.c
+          pushd addons/test
+          # We'll force C89 standard to enable an additional verification for
+          # rules 5.4 and 5.5 which have standard-dependent options.
+          ../../cppcheck --dump -DDUMMY --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 --platform=unix64 
+          python3 ../misra.py -verify misra/misra-test.c.dump
+          # Test slight MISRA differences in C11 standard
+          ../../cppcheck --dump -DDUMMY --suppress=uninitvar --inline-suppr misra/misra-test-c11.c --std=c11 --platform=unix64
+          python3 ../misra.py -verify misra/misra-test-c11.c.dump
+          # TODO: do we need to verify something here?
+          ../../cppcheck --dump -DDUMMY --suppress=uninitvar --suppress=uninitStructMember --std=c89 misra/misra-test.h
+          ../../cppcheck --dump misra/misra-test.cpp 
+          python3 ../misra.py -verify misra/misra-test.cpp.dump
+          python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_ascii.txt -verify misra/misra-test.cpp.dump
+          python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_utf8.txt -verify misra/misra-test.cpp.dump
+          python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_windows1250.txt -verify misra/misra-test.cpp.dump
+          ../../cppcheck --addon=misra --enable=style --platform=avr8 --error-exitcode=1 misra/misra-test-avr8.c
+          ../../cppcheck --dump misc-test.cpp 
+          python3 ../misc.py -verify misc-test.cpp.dump
+          ../../cppcheck --dump naming_test.c 
+          python3 ../naming.py --var='[a-z].*' --function='[a-z].*' naming_test.c.dump
+          ../../cppcheck --dump naming_test.cpp 
+          python3 ../naming.py --var='[a-z].*' --function='[a-z].*' naming_test.cpp.dump
+
+      - name: Build democlient
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          warnings="-pedantic -Wall -Wextra -Wcast-qual -Wno-deprecated-declarations -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wundef -Wno-shadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar"
+          g++ $warnings -c -Ilib -Iexternals/tinyxml2 democlient/democlient.cpp
+
+  selfcheck:
+    needs: build # wait for all tests to be successful first
+
+    runs-on: ubuntu-22.04 # run on the latest image only
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
+
+      - name: Install missing software on ubuntu
+        run: |
+          sudo apt-get update
+          # qt6-tools-dev-tools for lprodump
+          # qt6-l10n-tools for lupdate
+          sudo apt-get install qt6-base-dev libqt6charts6-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools libglx-dev libgl1-mesa-dev
+          sudo apt-get install libboost-container-dev
+
+      - name: Self check (build)
+        run: |
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          # compile with verification and ast matchers
+          make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXFLAGS="-g -O2 -w -DHAVE_BOOST" MATCHCOMPILER=yes VERIFY=1
+
+      - name: CMake
+        run: |
+          cmake -S . -B cmake.output -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DUSE_MATCHCOMPILER=Verify -DENABLE_CHECK_INTERNAL=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DDISABLE_DMAKE=On
+
+      - name: Generate dependencies
+        run: |
+          # make sure auto-generated GUI files exist
+          make -C cmake.output autogen
+          make -C cmake.output gui-build-deps triage-build-ui-deps
+
+      - name: Self check
+        run: |
+          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=file-total -D__GNUC__ --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=gnu --inconclusive --enable=style,performance,portability,warning,missingInclude --exception-handling --debug-warnings --check-level=exhaustive"
+          cppcheck_options="-D__CPPCHECK__ -DCHECK_INTERNAL -DHAVE_RULES --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2"
+          ec=0
+          
+          # TODO: add --check-config          
+         
+          # early exit
+          if [ $ec -eq 1 ]; then
+            exit $ec
+          fi
+          
+          # self check simplecpp
+          ./cppcheck $selfcheck_options externals/simplecpp || ec=1
+          # self check lib/cli
+          mkdir b1
+          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b1 --addon=naming.json cli || ec=1
+          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b1 --addon=naming.json --enable=internal lib || ec=1
+          # check gui with qt settings
+          mkdir b2
+          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b2 -DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=68 -DQT_CHARTS_LIB --library=qt --addon=naming.json -Icmake.output/gui -Igui gui/*.cpp cmake.output/gui || ec=1
+          # self check test and tools
+          ./cppcheck $selfcheck_options $cppcheck_options -Icli test/*.cpp tools/*.cpp || ec=1
+          # triage
+          ./cppcheck $selfcheck_options $cppcheck_options -DQ_MOC_OUTPUT_REVISION=68 -DQT_CHARTS_LIB --library=qt -Icmake.output/tools/triage -Igui tools/triage/*.cpp cmake.output/tools/triage || ec=1
+          exit $ec
