@@ -16,7 +16,7 @@ import copy
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.63"
+CLIENT_VERSION = "1.3.64"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -133,7 +133,10 @@ def checkout_cppcheck_version(repo_path, version, cppcheck_path):
         hash_old = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'], cwd=cppcheck_path).strip()
 
         print('Pulling {}'.format(version))
-        subprocess.check_call(['git', 'pull'], cwd=cppcheck_path)
+        # --rebase is a workaround for a dropped commit - see https://github.com/danmar/cppcheck/pull/6904
+        # TODO: drop the commit in question
+        # TOD: remove --rebase
+        subprocess.check_call(['git', 'pull', '--rebase'], cwd=cppcheck_path)
 
         hash_new = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'], cwd=cppcheck_path).strip()
 
