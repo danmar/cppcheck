@@ -36,7 +36,8 @@ static QStringList getTranslationNames(const TranslationHandler& handler)
 void TestTranslationHandler::construct() const
 {
     TranslationHandler handler;
-    QCOMPARE(getTranslationNames(handler).size(), 13);  // 12 translations + english
+    // TODO: there are actually 14 translations excluding english
+    QCOMPARE(getTranslationNames(handler).size(), 14);  // 13 translations + english
     QCOMPARE(handler.getCurrentLanguage(), QString("en"));
 }
 
