@@ -80,8 +80,6 @@ private:
         TEST_CASE(operatorEqToSelf8);   // ticket #2179
         TEST_CASE(operatorEqToSelf9);   // ticket #2592
 
-        TEST_CASE(operatorEqPtrAssign); // ticket #13203
-
         TEST_CASE(memsetOnStruct);
         TEST_CASE(memsetVector);
         TEST_CASE(memsetOnClass);
@@ -2589,55 +2587,6 @@ private:
             "    return Foo::operator=(&other);\n"
             "}");
         ASSERT_EQUALS("", errout_str());
-    }
-
-#define checkConstructors(code) checkConstructors_(code, __FILE__, __LINE__)
-    template<size_t size>
-    void checkConstructors_(const char (&code)[size], const char* file, int line) {
-        const Settings settings = settingsBuilder().severity(Severity::warning).build();
-
-        // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code), file, line);
-
-        // Check..
-        CheckClass checkClass(&tokenizer, &settings, this);
-        (checkClass.constructors)();
-    }
-
-    void operatorEqPtrAssign() { // ticket #13203
-        checkConstructors("struct S {\n"
-                          "    int* m_data;\n"
-                          "    S() : m_data(new int()) {}\n"
-                          "    S& operator=(const S& s) {\n"
-                          "        if (&s != this) {\n"
-                          "            *(m_data) = *(s.m_data);\n"
-                          "        }\n"
-                          "        return *this;\n"
-                          "    }\n"
-                          "};\n");
-        ASSERT_EQUALS("", errout_str());
-
-        checkConstructors("struct S {\n"
-                          "    int* m_data;\n"
-                          "    S() : m_data(new int()) {}\n"
-                          "    S& operator=(const S& s) {\n"
-                          "        if (&s != this) {\n"
-                          "            (*m_data) = *(s.m_data);\n"
-                          "        }\n"
-                          "        return *this;\n"
-                          "    }\n"
-                          "};\n");
-        ASSERT_EQUALS("", errout_str());
-
-        checkConstructors("struct S {\n"
-                          "    int* m_data;\n"
-                          "    S() : m_data(new int()) {}\n"
-                          "    S& operator=(const S& s) {\n"
-                          "        return *this;\n"
-                          "    }\n"
-                          "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'S::m_data' is not assigned a value in 'S::operator='.\n", errout_str());
     }
 
     // Check that base classes have virtual destructors

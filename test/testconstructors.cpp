@@ -104,6 +104,9 @@ private:
         TEST_CASE(initvar_operator_eq6);
         TEST_CASE(initvar_operator_eq7);
         TEST_CASE(initvar_operator_eq8);
+        TEST_CASE(initvar_operator_eq9);
+        TEST_CASE(initvar_operator_eq10);
+        TEST_CASE(initvar_operator_eq11);
         TEST_CASE(initvar_same_classname);      // BUG 2208157
         TEST_CASE(initvar_chained_assign);      // BUG 2270433
         TEST_CASE(initvar_2constructors);       // BUG 2270353
@@ -996,6 +999,46 @@ private:
         ASSERT_EQUALS("[test.cpp:13]: (warning) Member variable 'D3::d3_2' is not assigned a value in 'D3::operator='.\n"
                       "[test.cpp:13]: (warning) Member variable 'D3::d2' is not assigned a value in 'D3::operator='.\n", errout_str());
     }
+
+    void initvar_operator_eq9() {  // ticket #13203
+        check("struct S {\n"
+              "    int* m_data;\n"
+              "    S() : m_data(new int()) {}\n"
+              "    S& operator=(const S& s) {\n"
+              "        if (&s != this) {\n"
+              "            *(m_data) = *(s.m_data);\n"
+              "        }\n"
+              "        return *this;\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void initvar_operator_eq10() {
+        check("struct S {\n"
+              "    int* m_data;\n"
+              "    S() : m_data(new int()) {}\n"
+              "    S& operator=(const S& s) {\n"
+              "        if (&s != this) {\n"
+              "            (*m_data) = *(s.m_data);\n"
+              "        }\n"
+              "        return *this;\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void initvar_operator_eq11() {
+        check("struct S {\n"
+              "    int* m_data;\n"
+              "    S() : m_data(new int()) {}\n"
+              "    S& operator=(const S& s) {\n"
+              "        return *this;\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'S::m_data' is not assigned a value in 'S::operator='.\n", errout_str());
+    }
+
 
     void initvar_same_classname() {
         // Bug 2208157 - False positive: Uninitialized variable, same class name
