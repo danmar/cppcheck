@@ -1062,9 +1062,9 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         // Assignment of array item of member variable?
         else if (Token::Match(ftok, "* %name% =")) {
             assignVar(usage, ftok->next()->varId());
-        } else if (Token::Match(ftok, "(| * %name% )| =")) {
+        } else if (Token::Match(ftok, "( * %name% ) =")) {
             assignVar(usage, ftok->tokAt(2)->varId());
-        } else if (Token::Match(ftok, "* (| %name% )| =")) {
+        } else if (Token::Match(ftok, "* ( %name% ) =")) {
             assignVar(usage, ftok->tokAt(2)->varId());
         } else if (Token::Match(ftok, "(| * this . %name% )| =")) {
             assignVar(usage, ftok->tokAt(3)->varId());
