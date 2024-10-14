@@ -8530,6 +8530,9 @@ void Tokenizer::findGarbageCode() const
         else if (Token::Match(tok, "[({<] %assign%"))
             syntaxError(tok);
 
+        else if (Token::Match(tok, "%assign% >"))
+            syntaxError(tok);
+
         else if (Token::Match(tok, "[`\\@]"))
             syntaxError(tok);
 

@@ -305,9 +305,9 @@ private:
     }
 
     void test2168() {
-        check("--> declare allocator lock here\n"
-              "int main(){}");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_THROW_INTERNAL(check("--> declare allocator lock here\n"
+                                    "int main(){}"),
+                              AST);
     }
 
     void pointerSimplest() {
