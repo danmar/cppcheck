@@ -1066,7 +1066,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             assignVar(usage, ftok->tokAt(2)->varId());
         } else if (Token::Match(ftok, "* ( %name% ) =")) {
             assignVar(usage, ftok->tokAt(2)->varId());
-        } else if (Token::Match(ftok, "(| * this . %name% )| =")) {
+        } else if (Token::Match(ftok, "* this . %name% =")) {
             assignVar(usage, ftok->tokAt(3)->varId());
         } else if (astIsRangeBasedForDecl(ftok)) {
             if (const Variable* rangeVar = ftok->astParent()->astOperand1()->variable()) {
