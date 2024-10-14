@@ -6774,6 +6774,22 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout_str());
+
+        check("void f(bool b) {\n"
+              "    static std::string s = {};\n"
+              "    for (auto c : s) {}\n"
+              "    if (b)\n"
+              "        s += 'a';\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("void f(bool b) {\n"
+              "    std::string s = {};\n"
+              "    for (auto c : s) {}\n"
+              "    if (b)\n"
+              "        s += 'a';\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Iterating over container 's' that is always empty.\n", errout_str());
     }
 
     void checkMutexes() {
