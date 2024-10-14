@@ -1547,8 +1547,12 @@ bool compareTokenFlags(const Token* tok1, const Token* tok2, bool macro) {
     if (macro) {
         if (tok1->isExpandedMacro() != tok2->isExpandedMacro())
             return false;
-        if (tok1->isExpandedMacro() && tok1->getMacroName() != tok2->getMacroName())
-            return false;
+        if (tok1->isExpandedMacro()) { // both are macros
+            if (tok1->getMacroName() != tok2->getMacroName())
+                return false;
+            if (tok1->astParent() && tok2->astParent() && tok1->astParent()->isExpandedMacro() && tok1->astParent()->getMacroName() == tok2->astParent()->getMacroName())
+                return false;
+        }
         if (tok1->isTemplateArg() || tok2->isTemplateArg())
             return false;
     }
