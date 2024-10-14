@@ -273,6 +273,9 @@ public:
     /** @brief write results (--output-file=&lt;file&gt;) */
     std::string outputFile;
 
+    enum class OutputFormat : std::uint8_t {text, plist, sarif, xml};
+    OutputFormat outputFormat = OutputFormat::text;
+
     Platform platform;
 
     /** @brief pid of cppcheck. Intention is that this is set in the main process. */

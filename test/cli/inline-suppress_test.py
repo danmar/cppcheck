@@ -26,7 +26,7 @@ def __create_unused_function_compile_commands(tmpdir):
     return compile_commands
 
 
-def test1():
+def test_1():
     args = [
         '-q',
         '--template=simple',
@@ -39,7 +39,7 @@ def test1():
     assert ret == 0, stdout
 
 
-def test2():
+def test_2():
     args = [
         '-q',
         '--template=simple',

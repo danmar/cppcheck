@@ -125,9 +125,10 @@ def test_combinelines_chunk_2():
         's,\n',
         't;\n'
     ]
+    filedata_exp = filedata
 
     filedata2 = reduce.combinelines(filedata)
-    assert filedata == filedata
+    assert filedata == filedata_exp
     assert filedata2 == ['int i,j,\n',
                          '',
                          'l,\n',

@@ -86,6 +86,13 @@ CheckOptions:
     install(FILES cppcheck-gui.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
     install(FILES cppcheck-gui.png DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/64x64/apps)
 
+    add_dependencies(cppcheck-gui copy_cfg)
+    add_dependencies(cppcheck-gui copy_addons)
+    add_dependencies(cppcheck-gui copy_platforms)
+    if (NOT DISABLE_DMAKE)
+        add_dependencies(cppcheck-gui run-dmake)
+    endif()
+
     if (BUILD_TESTS)
         add_subdirectory(test)
     endif()

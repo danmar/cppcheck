@@ -2840,6 +2840,18 @@ private:
                "    return x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 123));
+
+        code = "bool f() {\n" // #13208
+               "    struct S {\n"
+               "        bool b = true;\n"
+               "        bool get() const { return b; }\n"
+               "    };\n"
+               "    S s;\n"
+               "    s.b = false;\n"
+               "    bool x = s.get();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 9U, 1));
     }
 
     void valueFlowAfterSwap()

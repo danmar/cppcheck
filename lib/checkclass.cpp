@@ -856,7 +856,9 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         if (!Token::Match(ftok->next(), "::| %name%") &&
             !Token::Match(ftok->next(), "*| this . %name%") &&
             !Token::Match(ftok->next(), "* %name% =") &&
-            !Token::Match(ftok->next(), "( * this ) . %name%"))
+            !Token::Match(ftok->next(), "( * this ) . %name%") &&
+            !Token::Match(ftok->next(), "( * %name% ) =") &&
+            !Token::Match(ftok->next(), "* ( %name% ) ="))
             continue;
 
         // Goto the first token in this statement..
@@ -1060,6 +1062,10 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         // Assignment of array item of member variable?
         else if (Token::Match(ftok, "* %name% =")) {
             assignVar(usage, ftok->next()->varId());
+        } else if (Token::Match(ftok, "( * %name% ) =")) {
+            assignVar(usage, ftok->tokAt(2)->varId());
+        } else if (Token::Match(ftok, "* ( %name% ) =")) {
+            assignVar(usage, ftok->tokAt(2)->varId());
         } else if (Token::Match(ftok, "* this . %name% =")) {
             assignVar(usage, ftok->tokAt(3)->varId());
         } else if (astIsRangeBasedForDecl(ftok)) {

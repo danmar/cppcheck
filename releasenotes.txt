@@ -10,6 +10,8 @@ GUI:
 -
 
 Changed interface:
+- SARIF output. Use --output-format=sarif to activate this.
+- Add option --output-format=<format>. Allowed formats are sarif and xml.
 -
 
 Deprecations:

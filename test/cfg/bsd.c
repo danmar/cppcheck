@@ -32,11 +32,15 @@ void nullPointer_setlinebuf(FILE *stream)
 // #9323, #9331
 void verify_timercmp(struct timeval t)
 {
+    // cppcheck-suppress duplicateExpression
     (void)timercmp(&t, &t, <);
+    // cppcheck-suppress duplicateExpression
     (void)timercmp(&t, &t, <=);
     (void)timercmp(&t, &t, ==);
     (void)timercmp(&t, &t, !=);
+    // cppcheck-suppress duplicateExpression
     (void)timercmp(&t, &t, >=);
+    // cppcheck-suppress duplicateExpression
     (void)timercmp(&t, &t, >);
 }
 
@@ -68,10 +72,11 @@ ssize_t nullPointer_pwritev(int fd, const struct iovec *iov, int iovcnt, off_t o
     return pwritev(fd,iov,iovcnt,offset);
 }
 
-// False negative: #9346
+// #9346
 void uninitvar_timercmp(struct timeval t)
 {
     struct timeval uninit;
+    // cppcheck-suppress uninitvar
     (void)timercmp(&t, &uninit, <);
     (void)timercmp(&uninit, &t, <=);
     (void)timercmp(&uninit, &uninit, ==);

@@ -66,10 +66,19 @@ jobs:
       - name: Build GUI release (CMake)
         if: startsWith(matrix.qt_ver, '6')
         run: |
-          cmake -S . -B build -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
-          cmake --build build --target cppcheck-gui || exit /b !errorlevel!
+          ; TODO: enable rules?
+          ; specify Release build so matchcompiler is used
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
+          cmake --build build --target cppcheck-gui --config Release || exit /b !errorlevel!
 
-      # TODO: deploy with CMake/Qt6
+      - name: Deploy GUI
+        if: startsWith(matrix.qt_ver, '6')
+        run: |
+          windeployqt build\bin\Release || exit /b !errorlevel!
+          del build\bin\Release\cppcheck-gui.ilk || exit /b !errorlevel!
+          del build\bin\Release\cppcheck-gui.pdb || exit /b !errorlevel!
+
+      # TODO: run GUI tests
 
   build:
     strategy:
@@ -87,11 +96,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python 3.12
+      - name: Set up Python 3.13
         if: matrix.config == 'release'
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
           check-latest: true
 
       - name: Set up Visual Studio environment

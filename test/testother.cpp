@@ -1843,6 +1843,14 @@ private:
               "    printf(\"result: %d\\n\", msg);\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void g(const char* format, ...);\n"
+              "void f(bool b) {\n"
+              "    const char* s = \"abc\";\n"
+              "    if (b)\n"
+              "       g(\"%d %s\", 1, s);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) The scope of the variable 's' can be reduced.\n", errout_str());
     }
 
 #define checkOldStylePointerCast(...) checkOldStylePointerCast_(__FILE__, __LINE__, __VA_ARGS__)
@@ -7065,6 +7073,21 @@ private:
         check("void f() {\n"
               "    if ($a == $a) { }\n"
               "}");
+        ASSERT_EQUALS("", errout_str());
+
+        checkP("#define X 1\n"
+               "#define Y 1\n"
+               "void f() {\n"
+               "    if (X == X) {}\n"
+               "    if (X == Y) {}\n"
+               "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Same expression on both sides of '=='.\n", errout_str());
+
+        checkP("#define X 1\n"
+               "#define Y X\n"
+               "void f() {\n"
+               "    if (X == Y) {}\n"
+               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
