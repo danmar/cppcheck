@@ -21,6 +21,5 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 if (REGISTER_GUI_TESTS)
-    # TODO: does not work in CI
-    #add_test(NAME test-resultstree COMMAND $<TARGET_FILE:test-resultstree>)
+    add_test(NAME test-resultstree COMMAND $<TARGET_FILE:test-resultstree> -platform offscreen)
 endif()
