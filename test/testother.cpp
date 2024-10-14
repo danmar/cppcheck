@@ -7500,7 +7500,7 @@ private:
                "#define MACRO_ALL (MACRO1 | MACRO2)\n"
                "void f() {\n"
                "    if (MACRO_ALL == 0) {}\n"
-              "}\n");
+               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
