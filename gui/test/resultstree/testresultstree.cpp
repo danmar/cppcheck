@@ -66,6 +66,7 @@ public:
 };
 
 // Mock GUI...
+ProjectFile::ProjectFile(QObject *parent) : QObject(parent) {}
 ProjectFile *ProjectFile::mActiveProject;
 void ProjectFile::addSuppression(const SuppressionList::Suppression & /*unused*/) {}
 QString ProjectFile::getWarningTags(std::size_t /*unused*/) const {
@@ -78,11 +79,21 @@ bool ProjectFile::write(const QString & /*unused*/) {
 std::string severityToString(Severity severity) {
     return std::to_string((int)severity);
 }
+ApplicationList::ApplicationList(QObject *parent) : QObject(parent) {}
+ApplicationList::~ApplicationList() = default;
 int ApplicationList::getApplicationCount() const {
     return 0;
 }
+ThreadHandler::ThreadHandler(QObject *parent) : QObject(parent) {}
+ThreadHandler::~ThreadHandler() = default;
 bool ThreadHandler::isChecking() const {
     return false;
+}
+void ThreadHandler::stop() {
+    throw 1;
+}
+void ThreadHandler::threadDone() {
+    throw 1;
 }
 Application& ApplicationList::getApplication(const int /*unused*/) {
     throw 1;
@@ -101,6 +112,15 @@ QString XmlReport::unquoteMessage(const QString &message) {
     return message;
 }
 XmlReport::XmlReport(const QString& filename) : Report(filename) {}
+void ThreadResult::fileChecked(const QString & /*unused*/) {
+    throw 1;
+}
+void ThreadResult::reportOut(const std::string & /*unused*/, Color /*unused*/) {
+    throw 1;
+}
+void ThreadResult::reportErr(const ErrorMessage & /*unused*/) {
+    throw 1;
+}
 
 // Mock LIB...
 bool Path::isHeader(std::string const& /*unused*/) {
