@@ -20,7 +20,6 @@
 
 #include "astutils.h"
 #include "infer.h"
-#include "mathlib.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueptr.h"
@@ -28,31 +27,11 @@
 
 #include "vf_settokenvalue.h"
 
-#include <cassert>
 #include <utility>
 #include <vector>
 
 namespace ValueFlow
 {
-    struct SymbolicInferModel : InferModel {
-        const Token* expr;
-        explicit SymbolicInferModel(const Token* tok) : expr(tok) {
-            assert(expr->exprId() != 0);
-        }
-        bool match(const Value& value) const override
-        {
-            return value.isSymbolicValue() && value.tokvalue && value.tokvalue->exprId() == expr->exprId();
-        }
-        Value yield(MathLib::bigint value) const override
-        {
-            Value result(value);
-            result.valueType = Value::ValueType::SYMBOLIC;
-            result.tokvalue = expr;
-            result.setKnown();
-            return result;
-        }
-    };
-
     void valueFlowSymbolicInfer(const SymbolDatabase& symboldatabase, const Settings& settings)
     {
         for (const Scope* scope : symboldatabase.functionScopes) {
@@ -78,10 +57,10 @@ namespace ValueFlow
                 if (astIsFloat(tok->astOperand2(), false))
                     continue;
 
-                SymbolicInferModel leftModel{tok->astOperand1()};
+                auto leftModel = makeSymbolicInferModel(tok->astOperand1());
                 std::vector<Value> values = infer(leftModel, tok->str(), 0, tok->astOperand2()->values());
                 if (values.empty()) {
-                    SymbolicInferModel rightModel{tok->astOperand2()};
+                    auto rightModel = makeSymbolicInferModel(tok->astOperand2());
                     values = infer(rightModel, tok->str(), tok->astOperand1()->values(), 0);
                 }
                 for (Value& value : values) {
