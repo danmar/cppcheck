@@ -280,3 +280,139 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
 
     return fout.str();
 }
+
+std::string CheckersReport::getXmlReport(const std::string& criticalErrors) const
+{
+    std::ostringstream fout;
+
+    fout << "    <critical errors>";
+    if (!criticalErrors.empty())
+        fout << criticalErrors << std::endl;
+    fout << "</critical errors>" << std::endl;
+
+    fout << "    <checkers-report>" << std::endl;
+    fout << "        <open source checkers>" << std::endl;
+
+    std::size_t maxCheckerSize = 0;
+    for (const auto& checkReq: checkers::allCheckers) {
+        const std::string& checker = checkReq.first;
+        maxCheckerSize = std::max(checker.size(), maxCheckerSize);
+    }
+    for (const auto& checkReq: checkers::allCheckers) {
+        fout << "            <checker active=\"";
+        const std::string& checker = checkReq.first;
+        const bool active = mActiveCheckers.count(checkReq.first) > 0;
+        const std::string& req = checkReq.second;
+        fout << (active ? "Yes" : "No") << "\"" << " id=\"" << checker << "\"";
+        if (!active && !req.empty())
+            fout << " require=\"" + req << "\"";
+        fout << "/>" << std::endl;
+    }
+
+    fout << "        </open source checkers>" << std::endl;
+
+    const bool cppcheckPremium = isCppcheckPremium(mSettings);
+
+    auto reportSection = [&fout, cppcheckPremium]
+                             (const std::string& title,
+                             const Settings& settings,
+                             const std::set<std::string>& activeCheckers,
+                             const std::map<std::string, std::string>& premiumCheckers,
+                             const std::string& substring) {
+        fout << "        <" << title << ">";
+        if (!cppcheckPremium) {
+            fout << "Not available, Cppcheck Premium is not used</" << title << ">" << std::endl;
+            return;
+        }
+        fout << std::endl;
+        int maxCheckerSize = 0;
+        for (const auto& checkReq: premiumCheckers) {
+            const std::string& checker = checkReq.first;
+            if (checker.find(substring) != std::string::npos && checker.size() > maxCheckerSize)
+                maxCheckerSize = checker.size();
+        }
+        for (const auto& checkReq: premiumCheckers) {
+            const std::string& checker = checkReq.first;
+            if (checker.find(substring) == std::string::npos)
+                continue;
+            std::string req = checkReq.second;
+            bool active = cppcheckPremium && activeCheckers.count(checker) > 0;
+            if (substring == "::") {
+                if (req == "warning")
+                    active &= settings.severity.isEnabled(Severity::warning);
+                else if (req == "style")
+                    active &= settings.severity.isEnabled(Severity::style);
+                else if (req == "portability")
+                    active &= settings.severity.isEnabled(Severity::portability);
+                else if (!req.empty())
+                    active = false; // FIXME: handle req
+            }
+            fout << "            <checker active=\"" << (active ? "Yes" : "No") << "\" id=\"" << checker << "\"";
+            if (!cppcheckPremium) {
+                if (!req.empty())
+                    req = "premium," + req;
+                else
+                    req = "premium";
+            }
+            if (!active)
+                fout << " require=\"" << req << "\"";
+            fout << "/>" << std::endl;
+        }
+        fout << "        </" << title << ">" << std::endl;
+    };
+
+    reportSection("Premium Checkers", mSettings, mActiveCheckers, checkers::premiumCheckers, "::");
+    reportSection("Autosar", mSettings, mActiveCheckers, checkers::premiumCheckers, "Autosar: ");
+    reportSection("Cert C", mSettings, mActiveCheckers, checkers::premiumCheckers, "Cert C: ");
+    reportSection("Cert Cpp", mSettings, mActiveCheckers, checkers::premiumCheckers, "Cert C++: ");
+
+    int misra = 0;
+    if (mSettings.premiumArgs.find("misra-c-2012") != std::string::npos)
+        misra = 2012;
+    else if (mSettings.premiumArgs.find("misra-c-2023") != std::string::npos)
+        misra = 2023;
+    else if (mSettings.addons.count("misra"))
+        misra = 2012;
+
+    if (misra == 0) {
+        fout << "        <Misra C> Misra is not enabled </Misra C>" << std::endl;
+    } else {
+        fout << "        <Misra C " << misra << ">" << std::endl;
+        for (const checkers::MisraInfo& info: checkers::misraC2012Directives) {
+            const std::string directive = "Dir " + std::to_string(info.a) + "." + std::to_string(info.b);
+            const bool active = isMisraRuleActive(mActiveCheckers, directive);
+            fout << "            <checker active=\"";
+            fout << (active ? "Yes" : "No") << "\" id=\"" << "Misra C " << misra << ": " << directive << "\"";
+            std::string extra;
+            if (misra == 2012 && info.amendment >= 1)
+                extra = " amendment=\"" + std::to_string(info.amendment) + "\"";
+            if (!extra.empty())
+                fout << extra;
+            fout << "/>" << std::endl;
+        }
+        for (const checkers::MisraInfo& info: checkers::misraC2012Rules) {
+            const std::string rule = std::to_string(info.a) + "." + std::to_string(info.b);
+            const bool active = isMisraRuleActive(mActiveCheckers, rule);
+            fout << "            <checker active=\"";
+            fout << (active ? "Yes" : "No") << "\" id=\"" << "Misra C " << misra << ": " << rule << "\"";
+            std::string extra;
+            if (misra == 2012 && info.amendment >= 1)
+                extra = " amendment=\"" + std::to_string(info.amendment) + "\"";
+            std::string reqs;
+            if (info.amendment >= 3)
+                reqs += "premium";
+            if (!active && !reqs.empty())
+                extra += " require=\"" + reqs + "\"";
+            if (!extra.empty())
+                fout << extra;
+            fout << "/>" << std::endl;
+        }
+        fout << "        </Misra C " << misra << ">" << std::endl;
+    }
+
+    reportSection("Misra C++ 2008", mSettings, mActiveCheckers, checkers::premiumCheckers, "Misra C++ 2008: ");
+    reportSection("Misra C++ 2023", mSettings, mActiveCheckers, checkers::premiumCheckers, "Misra C++ 2023: ");
+
+    fout << "    </checkers-report>";
+    return fout.str();
+}

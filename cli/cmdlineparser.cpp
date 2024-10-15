@@ -340,7 +340,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 return Result::Fail;
             {
                 XMLErrorMessagesLogger xmlLogger;
-                std::cout << ErrorMessage::getXMLHeader(mSettings.cppcheckCfgProductName);
+                std::cout << ErrorMessage::getXMLHeader(mSettings.cppcheckCfgProductName, mSettings.xml_version);
                 CppCheck::getErrorMessages(xmlLogger);
                 std::cout << ErrorMessage::getXMLFooter() << std::endl;
             }
@@ -1386,9 +1386,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 int tmp;
                 if (!parseNumberArg(argv[i], 14, tmp))
                     return Result::Fail;
-                if (tmp != 2) {
-                    // We only have xml version 2
-                    mLogger.printError("'--xml-version' can only be 2.");
+                if (tmp != 2 && tmp != 3) {
+                    // We only have xml version 2 and 3
+                    mLogger.printError("'--xml-version' can only be 2 or 3.");
                     return Result::Fail;
                 }
 
