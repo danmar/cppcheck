@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 #
-# MISRA C 2012 checkers
-# Partially reused for "MISRA C++ 2008" checking
+# MISRA C 2012 checkers (including amendment 1 and 2)
 #
 # Example usage of this addon (scan a sourcefile main.cpp)
 # cppcheck --dump main.cpp
 # python misra.py --rule-texts=<path-to-rule-texts> main.cpp.dump
 #
-# Limitations: This addon is released as open source. Rule texts can't be freely
-# distributed. https://www.misra.org.uk/forum/viewtopic.php?f=56&t=1189
+# Limitations: This addon is released as open source. We are not allowed by
+# MISRA to distribute rule texts openly.
 #
 # The MISRA standard documents may be obtained from https://www.misra.org.uk
 #
