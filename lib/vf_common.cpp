@@ -31,6 +31,7 @@
 
 #include "vf_settokenvalue.h"
 
+#include <cassert>
 #include <climits>
 #include <cstddef>
 #include <exception>
@@ -436,5 +437,21 @@ namespace ValueFlow
         while (scope && scope->type != Scope::eWhile && scope->type != Scope::eFor && scope->type != Scope::eDo)
             scope = scope->nestedIn;
         return scope;
+    }
+
+    void setSymbolic(Value& value, const Token* tok)
+    {
+        assert(tok && tok->exprId() > 0 && "Missing expr id for symbolic value");
+        value.valueType = Value::ValueType::SYMBOLIC;
+        value.tokvalue = tok;
+    }
+
+    Value makeSymbolic(const Token* tok, MathLib::bigint delta)
+    {
+        Value value;
+        value.setKnown();
+        setSymbolic(value, tok);
+        value.intvalue = delta;
+        return value;
     }
 }
