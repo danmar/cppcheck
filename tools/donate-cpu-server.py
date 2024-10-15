@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.60"
+SERVER_VERSION = "1.3.61"
 
 OLD_VERSION = '2.15.0'
 
@@ -1445,6 +1445,9 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             if old_version_wrong:
                 print_ts('Unexpected old version. Ignoring result data.')
                 continue
+            if '\nclient-version: 1.3.63\n' in data:
+                print_ts('Client version 1.3.63 detected. Ignoring result data.')
+                continue
             filename = os.path.join(resultPath, res.group(1))
             if truncated_data:
                 print_ts('Data is too large. Removing result.')
@@ -1475,6 +1478,9 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 continue
             if pos < 10:
                 print_ts('Data is less than 10 characters. Ignoring information data.')
+                continue
+            if '\nclient-version: 1.3.63\n' in data:
+                print_ts('Client version 1.3.63 detected. Ignoring information data.')
                 continue
             url = data[:pos]
             print_ts('write_info:' + url)
