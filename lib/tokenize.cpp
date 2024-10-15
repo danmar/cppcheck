@@ -8747,6 +8747,8 @@ void Tokenizer::findGarbageCode() const
                      !(tok->tokType() == Token::Type::eBoolean && cpp && Token::simpleMatch(tok->tokAt(-1), "requires")))
                 syntaxError(tok);
         }
+        if (Token::Match(tok, "( ) %num%|%bool%|%char%|%str%"))
+            syntaxError(tok);
         if (Token::Match(tok, "%assign% typename|class %assign%"))
             syntaxError(tok);
         if (Token::Match(tok, "%assign% [;)}]") && (!cpp || !Token::simpleMatch(tok->previous(), "operator")))
