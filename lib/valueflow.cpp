@@ -105,6 +105,7 @@
 #include "vf_analyzers.h"
 #include "vf_bailout.h"
 #include "vf_common.h"
+#include "vf_forward.h"
 #include "vf_reverse.h"
 #include "vf_settokenvalue.h"
 
@@ -483,75 +484,7 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, int m
     return 0;
 }
 
-static Analyzer::Result valueFlowForward(Token* startToken,
-                                         const Token* endToken,
-                                         const Token* exprTok,
-                                         ValueFlow::Value value,
-                                         const TokenList& tokenlist,
-                                         ErrorLogger& errorLogger,
-                                         const Settings& settings,
-                                         SourceLocation loc = SourceLocation::current())
-{
-    if (settings.debugnormal)
-        setSourceLocation(value, loc, startToken);
-    return valueFlowGenericForward(startToken,
-                                   endToken,
-                                   makeAnalyzer(exprTok, std::move(value), settings),
-                                   tokenlist,
-                                   errorLogger,
-                                   settings);
-}
 
-static Analyzer::Result valueFlowForward(Token* startToken,
-                                         const Token* endToken,
-                                         const Token* exprTok,
-                                         std::list<ValueFlow::Value> values,
-                                         const TokenList& tokenlist,
-                                         ErrorLogger& errorLogger,
-                                         const Settings& settings,
-                                         SourceLocation loc = SourceLocation::current())
-{
-    Analyzer::Result result{};
-    for (ValueFlow::Value& v : values) {
-        result.update(valueFlowForward(startToken, endToken, exprTok, std::move(v), tokenlist, errorLogger, settings, loc));
-    }
-    return result;
-}
-
-static Analyzer::Result valueFlowForward(Token* startToken,
-                                         const Token* exprTok,
-                                         ValueFlow::Value v,
-                                         const TokenList& tokenlist,
-                                         ErrorLogger& errorLogger,
-                                         const Settings& settings,
-                                         SourceLocation loc = SourceLocation::current())
-{
-    const Token* endToken = nullptr;
-    const Function* f = Scope::nestedInFunction(startToken->scope());
-    if (f && f->functionScope)
-        endToken = f->functionScope->bodyEnd;
-    if (!endToken && exprTok && exprTok->variable() && !exprTok->variable()->isLocal())
-        endToken = startToken->scope()->bodyEnd;
-    return valueFlowForward(startToken, endToken, exprTok, std::move(v), tokenlist, errorLogger, settings, loc);
-}
-
-static Analyzer::Result valueFlowForwardRecursive(Token* top,
-                                                  const Token* exprTok,
-                                                  std::list<ValueFlow::Value> values,
-                                                  const TokenList& tokenlist,
-                                                  ErrorLogger& errorLogger,
-                                                  const Settings& settings,
-                                                  SourceLocation loc = SourceLocation::current())
-{
-    Analyzer::Result result{};
-    for (ValueFlow::Value& v : values) {
-        if (settings.debugnormal)
-            setSourceLocation(v, loc, top);
-        result.update(
-            valueFlowGenericForward(top, makeAnalyzer(exprTok, std::move(v), settings), tokenlist, errorLogger, settings));
-    }
-    return result;
-}
 
 static bool isConditionKnown(const Token* tok, bool then)
 {
