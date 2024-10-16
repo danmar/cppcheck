@@ -514,6 +514,9 @@ static bool iscast(const Token *tok, bool cpp)
     if (Token::Match(tok->link(), ") }|)|]|;"))
         return false;
 
+    if (Token::Match(tok->link(), ") ++|-- [;)]"))
+        return false;
+
     if (Token::Match(tok->link(), ") %cop%") && !Token::Match(tok->link(), ") [&*+-~!]"))
         return false;
 

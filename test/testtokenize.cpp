@@ -6544,6 +6544,8 @@ private:
                                              "    auto l = [x = 3](std::string&& v) { };\n"
                                              "}\n"));
         ASSERT_EQUALS("[test.cpp:2]: (debug) analyzeConditionExpressions bailout: Skipping function due to incomplete variable x\n", errout_str());
+
+        ASSERT_EQUALS("forinti(0=i5<=i++;;(", testAst("for (int (i) = 0; (i) <= 5; (i)++) {}")); // #13225
     }
 
     void astbrackets() { // []
