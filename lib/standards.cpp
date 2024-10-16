@@ -17,6 +17,7 @@
  */
 
 #include "standards.h"
+#include "utils.h"
 
 #include <utility>
 
@@ -38,6 +39,7 @@ static Standards::cstd_t mapC(simplecpp::cstd_t cstd) {
     case simplecpp::CUnknown:
         return Standards::CLatest;
     }
+    cppcheck::unreachable();
 }
 
 bool Standards::setC(std::string str)
@@ -100,6 +102,7 @@ static Standards::cppstd_t mapCPP(simplecpp::cppstd_t cppstd) {
     case simplecpp::CPPUnknown:
         return Standards::CPPLatest;
     }
+    cppcheck::unreachable();
 }
 
 bool Standards::setCPP(std::string str)
