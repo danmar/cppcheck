@@ -495,6 +495,14 @@ private:
                       "[test.cpp:2]: (style) Expression '(X & 0x100) == 0x200' is always false.\n"
                       "[test.cpp:3]: (style) Expression '(X & 0x100) == 0x200' is always false.\n",
                       errout_str());
+
+        checkP("#define MACRO1 (0x0010)\n" // #13222
+               "#define MACRO2 (0x0020)\n"
+               "#define MACRO_ALL (MACRO1 | MACRO2)\n"
+               "void f() {\n"
+               "    if (MACRO_ALL == 0) {}\n"
+               "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
 #define checkPureFunction(code) checkPureFunction_(code, __FILE__, __LINE__)

@@ -372,6 +372,8 @@ void CheckCondition::comparison()
             std::swap(expr1,expr2);
         if (!expr2->isNumber())
             continue;
+        if (!compareTokenFlags(expr1, expr2, /*macro*/ true))
+            continue;
         const MathLib::bigint num2 = MathLib::toBigNumber(expr2->str());
         if (num2 < 0)
             continue;
