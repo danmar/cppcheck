@@ -55,6 +55,7 @@ TranslationHandler::TranslationHandler(QObject *parent) :
     addTranslation("German", "cppcheck_de");
     addTranslation("Italian", "cppcheck_it");
     addTranslation("Japanese", "cppcheck_ja");
+    addTranslation("Georgian", "cppcheck_ka");
     addTranslation("Korean", "cppcheck_ko");
     addTranslation("Russian", "cppcheck_ru");
     addTranslation("Serbian", "cppcheck_sr");
