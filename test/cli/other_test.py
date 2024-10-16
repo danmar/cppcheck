@@ -5,6 +5,7 @@ import os
 import sys
 import pytest
 import json
+import xml.etree.ElementTree as ET
 
 from testutils import cppcheck, assert_cppcheck, cppcheck_ex
 
@@ -2229,3 +2230,20 @@ def test_ignore_project_2(tmpdir):
     exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
     assert exitcode == 1, stdout
     assert stdout.splitlines() == lines_exp
+
+def test_xml_checkers_report(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.c')
+    test_xml = os.path.join(tmpdir, 'results.xml')
+    with open(test_file, 'wt') as f:
+        f.write("""
+                int main(int argc)
+                {
+                }
+                """)
+
+    args = ['--xml-version=3', '--enable=all', '-j2', "--output-file=" + test_xml, test_file]
+
+    exitcode, _, stderr = cppcheck(args)
+    assert exitcode == 0
+    assert stderr == ""
+    assert ET.parse(test_xml)

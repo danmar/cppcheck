@@ -285,13 +285,13 @@ std::string CheckersReport::getXmlReport(const std::string& criticalErrors) cons
 {
     std::ostringstream fout;
 
-    fout << "    <critical errors>";
+    fout << "    <critical-errors>";
     if (!criticalErrors.empty())
         fout << criticalErrors << std::endl;
-    fout << "</critical errors>" << std::endl;
+    fout << "</critical-errors>" << std::endl;
 
     fout << "    <checkers-report>" << std::endl;
-    fout << "        <open source checkers>" << std::endl;
+    fout << "        <open-source-checkers>" << std::endl;
 
     std::size_t maxCheckerSize = 0;
     for (const auto& checkReq: checkers::allCheckers) {
@@ -309,7 +309,7 @@ std::string CheckersReport::getXmlReport(const std::string& criticalErrors) cons
         fout << "/>" << std::endl;
     }
 
-    fout << "        </open source checkers>" << std::endl;
+    fout << "        </open-source-checkers>" << std::endl;
 
     const bool cppcheckPremium = isCppcheckPremium(mSettings);
 
@@ -361,10 +361,10 @@ std::string CheckersReport::getXmlReport(const std::string& criticalErrors) cons
         fout << "        </" << title << ">" << std::endl;
     };
 
-    reportSection("Premium Checkers", mSettings, mActiveCheckers, checkers::premiumCheckers, "::");
-    reportSection("Autosar", mSettings, mActiveCheckers, checkers::premiumCheckers, "Autosar: ");
-    reportSection("Cert C", mSettings, mActiveCheckers, checkers::premiumCheckers, "Cert C: ");
-    reportSection("Cert Cpp", mSettings, mActiveCheckers, checkers::premiumCheckers, "Cert C++: ");
+    reportSection("premium-checkers", mSettings, mActiveCheckers, checkers::premiumCheckers, "::");
+    reportSection("autosar", mSettings, mActiveCheckers, checkers::premiumCheckers, "Autosar: ");
+    reportSection("cert-c", mSettings, mActiveCheckers, checkers::premiumCheckers, "Cert C: ");
+    reportSection("cert-cpp", mSettings, mActiveCheckers, checkers::premiumCheckers, "Cert C++: ");
 
     int misra = 0;
     if (mSettings.premiumArgs.find("misra-c-2012") != std::string::npos)
@@ -375,9 +375,9 @@ std::string CheckersReport::getXmlReport(const std::string& criticalErrors) cons
         misra = 2012;
 
     if (misra == 0) {
-        fout << "        <Misra C> Misra is not enabled </Misra C>" << std::endl;
+        fout << "        <misra-c> Misra is not enabled </misra-c>" << std::endl;
     } else {
-        fout << "        <Misra C " << misra << ">" << std::endl;
+        fout << "        <misra-c-" << misra << ">" << std::endl;
         for (const checkers::MisraInfo& info: checkers::misraC2012Directives) {
             const std::string directive = "Dir " + std::to_string(info.a) + "." + std::to_string(info.b);
             const bool active = isMisraRuleActive(mActiveCheckers, directive);
@@ -407,11 +407,11 @@ std::string CheckersReport::getXmlReport(const std::string& criticalErrors) cons
                 fout << extra;
             fout << "/>" << std::endl;
         }
-        fout << "        </Misra C " << misra << ">" << std::endl;
+        fout << "        </misra-c-" << misra << ">" << std::endl;
     }
 
-    reportSection("Misra C++ 2008", mSettings, mActiveCheckers, checkers::premiumCheckers, "Misra C++ 2008: ");
-    reportSection("Misra C++ 2023", mSettings, mActiveCheckers, checkers::premiumCheckers, "Misra C++ 2023: ");
+    reportSection("misra-cpp-2008", mSettings, mActiveCheckers, checkers::premiumCheckers, "Misra C++ 2008: ");
+    reportSection("misra-cpp-2023", mSettings, mActiveCheckers, checkers::premiumCheckers, "Misra C++ 2023: ");
 
     fout << "    </checkers-report>";
     return fout.str();
