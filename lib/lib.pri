@@ -90,6 +90,7 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/vf_conditionexpressions.h \
            $${PWD}/vf_debug.h \
            $${PWD}/vf_enumvalue.h \
+           $${PWD}/vf_forward.h \
            $${PWD}/vf_functionreturn.h \
            $${PWD}/vf_globalconstvar.h \
            $${PWD}/vf_globalstaticvar.h \
@@ -184,6 +185,7 @@ SOURCES += $${PWD}/valueflow.cpp \
            $${PWD}/vf_conditionexpressions.cpp \
            $${PWD}/vf_debug.cpp \
            $${PWD}/vf_enumvalue.cpp \
+           $${PWD}/vf_forward.cpp \
            $${PWD}/vf_functionreturn.cpp \
            $${PWD}/vf_globalconstvar.cpp \
            $${PWD}/vf_globalstaticvar.cpp \
