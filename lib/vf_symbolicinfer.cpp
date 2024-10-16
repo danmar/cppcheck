@@ -79,8 +79,11 @@ namespace ValueFlow
                 if (astIsFloat(tok->astOperand2(), false))
                     continue;
 
-                SymbolicInferModel leftModel{tok->astOperand1()};
-                std::vector<Value> values = infer(leftModel, tok->str(), 0, tok->astOperand2()->values());
+                std::vector<Value> values;
+                {
+                    SymbolicInferModel leftModel{tok->astOperand1()};
+                    values = infer(leftModel, tok->str(), 0, tok->astOperand2()->values());
+                }
                 if (values.empty()) {
                     SymbolicInferModel rightModel{tok->astOperand2()};
                     values = infer(rightModel, tok->str(), tok->astOperand1()->values(), 0);
