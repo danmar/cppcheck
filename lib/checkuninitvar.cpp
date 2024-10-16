@@ -1747,7 +1747,8 @@ bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo *ctu, const std::li
                                             callsMap,
                                             "Using argument ARG",
                                             &functionCall,
-                                            false);
+                                            false,
+                                            settings.maxCtuDepth);
             if (locationList.empty())
                 continue;
 

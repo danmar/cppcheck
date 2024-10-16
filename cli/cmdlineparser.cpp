@@ -903,8 +903,14 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             // max ctu depth
             else if (std::strncmp(argv[i], "--max-ctu-depth=", 16) == 0) {
-                if (!parseNumberArg(argv[i], 16, mSettings.maxCtuDepth))
+                int temp = 0;
+                if (!parseNumberArg(argv[i], 16, temp))
                     return Result::Fail;
+                if (temp > 10) {
+                    mLogger.printMessage("--max-ctu-depth is being capped at 10. This limitation will be removed in a future Cppcheck version.");
+                    temp = 10;
+                }
+                mSettings.maxCtuDepth = temp;
             }
 
             else if (std::strcmp(argv[i], "--no-cpp-header-probe") == 0) {

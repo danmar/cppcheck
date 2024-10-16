@@ -637,7 +637,8 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
                                                 callsMap,
                                                 "Dereferencing argument ARG that is null",
                                                 nullptr,
-                                                warning);
+                                                warning,
+                                                settings.maxCtuDepth);
                 if (locationList.empty())
                     continue;
 

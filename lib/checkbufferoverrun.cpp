@@ -987,7 +987,6 @@ bool CheckBufferOverrun::analyseWholeProgram(const CTU::FileInfo *ctu, const std
     if (!ctu)
         return false;
     bool foundErrors = false;
-    (void)settings; // This argument is unused
 
     CheckBufferOverrun dummy(nullptr, &settings, &errorLogger);
     dummy.
@@ -1000,14 +999,14 @@ bool CheckBufferOverrun::analyseWholeProgram(const CTU::FileInfo *ctu, const std
         if (!fi)
             continue;
         for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafeArrayIndex)
-            foundErrors |= analyseWholeProgram1(callsMap, unsafeUsage, 1, errorLogger);
+            foundErrors |= analyseWholeProgram1(callsMap, unsafeUsage, 1, errorLogger, settings.maxCtuDepth);
         for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafePointerArith)
-            foundErrors |= analyseWholeProgram1(callsMap, unsafeUsage, 2, errorLogger);
+            foundErrors |= analyseWholeProgram1(callsMap, unsafeUsage, 2, errorLogger, settings.maxCtuDepth);
     }
     return foundErrors;
 }
 
-bool CheckBufferOverrun::analyseWholeProgram1(const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap, const CTU::FileInfo::UnsafeUsage &unsafeUsage, int type, ErrorLogger &errorLogger)
+bool CheckBufferOverrun::analyseWholeProgram1(const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap, const CTU::FileInfo::UnsafeUsage &unsafeUsage, int type, ErrorLogger &errorLogger, int maxCtuDepth)
 {
     const CTU::FileInfo::FunctionCall *functionCall = nullptr;
 
@@ -1017,7 +1016,8 @@ bool CheckBufferOverrun::analyseWholeProgram1(const std::map<std::string, std::l
                                     callsMap,
                                     "Using argument ARG",
                                     &functionCall,
-                                    false);
+                                    false,
+                                    maxCtuDepth);
     if (locationList.empty())
         return false;
 
