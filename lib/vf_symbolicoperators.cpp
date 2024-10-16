@@ -40,8 +40,10 @@ namespace ValueFlow
 {
     static const Token* isStrlenOf(const Token* tok, const Token* expr, int depth = 10)
     {
-        if (depth < 0)
+        if (depth < 0) {
+            // TODO: add bailout message
             return nullptr;
+        }
         if (!tok)
             return nullptr;
         if (!expr)
@@ -84,7 +86,7 @@ namespace ValueFlow
                         continue;
 
                     Value v = makeSymbolic(arg);
-                    v.errorPath = c.errorPath;
+                    v.errorPath = std::move(c.errorPath);
                     v.errorPath.emplace_back(tok, "Passed to " + tok->str());
                     if (c.intvalue == 0)
                         v.setImpossible();
