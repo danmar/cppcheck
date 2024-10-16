@@ -3699,8 +3699,11 @@ static void valueFlowSymbolicInfer(const SymbolDatabase& symboldatabase, const S
             if (astIsFloat(tok->astOperand2(), false))
                 continue;
 
-            SymbolicInferModel leftModel{tok->astOperand1()};
-            std::vector<ValueFlow::Value> values = infer(leftModel, tok->str(), 0, tok->astOperand2()->values());
+            std::vector<ValueFlow::Value> values;
+            {
+                SymbolicInferModel leftModel{tok->astOperand1()};
+                values = infer(leftModel, tok->str(), 0, tok->astOperand2()->values());
+            }
             if (values.empty()) {
                 SymbolicInferModel rightModel{tok->astOperand2()};
                 values = infer(rightModel, tok->str(), tok->astOperand1()->values(), 0);
