@@ -145,3 +145,7 @@ compile_commands.json
 
 # GDB configuration
 .gdbinit
+
+# pyinstaller output
+/addons/dist
+/addons/misra.spec
