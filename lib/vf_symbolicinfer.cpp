@@ -54,7 +54,7 @@ namespace ValueFlow
         const Token* expr;
     };
 
-    void valueFlowSymbolicInfer(const SymbolDatabase& symboldatabase, const Settings& settings)
+    void analyzeSymbolicInfer(const SymbolDatabase& symboldatabase, const Settings& settings)
     {
         for (const Scope* scope : symboldatabase.functionScopes) {
             for (auto* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
