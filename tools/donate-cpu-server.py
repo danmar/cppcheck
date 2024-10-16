@@ -28,6 +28,7 @@ from urllib.parse import urlparse
 # changes)
 SERVER_VERSION = "1.3.62"
 
+# TODO: fetch from GitHub tags
 OLD_VERSION = '2.15.0'
 
 HEAD_MARKER = 'head results:'

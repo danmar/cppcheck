@@ -61,6 +61,7 @@ static constexpr bool caseInsensitiveFilesystem()
     return true;
 #else
     // TODO: Non-windows filesystems might be case insensitive
+    // needs to be determined per filesystem and location - e.g. /sys/fs/ext4/features/casefold
     return false;
 #endif
 }

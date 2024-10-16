@@ -1180,6 +1180,7 @@ void Tokenizer::simplifyTypedef()
     simplifyTypedefCpp();
 }
 
+// TODO: rename - it is not C++ specific
 void Tokenizer::simplifyTypedefCpp()
 {
     const bool cpp = isCPP();
@@ -3477,6 +3478,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
 
     // TODO: apply this through Settings::ValueFlowOptions
     // TODO: do not run valueflow if no checks are being performed at all - e.g. unusedFunctions only
+    // TODO: log message when this is active?
     const char* disableValueflowEnv = std::getenv("DISABLE_VALUEFLOW");
     const bool doValueFlow = !disableValueflowEnv || (std::strcmp(disableValueflowEnv, "1") != 0);
 
