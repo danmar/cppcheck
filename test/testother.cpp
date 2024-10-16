@@ -3743,6 +3743,20 @@ private:
               "    return lam();\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S { int x[3]; };\n" // #13226
+              "void g(int a, int* b);\n"
+              "void f(int a, S& s) {\n"
+              "    return g(a, s.x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("struct S { int *x; };\n"
+              "void g(int a, int* b);\n"
+              "void f(int a, S& s) {\n"
+              "    return g(a, s.x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Parameter 's' can be declared as reference to const\n", errout_str());
     }
 
     void constParameterCallback() {

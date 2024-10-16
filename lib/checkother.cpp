@@ -1590,6 +1590,34 @@ void CheckOther::checkConstVariable()
             if (usedInAssignment)
                 continue;
         }
+        // Skip if array member member is passed as pointer argument
+        if (var->isClass()) {
+            bool modified = false;
+            const Scope *classScope = var->typeScope();
+            if (classScope) {
+                for (const Variable &member : classScope->varlist) {
+                    if (!member.isArray())
+                        continue;
+                    for (const Token *tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next()) {
+                        if (!Token::Match(tok, "%varid% . %name%", var->declarationId()) || tok->tokAt(2)->str() != member.name())
+                            continue;
+                        int argn = -1;
+                        const Token *ftok = getTokenArgumentFunction(tok, argn);
+                        if (!ftok || !ftok->function())
+                            continue;
+                        const Variable *param = ftok->function()->getArgumentVar(argn);
+                        if (!param->isConst() && param->isPointer()) {
+                            modified = true;
+                            break;
+                        }
+                    }
+                    if (modified)
+                        break;
+                }
+                if (modified)
+                    continue;
+            }
+        }
 
         constVariableError(var, hasFunction ? function : nullptr);
     }
