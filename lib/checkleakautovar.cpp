@@ -363,6 +363,54 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
         while (Token::Match(ftok, "%name% :: %name%"))
             ftok = ftok->tokAt(2);
 
+        // memcpy / memmove
+        if (Token::Match(varTok, "memcpy|memmove")) {
+            const std::vector<const Token*> args = getArguments(varTok);
+            // too few args for memcpy / memmove call
+            if (args.size() < 3)
+                continue;
+            const Token *dst = args[0];
+            const Token *src = args[1];
+
+            // check that dst arg is pointer to pointer
+            int dstIndirectionLevel = 0;
+            while (dst->str() == "*") {
+                dst = dst->astOperand1();
+                dstIndirectionLevel--;
+            }
+            if (dst->str() == "&") {
+                dst = dst->astOperand1();
+                dstIndirectionLevel++;
+            }
+            if (!dst->isVariable())
+                continue;
+            if (dstIndirectionLevel + dst->variable()->valueType()->pointer != 2)
+                continue;
+
+            // check that src arg is pointer to pointer
+            int srcIndirectionLevel = 0;
+            while (src->str() == "*") {
+                src = src->astOperand1();
+                srcIndirectionLevel--;
+            }
+            if (src->str() == "&") {
+                src = src->astOperand1();
+                srcIndirectionLevel++;
+            }
+            if (!src->isVariable())
+                continue;
+            if (srcIndirectionLevel + src->variable()->valueType()->pointer != 2)
+                continue;
+
+            if (!dst->variable()->isArgument()) {
+                varInfo.alloctype[dst->varId()].status = VarInfo::AllocStatus::ALLOC;
+            }
+
+            // no multivariable checking currently (see assignment below)
+            // treat source pointer as unallocated
+            varInfo.erase(src->varId());
+        }
+
         auto isAssignment = [](const Token* varTok) -> const Token* {
             if (varTok->varId()) {
                 const Token* top = varTok;
