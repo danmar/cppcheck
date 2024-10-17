@@ -37,6 +37,10 @@ if (BUILD_TESTS)
         target_compile_definitions(testrunner PRIVATE CPPCHECKLIB_IMPORT SIMPLECPP_IMPORT)
         target_link_libraries(testrunner cppcheck-core)
     endif()
+    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+        # (void) in ASSERT_THROW* macros might trigger this
+        target_compile_options_safe(testrunner -Wno-useless-cast)
+    endif()
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         # $ is used in dinit() designated initialization helper
         target_compile_options_safe(testrunner -Wno-dollar-in-identifier-extension)

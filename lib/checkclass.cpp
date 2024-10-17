@@ -2189,7 +2189,7 @@ void CheckClass::checkConst()
             std::string classname = scope->className;
             const Scope *nest = scope->nestedIn;
             while (nest && nest->type != Scope::eGlobal) {
-                classname = std::string(nest->className + "::" + classname);
+                classname = nest->className + "::" + classname;
                 nest = nest->nestedIn;
             }
 
