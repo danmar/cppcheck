@@ -1207,3 +1207,10 @@ void SEH_knownConditionTrueFalse() { // #8434
     }
     if (r == 0) {}
 }
+
+void SEH_unusedLabel() { // #13233
+    __try {
+    }
+    __finally {
+    }
+}
