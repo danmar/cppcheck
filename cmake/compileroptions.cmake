@@ -66,6 +66,10 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     add_compile_options(-Wsuggest-attribute=noreturn)
     add_compile_options_safe(-Wuseless-cast)
     # add_compile_options_safe(-Wsuggest-attribute=returns_nonnull) # reports the warning even if the attribute is set
+
+    # TODO: evaluate
+    #add_compile_options(-Wduplicated-branches)
+    #add_compile_options(-Wduplicated-cond)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 14 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 14)
         # TODO: verify this regression still exists in clang-15
