@@ -1809,10 +1809,10 @@ private:
 
     void xmlverunknown() {
         REDIRECT;
-        const char * const argv[] = {"cppcheck", "--xml", "--xml-version=3", "file.cpp"};
+        const char * const argv[] = {"cppcheck", "--xml", "--xml-version=4", "file.cpp"};
         // FAils since unknown XML format version
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
-        ASSERT_EQUALS("cppcheck: error: '--xml-version' can only be 2.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: '--xml-version' can only be 2 or 3.\n", logger->str());
     }
 
     void xmlverinvalid() {

@@ -413,7 +413,7 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
         stdLogger.resetLatestProgressOutputTime();
 
     if (settings.xml) {
-        stdLogger.reportErr(ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName));
+        stdLogger.reportErr(ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName, settings.xml_version));
     }
 
     if (!settings.buildDir.empty()) {
@@ -466,7 +466,7 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
         stdLogger.writeCheckersReport();
 
     if (settings.xml) {
-        stdLogger.reportErr(ErrorMessage::getXMLFooter());
+        stdLogger.reportErr(ErrorMessage::getXMLFooter(settings.xml_version));
     }
 
     if (settings.safety && stdLogger.hasCriticalErrors())
@@ -511,6 +511,11 @@ void StdLogger::writeCheckersReport()
         std::ofstream fout(mSettings.checkersReportFilename);
         if (fout.is_open())
             fout << checkersReport.getReport(mCriticalErrors);
+    }
+
+    if (mSettings.xml && mSettings.xml_version == 3) {
+        reportErr("    </errors>\n");
+        reportErr(checkersReport.getXmlReport(mCriticalErrors));
     }
 }
 

@@ -34,6 +34,7 @@ public:
     int getAllCheckersCount();
 
     std::string getReport(const std::string& criticalErrors) const;
+    std::string getXmlReport(const std::string& criticalErrors) const;
 
 private:
     const Settings& mSettings;
