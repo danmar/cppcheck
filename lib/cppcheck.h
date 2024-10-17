@@ -116,7 +116,7 @@ public:
      * @brief Returns current version number as a string.
      * @return version, e.g. "1.38"
      */
-    static const char * version();
+    RET_NONNULL static const char * version();
 
     /**
      * @brief Returns extra version info as a string.
@@ -124,7 +124,7 @@ public:
      * time/date etc.
      * @return extra version info, e.g. "04d42151" (Git commit id).
      */
-    static const char * extraVersion();
+    RET_NONNULL static const char * extraVersion();
 
     /**
      * @brief Call all "getErrorMessages" in all registered Check classes.
