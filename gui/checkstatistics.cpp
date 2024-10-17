@@ -113,5 +113,5 @@ QStringList CheckStatistics::getTools() const
     for (const QString& tool: mPerformance.keys()) ret.insert(tool);
     for (const QString& tool: mPortability.keys()) ret.insert(tool);
     for (const QString& tool: mError.keys()) ret.insert(tool);
-    return QStringList(ret.values());
+    return ret.values();
 }

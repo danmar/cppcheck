@@ -56,7 +56,7 @@ QString toFilterString(const QMap<QString,QString>& filters, bool addAllSupporte
 
     if (addAllSupported) {
         entries << QCoreApplication::translate("toFilterString", "All supported files (%1)")
-            .arg(QStringList(filters.values()).join(" "));
+            .arg(filters.values().join(" "));
     }
 
     if (addAll) {

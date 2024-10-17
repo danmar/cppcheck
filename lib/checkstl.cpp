@@ -340,7 +340,7 @@ void CheckStl::outOfBoundsIndexExpression()
 void CheckStl::outOfBoundsIndexExpressionError(const Token *tok, const Token *index)
 {
     const std::string varname = tok ? tok->str() : std::string("var");
-    const std::string i = index ? index->expressionString() : std::string(varname + ".size()");
+    const std::string i = index ? index->expressionString() : (varname + ".size()");
 
     std::string errmsg = "Out of bounds access of $symbol, index '" + i + "' is out of bounds.";
 

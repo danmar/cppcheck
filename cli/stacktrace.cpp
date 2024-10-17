@@ -65,7 +65,7 @@ void print_stacktrace(FILE* output, int start_idx, bool demangling, int maxdepth
         const char * const secondBracketAddress = strchr(firstBracketAddress, ']');
         const char * const beginAddress         = firstBracketAddress+3;
         const int addressLen = int(secondBracketAddress-beginAddress);
-        const int padLen     = int(ADDRESSDISPLAYLENGTH-addressLen);
+        const int padLen     = (ADDRESSDISPLAYLENGTH-addressLen);
         if (demangling && firstBracketName) {
             const char * const plus = strchr(firstBracketName, '+');
             if (plus && (plus>(firstBracketName+1))) {
