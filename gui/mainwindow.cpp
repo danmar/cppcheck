@@ -2018,7 +2018,7 @@ void MainWindow::editProjectFile()
     if (!mProjectFile) {
         QMessageBox msg(QMessageBox::Critical,
                         tr("Cppcheck"),
-                        QString(tr("No project file loaded")),
+                        tr("No project file loaded"),
                         QMessageBox::Ok,
                         this);
         msg.exec();
