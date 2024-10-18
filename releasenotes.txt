@@ -21,4 +21,5 @@ Deprecations:
 
 Other:
 - "missingInclude" is no longer implicitly enabled with "information" - you need to enable it explicitly now.
+- Removed deperecated support for builds via qmake.
 -
