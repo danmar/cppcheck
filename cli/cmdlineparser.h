@@ -154,6 +154,13 @@ private:
      */
     bool loadAddons(Settings& settings);
 
+    /**
+     * @brief Load macro file and set userDefines based on it
+     * @param path File path
+     * @return Returns true if successful
+     */
+    bool loadMacroFile(const std::string & path);
+
     bool loadCppcheckCfg();
 
     CmdLineLogger &mLogger;
