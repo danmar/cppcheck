@@ -927,7 +927,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             }
 
             // User macro file with multiple define statements in it
-            else if (std::strncmp(argv[i], "--macro-file=", 8) == 0) {
+            else if (std::strncmp(argv[i], "--macro-file=", 13) == 0) {
 
                 if (!loadMacroFile(13 + argv[i])) {
                     return Result::Fail;
