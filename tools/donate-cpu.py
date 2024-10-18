@@ -251,10 +251,10 @@ while True:
                 cmd = 'python3' + ' ' + os.path.join(path, 'tools', 'donate-cpu.py') + ' ' + '--version'
                 with subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, universal_newlines=True) as p:
                     try:
-                        comm = p.communicate()
-                        return comm[0].strip()
+                        stdout, _ = p.communicate()
                     except:
                         return None
+                return stdout.strip()
 
             client_version_head = get_client_version_head(tree_path)
         c, errout, info, t, cppcheck_options, timing_info = lib.scan_package(tree_path, source_path, libraries, capture_callstack)

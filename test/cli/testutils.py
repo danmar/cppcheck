@@ -119,7 +119,7 @@ def __run_subprocess(args, env=None, cwd=None, timeout=None):
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, cwd=cwd)
 
     try:
-        comm = p.communicate(timeout=timeout)
+        stdout, stderr = p.communicate(timeout=timeout)
         return_code = p.returncode
         p = None
     except subprocess.TimeoutExpired:
@@ -141,10 +141,9 @@ def __run_subprocess(args, env=None, cwd=None, timeout=None):
             # sending the signal to the process groups causes the parent Python process to terminate as well
             #os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
             p.terminate()
-            comm = p.communicate()
+            stdout, stderr = p.communicate()
+            p = None
 
-    stdout = comm[0]
-    stderr = comm[1]
     return return_code, stdout, stderr
 
 

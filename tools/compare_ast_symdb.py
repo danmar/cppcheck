@@ -15,8 +15,8 @@ def run_cppcheck(cppcheck_parameters:str, clang:str):
     cmd = '{} {} {} --debug --verbose'.format(CPPCHECK, cppcheck_parameters, clang)
     #print(cmd)
     with subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p:
-        comm = p.communicate()
-    return comm[0].decode('utf-8', 'ignore')
+        stdout, _ = p.communicate()
+    return stdout.decode('utf-8', 'ignore')
 
 
 def get_ast(debug):

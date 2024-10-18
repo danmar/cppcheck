@@ -403,13 +403,12 @@ def __run_command(cmd, print_cmd=True):
     if print_cmd:
         print(cmd)
     time_start = time.time()
-    comm = None
     if sys.platform == 'win32':
         p = subprocess.Popen(shlex.split(cmd, comments=False, posix=False), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, errors='surrogateescape')
     else:
         p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, errors='surrogateescape', preexec_fn=os.setsid)
     try:
-        comm = p.communicate(timeout=CPPCHECK_TIMEOUT)
+        stdout, stderr = p.communicate(timeout=CPPCHECK_TIMEOUT)
         return_code = p.returncode
         p = None
     except subprocess.TimeoutExpired:
@@ -422,16 +421,16 @@ def __run_command(cmd, print_cmd=True):
                 child.terminate()
             try:
                 # call with timeout since it might get stuck e.g. gcc-arm-none-eabi
-                comm = p.communicate(timeout=5)
+                stdout, stderr = p.communicate(timeout=5)
                 p = None
             except subprocess.TimeoutExpired:
                 pass
     finally:
         if p:
             os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
-            comm = p.communicate()
+            stdout, stderr = p.communicate()
+            p = None
     time_stop = time.time()
-    stdout, stderr = comm
     elapsed_time = time_stop - time_start
     return return_code, stdout, stderr, elapsed_time
 
