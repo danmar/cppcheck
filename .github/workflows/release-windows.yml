@@ -79,6 +79,7 @@ jobs:
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
           cmake --build build --target cppcheck-gui --config Release || exit /b !errorlevel!
 
+      # TODO: package PDBs
       - name: Deploy app
         run: |
           windeployqt build\bin\Release || exit /b !errorlevel!
@@ -107,17 +108,21 @@ jobs:
         run: |
           pip install -U pyinstaller || exit /b !errorlevel!
 
+      # TODO: include in installer?
       - name: Compile misra.py executable
         run: |
           cd addons || exit /b !errorlevel!
           pyinstaller --hidden-import xml --hidden-import xml.etree --hidden-import xml.etree.ElementTree misra.py || exit /b !errorlevel!
           del *.spec || exit /b !errorlevel!
 
+      # TODO: include in installer?
       - name: Compile cppcheck-htmlreport executable
         run: |
           cd htmlreport || exit /b !errorlevel!
           pyinstaller cppcheck-htmlreport || exit /b !errorlevel!
           del *.spec || exit /b !errorlevel!
+
+      # TODO: test the compiled Python files
 
       - name: Collect files
         run: |
