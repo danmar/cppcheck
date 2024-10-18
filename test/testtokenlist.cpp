@@ -35,10 +35,12 @@
 
 class TestTokenList : public TestFixture {
 public:
-    TestTokenList() : TestFixture("TestTokenList") {}
+    TestTokenList() : TestFixture("TestTokenList") {
+        settings.enforcedLang = Standards::Language::C;
+    }
 
 private:
-    const Settings settings;
+    /*const*/ Settings settings;
 
     void run() override {
         TEST_CASE(testaddtoken1);
@@ -59,7 +61,7 @@ private:
 
     void testaddtoken2() const {
         const std::string code = "0xF0000000";
-        /*const*/ Settings settings1;
+        /*const*/ Settings settings1 = settings;
         settings1.platform.int_bit = 32;
         TokenList tokenlist(&settings1);
         tokenlist.addtoken(code, 1, 1, false);
