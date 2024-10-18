@@ -166,6 +166,7 @@ SOURCES += $${PWD}/valueflow.cpp \
            $${PWD}/programmemory.cpp \
            $${PWD}/reverseanalyzer.cpp \
            $${PWD}/settings.cpp \
+           $${PWD}/standards.cpp \
            $${PWD}/summaries.cpp \
            $${PWD}/suppressions.cpp \
            $${PWD}/templatesimplifier.cpp \
