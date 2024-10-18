@@ -128,7 +128,8 @@ namespace {
         }
 
         void reportProgress(const std::string & /*filename*/, const char /*stage*/[], const std::size_t /*value*/) override
-        {}
+        {
+        }
     };
 }
 
@@ -321,11 +322,11 @@ bool CmdLineParser::loadMacroFile(const std::string &path) {
     while (std::getline(file, line)) {
         size_t pos = line.find("#define");
         if (pos != std::string::npos) {
-            
+
             // extract name and value
-            std::istringstream iss(line.substr(pos + 8));  
+            std::istringstream iss(line.substr(pos + 8));
             std::string name, value;
-            iss >> name >> value;  
+            iss >> name >> value;
 
             std::string rest;
             std::getline(iss, rest);
@@ -338,7 +339,7 @@ bool CmdLineParser::loadMacroFile(const std::string &path) {
 
     mSettings.userDefines += result.str();
 
-    return true;  
+    return true;
 }
 
 // TODO: normalize/simplify/native all path parameters
