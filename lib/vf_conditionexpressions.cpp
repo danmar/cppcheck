@@ -136,7 +136,6 @@ namespace ValueFlow
                 Token* parenTok = tok->next();
                 if (!Token::simpleMatch(parenTok->link(), ") {"))
                     continue;
-                Token * blockTok = parenTok->link()->tokAt(1);
                 const Token* condTok = parenTok->astOperand2();
                 if (condTok->exprId() == 0)
                     continue;
@@ -147,6 +146,7 @@ namespace ValueFlow
                 const bool isOp = condTok->isComparisonOp() || condTok->tokType() == Token::eLogicalOp;
                 const bool is1 = isOp || astIsBool(condTok);
 
+                Token * blockTok = parenTok->link()->tokAt(1);
                 Token* startTok = blockTok;
                 // Inner condition
                 {
@@ -163,6 +163,8 @@ namespace ValueFlow
                 }
 
                 std::vector<const Token*> conds = getConditions(condTok, "||");
+                if (conds.empty())
+                    continue;
 
                 // Check else block
                 if (Token::simpleMatch(startTok->link(), "} else {")) {

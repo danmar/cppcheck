@@ -57,12 +57,14 @@ namespace ValueFlow
             const Library::Container::Yield yield = findIteratorYield(tok, ftok, settings);
             if (!ftok)
                 continue;
-            Value v(0);
-            v.setKnown();
             if (yield == Library::Container::Yield::START_ITERATOR) {
+                Value v(0);
+                v.setKnown();
                 v.valueType = Value::ValueType::ITERATOR_START;
                 setTokenValue(const_cast<Token*>(ftok)->next(), std::move(v), settings);
             } else if (yield == Library::Container::Yield::END_ITERATOR) {
+                Value v(0);
+                v.setKnown();
                 v.valueType = Value::ValueType::ITERATOR_END;
                 setTokenValue(const_cast<Token*>(ftok)->next(), std::move(v), settings);
             }
