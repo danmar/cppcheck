@@ -524,11 +524,6 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedGlobalSuppr
     return result;
 }
 
-const std::list<SuppressionList::Suppression> &SuppressionList::getSuppressions() const
-{
-    return mSuppressions;
-}
-
 void SuppressionList::markUnmatchedInlineSuppressionsAsChecked(const Tokenizer &tokenizer) {
     int currLineNr = -1;
     int currFileIdx = -1;

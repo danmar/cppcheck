@@ -117,29 +117,34 @@ public:
     int appendFileIfNew(std::string fileName);
 
     /** get first token of list */
-    const Token *front() const {
+    const Token *front() const & {
         return mTokensFrontBack.front;
     }
     // NOLINTNEXTLINE(readability-make-member-function-const) - do not allow usage of mutable pointer from const object
-    Token *front() {
+    Token *front() & {
         return mTokensFrontBack.front;
     }
+    Token *front() && = delete;
 
     /** get last token of list */
-    const Token *back() const {
+    const Token *back() const & {
         return mTokensFrontBack.back;
     }
     // NOLINTNEXTLINE(readability-make-member-function-const) - do not allow usage of mutable pointer from const object
-    Token *back() {
+    Token *back() & {
         return mTokensFrontBack.back;
     }
+    Token *back() && = delete;
 
     /**
      * Get filenames (the sourcefile + the files it include).
      * The first filename is the filename for the sourcefile
      * @return vector with filenames
      */
-    const std::vector<std::string>& getFiles() const {
+    const std::vector<std::string>& getFiles() const & {
+        return mFiles;
+    }
+    std::vector<std::string> getFiles() && {
         return mFiles;
     }
 

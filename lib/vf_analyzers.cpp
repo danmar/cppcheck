@@ -882,7 +882,7 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
                 return &mIt->second;
             }
 
-            Iterator &operator++() {
+            Iterator &operator++() & {
                 // cppcheck-suppress postfixOperator - forward iterator needs to perform post-increment
                 mIt++;
                 return *this;
@@ -926,7 +926,10 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
         }
     }
 
-    virtual const std::unordered_map<nonneg int, const Variable*>& getVars() const {
+    virtual const std::unordered_map<nonneg int, const Variable*>& getVars() const & {
+        return vars;
+    }
+    virtual std::unordered_map<nonneg int, const Variable*> getVars() && {
         return vars;
     }
 
@@ -1073,11 +1076,17 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
 
     SingleValueFlowAnalyzer(ValueFlow::Value v, const Settings& s) : ValueFlowAnalyzer(s), value(std::move(v)) {}
 
-    const std::unordered_map<nonneg int, const Variable*>& getVars() const {
+    const std::unordered_map<nonneg int, const Variable*>& getVars() const & {
+        return varids;
+    }
+    std::unordered_map<nonneg int, const Variable*> getVars() && {
         return varids;
     }
 
-    const std::unordered_map<nonneg int, const Variable*>& getAliasedVars() const {
+    const std::unordered_map<nonneg int, const Variable*>& getAliasedVars() const & {
+        return aliases;
+    }
+    std::unordered_map<nonneg int, const Variable*> getAliasedVars() && {
         return aliases;
     }
 
