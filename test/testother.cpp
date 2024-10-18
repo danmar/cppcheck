@@ -177,6 +177,7 @@ private:
         TEST_CASE(duplicateExpression15); // #10650
         TEST_CASE(duplicateExpression16); // #10569
         TEST_CASE(duplicateExpression17); // #12036
+        TEST_CASE(duplicateExpression18);
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
@@ -7489,6 +7490,24 @@ private:
               "void f() {\n"
               "    static_assert(std::is_same<T, U>::value || std::is_integral<T>::value);\n"
               "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void duplicateExpression18() {
+        checkP("#if defined(ABC)\n" // #13218
+               "#define MACRO1 (0x1)\n"
+               "#else\n"
+               "#define MACRO1 (0)\n"
+               "#endif\n"
+               "#if defined(XYZ)\n"
+               "#define MACRO2 (0x2)\n"
+               "#else\n"
+               "#define MACRO2 (0)\n"
+               "#endif\n"
+               "#define MACRO_ALL (MACRO1 | MACRO2)\n"
+               "void f() {\n"
+               "    if (MACRO_ALL == 0) {}\n"
+               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
