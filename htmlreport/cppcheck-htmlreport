@@ -653,7 +653,7 @@ def main() -> None:
         sys.argv[1]
     except IndexError:  # no arguments give, print --help
         parser.print_help()
-        quit()
+        sys.exit(0)
 
     if not options.report_dir:
         parser.error('No report directory set.')

@@ -17,7 +17,7 @@ def validate_regex(expr):
         re.compile(expr)
     except re.error:
         print('Error: "{}" is not a valid regular expression.'.format(expr))
-        exit(1)
+        sys.exit(1)
 
 
 RE_VARNAME = None
