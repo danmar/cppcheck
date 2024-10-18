@@ -1439,6 +1439,9 @@ private:
     /** Internal helper function to avoid excessive string allocations */
     void astStringVerboseRecursive(std::string& ret, nonneg int indent1 = 0, nonneg int indent2 = 0) const;
 
+    bool mIsC : 1;
+    bool mIsCpp : 1;
+
 public:
     void astOperand1(Token *tok);
     void astOperand2(Token *tok);
@@ -1548,9 +1551,15 @@ public:
         mImpl->mDebug = td;
     }
 
-    bool isCpp() const;
+    bool isCpp() const
+    {
+        return mIsCpp;
+    }
 
-    bool isC() const;
+    bool isC() const
+    {
+        return mIsC;
+    }
 };
 
 Token* findTypeEnd(Token* tok);

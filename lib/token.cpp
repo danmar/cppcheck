@@ -57,8 +57,10 @@ namespace {
 
 const std::list<ValueFlow::Value> TokenImpl::mEmptyValueList;
 
-Token::Token(TokensFrontBack &tokensFrontBack) :
-    mTokensFrontBack(tokensFrontBack)
+Token::Token(TokensFrontBack &tokensFrontBack)
+    : mTokensFrontBack(tokensFrontBack)
+    , mIsC(mTokensFrontBack.list.isC())
+    , mIsCpp(mTokensFrontBack.list.isCPP())
 {
     mImpl = new TokenImpl();
 }
@@ -2651,16 +2653,6 @@ Token* findLambdaEndScope(Token* tok)
 }
 const Token* findLambdaEndScope(const Token* tok) {
     return findLambdaEndScope(const_cast<Token*>(tok));
-}
-
-bool Token::isCpp() const
-{
-    return mTokensFrontBack.list.isCPP();
-}
-
-bool Token::isC() const
-{
-    return mTokensFrontBack.list.isC();
 }
 
 const std::string& Token::fileName() const {
