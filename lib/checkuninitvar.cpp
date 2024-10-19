@@ -916,7 +916,7 @@ bool CheckUninitVar::checkIfForWhileHead(const Token *startparentheses, const Va
 }
 
 /** recursively check loop, return error token */
-const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Variable& var, const Alloc alloc, const std::string &membervar, bool &bailout) const
+const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Variable& var, const Alloc alloc, const std::string &membervar, bool &bailout, bool &alwaysReturns) const
 {
     assert(start->str() == "{");
 
@@ -941,9 +941,10 @@ const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Va
             if (!Token::simpleMatch(top->previous(), "for (") || !Token::simpleMatch(top->link(), ") {"))
                 continue;
             const Token *bodyStart = top->link()->next();
-            const Token *errorToken1 = checkLoopBodyRecursive(bodyStart, var, alloc, membervar, bailout);
+            const Token *errorToken1 = checkLoopBodyRecursive(bodyStart, var, alloc, membervar, bailout, alwaysReturns);
             if (!errorToken)
                 errorToken = errorToken1;
+            bailout |= alwaysReturns;
             if (bailout)
                 return nullptr;
         }
@@ -962,11 +963,12 @@ const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Va
                 return nullptr;
             }
 
-            const Token *errorToken1 = checkLoopBodyRecursive(tok, var, alloc, membervar, bailout);
+            bool alwaysReturnsUnused;
+            const Token *errorToken1 = checkLoopBodyRecursive(tok, var, alloc, membervar, bailout, alwaysReturnsUnused);
             tok = tok->link();
             if (Token::simpleMatch(tok, "} else {")) {
                 const Token *elseBody = tok->tokAt(2);
-                const Token *errorToken2 = checkLoopBodyRecursive(elseBody, var, alloc, membervar, bailout);
+                const Token *errorToken2 = checkLoopBodyRecursive(elseBody, var, alloc, membervar, bailout, alwaysReturnsUnused);
                 tok = elseBody->link();
                 if (errorToken1 && errorToken2)
                     return errorToken1;
@@ -978,6 +980,23 @@ const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Va
             if (!errorToken)
                 errorToken = errorToken1;
         }
+
+        if (Token::simpleMatch(tok, "return")) {
+            bool returnWithoutVar = true;
+            while (tok && !Token::simpleMatch(tok, ";")) {
+                if (tok->isVariable() && tok->variable() == &var) {
+                    returnWithoutVar = false;
+                    break;
+                }
+                tok = tok->next();
+            }
+            if (returnWithoutVar) {
+                alwaysReturns = true;
+                return nullptr;
+            }
+        }
+        if (!tok)
+            break;
 
         if (tok->varId() != var.declarationId())
             continue;
@@ -1068,9 +1087,10 @@ const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Va
 bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const Alloc alloc, const std::string &membervar, const bool suppressErrors)
 {
     bool bailout = false;
-    const Token *errorToken = checkLoopBodyRecursive(tok, var, alloc, membervar, bailout);
+    bool alwaysReturns = false;
+    const Token *errorToken = checkLoopBodyRecursive(tok, var, alloc, membervar, bailout, alwaysReturns);
 
-    if (!suppressErrors && !bailout && errorToken) {
+    if (!suppressErrors && !bailout && !alwaysReturns && errorToken) {
         if (membervar.empty())
             uninitvarError(errorToken, errorToken->expressionString(), alloc);
         else
@@ -1078,7 +1098,7 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
         return true;
     }
 
-    return bailout;
+    return bailout || alwaysReturns;
 }
 
 void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, Alloc alloc, nonneg int number_of_if, const std::string &membervar)

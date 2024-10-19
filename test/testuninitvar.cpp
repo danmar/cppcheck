@@ -57,6 +57,7 @@ private:
         TEST_CASE(uninitvar3);          // #3844
         TEST_CASE(uninitvar4);          // #3869 (reference)
         TEST_CASE(uninitvar5);          // #3861
+        TEST_CASE(uninitvar6);          // #13227
         TEST_CASE(uninitvar2_func);     // function calls
         TEST_CASE(uninitvar2_value);    // value flow
         TEST_CASE(valueFlowUninit2_value);
@@ -3069,6 +3070,22 @@ private:
                        "    char a = c << 2;\n"
                        "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: c\n", errout_str());
+    }
+
+    // #13227
+    void uninitvar6() {
+        checkUninitVar("int foo(int x) {\n"
+                       "    int i;\n"
+                       "    if (x == 1) {\n"
+                       "        i = 3;\n"
+                       "    } else {\n"
+                       "        do {\n"
+                       "            return 2;\n"
+                       "        } while (0);\n"
+                       "    }\n"
+                       "    return i;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void uninitvar8() {

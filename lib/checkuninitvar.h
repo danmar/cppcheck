@@ -96,7 +96,7 @@ private:
     const Token* checkExpr(const Token* tok, const Variable& var, Alloc alloc, bool known, bool* bailout = nullptr) const;
     bool checkIfForWhileHead(const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, Alloc alloc, const std::string &membervar);
     bool checkLoopBody(const Token *tok, const Variable& var, Alloc alloc, const std::string &membervar, bool suppressErrors);
-    const Token* checkLoopBodyRecursive(const Token *start, const Variable& var, Alloc alloc, const std::string &membervar, bool &bailout) const;
+    const Token* checkLoopBodyRecursive(const Token *start, const Variable& var, Alloc alloc, const std::string &membervar, bool &bailout, bool &alwaysReturns) const;
     void checkRhs(const Token *tok, const Variable &var, Alloc alloc, nonneg int number_of_if, const std::string &membervar);
     static int isFunctionParUsage(const Token *vartok, const Library &library, bool pointer, Alloc alloc, int indirect = 0);
     int isFunctionParUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect = 0) const;
