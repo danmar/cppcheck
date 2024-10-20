@@ -194,7 +194,7 @@ def cppcheck_ex(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_
     if 'TEST_CPPCHECK_INJECT_BUILDDIR' in os.environ:
         found_builddir = False
         for arg in args:
-            if arg.startswith('--cppcheck-build-dir='):
+            if arg.startswith('--cppcheck-build-dir=') or arg == '--no-cppcheck-build-dir':
                 found_builddir = True
                 break
         if not found_builddir:
