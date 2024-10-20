@@ -436,6 +436,9 @@ private:
         TEST_CASE(cppcheckBuildDirExistent);
         TEST_CASE(cppcheckBuildDirNonExistent);
         TEST_CASE(cppcheckBuildDirEmpty);
+        TEST_CASE(cppcheckBuildDirMultiple);
+        TEST_CASE(noCppcheckBuildDir);
+        TEST_CASE(noCppcheckBuildDir2);
 
         TEST_CASE(invalidCppcheckCfg);
     }
@@ -2962,20 +2965,44 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--cppcheck-build-dir=.", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(".", settings->buildDir);
     }
 
     void cppcheckBuildDirNonExistent() {
         REDIRECT;
-        const char * const argv[] = {"cppcheck", "--cppcheck-build-dir=non-existent-path"};
-        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
+        const char * const argv[] = {"cppcheck", "--cppcheck-build-dir=non-existent-path", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: Directory 'non-existent-path' specified by --cppcheck-build-dir argument has to be existent.\n", logger->str());
     }
 
     void cppcheckBuildDirEmpty() {
         REDIRECT;
-        const char * const argv[] = {"cppcheck", "--cppcheck-build-dir="};
-        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(2, argv));
-        ASSERT_EQUALS("cppcheck: error: Directory '' specified by --cppcheck-build-dir argument has to be existent.\n", logger->str());
+        const char * const argv[] = {"cppcheck", "--cppcheck-build-dir=", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: no path has been specified for --cppcheck-build-dir\n", logger->str());
+    }
+
+    void cppcheckBuildDirMultiple() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--cppcheck-build-dir=non-existent-path", "--cppcheck-build-dir=.", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS(".", settings->buildDir);
+    }
+
+    void noCppcheckBuildDir()
+    {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--no-cppcheck-build-dir", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT(settings->buildDir.empty());
+    }
+
+    void noCppcheckBuildDir2()
+    {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--cppcheck-build-dir=b1", "--no-cppcheck-build-dir", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT(settings->buildDir.empty());
     }
 
     void invalidCppcheckCfg() {
