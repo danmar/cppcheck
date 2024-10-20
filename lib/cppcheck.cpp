@@ -464,7 +464,8 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
     if (!mSettings.buildDir.empty()) {
         std::ofstream fout(clangcmd);
         fout << exe << " " << args2 << " " << redirect2 << std::endl;
-    } else if (mSettings.verbose && !mSettings.quiet) {
+    }
+    if (mSettings.verbose && !mSettings.quiet) {
         mErrorLogger.reportOut(exe + " " + args2);
     }
 
