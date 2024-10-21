@@ -52,7 +52,6 @@ disable=
         consider-using-in,
         too-many-nested-blocks,
         too-many-public-methods,
-        consider-using-sys-exit,
         chained-comparison,
         too-many-instance-attributes,
         too-many-boolean-expressions,
