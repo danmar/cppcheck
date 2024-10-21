@@ -3134,6 +3134,21 @@ static std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const
         return openHeaderIncludePath(f, dui, header);
     return ret;
 }
+static bool IsFileExists(const std::string& simplePath)
+{
+	if (simplePath.empty())
+	{
+		return false;
+	}
+
+	std::ifstream ifs(simplePath);
+	if (ifs.good())
+	{
+		return true;
+	}
+
+	return false;
+}
 
 static std::string getFileName(const std::map<std::string, simplecpp::TokenList *> &filedata, const std::string &sourcefile, const std::string &header, const simplecpp::DUI &dui, bool systemheader)
 {
@@ -3144,11 +3159,18 @@ static std::string getFileName(const std::map<std::string, simplecpp::TokenList 
         return (filedata.find(header) != filedata.end()) ? simplecpp::simplifyPath(header) : "";
     }
 
-    if (!systemheader) {
-        const std::string relativeFilename = getRelativeFileName(sourcefile, header);
-        if (filedata.find(relativeFilename) != filedata.end())
-            return relativeFilename;
-    }
+	if (!systemheader) {
+		const std::string relativeFilename = getRelativeFileName(sourcefile, header);
+		if (filedata.find(relativeFilename) != filedata.end())
+			return relativeFilename;
+
+		// If relativeFilename is not found in filedata, check if it exists on disk
+		// If the file exists, load it
+		if (IsFileExists(relativeFilename))
+		{
+			return "";
+		}
+	}
 
     for (std::list<std::string>::const_iterator it = dui.includePaths.begin(); it != dui.includePaths.end(); ++it) {
         std::string s = simplecpp::simplifyPath(getIncludePathFileName(*it, header));

@@ -6158,7 +6158,7 @@ void Tokenizer::dump(std::ostream &out) const
             }
             containers.insert(tok->valueType()->container);
         }
-        if (!tok->varId() && tok->scope()->isExecutable() && Token::Match(tok, "%name% (")) {
+        if (!tok->varId() && tok->scope() && tok->scope()->isExecutable() && Token::Match(tok, "%name% (")) {
             if (mSettings.library.isnoreturn(tok))
                 outs += " noreturn=\"true\"";
         }
