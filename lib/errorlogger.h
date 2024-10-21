@@ -142,8 +142,8 @@ public:
      */
     std::string toXML() const;
 
-    static std::string getXMLHeader(std::string productName, int _xmlVersion = 2);
-    static std::string getXMLFooter(int _xmlVersion = 2);
+    static std::string getXMLHeader(std::string productName, int xmlVersion = 2);
+    static std::string getXMLFooter(int xmlVersion = 2);
 
     /**
      * Format the error message into a string.

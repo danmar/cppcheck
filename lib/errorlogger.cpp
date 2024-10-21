@@ -423,7 +423,7 @@ void ErrorMessage::deserialize(const std::string &data)
     }
 }
 
-std::string ErrorMessage::getXMLHeader(std::string productName, int _xmlVersion)
+std::string ErrorMessage::getXMLHeader(std::string productName, int xmlVersion)
 {
     const auto nameAndVersion = Settings::getNameAndVersion(productName);
     productName = nameAndVersion.first;
@@ -437,7 +437,7 @@ std::string ErrorMessage::getXMLHeader(std::string productName, int _xmlVersion)
     // header
     printer.OpenElement("results", false);
 
-    printer.PushAttribute("version", _xmlVersion);
+    printer.PushAttribute("version", xmlVersion);
     printer.OpenElement("cppcheck", false);
     if (!productName.empty())
         printer.PushAttribute("product-name", productName.c_str());
@@ -448,9 +448,9 @@ std::string ErrorMessage::getXMLHeader(std::string productName, int _xmlVersion)
     return std::string(printer.CStr()) + '>';
 }
 
-std::string ErrorMessage::getXMLFooter(int _xmlVersion)
+std::string ErrorMessage::getXMLFooter(int xmlVersion)
 {
-    return _xmlVersion == 3? "</results>" : "    </errors>\n</results>";
+    return xmlVersion == 3? "</results>" : "    </errors>\n</results>";
 }
 
 // There is no utf-8 support around but the strings should at least be safe for to tinyxml2.
