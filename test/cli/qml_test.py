@@ -35,7 +35,7 @@ def __test_unused_functions(extra_args):
 
 
 def test_unused_functions():
-    __test_unused_functions(['-j1'])
+    __test_unused_functions(['-j1', '--no-cppcheck-build-dir'])
 
 
 def test_unused_functions_j():
@@ -45,6 +45,7 @@ def test_unused_functions_j():
         '--library=qt',
         '--enable=unusedFunction',
         '-j2',
+        '--no-cppcheck-build-dir',
         __project_dir
     ]
     ret, stdout, stderr = cppcheck(args)
