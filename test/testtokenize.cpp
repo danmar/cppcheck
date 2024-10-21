@@ -7216,6 +7216,8 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify("class A { bool restrict() const; };\n"
                                              "bool A::restrict() const { return true; }")); // #12718
 
+        ASSERT_NO_THROW(tokenizeAndStringify("enum { E = sizeof(struct { int i; }) };")); // #13249
+
         ignore_errout();
     }
 

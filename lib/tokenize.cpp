@@ -8619,6 +8619,10 @@ void Tokenizer::findGarbageCode() const
                 syntaxError(tok->tokAt(2), "Unexpected token '" + tok->strAt(2) + "'");
             if (const Token* start = SymbolDatabase::isEnumDefinition(tok)) {
                 for (const Token* tok2 = start->next(); tok2 && tok2 != start->link(); tok2 = tok2->next()) {
+                    if (Token::simpleMatch(tok2, "sizeof (")) {
+                        tok2 = tok2->linkAt(1);
+                        continue;
+                    }
                     if (tok2->str() == ";")
                         syntaxError(tok2);
                 }
