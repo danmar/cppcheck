@@ -387,7 +387,7 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger& errorLogger,
 }
 
 CheckUnusedFunctions::FunctionDecl::FunctionDecl(const Function *f)
-    : functionName(f->name()), lineNumber(f->token->linenr())
+    : functionName(f->name()), fileName(f->token->fileName()), lineNumber(f->token->linenr())
 {}
 
 std::string CheckUnusedFunctions::analyzerInfo() const
@@ -395,6 +395,7 @@ std::string CheckUnusedFunctions::analyzerInfo() const
     std::ostringstream ret;
     for (const FunctionDecl &functionDecl : mFunctionDecl) {
         ret << "    <functiondecl"
+            << " file=\"" << ErrorLogger::toxml(functionDecl.fileName) << '\"'
             << " functionName=\"" << ErrorLogger::toxml(functionDecl.functionName) << '\"'
             << " lineNumber=\"" << functionDecl.lineNumber << "\"/>\n";
     }
@@ -458,8 +459,9 @@ void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLo
                 if (std::strcmp(name,"functiondecl") == 0) {
                     const char* lineNumber = e2->Attribute("lineNumber");
                     if (lineNumber) {
+                        const char* file = e2->Attribute("file");
                         // cppcheck-suppress templateInstantiation - TODO: fix this - see #11631
-                        decls[functionName] = Location(sourcefile, strToInt<int>(lineNumber));
+                        decls[functionName] = Location(file ? file : sourcefile, strToInt<int>(lineNumber));
                     }
                 }
             }

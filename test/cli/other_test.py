@@ -784,7 +784,7 @@ typedef int MISRA_5_6_VIOLATION;
 
 # TODO: test with -j2
 # #11483
-def test_unused_function_include(tmpdir):
+def __test_unused_function_include(tmpdir, extra_args):
     test_cpp_file = os.path.join(tmpdir, 'test.cpp')
     with open(test_cpp_file, 'wt') as f:
         f.write("""
@@ -802,10 +802,29 @@ def test_unused_function_include(tmpdir):
                 };
                 """)
 
-    args = ['--enable=unusedFunction', '--inline-suppr', '--template=simple', '-j1', test_cpp_file]
+    args = [
+        '--enable=unusedFunction',
+        '--inline-suppr',
+        '--template=simple',
+        '-j1',
+        test_cpp_file
+    ]
+
+    args += extra_args
 
     _, _, stderr = cppcheck(args)
     assert stderr == "{}:4:0: style: The function 'f' is never used. [unusedFunction]\n".format(test_h_file)
+
+
+def test_unused_function_include(tmpdir):
+    __test_unused_function_include(tmpdir, [])
+
+
+# TODO: remove when we inject builddir
+def test_unused_function_include_builddir(tmpdir):
+    builddir = os.path.join(tmpdir, 'injected')
+    os.makedirs(builddir)
+    __test_unused_function_include(tmpdir, ['--cppcheck-build-dir={}'.format(builddir)])
 
 
 # TODO: test with all other types

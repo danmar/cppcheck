@@ -2662,3 +2662,7 @@ bool Token::isC() const
 {
     return mTokensFrontBack.list.isC();
 }
+
+const std::string& Token::fileName() const {
+    return mTokensFrontBack.list.getFiles()[mImpl->mFileIndex];
+}

@@ -84,6 +84,7 @@ private:
     public:
         explicit FunctionDecl(const Function *f);
         std::string functionName;
+        std::string fileName;
         unsigned int lineNumber;
     };
     std::list<FunctionDecl> mFunctionDecl;
