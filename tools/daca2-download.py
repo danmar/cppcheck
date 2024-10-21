@@ -41,9 +41,8 @@ def getpackages():
     if not wget('ls-lR.gz'):
         return []
     subprocess.call(['nice', 'gunzip', 'ls-lR.gz'])
-    f = open('ls-lR', 'rt')
-    lines = f.readlines()
-    f.close()
+    with open('ls-lR', 'rt') as f:
+        lines = f.readlines()
     subprocess.call(['rm', 'ls-lR'])
 
     path = None
