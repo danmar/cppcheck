@@ -1724,6 +1724,7 @@ void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
         (*it)->getErrorMessages(&errorlogger, &s);
 
     CheckUnusedFunctions::getErrorMessages(errorlogger);
+    s.addEnabled("missingInclude");
     Preprocessor::getErrorMessages(errorlogger, s);
 }
 
