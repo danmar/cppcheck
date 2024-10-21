@@ -220,8 +220,11 @@ def test_addon_rerun(tmp_path, builddir):
         '--enable=style',
         '--template={id}',
         'whole-program']
+    # do not use the injection because the directory needs to survive runs
     if builddir:
         args.append('--cppcheck-build-dir=' + str(tmp_path))
+    else:
+        args.append('--no-cppcheck-build-dir')
     _, _, stderr = cppcheck(args, cwd=__script_dir)
     assert 'misra-c2012-5.8' in stderr
     _, _, stderr = cppcheck(args, cwd=__script_dir)
@@ -293,10 +296,9 @@ def test_checkclass():
     __test_checkclass(['-j1'])
 
 
-# whole program analysis requires a build dir with -j
-@pytest.mark.xfail(strict=True)
+@pytest.mark.xfail(strict=True) # TODO: check error
 def test_checkclass_j():
-    __test_checkclass(['-j2'])
+    __test_checkclass(['-j2', '--no-cppcheck-build-dir'])
 
 
 def test_checkclass_builddir(tmpdir):
@@ -304,6 +306,11 @@ def test_checkclass_builddir(tmpdir):
     os.mkdir(build_dir)
     __test_checkclass(['--cppcheck-build-dir={}'.format(build_dir)])
 
+
+def test_checkclass_builddir_j(tmpdir):
+    build_dir = os.path.join(tmpdir, 'b1')
+    os.mkdir(build_dir)
+    __test_checkclass(['-j2', '--cppcheck-build-dir={}'.format(build_dir)])
 
 def __test_checkclass_project(tmpdir, extra_args):
     odr_file_1 = os.path.join(__script_dir, 'whole-program', 'odr1.cpp')
@@ -336,10 +343,9 @@ def test_checkclass_project(tmpdir):
     __test_checkclass_project(tmpdir, ['-j1'])
 
 
-# whole program analysis requires a build dir with -j
-@pytest.mark.xfail(strict=True)
+@pytest.mark.xfail(strict=True) # TODO: check error
 def test_checkclass_project_j(tmpdir):
-    __test_checkclass_project(tmpdir, ['-j2'])
+    __test_checkclass_project(tmpdir, ['-j2', '--no-cppcheck-build-dir'])
 
 
 def test_checkclass_project_builddir(tmpdir):
@@ -347,3 +353,8 @@ def test_checkclass_project_builddir(tmpdir):
     os.mkdir(build_dir)
     __test_checkclass_project(tmpdir, ['-j1', '--cppcheck-build-dir={}'.format(build_dir)])
 
+
+def test_checkclass_project_builddir_j(tmpdir):
+    build_dir = os.path.join(tmpdir, 'b1')
+    os.mkdir(build_dir)
+    __test_checkclass_project(tmpdir, ['-j2', '--cppcheck-build-dir={}'.format(build_dir)])

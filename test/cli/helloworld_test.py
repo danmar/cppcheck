@@ -291,24 +291,25 @@ def test_checkers_report(tmpdir):
     filename = os.path.join(tmpdir, '1.txt')
     args = [
         f'--checkers-report={filename}',
+        '--no-cppcheck-build-dir',  # TODO: remove this
         'helloworld'
     ]
 
     cppcheck(args, cwd=__script_dir)
 
     with open(filename, 'rt') as f:
-        data = f.read()
-        assert 'No   CheckAutoVariables::assignFunctionArg' in data
-        assert 'Yes  CheckAutoVariables::autoVariables' in data
+        data = f.read().splitlines()
+        assert 'No   CheckAutoVariables::assignFunctionArg                     require:style,warning' in data, json.dumps(data, indent=4)
+        assert 'Yes  CheckAutoVariables::autoVariables' in data, json.dumps(data, indent=4)
 
     args += [
         '--enable=style'
     ]
     cppcheck(args, cwd=__script_dir)
     with open(filename, 'rt') as f:
-        data = f.read()
+        data = f.read().splitlines()
         # checker has been activated by --enable=style
-        assert 'Yes  CheckAutoVariables::assignFunctionArg' in data
+        assert 'Yes  CheckAutoVariables::assignFunctionArg' in data, json.dumps(data, indent=4)
 
 
 def test_missing_include_system():  # #11283
