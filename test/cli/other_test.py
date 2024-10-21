@@ -820,13 +820,6 @@ def test_unused_function_include(tmpdir):
     __test_unused_function_include(tmpdir, [])
 
 
-# TODO: remove when we inject builddir
-def test_unused_function_include_builddir(tmpdir):
-    builddir = os.path.join(tmpdir, 'injected')
-    os.makedirs(builddir)
-    __test_unused_function_include(tmpdir, ['--cppcheck-build-dir={}'.format(builddir)])
-
-
 # TODO: test with all other types
 def test_showtime_top5_file(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
