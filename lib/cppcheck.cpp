@@ -1713,6 +1713,8 @@ void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
     s.severity.enable(Severity::performance);
     s.severity.enable(Severity::information);
 
+    s.addEnabled("all");
+
     CppCheck cppcheck(errorlogger, true, nullptr);
     cppcheck.purgedConfigurationMessage(emptyString,emptyString);
     cppcheck.mTooManyConfigs = true;
@@ -1724,7 +1726,6 @@ void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
         (*it)->getErrorMessages(&errorlogger, &s);
 
     CheckUnusedFunctions::getErrorMessages(errorlogger);
-    s.addEnabled("missingInclude");
     Preprocessor::getErrorMessages(errorlogger, s);
 }
 
