@@ -285,10 +285,10 @@ std::string CheckersReport::getXmlReport(const std::string& criticalErrors) cons
 {
     std::string ret;
 
-    ret += "    <critical-errors>";
-    if (!criticalErrors.empty())
-        ret += criticalErrors + "\n";
-    ret += "</critical-errors>\n";
+    if (!criticalErrors.empty()) {
+        ret += "    <critical-errors>" + criticalErrors + "\n    </critical-errors>\n";
+    } else
+        ret += "    <critical-errors/>\n";
     ret += "    <checkers-report>\n";
 
     const bool cppcheckPremium = isCppcheckPremium(mSettings);
@@ -299,12 +299,11 @@ std::string CheckersReport::getXmlReport(const std::string& criticalErrors) cons
                              const std::set<std::string>& activeCheckers,
                              const std::map<std::string, std::string>& premiumCheckers,
                              const std::string& substring) {
-        ret += "        <" + title + ">";
         if (!cppcheckPremium) {
-            ret += "Not available, Cppcheck Premium is not used</" + title + ">\n";
+            ret += "<" + title + "/>\n";
             return;
         }
-        ret += "\n";
+        ret += "        <" + title + ">\n";
         for (const auto& checkReq: premiumCheckers) {
             const std::string& checker = checkReq.first;
             if (checker.find(substring) == std::string::npos)
@@ -320,7 +319,7 @@ std::string CheckersReport::getXmlReport(const std::string& criticalErrors) cons
                 else if (!checkReq.second.empty())
                     active = false; // FIXME: handle req
             }
-            ret += "            <checker active=\"" + static_cast<std::string>(active ? "Yes" : "No") + "\" id=\"" + checker + "\"";
+            ret += "            <checker active=\"" + std::string(active ? "Yes" : "No") + "\" id=\"" + checker + "\"";
             ret += "/>\n";
         }
         ret += "        </" + title + ">\n";
@@ -340,21 +339,21 @@ std::string CheckersReport::getXmlReport(const std::string& criticalErrors) cons
         misra = 2012;
 
     if (misra == 0) {
-        ret += "        <misra-c> Misra is not enabled </misra-c>\n";
+        ret += "        <misra-c/>\n";
     } else {
         ret += "        <misra-c-" + std::to_string(misra) + ">\n";
         for (const checkers::MisraInfo& info: checkers::misraC2012Directives) {
             const std::string directive = "Dir " + std::to_string(info.a) + "." + std::to_string(info.b);
             const bool active = isMisraRuleActive(mActiveCheckers, directive);
             ret += "            <checker active=\"";
-            ret += static_cast<std::string>(active ? "Yes" : "No") + "\" id=\"Misra C " + std::to_string(misra) + ": " + directive + "\"";
+            ret += std::string(active ? "Yes" : "No") + "\" id=\"Misra C " + std::to_string(misra) + ": " + directive + "\"";
             ret += "/>\n";
         }
         for (const checkers::MisraInfo& info: checkers::misraC2012Rules) {
             const std::string rule = std::to_string(info.a) + "." + std::to_string(info.b);
             const bool active = isMisraRuleActive(mActiveCheckers, rule);
             ret += "            <checker active=\"";
-            ret += static_cast<std::string>(active ? "Yes" : "No") + "\" id=\"Misra C " + std::to_string(misra) + ": " + rule + "\"";
+            ret += std::string(active ? "Yes" : "No") + "\" id=\"Misra C " + std::to_string(misra) + ": " + rule + "\"";
             ret += "/>\n";
         }
         ret += "        </misra-c-" + std::to_string(misra) + ">\n";

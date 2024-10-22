@@ -5,7 +5,6 @@ import os
 import sys
 import pytest
 import json
-import xml.etree.ElementTree as ET
 
 from testutils import cppcheck, assert_cppcheck, cppcheck_ex
 
