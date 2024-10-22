@@ -781,7 +781,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
         // Get configurations..
         std::set<std::string> configurations;
-        if ((mSettings.checkAllConfigurations && mSettings.userDefines.empty()) || mSettings.force) {
+        if ((mSettings.checkAllConfigurations && mSettings.maxConfigs > 1) || mSettings.force) {
             Timer::run("Preprocessor::getConfigs", mSettings.showtime, &s_timerResults, [&]() {
                 configurations = preprocessor.getConfigs(tokens1);
             });
