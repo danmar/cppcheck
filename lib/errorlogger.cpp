@@ -450,7 +450,7 @@ std::string ErrorMessage::getXMLHeader(std::string productName, int xmlVersion)
 
 std::string ErrorMessage::getXMLFooter(int xmlVersion)
 {
-    return xmlVersion == 3? "</results>" : "    </errors>\n</results>";
+    return xmlVersion == 3 ? "</results>" : "    </errors>\n</results>";
 }
 
 // There is no utf-8 support around but the strings should at least be safe for to tinyxml2.
