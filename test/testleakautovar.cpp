@@ -64,8 +64,8 @@ private:
         TEST_CASE(assign25);
         TEST_CASE(assign26);
 
-        TEST_CASE(memcpyWithPtr1); // #11542
-        TEST_CASE(memcpyWithPtr2);
+        TEST_CASE(memcpy1); // #11542
+        TEST_CASE(memcpy2);
 
         TEST_CASE(isAutoDealloc);
 
@@ -636,7 +636,7 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
-    void memcpyWithPtr1() { // #11542
+    void memcpy1() { // #11542
         const Settings s = settingsBuilder().library("std.cfg").library("posix.cfg").build();
         check("void f(char** old, char* value) {\n"
               "    char *str = strdup(value);\n"
@@ -645,14 +645,13 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
-    void memcpyWithPtr2() {
+    void memcpy2() {
         const Settings s = settingsBuilder().library("std.cfg").library("posix.cfg").build();
-        check("void f(char* value) {\n"
-              "    char *old = NULL;\n"
+        check("void f(char* old, char* value, size_t len) {\n"
               "    char *str = strdup(value);\n"
-              "    memcpy(&old, &str, sizeof(char*));\n"
+              "    memcpy(old, str, len);\n"
               "}\n", &s);
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: old\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: str\n", errout_str());
     }
 
     void isAutoDealloc() {
