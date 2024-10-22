@@ -1707,12 +1707,6 @@ void CppCheck::reportProgress(const std::string &filename, const char stage[], c
 void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
 {
     Settings s;
-    s.severity.enable(Severity::warning);
-    s.severity.enable(Severity::style);
-    s.severity.enable(Severity::portability);
-    s.severity.enable(Severity::performance);
-    s.severity.enable(Severity::information);
-
     s.addEnabled("all");
 
     CppCheck cppcheck(errorlogger, true, nullptr);
