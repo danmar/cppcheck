@@ -280,3 +280,88 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
 
     return fout.str();
 }
+
+std::string CheckersReport::getXmlReport(const std::string& criticalErrors) const
+{
+    std::string ret;
+
+    if (!criticalErrors.empty()) {
+        ret += "    <critical-errors>" + criticalErrors + "\n    </critical-errors>\n";
+    } else
+        ret += "    <critical-errors/>\n";
+    ret += "    <checkers-report>\n";
+
+    const bool cppcheckPremium = isCppcheckPremium(mSettings);
+
+    auto reportSection = [&ret, cppcheckPremium]
+                             (const std::string& title,
+                             const Settings& settings,
+                             const std::set<std::string>& activeCheckers,
+                             const std::map<std::string, std::string>& premiumCheckers,
+                             const std::string& substring) {
+        if (!cppcheckPremium) {
+            ret += "<" + title + "/>\n";
+            return;
+        }
+        ret += "        <" + title + ">\n";
+        for (const auto& checkReq: premiumCheckers) {
+            const std::string& checker = checkReq.first;
+            if (checker.find(substring) == std::string::npos)
+                continue;
+            bool active = cppcheckPremium && activeCheckers.count(checker) > 0;
+            if (substring == "::") {
+                if (checkReq.second == "warning")
+                    active &= settings.severity.isEnabled(Severity::warning);
+                else if (checkReq.second == "style")
+                    active &= settings.severity.isEnabled(Severity::style);
+                else if (checkReq.second == "portability")
+                    active &= settings.severity.isEnabled(Severity::portability);
+                else if (!checkReq.second.empty())
+                    active = false; // FIXME: handle req
+            }
+            ret += "            <checker active=\"" + std::string(active ? "Yes" : "No") + "\" id=\"" + checker + "\"";
+            ret += "/>\n";
+        }
+        ret += "        </" + title + ">\n";
+    };
+
+    reportSection("premium-checkers", mSettings, mActiveCheckers, checkers::premiumCheckers, "::");
+    reportSection("autosar", mSettings, mActiveCheckers, checkers::premiumCheckers, "Autosar: ");
+    reportSection("cert-c", mSettings, mActiveCheckers, checkers::premiumCheckers, "Cert C: ");
+    reportSection("cert-cpp", mSettings, mActiveCheckers, checkers::premiumCheckers, "Cert C++: ");
+
+    int misra = 0;
+    if (mSettings.premiumArgs.find("misra-c-2012") != std::string::npos)
+        misra = 2012;
+    else if (mSettings.premiumArgs.find("misra-c-2023") != std::string::npos)
+        misra = 2023;
+    else if (mSettings.addons.count("misra"))
+        misra = 2012;
+
+    if (misra == 0) {
+        ret += "        <misra-c/>\n";
+    } else {
+        ret += "        <misra-c-" + std::to_string(misra) + ">\n";
+        for (const checkers::MisraInfo& info: checkers::misraC2012Directives) {
+            const std::string directive = "Dir " + std::to_string(info.a) + "." + std::to_string(info.b);
+            const bool active = isMisraRuleActive(mActiveCheckers, directive);
+            ret += "            <checker active=\"";
+            ret += std::string(active ? "Yes" : "No") + "\" id=\"Misra C " + std::to_string(misra) + ": " + directive + "\"";
+            ret += "/>\n";
+        }
+        for (const checkers::MisraInfo& info: checkers::misraC2012Rules) {
+            const std::string rule = std::to_string(info.a) + "." + std::to_string(info.b);
+            const bool active = isMisraRuleActive(mActiveCheckers, rule);
+            ret += "            <checker active=\"";
+            ret += std::string(active ? "Yes" : "No") + "\" id=\"Misra C " + std::to_string(misra) + ": " + rule + "\"";
+            ret += "/>\n";
+        }
+        ret += "        </misra-c-" + std::to_string(misra) + ">\n";
+    }
+
+    reportSection("misra-cpp-2008", mSettings, mActiveCheckers, checkers::premiumCheckers, "Misra C++ 2008: ");
+    reportSection("misra-cpp-2023", mSettings, mActiveCheckers, checkers::premiumCheckers, "Misra C++ 2023: ");
+
+    ret += "    </checkers-report>";
+    return ret;
+}
