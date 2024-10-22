@@ -386,14 +386,14 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                     });
                     if (!isInParam)
                         continue;
-                    const Token *varTok = args[i];
+                    const Token *inTok = args[i];
                     int indirect = 0;
-                    while (varTok->isUnaryOp("&")) {
-                        varTok = varTok->astOperand1();
+                    while (inTok->isUnaryOp("&")) {
+                        inTok = inTok->astOperand1();
                         indirect++;
                     }
-                    if (varTok->isVariable() && indirect) {
-                        varInfo.erase(varTok->varId());
+                    if (inTok->isVariable() && indirect) {
+                        varInfo.erase(inTok->varId());
                     }
                 }
             }
