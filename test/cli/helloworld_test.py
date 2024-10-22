@@ -347,4 +347,4 @@ def test_xml_checkers_report():
 
     exitcode, _, stderr = cppcheck(args)
     assert exitcode == 0
-    assert ET.fromstring(stderr)
+    assert ET.fromstring(stderr) is not None
