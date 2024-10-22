@@ -3077,6 +3077,8 @@ static bool isKnownEmptyContainer(const Token* tok)
 {
     if (!tok)
         return false;
+    if (tok->isVariable() && tok->variable()->isStatic() && !tok->variable()->isConst())
+        return false;
     return std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
         if (!v.isKnown())
             return false;
