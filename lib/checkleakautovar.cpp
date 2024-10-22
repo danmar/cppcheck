@@ -363,6 +363,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
         while (Token::Match(ftok, "%name% :: %name%"))
             ftok = ftok->tokAt(2);
 
+        // bailout for variable passed to library function with out parameter
         if (const Library::Function *libFunc = mSettings->library.getFunction(ftok)) {
             using ArgumentChecks = Library::ArgumentChecks;
             using Direction = ArgumentChecks::Direction;
@@ -381,7 +382,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                     if (!argChecks.count(i + 1))
                         continue;
                     const ArgumentChecks argCheck = argChecks.at(i + 1);
-                    bool isInParam = std::any_of(argCheck.direction.cbegin(), argCheck.direction.cend(), [&](const Direction dir) {
+                    const bool isInParam = std::any_of(argCheck.direction.cbegin(), argCheck.direction.cend(), [&](const Direction dir) {
                         return dir == Direction::DIR_IN;
                     });
                     if (!isInParam)
