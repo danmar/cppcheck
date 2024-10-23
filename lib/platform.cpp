@@ -39,6 +39,7 @@ bool Platform::set(Type t)
     case Type::Unspecified: // unknown type sizes (sizes etc are set but are not known)
     case Type::Native: // same as system this code was compile on
         type = t;
+        // TODO: set windows?
         sizeof_bool = sizeof(bool);
         sizeof_short = sizeof(short);
         sizeof_int = sizeof(int);
@@ -64,6 +65,8 @@ bool Platform::set(Type t)
     case Type::Win32W:
     case Type::Win32A:
         type = t;
+        windows = true;
+        win_ansi = (t == Type::Win32A);
         sizeof_bool = 1; // 4 in Visual C++ 4.2
         sizeof_short = 2;
         sizeof_int = 4;
@@ -84,6 +87,8 @@ bool Platform::set(Type t)
         return true;
     case Type::Win64:
         type = t;
+        windows = true;
+        // TODO: win_ansi
         sizeof_bool = 1;
         sizeof_short = 2;
         sizeof_int = 4;
@@ -233,10 +238,26 @@ bool Platform::loadFromFile(const char exename[], const std::string &filename, b
     return loadFromXmlDocument(&doc);
 }
 
+static const char* xmlText(const tinyxml2::XMLElement* node, bool& error)
+{
+    const char* const str = node->GetText();
+    if (!str)
+        error = true;
+    return str;
+}
+
 static unsigned int xmlTextAsUInt(const tinyxml2::XMLElement* node, bool& error)
 {
     unsigned int retval = 0;
     if (node->QueryUnsignedText(&retval) != tinyxml2::XML_SUCCESS)
+        error = true;
+    return retval;
+}
+
+static unsigned int xmlTextAsBool(const tinyxml2::XMLElement* node, bool& error)
+{
+    bool retval = false;
+    if (node->QueryBoolText(&retval) != tinyxml2::XML_SUCCESS)
         error = true;
     return retval;
 }
@@ -252,11 +273,9 @@ bool Platform::loadFromXmlDocument(const tinyxml2::XMLDocument *doc)
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         const char* name = node->Name();
         if (std::strcmp(name, "default-sign") == 0) {
-            const char* str = node->GetText();
-            if (str)
+            const char * const str = xmlText(node, error);
+            if (!error)
                 defaultSign = *str;
-            else
-                error = true;
         } else if (std::strcmp(name, "char_bit") == 0)
             char_bit = xmlTextAsUInt(node, error);
         else if (std::strcmp(name, "sizeof") == 0) {
@@ -284,6 +303,26 @@ bool Platform::loadFromXmlDocument(const tinyxml2::XMLDocument *doc)
                     sizeof_size_t = xmlTextAsUInt(sz, error);
                 else if (std::strcmp(szname, "wchar_t") == 0)
                     sizeof_wchar_t = xmlTextAsUInt(sz, error);
+            }
+        }
+        else if (std::strcmp(node->Name(), "windows") == 0) {
+            windows = xmlTextAsBool(node, error);
+        }
+        else if (std::strcmp(node->Name(), "winapi") == 0) {
+            const char * const text = xmlText(node, error);
+            if (!error) {
+                if (std::strcmp(text, "ansi")) {
+                    win_ansi = true;
+                }
+                else if (std::strcmp(text, "unicode")) {
+                    win_ansi = false;
+                }
+                else {
+                    // TODO: make an error
+                }
+            }
+            else {
+                // TODO: make an error if we have a windows config
             }
         }
     }
