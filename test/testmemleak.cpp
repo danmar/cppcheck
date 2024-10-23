@@ -1328,10 +1328,9 @@ private:
               "public:\n"
               "    A() : b(new B()), c(new C(b)) { }\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n"
-                           "[test.cpp:10]: (style) Class 'A' is unsafe, 'A::c' can leak by wrong usage.\n",
-                           "[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n",
-                           errout_str());
+        ASSERT_EQUALS("[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n"
+                      "[test.cpp:10]: (style) Class 'A' is unsafe, 'A::c' can leak by wrong usage.\n",
+                      errout_str());
 
         check("struct B { };\n"
               "struct C\n"
@@ -1350,10 +1349,9 @@ private:
               "       c = new C(b);\n"
               "    }\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n"
-                           "[test.cpp:10]: (style) Class 'A' is unsafe, 'A::c' can leak by wrong usage.\n",
-                           "[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n",
-                           errout_str());
+        ASSERT_EQUALS("[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n"
+                      "[test.cpp:10]: (style) Class 'A' is unsafe, 'A::c' can leak by wrong usage.\n",
+                      errout_str());
     }
 
     void class22() { // ticket #3012 - false positive
@@ -2870,7 +2868,7 @@ private:
               "        delete t;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:13]: (error) Return value of allocation function 'makeThing' is not stored.\n", errout_str());
     }
 
     void crash1() { // #10729
