@@ -390,6 +390,7 @@ std::vector<MathLib::bigint> getMaxValue(const ValuePtr<InferModel>& model, cons
 
 namespace {
     struct IntegralInferModel : InferModel {
+    private:
         bool match(const ValueFlow::Value& value) const override {
             return value.isIntValue();
         }
@@ -406,6 +407,74 @@ namespace {
 ValuePtr<InferModel> makeIntegralInferModel()
 {
     return IntegralInferModel{};
+}
+
+namespace {
+    struct SymbolicInferModel : InferModel {
+        explicit SymbolicInferModel(const Token* tok) : expr(tok) {
+            assert(expr->exprId() != 0);
+        }
+    private:
+        bool match(const ValueFlow::Value& value) const override
+        {
+            return value.isSymbolicValue() && value.tokvalue && value.tokvalue->exprId() == expr->exprId();
+        }
+        ValueFlow::Value yield(MathLib::bigint value) const override
+        {
+            ValueFlow::Value result(value);
+            result.valueType = ValueFlow::Value::ValueType::SYMBOLIC;
+            result.tokvalue = expr;
+            result.setKnown();
+            return result;
+        }
+        const Token* expr;
+    };
+}
+
+ValuePtr<InferModel> makeSymbolicInferModel(const Token* token)
+{
+    return SymbolicInferModel{token};
+}
+
+namespace {
+    struct IteratorInferModel : InferModel {
+    private:
+        virtual ValueFlow::Value::ValueType getType() const = 0;
+        bool match(const ValueFlow::Value& value) const override {
+            return value.valueType == getType();
+        }
+        ValueFlow::Value yield(MathLib::bigint value) const override
+        {
+            ValueFlow::Value result(value);
+            result.valueType = getType();
+            result.setKnown();
+            return result;
+        }
+    };
+
+    struct EndIteratorInferModel : IteratorInferModel {
+    private:
+        ValueFlow::Value::ValueType getType() const override {
+            return ValueFlow::Value::ValueType::ITERATOR_END;
+        }
+    };
+
+    struct StartIteratorInferModel : IteratorInferModel {
+    private:
+        ValueFlow::Value::ValueType getType() const override {
+            return ValueFlow::Value::ValueType::ITERATOR_END;
+        }
+    };
+}
+
+ValuePtr<InferModel> makeEndIteratorInferModel()
+{
+    return EndIteratorInferModel{};
+}
+
+ValuePtr<InferModel> makeStartIteratorInferModel()
+{
+    return StartIteratorInferModel{};
 }
 
 ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val)
