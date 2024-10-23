@@ -54,6 +54,7 @@ private:
         TEST_CASE(ToXmlV2Locations);
         TEST_CASE(ToXmlV2Encoding);
         TEST_CASE(FromXmlV2);
+        TEST_CASE(ToXmlV3);
 
         // Inconclusive results in xml reports..
         TEST_CASE(InconclusiveXml);
@@ -232,7 +233,7 @@ private:
         header += CppCheck::version();
         header += "\"/>\n    <errors>";
         ASSERT_EQUALS(header, ErrorMessage::getXMLHeader(""));
-        ASSERT_EQUALS("    </errors>\n</results>", ErrorMessage::getXMLFooter());
+        ASSERT_EQUALS("    </errors>\n</results>", ErrorMessage::getXMLFooter(2));
         std::string message("        <error id=\"errorId\" severity=\"error\"");
         message += " msg=\"Programming error.\" verbose=\"Verbose error\">\n";
         message += "            <location file=\"foo.cpp\" line=\"5\" column=\"1\"/>\n        </error>";
@@ -253,7 +254,7 @@ private:
         header += CppCheck::version();
         header += "\"/>\n    <errors>";
         ASSERT_EQUALS(header, ErrorMessage::getXMLHeader(""));
-        ASSERT_EQUALS("    </errors>\n</results>", ErrorMessage::getXMLFooter());
+        ASSERT_EQUALS("    </errors>\n</results>", ErrorMessage::getXMLFooter(2));
         std::string message("        <error id=\"errorId\" severity=\"error\"");
         message += " msg=\"Programming error.\" verbose=\"Verbose error\">\n";
         message += "            <location file=\"bar.cpp\" line=\"8\" column=\"1\" info=\"\\303\\244\"/>\n";
@@ -310,6 +311,10 @@ private:
         ASSERT_EQUALS("bar.cpp", msg.callStack.back().getfile());
         ASSERT_EQUALS(8, msg.callStack.back().line);
         ASSERT_EQUALS(1u, msg.callStack.back().column);
+    }
+
+    void ToXmlV3() const {
+        ASSERT_EQUALS("</results>", ErrorMessage::getXMLFooter(3));
     }
 
     void InconclusiveXml() const {

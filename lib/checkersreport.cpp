@@ -40,6 +40,11 @@ static int getMisraCVersion(const Settings& settings) {
         return 2023;
     if (settings.addons.count("misra"))
         return 2012;
+    const bool misraAddonInfo = std::any_of(settings.addonInfos.cbegin(), settings.addonInfos.cend(), [](const AddonInfo& addonInfo) {
+        return addonInfo.name == "misra";
+    };
+    if (misraAddonInfo)
+        return 2012;
     return 0;
 }
 

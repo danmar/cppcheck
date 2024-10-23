@@ -1970,6 +1970,19 @@ def test_checkers_report(tmpdir):
     assert '--checkers-report' not in stderr
 
 
+def test_checkers_report_misra_json(tmpdir):
+    """check that misra checkers are reported properly when --addon=misra.json is used"""
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write('x=1;')
+    misra_json = os.path.join(tmpdir, 'misra.json')
+    with open(misra_json, 'wt') as f:
+        f.write('{"script":"misra.py"}')
+    exitcode, stdout, stderr = cppcheck('--enable=style --addon=misra.json --xml-version=3 test.c'.split(), cwd=tmpdir)
+    assert exitcode == 0, stdout
+    assert '<checker id="Misra C 2012: 8.1"/>' in stderr
+
+
 def test_ignore(tmpdir):
     os.mkdir(os.path.join(tmpdir, 'src'))
     test_file = os.path.join(tmpdir, 'src', 'test.cpp')

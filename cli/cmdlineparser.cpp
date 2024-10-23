@@ -340,9 +340,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 return Result::Fail;
             {
                 XMLErrorMessagesLogger xmlLogger;
-                std::cout << ErrorMessage::getXMLHeader(mSettings.cppcheckCfgProductName, mSettings.xml_version);
+                std::cout << ErrorMessage::getXMLHeader(mSettings.cppcheckCfgProductName, 2);
                 CppCheck::getErrorMessages(xmlLogger);
-                std::cout << ErrorMessage::getXMLFooter() << std::endl;
+                std::cout << ErrorMessage::getXMLFooter(2) << std::endl;
             }
             return Result::Exit;
         }

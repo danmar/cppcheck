@@ -274,6 +274,7 @@ namespace {
          * @brief Write the checkers report
          */
         void writeCheckersReport();
+        void writeXmlCheckersReport();
 
         bool hasCriticalErrors() const {
             return !mCriticalErrors.empty();
@@ -464,6 +465,8 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
 
     if (settings.safety || settings.severity.isEnabled(Severity::information) || !settings.checkersReportFilename.empty())
         stdLogger.writeCheckersReport();
+    if (settings.xml_version == 3)
+        stdLogger.writeXmlCheckersReport();
 
     if (settings.xml) {
         stdLogger.reportErr(ErrorMessage::getXMLFooter(settings.xml_version));
@@ -512,9 +515,13 @@ void StdLogger::writeCheckersReport()
         if (fout.is_open())
             fout << checkersReport.getReport(mCriticalErrors);
     }
+}
 
+void StdLogger::writeXmlCheckersReport()
+{
     if (mSettings.xml && mSettings.xml_version == 3) {
         reportErr("    </errors>\n");
+        const CheckersReport checkersReport(mSettings, mActiveCheckers);
         reportErr(checkersReport.getXmlReport(mCriticalErrors));
     }
 }
