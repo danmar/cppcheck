@@ -1056,9 +1056,8 @@ bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive)
     return false;
 }
 
-bool isAliasOf(const Token* tok, const Token* expr, int* indirect, bool* inconclusive)
+bool isAliasOf(const Token* tok, const Token* expr, int* indirect)
 {
-    const ValueFlow::Value* value = nullptr;
     const Token* r = nullptr;
     if (indirect)
         *indirect = 1;
@@ -1080,11 +1079,7 @@ bool isAliasOf(const Token* tok, const Token* expr, int* indirect, bool* inconcl
                                     [&](const Token* aliasTok) {
                         return aliasTok != childTok && aliasTok->exprId() == childTok->exprId();
                     })) {
-                        if (val.isInconclusive() && inconclusive != nullptr) {
-                            value = &val;
-                        } else {
-                            return true;
-                        }
+                        return true;
                     }
                 }
             }
@@ -1093,9 +1088,7 @@ bool isAliasOf(const Token* tok, const Token* expr, int* indirect, bool* inconcl
         if (r)
             break;
     }
-    if (!r && value && inconclusive)
-        *inconclusive = true;
-    return r || value;
+    return r;
 }
 
 static bool isAliased(const Token *startTok, const Token *endTok, nonneg int varid)
