@@ -77,11 +77,12 @@ jobs:
 
       - name: Build x64 release GUI
         run: |
-          ; TODO: enable rules?
-          ; specify Release build so matchcompiler is used
+          :: TODO: enable rules?
+          :: specify Release build so matchcompiler is used
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
           cmake --build build --target cppcheck-gui --config Release || exit /b !errorlevel!
 
+      # TODO: package PDBs
       - name: Deploy app
         run: |
           windeployqt build\bin\Release || exit /b !errorlevel!
@@ -95,11 +96,22 @@ jobs:
       - name: Build CLI x64 release configuration using MSBuild
         run: msbuild -m cppcheck.sln -t:cli -p:Configuration=Release-PCRE -p:Platform=x64 || exit /b !errorlevel!
 
-      - name: Compile misra.py executable
+      - name: Install missing Python packages
         run: |
           pip install -U pyinstaller || exit /b !errorlevel!
+
+      # TODO: include in installer?
+      - name: Compile misra.py executable
+        run: |
           cd addons || exit /b !errorlevel!
           pyinstaller --hidden-import xml --hidden-import xml.etree --hidden-import xml.etree.ElementTree misra.py || exit /b !errorlevel!
+          del *.spec || exit /b !errorlevel!
+
+      # TODO: include in installer?
+      - name: Compile cppcheck-htmlreport executable
+        run: |
+          cd htmlreport || exit /b !errorlevel!
+          pyinstaller cppcheck-htmlreport || exit /b !errorlevel!
           del *.spec || exit /b !errorlevel!
 
       - name: Collect files
@@ -113,6 +125,7 @@ jobs:
           xcopy /s gui\help win_installer\files\help || exit /b !errorlevel!
           del win_installer\files\translations\*.qm || exit /b !errorlevel!
           move gui\*.qm win_installer\files\translations || exit /b !errorlevel!
+          copy htmlreport\dist\cppcheck-htmlreport\*.* win_installer\files || exit /b !errorlevel!
           :: copy libcrypto-3-x64.dll and libssl-3-x64.dll
           copy %RUNNER_WORKSPACE%\Qt\Tools\OpenSSLv3\Win_x64\bin\lib*.dll win_installer\files || exit /b !errorlevel!
 
@@ -139,6 +152,8 @@ jobs:
       - name: Clean up deploy
         run: |
           del win_installer\files\addons\*.dll || exit /b !errorlevel!
+          del win_installer\files\addons\*.doxyfile || exit /b !errorlevel!
+          del win_installer\files\addons\*.md || exit /b !errorlevel!
           del win_installer\files\addons\*.pyd || exit /b !errorlevel!
           del win_installer\files\addons\base_library.zip || exit /b !errorlevel!
           rmdir /s /q win_installer\files\bearer || exit /b !errorlevel!
