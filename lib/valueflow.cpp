@@ -5452,6 +5452,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
         VFA(analyzeArrayBool(tokenlist, settings)),
         VFA(analyzeArrayElement(tokenlist, settings)),
         VFA(analyzeRightShift(tokenlist, settings)),
+        VFA_CPP(valueFlowCondition(ContainerConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
         VFA(valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
         VFA_CPP(valueFlowAfterSwap(tokenlist, symboldatabase, errorLogger, settings)),
         VFA(valueFlowCondition(SimpleConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
@@ -5470,8 +5471,6 @@ void ValueFlow::setValues(TokenList& tokenlist,
             valueFlowCondition(IteratorConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
         VFA_CPP(analyzeIteratorInfer(tokenlist, settings)),
         VFA_CPP(valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
-        VFA_CPP(
-            valueFlowCondition(ContainerConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
         VFA(valueFlowSafeFunctions(tokenlist, symboldatabase, errorLogger, settings)),
     });
 
