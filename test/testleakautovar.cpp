@@ -637,7 +637,7 @@ private:
     }
 
     void memcpy1() { // #11542
-        const Settings s = settingsBuilder().library("std.cfg").library("posix.cfg").build();
+        const Settings s = settingsBuilder().library("std.cfg").build();
         check("void f(char** old, char* value) {\n"
               "    char *str = strdup(value);\n"
               "    memcpy(old, &str, sizeof(char*));\n"
@@ -646,7 +646,7 @@ private:
     }
 
     void memcpy2() {
-        const Settings s = settingsBuilder().library("std.cfg").library("posix.cfg").build();
+        const Settings s = settingsBuilder().library("std.cfg").build();
         check("void f(char* old, char* value, size_t len) {\n"
               "    char *str = strdup(value);\n"
               "    memcpy(old, str, len);\n"
