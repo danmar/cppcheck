@@ -518,10 +518,9 @@ static Analyzer::Result valueFlowForward(Token* startToken,
     return result;
 }
 
-template<class ValueOrValues>
 static Analyzer::Result valueFlowForward(Token* startToken,
                                          const Token* exprTok,
-                                         ValueOrValues v,
+                                         ValueFlow::Value v,
                                          const TokenList& tokenlist,
                                          ErrorLogger& errorLogger,
                                          const Settings& settings,
