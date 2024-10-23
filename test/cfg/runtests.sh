@@ -107,6 +107,7 @@ function gnu_fn {
 # qt.cpp
 function qt_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
+        # TODO: check syntax with Qt5 and Qt6?
         QTCONFIG=$(get_pkg_config_cflags Qt6Core Qt6Test Qt6Gui)
         QTBUILDCONFIG=$(pkg-config --variable=qt_config Qt6Core Qt6Test Qt6Gui)
         if [ -z "$QTCONFIG" ]; then
