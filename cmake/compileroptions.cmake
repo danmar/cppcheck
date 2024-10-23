@@ -47,8 +47,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"
     add_compile_options(-Wpacked)                   #
     add_compile_options(-Wredundant-decls)          # if anything is declared more than once in the same scope
     add_compile_options(-Wundef)
-    add_compile_options(-Wno-missing-field-initializers)
-    add_compile_options(-Wno-missing-braces)
     add_compile_options(-Wno-sign-compare)
     add_compile_options(-Wno-multichar)
     add_compile_options(-Woverloaded-virtual)       # when a function declaration hides virtual functions from a base class
@@ -65,10 +63,13 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # use pipes instead of temporary files - greatly reduces I/O usage
     add_compile_options(-pipe)
 
-    add_compile_options(-Wno-maybe-uninitialized)   # there are some false positives
     add_compile_options(-Wsuggest-attribute=noreturn)
-    add_compile_options(-Wno-shadow)                # whenever a local variable or type declaration shadows another one
     add_compile_options_safe(-Wuseless-cast)
+    # add_compile_options_safe(-Wsuggest-attribute=returns_nonnull) # reports the warning even if the attribute is set
+
+    # TODO: evaluate
+    #add_compile_options(-Wduplicated-branches)
+    #add_compile_options(-Wduplicated-cond)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 14 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 14)
         # TODO: verify this regression still exists in clang-15
@@ -104,11 +105,9 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options_safe(-Wno-implicit-float-conversion)
     add_compile_options_safe(-Wno-switch-enum)
     add_compile_options_safe(-Wno-float-conversion)
-    add_compile_options_safe(-Wno-enum-enum-conversion)
     add_compile_options_safe(-Wno-date-time)
     add_compile_options(-Wno-disabled-macro-expansion)
     add_compile_options_safe(-Wno-bitwise-instead-of-logical)
-    add_compile_options_safe(-Wno-switch-default)
 
     # these cannot be fixed properly without adopting later C++ standards
     add_compile_options_safe(-Wno-unsafe-buffer-usage)
@@ -124,6 +123,9 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
     # only needs to be addressed to work around issues in older compilers
     add_compile_options_safe(-Wno-return-std-move-in-c++11)
+
+    # this is reported even when it is unnecessary i.e. -Wswitch-enum warnings have been mitigated
+    add_compile_options_safe(-Wno-switch-default)
 
     # warnings we are currently not interested in
     add_compile_options(-Wno-four-char-constants)
