@@ -697,8 +697,12 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                 mUnusedFunctionsCheck->parseTokens(tokenizer, mSettings);
 
                 if (mAnalyzerInformation) {
-                    // TODO: open file so we can set the fileinfo
+                    // TODO: how to get the proper tokenlist to generate the proper hash?
+                    const std::size_t hash = time(nullptr); // calculateHash(tokenizer.list, mSettings);
+                    std::list<ErrorMessage> errors;
+                    mAnalyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, hash, errors);
                     mAnalyzerInformation->setFileInfo("CheckUnusedFunctions", mUnusedFunctionsCheck->analyzerInfo());
+                    mAnalyzerInformation->close();
                 }
             }
             return EXIT_SUCCESS;
