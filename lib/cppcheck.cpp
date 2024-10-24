@@ -624,6 +624,20 @@ static simplecpp::TokenList createTokenList(const std::string& filename, std::ve
     return {filename, files, outputList};
 }
 
+static std::size_t calculateHash(const Preprocessor& preprocessor, const simplecpp::TokenList& tokens, const Settings& settings)
+{
+    std::ostringstream toolinfo;
+    toolinfo << CPPCHECK_VERSION_STRING;
+    toolinfo << (settings.severity.isEnabled(Severity::warning) ? 'w' : ' ');
+    toolinfo << (settings.severity.isEnabled(Severity::style) ? 's' : ' ');
+    toolinfo << (settings.severity.isEnabled(Severity::performance) ? 'p' : ' ');
+    toolinfo << (settings.severity.isEnabled(Severity::portability) ? 'p' : ' ');
+    toolinfo << (settings.severity.isEnabled(Severity::information) ? 'i' : ' ');
+    toolinfo << settings.userDefines;
+    settings.supprs.nomsg.dump(toolinfo);
+    return preprocessor.calculateHash(tokens, toolinfo.str());
+}
+
 unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string &cfgname, std::istream* fileStream)
 {
     // TODO: move to constructor when CppCheck no longer owns the settings
@@ -752,19 +766,8 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             mAnalyzerInformation.reset(new AnalyzerInformation);
 
         if (mAnalyzerInformation) {
-            // Get toolinfo
-            std::ostringstream toolinfo;
-            toolinfo << CPPCHECK_VERSION_STRING;
-            toolinfo << (mSettings.severity.isEnabled(Severity::warning) ? 'w' : ' ');
-            toolinfo << (mSettings.severity.isEnabled(Severity::style) ? 's' : ' ');
-            toolinfo << (mSettings.severity.isEnabled(Severity::performance) ? 'p' : ' ');
-            toolinfo << (mSettings.severity.isEnabled(Severity::portability) ? 'p' : ' ');
-            toolinfo << (mSettings.severity.isEnabled(Severity::information) ? 'i' : ' ');
-            toolinfo << mSettings.userDefines;
-            mSettings.supprs.nomsg.dump(toolinfo);
-
             // Calculate hash so it can be compared with old hash / future hashes
-            const std::size_t hash = preprocessor.calculateHash(tokens1, toolinfo.str());
+            const std::size_t hash = calculateHash(preprocessor, tokens1, mSettings);
             std::list<ErrorMessage> errors;
             if (!mAnalyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, hash, errors)) {
                 while (!errors.empty()) {
