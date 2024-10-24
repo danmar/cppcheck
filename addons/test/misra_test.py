@@ -1,11 +1,6 @@
-# Running the test with Python 2:
-# Be sure to install pytest version 4.6.4 (newer should also work)
-# Command in cppcheck directory:
-# python -m pytest addons/test/test-misra.py
-#
 # Running the test with Python 3:
 # Command in cppcheck directory:
-# PYTHONPATH=./addons python3 -m pytest addons/test/test-misra.py
+# PYTHONPATH=./addons python3 -m pytest addons/test/misra_test.py
 
 import pytest
 import re
@@ -48,6 +43,8 @@ def test_loadRuleTexts_structure(checker):
     assert(checker.ruleTexts.get(101, None) is None)
     assert(checker.ruleTexts[102].text == "Rule text.")
     assert(checker.ruleTexts.get(103, None) is None)
+    assert(checker.ruleTexts[201].text == "Rule text for 2.1.")
+    assert(checker.ruleTexts.get(202, None) is None)
 
 
 def test_loadRuleTexts_empty_lines(checker):
@@ -62,7 +59,7 @@ def test_loadRuleTexts_mutiple_lines(checker):
     assert(checker.ruleTexts[102].text == "Multiple lines text.")
     assert(checker.ruleTexts[103].text == "Multiple lines text.")
     assert(checker.ruleTexts[104].text == "Should")
-    assert(checker.ruleTexts[105].text == "Should")
+    assert(checker.ruleTexts[105].text == "Should starts from lowercase letter.")
     assert(checker.ruleTexts[106].text == "Can contain empty lines.")
 
 

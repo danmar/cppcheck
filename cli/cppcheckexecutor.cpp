@@ -462,8 +462,7 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
         cppcheck.tooManyConfigsError(emptyString,0U);
     }
 
-    if (settings.safety || settings.severity.isEnabled(Severity::information) || !settings.checkersReportFilename.empty())
-        stdLogger.writeCheckersReport();
+    stdLogger.writeCheckersReport();
 
     if (settings.xml) {
         stdLogger.reportErr(ErrorMessage::getXMLFooter(settings.xml_version));
@@ -479,15 +478,21 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
 
 void StdLogger::writeCheckersReport()
 {
+    const bool summary = mSettings.safety || mSettings.severity.isEnabled(Severity::information);
+    const bool xmlReport = mSettings.xml && mSettings.xml_version == 3;
+    const bool textReport = !mSettings.checkersReportFilename.empty();
+
+    if (!summary && !xmlReport && !textReport)
+        return;
+
     CheckersReport checkersReport(mSettings, mActiveCheckers);
 
-    bool suppressed = false;
-    for (const SuppressionList::Suppression& s : mSettings.supprs.nomsg.getSuppressions()) {
-        if (s.errorId == "checkersReport")
-            suppressed = true;
-    }
+    const auto& suppressions = mSettings.supprs.nomsg.getSuppressions();
+    const bool summarySuppressed = std::any_of(suppressions.cbegin(), suppressions.cend(), [](const SuppressionList::Suppression& s) {
+        return s.errorId == "checkersReport";
+    });
 
-    if (!suppressed) {
+    if (summary && !summarySuppressed) {
         ErrorMessage msg;
         msg.severity = Severity::information;
         msg.id = "checkersReport";
@@ -500,20 +505,20 @@ void StdLogger::writeCheckersReport()
             what = std::to_string(activeCheckers) + "/" + std::to_string(totalCheckers);
         else
             what = "There was critical errors";
-        if (mSettings.checkersReportFilename.empty())
+        if (!xmlReport && !textReport)
             what += " (use --checkers-report=<filename> to see details)";
         msg.setmsg("Active checkers: " + what);
 
         reportErr(msg);
     }
 
-    if (!mSettings.checkersReportFilename.empty()) {
+    if (textReport) {
         std::ofstream fout(mSettings.checkersReportFilename);
         if (fout.is_open())
             fout << checkersReport.getReport(mCriticalErrors);
     }
 
-    if (mSettings.xml && mSettings.xml_version == 3) {
+    if (xmlReport) {
         reportErr("    </errors>\n");
         reportErr(checkersReport.getXmlReport(mCriticalErrors));
     }
