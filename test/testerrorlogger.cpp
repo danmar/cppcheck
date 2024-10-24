@@ -314,6 +314,12 @@ private:
     }
 
     void ToXmlV3() const {
+        std::string header("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results version=\"3\">\n");
+        header += "    <cppcheck version=\"";
+        header += CppCheck::version();
+        header += "\"/>\n    <errors>";
+        ASSERT_EQUALS(header, ErrorMessage::getXMLHeader("", 3));
+
         ASSERT_EQUALS("</results>", ErrorMessage::getXMLFooter(3));
     }
 
