@@ -8355,12 +8355,23 @@ private:
                       "    ~S();\n"
                       "    void f();\n"
                       "};\n"
+                      "struct T {\n"
+                      "    T();\n"
+                      "};\n"
                       "void S::f() {\n"
-                      "    auto s = new S;\n"
+                      "    auto s1 = new S;\n"
+                      "    auto s2 = new S();\n"
+                      "    auto t = new T();\n"
                       "}\n");
         const Token* S = Token::findsimplematch(tokenizer.tokens(), "S ;");
         ASSERT(S && S->type());
         ASSERT_EQUALS(S->type()->classDef->linenr(), 1);
+        S = Token::findsimplematch(S, "S (");
+        ASSERT(S && S->type());
+        ASSERT_EQUALS(S->type()->classDef->linenr(), 1);
+        const Token* T = Token::findsimplematch(S, "T (");
+        ASSERT(T && T->function());
+        ASSERT_EQUALS(T->function()->tokenDef->linenr(), 6);
     }
 
     void findFunctionRef1() {
