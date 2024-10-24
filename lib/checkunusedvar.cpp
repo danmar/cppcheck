@@ -1534,7 +1534,14 @@ void CheckUnusedVar::checkStructMemberUsage()
         if (bailout)
             continue;
 
+        // Keep track of number of non-static members encountered so far
+        int memberCount = 0;
+
         for (const Variable &var : scope.varlist) {
+            if (!var.isStatic()) {
+                memberCount++;
+            }
+
             // only warn for variables without side effects
             if (!var.typeStartToken()->isStandardType() && !var.isPointer() && !astIsContainer(var.nameToken()) && !isRecordTypeWithoutSideEffects(var.type()))
                 continue;
@@ -1544,6 +1551,22 @@ void CheckUnusedVar::checkStructMemberUsage()
             // Check if the struct member variable is used anywhere in the file
             bool use = false;
             for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+                if (Token::Match(tok, "%name% {") && !Token::Match(tok->previous(), "class|struct") && tok->str() == scope.className) {
+                    const Token *inner = tok->next()->astOperand2();
+                    // Find number of initialized members in braced initalizer
+                    int initializedMemberCount = 0;
+                    while (inner) {
+                        initializedMemberCount++;
+                        if (!inner->isInitComma()) {
+                            break;
+                        }
+                        inner = inner->astOperand1();
+                    }
+                    if (initializedMemberCount >= memberCount) {
+                        use = true;
+                        break;
+                    }
+                }
                 if (Token::Match(tok, ". %name%") && !tok->next()->variable() && !tok->next()->function() && tok->strAt(1) == var.name()) {
                     // not known => assume variable is used
                     use = true;
