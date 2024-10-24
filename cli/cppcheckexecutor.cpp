@@ -274,7 +274,6 @@ namespace {
          * @brief Write the checkers report
          */
         void writeCheckersReport();
-        void writeXmlCheckersReport();
 
         bool hasCriticalErrors() const {
             return !mCriticalErrors.empty();
