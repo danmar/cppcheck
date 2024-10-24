@@ -5716,6 +5716,8 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst, Referen
             const Function *func = it->second;
             if (ref == Reference::LValue && func->hasRvalRefQualifier())
                 continue;
+            if (func->isDestructor() && !Token::simpleMatch(tok->tokAt(-1), "~"))
+                continue;
             if (!isCall || args == func->argCount() ||
                 (func->isVariadic() && args >= (func->minArgCount() - 1)) ||
                 (args < func->argCount() && args >= func->minArgCount())) {

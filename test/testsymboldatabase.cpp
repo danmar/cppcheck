@@ -520,6 +520,7 @@ private:
         TEST_CASE(findFunction54);
         TEST_CASE(findFunction55); // #13004
         TEST_CASE(findFunction56);
+        TEST_CASE(findFunction57);
         TEST_CASE(findFunctionRef1);
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
@@ -8347,6 +8348,30 @@ private:
         const Token* f = Token::findsimplematch(tokenizer.tokens(), "f ( \"abc\"");
         ASSERT(f && f->function());
         ASSERT_EQUALS(f->function()->tokenDef->linenr(), 1);
+    }
+
+    void findFunction57() { // #13051
+        GET_SYMBOL_DB("struct S {\n"
+                      "    ~S();\n"
+                      "    void f();\n"
+                      "};\n"
+                      "struct T {\n"
+                      "    T();\n"
+                      "};\n"
+                      "void S::f() {\n"
+                      "    auto s1 = new S;\n"
+                      "    auto s2 = new S();\n"
+                      "    auto t = new T();\n"
+                      "}\n");
+        const Token* S = Token::findsimplematch(tokenizer.tokens(), "S ;");
+        ASSERT(S && S->type());
+        ASSERT_EQUALS(S->type()->classDef->linenr(), 1);
+        S = Token::findsimplematch(S, "S (");
+        ASSERT(S && S->type());
+        ASSERT_EQUALS(S->type()->classDef->linenr(), 1);
+        const Token* T = Token::findsimplematch(S, "T (");
+        ASSERT(T && T->function());
+        ASSERT_EQUALS(T->function()->tokenDef->linenr(), 6);
     }
 
     void findFunctionRef1() {
