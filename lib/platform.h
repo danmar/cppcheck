@@ -157,9 +157,9 @@ public:
         case Type::Native:
             return "native";
         case Type::Win32A:
-            return "win32A";
+            return "win32a";
         case Type::Win32W:
-            return "win32W";
+            return "win32w";
         case Type::Win64:
             return "win64";
         case Type::Unix32:

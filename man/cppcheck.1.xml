@@ -511,7 +511,7 @@ There are false positives with this option. Each result must be carefully invest
         </term>
         <listitem>
           <para>Specifies platform specific types and sizes.The available platforms are:
-            <glosslist><glossentry><glossterm>unix32</glossterm><glossdef><para>32 bit unix variant</para></glossdef></glossentry><glossentry><glossterm>unix64</glossterm><glossdef><para>64 bit unix variant</para></glossdef></glossentry><glossentry><glossterm>win32A</glossterm><glossdef><para>32 bit Windows ASCII character encoding</para></glossdef></glossentry><glossentry><glossterm>win32W</glossterm><glossdef><para>32 bit Windows UNICODE character encoding</para></glossdef></glossentry><glossentry><glossterm>win64</glossterm><glossdef><para>64 bit Windows</para></glossdef></glossentry></glosslist>
+            <glosslist><glossentry><glossterm>unix32</glossterm><glossdef><para>32 bit unix variant</para></glossdef></glossentry><glossentry><glossterm>unix64</glossterm><glossdef><para>64 bit unix variant</para></glossdef></glossentry><glossentry><glossterm>win32a</glossterm><glossdef><para>32 bit Windows ASCII character encoding</para></glossdef></glossentry><glossentry><glossterm>win32w</glossterm><glossdef><para>32 bit Windows UNICODE character encoding</para></glossdef></glossentry><glossentry><glossterm>win64</glossterm><glossdef><para>64 bit Windows</para></glossdef></glossentry></glosslist>
             By default the platform which was used to compile Cppcheck is used.
           </para>
         </listitem>

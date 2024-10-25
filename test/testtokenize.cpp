@@ -5681,10 +5681,10 @@ private:
                                 "float * ptrToFloat ;";
 
         // These types should be defined the same on all Windows platforms
-        const std::string win32A = tokenizeAndStringifyWindows(code, true, Platform::Type::Win32A);
-        ASSERT_EQUALS(expected, win32A);
-        ASSERT_EQUALS(win32A, tokenizeAndStringifyWindows(code, true, Platform::Type::Win32W));
-        ASSERT_EQUALS(win32A, tokenizeAndStringifyWindows(code, true, Platform::Type::Win64));
+        const std::string win32a = tokenizeAndStringifyWindows(code, true, Platform::Type::Win32A);
+        ASSERT_EQUALS(expected, win32a);
+        ASSERT_EQUALS(win32a, tokenizeAndStringifyWindows(code, true, Platform::Type::Win32W));
+        ASSERT_EQUALS(win32a, tokenizeAndStringifyWindows(code, true, Platform::Type::Win64));
     }
 
     void platformWin32A() {
