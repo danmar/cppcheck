@@ -48,6 +48,8 @@
 #include <unordered_map>
 #include <utility>
 
+#include <iostream>
+
 const Token* findExpression(const nonneg int exprid,
                             const Token* start,
                             const Token* end,
@@ -2485,12 +2487,21 @@ bool isMutableExpression(const Token* tok)
         return false;
     if (tok->isLiteral() || tok->isKeyword() || tok->isStandardType() || tok->isEnumerator())
         return false;
+    //if (Token::Match(tok, "std :: %name%"))
+    //    return false;
+    //if (Token::Match(tok->previous(), "std :: %name%"))
+    //    return false;
+    //if (Token::Match(tok->tokAt(-2), "std :: %name%"))
+    //    return false;
     if (Token::Match(tok, ",|;|:|]|)|}"))
         return false;
     if (Token::simpleMatch(tok, "[ ]"))
         return false;
-    if (tok->previous() && tok->previous()->isKeyword() && Token::Match(tok->previous(), "%name% ("))
+    if (tok->previous() && tok->previous()->isKeyword() && Token::Match(tok->previous(), "%name% (")) {
+    //if (tok->previous() && tok->previous()->exprId() == 0 && Token::Match(tok->previous(), "%name% (")) {
+        //std::cout << tok->strAt(-1) << std::endl;
         return false;
+    }
     if (tok->link() && Token::Match(tok, "<|>"))
         return false;
     if (tok->astOperand1() && Token::simpleMatch(tok, "["))
@@ -2926,7 +2937,10 @@ static bool isExpressionChangedAt(const F& getExprTok,
         if (!expr && !(tok->valueType() && tok->valueType()->pointer == 0 && tok->valueType()->reference == Reference::None))
             aliased = true;
         if (!aliased)
+        {
+            std::cout << tok->str() << " " << tok->exprId() << " " << exprid << " " << indirect << std::endl;
             aliased = isAliasOf(tok, expr, &i);
+        }
         if (!aliased)
             return false;
         i += indirect;
