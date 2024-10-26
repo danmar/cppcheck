@@ -41,6 +41,7 @@
     <ClCompile Include="checkclass.cpp" />
     <ClCompile Include="checkcondition.cpp" />
     <ClCompile Include="checkers.cpp" />
+    <ClCompile Include="checkersidmapping.cpp" />
     <ClCompile Include="checkersreport.cpp" />
     <ClCompile Include="checkexceptionsafety.cpp" />
     <ClCompile Include="checkfunctions.cpp" />
@@ -136,6 +137,7 @@
     <ClInclude Include="checkclass.h" />
     <ClInclude Include="checkcondition.h" />
     <ClInclude Include="checkers.h" />
+    <ClInclude Include="checkersidmapping.h" />
     <ClInclude Include="checkersreport.h" />
     <ClInclude Include="checkexceptionsafety.h" />
     <ClInclude Include="checkfunctions.h" />

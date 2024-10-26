@@ -206,6 +206,7 @@ LIBOBJ =      $(libcppdir)/valueflow.o \
               $(libcppdir)/checkclass.o \
               $(libcppdir)/checkcondition.o \
               $(libcppdir)/checkers.o \
+              $(libcppdir)/checkersidmapping.o \
               $(libcppdir)/checkersreport.o \
               $(libcppdir)/checkexceptionsafety.o \
               $(libcppdir)/checkfunctions.o \
@@ -528,6 +529,9 @@ $(libcppdir)/checkcondition.o: lib/checkcondition.cpp lib/addoninfo.h lib/astuti
 
 $(libcppdir)/checkers.o: lib/checkers.cpp lib/checkers.h lib/config.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checkers.cpp
+
+$(libcppdir)/checkersidmapping.o: lib/checkersidmapping.cpp lib/checkers.h lib/config.h
+	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checkersidmapping.cpp
 
 $(libcppdir)/checkersreport.o: lib/checkersreport.cpp lib/addoninfo.h lib/checkers.h lib/checkersreport.h lib/config.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checkersreport.cpp
