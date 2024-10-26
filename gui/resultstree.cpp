@@ -262,25 +262,19 @@ void ResultsTree::keyPressEvent(QKeyEvent *event)
 void ResultsTree::setReportType(ReportType reportType) {
     mReportType = reportType;
 
-    auto readInfo = [this](const std::vector<checkers::Info>& info) {
-        for (const auto& i: info)
-            for (const QString& cppcheckId: QString(i.cppcheckIds).split(","))
-                mGuideline[cppcheckId] = QString(i.guideline).toUpper();
-    };
-
-    auto readIdMapping = [this](const std::vector<checkers::IdMapping>& idMapping) {
+    auto readIdMapping = [this](const std::vector<checkers::IdMapping>& idMapping, const char* ext = "") {
         for (const auto& i: idMapping)
             for (const QString& cppcheckId: QString(i.cppcheckId).split(","))
-                mGuideline[cppcheckId] = i.guideline;
+                mGuideline[cppcheckId] = QString(i.guideline) + ext;
     };
 
     if (reportType == ReportType::autosar)
-        readInfo(checkers::autosarInfo);
+        readIdMapping(checkers::idMappingAutosar);
     else if (reportType == ReportType::certC)
-        readInfo(checkers::certCInfo);
+        readIdMapping(checkers::idMappingCertC, "-C");
     else if (reportType == ReportType::certCpp) {
-        readInfo(checkers::certCInfo);
-        readInfo(checkers::certCppInfo);
+        readIdMapping(checkers::idMappingCertC, "-C");
+        readIdMapping(checkers::idMappingCertCpp, "-CPP");
     }
     else if (reportType == ReportType::misraC)
         readIdMapping(checkers::idMappingMisraC);

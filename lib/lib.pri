@@ -18,6 +18,7 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/checkclass.h \
            $${PWD}/checkcondition.h \
            $${PWD}/checkers.h \
+           $${PWD}/checkersidmapping.h \
            $${PWD}/checkersreport.h \
            $${PWD}/checkexceptionsafety.h \
            $${PWD}/checkfunctions.h \
@@ -128,6 +129,7 @@ SOURCES += $${PWD}/valueflow.cpp \
            $${PWD}/checkclass.cpp \
            $${PWD}/checkcondition.cpp \
            $${PWD}/checkers.cpp \
+           $${PWD}/checkersidmapping.cpp \
            $${PWD}/checkersreport.cpp \
            $${PWD}/checkexceptionsafety.cpp \
            $${PWD}/checkfunctions.cpp \
