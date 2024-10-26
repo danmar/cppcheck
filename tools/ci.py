@@ -39,9 +39,9 @@ def gitpush():
 
 
 def iconv(filename):
-    p = subprocess.Popen(['file', '-i', filename],
-                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    comm = p.communicate()
+    with subprocess.Popen(['file', '-i', filename],
+                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as p:
+        comm = p.communicate()
     if 'charset=iso-8859-1' in comm[0]:
         subprocess.call(
             ["iconv", filename, "--from=ISO-8859-1", "--to=UTF-8", "-o", filename])
