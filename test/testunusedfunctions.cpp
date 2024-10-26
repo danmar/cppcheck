@@ -502,8 +502,8 @@ private:
         check("extern \"C\" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataSize) { return 0; }\n");
         ASSERT_EQUALS("", errout_str());
 
-        check("[[maybe_unused]] void f() {}\n"); // #13268
-              "__attribute__((unused)) void g() {}\n";
+        check("[[maybe_unused]] void f() {}\n" // #13268
+              "__attribute__((unused)) void g() {}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
