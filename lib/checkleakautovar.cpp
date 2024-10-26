@@ -369,14 +369,11 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
             using Direction = ArgumentChecks::Direction;
             const std::vector<const Token *> args = getArguments(ftok);
             const std::map<int, ArgumentChecks> &argChecks = libFunc->argumentChecks;
-            bool hasOutParam = false;
-            for (const auto &pair : argChecks) {
-                hasOutParam |= std::any_of(pair.second.direction.cbegin(), pair.second.direction.cend(), [&](const Direction dir) {
+            bool hasOutParam = std::any_of(argChecks.cbegin(), argChecks.cend(), [](const std::pair<int, ArgumentChecks> &pair) {
+                return std::any_of(pair.second.direction.cbegin(), pair.second.direction.cend(), [](const Direction dir) {
                     return dir == Direction::DIR_OUT;
                 });
-                if (hasOutParam)
-                    break;
-            }
+            });
             if (hasOutParam) {
                 for (int i = 0; i < args.size(); i++) {
                     if (!argChecks.count(i + 1))
