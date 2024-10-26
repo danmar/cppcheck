@@ -501,6 +501,9 @@ private:
         // #10661
         check("extern \"C\" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataSize) { return 0; }\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("[[maybe_unused]] void f() {}"); // #13268
+        ASSERT_EQUALS("", errout_str());
     }
 
     void initializer_list() {
