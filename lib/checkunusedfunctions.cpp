@@ -98,7 +98,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
 
             FunctionUsage &usage = mFunctions[stripTemplateParameters(func->name())];
 
-            if (func->retDef && func->retDef->isAttributeMaybeUnused()) {
+            if (func->retDef && (func->retDef->isAttributeUnused() || func->retDef->isAttributeMaybeUnused())) {
                 usage.usedOtherFile = true;
             }
 
