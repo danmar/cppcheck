@@ -683,22 +683,32 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                 mAnalyzerInformation.reset(new AnalyzerInformation);
 
             if (mUnusedFunctionsCheck && (mSettings.useSingleJob() || mAnalyzerInformation)) {
+                std::size_t hash = 0;
                 // this is not a real source file - we just want to tokenize it. treat it as C anyways as the language needs to be determined.
                 Tokenizer tokenizer(mSettings, *this);
                 // enforce the language since markup files are special and do not adhere to the enforced language
                 tokenizer.list.setLang(Standards::Language::C, true);
                 if (fileStream) {
-                    tokenizer.list.createTokens(*fileStream, file.spath());
+                    std::vector<std::string> files{file.spath()};
+                    simplecpp::TokenList tokens(*fileStream, files);
+                    if (mAnalyzerInformation) {
+                        const Preprocessor preprocessor(mSettings, *this);
+                        hash = calculateHash(preprocessor, tokens, mSettings);
+                    }
+                    tokenizer.list.createTokens(std::move(tokens));
                 }
                 else {
-                    std::ifstream in(file.spath());
-                    tokenizer.list.createTokens(in, file.spath());
+                    std::vector<std::string> files{file.spath()};
+                    simplecpp::TokenList tokens(file.spath(), files);
+                    if (mAnalyzerInformation) {
+                        const Preprocessor preprocessor(mSettings, *this);
+                        hash = calculateHash(preprocessor, tokens, mSettings);
+                    }
+                    tokenizer.list.createTokens(std::move(tokens));
                 }
                 mUnusedFunctionsCheck->parseTokens(tokenizer, mSettings);
 
                 if (mAnalyzerInformation) {
-                    // TODO: how to get the proper tokenlist to generate the proper hash?
-                    const std::size_t hash = time(nullptr); // calculateHash(tokenizer.list, mSettings);
                     std::list<ErrorMessage> errors;
                     mAnalyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, hash, errors);
                     mAnalyzerInformation->setFileInfo("CheckUnusedFunctions", mUnusedFunctionsCheck->analyzerInfo());
