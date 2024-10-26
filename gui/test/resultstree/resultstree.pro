@@ -19,7 +19,8 @@ SOURCES += testresultstree.cpp \
     ../../showtypes.cpp \
     ../../report.cpp \
     ../../xmlreportv2.cpp \
-    ../../../lib/checkers.cpp
+    ../../../lib/checkers.cpp \
+    ../../../lib/checkersidmapping.cpp
 
 HEADERS += testresultstree.h \
     ../../resultstree.h \
