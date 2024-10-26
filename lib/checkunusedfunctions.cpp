@@ -98,6 +98,10 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
 
             FunctionUsage &usage = mFunctions[stripTemplateParameters(func->name())];
 
+            if (func->retDef && (func->retDef->isAttributeUnused() || func->retDef->isAttributeMaybeUnused())) {
+                usage.usedOtherFile = true;
+            }
+
             if (!usage.lineNumber)
                 usage.lineNumber = func->token->linenr();
 
