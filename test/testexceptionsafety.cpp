@@ -361,6 +361,27 @@ private:
         // avoid false positives
         check("const char *func() throw() { return 0; }");
         ASSERT_EQUALS("", errout_str());
+
+
+        // #11691: FP throwInNoexceptFunction with if constexpr in template
+        check("template<bool IsNoThrow>\n"
+              "static void* MyNew(size_t Size) noexcept(IsNoThrow) {\n"
+              "    void* Memory = std::malloc(Size);\n"
+              "    if (!Memory) {\n"
+              "        if constexpr (!IsNoThrow) {\n"
+              "            throw std::bad_alloc();\n"
+              "        }\n"
+              "    }\n"
+              "    return Memory;\n"
+              "}\n"
+              "void* AllocateMemory(size_t Size, bool UseNoThrow) {\n"
+              "    if (UseNoThrow) {\n"
+              "        return MyNew<true>(Size);\n"
+              "    } else {\n"
+              "        return MyNew<false>(Size);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void unhandledExceptionSpecification1() { // #4800

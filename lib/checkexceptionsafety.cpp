@@ -25,6 +25,7 @@
 #include "symboldatabase.h"
 #include "token.h"
 
+#include <algorithm>
 #include <list>
 #include <set>
 #include <utility>
@@ -239,6 +240,13 @@ void CheckExceptionSafety::catchExceptionByValueError(const Token *tok)
                 "as a (const) reference which is usually recommended in C++.", CWE398, Certainty::normal);
 }
 
+static bool isPossibleBool(const Token *tok, bool b)
+{
+    const std::list<ValueFlow::Value> &values = tok->values();
+    return std::any_of(values.cbegin(), values.cend(), [&](const ValueFlow::Value &value) {
+        return value.isIntValue() && value.isPossible() && value.intvalue == static_cast<int>(b);
+    });
+}
 
 static const Token * functionThrowsRecursive(const Function * function, std::set<const Function *> & recursive)
 {
@@ -251,6 +259,19 @@ static const Token * functionThrowsRecursive(const Function * function, std::set
 
     for (const Token *tok = function->functionScope->bodyStart->next();
          tok != function->functionScope->bodyEnd; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "if")) {
+            tok = tok->astParent();
+            const Token *condTok = tok->astOperand2();
+            // check if condition is possibly false, since template arguments are not set to known
+            if (isPossibleBool(condTok, false)) {
+                tok = tok->link()->next();
+                if (Token::simpleMatch(tok, "{"))
+                    tok = tok->link();
+                else while (tok && !Token::simpleMatch(tok, ";"))
+                        tok = tok->next();
+                continue;
+            }
+        }
         if (Token::simpleMatch(tok, "try {"))
             tok = tok->linkAt(1);  // skip till start of catch clauses
         if (tok->str() == "throw")
