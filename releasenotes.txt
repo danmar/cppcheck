@@ -1,24 +1,18 @@
-Release Notes for Cppcheck 2.16
-
-New checks:
--
+Release Notes for Cppcheck 2.16.0
 
 Improved checking:
--
-
-GUI:
--
+- constVariable; checking multidimensional arrays
+- constVariablePointer; nested array access
+- deallocuse
 
 Changed interface:
 - SARIF output. Use --output-format=sarif to activate this.
 - Add option --output-format=<format>. Allowed formats are sarif and xml.
--
 
 Deprecations:
 - The previously deprecated support for Python 2.7 has been removed. please use Python 3 instead.
 - The maximum value for --max-ctu-depth is currently capped at 10. This limitation will be removed in a future release.
--
 
 Other:
 - "missingInclude" is no longer implicitly enabled with "information" - you need to enable it explicitly now.
--
+- Fixed checkers report when --addon=misra.py or --addon=misra.json is used.
