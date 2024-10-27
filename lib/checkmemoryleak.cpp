@@ -87,7 +87,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
             while (Token::Match(typeTok, "%name% :: %name%"))
                 typeTok = typeTok->tokAt(2);
             const Scope* classScope = nullptr;
-            if (typeTok->type() && typeTok->type()->isClassType()) {
+            if (typeTok->type() && (typeTok->type()->isClassType() || typeTok->type()->isStructType() || typeTok->type()->isUnionType())) {
                 classScope = typeTok->type()->classScope;
             } else if (typeTok->function() && typeTok->function()->isConstructor()) {
                 classScope = typeTok->function()->nestedIn;
