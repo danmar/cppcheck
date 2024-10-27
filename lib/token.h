@@ -1439,6 +1439,7 @@ private:
     /** Internal helper function to avoid excessive string allocations */
     void astStringVerboseRecursive(std::string& ret, nonneg int indent1 = 0, nonneg int indent2 = 0) const;
 
+    // cppcheck-suppress premium-misra-cpp-2023-12.2.1
     bool mIsC : 1;
     bool mIsCpp : 1;
 
