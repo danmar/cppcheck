@@ -1783,7 +1783,7 @@ Options:
     <message>
         <location filename="projectfile.ui" line="600"/>
         <source>Premium License</source>
-        <translation type="unfinished"></translation>
+        <translation>プレミアムライセンス</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="648"/>
@@ -2092,12 +2092,12 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="964"/>
         <source>Select license file</source>
-        <translation type="unfinished"></translation>
+        <translation>ライセンスファイルの選択</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="964"/>
         <source>License file (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>ライセンスファイル (%1)</translation>
     </message>
 </context>
 <context>
