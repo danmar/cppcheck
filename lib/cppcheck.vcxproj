@@ -81,6 +81,7 @@
     <ClCompile Include="programmemory.cpp" />
     <ClCompile Include="reverseanalyzer.cpp" />
     <ClCompile Include="settings.cpp" />
+    <ClCompile Include="standards.cpp" />
     <ClCompile Include="summaries.cpp" />
     <ClCompile Include="suppressions.cpp" />
     <ClCompile Include="templatesimplifier.cpp" />
