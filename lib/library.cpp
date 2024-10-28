@@ -359,7 +359,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 const std::string memorynodename = memorynode->Name();
                 const auto names = getnames(memorynode->GetText());
                 if (memorynodename == "alloc" || memorynodename == "realloc") {
-                    AllocFunc temp = {0};
+                    AllocFunc temp;
                     temp.groupId = allocationId;
 
                     temp.initData = memorynode->BoolAttribute("init", true);
@@ -396,7 +396,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     for (const auto& n : names)
                         map[n] = temp;
                 } else if (memorynodename == "dealloc") {
-                    AllocFunc temp = {0};
+                    AllocFunc temp;
                     temp.groupId = allocationId;
                     temp.arg = memorynode->IntAttribute("arg", 1);
                     for (const auto& n : names)
@@ -689,7 +689,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const char * const name = node->Attribute("name");
             if (!name)
                 return Error(ErrorCode::MISSING_ATTRIBUTE, "name");
-            PodType podType = {0};
+            PodType podType;
             podType.stdtype = PodType::Type::NO;
             const char * const stdtype = node->Attribute("stdtype");
             if (stdtype) {

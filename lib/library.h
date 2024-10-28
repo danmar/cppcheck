@@ -78,14 +78,14 @@ public:
     Error load(const char exename[], const char path[], bool debug = false);
 
     struct AllocFunc {
-        int groupId;
-        int arg;
+        int groupId{};
+        int arg{};
         enum class BufferSize : std::uint8_t {none,malloc,calloc,strdup};
-        BufferSize bufferSize;
-        int bufferSizeArg1;
-        int bufferSizeArg2;
-        int reallocArg;
-        bool initData;
+        BufferSize bufferSize{BufferSize::none};
+        int bufferSizeArg1{};
+        int bufferSizeArg2{};
+        int reallocArg{};
+        bool initData{};
     };
 
     /** get allocation info for function */
@@ -416,9 +416,9 @@ public:
     const SmartPointer* detectSmartPointer(const Token* tok, bool withoutStd = false) const;
 
     struct PodType {
-        unsigned int size;
-        char sign;
-        enum class Type : std::uint8_t { NO, BOOL, CHAR, SHORT, INT, LONG, LONGLONG } stdtype;
+        unsigned int size{};
+        char sign{};
+        enum class Type : std::uint8_t { NO, BOOL, CHAR, SHORT, INT, LONG, LONGLONG } stdtype = Type::NO;
     };
     const PodType *podtype(const std::string &name) const;
 
