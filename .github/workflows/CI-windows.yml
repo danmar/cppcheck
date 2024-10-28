@@ -47,23 +47,15 @@ jobs:
           modules: 'qtcharts'
           cache: true
 
-      - name: Build GUI release (qmake)
+      - name: Build GUI release (Qt 5)
         if: startsWith(matrix.qt_ver, '5')
         run: |
-          cd gui || exit /b !errorlevel!
-          qmake HAVE_QCHART=yes || exit /b !errorlevel!
-          nmake release || exit /b !errorlevel!
-        env:
-          CL: /MP
+          ; TODO: enable rules?
+          ; specify Release build so matchcompiler is used
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=On  -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
+          cmake --build build --target cppcheck-gui --config Release || exit /b !errorlevel!
 
-      - name: Deploy GUI
-        if: startsWith(matrix.qt_ver, '5')
-        run: |
-          windeployqt Build\gui || exit /b !errorlevel!
-          del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
-          del Build\gui\cppcheck-gui.pdb || exit /b !errorlevel!
-
-      - name: Build GUI release (CMake)
+      - name: Build GUI release (Qt 6)
         if: startsWith(matrix.qt_ver, '6')
         run: |
           ; TODO: enable rules?
@@ -72,7 +64,6 @@ jobs:
           cmake --build build --target cppcheck-gui --config Release || exit /b !errorlevel!
 
       - name: Deploy GUI
-        if: startsWith(matrix.qt_ver, '6')
         run: |
           windeployqt build\bin\Release || exit /b !errorlevel!
           del build\bin\Release\cppcheck-gui.ilk || exit /b !errorlevel!

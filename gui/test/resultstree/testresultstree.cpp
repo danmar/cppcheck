@@ -31,11 +31,13 @@
 #include "path.h"
 #include "settings.h"
 
+#include <utility>
+
 #include <QtTest>
 
 class TestReport : public Report {
 public:
-    TestReport(QString format) : Report(QString()), format(format) {}
+    explicit TestReport(QString format) : Report(QString()), format(std::move(format)) {}
     void writeHeader() override {
         output.clear();
     }
