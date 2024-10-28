@@ -6345,6 +6345,7 @@ private:
         ASSERT_EQUALS("sSint(new::(new=", testAst("s = new S(::new int());")); // #12502
         ASSERT_EQUALS("sS(new::=", testAst("s = ::new (ptr) S();")); // #12552
         ASSERT_EQUALS("pdelete::return", testAst("return ::delete p;"));
+        ASSERT_EQUALS("gn--(delete", testAst("delete g(--n);"));
 
         // placement new
         ASSERT_EQUALS("X12,3,(new ab,c,", testAst("new (a,b,c) X(1,2,3);"));
