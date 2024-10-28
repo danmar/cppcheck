@@ -716,7 +716,6 @@ int main(int argc, char **argv)
                                 "-Wredundant-decls "
                                 "-Wundef "
                                 "-Wno-shadow "
-                                "-Wno-missing-field-initializers "
                                 "-Wno-missing-braces "
                                 "-Wno-sign-compare "
                                 "-Wno-multichar "
