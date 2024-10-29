@@ -62,7 +62,7 @@ jobs:
       # available modules: https://github.com/miurahr/aqtinstall/blob/master/docs/getting_started.rst#installing-modules
       # available tools:   https://github.com/miurahr/aqtinstall/blob/master/docs/getting_started.rst#installing-tools
       - name: Install Qt ${{ env.QT_VERSION }}
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'

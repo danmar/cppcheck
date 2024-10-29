@@ -40,7 +40,7 @@ jobs:
           sudo apt-get install -y libcups2-dev  # required for Qt6PrintSupport in CMake since Qt 6.7.3
 
       - name: Install Qt ${{ env.QT_VERSION }}
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
