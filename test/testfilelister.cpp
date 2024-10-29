@@ -106,6 +106,8 @@ private:
 
         // Make sure headers are not added..
         ASSERT(find_file(dirprefix + "lib/tokenize.h") == files.end());
+
+        ASSERT_EQUALS_ENUM(Standards::Language::CPP, find_file(dirprefix + "cli/main.cpp")->lang());
     }
 
     void recursiveAddFilesEmptyPath() const {
@@ -134,7 +136,23 @@ private:
         std::string err = FileLister::recursiveAddFiles(files, basedir + "lib/token.cpp", {}, matcher);
         ASSERT_EQUALS("", err);
         ASSERT_EQUALS(1, files.size());
-        ASSERT_EQUALS(basedir + "lib/token.cpp", files.begin()->path());
+        auto it = files.begin();
+        ASSERT_EQUALS(basedir + "lib/token.cpp", it->path());
+        ASSERT_EQUALS_ENUM(Standards::Language::None, it->lang()); // explicitly specified files are not accepted
+    }
+
+    void header() const {
+        const std::string basedir = findBaseDir();
+
+        std::list<FileWithDetails> files;
+        std::vector<std::string> ignored;
+        PathMatch matcher(ignored);
+        std::string err = FileLister::recursiveAddFiles(files, basedir + "lib/token.h", matcher);
+        ASSERT_EQUALS("", err);
+        ASSERT_EQUALS(1, files.size());
+        auto it = files.begin();
+        ASSERT_EQUALS(basedir + "lib/token.h", it->path());
+        ASSERT_EQUALS_ENUM(Standards::Language::None, it->lang()); // explicitly specified files are not accepted
     }
 
     void excludeDir() const {
