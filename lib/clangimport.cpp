@@ -19,6 +19,7 @@
 #include "clangimport.h"
 
 #include "errortypes.h"
+#include "filesettings.h"
 #include "mathlib.h"
 #include "settings.h"
 #include "standards.h"
@@ -552,7 +553,7 @@ void clangimport::AstNode::setLocations(TokenList &tokenList, int file, int line
                 const bool windowsPath = colon == 2 && ext.size() > 3 && ext[2] == ':';
                 const std::string::size_type sep1 = windowsPath ? ext.find(':', 4) : colon;
                 const std::string::size_type sep2 = ext.find(':', sep1 + 1);
-                file = tokenList.appendFileIfNew(ext.substr(1, sep1 - 1));
+                file = tokenList.appendFileIfNew(FileWithDetails(ext.substr(1, sep1 - 1)));
                 line = strToInt<int>(ext.substr(sep1 + 1, sep2 - sep1 - 1));
             }
             else {

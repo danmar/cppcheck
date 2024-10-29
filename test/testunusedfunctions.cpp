@@ -600,7 +600,7 @@ private:
 
             Tokenizer tokenizer(settings, *this);
             std::istringstream istr(code);
-            ASSERT(tokenizer.list.createTokens(istr, fname));
+            ASSERT(tokenizer.list.createTokens(istr, createFileWithDetails(fname)));
             ASSERT(tokenizer.simplifyTokens1(""));
 
             c.parseTokens(tokenizer, settings);

@@ -863,7 +863,7 @@ private:
             Tokenizer tokenizer(settings1, *this);
             const char code[] = "void foo(int i) { reinterpret_cast<char>(i) };";
             std::istringstream istr(code);
-            ASSERT(tokenizer.list.createTokens(istr, "test.h"));
+            ASSERT(tokenizer.list.createTokens(istr, createFileWithDetails("test.h")));
             ASSERT_THROW_INTERNAL(tokenizer.simplifyTokens1(""), SYNTAX);
         }
     }
@@ -6122,7 +6122,7 @@ private:
         // tokenize given code..
         Tokenizer tokenizer(settings0, *this);
         std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr,"test.cpp"))
+        if (!tokenizer.list.createTokens(istr,createFileWithDetails("test.cpp")))
             return "ERROR";
 
         tokenizer.combineStringAndCharLiterals();
