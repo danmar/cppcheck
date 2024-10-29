@@ -55,7 +55,7 @@ jobs:
 
       - name: Install Qt ${{ env.QT_VERSION }}
         if: false
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
