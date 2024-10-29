@@ -202,7 +202,7 @@ Library::Error Library::load(const char exename[], const char path[], bool debug
         if (Path::getFilenameExtension(fullfilename).empty()) {
             fullfilename += ".cfg";
             if (debug)
-                std::cout << "looking for library '" + std::string(fullfilename) + "'" << std::endl;
+                std::cout << "looking for library '" + fullfilename + "'" << std::endl;
             error = xml_LoadFile(doc, fullfilename.c_str());
             if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
                 absolute_path = Path::getAbsoluteFilePath(fullfilename);
