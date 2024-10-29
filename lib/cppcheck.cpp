@@ -508,7 +508,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
 
     try {
         Tokenizer tokenizer(mSettings, *this);
-        tokenizer.list.appendFileIfNew(file.spath());
+        tokenizer.list.appendFileIfNew(file);
         std::istringstream ast(output2);
         clangimport::parseClangAstDump(tokenizer, ast);
         ValueFlow::setValues(tokenizer.list,
@@ -668,11 +668,11 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                 // enforce the language since markup files are special and do not adhere to the enforced language
                 tokenizer.list.setLang(Standards::Language::C, true);
                 if (fileStream) {
-                    tokenizer.list.createTokens(*fileStream, file.spath());
+                    tokenizer.list.createTokens(*fileStream, file);
                 }
                 else {
                     std::ifstream in(file.spath());
-                    tokenizer.list.createTokens(in, file.spath());
+                    tokenizer.list.createTokens(in, file);
                 }
                 mUnusedFunctionsCheck->parseTokens(tokenizer, mSettings);
                 // TODO: set analyzer information
