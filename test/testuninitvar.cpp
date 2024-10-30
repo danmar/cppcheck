@@ -53,6 +53,7 @@ private:
         TEST_CASE(func_uninit_pointer); // analyse function calls for: 'void a(int *p) { *p = 0; }'
         TEST_CASE(uninitvar_typeof);    // typeof
         TEST_CASE(uninitvar_ignore);    // ignore cast, *&x, ..
+        TEST_CASE(uninitvar_lambda);    // #12944
         TEST_CASE(uninitvar2);
         TEST_CASE(uninitvar3);          // #3844
         TEST_CASE(uninitvar4);          // #3869 (reference)
@@ -2512,6 +2513,17 @@ private:
                        "  return *&i;\n"
                        "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: i\n", errout_str());
+    }
+
+    void uninitvar_lambda() {  // #12944
+        checkUninitVar( "void Fun()\n"
+                        "{\n"
+                        "    int var;\n"
+                        "    auto lam = [&]() { int x = var; };\n"
+                        "    var = 5;\n"
+                        "    lam();\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void uninitvar2() {
