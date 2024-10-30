@@ -3725,3 +3725,49 @@ bool isExhaustiveSwitch(const Token *startbrace)
 
     return false;
 }
+
+template<typename T>
+static bool isKnownOrLiteral(const Token *tok, T value);
+
+template<>
+bool isKnownOrLiteral<bool>(const Token *tok, bool value)
+{
+    return (tok->hasKnownIntValue() && static_cast<bool>(tok->getKnownIntValue()) == value)
+           || (value && Token::simpleMatch(tok, "true"))
+           || (!value && Token::simpleMatch(tok, "false"));
+}
+
+bool isUnreachableOperand(const Token *tok)
+{
+    for (;;)
+    {
+        const Token *parent = tok->astParent();
+        if (!parent)
+            break;
+
+        if (parent->isBinaryOp()) {
+            bool left = tok == parent->astOperand1();
+            const Token *sibling = left ? parent->astOperand2() : parent->astOperand1();
+
+            // logical and
+            if (Token::simpleMatch(parent, "&&") && !left && isKnownOrLiteral(sibling, false))
+                return true;
+
+            // logical or
+            if (Token::simpleMatch(parent, "||") && !left && isKnownOrLiteral(sibling, true))
+                return true;
+
+            // ternary
+            if (Token::simpleMatch(parent, ":") && Token::simpleMatch(parent->astParent(), "?")) {
+                const Token *condTok = parent->astParent()->astOperand1();
+                if ((isKnownOrLiteral(condTok, true) && !left)
+                    || (isKnownOrLiteral(condTok, false) && left))
+                    return true;
+            }
+        }
+
+        tok = parent;
+    }
+
+    return false;
+}
