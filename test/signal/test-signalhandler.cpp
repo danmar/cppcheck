@@ -41,7 +41,7 @@
 /*static*/ void my_segv() // NOLINT(misc-use-internal-linkage)
 {
     // cppcheck-suppress nullPointer
-    ++*(int*)nullptr;
+    ++*(int*)nullptr; // NOLINT(clang-analyzer-core.NullDereference)
 }
 
 /*static*/ void my_fpe() // NOLINT(misc-use-internal-linkage)
