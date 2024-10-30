@@ -2515,7 +2515,6 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: i\n", errout_str());
     }
 
-
     void uninitvar2() {
         // using uninit var
         checkUninitVar("void f() {\n"
