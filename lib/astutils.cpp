@@ -3726,17 +3726,6 @@ bool isExhaustiveSwitch(const Token *startbrace)
     return false;
 }
 
-template<typename T>
-static bool isKnownOrLiteral(const Token *tok, T value);
-
-template<>
-bool isKnownOrLiteral<bool>(const Token *tok, bool value)
-{
-    return (tok->hasKnownIntValue() && static_cast<bool>(tok->getKnownIntValue()) == value)
-           || (value && Token::simpleMatch(tok, "true"))
-           || (!value && Token::simpleMatch(tok, "false"));
-}
-
 bool isUnreachableOperand(const Token *tok)
 {
     for (;;)
@@ -3750,18 +3739,19 @@ bool isUnreachableOperand(const Token *tok)
             const Token *sibling = left ? parent->astOperand2() : parent->astOperand1();
 
             // logical and
-            if (Token::simpleMatch(parent, "&&") && !left && isKnownOrLiteral(sibling, false))
+            if (Token::simpleMatch(parent, "&&") && !left && sibling->hasKnownIntValue()
+                && !sibling->getKnownIntValue())
                 return true;
 
             // logical or
-            if (Token::simpleMatch(parent, "||") && !left && isKnownOrLiteral(sibling, true))
+            if (Token::simpleMatch(parent, "||") && !left && sibling->hasKnownIntValue()
+                && sibling->getKnownIntValue())
                 return true;
 
             // ternary
             if (Token::simpleMatch(parent, ":") && Token::simpleMatch(parent->astParent(), "?")) {
                 const Token *condTok = parent->astParent()->astOperand1();
-                if ((isKnownOrLiteral(condTok, true) && !left)
-                    || (isKnownOrLiteral(condTok, false) && left))
+                if (condTok->hasKnownIntValue() && static_cast<bool>(condTok->getKnownIntValue()) != left)
                     return true;
             }
         }
