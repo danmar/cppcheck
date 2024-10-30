@@ -432,32 +432,8 @@ void CheckType::checkFloatToIntegerOverflow()
 {
     logChecker("CheckType::checkFloatToIntegerOverflow");
 
-    std::vector<const Token *> skippedTernaries;
-
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         const ValueType *vtint, *vtfloat;
-
-        if (!skippedTernaries.empty() && tok == skippedTernaries.back()) {
-            skippedTernaries.pop_back();
-            while (tok && !Token::Match(tok, ";|)|}")) {
-                if (Token::simpleMatch(tok, "(")) {
-                    tok = tok->link();
-                }
-                tok = tok->next();
-            }
-        }
-
-        if (Token::simpleMatch(tok, "?")) {
-            const Token * condTok = tok->astOperand1();
-            bool hasKnownIntValue = condTok->hasKnownIntValue();
-            if (hasKnownIntValue || Token::Match(condTok, "true|false")) {
-                if ((hasKnownIntValue && condTok->getKnownIntValue()) || Token::simpleMatch(condTok, "true")) {
-                    skippedTernaries.push_back(tok->astOperand2());
-                } else {
-                    tok = tok->astOperand2();
-                }
-            }
-        }
 
         // Explicit cast
         if (Token::Match(tok, "( %name%") && tok->astOperand1() && !tok->astOperand2()) {

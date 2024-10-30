@@ -495,21 +495,6 @@ private:
               "  return 1234.5;\n"
               "}", settingsDefault);
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
-
-        const Settings settingsWithStdint = settingsBuilder().library("std.cfg").build();
-        checkP("#define TEST(b, f) b ? 5000 : (uint16_t)f\n" // #11685
-               "void f(void)\n"
-               "{\n"
-               "  uint16_t u = TEST(true, 75000.0);\n"
-               "}\n", settingsWithStdint);
-        ASSERT_EQUALS("", errout_str());
-
-        checkP("#define TEST(b, f) b ? 5000 : (uint16_t)f\n"
-               "void f(void)\n"
-               "{\n"
-               "  uint16_t u = TEST(false, 75000.0);\n"
-               "}\n", settingsWithStdint);
-        ASSERT_EQUALS("[test.cpp:4]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
     }
 
     void integerOverflow() { // #11794
