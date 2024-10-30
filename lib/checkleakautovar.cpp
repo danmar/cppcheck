@@ -913,6 +913,12 @@ void CheckLeakAutoVar::changeAllocStatus(VarInfo &varInfo, const VarInfo::AllocI
     std::map<int, VarInfo::AllocInfo> &alloctype = varInfo.alloctype;
     const std::map<int, VarInfo::AllocInfo>::iterator var = alloctype.find(arg->varId());
     if (var != alloctype.end()) {
+        // bailout if function is also allocating, since the argument might be moved
+        // to the return value, such as in fdopen
+        if (allocation.allocTok && mSettings->library.getAllocFuncInfo(allocation.allocTok)) {
+            varInfo.erase(arg->varId());
+            return;
+        }
         if (allocation.status == VarInfo::NOALLOC) {
             // possible usage
             varInfo.possibleUsage[arg->varId()] = { tok, VarInfo::USED };
