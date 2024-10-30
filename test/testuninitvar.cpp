@@ -53,7 +53,6 @@ private:
         TEST_CASE(func_uninit_pointer); // analyse function calls for: 'void a(int *p) { *p = 0; }'
         TEST_CASE(uninitvar_typeof);    // typeof
         TEST_CASE(uninitvar_ignore);    // ignore cast, *&x, ..
-        TEST_CASE(uninitvar_lambda);    // #12944
         TEST_CASE(uninitvar2);
         TEST_CASE(uninitvar3);          // #3844
         TEST_CASE(uninitvar4);          // #3869 (reference)
@@ -64,6 +63,7 @@ private:
         TEST_CASE(valueFlowUninit2_value);
         TEST_CASE(valueFlowUninit_uninitvar2);
         TEST_CASE(valueFlowUninit_functioncall);
+        TEST_CASE(valueFlowUninit_lambda); // #12944
         TEST_CASE(uninitStructMember);  // struct members
         TEST_CASE(uninitvar2_while);
         TEST_CASE(uninitvar2_4494);      // #4494
@@ -2515,16 +2515,6 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: i\n", errout_str());
     }
 
-    void uninitvar_lambda() {  // #12944
-        checkUninitVar( "void Fun()\n"
-                        "{\n"
-                        "    int var;\n"
-                        "    auto lam = [&]() { int x = var; };\n"
-                        "    var = 5;\n"
-                        "    lam();\n"
-                        "}\n");
-        ASSERT_EQUALS("", errout_str());
-    }
 
     void uninitvar2() {
         // using uninit var
@@ -4399,6 +4389,17 @@ private:
                         "    return f(i, 0);\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:4]: (warning) Uninitialized variable: i\n", errout_str());
+    }
+
+    void valueFlowUninit_lambda() {  // #12944
+        valueFlowUninit( "void Fun()\n"
+                         "{\n"
+                         "    int var;\n"
+                         "    auto lam = [&]() { int x = var; };\n"
+                         "    var = 5;\n"
+                         "    lam();\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void uninitStructMember() { // struct members
