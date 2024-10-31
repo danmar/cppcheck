@@ -762,6 +762,7 @@ private:
     }
 
     void fdopen() { // #12781
+        const Settings posixSettings = settingsBuilder().library("posix.cfg").build();
         check("void foo(void) {\n"
               "    int fd;\n"
               "    FILE *stream;\n"
@@ -773,7 +774,7 @@ private:
               "        return;\n"
               "    }\n"
               "    fclose(stream);\n"
-              "}\n");
+              "}\n", posixSettings);
         ASSERT_EQUALS("", errout_str());
     }
 
