@@ -312,7 +312,7 @@
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4701;4706;4800;4805</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>precompiled.h</PrecompiledHeaderFile>
@@ -343,7 +343,7 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4701;4706;4800;4805</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>precompiled.h</PrecompiledHeaderFile>
@@ -378,7 +378,7 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4701;4706;4800;4805</DisableSpecificWarnings>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;NDEBUG;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -418,7 +418,7 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4701;4706;4800;4805</DisableSpecificWarnings>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;NDEBUG;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>

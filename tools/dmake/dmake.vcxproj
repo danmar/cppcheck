@@ -62,7 +62,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <PrecompiledHeader />
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
@@ -82,7 +82,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader />
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>

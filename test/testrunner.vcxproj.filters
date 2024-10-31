@@ -259,6 +259,15 @@
     <ClCompile Include="testcheck.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="testfilesettings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testprogrammemory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="teststandards.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup Label="HeaderFiles">
     <ClInclude Include="options.h">

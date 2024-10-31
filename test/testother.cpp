@@ -220,7 +220,7 @@ private:
         TEST_CASE(redundantVarAssignment_array);
         TEST_CASE(redundantVarAssignment_switch_break);
         TEST_CASE(redundantInitialization);
-        TEST_CASE(redundantMemWrite);
+        //TEST_CASE(redundantMemWrite); // FIXME: temporary hack
         TEST_CASE(redundantAssignmentSameValue);
 
         TEST_CASE(varFuncNullUB);
@@ -10307,9 +10307,8 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
+    // cppcheck-suppress unusedPrivateFunction
     void redundantMemWrite() {
-        return; // FIXME: temporary hack
-
         // Simple tests
         // cppcheck-suppress unreachableCode - remove when code is enabled again
         check("void f() {\n"
