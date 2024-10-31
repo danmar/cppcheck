@@ -1744,7 +1744,7 @@ void Tokenizer::simplifyTypedefCpp()
                             --classLevel;
                             pattern.clear();
 
-                            for (int i = classLevel; i < spaceInfo.size(); ++i)
+                            for (std::size_t i = classLevel; i < spaceInfo.size(); ++i)
                                 pattern += (spaceInfo[i].className + " :: ");
 
                             pattern += typeName->str();
@@ -1791,7 +1791,7 @@ void Tokenizer::simplifyTypedefCpp()
                                     spaceInfo[classLevel].bodyEnd2 = tok2->link();
                                     ++classLevel;
                                     pattern.clear();
-                                    for (int i = classLevel; i < spaceInfo.size(); ++i)
+                                    for (std::size_t i = classLevel; i < spaceInfo.size(); ++i)
                                         pattern += spaceInfo[i].className + " :: ";
 
                                     pattern += typeName->str();
@@ -1880,7 +1880,7 @@ void Tokenizer::simplifyTypedefCpp()
                             }
 
                             // remove qualification if present
-                            for (int i = classLevel; i < spaceInfo.size(); ++i) {
+                            for (std::size_t i = classLevel; i < spaceInfo.size(); ++i) {
                                 if (!removed.empty())
                                     removed += " ";
                                 removed += (tok2->str() + " " + tok2->strAt(1));
@@ -2021,7 +2021,7 @@ void Tokenizer::simplifyTypedefCpp()
                             tok2 = tok2->next();
                         }
 
-                        for (int i = classLevel; i < spaceInfo.size(); ++i) {
+                        for (std::size_t i = classLevel; i < spaceInfo.size(); ++i) {
                             tok2->insertToken(spaceInfo[i].className);
                             tok2 = tok2->next();
                             tok2->insertToken("::");
@@ -7489,7 +7489,7 @@ void Tokenizer::simplifyStaticConst()
     // move 'static' before all other qualifiers and types, ...
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         bool continue2 = false;
-        for (int i = 0; i < sizeof(qualifiers)/sizeof(qualifiers[0]); i++) {
+        for (std::size_t i = 0; i < sizeof(qualifiers)/sizeof(qualifiers[0]); i++) {
 
             // Keep searching for a qualifier
             if (!tok->next() || tok->strAt(1) != qualifiers[i])
@@ -7499,7 +7499,7 @@ void Tokenizer::simplifyStaticConst()
             Token* leftTok = tok;
             bool behindOther = false;
             for (; leftTok; leftTok = leftTok->previous()) {
-                for (int j = 0; j <= i; j++) {
+                for (std::size_t j = 0; j <= i; j++) {
                     if (leftTok->str() == qualifiers[j]) {
                         behindOther = true;
                         break;
@@ -7717,7 +7717,7 @@ void Tokenizer::simplifyInitVar()
                 tok1 = tok1->next();
             tok1->str(";");
 
-            const int numTokens = (Token::Match(tok, "class|struct|union")) ? 2U : 1U;
+            const int numTokens = (Token::Match(tok, "class|struct|union")) ? 2 : 1;
             TokenList::insertTokens(tok1, tok, numTokens);
             tok = initVar(tok);
         }
@@ -8171,7 +8171,7 @@ void Tokenizer::cppcheckError(const Token *tok) const
 void Tokenizer::unhandledCharLiteral(const Token *tok, const std::string& msg) const
 {
     std::string s = tok ? (" " + tok->str()) : "";
-    for (int i = 0; i < s.size(); ++i) {
+    for (std::size_t i = 0; i < s.size(); ++i) {
         if ((unsigned char)s[i] >= 0x80)
             s.clear();
     }
