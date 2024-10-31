@@ -52,7 +52,7 @@ jobs:
         run: |
           ; TODO: enable rules?
           ; specify Release build so matchcompiler is used
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=On  -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On  -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
           cmake --build build --target cppcheck-gui --config Release || exit /b !errorlevel!
 
       - name: Build GUI release (Qt 6)
@@ -60,7 +60,7 @@ jobs:
         run: |
           ; TODO: enable rules?
           ; specify Release build so matchcompiler is used
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
           cmake --build build --target cppcheck-gui --config Release || exit /b !errorlevel!
 
       - name: Deploy GUI
@@ -135,16 +135,15 @@ jobs:
           python -m pip install pytest-timeout || exit /b !errorlevel!
           python -m pip install psutil || exit /b !errorlevel!
 
-      - name: Run CMake
-        if: false # TODO: enable
-        run: |
-          cmake -S . -B build -DBUILD_TESTS=On || exit /b !errorlevel!
+      # TODO: build with CMake
 
       - name: Build CLI debug configuration using MSBuild
         if: matrix.config == 'debug'
         run: |
           :: cmake --build build --target check --config Debug || exit /b !errorlevel!
           msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE;Platform=x64 -maxcpucount || exit /b !errorlevel!
+        env:
+          _CL_: /WX
 
       - name: Run Debug test
         if: matrix.config == 'debug'
@@ -155,6 +154,8 @@ jobs:
         run: |
           :: cmake --build build --target check --config Release || exit /b !errorlevel!
           msbuild -m cppcheck.sln /p:Configuration=Release-PCRE;Platform=x64 -maxcpucount || exit /b !errorlevel!
+        env:
+          _CL_: /WX
 
       - name: Run Release test
         if: matrix.config == 'release'
