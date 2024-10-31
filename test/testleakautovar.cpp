@@ -73,7 +73,6 @@ private:
         TEST_CASE(realloc5); // #9292, #9990
         TEST_CASE(freopen1);
         TEST_CASE(freopen2);
-        TEST_CASE(fdopen); // #12781
 
         TEST_CASE(deallocuse1);
         TEST_CASE(deallocuse3);
@@ -759,22 +758,6 @@ private:
               "    void *q = freopen(name, b, p);\n"
               "}");
         ASSERT_EQUALS("[test.c:4]: (error) Resource leak: q\n", errout_str());
-    }
-
-    void fdopen() { // #12781
-        check("void foo(void) {\n"
-              "    int fd;\n"
-              "    FILE *stream;\n"
-              "    fd = open(\"/foo\", O_RDONLY);\n"
-              "    if (fd == -1) return;\n"
-              "    stream = fdopen(fd, \"r\");\n"
-              "    if (!stream) {\n"
-              "        close(fd);\n"
-              "        return;\n"
-              "    }\n"
-              "    fclose(stream);\n"
-              "}\n");
-        ASSERT_EQUALS("", errout_str());
     }
 
     void deallocuse1() {
@@ -3384,6 +3367,7 @@ private:
     void run() override {
         TEST_CASE(memleak_getline);
         TEST_CASE(deallocuse_fdopen);
+        TEST_CASE(doublefree_fdopen); // #12781
     }
 
     void memleak_getline() {
@@ -3406,6 +3390,22 @@ private:
               "    int fd = mkstemps(fileName, 4);\n"
               "    if (fd != -1)\n"
               "        out.reset(fdopen(fd, \"w\"));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void doublefree_fdopen() { // #12781
+        check("void foo(void) {\n"
+              "    int fd;\n"
+              "    FILE *stream;\n"
+              "    fd = open(\"/foo\", O_RDONLY);\n"
+              "    if (fd == -1) return;\n"
+              "    stream = fdopen(fd, \"r\");\n"
+              "    if (!stream) {\n"
+              "        close(fd);\n"
+              "        return;\n"
+              "    }\n"
+              "    fclose(stream);\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
