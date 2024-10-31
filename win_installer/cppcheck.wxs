@@ -13,6 +13,7 @@
     <Media Id='1' Cabinet='Cppcheck.cab' EmbedCab='yes' CompressionLevel='high' DiskPrompt='CD-ROM 1' />
     <Property Id='DiskPrompt' Value='Cppcheck installation [1]' />
 
+    <!-- TODO: what is DiskId for? It is used inconsistently -->
     <Directory Id='TARGETDIR' Name='SourceDir'>
       <Directory Id='System32' FileSource='SystemFolder' />
       <Directory Id='$(var.PlatformProgramFilesFolder)' Name='PFiles'>
@@ -36,16 +37,16 @@
             </File>
             <File Id='onlinehelpqhc' Name='online-help.qhc' Source='$(var.GuiHelpDir)\online-help.qhc' />
             <File Id='onlinehelpqch' Name='online-help.qch' Source='$(var.GuiHelpDir)\online-help.qch' />
-            <File Id='Qt5Coredll' Name='Qt5Core.dll' Source='$(var.QtDllDir)\Qt5Core.dll' />
-            <File Id='Qt5Guidll' Name='Qt5Gui.dll' Source='$(var.QtDllDir)\Qt5Gui.dll' />
-            <File Id='Qt5Helpdll' Name='Qt5Help.dll' Source='$(var.QtDllDir)\Qt5Help.dll' />
-            <File Id='Qt5Sqldll' Name='Qt5Sql.dll' Source='$(var.QtDllDir)\Qt5Sql.dll' />
-            <File Id='Qt5Widgetsdll' Name='Qt5Widgets.dll' Source='$(var.QtDllDir)\Qt5Widgets.dll' />
-            <File Id='Qt5PrintSupportdll' Name='Qt5PrintSupport.dll' Source='$(var.QtDllDir)\Qt5PrintSupport.dll' />
-            <?if $(var.Platform) = x64 ?>
-              <File Id='Qt5Chartsdll' Name='Qt5Charts.dll' Source='$(var.QtDllDir)\Qt5Charts.dll' />
-            <?endif?>
-            <File Id='Qt5Network.dll' Name='Qt5Network.dll' DiskId='1' Source='$(var.QtDllDir)\Qt5Network.dll' />
+            <File Id='Qt6Coredll' Name='Qt6Core.dll' Source='$(var.QtDllDir)\Qt6Core.dll' />
+            <File Id='Qt6Guidll' Name='Qt6Gui.dll' Source='$(var.QtDllDir)\Qt6Gui.dll' />
+            <File Id='Qt6Helpdll' Name='Qt6Help.dll' Source='$(var.QtDllDir)\Qt6Help.dll' />
+            <File Id='Qt6Sqldll' Name='Qt6Sql.dll' Source='$(var.QtDllDir)\Qt6Sql.dll' />
+            <File Id='Qt6Widgetsdll' Name='Qt6Widgets.dll' Source='$(var.QtDllDir)\Qt6Widgets.dll' />
+            <File Id='Qt6PrintSupportdll' Name='Qt6PrintSupport.dll' Source='$(var.QtDllDir)\Qt6PrintSupport.dll' />
+            <File Id='Qt6Chartsdll' Name='Qt6Charts.dll' Source='$(var.QtDllDir)\Qt6Charts.dll' />
+            <File Id='Qt6Network.dll' Name='Qt6Network.dll' DiskId='1' Source='$(var.QtDllDir)\Qt6Network.dll' />
+            <File Id='Qt6OpenGL.dll' Name='Qt6OpenGL.dll' DiskId='1' Source='$(var.QtDllDir)\Qt6OpenGL.dll' />
+            <File Id='Qt6OpenGLWidgets.dll' Name='Qt6OpenGLWidgets.dll' DiskId='1' Source='$(var.QtDllDir)\Qt6OpenGLWidgets.dll' />
             <File Id='libcrypto.dll' Name='libcrypto-3-x64.dll' DiskId='1' Source='$(var.QtDllDir)\libcrypto-3-x64.dll' />
             <File Id='libssl.dll' Name='libssl-3-x64.dll' DiskId='1' Source='$(var.QtDllDir)\libssl-3-x64.dll' />
           </Component>
@@ -56,7 +57,7 @@
           </Directory>
           <Directory Id='QtStylesFolder' Name='styles'>
             <Component Id='QtStyles' DiskId='1' Guid='$(var.qtstylesGUID)'>
-              <File Id='qwindowsvistastyledll' Name='qwindowsvistastyle.dll' Source='$(var.QtDllDir)\styles\qwindowsvistastyle.dll' />
+              <File Id='qmodernwindowsstyledll' Name='qmodernwindowsstyle.dll' Source='$(var.QtDllDir)\styles\qmodernwindowsstyle.dll' />
             </Component>
           </Directory>
           <Directory Id='TranslationsFolder' Name='lang'>
@@ -229,6 +230,7 @@
     </Feature>
 
     <MajorUpgrade DowngradeErrorMessage='Downgrade is not allowed'/>
+    <!-- TODO: remove old workarounds -->
     <!--Remove some pre 1.57 versions which can't be upgraded with MajorUpgrade-->
     <InstallExecuteSequence>
       <Custom Action='UninstallOld152' After='InstallFinalize'>NOT Installed</Custom>
