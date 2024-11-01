@@ -1039,7 +1039,7 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
     for (Scope& scope : scopeList) {
         // add all variables
         for (Variable& var: scope.varlist) {
-            const unsigned int varId = var.declarationId();
+            const int varId = var.declarationId();
             if (varId)
                 mVariableList[varId] = &var;
             // fix up variables without type
@@ -1055,7 +1055,7 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
             for (Variable& arg: func.argumentList) {
                 // check for named parameters
                 if (arg.nameToken() && arg.declarationId()) {
-                    const unsigned int declarationId = arg.declarationId();
+                    const int declarationId = arg.declarationId();
                     mVariableList[declarationId] = &arg;
                     // fix up parameters without type
                     if (!arg.type() && !arg.typeStartToken()->isStandardType()) {
@@ -2117,7 +2117,7 @@ namespace {
     {
         if (const Scope* scope = var->nameToken()->scope()) {
             auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [&](const Function& function) {
-                for (std::size_t arg = 0; arg < function.argCount(); ++arg) {
+                for (nonneg int arg = 0; arg < function.argCount(); ++arg) {
                     if (var == function.getArgumentVar(arg))
                         return true;
                 }
@@ -3011,7 +3011,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             // remove class name
             else if (arg_path_length > 2 && first->strAt(1) != second->strAt(1)) {
                 std::string short_path = path;
-                unsigned int short_path_length = arg_path_length;
+                int short_path_length = arg_path_length;
 
                 // remove last " :: "
                 short_path.resize(short_path.size() - 4);
@@ -3034,7 +3034,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
 
                 param = std::move(short_path);
                 if (Token::simpleMatch(second->next(), param.c_str(), param.size())) {
-                    second = second->tokAt(int(short_path_length));
+                    second = second->tokAt(short_path_length);
                     arg_path_length = 0;
                 }
             }
@@ -5961,7 +5961,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst, Referen
     // Prioritize matches in derived scopes
     for (const auto& fb : { fallback1Func, fallback2Func }) {
         const Function* ret = nullptr;
-        for (int i = 0; i < fb.size(); ++i) {
+        for (std::size_t i = 0; i < fb.size(); ++i) {
             if (std::find(matches.cbegin(), matches.cend(), fb[i]) == matches.cend())
                 continue;
             if (this == fb[i]->nestedIn) {
@@ -7144,7 +7144,7 @@ static const Token* parsedecl(const Token* type,
     if (settings.debugnormal || settings.debugwarnings)
         valuetype->setDebugPath(type, loc);
     const Token * const previousType = type;
-    const unsigned int pointer0 = valuetype->pointer;
+    const int pointer0 = valuetype->pointer;
     while (Token::Match(type->previous(), "%name%") && !endsWith(type->strAt(-1), ':'))
         type = type->previous();
     valuetype->sign = ValueType::Sign::UNKNOWN_SIGN;
@@ -7477,9 +7477,9 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
         } else if (tok->isBoolean()) {
             setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0U));
         } else if (tok->tokType() == Token::eChar || tok->tokType() == Token::eString) {
-            nonneg int const pointer = tok->tokType() == Token::eChar ? 0U : 1U;
-            nonneg int const constness = tok->tokType() == Token::eChar ? 0U : 1U;
-            nonneg int const volatileness = 0U;
+            nonneg int const pointer = tok->tokType() == Token::eChar ? 0 : 1;
+            nonneg int const constness = tok->tokType() == Token::eChar ? 0 : 1;
+            nonneg int const volatileness = 0;
             ValueType valuetype(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, pointer, constness, volatileness);
 
             if (tok->isCpp() && mSettings.standards.cpp >= Standards::CPP20 && tok->isUtf8()) {

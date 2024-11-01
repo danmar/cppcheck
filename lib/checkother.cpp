@@ -3765,14 +3765,14 @@ void CheckOther::funcArgOrderDifferent(const std::string & functionName,
         !definitions.empty() ? definitions[0] ? definitions[0] : definition : nullptr
     };
     std::string msg = "$symbol:" + functionName + "\nFunction '$symbol' argument order different: declaration '";
-    for (int i = 0; i < declarations.size(); ++i) {
+    for (std::size_t i = 0; i < declarations.size(); ++i) {
         if (i != 0)
             msg += ", ";
         if (declarations[i])
             msg += declarations[i]->str();
     }
     msg += "' definition '";
-    for (int i = 0; i < definitions.size(); ++i) {
+    for (std::size_t i = 0; i < definitions.size(); ++i) {
         if (i != 0)
             msg += ", ";
         if (definitions[i])

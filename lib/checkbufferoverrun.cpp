@@ -86,7 +86,7 @@ static int getMinFormatStringOutputLength(const std::vector<const Token*> &param
     bool i_d_x_f_found = false;
     int parameterLength = 0;
     int inputArgNr = formatStringArgNr;
-    for (int i = 1; i + 1 < formatString.length(); ++i) {
+    for (std::size_t i = 1; i + 1 < formatString.length(); ++i) {
         if (formatString[i] == '\\') {
             if (i < formatString.length() - 1 && formatString[i + 1] == '0')
                 break;
@@ -255,7 +255,7 @@ static std::vector<ValueFlow::Value> getOverrunIndexValues(const Token* tok,
 
     bool overflow = false;
     std::vector<ValueFlow::Value> indexValues;
-    for (int i = 0; i < dimensions.size() && i < indexTokens.size(); ++i) {
+    for (std::size_t i = 0; i < dimensions.size() && i < indexTokens.size(); ++i) {
         MathLib::bigint size = dimensions[i].num;
         if (!isArrayIndex)
             size++;
@@ -600,7 +600,7 @@ static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::Mi
     case Library::ArgumentChecks::MinSize::Type::ARGVALUE: {
         if (arg && arg->hasKnownIntValue()) {
             MathLib::bigint myMinsize = arg->getKnownIntValue();
-            const unsigned int baseSize = tokenizer->sizeOfType(minsize.baseType);
+            const int baseSize = tokenizer->sizeOfType(minsize.baseType);
             if (baseSize != 0)
                 myMinsize *= baseSize;
             return myMinsize <= bufferSize;
@@ -616,7 +616,7 @@ static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::Mi
         break;
     case Library::ArgumentChecks::MinSize::Type::VALUE: {
         MathLib::bigint myMinsize = minsize.value;
-        const unsigned int baseSize = tokenizer->sizeOfType(minsize.baseType);
+        const int baseSize = tokenizer->sizeOfType(minsize.baseType);
         if (baseSize != 0)
             myMinsize *= baseSize;
         return myMinsize <= bufferSize;
@@ -848,7 +848,7 @@ void CheckBufferOverrun::argumentSize()
                 if (calldata->variable()->dimensions().size() != argument->dimensions().size())
                     continue;
                 bool err = false;
-                for (int d = 0; d < argument->dimensions().size(); ++d) {
+                for (std::size_t d = 0; d < argument->dimensions().size(); ++d) {
                     const auto& dim1 = calldata->variable()->dimensions()[d];
                     const auto& dim2 = argument->dimensions()[d];
                     if (!dim1.known || !dim2.known)

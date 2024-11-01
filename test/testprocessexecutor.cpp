@@ -120,7 +120,7 @@ private:
         ASSERT_EQUALS(opt.executeCommandCalled, executeCommandCalled);
         ASSERT_EQUALS(opt.exe, exe);
         ASSERT_EQUALS(opt.args.size(), args.size());
-        for (int i = 0; i < args.size(); ++i)
+        for (std::size_t i = 0; i < args.size(); ++i)
         {
             ASSERT_EQUALS(opt.args[i], args[i]);
         }
