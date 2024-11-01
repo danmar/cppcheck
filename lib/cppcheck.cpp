@@ -1420,8 +1420,11 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
     std::string fileList;
 
     if (files.size() >= 2 || endsWith(files[0], ".ctu-info")) {
+        // TODO: can this conflict when using -j?
         fileList = Path::getPathFromFilename(files[0]) + FILELIST;
         std::ofstream fout(fileList);
+        filesDeleter.addFile(fileList);
+        // TODO: check if file could be created
         for (const std::string& f: files)
             fout << f << std::endl;
     }
