@@ -3,7 +3,6 @@
 
 import os
 import contextlib
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -107,8 +106,6 @@ def runCheck(source_filename=None, xml_version='1', xml_filename=None):
         index_contents = index_file.read()
 
     yield index_contents, output_directory
-
-    shutil.rmtree(output_directory)
 
 
 if __name__ == '__main__':
