@@ -406,6 +406,7 @@ jobs:
           # TODO: how to run this without copying the file?
           cp build.cmake.signal/bin/test-s* .
           python3 -m pytest -Werror --strict-markers -vv test/signal/test-signalhandler.py
+          rm test-signalhandler
 
       # no unix backtrace support on MacOs
       - name: Test Stacktrace
@@ -416,6 +417,7 @@ jobs:
           # TODO: how to run this without copying the file?
           cp build.cmake.stack/bin/test-s* .
           python3 -m pytest -Werror --strict-markers -vv test/signal/test-stacktrace.py
+          rm test-stacktrace
 
       # TODO: move to scriptcheck.yml so these are tested with all Python versions?
       - name: Test addons
