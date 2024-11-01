@@ -410,9 +410,9 @@ jobs:
       - name: Test Stacktrace
         if: contains(matrix.os, 'ubuntu')
         run: |
-          cmake -S . -B cmake.output.signal -G "Unix Makefiles" -DBUILD_TESTS=On
-          cmake --build cmake.output.signal --target test-stacktrace -- -j$(nproc)
-          cp cmake.output.signal/bin/test-s* .
+          cmake -S . -B cmake.output.stack -G "Unix Makefiles" -DBUILD_TESTS=On
+          cmake --build cmake.output.stack --target test-stacktrace -- -j$(nproc)
+          cp cmake.output.stack/bin/test-s* .
           python3 -m pytest -Werror --strict-markers -vv test/signal/test-stacktrace.py
 
       # TODO: move to scriptcheck.yml so these are tested with all Python versions?
