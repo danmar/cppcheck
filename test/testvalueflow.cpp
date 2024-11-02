@@ -4592,7 +4592,6 @@ private:
         ASSERT_EQUALS(0, it->intvalue);
         ASSERT(it->isPossible());
 
-
         code = "void f() {\n"
                "    const int a[10] = {};\n"
                "    for (int n = 0; 1; ++n) {\n"
