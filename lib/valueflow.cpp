@@ -3891,6 +3891,8 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
     if (isVariableChanged(bodyStart, bodyEnd, expr->varId(), globalvar, settings))
         return;
 
+    std::vector<std::pair<Token*, ValueFlow::Value>> valuesToSet;
+
     for (Token *tok2 = bodyStart->next(); tok2 != bodyEnd; tok2 = tok2->next()) {
         if (tok2->varId() == expr->varId()) {
             const Token * parent = tok2->astParent();
@@ -3913,7 +3915,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
 
             ValueFlow::Value value1(value);
             value1.varId = tok2->varId();
-            setTokenValue(tok2, std::move(value1), settings);
+            valuesToSet.emplace_back(tok2, std::move(value1));
         }
 
         if (Token::Match(tok2, "%oror%|&&")) {
@@ -3955,6 +3957,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
                 if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(1), vartok->varId())) {
                     if (settings.debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on conditional continue|break|return");
+                    valuesToSet.clear();
                     break;
                 }
                 if (settings.debugwarnings)
@@ -3964,6 +3967,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
                     if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(2), vartok->varId())) {
                         if (settings.debugwarnings)
                             bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on conditional continue|break|return");
+                        valuesToSet.clear();
                         break;
                     }
                     tok2 = tok2->linkAt(2);
@@ -3977,7 +3981,16 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
                     tok2 = tok2->linkAt(2);
             }
         }
+        if (Token::Match(tok2, "continue|break|return")) {
+            if (settings.debugwarnings)
+                bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on unconditional continue|break|return");
+            valuesToSet.clear();
+            break;
+        }
     }
+
+    for (std::pair<Token*, ValueFlow::Value>& p : valuesToSet)
+        setTokenValue(p.first, std::move(p.second), settings);
 }
 
 static void valueFlowForLoopSimplifyAfter(Token* fortok, nonneg int varid, const MathLib::bigint num, const TokenList& tokenlist, ErrorLogger & errorLogger, const Settings& settings)
