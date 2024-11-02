@@ -291,7 +291,7 @@ private:
               "   if (x==123456) {}\n"
               "   return -123456 * x;\n"
               "}",settings);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'x==123456' is redundant or there is signed integer overflow for expression '-123456*x'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'x==123456' is redundant or there is signed integer underflow for expression '-123456*x'.\n", errout_str());
 
         check("int foo(signed int x) {\n"
               "   if (x==123456) {}\n"
@@ -303,6 +303,16 @@ private:
               "    return (i == 31) ? 1 << i : 0;\n"
               "}", settings);
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (warning) Shifting signed 32-bit value by 31 bits is undefined behaviour. See condition at line 2.\n", errout_str());
+
+        check("void f() {\n"
+              "    int n = 0;\n"
+              "    for (int i = 0; i < 10; i++) {\n"
+              "        n = n * 47163 - 57412;\n"
+              "    }\n"
+              "}", settings);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Signed integer underflow for expression 'n*47163'.\n"
+                      "[test.cpp:4]: (error) Signed integer underflow for expression 'n*47163-57412'.\n",
+                      errout_str());
     }
 
     void signConversion() {
