@@ -27,9 +27,6 @@
 # Generate lib/checkers.cpp (TODO the premium checkers should not be statically coded)
 # cd ~/cppchecksolutions/cppcheck && python3 tools/get_checkers.py > lib/checkers.cpp
 #
-# Update translations
-#   lupdate gui.pro
-#
 # Update copyright year
 # git diff 2.8 -- */*.cpp */*.h | grep '^diff --git a/' | sed 's|.* b/||' | xargs sed -i 's/Copyright (C) 2007-20[12]./Copyright (C) 2007-2022/'
 # git diff | grep '^diff --git a/'

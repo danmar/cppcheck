@@ -69,16 +69,10 @@ jobs:
           tools: 'tools_opensslv3_x64'
           cache: true
 
-      - name: Create .qm
-        run: |
-          cd gui || exit /b !errorlevel!
-          lupdate gui.pro -no-obsolete || exit /b !errorlevel!
-          lrelease gui.pro -removeidentical || exit /b !errorlevel!
-
       - name: Build x64 release GUI
         run: |
-          ; TODO: enable rules?
-          ; specify Release build so matchcompiler is used
+          :: TODO: enable rules?
+          :: specify Release build so matchcompiler is used
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
           cmake --build build --target cppcheck-gui --config Release || exit /b !errorlevel!
 
@@ -112,16 +106,16 @@ jobs:
           mkdir win_installer\files\help || exit /b !errorlevel!
           xcopy /s gui\help win_installer\files\help || exit /b !errorlevel!
           del win_installer\files\translations\*.qm || exit /b !errorlevel!
-          move gui\*.qm win_installer\files\translations || exit /b !errorlevel!
+          move build\gui\*.qm win_installer\files\translations || exit /b !errorlevel!
           :: copy libcrypto-3-x64.dll and libssl-3-x64.dll
           copy %RUNNER_WORKSPACE%\Qt\Tools\OpenSSLv3\Win_x64\bin\lib*.dll win_installer\files || exit /b !errorlevel!
 
       - name: Build Installer
         run: |
           cd win_installer || exit /b !errorlevel!
-          REM Read ProductVersion
+          :: Read ProductVersion
           for /f "tokens=4 delims= " %%a in ('find "ProductVersion" productInfo.wxi') do set PRODUCTVER=%%a
-          REM Remove double quotes
+          :: Remove double quotes
           set PRODUCTVER=%PRODUCTVER:"=%
           @echo ProductVersion="%PRODUCTVER%" || exit /b !errorlevel!
           msbuild -m cppcheck.wixproj -p:Platform=x64,ProductVersion=%PRODUCTVER%.${{ github.run_number }} || exit /b !errorlevel!
