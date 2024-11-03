@@ -3735,7 +3735,7 @@ bool isUnreachableOperand(const Token *tok)
             break;
 
         if (parent->isBinaryOp()) {
-            bool left = tok == parent->astOperand1();
+            const bool left = tok == parent->astOperand1();
             const Token *sibling = left ? parent->astOperand2() : parent->astOperand1();
 
             // logical and
