@@ -496,44 +496,42 @@ private:
               "}", settingsDefault);
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
 
-        const Settings settingsWithStdint = settingsBuilder().library("std.cfg").build();
-
-        checkP("#define TEST(b, f) b ? 5000 : (uint16_t)f\n" // #11685
+        checkP("#define TEST(b, f) b ? 5000 : (unsigned short)f\n" // #11685
                "void f()\n"
                "{\n"
-               "    uint16_t u = TEST(true, 75000.0);\n"
-               "}\n", settingsWithStdint);
+               "    unsigned short u = TEST(true, 75000.0);\n"
+               "}\n", settingsDefault);
         ASSERT_EQUALS("", errout_str());
 
-        checkP("#define TEST(b, f) b ? 5000 : (uint16_t)f\n"
+        checkP("#define TEST(b, f) b ? 5000 : (unsigned short)f\n"
                "void f()\n"
                "{\n"
-               "    uint16_t u = TEST(false, 75000.0);\n"
-               "}\n", settingsWithStdint);
+               "    unsigned short u = TEST(false, 75000.0);\n"
+               "}\n", settingsDefault);
         ASSERT_EQUALS("[test.cpp:4]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
 
-        check( "bool f(uint16_t x);\n"
+        check( "bool f(unsigned short x);\n"
                "bool g() {\n"
-               "    return false && f((uint16_t)75000.0);\n"
-               "}\n", settingsWithStdint);
+               "    return false && f((unsigned short)75000.0);\n"
+               "}\n", settingsDefault);
         ASSERT_EQUALS("", errout_str());
 
-        check( "bool f(uint16_t x);\n"
+        check( "bool f(unsigned short x);\n"
                "bool g() {\n"
-               "    return true && f((uint16_t)75000.0);\n"
-               "}\n", settingsWithStdint);
+               "    return true && f((unsigned short)75000.0);\n"
+               "}\n", settingsDefault);
         ASSERT_EQUALS("[test.cpp:3]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
 
-        check( "bool f(uint16_t x);\n"
+        check( "bool f(unsigned short x);\n"
                "bool g() {\n"
-               "    return true || f((uint16_t)75000.0);\n"
-               "}\n", settingsWithStdint);
+               "    return true || f((unsigned short)75000.0);\n"
+               "}\n", settingsDefault);
         ASSERT_EQUALS("", errout_str());
 
-        check( "bool f(uint16_t x);\n"
+        check( "bool f(unsigned short x);\n"
                "bool g() {\n"
-               "    return false || f((uint16_t)75000.0);\n"
-               "}\n", settingsWithStdint);
+               "    return false || f((unsigned short)75000.0);\n"
+               "}\n", settingsDefault);
         ASSERT_EQUALS("[test.cpp:3]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
     }
 
