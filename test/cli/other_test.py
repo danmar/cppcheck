@@ -2261,3 +2261,17 @@ def test_ignore_project_2(tmpdir):
     exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
     assert exitcode == 1, stdout
     assert stdout.splitlines() == lines_exp
+
+
+def test_dumpfile_platform(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write('x=1;\n')
+    cppcheck('--dump --platform=unix64 test.c'.split(), cwd=tmpdir)
+    platform = ''
+    for line in open(test_file + '.dump', 'rt'):
+        if line.find('<platform name="') > 0:
+            platform = line.strip()
+            break
+    assert ' wchar_t_bit="' in platform
+    assert ' size_t_bit="' in platform
