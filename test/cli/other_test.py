@@ -2269,9 +2269,10 @@ def test_dumpfile_platform(tmpdir):
         f.write('x=1;\n')
     cppcheck('--dump --platform=unix64 test.c'.split(), cwd=tmpdir)
     platform = ''
-    for line in open(test_file + '.dump', 'rt'):
-        if line.find('<platform name="') > 0:
-            platform = line.strip()
-            break
+    with open(test_file + '.dump', 'rt') as f:
+        for line in f:
+            if line.find('<platform name="') > 0:
+                platform = line.strip()
+                break
     assert ' wchar_t_bit="' in platform
     assert ' size_t_bit="' in platform
