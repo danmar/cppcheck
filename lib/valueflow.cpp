@@ -3954,7 +3954,8 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
 
         if (Token::simpleMatch(tok2, ") {")) {
             if (vartok->varId() && Token::findmatch(tok2->link(), "%varid%", tok2, vartok->varId())) {
-                if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(1), vartok->varId())) {
+                const Token* tok3{};
+                if ((tok3 = Token::findmatch(tok2, "continue|break|return|throw", tok2->linkAt(1))) && tok3->isKexword()) {
                     if (settings.debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on conditional continue|break|return");
                     valuesToSet.clear();
@@ -3964,7 +3965,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
                     bailout(tokenlist, errorLogger, tok2, "For loop variable skipping conditional scope");
                 tok2 = tok2->linkAt(1);
                 if (Token::simpleMatch(tok2, "} else {")) {
-                    if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(2), vartok->varId())) {
+                    if ((tok3 = Token::findmatch(tok2, "continue|break|return|throw", tok2->linkAt(2))) && tok3->isKexword()) {
                         if (settings.debugwarnings)
                             bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on conditional continue|break|return");
                         valuesToSet.clear();
@@ -3981,7 +3982,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
                     tok2 = tok2->linkAt(2);
             }
         }
-        if (Token::Match(tok2, "continue|break|return")) {
+        if (Token::Match(tok2, "continue|break|return|throw") && tok2->isKeyword()) {
             if (settings.debugwarnings)
                 bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on unconditional continue|break|return");
             valuesToSet.clear();
