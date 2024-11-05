@@ -137,7 +137,7 @@ public:
      * @return Directory containing source files
      */
 
-    const QString& getCheckDirectory();
+    const QString& getCheckDirectory() const;
 
     /**
      * @brief Check if there are any visible results in view.
