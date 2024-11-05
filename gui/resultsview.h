@@ -139,7 +139,7 @@ public:
      * @return Directory containing source files
      */
 
-    QString getCheckDirectory();
+    QString getCheckDirectory() const;
 
     /**
      * Set settings used in checking
