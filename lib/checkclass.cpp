@@ -2280,9 +2280,12 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
     // not found in this class
     if (!scope->definedType->derivedFrom.empty()) {
         // check each base class
+        bool foundAllBaseClasses = true;
         for (const Type::BaseInfo & i : scope->definedType->derivedFrom) {
             // find the base class
             const Type *derivedFrom = i.type;
+            if (!derivedFrom)
+                foundAllBaseClasses = false;
 
             // find the function in the base class
             if (derivedFrom && derivedFrom->classScope && derivedFrom->classScope != scope) {
@@ -2290,6 +2293,8 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
                     return true;
             }
         }
+        if (!foundAllBaseClasses)
+            return true;
     }
 
     return false;
@@ -2624,8 +2629,8 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
         toks.push_back(tok2);
     if (!suggestStatic) {
         const std::string msg = foundAllBaseClasses ?
-            "Technically the member function '$symbol' can be const.\nThe member function '$symbol' can be made a const " :
-            "Either there is a missing 'override', or the member function '$symbol' can be const.\nUnless it overrides a base class member, the member function '$symbol' can be made a const ";
+                                "Technically the member function '$symbol' can be const.\nThe member function '$symbol' can be made a const " :
+                                "Either there is a missing 'override', or the member function '$symbol' can be const.\nUnless it overrides a base class member, the member function '$symbol' can be made a const ";
         reportError(toks, Severity::style, "functionConst",
                     "$symbol:" + classname + "::" + funcname +"\n"
                     + msg +
@@ -2636,8 +2641,8 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
     }
     else {
         const std::string msg = foundAllBaseClasses ?
-            "Technically the member function '$symbol' can be static (but you may consider moving to unnamed namespace).\nThe member function '$symbol' can be made a static " :
-            "Either there is a missing 'override', or the member function '$symbol' can be static.\nUnless it overrides a base class member, the member function '$symbol' can be made a static ";
+                                "Technically the member function '$symbol' can be static (but you may consider moving to unnamed namespace).\nThe member function '$symbol' can be made a static " :
+                                "Either there is a missing 'override', or the member function '$symbol' can be static.\nUnless it overrides a base class member, the member function '$symbol' can be made a static ";
         reportError(toks, Severity::performance, "functionStatic",
                     "$symbol:" + classname + "::" + funcname +"\n"
                     + msg +
