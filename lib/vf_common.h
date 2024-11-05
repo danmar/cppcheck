@@ -51,8 +51,6 @@ namespace ValueFlow
                            SourceLocation ctx,
                            const Token* tok,
                            SourceLocation local = SourceLocation::current());
-
-    std::list<Value> getIteratorValues(std::list<Value> values, const Value::ValueKind* kind = nullptr);
 }
 
 #endif // vfCommonH
