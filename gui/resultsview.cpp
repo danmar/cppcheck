@@ -262,7 +262,7 @@ void ResultsView::printPreview()
     dialog.exec();
 }
 
-void ResultsView::print(QPrinter* printer)
+void ResultsView::print(QPrinter* printer) const
 {
     if (!hasResults()) {
         QMessageBox msgBox;
