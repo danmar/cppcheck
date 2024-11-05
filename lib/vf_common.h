@@ -55,10 +55,6 @@ namespace ValueFlow
     std::list<Value> getIteratorValues(std::list<Value> values, const Value::ValueKind* kind = nullptr);
 
     MathLib::bigint valueFlowGetStrLength(const Token* tok);
-
-    bool isBreakOrContinueScope(const Token* endToken);
-
-    const Scope* getLoopScope(const Token* tok);
 }
 
 #endif // vfCommonH

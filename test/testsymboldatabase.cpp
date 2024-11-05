@@ -3410,7 +3410,7 @@ private:
         check("::y(){x}");
 
         ASSERT_EQUALS("[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n"
-                      "[test.cpp:1]: (debug) analyzeConditionExpressions bailout: Skipping function due to incomplete variable x\n"
+                      "[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n"
                       "[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n", // duplicate
                       errout_str());
     }

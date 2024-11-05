@@ -420,21 +420,4 @@ namespace ValueFlow
         }
         return 0;
     }
-
-    bool isBreakOrContinueScope(const Token* endToken)
-    {
-        if (!Token::simpleMatch(endToken, "}"))
-            return false;
-        return Token::Match(endToken->tokAt(-2), "break|continue ;");
-    }
-
-    const Scope* getLoopScope(const Token* tok)
-    {
-        if (!tok)
-            return nullptr;
-        const Scope* scope = tok->scope();
-        while (scope && scope->type != Scope::eWhile && scope->type != Scope::eFor && scope->type != Scope::eDo)
-            scope = scope->nestedIn;
-        return scope;
-    }
 }
