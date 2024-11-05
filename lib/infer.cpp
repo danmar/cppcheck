@@ -20,7 +20,6 @@
 
 #include "calculate.h"
 #include "errortypes.h"
-#include "token.h"
 #include "valueptr.h"
 
 #include <cassert>
@@ -29,6 +28,8 @@
 #include <iterator>
 #include <unordered_set>
 #include <utility>
+
+class Token;
 
 template<class Predicate, class Compare>
 static const ValueFlow::Value* getCompareValue(const std::list<ValueFlow::Value>& values, Predicate pred, Compare compare)
@@ -386,36 +387,4 @@ std::vector<MathLib::bigint> getMaxValue(const ValuePtr<InferModel>& model, cons
     return Interval::fromValues(values, [&](const ValueFlow::Value& v) {
         return model->match(v);
     }).maxvalue;
-}
-
-namespace {
-    struct IntegralInferModel : InferModel {
-        bool match(const ValueFlow::Value& value) const override {
-            return value.isIntValue();
-        }
-        ValueFlow::Value yield(MathLib::bigint value) const override
-        {
-            ValueFlow::Value result(value);
-            result.valueType = ValueFlow::Value::ValueType::INT;
-            result.setKnown();
-            return result;
-        }
-    };
-}
-
-ValuePtr<InferModel> makeIntegralInferModel()
-{
-    return IntegralInferModel{};
-}
-
-ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val)
-{
-    if (!varTok)
-        return ValueFlow::Value{};
-    if (varTok->hasKnownIntValue())
-        return ValueFlow::Value{};
-    std::vector<ValueFlow::Value> r = infer(makeIntegralInferModel(), op, varTok->values(), val);
-    if (r.size() == 1 && r.front().isKnown())
-        return r.front();
-    return ValueFlow::Value{};
 }

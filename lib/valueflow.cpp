@@ -2487,6 +2487,22 @@ static bool isTruncated(const ValueType* src, const ValueType* dst, const Settin
     return false;
 }
 
+static void setSymbolic(ValueFlow::Value& value, const Token* tok)
+{
+    assert(tok && tok->exprId() > 0 && "Missing expr id for symbolic value");
+    value.valueType = ValueFlow::Value::ValueType::SYMBOLIC;
+    value.tokvalue = tok;
+}
+
+static ValueFlow::Value makeSymbolic(const Token* tok, MathLib::bigint delta = 0)
+{
+    ValueFlow::Value value;
+    value.setKnown();
+    setSymbolic(value, tok);
+    value.intvalue = delta;
+    return value;
+}
+
 static std::set<nonneg int> getVarIds(const Token* tok)
 {
     std::set<nonneg int> result;
@@ -2546,17 +2562,141 @@ static void valueFlowSymbolic(const TokenList& tokenlist, const SymbolDatabase& 
             Token* start = nextAfterAstRightmostLeaf(tok);
             const Token* end = ValueFlow::getEndOfExprScope(tok->astOperand1(), scope);
 
-            ValueFlow::Value rhs = ValueFlow::makeSymbolic(tok->astOperand2());
+            ValueFlow::Value rhs = makeSymbolic(tok->astOperand2());
             rhs.errorPath.emplace_back(tok,
                                        tok->astOperand1()->expressionString() + " is assigned '" +
                                        tok->astOperand2()->expressionString() + "' here.");
             valueFlowForward(start, end, tok->astOperand1(), std::move(rhs), tokenlist, errorLogger, settings);
 
-            ValueFlow::Value lhs = ValueFlow::makeSymbolic(tok->astOperand1());
+            ValueFlow::Value lhs = makeSymbolic(tok->astOperand1());
             lhs.errorPath.emplace_back(tok,
                                        tok->astOperand1()->expressionString() + " is assigned '" +
                                        tok->astOperand2()->expressionString() + "' here.");
             valueFlowForward(start, end, tok->astOperand2(), std::move(lhs), tokenlist, errorLogger, settings);
+        }
+    }
+}
+
+static const Token* isStrlenOf(const Token* tok, const Token* expr, int depth = 10)
+{
+    if (depth < 0)
+        return nullptr;
+    if (!tok)
+        return nullptr;
+    if (!expr)
+        return nullptr;
+    if (expr->exprId() == 0)
+        return nullptr;
+    if (Token::simpleMatch(tok->previous(), "strlen (")) {
+        if (tok->astOperand2()->exprId() == expr->exprId())
+            return tok;
+    } else {
+        for (const ValueFlow::Value& v : tok->values()) {
+            if (!v.isSymbolicValue())
+                continue;
+            if (!v.isKnown())
+                continue;
+            if (v.intvalue != 0)
+                continue;
+            if (const Token* next = isStrlenOf(v.tokvalue, expr, depth - 1))
+                return next;
+        }
+    }
+    return nullptr;
+}
+
+static ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val);
+
+static void valueFlowSymbolicOperators(const SymbolDatabase& symboldatabase, const Settings& settings)
+{
+    for (const Scope* scope : symboldatabase.functionScopes) {
+        for (auto* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+            if (tok->hasKnownIntValue())
+                continue;
+
+            if (Token::Match(tok, "abs|labs|llabs|fabs|fabsf|fabsl (")) {
+                const Token* arg = tok->next()->astOperand2();
+                if (!arg)
+                    continue;
+                if (arg->exprId() == 0)
+                    continue;
+                ValueFlow::Value c = inferCondition(">=", arg, 0);
+                if (!c.isKnown())
+                    continue;
+
+                ValueFlow::Value v = makeSymbolic(arg);
+                v.errorPath = c.errorPath;
+                v.errorPath.emplace_back(tok, "Passed to " + tok->str());
+                if (c.intvalue == 0)
+                    v.setImpossible();
+                else
+                    v.setKnown();
+                setTokenValue(tok->next(), std::move(v), settings);
+            } else if (Token::Match(tok, "*|/|<<|>>|^|+|-|%or%")) {
+                if (!tok->astOperand1())
+                    continue;
+                if (!tok->astOperand2())
+                    continue;
+                if (!astIsIntegral(tok->astOperand1(), false) && !astIsIntegral(tok->astOperand2(), false))
+                    continue;
+                const ValueFlow::Value* constant = nullptr;
+                const Token* vartok = nullptr;
+                if (tok->astOperand1()->hasKnownIntValue()) {
+                    constant = &tok->astOperand1()->values().front();
+                    vartok = tok->astOperand2();
+                }
+                if (tok->astOperand2()->hasKnownIntValue()) {
+                    constant = &tok->astOperand2()->values().front();
+                    vartok = tok->astOperand1();
+                }
+                if (!constant)
+                    continue;
+                if (!vartok)
+                    continue;
+                if (vartok->exprId() == 0)
+                    continue;
+                if (Token::Match(tok, "<<|>>|/") && !astIsLHS(vartok))
+                    continue;
+                if (Token::Match(tok, "<<|>>|^|+|-|%or%") && constant->intvalue != 0)
+                    continue;
+                if (Token::Match(tok, "*|/") && constant->intvalue != 1)
+                    continue;
+                std::vector<ValueFlow::Value> values = {makeSymbolic(vartok)};
+                std::unordered_set<nonneg int> ids = {vartok->exprId()};
+                std::copy_if(vartok->values().cbegin(),
+                             vartok->values().cend(),
+                             std::back_inserter(values),
+                             [&](const ValueFlow::Value& v) {
+                    if (!v.isSymbolicValue())
+                        return false;
+                    if (!v.tokvalue)
+                        return false;
+                    return ids.insert(v.tokvalue->exprId()).second;
+                });
+                for (ValueFlow::Value& v : values)
+                    setTokenValue(tok, std::move(v), settings);
+            } else if (Token::simpleMatch(tok, "[")) {
+                const Token* arrayTok = tok->astOperand1();
+                const Token* indexTok = tok->astOperand2();
+                if (!arrayTok)
+                    continue;
+                if (!indexTok)
+                    continue;
+                for (const ValueFlow::Value& value : indexTok->values()) {
+                    if (!value.isSymbolicValue())
+                        continue;
+                    if (value.intvalue != 0)
+                        continue;
+                    const Token* strlenTok = isStrlenOf(value.tokvalue, arrayTok);
+                    if (!strlenTok)
+                        continue;
+                    ValueFlow::Value v = value;
+                    v.bound = ValueFlow::Value::Bound::Point;
+                    v.valueType = ValueFlow::Value::ValueType::INT;
+                    v.errorPath.emplace_back(strlenTok, "Return index of first '\\0' character in string");
+                    setTokenValue(tok, std::move(v), settings);
+                }
+            }
         }
     }
 }
@@ -3752,6 +3892,35 @@ struct SimpleConditionHandler : ConditionHandler {
     }
 };
 
+struct IntegralInferModel : InferModel {
+    bool match(const ValueFlow::Value& value) const override {
+        return value.isIntValue();
+    }
+    ValueFlow::Value yield(MathLib::bigint value) const override
+    {
+        ValueFlow::Value result(value);
+        result.valueType = ValueFlow::Value::ValueType::INT;
+        result.setKnown();
+        return result;
+    }
+};
+
+ValuePtr<InferModel> ValueFlow::makeIntegralInferModel() {
+    return IntegralInferModel{};
+}
+
+static ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val)
+{
+    if (!varTok)
+        return ValueFlow::Value{};
+    if (varTok->hasKnownIntValue())
+        return ValueFlow::Value{};
+    std::vector<ValueFlow::Value> r = infer(ValueFlow::makeIntegralInferModel(), op, varTok->values(), val);
+    if (r.size() == 1 && r.front().isKnown())
+        return r.front();
+    return ValueFlow::Value{};
+}
+
 struct SymbolicConditionHandler : SimpleConditionHandler {
 
     static bool isNegatedBool(const Token* tok)
@@ -4786,7 +4955,7 @@ static void valueFlowSmartPointer(TokenList &tokenlist, ErrorLogger & errorLogge
                 v.setKnown();
                 valueFlowForwardAssign(ftok, tok, std::move(vars), {std::move(v)}, false, tokenlist, errorLogger, settings);
             } else if (Token::simpleMatch(tok->astParent(), ". get ( )")) {
-                ValueFlow::Value v = ValueFlow::makeSymbolic(tok);
+                ValueFlow::Value v = makeSymbolic(tok);
                 setTokenValue(tok->astParent()->tokAt(2), std::move(v), settings);
             }
         } else if (Token::Match(tok->previous(), "%name%|> (|{") && astIsSmartPointer(tok) &&
@@ -5675,7 +5844,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
 
     runner.run({
         VFA(analyzeImpossibleValues(tokenlist, settings)),
-        VFA(analyzeSymbolicOperators(symboldatabase, settings)),
+        VFA(valueFlowSymbolicOperators(symboldatabase, settings)),
         VFA(valueFlowCondition(SymbolicConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
         VFA(valueFlowSymbolicInfer(symboldatabase, settings)),
         VFA(analyzeArrayBool(tokenlist, settings)),

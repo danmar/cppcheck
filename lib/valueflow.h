@@ -34,6 +34,7 @@
 #include <vector>
 
 class ErrorLogger;
+struct InferModel;
 class Settings;
 class SymbolDatabase;
 class TimerResultsIntf;
@@ -42,6 +43,9 @@ class TokenList;
 class ValueType;
 class Variable;
 class Scope;
+
+template<class T>
+class ValuePtr;
 
 namespace ValueFlow {
     /// Constant folding of expression. This can be used before the full ValueFlow has been executed (ValueFlow::setValues).
@@ -99,6 +103,8 @@ namespace ValueFlow {
 
     const Token *parseCompareInt(const Token *tok, Value &true_value, Value &false_value, const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate);
     const Token *parseCompareInt(const Token *tok, Value &true_value, Value &false_value);
+
+    CPPCHECKLIB ValuePtr<InferModel> makeIntegralInferModel();
 
     const Token* solveExprValue(const Token* expr,
                                 const std::function<std::vector<MathLib::bigint>(const Token*)>& eval,

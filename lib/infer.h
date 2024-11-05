@@ -27,7 +27,6 @@
 #include <string>
 #include <vector>
 
-class Token;
 template<class T> class ValuePtr;
 
 struct InferModel {
@@ -56,9 +55,5 @@ std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
 
 CPPCHECKLIB std::vector<MathLib::bigint> getMinValue(const ValuePtr<InferModel>& model, const std::list<ValueFlow::Value>& values);
 std::vector<MathLib::bigint> getMaxValue(const ValuePtr<InferModel>& model, const std::list<ValueFlow::Value>& values);
-
-ValuePtr<InferModel> makeIntegralInferModel();
-
-ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val);
 
 #endif
