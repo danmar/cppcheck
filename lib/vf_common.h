@@ -63,12 +63,6 @@ namespace ValueFlow
     void setSymbolic(Value& value, const Token* tok);
 
     Value makeSymbolic(const Token* tok, MathLib::bigint delta = 0);
-
-    void removeImpossible(std::list<Value>& values, int indirect = -1);
-
-    void changeKnownToPossible(std::list<Value> &values, int indirect=-1);
-
-    void lowerToPossible(std::list<Value>& values, int indirect = -1);
 }
 
 #endif // vfCommonH

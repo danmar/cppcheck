@@ -454,28 +454,4 @@ namespace ValueFlow
         value.intvalue = delta;
         return value;
     }
-
-    void removeImpossible(std::list<Value>& values, int indirect)
-    {
-        values.remove_if([&](const Value& v) {
-            if (indirect >= 0 && v.indirect != indirect)
-                return false;
-            return v.isImpossible();
-        });
-    }
-
-    void changeKnownToPossible(std::list<Value> &values, int indirect)
-    {
-        for (Value& v: values) {
-            if (indirect >= 0 && v.indirect != indirect)
-                continue;
-            v.changeKnownToPossible();
-        }
-    }
-
-    void lowerToPossible(std::list<Value>& values, int indirect)
-    {
-        changeKnownToPossible(values, indirect);
-        removeImpossible(values, indirect);
-    }
 }

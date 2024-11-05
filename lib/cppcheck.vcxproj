@@ -113,7 +113,6 @@
     <ClCompile Include="vf_sameexpressions.cpp" />
     <ClCompile Include="vf_settokenvalue.cpp" />
     <ClCompile Include="vf_string.cpp" />
-    <ClCompile Include="vf_subfunction.cpp" />
     <ClCompile Include="vf_switchvariable.cpp" />
     <ClCompile Include="vf_symbolicinfer.cpp" />
     <ClCompile Include="vf_symbolicoperators.cpp" />
@@ -225,7 +224,6 @@
     <ClInclude Include="vf_sameexpressions.h" />
     <ClInclude Include="vf_settokenvalue.h" />
     <ClInclude Include="vf_string.h" />
-    <ClInclude Include="vf_subfunction.h" />
     <ClInclude Include="vf_switchvariable.h" />
     <ClInclude Include="vf_symbolicinfer.h" />
     <ClInclude Include="vf_symbolicoperators.h" />
