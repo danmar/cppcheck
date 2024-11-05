@@ -87,19 +87,10 @@
     <ClCompile Include="token.cpp" />
     <ClCompile Include="tokenlist.cpp" />
     <ClCompile Include="utils.cpp" />
-    <ClCompile Include="vf_array.cpp" />
-    <ClCompile Include="vf_bitand.cpp" />
     <ClCompile Include="vf_common.cpp" />
-    <ClCompile Include="vf_debug.cpp" />
     <ClCompile Include="vf_enumvalue.cpp" />
-    <ClCompile Include="vf_globalconstvar.cpp" />
-    <ClCompile Include="vf_globalstaticvar.cpp" />
     <ClCompile Include="vf_number.cpp" />
-    <ClCompile Include="vf_pointeralias.cpp" />
-    <ClCompile Include="vf_sameexpressions.cpp" />
     <ClCompile Include="vf_settokenvalue.cpp" />
-    <ClCompile Include="vf_string.cpp" />
-    <ClCompile Include="vf_unknownfunctionreturn.cpp" />
     <ClCompile Include="vfvalue.cpp" />
   </ItemGroup>
   <ItemGroup Label="HeaderFiles">
@@ -180,19 +171,10 @@
     <ClInclude Include="valueptr.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="vf_analyze.h" />
-    <ClInclude Include="vf_array.h" />
-    <ClInclude Include="vf_bitand.h" />
     <ClInclude Include="vf_common.h" />
-    <ClInclude Include="vf_debug.h" />
     <ClInclude Include="vf_enumvalue.h" />
-    <ClInclude Include="vf_globalconstvar.h" />
-    <ClInclude Include="vf_globalstaticvar.h" />
     <ClInclude Include="vf_number.h" />
-    <ClInclude Include="vf_pointeralias.h" />
-    <ClInclude Include="vf_sameexpressions.h" />
     <ClInclude Include="vf_settokenvalue.h" />
-    <ClInclude Include="vf_string.h" />
-    <ClInclude Include="vf_unknownfunctionreturn.h" />
     <ClInclude Include="vfvalue.h" />
     <ClInclude Include="xml.h" />
   </ItemGroup>

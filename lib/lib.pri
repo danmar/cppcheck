@@ -78,19 +78,10 @@ HEADERS += $${PWD}/addoninfo.h \
            $${PWD}/valueptr.h \
            $${PWD}/version.h \
            $${PWD}/vf_analyze.h \
-           $${PWD}/vf_array.h \
-           $${PWD}/vf_bitand.h \
            $${PWD}/vf_common.h \
-           $${PWD}/vf_debug.h \
            $${PWD}/vf_enumvalue.h \
-           $${PWD}/vf_globalconstvar.h \
-           $${PWD}/vf_globalstaticvar.h \
            $${PWD}/vf_number.h \
-           $${PWD}/vf_pointeralias.h \
-           $${PWD}/vf_sameexpressions.h \
            $${PWD}/vf_settokenvalue.h \
-           $${PWD}/vf_string.h \
-           $${PWD}/vf_unknownfunctionreturn.h \
            $${PWD}/vfvalue.h \
            $${PWD}/xml.h
 
@@ -156,17 +147,8 @@ SOURCES += $${PWD}/valueflow.cpp \
            $${PWD}/token.cpp \
            $${PWD}/tokenlist.cpp \
            $${PWD}/utils.cpp \
-           $${PWD}/vf_array.cpp \
-           $${PWD}/vf_bitand.cpp \
            $${PWD}/vf_common.cpp \
-           $${PWD}/vf_debug.cpp \
            $${PWD}/vf_enumvalue.cpp \
-           $${PWD}/vf_globalconstvar.cpp \
-           $${PWD}/vf_globalstaticvar.cpp \
            $${PWD}/vf_number.cpp \
-           $${PWD}/vf_pointeralias.cpp \
-           $${PWD}/vf_sameexpressions.cpp \
            $${PWD}/vf_settokenvalue.cpp \
-           $${PWD}/vf_string.cpp \
-           $${PWD}/vf_unknownfunctionreturn.cpp \
            $${PWD}/vfvalue.cpp
