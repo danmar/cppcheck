@@ -186,6 +186,7 @@ private:
         TEST_CASE(const92);
         TEST_CASE(const93);
         TEST_CASE(const94);
+        TEST_CASE(const95);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -4855,7 +4856,7 @@ private:
                    "        UnknownScope::x = x_;\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:4]: (performance, inconclusive) Either there is a missing 'override', or the member function 'AA::vSetXPos' can be static.\n", errout_str());
 
         checkConst("class AA {\n"
                    "public:\n"
@@ -5040,7 +5041,7 @@ private:
                    "public:\n"
                    "    void f(){}\n"
                    "};");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Either there is a missing 'override', or the member function 'derived::f' can be static.\n", errout_str());
     }
 
     void const34() { // ticket #1964
@@ -5826,7 +5827,9 @@ private:
                    "      inherited::set(inherited::Key(key));\n"
                    "  }\n"
                    "};\n", nullptr, false);
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (performance, inconclusive) Either there is a missing 'override', or the member function 'MixerParticipant::GetAudioFrame' can be static.\n"
+                      "[test.cpp:2]: (performance, inconclusive) Either there is a missing 'override', or the member function 'MixerParticipant::InitializeFileReader' can be static.\n",
+                      errout_str());
     }
 
     void const62() {
@@ -6703,6 +6706,15 @@ private:
                    "    void nop() {}\n"
                    "};\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void const95() { // #13282
+        checkConst("struct S : B {\n"
+                   "    bool f() { return b; }\n"
+                   "    bool g() override { return b; }\n"
+                   "    bool b;\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Either there is a missing 'override', or the member function 'S::f' can be const.\n", errout_str());
     }
 
     void const_handleDefaultParameters() {
