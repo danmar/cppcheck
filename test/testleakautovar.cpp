@@ -2764,7 +2764,6 @@ private:
     }
 
     void return11() { // #13098
-        const Settings s = settingsBuilder().library("std.cfg").build();
         check("char malloc_memleak(void) {\n"
               "    bool flag = false;\n"
               "    char *ptr = malloc(10);\n"
@@ -2772,7 +2771,7 @@ private:
               "        free(ptr);\n"
               "    }\n"
               "    return 'a';\n"
-              "}\n", true, &s);
+              "}\n", true);
         ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: ptr\n", errout_str());
     }
 
