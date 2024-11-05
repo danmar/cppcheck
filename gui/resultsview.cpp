@@ -300,7 +300,7 @@ void ResultsView::setCheckDirectory(const QString &dir)
     mUI->mTree->setCheckDirectory(dir);
 }
 
-QString ResultsView::getCheckDirectory()
+QString ResultsView::getCheckDirectory() const
 {
     return mUI->mTree->getCheckDirectory();
 }
