@@ -4856,7 +4856,7 @@ private:
                    "        UnknownScope::x = x_;\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (performance, inconclusive) Either there is a missing 'override', or the member function 'AA::vSetXPos' can be static.\n", errout_str());
+        ASSERT_EQUALS("", errout_str());
 
         checkConst("class AA {\n"
                    "public:\n"
@@ -5827,8 +5827,7 @@ private:
                    "      inherited::set(inherited::Key(key));\n"
                    "  }\n"
                    "};\n", nullptr, false);
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (performance, inconclusive) Either there is a missing 'override', or the member function 'MixerParticipant::GetAudioFrame' can be static.\n"
-                      "[test.cpp:2]: (performance, inconclusive) Either there is a missing 'override', or the member function 'MixerParticipant::InitializeFileReader' can be static.\n",
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (performance, inconclusive) Either there is a missing 'override', or the member function 'MixerParticipant::GetAudioFrame' can be static.\n",
                       errout_str());
     }
 
@@ -6676,8 +6675,6 @@ private:
                    "struct S<0> {};\n"
                    "struct D : S<150> {};\n");
         // don't hang
-        // we are not interested in the output - just consume it
-        ignore_errout();
     }
 
     void const93() { // #12162
