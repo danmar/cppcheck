@@ -304,7 +304,7 @@ private:
               "}", settings);
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (warning) Shifting signed 32-bit value by 31 bits is undefined behaviour. See condition at line 2.\n", errout_str());
 
-        check("void f() {\n"
+        check("void f() {\n" // #13092
               "    int n = 0;\n"
               "    for (int i = 0; i < 10; i++) {\n"
               "        n = n * 47163 - 57412;\n"
