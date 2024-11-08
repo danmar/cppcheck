@@ -448,4 +448,6 @@ bool isUnevaluated(const Token *tok);
 
 bool isExhaustiveSwitch(const Token *startbrace);
 
+bool isUnreachableOperand(const Token *tok);
+
 #endif // astutilsH

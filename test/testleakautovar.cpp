@@ -176,6 +176,7 @@ private:
         TEST_CASE(return8);
         TEST_CASE(return9);
         TEST_CASE(return10);
+        TEST_CASE(return11); // #13098
 
         // General tests: variable type, allocation type, etc
         TEST_CASE(test1);
@@ -1686,7 +1687,7 @@ private:
               "    free(p);\n"
               "    if (q == NULL)\n"
               "        return;\n"
-              "    free(q)\n"
+              "    free(q);\n"
               "}");
         ASSERT_EQUALS("[test.c:3] -> [test.c:8]: (error) Memory pointed to by 'p' is freed twice.\n", errout_str());
     }
@@ -2743,6 +2744,18 @@ private:
               "    return *p;\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Returning/dereferencing 'p' after it is deallocated / released\n", errout_str());
+    }
+
+    void return11() { // #13098
+        check("char malloc_memleak(void) {\n"
+              "    bool flag = false;\n"
+              "    char *ptr = malloc(10);\n"
+              "    if (flag) {\n"
+              "        free(ptr);\n"
+              "    }\n"
+              "    return 'a';\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: ptr\n", errout_str());
     }
 
     void test1() {
