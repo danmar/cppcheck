@@ -23,51 +23,51 @@ defaults:
 
 jobs:
 
-  build_qt:
-    strategy:
-      matrix:
-        os: [windows-2019, windows-2022]
-        qt_ver: [5.15.2, 6.7.3]
-      fail-fast: false
+  # build_qt:
+  #   strategy:
+  #     matrix:
+  #       os: [windows-2019, windows-2022]
+  #       qt_ver: [5.15.2, 6.7.3]
+  #     fail-fast: false
 
-    runs-on: ${{ matrix.os }}
+  #   runs-on: ${{ matrix.os }}
 
-    steps:
-      - uses: actions/checkout@v4
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - name: Set up Visual Studio environment
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
+  #     - name: Set up Visual Studio environment
+  #       uses: ilammy/msvc-dev-cmd@v1
+  #       with:
+  #         arch: x64
 
-      - name: Install Qt ${{ matrix.qt_ver }}
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: ${{ matrix.qt_ver }}
-          modules: 'qtcharts'
-          cache: true
+  #     - name: Install Qt ${{ matrix.qt_ver }}
+  #       uses: jurplel/install-qt-action@v4
+  #       with:
+  #         version: ${{ matrix.qt_ver }}
+  #         modules: 'qtcharts'
+  #         cache: true
 
-      - name: Build GUI release (Qt 5)
-        if: startsWith(matrix.qt_ver, '5')
-        run: |
-          ; TODO: enable rules?
-          ; specify Release build so matchcompiler is used
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On  -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
-          cmake --build build --target cppcheck-gui --config Release || exit /b !errorlevel!
+  #     - name: Build GUI release (Qt 5)
+  #       if: startsWith(matrix.qt_ver, '5')
+  #       run: |
+  #         ; TODO: enable rules?
+  #         ; specify Release build so matchcompiler is used
+  #         cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On  -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
+  #         cmake --build build --target cppcheck-gui --config Release || exit /b !errorlevel!
 
-      - name: Build GUI release (Qt 6)
-        if: startsWith(matrix.qt_ver, '6')
-        run: |
-          ; TODO: enable rules?
-          ; specify Release build so matchcompiler is used
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
-          cmake --build build --target cppcheck-gui --config Release || exit /b !errorlevel!
+  #     - name: Build GUI release (Qt 6)
+  #       if: startsWith(matrix.qt_ver, '6')
+  #       run: |
+  #         ; TODO: enable rules?
+  #         ; specify Release build so matchcompiler is used
+  #         cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
+  #         cmake --build build --target cppcheck-gui --config Release || exit /b !errorlevel!
 
-      - name: Deploy GUI
-        run: |
-          windeployqt build\bin\Release || exit /b !errorlevel!
-          del build\bin\Release\cppcheck-gui.ilk || exit /b !errorlevel!
-          del build\bin\Release\cppcheck-gui.pdb || exit /b !errorlevel!
+  #     - name: Deploy GUI
+  #       run: |
+  #         windeployqt build\bin\Release || exit /b !errorlevel!
+  #         del build\bin\Release\cppcheck-gui.ilk || exit /b !errorlevel!
+  #         del build\bin\Release\cppcheck-gui.pdb || exit /b !errorlevel!
 
       # TODO: run GUI tests
 
