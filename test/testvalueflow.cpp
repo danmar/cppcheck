@@ -4576,7 +4576,7 @@ private:
         values = tokenValues(code, "[ f . b");
         ASSERT_EQUALS(true, values.empty());
 
-        code = "void f() {\n"
+        code = "void f() {\n" // #13109
                "    const int a[10] = {};\n"
                "    for (int n = 0; 1; ++n) {\n"
                "        (void)a[n];\n"
@@ -4613,6 +4613,38 @@ private:
                "    for (int n = 0; 1; ++n) {\n"
                "        if (a[n] < 1)\n"
                "            throw 0;\n"
+               "    }\n"
+               "}\n";
+        values = tokenValues(code, "n ]");
+        ASSERT_EQUALS(2, values.size());
+        it = values.begin();
+        ASSERT_EQUALS(-1, it->intvalue);
+        ASSERT(it->isImpossible());
+        ++it;
+        ASSERT_EQUALS(0, it->intvalue);
+        ASSERT(it->isPossible());
+
+        code = "void f() {\n"
+               "    const int a[10] = {};\n"
+               "    for (int n = 0; 1; ++n) {\n"
+               "        (void)a[n];\n"
+               "        exit(1);\n"
+               "    }\n"
+               "}\n";
+        values = tokenValues(code, "n ]");
+        ASSERT_EQUALS(2, values.size());
+        it = values.begin();
+        ASSERT_EQUALS(-1, it->intvalue);
+        ASSERT(it->isImpossible());
+        ++it;
+        ASSERT_EQUALS(0, it->intvalue);
+        ASSERT(it->isPossible());
+
+        code = "void f() {\n"
+               "    const int a[10] = {};\n"
+               "    for (int n = 0; 1; ++n) {\n"
+               "        if (a[n] < 1)\n"
+               "            exit(1);\n"
                "    }\n"
                "}\n";
         values = tokenValues(code, "n ]");

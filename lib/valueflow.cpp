@@ -3875,6 +3875,19 @@ static bool valueFlowForLoop2(const Token *tok,
     return true;
 }
 
+static bool hasLoopExitOrContinue(const Token* start, const Token* end, const Library* library)
+{
+    for (const Token* tok = start; tok != end; tok = tok->next()) {
+        if (!tok->isName())
+            continue;
+        if (tok->isKeyword() && Token::Match(tok, "continue|break|return|throw"))
+            return true;
+        if (isEscapeFunction(tok, library))
+            return true;
+    }
+    return false;
+}
+
 static void valueFlowForLoopSimplify(Token* const bodyStart,
                                      const Token* expr,
                                      bool globalvar,
@@ -3954,8 +3967,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
 
         if (Token::simpleMatch(tok2, ") {")) {
             if (vartok->varId() && Token::findmatch(tok2->link(), "%varid%", tok2, vartok->varId())) {
-                const Token* tok3 = Token::findmatch(tok2, "continue|break|return|throw", tok2->linkAt(1));
-                if (tok3 && tok3->isKeyword()) {
+                if (hasLoopExitOrContinue(tok2, tok2->linkAt(1), &settings.library)) {
                     if (settings.debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on conditional continue|break|return");
                     valuesToSet.clear();
@@ -3965,8 +3977,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
                     bailout(tokenlist, errorLogger, tok2, "For loop variable skipping conditional scope");
                 tok2 = tok2->linkAt(1);
                 if (Token::simpleMatch(tok2, "} else {")) {
-                    tok3 = Token::findmatch(tok2, "continue|break|return|throw", tok2->linkAt(2));
-                    if (tok3 && tok3->isKeyword()) {
+                    if (hasLoopExitOrContinue(tok2, tok2->linkAt(1), &settings.library)) {
                         if (settings.debugwarnings)
                             bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on conditional continue|break|return");
                         valuesToSet.clear();
@@ -3983,7 +3994,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
                     tok2 = tok2->linkAt(2);
             }
         }
-        if (Token::Match(tok2, "continue|break|return|throw") && tok2->isKeyword()) {
+        if (hasLoopExitOrContinue(tok2, tok2->next(), &settings.library)) {
             if (settings.debugwarnings)
                 bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on unconditional continue|break|return");
             valuesToSet.clear();
