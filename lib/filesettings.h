@@ -99,6 +99,10 @@ struct CPPCHECKLIB FileSettings {
     {
         return file.spath();
     }
+    std::size_t filesize() const
+    {
+        return file.size();
+    }
     std::string defines;
     // TODO: handle differently
     std::string cppcheckDefines() const {
