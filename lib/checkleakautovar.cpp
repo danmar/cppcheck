@@ -450,6 +450,16 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
 
         // if/else
         else if (Token::simpleMatch(tok, "if (")) {
+
+            bool skipIfBlock = false;
+            bool skipElseBlock = false;
+            const Token *condTok = tok->astSibling();
+
+            if (condTok && condTok->hasKnownIntValue()) {
+                skipIfBlock = !condTok->getKnownIntValue();
+                skipElseBlock = !skipIfBlock;
+            }
+
             // Parse function calls inside the condition
 
             const Token * closingParenthesis = tok->linkAt(1);
