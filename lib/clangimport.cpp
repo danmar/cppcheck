@@ -385,21 +385,21 @@ namespace clangimport {
 std::string clangimport::AstNode::getSpelling() const
 {
     if (nodeType == CompoundAssignOperator) {
-        int typeIndex = 1;
+        std::size_t typeIndex = 1;
         while (typeIndex < mExtTokens.size() && mExtTokens[typeIndex][0] != '\'')
             typeIndex++;
         // name is next quoted token
-        int nameIndex = typeIndex + 1;
+        std::size_t nameIndex = typeIndex + 1;
         while (nameIndex < mExtTokens.size() && mExtTokens[nameIndex][0] != '\'')
             nameIndex++;
         return (nameIndex < mExtTokens.size()) ? unquote(mExtTokens[nameIndex]) : "";
     }
 
     if (nodeType == UnaryExprOrTypeTraitExpr) {
-        int typeIndex = 1;
+        std::size_t typeIndex = 1;
         while (typeIndex < mExtTokens.size() && mExtTokens[typeIndex][0] != '\'')
             typeIndex++;
-        const int nameIndex = typeIndex + 1;
+        const std::size_t nameIndex = typeIndex + 1;
         return (nameIndex < mExtTokens.size()) ? unquote(mExtTokens[nameIndex]) : "";
     }
 
@@ -449,7 +449,7 @@ std::string clangimport::AstNode::getType(int index) const
 
 std::string clangimport::AstNode::getFullType(int index) const
 {
-    int typeIndex = 1;
+    std::size_t typeIndex = 1;
     while (typeIndex < mExtTokens.size() && mExtTokens[typeIndex][0] != '\'')
         typeIndex++;
     if (typeIndex >= mExtTokens.size())
@@ -867,7 +867,7 @@ Token *clangimport::AstNode::createTokens(TokenList &tokenList)
         Token *expr1 = varDecl->createTokens(tokenList);
         Token *colon = addtoken(tokenList, ":");
         AstNodePtr range;
-        for (int i = 0; i < 2; i++) {
+        for (std::size_t i = 0; i < 2; i++) {
             if (children[i] && children[i]->nodeType == DeclStmt && children[i]->getChild(0)->nodeType == VarDecl) {
                 range = children[i]->getChild(0)->getChild(0);
                 break;
@@ -890,7 +890,7 @@ Token *clangimport::AstNode::createTokens(TokenList &tokenList)
         return nullptr;
     }
     if (nodeType == CXXMethodDecl) {
-        for (int i = 0; i+1 < mExtTokens.size(); ++i) {
+        for (std::size_t i = 0; i+1 < mExtTokens.size(); ++i) {
             if (mExtTokens[i] == "prev" && !mData->hasDecl(mExtTokens[i+1]))
                 return nullptr;
         }
@@ -1288,11 +1288,11 @@ Token * clangimport::AstNode::createTokensCall(TokenList &tokenList)
     f->setValueType(nullptr);
     Token *par1 = addtoken(tokenList, "(");
     par1->astOperand1(f);
-    int args = 0;
+    std::size_t args = 0;
     while (args < children.size() && children[args]->nodeType != CXXDefaultArgExpr)
         args++;
     Token *child = nullptr;
-    for (int c = firstParam; c < args; ++c) {
+    for (std::size_t c = firstParam; c < args; ++c) {
         if (child) {
             Token *comma = addtoken(tokenList, ",");
             comma->setValueType(nullptr);

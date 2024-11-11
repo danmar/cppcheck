@@ -82,14 +82,22 @@ private:
         // Check for error ids from this class.
         bool foundPurgedConfiguration = false;
         bool foundTooManyConfigs = false;
+        bool foundMissingInclude = false; // #11984
+        bool foundMissingIncludeSystem = false; // #11984
         for (const std::string & it : errorLogger.ids) {
             if (it == "purgedConfiguration")
                 foundPurgedConfiguration = true;
             else if (it == "toomanyconfigs")
                 foundTooManyConfigs = true;
+            else if (it == "missingInclude")
+                foundMissingInclude = true;
+            else if (it == "missingIncludeSystem")
+                foundMissingIncludeSystem = true;
         }
         ASSERT(foundPurgedConfiguration);
         ASSERT(foundTooManyConfigs);
+        ASSERT(foundMissingInclude);
+        ASSERT(foundMissingIncludeSystem);
     }
 
     void checkWithFile() const

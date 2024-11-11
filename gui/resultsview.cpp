@@ -453,39 +453,39 @@ void ResultsView::updateDetails(const QModelIndex &index)
     if (item->parent() && item->column() != 0)
         item = item->parent()->child(item->row(), 0);
 
-    QVariantMap data = item->data().toMap();
+    QVariantMap itemdata = item->data().toMap();
 
     // If there is no severity data then it is a parent item without summary and message
-    if (!data.contains("severity")) {
+    if (!itemdata.contains("severity")) {
         mUI->mCode->clear();
         mUI->mDetails->setText(QString());
         return;
     }
 
-    const QString message = data["message"].toString();
+    const QString message = itemdata["message"].toString();
     QString formattedMsg = message;
 
-    const QString file0 = data["file0"].toString();
-    if (!file0.isEmpty() && Path::isHeader(data["file"].toString().toStdString()))
+    const QString file0 = itemdata["file0"].toString();
+    if (!file0.isEmpty() && Path::isHeader(itemdata["file"].toString().toStdString()))
         formattedMsg += QString("\n\n%1: %2").arg(tr("First included by")).arg(QDir::toNativeSeparators(file0));
 
-    if (data["cwe"].toInt() > 0)
-        formattedMsg.prepend("CWE: " + QString::number(data["cwe"].toInt()) + "\n");
+    if (itemdata["cwe"].toInt() > 0)
+        formattedMsg.prepend("CWE: " + QString::number(itemdata["cwe"].toInt()) + "\n");
     if (mUI->mTree->showIdColumn())
-        formattedMsg.prepend(tr("Id") + ": " + data["id"].toString() + "\n");
-    if (data["incomplete"].toBool())
+        formattedMsg.prepend(tr("Id") + ": " + itemdata["id"].toString() + "\n");
+    if (itemdata["incomplete"].toBool())
         formattedMsg += "\n" + tr("Bug hunting analysis is incomplete");
     mUI->mDetails->setText(formattedMsg);
 
-    const int lineNumber = data["line"].toInt();
+    const int lineNumber = itemdata["line"].toInt();
 
-    QString filepath = data["file"].toString();
+    QString filepath = itemdata["file"].toString();
     if (!QFileInfo::exists(filepath) && QFileInfo::exists(mUI->mTree->getCheckDirectory() + '/' + filepath))
         filepath = mUI->mTree->getCheckDirectory() + '/' + filepath;
 
     QStringList symbols;
-    if (data.contains("symbolNames"))
-        symbols = data["symbolNames"].toString().split("\n");
+    if (itemdata.contains("symbolNames"))
+        symbols = itemdata["symbolNames"].toString().split("\n");
 
     if (filepath == mUI->mCode->getFileName()) {
         mUI->mCode->setError(lineNumber, symbols);

@@ -202,7 +202,7 @@ Library::Error Library::load(const char exename[], const char path[], bool debug
         if (Path::getFilenameExtension(fullfilename).empty()) {
             fullfilename += ".cfg";
             if (debug)
-                std::cout << "looking for library '" + std::string(fullfilename) + "'" << std::endl;
+                std::cout << "looking for library '" + fullfilename + "'" << std::endl;
             error = xml_LoadFile(doc, fullfilename.c_str());
             if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
                 absolute_path = Path::getAbsoluteFilePath(fullfilename);
@@ -359,7 +359,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 const std::string memorynodename = memorynode->Name();
                 const auto names = getnames(memorynode->GetText());
                 if (memorynodename == "alloc" || memorynodename == "realloc") {
-                    AllocFunc temp = {0};
+                    AllocFunc temp;
                     temp.groupId = allocationId;
 
                     temp.initData = memorynode->BoolAttribute("init", true);
@@ -396,7 +396,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     for (const auto& n : names)
                         map[n] = temp;
                 } else if (memorynodename == "dealloc") {
-                    AllocFunc temp = {0};
+                    AllocFunc temp;
                     temp.groupId = allocationId;
                     temp.arg = memorynode->IntAttribute("arg", 1);
                     for (const auto& n : names)
@@ -689,7 +689,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const char * const name = node->Attribute("name");
             if (!name)
                 return Error(ErrorCode::MISSING_ATTRIBUTE, "name");
-            PodType podType = {0};
+            PodType podType;
             podType.stdtype = PodType::Type::NO;
             const char * const stdtype = node->Attribute("stdtype");
             if (stdtype) {
@@ -1435,10 +1435,10 @@ bool Library::matchArguments(const Token *ftok, const std::string &functionName,
 {
     if (functionName.empty())
         return false;
-    const int callargs = numberOfArgumentsWithoutAst(ftok);
     const std::unordered_map<std::string, Function>::const_iterator it = mData->mFunctions.find(functionName);
     if (it == mData->mFunctions.cend())
         return false;
+    const int callargs = numberOfArgumentsWithoutAst(ftok);
     int args = 0;
     int firstOptionalArg = -1;
     for (const std::pair<const int, Library::ArgumentChecks> & argCheck : it->second.argumentChecks) {

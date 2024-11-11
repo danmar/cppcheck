@@ -228,9 +228,13 @@ private:
         TEST_CASE(reportProgress4);
         TEST_CASE(reportProgress5);
         TEST_CASE(stdc99);
+        TEST_CASE(stdgnu17);
+        TEST_CASE(stdiso9899_1999);
         TEST_CASE(stdcpp11);
+        TEST_CASE(stdgnupp23);
         TEST_CASE(stdunknown1);
         TEST_CASE(stdunknown2);
+        TEST_CASE(stdunknown3);
         TEST_CASE(stdoverwrite1);
         TEST_CASE(stdoverwrite2);
         TEST_CASE(stdoverwrite3);
@@ -1415,12 +1419,34 @@ private:
         ASSERT(settings->standards.c == Standards::C99);
     }
 
+    void stdgnu17() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--std=gnu17", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT(settings->standards.c == Standards::C17);
+    }
+
+    void stdiso9899_1999() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--std=iso9899:1999", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT(settings->standards.c == Standards::C99);
+    }
+
     void stdcpp11() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--std=c++11", "file.cpp"};
         settings->standards.cpp = Standards::CPP03;
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->standards.cpp == Standards::CPP11);
+    }
+
+    void stdgnupp23() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--std=gnu++23", "file.cpp"};
+        settings->standards.cpp = Standards::CPP03;
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT(settings->standards.cpp == Standards::CPP23);
     }
 
     void stdunknown1() {
@@ -1435,6 +1461,13 @@ private:
         const char *const argv[] = {"cppcheck", "--std=cplusplus11", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unknown --std value 'cplusplus11'\n", logger->str());
+    }
+
+    void stdunknown3() {
+        REDIRECT;
+        const char *const argv[] = {"cppcheck", "--std=C++11", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: unknown --std value 'C++11'\n", logger->str());
     }
 
     void stdoverwrite1() {
@@ -1809,10 +1842,10 @@ private:
 
     void xmlverunknown() {
         REDIRECT;
-        const char * const argv[] = {"cppcheck", "--xml", "--xml-version=3", "file.cpp"};
+        const char * const argv[] = {"cppcheck", "--xml", "--xml-version=4", "file.cpp"};
         // FAils since unknown XML format version
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
-        ASSERT_EQUALS("cppcheck: error: '--xml-version' can only be 2.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: '--xml-version' can only be 2 or 3.\n", logger->str());
     }
 
     void xmlverinvalid() {

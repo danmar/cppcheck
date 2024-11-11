@@ -1721,7 +1721,7 @@ static Token * createAstAtToken(Token *tok)
         }
     }
 
-    if (Token::Match(tok, "%type% %name%|*|&|::") && !Token::Match(tok, "return|new")) {
+    if (Token::Match(tok, "%type% %name%|*|&|::") && !Token::Match(tok, "return|new|delete")) {
         int typecount = 0;
         Token *typetok = tok;
         while (Token::Match(typetok, "%type%|::|*|&")) {

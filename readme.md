@@ -35,12 +35,11 @@ You can stop the script whenever you like with Ctrl C.
 
 Cppcheck requires a C++ compiler with (partial) C++11 support. Minimum required versions are GCC 5.1 / Clang 3.5 / Visual Studio 2015.
 
-To build the GUI application, you need to use the CMake or qmake (deprecated) build system.
+To build the GUI application, you need to use the CMake build system.
 
 When building the command line tool, [PCRE](http://www.pcre.org/) is optional. It is used if you build with rules.
 
 There are multiple compilation choices:
-* qmake - cross platform build tool (deprecated)
 * CMake - cross platform build tool
 * Windows: Visual Studio
 * Windows: Qt Creator + MinGW
@@ -93,18 +92,6 @@ mkdir build
 cd build
 cmake ..
 cmake --build . --config RelWithDebInfo
-```
-
-### qmake
-
-NOTE: This has been deprecated and will be removed in Cppcheck 2.16. Please use CMake instead.
-
-You can use the gui/gui.pro file to build the GUI.
-
-```shell
-cd gui
-qmake
-make
 ```
 
 ### Visual Studio

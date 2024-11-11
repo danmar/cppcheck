@@ -1970,6 +1970,19 @@ def test_checkers_report(tmpdir):
     assert '--checkers-report' not in stderr
 
 
+def test_checkers_report_misra_json(tmpdir):
+    """check that misra checkers are reported properly when --addon=misra.json is used"""
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write('x=1;')
+    misra_json = os.path.join(tmpdir, 'misra.json')
+    with open(misra_json, 'wt') as f:
+        f.write('{"script":"misra.py"}')
+    exitcode, stdout, stderr = cppcheck('--enable=style --addon=misra.json --xml-version=3 test.c'.split(), cwd=tmpdir)
+    assert exitcode == 0, stdout
+    assert '<checker id="Misra C 2012: 8.1"/>' in stderr
+
+
 def test_ignore(tmpdir):
     os.mkdir(os.path.join(tmpdir, 'src'))
     test_file = os.path.join(tmpdir, 'src', 'test.cpp')
@@ -2248,3 +2261,18 @@ def test_ignore_project_2(tmpdir):
     exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
     assert exitcode == 1, stdout
     assert stdout.splitlines() == lines_exp
+
+
+def test_dumpfile_platform(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write('x=1;\n')
+    cppcheck('--dump --platform=unix64 test.c'.split(), cwd=tmpdir)
+    platform = ''
+    with open(test_file + '.dump', 'rt') as f:
+        for line in f:
+            if line.find('<platform name="') > 0:
+                platform = line.strip()
+                break
+    assert ' wchar_t_bit="' in platform
+    assert ' size_t_bit="' in platform
