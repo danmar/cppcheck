@@ -268,7 +268,7 @@ $(libcppdir)/errorlogger.o: ../lib/errorlogger.cpp ../externals/tinyxml2/tinyxml
 $(libcppdir)/errortypes.o: ../lib/errortypes.cpp ../lib/config.h ../lib/errortypes.h ../lib/utils.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/errortypes.cpp
 
-$(libcppdir)/filesettings.o: ../lib/filesettings.cpp ../lib/config.h ../lib/filesettings.h ../lib/path.h ../lib/platform.h ../lib/standards.h ../lib/utils.h
+$(libcppdir)/filesettings.o: ../lib/filesettings.cpp ../lib/config.h ../lib/filesettings.h ../lib/path.h ../lib/platform.h ../lib/standards.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/filesettings.cpp
 
 $(libcppdir)/forwardanalyzer.o: ../lib/forwardanalyzer.cpp ../lib/addoninfo.h ../lib/analyzer.h ../lib/astutils.h ../lib/color.h ../lib/config.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/forwardanalyzer.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/suppressions.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueptr.h ../lib/vfvalue.h
