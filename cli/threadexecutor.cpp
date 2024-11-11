@@ -90,6 +90,9 @@ public:
         mTotalFileSize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const FileWithDetails& p) {
             return v + p.size();
         });
+        for (const auto &fs : mFileSettings) {
+            mTotalFileSize += fs.filesize();
+        }
     }
 
     bool next(const FileWithDetails *&file, const FileSettings *&fs, std::size_t &fileSize) {
@@ -104,7 +107,7 @@ public:
         if (mItNextFileSettings != mFileSettings.end()) {
             file = nullptr;
             fs = &(*mItNextFileSettings);
-            fileSize = 0;
+            fileSize = mItNextFileSettings->filesize();
             ++mItNextFileSettings;
             return true;
         }
