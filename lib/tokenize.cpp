@@ -4297,7 +4297,7 @@ static bool setVarIdParseDeclaration(Token*& tok, const VariableMap& variableMap
                     return false;
             }
             bracket = true; // Skip: Seems to be valid pointer to array or function pointer
-        } else if (singleNameCount >= 1 && Token::Match(tok2, "( * %name% [") && Token::Match(tok2->linkAt(3), "] ) [;,]")) {
+        } else if (singleNameCount >= 1 && Token::Match(tok2, "( * %name% [") && Token::Match(tok2->linkAt(3), "] ) [;,]") && !variableMap.map(false).count(tok2->strAt(2))) {
             bracket = true;
         } else if (singleNameCount >= 1 && tok2->previous() && tok2->previous()->isStandardType() && Token::Match(tok2, "( *|&| %name% ) ;")) {
             bracket = true;
