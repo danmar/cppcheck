@@ -455,7 +455,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
             bool skipElseBlock = false;
             const Token *condTok = tok->astSibling();
 
-            if (condTok->hasKnownIntValue()) {
+            if (condTok && condTok->hasKnownIntValue()) {
                 skipIfBlock = !condTok->getKnownIntValue();
                 skipElseBlock = !skipIfBlock;
             }
