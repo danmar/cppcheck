@@ -47,6 +47,15 @@ public:
             throw std::runtime_error("empty path specified");
     }
 
+    FileWithDetails(std::string path, Standards::Language lang)
+        : mPath(std::move(path))
+        , mPathSimplified(Path::simplifyPath(mPath))
+        , mLang(lang)
+    {
+        if (mPath.empty())
+            throw std::runtime_error("empty path specified");
+    }
+
     const std::string& path() const
     {
         return mPath;
@@ -71,6 +80,9 @@ public:
     {
         return mLang;
     }
+
+    std::string updateSize();
+
 private:
     std::string mPath;
     std::string mPathSimplified;
@@ -103,6 +115,12 @@ struct CPPCHECKLIB FileSettings {
     {
         return file.size();
     }
+
+    std::string updateFileSize()
+    {
+        return file.updateSize();
+    }
+
     std::string defines;
     // TODO: handle differently
     std::string cppcheckDefines() const {

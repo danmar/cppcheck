@@ -1507,21 +1507,6 @@ bool ImportProject::sourceFileExists(const std::string &file)
 void ImportProject::setFileSizes()
 {
     for (auto &fs : fileSettings) {
-        int statResult;
-#ifdef _WIN32
-#ifdef _WIN64
-        struct _stati64 statBuf;
-        statResult = _stati64(fs.filename().c_str(), &statBuf);
-#else
-        struct _stat statBuf;
-        statResult = _stat(fs.filename().c_str(), &statBuf);
-#endif
-#else
-        struct stat statBuf;
-        statResult = stat(fs.filename().c_str(), &statBuf);
-#endif
-        if (statResult == 0) {
-            fs.file = FileWithDetails(fs.file.path(), statBuf.st_size);
-        }
+        fs.updateFileSize();
     }
 }
