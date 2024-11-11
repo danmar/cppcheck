@@ -239,7 +239,7 @@ unsigned int ProcessExecutor::check()
     unsigned int fileCount = 0;
     unsigned int result = 0;
 
-    std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const FileWithDetails& fwd) {
+    const std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const FileWithDetails& fwd) {
         return v + fwd.size();
     }) + std::accumulate(mFileSettings.cbegin(), mFileSettings.cend(), std::size_t(0), [](std::size_t v, const FileSettings& fs) {
         return v + fs.filesize();
