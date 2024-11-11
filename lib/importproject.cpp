@@ -37,9 +37,6 @@
 #include <unordered_set>
 #include <utility>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-
 #include "xml.h"
 
 #include "json.h"
