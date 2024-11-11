@@ -203,6 +203,8 @@ static void createDumpFile(const Settings& settings,
           << " long_bit=\"" << settings.platform.long_bit << '\"'
           << " long_long_bit=\"" << settings.platform.long_long_bit << '\"'
           << " pointer_bit=\"" << (settings.platform.sizeof_pointer * settings.platform.char_bit) << '\"'
+          << " wchar_t_bit=\"" << (settings.platform.sizeof_wchar_t * settings.platform.char_bit) << '\"'
+          << " size_t_bit=\"" << (settings.platform.sizeof_size_t * settings.platform.char_bit) << '\"'
           << "/>" << '\n';
 }
 
@@ -464,7 +466,8 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
     if (!mSettings.buildDir.empty()) {
         std::ofstream fout(clangcmd);
         fout << exe << " " << args2 << " " << redirect2 << std::endl;
-    } else if (mSettings.verbose && !mSettings.quiet) {
+    }
+    if (mSettings.verbose && !mSettings.quiet) {
         mErrorLogger.reportOut(exe + " " + args2);
     }
 
@@ -1707,11 +1710,7 @@ void CppCheck::reportProgress(const std::string &filename, const char stage[], c
 void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
 {
     Settings s;
-    s.severity.enable(Severity::warning);
-    s.severity.enable(Severity::style);
-    s.severity.enable(Severity::portability);
-    s.severity.enable(Severity::performance);
-    s.severity.enable(Severity::information);
+    s.addEnabled("all");
 
     CppCheck cppcheck(errorlogger, true, nullptr);
     cppcheck.purgedConfigurationMessage(emptyString,emptyString);

@@ -2587,6 +2587,17 @@ private:
               "int O::f() const { return v[c.h() - 1]; }\n");
         ASSERT_EQUALS("", errout_str());
 
+        check("void f(const std::vector<int>& v) {\n" // #13196
+              "    if (v.empty())\n"
+              "        return;\n"
+              "    int idx = -1;\n"
+              "    for (int i = 0; i < v.size(); ++i) {\n"
+              "        idx = i;\n"
+              "    }\n"
+              "    (void)v[idx];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
         const auto oldSettings = settings;
         settings.daca = true;
 

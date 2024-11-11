@@ -5,6 +5,7 @@ import os
 import re
 import glob
 import json
+import xml.etree.ElementTree as ET
 
 from testutils import create_gui_project_file, cppcheck
 
@@ -338,3 +339,12 @@ def test_sarif():
     assert res['runs'][0]['tool']['driver']['rules'][0]['properties']['security-severity'] > 9.5
     assert 'security' in res['runs'][0]['tool']['driver']['rules'][0]['properties']['tags']
     assert re.match(r'[0-9]+(.[0-9]+)+', res['runs'][0]['tool']['driver']['semanticVersion'])
+
+
+def test_xml_checkers_report():
+    test_file = os.path.join(__proj_dir, 'main.c')
+    args = ['--xml-version=3', '--enable=all', test_file]
+
+    exitcode, _, stderr = cppcheck(args)
+    assert exitcode == 0
+    assert ET.fromstring(stderr) is not None

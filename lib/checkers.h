@@ -62,11 +62,13 @@ namespace checkers {
     extern std::vector<IdMapping> idMappingMisraC;
     extern std::vector<IdMapping> idMappingMisraCpp2008;
     extern std::vector<IdMapping> idMappingMisraCpp2023;
+    extern std::vector<IdMapping> idMappingAutosar;
+    extern std::vector<IdMapping> idMappingCertC;
+    extern std::vector<IdMapping> idMappingCertCpp;
 
     struct CPPCHECKLIB Info {
         const char* guideline;
         const char* classification;
-        const char* cppcheckIds;
     };
     extern std::vector<Info> autosarInfo;
     extern std::vector<Info> certCInfo;

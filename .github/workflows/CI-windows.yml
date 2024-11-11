@@ -24,6 +24,7 @@ defaults:
 jobs:
 
   build_qt:
+    if: false
     strategy:
       matrix:
         os: [windows-2019, windows-2022]
@@ -41,38 +42,29 @@ jobs:
           arch: x64
 
       - name: Install Qt ${{ matrix.qt_ver }}
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
           version: ${{ matrix.qt_ver }}
           modules: 'qtcharts'
           cache: true
 
-      - name: Build GUI release (qmake)
+      - name: Build GUI release (Qt 5)
         if: startsWith(matrix.qt_ver, '5')
         run: |
-          cd gui || exit /b !errorlevel!
-          qmake HAVE_QCHART=yes || exit /b !errorlevel!
-          nmake release || exit /b !errorlevel!
-        env:
-          CL: /MP
+          ; TODO: enable rules?
+          ; specify Release build so matchcompiler is used
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On  -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
+          cmake --build build --target cppcheck-gui --config Release || exit /b !errorlevel!
 
-      - name: Deploy GUI
-        if: startsWith(matrix.qt_ver, '5')
-        run: |
-          windeployqt Build\gui || exit /b !errorlevel!
-          del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
-          del Build\gui\cppcheck-gui.pdb || exit /b !errorlevel!
-
-      - name: Build GUI release (CMake)
+      - name: Build GUI release (Qt 6)
         if: startsWith(matrix.qt_ver, '6')
         run: |
           ; TODO: enable rules?
           ; specify Release build so matchcompiler is used
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
           cmake --build build --target cppcheck-gui --config Release || exit /b !errorlevel!
 
       - name: Deploy GUI
-        if: startsWith(matrix.qt_ver, '6')
         run: |
           windeployqt build\bin\Release || exit /b !errorlevel!
           del build\bin\Release\cppcheck-gui.ilk || exit /b !errorlevel!
@@ -144,16 +136,15 @@ jobs:
           python -m pip install pytest-timeout || exit /b !errorlevel!
           python -m pip install psutil || exit /b !errorlevel!
 
-      - name: Run CMake
-        if: false # TODO: enable
-        run: |
-          cmake -S . -B build -DBUILD_TESTS=On || exit /b !errorlevel!
+      # TODO: build with CMake
 
       - name: Build CLI debug configuration using MSBuild
         if: matrix.config == 'debug'
         run: |
           :: cmake --build build --target check --config Debug || exit /b !errorlevel!
           msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE;Platform=x64 -maxcpucount || exit /b !errorlevel!
+        env:
+          _CL_: /WX
 
       - name: Run Debug test
         if: matrix.config == 'debug'
@@ -164,6 +155,8 @@ jobs:
         run: |
           :: cmake --build build --target check --config Release || exit /b !errorlevel!
           msbuild -m cppcheck.sln /p:Configuration=Release-PCRE;Platform=x64 -maxcpucount || exit /b !errorlevel!
+        env:
+          _CL_: /WX
 
       - name: Run Release test
         if: matrix.config == 'release'

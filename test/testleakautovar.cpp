@@ -176,6 +176,7 @@ private:
         TEST_CASE(return8);
         TEST_CASE(return9);
         TEST_CASE(return10);
+        TEST_CASE(return11); // #13098
 
         // General tests: variable type, allocation type, etc
         TEST_CASE(test1);
@@ -1686,7 +1687,7 @@ private:
               "    free(p);\n"
               "    if (q == NULL)\n"
               "        return;\n"
-              "    free(q)\n"
+              "    free(q);\n"
               "}");
         ASSERT_EQUALS("[test.c:3] -> [test.c:8]: (error) Memory pointed to by 'p' is freed twice.\n", errout_str());
     }
@@ -2745,6 +2746,18 @@ private:
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Returning/dereferencing 'p' after it is deallocated / released\n", errout_str());
     }
 
+    void return11() { // #13098
+        check("char malloc_memleak(void) {\n"
+              "    bool flag = false;\n"
+              "    char *ptr = malloc(10);\n"
+              "    if (flag) {\n"
+              "        free(ptr);\n"
+              "    }\n"
+              "    return 'a';\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: ptr\n", errout_str());
+    }
+
     void test1() {
         check("void f(double*&p) {\n" // 3809
               "    p = malloc(0x100);\n"
@@ -3367,6 +3380,7 @@ private:
     void run() override {
         TEST_CASE(memleak_getline);
         TEST_CASE(deallocuse_fdopen);
+        TEST_CASE(doublefree_fdopen); // #12781
     }
 
     void memleak_getline() {
@@ -3389,6 +3403,22 @@ private:
               "    int fd = mkstemps(fileName, 4);\n"
               "    if (fd != -1)\n"
               "        out.reset(fdopen(fd, \"w\"));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void doublefree_fdopen() { // #12781
+        check("void foo(void) {\n"
+              "    int fd;\n"
+              "    FILE *stream;\n"
+              "    fd = open(\"/foo\", O_RDONLY);\n"
+              "    if (fd == -1) return;\n"
+              "    stream = fdopen(fd, \"r\");\n"
+              "    if (!stream) {\n"
+              "        close(fd);\n"
+              "        return;\n"
+              "    }\n"
+              "    fclose(stream);\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }

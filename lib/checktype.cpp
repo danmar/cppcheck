@@ -20,6 +20,7 @@
 //---------------------------------------------------------------------------
 #include "checktype.h"
 
+#include "astutils.h"
 #include "errortypes.h"
 #include "mathlib.h"
 #include "platform.h"
@@ -437,6 +438,8 @@ void CheckType::checkFloatToIntegerOverflow()
 
         // Explicit cast
         if (Token::Match(tok, "( %name%") && tok->astOperand1() && !tok->astOperand2()) {
+            if (isUnreachableOperand(tok))
+                continue;
             vtint = tok->valueType();
             vtfloat = tok->astOperand1()->valueType();
             checkFloatToIntegerOverflow(tok, vtint, vtfloat, tok->astOperand1()->values());
@@ -444,12 +447,16 @@ void CheckType::checkFloatToIntegerOverflow()
 
         // Assignment
         else if (tok->str() == "=" && tok->astOperand1() && tok->astOperand2()) {
+            if (isUnreachableOperand(tok))
+                continue;
             vtint = tok->astOperand1()->valueType();
             vtfloat = tok->astOperand2()->valueType();
             checkFloatToIntegerOverflow(tok, vtint, vtfloat, tok->astOperand2()->values());
         }
 
         else if (tok->str() == "return" && tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->isFloat()) {
+            if (isUnreachableOperand(tok))
+                continue;
             const Scope *scope = tok->scope();
             while (scope && scope->type != Scope::ScopeType::eLambda && scope->type != Scope::ScopeType::eFunction)
                 scope = scope->nestedIn;

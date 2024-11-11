@@ -23,7 +23,6 @@ GUIも利用する場合、Qtライブラリが必要です。
 コマンドラインツールをビルドする場合、[PCRE](http://www.pcre.org/)はオプションです。これはルールを作成するために利用します。
 
 コンパイル上の選択肢がいくつかあります。
-* qmake - クロスプラットフォームのビルドツール
 * cmake - クロスプラットフォームのビルドツール
 * Windows: Visual Studio (VS 2013 またはそれ以上)
 * Windows: Qt Creator + mingw
@@ -50,16 +49,6 @@ CppcheckのGUIが必要な場合次のフラグを指定します。
 
 pcreが必要になりますが、正規表現のルールサポートが必要な場合次のフラグを指定します。
 -DHAVE_RULES=ON
-
-### qmake
-
-GUIをビルドするには、gui/gui.proファイルが利用できます。
-
-```shell
-cd gui
-qmake
-make
-```
 
 ### Visual Studio
 

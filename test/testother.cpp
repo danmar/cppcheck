@@ -220,7 +220,7 @@ private:
         TEST_CASE(redundantVarAssignment_array);
         TEST_CASE(redundantVarAssignment_switch_break);
         TEST_CASE(redundantInitialization);
-        TEST_CASE(redundantMemWrite);
+        //TEST_CASE(redundantMemWrite); // FIXME: temporary hack
         TEST_CASE(redundantAssignmentSameValue);
 
         TEST_CASE(varFuncNullUB);
@@ -4312,6 +4312,18 @@ private:
               "    return *(b + i);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'b' can be declared as pointer to const\n",
+                      errout_str());
+
+        check("struct S { int a; };\n" // #13286
+              "void f(struct S* s) {\n"
+              "    if ((--s)->a >= 0) {}\n"
+              "}\n"
+              "void g(struct S* s) {\n"
+              "    --s;\n"
+              "    if (s->a >= 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 's' can be declared as pointer to const\n"
+                      "[test.cpp:5]: (style) Parameter 's' can be declared as pointer to const\n",
                       errout_str());
     }
 
@@ -10307,9 +10319,8 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
+    // cppcheck-suppress unusedPrivateFunction
     void redundantMemWrite() {
-        return; // FIXME: temporary hack
-
         // Simple tests
         // cppcheck-suppress unreachableCode - remove when code is enabled again
         check("void f() {\n"

@@ -4353,9 +4353,8 @@ class MisraChecker:
         num1 = 0
         num2 = 0
         appendixA = False
-        expect_more = False
 
-        Rule_pattern = re.compile(r'^Rule ([0-9]+).([0-9]+)')
+        Rule_pattern = re.compile(r'^Rule ([0-9]+)\.([0-9]+)')
         severity_pattern = re.compile(r'.*[ ]*(Advisory|Required|Mandatory)$')
         xA_Z_pattern = re.compile(r'^[#A-Z].*')
         a_z_pattern = re.compile(r'^[a-z].*')
@@ -4383,12 +4382,13 @@ class MisraChecker:
                 file_stream = open(filename, 'rt')
 
         rule = None
-        have_severity = False
-        severity_loc = 0
+        rule_line_number = 0
 
         for line in file_stream:
 
-            line = line.replace('\r', '').replace('\n', '')
+            line = line.strip()
+            if len(line) == 0:
+                continue
 
             if not appendixA:
                 if line.find('Appendix A') >= 0 and line.find('Summary of guidelines') >= 10:
@@ -4396,57 +4396,48 @@ class MisraChecker:
                 continue
             if line.find('Appendix B') >= 0:
                 break
-            if len(line) == 0:
-                continue
 
             # Parse rule declaration.
             res = Rule_pattern.match(line)
 
             if res:
-                have_severity = False
-                expect_more = False
-                severity_loc = 0
+                rule_line_number = 0
                 num1 = int(res.group(1))
                 num2 = int(res.group(2))
                 rule = Rule(num1, num2)
 
-            if not have_severity and rule is not None:
                 res = severity_pattern.match(line)
-
                 if res:
                     rule.misra_severity = res.group(1)
-                    have_severity = True
-                else:
-                    severity_loc += 1
-
-                # Only look for severity on the Rule line
-                # or the next non-blank line after
-                # If it's not in either of those locations then
-                # assume a severity was not provided.
-
-                if severity_loc < 2:
-                    continue
-
-                rule.misra_severity = ''
-                have_severity = True
+                    rule_line_number = 1
+                continue
 
             if rule is None:
                 continue
 
-            # Parse continuing of rule text.
-            if expect_more:
-                if a_z_pattern.match(line):
-                    self.ruleTexts[rule.num].text += ' ' + line
+            rule_line_number += 1
+
+            if rule_line_number == 1:
+                res = severity_pattern.match(line)
+
+                if res:
+                    rule.misra_severity = res.group(1)
                     continue
 
-                expect_more = False
-                continue
+                rule_line_number = 2
 
             # Parse beginning of rule text.
-            if xA_Z_pattern.match(line):
-                rule.text = line
+            if not rule.text and xA_Z_pattern.match(line):
+                rule.text = line.strip()
                 self.ruleTexts[rule.num] = rule
-                expect_more = True
+                continue
+
+            # Parse continuing of rule text.
+            if a_z_pattern.match(line):
+                self.ruleTexts[rule.num].text += ' ' + line.strip()
+                continue
+
+            rule = None
 
         file_stream.close()
 

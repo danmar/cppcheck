@@ -1,4 +1,4 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2024 Cppcheck team.
  *
@@ -16,41 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "scratchpad.h"
+#ifndef vfSubFunctionH
+#define vfSubFunctionH
 
-#include "codeeditor.h"
-#include "mainwindow.h"
+class TokenList;
+class SymbolDatabase;
+class ErrorLogger;
+class Settings;
 
-#include "ui_scratchpad.h"
-
-#include <QLineEdit>
-#include <QPushButton>
-#include <QString>
-
-ScratchPad::ScratchPad(MainWindow& mainWindow)
-    : QDialog(&mainWindow)
-    , mUI(new Ui::ScratchPad)
-    , mMainWindow(mainWindow)
+namespace ValueFlow
 {
-    mUI->setupUi(this);
-
-    connect(mUI->mCheckButton, &QPushButton::clicked, this, &ScratchPad::checkButtonClicked);
+    void analyzeSubFunction(const TokenList& tokenlist, SymbolDatabase& symboldatabase, ErrorLogger& errorLogger, const Settings& settings);
 }
 
-ScratchPad::~ScratchPad()
-{
-    delete mUI;
-}
-
-void ScratchPad::translate()
-{
-    mUI->retranslateUi(this);
-}
-
-void ScratchPad::checkButtonClicked()
-{
-    QString filename = mUI->lineEdit->text();
-    if (filename.isEmpty())
-        filename = "test.cpp";
-    mMainWindow.analyzeCode(mUI->plainTextEdit->toPlainText(), filename);
-}
+#endif // vfSubFunctionH

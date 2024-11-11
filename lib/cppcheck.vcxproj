@@ -41,6 +41,7 @@
     <ClCompile Include="checkclass.cpp" />
     <ClCompile Include="checkcondition.cpp" />
     <ClCompile Include="checkers.cpp" />
+    <ClCompile Include="checkersidmapping.cpp" />
     <ClCompile Include="checkersreport.cpp" />
     <ClCompile Include="checkexceptionsafety.cpp" />
     <ClCompile Include="checkfunctions.cpp" />
@@ -80,6 +81,7 @@
     <ClCompile Include="programmemory.cpp" />
     <ClCompile Include="reverseanalyzer.cpp" />
     <ClCompile Include="settings.cpp" />
+    <ClCompile Include="standards.cpp" />
     <ClCompile Include="summaries.cpp" />
     <ClCompile Include="suppressions.cpp" />
     <ClCompile Include="templatesimplifier.cpp" />
@@ -111,6 +113,7 @@
     <ClCompile Include="vf_sameexpressions.cpp" />
     <ClCompile Include="vf_settokenvalue.cpp" />
     <ClCompile Include="vf_string.cpp" />
+    <ClCompile Include="vf_subfunction.cpp" />
     <ClCompile Include="vf_switchvariable.cpp" />
     <ClCompile Include="vf_symbolicinfer.cpp" />
     <ClCompile Include="vf_symbolicoperators.cpp" />
@@ -135,6 +138,7 @@
     <ClInclude Include="checkclass.h" />
     <ClInclude Include="checkcondition.h" />
     <ClInclude Include="checkers.h" />
+    <ClInclude Include="checkersidmapping.h" />
     <ClInclude Include="checkersreport.h" />
     <ClInclude Include="checkexceptionsafety.h" />
     <ClInclude Include="checkfunctions.h" />
@@ -221,6 +225,7 @@
     <ClInclude Include="vf_sameexpressions.h" />
     <ClInclude Include="vf_settokenvalue.h" />
     <ClInclude Include="vf_string.h" />
+    <ClInclude Include="vf_subfunction.h" />
     <ClInclude Include="vf_switchvariable.h" />
     <ClInclude Include="vf_symbolicinfer.h" />
     <ClInclude Include="vf_symbolicoperators.h" />
@@ -307,7 +312,7 @@
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4701;4706;4800;4805</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>precompiled.h</PrecompiledHeaderFile>
@@ -338,7 +343,7 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4701;4706;4800;4805</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>precompiled.h</PrecompiledHeaderFile>
@@ -373,7 +378,7 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4701;4706;4800;4805</DisableSpecificWarnings>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;NDEBUG;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -413,7 +418,7 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4701;4706;4800;4805</DisableSpecificWarnings>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;NDEBUG;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>

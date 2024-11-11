@@ -1688,7 +1688,7 @@ void CheckOther::checkConstPointer()
         else if (Token::simpleMatch(parent, "[") && parent->astOperand1() == tok && tok != nameTok)
             deref = DEREF;
         else if (Token::Match(parent, "%op%") && Token::simpleMatch(parent->astParent(), "."))
-            deref = DEREF;
+            deref = MEMBER;
         else if (Token::simpleMatch(parent, "."))
             deref = MEMBER;
         else if (astIsRangeBasedForDecl(tok))
@@ -1707,12 +1707,12 @@ void CheckOther::checkConstPointer()
                         continue;
                 }
             }
-            if (Token::Match(gparent, "%cop%") && !gparent->isUnaryOp("&") && !gparent->isUnaryOp("*"))
-                continue;
             if (hasIncDecPlus) {
                 parent = gparent;
                 gparent = gparent ? gparent->astParent() : nullptr;
             }
+            if (Token::Match(gparent, "%cop%") && !gparent->isUnaryOp("&") && !gparent->isUnaryOp("*"))
+                continue;
             int argn = -1;
             if (Token::simpleMatch(gparent, "return")) {
                 const Function* function = gparent->scope()->function;
@@ -1743,6 +1743,8 @@ void CheckOther::checkConstPointer()
         } else {
             int argn = -1;
             if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-|<<"))
+                continue;
+            if (hasIncDecPlus && !parent->astParent())
                 continue;
             if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
                 continue;
@@ -3765,14 +3767,14 @@ void CheckOther::funcArgOrderDifferent(const std::string & functionName,
         !definitions.empty() ? definitions[0] ? definitions[0] : definition : nullptr
     };
     std::string msg = "$symbol:" + functionName + "\nFunction '$symbol' argument order different: declaration '";
-    for (int i = 0; i < declarations.size(); ++i) {
+    for (std::size_t i = 0; i < declarations.size(); ++i) {
         if (i != 0)
             msg += ", ";
         if (declarations[i])
             msg += declarations[i]->str();
     }
     msg += "' definition '";
-    for (int i = 0; i < definitions.size(); ++i) {
+    for (std::size_t i = 0; i < definitions.size(); ++i) {
         if (i != 0)
             msg += ", ";
         if (definitions[i])

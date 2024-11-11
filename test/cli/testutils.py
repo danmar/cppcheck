@@ -40,9 +40,8 @@ def create_gui_project_file(project_file, root_path=None, import_project=None, p
         cppcheck_xml += '  </addons>\n'
     cppcheck_xml += '</project>\n'
 
-    f = open(project_file, 'wt')
-    f.write(cppcheck_xml)
-    f.close()
+    with open(project_file, 'wt') as f:
+        f.write(cppcheck_xml)
 
 
 def __lookup_cppcheck_exe():

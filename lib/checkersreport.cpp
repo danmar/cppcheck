@@ -33,6 +33,21 @@ static bool isCppcheckPremium(const Settings& settings) {
     return (settings.cppcheckCfgProductName.compare(0, 16, "Cppcheck Premium") == 0);
 }
 
+static int getMisraCVersion(const Settings& settings) {
+    if (settings.premiumArgs.find("misra-c-2012") != std::string::npos)
+        return 2012;
+    if (settings.premiumArgs.find("misra-c-2023") != std::string::npos)
+        return 2023;
+    if (settings.addons.count("misra"))
+        return 2012;
+    const bool misraAddonInfo = std::any_of(settings.addonInfos.cbegin(), settings.addonInfos.cend(), [](const AddonInfo& addonInfo) {
+        return addonInfo.name == "misra";
+    });
+    if (misraAddonInfo)
+        return 2012;
+    return 0;
+}
+
 static bool isMisraRuleActive(const std::set<std::string>& activeCheckers, const std::string& rule) {
     if (activeCheckers.count("Misra C: " + rule))
         return true;
@@ -229,29 +244,23 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
     reportSection("Cert C", mSettings, mActiveCheckers, checkers::premiumCheckers, "Cert C: ");
     reportSection("Cert C++", mSettings, mActiveCheckers, checkers::premiumCheckers, "Cert C++: ");
 
-    int misra = 0;
-    if (mSettings.premiumArgs.find("misra-c-2012") != std::string::npos)
-        misra = 2012;
-    else if (mSettings.premiumArgs.find("misra-c-2023") != std::string::npos)
-        misra = 2023;
-    else if (mSettings.addons.count("misra"))
-        misra = 2012;
+    const int misraCVersion = getMisraCVersion(mSettings);
 
-    if (misra == 0) {
+    if (misraCVersion == 0) {
         fout << std::endl << std::endl;
         fout << "Misra C" << std::endl;
         fout << "-------" << std::endl;
         fout << "Misra is not enabled" << std::endl;
     } else {
         fout << std::endl << std::endl;
-        fout << "Misra C " << misra << std::endl;
+        fout << "Misra C " << misraCVersion << std::endl;
         fout << "------------" << std::endl;
         for (const checkers::MisraInfo& info: checkers::misraC2012Directives) {
             const std::string directive = "Dir " + std::to_string(info.a) + "." + std::to_string(info.b);
             const bool active = isMisraRuleActive(mActiveCheckers, directive);
-            fout << (active ? "Yes  " : "No   ") << "Misra C " << misra << ": " << directive;
+            fout << (active ? "Yes  " : "No   ") << "Misra C " << misraCVersion << ": " << directive;
             std::string extra;
-            if (misra == 2012 && info.amendment >= 1)
+            if (misraCVersion == 2012 && info.amendment >= 1)
                 extra = " amendment:" + std::to_string(info.amendment);
             if (!extra.empty())
                 fout << std::string(10 - directive.size(), ' ') << extra;
@@ -260,9 +269,9 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
         for (const checkers::MisraInfo& info: checkers::misraC2012Rules) {
             const std::string rule = std::to_string(info.a) + "." + std::to_string(info.b);
             const bool active = isMisraRuleActive(mActiveCheckers, rule);
-            fout << (active ? "Yes  " : "No   ") << "Misra C " << misra << ": " << rule;
+            fout << (active ? "Yes  " : "No   ") << "Misra C " << misraCVersion << ": " << rule;
             std::string extra;
-            if (misra == 2012 && info.amendment >= 1)
+            if (misraCVersion == 2012 && info.amendment >= 1)
                 extra = " amendment:" + std::to_string(info.amendment);
             std::string reqs;
             if (info.amendment >= 3)
@@ -279,4 +288,22 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
     reportSection("Misra C++ 2023", mSettings, mActiveCheckers, checkers::premiumCheckers, "Misra C++ 2023: ");
 
     return fout.str();
+}
+
+std::string CheckersReport::getXmlReport(const std::string& criticalErrors) const
+{
+    std::string ret;
+    if (!criticalErrors.empty())
+        ret += "    <critical-errors>" + criticalErrors + "</critical-errors>\n";
+    else
+        ret += "    <critical-errors/>\n";
+    ret += "    <checkers-report>\n";
+    const int misraCVersion = getMisraCVersion(mSettings);
+    for (std::string checker: mActiveCheckers) {
+        if (checker.compare(0,8,"Misra C:") == 0)
+            checker = "Misra C " + std::to_string(misraCVersion) + ":" + checker.substr(8);
+        ret += "        <checker id=\"" + checker + "\"/>\n";
+    }
+    ret += "    </checkers-report>";
+    return ret;
 }

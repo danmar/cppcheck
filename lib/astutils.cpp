@@ -1056,9 +1056,8 @@ bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive)
     return false;
 }
 
-bool isAliasOf(const Token* tok, const Token* expr, int* indirect, bool* inconclusive)
+bool isAliasOf(const Token* tok, const Token* expr, int* indirect)
 {
-    const ValueFlow::Value* value = nullptr;
     const Token* r = nullptr;
     if (indirect)
         *indirect = 1;
@@ -1080,11 +1079,7 @@ bool isAliasOf(const Token* tok, const Token* expr, int* indirect, bool* inconcl
                                     [&](const Token* aliasTok) {
                         return aliasTok != childTok && aliasTok->exprId() == childTok->exprId();
                     })) {
-                        if (val.isInconclusive() && inconclusive != nullptr) {
-                            value = &val;
-                        } else {
-                            return true;
-                        }
+                        return true;
                     }
                 }
             }
@@ -1093,9 +1088,7 @@ bool isAliasOf(const Token* tok, const Token* expr, int* indirect, bool* inconcl
         if (r)
             break;
     }
-    if (!r && value && inconclusive)
-        *inconclusive = true;
-    return r || value;
+    return r;
 }
 
 static bool isAliased(const Token *startTok, const Token *endTok, nonneg int varid)
@@ -3728,6 +3721,42 @@ bool isExhaustiveSwitch(const Token *startbrace)
         return std::all_of(enumList.cbegin(), enumList.cend(), [&](const Enumerator &e) {
             return !e.value_known || switchValues.count(e.value);
         });
+    }
+
+    return false;
+}
+
+bool isUnreachableOperand(const Token *tok)
+{
+    for (;;)
+    {
+        const Token *parent = tok->astParent();
+        if (!parent)
+            break;
+
+        if (parent->isBinaryOp()) {
+            const bool left = tok == parent->astOperand1();
+            const Token *sibling = left ? parent->astOperand2() : parent->astOperand1();
+
+            // logical and
+            if (Token::simpleMatch(parent, "&&") && !left && sibling->hasKnownIntValue()
+                && !sibling->getKnownIntValue())
+                return true;
+
+            // logical or
+            if (Token::simpleMatch(parent, "||") && !left && sibling->hasKnownIntValue()
+                && sibling->getKnownIntValue())
+                return true;
+
+            // ternary
+            if (Token::simpleMatch(parent, ":") && Token::simpleMatch(parent->astParent(), "?")) {
+                const Token *condTok = parent->astParent()->astOperand1();
+                if (condTok->hasKnownIntValue() && static_cast<bool>(condTok->getKnownIntValue()) != left)
+                    return true;
+            }
+        }
+
+        tok = parent;
     }
 
     return false;

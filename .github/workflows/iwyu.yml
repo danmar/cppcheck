@@ -70,9 +70,6 @@ jobs:
         run: |
           zypper install -y cmake clang pcre-devel
           zypper install -y include-what-you-use-tools
-          # fixes error during Qt installation
-          # /__w/cppcheck/Qt/6.7.0/gcc_64/bin/qmake: error while loading shared libraries: libgthread-2.0.so.0: cannot open shared object file: No such file or directory
-          zypper install -y libgthread-2_0-0
           ln -s iwyu_tool.py /usr/bin/iwyu_tool
 
       # Fails on OpenSUSE:
@@ -80,7 +77,7 @@ jobs:
       # Also the shell is broken afterwards:
       # OCI runtime exec failed: exec failed: unable to start container process: exec: "sh": executable file not found in $PATH: unknown
       - name: Install Qt ${{ env.QT_VERSION }}
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
@@ -154,7 +151,7 @@ jobs:
           sudo apt-get install -y clang-tools-19
 
       - name: Install Qt ${{ env.QT_VERSION }}
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'

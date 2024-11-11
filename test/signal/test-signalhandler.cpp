@@ -73,6 +73,8 @@ int main(int argc, const char * const argv[])
 
     return 0;
 #else
+    (void)argc;
+    (void)argv;
     return 1;
 #endif
 }

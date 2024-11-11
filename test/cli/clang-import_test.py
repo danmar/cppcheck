@@ -196,6 +196,13 @@ def test_cmd_std_c(tmp_path):  # #13129
     __test_cmd(tmp_path, 'test.cpp',['--std=c89', '--std=c++14'], '-x c++ -std=c++14')
 
 
+# TODO: remove when we inject the build-dir into all tests
+def test_cmd_std_c_builddir(tmp_path):  # #13129
+    build_dir = tmp_path / 'b1'
+    os.makedirs(build_dir)
+    __test_cmd(tmp_path, 'test.cpp',['--std=c89', '--std=c++14', '--cppcheck-build-dir={}'.format(build_dir)], '-x c++ -std=c++14')
+
+
 def test_cmd_std_cpp(tmp_path):  # #13129
     __test_cmd(tmp_path, 'test.c',['--std=c89', '--std=c++14'], '-x c -std=c89')
 
@@ -208,16 +215,13 @@ def test_cmd_std_cpp_enforce(tmp_path):  # #13128/#13129
     __test_cmd(tmp_path, 'test.c',['--language=c++', '--std=c89', '--std=c++14'], '-x c++ -std=c++14')
 
 
-@pytest.mark.xfail(strict=True)
 def test_cmd_std_c_enforce_alias(tmp_path):  # #13128/#13129/#13130
-    __test_cmd(tmp_path, 'test.c',['--language=c++', '--std=gnu99', '--std=gnu++11'], '-x c -std=gnu99')
+    __test_cmd(tmp_path, 'test.c',['--language=c', '--std=gnu99', '--std=gnu++11'], '-x c -std=gnu99')
 
 
-@pytest.mark.xfail(strict=True)
 def test_cmd_std_c_enforce_alias_2(tmp_path):  # #13128/#13129/#13130
-    __test_cmd(tmp_path, 'test.c',['--language=c++', '--std=iso9899:1999', '--std=gnu++11'], '-x c -std=iso9899:1999')
+    __test_cmd(tmp_path, 'test.c',['--language=c', '--std=iso9899:1999', '--std=gnu++11'], '-x c -std=iso9899:1999')
 
 
-@pytest.mark.xfail(strict=True)
 def test_cmd_std_cpp_enforce_alias(tmp_path):  # #13128/#13129/#13130
     __test_cmd(tmp_path, 'test.c',['--language=c++', '--std=gnu99', '--std=gnu++11'], '-x c++ -std=gnu++11')
