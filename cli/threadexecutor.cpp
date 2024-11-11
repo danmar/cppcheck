@@ -89,10 +89,9 @@ public:
         mTotalFiles = mFiles.size() + mFileSettings.size();
         mTotalFileSize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const FileWithDetails& p) {
             return v + p.size();
+        }) + std::accumulate(mFileSettings.cbegin(), mFileSettings.cend(), std::size_t(0), [](std::size_t v, const FileSettings& p) {
+            return v + p.filesize();
         });
-        for (const auto &fs : mFileSettings) {
-            mTotalFileSize += fs.filesize();
-        }
     }
 
     bool next(const FileWithDetails *&file, const FileSettings *&fs, std::size_t &fileSize) {
