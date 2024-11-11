@@ -100,6 +100,7 @@
     <ClCompile Include="..\lib\utils.cpp" />
     <ClCompile Include="dmake.cpp" />
     <ClCompile Include="..\cli\filelister.cpp" />
+    <ClCompile Include="..\lib\filesttings.cpp" />
     <ClCompile Include="..\lib\path.cpp" />
   </ItemGroup>
   <ItemGroup>
