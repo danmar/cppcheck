@@ -2325,13 +2325,13 @@ private:
 
     void ifelse29() { // #13296
         check("struct S {\n"
-            "    typedef int (S::* func_t)(int) const;\n"
-            "    void f(func_t pfn);\n"
-            "    int g(int) const;\n"
-            "};\n"
-            "void S::f(func_t pfn) {\n"
-            "    if (pfn == (func_t)&S::g) {}\n"
-            "}\n", true);
+              "    typedef int (S::* func_t)(int) const;\n"
+              "    void f(func_t pfn);\n"
+              "    int g(int) const;\n"
+              "};\n"
+              "void S::f(func_t pfn) {\n"
+              "    if (pfn == (func_t)&S::g) {}\n"
+              "}\n", true);
         ASSERT_EQUALS("", errout_str()); // don't crash
     }
 
