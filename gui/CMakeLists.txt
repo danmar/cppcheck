@@ -32,6 +32,9 @@ CheckOptions:
             list(APPEND cppcheck-gui_SOURCES $<TARGET_OBJECTS:tinyxml2_objs>)
         endif()
     endif()
+    if (WIN32)
+        list(APPEND cppcheck-gui_SOURCES cppcheck-gui.rc)
+    endif()
 
     add_executable(cppcheck-gui ${cppcheck-gui-deps} ${cppcheck-gui_SOURCES})
     set_target_properties(cppcheck-gui PROPERTIES AUTOMOC ON)
