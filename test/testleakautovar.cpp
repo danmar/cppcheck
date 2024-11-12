@@ -2769,6 +2769,16 @@ private:
               "    return 'a';\n"
               "}\n", true);
         ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: ptr\n", errout_str());
+
+        check("char malloc_memleak(void) {\n"
+              "    bool flag = false;\n"
+              "    char *ptr = malloc(10);\n"
+              "    if (flag) {\n"
+              "        free(ptr);\n"
+              "    }\n"
+              "    return 'a';\n"
+              "}\n", false);
+        ASSERT_EQUALS("[test.c:7]: (error) Memory leak: ptr\n", errout_str());
     }
 
     void test1() {

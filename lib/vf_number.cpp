@@ -18,6 +18,7 @@
 
 #include "vf_number.h"
 
+#include "settings.h"
 #include "token.h"
 #include "tokenlist.h"
 #include "vfvalue.h"
@@ -36,7 +37,7 @@ namespace ValueFlow
             tok = valueFlowSetConstantValue(tok, settings);
         }
 
-        if (tokenlist.isCPP()) {
+        if (tokenlist.isCPP() || settings.standards.c >= Standards::C23) {
             for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
                 if (tok->isName() && !tok->varId() && Token::Match(tok, "false|true")) {
                     ValueFlow::Value value(tok->str() == "true");

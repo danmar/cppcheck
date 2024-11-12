@@ -726,7 +726,7 @@ $(libcppdir)/vf_iteratorinfer.o: lib/vf_iteratorinfer.cpp lib/config.h lib/error
 $(libcppdir)/vf_iterators.o: lib/vf_iterators.cpp lib/astutils.h lib/config.h lib/errortypes.h lib/library.h lib/mathlib.h lib/smallvector.h lib/sourcelocation.h lib/standards.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenlist.h lib/utils.h lib/vf_iterators.h lib/vf_settokenvalue.h lib/vfvalue.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/vf_iterators.cpp
 
-$(libcppdir)/vf_number.o: lib/vf_number.cpp lib/config.h lib/errortypes.h lib/library.h lib/mathlib.h lib/sourcelocation.h lib/standards.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenlist.h lib/utils.h lib/vf_common.h lib/vf_number.h lib/vf_settokenvalue.h lib/vfvalue.h
+$(libcppdir)/vf_number.o: lib/vf_number.cpp lib/addoninfo.h lib/config.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/sourcelocation.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenlist.h lib/utils.h lib/vf_common.h lib/vf_number.h lib/vf_settokenvalue.h lib/vfvalue.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/vf_number.cpp
 
 $(libcppdir)/vf_pointeralias.o: lib/vf_pointeralias.cpp lib/config.h lib/errortypes.h lib/library.h lib/mathlib.h lib/sourcelocation.h lib/standards.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenlist.h lib/utils.h lib/vf_pointeralias.h lib/vf_settokenvalue.h lib/vfvalue.h
