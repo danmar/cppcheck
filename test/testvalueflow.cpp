@@ -524,8 +524,8 @@ private:
     }
 
 #define valueOfTok(...) valueOfTok_(__FILE__, __LINE__, __VA_ARGS__)
-    ValueFlow::Value valueOfTok_(const char* file, int line, const char code[], const char tokstr[], const Settings *settings = nullptr, bool cpp = true) {
-        std::list<ValueFlow::Value> values = removeImpossible(tokenValues_(file, line, code, tokstr, settings, cpp));
+    ValueFlow::Value valueOfTok_(const char* file, int line, const char code[], const char tokstr[], const Settings *s = nullptr, bool cpp = true) {
+        std::list<ValueFlow::Value> values = removeImpossible(tokenValues_(file, line, code, tokstr, s, cpp));
         return values.size() == 1U && !values.front().isTokValue() ? values.front() : ValueFlow::Value();
     }
 
