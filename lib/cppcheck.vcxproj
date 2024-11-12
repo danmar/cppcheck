@@ -183,6 +183,7 @@
     <ClInclude Include="preprocessor.h" />
     <ClInclude Include="programmemory.h" />
     <ClInclude Include="reverseanalyzer.h" />
+    <ClInclude Include="safeptr.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="smallvector.h" />
     <ClInclude Include="sourcelocation.h" />
