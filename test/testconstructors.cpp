@@ -75,6 +75,7 @@ private:
         TEST_CASE(simple15); // #8942 multiple arguments, decltype
         TEST_CASE(simple16); // copy members with c++11 init
         TEST_CASE(simple17); // #10360
+        TEST_CASE(simple18);
 
         TEST_CASE(noConstructor1);
         TEST_CASE(noConstructor2);
@@ -510,6 +511,23 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
+    void simple15() { // #8942
+        check("class A\n"
+              "{\n"
+              "public:\n"
+              "  int member;\n"
+              "};\n"
+              "class B\n"
+              "{\n"
+              "public:\n"
+              "  B(const decltype(A::member)& x, const decltype(A::member)& y) : x(x), y(y) {}\n"
+              "private:\n"
+              "  const decltype(A::member)& x;\n"
+              "  const decltype(A::member)& y;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
     void simple16() {
         check("struct S {\n"
               "    int i{};\n"
@@ -554,21 +572,13 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
-    void simple15() { // #8942
-        check("class A\n"
-              "{\n"
-              "public:\n"
-              "  int member;\n"
-              "};\n"
-              "class B\n"
-              "{\n"
-              "public:\n"
-              "  B(const decltype(A::member)& x, const decltype(A::member)& y) : x(x), y(y) {}\n"
-              "private:\n"
-              "  const decltype(A::member)& x;\n"
-              "  const decltype(A::member)& y;\n"
-              "};\n");
-        ASSERT_EQUALS("", errout_str());
+    void simple18() { // #13302
+        check("struct S {};\n"
+              "class C1 { S& r; };\n"
+              "class C2 { S* p; };\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The class 'C1' does not declare a constructor although it has private member variables which likely require initialization.\n"
+                      "[test.cpp:3]: (style) The class 'C2' does not declare a constructor although it has private member variables which likely require initialization.\n",
+                      errout_str());
     }
 
     void noConstructor1() {
