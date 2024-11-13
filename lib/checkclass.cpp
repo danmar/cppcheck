@@ -2537,12 +2537,12 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                 if (!vt || !vt->container)
                     return false;
                 const auto yield = vt->container->getYield(end->str());
-                if (((yield == Library::Container::Yield::START_ITERATOR) ||
-                     (yield == Library::Container::Yield::END_ITERATOR))
-                    && (tok1->tokAt(-1)->isComparisonOp() ||
-                        (tok1->tokAt(-1)->isAssignmentOp() && tok1->tokAt(-2)->variable() && Token::Match(tok1->tokAt(-2)->variable()->typeEndToken(), "const_iterator|const_reverse_iterator"))))
+                if (((yield == Library::Container::Yield::START_ITERATOR) || (yield == Library::Container::Yield::END_ITERATOR)) &&
+                    (tok1->tokAt(-1)->isComparisonOp() ||
+                     (tok1->tokAt(-1)->isAssignmentOp() && tok1->tokAt(-2)->variable() && Token::Match(tok1->tokAt(-2)->variable()->typeEndToken(), "const_iterator|const_reverse_iterator"))))
                     return true;
-                if ((yield == Library::Container::Yield::ITEM || yield == Library::Container::Yield::AT_INDEX) && (lhs->isComparisonOp() || lhs->isAssignmentOp()))
+                if ((yield == Library::Container::Yield::ITEM || yield == Library::Container::Yield::AT_INDEX) &&
+                    (lhs->isComparisonOp() || lhs->isAssignmentOp() || (lhs->str() == "(" && Token::Match(lhs->astParent(), "%cop%"))))
                     return true; // assume that these functions have const overloads
                 return false;
             };

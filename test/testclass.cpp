@@ -6718,18 +6718,23 @@ private:
                    "        return r;\n"
                    "    }\n"
                    "    void h() {\n"
-                   "        v.at(0) = 0;\n"
+                   "        if (v.front() == 0) {}\n"
+                   "        if (1 == v.front()) {}\n"
                    "    }\n"
                    "    void i() {\n"
-                   "        dostuff(1, v.at(0));\n"
+                   "        v.at(0) = 0;\n"
                    "    }\n"
                    "    void j() {\n"
+                   "        dostuff(1, v.at(0));\n"
+                   "    }\n"
+                   "    void k() {\n"
                    "        int& r = v.front();\n"
                    "        r = 0;\n"
                    "    }\n"
                    "};\n");
         ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'S::f' can be const.\n"
-                      "[test.cpp:7]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
+                      "[test.cpp:7]: (style, inconclusive) Technically the member function 'S::g' can be const.\n"
+                      "[test.cpp:11]: (style, inconclusive) Technically the member function 'S::h' can be const.\n",
                       errout_str());
     }
 
