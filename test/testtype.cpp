@@ -533,6 +533,21 @@ private:
                "    return false || f((unsigned short)75000.0);\n"
                "}\n", settingsDefault);
         ASSERT_EQUALS("[test.cpp:3]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
+
+        checkP("#define TEST(b, f) b ? 5000 : (unsigned short)f\n" // #11685
+               "void f()\n"
+               "{\n"
+               "    unsigned short u = TEST(true, 75000.0);\n"
+               "}\n", settingsDefault, "test.c");
+        ASSERT_EQUALS("", errout_str());
+
+        checkP("#define TEST(b, f) b ? 5000 : (unsigned short)f\n"
+               "void f()\n"
+               "{\n"
+               "    unsigned short u = TEST(false, 75000.0);\n"
+               "}\n", settingsDefault, "test.c");
+        ASSERT_EQUALS("[test.c:4]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
+
     }
 
     void integerOverflow() { // #11794

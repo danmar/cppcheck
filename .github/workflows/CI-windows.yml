@@ -24,7 +24,6 @@ defaults:
 jobs:
 
   build_qt:
-    if: false
     strategy:
       matrix:
         os: [windows-2019, windows-2022]

@@ -660,7 +660,7 @@ $(libcppdir)/vf_common.o: lib/vf_common.cpp lib/addoninfo.h lib/astutils.h lib/c
 $(libcppdir)/vf_enumvalue.o: lib/vf_enumvalue.cpp lib/config.h lib/errortypes.h lib/library.h lib/mathlib.h lib/sourcelocation.h lib/standards.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/utils.h lib/valueflow.h lib/vf_enumvalue.h lib/vfvalue.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/vf_enumvalue.cpp
 
-$(libcppdir)/vf_number.o: lib/vf_number.cpp lib/config.h lib/errortypes.h lib/library.h lib/mathlib.h lib/sourcelocation.h lib/standards.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenlist.h lib/utils.h lib/vf_common.h lib/vf_number.h lib/vf_settokenvalue.h lib/vfvalue.h
+$(libcppdir)/vf_number.o: lib/vf_number.cpp lib/addoninfo.h lib/config.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/sourcelocation.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenlist.h lib/utils.h lib/vf_common.h lib/vf_number.h lib/vf_settokenvalue.h lib/vfvalue.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/vf_number.cpp
 
 $(libcppdir)/vf_settokenvalue.o: lib/vf_settokenvalue.cpp lib/addoninfo.h lib/astutils.h lib/calculate.h lib/config.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/smallvector.h lib/sourcelocation.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/utils.h lib/valueflow.h lib/vf_common.h lib/vf_settokenvalue.h lib/vfvalue.h

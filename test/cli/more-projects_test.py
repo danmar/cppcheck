@@ -5,6 +5,7 @@ import pytest
 import sys
 from testutils import cppcheck, assert_cppcheck
 
+__script_dir = os.path.dirname(os.path.abspath(__file__))
 
 def test_project_force_U(tmpdir):
     # 10018
@@ -845,22 +846,18 @@ def test_compdb_D(tmpdir):
     assert ret == 0, stdout
 
 
-def test_shared_items_project(tmpdir = ""):
-    # tmpdir is unused
-    solutionDir = os.path.join(os.getcwd(), 'shared-items-project')
-    solutionFile = os.path.join(solutionDir, 'Solution.sln')
+def test_shared_items_project():
+    solution_file = os.path.join('shared-items-project', 'Solution.sln')
 
     args = [
         '--platform=win64',
-        '--project={}'.format(solutionFile), 
-        '--project-configuration=Release|x64',
-        '-j1'
+        '--project={}'.format(solution_file),
+        '--project-configuration=Release|x64'
     ]
 
-    exitcode, stdout, stderr = cppcheck(args)
+    exitcode, stdout, stderr = cppcheck(args, cwd=__script_dir)
     assert exitcode == 0
-    lines = stdout.splitlines()
 
     # Assume no errors, and that shared items code files have been checked as well
-    assert any('2/2 files checked 100% done' in x for x in lines)
+    assert '2/2 files checked ' in stdout  # only perform partial check since -j2 does not report a percentage right now
     assert stderr == ''

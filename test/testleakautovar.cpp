@@ -151,6 +151,7 @@ private:
         TEST_CASE(ifelse26);
         TEST_CASE(ifelse27);
         TEST_CASE(ifelse28); // #11038
+        TEST_CASE(ifelse29);
 
         // switch
         TEST_CASE(switch1);
@@ -2322,6 +2323,18 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
+    void ifelse29() { // #13296
+        check("struct S {\n"
+              "    typedef int (S::* func_t)(int) const;\n"
+              "    void f(func_t pfn);\n"
+              "    int g(int) const;\n"
+              "};\n"
+              "void S::f(func_t pfn) {\n"
+              "    if (pfn == (func_t)&S::g) {}\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout_str()); // don't crash
+    }
+
     void switch1() {
         check("void f() {\n"
               "    char *p = 0;\n"
@@ -2756,6 +2769,16 @@ private:
               "    return 'a';\n"
               "}\n", true);
         ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: ptr\n", errout_str());
+
+        check("char malloc_memleak(void) {\n"
+              "    bool flag = false;\n"
+              "    char *ptr = malloc(10);\n"
+              "    if (flag) {\n"
+              "        free(ptr);\n"
+              "    }\n"
+              "    return 'a';\n"
+              "}\n", false);
+        ASSERT_EQUALS("[test.c:7]: (error) Memory leak: ptr\n", errout_str());
     }
 
     void test1() {

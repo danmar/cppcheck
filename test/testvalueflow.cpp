@@ -489,9 +489,9 @@ private:
     }
 
 #define tokenValues(...) tokenValues_(__FILE__, __LINE__, __VA_ARGS__)
-    std::list<ValueFlow::Value> tokenValues_(const char* file, int line, const char code[], const char tokstr[], const Settings *s = nullptr) {
+    std::list<ValueFlow::Value> tokenValues_(const char* file, int line, const char code[], const char tokstr[], const Settings *s = nullptr, bool cpp = true) {
         SimpleTokenizer tokenizer(s ? *s : settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code), file, line);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
         const Token *tok = Token::findmatch(tokenizer.tokens(), tokstr);
         return tok ? tok->values() : std::list<ValueFlow::Value>();
     }
@@ -523,9 +523,9 @@ private:
         return result;
     }
 
-#define valueOfTok(code, tokstr) valueOfTok_(code, tokstr, __FILE__, __LINE__)
-    ValueFlow::Value valueOfTok_(const char code[], const char tokstr[], const char* file, int line) {
-        std::list<ValueFlow::Value> values = removeImpossible(tokenValues_(file, line, code, tokstr));
+#define valueOfTok(...) valueOfTok_(__FILE__, __LINE__, __VA_ARGS__)
+    ValueFlow::Value valueOfTok_(const char* file, int line, const char code[], const char tokstr[], const Settings *s = nullptr, bool cpp = true) {
+        std::list<ValueFlow::Value> values = removeImpossible(tokenValues_(file, line, code, tokstr, s, cpp));
         return values.size() == 1U && !values.front().isTokValue() ? values.front() : ValueFlow::Value();
     }
 
@@ -556,6 +556,14 @@ private:
         TODO_ASSERT_EQUALS(0xFFFFFFFF00000000, 0, valueOfTok("x=0xFFFFFFFF00000000;", "0xFFFFFFFF00000000").intvalue); // #7701
         ASSERT_EQUALS_DOUBLE(16, valueOfTok("x=(double)16;", "(").floatValue, 1e-5);
         ASSERT_EQUALS_DOUBLE(0.0625, valueOfTok("x=1/(double)16;", "/").floatValue, 1e-5);
+
+        const Settings settingsC23 = settingsBuilder().c(Standards::C23).build();
+        ASSERT_EQUALS(1, valueOfTok("x=true;", "true", &settingsC23, false).intvalue);
+        ASSERT_EQUALS(0, valueOfTok("x=false;", "false", &settingsC23, false).intvalue);
+
+        const Settings settingsC17 = settingsBuilder().c(Standards::C17).build();
+        ASSERT(!valueOfTok("x=true;", "true", &settingsC17, false).isKnown());
+        ASSERT(!valueOfTok("x=false;", "false", &settingsC17, false).isKnown());
 
         // scope
         {
