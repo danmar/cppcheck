@@ -6717,6 +6717,16 @@ private:
                    "        const int& r = v.at(0);\n"
                    "        return r;\n"
                    "    }\n"
+                   "    void h() {\n"
+                   "        v.at(0) = 0;\n"
+                   "    }\n"
+                   "    void i() {\n"
+                   "        dostuff(1, v.at(0));\n"
+                   "    }\n"
+                   "    void j() {\n"
+                   "        int& r = v.front();\n"
+                   "        r = 0;\n"
+                   "    }\n"
                    "};\n");
         ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'S::f' can be const.\n"
                       "[test.cpp:7]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
