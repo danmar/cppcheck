@@ -186,6 +186,7 @@ private:
         TEST_CASE(const92);
         TEST_CASE(const93);
         TEST_CASE(const94);
+        TEST_CASE(const95);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -6703,6 +6704,23 @@ private:
                    "    void nop() {}\n"
                    "};\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void const95() { // #13301
+        checkConst("struct S {\n"
+                   "    std::vector<int> v;\n"
+                   "    int f() {\n"
+                   "        const int& r = v.front();\n"
+                   "        return r;\n"
+                   "    }\n"
+                   "    int g() {\n"
+                   "        const int& r = v.at(0);\n"
+                   "        return r;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'S::f' can be const.\n"
+                      "[test.cpp:7]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
+                      errout_str());
     }
 
     void const_handleDefaultParameters() {
