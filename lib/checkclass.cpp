@@ -2533,18 +2533,29 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                 return func && func->isConst();
             };
 
+            auto isConstContainerUsage = [&](const ValueType* vt) -> bool {
+                if (!vt || !vt->container)
+                    return false;
+                const auto yield = vt->container->getYield(end->str());
+                if (((yield == Library::Container::Yield::START_ITERATOR) ||
+                     (yield == Library::Container::Yield::END_ITERATOR))
+                    && (tok1->tokAt(-1)->isComparisonOp() ||
+                        (tok1->tokAt(-1)->isAssignmentOp() && tok1->tokAt(-2)->variable() && Token::Match(tok1->tokAt(-2)->variable()->typeEndToken(), "const_iterator|const_reverse_iterator"))))
+                    return true;
+                if ((yield == Library::Container::Yield::ITEM || yield == Library::Container::Yield::AT_INDEX) && (lhs->isComparisonOp() || lhs->isAssignmentOp()))
+                    return true; // assume that these functions have const overloads
+                return false;
+            };
+
             if (end->strAt(1) == "(") {
                 const Variable *var = lastVarTok->variable();
                 if (!var)
                     return false;
-                if ((var->isStlType() // assume all std::*::size() and std::*::empty() are const
-                     && (Token::Match(end, "size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|get_allocator|c_str|str ( )") || Token::Match(end, "rfind|copy"))) ||
-
-                    (lastVarTok->valueType() && lastVarTok->valueType()->container &&
-                     ((lastVarTok->valueType()->container->getYield(end->str()) == Library::Container::Yield::START_ITERATOR) ||
-                      (lastVarTok->valueType()->container->getYield(end->str()) == Library::Container::Yield::END_ITERATOR))
-                     && (tok1->previous()->isComparisonOp() ||
-                         (tok1->previous()->isAssignmentOp() && tok1->tokAt(-2)->variable() && Token::Match(tok1->tokAt(-2)->variable()->typeEndToken(), "const_iterator|const_reverse_iterator"))))) {
+                if (var->isStlType() // assume all std::*::size() and std::*::empty() are const
+                     && (Token::Match(end, "size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|get_allocator|c_str|str ( )") || Token::Match(end, "rfind|copy"))) {
+                    // empty body
+                }
+                else if (isConstContainerUsage(lastVarTok->valueType())) {
                     // empty body
                 }
                 else if (var->smartPointerType() && var->smartPointerType()->classScope && isConstMemberFunc(var->smartPointerType()->classScope, end)) {
