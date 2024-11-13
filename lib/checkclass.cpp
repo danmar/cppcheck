@@ -2552,7 +2552,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                 if (!var)
                     return false;
                 if (var->isStlType() // assume all std::*::size() and std::*::empty() are const
-                     && (Token::Match(end, "size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|get_allocator|c_str|str ( )") || Token::Match(end, "rfind|copy"))) {
+                    && (Token::Match(end, "size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|get_allocator|c_str|str ( )") || Token::Match(end, "rfind|copy"))) {
                     // empty body
                 }
                 else if (isConstContainerUsage(lastVarTok->valueType())) {
