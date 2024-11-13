@@ -852,14 +852,12 @@ def test_shared_items_project():
     args = [
         '--platform=win64',
         '--project={}'.format(solution_file),
-        '--project-configuration=Release|x64',
-        '-j1'
+        '--project-configuration=Release|x64'
     ]
 
     exitcode, stdout, stderr = cppcheck(args, cwd=__script_dir)
     assert exitcode == 0
-    lines = stdout.splitlines()
 
     # Assume no errors, and that shared items code files have been checked as well
-    assert any('2/2 files checked 100% done' in x for x in lines)
+    assert '2/2 files checked ' in stdout  # only perform partial check since -j2 does not report a percentage right now
     assert stderr == ''
