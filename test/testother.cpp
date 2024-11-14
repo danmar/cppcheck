@@ -2435,8 +2435,10 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         check("void f(const std::vector<int> v[2]);\n" // #13052
-              "int g(const std::array<std::vector<int>, 2> a) { return a[0][0]; }\n");
-        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'a' should be passed by const reference.\n", errout_str());
+              "void g(const std::vector<int> v[2]);\n"
+              "void g(const std::vector<int> v[2]) {}\n"
+              "int h(const std::array<std::vector<int>, 2> a) { return a[0][0]; }\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Function parameter 'a' should be passed by const reference.\n", errout_str());
 
         /*const*/ Settings settings1 = settingsBuilder().platform(Platform::Type::Win64).build();
         check("using ui64 = unsigned __int64;\n"
