@@ -85,6 +85,13 @@ def test_absolute_path(tmp_path):
     assert stdout.find('Checking %s ...' % file1) >= 0
     assert stdout.find('Checking %s ...' % file2) >= 0
 
+def test_progress_threads():
+    create_compile_commands()
+    ret, stdout, _ = cppcheck(['--project=' + os.path.realpath('proj2/' + COMPILE_COMMANDS_JSON), '-j2'])
+    assert ret == 0, stdout
+    assert stdout.find('1/2 files checked 76% done') >= 0
+    assert stdout.find('2/2 files checked 100% done') >= 0
+
 def test_gui_project_loads_compile_commands_1(tmp_path):
     proj_dir = tmp_path / 'proj2'
     shutil.copytree(__proj_dir, proj_dir)
