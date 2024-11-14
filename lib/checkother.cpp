@@ -1407,8 +1407,11 @@ void CheckOther::checkPassByReference()
         if (inconclusive && !mSettings->certainty.isEnabled(Certainty::inconclusive))
             continue;
 
+        if (var->isArray() && var->getTypeName() != "std::array")
+            continue;
+
         const bool isConst = var->isConst();
-        if (isConst && !var->isArray()) {
+        if (isConst) {
             passedByValueError(var, inconclusive, isRangeBasedFor);
             continue;
         }
