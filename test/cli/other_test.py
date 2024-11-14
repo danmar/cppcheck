@@ -196,6 +196,17 @@ def test_progress_j(tmpdir):
     assert stdout == "Checking {} ...\n".format(test_file)
     assert stderr == ""
 
+def test_progress_proj_j(tmpdir):
+    args = ['--project=proj2/proj2.cppcheck', '-j2']
+
+    exitcode, stdout, stderr = cppcheck(args)
+
+    progress_lines = '\n'.join(list(filter(lambda l: not l.startswith("Checking"), stdout.split('\n'))))
+
+    assert (progress_lines ==
+            "1/2 files checked 76% done\n"
+            "2/2 files checked 100% done\n")
+    assert exitcode == 0
 
 def test_execute_addon_failure_py_auto(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
