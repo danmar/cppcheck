@@ -51,7 +51,7 @@ struct ValueFlowAnalyzer : Analyzer {
     const Settings& settings;
     ProgramMemoryState pms;
 
-    explicit ValueFlowAnalyzer(const Settings& s) : settings(s), pms(&settings) {}
+    explicit ValueFlowAnalyzer(const Settings& s) : settings(s), pms(settings) {}
 
     virtual const ValueFlow::Value* getValue(const Token* tok) const = 0;
     virtual ValueFlow::Value* getValue(const Token* tok) = 0;
