@@ -52,6 +52,7 @@ jobs:
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
           sudo ./llvm.sh 19
+          sudo apt-get install -y libc++-19-dev 
 
       - name: Install Qt ${{ env.QT_VERSION }}
         if: false
@@ -70,7 +71,7 @@ jobs:
 
       - name: CMake
         run: |
-          cmake -S . -B cmake.output -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=Off -DUSE_QT6=On -DWITH_QCHART=On -DUSE_MATCHCOMPILER=Verify -DANALYZE_THREAD=On -DENABLE_CHECK_INTERNAL=On -DUSE_BOOST=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=Off -DDISABLE_DMAKE=On -DFILESDIR= -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -S . -B cmake.output -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=Off -DUSE_QT6=On -DWITH_QCHART=On -DUSE_MATCHCOMPILER=Verify -DANALYZE_THREAD=On -DENABLE_CHECK_INTERNAL=On -DUSE_BOOST=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=Off -DDISABLE_DMAKE=On -DFILESDIR= -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DUSE_LIBCXX=On
         env:
           CC: clang-19
           CXX: clang++-19
