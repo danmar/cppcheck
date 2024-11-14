@@ -465,7 +465,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
     const std::string redirect2 = analyzerInfo.empty() ? std::string("2>&1") : ("2> " + clangStderr);
     if (!mSettings.buildDir.empty()) {
         std::ofstream fout(clangcmd);
-        fout << exe << " " << args2 << " " << redirect2 << std::endl;
+        fout << exe << " " << args2 << " " << redirect2 << '\n';
     }
     if (mSettings.verbose && !mSettings.quiet) {
         mErrorLogger.reportOut(exe + " " + args2);
@@ -475,13 +475,13 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
     const int exitcode = mExecuteCommand(exe,split(args2),redirect2,output2);
     if (exitcode != EXIT_SUCCESS) {
         // TODO: report as proper error
-        std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "' - (exitcode: " << exitcode << " / output: " << output2 << ")" << std::endl;
+        std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "' - (exitcode: " << exitcode << " / output: " << output2 << ")" << '\n';
         return 0; // TODO: report as failure?
     }
 
     if (output2.find("TranslationUnitDecl") == std::string::npos) {
         // TODO: report as proper error
-        std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "' - (no TranslationUnitDecl in output)" << std::endl;
+        std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "' - (no TranslationUnitDecl in output)" << '\n';
         return 0; // TODO: report as failure?
     }
 
@@ -505,7 +505,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
 
     if (!mSettings.buildDir.empty()) {
         std::ofstream fout(clangAst);
-        fout << output2 << std::endl;
+        fout << output2 << '\n';
     }
 
     try {
@@ -922,7 +922,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     fdump << getLibraryDumpData();
                     preprocessor.dump(fdump);
                     tokenizer.dump(fdump);
-                    fdump << "</dump>" << std::endl;
+                    fdump << "</dump>" << '\n';
                 }
 
                 // Need to call this even if the hash will skip this configuration
@@ -994,7 +994,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
         // dumped all configs, close root </dumps> element now
         if (fdump.is_open()) {
-            fdump << "</dumps>" << std::endl;
+            fdump << "</dumps>" << '\n';
             fdump.close();
         }
 
@@ -1425,7 +1425,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
         fileList = Path::getPathFromFilename(files[0]) + FILELIST;
         std::ofstream fout(fileList);
         for (const std::string& f: files)
-            fout << f << std::endl;
+            fout << f << '\n';
     }
 
     // ensure all addons have already been resolved - TODO: remove when settings are const after creation
@@ -1744,7 +1744,7 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
     const std::string args = "-quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename() + "\" -- " + allIncludes + allDefines;
     std::string output;
     if (const int exitcode = mExecuteCommand(exe, split(args), emptyString, output)) {
-        std::cerr << "Failed to execute '" << exe << "' (exitcode: " << std::to_string(exitcode) << ")" << std::endl;
+        std::cerr << "Failed to execute '" << exe << "' (exitcode: " << std::to_string(exitcode) << ")" << '\n';
         return;
     }
 
