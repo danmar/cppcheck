@@ -8929,6 +8929,22 @@ private:
                               "    done();\n"
                               "}");
         ASSERT_EQUALS("", errout_str());
+
+        checkThisUseAfterFree("class C {\n" // #13311
+                              "public:\n"
+                              "    static void init();\n"
+                              "private:\n"
+                              "    C();\n"
+                              "    static C* self;\n"
+                              "    bool use;\n"
+                              "};\n"
+                              "C::C() { use = true; }\n"
+                              "void C::init() {\n"
+                              "    if (self)\n"
+                              "        delete self;\n"
+                              "    self = new C();\n"
+                              "}");
+        ASSERT_EQUALS("", errout_str());
     }
 
 
