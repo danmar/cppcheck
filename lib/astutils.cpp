@@ -1122,11 +1122,11 @@ bool exprDependsOnThis(const Token* expr, bool onVar, nonneg int depth)
             const Scope* fScope = expr->scope();
             while (!fScope->functionOf && fScope->nestedIn)
                 fScope = fScope->nestedIn;
-            
+
             const Scope* classScope = fScope->functionOf;
             if (classScope && classScope->function)
                 classScope = classScope->function->token->scope();
-            
+
             if (classScope && classScope->isClassOrStruct())
                 return contains(classScope->findAssociatedScopes(), expr->function()->nestedIn);
             return false;
