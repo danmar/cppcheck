@@ -1142,7 +1142,7 @@ Token* Token::insertToken(const std::string& tokenStr, const std::string& origin
                 }
                 if (newToken->str() == ";") {
                     const Token* statementStart;
-                    for (statementStart = newToken; statementStart->previous() && !Token::Match(statementStart->previous(), ";|{"); statementStart = statementStart->previous());
+                    for (statementStart = newToken; statementStart->previous() && !Token::Match(statementStart->previous(), ";|{"); statementStart = statementStart->previous()) {}
                     if (Token::Match(statementStart, "using namespace %name% ::|;")) {
                         const Token * tok1 = statementStart->tokAt(2);
                         std::string nameSpace;
