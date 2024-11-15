@@ -4915,7 +4915,7 @@ void Tokenizer::setVarIdPass1()
             if ((!scopeStack.top().isEnum || !(Token::Match(tok->previous(), "{|,") && Token::Match(tok->next(), ",|=|}"))) &&
                 !Token::simpleMatch(tok->next(), ": ;")) {
                 const std::unordered_map<std::string, nonneg int>::const_iterator it = variableMap.map(globalNamespace).find(tok->str());
-                if (it != variableMap.map(globalNamespace).end()) {
+                if (it != variableMap.map(globalNamespace).end() && tok->varId() == 0) {
                     tok->varId(it->second);
                     setVarIdStructMembers(tok, structMembers, variableMap.getVarId());
                 }
