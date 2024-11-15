@@ -1116,19 +1116,23 @@ bool exprDependsOnThis(const Token* expr, bool onVar, nonneg int depth)
     ++depth;
 
     // calling nonstatic method?
-    if (Token::Match(expr, "%name% (") && expr->function() && expr->function()->nestedIn && expr->function()->nestedIn->isClassOrStruct() && !expr->function()->isStatic()) {
-        // is it a method of this?
-        const Scope* fScope = expr->scope();
-        while (!fScope->functionOf && fScope->nestedIn)
-            fScope = fScope->nestedIn;
-
-        const Scope* classScope = fScope->functionOf;
-        if (classScope && classScope->function)
-            classScope = classScope->function->token->scope();
-
-        if (classScope && classScope->isClassOrStruct())
-            return contains(classScope->findAssociatedScopes(), expr->function()->nestedIn);
-        return false;
+    if (Token::Match(expr, "%name% (")) {
+        if (expr->function() && expr->function()->nestedIn && expr->function()->nestedIn->isClassOrStruct() && !expr->function()->isStatic()) {
+            // is it a method of this?
+            const Scope* fScope = expr->scope();
+            while (!fScope->functionOf && fScope->nestedIn)
+                fScope = fScope->nestedIn;
+            
+            const Scope* classScope = fScope->functionOf;
+            if (classScope && classScope->function)
+                classScope = classScope->function->token->scope();
+            
+            if (classScope && classScope->isClassOrStruct())
+                return contains(classScope->findAssociatedScopes(), expr->function()->nestedIn);
+            return false;
+        }
+        if (expr->isOperatorKeyword() && !Token::simpleMatch(expr->next()->astParent(), "."))
+            return true;
     }
     if (onVar && expr->variable()) {
         const Variable* var = expr->variable();
@@ -2978,7 +2982,7 @@ bool isThisChanged(const Token* tok, int indirect, const Settings& settings)
         if (tok->previous()->function()) {
             return (!tok->previous()->function()->isConst() && !tok->previous()->function()->isStatic());
         }
-        if (!tok->previous()->isKeyword()) {
+        if (!tok->previous()->isKeyword() || tok->previous()->isOperatorKeyword()) {
             return true;
         }
     }
