@@ -347,10 +347,12 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 }
             }
             if (allocationId == 0) {
-                if (nodename == "memory")
+                if (nodename == "memory") {
                     while (!ismemory(++mData->mAllocId)) {}
-                else
+                }
+                else {
                     while (!isresource(++mData->mAllocId)) {}
+                }
                 allocationId = mData->mAllocId;
             }
 
