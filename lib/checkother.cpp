@@ -3897,7 +3897,7 @@ void CheckOther::checkKnownArgument()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
         for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
-            if (!tok->hasKnownIntValue())
+            if (!tok->hasKnownIntValue() || tok->isExpandedMacro())
                 continue;
             if (Token::Match(tok, "++|--|%assign%"))
                 continue;

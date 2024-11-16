@@ -12164,6 +12164,12 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Argument 'i-1*i' to init list { is always 0. It does not matter what value 'i' has.\n"
                       "[test.cpp:4]: (style) Argument 'i-1*i' to constructor S is always 0. It does not matter what value 'i' has.\n",
                       errout_str());
+
+        checkP("#define MACRO(X) std::abs(X ? 0 : a)\n"
+               "int f(int a) {\n"
+               "    return MACRO(true);\n"
+               "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void knownArgumentHiddenVariableExpression() {
