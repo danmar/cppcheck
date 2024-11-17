@@ -21,7 +21,7 @@ CheckOptions:
     QT_WRAP_UI(uis_hdrs ${uis})
     QT_ADD_RESOURCES(resources "gui.qrc")
     # TODO: passing "-no-obsolete" here breaks the translations
-    QT_CREATE_TRANSLATION(qms ${CMAKE_CURRENT_SOURCE_DIR} ${tss})
+    QT_CREATE_TRANSLATION(qms ${CMAKE_CURRENT_SOURCE_DIR} ${tss} OPTIONS -no-ui-lines)
     list(APPEND cppcheck-gui-deps ${hdrs} ${uis_hdrs} ${resources} ${qms})
     add_custom_target(gui-build-deps SOURCES ${cppcheck-gui-deps})
 
