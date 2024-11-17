@@ -39,8 +39,6 @@ class QModelIndex;
 class QWidget;
 class QItemSelectionModel;
 class ThreadHandler;
-class QContextMenuEvent;
-class QKeyEvent;
 class QSettings;
 enum class Severity : std::uint8_t;
 

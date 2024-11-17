@@ -42,10 +42,6 @@
 
 #include "xml.h"
 
-namespace CTU {
-    class FileInfo;
-}
-
 //---------------------------------------------------------------------------
 
 // Register CheckClass..

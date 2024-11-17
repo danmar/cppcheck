@@ -18,6 +18,7 @@
 
 #include "checkersreport.h"
 
+#include "addoninfo.h"
 #include "checkers.h"
 #include "errortypes.h"
 #include "settings.h"

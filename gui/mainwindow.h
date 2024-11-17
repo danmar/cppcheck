@@ -42,7 +42,6 @@ class QSettings;
 class QTimer;
 class QLineEdit;
 class ImportProject;
-class QCloseEvent;
 class QNetworkAccessManager;
 class QNetworkReply;
 class Settings;

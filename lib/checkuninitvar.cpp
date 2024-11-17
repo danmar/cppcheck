@@ -41,11 +41,6 @@
 #include <unordered_set>
 #include <vector>
 
-
-namespace tinyxml2 {
-    class XMLElement;
-}
-
 //---------------------------------------------------------------------------
 
 // CWE ids used:

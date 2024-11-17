@@ -30,7 +30,6 @@
 #include "vfvalue.h"
 
 #include <cstdint>
-#include <list>
 #include <map>
 #include <set>
 #include <string>
@@ -41,15 +40,6 @@ class Variable;
 class ErrorLogger;
 class Settings;
 class Library;
-
-namespace CTU {
-    class FileInfo;
-}
-
-namespace tinyxml2 {
-    class XMLElement;
-}
-
 
 struct VariableValue {
     explicit VariableValue(MathLib::bigint val = 0) : value(val) {}
