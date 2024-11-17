@@ -58,6 +58,7 @@ option(WITH_QCHART          "Enable QtCharts usage in the GUI"                  
 option(USE_QT6              "Prefer Qt6 when available"                                     OFF)
 option(REGISTER_GUI_TESTS   "Register GUI tests in CTest"                                   ON)
 option(BUILD_ONLINE_HELP    "Build online help"                                             OFF)
+option(BUILD_TRIAGE         "Build triage UI tool"                                          OFF)
 
 option(HAVE_RULES           "Usage of rules (needs PCRE library and headers)"               OFF)
 option(USE_BUNDLED_TINYXML2 "Usage of bundled tinyxml2 library"                             ON)

@@ -1,4 +1,4 @@
-if (BUILD_GUI AND BUILD_TESTS)
+if (BUILD_GUI AND BUILD_TRIAGE)
     # disable all clang-tidy checks for Qt generated files
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/.clang-tidy"
 "---
