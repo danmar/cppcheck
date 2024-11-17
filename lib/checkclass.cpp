@@ -2119,6 +2119,8 @@ void CheckClass::checkConst()
                 continue;
             if (func.functionPointerUsage)
                 continue;
+            if (func.hasRvalRefQualifier())
+                continue;
 
             // don't suggest const when returning non-const pointer/reference, but still suggest static
             auto isPointerOrReference = [this](const Token* start, const Token* end) -> bool {
