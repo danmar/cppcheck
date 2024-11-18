@@ -87,7 +87,7 @@ def test_absolute_path(tmp_path):
 
 def test_progress_threads():
     __create_compile_commands()
-    ret, stdout, _ = cppcheck(['--project=' + os.path.realpath('proj2/' + __COMPILE_COMMANDS_JSON), '-j2'])
+    ret, stdout, _ = cppcheck(['--project=' + os.path.join(__proj_dir, __COMPILE_COMMANDS_JSON), '-j2'], cwd=__script_dir)
     assert ret == 0, stdout
     assert stdout.find('1/2 files checked 76% done') >= 0
     assert stdout.find('2/2 files checked 100% done') >= 0
