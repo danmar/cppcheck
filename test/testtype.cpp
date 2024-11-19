@@ -352,6 +352,11 @@ private:
               " return -2 * x;\n"
               "}", settingsDefault);
         ASSERT_EQUALS("[test.cpp:2]: (warning) Expression '-2' has a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout_str());
+
+        checkP("void f() {\n" // #12110 FP signConversion with integer overflow
+               "    if (LLONG_MIN / (-1)) {}\n"
+               "}\n", settingsDefault);
+        ASSERT_EQUALS("", errout_str());
     }
 
     void longCastAssign() {
