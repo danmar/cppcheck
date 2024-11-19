@@ -78,10 +78,8 @@ public:
         return value <= longMax;
     }
 
-    bool isLongLongValue(unsigned long long value, bool isSigned) const {
+    bool isLongLongValue(unsigned long long value) const {
         const unsigned long long longLongMax = max_value(long_long_bit);
-        if (isSigned)
-            return value <= longLongMax + 1;
         return value <= longLongMax;
     }
 
