@@ -58,7 +58,7 @@ private:
     static unsigned long long max_value_unsigned(int bit) {
         if (bit >= 64)
             return ~0ULL;
-        return (1LL << bit) - 1LL;
+        return (1ULL << bit) - 1ULL;
     }
 
     /** provides list of defines specified by the limit.h/climits includes */
