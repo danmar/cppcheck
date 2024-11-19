@@ -339,11 +339,11 @@ unsigned int ProcessExecutor::check()
                             if (p != pipeFile.cend()) {
                                 pipeFile.erase(p);
                                 const auto fs = std::find_if(mFileSettings.cbegin(), mFileSettings.cend(), [&name](const FileSettings& entry) {
-                                    return entry.filename() == name.substr(0, name.find(' '));
+                                    return name.find(entry.filename() + " ") == 0;
                                 });
                                 if (fs == mFileSettings.cend()) {
                                     const auto fwd = std::find_if(mFiles.cbegin(), mFiles.cend(), [&name](const FileWithDetails &entry) {
-                                        return entry.path() == name.substr(0, name.find(' '));
+                                        return name.find(entry.path() + " ") == 0;
                                     });
                                     if (fwd != mFiles.cend()) {
                                         size = fwd->size();
