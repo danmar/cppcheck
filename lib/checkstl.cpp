@@ -741,6 +741,11 @@ static ValueFlow::Value getLifetimeIteratorValue(const Token* tok, MathLib::bigi
     }
     if (values.size() == 1)
         return values.front();
+    it = std::find_if(values.cbegin(), values.cend(), [](const ValueFlow::Value& v) {
+        return v.tokvalue->str() == ".";
+    });
+    if (it != values.cend())
+        return *it;
     return ValueFlow::Value{};
 }
 
