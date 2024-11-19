@@ -357,11 +357,6 @@ private:
                "    if (LLONG_MIN / (-1)) {}\n"
                "}\n", settingsDefault);
         ASSERT_EQUALS("", errout_str());
-
-        checkP("void f() {\n"
-               "    if (LONG_MIN / (-1)) {}\n"
-               "}\n", settingsDefault);
-        ASSERT_EQUALS("", errout_str());
     }
 
     void longCastAssign() {

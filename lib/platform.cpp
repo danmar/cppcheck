@@ -339,14 +339,14 @@ std::string Platform::getLimitsDefines(bool c99) const
     s += ";LONG_MAX=";
     s += std::to_string(max_value(long_bit)) + "L";
     s += ";ULONG_MAX=";
-    s += std::to_string(max_value(long_bit+1)) + "UL";
+    s += std::to_string(max_value_unsigned(long_bit)) + "UL";
     if (c99) {
         s += ";LLONG_MIN=";
         s += "(-" + std::to_string(max_value(long_long_bit)) + "LL - 1LL)";
         s += ";LLONG_MAX=";
         s += std::to_string(max_value(long_long_bit)) + "LL";
         s += ";ULLONG_MAX=";
-        s += std::to_string(max_value(long_long_bit + 1)) + "ULL";
+        s += std::to_string(max_value_unsigned(long_long_bit)) + "ULL";
     }
 
     // cstdint / stdint.h
