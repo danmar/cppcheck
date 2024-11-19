@@ -234,8 +234,10 @@ unsigned int ProcessExecutor::check()
     unsigned int fileCount = 0;
     unsigned int result = 0;
 
-    const std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const FileWithDetails& p) {
-        return v + p.size();
+    const std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const FileWithDetails& fwd) {
+        return v + fwd.size();
+    }) + std::accumulate(mFileSettings.cbegin(), mFileSettings.cend(), std::size_t(0), [](std::size_t v, const FileSettings& fs) {
+        return v + fs.filesize();
     });
 
     std::list<int> rpipes;
@@ -331,11 +333,18 @@ unsigned int ProcessExecutor::check()
                             std::size_t size = 0;
                             if (p != pipeFile.cend()) {
                                 pipeFile.erase(p);
-                                const auto fs = std::find_if(mFiles.cbegin(), mFiles.cend(), [&name](const FileWithDetails& entry) {
-                                    return entry.path() == name;
+                                const auto fs = std::find_if(mFileSettings.cbegin(), mFileSettings.cend(), [&name](const FileSettings& entry) {
+                                    return entry.filename() == name.substr(0, name.find(' '));
                                 });
-                                if (fs != mFiles.end()) {
-                                    size = fs->size();
+                                if (fs == mFileSettings.cend()) {
+                                    const auto fwd = std::find_if(mFiles.cbegin(), mFiles.cend(), [&name](const FileWithDetails &entry) {
+                                        return entry.path() == name.substr(0, name.find(' '));
+                                    });
+                                    if (fwd != mFiles.cend()) {
+                                        size = fwd->size();
+                                    }
+                                } else {
+                                    size = fs->filesize();
                                 }
                             }
 
