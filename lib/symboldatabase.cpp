@@ -1804,6 +1804,7 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
                 // In template arguments, there might not be AST
                 // Determine size by using the "raw tokens"
                 TokenList tokenList(&mSettings);
+                tokenList.setLang(dimension.tok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
                 tokenList.addtoken(";", 0, 0, 0, false);
                 bool fail = false;
                 for (const Token *tok = dimension.tok; tok && !Token::Match(tok, "[,>]"); tok = tok->next()) {
@@ -2319,7 +2320,6 @@ void Variable::evaluate(const Settings& settings)
 
     const Library & lib = settings.library;
 
-    // TODO: ValueType::parseDecl() is also performing a container lookup
     bool isContainer = false;
     if (mNameToken)
         setFlag(fIsArray, arrayDimensions(settings, isContainer));

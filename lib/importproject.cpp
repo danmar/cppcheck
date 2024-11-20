@@ -1269,7 +1269,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
         if (strcmp(name, CppcheckXml::RootPathName) == 0) {
             const char* attr = node->Attribute(CppcheckXml::RootPathNameAttrib);
             if (attr) {
-                temp.basePaths.push_back(joinRelativePath(path, attr));
+                temp.basePaths.push_back(Path::fromNativeSeparators(joinRelativePath(path, attr)));
                 temp.relativePaths = true;
             }
         } else if (strcmp(name, CppcheckXml::BuildDirElementName) == 0)
@@ -1401,7 +1401,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
         settings->premiumArgs = temp.premiumArgs.substr(1);
 
     for (const std::string &p : paths)
-        guiProject.pathNames.push_back(p);
+        guiProject.pathNames.push_back(Path::fromNativeSeparators(p));
     settings->supprs.nomsg.addSuppressions(std::move(suppressions));
     settings->checkHeaders = temp.checkHeaders;
     settings->checkUnusedTemplates = temp.checkUnusedTemplates;

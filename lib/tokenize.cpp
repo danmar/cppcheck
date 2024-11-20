@@ -1180,6 +1180,7 @@ void Tokenizer::simplifyTypedef()
     simplifyTypedefCpp();
 }
 
+// TODO: rename - it is not C++ specific
 void Tokenizer::simplifyTypedefCpp()
 {
     const bool cpp = isCPP();
@@ -3477,6 +3478,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
 
     // TODO: apply this through Settings::ValueFlowOptions
     // TODO: do not run valueflow if no checks are being performed at all - e.g. unusedFunctions only
+    // TODO: log message when this is active?
     const char* disableValueflowEnv = std::getenv("DISABLE_VALUEFLOW");
     const bool doValueFlow = !disableValueflowEnv || (std::strcmp(disableValueflowEnv, "1") != 0);
 
@@ -4297,7 +4299,7 @@ static bool setVarIdParseDeclaration(Token*& tok, const VariableMap& variableMap
                     return false;
             }
             bracket = true; // Skip: Seems to be valid pointer to array or function pointer
-        } else if (singleNameCount >= 1 && Token::Match(tok2, "( * %name% [") && Token::Match(tok2->linkAt(3), "] ) [;,]")) {
+        } else if (singleNameCount >= 1 && Token::Match(tok2, "( * %name% [") && Token::Match(tok2->linkAt(3), "] ) [;,]") && !variableMap.map(false).count(tok2->strAt(2))) {
             bracket = true;
         } else if (singleNameCount >= 1 && tok2->previous() && tok2->previous()->isStandardType() && Token::Match(tok2, "( *|&| %name% ) ;")) {
             bracket = true;

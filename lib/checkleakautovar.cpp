@@ -450,6 +450,16 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
 
         // if/else
         else if (Token::simpleMatch(tok, "if (")) {
+
+            bool skipIfBlock = false;
+            bool skipElseBlock = false;
+            const Token *condTok = tok->astSibling();
+
+            if (condTok && condTok->hasKnownIntValue()) {
+                skipIfBlock = !condTok->getKnownIntValue();
+                skipElseBlock = !skipIfBlock;
+            }
+
             // Parse function calls inside the condition
 
             const Token * closingParenthesis = tok->linkAt(1);
@@ -565,13 +575,13 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                     return ChildrenToVisit::none;
                 });
 
-                if (!checkScope(closingParenthesis->next(), varInfo1, notzero, recursiveCount)) {
+                if (!skipIfBlock && !checkScope(closingParenthesis->next(), varInfo1, notzero, recursiveCount)) {
                     varInfo.clear();
                     continue;
                 }
                 closingParenthesis = closingParenthesis->linkAt(1);
                 if (Token::simpleMatch(closingParenthesis, "} else {")) {
-                    if (!checkScope(closingParenthesis->tokAt(2), varInfo2, notzero, recursiveCount)) {
+                    if (!skipElseBlock && !checkScope(closingParenthesis->tokAt(2), varInfo2, notzero, recursiveCount)) {
                         varInfo.clear();
                         return false;
                     }

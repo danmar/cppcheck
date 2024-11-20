@@ -20,6 +20,7 @@
 //---------------------------------------------------------------------------
 #include "checktype.h"
 
+#include "astutils.h"
 #include "errortypes.h"
 #include "mathlib.h"
 #include "platform.h"
@@ -198,9 +199,12 @@ void CheckType::checkIntegerOverflow()
         const MathLib::bigint maxvalue = (((MathLib::biguint)1) << (bits - 1)) - 1;
 
         // is there a overflow result value
+        bool isOverflow = true;
         const ValueFlow::Value *value = tok->getValueGE(maxvalue + 1, *mSettings);
-        if (!value)
+        if (!value) {
             value = tok->getValueLE(-maxvalue - 2, *mSettings);
+            isOverflow = false;
+        }
         if (!value || !mSettings->isEnabled(value,false))
             continue;
 
@@ -208,25 +212,26 @@ void CheckType::checkIntegerOverflow()
         if (tok->str() == "<<" && value->intvalue > 0 && value->intvalue < (((MathLib::bigint)1) << bits))
             continue;
 
-        integerOverflowError(tok, *value);
+        integerOverflowError(tok, *value, isOverflow);
     }
 }
 
-void CheckType::integerOverflowError(const Token *tok, const ValueFlow::Value &value)
+void CheckType::integerOverflowError(const Token *tok, const ValueFlow::Value &value, bool isOverflow)
 {
     const std::string expr(tok ? tok->expressionString() : "");
+    const std::string type = isOverflow ? "overflow" : "underflow";
 
     std::string msg;
     if (value.condition)
         msg = ValueFlow::eitherTheConditionIsRedundant(value.condition) +
-              " or there is signed integer overflow for expression '" + expr + "'.";
+              " or there is signed integer " + type + " for expression '" + expr + "'.";
     else
-        msg = "Signed integer overflow for expression '" + expr + "'.";
+        msg = "Signed integer " + type + " for expression '" + expr + "'.";
 
     if (value.safe)
         msg = "Safe checks: " + msg;
 
-    reportError(getErrorPath(tok, &value, "Integer overflow"),
+    reportError(getErrorPath(tok, &value, "Integer " + type),
                 value.errorSeverity() ? Severity::error : Severity::warning,
                 getMessageId(value, "integerOverflow").c_str(),
                 msg,
@@ -437,6 +442,8 @@ void CheckType::checkFloatToIntegerOverflow()
 
         // Explicit cast
         if (Token::Match(tok, "( %name%") && tok->astOperand1() && !tok->astOperand2()) {
+            if (isUnreachableOperand(tok))
+                continue;
             vtint = tok->valueType();
             vtfloat = tok->astOperand1()->valueType();
             checkFloatToIntegerOverflow(tok, vtint, vtfloat, tok->astOperand1()->values());
@@ -444,12 +451,16 @@ void CheckType::checkFloatToIntegerOverflow()
 
         // Assignment
         else if (tok->str() == "=" && tok->astOperand1() && tok->astOperand2()) {
+            if (isUnreachableOperand(tok))
+                continue;
             vtint = tok->astOperand1()->valueType();
             vtfloat = tok->astOperand2()->valueType();
             checkFloatToIntegerOverflow(tok, vtint, vtfloat, tok->astOperand2()->values());
         }
 
         else if (tok->str() == "return" && tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->isFloat()) {
+            if (isUnreachableOperand(tok))
+                continue;
             const Scope *scope = tok->scope();
             while (scope && scope->type != Scope::ScopeType::eLambda && scope->type != Scope::ScopeType::eFunction)
                 scope = scope->nestedIn;

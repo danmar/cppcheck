@@ -291,7 +291,7 @@ private:
               "   if (x==123456) {}\n"
               "   return -123456 * x;\n"
               "}",settings);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'x==123456' is redundant or there is signed integer overflow for expression '-123456*x'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'x==123456' is redundant or there is signed integer underflow for expression '-123456*x'.\n", errout_str());
 
         check("int foo(signed int x) {\n"
               "   if (x==123456) {}\n"
@@ -303,6 +303,16 @@ private:
               "    return (i == 31) ? 1 << i : 0;\n"
               "}", settings);
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (warning) Shifting signed 32-bit value by 31 bits is undefined behaviour. See condition at line 2.\n", errout_str());
+
+        check("void f() {\n" // #13092
+              "    int n = 0;\n"
+              "    for (int i = 0; i < 10; i++) {\n"
+              "        n = n * 47163 - 57412;\n"
+              "    }\n"
+              "}", settings);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Signed integer underflow for expression 'n*47163'.\n"
+                      "[test.cpp:4]: (error) Signed integer underflow for expression 'n*47163-57412'.\n",
+                      errout_str());
     }
 
     void signConversion() {
@@ -352,6 +362,11 @@ private:
               " return -2 * x;\n"
               "}", settingsDefault);
         ASSERT_EQUALS("[test.cpp:2]: (warning) Expression '-2' has a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout_str());
+
+        checkP("void f() {\n" // #12110 FP signConversion with integer overflow
+               "    if (LLONG_MIN / (-1)) {}\n"
+               "}\n", settingsDefault);
+        ASSERT_EQUALS("", errout_str());
     }
 
     void longCastAssign() {
@@ -495,6 +510,59 @@ private:
               "  return 1234.5;\n"
               "}", settingsDefault);
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
+
+        checkP("#define TEST(b, f) b ? 5000 : (unsigned short)f\n" // #11685
+               "void f()\n"
+               "{\n"
+               "    unsigned short u = TEST(true, 75000.0);\n"
+               "}\n", settingsDefault);
+        ASSERT_EQUALS("", errout_str());
+
+        checkP("#define TEST(b, f) b ? 5000 : (unsigned short)f\n"
+               "void f()\n"
+               "{\n"
+               "    unsigned short u = TEST(false, 75000.0);\n"
+               "}\n", settingsDefault);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
+
+        check( "bool f(unsigned short x);\n"
+               "bool g() {\n"
+               "    return false && f((unsigned short)75000.0);\n"
+               "}\n", settingsDefault);
+        ASSERT_EQUALS("", errout_str());
+
+        check( "bool f(unsigned short x);\n"
+               "bool g() {\n"
+               "    return true && f((unsigned short)75000.0);\n"
+               "}\n", settingsDefault);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
+
+        check( "bool f(unsigned short x);\n"
+               "bool g() {\n"
+               "    return true || f((unsigned short)75000.0);\n"
+               "}\n", settingsDefault);
+        ASSERT_EQUALS("", errout_str());
+
+        check( "bool f(unsigned short x);\n"
+               "bool g() {\n"
+               "    return false || f((unsigned short)75000.0);\n"
+               "}\n", settingsDefault);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
+
+        checkP("#define TEST(b, f) b ? 5000 : (unsigned short)f\n" // #11685
+               "void f()\n"
+               "{\n"
+               "    unsigned short u = TEST(true, 75000.0);\n"
+               "}\n", settingsDefault, "test.c");
+        ASSERT_EQUALS("", errout_str());
+
+        checkP("#define TEST(b, f) b ? 5000 : (unsigned short)f\n"
+               "void f()\n"
+               "{\n"
+               "    unsigned short u = TEST(false, 75000.0);\n"
+               "}\n", settingsDefault, "test.c");
+        ASSERT_EQUALS("[test.c:4]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
+
     }
 
     void integerOverflow() { // #11794

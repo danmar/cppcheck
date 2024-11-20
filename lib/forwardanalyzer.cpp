@@ -47,7 +47,6 @@
 namespace {
     struct ForwardTraversal {
         enum class Progress : std::uint8_t { Continue, Break, Skip };
-        enum class Terminate : std::uint8_t { None, Bail, Inconclusive };
         ForwardTraversal(const ValuePtr<Analyzer>& analyzer, const TokenList& tokenList, ErrorLogger& errorLogger, const Settings& settings)
             : analyzer(analyzer), tokenList(tokenList), errorLogger(errorLogger), settings(settings)
         {}
@@ -336,11 +335,6 @@ namespace {
                 unknown = true;
             return r;
         }
-
-        enum class Status : std::uint8_t {
-            None,
-            Inconclusive,
-        };
 
         Analyzer::Action analyzeScope(const Token* endBlock) const {
             return analyzeRange(endBlock->link(), endBlock);

@@ -57,8 +57,10 @@ namespace {
 
 const std::list<ValueFlow::Value> TokenImpl::mEmptyValueList;
 
-Token::Token(TokensFrontBack &tokensFrontBack) :
-    mTokensFrontBack(tokensFrontBack)
+Token::Token(TokensFrontBack &tokensFrontBack)
+    : mTokensFrontBack(tokensFrontBack)
+    , mIsC(mTokensFrontBack.list.isC())
+    , mIsCpp(mTokensFrontBack.list.isCPP())
 {
     mImpl = new TokenImpl();
 }
@@ -1139,8 +1141,10 @@ Token* Token::insertToken(const std::string& tokenStr, const std::string& origin
                     newToken->mImpl->mScopeInfo = mImpl->mScopeInfo;
                 }
                 if (newToken->str() == ";") {
-                    const Token* statementStart;
-                    for (statementStart = newToken; statementStart->previous() && !Token::Match(statementStart->previous(), ";|{"); statementStart = statementStart->previous());
+                    const Token* statementStart = newToken;
+                    while (statementStart->previous() && !Token::Match(statementStart->previous(), ";|{")) {
+                        statementStart = statementStart->previous();
+                    }
                     if (Token::Match(statementStart, "using namespace %name% ::|;")) {
                         const Token * tok1 = statementStart->tokAt(2);
                         std::string nameSpace;
@@ -2651,16 +2655,6 @@ Token* findLambdaEndScope(Token* tok)
 }
 const Token* findLambdaEndScope(const Token* tok) {
     return findLambdaEndScope(const_cast<Token*>(tok));
-}
-
-bool Token::isCpp() const
-{
-    return mTokensFrontBack.list.isCPP();
-}
-
-bool Token::isC() const
-{
-    return mTokensFrontBack.list.isC();
 }
 
 const std::string& Token::fileName() const {

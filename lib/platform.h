@@ -55,6 +55,12 @@ private:
         return (1LL << (bit-1)) - 1LL;
     }
 
+    static unsigned long long max_value_unsigned(int bit) {
+        if (bit >= 64)
+            return ~0ULL;
+        return (1ULL << bit) - 1ULL;
+    }
+
     /** provides list of defines specified by the limit.h/climits includes */
     std::string getLimitsDefines(bool c99) const;
 public:
