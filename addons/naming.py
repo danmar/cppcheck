@@ -37,6 +37,7 @@ for arg in sys.argv[1:]:
     elif arg[:11] == '--function=':
         RE_FUNCTIONNAME = arg[11:]
         validate_regex(RE_FUNCTIONNAME)
+    # TODO: bail out on unknown parameter
 
 
 def reportError(token, severity, msg, errorId):

@@ -2320,7 +2320,6 @@ void Variable::evaluate(const Settings& settings)
 
     const Library & lib = settings.library;
 
-    // TODO: ValueType::parseDecl() is also performing a container lookup
     bool isContainer = false;
     if (mNameToken)
         setFlag(fIsArray, arrayDimensions(settings, isContainer));
@@ -5717,6 +5716,15 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst, Referen
             const Function *func = it->second;
             if (ref == Reference::LValue && func->hasRvalRefQualifier())
                 continue;
+            if (ref == Reference::None && func->hasRvalRefQualifier()) {
+                if (Token::simpleMatch(tok->astParent(), ".")) {
+                    const Token* obj = tok->astParent()->astOperand1();
+                    while (obj && obj->str() == "[")
+                        obj = obj->astOperand1();
+                    if (!obj || obj->isName())
+                        continue;
+                }
+            }
             if (func->isDestructor() && !Token::simpleMatch(tok->tokAt(-1), "~"))
                 continue;
             if (!isCall || args == func->argCount() ||
