@@ -3507,8 +3507,6 @@ static const Token* isStrlenOf(const Token* tok, const Token* expr, int depth = 
     return nullptr;
 }
 
-static ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val);
-
 static void valueFlowSymbolicOperators(const SymbolDatabase& symboldatabase, const Settings& settings)
 {
     for (const Scope* scope : symboldatabase.functionScopes) {
@@ -4851,35 +4849,6 @@ struct SimpleConditionHandler : ConditionHandler {
     }
 };
 
-struct IntegralInferModel : InferModel {
-    bool match(const ValueFlow::Value& value) const override {
-        return value.isIntValue();
-    }
-    ValueFlow::Value yield(MathLib::bigint value) const override
-    {
-        ValueFlow::Value result(value);
-        result.valueType = ValueFlow::Value::ValueType::INT;
-        result.setKnown();
-        return result;
-    }
-};
-
-ValuePtr<InferModel> ValueFlow::makeIntegralInferModel() {
-    return IntegralInferModel{};
-}
-
-static ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val)
-{
-    if (!varTok)
-        return ValueFlow::Value{};
-    if (varTok->hasKnownIntValue())
-        return ValueFlow::Value{};
-    std::vector<ValueFlow::Value> r = infer(IntegralInferModel{}, op, varTok->values(), val);
-    if (r.size() == 1 && r.front().isKnown())
-        return r.front();
-    return ValueFlow::Value{};
-}
-
 struct IteratorInferModel : InferModel {
     virtual ValueFlow::Value::ValueType getType() const = 0;
     bool match(const ValueFlow::Value& value) const override {
@@ -4953,7 +4922,7 @@ static void valueFlowInferCondition(TokenList& tokenlist, const Settings& settin
                 }
             } else if (isIntegralOrPointer(tok->astOperand1()) && isIntegralOrPointer(tok->astOperand2())) {
                 std::vector<ValueFlow::Value> result =
-                    infer(IntegralInferModel{}, tok->str(), tok->astOperand1()->values(), tok->astOperand2()->values());
+                    infer(makeIntegralInferModel(), tok->str(), tok->astOperand1()->values(), tok->astOperand2()->values());
                 for (ValueFlow::Value& value : result) {
                     setTokenValue(tok, std::move(value), settings);
                 }
@@ -4961,7 +4930,7 @@ static void valueFlowInferCondition(TokenList& tokenlist, const Settings& settin
         } else if (Token::Match(tok->astParent(), "?|&&|!|%oror%") ||
                    Token::Match(tok->astParent()->previous(), "if|while (") ||
                    (astIsPointer(tok) && isUsedAsBool(tok, settings))) {
-            std::vector<ValueFlow::Value> result = infer(IntegralInferModel{}, "!=", tok->values(), 0);
+            std::vector<ValueFlow::Value> result = infer(makeIntegralInferModel(), "!=", tok->values(), 0);
             if (result.size() != 1)
                 continue;
             ValueFlow::Value value = result.front();
