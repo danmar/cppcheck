@@ -24,6 +24,7 @@
 #include "threadresult.h"
 
 #include <set>
+#include <string>
 
 #include <QDateTime>
 #include <QElapsedTimer>

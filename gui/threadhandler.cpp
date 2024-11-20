@@ -109,7 +109,8 @@ void ThreadHandler::check(const Settings &settings)
         mThreads[i]->setAddonsAndTools(addonsAndTools);
         mThreads[i]->setSuppressions(mSuppressions);
         mThreads[i]->setClangIncludePaths(mClangIncludePaths);
-        mThreads[i]->check(settings);
+        mThreads[i]->setSettings(settings);
+        mThreads[i]->start();
     }
 
     // Date and time when checking starts..
