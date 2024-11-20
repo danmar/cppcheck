@@ -186,6 +186,7 @@ private:
         TEST_CASE(const92);
         TEST_CASE(const93);
         TEST_CASE(const94);
+        TEST_CASE(const95); // #13320 - do not warn about r-value ref method
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -6701,6 +6702,14 @@ private:
                    "    typedef void (A::* Fn)();\n"
                    "    Fn tickFunction;\n"
                    "    void nop() {}\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void const95() { // #13320
+        checkConst("class C {\n"
+                   "    std::string x;\n"
+                   "    std::string get() && { return x; }\n"
                    "};\n");
         ASSERT_EQUALS("", errout_str());
     }

@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     env:
-      QT_VERSION: 6.7.3
+      QT_VERSION: 6.8.0
       ASAN_OPTIONS: detect_stack_use_after_return=1
       # TODO: figure out why there are cache misses with PCH enabled
       CCACHE_SLOPPINESS: pch_defines,time_macros
@@ -100,14 +100,12 @@ jobs:
       - name: Run test/cli
         run: |
           pwd=$(pwd)
-          cd test/cli
-          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv
+          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv test/cli
 
       - name: Run test/cli (-j2)
         run: |
           pwd=$(pwd)
-          cd test/cli
-          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv
+          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv test/cli
         env:
           TEST_CPPCHECK_INJECT_J: 2
 
@@ -115,8 +113,7 @@ jobs:
         if: false
         run: |
           pwd=$(pwd)
-          cd test/cli
-          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv
+          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv test/cli
         env:
           TEST_CPPCHECK_INJECT_CLANG: clang
 

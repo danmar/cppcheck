@@ -81,7 +81,7 @@ private:
     // Error messages..
     void tooBigBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits);
     void tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits);
-    void integerOverflowError(const Token *tok, const ValueFlow::Value &value);
+    void integerOverflowError(const Token *tok, const ValueFlow::Value &value, bool isOverflow = true);
     void signConversionError(const Token *tok, const ValueFlow::Value *negativeValue, bool constvalue);
     void longCastAssignError(const Token *tok, const ValueType* src = nullptr, const ValueType* tgt = nullptr);
     void longCastReturnError(const Token *tok, const ValueType* src = nullptr, const ValueType* tgt = nullptr);

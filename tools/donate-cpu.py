@@ -125,10 +125,10 @@ for arg in sys.argv[1:]:
         print('Unhandled argument: ' + arg)
         sys.exit(1)
 
-if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 4):
+if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 6):
     print("#" * 80)
     print("IMPORTANT")
-    print("Please run the client with at least Python 3.4, thanks!")
+    print("Please run the client with at least Python 3.6, thanks!")
     print("#" * 80)
     time.sleep(2)
     sys.exit(1)
