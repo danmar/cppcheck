@@ -409,6 +409,7 @@ namespace utils {
     template<class T>
     constexpr typename std::add_const<T>::type & as_const(T& t) noexcept
     {
+        // NOLINTNEXTLINE(bugprone-return-const-ref-from-parameter) - potential false positive
         return t;
     }
 }
