@@ -50,7 +50,7 @@ public:
     /** @brief value class */
     class value {
     private:
-        long long mIntValue{};
+        bigint mIntValue{};
         double mDoubleValue{};
         enum class Type : std::uint8_t { INT, LONG, LONGLONG, FLOAT } mType;
         bool mIsUnsigned{};
