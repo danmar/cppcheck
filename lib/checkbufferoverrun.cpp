@@ -218,7 +218,7 @@ static bool getDimensionsEtc(const Token * const arrayToken, const Settings &set
         Dimension dim;
         dim.known = value->isKnown();
         dim.tok = nullptr;
-        const int typeSize = array->valueType()->typeSize(settings.platform, array->valueType()->pointer > 1);
+        const MathLib::bigint typeSize = array->valueType()->typeSize(settings.platform, array->valueType()->pointer > 1);
         if (typeSize == 0)
             return false;
         dim.num = value->intvalue / typeSize;

@@ -1579,7 +1579,7 @@ static void setValues(const Tokenizer &tokenizer, const SymbolDatabase *symbolDa
         if (!scope.definedType)
             continue;
 
-        int typeSize = 0;
+        MathLib::bigint typeSize = 0;
         for (const Variable &var: scope.varlist) {
             const int mul = std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), 1, [](int v, const Dimension& dim) {
                 return v * dim.num;
@@ -1593,7 +1593,7 @@ static void setValues(const Tokenizer &tokenizer, const SymbolDatabase *symbolDa
     for (auto *tok = const_cast<Token*>(tokenizer.tokens()); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
             ValueType vt = ValueType::parseDecl(tok->tokAt(2), settings);
-            const int sz = vt.typeSize(settings.platform, true);
+            const MathLib::bigint sz = vt.typeSize(settings.platform, true);
             if (sz <= 0)
                 continue;
             long long mul = 1;

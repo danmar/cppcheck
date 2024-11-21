@@ -151,7 +151,7 @@ void CheckFunctions::invalidFunctionUsage()
                         && valueType && (valueType->type == ValueType::Type::CHAR || valueType->type == ValueType::Type::WCHAR_T)
                         && !isVariablesChanged(variable->declEndToken(), functionToken, 0 /*indirect*/, { variable }, *mSettings)) {
                         const Token* varTok = variable->declEndToken();
-                        auto count = -1; // Find out explicitly set count, e.g.: char buf[3] = {...}. Variable 'count' is set to 3 then.
+                        MathLib::bigint count = -1; // Find out explicitly set count, e.g.: char buf[3] = {...}. Variable 'count' is set to 3 then.
                         if (varTok && Token::simpleMatch(varTok->astOperand1(), "["))
                         {
                             const Token* const countTok = varTok->astOperand1()->astOperand2();
@@ -578,7 +578,7 @@ void CheckFunctions::memsetInvalid2ndParam()
             }
 
             if (printWarning && secondParamTok->isNumber()) { // Check if the second parameter is a literal and is out of range
-                const long long int value = MathLib::toBigNumber(secondParamTok->str());
+                const MathLib::bigint value = MathLib::toBigNumber(secondParamTok->str());
                 const long long sCharMin = mSettings->platform.signedCharMin();
                 const long long uCharMax = mSettings->platform.unsignedCharMax();
                 if (value < sCharMin || value > uCharMax)

@@ -6348,7 +6348,7 @@ static std::vector<ValueFlow::Value> getContainerValues(const Token* tok)
     return values;
 }
 
-static ValueFlow::Value makeContainerSizeValue(std::size_t s, bool known = true)
+static ValueFlow::Value makeContainerSizeValue(MathLib::bigint s, bool known = true)
 {
     ValueFlow::Value value(s);
     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
@@ -6511,7 +6511,7 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
             continue;
 
         bool known = true;
-        int size = 0;
+        MathLib::bigint size = 0;
         const bool nonLocal = !var->isLocal() || var->isPointer() || var->isReference() || var->isStatic();
         bool constSize = var->isConst() && !nonLocal;
         bool staticSize = false;

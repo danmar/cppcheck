@@ -2037,7 +2037,7 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
     }
 }
 
-void CheckCondition::compareValueOutOfTypeRangeError(const Token *comparison, const std::string &type, long long value, bool result)
+void CheckCondition::compareValueOutOfTypeRangeError(const Token *comparison, const std::string &type, MathLib::bigint value, bool result)
 {
     reportError(
         comparison,
