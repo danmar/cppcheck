@@ -100,7 +100,7 @@ namespace ValueFlow {
     std::string Value::infoString() const {
         switch (valueType) {
         case ValueType::INT:
-            return std::to_string(intvalue);
+            return MathLib::toString(intvalue);
         case ValueType::TOK:
             return tokvalue->str();
         case ValueType::FLOAT:
@@ -111,20 +111,20 @@ namespace ValueFlow {
             return "<Uninit>";
         case ValueType::BUFFER_SIZE:
         case ValueType::CONTAINER_SIZE:
-            return "size=" + std::to_string(intvalue);
+            return "size=" + MathLib::toString(intvalue);
         case ValueType::ITERATOR_START:
-            return "start=" + std::to_string(intvalue);
+            return "start=" + MathLib::toString(intvalue);
         case ValueType::ITERATOR_END:
-            return "end=" + std::to_string(intvalue);
+            return "end=" + MathLib::toString(intvalue);
         case ValueType::LIFETIME:
             return "lifetime=" + tokvalue->str();
         case ValueType::SYMBOLIC:
         {
             std::string result = "symbolic=" + tokvalue->expressionString();
             if (intvalue > 0)
-                result += "+" + std::to_string(intvalue);
+                result += "+" + MathLib::toString(intvalue);
             else if (intvalue < 0)
-                result += "-" + std::to_string(-intvalue);
+                result += "-" + MathLib::toString(-intvalue);
             return result;
         }
         }

@@ -149,6 +149,8 @@ MathLib::value operator^(const MathLib::value &v1, const MathLib::value &v2);
 MathLib::value operator<<(const MathLib::value &v1, const MathLib::value &v2);
 MathLib::value operator>>(const MathLib::value &v1, const MathLib::value &v2);
 
+template<> CPPCHECKLIB std::string MathLib::toString<MathLib::bigint>(MathLib::bigint value);
+template<> CPPCHECKLIB std::string MathLib::toString<MathLib::biguint>(MathLib::biguint value);
 template<> CPPCHECKLIB std::string MathLib::toString<double>(double value);
 
 /// @}

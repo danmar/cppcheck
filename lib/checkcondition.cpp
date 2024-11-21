@@ -1057,7 +1057,7 @@ static bool parseComparison(const Token *comp, bool &not1, std::string &op, std:
             return false;
         op = invertOperatorForOperandSwap(comp->str());
         if (op1->enumerator() && op1->enumerator()->value_known)
-            value = std::to_string(op1->enumerator()->value);
+            value = MathLib::toString(op1->enumerator()->value);
         else
             value = op1->str();
         expr = op2;
@@ -1066,7 +1066,7 @@ static bool parseComparison(const Token *comp, bool &not1, std::string &op, std:
             return false;
         op = comp->str();
         if (op2->enumerator() && op2->enumerator()->value_known)
-            value = std::to_string(op2->enumerator()->value);
+            value = MathLib::toString(op2->enumerator()->value);
         else
             value = op2->str();
         expr = op1;
@@ -2043,7 +2043,7 @@ void CheckCondition::compareValueOutOfTypeRangeError(const Token *comparison, co
         comparison,
         Severity::style,
         "compareValueOutOfTypeRangeError",
-        "Comparing expression of type '" + type + "' against value " + std::to_string(value) + ". Condition is always " + bool_to_string(result) + ".",
+        "Comparing expression of type '" + type + "' against value " + MathLib::toString(value) + ". Condition is always " + bool_to_string(result) + ".",
         CWE398,
         Certainty::normal);
 }

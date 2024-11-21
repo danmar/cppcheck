@@ -519,6 +519,28 @@ double MathLib::toDoubleNumber(const std::string &str)
     return ret;
 }
 
+template<> std::string MathLib::toString<MathLib::bigint>(MathLib::bigint value)
+{
+#if defined(HAVE_BOOST) && defined(HAVE_BOOST_INT128)
+    std::ostringstream result;
+    result << value;
+    return result.str();
+#else
+    return std::to_string(value);
+#endif
+}
+
+template<> std::string MathLib::toString<MathLib::biguint>(MathLib::biguint value)
+{
+#if defined(HAVE_BOOST) && defined(HAVE_BOOST_INT128)
+    std::ostringstream result;
+    result << value;
+    return result.str();
+#else
+    return std::to_string(value);
+#endif
+}
+
 template<> std::string MathLib::toString<double>(double value)
 {
     std::ostringstream result;
@@ -1059,7 +1081,7 @@ std::string MathLib::add(const std::string & first, const std::string & second)
     return (value(first) + value(second)).str();
 #else
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        return std::to_string(toBigNumber(first) + toBigNumber(second)) + intsuffix(first, second);
+        return MathLib::toString(toBigNumber(first) + toBigNumber(second)) + intsuffix(first, second);
     }
 
     double d1 = toDoubleNumber(first);
@@ -1081,7 +1103,7 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
     return (value(first) - value(second)).str();
 #else
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        return std::to_string(toBigNumber(first) - toBigNumber(second)) + intsuffix(first, second);
+        return MathLib::toString(toBigNumber(first) - toBigNumber(second)) + intsuffix(first, second);
     }
 
     if (first == second)
@@ -1112,7 +1134,7 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
             throw InternalError(nullptr, "Internal Error: Division by zero");
         if (a == std::numeric_limits<bigint>::min() && std::abs(b)<=1)
             throw InternalError(nullptr, "Internal Error: Division overflow");
-        return std::to_string(toBigNumber(first) / b) + intsuffix(first, second);
+        return MathLib::toString(toBigNumber(first) / b) + intsuffix(first, second);
     }
     if (isNullValue(second)) {
         if (isNullValue(first))
@@ -1129,7 +1151,7 @@ std::string MathLib::multiply(const std::string &first, const std::string &secon
     return (value(first) * value(second)).str();
 #else
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        return std::to_string(toBigNumber(first) * toBigNumber(second)) + intsuffix(first, second);
+        return MathLib::toString(toBigNumber(first) * toBigNumber(second)) + intsuffix(first, second);
     }
     return toString(toDoubleNumber(first) * toDoubleNumber(second));
 #endif
@@ -1144,7 +1166,7 @@ std::string MathLib::mod(const std::string &first, const std::string &second)
         const bigint b = toBigNumber(second);
         if (b == 0)
             throw InternalError(nullptr, "Internal Error: Division by zero");
-        return std::to_string(toBigNumber(first) % b) + intsuffix(first, second);
+        return MathLib::toString(toBigNumber(first) % b) + intsuffix(first, second);
     }
     return toString(std::fmod(toDoubleNumber(first),toDoubleNumber(second)));
 #endif
@@ -1169,13 +1191,13 @@ std::string MathLib::calculate(const std::string &first, const std::string &seco
         return MathLib::mod(first, second);
 
     case '&':
-        return std::to_string(MathLib::toBigNumber(first) & MathLib::toBigNumber(second)) + intsuffix(first, second);
+        return MathLib::toString(MathLib::toBigNumber(first) & MathLib::toBigNumber(second)) + intsuffix(first, second);
 
     case '|':
-        return std::to_string(MathLib::toBigNumber(first) | MathLib::toBigNumber(second)) + intsuffix(first, second);
+        return MathLib::toString(MathLib::toBigNumber(first) | MathLib::toBigNumber(second)) + intsuffix(first, second);
 
     case '^':
-        return std::to_string(MathLib::toBigNumber(first) ^ MathLib::toBigNumber(second)) + intsuffix(first, second);
+        return MathLib::toString(MathLib::toBigNumber(first) ^ MathLib::toBigNumber(second)) + intsuffix(first, second);
 
     default:
         throw InternalError(nullptr, std::string("Unexpected action '") + action + "' in MathLib::calculate(). Please report this to Cppcheck developers.");
