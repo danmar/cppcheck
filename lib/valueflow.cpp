@@ -6163,17 +6163,17 @@ static void valueFlowSmartPointer(TokenList &tokenlist, ErrorLogger & errorLogge
     }
 }
 
-static Library::Container::Yield findIteratorYield(Token* tok, const Token** ftok, const Settings& settings)
+static Library::Container::Yield findIteratorYield(Token* tok, const Token*& ftok, const Settings& settings)
 {
-    auto yield = astContainerYield(tok, ftok);
-    if (ftok && *ftok)
+    auto yield = astContainerYield(tok, &ftok);
+    if (ftok)
         return yield;
 
     if (!tok->astParent())
         return yield;
 
     // begin/end free functions
-    return astFunctionYield(tok->astParent()->previous(), settings, ftok);
+    return astFunctionYield(tok->astParent()->previous(), settings, &ftok);
 }
 
 static void valueFlowIterators(TokenList& tokenlist, const Settings& settings)
@@ -6185,18 +6185,18 @@ static void valueFlowIterators(TokenList& tokenlist, const Settings& settings)
             continue;
         if (!astIsContainer(tok))
             continue;
-        Token* ftok = nullptr;
-        const Library::Container::Yield yield = findIteratorYield(tok, const_cast<const Token**>(&ftok), settings);
-        if (ftok) {
-            ValueFlow::Value v(0);
-            v.setKnown();
-            if (yield == Library::Container::Yield::START_ITERATOR) {
-                v.valueType = ValueFlow::Value::ValueType::ITERATOR_START;
-                setTokenValue(ftok->next(), std::move(v), settings);
-            } else if (yield == Library::Container::Yield::END_ITERATOR) {
-                v.valueType = ValueFlow::Value::ValueType::ITERATOR_END;
-                setTokenValue(ftok->next(), std::move(v), settings);
-            }
+        const Token* ftok = nullptr;
+        const Library::Container::Yield yield = findIteratorYield(tok, ftok, settings);
+        if (!ftok)
+            continue;
+        ValueFlow::Value v(0);
+        v.setKnown();
+        if (yield == Library::Container::Yield::START_ITERATOR) {
+            v.valueType = ValueFlow::Value::ValueType::ITERATOR_START;
+            setTokenValue(const_cast<Token*>(ftok)->next(), std::move(v), settings);
+        } else if (yield == Library::Container::Yield::END_ITERATOR) {
+            v.valueType = ValueFlow::Value::ValueType::ITERATOR_END;
+            setTokenValue(const_cast<Token*>(ftok)->next(), std::move(v), settings);
         }
     }
 }
@@ -7214,7 +7214,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
 
     runner.run_once({
         VFA(valueFlowDynamicBufferSize(tokenlist, symboldatabase, errorLogger, settings)),
-        VFA(valueFlowDebug(tokenlist, errorLogger, settings)),
+        VFA(valueFlowDebug(tokenlist, errorLogger, settings)), // TODO: add option to print it after each step/iteration
     });
 }
 
