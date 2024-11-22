@@ -59,7 +59,7 @@ std::size_t ExprIdToken::Hash::operator()(ExprIdToken etok) const
 void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
     copyOnWrite();
 
-    (*mValues)[expr] = value;
+    (*mValues)[expr] = value; // copy
     ValueFlow::Value subvalue = value;
     const Token* subexpr = solveExprValue(
         expr,
@@ -1344,8 +1344,10 @@ namespace {
             }
 
             nonneg int n = astCount(expr, expr->str().c_str());
-            if (n > 50)
+            if (n > 50) {
+                // TODO: add bailout message
                 return unknown();
+            }
             std::vector<const Token*> conditions1 = flattenConditions(expr);
             if (conditions1.empty())
                 return unknown();
@@ -1362,8 +1364,10 @@ namespace {
             }
             if (condValues.size() == conditions1.size() && allNegated)
                 return negatedValue;
-            if (n > 4)
+            if (n > 4) {
+                // TODO: add bailout message
                 return unknown();
+            }
             if (!sortConditions(conditions1))
                 return unknown();
 
@@ -1384,12 +1388,12 @@ namespace {
                         std::equal(conditions1.begin(), conditions1.end(), conditions2.begin(), &TokenExprIdEqual))
                         return value;
                     std::vector<const Token*> diffConditions1 = setDifference(conditions1, conditions2);
-                    std::vector<const Token*> diffConditions2 = setDifference(conditions2, conditions1);
                     pruneConditions(diffConditions1, !b, condValues);
+                    if (diffConditions1.size() == conditions1.size())
+                        continue;
+                    std::vector<const Token*> diffConditions2 = setDifference(conditions2, conditions1);
                     pruneConditions(diffConditions2, !b, executeAll(diffConditions2));
                     if (diffConditions1.size() != diffConditions2.size())
-                        continue;
-                    if (diffConditions1.size() == conditions1.size())
                         continue;
                     for (const Token* cond1 : diffConditions1) {
                         auto it = std::find_if(diffConditions2.begin(), diffConditions2.end(), [&](const Token* cond2) {
@@ -1597,6 +1601,7 @@ namespace {
                         return execute(tok);
                     });
                     if (f) {
+                        // TODO: add bailout message
                         if (fdepth >= 0 && !f->isImplicitlyVirtual()) {
                             ProgramMemory functionState;
                             for (std::size_t i = 0; i < args.size(); ++i) {
@@ -1684,8 +1689,10 @@ namespace {
             OnExit onExit{[&] {
                     depth++;
                 }};
-            if (depth < 0)
+            if (depth < 0) {
+                // TODO: add bailout message
                 return unknown();
+            }
             ValueFlow::Value v = unknown();
             if (updateValue(v, executeImpl(expr)))
                 return v;
@@ -1703,9 +1710,10 @@ namespace {
                     continue;
                 if (value.tokvalue->exprId() > 0 && !pm->hasValue(value.tokvalue->exprId()))
                     continue;
-                ValueFlow::Value v2 = utils::as_const(*pm).at(value.tokvalue->exprId());
-                if (!v2.isIntValue() && value.intvalue != 0)
+                const ValueFlow::Value& v_ref = utils::as_const(*pm).at(value.tokvalue->exprId());
+                if (!v_ref.isIntValue() && value.intvalue != 0)
                     continue;
+                ValueFlow::Value v2 = v_ref;
                 v2.intvalue += value.intvalue;
                 return v2;
             }

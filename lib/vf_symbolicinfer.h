@@ -24,7 +24,7 @@ class Settings;
 
 namespace ValueFlow
 {
-    void valueFlowSymbolicInfer(const SymbolDatabase& symboldatabase, const Settings& settings);
+    void analyzeSymbolicInfer(const SymbolDatabase& symboldatabase, const Settings& settings);
 }
 
 #endif // vfSymbolicInferH

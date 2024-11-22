@@ -35,10 +35,10 @@
 namespace ValueFlow
 {
     struct SymbolicInferModel : InferModel {
-        const Token* expr;
         explicit SymbolicInferModel(const Token* tok) : expr(tok) {
             assert(expr->exprId() != 0);
         }
+    private:
         bool match(const Value& value) const override
         {
             return value.isSymbolicValue() && value.tokvalue && value.tokvalue->exprId() == expr->exprId();
@@ -51,9 +51,10 @@ namespace ValueFlow
             result.setKnown();
             return result;
         }
+        const Token* expr;
     };
 
-    void valueFlowSymbolicInfer(const SymbolDatabase& symboldatabase, const Settings& settings)
+    void analyzeSymbolicInfer(const SymbolDatabase& symboldatabase, const Settings& settings)
     {
         for (const Scope* scope : symboldatabase.functionScopes) {
             for (auto* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
@@ -78,8 +79,11 @@ namespace ValueFlow
                 if (astIsFloat(tok->astOperand2(), false))
                     continue;
 
-                SymbolicInferModel leftModel{tok->astOperand1()};
-                std::vector<Value> values = infer(leftModel, tok->str(), 0, tok->astOperand2()->values());
+                std::vector<Value> values;
+                {
+                    SymbolicInferModel leftModel{tok->astOperand1()};
+                    values = infer(leftModel, tok->str(), 0, tok->astOperand2()->values());
+                }
                 if (values.empty()) {
                     SymbolicInferModel rightModel{tok->astOperand2()};
                     values = infer(rightModel, tok->str(), tok->astOperand1()->values(), 0);

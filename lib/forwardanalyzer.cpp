@@ -544,8 +544,10 @@ namespace {
         }
 
         Progress updateRange(Token* start, const Token* end, int depth = 20) {
-            if (depth < 0)
+            if (depth < 0) {
+                // TODO: add bailout message
                 return Break(Analyzer::Terminate::Bail);
+            }
             std::size_t i = 0;
             for (Token* tok = start; precedes(tok, end); tok = tok->next()) {
                 Token* next = nullptr;
