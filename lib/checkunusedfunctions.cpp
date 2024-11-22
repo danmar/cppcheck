@@ -347,7 +347,7 @@ bool CheckUnusedFunctions::check(const Settings& settings, ErrorLogger& errorLog
     using ErrorParams = std::tuple<std::string, unsigned int, unsigned int, std::string>;
     std::vector<ErrorParams> errors; // ensure well-defined order
 
-    for (std::unordered_map<std::string, FunctionUsage>::const_iterator it = mFunctions.cbegin(); it != mFunctions.cend(); ++it) {
+    for (auto it = mFunctions.cbegin(); it != mFunctions.cend(); ++it) {
         const FunctionUsage &func = it->second;
         if (func.usedOtherFile || func.filename.empty())
             continue;
@@ -472,7 +472,7 @@ void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLo
         }
     }
 
-    for (std::map<std::string, Location>::const_iterator decl = decls.cbegin(); decl != decls.cend(); ++decl) {
+    for (auto decl = decls.cbegin(); decl != decls.cend(); ++decl) {
         const std::string &functionName = stripTemplateParameters(decl->first);
 
         if (settings.library.isentrypoint(functionName))

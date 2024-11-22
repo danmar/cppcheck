@@ -58,7 +58,7 @@ namespace ValueFlow
         for (Token* tok = tokenList.front(); tok; tok = tok->next()) {
             if (!tok->variable())
                 continue;
-            const std::map<const Variable*, Value>::const_iterator var = vars.find(tok->variable());
+            const auto var = utils::as_const(vars).find(tok->variable());
             if (var == vars.end())
                 continue;
             setTokenValue(tok, var->second, settings);
