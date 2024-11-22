@@ -380,6 +380,7 @@ std::size_t TestFixture::runTests(const options& args)
     countTests = 0;
     errmsg.str("");
 
+    // TODO: bail out when given class/test is not found?
     for (std::string classname : args.which_test()) {
         std::string testname;
         if (classname.find("::") != std::string::npos) {

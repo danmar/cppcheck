@@ -468,10 +468,8 @@ static ProgramMemory getInitialProgramState(const Token* tok,
     return pm;
 }
 
-ProgramMemoryState::ProgramMemoryState(const Settings* s) : settings(s)
-{
-    assert(settings != nullptr);
-}
+ProgramMemoryState::ProgramMemoryState(const Settings& s) : settings(s)
+{}
 
 void ProgramMemoryState::replace(ProgramMemory pm, const Token* origin)
 {
@@ -493,9 +491,9 @@ void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& va
 {
     ProgramMemory pm = state;
     addVars(pm, vars);
-    fillProgramMemoryFromConditions(pm, tok, *settings);
+    fillProgramMemoryFromConditions(pm, tok, settings);
     ProgramMemory local = pm;
-    fillProgramMemoryFromAssignments(pm, tok, *settings, local, vars);
+    fillProgramMemoryFromAssignments(pm, tok, settings, local, vars);
     addVars(pm, vars);
     replace(std::move(pm), tok);
 }
@@ -506,7 +504,7 @@ void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
     if (isEmpty)
         pm.setContainerSizeValue(tok, 0, b);
     else
-        programMemoryParseCondition(pm, tok, nullptr, *settings, b);
+        programMemoryParseCondition(pm, tok, nullptr, settings, b);
     const Token* origin = tok;
     const Token* top = tok->astTop();
     if (Token::Match(top->previous(), "for|while|if (") && !Token::simpleMatch(tok->astParent(), "?")) {
@@ -523,7 +521,7 @@ void ProgramMemoryState::removeModifiedVars(const Token* tok)
     const ProgramMemory& pm = state;
     auto eval = [&](const Token* cond) -> std::vector<MathLib::bigint> {
         ProgramMemory pm2 = pm;
-        auto result = execute(cond, pm2, *settings);
+        auto result = execute(cond, pm2, settings);
         if (isTrue(result))
             return {1};
         if (isFalse(result))
@@ -533,7 +531,7 @@ void ProgramMemoryState::removeModifiedVars(const Token* tok)
     state.erase_if([&](const ExprIdToken& e) {
         const Token* start = origins[e.getExpressionId()];
         const Token* expr = e.tok;
-        if (!expr || findExpressionChangedSkipDeadCode(expr, start, tok, *settings, eval)) {
+        if (!expr || findExpressionChangedSkipDeadCode(expr, start, tok, settings, eval)) {
             origins.erase(e.getExpressionId());
             return true;
         }
@@ -1276,14 +1274,14 @@ static void pruneConditions(std::vector<const Token*>& conds,
 
 namespace {
     struct Executor {
-        ProgramMemory* pm = nullptr;
-        const Settings* settings = nullptr;
+        ProgramMemory* pm;
+        const Settings& settings;
         int fdepth = 4;
         int depth = 10;
 
-        Executor(ProgramMemory* pm, const Settings* settings) : pm(pm), settings(settings)
+        Executor(ProgramMemory* pm, const Settings& settings) : pm(pm), settings(settings)
         {
-            assert(settings != nullptr);
+            assert(pm != nullptr);
         }
 
         static ValueFlow::Value unknown() {
@@ -1395,7 +1393,7 @@ namespace {
                         continue;
                     for (const Token* cond1 : diffConditions1) {
                         auto it = std::find_if(diffConditions2.begin(), diffConditions2.end(), [&](const Token* cond2) {
-                            return evalSameCondition(*pm, cond2, cond1, *settings);
+                            return evalSameCondition(*pm, cond2, cond1, settings);
                         });
                         if (it == diffConditions2.end())
                             break;
@@ -1525,14 +1523,18 @@ namespace {
                     r = evaluate(expr->str(), lhs, rhs);
                 if (expr->isComparisonOp() && (r.isUninitValue() || r.isImpossible())) {
                     if (rhs.isIntValue() && !expr->astOperand1()->values().empty()) {
-                        std::vector<ValueFlow::Value> result =
-                            infer(makeIntegralInferModel(), expr->str(), expr->astOperand1()->values(), {std::move(rhs)});
+                        std::vector<ValueFlow::Value> result = infer(makeIntegralInferModel(),
+                                                                     expr->str(),
+                                                                     expr->astOperand1()->values(),
+                                                                     {std::move(rhs)});
                         if (!result.empty() && result.front().isKnown())
                             return std::move(result.front());
                     }
                     if (lhs.isIntValue() && !expr->astOperand2()->values().empty()) {
-                        std::vector<ValueFlow::Value> result =
-                            infer(makeIntegralInferModel(), expr->str(), {std::move(lhs)}, expr->astOperand2()->values());
+                        std::vector<ValueFlow::Value> result = infer(makeIntegralInferModel(),
+                                                                     expr->str(),
+                                                                     {std::move(lhs)},
+                                                                     expr->astOperand2()->values());
                         if (!result.empty() && result.front().isKnown())
                             return std::move(result.front());
                     }
@@ -1580,7 +1582,7 @@ namespace {
             }
             if (expr->exprId() > 0 && pm->hasValue(expr->exprId())) {
                 ValueFlow::Value result = utils::as_const(*pm).at(expr->exprId());
-                if (result.isImpossible() && result.isIntValue() && result.intvalue == 0 && isUsedAsBool(expr, *settings)) {
+                if (result.isImpossible() && result.isIntValue() && result.intvalue == 0 && isUsedAsBool(expr, settings)) {
                     result.intvalue = !result.intvalue;
                     result.setKnown();
                 }
@@ -1591,7 +1593,7 @@ namespace {
                 const Token* ftok = expr->previous();
                 const Function* f = ftok->function();
                 ValueFlow::Value result = unknown();
-                if (settings && expr->str() == "(") {
+                if (expr->str() == "(") {
                     std::vector<const Token*> tokArgs = getArguments(expr);
                     std::vector<ValueFlow::Value> args(tokArgs.size());
                     std::transform(
@@ -1619,7 +1621,7 @@ namespace {
                         BuiltinLibraryFunction lf = getBuiltinLibraryFunction(ftok->str());
                         if (lf)
                             return lf(args);
-                        const std::string& returnValue = settings->library.returnValue(ftok);
+                        const std::string& returnValue = settings.library.returnValue(ftok);
                         if (!returnValue.empty()) {
                             std::unordered_map<nonneg int, ValueFlow::Value> arg_map;
                             int argn = 0;
@@ -1628,7 +1630,7 @@ namespace {
                                     arg_map[argn] = v;
                                 argn++;
                             }
-                            return evaluateLibraryFunction(arg_map, returnValue, *settings, ftok->isCpp());
+                            return evaluateLibraryFunction(arg_map, returnValue, settings, ftok->isCpp());
                         }
                     }
                 }
@@ -1636,12 +1638,11 @@ namespace {
                 visitAstNodes(expr->astOperand2(), [&](const Token* child) {
                     if (child->exprId() > 0 && pm->hasValue(child->exprId())) {
                         ValueFlow::Value& v = pm->at(child->exprId());
-                        assert(settings != nullptr);
                         if (v.valueType == ValueFlow::Value::ValueType::CONTAINER_SIZE) {
-                            if (ValueFlow::isContainerSizeChanged(child, v.indirect, *settings))
+                            if (ValueFlow::isContainerSizeChanged(child, v.indirect, settings))
                                 v = unknown();
                         } else if (v.valueType != ValueFlow::Value::ValueType::UNINIT) {
-                            if (isVariableChanged(child, v.indirect, *settings))
+                            if (isVariableChanged(child, v.indirect, settings))
                                 v = unknown();
                         }
                     }
@@ -1773,13 +1774,13 @@ namespace {
 
 static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings& settings)
 {
-    Executor ex{&pm, &settings};
+    Executor ex{&pm, settings};
     return ex.execute(expr);
 }
 
 std::vector<ValueFlow::Value> execute(const Scope* scope, ProgramMemory& pm, const Settings& settings)
 {
-    Executor ex{&pm, &settings};
+    Executor ex{&pm, settings};
     return ex.execute(scope);
 }
 

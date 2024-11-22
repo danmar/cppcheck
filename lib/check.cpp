@@ -63,6 +63,7 @@ void Check::writeToErrorList(const ErrorMessage &errmsg)
 
 void Check::reportError(const std::list<const Token *> &callstack, Severity severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty certainty)
 {
+    // TODO: report debug warning when error is for a disabled severity
     const ErrorMessage errmsg(callstack, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, certainty);
     if (mErrorLogger)
         mErrorLogger->reportErr(errmsg);
@@ -72,6 +73,7 @@ void Check::reportError(const std::list<const Token *> &callstack, Severity seve
 
 void Check::reportError(const ErrorPath &errorPath, Severity severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty)
 {
+    // TODO: report debug warning when error is for a disabled severity
     const ErrorMessage errmsg(errorPath, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, certainty);
     if (mErrorLogger)
         mErrorLogger->reportErr(errmsg);

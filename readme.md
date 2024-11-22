@@ -47,6 +47,8 @@ There are multiple compilation choices:
 * GCC (g++)
 * Clang (clang++)
 
+The minimum required Python version is 3.6.
+
 ### CMake
 
 The minimum required version is CMake 3.5.

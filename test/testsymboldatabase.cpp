@@ -522,6 +522,7 @@ private:
         TEST_CASE(findFunction56);
         TEST_CASE(findFunction57);
         TEST_CASE(findFunctionRef1);
+        TEST_CASE(findFunctionRef2); // #13328
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -3409,10 +3410,11 @@ private:
         // ticket #2991 - segmentation fault
         check("::y(){x}");
 
-        ASSERT_EQUALS("[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n"
-                      "[test.cpp:1]: (debug) analyzeConditionExpressions bailout: Skipping function due to incomplete variable x\n"
-                      "[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n", // duplicate
-                      errout_str());
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n"
+            "[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n"
+            "[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n", // duplicate
+            errout_str());
     }
 
     void symboldatabase20() {
@@ -8385,6 +8387,25 @@ private:
                       "    x.getInts();\n"
                       "}\n");
         const Token* x = Token::findsimplematch(tokenizer.tokens(), "x . getInts ( ) ;");
+        ASSERT(x);
+        const Token* f = x->tokAt(2);
+        ASSERT(f);
+        ASSERT(f->function());
+        ASSERT(f->function()->tokenDef);
+        ASSERT_EQUALS(2, f->function()->tokenDef->linenr());
+    }
+
+    void findFunctionRef2() {
+        GET_SYMBOL_DB("struct X {\n"
+                      "    const int& foo() const &;\n" // <- this function is called
+                      "    int foo() &&;\n"
+                      "}\n"
+                      "\n"
+                      "void foo() {\n"
+                      "    X x;\n"
+                      "    x.foo();\n"
+                      "}\n");
+        const Token* x = Token::findsimplematch(tokenizer.tokens(), "x . foo ( ) ;");
         ASSERT(x);
         const Token* f = x->tokAt(2);
         ASSERT(f);

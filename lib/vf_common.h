@@ -37,8 +37,6 @@ namespace ValueFlow
 {
     bool getMinMaxValues(const ValueType* vt, const Platform& platform, MathLib::bigint& minValue, MathLib::bigint& maxValue);
 
-    bool getMinMaxValues(const std::string &typestr, const Settings &settings, bool cpp, MathLib::bigint &minvalue, MathLib::bigint &maxvalue);
-
     long long truncateIntValue(long long value, size_t value_size, const ValueType::Sign dst_sign);
 
     Token * valueFlowSetConstantValue(Token *tok, const Settings &settings);
@@ -52,23 +50,7 @@ namespace ValueFlow
                            const Token* tok,
                            SourceLocation local = SourceLocation::current());
 
-    std::list<Value> getIteratorValues(std::list<Value> values, const Value::ValueKind* kind = nullptr);
-
     MathLib::bigint valueFlowGetStrLength(const Token* tok);
-
-    bool isBreakOrContinueScope(const Token* endToken);
-
-    const Scope* getLoopScope(const Token* tok);
-
-    void setSymbolic(Value& value, const Token* tok);
-
-    Value makeSymbolic(const Token* tok, MathLib::bigint delta = 0);
-
-    void removeImpossible(std::list<Value>& values, int indirect = -1);
-
-    void changeKnownToPossible(std::list<Value> &values, int indirect=-1);
-
-    void lowerToPossible(std::list<Value>& values, int indirect = -1);
 }
 
 #endif // vfCommonH

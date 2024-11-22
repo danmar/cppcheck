@@ -493,14 +493,14 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
             reportErr(errorMessage);
         };
         if (reportClangErrors(fin, reportError, compilerWarnings))
-            return 0;
+            return 0; // TODO: report as failure?
     } else {
         std::istringstream istr(output2);
         auto reportError = [this](const ErrorMessage& errorMessage) {
             reportErr(errorMessage);
         };
         if (reportClangErrors(istr, reportError, compilerWarnings))
-            return 0;
+            return 0; // TODO: report as failure?
     }
 
     if (!mSettings.buildDir.empty()) {
@@ -1056,6 +1056,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
     CheckUnusedFunctions unusedFunctionsChecker;
 
     // TODO: this should actually be the behavior if only "--enable=unusedFunction" is specified - see #10648
+    // TODO: log message when this is active?
     const char* unusedFunctionOnly = std::getenv("UNUSEDFUNCTION_ONLY");
     const bool doUnusedFunctionOnly = unusedFunctionOnly && (std::strcmp(unusedFunctionOnly, "1") == 0);
 
