@@ -25,7 +25,6 @@
 #include "token.h"
 #include "tokenlist.h"
 
-#include <sstream>
 #include <stack>
 #include <string>
 #include <utility>
@@ -128,8 +127,7 @@ private:
             const char code2[] = "_Generic"; // C11 keyword
             const Settings s = settingsBuilder().c(Standards::C89).build();
             TokenList tokenlist(&s);
-            std::istringstream istr(code2);
-            ASSERT(tokenlist.createTokens(istr, "a.c"));
+            ASSERT(tokenlist.createTokensFromString(code2, "a.c"));
             ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
         }
 
@@ -149,8 +147,7 @@ private:
             const char code2[] = "noexcept"; // C++11 keyword
             const Settings s = settingsBuilder().cpp(Standards::CPP03).build();
             TokenList tokenlist(&s);
-            std::istringstream istr(code2);
-            ASSERT(tokenlist.createTokens(istr, "a.cpp"));
+            ASSERT(tokenlist.createTokensFromString(code2, "a.cpp"));
             ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
         }
     }
@@ -159,9 +156,8 @@ private:
         // analyzing /usr/include/poll.h caused Path::identify() to be called with an empty filename from
         // TokenList::determineCppC() because there are no tokens
         const char code[] = "#include <sys/poll.h>";
-        std::istringstream istr(code);
         std::vector<std::string> files;
-        simplecpp::TokenList tokens1(istr, files, "poll.h", nullptr);
+        simplecpp::TokenList tokens1(code, sizeof(code), files, "poll.h", nullptr);
         Preprocessor preprocessor(settingsDefault, *this);
         simplecpp::TokenList tokensP = preprocessor.preprocess(tokens1, "", files, true);
         TokenList tokenlist(&settingsDefault);
@@ -169,11 +165,10 @@ private:
     }
 
     void ast1() const {
-        const std::string s = "('Release|x64' == 'Release|x64');";
+        const char code[] = "('Release|x64' == 'Release|x64');";
 
         TokenList tokenlist(&settings);
-        std::istringstream istr(s);
-        ASSERT(tokenlist.createTokens(istr, Standards::Language::C));
+        ASSERT(tokenlist.createTokensFromString(code, Standards::Language::C));
         // TODO: put this logic in TokenList
         // generate links
         {

@@ -59,8 +59,8 @@ public:
         cppcheck.settings().certainty.enable(Certainty::inconclusive);
     }
 
-    void run(const char code[]) {
-        cppcheck.check(FileWithDetails("test.cpp"), code);
+    void run(const char* code) {
+        cppcheck.checkBuffer(FileWithDetails("test.cpp"), reinterpret_cast<const uint8_t*>(code), strlen(code));
     }
 
     void reportOut(const std::string & /*outmsg*/, Color /*c*/) override {}

@@ -102,11 +102,30 @@ public:
      * - multiline strings are not handled.
      * - UTF in the code are not handled.
      * - comments are not handled.
-     * @param code input stream for code
      * @param file0 source file name
      */
-    bool createTokens(std::istream &code, const std::string& file0);
-    bool createTokens(std::istream &code, Standards::Language lang);
+    bool createTokensFromFile(const std::string& file0);
+
+    bool createTokensFromString(const std::string& data, const std::string& file0) {
+        return createTokensFromBuffer(data.data(), data.size(), file0);
+    }
+
+    bool createTokensFromBuffer(const uint8_t* data, size_t size, const std::string& file0);
+    bool createTokensFromBuffer(const char* data, size_t size, const std::string& file0) {
+        return createTokensFromBuffer(reinterpret_cast<const uint8_t*>(data), size, file0);
+    }
+    template<size_t size>
+    bool createTokensFromString(const char (&data)[size], const std::string& file0) {
+        return createTokensFromBuffer(reinterpret_cast<const uint8_t*>(data), size-1, file0);
+    }
+    bool createTokensFromBuffer(const uint8_t* data, size_t size, Standards::Language lang);
+    bool createTokensFromBuffer(const char* data, size_t size, Standards::Language lang) {
+        return createTokensFromBuffer(reinterpret_cast<const uint8_t*>(data), size, lang);
+    }
+    template<size_t size>
+    bool createTokensFromString(const char (&data)[size], Standards::Language lang) {
+        return createTokensFromBuffer(reinterpret_cast<const uint8_t*>(data), size-1, lang);
+    }
 
     void createTokens(simplecpp::TokenList&& tokenList);
 
@@ -204,7 +223,8 @@ public:
 private:
     void determineCppC();
 
-    bool createTokensInternal(std::istream &code, const std::string& file0);
+    bool createTokensFromFileInternal(const std::string& file0);
+    bool createTokensFromBufferInternal(const uint8_t* data, std::size_t size, const std::string& file0);
 
     /** Token list */
     TokensFrontBack mTokensFrontBack;
