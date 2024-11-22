@@ -22,7 +22,6 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "errortypes.h"
 #include "mathlib.h"
 #include "vfvalue.h"
 
@@ -34,6 +33,7 @@
 #include <vector>
 
 class ErrorLogger;
+struct InferModel;
 class Settings;
 class SymbolDatabase;
 class TimerResultsIntf;
