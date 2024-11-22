@@ -907,7 +907,7 @@ static bool getExpressionRange(const Token* expr, MathLib::bigint* minvalue, Mat
     }
 
     if (expr->str() == "%" && expr->astOperand1() && expr->astOperand2()) {
-        MathLib::bigint vals[4];
+        std::array<MathLib::bigint, 4> vals;
         if (!getExpressionRange(expr->astOperand2(), &vals[2], &vals[3]))
             return false;
         if (vals[2] <= 0)
@@ -4712,9 +4712,9 @@ struct ConditionHandler {
                 }
             }
 
-            bool deadBranch[] = {false, false};
+            std::array<bool, 2> deadBranch = {false, false};
             // start token of conditional code
-            Token* startTokens[] = {nullptr, nullptr};
+            std::array<Token*, 2> startTokens = {nullptr, nullptr};
             // determine startToken(s)
             if (Token::simpleMatch(top->link(), ") {"))
                 startTokens[0] = top->link()->next();

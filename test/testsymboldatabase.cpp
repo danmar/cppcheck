@@ -6909,7 +6909,7 @@ private:
         ASSERT(db);
         const Scope * bar = db->findScopeByName("bar");
         ASSERT(bar != nullptr);
-        constexpr unsigned int linenrs[2] = { 2, 1 };
+        constexpr std::array<unsigned int, 2> linenrs = { 2, 1 };
         unsigned int index = 0;
         for (const Token * tok = bar->bodyStart->next(); tok != bar->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "%name% (") && !tok->varId() && Token::simpleMatch(tok->linkAt(1), ") ;")) {

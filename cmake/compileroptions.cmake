@@ -126,6 +126,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
     # these cannot be fixed properly without adopting later C++ standards
     add_compile_options_safe(-Wno-unsafe-buffer-usage)
+    add_compile_options_safe(-Wno-unsafe-buffer-usage-in-libc-call)
     add_compile_options_safe(-Wno-global-constructors)
     add_compile_options_safe(-Wno-exit-time-destructors)
 

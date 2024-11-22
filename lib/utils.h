@@ -313,7 +313,7 @@ static inline std::string id_string_i(std::uintptr_t l)
     // two characters of each byte / contains terminating \0
     static constexpr int buf_size = (ptr_size * 2) + 1;
 
-    char buf[buf_size];
+    std::array<char, buf_size> buf;
 
     // needs to be signed so we don't underflow in padding loop
     int idx = buf_size - 1;
