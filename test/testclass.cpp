@@ -188,7 +188,6 @@ private:
         TEST_CASE(const94);
         TEST_CASE(const95); // #13320 - do not warn about r-value ref method
 
-        
         TEST_CASE(const97);
 
         TEST_CASE(const_handleDefaultParameters);
@@ -6709,13 +6708,13 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
-      void const95() { // #13320
-          checkConst("class C {\n"
-                     "    std::string x;\n"
-                     "    std::string get() && { return x; }\n"
-                     "};\n");
-          ASSERT_EQUALS("", errout_str());
-      }
+    void const95() { // #13320
+        checkConst("class C {\n"
+                   "    std::string x;\n"
+                   "    std::string get() && { return x; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout_str());
+    }
 
     void const97() { // #13301
         checkConst("struct S {\n"
