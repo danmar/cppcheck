@@ -186,7 +186,9 @@ private:
         TEST_CASE(const92);
         TEST_CASE(const93);
         TEST_CASE(const94);
-        TEST_CASE(const95);
+
+        
+        TEST_CASE(const97);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -6706,7 +6708,7 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
-    void const95() { // #13301
+    void const97() { // #13301
         checkConst("struct S {\n"
                    "    std::vector<int> v;\n"
                    "    int f() {\n"
@@ -6735,6 +6737,13 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'S::f' can be const.\n"
                       "[test.cpp:7]: (style, inconclusive) Technically the member function 'S::g' can be const.\n"
                       "[test.cpp:11]: (style, inconclusive) Technically the member function 'S::h' can be const.\n",
+                      errout_str());
+
+        checkConst("struct B { std::string s; };\n"
+                   "struct D : B {\n"
+                   "    bool f(std::string::iterator it) { return it == B::s.begin(); }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'D::f' can be const.\n",
                       errout_str());
     }
 
