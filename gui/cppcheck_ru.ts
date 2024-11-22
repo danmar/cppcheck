@@ -2361,27 +2361,27 @@ Options:
         <translation>Неопределенный файл</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="865"/>
+        <location filename="resultstree.cpp" line="867"/>
         <source>Copy</source>
         <translation>Копировать</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1058"/>
+        <location filename="resultstree.cpp" line="1060"/>
         <source>Could not find file:</source>
         <translation>Невозможно найти файл:</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1062"/>
+        <location filename="resultstree.cpp" line="1064"/>
         <source>Please select the folder &apos;%1&apos;</source>
         <translation>Выберите каталог &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1063"/>
+        <location filename="resultstree.cpp" line="1065"/>
         <source>Select Directory &apos;%1&apos;</source>
         <translation>Выбрать каталог &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1065"/>
+        <location filename="resultstree.cpp" line="1067"/>
         <source>Please select the directory where file is located.</source>
         <translation>Укажите каталог с расположением файла.</translation>
     </message>
@@ -2396,27 +2396,27 @@ Options:
         <translation>заметка</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="864"/>
+        <location filename="resultstree.cpp" line="866"/>
         <source>Recheck</source>
         <translation>Проверить заново</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="866"/>
+        <location filename="resultstree.cpp" line="868"/>
         <source>Hide</source>
         <translation>Скрыть</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="867"/>
+        <location filename="resultstree.cpp" line="869"/>
         <source>Hide all with id</source>
         <translation>Скрыть все с id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="886"/>
+        <location filename="resultstree.cpp" line="888"/>
         <source>Suppress selected id(s)</source>
         <translation>Подавить выбранные id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="868"/>
+        <location filename="resultstree.cpp" line="870"/>
         <source>Open containing folder</source>
         <translation>Открыть содержащую папку</translation>
     </message>
@@ -2426,23 +2426,23 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="907"/>
+        <location filename="resultstree.cpp" line="909"/>
         <source>Tag</source>
         <translation>Тег</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="909"/>
+        <location filename="resultstree.cpp" line="911"/>
         <source>No tag</source>
         <translation>Тег отсутствует</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="940"/>
-        <location filename="resultstree.cpp" line="954"/>
+        <location filename="resultstree.cpp" line="942"/>
+        <location filename="resultstree.cpp" line="956"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="941"/>
+        <location filename="resultstree.cpp" line="943"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
@@ -2451,7 +2451,7 @@ Configure the editor application for Cppcheck in preferences/Applications.</sour
 Сконфигурируйте приложение редактора для Cppcheck в предпочтениях/Приложениях.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="955"/>
+        <location filename="resultstree.cpp" line="957"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
@@ -2459,12 +2459,12 @@ Please select the default editor application in preferences/Applications.</sourc
 Выберите приложение редактора по умолчанию в предпочтениях/Приложениях.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="981"/>
+        <location filename="resultstree.cpp" line="983"/>
         <source>Could not find the file!</source>
         <translation>Не удается найти файл!</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1044"/>
+        <location filename="resultstree.cpp" line="1046"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -2472,7 +2472,7 @@ Please check the application path and parameters are correct.</source>
 Пожалуйста, проверьте путь приложения, и верны ли параметры.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1066"/>
+        <location filename="resultstree.cpp" line="1068"/>
         <source>Select Directory</source>
         <translation>Выберите директорию</translation>
     </message>
