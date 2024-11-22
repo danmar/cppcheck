@@ -628,6 +628,9 @@ def main() -> None:
                            'from. You can combine results from several '
                            'xml reports i.e. "--file file1.xml --file file2.xml ..". '
                            'Default is reading from stdin.')
+    parser.add_option('--checkers-report-file', dest='checkers_report',
+                      help='The cppcheck checkers report file as produced '
+                           'with the "--checkers-report" option of cppcheck.')
     parser.add_option('--report-dir', dest='report_dir',
                       help='The directory where the HTML report content is '
                            'written.')
@@ -855,6 +858,8 @@ def main() -> None:
         output_file.write('\n           <tr><td></td><td>' + str(stats_count) + '</td><td>total</td></tr>')
         output_file.write('\n       </table>')
         output_file.write('\n       <p><a href="stats.html">Statistics</a></p>')
+        if options.checkers_report:
+            output_file.write('\n       <p><a href="checkers.html">Checkers</a></p>')
         output_file.write(HTML_MENU_END.replace("content", "content_index", 1))
 
         output_file.write('\n       <table class=\"summaryTable\">')
@@ -982,6 +987,26 @@ def main() -> None:
             stats_file.write("</p>\n")
 
         stats_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
+
+    if options.checkers_report:
+        print("Creating checkers.html (checkers report)\n")
+
+        with io.open(os.path.join(options.report_dir, 'checkers.html'), 'w') as checkers_file:
+
+            checkers_file.write(HTML_HEAD % (options.title, '', options.title, ': Checkers'))
+            checkers_file.write(HTML_HEAD_END)
+
+            checkers_file.write(HTML_MENU.replace('id="menu"', 'id="menu_index"', 1).replace("Defects:", "Back to summary", 1) % (''))
+            checkers_file.write(HTML_MENU_END.replace("content", "content_index", 1))
+
+            with io.open(options.checkers_report, 'r', encoding=options.source_encoding) as checkers_report:
+                content = checkers_report.read()
+
+                checkers_file.write("<pre>\n")
+                checkers_file.write(html_escape(content))
+                checkers_file.write("</pre>\n")
+
+            checkers_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
 
     print("\nOpen '" + options.report_dir + "/index.html' to see the results.")
 
