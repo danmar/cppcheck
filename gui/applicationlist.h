@@ -36,7 +36,7 @@ class ApplicationList : public QObject {
     Q_OBJECT
 public:
 
-    explicit ApplicationList(QObject *parent = nullptr);
+    explicit ApplicationList(QObject *parent);
     ~ApplicationList() override;
 
     /**

@@ -44,7 +44,7 @@ class FileViewDialog : public QDialog {
 public:
     FileViewDialog(const QString &file,
                    const QString &title,
-                   QWidget *parent = nullptr);
+                   QWidget *parent);
 
     ~FileViewDialog() override;
 
