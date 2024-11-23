@@ -3125,6 +3125,15 @@ private:
                       tokenize("void foo() {\n"
                                "  struct ABC abc = {.a { abc.a },.b= { abc.b } };\n"
                                "}"));
+
+        ASSERT_EQUALS("1: struct T { int a@1 ; } ;\n" // #13123
+                      "2: void f ( int a@2 ) {\n"
+                      "3: struct T t@3 ; t@3 = { . a@4 = 1 } ;\n"
+                      "4: }\n",
+                      tokenize("struct T { int a; };\n"
+                               "void f(int a) {\n"
+                               "    struct T t = { .a = 1 };\n"
+                               "}\n"));
     }
 
     void varid_arrayinit() {
