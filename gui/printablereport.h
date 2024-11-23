@@ -23,8 +23,6 @@
 
 #include <QString>
 
-class ErrorItem;
-
 /// @addtogroup GUI
 /// @{
 

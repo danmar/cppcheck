@@ -23,6 +23,7 @@
 
 #include <cassert>
 #include <cfenv>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 

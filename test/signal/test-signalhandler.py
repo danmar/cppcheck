@@ -35,7 +35,7 @@ def test_assert():
     if sys.platform == "darwin":
         assert stderr.startswith("Assertion failed: (false), function my_assert, file test-signalhandler.cpp, line "), stderr
     else:
-        assert stderr.endswith("test-signalhandler.cpp:33: void my_assert(): Assertion `false' failed.\n"), stderr
+        assert stderr.endswith("test-signalhandler.cpp:34: void my_assert(): Assertion `false' failed.\n"), stderr
     lines = stdout.splitlines()
     assert lines[0] == 'Internal error: cppcheck received signal SIGABRT - abort or assertion'
     # no stacktrace of MacOs
