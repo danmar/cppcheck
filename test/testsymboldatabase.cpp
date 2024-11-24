@@ -521,6 +521,7 @@ private:
         TEST_CASE(findFunction55); // #13004
         TEST_CASE(findFunction56);
         TEST_CASE(findFunction57);
+        TEST_CASE(findFunction58); // #13310
         TEST_CASE(findFunctionRef1);
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
@@ -8372,6 +8373,19 @@ private:
         const Token* T = Token::findsimplematch(S, "T (");
         ASSERT(T && T->function());
         ASSERT_EQUALS(T->function()->tokenDef->linenr(), 6);
+    }
+
+    void findFunction58() { // #13310
+        GET_SYMBOL_DB("class C {\n"
+                      "    enum class abc : uint8_t {\n"
+                      "        a,b,c\n"
+                      "    };\n"
+                      "    void a();\n"
+                      "};\n");
+        const Token *a1 = Token::findsimplematch(tokenizer.tokens(), "a ,");
+        ASSERT(a1 && !a1->function());
+        const Token *a2 = Token::findsimplematch(tokenizer.tokens(), "a (");
+        ASSERT(a2 && a2->function());
     }
 
     void findFunctionRef1() {
