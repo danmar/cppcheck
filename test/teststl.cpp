@@ -5155,6 +5155,13 @@ private:
               "    *it;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("int g() {\n" // #13332
+              "    const std::vector<int> v = { 1, 2, 3, 4 };\n"
+              "    const std::vector<int>::const_iterator a[2] = { v.begin(), v.end() };\n"
+              "    return *a[0];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void dereferenceInvalidIterator2() {
