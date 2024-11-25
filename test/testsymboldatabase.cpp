@@ -424,6 +424,7 @@ private:
         TEST_CASE(symboldatabase104);
         TEST_CASE(symboldatabase105);
         TEST_CASE(symboldatabase106);
+        TEST_CASE(symboldatabase107);
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -5653,6 +5654,22 @@ private:
                               "}\n");
             ASSERT(db != nullptr);
             ASSERT_EQUALS("", errout_str());
+        }
+    }
+
+    void symboldatabase107() {
+        {
+            GET_SYMBOL_DB_DBG("void g(int);\n" // #13329
+                              "void f(int** pp) {\n"
+                              "    for (int i = 0; i < 2; i++) {\n"
+                              "        g(*pp[i]);\n"
+                              "    }\n"
+                              "}\n");
+            ASSERT(db != nullptr);
+            ASSERT_EQUALS("", errout_str());
+            ASSERT_EQUALS(3, db->scopeList.size());
+            ASSERT_EQUALS(Scope::ScopeType::eFor, db->scopeList.back().type);
+            ASSERT_EQUALS(1, db->scopeList.back().varlist.size());
         }
     }
 
