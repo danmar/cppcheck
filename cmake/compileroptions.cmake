@@ -36,7 +36,10 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"
     if(WARNINGS_ARE_ERRORS)
         add_compile_options(-Werror)
     endif()
-    add_compile_options(-pedantic)
+    add_compile_options(-pedantic) # TODO: is this implied by -Weverything?
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     add_compile_options(-Wall)
     add_compile_options(-Wextra)
     add_compile_options(-Wcast-qual)                # Cast for removing type qualifiers
@@ -57,9 +60,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"
     #add_compile_options(-Wsign-conversion) # too many warnings
     #add_compile_options(-Wunreachable-code) # some GCC versions report lots of warnings
     #add_compile_options(-Wsign-promo)
-endif()
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # use pipes instead of temporary files - greatly reduces I/O usage
     add_compile_options(-pipe)
 
@@ -122,6 +123,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options_safe(-Wno-date-time)
     add_compile_options(-Wno-disabled-macro-expansion)
     add_compile_options_safe(-Wno-bitwise-instead-of-logical)
+    add_compile_options(-Wno-sign-compare)
 
     # these cannot be fixed properly without adopting later C++ standards
     add_compile_options_safe(-Wno-unsafe-buffer-usage)
@@ -144,6 +146,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # warnings we are currently not interested in
     add_compile_options(-Wno-four-char-constants)
     add_compile_options(-Wno-weak-vtables)
+    add_compile_options(-Wno-multichar)
 
     if(ENABLE_COVERAGE OR ENABLE_COVERAGE_XML)
       message(FATAL_ERROR "Do not use clang to generate code coverage. Use GCC instead.")
