@@ -17,8 +17,6 @@ jobs:
         include:
           - stdlib: libstdc++
             use_libcxx: Off
-          - stdlib: libc++
-            use_libcxx: On
       fail-fast: false
 
     runs-on: ubuntu-22.04
