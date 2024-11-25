@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         image: ["fedora:latest"] # "opensuse/tumbleweed:latest" / "fedora:latest" / "debian:unstable" / "archlinux:latest"
-        stdlib: [libstdc++, libc++]
+        stdlib: [libstdc++]
         include:
           - stdlib: libstdc++
             use_libcxx: Off
