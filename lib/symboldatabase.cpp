@@ -5993,6 +5993,9 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst, Referen
 
 const Function* SymbolDatabase::findFunction(const Token* const tok) const
 {
+    if (tok->tokType() == Token::Type::eEnumerator)
+        return nullptr;
+
     // find the scope this function is in
     const Scope *currScope = tok->scope();
     while (currScope && currScope->isExecutable()) {
