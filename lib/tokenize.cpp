@@ -3080,6 +3080,9 @@ bool Tokenizer::simplifyUsing()
         if (usingEnd)
             tok = usingEnd;
 
+        if (Token::Match(start, "class|struct|union|enum"))
+            start = start->next();
+
         // Unfortunately we have to start searching from the beginning
         // of the token stream because templates are instantiated at
         // the end of the token stream and it may be used before then.
