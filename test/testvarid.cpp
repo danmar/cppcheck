@@ -3134,6 +3134,21 @@ private:
                                "void f(int a) {\n"
                                "    struct T t = { .a = 1 };\n"
                                "}\n"));
+
+        ASSERT_EQUALS("1: struct S { int x@1 ; } ;\n" // TODO: set some varid for designated initializer?
+                      "2: void f0 ( S s@2 ) ;\n"
+                      "3: void f1 ( int n@3 ) {\n"
+                      "4: if ( int x@4 = n@3 ) {\n"
+                      "5: f0 ( S { . x = x@4 } ) ;\n"
+                      "6: }\n"
+                      "7: }\n",
+                      tokenize("struct S { int x; };\n"
+                               "void f0(S s);\n"
+                               "void f1(int n) {\n"
+                               "    if (int x = n) {\n"
+                               "        f0(S{ .x = x });\n"
+                               "    }\n"
+                               "}\n"));
     }
 
     void varid_arrayinit() {
