@@ -50,11 +50,7 @@ bool Platform::set(Type t)
         sizeof_wchar_t = sizeof(wchar_t);
         sizeof_size_t = sizeof(std::size_t);
         sizeof_pointer = sizeof(void *);
-        if (type == Type::Unspecified) {
-            defaultSign = '\0';
-        } else {
-            defaultSign = std::numeric_limits<char>::is_signed ? 's' : 'u';
-        }
+        defaultSign = std::numeric_limits<char>::is_signed ? 's' : 'u';
         char_bit = 8;
         short_bit = char_bit * sizeof_short;
         int_bit = char_bit * sizeof_int;
@@ -63,86 +59,14 @@ bool Platform::set(Type t)
         return true;
     case Type::Win32W:
     case Type::Win32A:
-        type = t;
-        sizeof_bool = 1; // 4 in Visual C++ 4.2
-        sizeof_short = 2;
-        sizeof_int = 4;
-        sizeof_long = 4;
-        sizeof_long_long = 8;
-        sizeof_float = 4;
-        sizeof_double = 8;
-        sizeof_long_double = 8;
-        sizeof_wchar_t = 2;
-        sizeof_size_t = 4;
-        sizeof_pointer = 4;
-        defaultSign = '\0';
-        char_bit = 8;
-        short_bit = char_bit * sizeof_short;
-        int_bit = char_bit * sizeof_int;
-        long_bit = char_bit * sizeof_long;
-        long_long_bit = char_bit * sizeof_long_long;
-        return true;
     case Type::Win64:
-        type = t;
-        sizeof_bool = 1;
-        sizeof_short = 2;
-        sizeof_int = 4;
-        sizeof_long = 4;
-        sizeof_long_long = 8;
-        sizeof_float = 4;
-        sizeof_double = 8;
-        sizeof_long_double = 8;
-        sizeof_wchar_t = 2;
-        sizeof_size_t = 8;
-        sizeof_pointer = 8;
-        defaultSign = '\0';
-        char_bit = 8;
-        short_bit = char_bit * sizeof_short;
-        int_bit = char_bit * sizeof_int;
-        long_bit = char_bit * sizeof_long;
-        long_long_bit = char_bit * sizeof_long_long;
-        return true;
     case Type::Unix32:
-        type = t;
-        sizeof_bool = 1;
-        sizeof_short = 2;
-        sizeof_int = 4;
-        sizeof_long = 4;
-        sizeof_long_long = 8;
-        sizeof_float = 4;
-        sizeof_double = 8;
-        sizeof_long_double = 12;
-        sizeof_wchar_t = 4;
-        sizeof_size_t = 4;
-        sizeof_pointer = 4;
-        defaultSign = '\0';
-        char_bit = 8;
-        short_bit = char_bit * sizeof_short;
-        int_bit = char_bit * sizeof_int;
-        long_bit = char_bit * sizeof_long;
-        long_long_bit = char_bit * sizeof_long_long;
-        return true;
     case Type::Unix64:
         type = t;
-        sizeof_bool = 1;
-        sizeof_short = 2;
-        sizeof_int = 4;
-        sizeof_long = 8;
-        sizeof_long_long = 8;
-        sizeof_float = 4;
-        sizeof_double = 8;
-        sizeof_long_double = 16;
-        sizeof_wchar_t = 4;
-        sizeof_size_t = 8;
-        sizeof_pointer = 8;
-        defaultSign = '\0';
-        char_bit = 8;
-        short_bit = char_bit * sizeof_short;
-        int_bit = char_bit * sizeof_int;
-        long_bit = char_bit * sizeof_long;
-        long_long_bit = char_bit * sizeof_long_long;
+        // read from platform file
         return true;
     case Type::File:
+        type = t;
         // sizes are not set.
         return false;
     }
@@ -152,40 +76,90 @@ bool Platform::set(Type t)
 
 bool Platform::set(const std::string& platformstr, std::string& errstr, const std::vector<std::string>& paths, bool debug)
 {
-    if (platformstr == "win32A")
-        set(Type::Win32A);
-    else if (platformstr == "win32W")
-        set(Type::Win32W);
-    else if (platformstr == "win64")
-        set(Type::Win64);
-    else if (platformstr == "unix32")
-        set(Type::Unix32);
-    else if (platformstr == "unix64")
-        set(Type::Unix64);
-    else if (platformstr == "native")
-        set(Type::Native);
-    else if (platformstr == "unspecified")
-        set(Type::Unspecified);
+    Type t;
+    std::string platformFile;
+
+    if (platformstr == "win32A") {
+        // TODO: deprecate
+        //std::cout << "Platform 'win32A' is deprecated and will be removed in a future version. Please use 'win32a' instead." << std::endl;
+        t = Type::Win32A;
+        platformFile = "win32";
+    }
+    else if (platformstr == "win32a") {
+        // TODO: deprecate if we have proper UNICODE support in win32.cfg
+        t = Type::Win32A;
+        platformFile = "win32";
+    }
+    else if (platformstr == "win32W") {
+        // TODO: deprecate
+        //std::cout << "Platform 'win32W' is deprecated and will be removed in a future version. Please use 'win32w' instead." << std::endl;
+        t = Type::Win32W;
+        platformFile = "win32";
+    }
+    else if (platformstr == "win32w") {
+        // TODO: deprecate if we have proper UNICODE support in win32.cfg
+        t = Type::Win32W;
+        platformFile = "win32";
+    }
+    else if (platformstr == "win32") {
+        t = Type::Win32A;
+        platformFile = platformstr;
+    }
+    else if (platformstr == "win64") {
+        t = Type::Win64;
+        platformFile = platformstr;
+    }
+    else if (platformstr == "unix32") {
+        t = Type::Unix32;
+        platformFile = platformstr;
+    }
+    else if (platformstr == "unix32-unsigned") {
+        std::cout << "Platform 'unix32-unsigned' is deprecated and will be removed in Cppcheck 2.18. Please use '--platform=unix32 --funsigned-char' instead." << std::endl;
+        t = Type::Unix32;
+        platformFile = platformstr;
+    }
+    else if (platformstr == "unix64") {
+        t = Type::Unix64;
+        platformFile = platformstr;
+    }
+    else if (platformstr == "unix64-unsigned") {
+        std::cout << "Platform 'unix64-unsigned' is deprecated and will be removed in Cppcheck 2.18. Please use '--platform=unix64 --funsigned-char' instead." << std::endl;
+        t = Type::Unix64;
+        platformFile = platformstr;
+    }
+    else if (platformstr == "native") {
+        t = Type::Native;
+    }
+    else if (platformstr == "unspecified") {
+        std::cout << "Platform 'unspecified' is deprecated and will be removed in a future version. It is also now identical to 'native' (i.e. char type signedness based on compiler instead of unknown)." << std::endl;
+        t = Type::Unspecified;
+    }
     else if (paths.empty()) {
         errstr = "unrecognized platform: '" + platformstr + "' (no lookup).";
         return false;
     }
     else {
+        t = Type::File;
+        platformFile = platformstr;
+    }
+
+    if (!platformFile.empty()) {
         bool found = false;
         for (const std::string& path : paths) {
             if (debug)
-                std::cout << "looking for platform '" + platformstr + "' in '" + path + "'" << std::endl;
-            if (loadFromFile(path.c_str(), platformstr, debug)) {
+                std::cout << "looking for platform '" + platformFile + "' in '" + path + "'" << std::endl;
+            if (loadFromFile(path.c_str(), platformFile, debug)) {
                 found = true;
                 break;
             }
         }
         if (!found) {
-            errstr = "unrecognized platform: '" + platformstr + "'.";
+            errstr = "unrecognized platform: '" + platformFile + "'.";
             return false;
         }
     }
 
+    set(t);
     return true;
 }
 
@@ -248,13 +222,14 @@ bool Platform::loadFromXmlDocument(const tinyxml2::XMLDocument *doc)
     if (!rootnode || std::strcmp(rootnode->Name(), "platform") != 0)
         return false;
 
+    // TODO: warn about missing fields
     bool error = false;
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         const char* name = node->Name();
         if (std::strcmp(name, "default-sign") == 0) {
             const char* str = node->GetText();
             if (str)
-                defaultSign = *str;
+                defaultSign = *str; // TODO: warn if neither 'u' nor 's'
             else
                 error = true;
         } else if (std::strcmp(name, "char_bit") == 0)
@@ -293,7 +268,6 @@ bool Platform::loadFromXmlDocument(const tinyxml2::XMLDocument *doc)
     long_bit = char_bit * sizeof_long;
     long_long_bit = char_bit * sizeof_long_long;
 
-    type = Type::File;
     return !error;
 }
 
