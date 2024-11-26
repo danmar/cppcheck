@@ -379,7 +379,11 @@ namespace ValueFlow
             return;
         std::string s = Path::stripDirectoryPart(file) + ":" + std::to_string(ctx.line()) + ": " + ctx.function_name() +
                         " => " + local.function_name() + ": " + debugString(v);
-        v.debugPath.emplace_back(tok, std::move(s));
+        auto it = v.debugPath.before_begin();
+        for (auto& _ : v.debugPath)
+            ++it;
+        v.debugPath.emplace_after(it, tok, std::move(s));
+        //v.debugPath.emplace_after(v.debugPath.cend(), tok, std::move(s));
     }
 
     MathLib::bigint valueFlowGetStrLength(const Token* tok)

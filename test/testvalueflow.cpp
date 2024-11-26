@@ -166,6 +166,8 @@ private:
         TEST_CASE(valueFlowBailoutIncompleteVar);
 
         TEST_CASE(performanceIfCount);
+
+        TEST_CASE(debug);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -8691,6 +8693,17 @@ private:
                "  return v.front();\n"
                "}\n";
         ASSERT_EQUALS(1U, tokenValues(code, "v .", &s).size());
+    }
+
+    void debug() {
+        const auto s = dinit(Settings, $.debugnormal = true);
+        const char code[] =
+                "void f() {\n"
+                "int i = 0;\n"
+                "}";
+        SimpleTokenizer tokenizer(s, *this);
+        ASSERT(tokenizer.tokenize(code));
+        // TODO: redirect debug output
     }
 };
 
