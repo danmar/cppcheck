@@ -70,6 +70,9 @@ private:
         TEST_CASE(structmember23);
         TEST_CASE(structmember24); // #10847
         TEST_CASE(structmember25);
+        TEST_CASE(structmember26); // #10305
+        TEST_CASE(structmember27);
+        TEST_CASE(structmember28);
         TEST_CASE(structmember_macro);
         TEST_CASE(classmember);
 
@@ -1960,6 +1963,43 @@ private:
                       "[test.cpp:6]: (style) struct member 'T::s' is never used.\n"
                       "[test.cpp:7]: (style) struct member 'T::j' is never used.\n",
                       errout_str());
+    }
+
+    void structmember26() { // #10305
+        checkStructMemberUsage("struct S {\n"
+                               "    int p;\n"
+                               "};\n"
+                               "S f() const {\n"
+                               "    return S{ 0 };\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void structmember27() {
+        checkStructMemberUsage("struct S {\n"
+                               "    int p;\n"
+                               "    static int q;\n"
+                               "    int r;\n"
+                               "};\n"
+                               "S f() const {\n"
+                               "    return S{ 0, 0 };\n"
+                               "}\n"
+                               "int S::q = 0;\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void structmember28() {
+        checkStructMemberUsage("struct S {\n"
+                               "    int p;\n"
+                               "    static int q;\n"
+                               "    int r;\n"
+                               "    int s;"
+                               "};\n"
+                               "S f() const {\n"
+                               "    return S{ 0, 0 };\n"
+                               "}\n"
+                               "int S::q = 0;\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) struct member 'S::s' is never used.\n", errout_str());
     }
 
     void structmember_macro() {
