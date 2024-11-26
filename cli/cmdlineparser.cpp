@@ -50,6 +50,7 @@
 #include <list>
 #include <set>
 #include <sstream>
+#include <thread>
 #include <unordered_set>
 #include <utility>
 
@@ -803,11 +804,14 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     return Result::Fail;
                 }
                 if (tmp == 0) {
-                    // TODO: implement get CPU logical core count and use that.
-                    // Usually, -j 0 would mean "use all available cores," but
-                    // if we get a 0, we just stall and don't do any work.
-                    mLogger.printError("argument for '-j' must be greater than 0.");
-                    return Result::Fail;
+                    tmp = std::thread::hardware_concurrency();
+
+                    if (tmp == 0)
+                    {
+                        mLogger.printError("Failed to get the system's CPU count. "
+                                           "Call again with a nonzero value for -j.");
+                        return Result::Fail;
+                    }
                 }
                 if (tmp > 1024) {
                     // Almost nobody has 1024 logical cores, but somebody out
@@ -1626,6 +1630,7 @@ void CmdLineParser::printHelp() const
         "                         more comments, like: '// cppcheck-suppress warningId'\n"
         "                         on the lines before the warning to suppress.\n"
         "    -j <jobs>            Start <jobs> threads to do the checking simultaneously.\n"
+        "                         If j=0, the thread count is chosen automatically.\n"
         "    -l <load>            Specifies that no new threads should be started if\n"
         "                         there are other threads running and the load average is\n"
         "                         at least <load>.\n"

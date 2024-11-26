@@ -10,7 +10,7 @@ GUI:
 -
 
 Changed interface:
--
+- '-j0' will now automatically choose a thread count.
 
 Deprecations:
 -

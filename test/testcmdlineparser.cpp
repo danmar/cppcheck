@@ -199,9 +199,9 @@ private:
         TEST_CASE(inlineSuppr);
         TEST_CASE(jobs);
         TEST_CASE(jobs2);
+        TEST_CASE(jobs0);
         TEST_CASE(jobsMissingCount);
         TEST_CASE(jobsInvalid);
-        TEST_CASE(jobsNoJobs);
         TEST_CASE(jobsTooBig);
         TEST_CASE(maxConfigs);
         TEST_CASE(maxConfigsMissingCount);
@@ -1195,6 +1195,14 @@ private:
         ASSERT_EQUALS(3, settings->jobs);
     }
 
+    void jobs0() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "-j0", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        // Resolves to a varying number equal to the system core count
+        ASSERT(0 != settings->jobs);
+    }
+
     void jobsMissingCount() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-j", "file.cpp"};
@@ -1209,13 +1217,6 @@ private:
         // Fails since invalid count given for -j
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '-j' is not valid - not an integer.\n", logger->str());
-    }
-
-    void jobsNoJobs() {
-        REDIRECT;
-        const char * const argv[] = {"cppcheck", "-j0", "file.cpp"};
-        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS("cppcheck: error: argument for '-j' must be greater than 0.\n", logger->str());
     }
 
     void jobsTooBig() {
