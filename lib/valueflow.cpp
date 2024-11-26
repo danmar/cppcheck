@@ -5494,7 +5494,7 @@ static void valueFlowLibraryFunction(Token* tok, const std::string& returnValue,
 }
 
 static void valueFlowSubFunction(const TokenList& tokenlist,
-                                 SymbolDatabase& symboldatabase,
+                                 const SymbolDatabase& symboldatabase,
                                  ErrorLogger& errorLogger,
                                  const Settings& settings)
 {
