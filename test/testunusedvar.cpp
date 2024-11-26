@@ -1969,7 +1969,6 @@ private:
                                "};\n"
                                "size_t offset_unused = offsetof(struct foobar, unused);\n");
         ASSERT_EQUALS("", errout_str());
-
     }
 
     void structmember_macro() {
