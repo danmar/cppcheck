@@ -105,7 +105,6 @@
 #include "valueptr.h"
 #include "vfvalue.h"
 
-#include "vf_analyze.h"
 #include "vf_analyzers.h"
 #include "vf_common.h"
 #include "vf_settokenvalue.h"
