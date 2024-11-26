@@ -1182,11 +1182,11 @@ Below is example usage to generate a Misra C 2012 compliance report.
 
 1. Execute cppcheck and save warnings in an xml file. Save the checkers report.
 
-    `cppcheck --premium=misra-c-2012 --checkers-report=r.txt --xml src 2> results.xml`
+    `cppcheck --premium=misra-c-2012 --xml-version=3 src 2> results.xml`
 
 2. Use `compliance-report` to convert the files to an html report.
 
-    `compliance-report --misra-c-2012 --project-name=Device --project-version=2.3 --checkers-report=r.txt --output-file=report.html results.xml`
+    `compliance-report --misra-c-2012 --project-name=Device --project-version=2.3 --output-file=report.html results.xml`
 
 Description of the options:
 
@@ -1201,20 +1201,14 @@ Description of the options:
 
 ### Individual license
 
-A license that is connected to your computer. You can check any code you want.
+A license that is connected to your computer.
 
-### LOC license
+After installing you run a register tool that will create a license file
+which is locked to your computer.
 
-A license that allows you to run cppcheck on a limited number of lines of code. It can only be used for certain licensed paths in a repository.
+### Enterprise license
 
-#### Running analysis
+You receive a license file. Copy that to one of these paths:
+Windows: C:\ProgramData\Cppcheck Solutions AB\
+Linux: /etc/cppcheckpremium/  or  ~/.cppcheckpremium/
 
-Commands:
-
-    cd check-path
-
-    # Calculate lines of code and validate the license
-    premiumaddon --check-loc-license some-path/license-file > cppcheck-premium-loc
-
-    # Run cppcheck analysis
-    cppcheck <usual cppcheck parameters>
