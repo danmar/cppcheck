@@ -35,6 +35,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -98,6 +100,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -172,6 +176,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -204,6 +210,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -236,6 +244,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       # coreutils contains "g++" (default is "c++") and "nproc"
       - name: Install missing software on macos
@@ -258,6 +268,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -426,6 +438,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2

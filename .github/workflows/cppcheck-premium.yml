@@ -25,6 +25,8 @@ jobs:
     runs-on: ubuntu-24.04 # run on the latest image only
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Download cppcheckpremium
         run: |

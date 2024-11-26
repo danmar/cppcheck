@@ -31,6 +31,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Visual Studio environment
         uses: ilammy/msvc-dev-cmd@v1
