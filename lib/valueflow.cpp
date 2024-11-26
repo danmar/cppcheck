@@ -105,7 +105,6 @@
 #include "valueptr.h"
 #include "vfvalue.h"
 
-#include "vf_analyze.h"
 #include "vf_analyzers.h"
 #include "vf_common.h"
 #include "vf_settokenvalue.h"
@@ -553,6 +552,31 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, int m
         return total;
     }
     return 0;
+}
+
+static void valueFlowNumber(TokenList &tokenlist, const Settings& settings)
+{
+    for (Token *tok = tokenlist.front(); tok;) {
+        tok = ValueFlow::valueFlowSetConstantValue(tok, settings);
+    }
+
+    if (tokenlist.isCPP() || settings.standards.c >= Standards::C23) {
+        for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
+            if (tok->isName() && !tok->varId() && Token::Match(tok, "false|true")) {
+                ValueFlow::Value value(tok->str() == "true");
+                if (!tok->isTemplateArg())
+                    value.setKnown();
+                setTokenValue(tok, std::move(value), settings);
+            } else if (Token::Match(tok, "[(,] NULL [,)]")) {
+                // NULL function parameters are not simplified in the
+                // normal tokenlist
+                ValueFlow::Value value(0);
+                if (!tok->isTemplateArg())
+                    value.setKnown();
+                setTokenValue(tok->next(), std::move(value), settings);
+            }
+        }
+    }
 }
 
 static void valueFlowString(TokenList& tokenlist, const Settings& settings)
@@ -1109,6 +1133,33 @@ static void valueFlowImpossibleValues(TokenList& tokenList, const Settings& sett
             ValueFlow::Value value{0};
             value.setImpossible();
             setTokenValue(tok, std::move(value), settings);
+        }
+    }
+}
+
+static void valueFlowEnumValue(SymbolDatabase & symboldatabase, const Settings & settings)
+{
+    for (Scope & scope : symboldatabase.scopeList) {
+        if (scope.type != Scope::eEnum)
+            continue;
+        MathLib::bigint value = 0;
+        bool prev_enum_is_known = true;
+
+        for (Enumerator & enumerator : scope.enumeratorList) {
+            if (enumerator.start) {
+                auto* rhs = const_cast<Token*>(enumerator.start->previous()->astOperand2());
+                ValueFlow::valueFlowConstantFoldAST(rhs, settings);
+                if (rhs && rhs->hasKnownIntValue()) {
+                    enumerator.value = rhs->values().front().intvalue;
+                    enumerator.value_known = true;
+                    value = enumerator.value + 1;
+                    prev_enum_is_known = true;
+                } else
+                    prev_enum_is_known = false;
+            } else if (prev_enum_is_known) {
+                enumerator.value = value++;
+                enumerator.value_known = true;
+            }
         }
     }
 }
@@ -7164,13 +7215,13 @@ void ValueFlow::setValues(TokenList& tokenlist,
 
     ValueFlowPassRunner runner{ValueFlowState{tokenlist, symboldatabase, errorLogger, settings}, timerResults};
     runner.run_once({
-        VFA(analyzeEnumValue(symboldatabase, settings)),
-        VFA(analyzeNumber(tokenlist, settings)),
+        VFA(valueFlowEnumValue(symboldatabase, settings)),
+        VFA(valueFlowNumber(tokenlist, settings)),
         VFA(valueFlowString(tokenlist, settings)),
         VFA(valueFlowArray(tokenlist, settings)),
         VFA(valueFlowUnknownFunctionReturn(tokenlist, settings)),
         VFA(valueFlowGlobalConstVar(tokenlist, settings)),
-        VFA(analyzeEnumValue(symboldatabase, settings)),
+        VFA(valueFlowEnumValue(symboldatabase, settings)),
         VFA(valueFlowGlobalStaticVar(tokenlist, settings)),
         VFA(valueFlowPointerAlias(tokenlist, settings)),
         VFA(valueFlowLifetime(tokenlist, errorLogger, settings)),
