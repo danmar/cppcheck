@@ -17,6 +17,7 @@
  */
 
 #include "cppcheck.h"
+#include "errorlogger.h"
 #include "filesettings.h"
 #include "type2.h"
 
