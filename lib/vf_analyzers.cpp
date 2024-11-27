@@ -882,7 +882,7 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
                 return &mIt->second;
             }
 
-            Iterator &operator++() {
+            Iterator &operator++() & {
                 // cppcheck-suppress postfixOperator - forward iterator needs to perform post-increment
                 mIt++;
                 return *this;

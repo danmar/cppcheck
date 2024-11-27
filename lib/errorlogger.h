@@ -92,9 +92,10 @@ public:
         int line; // negative value means "no line"
         unsigned int column;
 
-        const std::string& getinfo() const {
+        const std::string& getinfo() const & {
             return mInfo;
         }
+        std::string getinfo() && = delete;
 
     private:
         std::string mOrigFileName;
@@ -181,20 +182,23 @@ public:
     void setmsg(const std::string &msg);
 
     /** Short message (single line short message) */
-    const std::string &shortMessage() const {
+    const std::string &shortMessage() const & {
         return mShortMessage;
     }
+    std::string shortMessage() && = delete;
 
     /** Verbose message (may be the same as the short message) */
     // cppcheck-suppress unusedFunction - used by GUI only
-    const std::string &verboseMessage() const {
+    const std::string &verboseMessage() const & {
         return mVerboseMessage;
     }
+    std::string verboseMessage() && = delete;
 
     /** Symbol names */
-    const std::string &symbolNames() const {
+    const std::string &symbolNames() const & {
         return mSymbolNames;
     }
+    std::string symbolNames() && = delete;
 
     static ErrorMessage fromInternalError(const InternalError &internalError, const TokenList *tokenList, const std::string &filename, const std::string& msg = emptyString);
 

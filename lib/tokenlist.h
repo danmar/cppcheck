@@ -139,9 +139,10 @@ public:
      * The first filename is the filename for the sourcefile
      * @return vector with filenames
      */
-    const std::vector<std::string>& getFiles() const {
+    const std::vector<std::string>& getFiles() const & {
         return mFiles;
     }
+    std::vector<std::string> getFiles() && = delete;
 
     std::string getOrigFile(const Token *tok) const;
 

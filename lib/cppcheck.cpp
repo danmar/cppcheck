@@ -1543,7 +1543,7 @@ void CppCheck::executeAddonsWholeProgram(const std::list<FileWithDetails> &files
     }
 }
 
-Settings &CppCheck::settings()
+Settings &CppCheck::settings() &
 {
     return mSettings;
 }

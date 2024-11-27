@@ -85,9 +85,10 @@ public:
     virtual void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const = 0;
 
     /** class name, used to generate documentation */
-    const std::string& name() const {
+    const std::string& name() const & {
         return mName;
     }
+    std::string name() && = delete;
 
     /** get information about this class, used to generate documentation */
     virtual std::string classInfo() const = 0;

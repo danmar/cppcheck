@@ -110,7 +110,7 @@ struct Analyzer {
             return get(Match);
         }
 
-        Action& operator|=(Action a) {
+        Action& operator|=(Action a) & {
             set(a.mFlag);
             return *this;
         }
