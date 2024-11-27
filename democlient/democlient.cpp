@@ -23,6 +23,7 @@
 #include <iostream>
 
 #include "cppcheck.h"
+#include "errorlogger.h"
 #include "filesettings.h"
 #include "version.h"
 
