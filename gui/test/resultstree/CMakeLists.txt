@@ -25,3 +25,5 @@ if (REGISTER_GUI_TESTS)
     # TODO: does not work in the CI
     # add_test(NAME test-resultstree COMMAND $<TARGET_FILE:test-resultstree>)
 endif()
+
+add_dependencies(gui-tests test-resultstree)

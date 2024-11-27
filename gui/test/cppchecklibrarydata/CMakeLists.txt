@@ -20,3 +20,5 @@ endif()
 if (REGISTER_GUI_TESTS)
     add_test(NAME test-cppchecklibrarydata COMMAND $<TARGET_FILE:test-cppchecklibrarydata>)
 endif()
+
+add_dependencies(gui-tests test-cppchecklibrarydata)
