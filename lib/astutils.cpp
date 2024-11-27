@@ -3762,3 +3762,72 @@ bool isUnreachableOperand(const Token *tok)
 
     return false;
 }
+
+static bool tokenDependsOnTemplateArg(const Token *tok)
+{
+    if (!tok)
+        return false;
+    if (tok->isTemplateArg())
+        return true;
+    return tokenDependsOnTemplateArg(tok->astOperand1())
+           || tokenDependsOnTemplateArg(tok->astOperand2());
+}
+
+static void skipUnreachableIfBranch(const Token *&tok)
+{
+    const Token *condTok = tok->linkAt(-1);
+    if (!condTok)
+        return;
+
+    if (!Token::simpleMatch(condTok->tokAt(-1), "if") && !Token::simpleMatch(condTok->tokAt(-2), "if constexpr"))
+        return;
+
+    condTok = condTok->astOperand2();
+    if (!condTok)
+        return;
+
+    if ((condTok->hasKnownIntValue() && condTok->getKnownIntValue() == 0)
+        || (tokenDependsOnTemplateArg(condTok) && condTok->getValue(0))) {
+        tok = tok->link();
+    }
+}
+
+static void skipUnreachableElseBranch(const Token *&tok)
+{
+    if (Token::simpleMatch(tok->previous(), ")"))
+        return;
+
+    const Token *condTok = tok->linkAt(-2);
+    if (!condTok)
+        return;
+
+    condTok = condTok->linkAt(-1);
+    if (!condTok)
+        return;
+
+    if (!Token::simpleMatch(condTok->tokAt(-1), "if") && !Token::simpleMatch(condTok->tokAt(-2), "if constexpr"))
+        return;
+
+    condTok = condTok->astOperand2();
+
+    if ((condTok->hasKnownIntValue() && condTok->getKnownIntValue() != 0)
+        || (tokenDependsOnTemplateArg(condTok) && !condTok->getValue(0))) {
+        tok = tok->link();
+    }
+}
+
+void skipUnreachableBranch(const Token *&tok)
+{
+    if (!Token::simpleMatch(tok, "{"))
+        return;
+
+    if (tok->scope()->type == Scope::ScopeType::eIf) {
+        skipUnreachableIfBranch(tok);
+        return;
+    }
+
+    if (tok->scope()->type == Scope::ScopeType::eElse) {
+        skipUnreachableElseBranch(tok);
+        return;
+    }
+}
