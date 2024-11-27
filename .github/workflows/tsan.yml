@@ -56,7 +56,6 @@ jobs:
           sudo ./llvm.sh 19
 
       - name: Install Qt ${{ env.QT_VERSION }}
-        if: false
         uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}
@@ -72,7 +71,7 @@ jobs:
 
       - name: CMake
         run: |
-          cmake -S . -B cmake.output -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=Off -DUSE_QT6=On -DWITH_QCHART=On -DUSE_MATCHCOMPILER=Verify -DANALYZE_THREAD=On -DENABLE_CHECK_INTERNAL=On -DUSE_BOOST=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=Off -DDISABLE_DMAKE=On -DFILESDIR= -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -S . -B cmake.output -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DUSE_MATCHCOMPILER=Verify -DANALYZE_THREAD=On -DENABLE_CHECK_INTERNAL=On -DUSE_BOOST=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=Off -DDISABLE_DMAKE=On -DFILESDIR= -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
         env:
           CC: clang-19
           CXX: clang++-19
@@ -84,6 +83,10 @@ jobs:
       - name: Build test
         run: |
           cmake --build cmake.output --target testrunner -- -j $(nproc)
+
+      - name: Build GUI tests
+        run: |
+          cmake --build cmake.output --target gui-tests -- -j $(nproc)
 
       - name: Run tests
         run: ./cmake.output/bin/testrunner
