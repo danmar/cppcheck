@@ -9384,6 +9384,20 @@ private:
               "    return f<1>(2)\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("template<int b>\n"
+              "int f(int a)\n"
+              "{\n"
+              "    if constexpr (b >= 0) {\n"
+              "        return a << b;\n"
+              "    } else {\n"
+              "        return a << -b;\n"
+              "    }\n"
+              "}\n"
+              "int g() {\n"
+              "    return f<-1>(2)\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void incompleteArrayFill() {
