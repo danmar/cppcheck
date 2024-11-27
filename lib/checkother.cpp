@@ -3114,7 +3114,7 @@ void CheckOther::checkNegativeBitwiseShift()
     logChecker("CheckOther::checkNegativeBitwiseShift");
 
     for (const Token* tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-        skipUnreachableBranch(tok);
+        tok = skipUnreachableBranch(tok);
 
         if (!tok->astOperand1() || !tok->astOperand2())
             continue;

@@ -3773,40 +3773,42 @@ static bool tokenDependsOnTemplateArg(const Token *tok)
            || tokenDependsOnTemplateArg(tok->astOperand2());
 }
 
-static void skipUnreachableIfBranch(const Token *&tok)
+static const Token *skipUnreachableIfBranch(const Token *tok)
 {
     const Token *condTok = tok->linkAt(-1);
     if (!condTok)
-        return;
+        return tok;
 
     if (!Token::simpleMatch(condTok->tokAt(-1), "if") && !Token::simpleMatch(condTok->tokAt(-2), "if constexpr"))
-        return;
+        return tok;
 
     condTok = condTok->astOperand2();
     if (!condTok)
-        return;
+        return tok;
 
     if ((condTok->hasKnownIntValue() && condTok->getKnownIntValue() == 0)
         || (tokenDependsOnTemplateArg(condTok) && condTok->getValue(0))) {
         tok = tok->link();
     }
+
+    return tok;
 }
 
-static void skipUnreachableElseBranch(const Token *&tok)
+static const Token *skipUnreachableElseBranch(const Token *tok)
 {
     if (Token::simpleMatch(tok->previous(), ")"))
-        return;
+        return tok;
 
     const Token *condTok = tok->linkAt(-2);
     if (!condTok)
-        return;
+        return tok;
 
     condTok = condTok->linkAt(-1);
     if (!condTok)
-        return;
+        return tok;
 
     if (!Token::simpleMatch(condTok->tokAt(-1), "if") && !Token::simpleMatch(condTok->tokAt(-2), "if constexpr"))
-        return;
+        return tok;
 
     condTok = condTok->astOperand2();
 
@@ -3814,20 +3816,22 @@ static void skipUnreachableElseBranch(const Token *&tok)
         || (tokenDependsOnTemplateArg(condTok) && !condTok->getValue(0))) {
         tok = tok->link();
     }
+
+    return tok;
 }
 
-void skipUnreachableBranch(const Token *&tok)
+const Token *skipUnreachableBranch(const Token *tok)
 {
     if (!Token::simpleMatch(tok, "{"))
-        return;
+        return tok;
 
     if (tok->scope()->type == Scope::ScopeType::eIf) {
-        skipUnreachableIfBranch(tok);
-        return;
+        return skipUnreachableIfBranch(tok);
     }
 
     if (tok->scope()->type == Scope::ScopeType::eElse) {
-        skipUnreachableElseBranch(tok);
-        return;
+        return skipUnreachableElseBranch(tok);
     }
+
+    return tok;
 }
