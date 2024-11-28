@@ -43,6 +43,10 @@
 #include <unordered_set>
 #include <utility>
 
+#if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
+#include <cstdio>
+#endif
+
 enum class SHOWTIME_MODES : std::uint8_t;
 namespace ValueFlow {
     class Value;

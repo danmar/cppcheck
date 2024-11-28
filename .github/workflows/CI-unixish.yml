@@ -35,6 +35,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -98,6 +100,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -172,6 +176,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -204,6 +210,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -236,6 +244,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       # coreutils contains "g++" (default is "c++") and "nproc"
       - name: Install missing software on macos
@@ -258,6 +268,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -309,30 +321,37 @@ jobs:
         run: |
           tools/generate_and_run_more_tests.sh
 
-      # do not use pushd in this step since we go below the working directory
       - name: Run test/cli
         run: |
-          cd test/cli
-          python3 -m pytest -Werror --strict-markers -vv
-          cd ../../..
+          python3 -m pytest -Werror --strict-markers -vv test/cli
+
+      # TODO: use the step below instead
+      # do not use pushd in this step since we go below the working directory
+      - name: Run test/cli (symlink)
+        run: |
+          cd ..
           ln -s cppcheck 'cpp check'
           cd 'cpp check/test/cli'
           python3 -m pytest -Werror --strict-markers -vv
 
-      # do not use pushd in this step since we go below the working directory
+      # FIXME: proj2_test.py fails because of the relative path cleanups in ImportProject::setRelativePaths()
+      # It fails because the application path used as base path has its symlink resolved by getcwd().
+      - name: Run test/cli (symlink)
+        if: false
+        run: |
+          ln -s . 'cpp check'
+          python3 -m pytest -Werror --strict-markers -vv 'cpp check/test/cli'
+
       - name: Run test/cli (-j2)
         run: |
-          cd test/cli
-          python3 -m pytest -Werror --strict-markers -vv
+          python3 -m pytest -Werror --strict-markers -vv test/cli
         env:
           TEST_CPPCHECK_INJECT_J: 2
 
-      # do not use pushd in this step since we go below the working directory
       - name: Run test/cli (--clang)
         if: false
         run: |
-          cd test/cli
-          python3 -m pytest -Werror --strict-markers -vv
+          python3 -m pytest -Werror --strict-markers -vv test/cli
         env:
           TEST_CPPCHECK_INJECT_CLANG: clang
 
@@ -419,6 +438,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2

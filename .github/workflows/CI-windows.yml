@@ -24,17 +24,18 @@ defaults:
 jobs:
 
   build_qt:
-    if: false
     strategy:
       matrix:
         os: [windows-2019, windows-2022]
-        qt_ver: [5.15.2, 6.7.3]
+        qt_ver: [5.15.2, 6.8.0]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Visual Studio environment
         uses: ilammy/msvc-dev-cmd@v1
@@ -87,6 +88,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Python 3.13
         if: matrix.config == 'release'
@@ -173,14 +176,12 @@ jobs:
       - name: Run test/cli
         if: matrix.config == 'release'
         run: |
-          cd test/cli || exit /b !errorlevel!
-          python -m pytest -Werror --strict-markers -vv || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv test/cli || exit /b !errorlevel!
 
       - name: Run test/cli (-j2)
         if: matrix.config == 'release'
         run: |
-          cd test/cli || exit /b !errorlevel!
-          python -m pytest -Werror --strict-markers -vv || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv test/cli || exit /b !errorlevel!
         env:
           TEST_CPPCHECK_INJECT_J: 2
 
@@ -188,8 +189,7 @@ jobs:
       - name: Run test/cli (--clang)
         if: false # matrix.config == 'release'
         run: |
-          cd test/cli || exit /b !errorlevel!
-          python -m pytest -Werror --strict-markers -vv || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv test/cli || exit /b !errorlevel!
         env:
           TEST_CPPCHECK_INJECT_CLANG: clang
 

@@ -36,10 +36,6 @@
 #include <string>
 #include <vector>
 
-namespace tinyxml2 {
-    class XMLElement;
-}
-
 class ErrorLogger;
 class Settings;
 class Token;

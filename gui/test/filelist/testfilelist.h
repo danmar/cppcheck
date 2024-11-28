@@ -17,7 +17,6 @@
  */
 
 #include <QObject>
-#include <QString>
 
 class TestFileList : public QObject {
     Q_OBJECT

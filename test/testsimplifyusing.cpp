@@ -73,6 +73,7 @@ private:
         TEST_CASE(simplifyUsing31);
         TEST_CASE(simplifyUsing32);
         TEST_CASE(simplifyUsing33);
+        TEST_CASE(simplifyUsing34);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -231,7 +232,7 @@ private:
         const char expected[] =
             "void f ( ) "
             "{ "
-            "struct yy_buffer_state * state ; "
+            "yy_buffer_state * state ; "
             "}";
 
         ASSERT_EQUALS(expected, tok(code));
@@ -311,13 +312,13 @@ private:
             "struct t { int a ; } ; "
             "struct U { int a ; } ; "
             "struct Unnamed0 { int a ; } ; "
-            "struct s s ; "
-            "struct s * ps ; "
-            "struct t t ; "
-            "struct t * tp ; "
-            "struct U u ; "
-            "struct U * v ; "
-            "struct Unnamed0 * w ;";
+            "s s ; "
+            "s * ps ; "
+            "t t ; "
+            "t * tp ; "
+            "U u ; "
+            "U * v ; "
+            "Unnamed0 * w ;";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -342,13 +343,13 @@ private:
             "union t { int a ; float b ; } ; "
             "union U { int a ; float b ; } ; "
             "union Unnamed0 { int a ; float b ; } ; "
-            "union s s ; "
-            "union s * ps ; "
-            "union t t ; "
-            "union t * tp ; "
-            "union U u ; "
-            "union U * v ; "
-            "union Unnamed0 * w ;";
+            "s s ; "
+            "s * ps ; "
+            "t t ; "
+            "t * tp ; "
+            "U u ; "
+            "U * v ; "
+            "Unnamed0 * w ;";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -361,8 +362,8 @@ private:
 
         const char expected[] = "enum abc { a = 0 , b = 1 , c = 2 } ; "
                                 "enum xyz { x = 0 , y = 1 , z = 2 } ; "
-                                "enum abc e1 ; "
-                                "enum xyz e2 ;";
+                                "abc e1 ; "
+                                "xyz e2 ;";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -448,7 +449,7 @@ private:
         const char expected[] = "struct STRFOO { "
                                 "char freem [ 4096 ] ; "
                                 "} ; "
-                                "struct STRFOO s ;";
+                                "STRFOO s ;";
 
         ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout_str());
@@ -470,10 +471,10 @@ private:
                                 "class S2 : public C1 { } ; "
                                 "class S3 { } ; "
                                 "class S4 : public C1 { } ; "
-                                "class S1 s1 ; "
-                                "class S2 s2 ; "
-                                "class S3 s3 ; "
-                                "class S4 s4 ;";
+                                "S1 s1 ; "
+                                "S2 s2 ; "
+                                "S3 s3 ; "
+                                "S4 s4 ;";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -743,7 +744,9 @@ private:
                                     "cout << std :: string ( c ) << \"abc\" ; "
                                     "}";
             ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
-            ASSERT_EQUALS("[test.cpp:3]: (debug) analyzeConditionExpressions bailout: Skipping function due to incomplete variable cout\n", errout_str());
+            ASSERT_EQUALS(
+                "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cout\n",
+                errout_str());
         }
         {
             const char code[] = "class T : private std::vector<std::pair<std::string, const int*>> {\n" // #12521
@@ -827,6 +830,26 @@ private:
                                 "struct S { "
                                 "int g ( ) { return ( int ) 0 ; } "
                                 "} ;";
+        ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void simplifyUsing34() { // #13295
+        const char code[] = "struct A {\n"
+                            "    static const int a = 1;\n"
+                            "};\n"
+                            "using B = struct A;\n"
+                            "void g(int);\n"
+                            "void f() {\n"
+                            "    g({ B::a });\n"
+                            "}\n";
+        const char expected[] = "struct A { "
+                                "static const int a = 1 ; "
+                                "} ; "
+                                "void g ( int ) ; "
+                                "void f ( ) { "
+                                "g ( { A :: a } ) ; "
+                                "}";
         ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
         ASSERT_EQUALS("", errout_str());
     }

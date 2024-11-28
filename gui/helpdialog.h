@@ -25,7 +25,6 @@
 #include <QVariant>
 
 class QHelpEngine;
-class QUrl;
 class QWidget;
 namespace Ui {
     class HelpDialog;

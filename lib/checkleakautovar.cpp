@@ -363,6 +363,40 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
         while (Token::Match(ftok, "%name% :: %name%"))
             ftok = ftok->tokAt(2);
 
+        // bailout for variable passed to library function with out parameter
+        if (const Library::Function *libFunc = mSettings->library.getFunction(ftok)) {
+            using ArgumentChecks = Library::ArgumentChecks;
+            using Direction = ArgumentChecks::Direction;
+            const std::vector<const Token *> args = getArguments(ftok);
+            const std::map<int, ArgumentChecks> &argChecks = libFunc->argumentChecks;
+            bool hasOutParam = std::any_of(argChecks.cbegin(), argChecks.cend(), [](const std::pair<int, ArgumentChecks> &pair) {
+                return std::any_of(pair.second.direction.cbegin(), pair.second.direction.cend(), [](const Direction dir) {
+                    return dir == Direction::DIR_OUT;
+                });
+            });
+            if (hasOutParam) {
+                for (int i = 0; i < args.size(); i++) {
+                    if (!argChecks.count(i + 1))
+                        continue;
+                    const ArgumentChecks argCheck = argChecks.at(i + 1);
+                    const bool isInParam = std::any_of(argCheck.direction.cbegin(), argCheck.direction.cend(), [&](const Direction dir) {
+                        return dir == Direction::DIR_IN;
+                    });
+                    if (!isInParam)
+                        continue;
+                    const Token *inTok = args[i];
+                    int indirect = 0;
+                    while (inTok->isUnaryOp("&")) {
+                        inTok = inTok->astOperand1();
+                        indirect++;
+                    }
+                    if (inTok->isVariable() && indirect) {
+                        varInfo.erase(inTok->varId());
+                    }
+                }
+            }
+        }
+
         auto isAssignment = [](const Token* varTok) -> const Token* {
             if (varTok->varId()) {
                 const Token* top = varTok;
@@ -455,7 +489,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
             bool skipElseBlock = false;
             const Token *condTok = tok->astSibling();
 
-            if (condTok->hasKnownIntValue()) {
+            if (condTok && condTok->hasKnownIntValue()) {
                 skipIfBlock = !condTok->getKnownIntValue();
                 skipElseBlock = !skipIfBlock;
             }

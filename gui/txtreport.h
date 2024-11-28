@@ -25,8 +25,6 @@
 #include <QObject>
 #include <QTextStream>
 
-class ErrorItem;
-
 /// @addtogroup GUI
 /// @{
 

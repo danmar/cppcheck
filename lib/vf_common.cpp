@@ -26,17 +26,14 @@
 #include "standards.h"
 #include "symboldatabase.h"
 #include "token.h"
-#include "tokenlist.h"
 #include "valueflow.h"
 
 #include "vf_settokenvalue.h"
 
-#include <cassert>
 #include <climits>
 #include <cstddef>
 #include <exception>
 #include <limits>
-#include <sstream>
 #include <utility>
 #include <vector>
 
@@ -95,18 +92,6 @@ namespace ValueFlow
         }
 
         return true;
-    }
-
-    bool getMinMaxValues(const std::string &typestr, const Settings &settings, bool cpp, MathLib::bigint &minvalue, MathLib::bigint &maxvalue)
-    {
-        TokenList typeTokens(&settings);
-        std::istringstream istr(typestr+";");
-        if (!typeTokens.createTokens(istr, cpp ? Standards::Language::CPP : Standards::Language::C))
-            return false;
-        typeTokens.simplifyPlatformTypes();
-        typeTokens.simplifyStdType();
-        const ValueType &vt = ValueType::parseDecl(typeTokens.front(), settings);
-        return getMinMaxValues(&vt, settings.platform, minvalue, maxvalue);
     }
 
     long long truncateIntValue(long long value, size_t value_size, const ValueType::Sign dst_sign)
@@ -397,16 +382,6 @@ namespace ValueFlow
         v.debugPath.emplace_back(tok, std::move(s));
     }
 
-    std::list<Value> getIteratorValues(std::list<Value> values, const Value::ValueKind* kind)
-    {
-        values.remove_if([&](const Value& v) {
-            if (kind && v.valueKind != *kind)
-                return true;
-            return !v.isIteratorValue();
-        });
-        return values;
-    }
-
     MathLib::bigint valueFlowGetStrLength(const Token* tok)
     {
         if (tok->tokType() == Token::eString)
@@ -420,62 +395,5 @@ namespace ValueFlow
                 return valueFlowGetStrLength(v->tokvalue);
         }
         return 0;
-    }
-
-    bool isBreakOrContinueScope(const Token* endToken)
-    {
-        if (!Token::simpleMatch(endToken, "}"))
-            return false;
-        return Token::Match(endToken->tokAt(-2), "break|continue ;");
-    }
-
-    const Scope* getLoopScope(const Token* tok)
-    {
-        if (!tok)
-            return nullptr;
-        const Scope* scope = tok->scope();
-        while (scope && scope->type != Scope::eWhile && scope->type != Scope::eFor && scope->type != Scope::eDo)
-            scope = scope->nestedIn;
-        return scope;
-    }
-
-    void setSymbolic(Value& value, const Token* tok)
-    {
-        assert(tok && tok->exprId() > 0 && "Missing expr id for symbolic value");
-        value.valueType = Value::ValueType::SYMBOLIC;
-        value.tokvalue = tok;
-    }
-
-    Value makeSymbolic(const Token* tok, MathLib::bigint delta)
-    {
-        Value value;
-        value.setKnown();
-        setSymbolic(value, tok);
-        value.intvalue = delta;
-        return value;
-    }
-
-    void removeImpossible(std::list<Value>& values, int indirect)
-    {
-        values.remove_if([&](const Value& v) {
-            if (indirect >= 0 && v.indirect != indirect)
-                return false;
-            return v.isImpossible();
-        });
-    }
-
-    void changeKnownToPossible(std::list<Value> &values, int indirect)
-    {
-        for (Value& v: values) {
-            if (indirect >= 0 && v.indirect != indirect)
-                continue;
-            v.changeKnownToPossible();
-        }
-    }
-
-    void lowerToPossible(std::list<Value>& values, int indirect)
-    {
-        changeKnownToPossible(values, indirect);
-        removeImpossible(values, indirect);
     }
 }

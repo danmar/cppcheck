@@ -18,11 +18,13 @@ permissions:
 jobs:
   build:
 
-    # 'ubuntu-22.04' removes Python 3.5 and 3.6 so keep the previous LTS version
+    # 'ubuntu-22.04' removes Python 3.6 so keep the previous LTS version
     runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -44,7 +46,7 @@ jobs:
   scriptcheck:
 
     needs: build
-    # 'ubuntu-22.04' removes Python 3.5 and 3.6 so keep the previous LTS version
+    # 'ubuntu-22.04' removes Python 3.6 so keep the previous LTS version
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -57,7 +59,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
+      # TODO: bailout on error
       - name: Restore Cppcheck
         uses: actions/cache@v4
         with:
@@ -101,7 +106,7 @@ jobs:
         if: matrix.python-latest
         run: |
           shopt -s globstar
-          pylint --jobs $(nproc) addons/**/*.py htmlreport/cppcheck-htmlreport htmlreport/**/*.py test/**/*.py tools/**/*.py
+          pylint --jobs $(nproc) --py-version 3.6 addons/**/*.py htmlreport/cppcheck-htmlreport htmlreport/**/*.py test/**/*.py tools/**/*.py
 
       - name: check .json files
         if: matrix.python-latest
@@ -192,6 +197,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: run dmake
         run: |
