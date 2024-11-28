@@ -57,7 +57,7 @@ static constexpr int NEW_ARRAY = -2;
 static constexpr int NEW = -1;
 
 static const std::array<std::pair<std::string, std::string>, 4> alloc_failed_conds {{{"==", "0"}, {"<", "0"}, {"==", "-1"}, {"<=", "-1"}}};
-static const std::array<std::pair<std::string, std::string>, 4> alloc_success_conds {{{"!=", "0"}, {">", "0"}, {"!=", "-1"}, {">=", "0"}}};
+static const std::array<std::pair<std::string, std::string>, 5> alloc_success_conds {{{"!=", "0"}, {">", "0"}, {"!=", "-1"}, {">=", "0"}, {">", "-1"}}};
 
 static bool isAutoDeallocType(const Type* type) {
     if (!type || !type->classScope)
