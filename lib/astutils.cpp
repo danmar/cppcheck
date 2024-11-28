@@ -2833,6 +2833,41 @@ const Token* findExpression(const Token* start, const nonneg int exprid)
     return nullptr;
 }
 
+const Token* findEscapeStatement(const Scope* scope, const Library* library)
+{
+    if (!scope)
+        return nullptr;
+    for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+        const Scope* escapeScope = tok->scope();
+        if (!escapeScope->isExecutable()) { // skip type definitions
+            tok = escapeScope->bodyEnd;
+            continue;
+        }
+        if (const Token* lambdaEnd = findLambdaEndToken(tok)) { // skip lambdas
+            tok = lambdaEnd;
+            continue;
+        }
+        if (!tok->isName())
+            continue;
+        if (isEscapeFunction(tok, library))
+            return tok;
+        if (!tok->isKeyword())
+            continue;
+        if (Token::Match(tok, "goto|return|throw")) // TODO: check try/catch, labels?
+            return tok;
+        if (!Token::Match(tok, "break|continue"))
+            continue;
+        const bool isBreak = tok->str()[0] == 'b';
+        while (escapeScope && escapeScope != scope) {
+            if (escapeScope->isLoopScope() || (isBreak && escapeScope->type == Scope::ScopeType::eSwitch))
+                return nullptr;
+            escapeScope = escapeScope->nestedIn;
+        }
+        return tok;
+    }
+    return nullptr;
+}
+
 // Thread-unsafe memoization
 template<class F, class R=decltype(std::declval<F>()())>
 static std::function<R()> memoize(F f)
