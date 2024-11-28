@@ -1734,6 +1734,8 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
                     continue;
                 if (tok->isControlFlowKeyword())
                     continue;
+                if (Token::Match(tok->tokAt(-1), ". %name%") && Token::Match(tok->tokAt(-2), "[{,]")) // designated initializers
+                    continue;
 
                 if (Token::Match(tok, "%name% <") && tok->linkAt(1)) {
                     tok->exprId(id);
