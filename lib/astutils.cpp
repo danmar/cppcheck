@@ -3763,14 +3763,16 @@ bool isUnreachableOperand(const Token *tok)
     return false;
 }
 
-static bool tokenDependsOnTemplateArg(const Token *tok)
+static bool unknownLeafValuesAreTemplateArgs(const Token *tok)
 {
     if (!tok)
-        return false;
-    if (tok->isTemplateArg())
         return true;
-    return tokenDependsOnTemplateArg(tok->astOperand1())
-           || tokenDependsOnTemplateArg(tok->astOperand2());
+
+    if (!tok->astOperand1() && !tok->astOperand2())
+        return tok->isTemplateArg() || tok->hasKnownIntValue();
+
+    return unknownLeafValuesAreTemplateArgs(tok->astOperand1())
+           && unknownLeafValuesAreTemplateArgs(tok->astOperand2());
 }
 
 static const Token *skipUnreachableIfBranch(const Token *tok)
@@ -3787,7 +3789,7 @@ static const Token *skipUnreachableIfBranch(const Token *tok)
         return tok;
 
     if ((condTok->hasKnownIntValue() && condTok->getKnownIntValue() == 0)
-        || (tokenDependsOnTemplateArg(condTok) && condTok->getValue(0))) {
+        || (unknownLeafValuesAreTemplateArgs(condTok) && condTok->getValue(0))) {
         tok = tok->link();
     }
 
@@ -3813,7 +3815,7 @@ static const Token *skipUnreachableElseBranch(const Token *tok)
     condTok = condTok->astOperand2();
 
     if ((condTok->hasKnownIntValue() && condTok->getKnownIntValue() != 0)
-        || (tokenDependsOnTemplateArg(condTok) && !condTok->getValue(0))) {
+        || (unknownLeafValuesAreTemplateArgs(condTok) && !condTok->getValue(0))) {
         tok = tok->link();
     }
 
