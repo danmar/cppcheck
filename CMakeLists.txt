@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 if(MSVC)
     cmake_minimum_required(VERSION 3.13)
 endif()
-project(Cppcheck VERSION 2.16.0 LANGUAGES CXX)
+project(Cppcheck VERSION 2.16.1 LANGUAGES CXX)
 
 include(cmake/cxx11.cmake)
 use_cxx11()

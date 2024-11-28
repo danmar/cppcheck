@@ -1,6 +1,6 @@
 ---
 title: Cppcheck .cfg format
-subtitle: Version 2.16.0
+subtitle: Version 2.16.1
 author: Cppcheck team
 lang: en
 documentclass: report
