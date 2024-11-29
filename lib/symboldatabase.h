@@ -1037,10 +1037,10 @@ public:
         const Scope *scope;
     };
 
-    Scope(const SymbolDatabase *symdb_, const Token *classDef_, const Scope *nestedIn_);
-    Scope(const SymbolDatabase *symdb_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_);
+    Scope(const SymbolDatabase &symdb_, const Token *classDef_, const Scope *nestedIn_);
+    Scope(const SymbolDatabase &symdb_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_);
 
-    const SymbolDatabase* symdb{};
+    const SymbolDatabase& symdb;
     std::string className;
     const Token* classDef{};   ///< class/struct/union/namespace token
     const Token* bodyStart{};  ///< '{' token

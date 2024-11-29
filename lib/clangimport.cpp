@@ -633,7 +633,7 @@ const ::Type * clangimport::AstNode::addTypeTokens(TokenList &tokenList, const s
     for (const Token *typeToken = tokenList.back(); Token::Match(typeToken, "&|*|%name%"); typeToken = typeToken->previous()) {
         if (!typeToken->isName())
             continue;
-        const ::Type *recordType = scope->symdb->findVariableType(scope, typeToken);
+        const ::Type *recordType = scope->symdb.findVariableType(scope, typeToken);
         if (recordType) {
             const_cast<Token*>(typeToken)->type(recordType);
             return recordType;
@@ -1403,7 +1403,7 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList &tokenList)
 
     Scope *scope = nullptr;
     if (hasBody) {
-        symbolDatabase.scopeList.emplace_back(&symbolDatabase, nullptr, nestedIn);
+        symbolDatabase.scopeList.emplace_back(symbolDatabase, nullptr, nestedIn);
         scope = &symbolDatabase.scopeList.back();
         scope->function = function;
         scope->classDef = nameToken; // TODO: pass into ctor
@@ -1618,7 +1618,7 @@ void clangimport::parseClangAstDump(Tokenizer &tokenizer, std::istream &f)
 
     tokenizer.createSymbolDatabase();
     auto *symbolDatabase = const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase());
-    symbolDatabase->scopeList.emplace_back(symbolDatabase, nullptr, nullptr);
+    symbolDatabase->scopeList.emplace_back(*symbolDatabase, nullptr, nullptr);
     symbolDatabase->scopeList.back().type = ScopeType::eGlobal;
 
     clangimport::Data data(tokenizer.getSettings(), *symbolDatabase);
