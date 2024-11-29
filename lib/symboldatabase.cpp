@@ -2794,10 +2794,10 @@ static bool typesMatch(
     const Token *&new_second)
 {
     // get first type
-    const Type* first_type = first_scope->check->findType(first_token, first_scope, /*lookOutside*/ true);
+    const Type* first_type = first_scope->symdb->findType(first_token, first_scope, /*lookOutside*/ true);
     if (first_type) {
         // get second type
-        const Type* second_type = second_scope->check->findType(second_token, second_scope, /*lookOutside*/ true);
+        const Type* second_type = second_scope->symdb->findType(second_token, second_scope, /*lookOutside*/ true);
         // check if types match
         if (first_type == second_type) {
             const Token* tok1 = first_token;
@@ -3575,7 +3575,7 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
                 }
             }
 
-            const Type * baseType = classScope->check->findType(base.nameTok, enclosingScope);
+            const Type * baseType = classScope->symdb->findType(base.nameTok, enclosingScope);
             if (baseType && !baseType->findDependency(this))
                 base.type = baseType;
 
@@ -4737,8 +4737,8 @@ const Variable* Function::getArgumentVar(nonneg int num) const
 
 //---------------------------------------------------------------------------
 
-Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_) :
-    check(check_),
+Scope::Scope(const SymbolDatabase *symdb_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_) :
+    symdb(symdb_),
     classDef(classDef_),
     nestedIn(nestedIn_),
     type(type_)
@@ -4746,8 +4746,8 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
     setBodyStartEnd(start_);
 }
 
-Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_) :
-    check(check_),
+Scope::Scope(const SymbolDatabase *symdb_, const Token *classDef_, const Scope *nestedIn_) :
+    symdb(symdb_),
     classDef(classDef_),
     nestedIn(nestedIn_)
 {
@@ -4821,7 +4821,7 @@ void Scope::getVariableList(const Settings& settings)
 
     // global scope
     else if (type == ScopeType::eGlobal)
-        getVariableList(settings, check->mTokenizer.tokens(), nullptr);
+        getVariableList(settings, symdb->mTokenizer.tokens(), nullptr);
 
     // forward declaration
     else
@@ -4992,14 +4992,14 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
 
         if (vartok->varId() == 0) {
             if (!vartok->isBoolean())
-                check->debugMessage(vartok, "varid0", "Scope::checkVariable found variable \'" + vartok->str() + "\' with varid 0.");
+                symdb->debugMessage(vartok, "varid0", "Scope::checkVariable found variable \'" + vartok->str() + "\' with varid 0.");
             return tok;
         }
 
         const Type *vType = nullptr;
 
         if (typetok) {
-            vType = findVariableTypeIncludingUsedNamespaces(check, this, typetok);
+            vType = findVariableTypeIncludingUsedNamespaces(symdb, this, typetok);
 
             const_cast<Token *>(typetok)->type(vType);
         }
@@ -5018,7 +5018,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
                 }
                 if (Token::Match(tok2, ", %name%")) {
                     if (tok2->next()->varId() == 0) {
-                        check->debugMessage(tok2->next(), "varid0", "Scope::checkVariable found variable \'" + tok2->strAt(1) + "\' with varid 0.");
+                        symdb->debugMessage(tok2->next(), "varid0", "Scope::checkVariable found variable \'" + tok2->strAt(1) + "\' with varid 0.");
                         return tok;
                     }
                     addVariable(tok2->next(), typestart, vartok->previous(), varaccess, vType, this, settings);
@@ -5088,7 +5088,7 @@ bool Scope::isVariableDeclaration(const Token* const tok, const Token*& vartok, 
     if (isCPP && Token::Match(tok, "throw|new"))
         return false;
 
-    const bool isCPP11 = isCPP && check->mSettings.standards.cpp >= Standards::CPP11;
+    const bool isCPP11 = isCPP && symdb->mSettings.standards.cpp >= Standards::CPP11;
 
     if (isCPP11 && tok->str() == "using")
         return false;
@@ -7314,7 +7314,7 @@ static const Token* parsedecl(const Token* type,
                 valuetype->container = container;
             } else {
                 const Scope *scope = type->scope();
-                valuetype->typeScope = scope->check->findScope(typeTokens.front(), scope);
+                valuetype->typeScope = scope->symdb->findScope(typeTokens.front(), scope);
                 if (valuetype->typeScope)
                     valuetype->type = (scope->type == ScopeType::eClass) ? ValueType::Type::RECORD : ValueType::Type::NONSTD;
             }

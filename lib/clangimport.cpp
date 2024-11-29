@@ -633,7 +633,7 @@ const ::Type * clangimport::AstNode::addTypeTokens(TokenList &tokenList, const s
     for (const Token *typeToken = tokenList.back(); Token::Match(typeToken, "&|*|%name%"); typeToken = typeToken->previous()) {
         if (!typeToken->isName())
             continue;
-        const ::Type *recordType = scope->check->findVariableType(scope, typeToken);
+        const ::Type *recordType = scope->symdb->findVariableType(scope, typeToken);
         if (recordType) {
             const_cast<Token*>(typeToken)->type(recordType);
             return recordType;
@@ -709,7 +709,7 @@ Scope *clangimport::AstNode::createScope(TokenList &tokenList, ScopeType scopeTy
     nestedIn->nestedList.push_back(scope);
     scope->type = scopeType;
     scope->classDef = def;
-    scope->check = nestedIn->check;
+    scope->symdb = nestedIn->symdb;
     if (Token::Match(def, "if|for|while (")) {
         std::map<const Variable *, const Variable *> replaceVar;
         for (const Token *vartok = def->tokAt(2); vartok; vartok = vartok->next()) {
@@ -1406,7 +1406,7 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList &tokenList)
     if (hasBody) {
         symbolDatabase.scopeList.emplace_back(nullptr, nullptr, nestedIn);
         scope = &symbolDatabase.scopeList.back();
-        scope->check = &symbolDatabase;
+        scope->symdb = &symbolDatabase;
         scope->function = function;
         scope->classDef = nameToken;
         scope->type = ScopeType::eFunction;
@@ -1622,7 +1622,7 @@ void clangimport::parseClangAstDump(Tokenizer &tokenizer, std::istream &f)
     auto *symbolDatabase = const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase());
     symbolDatabase->scopeList.emplace_back(nullptr, nullptr, nullptr);
     symbolDatabase->scopeList.back().type = ScopeType::eGlobal;
-    symbolDatabase->scopeList.back().check = symbolDatabase;
+    symbolDatabase->scopeList.back().symdb = symbolDatabase;
 
     clangimport::Data data(tokenizer.getSettings(), *symbolDatabase);
     std::string line;
