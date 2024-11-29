@@ -849,7 +849,7 @@ void SymbolDatabase::createSymbolDatabaseVariableInfo()
     // fill in variable info
     for (Scope& scope : scopeList) {
         // find variables
-        scope.getVariableList(mTokenizer.getSettings());
+        scope.getVariableList();
     }
 
     // fill in function arguments
@@ -4815,16 +4815,16 @@ void Scope::addVariable(const Token *token_, const Token *start_, const Token *e
 }
 
 // Get variable list..
-void Scope::getVariableList(const Settings& settings)
+void Scope::getVariableList()
 {
     if (!bodyStartList.empty()) {
         for (const Token *bs: bodyStartList)
-            getVariableList(settings, bs->next(), bs->link());
+            getVariableList(symdb->mTokenizer.getSettings(), bs->next(), bs->link());
     }
 
     // global scope
     else if (type == ScopeType::eGlobal)
-        getVariableList(settings, symdb->mTokenizer.tokens(), nullptr);
+        getVariableList(symdb->mTokenizer.getSettings(), symdb->mTokenizer.tokens(), nullptr);
 
     // forward declaration
     else
