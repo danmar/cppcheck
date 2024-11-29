@@ -4413,9 +4413,9 @@ void SymbolDatabase::printXml(std::ostream &out) const
 
 //---------------------------------------------------------------------------
 
-static const Type* findVariableTypeIncludingUsedNamespaces(const SymbolDatabase* symbolDatabase, const Scope* scope, const Token* typeTok)
+static const Type* findVariableTypeIncludingUsedNamespaces(const SymbolDatabase& symbolDatabase, const Scope* scope, const Token* typeTok)
 {
-    const Type* argType = symbolDatabase->findVariableType(scope, typeTok);
+    const Type* argType = symbolDatabase.findVariableType(scope, typeTok);
     if (argType)
         return argType;
 
@@ -4423,7 +4423,7 @@ static const Type* findVariableTypeIncludingUsedNamespaces(const SymbolDatabase*
     while (scope) {
         for (const Scope::UsingInfo &ui : scope->usingList) {
             if (ui.scope) {
-                argType = symbolDatabase->findVariableType(ui.scope, typeTok);
+                argType = symbolDatabase.findVariableType(ui.scope, typeTok);
                 if (argType)
                     return argType;
             }
@@ -4524,7 +4524,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
         const ::Type *argType = nullptr;
         if (!typeTok->isStandardType()) {
-            argType = findVariableTypeIncludingUsedNamespaces(symbolDatabase, scope, typeTok);
+            argType = findVariableTypeIncludingUsedNamespaces(*symbolDatabase, scope, typeTok);
 
             // save type
             const_cast<Token *>(typeTok)->type(argType);
@@ -4725,6 +4725,7 @@ Scope::Scope(const SymbolDatabase *symdb_, const Token *classDef_, const Scope *
     nestedIn(nestedIn_),
     type(type_)
 {
+    assert(symdb_);
     setBodyStartEnd(start_);
 }
 
@@ -4733,6 +4734,8 @@ Scope::Scope(const SymbolDatabase *symdb_, const Token *classDef_, const Scope *
     classDef(classDef_),
     nestedIn(nestedIn_)
 {
+    assert(symdb_);
+
     const Token *nameTok = classDef;
     if (!classDef) {
         type = Scope::eGlobal;
@@ -4980,7 +4983,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
         const Type *vType = nullptr;
 
         if (typetok) {
-            vType = findVariableTypeIncludingUsedNamespaces(symdb, this, typetok);
+            vType = findVariableTypeIncludingUsedNamespaces(*symdb, this, typetok);
 
             const_cast<Token *>(typetok)->type(vType);
         }
