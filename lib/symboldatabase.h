@@ -1209,7 +1209,7 @@ private:
     void findFunctionInBase(const std::string & name, nonneg int args, std::vector<const Function *> & matches) const;
 
     /** @brief initialize varlist */
-    void getVariableList(const Settings& settings, const Token *start, const Token *end);
+    void getVariableList(const Token *start, const Token *end);
 };
 
 /** Value type */
