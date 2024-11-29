@@ -41,7 +41,6 @@
 #include <vector>
 
 class Platform;
-class ErrorLogger;
 class Function;
 class Scope;
 class Settings;
@@ -1328,7 +1327,7 @@ public:
 class CPPCHECKLIB SymbolDatabase {
     friend class TestSymbolDatabase;
 public:
-    SymbolDatabase(Tokenizer& tokenizer, const Settings& settings, ErrorLogger& errorLogger);
+    explicit SymbolDatabase(Tokenizer& tokenizer);
     ~SymbolDatabase();
 
     /** @brief Information about all namespaces/classes/structures */
@@ -1476,8 +1475,6 @@ private:
     void validateVariables() const;
 
     Tokenizer& mTokenizer;
-    const Settings &mSettings;
-    ErrorLogger &mErrorLogger;
 
     /** variable symbol table */
     std::vector<const Variable *> mVariableList;
