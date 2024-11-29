@@ -561,9 +561,9 @@ std::list<ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(InvalidValueTy
 {
     std::list<ErrorMessage::FileLocation> locationList;
 
-    const CTU::FileInfo::CallBase *path[10] = {nullptr};
+    std::array<const CTU::FileInfo::CallBase*, 10> path = {};
 
-    if (!findPath(unsafeUsage.myId, unsafeUsage.myArgNr, unsafeUsage.value, invalidValue, callsMap, path, 0, warning, maxCtuDepth))
+    if (!findPath(unsafeUsage.myId, unsafeUsage.myArgNr, unsafeUsage.value, invalidValue, callsMap, path.data(), 0, warning, maxCtuDepth))
         return locationList;
 
     const std::string value1 = (invalidValue == InvalidValueType::null) ? "null" : "uninitialized";

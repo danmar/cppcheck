@@ -8,4 +8,5 @@ endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options_safe(simplecpp_objs -Wno-zero-as-null-pointer-constant)
+    target_compile_options_safe(simplecpp_objs -Wno-unsafe-buffer-usage)
 endif()
