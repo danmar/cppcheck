@@ -1160,7 +1160,7 @@ public:
                      const Scope *scope_);
 
     /** @brief initialize varlist */
-    void getVariableList(const Settings& settings);
+    void getVariableList();
 
     const Function *getDestructor() const;
 
