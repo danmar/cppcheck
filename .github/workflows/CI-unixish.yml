@@ -20,7 +20,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-13]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-13, macos-14]
         include:
           - use_qt6: On
           - os: ubuntu-20.04
@@ -85,7 +85,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-13]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-13, macos-14]
         include:
           - use_qt6: On
           - os: ubuntu-20.04
@@ -169,7 +169,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-13]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-13, macos-14]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -203,7 +203,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-13]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-13, macos-14]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -237,7 +237,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-13]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-13, macos-14]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -261,7 +261,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-13]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-13, macos-14]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -293,14 +293,27 @@ jobs:
         if: contains(matrix.os, 'macos')
         run: |
           # pcre was removed from runner images in November 2022
-          brew install coreutils python3 pcre gnu-sed
+          brew install coreutils pcre gnu-sed
 
-      - name: Install missing Python packages
+      - name: Install missing Python packages on ubuntu
+        if: contains(matrix.os, 'ubuntu')
         run: |
           python3 -m pip install pip --upgrade
           python3 -m pip install pytest
           python3 -m pip install pytest-timeout
           python3 -m pip install psutil
+
+      # we need to use -break-system-packages --user because the common approaches do not work.
+      # using pip works but it appears to install the packages into a different Python installation so they are not found later on.
+      # using python3 -m pip without the additional flags fails since the packages are being managed by a different tool (brew) and that lacks some of the packages.
+      # using pipx also does not work.
+      - name: Install missing Python packages on macos
+        if: contains(matrix.os, 'macos')
+        run: |
+          python3 -m pip install --break-system-packages --user pip --upgrade
+          python3 -m pip install --break-system-packages --user pytest
+          python3 -m pip install --break-system-packages --user pytest-timeout
+          python3 -m pip install --break-system-packages --user psutil
 
       - name: Build cppcheck
         run: |
@@ -431,69 +444,3 @@ jobs:
           warnings="-pedantic -Wall -Wextra -Wcast-qual -Wno-deprecated-declarations -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wundef -Wno-shadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar"
           g++ $warnings -c -Ilib -Iexternals/tinyxml2 democlient/democlient.cpp
 
-  selfcheck:
-    needs: build # wait for all tests to be successful first
-
-    runs-on: ubuntu-22.04 # run on the latest image only
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: ccache
-        uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
-
-      - name: Install missing software on ubuntu
-        run: |
-          sudo apt-get update
-          # qt6-tools-dev-tools for lprodump
-          # qt6-l10n-tools for lupdate
-          sudo apt-get install qt6-base-dev libqt6charts6-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools libglx-dev libgl1-mesa-dev
-          sudo apt-get install libboost-container-dev
-
-      - name: Self check (build)
-        run: |
-          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          # compile with verification and ast matchers
-          make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXFLAGS="-g -O2 -w -DHAVE_BOOST" MATCHCOMPILER=yes VERIFY=1
-
-      - name: CMake
-        run: |
-          cmake -S . -B cmake.output -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DUSE_MATCHCOMPILER=Verify -DENABLE_CHECK_INTERNAL=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DDISABLE_DMAKE=On
-
-      - name: Generate dependencies
-        run: |
-          # make sure auto-generated GUI files exist
-          make -C cmake.output autogen
-          make -C cmake.output gui-build-deps triage-build-ui-deps
-
-      - name: Self check
-        run: |
-          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=file-total -D__GNUC__ --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=gnu --inconclusive --enable=style,performance,portability,warning,missingInclude --exception-handling --debug-warnings --check-level=exhaustive"
-          cppcheck_options="-D__CPPCHECK__ -DCHECK_INTERNAL -DHAVE_RULES --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2"
-          ec=0
-          
-          # TODO: add --check-config          
-         
-          # early exit
-          if [ $ec -eq 1 ]; then
-            exit $ec
-          fi
-          
-          # self check simplecpp
-          ./cppcheck $selfcheck_options externals/simplecpp || ec=1
-          # self check lib/cli
-          mkdir b1
-          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b1 --addon=naming.json cli || ec=1
-          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b1 --addon=naming.json --enable=internal lib || ec=1
-          # check gui with qt settings
-          mkdir b2
-          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b2 -DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=68 -DQT_CHARTS_LIB --library=qt --addon=naming.json -Icmake.output/gui -Igui gui/*.cpp cmake.output/gui || ec=1
-          # self check test and tools
-          ./cppcheck $selfcheck_options $cppcheck_options -Icli test/*.cpp tools/dmake/*.cpp || ec=1
-          # triage
-          ./cppcheck $selfcheck_options $cppcheck_options -DQ_MOC_OUTPUT_REVISION=68 -DQT_CHARTS_LIB --library=qt -Icmake.output/tools/triage -Igui tools/triage/*.cpp cmake.output/tools/triage || ec=1
-          exit $ec

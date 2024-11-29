@@ -57,6 +57,7 @@ int deallocuse_backtrace(int size) {
     return numEntries;
 }
 
+#if !defined(__APPLE__)
 void leakReturnValNotUsed_get_current_dir_name(void)
 {
     // cppcheck-suppress leakReturnValNotUsed
@@ -113,7 +114,6 @@ int nullPointer_gethostbyname_r(const char* name, struct hostent* ret, const cha
     return gethostbyname_r(name, ret, buf, buflen, result, h_errnop);
 }
 
-
 int nullPointer_gethostbyaddr_r(const void* addr, socklen_t len, int type, struct hostent* ret, const char* buf, size_t buflen, struct hostent** result, const int* h_errnop)
 {
     // cppcheck-suppress nullPointer
@@ -128,6 +128,7 @@ int nullPointer_gethostbyaddr_r(const void* addr, socklen_t len, int type, struc
     (void) gethostbyaddr_r(addr, len, type, ret, buf, buflen, result, NULL);
     return gethostbyaddr_r(addr, len, type, ret, buf, buflen, result, h_errnop);
 }
+#endif
 
 int nullPointer_getopt_long(int argc, char **argv, const char *optstring,
                             const struct option *longopts, int *longindex)
@@ -153,6 +154,7 @@ int nullPointer_getopt_long_only(int argc, char* const* argv, const char* optstr
     return getopt_long_only(argc, argv, optstring, longopts, longindex);
 }
 
+#if !defined(__APPLE__)
 int nullPointer_getservent_r(struct servent *restrict result_buf, const char *restrict buf, size_t buflen, struct servent **restrict result)
 {
     // cppcheck-suppress nullPointer
@@ -172,6 +174,7 @@ void *bufferAccessOutOfBounds_memrchr(const void *s, int c, size_t n)
     (void)memrchr(buf,c,43);
     return memrchr(s,c,n);
 }
+#endif
 
 void knownConditionTrueFalse_ffsl(long i)
 {
@@ -191,6 +194,7 @@ void knownConditionTrueFalse_ffsll(long long i)
     if (ffsll(i) == 0) {}
 }
 
+#if !defined(__APPLE__)
 int nullPointer_semtimedop(int semid, struct sembuf *sops, size_t nsops, const struct timespec *timeout)
 {
     (void) semtimedop(semid, sops, nsops, NULL); // If the timeout argument is NULL, then semtimedop() behaves exactly like semop().
@@ -226,8 +230,10 @@ int uninitvar_getpw(uid_t uid, char *buf)
     // cppcheck-suppress uninitvar
     return getpw(someUid, buf);
 }
+#endif
 
 // Declaration necessary because there is no specific / portable header.
+// https://www.eyrie.org/~eagle/software/rra-c-util/xmalloc.html
 extern void *xcalloc(size_t nmemb, size_t size);
 extern void *xmalloc(size_t size);
 extern void *xrealloc(void *block, size_t newsize);
@@ -293,8 +299,10 @@ void valid_code(int argInt1, va_list valist_arg, const int * parg)
 
     if (__builtin_expect(argInt1, 0)) {}
     if (__builtin_expect_with_probability(argInt1 + 1, 2, 0.5)) {}
+#ifdef __GLIBC__
     if (__glibc_unlikely(argInt1 != 0)) {}
     if (__glibc_likely(parg != NULL)) {}
+#endif
     const void *ax1 = __builtin_assume_aligned(parg, 16);
     printf("%p", ax1);
     const void *ax2 = __builtin_assume_aligned(parg, 32, 8);
@@ -482,6 +490,7 @@ void bufferAccessOutOfBounds()
     free(pAlloc2);
 }
 
+#if !defined(__APPLE__)
 void leakReturnValNotUsed()
 {
     // cppcheck-suppress [unreadVariable, constVariablePointer]
@@ -501,6 +510,7 @@ void leakReturnValNotUsed()
     if (42 == __builtin_expect(42, 0))
         return;
 }
+#endif
 
 #if !defined(__CYGWIN__) && !defined(__APPLE__)
 int nullPointer_epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)
