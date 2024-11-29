@@ -2,6 +2,9 @@ import subprocess
 import os
 import sys
 import pytest
+import platform
+
+from packaging.version import Version
 
 def __lookup_cppcheck_exe(exe_name):
     # path the script is located in
@@ -64,7 +67,10 @@ def test_segv():
     assert stderr == ''
     lines = stdout.splitlines()
     if sys.platform == "darwin":
-        assert lines[0] == 'Internal error: cppcheck received signal SIGSEGV - SEGV_MAPERR (at 0x0).'
+        if Version(platform.mac_ver()[0]) >= Version('14'):
+            assert lines[0] == 'Internal error: cppcheck received signal SIGSEGV - SEGV_ACCERR (at 0x0).'
+        else:
+            assert lines[0] == 'Internal error: cppcheck received signal SIGSEGV - SEGV_MAPERR (at 0x0).'
     else:
         assert lines[0] == 'Internal error: cppcheck received signal SIGSEGV - SEGV_MAPERR (reading at 0x0).'
     # no stacktrace on macOS
