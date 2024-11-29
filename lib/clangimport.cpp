@@ -702,14 +702,13 @@ Scope *clangimport::AstNode::createScope(TokenList &tokenList, ScopeType scopeTy
 
     auto *nestedIn = const_cast<Scope *>(getNestedInScope(tokenList));
 
-    symbolDatabase.scopeList.emplace_back(nullptr, nullptr, nestedIn);
+    symbolDatabase.scopeList.emplace_back(nestedIn->symdb, nullptr, nestedIn);
     Scope *scope = &symbolDatabase.scopeList.back();
     if (scopeType == ScopeType::eEnum)
         scope->enumeratorList.reserve(children2.size());
     nestedIn->nestedList.push_back(scope);
     scope->type = scopeType;
-    scope->classDef = def;
-    scope->symdb = nestedIn->symdb;
+    scope->classDef = def; // TODO: pass into ctor
     if (Token::Match(def, "if|for|while (")) {
         std::map<const Variable *, const Variable *> replaceVar;
         for (const Token *vartok = def->tokAt(2); vartok; vartok = vartok->next()) {
@@ -1404,11 +1403,10 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList &tokenList)
 
     Scope *scope = nullptr;
     if (hasBody) {
-        symbolDatabase.scopeList.emplace_back(nullptr, nullptr, nestedIn);
+        symbolDatabase.scopeList.emplace_back(&symbolDatabase, nullptr, nestedIn);
         scope = &symbolDatabase.scopeList.back();
-        scope->symdb = &symbolDatabase;
         scope->function = function;
-        scope->classDef = nameToken;
+        scope->classDef = nameToken; // TODO: pass into ctor
         scope->type = ScopeType::eFunction;
         scope->className = nameToken->str();
         nestedIn->nestedList.push_back(scope);
@@ -1620,9 +1618,8 @@ void clangimport::parseClangAstDump(Tokenizer &tokenizer, std::istream &f)
 
     tokenizer.createSymbolDatabase();
     auto *symbolDatabase = const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase());
-    symbolDatabase->scopeList.emplace_back(nullptr, nullptr, nullptr);
+    symbolDatabase->scopeList.emplace_back(symbolDatabase, nullptr, nullptr);
     symbolDatabase->scopeList.back().type = ScopeType::eGlobal;
-    symbolDatabase->scopeList.back().symdb = symbolDatabase;
 
     clangimport::Data data(tokenizer.getSettings(), *symbolDatabase);
     std::string line;
