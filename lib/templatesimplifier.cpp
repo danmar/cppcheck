@@ -1346,7 +1346,7 @@ void TemplateSimplifier::simplifyTemplateAliases()
                     const Token * const fromStart = args[argnr].first;
                     const Token * const fromEnd   = args[argnr].second->previous();
                     Token *temp = TokenList::copyTokens(tok1, fromStart, fromEnd, true);
-                    const bool tempOK(temp && temp != tok1->next());
+                    const bool tempOK(temp != tok1->next());
                     tok1->deleteThis();
                     if (tempOK)
                         tok1 = temp; // skip over inserted parameters
