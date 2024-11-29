@@ -1157,7 +1157,7 @@ public:
 
     void addVariable(const Token *token_, const Token *start_,
                      const Token *end_, AccessControl access_, const Type *type_,
-                     const Scope *scope_, const Settings& settings);
+                     const Scope *scope_);
 
     /** @brief initialize varlist */
     void getVariableList(const Settings& settings);

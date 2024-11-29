@@ -449,7 +449,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 scope->definedTypesMap[new_type->name()] = new_type;
             }
 
-            scope->addVariable(varNameTok, tok, tok, access[scope], new_scope->definedType, scope, mTokenizer.getSettings());
+            scope->addVariable(varNameTok, tok, tok, access[scope], new_scope->definedType, scope);
 
             const Token *tok2 = tok->next();
 
@@ -4806,12 +4806,12 @@ AccessControl Scope::defaultAccess() const
 }
 
 void Scope::addVariable(const Token *token_, const Token *start_, const Token *end_,
-                        AccessControl access_, const Type *type_, const Scope *scope_, const Settings& settings)
+                        AccessControl access_, const Type *type_, const Scope *scope_)
 {
     // keep possible size_t -> int truncation outside emplace_back() to have a single line
     // C4267 VC++ warning instead of several dozens lines
     const int varIndex = varlist.size();
-    varlist.emplace_back(token_, start_, end_, varIndex, access_, type_, scope_, settings);
+    varlist.emplace_back(token_, start_, end_, varIndex, access_, type_, scope_, scope_->symdb->mTokenizer.getSettings());
 }
 
 // Get variable list..
@@ -4973,7 +4973,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
         const Token *typeend = Token::findsimplematch(typestart, "[")->previous();
         for (tok = typeend->tokAt(2); Token::Match(tok, "%name%|,"); tok = tok->next()) {
             if (tok->varId())
-                addVariable(tok, typestart, typeend, varaccess, nullptr, this, settings);
+                addVariable(tok, typestart, typeend, varaccess, nullptr, this);
         }
         return typeend->linkAt(1);
     }
@@ -5011,7 +5011,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
         if (Token::Match(typestart, "enum|struct"))
             typestart = typestart->next();
 
-        addVariable(vartok, typestart, vartok->previous(), varaccess, vType, this, settings);
+        addVariable(vartok, typestart, vartok->previous(), varaccess, vType, this);
 
         if (type == ScopeType::eFor && orig->strAt(-2) == "for") {
             for (const Token* tok2 = tok; tok2 && !Token::Match(tok2, "[;:]"); tok2 = tok2->next()) {
@@ -5024,7 +5024,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
                         symdb->debugMessage(tok2->next(), "varid0", "Scope::checkVariable found variable \'" + tok2->strAt(1) + "\' with varid 0.");
                         return tok;
                     }
-                    addVariable(tok2->next(), typestart, vartok->previous(), varaccess, vType, this, settings);
+                    addVariable(tok2->next(), typestart, vartok->previous(), varaccess, vType, this);
                 }
             }
         }
