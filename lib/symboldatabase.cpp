@@ -4819,23 +4819,23 @@ void Scope::getVariableList()
 {
     if (!bodyStartList.empty()) {
         for (const Token *bs: bodyStartList)
-            getVariableList(symdb->mTokenizer.getSettings(), bs->next(), bs->link());
+            getVariableList(bs->next(), bs->link());
     }
 
     // global scope
     else if (type == ScopeType::eGlobal)
-        getVariableList(symdb->mTokenizer.getSettings(), symdb->mTokenizer.tokens(), nullptr);
+        getVariableList(symdb->mTokenizer.tokens(), nullptr);
 
     // forward declaration
     else
         return;
 }
 
-void Scope::getVariableList(const Settings& settings, const Token* start, const Token* end)
+void Scope::getVariableList(const Token* start, const Token* end)
 {
     // Variable declared in condition: if (auto x = bar())
     if (Token::Match(classDef, "if|while ( %type%") && Token::simpleMatch(classDef->next()->astOperand2(), "=")) {
-        checkVariable(classDef->tokAt(2), defaultAccess(), settings);
+        checkVariable(classDef->tokAt(2), defaultAccess(), symdb->mTokenizer.getSettings());
     }
 
     AccessControl varaccess = defaultAccess();
@@ -4932,7 +4932,7 @@ void Scope::getVariableList(const Settings& settings, const Token* start, const 
         if (tok->str() == ";")
             continue;
 
-        tok = checkVariable(tok, varaccess, settings);
+        tok = checkVariable(tok, varaccess, symdb->mTokenizer.getSettings());
 
         if (!tok)
             break;
