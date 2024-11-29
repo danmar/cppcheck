@@ -1030,10 +1030,10 @@ public:
 
     enum ScopeType : std::uint8_t { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eFor, eWhile, eDo, eSwitch, eUnconditional, eTry, eCatch, eLambda, eEnum };
 
-    Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_);
-    Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_);
+    Scope(const SymbolDatabase *symdb_, const Token *classDef_, const Scope *nestedIn_);
+    Scope(const SymbolDatabase *symdb_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_);
 
-    const SymbolDatabase* check{};
+    const SymbolDatabase* symdb{};
     std::string className;
     const Token* classDef{};   ///< class/struct/union/namespace token
     const Token* bodyStart{};  ///< '{' token
