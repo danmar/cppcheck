@@ -503,6 +503,15 @@ private:
                "    if (MACRO_ALL == 0) {}\n"
                "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        checkP("void f(int i, int j) {\n" // #13360
+               "    int X = 0x10;\n"
+               "    if ((i & 0xff00) == X) {}\n"
+               "    if (X == (j & 0xff00)) {}\n"
+               "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0xff00) == 0x10' is always false.\n"
+                      "[test.cpp:4]: (style) Expression '(X & 0xff00) == 0x10' is always false.\n",
+                      errout_str());
     }
 
 #define checkPureFunction(code) checkPureFunction_(code, __FILE__, __LINE__)
