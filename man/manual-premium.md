@@ -912,6 +912,7 @@ Carriage return
 You can add remark comments in the source code that justify why there is a warning/violation.
 
 Such a remark comment shall:
+
  * start with REMARK.
  * can either be added above the source code that generates the warning, or after the code on the same line.
 
