@@ -2878,7 +2878,7 @@ static bool isExpressionChangedAt(const F& getExprTok,
         bool aliased = false;
         // If we can't find the expression then assume it is an alias
         auto expr = getExprTok();
-        if (!expr)
+        if (!expr && !(tok->valueType() && tok->valueType()->pointer == 0 && tok->valueType()->reference == Reference::None))
             aliased = true;
         if (!aliased)
             aliased = isAliasOf(tok, expr, &i);
