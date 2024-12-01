@@ -248,7 +248,7 @@ private:
         TEST_CASE(pointer_out_of_bounds_2);
         TEST_CASE(pointer_out_of_bounds_3);
         TEST_CASE(pointer_out_of_bounds_4);
-        TEST_CASE(pointer_out_of_bounds_5); // #20337
+        TEST_CASE(pointer_out_of_bounds_5); // #10227
         TEST_CASE(pointer_out_of_bounds_sub);
 
         TEST_CASE(strcat1);
@@ -3864,9 +3864,8 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
-    void pointer_out_of_bounds_5() { // #20337
-        check("int foo(char str[6])\n"
-              "{\n"
+    void pointer_out_of_bounds_5() { // #10227
+        check("int foo(char str[6]) {\n"
               "    return !((0 && *(\"STRING\" + 14) == 0) || memcmp(str, \"STRING\", 6) == 0);\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
