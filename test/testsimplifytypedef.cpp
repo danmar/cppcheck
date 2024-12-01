@@ -243,6 +243,8 @@ private:
 
         TEST_CASE(simplifyTypedefOriginalName);
 
+        TEST_CASE(simplifyTypedefTokenColumn);
+
         TEST_CASE(typedefInfo1);
 
         TEST_CASE(typedefInfo2);
@@ -4452,6 +4454,24 @@ private:
         // Search for the simplified * token -> function pointer gets "(*" tokens infront of it
         token = Token::findsimplematch(endOfTypeDef, "*", tokenizer.list.back());
         ASSERT_EQUALS("rFunctionPointer_fp", token->originalName());
+    }
+
+    void simplifyTypedefTokenColumn() {  // #13155
+        const char code[] = "void foo(void) {\n"
+                            "    typedef signed int MY_INT;\n"
+                            "    MY_INT x = 0;\n"
+                            "}";
+
+        Tokenizer tokenizer(settings1, *this);
+        std::istringstream istr(code);
+        ASSERT(tokenizer.list.createTokens(istr, "file.c"));
+        tokenizer.createLinks();
+        tokenizer.simplifyTypedef();
+
+        const Token* x = Token::findsimplematch(tokenizer.list.front(), "x");
+        const Token* type = x->previous();
+        ASSERT_EQUALS("int", type->str());
+        ASSERT_EQUALS(5, type->column());
     }
 
     void typedefInfo1() {

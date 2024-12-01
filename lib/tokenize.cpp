@@ -2057,10 +2057,13 @@ void Tokenizer::simplifyTypedefCpp()
                             removed1.resize(idx);
                         }
                     }
-                    replStart->isSimplifiedTypedef(true);
                     Token* constTok = Token::simpleMatch(tok2->previous(), "const") ? tok2->previous() : nullptr;
                     // add remainder of type
                     tok2 = TokenList::copyTokens(tok2, typeStart->next(), typeEnd);
+                    for (Token* tok3 = replStart; tok3 != tok2->next(); tok3 = tok3->next()) {
+                        tok3->column(replStart->column());
+                        tok3->isSimplifiedTypedef(true);
+                    }
 
                     if (!pointers.empty()) {
                         for (const std::string &p : pointers) {
