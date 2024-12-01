@@ -1,5 +1,5 @@
 
-# python -m pytest test-other.py
+# python -m pytest other_test.py
 
 import os
 import sys
