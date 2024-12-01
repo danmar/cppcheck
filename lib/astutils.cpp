@@ -3798,7 +3798,7 @@ static const Token *skipUnreachableIfBranch(const Token *tok)
 
 static const Token *skipUnreachableElseBranch(const Token *tok)
 {
-    if (Token::simpleMatch(tok->previous(), ")"))
+    if (!Token::simpleMatch(tok->tokAt(-2), "} else {"))
         return tok;
 
     const Token *condTok = tok->linkAt(-2);
@@ -3809,7 +3809,7 @@ static const Token *skipUnreachableElseBranch(const Token *tok)
     if (!condTok)
         return tok;
 
-    if (!Token::simpleMatch(condTok->tokAt(-1), "if") && !Token::simpleMatch(condTok->tokAt(-2), "if constexpr"))
+    if (!Token::simpleMatch(condTok->tokAt(-1), "if (") && !Token::simpleMatch(condTok->tokAt(-2), "if constexpr ("))
         return tok;
 
     condTok = condTok->astOperand2();
