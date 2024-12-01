@@ -3425,6 +3425,7 @@ private:
         TEST_CASE(memleak_getline);
         TEST_CASE(deallocuse_fdopen);
         TEST_CASE(doublefree_fdopen); // #12781
+        TEST_CASE(memleak_open); // #13356
     }
 
     void memleak_getline() {
@@ -3463,6 +3464,17 @@ private:
               "        return;\n"
               "    }\n"
               "    fclose(stream);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void memleak_open() { // #13356
+        check("int f() {\n"
+              "    int fd = open(\"abc \", O_RDONLY);\n"
+              "    if (fd > -1) {\n"
+              "        return fd;\n"
+              "    }\n"
+              "    return -1;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
