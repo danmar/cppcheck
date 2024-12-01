@@ -243,7 +243,8 @@ private:
 
         TEST_CASE(simplifyTypedefOriginalName);
 
-        TEST_CASE(simplifyTypedefTokenColumn);
+        TEST_CASE(simplifyTypedefTokenColumn1);
+        TEST_CASE(simplifyTypedefTokenColumn2);
 
         TEST_CASE(typedefInfo1);
 
@@ -4456,7 +4457,7 @@ private:
         ASSERT_EQUALS("rFunctionPointer_fp", token->originalName());
     }
 
-    void simplifyTypedefTokenColumn() {  // #13155
+    void simplifyTypedefTokenColumn1() {  // #13155
         const char code[] = "void foo(void) {\n"
                             "    typedef signed int MY_INT;\n"
                             "    MY_INT x = 0;\n"
@@ -4471,6 +4472,24 @@ private:
         const Token* x = Token::findsimplematch(tokenizer.list.front(), "x");
         const Token* type = x->previous();
         ASSERT_EQUALS("int", type->str());
+        ASSERT_EQUALS(5, type->column());
+    }
+
+    void simplifyTypedefTokenColumn2() {
+        const char code[] = "void foo(void) {\n"
+                            "    typedef signed int (*F)(int);\n"
+                            "    F x = 0;\n"
+                            "}";
+
+        Tokenizer tokenizer(settings1, *this);
+        std::istringstream istr(code);
+        ASSERT(tokenizer.list.createTokens(istr, "file.c"));
+        tokenizer.createLinks();
+        tokenizer.simplifyTypedef();
+
+        const Token* x = Token::findsimplematch(tokenizer.list.front(), "x");
+        const Token* type = x->previous();
+        ASSERT_EQUALS("*", type->str());
         ASSERT_EQUALS(5, type->column());
     }
 
