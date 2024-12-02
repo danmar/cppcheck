@@ -92,7 +92,6 @@ jobs:
           persist-credentials: false
 
       - name: Set up Python
-        if: matrix.config == 'release'
         uses: actions/setup-python@v5
         with:
           python-version: '3.14'
@@ -133,7 +132,6 @@ jobs:
           CL: /MP
 
       - name: Install missing Python packages
-        if: matrix.config == 'release'
         run: |
           python -m pip install pip --upgrade || exit /b !errorlevel!
           python -m pip install pytest || exit /b !errorlevel!
@@ -168,7 +166,15 @@ jobs:
         if: matrix.config == 'release'
         run: .\bin\testrunner.exe || exit /b !errorlevel!
 
-      - name: Prepare test/cli
+      - name: Prepare test/cli (debug)
+        if: matrix.config == 'debug'
+        run: |
+          :: since FILESDIR is not set copy the binary to the root so the addons are found
+          :: copy .\build\bin\Release\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
+          copy .\bin\debug\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
+          copy .\bin\debug\cppcheck-core.dll .\cppcheck-core.dll || exit /b !errorlevel!
+
+      - name: Prepare test/cli (release)
         if: matrix.config == 'release'
         run: |
           :: since FILESDIR is not set copy the binary to the root so the addons are found
@@ -177,12 +183,10 @@ jobs:
           copy .\bin\cppcheck-core.dll .\cppcheck-core.dll || exit /b !errorlevel!
 
       - name: Run test/cli
-        if: matrix.config == 'release'
         run: |
           python -m pytest -Werror --strict-markers -vv -n auto test/cli || exit /b !errorlevel!
 
       - name: Run test/cli (-j2)
-        if: matrix.config == 'release'
         run: |
           python -m pytest -Werror --strict-markers -vv -n auto test/cli || exit /b !errorlevel!
         env:
@@ -190,7 +194,7 @@ jobs:
 
       # TODO: install clang
       - name: Run test/cli (--clang)
-        if: false # matrix.config == 'release'
+        if: false
         run: |
           python -m pytest -Werror --strict-markers -vv -n auto test/cli || exit /b !errorlevel!
         env:
@@ -215,7 +219,6 @@ jobs:
           del test-sehwrapper.exe || exit /b !errorlevel!
 
       - name: Test addons
-        if: matrix.config == 'release'
         run: |
           echo on
           .\cppcheck --addon=threadsafety addons\test\threadsafety || exit /b !errorlevel!
