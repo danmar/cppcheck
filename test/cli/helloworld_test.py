@@ -110,6 +110,7 @@ def test_addon_relative_path():
 
 def test_addon_with_gui_project():
     project_file = os.path.join('helloworld', 'test.cppcheck')
+    # TODO: generate in temporary folder
     create_gui_project_file(os.path.join(__script_dir, project_file), paths=['.'], addon='misra')
     args = [
         '--template=cppcheck1',
@@ -117,6 +118,7 @@ def test_addon_with_gui_project():
         '--project=' + project_file
     ]
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    os.remove(os.path.join(__script_dir, project_file))  # TODO: do not remove explicitly
     filename = os.path.join('helloworld', 'main.c')
     assert ret == 0, stdout
     assert stdout == 'Checking %s ...\n' % filename
@@ -230,6 +232,7 @@ def test_suppress_command_line_absolute():
 
 def test_suppress_project_relative():
     project_file = os.path.join('helloworld', 'test.cppcheck')
+    # TODO: generate in temporary folder
     create_gui_project_file(os.path.join(__script_dir, project_file),
                             paths=['.'],
                             suppressions=[{'fileName':'main.c', 'id':'zerodiv'}])
@@ -239,12 +242,14 @@ def test_suppress_project_relative():
     ]
 
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    os.remove(os.path.join(__script_dir, project_file))  # TODO: do not remove explicitly
     assert ret == 0, stdout
     assert stderr == ''
 
 
 def test_suppress_project_absolute():
     project_file = os.path.join('helloworld', 'test.cppcheck')
+    # TODO: generate in temporary folder
     create_gui_project_file(os.path.join(__script_dir, project_file),
                             paths=['.'],
                             suppressions=[{'fileName':'main.c', 'id':'zerodiv'}])
@@ -254,6 +259,7 @@ def test_suppress_project_absolute():
     ]
 
     ret, stdout, stderr = cppcheck(args)
+    os.remove(os.path.join(__script_dir, project_file))  # TODO: do not remove explicitly
     assert ret == 0, stdout
     assert stderr == ''
 
