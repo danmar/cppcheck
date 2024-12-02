@@ -97,9 +97,9 @@ def test_color_non_tty(tmpdir, env, color_expected):
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt') as f:
         f.write('#error test\nx=1;\n')
-    exitcode, _, stderr = cppcheck([test_file], env=env)
+    exitcode, stdout, stderr = cppcheck([test_file], env=env)
 
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     assert stderr
     assert (__ANSI_BOLD in stderr) == color_expected
     assert (__ANSI_FG_RED in stderr) == color_expected
@@ -113,9 +113,9 @@ def test_color_tty(tmpdir, env, color_expected):
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt') as f:
         f.write('#error test\nx=1;\n')
-    exitcode, _, stderr = cppcheck([test_file], env=env, tty=True)
+    exitcode, stdout, stderr = cppcheck([test_file], env=env, tty=True)
 
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     assert stderr
     assert (__ANSI_BOLD in stderr) == color_expected
     assert (__ANSI_FG_RED in stderr) == color_expected
@@ -158,7 +158,7 @@ def test_progress(tmpdir):
     args = ['--report-progress=0', '--enable=all', '--inconclusive', '-j1', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     pos = stdout.find('\n')
     assert(pos != -1)
     pos += 1
@@ -191,7 +191,7 @@ def test_progress_j(tmpdir):
     args = ['--report-progress=0', '--enable=all', '--inconclusive', '-j2', '--disable=unusedFunction', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     assert stdout == "Checking {} ...\n".format(test_file)
     assert stderr == ""
 
@@ -281,7 +281,7 @@ typedef int MISRA_5_6_VIOLATION;
     args = ['--addon=misra', '--enable=all', '--disable=unusedFunction', '-j1', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file)
@@ -304,7 +304,7 @@ extern void f()
     args = ['--addon=y2038', '--enable=all', '--disable=unusedFunction', '--template=simple', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file)
@@ -325,7 +325,7 @@ extern const char* f()
     args = ['--addon=threadsafety', '--enable=all', '--disable=unusedFunction', '--template=simple', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file)
@@ -355,7 +355,7 @@ int Var;
     args = ['--addon={}'.format(addon_file), '--enable=all', '--disable=unusedFunction', '--template=simple', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file)
@@ -466,7 +466,7 @@ namespace _invalid_namespace { }
     args = ['--addon='+addon_file, '--verbose', '--enable=all', '--disable=unusedFunction', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = __remove_verbose_log(stdout.splitlines())
     assert lines == [
         'Checking {} ...'.format(test_file)
@@ -594,7 +594,7 @@ def test_addon_namingng_config(tmpdir):
     args = ['--addon='+addon_file, '--verbose', '--enable=all', '-j1', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
 
     lines = __remove_verbose_log(stdout.splitlines())
     assert lines == [
@@ -640,7 +640,7 @@ def test_addon_findcasts(tmpdir):
     args = ['--addon=findcasts', '--enable=all', '--disable=unusedFunction', '--template=simple', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file)
@@ -661,7 +661,7 @@ extern void f()
     args = ['--addon=misc', '--enable=all', '--disable=unusedFunction', '--template=simple', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file)
@@ -944,7 +944,7 @@ def test_file_order(tmpdir):
     args = [test_file_c, test_file_d, test_file_b, test_file_a, '-j1']
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file_c),
@@ -1005,7 +1005,7 @@ def test_markup_j(tmpdir):
     args = ['--library=qt', '-j2', test_file_1, test_file_2, test_file_3, test_file_4]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     for i in range(1, 5):
         lines.remove('{}/4 files checked 0% done'.format(i))
@@ -1062,7 +1062,7 @@ inline void f2()
     args = ['--debug', test_file_cpp]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     if sys.platform == "win32":
         stdout = stdout.replace('/', '\\')
     assert stdout == '''Checking {} ...
@@ -1120,7 +1120,7 @@ def test_file_duplicate(tmpdir):
     args = [test_file_a, test_file_a, str(tmpdir)]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file_a)
@@ -1142,7 +1142,7 @@ def test_file_duplicate_2(tmpdir):
     args = [test_file_c, test_file_a, test_file_b, str(tmpdir), test_file_b, test_file_c, test_file_a, str(tmpdir), '-j1']
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file_c),
@@ -1172,7 +1172,7 @@ def test_file_duplicate_3(tmpdir):
     args.append('-j1') # TODO: remove when fixed
 
     exitcode, stdout, stderr = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     # TODO: only a single file should be checked
     if sys.platform == 'win32':
@@ -1226,7 +1226,7 @@ def test_file_duplicate_4(tmpdir):
     args.append('-j1') # TODO: remove when fixed
 
     exitcode, stdout, stderr = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     # TODO: only a single file should be checked
     assert lines == [
@@ -1337,7 +1337,7 @@ void f() { }
 ''')
 
     exitcode, stdout, stderr = cppcheck(['-q', test_file])
-    assert exitcode == 0, stderr
+    assert exitcode == 0, stdout if stdout else stderr
     assert stdout == ''
     assert stderr == ''
 
@@ -1375,7 +1375,7 @@ void f() { }
 ''')
 
     exitcode, stdout, stderr = cppcheck(['--template=simple', '--rule-file={}'.format(rule_file), '-DDEF_3', test_file])
-    assert exitcode == 0, stderr
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file),
@@ -1409,7 +1409,7 @@ void f() { }
 ''')
 
     exitcode, stdout, stderr = cppcheck(['--template=simple', '--rule-file={}'.format(rule_file), '-DDEF_3', test_file])
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file),
@@ -1442,7 +1442,7 @@ void f(i32) { }
 ''')
 
     exitcode, stdout, stderr = cppcheck(['--template=simple', '--rule-file={}'.format(rule_file), test_file])
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file),
@@ -1474,7 +1474,7 @@ void f(i32) { }
 ''')
 
     exitcode, stdout, stderr = cppcheck(['--template=simple', '--rule-file={}'.format(rule_file), test_file])
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file),
@@ -1497,7 +1497,7 @@ void f() { }
 ''')
 
     exitcode, stdout, stderr = cppcheck(['--template=simple', '--rule=f', test_file])
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file),
@@ -1554,9 +1554,9 @@ def test_filelist(tmpdir):
         pass
 
     # TODO: -rp is not applied to "Checking" messages
-    #exitcode, stdout, _ = cppcheck(['-j1', '-rp', list_dir])
-    exitcode, stdout, _ = cppcheck(['-j1', '.'], cwd=list_dir)
-    assert exitcode == 0, stdout
+    #exitcode, stdout, stderr = cppcheck(['-j1', '-rp', list_dir])
+    exitcode, stdout, stderr = cppcheck(['-j1', '.'], cwd=list_dir)
+    assert exitcode == 0, stdout if stdout else stderr
     if sys.platform == "win32":
         stdout = stdout.replace('\\', '/')
     lines = stdout.splitlines()
@@ -1597,8 +1597,8 @@ def test_markup_lang(tmpdir):
         test_file_2
     ]
 
-    exitcode, stdout, _ = cppcheck(args)
-    assert exitcode == 0, stdout
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout if stdout else stderr
 
 
 def test_cpp_probe(tmpdir):
@@ -1611,7 +1611,7 @@ def test_cpp_probe(tmpdir):
     args = ['-q', '--template=simple', '--cpp-header-probe', '--verbose', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == []
     lines = stderr.splitlines()
@@ -1640,11 +1640,11 @@ def test_lib_lookup(tmpdir):
     with open(test_file, 'wt'):
         pass
 
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=library', '--library=gnu', test_file])
+    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=library', '--library=gnu', test_file])
     exepath = os.path.dirname(exe)
     if sys.platform == 'win32':
         exepath = exepath.replace('\\', '/')
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
     assert lines == [
         "looking for library 'gnu'",
@@ -1693,11 +1693,11 @@ def test_lib_lookup_absolute(tmpdir):
 </def>
         ''')
 
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=library', '--library={}'.format(cfg_file), test_file])
+    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=library', '--library={}'.format(cfg_file), test_file])
     exepath = os.path.dirname(exe)
     if sys.platform == 'win32':
         exepath = exepath.replace('\\', '/')
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
     assert lines == [
         "looking for library '{}'".format(cfg_file),
@@ -1736,11 +1736,11 @@ def test_lib_lookup_nofile(tmpdir):
     gtk_cfg_dir = os.path.join(tmpdir, 'gtk.cfg')
     os.mkdir(gtk_cfg_dir)
 
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=library', '--library=gtk', test_file], cwd=tmpdir)
+    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=library', '--library=gtk', test_file], cwd=tmpdir)
     exepath = os.path.dirname(exe)
     if sys.platform == 'win32':
         exepath = exepath.replace('\\', '/')
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
     assert lines == [
         "looking for library 'gtk'",
@@ -1756,11 +1756,11 @@ def test_lib_lookup_multi(tmpdir):
     with open(test_file, 'wt'):
         pass
 
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=library', '--library=posix,gnu', test_file])
+    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=library', '--library=posix,gnu', test_file])
     exepath = os.path.dirname(exe)
     if sys.platform == 'win32':
         exepath = exepath.replace('\\', '/')
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
     assert lines == [
         "looking for library 'posix'",
@@ -1780,8 +1780,8 @@ def test_platform_lookup_builtin(tmpdir):
     with open(test_file, 'wt'):
         pass
 
-    exitcode, stdout, _ = cppcheck(['--debug-lookup=platform', '--platform=unix64', test_file])
-    assert exitcode == 0, stdout
+    exitcode, stdout, stderr = cppcheck(['--debug-lookup=platform', '--platform=unix64', test_file])
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     # built-in platform are not being looked up
     assert lines == [
@@ -1797,11 +1797,11 @@ def test_platform_lookup_external(tmpdir):
     with open(test_file, 'wt'):
         pass
 
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=platform', '--platform=avr8', test_file])
+    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=platform', '--platform=avr8', test_file])
     exepath = os.path.dirname(exe)
     if sys.platform == 'win32':
         exepath = exepath.replace('\\', '/')
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         "looking for platform 'avr8' in '{}'".format(os.path.join(exepath, 'cppcheck')),  # TODO: this not not the path *of* the executable but the the path *to* the executable
@@ -1847,10 +1847,10 @@ def test_addon_lookup(tmpdir):
     with open(test_file, 'wt'):
         pass
 
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=addon', '--addon=misra', test_file])
+    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=addon', '--addon=misra', test_file])
     exepath = os.path.dirname(exe)
     exepath_sep = exepath + os.path.sep
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         "looking for addon 'misra.py'",
@@ -1866,10 +1866,10 @@ def test_addon_lookup_ext(tmpdir):
     with open(test_file, 'wt'):
         pass
 
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=addon', '--addon=misra.py', test_file])
+    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=addon', '--addon=misra.py', test_file])
     exepath = os.path.dirname(exe)
     exepath_sep = exepath + os.path.sep
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         "looking for addon 'misra.py'",
@@ -1929,10 +1929,10 @@ def test_config_lookup(tmpdir):
     with open(config_file, 'wt'):
         pass
 
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=config', '--addon=misra', test_file], cwd=tmpdir)
+    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=config', '--addon=misra', test_file], cwd=tmpdir)
     exepath = os.path.dirname(exe)
     exepath_sep = exepath + os.path.sep
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         "looking for '{}cppcheck.cfg'".format(exepath_sep),
@@ -1947,10 +1947,10 @@ def test_config_lookup_notfound(tmpdir):
     with open(test_file, 'wt'):
         pass
 
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=config', test_file])
+    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=config', test_file])
     exepath = os.path.dirname(exe)
     exepath_sep = exepath + os.path.sep
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         "looking for '{}cppcheck.cfg'".format(exepath_sep),
@@ -1965,7 +1965,7 @@ def test_checkers_report(tmpdir):
         f.write('x=1;')
     checkers_report = os.path.join(tmpdir, 'r.txt')
     exitcode, stdout, stderr = cppcheck(['--enable=all', '--checkers-report=' + checkers_report, test_file], remove_checkers_report=False)
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     assert 'Active checkers:' in stderr
     assert '--checkers-report' not in stderr
 
@@ -1979,7 +1979,7 @@ def test_checkers_report_misra_json(tmpdir):
     with open(misra_json, 'wt') as f:
         f.write('{"script":"misra.py"}')
     exitcode, stdout, stderr = cppcheck('--enable=style --addon=misra.json --xml-version=3 test.c'.split(), cwd=tmpdir)
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     assert '<checker id="Misra C 2012: 8.1"/>' in stderr
 
 
