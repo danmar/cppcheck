@@ -530,14 +530,14 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             }
 
             else if (std::strncmp(argv[i], "--cppcheck-build-dir=", 21) == 0) {
-                mSettings.buildDir = Path::fromNativeSeparators(argv[i] + 21);
-                if (endsWith(mSettings.buildDir, '/'))
-                    mSettings.buildDir.pop_back();
-
-                if (!Path::isDirectory(mSettings.buildDir)) {
-                    mLogger.printError("Directory '" + mSettings.buildDir + "' specified by --cppcheck-build-dir argument has to be existent.");
+                std::string path = Path::fromNativeSeparators(argv[i] + 21);
+                if (path.empty()) {
+                    mLogger.printError("no path has been specified for --cppcheck-build-dir");
                     return Result::Fail;
                 }
+                mSettings.buildDir = std::move(path);
+                if (endsWith(mSettings.buildDir, '/'))
+                    mSettings.buildDir.pop_back();
             }
 
             else if (std::strcmp(argv[i], "--cpp-header-probe") == 0) {
@@ -911,6 +911,11 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     temp = 10;
                 }
                 mSettings.maxCtuDepth = temp;
+            }
+
+            // undocumented option for usage in Python tests to indicate that no build dir should be injected
+            else if (std::strcmp(argv[i], "--no-cppcheck-build-dir") == 0) {
+                mSettings.buildDir.clear();
             }
 
             else if (std::strcmp(argv[i], "--no-cpp-header-probe") == 0) {
@@ -1455,6 +1460,11 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
     if (!mPathNames.empty() && project.projectType != ImportProject::Type::NONE) {
         mLogger.printError("--project cannot be used in conjunction with source files.");
+        return Result::Fail;
+    }
+
+    if (!mSettings.buildDir.empty() && !Path::isDirectory(mSettings.buildDir)) {
+        mLogger.printError("Directory '" + mSettings.buildDir + "' specified by --cppcheck-build-dir argument has to be existent.");
         return Result::Fail;
     }
 
