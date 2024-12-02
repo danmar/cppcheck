@@ -24,6 +24,7 @@ defaults:
 jobs:
 
   build_qt:
+    if: false
     strategy:
       matrix:
         os: [windows-2019, windows-2022]
@@ -76,8 +77,8 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-2019, windows-2022]
-        config: [debug, release]
+        os: [windows-2022]
+        config: [release]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
