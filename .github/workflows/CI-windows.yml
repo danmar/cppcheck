@@ -251,3 +251,15 @@ jobs:
           cd test\cfg
           cl.exe windows.cpp -DUNICODE=1 -D_UNICODE=1 /Zs || exit /b !errorlevel!
           cl.exe mfc.cpp /EHsc /Zs || exit /b !errorlevel!
+
+      - name: Show all ignored files
+        if: false  # TODO: currently lists all the contents of ignored folders - we only need what actually matched
+        run: |
+          git ls-files --others --ignored --exclude-standard || exit /b !errorlevel!
+
+      - name: Check for changed and unversioned files
+        run: |
+          :: TODO: how to do this with a single command?
+          git status --ignored=no
+          :: TODO: make this work
+          :: git status --ignored=no | grep -q 'working tree clean'
