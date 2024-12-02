@@ -190,6 +190,17 @@ jobs:
         env:
           PYTHONPATH: ./tools
 
+      - name: Show all ignored files
+        if: false  # TODO: currently lists all the contents of ignored folders - we only need what actually matched
+        run: |
+          git ls-files --others --ignored --exclude-standard
+
+      - name: Check for changed and unversioned files
+        run: |
+          # TODO: how to do this with a single command?
+          git status --ignored=no
+          git status --ignored=no | grep -q 'working tree clean'
+
   dmake:
     strategy:
       matrix:
