@@ -85,10 +85,12 @@ def test_gui_project_loads_compile_commands_1():
 def test_gui_project_loads_compile_commands_2():
     __create_compile_commands()
     exclude_path_1 = 'proj2/b'
+    # TODO: generate in temporary folder
     create_gui_project_file(os.path.join(__proj_dir, 'test.cppcheck'),
                             import_project='compile_commands.json',
                             exclude_paths=[exclude_path_1])
     ret, stdout, _ = cppcheck(['--project=' + os.path.join('proj2','test.cppcheck')], cwd=__script_dir)
+    os.remove(os.path.join(__proj_dir, 'test.cppcheck'))  # TODO: do not remove explicitly
     file1 = os.path.join('proj2', 'a', 'a.c')
     file2 = os.path.join('proj2', 'b', 'b.c') # Excluded by test.cppcheck
     assert ret == 0, stdout
@@ -97,8 +99,9 @@ def test_gui_project_loads_compile_commands_2():
 
 
 def test_gui_project_loads_relative_vs_solution():
-    create_gui_project_file(os.path.join(__script_dir, 'test.cppcheck'), import_project='proj2/proj2.sln')
+    create_gui_project_file(os.path.join(__script_dir, 'test.cppcheck'), import_project='proj2/proj2.sln')  # TODO: generate in temporary folder
     ret, stdout, _ = cppcheck(['--project=test.cppcheck'], cwd=__script_dir)
+    os.remove(os.path.join(__script_dir, 'test.cppcheck'))  # TODO: do not remove explicitly
     file1 = os.path.join('proj2', 'a', 'a.c')
     file2 = os.path.join('proj2', 'b', 'b.c')
     assert ret == 0, stdout
@@ -112,8 +115,9 @@ def test_gui_project_loads_relative_vs_solution():
     assert stdout.find('Checking %s Release|x64...' % file2) >= 0
 
 def test_gui_project_loads_absolute_vs_solution():
-    create_gui_project_file(os.path.join(__script_dir, 'test.cppcheck'), import_project=os.path.join(__proj_dir, 'proj2.sln'))
+    create_gui_project_file(os.path.join(__script_dir, 'test.cppcheck'), import_project=os.path.join(__proj_dir, 'proj2.sln'))  # TODO: generate in temporary folder
     ret, stdout, _ = cppcheck(['--project=test.cppcheck'], cwd=__script_dir)
+    os.remove(os.path.join(__script_dir, 'test.cppcheck'))  # TODO: do not remove explicitly
     file1 = os.path.join(__proj_dir, 'a', 'a.c')
     file2 = os.path.join(__proj_dir, 'b', 'b.c')
     assert ret == 0, stdout
@@ -127,21 +131,25 @@ def test_gui_project_loads_absolute_vs_solution():
     assert stdout.find('Checking %s Release|x64...' % file2) >= 0
 
 def test_gui_project_loads_relative_vs_solution_2():
-    create_gui_project_file(os.path.join(__script_dir, 'test.cppcheck'), root_path='proj2', import_project='proj2/proj2.sln')
+    create_gui_project_file(os.path.join(__script_dir, 'test.cppcheck'), root_path='proj2', import_project='proj2/proj2.sln')  # TODO: generate in temporary folder
     ret, stdout, stderr = cppcheck(['--project=test.cppcheck'], cwd=__script_dir)
+    os.remove(os.path.join(__script_dir, 'test.cppcheck'))  # TODO: do not remove explicitly
     assert ret == 0, stdout
     assert stderr == __ERR_A + __ERR_B
 
 def test_gui_project_loads_relative_vs_solution_with_exclude():
-    create_gui_project_file(os.path.join(__script_dir, 'test.cppcheck'), root_path='proj2', import_project='proj2/proj2.sln', exclude_paths=['b'])
+    create_gui_project_file(os.path.join(__script_dir, 'test.cppcheck'), root_path='proj2', import_project='proj2/proj2.sln', exclude_paths=['b'])  # TODO: generate in temporary folder
     ret, stdout, stderr = cppcheck(['--project=test.cppcheck'], cwd=__script_dir)
+    os.remove(os.path.join(__script_dir, 'test.cppcheck'))  # TODO: do not remove explicitly
     assert ret == 0, stdout
     assert stderr == __ERR_A
 
 def test_gui_project_loads_absolute_vs_solution_2():
+    # TODO: generate in temporary folder
     create_gui_project_file(os.path.join(__script_dir, 'test.cppcheck'),
                             root_path=__proj_dir,
                             import_project=os.path.join(__proj_dir, 'proj2.sln'))
     ret, stdout, stderr = cppcheck(['--project=test.cppcheck'], cwd=__script_dir)
+    os.remove(os.path.join(__script_dir, 'test.cppcheck'))  # TODO: do not remove explicitly
     assert ret == 0, stdout
     assert stderr == __ERR_A + __ERR_B
