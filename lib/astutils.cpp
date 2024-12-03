@@ -3815,7 +3815,7 @@ static const Token *skipUnreachableElseBranch(const Token *tok)
     condTok = condTok->astOperand2();
 
     if ((condTok->hasKnownIntValue() && condTok->getKnownIntValue() != 0)
-        || (unknownLeafValuesAreTemplateArgs(condTok) && !condTok->getValue(0))) {
+        || (unknownLeafValuesAreTemplateArgs(condTok) && condTok->getValueNE(0))) {
         tok = tok->link();
     }
 
