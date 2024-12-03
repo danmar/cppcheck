@@ -251,6 +251,7 @@ while True:
                 cmd = 'python3' + ' ' + os.path.join(path, 'tools', 'donate-cpu.py') + ' ' + '--version'
                 with subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, universal_newlines=True) as p:
                     try:
+                        # TODO: handle p.returncode?
                         stdout, _ = p.communicate()
                     except:
                         return None

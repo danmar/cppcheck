@@ -9,6 +9,7 @@ import pytest
 from testutils import cppcheck, assert_cppcheck
 
 try:
+    # TODO: handle exitcode?
     subprocess.call(['clang', '--version'])
 except OSError:
     pytest.skip("'clang' does not exist", allow_module_level=True)

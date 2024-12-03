@@ -133,6 +133,7 @@ for entry in versions:
         # get version string
         version_cmd = exe + ' ' + '--version'
         with subprocess.Popen(version_cmd.split(), stdout=subprocess.PIPE, universal_newlines=True) as p:
+            # TODO: handle p.returncode?
             version = p.stdout.read().strip()
         # sanitize version
         version = version.replace('Cppcheck ', '').replace(' dev', '')
