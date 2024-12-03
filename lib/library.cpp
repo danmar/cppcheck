@@ -1280,11 +1280,13 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
         return false;
 
     if (const Token *beginScope = end->link()) {
+        const Token * fTok = beginScope->linkAt(-1) && beginScope->linkAt(-1)->previous() && beginScope->linkAt(-1)->previous()->function() ? beginScope->linkAt(-1)->previous()->function()->tokenDef : nullptr;
         while (beginScope && beginScope != end) {
             if (beginScope->function()) {
                 if (isnoreturn(beginScope))
                     return true;
-                if (Token::Match(beginScope->linkAt(1), ") ;") && beginScope->function()->token && beginScope->function()->token->linkAt(1) && beginScope->function()->token->linkAt(1)->linkAt(1)) {
+                if (Token::Match(beginScope->linkAt(1), ") ;") && beginScope->function()->token && beginScope->function()->tokenDef != fTok
+                && beginScope->function()->token->linkAt(1) && beginScope->function()->token->linkAt(1)->linkAt(1)) {
                     std::string unknownFunction;
                     if (isScopeNoReturn(beginScope->function()->token->linkAt(1)->linkAt(1), &unknownFunction))
                         return true;
