@@ -1279,6 +1279,21 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
     if (!Token::simpleMatch(end->tokAt(-2), ") ; }"))
         return false;
 
+    if (const Token *beginScope = end->link()) {
+        while (beginScope && beginScope != end) {
+            if (beginScope->function()) {
+                if (isnoreturn(beginScope))
+                    return true;
+                if (Token::Match(beginScope->linkAt(1), ") ;") && beginScope->function()->token && beginScope->function()->token->linkAt(1) && beginScope->function()->token->linkAt(1)->linkAt(1)) {
+                    std::string unknownFunction;
+                    if (isScopeNoReturn(beginScope->function()->token->linkAt(1)->linkAt(1), &unknownFunction))
+                        return true;
+                }
+            }
+            beginScope = beginScope->next();
+        }
+    }
+
     const Token *funcname = end->linkAt(-2)->previous();
     if (funcname->isCpp() && funcname->astTop()->str() == "throw")
         return true;
