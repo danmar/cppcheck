@@ -245,7 +245,7 @@ private:
 
         TEST_CASE(simplifyTypedefTokenColumn1);
         TEST_CASE(simplifyTypedefTokenColumn2);
-        TEST_CASE(simplifyTypedefTokenColumn3;
+        TEST_CASE(simplifyTypedefTokenColumn3);
 
         TEST_CASE(typedefInfo1);
 
