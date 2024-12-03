@@ -1894,6 +1894,16 @@ const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Sett
     });
 }
 
+const ValueFlow::Value * Token::getValueNE(MathLib::bigint val) const
+{
+    if (!mImpl->mValues)
+        return nullptr;
+    const auto it = std::find_if(mImpl->mValues->cbegin(), mImpl->mValues->cend(), [=](const ValueFlow::Value& value) {
+        return value.isIntValue() && !value.isImpossible() && value.intvalue != val;
+    });
+    return it == mImpl->mValues->end() ? nullptr : &*it;
+}
+
 const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, nonneg int argnr, const Settings &settings) const
 {
     if (!mImpl->mValues)
