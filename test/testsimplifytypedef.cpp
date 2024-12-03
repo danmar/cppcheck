@@ -303,7 +303,7 @@ private:
         Tokenizer tokenizer(settings1, *this);
 
         std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "file.c"))
+        if (!tokenizer.list.createTokens(istr, createFileWithDetails("file.c")))
             return "";
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
@@ -319,7 +319,7 @@ private:
         Tokenizer tokenizer(settings1, *this);
 
         std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "file.c"))
+        if (!tokenizer.list.createTokens(istr, createFileWithDetails("file.c")))
             return {};
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
@@ -4423,7 +4423,7 @@ private:
 
         Tokenizer tokenizer(settings1, *this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.list.createTokens(istr, "file.c"));
+        ASSERT(tokenizer.list.createTokens(istr, createFileWithDetails("file.c")));
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 
