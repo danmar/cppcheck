@@ -110,6 +110,7 @@ private:
         TEST_CASE(doublefree15);
         TEST_CASE(doublefree16);
         TEST_CASE(doublefree17); // #8109: delete with comma operator
+        TEST_CASE(doublefree18); // #5783: Memory is free once, subfunction that doesn't return
 
         // exit
         TEST_CASE(exit1);
@@ -1794,6 +1795,21 @@ private:
               "    delete (b, c);\n"
               "}\n", true);
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6]: (error) Memory pointed to by 'c' is freed twice.\n", errout_str());
+    }
+
+    void doublefree18() {
+        check("void myassert() {\n"
+              "    exit(1);\n"
+              "}\n"
+              " \n"
+              "void f(char *buf) {\n"
+              "    if(i==0) {\n"
+              "        free(buf);\n"
+              "        myassert();\n"
+              "    }\n"
+              "    free(buf);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout_str());
     }
 
     void exit1() {
