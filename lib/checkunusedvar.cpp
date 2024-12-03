@@ -1551,7 +1551,7 @@ void CheckUnusedVar::checkStructMemberUsage()
                 }
                 // Member referenced in offsetof
                 if (Token::Match(tok, ("offsetof ( struct| " + scope.className + " , %name%").c_str())) {
-                    tok = tok->astSibling()->astOperand2();
+                    tok = Token::simpleMatch(tok->tokAt(2), "struct") ? tok->tokAt(5) : tok->tokAt(4);
                     if (tok->str() == var.name()) {
                         use = true;
                         break;
