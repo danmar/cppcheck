@@ -245,6 +245,7 @@ private:
 
         TEST_CASE(simplifyTypedefTokenColumn1);
         TEST_CASE(simplifyTypedefTokenColumn2);
+        TEST_CASE(simplifyTypedefTokenColumn3);
 
         TEST_CASE(typedefInfo1);
 
@@ -4491,6 +4492,14 @@ private:
         const Token* type = x->previous();
         ASSERT_EQUALS("*", type->str());
         ASSERT_EQUALS(5, type->column());
+    }
+
+    void simplifyTypedefTokenColumn3() { // #13368
+        const char code[] = "typedef struct S_ {} S;\n"
+                            "typedef S* P;\n"
+                            "void f(const P p);\n";
+        ASSERT_EQUALS("struct S_ { } ; void f ( struct S_ * const p ) ;", // don't crash
+                      tok(code));
     }
 
     void typedefInfo1() {
