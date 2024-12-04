@@ -4,39 +4,39 @@
 <context>
     <name>About</name>
     <message>
-        <location filename="about.ui" line="14"/>
+        <location filename="about.ui"/>
         <source>About Cppcheck</source>
         <translation>關於 Cppcheck</translation>
     </message>
     <message>
-        <location filename="about.ui" line="64"/>
+        <location filename="about.ui"/>
         <source>Version %1</source>
         <translation>版本 %1</translation>
     </message>
     <message>
-        <location filename="about.ui" line="71"/>
+        <location filename="about.ui"/>
         <source>Cppcheck - A tool for static C/C++ code analysis.</source>
         <translation>Cppcheck - 一款靜態 C/C++ 程式碼分析工具。</translation>
     </message>
     <message>
-        <location filename="about.ui" line="81"/>
+        <location filename="about.ui"/>
         <source>Copyright © 2007-%1 Cppcheck team.</source>
         <translation>著作權 © 2007-%1 Cppcheck 團隊。</translation>
     </message>
     <message>
-        <location filename="about.ui" line="91"/>
+        <location filename="about.ui"/>
         <source>This program is licensed under the terms
 of the GNU General Public License version 3</source>
         <translation>該程式是根據 GNU 通用公眾授權條款第 3 版
 的規定進行授權的</translation>
     </message>
     <message>
-        <location filename="about.ui" line="102"/>
+        <location filename="about.ui"/>
         <source>Visit Cppcheck homepage at %1</source>
         <translation>訪問 Cppcheck 主頁: %1</translation>
     </message>
     <message>
-        <location filename="about.ui" line="115"/>
+        <location filename="about.ui"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Many thanks to these libraries that we use:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;PCRE&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;PicoJSON&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Qt&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;TinyXML2&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Boost&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <oldsource>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Many thanks to these libraries that we use:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;pcre&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;picojson&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;qt&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;tinyxml2&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</oldsource>
         <translation type="unfinished"></translation>
@@ -45,12 +45,12 @@ of the GNU General Public License version 3</source>
 <context>
     <name>ApplicationDialog</name>
     <message>
-        <location filename="applicationdialog.ui" line="23"/>
+        <location filename="applicationdialog.ui"/>
         <source>Add an application</source>
         <translation>新增應用程式</translation>
     </message>
     <message>
-        <location filename="applicationdialog.ui" line="41"/>
+        <location filename="applicationdialog.ui"/>
         <source>Here you can add an application that can open error files. Specify a name for the application, the application executable and command line parameters for the application.
 
 The following texts in parameters are replaced with appropriate values when application is executed:
@@ -65,22 +65,22 @@ Parameters: -l(line) (file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="applicationdialog.ui" line="76"/>
+        <location filename="applicationdialog.ui"/>
         <source>&amp;Name:</source>
         <translation>名稱(&amp;N):</translation>
     </message>
     <message>
-        <location filename="applicationdialog.ui" line="86"/>
+        <location filename="applicationdialog.ui"/>
         <source>&amp;Executable:</source>
         <translation>執行檔(&amp;E):</translation>
     </message>
     <message>
-        <location filename="applicationdialog.ui" line="96"/>
+        <location filename="applicationdialog.ui"/>
         <source>&amp;Parameters:</source>
         <translation>參數(&amp;P):</translation>
     </message>
     <message>
-        <location filename="applicationdialog.ui" line="138"/>
+        <location filename="applicationdialog.ui"/>
         <source>Browse</source>
         <translation>瀏覽</translation>
     </message>
@@ -108,42 +108,42 @@ Parameters: -l(line) (file)</source>
 <context>
     <name>ComplianceReportDialog</name>
     <message>
-        <location filename="compliancereportdialog.ui" line="14"/>
+        <location filename="compliancereportdialog.ui"/>
         <source>Compliance Report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="compliancereportdialog.ui" line="29"/>
+        <location filename="compliancereportdialog.ui"/>
         <source>Project name</source>
         <translation>專案名稱</translation>
     </message>
     <message>
-        <location filename="compliancereportdialog.ui" line="22"/>
+        <location filename="compliancereportdialog.ui"/>
         <source>Project version</source>
         <translation>專案版本</translation>
     </message>
     <message>
-        <location filename="compliancereportdialog.ui" line="42"/>
+        <location filename="compliancereportdialog.ui"/>
         <source>Coding Standard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="compliancereportdialog.ui" line="50"/>
+        <location filename="compliancereportdialog.ui"/>
         <source>Misra C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="compliancereportdialog.ui" line="55"/>
+        <location filename="compliancereportdialog.ui"/>
         <source>Cert C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="compliancereportdialog.ui" line="60"/>
+        <location filename="compliancereportdialog.ui"/>
         <source>Cert C++</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="compliancereportdialog.ui" line="70"/>
+        <location filename="compliancereportdialog.ui"/>
         <source>List of files with md5 checksums</source>
         <translation type="unfinished"></translation>
     </message>
@@ -191,17 +191,17 @@ Parameters: -l(line) (file)</source>
 <context>
     <name>HelpDialog</name>
     <message>
-        <location filename="helpdialog.ui" line="14"/>
+        <location filename="helpdialog.ui"/>
         <source>Cppcheck GUI help</source>
         <translation>Cppcheck GUI 幫助</translation>
     </message>
     <message>
-        <location filename="helpdialog.ui" line="34"/>
+        <location filename="helpdialog.ui"/>
         <source>Contents</source>
         <translation>內容</translation>
     </message>
     <message>
-        <location filename="helpdialog.ui" line="44"/>
+        <location filename="helpdialog.ui"/>
         <source>Index</source>
         <translation>索引</translation>
     </message>
@@ -219,17 +219,17 @@ Parameters: -l(line) (file)</source>
 <context>
     <name>LibraryAddFunctionDialog</name>
     <message>
-        <location filename="libraryaddfunctiondialog.ui" line="23"/>
+        <location filename="libraryaddfunctiondialog.ui"/>
         <source>Add function</source>
         <translation>新增函式</translation>
     </message>
     <message>
-        <location filename="libraryaddfunctiondialog.ui" line="34"/>
+        <location filename="libraryaddfunctiondialog.ui"/>
         <source>Function name(s)</source>
         <translation>函式名稱</translation>
     </message>
     <message>
-        <location filename="libraryaddfunctiondialog.ui" line="44"/>
+        <location filename="libraryaddfunctiondialog.ui"/>
         <source>Number of arguments</source>
         <translation>引數數量</translation>
     </message>
@@ -237,87 +237,87 @@ Parameters: -l(line) (file)</source>
 <context>
     <name>LibraryDialog</name>
     <message>
-        <location filename="librarydialog.ui" line="14"/>
+        <location filename="librarydialog.ui"/>
         <source>Library Editor</source>
         <translation>程式庫編輯器</translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="22"/>
+        <location filename="librarydialog.ui"/>
         <source>Open</source>
         <translation>開啟</translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="29"/>
+        <location filename="librarydialog.ui"/>
         <source>Save</source>
         <translation>儲存</translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="36"/>
+        <location filename="librarydialog.ui"/>
         <source>Save as</source>
         <translation type="unfinished">另存為</translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="62"/>
+        <location filename="librarydialog.ui"/>
         <source>Functions</source>
         <translation>函式</translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="71"/>
+        <location filename="librarydialog.ui"/>
         <source>Sort</source>
         <translation>排序</translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="111"/>
+        <location filename="librarydialog.ui"/>
         <source>Add</source>
         <translation>新增</translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="131"/>
+        <location filename="librarydialog.ui"/>
         <source>Filter:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="164"/>
+        <location filename="librarydialog.ui"/>
         <source>Comments</source>
         <translation>註釋</translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="204"/>
+        <location filename="librarydialog.ui"/>
         <source>noreturn</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="212"/>
+        <location filename="librarydialog.ui"/>
         <source>False</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="217"/>
+        <location filename="librarydialog.ui"/>
         <source>True</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="222"/>
+        <location filename="librarydialog.ui"/>
         <source>Unknown</source>
         <translation>未知</translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="232"/>
+        <location filename="librarydialog.ui"/>
         <source>return value must be used</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="239"/>
+        <location filename="librarydialog.ui"/>
         <source>ignore function in leaks checking</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="246"/>
+        <location filename="librarydialog.ui"/>
         <source>Arguments</source>
         <translation>引數</translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="258"/>
+        <location filename="librarydialog.ui"/>
         <source>Edit</source>
         <translation>編輯</translation>
     </message>
@@ -363,12 +363,12 @@ Parameters: -l(line) (file)</source>
 <context>
     <name>LibraryEditArgDialog</name>
     <message>
-        <location filename="libraryeditargdialog.ui" line="14"/>
+        <location filename="libraryeditargdialog.ui"/>
         <source>Edit argument</source>
         <translation>編輯引數</translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="20"/>
+        <location filename="libraryeditargdialog.ui"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
 &lt;p&gt;Is bool value allowed? For instance result from comparison or from &apos;!&apos; operator.&lt;/p&gt;
 &lt;p&gt;Typically, set this if the argument is a pointer, size, etc.&lt;/p&gt;
@@ -378,12 +378,12 @@ Parameters: -l(line) (file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="28"/>
+        <location filename="libraryeditargdialog.ui"/>
         <source>Not bool</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="35"/>
+        <location filename="libraryeditargdialog.ui"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
 &lt;p&gt;Is a null parameter value allowed?&lt;/p&gt;
 &lt;p&gt;Typically this should be used on any pointer parameter that does not allow null.&lt;/p&gt;
@@ -393,79 +393,72 @@ Parameters: -l(line) (file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="43"/>
+        <location filename="libraryeditargdialog.ui"/>
         <source>Not null</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="50"/>
+        <location filename="libraryeditargdialog.ui"/>
         <source>Not uninit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="57"/>
+        <location filename="libraryeditargdialog.ui"/>
         <source>String</source>
         <translation>字串</translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="70"/>
+        <location filename="libraryeditargdialog.ui"/>
         <source>Format string</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="92"/>
+        <location filename="libraryeditargdialog.ui"/>
         <source>Min size of buffer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="101"/>
-        <location filename="libraryeditargdialog.ui" line="203"/>
+        <location filename="libraryeditargdialog.ui"/>
         <source>Type</source>
         <translation>型別</translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="109"/>
-        <location filename="libraryeditargdialog.ui" line="214"/>
+        <location filename="libraryeditargdialog.ui"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="114"/>
-        <location filename="libraryeditargdialog.ui" line="219"/>
+        <location filename="libraryeditargdialog.ui"/>
         <source>argvalue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="119"/>
-        <location filename="libraryeditargdialog.ui" line="224"/>
+        <location filename="libraryeditargdialog.ui"/>
         <source>mul</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="124"/>
-        <location filename="libraryeditargdialog.ui" line="229"/>
+        <location filename="libraryeditargdialog.ui"/>
         <source>strlen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="132"/>
-        <location filename="libraryeditargdialog.ui" line="237"/>
+        <location filename="libraryeditargdialog.ui"/>
         <source>Arg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="159"/>
-        <location filename="libraryeditargdialog.ui" line="264"/>
+        <location filename="libraryeditargdialog.ui"/>
         <source>Arg2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="194"/>
+        <location filename="libraryeditargdialog.ui"/>
         <source>and</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="310"/>
+        <location filename="libraryeditargdialog.ui"/>
         <source>Valid values</source>
         <translation>有效值</translation>
     </message>
@@ -473,8 +466,7 @@ Parameters: -l(line) (file)</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="mainwindow.ui" line="26"/>
-        <location filename="mainwindow.ui" line="685"/>
+        <location filename="mainwindow.ui"/>
         <location filename="mainwindow.cpp" line="448"/>
         <location filename="mainwindow.cpp" line="635"/>
         <location filename="mainwindow.cpp" line="715"/>
@@ -492,563 +484,555 @@ Parameters: -l(line) (file)</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="84"/>
+        <location filename="mainwindow.ui"/>
         <source>Checking for updates</source>
         <translation>檢查更新</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="100"/>
+        <location filename="mainwindow.ui"/>
         <source>Hide</source>
         <translation>隱藏</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="132"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;File</source>
         <translation>檔案(&amp;F)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="152"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;View</source>
         <translation>檢視(&amp;V)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="156"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Toolbars</source>
         <translation>工具條(&amp;T)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="164"/>
-        <location filename="mainwindow.ui" line="969"/>
+        <location filename="mainwindow.ui"/>
         <source>Report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="198"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Help</source>
         <translation>幫助(&amp;H)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="208"/>
+        <location filename="mainwindow.ui"/>
         <source>A&amp;nalyze</source>
         <translation>分析(&amp;N)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="212"/>
+        <location filename="mainwindow.ui"/>
         <source>C++ standard</source>
         <translation>C++ 標準</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="224"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;C standard</source>
         <translation>C 標準(&amp;C)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="251"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Edit</source>
         <translation>編輯(&amp;E)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="264"/>
+        <location filename="mainwindow.ui"/>
         <source>Standard</source>
         <translation>標準</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="282"/>
+        <location filename="mainwindow.ui"/>
         <source>Categories</source>
         <translation>分類</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="301"/>
+        <location filename="mainwindow.ui"/>
         <source>Filter</source>
         <translation>篩選</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="312"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;License...</source>
         <translation>授權(&amp;L)...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="317"/>
+        <location filename="mainwindow.ui"/>
         <source>A&amp;uthors...</source>
         <translation>作者(&amp;U)...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="326"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;About...</source>
         <translation>關於(&amp;A)...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="331"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Files...</source>
         <translation>檔案(&amp;F)...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="334"/>
-        <location filename="mainwindow.ui" line="337"/>
+        <location filename="mainwindow.ui"/>
         <source>Analyze files</source>
         <translation>分析檔案</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="340"/>
+        <location filename="mainwindow.ui"/>
         <source>Ctrl+F</source>
         <translation>Ctrl+F</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="349"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Directory...</source>
         <translation>目錄(&amp;D)...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="352"/>
-        <location filename="mainwindow.ui" line="355"/>
+        <location filename="mainwindow.ui"/>
         <source>Analyze directory</source>
         <translation>分析目錄</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="358"/>
+        <location filename="mainwindow.ui"/>
         <source>Ctrl+D</source>
         <translation>Ctrl+D</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="367"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Reanalyze modified files</source>
         <translation>重新分析已修改的檔案(&amp;R)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="370"/>
+        <location filename="mainwindow.ui"/>
         <source>Ctrl+R</source>
         <translation>Ctrl+R</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="379"/>
+        <location filename="mainwindow.ui"/>
         <source>Reanal&amp;yze all files</source>
         <translation>重新分析所有檔案(&amp;Y)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="388"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Stop</source>
         <translation>停止(&amp;S)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="391"/>
-        <location filename="mainwindow.ui" line="394"/>
+        <location filename="mainwindow.ui"/>
         <source>Stop analysis</source>
         <translation>停止分析</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="397"/>
+        <location filename="mainwindow.ui"/>
         <source>Esc</source>
         <translation>Esc</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="406"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Save results to file...</source>
         <translation>儲存結果為檔案(&amp;S)...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="409"/>
+        <location filename="mainwindow.ui"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="414"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Quit</source>
         <translation>退出(&amp;Q)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="417"/>
+        <location filename="mainwindow.ui"/>
         <source>Ctrl+Q</source>
         <translation>Ctrl+Q</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="426"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Clear results</source>
         <translation>清除結果(&amp;C)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="435"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Preferences</source>
         <translation>偏好設定(&amp;P)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="447"/>
+        <location filename="mainwindow.ui"/>
         <source>Style war&amp;nings</source>
         <translation>樣式警告(&amp;N)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="450"/>
-        <location filename="mainwindow.ui" line="453"/>
+        <location filename="mainwindow.ui"/>
         <source>Show style warnings</source>
         <translation>顯示樣式警告</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="465"/>
+        <location filename="mainwindow.ui"/>
         <source>E&amp;rrors</source>
         <translation>錯誤(&amp;R)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="468"/>
-        <location filename="mainwindow.ui" line="471"/>
+        <location filename="mainwindow.ui"/>
         <location filename="mainwindow.cpp" line="2318"/>
         <source>Show errors</source>
         <translation>顯示錯誤</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="476"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Check all</source>
         <translation>全部檢查(&amp;C)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="481"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Uncheck all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="486"/>
+        <location filename="mainwindow.ui"/>
         <source>Collapse &amp;all</source>
         <translation>全部摺疊(&amp;A)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="491"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Expand all</source>
         <translation>全部展開(&amp;E)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="499"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Standard</source>
         <translation>標準(&amp;S)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="502"/>
+        <location filename="mainwindow.ui"/>
         <source>Standard items</source>
         <translatorcomment>標準項目</translatorcomment>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="507"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Contents</source>
         <translation>內容(&amp;C)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="510"/>
+        <location filename="mainwindow.ui"/>
         <source>Open the help contents</source>
         <translation>開啟幫助內容</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="513"/>
+        <location filename="mainwindow.ui"/>
         <source>F1</source>
         <translation>F1</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="518"/>
+        <location filename="mainwindow.ui"/>
         <source>Toolbar</source>
         <translation>工具條</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="526"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Categories</source>
         <translation>分類(&amp;C)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="529"/>
+        <location filename="mainwindow.ui"/>
         <source>Error categories</source>
         <translation>錯誤分類</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="534"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Open XML...</source>
         <translation>開啟 XML(&amp;O)...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="543"/>
+        <location filename="mainwindow.ui"/>
         <source>Open P&amp;roject File...</source>
         <translation>開啟專案檔(&amp;R)...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="546"/>
+        <location filename="mainwindow.ui"/>
         <source>Ctrl+Shift+O</source>
         <translation>Ctrl+Shift+O</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="555"/>
+        <location filename="mainwindow.ui"/>
         <source>Sh&amp;ow Scratchpad...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="560"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;New Project File...</source>
         <translation>新增專案檔(&amp;N)...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="563"/>
+        <location filename="mainwindow.ui"/>
         <source>Ctrl+Shift+N</source>
         <translation>Ctrl+Shift+N</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="568"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Log View</source>
         <translation>日誌檢視(&amp;L)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="571"/>
+        <location filename="mainwindow.ui"/>
         <source>Log View</source>
         <translation>日誌檢視</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="579"/>
+        <location filename="mainwindow.ui"/>
         <source>C&amp;lose Project File</source>
         <translation>關閉專案檔(&amp;L)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="587"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Edit Project File...</source>
         <translation>編輯專案檔(&amp;E)...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="599"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Statistics</source>
         <translation>統計資料(&amp;S)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="611"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Warnings</source>
         <translation>警告(&amp;W)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="614"/>
-        <location filename="mainwindow.ui" line="617"/>
+        <location filename="mainwindow.ui"/>
         <location filename="mainwindow.cpp" line="2319"/>
         <source>Show warnings</source>
         <translation>顯示警告</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="629"/>
+        <location filename="mainwindow.ui"/>
         <source>Per&amp;formance warnings</source>
         <translation>效能警告(&amp;F)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="632"/>
-        <location filename="mainwindow.ui" line="635"/>
+        <location filename="mainwindow.ui"/>
         <source>Show performance warnings</source>
         <translation>顯示下效能警告</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="643"/>
+        <location filename="mainwindow.ui"/>
         <source>Show &amp;hidden</source>
         <translation>顯示隱藏項目(&amp;H)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="655"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Information</source>
         <translation>資訊(&amp;I)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="658"/>
+        <location filename="mainwindow.ui"/>
         <source>Show information messages</source>
         <translation>顯示資訊訊息</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="670"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Portability</source>
         <translation>可移植性(&amp;P)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="673"/>
+        <location filename="mainwindow.ui"/>
         <source>Show portability warnings</source>
         <translation>顯示可移植性警告</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="688"/>
+        <location filename="mainwindow.ui"/>
         <source>Show Cppcheck results</source>
         <translation>顯示 Cppcheck 結果</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="700"/>
+        <location filename="mainwindow.ui"/>
         <source>Clang</source>
         <translation>Clang</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="703"/>
+        <location filename="mainwindow.ui"/>
         <source>Show Clang results</source>
         <translation>顯示 Clang 結果</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="711"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Filter</source>
         <translation>篩選(&amp;F)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="714"/>
+        <location filename="mainwindow.ui"/>
         <source>Filter results</source>
         <translation>篩選結果</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="730"/>
+        <location filename="mainwindow.ui"/>
         <source>Windows 32-bit ANSI</source>
         <translation>Windows 32 位元 ANSI</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="738"/>
+        <location filename="mainwindow.ui"/>
         <source>Windows 32-bit Unicode</source>
         <translation>Windows 32 位元 Unicode</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="746"/>
+        <location filename="mainwindow.ui"/>
         <source>Unix 32-bit</source>
         <translation>Unix 32 位元</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="754"/>
+        <location filename="mainwindow.ui"/>
         <source>Unix 64-bit</source>
         <translation>Unix 64 位元</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="762"/>
+        <location filename="mainwindow.ui"/>
         <source>Windows 64-bit</source>
         <translation>Windows 64 位元</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="770"/>
+        <location filename="mainwindow.ui"/>
         <source>P&amp;latforms</source>
         <translation>平臺(&amp;L)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="784"/>
+        <location filename="mainwindow.ui"/>
         <source>C++&amp;11</source>
         <translation>C++&amp;11</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="795"/>
+        <location filename="mainwindow.ui"/>
         <source>C&amp;99</source>
         <translation>C&amp;99</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="803"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Posix</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="811"/>
+        <location filename="mainwindow.ui"/>
         <source>C&amp;11</source>
         <translation>C&amp;11</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="835"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;C89</source>
         <translation>&amp;C89</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="843"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;C++03</source>
         <translation>&amp;C++03</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="848"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Print...</source>
         <translation>列印(&amp;P)...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="851"/>
+        <location filename="mainwindow.ui"/>
         <source>Print the Current Report</source>
         <translation>列印當前報告</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="856"/>
+        <location filename="mainwindow.ui"/>
         <source>Print Pre&amp;view...</source>
         <translation>列印預覽(&amp;V)...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="859"/>
+        <location filename="mainwindow.ui"/>
         <source>Open a Print Preview Dialog for the Current Results</source>
         <translation>開啟當前結果的列印預覽視窗</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="864"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Library Editor...</source>
         <translation>程式庫編輯器(&amp;L)...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="867"/>
+        <location filename="mainwindow.ui"/>
         <source>Open library editor</source>
         <translation>開啟程式庫編輯器</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="875"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Auto-detect language</source>
         <translation>自動偵測語言(&amp;A)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="883"/>
+        <location filename="mainwindow.ui"/>
         <source>&amp;Enforce C++</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="891"/>
+        <location filename="mainwindow.ui"/>
         <source>E&amp;nforce C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="902"/>
+        <location filename="mainwindow.ui"/>
         <source>C++14</source>
         <translation>C++14</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="910"/>
+        <location filename="mainwindow.ui"/>
         <source>Reanalyze and check library</source>
         <translation>重新分析並檢查程式庫</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="918"/>
+        <location filename="mainwindow.ui"/>
         <source>Check configuration (defines, includes)</source>
         <translation>檢查組態 (定義、包含)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="926"/>
+        <location filename="mainwindow.ui"/>
         <source>C++17</source>
         <translation>C++17</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="937"/>
+        <location filename="mainwindow.ui"/>
         <source>C++20</source>
         <translation>C++20</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="964"/>
+        <location filename="mainwindow.ui"/>
         <source>Compliance report...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="977"/>
+        <location filename="mainwindow.ui"/>
         <source>Normal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="985"/>
+        <location filename="mainwindow.ui"/>
         <source>Misra C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="993"/>
+        <location filename="mainwindow.ui"/>
         <source>Misra C++ 2008</source>
         <translation type="unfinished">Misra C++ 2008</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1001"/>
+        <location filename="mainwindow.ui"/>
         <source>Cert C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1009"/>
+        <location filename="mainwindow.ui"/>
         <source>Cert C++</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1017"/>
+        <location filename="mainwindow.ui"/>
         <source>Misra C++ 2023</source>
         <translation type="unfinished">Misra C++ 2023</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1025"/>
+        <location filename="mainwindow.ui"/>
         <source>Autosar</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1491,27 +1475,27 @@ Do you want to remove the file from the recently used projects -list?</source>
 <context>
     <name>NewSuppressionDialog</name>
     <message>
-        <location filename="newsuppressiondialog.ui" line="17"/>
+        <location filename="newsuppressiondialog.ui"/>
         <source>New suppression</source>
         <translation>新建抑制</translation>
     </message>
     <message>
-        <location filename="newsuppressiondialog.ui" line="25"/>
+        <location filename="newsuppressiondialog.ui"/>
         <source>Error ID</source>
         <translation>錯誤 ID</translation>
     </message>
     <message>
-        <location filename="newsuppressiondialog.ui" line="32"/>
+        <location filename="newsuppressiondialog.ui"/>
         <source>File name</source>
         <translation>檔案名稱</translation>
     </message>
     <message>
-        <location filename="newsuppressiondialog.ui" line="42"/>
+        <location filename="newsuppressiondialog.ui"/>
         <source>Line number</source>
         <translation>行號</translation>
     </message>
     <message>
-        <location filename="newsuppressiondialog.ui" line="52"/>
+        <location filename="newsuppressiondialog.ui"/>
         <source>Symbol name</source>
         <translation>符號名稱</translation>
     </message>
@@ -1557,313 +1541,302 @@ Do you want to remove the file from the recently used projects -list?</source>
 <context>
     <name>ProjectFile</name>
     <message>
-        <location filename="projectfile.ui" line="14"/>
+        <location filename="projectfile.ui"/>
         <source>Project File</source>
         <translation>專案檔</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="24"/>
+        <location filename="projectfile.ui"/>
         <source>Paths and Defines</source>
         <translation>路徑與定義</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="30"/>
+        <location filename="projectfile.ui"/>
         <source>Import Project (Visual studio / compile database/ Borland C++ Builder 6)</source>
         <translation>匯入專案 (Visual Studio / 編譯資料庫 / Borland C++ Builder 6)</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="60"/>
-        <location filename="projectfile.ui" line="422"/>
-        <location filename="projectfile.ui" line="609"/>
+        <location filename="projectfile.ui"/>
         <source>Browse...</source>
         <translation>瀏覽...</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="73"/>
+        <location filename="projectfile.ui"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;You have a choice:&lt;/p&gt;&lt;p&gt; * Analyze all Debug and Release configurations&lt;/p&gt;&lt;p&gt; * Only analyze the first matching Debug configuration&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="76"/>
+        <location filename="projectfile.ui"/>
         <source>Analyze all Visual Studio configurations</source>
         <translation>分析所有 Visual Studio 組態</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="113"/>
+        <location filename="projectfile.ui"/>
         <source>Selected VS Configurations</source>
         <translation>選取 VS 組態</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="147"/>
+        <location filename="projectfile.ui"/>
         <source>Paths:</source>
         <translation>路徑:</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="181"/>
-        <location filename="projectfile.ui" line="296"/>
+        <location filename="projectfile.ui"/>
         <source>Add...</source>
         <translation>新增...</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="188"/>
-        <location filename="projectfile.ui" line="303"/>
-        <location filename="projectfile.ui" line="683"/>
+        <location filename="projectfile.ui"/>
         <source>Edit</source>
         <translation>編輯</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="195"/>
-        <location filename="projectfile.ui" line="310"/>
-        <location filename="projectfile.ui" line="690"/>
-        <location filename="projectfile.ui" line="733"/>
+        <location filename="projectfile.ui"/>
         <source>Remove</source>
         <translation>移除</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="221"/>
+        <location filename="projectfile.ui"/>
         <source>Defines:</source>
         <translation>定義:</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="231"/>
+        <location filename="projectfile.ui"/>
         <source>Defines must be separated by a semicolon. Example: DEF1;DEF2=5;DEF3=int</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="242"/>
+        <location filename="projectfile.ui"/>
         <source>Undefines:</source>
         <translation>未定義:</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="252"/>
+        <location filename="projectfile.ui"/>
         <source>Undefines must be separated by a semicolon. Example: UNDEF1;UNDEF2;UNDEF3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="265"/>
+        <location filename="projectfile.ui"/>
         <source>Include Paths:</source>
         <translation>包含路徑:</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="330"/>
+        <location filename="projectfile.ui"/>
         <source>Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="337"/>
+        <location filename="projectfile.ui"/>
         <source>Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="362"/>
+        <location filename="projectfile.ui"/>
         <source>Types and Functions</source>
         <translation>型別與函式</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="368"/>
+        <location filename="projectfile.ui"/>
         <source>Platform</source>
         <translation>平臺</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="380"/>
+        <location filename="projectfile.ui"/>
         <source>Libraries</source>
         <translation>程式庫</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="389"/>
+        <location filename="projectfile.ui"/>
         <source>Note: Put your own custom .cfg files in the same folder as the project file. You should see them above.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="403"/>
-        <location filename="projectfile.ui" line="481"/>
+        <location filename="projectfile.ui"/>
         <source>Analysis</source>
         <translation>分析</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="409"/>
+        <location filename="projectfile.ui"/>
         <source>Cppcheck build dir (whole program analysis, incremental analysis, statistics, etc)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="415"/>
+        <location filename="projectfile.ui"/>
         <source>This is a workfolder that Cppcheck will use for various purposes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="432"/>
+        <location filename="projectfile.ui"/>
         <source>Parser</source>
         <translation>剖析器</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="438"/>
+        <location filename="projectfile.ui"/>
         <source>Cppcheck (built in)</source>
         <translation>Cppcheck (內建)</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="448"/>
+        <location filename="projectfile.ui"/>
         <source>Clang (experimental)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="458"/>
+        <location filename="projectfile.ui"/>
         <source>Check level</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="464"/>
+        <location filename="projectfile.ui"/>
         <source>Normal -- meant for normal analysis in CI. Analysis should finish in reasonable time.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="471"/>
+        <location filename="projectfile.ui"/>
         <source>Exhaustive -- meant for nightly builds etc. Analysis time can be longer (10x slower than compilation is OK).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="487"/>
+        <location filename="projectfile.ui"/>
         <source>If you want to design your classes to be as flexible and robust as possible then the public interface must be very robust. Cppcheck will asumme that arguments can take *any* value.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="490"/>
+        <location filename="projectfile.ui"/>
         <source>Check that each class has a safe public interface</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="506"/>
+        <location filename="projectfile.ui"/>
         <source>Limit analysis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="512"/>
+        <location filename="projectfile.ui"/>
         <source>Check code in headers  (should be ON normally. if you want a limited quick analysis then turn this OFF)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="522"/>
+        <location filename="projectfile.ui"/>
         <source>Check code in unused templates (should be ON normally, however in theory you can safely ignore warnings in unused templates)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="534"/>
+        <location filename="projectfile.ui"/>
         <source>Max CTU depth</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="565"/>
+        <location filename="projectfile.ui"/>
         <source>Max recursion in template instantiation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="600"/>
+        <location filename="projectfile.ui"/>
         <source>Premium License</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="620"/>
+        <location filename="projectfile.ui"/>
         <source>Warning options</source>
         <translation>警告選項</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="626"/>
+        <location filename="projectfile.ui"/>
         <source>Root path:</source>
         <translation>根路徑:</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="632"/>
+        <location filename="projectfile.ui"/>
         <source>Filepaths in warnings will be relative to this path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="642"/>
+        <location filename="projectfile.ui"/>
         <source>Warning tags (separated by semicolon)</source>
         <translation>警告標記 (由分號分隔)</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="648"/>
+        <location filename="projectfile.ui"/>
         <source>If tags are added, you will be able to right click on warnings and set one of these tags. You can manually categorize warnings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="658"/>
+        <location filename="projectfile.ui"/>
         <source>Exclude source files</source>
         <translation>排除來源檔</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="669"/>
+        <location filename="projectfile.ui"/>
         <source>Exclude folder...</source>
         <translation>排除資料夾...</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="676"/>
+        <location filename="projectfile.ui"/>
         <source>Exclude file...</source>
         <translation>排除檔案...</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="715"/>
+        <location filename="projectfile.ui"/>
         <source>Suppressions</source>
         <translation>抑制</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="726"/>
+        <location filename="projectfile.ui"/>
         <source>Add</source>
         <translation>新增</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="758"/>
+        <location filename="projectfile.ui"/>
         <source>Enable inline suppressions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="779"/>
-        <location filename="projectfile.ui" line="785"/>
+        <location filename="projectfile.ui"/>
         <source>Addons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="791"/>
+        <location filename="projectfile.ui"/>
         <source>Note: Addons require &lt;a href=&quot;https://www.python.org/&quot;&gt;Python&lt;/a&gt; being installed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="801"/>
+        <location filename="projectfile.ui"/>
         <source>Y2038</source>
         <translation>Y2038</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="808"/>
+        <location filename="projectfile.ui"/>
         <source>Thread safety</source>
         <translation>執行緒安全</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="818"/>
+        <location filename="projectfile.ui"/>
         <source>Coding standards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="826"/>
+        <location filename="projectfile.ui"/>
         <source>Misra C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="834"/>
+        <location filename="projectfile.ui"/>
         <source>2012</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="839"/>
-        <location filename="projectfile.ui" line="902"/>
+        <location filename="projectfile.ui"/>
         <source>2023</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="889"/>
+        <location filename="projectfile.ui"/>
         <source>Misra C++</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="897"/>
+        <location filename="projectfile.ui"/>
         <source>2008</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1872,17 +1845,17 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="vanished">Misra C 2012</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="864"/>
+        <location filename="projectfile.ui"/>
         <source>MISRA rule texts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="871"/>
+        <location filename="projectfile.ui"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="878"/>
+        <location filename="projectfile.ui"/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -1891,47 +1864,47 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="vanished">Misra C++ 2008</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="925"/>
+        <location filename="projectfile.ui"/>
         <source>Cert C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="934"/>
+        <location filename="projectfile.ui"/>
         <source>CERT-INT35-C:  int precision (if size equals precision, you can leave empty)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="946"/>
+        <location filename="projectfile.ui"/>
         <source>Cert C++</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="953"/>
+        <location filename="projectfile.ui"/>
         <source>Autosar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="963"/>
+        <location filename="projectfile.ui"/>
         <source>Bug hunting (Premium)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="969"/>
+        <location filename="projectfile.ui"/>
         <source>Bug hunting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="979"/>
+        <location filename="projectfile.ui"/>
         <source>External tools</source>
         <translation>外部工具</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="985"/>
+        <location filename="projectfile.ui"/>
         <source>Clang-tidy</source>
         <translation>Clang-tidy</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="992"/>
+        <location filename="projectfile.ui"/>
         <source>Clang analyzer</source>
         <translation>Clang 分析器</translation>
     </message>
@@ -2333,99 +2306,99 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="866"/>
+        <location filename="resultstree.cpp" line="864"/>
         <source>Recheck</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="867"/>
+        <location filename="resultstree.cpp" line="865"/>
         <source>Copy</source>
         <translation>複製</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="868"/>
+        <location filename="resultstree.cpp" line="866"/>
         <source>Hide</source>
         <translation>隱藏</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="869"/>
+        <location filename="resultstree.cpp" line="867"/>
         <source>Hide all with id</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="870"/>
+        <location filename="resultstree.cpp" line="868"/>
         <source>Open containing folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="888"/>
+        <location filename="resultstree.cpp" line="886"/>
         <source>Suppress selected id(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="909"/>
+        <location filename="resultstree.cpp" line="907"/>
         <source>Tag</source>
         <translation>標記</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="911"/>
+        <location filename="resultstree.cpp" line="909"/>
         <source>No tag</source>
         <translation>取消標記</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="942"/>
-        <location filename="resultstree.cpp" line="956"/>
+        <location filename="resultstree.cpp" line="940"/>
+        <location filename="resultstree.cpp" line="954"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="943"/>
+        <location filename="resultstree.cpp" line="941"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="957"/>
+        <location filename="resultstree.cpp" line="955"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="983"/>
+        <location filename="resultstree.cpp" line="981"/>
         <source>Could not find the file!</source>
         <translation>找不到該檔案！</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1046"/>
+        <location filename="resultstree.cpp" line="1044"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1060"/>
+        <location filename="resultstree.cpp" line="1058"/>
         <source>Could not find file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1064"/>
+        <location filename="resultstree.cpp" line="1062"/>
         <source>Please select the folder &apos;%1&apos;</source>
         <translation>請選取資料夾 &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1065"/>
+        <location filename="resultstree.cpp" line="1063"/>
         <source>Select Directory &apos;%1&apos;</source>
         <translation>選取目錄 &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1067"/>
+        <location filename="resultstree.cpp" line="1065"/>
         <source>Please select the directory where file is located.</source>
         <translation>請選取資料夾所在的目錄。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1068"/>
+        <location filename="resultstree.cpp" line="1066"/>
         <source>Select Directory</source>
         <translation>選取目錄</translation>
     </message>
@@ -2449,22 +2422,22 @@ Please check the application path and parameters are correct.</source>
 <context>
     <name>ResultsView</name>
     <message>
-        <location filename="resultsview.ui" line="26"/>
+        <location filename="resultsview.ui"/>
         <source>Results</source>
         <translation>結果</translation>
     </message>
     <message>
-        <location filename="resultsview.ui" line="60"/>
+        <location filename="resultsview.ui"/>
         <source>Critical errors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.ui" line="92"/>
+        <location filename="resultsview.ui"/>
         <source>Analysis Log</source>
         <translation>分析日誌</translation>
     </message>
     <message>
-        <location filename="resultsview.ui" line="114"/>
+        <location filename="resultsview.ui"/>
         <source>Warning Details</source>
         <translation>警告詳細資訊</translation>
     </message>
@@ -2576,27 +2549,27 @@ To toggle what kind of errors are shown, open view menu.</source>
 <context>
     <name>ScratchPad</name>
     <message>
-        <location filename="scratchpad.ui" line="14"/>
+        <location filename="scratchpad.ui"/>
         <source>Scratchpad</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="scratchpad.ui" line="20"/>
+        <location filename="scratchpad.ui"/>
         <source>Copy or write some C/C++ code here:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="scratchpad.ui" line="37"/>
+        <location filename="scratchpad.ui"/>
         <source>Optionally enter a filename (mainly for automatic language detection) and click on &quot;Check&quot;:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="scratchpad.ui" line="71"/>
+        <location filename="scratchpad.ui"/>
         <source>filename</source>
         <translation>檔案名稱</translation>
     </message>
     <message>
-        <location filename="scratchpad.ui" line="78"/>
+        <location filename="scratchpad.ui"/>
         <source>Check</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2604,195 +2577,192 @@ To toggle what kind of errors are shown, open view menu.</source>
 <context>
     <name>Settings</name>
     <message>
-        <location filename="settings.ui" line="14"/>
+        <location filename="settings.ui"/>
         <source>Preferences</source>
         <translation>偏好設定</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="24"/>
+        <location filename="settings.ui"/>
         <source>General</source>
         <translation>一般</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="41"/>
+        <location filename="settings.ui"/>
         <source>Number of threads: </source>
         <translation>執行緒數量: </translation>
     </message>
     <message>
-        <location filename="settings.ui" line="85"/>
+        <location filename="settings.ui"/>
         <source>Ideal count:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="114"/>
+        <location filename="settings.ui"/>
         <source>Force checking all #ifdef configurations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="121"/>
+        <location filename="settings.ui"/>
         <source>Show full path of files</source>
         <translation>顯示檔案的完整路徑</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="128"/>
+        <location filename="settings.ui"/>
         <source>Show &quot;No errors found&quot; message when no errors found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="135"/>
+        <location filename="settings.ui"/>
         <source>Display error Id in column &quot;Id&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="142"/>
+        <location filename="settings.ui"/>
         <source>Enable inline suppressions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="149"/>
+        <location filename="settings.ui"/>
         <source>Check for inconclusive errors also</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="156"/>
+        <location filename="settings.ui"/>
         <source>Show statistics on check completion</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="163"/>
+        <location filename="settings.ui"/>
         <source>Check for updates</source>
         <translation>檢查更新</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="183"/>
+        <location filename="settings.ui"/>
         <source>Show internal warnings in log</source>
         <translation>顯示日誌中的內部警告</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="191"/>
+        <location filename="settings.ui"/>
         <source>Applications</source>
         <translation>應用程式</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="202"/>
+        <location filename="settings.ui"/>
         <source>Add...</source>
         <translation>新增...</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="209"/>
-        <location filename="settings.ui" line="485"/>
+        <location filename="settings.ui"/>
         <source>Edit...</source>
         <translation>編輯...</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="216"/>
+        <location filename="settings.ui"/>
         <source>Remove</source>
         <translation>移除</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="223"/>
+        <location filename="settings.ui"/>
         <source>Set as default</source>
         <translation>設定為預設值</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="246"/>
+        <location filename="settings.ui"/>
         <source>Reports</source>
         <translation>報告</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="252"/>
+        <location filename="settings.ui"/>
         <source>Save all errors when creating report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="259"/>
+        <location filename="settings.ui"/>
         <source>Save full path to files in reports</source>
         <translation>在報告中儲存檔案的完整路徑</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="280"/>
+        <location filename="settings.ui"/>
         <source>Language</source>
         <translation>語言</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="294"/>
+        <location filename="settings.ui"/>
         <source>Addons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="300"/>
+        <location filename="settings.ui"/>
         <source>Python binary (leave this empty to use python in the PATH)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="311"/>
-        <location filename="settings.ui" line="352"/>
-        <location filename="settings.ui" line="397"/>
+        <location filename="settings.ui"/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="330"/>
+        <location filename="settings.ui"/>
         <source>MISRA addon</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="338"/>
+        <location filename="settings.ui"/>
         <source>MISRA rule texts file</source>
         <translation>MISRA 規則文字檔</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="345"/>
+        <location filename="settings.ui"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="378"/>
+        <location filename="settings.ui"/>
         <source>Clang</source>
         <translation>Clang</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="384"/>
+        <location filename="settings.ui"/>
         <source>Clang path (leave empty to use system PATH)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="407"/>
+        <location filename="settings.ui"/>
         <source>Visual Studio headers</source>
         <translation>Visual Studio 標頭檔</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="413"/>
+        <location filename="settings.ui"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Paths to Visual Studio headers, separated by semicolon &apos;;&apos;.&lt;/p&gt;&lt;p&gt;You can open a Visual Studio command prompt, write &amp;quot;SET INCLUDE&amp;quot;. Then copy/paste the paths.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="443"/>
+        <location filename="settings.ui"/>
         <source>Code Editor</source>
         <translation>程式碼編輯器</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="449"/>
+        <location filename="settings.ui"/>
         <source>Code Editor Style</source>
         <translation>程式碼編輯器樣式</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="455"/>
+        <location filename="settings.ui"/>
         <source>System Style</source>
         <translation>系統樣式</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="462"/>
+        <location filename="settings.ui"/>
         <source>Default Light Style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="469"/>
+        <location filename="settings.ui"/>
         <source>Default Dark Style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings.ui" line="478"/>
+        <location filename="settings.ui"/>
         <source>Custom</source>
         <translation>自訂</translation>
     </message>
@@ -2848,122 +2818,121 @@ To toggle what kind of errors are shown, open view menu.</source>
 <context>
     <name>StatsDialog</name>
     <message>
-        <location filename="statsdialog.ui" line="14"/>
-        <location filename="statsdialog.ui" line="248"/>
+        <location filename="statsdialog.ui"/>
         <location filename="statsdialog.cpp" line="187"/>
         <location filename="statsdialog.cpp" line="234"/>
         <source>Statistics</source>
         <translation>統計資料</translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="27"/>
+        <location filename="statsdialog.ui"/>
         <location filename="statsdialog.cpp" line="225"/>
         <source>Project</source>
         <translation>專案</translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="33"/>
+        <location filename="statsdialog.ui"/>
         <source>Project:</source>
         <translation>專案:</translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="53"/>
+        <location filename="statsdialog.ui"/>
         <source>Paths:</source>
         <translation>路徑:</translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="85"/>
+        <location filename="statsdialog.ui"/>
         <source>Include paths:</source>
         <translation>包含路徑:</translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="108"/>
+        <location filename="statsdialog.ui"/>
         <source>Defines:</source>
         <translation>定義:</translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="131"/>
+        <location filename="statsdialog.ui"/>
         <source>Undefines:</source>
         <translation>未定義:</translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="165"/>
+        <location filename="statsdialog.ui"/>
         <location filename="statsdialog.cpp" line="230"/>
         <source>Previous Scan</source>
         <translation>上一次掃描</translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="171"/>
+        <location filename="statsdialog.ui"/>
         <source>Path Selected:</source>
         <translation>選取的路徑:</translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="181"/>
+        <location filename="statsdialog.ui"/>
         <source>Number of Files Scanned:</source>
         <translation>已掃描的檔案數量:</translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="201"/>
+        <location filename="statsdialog.ui"/>
         <source>Scan Duration:</source>
         <translation>掃描時間:</translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="254"/>
+        <location filename="statsdialog.ui"/>
         <source>Errors:</source>
         <translation>錯誤:</translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="271"/>
+        <location filename="statsdialog.ui"/>
         <source>Warnings:</source>
         <translation>警告:</translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="288"/>
+        <location filename="statsdialog.ui"/>
         <source>Stylistic warnings:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="305"/>
+        <location filename="statsdialog.ui"/>
         <source>Portability warnings:</source>
         <translation>可移植性警告:</translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="322"/>
+        <location filename="statsdialog.ui"/>
         <source>Performance issues:</source>
         <translation>效能議題:</translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="339"/>
+        <location filename="statsdialog.ui"/>
         <source>Information messages:</source>
         <translation>資訊訊息:</translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="356"/>
+        <location filename="statsdialog.ui"/>
         <source>Active checkers:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="374"/>
+        <location filename="statsdialog.ui"/>
         <source>Checkers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="399"/>
+        <location filename="statsdialog.ui"/>
         <source>History</source>
         <translation>歷史紀錄</translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="405"/>
+        <location filename="statsdialog.ui"/>
         <source>File:</source>
         <translation>檔案:</translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="443"/>
+        <location filename="statsdialog.ui"/>
         <source>Copy to Clipboard</source>
         <translation>複製到剪貼簿</translation>
     </message>
     <message>
-        <location filename="statsdialog.ui" line="450"/>
+        <location filename="statsdialog.ui"/>
         <source>Pdf Export</source>
         <translation>Pdf 匯出</translation>
     </message>
