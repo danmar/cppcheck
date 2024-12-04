@@ -4,6 +4,8 @@ if(MSVC)
 endif()
 project(Cppcheck VERSION 2.16.99 LANGUAGES CXX)
 
+include(cmake/platformCheck.cmake)
+
 include(cmake/cxx11.cmake)
 use_cxx11()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
