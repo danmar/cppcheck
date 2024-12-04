@@ -677,7 +677,7 @@ int main(int argc, char **argv)
 
     // Makefile settings..
     if (release) {
-        makeConditionalVariable(fout, "CXXFLAGS", "-std=c++0x -O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-multichar");
+        makeConditionalVariable(fout, "CXXFLAGS", "-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-multichar");
     } else {
         makeConditionalVariable(fout, "CXXFLAGS",
                                 "-pedantic "
@@ -699,14 +699,9 @@ int main(int argc, char **argv)
     }
 
     fout << "ifeq (g++, $(findstring g++,$(CXX)))\n"
-         << "    override CXXFLAGS += -std=gnu++0x -pipe\n"
-         << "else ifeq (clang++, $(findstring clang++,$(CXX)))\n"
-         << "    override CXXFLAGS += -std=c++0x\n"
-         << "else ifeq ($(CXX), c++)\n"
-         << "    ifeq ($(shell uname -s), Darwin)\n"
-         << "        override CXXFLAGS += -std=c++0x\n"
-         << "    endif\n"
+         << "    override CXXFLAGS += -pipe\n"
          << "endif\n"
+         << "override CXXFLAGS += -std=c++11"
          << "\n";
 
     fout << "ifeq ($(HAVE_RULES),yes)\n"
