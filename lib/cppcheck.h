@@ -21,7 +21,6 @@
 #define cppcheckH
 //---------------------------------------------------------------------------
 
-#include "analyzerinfo.h"
 #include "check.h"
 #include "color.h"
 #include "config.h"
@@ -48,6 +47,7 @@ class CheckUnusedFunctions;
 class Tokenizer;
 class FileWithDetails;
 class RemarkComment;
+class AnalyzerInformation;
 
 namespace simplecpp { class TokenList; }
 
@@ -116,7 +116,7 @@ public:
      * @brief Returns current version number as a string.
      * @return version, e.g. "1.38"
      */
-    static const char * version();
+    RET_NONNULL static const char * version();
 
     /**
      * @brief Returns extra version info as a string.
@@ -124,7 +124,7 @@ public:
      * time/date etc.
      * @return extra version info, e.g. "04d42151" (Git commit id).
      */
-    static const char * extraVersion();
+    RET_NONNULL static const char * extraVersion();
 
     /**
      * @brief Call all "getErrorMessages" in all registered Check classes.
@@ -246,7 +246,7 @@ private:
     /** File info used for whole program analysis */
     std::list<Check::FileInfo*> mFileInfo;
 
-    AnalyzerInformation mAnalyzerInformation;
+    std::unique_ptr<AnalyzerInformation> mAnalyzerInformation;
 
     /** Callback for executing a shell command (exe, args, output) */
     ExecuteCmdFn mExecuteCommand;

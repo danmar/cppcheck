@@ -172,7 +172,7 @@ private:
      * '; int *p(0);' => '; int *p = 0;'
      */
     void simplifyInitVar();
-    static Token* initVar(Token* tok);
+    RET_NONNULL static Token* initVar(Token* tok);
 
     /**
      * Simplify the location of "static" and "const" qualifiers in

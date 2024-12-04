@@ -6792,6 +6792,14 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout_str());
+
+        check("void f(bool b) {\n" // #13121
+              "    static std::string s = {};\n"
+              "    for (auto c : s) {}\n"
+              "    if (b)\n"
+              "        s += \'a\';\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout_str());
     }
 
     void checkMutexes() {

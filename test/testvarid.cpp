@@ -252,6 +252,7 @@ private:
         TEST_CASE(exprid10);
         TEST_CASE(exprid11);
         TEST_CASE(exprid12);
+        TEST_CASE(exprid13);
 
         TEST_CASE(structuredBindings);
     }
@@ -4331,6 +4332,23 @@ private:
                           "5: [ ] ( S * s@4 ) { s@4 .@UNIQUE p@5 .@UNIQUE release (@UNIQUE ) ; }\n"
                           "6: } ;\n"
                           "7: }\n";
+        ASSERT_EQUALS(exp, tokenizeExpr(code));
+    }
+
+    void exprid13()
+    {
+        const char code[] = "struct S { int s; };\n" // #11488
+                            "struct T { struct S s; };\n"
+                            "struct U { struct T t; };\n"
+                            "void f() {\n"
+                            "    struct U u = { .t = { .s = { .s = 1 } } };\n"
+                            "}\n";
+        const char* exp = "1: struct S { int s ; } ;\n"
+                          "2: struct T { struct S s ; } ;\n"
+                          "3: struct U { struct T t ; } ;\n"
+                          "4: void f ( ) {\n"
+                          "5: struct U u@4 ; u@4 = { .@UNIQUE t@5 = { . s = { . s = 1 } } } ;\n"
+                          "6: }\n";
         ASSERT_EQUALS(exp, tokenizeExpr(code));
     }
 
