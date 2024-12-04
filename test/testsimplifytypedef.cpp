@@ -4500,6 +4500,12 @@ private:
                             "void f(const P p);\n";
         ASSERT_EQUALS("struct S_ { } ; void f ( struct S_ * const p ) ;", // don't crash
                       tok(code));
+
+        const char code2[] = "struct S;\n"
+                             "typedef S& (S::* P)(const S&);\n"
+                             "void f(const P);\n";
+        ASSERT_EQUALS("struct S ; void f ( const S & ( S :: * ) ( const S & ) ) ;", // don't crash
+                      tok(code2));
     }
 
     void typedefInfo1() {
