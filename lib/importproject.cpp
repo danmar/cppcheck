@@ -1261,8 +1261,6 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
 
     guiProject.analyzeAllVsConfigs.clear();
 
-    bool checkLevelExhaustive = false;
-
     // TODO: this should support all available command-line options
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         const char* name = node->Name();
@@ -1334,8 +1332,12 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             }
         } else if (strcmp(name, CppcheckXml::CheckHeadersElementName) == 0)
             temp.checkHeaders = (strcmp(default_if_null(node->GetText(), ""), "true") == 0);
+        else if (strcmp(name, CppcheckXml::CheckLevelReducedElementName) == 0)
+            temp.setCheckLevel(Settings::CheckLevel::reduced);
+        else if (strcmp(name, CppcheckXml::CheckLevelNormalElementName) == 0)
+            temp.setCheckLevel(Settings::CheckLevel::normal);
         else if (strcmp(name, CppcheckXml::CheckLevelExhaustiveElementName) == 0)
-            checkLevelExhaustive = true;
+            temp.setCheckLevel(Settings::CheckLevel::exhaustive);
         else if (strcmp(name, CppcheckXml::CheckUnusedTemplatesElementName) == 0)
             temp.checkUnusedTemplates = (strcmp(default_if_null(node->GetText(), ""), "true") == 0);
         else if (strcmp(name, CppcheckXml::InlineSuppression) == 0)
@@ -1409,11 +1411,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->maxTemplateRecursion = temp.maxTemplateRecursion;
     settings->inlineSuppressions |= temp.inlineSuppressions;
     settings->safeChecks = temp.safeChecks;
-
-    if (checkLevelExhaustive)
-        settings->setCheckLevel(Settings::CheckLevel::exhaustive);
-    else
-        settings->setCheckLevel(Settings::CheckLevel::normal);
+    settings->setCheckLevel(temp.checkLevel);
 
     return true;
 }
