@@ -4374,6 +4374,16 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'a' can be declared as const array\n",
                       errout_str());
+
+        check("void f(int n, int v[42]) {\n" // #12796
+              "    int j = 0;\n"
+              "    for (int i = 0; i < n; ++i) {\n"
+              "        j += 1;\n"
+              "        if (j == 1) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared as const array\n",
+                      errout_str());
     }
 
     void switchRedundantAssignmentTest() {
