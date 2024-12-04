@@ -654,16 +654,11 @@ int main(int argc, char **argv)
          << "endif # WINNT\n"
          << "\n";
 
-    // tinymxl2 requires __STRICT_ANSI__ to be undefined to compile under CYGWIN.
     fout << "ifdef CYGWIN\n"
          << "    ifeq ($(VERBOSE),1)\n"
          << "        $(info CYGWIN found)\n"
          << "    endif\n"
          << "\n"
-         << "    # Set the flag to address compile time warnings\n"
-         << "    # with tinyxml2 and Cygwin.\n"
-         << "    CPPFLAGS+=-U__STRICT_ANSI__\n"
-         << "    \n"
          << "    # Increase stack size for Cygwin builds to avoid segmentation fault in limited recursive tests.\n"
          << "    CXXFLAGS+=-Wl,--stack,8388608\n"
          << "endif # CYGWIN\n"

@@ -120,10 +120,6 @@ ifdef CYGWIN
         $(info CYGWIN found)
     endif
 
-    # Set the flag to address compile time warnings
-    # with tinyxml2 and Cygwin.
-    CPPFLAGS+=-U__STRICT_ANSI__
-    
     # Increase stack size for Cygwin builds to avoid segmentation fault in limited recursive tests.
     CXXFLAGS+=-Wl,--stack,8388608
 endif # CYGWIN

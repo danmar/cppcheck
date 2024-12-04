@@ -169,10 +169,6 @@ std::string FileLister::addFiles(std::list<FileWithDetails> &files, const std::s
 ////// This code is POSIX-style systems ///////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-#if defined(__CYGWIN__)
-#undef __STRICT_ANSI__
-#endif
-
 #include <dirent.h>
 #include <sys/stat.h>
 #include <cerrno>
