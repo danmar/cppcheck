@@ -19,3 +19,5 @@ if (REGISTER_GUI_TESTS)
     # TODO: requires X session - run with QT_QPA_PLATFORM=offscreen?
     #add_test(NAME test-translationhandler COMMAND $<TARGET_FILE:test-translationhandler>)
 endif()
+
+add_dependencies(gui-tests test-translationhandler)

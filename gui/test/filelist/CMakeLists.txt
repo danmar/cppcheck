@@ -23,3 +23,5 @@ endif()
 if (REGISTER_GUI_TESTS)
     add_test(NAME test-filelist COMMAND $<TARGET_FILE:test-filelist>)
 endif()
+
+add_dependencies(gui-tests test-filelist)

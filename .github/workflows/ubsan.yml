@@ -85,6 +85,10 @@ jobs:
         run: |
           cmake --build cmake.output --target testrunner -- -j $(nproc)
 
+      - name: Build GUI tests
+        run: |
+          cmake --build cmake.output --target gui-tests -- -j $(nproc)
+
       - name: Run tests
         run: ./cmake.output/bin/testrunner
 
@@ -92,9 +96,7 @@ jobs:
         run: |
           cmake --build cmake.output --target checkcfg -- -j $(nproc)
 
-      # TODO: we should use CTest instead to parallelize tests but the start-up overhead will slow things down
       - name: Run CTest
-        if: false
         run: |
           ctest --test-dir cmake.output --output-on-failure -j$(nproc)
 

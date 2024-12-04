@@ -1,3 +1,5 @@
+add_custom_target(gui-tests)
+
 add_subdirectory(cppchecklibrarydata)
 add_subdirectory(filelist)
 add_subdirectory(projectfile)

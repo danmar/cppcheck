@@ -56,7 +56,6 @@ jobs:
           sudo ./llvm.sh 19
 
       - name: Install Qt ${{ env.QT_VERSION }}
-        if: false
         uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}
@@ -73,7 +72,7 @@ jobs:
       # TODO: disable all warnings
       - name: CMake
         run: |
-          cmake -S . -B cmake.output -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=Off -DUSE_QT6=On -DWITH_QCHART=On -DUSE_MATCHCOMPILER=Verify -DANALYZE_ADDRESS=On -DENABLE_CHECK_INTERNAL=On -DUSE_BOOST=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DDISABLE_DMAKE=On -DFILESDIR= -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -S . -B cmake.output -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DUSE_MATCHCOMPILER=Verify -DANALYZE_ADDRESS=On -DENABLE_CHECK_INTERNAL=On -DUSE_BOOST=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DDISABLE_DMAKE=On -DFILESDIR= -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
         env:
           CC: clang-19
           CXX: clang++-19
@@ -86,6 +85,10 @@ jobs:
         run: |
           cmake --build cmake.output --target testrunner -- -j $(nproc)
 
+      - name: Build GUI tests
+        run: |
+          cmake --build cmake.output --target gui-tests -- -j $(nproc)
+
       - name: Run tests
         run: ./cmake.output/bin/testrunner
 
@@ -93,9 +96,7 @@ jobs:
         run: |
           cmake --build cmake.output --target checkcfg -- -j $(nproc)
 
-      # TODO: we should use CTest instead to parallelize tests but the start-up overhead will slow things down
       - name: Run CTest
-        if: false
         run: |
           ctest --test-dir cmake.output --output-on-failure -j$(nproc)
 
