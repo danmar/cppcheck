@@ -22,7 +22,9 @@
 #include "config.h"
 #include "path.h"
 
+#if defined(__GNUC__) && (__GNUC__ >= 14)
 SUPPRESS_WARNING_GCC_PUSH("-Wsuggest-attribute=returns_nonnull")
+#endif
 SUPPRESS_WARNING_CLANG_PUSH("-Wzero-as-null-pointer-constant")
 SUPPRESS_WARNING_CLANG_PUSH("-Wsuggest-destructor-override")
 SUPPRESS_WARNING_CLANG_PUSH("-Winconsistent-missing-destructor-override")
@@ -34,7 +36,9 @@ SUPPRESS_WARNING_CLANG_POP
 SUPPRESS_WARNING_CLANG_POP
 SUPPRESS_WARNING_CLANG_POP
 SUPPRESS_WARNING_CLANG_POP
+#if defined(__GNUC__) && (__GNUC__ >= 14)
 SUPPRESS_WARNING_GCC_POP
+#endif
 
 inline static tinyxml2::XMLError xml_LoadFile(tinyxml2::XMLDocument& doc, const char* filename)
 {
