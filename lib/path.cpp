@@ -359,16 +359,26 @@ bool Path::isHeader(const std::string &path)
 
 std::string Path::getAbsoluteFilePath(const std::string& filePath)
 {
+    if (filePath.empty())
+        return "";
+
     std::string absolute_path;
 #ifdef _WIN32
     char absolute[_MAX_PATH];
     if (_fullpath(absolute, filePath.c_str(), _MAX_PATH))
         absolute_path = absolute;
+    if (!absolute_path.empty() && absolute_path.back() == '\\')
+        absolute_path.pop_back();
 #elif defined(__linux__) || defined(__sun) || defined(__hpux) || defined(__GNUC__) || defined(__CPPCHECK__)
-    char * absolute = realpath(filePath.c_str(), nullptr);
+    // simplify the path since any non-existent part has to exist even if discarded by ".."
+    std::string spath = Path::simplifyPath(filePath);
+    char * absolute = realpath(spath.c_str(), nullptr);
     if (absolute)
         absolute_path = absolute;
     free(absolute);
+    // only throw on realpath() fialure to resolve a path when the given one was non-existent
+    if (!spath.empty() && absolute_path.empty() && !exists(spath))
+        throw std::runtime_error("path '" + filePath + "' does not exist");
 #else
 #error Platform absolute path function needed
 #endif
@@ -410,6 +420,12 @@ bool Path::isFile(const std::string &path)
 bool Path::isDirectory(const std::string &path)
 {
     return file_type(path) == S_IFDIR;
+}
+
+bool Path::exists(const std::string &path)
+{
+    const auto type = file_type(path);
+    return type == S_IFREG || type == S_IFDIR;
 }
 
 std::string Path::join(const std::string& path1, const std::string& path2) {
