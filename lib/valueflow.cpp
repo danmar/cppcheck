@@ -1585,7 +1585,8 @@ static std::vector<ValueFlow::LifetimeToken> getLifetimeTokens(const Token* tok,
             if (vartok->str() == "[" || vartok->isUnaryOp("*"))
                 vartok = vartok->astOperand1();
             else if (vartok->str() == ".") {
-                if (vartok->originalName().empty() || !Token::simpleMatch(vartok->astOperand1(), "."))
+                if (!Token::simpleMatch(vartok->astOperand1(), ".") &&
+                    !(vartok->astOperand2() && vartok->astOperand2()->valueType() && vartok->astOperand2()->valueType()->reference != Reference::None))
                     vartok = vartok->astOperand1();
                 else
                     break;

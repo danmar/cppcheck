@@ -119,6 +119,7 @@ private:
         TEST_CASE(returnReference25); // #10983
         TEST_CASE(returnReference26);
         TEST_CASE(returnReference27);
+        TEST_CASE(returnReference28);
         TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
@@ -1669,6 +1670,17 @@ private:
               "    }\n"
               "    std::map<std::string, std::string> m;\n"
               "};\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void returnReference28()
+    {
+        check("struct S {\n" // #13373
+              "    int& r;\n"
+              "};\n"
+              "int& f(S s) {\n"
+              "    return s.r;\n"
+              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
