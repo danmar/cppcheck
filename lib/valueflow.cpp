@@ -5128,6 +5128,12 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
     if (isVariableChanged(bodyStart, bodyEnd, expr->varId(), globalvar, settings))
         return;
 
+    if (const Token* escape = findEscapeStatement(bodyStart->scope(), &settings.library)) {
+        if (settings.debugwarnings)
+            bailout(tokenlist, errorLogger, escape, "For loop variable bailout on escape statement");
+        return;
+    }
+
     for (Token *tok2 = bodyStart->next(); tok2 != bodyEnd; tok2 = tok2->next()) {
         if (tok2->varId() == expr->varId()) {
             const Token * parent = tok2->astParent();
@@ -5189,20 +5195,10 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
 
         if (Token::simpleMatch(tok2, ") {")) {
             if (vartok->varId() && Token::findmatch(tok2->link(), "%varid%", tok2, vartok->varId())) {
-                if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(1), vartok->varId())) {
-                    if (settings.debugwarnings)
-                        bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on conditional continue|break|return");
-                    break;
-                }
                 if (settings.debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "For loop variable skipping conditional scope");
                 tok2 = tok2->linkAt(1);
                 if (Token::simpleMatch(tok2, "} else {")) {
-                    if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(2), vartok->varId())) {
-                        if (settings.debugwarnings)
-                            bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on conditional continue|break|return");
-                        break;
-                    }
                     tok2 = tok2->linkAt(2);
                 }
             }

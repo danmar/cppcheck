@@ -2579,6 +2579,19 @@ private:
               "    return buf[0];\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'buf[10]' accessed at index 10, which is out of bounds.\n", errout_str());
+
+        check("void f() {\n"
+              "    const int a[10] = {};\n"
+              "    for (int n = 0; 1; ++n) {\n"
+              "        if (a[n] < 1) {\n"
+              "            switch (a[n]) {\n"
+              "            case 0:\n"
+              "                break;\n"
+              "            }\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10]' accessed at index 9998, which is out of bounds.\n", errout_str());
     }
 
     void array_index_for_neq() {
