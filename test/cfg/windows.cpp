@@ -498,8 +498,10 @@ void bufferAccessOutOfBounds()
     FillMemory(byteBuf, sizeof(byteBuf)+1, 0x01);
 
     char * pAlloc1 = static_cast<char*>(_malloca(32));
+    // cppcheck-suppress nullPointerOutOfMemory
     memset(pAlloc1, 0, 32);
     // cppcheck-suppress bufferAccessOutOfBounds
+    // cppcheck-suppress nullPointerOutOfMemory
     memset(pAlloc1, 0, 33);
     _freea(pAlloc1);
 }

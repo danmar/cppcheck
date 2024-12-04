@@ -284,6 +284,14 @@ namespace ValueFlow
         /** For calculated values - varId that calculated value depends on */
         nonneg int varId{};
 
+        enum class UnknownFunctionReturn : uint8_t {
+            no,             // not unknown function return
+            outOfMemory,    // out of memory
+            outOfResources, // out of resource
+            other           // other
+        };
+        UnknownFunctionReturn unknownFunctionReturn{UnknownFunctionReturn::no};
+
         /** value relies on safe checking */
         bool safe{};
 
@@ -296,7 +304,7 @@ namespace ValueFlow
         /** Is this value passed as default parameter to the function? */
         bool defaultArg{};
 
-        int indirect{};
+        int8_t indirect{};
 
         /** kind of moved  */
         enum class MoveKind : std::uint8_t { NonMovedVariable, MovedVariable, ForwardedVariable } moveKind = MoveKind::NonMovedVariable;

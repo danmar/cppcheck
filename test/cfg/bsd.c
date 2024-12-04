@@ -155,8 +155,10 @@ void uninitvar(void)
 void arrayIndexOutOfBounds(void)
 {
     char * pAlloc = calloc(2, 3);
+    // cppcheck-suppress nullPointerOutOfMemory
     pAlloc[5] = 'a';
     // cppcheck-suppress arrayIndexOutOfBounds
+    // cppcheck-suppress nullPointerOutOfMemory
     pAlloc[6] = 1;
     // cppcheck-suppress memleakOnRealloc
     pAlloc = reallocarray(pAlloc, 3, 3);

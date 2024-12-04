@@ -2631,6 +2631,7 @@ private:
               "}\n"
               "void f() {\n"
               "    struct S* s = malloc(sizeof(struct S));\n"
+              "    if (!s) return;\n"
               "    s->ppc = NULL;\n"
               "    if (alloc(s))\n"
               "        s->ppc[0] = \"\";\n"
@@ -2767,7 +2768,7 @@ private:
               "    (*kep)->next = 0;\n"
               "    (*kep)->len = slen;\n"
               "}\n");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Possible null pointer dereference: *kep (if there has been failed memory allocation)\n", errout_str());
     }
 
     void nullpointer95() // #11142
